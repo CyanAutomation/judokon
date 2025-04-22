@@ -1,33 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Specifies the character encoding for the document -->
   <meta charset="UTF-8" />
+  <!-- Ensures the page is responsive and scales properly on different devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- Prevents the browser from caching the page, ensuring the latest version is always loaded -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <!-- Provides a brief description of the page for SEO and social media previews -->
   <meta name="description" content="JUDOKON! A web-based judo-themed card battle game featuring IJF judoka." />
+  <!-- Keywords to improve search engine optimization -->
   <meta name="keywords" content="judo, card game, web game, IJF, judoka" />
+  <!-- Specifies the author of the page -->
   <meta name="author" content="Marc Scheimann" />
+  <!-- Sets the title of the page, which appears in the browser tab -->
   <title>JUDOKON!</title>
+  <!-- Preloads the stylesheet for faster loading -->
   <link rel="preload" href="style.css" as="style" />
+  <!-- Links the main stylesheet for the page -->
   <link rel="stylesheet" href="style.css" />
+  <!-- Inline styles for the body element -->
   <style>
     body {
       font-family: Arial, sans-serif;
     }
   </style>
+  <!-- Links the main JavaScript file and defers its execution until the HTML is fully parsed -->
   <script src="script.js" type="module" defer></script>
 </head>
 <body>
   <!-- Header Section -->
   <header>
+    <!-- Displays the main title of the game -->
     <h1>JUDOKON!</h1>
+    <!-- Subtitle providing additional context about the game -->
     <p class="subtitle">A web-based judo-themed card battle game featuring IJF judoka</p>
   </header>
 
   <!-- Main Content -->
   <main class="container">
+    <!-- Button to start the game -->
     <button id="startBtn" aria-label="Start the game">Start Game</button>
+    <!-- Button to start the game -->
     <div id="loading" class="hidden" aria-live="polite">Loading...</div>
+    <!-- Game area where the dynamic content (e.g., judoka cards) will be displayed -->
     <div id="gameArea" class="hidden">
       <!-- Game content will go here -->
     </div>
