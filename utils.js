@@ -1,4 +1,5 @@
 import gokyo from './data/gokyo.json'; // Import gokyo.json
+console.log("Loaded gokyo techniques:", gokyo);
 
 // Generate flag URL
 export function getFlagUrl(countryCode) {
@@ -42,6 +43,9 @@ function generateCardPortrait(judoka) {
 }
 
 function generateCardStats(judoka) {
+  // Check if the judoka has stats available
+  if (!judoka.stats) return `<div class="card-stats">No stats available</div>`;
+
   // Extract stats from the judoka object
   const { power, speed, technique, kumiKata, neWaza } = judoka.stats;
 
@@ -62,7 +66,9 @@ function generateCardStats(judoka) {
 
 function generateCardSignatureMove(judoka) {
   // Find the technique in gokyo.json using the signatureMoveId
+  console.log("Judoka ID:", judoka.signatureMoveId);
   const technique = gokyo.find(move => move.id === judoka.signatureMoveId);
+  console.log("Matched technique:", technique);
 
   // Get the technique name or fallback to "Unknown"
   const techniqueName = technique ? technique.name : "Unknown";
