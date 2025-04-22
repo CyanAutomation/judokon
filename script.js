@@ -1,32 +1,32 @@
 // filepath: /workspaces/judokon/script.js
 document.getElementById("startBtn").addEventListener("click", async () => {
-  document.getElementById("startBtn").classList.add("hidden");
-  document.getElementById("gameArea").innerHTML = "<p>Loading...</p>";
-
-  try {
-    const response = await fetch("data/judoka.json");
-    const judokaData = await response.json();
-    const randomIndex = Math.floor(Math.random() * judokaData.length);
-    displayJudokaCard(judokaData[randomIndex]);
-  } catch (error) {
-    console.error("Error loading judoka data:", error);
-    document.getElementById("gameArea").innerHTML = `
-      <p>Failed to load game data. Please try again later.</p>
-    `;
-  }
-});
+  const startBtn = document.getElementById("startBtn");
+  const gameArea = document.getElementById("gameArea");
+  const loadingIndicator = document.getElementById("loading");
+  
+  startBtn.addEventListener("click", async () => {
+    startBtn.classList.add("hidden");
+    loadingIndicator.classList.remove("hidden");
+  
+    try {
+      const response = await fetch("data/judoka.json");
+      const judokaData = await response.json();
+      const randomIndex = Math.floor(Math.random() * judokaData.length);
+      displayJudokaCard(judokaData[randomIndex]);
+    } catch (error) {
+      console.error("Error loading judoka data:", error);
+      gameArea.innerHTML = `<p>Failed to load game data. Please try again later.</p>`;
+    } finally {
+      loadingIndicator.classList.add("hidden");
+    }
+  });
 
 function getFlagUrl(countryCode) {
   return `https://flagcdn.com/w320/${countryCode?.toLowerCase() || "unknown"}.png`;
 }
 
-function displayJudokaCard(judoka) {
-  const flagUrl = getFlagUrl(judoka.countryCode);
-  document.getElementById("gameArea").innerHTML = generateJudokaCardHTML(judoka);
-}
-
 function generateJudokaCardHTML(judoka) {
-  const flagUrl = `https://flagcdn.com/w320/${judoka.countryCode?.toLowerCase() || "unknown"}.png`;
+  const flagUrl = getFlagUrl(judoka.countryCode);
 
   return `
     <div class="card">
@@ -63,5 +63,6 @@ function generateJudokaCardHTML(judoka) {
 }
 
 function displayJudokaCard(judoka) {
+  const flagUrl = getFlagUrl(judoka.countryCode);
   document.getElementById("gameArea").innerHTML = generateJudokaCardHTML(judoka);
 }

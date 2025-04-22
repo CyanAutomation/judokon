@@ -4,25 +4,37 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta name="description" content="JUDOKON! A web-based judo-themed card battle game featuring IJF judoka." />
+  <meta name="keywords" content="judo, card game, web game, IJF, judoka" />
+  <meta name="author" content="Marc Scheimann" />
   <title>JUDOKON!</title>
+  <link rel="preload" href="style.css" as="style" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+  </style>
   <script src="script.js" defer></script>
 </head>
 <body>
+  <!-- Header Section -->
   <header>
     <h1>JUDOKON!</h1>
     <p class="subtitle">A web-based judo-themed card battle game featuring IJF judoka</p>
   </header>
+
+  <!-- Main Content -->
   <main class="container">
     <button id="startBtn" aria-label="Start the game">Start Game</button>
-    <div id="loading" class="hidden">Loading...</div>
+    <div id="loading" class="hidden" aria-live="polite">Loading...</div>
     <div id="gameArea" class="hidden">
       <!-- Game content will go here -->
     </div>
   </main>
-</body>
+<!-- Footer Section -->
 <footer>
   <p>&copy; 2025 JUDOKON! All rights reserved.</p>
 </footer>
+</body>
 </html>
