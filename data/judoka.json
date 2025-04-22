@@ -15,7 +15,8 @@
     },
     "signatureMove": "Uchi-mata",
     "lastUpdated": "2025-04-22T10:00:00Z",
-    "profileUrl": "https://en.wikipedia.org/wiki/Megan_Fletcher"
+    "profileUrl": "https://en.wikipedia.org/wiki/Megan_Fletcher",
+    "gender": "female"
   },
   {
     "id": 2,
@@ -33,6 +34,7 @@
     },
     "signatureMove": "O-soto-gari",
     "lastUpdated": "2025-04-20T15:30:00Z",
-    "profileUrl": "https://en.wikipedia.org/wiki/Teddy_Riner"
+    "profileUrl": "https://en.wikipedia.org/wiki/Teddy_Riner",
+    "gender": "male"
   }
 ]
