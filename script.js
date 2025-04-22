@@ -17,14 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
     gameArea.innerHTML = ""; // Clear the game area
     loadingIndicator.classList.remove("hidden");
 
-    // Simulate a delay (e.g., loading game assets)
-    setTimeout(() => {
-    // Hide the loading spinner and show the game area
-    loadingDiv.classList.add("hidden");
-    gameArea.classList.remove("hidden");
-    }, 2000); // 2-second delay
-
     try {
+      // Simulate a delay for loading (e.g., fetching data)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
       // Fetch the judoka data from the JSON file
       const response = await fetch("data/judoka.json");
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -34,22 +30,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Select a random judoka from the data
       const randomJudoka = getRandomJudoka(judokaData);
-      console.log("Selected judoka:", selectedJudoka); // Debugging log
+      console.log("Selected judoka:", randomJudoka);      // Debugging log
       displayJudokaCard(randomJudoka);
     } catch (error) {
       console.error("Error loading card:", error);
+      // Display an error message in the game area
       gameArea.innerHTML = `<p>⚠️ Failed to load card. Please try again later.</p>`;
     } finally {
       // Hide the loading indicator and show the game area
       loadingIndicator.classList.add("hidden");
+      gameArea.classList.remove("hidden");
     }
   });
 
+  // Function to select a random judoka from the data
+  // This function takes a number of milliseconds and returns a promise that resolves after that time
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Function to select a random judoka from the data
+  // This function takes an array of judoka data and returns a random judoka object  
   function getRandomJudoka(data) {
     const index = Math.floor(Math.random() * data.length);
+    console.log("Random index:", index);
     return data[index];
-    console.log("Random index:", randomIndex); // Debugging log
-  }
+  }  
 
   // Function to display the selected judoka's card
   function displayJudokaCard(judoka) {
