@@ -5,8 +5,13 @@ import { getFlagUrl, generateJudokaCardHTML } from './utils.js';
 document.addEventListener("DOMContentLoaded", () => {
   // Select DOM elements for the start button, game area, and loading indicator
   const startBtn = document.getElementById("startBtn");
+  console.log("Start button element:", startBtn);
   const gameArea = document.getElementById("gameArea");
   const loadingIndicator = document.getElementById("loading");
+  const [judokaData, gokyoData] = await Promise.all([
+    fetch("data/judoka.json").then(res => res.json()),
+    fetch("data/gokyo.json").then(res => res.json())
+  ]);
 
   // Add a click event listener to the "Start Game" button
   startBtn.addEventListener("click", async () => {
@@ -23,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Fetch the judoka data from the JSON file
       const response = await fetch("data/judoka.json");
+      console.log("Fetch response:", response);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const judokaData = await response.json();
 
@@ -31,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Select a random judoka from the data
       const randomJudoka = getRandomJudoka(judokaData);
       console.log("Selected judoka:", randomJudoka);      // Debugging log
-      displayJudokaCard(randomJudoka);
+      displayJudokaCard(selectedJudoka, gokyoData);
     } catch (error) {
       console.error("Error loading card:", error);
       // Display an error message in the game area
@@ -58,10 +64,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }  
 
   // Function to display the selected judoka's card
-  function displayJudokaCard(judoka) {
+  function displayJudokaCard(judoka, gokyo) {
     console.log("Judoka passed to displayJudokaCard:", judoka);
     // Use the utility function to generate the judoka card HTML
-    gameArea.innerHTML = generateJudokaCardHTML(judoka);
-    console.log("Generated card HTML:", generateJudokaCardHTML(judoka));
+    gameArea.innerHTML = generateJudokaCardHTML(judoka, gokyo);
   }
 });

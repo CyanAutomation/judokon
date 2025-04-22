@@ -1,4 +1,3 @@
-import gokyo from './data/gokyo.json'; // Import gokyo.json
 export { getValue, formatDate, generateCardTopBar };
 console.log("Loaded gokyo techniques:", gokyo);
 
@@ -77,7 +76,7 @@ function generateCardStats(judoka) {
   `;
 }
 
-function generateCardSignatureMove(judoka) {
+function generateCardSignatureMove(judoka, gokyo) {
   // Find the technique in gokyo.json using the signatureMoveId
   console.log("Judoka ID:", judoka.signatureMoveId);
   const technique = gokyo.find(move => move.id === judoka.signatureMoveId);
@@ -96,7 +95,7 @@ function generateCardLastUpdated(date) {
 }
 
 // Generate HTML for a judoka card
-export function generateJudokaCardHTML(judoka) {
+export function generateJudokaCardHTML(judoka, gokyo) {
   console.log("Judoka:", judoka);
   console.log("Signature Move ID:", judoka.signatureMoveId);
   // Generate the flag URL for the judoka's country
@@ -115,7 +114,7 @@ export function generateJudokaCardHTML(judoka) {
         ${generateCardTopBar(judoka, flagUrl)}
         ${generateCardPortrait(judoka)}
         ${generateCardStats(judoka)}
-        ${generateCardSignatureMove(judoka)}
+        ${generateCardSignatureMove(judoka, gokyo)}
         ${generateCardLastUpdated(lastUpdated)}
       </div>
     </div>
