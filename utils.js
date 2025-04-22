@@ -1,3 +1,5 @@
+import gokyo from './data/gokyo.json'; // Import gokyo.json
+
 // Generate flag URL
 export function getFlagUrl(countryCode) {
   // If the country code is missing, return the placeholder flag from the assets/images directory
@@ -40,12 +42,33 @@ function generateCardPortrait(judoka) {
 }
 
 function generateCardStats(judoka) {
-  // TODO: Implement the stats section of the judoka card
-  return `<div class="card-stats">[Stats go here]</div>`;
+  // Extract stats from the judoka object
+  const { power, speed, technique, kumiKata, neWaza } = judoka.stats;
+
+  // Generate HTML for the stats section
+  return `
+    <div class="card-stats">
+      <h3>Stats</h3>
+      <ul>
+        <li><strong>Power:</strong> ${power}</li>
+        <li><strong>Speed:</strong> ${speed}</li>
+        <li><strong>Technique:</strong> ${technique}</li>
+        <li><strong>Kumi-kata:</strong> ${kumiKata}</li>
+        <li><strong>Ne-waza:</strong> ${neWaza}</li>
+      </ul>
+    </div>
+  `;
 }
 
 function generateCardSignatureMove(judoka) {
-  return `<div class="card-signature"><strong>Signature Move:</strong> ${getValue(judoka.signatureMove)}</div>`;
+  // Find the technique in gokyo.json using the signatureMoveId
+  const technique = gokyo.find(move => move.id === judoka.signatureMoveId);
+
+  // Get the technique name or fallback to "Unknown"
+  const techniqueName = technique ? technique.name : "Unknown";
+
+  // Return the HTML for the signature move
+  return `<div class="card-signature"><strong>Signature Move:</strong> ${techniqueName}</div>`;
 }
 
 function generateCardLastUpdated(date) {

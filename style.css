@@ -136,6 +136,8 @@ button:focus {
 
 .judoka-card {
   width: 300px; /* Fixed width for cards */
+  max-width: 300px;
+  width: 100%; /* Full width for smaller screens */
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
   border: 4px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
@@ -211,6 +213,21 @@ button:focus {
   color: var(--text-color); /* Text color */
   padding: var(--padding-large); /* Add padding */
   font-size: var(--font-medium); /* Medium font size */
+  margin-top: 10px;
+}
+
+.card-stats h3 {
+  font-size: 1.2em;
+  margin-bottom: 5px;
+}
+
+.card-stats ul {
+  list-style: none;
+  padding: 0;
+}
+
+.card-stats li {
+  margin: 5px 0;
 }
 
 .card-stats .stat {
