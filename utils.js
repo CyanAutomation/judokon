@@ -83,6 +83,8 @@ function generateCardLastUpdated(date) {
 
 // Generate HTML for a judoka card
 export function generateJudokaCardHTML(judoka) {
+  console.log("Judoka:", judoka);
+  console.log("Signature Move ID:", judoka.signatureMoveId);
   // Generate the flag URL for the judoka's country
   const flagUrl = getFlagUrl(judoka.countryCode);
 

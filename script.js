@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const startBtn = document.getElementById("startBtn");
   const gameArea = document.getElementById("gameArea");
   const loadingIndicator = document.getElementById("loading");
+  console.log("Judoka passed to displayJudokaCard:", judoka);
 
   // Add a click event listener to the "Start Game" button
   startBtn.addEventListener("click", async () => {
@@ -59,7 +60,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to display the selected judoka's card
   function displayJudokaCard(judoka) {
+    console.log("Judoka passed to displayJudokaCard:", judoka);
     // Use the utility function to generate the judoka card HTML
     gameArea.innerHTML = generateJudokaCardHTML(judoka);
+    console.log("Generated card HTML:", generateJudokaCardHTML(judoka));
   }
 });
