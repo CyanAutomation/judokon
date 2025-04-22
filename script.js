@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const startBtn = document.getElementById("startBtn");
   const gameArea = document.getElementById("gameArea");
   const loadingIndicator = document.getElementById("loading");
-  console.log("Judoka passed to displayJudokaCard:", judoka);
 
   // Add a click event listener to the "Start Game" button
   startBtn.addEventListener("click", async () => {
