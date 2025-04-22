@@ -1,4 +1,5 @@
 import gokyo from './data/gokyo.json'; // Import gokyo.json
+export { getValue, formatDate, generateCardTopBar };
 console.log("Loaded gokyo techniques:", gokyo);
 
 // Generate flag URL
@@ -14,17 +15,23 @@ export function getFlagUrl(countryCode) {
 
 // Get a value or fallback to a default if the value is missing
 function getValue(value, fallback = "Unknown") {
-  return value || fallback;
+  if (typeof value === "string") return value.trim() || fallback;
+  return value ?? fallback; // Use nullish coalescing for better fallback handling
 }
 
 // Format a date string into a readable format
 function formatDate(dateString) {
   if (!dateString) return "N/A";
-  return new Date(dateString).toLocaleDateString();
+  const date = new Date(dateString);
+  return isNaN(date.getTime()) ? "Invalid Date" : date.toLocaleDateString();
 }
 
 // Generate the top bar of the judoka card (name and flag)
 function generateCardTopBar(judoka, flagUrl) {
+  if (!judoka) {
+    console.error("Judoka object is missing!");
+    return `<div class="card-top-bar">No data available</div>`;
+  }
   return `
     <div class="card-top-bar">
       <div class="card-name">
@@ -38,8 +45,14 @@ function generateCardTopBar(judoka, flagUrl) {
 }
 
 function generateCardPortrait(judoka) {
-  // TODO: Implement the portrait section of the judoka card
-  return `<div class="card-portrait">[Portrait goes here]</div>`;
+  if (!judoka || !judoka.profileUrl) {
+    return `<div class="card-portrait">No portrait available</div>`;
+  }
+  return `
+    <div class="card-portrait">
+      <img src="${judoka.profileUrl}" alt="${judoka.firstName} ${judoka.surname}'s portrait">
+    </div>
+  `;
 }
 
 function generateCardStats(judoka) {
@@ -68,8 +81,9 @@ function generateCardSignatureMove(judoka) {
   // Find the technique in gokyo.json using the signatureMoveId
   console.log("Judoka ID:", judoka.signatureMoveId);
   const technique = gokyo.find(move => move.id === judoka.signatureMoveId);
-  console.log("Matched technique:", technique);
-
+  if (!technique) {
+    console.warn(`No technique found for signatureMoveId: ${judoka.signatureMoveId}`);
+  }
   // Get the technique name or fallback to "Unknown"
   const techniqueName = technique ? technique.name : "Unknown";
 

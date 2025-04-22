@@ -7,8 +7,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Prevents the browser from caching the page -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <!-- Provides a brief description of the page -->
-  <meta name="description" content="JU-DO-KON! A web-based judo-themed card battle game featuring IJF judoka." />
   <!-- Keywords for SEO -->
   <meta name="keywords" content="judo, card game, web game, IJF, judoka" />
   <!-- Specifies the author of the page -->
@@ -16,9 +14,6 @@
   <!-- Open Graph meta tags for social media sharing -->
   <meta property="og:title" content="JU-DO-KON!" />
   <meta name="description" content="JU-DO-KON! A web-based judo-themed card battle game featuring IJF judoka." />
-  <!-- <meta property="og:image" content="assets/images/social-preview.png" /> -->
-  <!-- <meta property="og:url" content="https://yourwebsite.com" /> -->
-  <meta name="twitter:card" content="summary_large_image" />
   <!-- Sets the title of the page -->
   <title>Ju-Do-Kon!</title>
   <!-- Links the favicon -->
@@ -26,7 +21,7 @@
   <!-- Preloads the stylesheet -->
   <link rel="preload" href="style.css" as="style" />
   <!-- Links the main stylesheet -->
-  <link rel="stylesheet" href="style.css" />
+  <link rel="preload" href="style.css" as="style" onload="this.rel='stylesheet'" />
 </head>
 <body>
   <!-- Header Section -->
@@ -59,6 +54,6 @@
     <p style="color: red; font-weight: bold;">JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.</p>
   </noscript>
   <!-- JavaScript file -->
-  <script src="script.js" type="module"></script>
+  <script src="script.js" type="module" defer></script>
 </body>
 </html>
