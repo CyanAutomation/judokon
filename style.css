@@ -14,9 +14,9 @@
   --card-portrait-gradient-start: #1C4B95; /* Gradient start for card portrait */
   --card-portrait-gradient-end: #0C3F7A; /* Gradient end for card portrait */
   --card-stats-bg: #0C3F7A; /* Background color for card stats */
-  --card-signature-bg: #003B88; /* Background color for signature section */
-  --card-signature-badge-bg: #fed843; /* Badge background color */
-  --card-signature-badge-text: #003B88; /* Badge text color */
+  --card-signature-move-bg: #003B88; /* Background color for signature section */
+  --card-signature-move-badge-bg: #fed843; /* Badge background color */
+  --card-signature-move-badge-text: #003B88; /* Badge text color */
 
   /* Font sizes */
   --font-small: 0.9rem;
@@ -42,7 +42,7 @@
 /* Reset default browser styles for all elements */
 *, *::before, *::after {
   margin: 0;
-  padding: 0;
+  padding: var(--padding-small);
   box-sizing: border-box;
 }
 
@@ -53,12 +53,12 @@ body {
   color: var(--text-color); /* Default text color */
   text-align: center; /* Center-align text */
   margin: 0;
-  padding: 0;
+  padding: var(--padding-small); /* Add padding */
 }
 
 /* Container for main content */
 .container {
-  padding: 2rem; /* Add padding around the container */
+  padding: var(--font-extra-large);
 }
 
 /* Styles for the main title (h1) */
@@ -104,12 +104,12 @@ button:focus {
   }
 
   .subtitle {
-    font-size: 1rem; /* Reduce subtitle font size */
+    font-size: var(--font-medium); /* Reduce subtitle font size */
   }
 
   button {
     padding: 0.75rem 1.5rem; /* Adjust button padding */
-    font-size: 1rem; /* Reduce button font size */
+    font-size: var(--padding-medium); /* Adjust button font size */
   }
 }
 
@@ -131,7 +131,7 @@ button:focus {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
+  padding: var(--padding-extra-large); /* Add padding */
 }
 
 .judoka-card {
@@ -223,7 +223,7 @@ button:focus {
 
 .card-stats ul {
   list-style: none;
-  padding: 0;
+  padding: var(--padding-small); /* Add padding */
 }
 
 .card-stats li {
@@ -240,9 +240,9 @@ button:focus {
   margin-bottom: 0; /* Remove margin for the last stat */
 }
 
-/* Signature move section of the card */
+/* Signature Move section of the card */
 .card-signature-move {
-  background-color: var(--card-signature-bg); /* Background color */
+  background-color: var(--card-signature-move-bg); /* Background color */
   color: var(--text-color); /* Text color */
   display: flex; /* Flexbox layout */
   justify-content: space-between; /* Space between elements */
@@ -252,8 +252,8 @@ button:focus {
 }
 
 .card-signature-move .badge {
-  background-color: var(--card-signature-badge-bg); /* Badge background color */
-  color: var(--card-signature-badge-text); /* Badge text color */
+  background-color: var(--card-signature-move-badge-bg); /* Badge background color */
+  color: var(--card-signature-move-badge-text); /* Badge text color */
   font-weight: bold; /* Bold text */
   padding: var(--padding-small) var(--padding-medium); /* Add padding */
   border-radius: var(--border-radius-small); /* Rounded corners */
