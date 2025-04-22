@@ -2,7 +2,7 @@
 import { getFlagUrl, generateJudokaCardHTML } from './utils.js';
 
 // Wait for the DOM to fully load before executing the script
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   // Select DOM elements for the start button, game area, and loading indicator
   const startBtn = document.getElementById("startBtn");
   console.log("Start button element:", startBtn);

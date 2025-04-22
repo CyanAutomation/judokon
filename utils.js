@@ -1,5 +1,4 @@
 export { getValue, formatDate, generateCardTopBar };
-console.log("Loaded gokyo techniques:", gokyo);
 
 // Generate flag URL
 export function getFlagUrl(countryCode) {
