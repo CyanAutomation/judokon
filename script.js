@@ -18,6 +18,8 @@ document.getElementById("startBtn").addEventListener("click", () => {
 });
 
 function displayJudokaCard(judoka) {
+  const flagUrl = `https://flagcdn.com/w320/${judoka.countryCode.toLowerCase()}.png`;
+
   document.getElementById("gameArea").innerHTML = `
     <div class="card">
       <div class="card-top-bar">
@@ -25,10 +27,10 @@ function displayJudokaCard(judoka) {
           <span class="first-name">${judoka.firstName}</span>
           <span class="surname">${judoka.surname}</span>
         </div>
-        <img class="card-flag" src="${judoka.flag}" alt="${judoka.country} flag">
+        <img class="card-flag" src="${flagUrl}" alt="${judoka.country} flag">
       </div>
       <div class="card-portrait">
-        <div class="card-weight-class">${judoka.weightClass}</div>
+        <div class="card-weight-class">${judoka.weightClass}kg</div>
         <img src="path/to/placeholder-image.png" alt="${judoka.firstName} ${judoka.surname}">
       </div>
       <div class="card-stats">
@@ -42,6 +44,13 @@ function displayJudokaCard(judoka) {
         <span>Signature Move:</span>
         <span class="badge">${judoka.signatureMove}</span>
       </div>
+      <div class="card-updated">
+        <small>Last Updated: ${new Date(judoka.lastUpdated).toLocaleDateString()}</small>
+      </div>
+      <div class="card-profile">
+        <a href="${judoka.profileUrl}" target="_blank" class="profile-link">Learn More</a>
+      </div>
     </div>
   `;
+}
 }

@@ -256,3 +256,19 @@ button:focus {
     font-size: calc(var(--font-small) - 0.1rem);
   }
 }
+
+.card-profile .profile-link {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--button-bg);
+  color: var(--button-text-color);
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: var(--border-radius-small);
+  transition: background-color 0.3s ease;
+}
+
+.card-profile .profile-link:hover {
+  background-color: var(--button-hover-bg);
+}
