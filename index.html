@@ -3,19 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <title>JUDOKON!</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
 </head>
 <body>
-  <div class="container">
+  <header>
     <h1>JUDOKON!</h1>
     <p class="subtitle">A web-based judo-themed card battle game featuring IJF judoka</p>
-    <button id="startBtn">Start Game</button>
+  </header>
+  <main class="container">
+    <button id="startBtn" aria-label="Start the game">Start Game</button>
+    <div id="loading" class="hidden">Loading...</div>
     <div id="gameArea" class="hidden">
       <!-- Game content will go here -->
     </div>
-  </div>
-
-  <script src="script.js"></script>
+  </main>
+  <script src="script.js" defer></script>
 </body>
+<footer>
+  <p>&copy; 2025 JUDOKON! All rights reserved.</p>
+</footer>
 </html>
