@@ -14,7 +14,11 @@ The visual assets (e.g. card illustrations and logos) are © 2025 Marc Scheimann
 4. [🎮 How to Play JUDOKON!](#-how-to-play-judokon)
    - [🥋 The Rules](#-the-rules)
 5. [Live Demo](#live-demo)
-6. [Future Plans]
+6. Installation [#installation]
+7. Dependencies [#dependencies]
+8. Project Structure [#project-structure]
+9. Changelog [#changelog]
+10. Future Plans [#future-plans]
 
 ## Contributing
 
@@ -28,11 +32,25 @@ Contributions are welcome! Please fork the repository and submit a pull request.
 
 2. Navigate to the project directory:
 cd judokon
-3. Open index.html in your browser to play the game locally
+
+3. Serve the project using a local server (e.g., Live Server in VS Code) to ensure the import statements work:
+npx serve
+
+4. Open the game in your browser:
+http://localhost:5000
+
 
 ## Dependencies
 
 - None (pure HTML, CSS, and JavaScript)
+- Modularized JavaScript with `utils.js` for reusable functions
+
+## Project Structure
+- index.html: The main HTML file for the game.
+- style.css: The stylesheet for the game's design.
+- script.js: The main JavaScript file for game logic.
+- utils.js: A utility file containing reusable functions like generating flag URLs and card HTML.
+- judoka.json: The JSON file containing judoka card data.
 
 ## Features
 
@@ -40,6 +58,8 @@ cd judokon
 - One-on-one stat battles
 - Designed for kids and judo fans alike
 - Playable directly in the browser
+- Loading indicator for better user experience
+- Modularized JavaScript for better maintainability
 
 ## About JUDOKON!
 
@@ -92,4 +112,6 @@ The live demo allows you to experience the full gameplay directly in your browse
 ## Future Plans
 - Get feedback on current cards and stat points
 - Take submissions/suggestions on new card designs and stats
+- Add animations for card flips and stat comparisons
 - Implement difficulty levels for the computer opponent
+- Expand the card deck with more judoka and stats
