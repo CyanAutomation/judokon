@@ -10,9 +10,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Add a click event listener to the "Start Game" button
   startBtn.addEventListener("click", async () => {
+    // Log the button click for debugging
     console.log("Start button clicked!");
+    // Hide the start button and show the loading indicator
     startBtn.classList.add("hidden");
+    gameArea.innerHTML = ""; // Clear the game area
     loadingIndicator.classList.remove("hidden");
+
+    // Simulate a delay (e.g., loading game assets)
+    setTimeout(() => {
+    // Hide the loading spinner and show the game area
+    loadingDiv.classList.add("hidden");
+    gameArea.classList.remove("hidden");
+    }, 2000); // 2-second delay
 
     try {
       // Fetch the judoka data from the JSON file
