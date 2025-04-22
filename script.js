@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
       // Simulate a delay for loading (e.g., fetching data)
-      // await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Fetch the judoka data from the JSON file
       const response = await fetch("data/judoka.json");
@@ -35,8 +35,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log("Judoka data fetched:", judokaData); // Debugging log
 
       // Select a random judoka from the data
-      const randomJudoka = getRandomJudoka(judokaData);
-      console.log("Selected judoka:", randomJudoka);      // Debugging log
+      const selectedJudoka = getRandomJudoka(judokaData);
+      console.log("Selected judoka:", selectedJudoka);      // Debugging log
       displayJudokaCard(selectedJudoka, gokyoData);
     } catch (error) {
       console.error("Error loading card:", error);
