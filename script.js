@@ -18,8 +18,10 @@ document.getElementById("startBtn").addEventListener("click", () => {
 });
 
 function displayJudokaCard(judoka) {
+  // Generate the flag URL using FlagCDN
   const flagUrl = `https://flagcdn.com/w320/${judoka.countryCode.toLowerCase()}.png`;
 
+  // Render the judoka card
   document.getElementById("gameArea").innerHTML = `
     <div class="card">
       <div class="card-top-bar">
@@ -52,5 +54,4 @@ function displayJudokaCard(judoka) {
       </div>
     </div>
   `;
-}
 }
