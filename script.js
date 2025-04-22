@@ -19,13 +19,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch("data/judoka.json");
       const judokaData = await response.json();
 
-      // Select a random judoka from the data    
+      console.log("Judoka data fetched:", judokaData); // Debugging log
+
+      // Select a random judoka from the data
       const randomIndex = Math.floor(Math.random() * judokaData.length);
+      console.log("Random index:", randomIndex); // Debugging log
+      console.log("Selected judoka:", judokaData[randomIndex]); // Debugging log
 
       // Display the selected judoka's card in the game area
       displayJudokaCard(judokaData[randomIndex]);
     } catch (error) {
-      // Handle errors during data fetching
       console.error("Error loading judoka data:", error);
       gameArea.innerHTML = `<p>Failed to load game data. Please try again later.</p>`;
     } finally {
@@ -39,8 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Generate the HTML for the judoka card using the utility function
     gameArea.innerHTML = `
       <div>
-        <h2>${judoka.firstName} ${judoka.surname}</h2>
-        <p>Country: ${judoka.country}</p>
+        <h2>${judoka.firstName || "Unknown"} ${judoka.surname || "Unknown"}</h2>
+        <p>Country: ${judoka.country || "Unknown"}</p>
       </div>
     `;
   }

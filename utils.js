@@ -1,9 +1,9 @@
 // Generate flag URL
 export function getFlagUrl(countryCode) {
-  // Generate and insert the HTML for the judoka card
+  // If the country code is missing, return the placeholder flag from the assets/images directory
   if (!countryCode) {
     console.warn("Missing country code. Using placeholder flag.");
-    return "path/to/placeholder-flag.png";
+    return "assets/images/placeholder-flag.png";
   }
   // Return the URL for the country flag using FlagCDN
   return `https://flagcdn.com/w320/${countryCode.toLowerCase()}.png`;
@@ -18,6 +18,20 @@ function getValue(value, fallback = "Unknown") {
 function formatDate(dateString) {
   if (!dateString) return "N/A";
   return new Date(dateString).toLocaleDateString();
+}
+
+// Generate the top bar of the judoka card (name and flag)
+function generateCardTopBar(judoka, flagUrl) {
+  return `
+    <div class="card-top-bar">
+      <div class="card-name">
+        <span class="first-name">${getValue(judoka.firstName)}</span>
+        <span class="surname">${getValue(judoka.surname)}</span>
+      </div>
+      <img class="card-flag" src="${flagUrl}" alt="${getValue(judoka.country)} flag" 
+        onerror="this.src='assets/images/placeholder-flag.png'">
+    </div>
+  `;
 }
 
 // Generate HTML for a judoka card
@@ -42,17 +56,4 @@ export function generateJudokaCardHTML(judoka) {
       ${generateCardProfile(judoka)}
     </div>
   `;
-}
-
-// Generate the top bar of the judoka card (name and flag)
-function generateCardTopBar(judoka, flagUrl) {
-return `
-  <div class="card-top-bar">
-    <div class="card-name">
-      <span class="first-name">${getValue(judoka.firstName)}</span>
-      <span class="surname">${getValue(judoka.surname)}</span>
-    </div>
-    <img class="card-flag" src="${flagUrl}" alt="${getValue(judoka.country)} flag" onerror="this.src='path/to/placeholder-flag.png'">
-  </div>
-`;
 }
