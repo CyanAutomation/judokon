@@ -127,8 +127,16 @@ button:focus {
 }
 
 /* Card styles */
-.card {
+.card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.judoka-card {
   width: 300px; /* Fixed width for cards */
+  aspect-ratio: 2 / 3; /* Maintain aspect ratio */
   border: 4px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
   overflow: hidden; /* Hide overflow content */
@@ -216,7 +224,7 @@ button:focus {
 }
 
 /* Signature move section of the card */
-.card-signature {
+.card-signature-move {
   background-color: var(--card-signature-bg); /* Background color */
   color: var(--text-color); /* Text color */
   display: flex; /* Flexbox layout */
@@ -226,7 +234,7 @@ button:focus {
   font-size: var(--font-medium); /* Medium font size */
 }
 
-.card-signature .badge {
+.card-signature-move .badge {
   background-color: var(--card-signature-badge-bg); /* Badge background color */
   color: var(--card-signature-badge-text); /* Badge text color */
   font-weight: bold; /* Bold text */
@@ -254,7 +262,7 @@ button:focus {
 
 /* Responsive styles for smaller screens (max-width: 768px) */
 @media (max-width: 768px) {
-  .card {
+  .judoka-card {
     width: 90%; /* Adjust card width */
     margin: 0 auto; /* Center the card */
   }
@@ -267,7 +275,7 @@ button:focus {
     font-size: var(--font-small); /* Adjust font size */
   }
 
-  .card-signature .badge {
+  .card-signature-move .badge {
     font-size: calc(var(--font-small) - 0.1rem); /* Adjust badge font size */
   }
 }

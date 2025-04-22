@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       // Simulate a delay for loading (e.g., fetching data)
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Fetch the judoka data from the JSON file
       const response = await fetch("data/judoka.json");

@@ -65,12 +65,14 @@ export function generateJudokaCardHTML(judoka) {
 
   // Return the complete HTML for the judoka card by combining different sections
   return `
-    <div class="judoka-card">
-      ${generateCardTopBar(judoka, flagUrl)}
-      ${generateCardPortrait(judoka)}
-      ${generateCardStats(judoka)}
-      ${generateCardSignatureMove(judoka)}
-      ${generateCardLastUpdated(lastUpdated)}
+    <div class="card-container">
+      <div class="judoka-card">
+        ${generateCardTopBar(judoka, flagUrl)}
+        ${generateCardPortrait(judoka)}
+        ${generateCardStats(judoka)}
+        ${generateCardSignatureMove(judoka)}
+        ${generateCardLastUpdated(lastUpdated)}
+      </div>
     </div>
   `;
 }
