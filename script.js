@@ -8,10 +8,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   console.log("Start button element:", startBtn);
   const gameArea = document.getElementById("gameArea");
   const loadingIndicator = document.getElementById("loading");
-  const [judokaData, gokyoData] = await Promise.all([
-    fetch("data/judoka.json").then(res => res.json()),
-    fetch("data/gokyo.json").then(res => res.json())
-  ]);
 
   // Add a click event listener to the "Start Game" button
   startBtn.addEventListener("click", async () => {
@@ -23,16 +19,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadingIndicator.classList.remove("hidden");
 
     try {
-      // Simulate a delay for loading (e.g., fetching data)
-      await new Promise(resolve => setTimeout(resolve, 500));
-
       // Fetch the judoka data from the JSON file
       const response = await fetch("data/judoka.json");
       console.log("Fetch response:", response);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const judokaData = await response.json();
 
+      // Fetch the gokyo data from the JSON file
+      const gokyoResponse = await fetch("data/gokyo.json");
+      console.log("Gokyo fetch response:", gokyoResponse);
+      if (!gokyoResponse.ok) throw new Error(`HTTP error! status: ${gokyoResponse.status}`);
+      const gokyoData = await gokyoResponse.json();  
+
       console.log("Judoka data fetched:", judokaData); // Debugging log
+      console.log("Gokyo data fetched:", gokyoData); // Debugging log
 
       // Select a random judoka from the data
       const selectedJudoka = getRandomJudoka(judokaData);
