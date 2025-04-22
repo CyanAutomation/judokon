@@ -1,42 +1,47 @@
 // Generate flag URL
 export function getFlagUrl(countryCode) {
-  return `https://flagcdn.com/w320/${countryCode?.toLowerCase() || "unknown"}.png`;
+  if (!countryCode) {
+    console.warn("Missing country code. Using placeholder flag.");
+    return "path/to/placeholder-flag.png";
+  }
+  return `https://flagcdn.com/w320/${countryCode.toLowerCase()}.png`;
 }
 
+function getValue(value, fallback = "Unknown") {
+  return value || fallback;
+}
+function formatDate(dateString) {
+  if (!dateString) return "N/A";
+  return new Date(dateString).toLocaleDateString();
+}
 // Generate HTML for a judoka card
 export function generateJudokaCardHTML(judoka) {
   const flagUrl = getFlagUrl(judoka.countryCode);
+  const firstName = getValue(judoka.firstName);
+  const surname = getValue(judoka.surname);
+  const country = getValue(judoka.country);
+  const lastUpdated = formatDate(judoka.lastUpdated);
 
   return `
     <div class="card">
-      <div class="card-top-bar">
-        <div class="card-name">
-          <span class="first-name">${judoka.firstName || "Unknown"}</span>
-          <span class="surname">${judoka.surname || "Unknown"}</span>
-        </div>
-        <img class="card-flag" src="${flagUrl}" alt="${judoka.country || "Unknown"} flag" onerror="this.src='path/to/placeholder-flag.png'">
-      </div>
-      <div class="card-portrait">
-        <div class="card-weight-class">${judoka.weightClass || "N/A"}kg</div>
-        <img src="path/to/placeholder-image.png" alt="${judoka.firstName || "Unknown"} ${judoka.surname || "Unknown"}">
-      </div>
-      <div class="card-stats">
-        <div class="stat"><span>Power:</span> <span>${judoka.stats?.power || 0}</span></div>
-        <div class="stat"><span>Speed:</span> <span>${judoka.stats?.speed || 0}</span></div>
-        <div class="stat"><span>Technique:</span> <span>${judoka.stats?.technique || 0}</span></div>
-        <div class="stat"><span>Kumi-kata:</span> <span>${judoka.stats?.kumiKata || 0}</span></div>
-        <div class="stat"><span>Ne-waza:</span> <span>${judoka.stats?.neWaza || 0}</span></div>
-      </div>
-      <div class="card-signature">
-        <span>Signature Move:</span>
-        <span class="badge">${judoka.signatureMove || "Unknown"}</span>
-      </div>
-      <div class="card-updated">
-        <small>Last Updated: ${judoka.lastUpdated ? new Date(judoka.lastUpdated).toLocaleDateString() : "N/A"}</small>
-      </div>
-      <div class="card-profile">
-        <a href="${judoka.profileUrl || "#"}" target="_blank" class="profile-link">Learn More</a>
-      </div>
+      ${generateCardTopBar(judoka, flagUrl)}
+      ${generateCardPortrait(judoka)}
+      ${generateCardStats(judoka)}
+      ${generateCardSignature(judoka)}
+      ${generateCardUpdated(lastUpdated)}
+      ${generateCardProfile(judoka)}
     </div>
   `;
+}
+
+function generateCardTopBar(judoka, flagUrl) {
+return `
+  <div class="card-top-bar">
+    <div class="card-name">
+      <span class="first-name">${getValue(judoka.firstName)}</span>
+      <span class="surname">${getValue(judoka.surname)}</span>
+    </div>
+    <img class="card-flag" src="${flagUrl}" alt="${getValue(judoka.country)} flag" onerror="this.src='path/to/placeholder-flag.png'">
+  </div>
+`;
 }

@@ -14,11 +14,11 @@ The visual assets (e.g. card illustrations and logos) are © 2025 Marc Scheimann
 4. [🎮 How to Play JUDOKON!](#-how-to-play-judokon)
    - [🥋 The Rules](#-the-rules)
 5. [Live Demo](#live-demo)
-6. Installation [#installation]
-7. Dependencies [#dependencies]
-8. Project Structure [#project-structure]
-9. Changelog [#changelog]
-10. Future Plans [#future-plans]
+6. [Installation](#installation)
+7. [Dependencies](#dependencies)
+8. [Project Structure](#project-structure)
+9. [Changelog](#changelog)
+10. [Future Plans](#future-plans)
 
 ## Contributing
 
