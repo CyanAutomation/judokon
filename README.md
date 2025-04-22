@@ -4,14 +4,14 @@ This project is licensed under the [GNU General Public License v3.0](LICENSE).
 
 You are free to use, modify, and share this project under the same terms — but any redistributed or modified versions must also be open-source and released under the GPL v3 license.
 
-The visual assets (e.g. card illustrations and logos) are © 2025 Marc Scheimann. They may not be used commercially without permission.
+The visual assets (e.g. card illustrations and logos) are © 2025 Marc Scheimann. They may not be used, copied, or republished for commercial purposes without written permission.
 
 ## Table of Contents
 
 1. [Contributing](#contributing)
-2. [About JUDOKON!](#about-judokon)
+2. [About JU-DO-KON!](#about-ju-do-kon)
 3. [Features](#features)
-4. [🎮 How to Play JUDOKON!](#-how-to-play-judokon)
+4. [🎮 How to Play JU-DO-KON!](#how-to-play-judokon)
    - [🥋 The Rules](#-the-rules)
 5. [Live Demo](#live-demo)
 6. [Installation](#installation)
@@ -29,16 +29,9 @@ Contributions are welcome! Please fork the repository and submit a pull request.
 1. Clone the repository:
    ```bash
    git clone https://github.com/cyanautomation/judokon.git
-
-2. Navigate to the project directory:
-cd judokon
-
-3. Serve the project using a local server (e.g., Live Server in VS Code) to ensure the import statements work:
-npx serve
-
-4. Open the game in your browser:
-http://localhost:5000
-
+   cd judokon
+   npx serve
+   # Then visit: http://localhost:5000
 
 ## Dependencies
 
@@ -61,17 +54,15 @@ http://localhost:5000
 - Loading indicator for better user experience
 - Modularized JavaScript for better maintainability
 
-## About JUDOKON!
+## About JU-DO-KON!
 
-**JUDOKON!** is a fast-paced, web-based card game, featuring real-life elite judoka from the International Judo Federation. Designed for ages 8–12, the game uses simplified stats, vibrant collectible cards, and a player-vs-computer battle format. First to win 10 rounds takes the match!
+**JU-DO-KON!** is a fast-paced, web-based card game, featuring real-life elite judoka. Designed for ages 8–12, the game uses simplified stats, vibrant collectible cards, and a player-vs-computer battle format. First to win 10 rounds takes the match!
 
 This project is built with HTML, CSS, and JavaScript, and hosted on GitHub Pages.
 
 🥋 99-card deck  
 💥 One-on-one stat battles  
 🔥 Built for kids and judo fans alike
-
-Absolutely — here’s a clear, kid-friendly summary of the **JUDOKON!** rules that you can paste into your `README.md`:
 
 ---
 
@@ -105,7 +96,7 @@ Absolutely — here’s a clear, kid-friendly summary of the **JUDOKON!** rules 
 
 ## Live Demo
 
-Play the game here: [JUDOKON!](https://cyanautomation.github.io/judokon/)
+Play the game here: [JU-DO-KON!](https://cyanautomation.github.io/judokon/)
 
 The live demo allows you to experience the full gameplay directly in your browser. No installation required!
 

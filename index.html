@@ -8,19 +8,19 @@
   <!-- Prevents the browser from caching the page -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <!-- Provides a brief description of the page -->
-  <meta name="description" content="JUDOKON! A web-based judo-themed card battle game featuring IJF judoka." />
+  <meta name="description" content="JU-DO-KON! A web-based judo-themed card battle game featuring IJF judoka." />
   <!-- Keywords for SEO -->
   <meta name="keywords" content="judo, card game, web game, IJF, judoka" />
   <!-- Specifies the author of the page -->
   <meta name="author" content="Marc Scheimann" />
   <!-- Open Graph meta tags for social media sharing -->
-  <meta property="og:title" content="JUDOKON!" />
-  <meta property="og:description" content="A web-based judo-themed card battle game featuring IJF judoka." />
+  <meta property="og:title" content="JU-DO-KON!" />
+  <meta name="description" content="JU-DO-KON! A web-based judo-themed card battle game featuring IJF judoka." />
   <!-- <meta property="og:image" content="assets/images/social-preview.png" /> -->
   <!-- <meta property="og:url" content="https://yourwebsite.com" /> -->
   <meta name="twitter:card" content="summary_large_image" />
   <!-- Sets the title of the page -->
-  <title>JUDOKON!</title>
+  <title>Ju-Do-Kon!</title>
   <!-- Links the favicon -->
   <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon" />
   <!-- Preloads the stylesheet -->
@@ -32,19 +32,16 @@
     body {
       font-family: Arial, Helvetica, sans-serif;
     }
-  </style>
-  <!-- Links the main JavaScript file -->
-  <script src="script.js" type="module" defer></script>
 </head>
 <body>
   <!-- Header Section -->
   <header>
-    <h1>JUDOKON!</h1>
+    <h1>JU-DO-KON!</h1>
     <p class="subtitle">A web-based judo-themed card battle game featuring IJF judoka</p>
   </header>
 
   <!-- Main Content -->
-  <main class="container">
+  <main class="container" role="main">
     <section>
       <button id="startBtn" aria-label="Start the game">Start Game</button>
       <div id="loading" class="hidden" aria-live="polite">
@@ -52,19 +49,19 @@
         <div class="spinner"></div>
       </div>
       <div id="gameArea" class="hidden" aria-live="polite">
-        <p>Get ready to play JUDOKON! Click "Start Game" to begin.</p>
+        <p>Get ready to play JU-DO-KON! Click "Start Game" to begin.</p>
       </div>
     </section>
   </main>
 
   <!-- Footer Section -->
   <footer>
-    <p>&copy; 2025 JUDOKON! All rights reserved.</p>
+    <p>&copy; 2025 JU-DO-KON! All rights reserved.</p>
   </footer>
 
   <!-- Fallback for users without JavaScript -->
   <noscript>
-    <p>JUDOKON! requires JavaScript to run. Please enable JavaScript in your browser to play the game.</p>
+    <p style="color: red; font-weight: bold;">JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.</p>
   </noscript>
 </body>
 </html>

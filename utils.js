@@ -36,10 +36,20 @@ function generateCardTopBar(judoka, flagUrl) {
 
 function generateCardPortrait(judoka) {
   // TODO: Implement the portrait section of the judoka card
+  return `<div class="card-portrait">[Portrait goes here]</div>`;
 }
 
 function generateCardStats(judoka) {
   // TODO: Implement the stats section of the judoka card
+  return `<div class="card-stats">[Stats go here]</div>`;
+}
+
+function generateCardSignatureMove(judoka) {
+  return `<div class="card-signature"><strong>Signature Move:</strong> ${getValue(judoka.signatureMove)}</div>`;
+}
+
+function generateCardLastUpdated(date) {
+  return `<div class="card-updated">Last updated: ${date}</div>`;
 }
 
 // Generate HTML for a judoka card
@@ -55,13 +65,12 @@ export function generateJudokaCardHTML(judoka) {
 
   // Return the complete HTML for the judoka card by combining different sections
   return `
-    <div class="card">
+    <div class="judoka-card">
       ${generateCardTopBar(judoka, flagUrl)}
       ${generateCardPortrait(judoka)}
       ${generateCardStats(judoka)}
-      ${generateCardSignature(judoka)}
-      ${generateCardUpdated(lastUpdated)}
-      ${generateCardProfile(judoka)}
+      ${generateCardSignatureMove(judoka)}
+      ${generateCardLastUpdated(lastUpdated)}
     </div>
   `;
 }

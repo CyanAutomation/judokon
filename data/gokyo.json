@@ -2,11 +2,19 @@
   {
     "id": 1,
     "name": "Uchi-mata",
-    "description": "A powerful inner thigh throw."
+    "japanese": "内股",
+    "category": "Nage-waza",
+    "subCategory": "Koshi-waza",
+    "description": "A powerful inner thigh throw.",
+    "link": "https://en.wikipedia.org/wiki/Uchi_mata"
   },
   {
     "id": 2,
     "name": "O-soto-gari",
-    "description": "A major outer reap throw."
+    "japanese": "大外刈",
+    "category": "Nage-waza",
+    "subCategory": "Ashi-waza",
+    "description": "A major outer reap throw.",
+    "link": "https://en.wikipedia.org/wiki/O_soto_gari"
   }
 ]
