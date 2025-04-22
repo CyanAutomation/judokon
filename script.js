@@ -23,11 +23,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Select a random judoka from the data
       const randomIndex = Math.floor(Math.random() * judokaData.length);
+      const selectedJudoka = judokaData[randomIndex];
       console.log("Random index:", randomIndex); // Debugging log
-      console.log("Selected judoka:", judokaData[randomIndex]); // Debugging log
+      console.log("Selected judoka:", selectedJudoka); // Debugging log
 
       // Display the selected judoka's card in the game area
-      displayJudokaCard(judokaData[randomIndex]);
+      displayJudokaCard(selectedJudoka);
     } catch (error) {
       console.error("Error loading judoka data:", error);
       gameArea.innerHTML = `<p>Failed to load game data. Please try again later.</p>`;
@@ -39,12 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to display the selected judoka's card
   function displayJudokaCard(judoka) {
-    // Generate the HTML for the judoka card using the utility function
-    gameArea.innerHTML = `
-      <div>
-        <h2>${judoka.firstName || "Unknown"} ${judoka.surname || "Unknown"}</h2>
-        <p>Country: ${judoka.country || "Unknown"}</p>
-      </div>
-    `;
+    // Use the utility function to generate the judoka card HTML
+    gameArea.innerHTML = generateJudokaCardHTML(judoka);
   }
 });

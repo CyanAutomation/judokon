@@ -34,6 +34,14 @@ function generateCardTopBar(judoka, flagUrl) {
   `;
 }
 
+function generateCardPortrait(judoka) {
+  // TODO: Implement the portrait section of the judoka card
+}
+
+function generateCardStats(judoka) {
+  // TODO: Implement the stats section of the judoka card
+}
+
 // Generate HTML for a judoka card
 export function generateJudokaCardHTML(judoka) {
   // Generate the flag URL for the judoka's country
