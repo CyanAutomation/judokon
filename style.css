@@ -264,7 +264,7 @@ button:focus {
 
 .card-stats .stat span {
   text-align: right; /* Ensure the value is right-aligned */
-  flex-shrink: 0; Prevent the value from shrinking */
+  flex-shrink: 0; /* Prevent the value from shrinking */
 }
 
 .card-stats .stat:last-child {
