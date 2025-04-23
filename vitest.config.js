@@ -3,6 +3,6 @@ export default {
   test: {
     globals: true,
     environment: "node",
-    testTimeout: 9000
+    testTimeout: 9000,
   },
 }
