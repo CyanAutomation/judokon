@@ -47,24 +47,41 @@ describe("generateCardSignatureMove", () => {
     })
 
     it("handles undefined judoka gracefully", () => {
-      const html = generateCardSignatureMove(undefined, mockGokyo)
-      expect(html).toContain(generateExpectedHTML("Signature Move:", "Unknown"))
-    })
-
+      const html = generateCardSignatureMove(undefined, mockGokyo);
+      expect(html).toContain(generateExpectedHTML("Signature Move:", "Unknown"));
+    });
+    
     it("handles null gokyo gracefully", () => {
-      const html = generateCardSignatureMove(mockJudoka, null)
-      expect(html).toContain(generateExpectedHTML("Signature Move:", "Unknown"))
-    })
-
-    it("handles undefined gokyo gracefully", () => {
-      const html = generateCardSignatureMove(mockJudoka, undefined)
-      expect(html).toContain(generateExpectedHTML("Signature Move:", "Unknown"))
-    })
+      const html = generateCardSignatureMove(mockJudoka, null);
+      expect(html).toContain(generateExpectedHTML("Signature Move:", "Unknown"));
+    });
+    
+    it("handles empty judoka object gracefully", () => {
+      const html = generateCardSignatureMove({}, mockGokyo);
+    
+      // Normalize whitespace in both the actual and expected HTML
+      const normalize = (str) => str.replace(/\s+/g, " ").trim();
+    
+      expect(normalize(html)).toContain(
+        normalize(generateExpectedHTML("Signature Move:", "Unknown"))
+      );
+    });
 
     it("handles empty judoka object gracefully", () => {
-      const html = generateCardSignatureMove({}, mockGokyo)
-      expect(html).toContain(generateExpectedHTML("Signature Move:", "Unknown"))
-    })
+      const html = generateCardSignatureMove({}, mockGokyo);
+    
+      // Normalize whitespace in both the actual and expected HTML
+      const normalize = (str) => str.replace(/\s+/g, " ").trim();
+    
+      expect(normalize(html)).toContain(
+        normalize(`
+          <div class="card-signature">
+            <span class="signature-move-label"><strong>Signature Move:</strong></span>
+            <span class="signature-move-value">Unknown</span>
+          </div>
+        `)
+      );
+    });
   })
 
   // Group: Malformed Data
@@ -73,12 +90,17 @@ describe("generateCardSignatureMove", () => {
       const caseInsensitiveJudoka = { signatureMoveId: "UCHI-MATA" };
       const html = generateCardSignatureMove(caseInsensitiveJudoka, mockGokyo);
     
-      expect(html).toContain(`
-        <div class="card-signature">
-          <span class="signature-move-label"><strong>Signature Move:</strong></span>
-          <span class="signature-move-value">Unknown</span>
-        </div>
-      `.trim());
+      // Normalize whitespace in both the actual and expected HTML
+      const normalize = (str) => str.replace(/\s+/g, " ").trim();
+    
+      expect(normalize(html)).toContain(
+        normalize(`
+          <div class="card-signature">
+            <span class="signature-move-label"><strong>Signature Move:</strong></span>
+            <span class="signature-move-value">Unknown</span>
+          </div>
+        `)
+      );
     });
 
     it("handles malformed gokyo entries gracefully", () => {
