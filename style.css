@@ -97,9 +97,7 @@ button {
 }
 
 button:hover {
-  background-color: var(
-    --button-hover-bg
-  ); /* Change background color on hover */
+  background-color: var(--button-hover-bg); /* Change background color on hover */
   transform: scale(1.05); /* Slightly enlarge the button on hover */
 }
 
@@ -155,8 +153,7 @@ button:focus {
   overflow: hidden; /* Hide overflow content */
   background-color: #ffffff; /* White background for contrast */
   box-shadow: var(--box-shadow); /* Add shadow for depth */
-  font-family:
-    "Inter", "Montserrat", "Nunito", sans-serif; /* Custom font family */
+  font-family: "Inter", "Montserrat", "Nunito", sans-serif; /* Custom font family */
 }
 
 /* Top bar of the card (name and flag) */
@@ -283,9 +280,7 @@ button:focus {
 }
 
 .card-signature-move .badge {
-  background-color: var(
-    --card-signature-move-badge-bg
-  ); /* Badge background color */
+  background-color: var(--card-signature-move-badge-bg); /* Badge background color */
   color: var(--card-signature-move-badge-text); /* Badge text color */
   font-weight: bold; /* Bold text */
   padding: var(--padding-small) var(--padding-medium); /* Add padding */
@@ -307,9 +302,7 @@ button:focus {
 }
 
 .card-profile .profile-link:hover {
-  background-color: var(
-    --button-hover-bg
-  ); /* Change background color on hover */
+  background-color: var(--button-hover-bg); /* Change background color on hover */
 }
 
 /* Responsive styles for smaller screens (max-width: 768px) */
