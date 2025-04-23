@@ -33,7 +33,7 @@ function generateCardTopBar(judoka, flagUrl) {
   return `
     <div class="card-top-bar">
       <div class="card-name">
-        <span class="first-name">${getValue(judoka.firstName)}</span>
+        <span class="firstname">${getValue(judoka.firstname)}</span>
         <span class="surname">${getValue(judoka.surname)}</span>
       </div>
       <img class="card-flag" src="${flagUrl}" alt="${getValue(judoka.country)} flag" 
@@ -48,7 +48,7 @@ function generateCardPortrait(judoka) {
   }
   return `
     <div class="card-portrait">
-      <img src="${judoka.profileUrl}" alt="${judoka.firstName} ${judoka.surname}'s portrait">
+      <img src="${judoka.profileUrl}" alt="${judoka.firstname} ${judoka.surname}'s portrait">
     </div>
   `
 }
@@ -58,7 +58,7 @@ function generateCardStats(judoka) {
   if (!judoka.stats) return `<div class="card-stats">No stats available</div>`
 
   // Extract stats from the judoka object
-  const {power, speed, technique, kumiKata, neWaza} = judoka.stats
+  const {power, speed, technique, kumikata, newaza} = judoka.stats
 
   // Generate HTML for the stats section
   return `
@@ -67,8 +67,8 @@ function generateCardStats(judoka) {
         <li class="stat"><strong>Power:</strong> <span>${power}</span></li>
         <li class="stat"><strong>Speed:</strong> <span>${speed}</span></li>
         <li class="stat"><strong>Technique:</strong> <span>${technique}</span></li>
-        <li class="stat"><strong>Kumi-kata:</strong> <span>${kumiKata}</span></li>
-        <li class="stat"><strong>Ne-waza:</strong> <span>${neWaza}</span></li>
+        <li class="stat"><strong>Kumi-kata:</strong> <span>${kumikata}</span></li>
+        <li class="stat"><strong>Ne-waza:</strong> <span>${newaza}</span></li>
       </ul>
     </div>
   `
@@ -100,9 +100,6 @@ export function generateJudokaCardHTML(judoka, gokyo) {
   const flagUrl = getFlagUrl(judoka.countryCode)
 
   // Extract and format judoka details with fallback values
-  // const firstName = getValue(judoka.firstName);
-  // const surname = getValue(judoka.surname);
-  // const country = getValue(judoka.country);
   const lastUpdated = formatDate(judoka.lastUpdated)
 
   // Return the complete HTML for the judoka card by combining different sections

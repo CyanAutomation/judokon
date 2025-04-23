@@ -172,7 +172,7 @@ button:focus {
 }
 
 /* Styles for the judoka's name */
-.card-name .first-name {
+.card-name .firstname {
   font-size: var(--font-small); /* Small font size for the first name */
   font-weight: normal; /* Normal font weight */
   display: block; /* Force the first name to appear on its own line */
