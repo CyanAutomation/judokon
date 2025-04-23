@@ -90,7 +90,8 @@ export function generateCardSignatureMove(judoka, gokyo) {
       <span class="signature-move-label"><strong>Signature Move:</strong></span>
       <span class="signature-move-value">${techniqueName}</span>
     </div>
-  `;}
+  `
+}
 
 function generateCardLastUpdated(date) {
   return `<div class="card-updated">Last updated: ${date}</div>`
