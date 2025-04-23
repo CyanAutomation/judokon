@@ -1,8 +1,7 @@
 [
   {
     "gender": "male",
-    "description": "Men’s weight categories",
-    // This is a list of male weight categories
+    "description": "Men\u2019s weight categories",
     "categories": [
       { "weight": "-60", "descriptor": "Extra Lightweight" },
       { "weight": "-66", "descriptor": "Half Lightweight" },
@@ -15,8 +14,7 @@
   },
   {
     "gender": "female",
-    "description": "Women’s weight categories",
-    // This is a list of female weight categories
+    "description": "Women\u2019s weight categories",
     "categories": [
       { "weight": "-48", "descriptor": "Extra Lightweight" },
       { "weight": "-52", "descriptor": "Half Lightweight" },

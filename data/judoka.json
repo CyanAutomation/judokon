@@ -16,7 +16,8 @@
     "signatureMoveId": 1,
     "lastUpdated": "2025-04-22T10:00:00Z",
     "profileUrl": "https://en.wikipedia.org/wiki/Joana_Ramos",
-    "gender": "female"
+    "gender": "female",
+    "active": true
   },
   {
     "id": 2,
@@ -35,6 +36,7 @@
     "signatureMoveId": 2,
     "lastUpdated": "2025-04-20T15:30:00Z",
     "profileUrl": "https://en.wikipedia.org/wiki/Teddy_Riner",
-    "gender": "male"
+    "gender": "male",
+    "active": true
   }
 ]
