@@ -1,5 +1,5 @@
 // Import utility functions for generating flag URLs and judoka card HTML
-import { getFlagUrl, generateJudokaCardHTML } from "./utils.js";
+import { generateJudokaCardHTML } from "./utils.js";
 
 // Wait for the DOM to fully load before executing the script
 document.addEventListener("DOMContentLoaded", async () => {
@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     startBtn.classList.add("hidden");
     gameArea.innerHTML = ""; // Clear the game area
     loadingIndicator.classList.remove("hidden");
+    await delay(500); // delay for dramatic effect before showing card
 
     try {
       // Fetch the judoka data from the JSON file
@@ -50,12 +51,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       gameArea.classList.remove("hidden");
     }
   });
-
-  // Function to select a random judoka from the data
-  // This function takes a number of milliseconds and returns a promise that resolves after that time
-  function delay(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
 
   // Function to select a random judoka from the data
   // This function takes an array of judoka data and returns a random judoka object
