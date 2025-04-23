@@ -208,7 +208,9 @@ button:focus {
 
 .card-portrait img {
   width: 80%; /* Image width */
-  border-radius: var(--border-radius-medium); /* Rounded corners */
+  height: auto;
+  border-radius: 8px;
+  border: 2px solid var(--card-border-color);
 }
 
 /* Weight class badge in the portrait section */

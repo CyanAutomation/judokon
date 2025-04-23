@@ -43,12 +43,15 @@ function generateCardTopBar(judoka, flagUrl) {
 }
 
 function generateCardPortrait(judoka) {
-  if (!judoka || !judoka.profileUrl) {
-    return `<div class="card-portrait">No portrait available</div>`
-  }
+  // Use the placeholder portrait if judoka is null, undefined, or has no valid ID
+  const portraitUrl =
+    judoka && judoka.id
+      ? `assets/portraits/judokaPortrait-${judoka.id}.png`
+      : `assets/portraits/judokaPortrait-0.png`
+
   return `
     <div class="card-portrait">
-      <img src="${judoka.profileUrl}" alt="${judoka.firstname} ${judoka.surname}'s portrait">
+      <img src="${portraitUrl}" alt="${judoka ? `${judoka.firstname} ${judoka.surname}'s portrait` : "Placeholder portrait"}" onerror="this.src='assets/portraits/judokaPortrait-0.png'">
     </div>
   `
 }

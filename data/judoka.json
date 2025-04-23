@@ -17,7 +17,8 @@
     "lastUpdated": "2025-04-22T10:00:00Z",
     "profileUrl": "https://en.wikipedia.org/wiki/Joana_Ramos",
     "gender": "female",
-    "isHidden": false
+    "isHidden": false,
+    "rarity": "Common"
   },
   {
     "id": 114,
@@ -37,6 +38,7 @@
     "lastUpdated": "2025-04-20T15:30:00Z",
     "profileUrl": "https://en.wikipedia.org/wiki/Nina_Cutro-Kelly",
     "gender": "female",
-    "isHidden": false
+    "isHidden": false,
+    "rarity": "Common"
   }
 ]
