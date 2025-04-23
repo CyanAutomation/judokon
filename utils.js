@@ -103,9 +103,9 @@ export function generateJudokaCardHTML(judoka, gokyo) {
   const flagUrl = getFlagUrl(judoka.countryCode);
 
   // Extract and format judoka details with fallback values
-  const firstName = getValue(judoka.firstName);
-  const surname = getValue(judoka.surname);
-  const country = getValue(judoka.country);
+  // const firstName = getValue(judoka.firstName);
+  // const surname = getValue(judoka.surname);
+  // const country = getValue(judoka.country);
   const lastUpdated = formatDate(judoka.lastUpdated);
 
   // Return the complete HTML for the judoka card by combining different sections
