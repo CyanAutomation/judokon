@@ -84,9 +84,13 @@ export function generateCardSignatureMove(judoka, gokyo) {
   // Get the technique name or fallback to "Unknown"
   const techniqueName = technique ? technique.name : "Unknown"
 
-  // Return the HTML for the signature move
-  return `<div class="card-signature"><strong>Signature Move:</strong> ${techniqueName}</div>`
-}
+  // Return the HTML for the signature move with separate label and value
+  return `
+    <div class="card-signature">
+      <span class="signature-move-label"><strong>Signature Move:</strong></span>
+      <span class="signature-move-value">${techniqueName}</span>
+    </div>
+  `;}
 
 function generateCardLastUpdated(date) {
   return `<div class="card-updated">Last updated: ${date}</div>`

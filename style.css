@@ -269,14 +269,14 @@ button:focus {
 }
 
 /* Signature Move section of the card */
-.card-signature-move {
-  background-color: var(--card-signature-move-bg); /* Background color */
-  color: var(--text-color); /* Text color */
-  display: flex; /* Flexbox layout */
-  justify-content: space-between; /* Space between elements */
-  align-items: center; /* Center-align items vertically */
-  padding: var(--padding-medium) var(--padding-large); /* Add padding */
-  font-size: var(--font-medium); /* Medium font size */
+.signature-move-label {
+  font-weight: bold;
+  color: #333;
+}
+
+.signature-move-value {
+  font-style: italic;
+  color: #555;
 }
 
 .card-signature-move .badge {
