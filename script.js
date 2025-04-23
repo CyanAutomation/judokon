@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     startBtn.classList.add("hidden");
     gameArea.innerHTML = ""; // Clear the game area
     loadingIndicator.classList.remove("hidden");
-    await delay(500); // delay for dramatic effect before showing card
 
     try {
       // Fetch the judoka data from the JSON file
