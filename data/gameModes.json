@@ -1,0 +1,49 @@
+[
+  {
+    "id": "shiai",
+    "name": "Shiai (Battle Mode)",
+    "description": "A standard one-on-one battle mode where players compete to win.",
+    "rules": {
+      "rounds": 3,
+      "timeLimit": "5 minutes",
+      "scoring": "ippon, waza-ari, yuko"
+    }
+  },
+  {
+    "id": "teamBattle",
+    "name": "Team Battle",
+    "description": "A team-based mode where players compete in groups.",
+    "rules": {
+      "teamSize": 5,
+      "elimination": "single",
+      "scoring": "team points"
+    }
+  },
+  {
+    "id": "browseJudoka",
+    "name": "Browse Judoka",
+    "description": "Explore the available judoka and their stats.",
+    "rules": {
+      "interaction": "view-only",
+      "filters": ["weight class", "country", "rank"]
+    }
+  },
+  {
+    "id": "createJudoka",
+    "name": "Create Judoka",
+    "description": "Create a new judoka by entering their details and stats.",
+    "rules": {
+      "fieldsRequired": ["name", "weight class", "stats"],
+      "maxStats": 50
+    }
+  },
+  {
+    "id": "updateJudoka",
+    "name": "Update Judoka",
+    "description": "Edit the details of an existing judoka.",
+    "rules": {
+      "editableFields": ["name", "stats", "signature move"],
+      "restrictions": "cannot exceed max stats"
+    }
+  }
+]

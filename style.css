@@ -171,6 +171,7 @@ button:focus {
 
 .card-name {
   text-align: left; /* Left-align the text */
+  flex-direction: column; /* Stack items vertically */
 }
 
 /* Styles for the judoka's name */
@@ -245,14 +246,14 @@ button:focus {
 }
 
 .card-stats li {
-  margin: 2px 0;
+  margin: 0 0;
 }
 
 .card-stats .stat {
   display: flex; /* Use flexbox for layout */
   justify-content: space-between; /* Space between label and value */
   align-items: center; /* Align items vertically */
-  margin-bottom: var(--padding-small); /* Add spacing between stats */
+  margin-bottom: var(--padding-none); /* Add spacing between stats */
 }
 
 .card-stats .stat strong {
