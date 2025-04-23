@@ -46,15 +46,15 @@ function generateCardPortrait(judoka) {
   // Use the placeholder portrait if judoka is null, undefined, or has no valid ID
   const portraitUrl =
     judoka && judoka.id
-      ? `assets/portraits/judokaPortrait-${judoka.id}.png`
-      : `assets/portraits/judokaPortrait-0.png`;
+      ? `assets/judokaPortraits/judokaPortrait-${judoka.id}.png`
+      : `assets/judokaPortraits/judokaPortrait-0.png`;
 
   // Log the generated portrait URL for debugging
   console.log(`Generated portrait URL: ${portraitUrl}`);
 
   return `
     <div class="card-portrait">
-      <img src="${portraitUrl}" alt="${judoka ? `${judoka.firstname} ${judoka.surname}'s portrait` : "Placeholder portrait"}" onerror="this.src='assets/portraits/judokaPortrait-0.png'">
+      <img src="${portraitUrl}" alt="${judoka ? `${judoka.firstname} ${judoka.surname}'s portrait` : "Placeholder portrait"}" onerror="this.src='assets/judokaPortraits/judokaPortrait-0.png'">
     </div>
   `;
 }
