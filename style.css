@@ -229,7 +229,7 @@ button:focus {
 .card-stats {
   background-color: var(--card-stats-bg); /* Background color */
   color: var(--text-color); /* Text color */
-  padding: var(--padding-large); /* Add padding */
+  padding: var(--padding-small); /* Add padding */
   font-size: var(--font-medium); /* Medium font size */
   margin-top: 10px;
 }
