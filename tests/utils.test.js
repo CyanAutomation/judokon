@@ -11,16 +11,21 @@ describe("getFlagUrl", () => {
 })
 
 describe("generateCardSignatureMove", () => {
-  const gokyo = [{id: "uchi-mata", name: "Uchi Mata"}]
-  const judoka = {signatureMoveId: "uchi-mata"}
+  const mockGokyo = [{ id: "uchi-mata", name: "Uchi Mata" }];
+  const mockJudoka = { signatureMoveId: "uchi-mata" };
 
   it("returns HTML with technique name", () => {
-    const html = generateCardSignatureMove(judoka, gokyo)
-    expect(html).toContain("Uchi Mata")
-  })
+    const html = generateCardSignatureMove(mockJudoka, mockGokyo);
+    expect(html).toBe('<div class="signature-move">Uchi Mata</div>');
+  });
 
   it('returns "Unknown" for unmatched ID', () => {
-    const html = generateCardSignatureMove({signatureMoveId: "nonexistent"}, gokyo)
-    expect(html).toContain("Unknown")
-  })
-})
+    const html = generateCardSignatureMove({ signatureMoveId: "nonexistent" }, mockGokyo);
+    expect(html).toBe('<div class="signature-move">Unknown</div>');
+  });
+
+  it("handles empty gokyo array gracefully", () => {
+    const html = generateCardSignatureMove(mockJudoka, []);
+    expect(html).toBe('<div class="signature-move">Unknown</div>');
+  });
+});
