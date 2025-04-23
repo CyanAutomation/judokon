@@ -1,17 +1,17 @@
 [
   {
-    "id": 1,
+    "id": 111,
     "firstname": "Joana",
     "surname": "Ramos",
     "country": "Portugal",
     "countryCode": "pt",
     "weightClass": "-52",
     "stats": {
-      "power": 7,
-      "speed": 6,
-      "technique": 7,
-      "kumikata": 6,
-      "newaza": 7
+      "power": 6,
+      "speed": 7,
+      "technique": 8,
+      "kumikata": 7,
+      "newaza": 6
     },
     "signatureMoveId": 1,
     "lastUpdated": "2025-04-22T10:00:00Z",
@@ -20,23 +20,23 @@
     "isHidden": false
   },
   {
-    "id": 2,
-    "firstname": "Teddy",
-    "surname": "Riner",
-    "country": "France",
-    "countryCode": "fr",
-    "weightClass": "+100",
+    "id": 114,
+    "firstname": "Nina",
+    "surname": "Cutro-Kelly",
+    "country": "USA",
+    "countryCode": "us",
+    "weightClass": "+78",
     "stats": {
-      "power": 10,
-      "speed": 8,
-      "technique": 9,
-      "kumikata": 9,
+      "power": 9,
+      "speed": 6,
+      "technique": 7,
+      "kumikata": 7,
       "newaza": 8
     },
     "signatureMoveId": 2,
     "lastUpdated": "2025-04-20T15:30:00Z",
-    "profileUrl": "https://en.wikipedia.org/wiki/Teddy_Riner",
-    "gender": "male",
+    "profileUrl": "https://en.wikipedia.org/wiki/Nina_Cutro-Kelly",
+    "gender": "female",
     "isHidden": false
   }
 ]
