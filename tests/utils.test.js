@@ -1,3 +1,5 @@
+import { generateCardSignatureMove } from "../utils";
+
 // Mock data for tests
 const mockGokyo = [{id: "uchi-mata", name: "Uchi Mata"}]
 const mockJudoka = {signatureMoveId: "uchi-mata"}
