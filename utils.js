@@ -47,13 +47,16 @@ function generateCardPortrait(judoka) {
   const portraitUrl =
     judoka && judoka.id
       ? `assets/portraits/judokaPortrait-${judoka.id}.png`
-      : `assets/portraits/judokaPortrait-0.png`
+      : `assets/portraits/judokaPortrait-0.png`;
+
+  // Log the generated portrait URL for debugging
+  console.log(`Generated portrait URL: ${portraitUrl}`);
 
   return `
     <div class="card-portrait">
       <img src="${portraitUrl}" alt="${judoka ? `${judoka.firstname} ${judoka.surname}'s portrait` : "Placeholder portrait"}" onerror="this.src='assets/portraits/judokaPortrait-0.png'">
     </div>
-  `
+  `;
 }
 
 function generateCardStats(judoka) {

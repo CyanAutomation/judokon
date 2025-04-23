@@ -70,10 +70,16 @@ describe("generateCardSignatureMove", () => {
   // Group: Malformed Data
   describe("Malformed Data", () => {
     it("handles case sensitivity in signatureMoveId", () => {
-      const caseInsensitiveJudoka = {signatureMoveId: "UCHI-MATA"}
-      const html = generateCardSignatureMove(caseInsensitiveJudoka, mockGokyo)
-      expect(html).toContain(generateExpectedHTML("Signature Move:", "Unknown")) // Assuming IDs are case-sensitive
-    })
+      const caseInsensitiveJudoka = { signatureMoveId: "UCHI-MATA" };
+      const html = generateCardSignatureMove(caseInsensitiveJudoka, mockGokyo);
+    
+      expect(html).toContain(`
+        <div class="card-signature">
+          <span class="signature-move-label"><strong>Signature Move:</strong></span>
+          <span class="signature-move-value">Unknown</span>
+        </div>
+      `.trim());
+    });
 
     it("handles malformed gokyo entries gracefully", () => {
       const malformedGokyo = [{id: "uchi-mata"}, {name: "Uchi Mata"}]
