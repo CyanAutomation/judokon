@@ -166,7 +166,7 @@ button:focus {
   display: flex; /* Flexbox layout */
   justify-content: space-between; /* Space between elements */
   align-items: center; /* Center-align items vertically */
-  padding: var(--padding-large) var(--padding-large); /* Add padding */
+  padding: var(--padding-small) var(--padding-small); /* Add padding */
 }
 
 .card-name {
