@@ -75,7 +75,7 @@ function generateCardStats(judoka) {
   `;
 }
 
-function generateCardSignatureMove(judoka, gokyo) {
+export function generateCardSignatureMove(judoka, gokyo) {
   // Find the technique in gokyo.json using the signatureMoveId
   console.log("Judoka ID:", judoka.signatureMoveId);
   const technique = gokyo.find(move => move.id === judoka.signatureMoveId);
