@@ -63,13 +63,12 @@ function generateCardStats(judoka) {
   // Generate HTML for the stats section
   return `
     <div class="card-stats">
-      <h3>Stats</h3>
       <ul>
-        <li><strong>Power:</strong> ${power}</li>
-        <li><strong>Speed:</strong> ${speed}</li>
-        <li><strong>Technique:</strong> ${technique}</li>
-        <li><strong>Kumi-kata:</strong> ${kumiKata}</li>
-        <li><strong>Ne-waza:</strong> ${neWaza}</li>
+        <li class="stat"><strong>Power:</strong> <span>${power}</span></li>
+        <li class="stat"><strong>Speed:</strong> <span>${speed}</span></li>
+        <li class="stat"><strong>Technique:</strong> <span>${technique}</span></li>
+        <li class="stat"><strong>Kumi-kata:</strong> <span>${kumiKata}</span></li>
+        <li class="stat"><strong>Ne-waza:</strong> <span>${neWaza}</span></li>
       </ul>
     </div>
   `;
