@@ -1,17 +1,107 @@
 [
-  { "country": "Portugal", "code": "pt" },
-  { "country": "France", "code": "fr" },
-  { "country": "Japan", "code": "jp" },
-  { "country": "Brazil", "code": "br" },
-  { "country": "United States", "code": "us" },
-  { "country": "Germany", "code": "de" },
-  { "country": "Russia", "code": "ru" },
-  { "country": "South Korea", "code": "kr" },
-  { "country": "United Kingdom", "code": "gb" },
-  { "country": "Canada", "code": "ca" },
-  { "country": "Italy", "code": "it" },
-  { "country": "Spain", "code": "es" },
-  { "country": "Netherlands", "code": "nl" },
-  { "country": "China", "code": "cn" },
-  { "country": "Mongolia", "code": "mn" }
+  {
+    "country": "Portugal",
+    "code": "pt",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "France",
+    "code": "fr",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "Japan",
+    "code": "jp",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "Brazil",
+    "code": "br",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "United States",
+    "code": "us",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "Germany",
+    "code": "de",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "Russia",
+    "code": "ru",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "South Korea",
+    "code": "kr",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "United Kingdom",
+    "code": "gb",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "Canada",
+    "code": "ca",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "Italy",
+    "code": "it",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "Spain",
+    "code": "es",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "Netherlands",
+    "code": "nl",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "China",
+    "code": "cn",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "Mongolia",
+    "code": "mn",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  }
 ]
