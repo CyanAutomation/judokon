@@ -5,6 +5,7 @@ import { generateJudokaCardHTML } from "./utils.js";
 document.addEventListener("DOMContentLoaded", async () => {
   // Select DOM elements for the start button, game area, and loading indicator
   const startBtn = document.getElementById("startBtn");
+  // Log the start button element for debugging
   console.log("Start button element:", startBtn);
   const gameArea = document.getElementById("gameArea");
   const loadingIndicator = document.getElementById("loading");

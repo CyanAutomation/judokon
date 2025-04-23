@@ -25,6 +25,7 @@
   --font-extra-large: 3rem;
 
   /* Spacing */
+  --padding-none: 0rem;
   --padding-small: 0.2rem;
   --padding-medium: 0.5rem;
   --padding-large: 1rem;
@@ -149,7 +150,7 @@ button:focus {
   max-width: 300px;
   width: 100%; /* Full width for smaller screens */
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
-  border: 4px solid var(--card-border-color); /* Card border */
+  border: 6px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
   overflow: hidden; /* Hide overflow content */
   background-color: #ffffff; /* White background for contrast */
@@ -165,25 +166,33 @@ button:focus {
   display: flex; /* Flexbox layout */
   justify-content: space-between; /* Space between elements */
   align-items: center; /* Center-align items vertically */
-  padding: var(--padding-medium) var(--padding-large); /* Add padding */
+  padding: var(--padding-small) var(--padding-small); /* Add padding */
+}
+
+.card-name {
+  text-align: left; /* Left-align the text */
+  flex-direction: column; /* Stack items vertically */
 }
 
 /* Styles for the judoka's name */
 .card-name .first-name {
   font-size: var(--font-small); /* Small font size for the first name */
   font-weight: normal; /* Normal font weight */
+  display: block; /* Force the first name to appear on its own line */
 }
 
 .card-name .surname {
   font-size: var(--font-large); /* Larger font size for the surname */
   font-weight: bold; /* Bold font weight */
   text-transform: uppercase; /* Uppercase text */
+  display: block; /* Force the surname to appear on its own line */
 }
 
 /* Styles for the country flag */
 .card-flag {
-  width: 40px; /* Fixed width */
-  height: 25px; /* Fixed height */
+  /* The standard aspect ratio for most flags is 4:3 (width:height). For example, if you increase the width to 80px, the height should be 60px to maintain the 4:3 ratio. */
+  width: 60px; /* Fixed width */
+  height: 45px; /* Fixed height */
   background-size: cover; /* Cover the background */
   border: 1px solid var(--text-color); /* Add border */
 }
@@ -196,7 +205,7 @@ button:focus {
     var(--card-portrait-gradient-end)
   ); /* Gradient background */
   text-align: center; /* Center-align text */
-  padding: var(--padding-large); /* Add padding */
+  padding: var(--padding-small); /* Add padding */
   position: relative; /* Position for child elements */
 }
 
@@ -222,29 +231,40 @@ button:focus {
 .card-stats {
   background-color: var(--card-stats-bg); /* Background color */
   color: var(--text-color); /* Text color */
-  padding: var(--padding-large); /* Add padding */
+  padding: var(--padding-none); /* Add padding */
   font-size: var(--font-medium); /* Medium font size */
-  margin-top: 10px;
+  margin-top: 0;
 }
 
 .card-stats h3 {
   font-size: 1.2em;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
 }
 
 .card-stats ul {
   list-style: none;
-  padding: var(--padding-small); /* Add padding */
+  padding: var(--padding-none); /* Add padding */
 }
 
 .card-stats li {
-  margin: 5px 0;
+  margin: 0 0;
 }
 
 .card-stats .stat {
-  display: flex; /* Flexbox layout */
-  justify-content: space-between; /* Space between stat name and value */
-  margin-bottom: var(--padding-medium); /* Add spacing between stats */
+  display: flex; /* Use flexbox for layout */
+  justify-content: space-between; /* Space between label and value */
+  align-items: center; /* Align items vertically */
+  margin-bottom: var(--padding-none); /* Add spacing between stats */
+}
+
+.card-stats .stat strong {
+  text-align: left; /* Ensure the label is left-aligned */
+  flex: 1; /* Allow the label to take up available space */
+}
+
+.card-stats .stat span {
+  text-align: right; /* Ensure the value is right-aligned */
+  flex-shrink: 0; Prevent the value from shrinking */
 }
 
 .card-stats .stat:last-child {
