@@ -1,11 +1,11 @@
 [
   {
     "id": 1,
-    "firstName": "Megan",
-    "surname": "Fletcher",
-    "country": "Ireland",
-    "countryCode": "ie",
-    "weightClass": "-70",
+    "firstName": "Joana",
+    "surname": "Ramos",
+    "country": "Portugal",
+    "countryCode": "pt",
+    "weightClass": "-52",
     "stats": {
       "power": 7,
       "speed": 6,
@@ -15,7 +15,7 @@
     },
     "signatureMoveId": 1,
     "lastUpdated": "2025-04-22T10:00:00Z",
-    "profileUrl": "https://en.wikipedia.org/wiki/Megan_Fletcher",
+    "profileUrl": "https://en.wikipedia.org/wiki/Joana_Ramos",
     "gender": "female"
   },
   {
