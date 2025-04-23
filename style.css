@@ -1,22 +1,22 @@
 /* Define global CSS variables for colors, font sizes, spacing, and other reusable styles */
 :root {
   /* Colors */
-  --primary-bg: #1C4B95; /* Primary background color (royal blue) */
-  --secondary-bg: #0C3F7A; /* Secondary background color (dark blue) */
+  --primary-bg: #1c4b95; /* Primary background color (royal blue) */
+  --secondary-bg: #0c3f7a; /* Secondary background color (dark blue) */
   --button-bg: #fed843; /* Button background color (yellow) */
   --button-hover-bg: #f2c027; /* Button hover background color (darker yellow) */
   --text-color: white; /* Default text color */
   --button-text-color: #1a1a1a; /* Button text color */
 
   /* Card-specific colors */
-  --card-border-color: #3C5AD6; /* Border color for cards */
-  --card-top-bar-bg: #0C3F7A; /* Background color for the card's top bar */
-  --card-portrait-gradient-start: #1C4B95; /* Gradient start for card portrait */
-  --card-portrait-gradient-end: #0C3F7A; /* Gradient end for card portrait */
-  --card-stats-bg: #0C3F7A; /* Background color for card stats */
-  --card-signature-move-bg: #003B88; /* Background color for signature section */
+  --card-border-color: #3c5ad6; /* Border color for cards */
+  --card-top-bar-bg: #0c3f7a; /* Background color for the card's top bar */
+  --card-portrait-gradient-start: #1c4b95; /* Gradient start for card portrait */
+  --card-portrait-gradient-end: #0c3f7a; /* Gradient end for card portrait */
+  --card-stats-bg: #0c3f7a; /* Background color for card stats */
+  --card-signature-move-bg: #003b88; /* Background color for signature section */
   --card-signature-move-badge-bg: #fed843; /* Badge background color */
-  --card-signature-move-badge-text: #003B88; /* Badge text color */
+  --card-signature-move-badge-text: #003b88; /* Badge text color */
 
   /* Font sizes */
   --font-small: 0.9rem;
@@ -40,7 +40,9 @@
 }
 
 /* Reset default browser styles for all elements */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: var(--padding-small);
   box-sizing: border-box;
@@ -49,7 +51,11 @@
 /* General body styles */
 body {
   font-family: Arial, Helvetica, sans-serif; /* Default font family */
-  background: linear-gradient(to bottom, var(--primary-bg), var(--secondary-bg)); /* Gradient background */
+  background: linear-gradient(
+    to bottom,
+    var(--primary-bg),
+    var(--secondary-bg)
+  ); /* Gradient background */
   color: var(--text-color); /* Default text color */
   text-align: center; /* Center-align text */
   margin: 0;
@@ -84,16 +90,20 @@ button {
   font-weight: bold; /* Make text bold */
   cursor: pointer; /* Change cursor to pointer on hover */
   border-radius: 8px; /* Rounded corners */
-  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease; /* Smooth transitions */
 }
 
 button:hover {
-  background-color: var(--button-hover-bg); /* Change background color on hover */
+  background-color: var(
+    --button-hover-bg
+  ); /* Change background color on hover */
   transform: scale(1.05); /* Slightly enlarge the button on hover */
 }
 
 button:focus {
-  outline: 2px solid #1C4B95; /* Add focus outline */
+  outline: 2px solid #1c4b95; /* Add focus outline */
   outline-offset: 2px; /* Offset the outline */
 }
 
@@ -142,9 +152,10 @@ button:focus {
   border: 4px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
   overflow: hidden; /* Hide overflow content */
-  background-color: #FFFFFF; /* White background for contrast */
+  background-color: #ffffff; /* White background for contrast */
   box-shadow: var(--box-shadow); /* Add shadow for depth */
-  font-family: 'Inter', 'Montserrat', 'Nunito', sans-serif; /* Custom font family */
+  font-family:
+    "Inter", "Montserrat", "Nunito", sans-serif; /* Custom font family */
 }
 
 /* Top bar of the card (name and flag) */
@@ -252,7 +263,9 @@ button:focus {
 }
 
 .card-signature-move .badge {
-  background-color: var(--card-signature-move-badge-bg); /* Badge background color */
+  background-color: var(
+    --card-signature-move-badge-bg
+  ); /* Badge background color */
   color: var(--card-signature-move-badge-text); /* Badge text color */
   font-weight: bold; /* Bold text */
   padding: var(--padding-small) var(--padding-medium); /* Add padding */
@@ -274,7 +287,9 @@ button:focus {
 }
 
 .card-profile .profile-link:hover {
-  background-color: var(--button-hover-bg); /* Change background color on hover */
+  background-color: var(
+    --button-hover-bg
+  ); /* Change background color on hover */
 }
 
 /* Responsive styles for smaller screens (max-width: 768px) */

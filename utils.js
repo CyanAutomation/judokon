@@ -78,9 +78,11 @@ function generateCardStats(judoka) {
 export function generateCardSignatureMove(judoka, gokyo) {
   // Find the technique in gokyo.json using the signatureMoveId
   console.log("Judoka ID:", judoka.signatureMoveId);
-  const technique = gokyo.find(move => move.id === judoka.signatureMoveId);
+  const technique = gokyo.find((move) => move.id === judoka.signatureMoveId);
   if (!technique) {
-    console.warn(`No technique found for signatureMoveId: ${judoka.signatureMoveId}`);
+    console.warn(
+      `No technique found for signatureMoveId: ${judoka.signatureMoveId}`,
+    );
   }
   // Get the technique name or fallback to "Unknown"
   const techniqueName = technique ? technique.name : "Unknown";

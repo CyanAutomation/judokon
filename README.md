@@ -32,6 +32,7 @@ Contributions are welcome! Please fork the repository and submit a pull request.
    cd judokon
    npx serve
    # Then visit: http://localhost:5000
+   ```
 
 ## Dependencies
 
@@ -39,6 +40,7 @@ Contributions are welcome! Please fork the repository and submit a pull request.
 - Modularized JavaScript with `utils.js` for reusable functions
 
 ## Project Structure
+
 - index.html: The main HTML file for the game.
 - style.css: The stylesheet for the game's design.
 - script.js: The main JavaScript file for game logic.
@@ -73,20 +75,25 @@ This project is built with HTML, CSS, and JavaScript, and hosted on GitHub Pages
 ### 🥋 The Rules:
 
 1. **You vs. Computer**
+
    - Each match starts with both players receiving **25 random cards** from a 99-card deck.
 
 2. **Start the Battle**
+
    - In each round, you and the computer each draw your top card.
 
 3. **Choose Your Stat**
+
    - You select one of the stats on your card (e.g. Power, Speed, Technique, etc.)
 
 4. **Compare Stats**
+
    - The chosen stat is compared with the computer’s card.
    - **Highest value wins the round**.
    - If both stats are equal, it’s a **draw** — no one scores.
 
 5. **Scoring**
+
    - Each round win gives you **1 point**.
    - The cards used in that round are **discarded** (not reused).
 
@@ -101,6 +108,7 @@ Play the game here: [JU-DO-KON!](https://cyanautomation.github.io/judokon/)
 The live demo allows you to experience the full gameplay directly in your browser. No installation required!
 
 ## Future Plans
+
 - Get feedback on current cards and stat points
 - Take submissions/suggestions on new card designs and stats
 - Add animations for card flips and stat comparisons

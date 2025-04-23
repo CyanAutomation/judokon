@@ -1,59 +1,74 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <!-- Specifies the character encoding for the document -->
-  <meta charset="UTF-8" />
-  <!-- Ensures the page is responsive and scales properly on different devices -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Prevents the browser from caching the page -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <!-- Keywords for SEO -->
-  <meta name="keywords" content="judo, card game, web game, IJF, judoka" />
-  <!-- Specifies the author of the page -->
-  <meta name="author" content="Marc Scheimann" />
-  <!-- Open Graph meta tags for social media sharing -->
-  <meta property="og:title" content="JU-DO-KON!" />
-  <meta name="description" content="JU-DO-KON! A web-based judo-themed card battle game featuring IJF judoka." />
-  <!-- Sets the title of the page -->
-  <title>Ju-Do-Kon!</title>
-  <!-- Links the favicon -->
-  <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon" />
-  <!-- Preloads the stylesheet -->
-  <link rel="preload" href="style.css" as="style" />
-  <!-- Links the main stylesheet -->
-  <link rel="preload" href="style.css" as="style" onload="this.rel='stylesheet'" />
-</head>
-<body>
-  <!-- Header Section -->
-  <header>
-    <h1>JU-DO-KON!</h1>
-    <p class="subtitle">A web-based judo-themed card battle game featuring elite judoka</p>
-  </header>
+  <head>
+    <!-- Specifies the character encoding for the document -->
+    <meta charset="UTF-8" />
+    <!-- Ensures the page is responsive and scales properly on different devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Prevents the browser from caching the page -->
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <!-- Keywords for SEO -->
+    <meta name="keywords" content="judo, card game, web game, IJF, judoka" />
+    <!-- Specifies the author of the page -->
+    <meta name="author" content="Marc Scheimann" />
+    <!-- Open Graph meta tags for social media sharing -->
+    <meta property="og:title" content="JU-DO-KON!" />
+    <meta
+      name="description"
+      content="JU-DO-KON! A web-based judo-themed card battle game featuring IJF judoka."
+    />
+    <!-- Sets the title of the page -->
+    <title>Ju-Do-Kon!</title>
+    <!-- Links the favicon -->
+    <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon" />
+    <!-- Preloads the stylesheet -->
+    <link rel="preload" href="style.css" as="style" />
+    <!-- Links the main stylesheet -->
+    <link
+      rel="preload"
+      href="style.css"
+      as="style"
+      onload="this.rel='stylesheet'"
+    />
+  </head>
+  <body>
+    <!-- Header Section -->
+    <header>
+      <h1>JU-DO-KON!</h1>
+      <p class="subtitle">
+        A web-based judo-themed card battle game featuring elite judoka
+      </p>
+    </header>
 
-  <!-- Main Content -->
-  <main class="container" role="main">
-    <section>
-      <button id="startBtn" aria-label="Start the game">Start Game</button>
-      <div id="loading" class="hidden" aria-live="polite">
-        <p>Loading...</p>
-        <div class="spinner"></div>
-      </div>
-      <div id="gameArea" class="hidden" aria-live="polite">
-        <p>Get ready to play JU-DO-KON! Click "Start Game" to begin.</p>
-      </div>
-    </section>
-  </main>
+    <!-- Main Content -->
+    <main class="container" role="main">
+      <section>
+        <button id="startBtn" aria-label="Start the game">Start Game</button>
+        <div id="loading" class="hidden" aria-live="polite">
+          <p>Loading...</p>
+          <div class="spinner"></div>
+        </div>
+        <div id="gameArea" class="hidden" aria-live="polite">
+          <p>Get ready to play JU-DO-KON! Click "Start Game" to begin.</p>
+        </div>
+      </section>
+    </main>
 
-  <!-- Footer Section -->
-  <footer>
-    <p>&copy; 2025 JU-DO-KON! All rights reserved.</p>
-  </footer>
+    <!-- Footer Section -->
+    <footer>
+      <p>&copy; 2025 JU-DO-KON! All rights reserved.</p>
+    </footer>
 
-  <!-- Fallback for users without JavaScript -->
-  <noscript>
-    <p style="color: red; font-weight: bold;">JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.</p>
-  </noscript>
-  <!-- JavaScript file -->
-  <script src="script.js" type="module" defer></script>
-</body>
+    <!-- Fallback for users without JavaScript -->
+    <noscript>
+      <p style="color: red; font-weight: bold">
+        JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
+      </p>
+    </noscript>
+    <!-- JavaScript file -->
+    <script src="script.js" type="module" defer></script>
+  </body>
 </html>

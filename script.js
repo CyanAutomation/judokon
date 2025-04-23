@@ -1,5 +1,5 @@
 // Import utility functions for generating flag URLs and judoka card HTML
-import { getFlagUrl, generateJudokaCardHTML } from './utils.js';
+import { getFlagUrl, generateJudokaCardHTML } from "./utils.js";
 
 // Wait for the DOM to fully load before executing the script
 document.addEventListener("DOMContentLoaded", async () => {
@@ -22,21 +22,23 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Fetch the judoka data from the JSON file
       const response = await fetch("data/judoka.json");
       console.log("Fetch response:", response);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
       const judokaData = await response.json();
 
       // Fetch the gokyo data from the JSON file
       const gokyoResponse = await fetch("data/gokyo.json");
       console.log("Gokyo fetch response:", gokyoResponse);
-      if (!gokyoResponse.ok) throw new Error(`HTTP error! status: ${gokyoResponse.status}`);
-      const gokyoData = await gokyoResponse.json();  
+      if (!gokyoResponse.ok)
+        throw new Error(`HTTP error! status: ${gokyoResponse.status}`);
+      const gokyoData = await gokyoResponse.json();
 
       console.log("Judoka data fetched:", judokaData); // Debugging log
       console.log("Gokyo data fetched:", gokyoData); // Debugging log
 
       // Select a random judoka from the data
       const selectedJudoka = getRandomJudoka(judokaData);
-      console.log("Selected judoka:", selectedJudoka);      // Debugging log
+      console.log("Selected judoka:", selectedJudoka); // Debugging log
       displayJudokaCard(selectedJudoka, gokyoData);
     } catch (error) {
       console.error("Error loading card:", error);
@@ -52,16 +54,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Function to select a random judoka from the data
   // This function takes a number of milliseconds and returns a promise that resolves after that time
   function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   // Function to select a random judoka from the data
-  // This function takes an array of judoka data and returns a random judoka object  
+  // This function takes an array of judoka data and returns a random judoka object
   function getRandomJudoka(data) {
     const index = Math.floor(Math.random() * data.length);
     console.log("Random index:", index);
     return data[index];
-  }  
+  }
 
   // Function to display the selected judoka's card
   function displayJudokaCard(judoka, gokyo) {
