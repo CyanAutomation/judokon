@@ -1,5 +1,19 @@
 export {getValue, formatDate, generateCardTopBar}
 
+// Escape special characters to prevent XSS
+export function escapeHTML(str) {
+  return String(str).replace(/[&<>"']/g, (char) => {
+    const escapeMap = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    };
+    return escapeMap[char];
+  });
+}
+
 // Generate flag URL
 export function getFlagUrl(countryCode) {
   // If the country code is missing, return the placeholder flag from the assets/images directory
@@ -25,22 +39,39 @@ export function formatDate(dateString) {
 }
 
 // Generate the top bar of the judoka card (name and flag)
-function generateCardTopBar(judoka, flagUrl) {
+export function generateCardTopBar(judoka, flagUrl) {
   if (!judoka) {
-    console.error("Judoka object is missing!")
-    return `<div class="card-top-bar">No data available</div>`
+    console.error("Judoka object is missing!");
+    return {
+      title: 'No data',
+      flagUrl: 'assets/images/placeholder-flag.png',
+      html: `<div class="card-top-bar">No data available</div>`,
+    };
   }
-  return `
-    <div class="card-top-bar">
-      <div class="card-name">
-        <span class="firstname">${getValue(judoka.firstname)}</span>
-        <span class="surname">${getValue(judoka.surname)}</span>
+
+  const firstname = escapeHTML(getValue(judoka.firstname));
+  const surname = escapeHTML(getValue(judoka.surname));
+  const country = escapeHTML(getValue(judoka.country));
+
+  const fullTitle = `${firstname} ${surname}`.trim();
+  const finalFlagUrl = flagUrl || 'assets/images/placeholder-flag.png';
+
+  return {
+    title: `${getValue(judoka.firstname)} ${getValue(judoka.surname)}`.trim(), // unescaped title is fine for logic
+    flagUrl: finalFlagUrl,
+    html: `
+      <div class="card-top-bar">
+        <div class="card-name">
+          <span class="firstname">${firstname}</span>
+          <span class="surname">${surname}</span>
+        </div>
+        <img class="card-flag" src="${finalFlagUrl}" alt="${country} flag" 
+          onerror="this.src='assets/images/placeholder-flag.png'">
       </div>
-      <img class="card-flag" src="${flagUrl}" alt="${getValue(judoka.country)} flag" 
-        onerror="this.src='assets/images/placeholder-flag.png'">
-    </div>
-  `
+    `,
+  };
 }
+
 
 function generateCardPortrait(judoka) {
   // Use the placeholder portrait if judoka is null, undefined, or has no valid ID
@@ -117,7 +148,7 @@ export function generateJudokaCardHTML(judoka, gokyo) {
   return `
     <div class="card-container">
       <div class="judoka-card">
-        ${generateCardTopBar(judoka, flagUrl)}
+        ${generateCardTopBar(judoka, flagUrl).html}
         ${generateCardPortrait(judoka)}
         ${generateCardStats(judoka)}
         ${generateCardSignatureMove(judoka, gokyo)}
