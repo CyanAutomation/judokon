@@ -1,5 +1,5 @@
 // Import utility functions for generating flag URLs and judoka card HTML
-import {generateJudokaCardHTML} from "./utils/judokaCardBuilder.js"
+import {generateJudokaCardHTML} from "./utils/CardBuilder.js"
 
 // Wait for the DOM to fully load before executing the script
 document.addEventListener("DOMContentLoaded", async () => {

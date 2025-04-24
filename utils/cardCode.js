@@ -1,5 +1,6 @@
 const XOR_KEY = 37;
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 32 readable characters
+const CARD_CODE_VERSION = 'v1';
 
 function xorEncode(str, key = XOR_KEY) {
   return str
@@ -18,11 +19,33 @@ function toReadableCharset(str) {
 }
 
 function chunk(str, size = 4) {
+  if (typeof str !== "string" || !str.length) return "";
   return str.match(new RegExp(`.{1,${size}}`, 'g')).join('-');
 }
 
+/**
+ * Generates a unique, readable card code for a judoka.
+ * @param {Object} judoka - The judoka object.
+ * @returns {string} The generated card code.
+ */
 export function generateCardCode(judoka) {
-  const version = 'v1';
+  if (
+    !judoka ||
+    !judoka.firstname ||
+    !judoka.surname ||
+    !judoka.countryCode ||
+    !judoka.weightClass ||
+    typeof judoka.signatureMoveId === "undefined" ||
+    !judoka.stats ||
+    typeof judoka.stats.power === "undefined" ||
+    typeof judoka.stats.speed === "undefined" ||
+    typeof judoka.stats.technique === "undefined" ||
+    typeof judoka.stats.kumikata === "undefined" ||
+    typeof judoka.stats.newaza === "undefined"
+  ) {
+    throw new Error("Missing required judoka fields for card code generation.");
+  }
+
   const stats = [
     judoka.stats.power,
     judoka.stats.speed,
@@ -32,12 +55,12 @@ export function generateCardCode(judoka) {
   ].join('');
 
   const raw = [
-    version,
+    CARD_CODE_VERSION,
     judoka.firstname.toUpperCase(),
     judoka.surname.toUpperCase(),
     judoka.countryCode.toUpperCase(),
-    judoka.weightClass, // Keep -/+ intact
-    judoka.signatureMoveId,
+    judoka.weightClass,
+    judoka.signatureMoveId.toString(),
     stats
   ].join('-');
 

@@ -1,20 +1,32 @@
 import countryCodeMapping from './data/countryCodeMapping.json';
 
+/**
+ * Returns the country name for a given code, or 'Unknown' if not found/active.
+ * @param {string} code
+ * @returns {string}
+ */
 export function getCountryNameFromCode(code) {
-    if (!code) return 'Unknown';
-    const match = countryCodeMapping.find(
-      entry => entry.code.toLowerCase() === code.toLowerCase() && entry.active
-    );
-    return match?.country ?? code;
+  if (typeof code !== 'string' || !code.trim()) return 'Unknown';
+  const match = countryCodeMapping.find(
+    entry => entry.code.toLowerCase() === code.toLowerCase() && entry.active
+  );
+  return match ? match.country : 'Unknown';
 }
 
-// Generate flag URL
+/**
+ * Returns the flag URL for a given country code, or a placeholder if missing/invalid.
+ * @param {string} countryCode
+ * @returns {string}
+ */
 export function getFlagUrl(countryCode) {
-    // If the country code is missing, return the placeholder flag from the assets/images directory
-    if (!countryCode) {
-      console.warn("Missing country code. Using placeholder flag.")
-      return "assets/images/placeholder-flag.png"
-    }
-    // Return the URL for the country flag using FlagCDN
-    return `https://flagcdn.com/w320/${countryCode.toLowerCase()}.png`
+  if (
+    !countryCode ||
+    !countryCodeMapping.some(
+      entry => entry.code.toLowerCase() === countryCode.toLowerCase() && entry.active
+    )
+  ) {
+    console.warn("Missing or invalid country code. Using placeholder flag.");
+    return "assets/images/placeholder-flag.png";
   }
+  return `https://flagcdn.com/w320/${countryCode.toLowerCase()}.png`;
+}
