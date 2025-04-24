@@ -1,4 +1,4 @@
 import { expect } from 'vitest';
-import { toHaveNoViolations } from 'vitest-axe';
+// import { toHaveNoViolations } from 'vitest-axe';
 
-expect.extend(toHaveNoViolations);
+// expect.extend(toHaveNoViolations);
