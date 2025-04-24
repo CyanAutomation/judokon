@@ -1,7 +1,7 @@
-import {formatDate, escapeHTML, getValue} from "./utils"
-import {getFlagUrl} from "./countryUtils"
-import {generateCardTopBar} from "./cardTopBar"
-import {generateCardPortrait, generateCardStats, generateCardSignatureMove} from "./cardRender"
+import {formatDate, escapeHTML, getValue} from "./utils.js"
+import {getFlagUrl} from "./countryUtils.js"
+import {generateCardTopBar} from "./cardTopBar.js"
+import {generateCardPortrait, generateCardStats, generateCardSignatureMove} from "./cardRender.js"
 
 /**
  * Generates the "last updated" HTML for a judoka card.
