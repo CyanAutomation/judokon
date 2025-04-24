@@ -1,4 +1,4 @@
-import { generateCardSignatureMove } from "../utils";
+import countryCodeMapping from './data/countryCodeMapping.json';
 
 // Mock data
 const mockJudoka = { signatureMoveId: "uchi-mata" };
