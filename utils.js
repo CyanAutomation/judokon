@@ -1,6 +1,5 @@
-export {getValue, formatDate, generateCardTopBar}
 import countryCodeMapping from './data/countryCodeMapping.json';
-
+Í
 // Escape special characters to prevent XSS
 export function escapeHTML(str) {
   return String(str).replace(/[&<>"']/g, (char) => {
@@ -33,8 +32,12 @@ export function getValue(value, fallback = "Unknown") {
 }
 
 export function formatDate(dateString) {
-  const date = new Date(dateString)
-  return isNaN(date) ? "Invalid Date" : date.toISOString().split("T")[0] // returns '2025-04-24'
+  if (typeof dateString !== 'string' || !dateString.trim()) {
+    return "Invalid Date";
+  }
+
+  const date = new Date(dateString);
+  return isNaN(date.getTime()) ? "Invalid Date" : date.toISOString().split("T")[0];
 }
 
 export function getCountryNameFromCode(code) {
@@ -119,22 +122,23 @@ function generateCardStats(judoka) {
 }
 
 export function generateCardSignatureMove(judoka, gokyo) {
-  // Find the technique in gokyo.json using the signatureMoveId
-  console.log("Judoka ID:", judoka.signatureMoveId)
-  const technique = gokyo.find((move) => move.id === judoka.signatureMoveId)
+  const signatureMoveId = judoka?.signatureMoveId;
+
+  console.log("Judoka ID:", signatureMoveId);
+
+  const technique = gokyo?.find((move) => move.id === signatureMoveId);
   if (!technique) {
-    console.warn(`No technique found for signatureMoveId: ${judoka.signatureMoveId}`)
+    console.warn(`No technique found for signatureMoveId: ${signatureMoveId}`);
   }
-  // Get the technique name or fallback to "Unknown"
+
   const techniqueName = technique?.name ?? "Unknown";
 
-  // Return the HTML for the signature move with separate label and value
   return `
     <div class="card-signature">
       <span class="signature-move-label"><strong>Signature Move:</strong></span>
       <span class="signature-move-value">${techniqueName}</span>
     </div>
-  `
+  `;
 }
 
 function generateCardLastUpdated(date) {

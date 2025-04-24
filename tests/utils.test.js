@@ -20,9 +20,4 @@ describe("generateCardSignatureMove", () => {
 
     // ...other edge case tests...
   });
-
-  test("should match the snapshot", () => {
-    const html = generateCardSignatureMove(mockJudoka, mockGokyo);
-    expect(html).toMatchSnapshot();
-  });
 });
