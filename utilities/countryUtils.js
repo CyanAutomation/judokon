@@ -1,4 +1,4 @@
-import countryCodeMapping from "./data/countryCodeMapping.json"
+import countryCodeMapping from "../data/countryCodeMapping.json"
 
 /**
  * Returns the country name for a given code, or 'Unknown' if not found/active.

@@ -1,4 +1,4 @@
-import {getValue} from "../utils.js"
+import {getValue} from "../utilities/utils.js"
 
 describe("getValue", () => {
   test("returns the value if it is a non-empty string", () => {
