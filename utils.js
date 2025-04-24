@@ -1,5 +1,5 @@
 import countryCodeMapping from './data/countryCodeMapping.json';
-Í
+
 // Escape special characters to prevent XSS
 export function escapeHTML(str) {
   return String(str).replace(/[&<>"']/g, (char) => {
