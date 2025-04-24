@@ -1,4 +1,4 @@
-import {generateCardSignatureMove} from "../utils/cardRender"
+import {generateCardSignatureMove} from "../utilities/cardRender"
 
 // Mock data
 const mockJudoka = {signatureMoveId: "uchi-mata"}
