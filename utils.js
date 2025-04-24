@@ -17,11 +17,11 @@ function getValue(value, fallback = "Unknown") {
   return value ?? fallback // Use nullish coalescing for better fallback handling
 }
 
-// Format a date string into a readable format
-function formatDate(dateString) {
-  if (!dateString) return "N/A"
-  const date = new Date(dateString)
-  return isNaN(date.getTime()) ? "Invalid Date" : date.toLocaleDateString()
+export function formatDate(dateString) {
+  const date = new Date(dateString);
+  return isNaN(date)
+    ? 'Invalid Date'
+    : date.toISOString().split('T')[0]; // returns '2025-04-24'
 }
 
 // Generate the top bar of the judoka card (name and flag)
