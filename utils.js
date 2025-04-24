@@ -25,3 +25,13 @@ export function formatDate(dateString) {
   const date = new Date(dateString);
   return isNaN(date.getTime()) ? "Invalid Date" : date.toISOString().split("T")[0];
 }
+
+// /src/
+//   └── utils/
+//         ├── stringUtils.js          ← escapeHTML, chunking, etc.
+//         ├── dateUtils.js            ← formatDate
+//         ├── countryUtils.js         ← getFlagUrl, getCountryNameFromCode
+//         ├── statUtils.js            ← encodeStats, score formatting
+//         ├── cardCode.js             ← generateCardCode (XOR, readable output)
+//         ├── cardRender.js           ← generateCardTopBar, Portrait, Stats, SignatureMove
+//         └── judokaCardBuilder.js    ← generateJudokaCardHTML (final composition)
