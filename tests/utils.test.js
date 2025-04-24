@@ -1,6 +1,6 @@
 import {generateCardSignatureMove} from "../utils"
-import { axe, toHaveNoViolations } from 'vitest-axe';
-expect.extend(toHaveNoViolations);
+import {axe, toHaveNoViolations} from "vitest-axe"
+expect.extend(toHaveNoViolations)
 
 // Mock data for tests
 const mockGokyo = [{id: "uchi-mata", name: "Uchi Mata"}]
@@ -15,14 +15,14 @@ const extractContent = (html, selector) => {
 }
 
 test.each([
-  [{ signatureMoveId: 'nonexistent' }, 'Unknown'],
-  [{}, 'Unknown'],
-  [null, 'Unknown'],
+  [{signatureMoveId: "nonexistent"}, "Unknown"],
+  [{}, "Unknown"],
+  [null, "Unknown"],
 ])('returns "%s" for given judoka', (input, expected) => {
-  const html = generateCardSignatureMove(input, gokyo);
-  const value = extractContent(html, '.signature-move-value');
-  expect(value).toBe(expected);
-});
+  const html = generateCardSignatureMove(input, gokyo)
+  const value = extractContent(html, ".signature-move-value")
+  expect(value).toBe(expected)
+})
 
 describe("generateCardSignatureMove", () => {
   // Group: Valid Inputs
@@ -55,32 +55,32 @@ describe("generateCardSignatureMove", () => {
     })
   })
 
-  describe('generateCardTopBar', () => {
-    describe('Accessibility', () => {
-      test('should have no accessibility violations', async () => {
+  describe("generateCardTopBar", () => {
+    describe("Accessibility", () => {
+      test("should have no accessibility violations", async () => {
         const judoka = {
-          firstname: 'Clarisse',
-          surname: 'Agbegnenou',
-          country: 'fr',
-        };
-        const result = generateCardTopBar(judoka, 'https://flagcdn.com/w320/fr.png');
-      
-        const container = document.createElement('div');
-        container.innerHTML = result.html;
-      
-        const results = await axe(container);
-        expect(results).toHaveNoViolations();
+          firstname: "Clarisse",
+          surname: "Agbegnenou",
+          country: "fr",
+        }
+        const result = generateCardTopBar(judoka, "https://flagcdn.com/w320/fr.png")
+
+        const container = document.createElement("div")
+        container.innerHTML = result.html
+
+        const results = await axe(container)
+        expect(results).toHaveNoViolations()
       })
-      test('should have appropriate alt text', () => {
-        const result = generateCardTopBar(judoka, flagUrl);
-        const container = document.createElement('div');
-        container.innerHTML = result.html;
-        const img = container.querySelector('img');
-        expect(img).toHaveAttribute('alt', 'France flag');
-      });
+      test("should have appropriate alt text", () => {
+        const result = generateCardTopBar(judoka, flagUrl)
+        const container = document.createElement("div")
+        container.innerHTML = result.html
+        const img = container.querySelector("img")
+        expect(img).toHaveAttribute("alt", "France flag")
+      })
     })
   })
-    
+
   // Group: Edge Cases
   describe("Edge Cases", () => {
     it('returns "Unknown" for unmatched ID', () => {
@@ -177,8 +177,8 @@ describe("generateCardSignatureMove", () => {
     })
   })
 
-  test('should match the snapshot', () => {
-    const html = generateCardSignatureMove(judoka, gokyo);
-    expect(html).toMatchSnapshot();
-  });
+  test("should match the snapshot", () => {
+    const html = generateCardSignatureMove(judoka, gokyo)
+    expect(html).toMatchSnapshot()
+  })
 })
