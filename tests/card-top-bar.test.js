@@ -1,4 +1,4 @@
-import {generateCardTopBar} from "../utilities/cardTopBar"
+import {generateCardTopBar} from "../utilities/cardTopBar.js"
 
 const judoka = {
   firstname: "Clarisse",
