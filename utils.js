@@ -4,14 +4,14 @@ export {getValue, formatDate, generateCardTopBar}
 export function escapeHTML(str) {
   return String(str).replace(/[&<>"']/g, (char) => {
     const escapeMap = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;',
-    };
-    return escapeMap[char];
-  });
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;",
+    }
+    return escapeMap[char]
+  })
 }
 
 // Generate flag URL
@@ -32,29 +32,27 @@ function getValue(value, fallback = "Unknown") {
 }
 
 export function formatDate(dateString) {
-  const date = new Date(dateString);
-  return isNaN(date)
-    ? 'Invalid Date'
-    : date.toISOString().split('T')[0]; // returns '2025-04-24'
+  const date = new Date(dateString)
+  return isNaN(date) ? "Invalid Date" : date.toISOString().split("T")[0] // returns '2025-04-24'
 }
 
 // Generate the top bar of the judoka card (name and flag)
 export function generateCardTopBar(judoka, flagUrl) {
   if (!judoka) {
-    console.error("Judoka object is missing!");
+    console.error("Judoka object is missing!")
     return {
-      title: 'No data',
-      flagUrl: 'assets/images/placeholder-flag.png',
+      title: "No data",
+      flagUrl: "assets/images/placeholder-flag.png",
       html: `<div class="card-top-bar">No data available</div>`,
-    };
+    }
   }
 
-  const firstname = escapeHTML(getValue(judoka.firstname));
-  const surname = escapeHTML(getValue(judoka.surname));
-  const country = escapeHTML(getValue(judoka.country));
+  const firstname = escapeHTML(getValue(judoka.firstname))
+  const surname = escapeHTML(getValue(judoka.surname))
+  const country = escapeHTML(getValue(judoka.country))
 
-  const fullTitle = `${firstname} ${surname}`.trim();
-  const finalFlagUrl = flagUrl || 'assets/images/placeholder-flag.png';
+  const fullTitle = `${firstname} ${surname}`.trim()
+  const finalFlagUrl = flagUrl || "assets/images/placeholder-flag.png"
 
   return {
     title: `${getValue(judoka.firstname)} ${getValue(judoka.surname)}`.trim(), // unescaped title is fine for logic
@@ -69,9 +67,8 @@ export function generateCardTopBar(judoka, flagUrl) {
           onerror="this.src='assets/images/placeholder-flag.png'">
       </div>
     `,
-  };
+  }
 }
-
 
 function generateCardPortrait(judoka) {
   // Use the placeholder portrait if judoka is null, undefined, or has no valid ID
