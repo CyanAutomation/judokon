@@ -1,4 +1,5 @@
 export {getValue, formatDate, generateCardTopBar}
+import countryCodeMapping from './data/countryCodeMapping.json';
 
 // Escape special characters to prevent XSS
 export function escapeHTML(str) {
@@ -26,7 +27,7 @@ export function getFlagUrl(countryCode) {
 }
 
 // Get a value or fallback to a default if the value is missing
-function getValue(value, fallback = "Unknown") {
+export function getValue(value, fallback = "Unknown") {
   if (typeof value === "string") return value.trim() || fallback
   return value ?? fallback // Use nullish coalescing for better fallback handling
 }
@@ -36,6 +37,14 @@ export function formatDate(dateString) {
   return isNaN(date) ? "Invalid Date" : date.toISOString().split("T")[0] // returns '2025-04-24'
 }
 
+export function getCountryNameFromCode(code) {
+  if (!code) return 'Unknown';
+  const match = countryCodeMapping.find(
+    entry => entry.code.toLowerCase() === code.toLowerCase() && entry.active
+  );
+  return match?.country ?? code;
+}
+
 // Generate the top bar of the judoka card (name and flag)
 export function generateCardTopBar(judoka, flagUrl) {
   if (!judoka) {
@@ -43,13 +52,14 @@ export function generateCardTopBar(judoka, flagUrl) {
     return {
       title: "No data",
       flagUrl: "assets/images/placeholder-flag.png",
-      html: `<div class="card-top-bar">No data available</div>`,
+      html: `<div class="card-top-bar">No data Íavailable</div>`,
     }
   }
-
   const firstname = escapeHTML(getValue(judoka.firstname))
   const surname = escapeHTML(getValue(judoka.surname))
   const country = escapeHTML(getValue(judoka.country))
+  const countryCode = getValue(judoka.country);
+  const countryName = getCountryNameFromCode(countryCode);
 
   const fullTitle = `${firstname} ${surname}`.trim()
   const finalFlagUrl = flagUrl || "assets/images/placeholder-flag.png"
@@ -63,7 +73,7 @@ export function generateCardTopBar(judoka, flagUrl) {
           <span class="firstname">${firstname}</span>
           <span class="surname">${surname}</span>
         </div>
-        <img class="card-flag" src="${finalFlagUrl}" alt="${country} flag" 
+        <img class="card-flag" src="${finalFlagUrl}" alt="${countryName} flag" 
           onerror="this.src='assets/images/placeholder-flag.png'">
       </div>
     `,
@@ -116,7 +126,7 @@ export function generateCardSignatureMove(judoka, gokyo) {
     console.warn(`No technique found for signatureMoveId: ${judoka.signatureMoveId}`)
   }
   // Get the technique name or fallback to "Unknown"
-  const techniqueName = technique ? technique.name : "Unknown"
+  const techniqueName = technique?.name ?? "Unknown";
 
   // Return the HTML for the signature move with separate label and value
   return `
