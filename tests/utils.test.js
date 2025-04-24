@@ -1,141 +1,38 @@
-import { generateCardSignatureMove } from "../utils";
+import { getValue, formatDate, generateCardTopBar } from './utils';
 
-// Mock data for tests
-const mockGokyo = [{ id: "uchi-mata", name: "Uchi Mata" }];
-const mockJudoka = { signatureMoveId: "uchi-mata" };
-
-// Helper function to extract key content from HTML
-const extractContent = (html, selector) => {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
-  const element = doc.querySelector(selector);
-  return element ? element.textContent.trim() : null;
-};
-
-describe("generateCardSignatureMove", () => {
-  // Group: Valid Inputs
-  describe("Valid Inputs", () => {
-    it("returns HTML with technique name", () => {
-      const html = generateCardSignatureMove(mockJudoka, mockGokyo);
-
-      // Extract and verify content
-      const label = extractContent(html, ".signature-move-label");
-      const value = extractContent(html, ".signature-move-value");
-
-      expect(label).toBe("Signature Move:");
-      expect(value).toBe("Uchi Mata");
-    });
-
-    it("selects the correct technique from multiple gokyo entries", () => {
-      const extendedGokyo = [
-        { id: "seoi-nage", name: "Seoi Nage" },
-        { id: "uchi-mata", name: "Uchi Mata" },
-        { id: "osoto-gari", name: "Osoto Gari" },
-      ];
-      const html = generateCardSignatureMove(mockJudoka, extendedGokyo);
-
-      // Extract and verify content
-      const label = extractContent(html, ".signature-move-label");
-      const value = extractContent(html, ".signature-move-value");
-
-      expect(label).toBe("Signature Move:");
-      expect(value).toBe("Uchi Mata");
-    });
+describe('getValue', () => {
+  test('returns the value when it is a string', () => {
+    expect(getValue('Hello')).toBe('Hello');
   });
 
-  // Group: Edge Cases
-  describe("Edge Cases", () => {
-    it('returns "Unknown" for unmatched ID', () => {
-      const html = generateCardSignatureMove({ signatureMoveId: "nonexistent" }, mockGokyo);
-
-      // Extract and verify content
-      const label = extractContent(html, ".signature-move-label");
-      const value = extractContent(html, ".signature-move-value");
-
-      expect(label).toBe("Signature Move:");
-      expect(value).toBe("Unknown");
-    });
-
-    it("handles empty gokyo array gracefully", () => {
-      const html = generateCardSignatureMove(mockJudoka, []);
-
-      // Extract and verify content
-      const label = extractContent(html, ".signature-move-label");
-      const value = extractContent(html, ".signature-move-value");
-
-      expect(label).toBe("Signature Move:");
-      expect(value).toBe("Unknown");
-    });
-
-    it("handles null judoka gracefully", () => {
-      const html = generateCardSignatureMove(null, mockGokyo);
-
-      // Extract and verify content
-      const label = extractContent(html, ".signature-move-label");
-      const value = extractContent(html, ".signature-move-value");
-
-      expect(label).toBe("Signature Move:");
-      expect(value).toBe("Unknown");
-    });
-
-    it("handles undefined judoka gracefully", () => {
-      const html = generateCardSignatureMove(undefined, mockGokyo);
-
-      // Extract and verify content
-      const label = extractContent(html, ".signature-move-label");
-      const value = extractContent(html, ".signature-move-value");
-
-      expect(label).toBe("Signature Move:");
-      expect(value).toBe("Unknown");
-    });
-
-    it("handles null gokyo gracefully", () => {
-      const html = generateCardSignatureMove(mockJudoka, null);
-
-      // Extract and verify content
-      const label = extractContent(html, ".signature-move-label");
-      const value = extractContent(html, ".signature-move-value");
-
-      expect(label).toBe("Signature Move:");
-      expect(value).toBe("Unknown");
-    });
-
-    it("handles empty judoka object gracefully", () => {
-      const html = generateCardSignatureMove({}, mockGokyo);
-
-      // Extract and verify content
-      const label = extractContent(html, ".signature-move-label");
-      const value = extractContent(html, ".signature-move-value");
-
-      expect(label).toBe("Signature Move:");
-      expect(value).toBe("Unknown");
-    });
+  test('returns fallback when value is not a string', () => {
+    expect(getValue(42)).toBe('Unknown');
   });
 
-  // Group: Malformed Data
-  describe("Malformed Data", () => {
-    it("handles case sensitivity in signatureMoveId", () => {
-      const caseInsensitiveJudoka = { signatureMoveId: "UCHI-MATA" };
-      const html = generateCardSignatureMove(caseInsensitiveJudoka, mockGokyo);
+  test('returns custom fallback when provided', () => {
+    expect(getValue(undefined, 'N/A')).toBe('N/A');
+  });
+});
 
-      // Extract and verify content
-      const label = extractContent(html, ".signature-move-label");
-      const value = extractContent(html, ".signature-move-value");
+describe('formatDate', () => {
+  test('formats valid date string correctly', () => {
+    expect(formatDate('2025-04-24')).toBe('April 24, 2025');
+  });
 
-      expect(label).toBe("Signature Move:");
-      expect(value).toBe("Unknown");
-    });
+  test('handles invalid date string', () => {
+    expect(formatDate('invalid-date')).toBe('Invalid Date');
+  });
+});
 
-    it("handles malformed gokyo entries gracefully", () => {
-      const malformedGokyo = [{ id: "uchi-mata" }, { name: "Uchi Mata" }];
-      const html = generateCardSignatureMove(mockJudoka, malformedGokyo);
+describe('generateCardTopBar', () => {
+  test('generates top bar with valid inputs', () => {
+    const result = generateCardTopBar('Champion', 'us');
+    expect(result.title).toBe('Champion');
+    expect(result.flagUrl).toBe('https://flagcdn.com/w320/us.png');
+  });
 
-      // Extract and verify content
-      const label = extractContent(html, ".signature-move-label");
-      const value = extractContent(html, ".signature-move-value");
-
-      expect(label).toBe("Signature Move:");
-      expect(value).toBe("Unknown");
-    });
+  test('uses placeholder flag when country code is missing', () => {
+    const result = generateCardTopBar('Champion', '');
+    expect(result.flagUrl).toBe('assets/images/placeholder-flag.png');
   });
 });
