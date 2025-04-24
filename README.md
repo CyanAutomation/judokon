@@ -118,11 +118,11 @@ The live demo allows you to experience the full gameplay directly in your browse
 ## Memo about Utils Structure
 
 /src/
-  └── utils/
-        ├── stringUtils.js          ← escapeHTML, chunking, etc.
-        ├── dateUtils.js            ← formatDate
-        ├── countryUtils.js         ← getFlagUrl, getCountryNameFromCode
-        ├── statUtils.js            ← encodeStats, score formatting
-        ├── cardCode.js             ← generateCardCode (XOR, readable output)
-        ├── cardRender.js           ← generateCardTopBar, Portrait, Stats, SignatureMove
-        └── judokaCardBuilder.js    ← generateJudokaCardHTML (final composition)
+└── utils/
+├── stringUtils.js ← escapeHTML, chunking, etc.
+├── dateUtils.js ← formatDate
+├── countryUtils.js ← getFlagUrl, getCountryNameFromCode
+├── statUtils.js ← encodeStats, score formatting
+├── cardCode.js ← generateCardCode (XOR, readable output)
+├── cardRender.js ← generateCardTopBar, Portrait, Stats, SignatureMove
+└── judokaCardBuilder.js ← generateJudokaCardHTML (final composition)
