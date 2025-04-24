@@ -24,6 +24,8 @@ export function escapeHTML(str) {
 export function getValue(value, fallback = "Unknown") {
   if (typeof value === "string") return value.trim() || fallback;
   if (typeof value === "number" || typeof value === "boolean") return value;
+  // Return fallback for objects, arrays, functions, symbols, etc.
+  if (typeof value === "object" || typeof value === "function" || typeof value === "symbol") return fallback;
   return value ?? fallback;
 }
 
