@@ -1,10 +1,16 @@
-import {defineConfig} from "vitest/config"
+import { defineConfig } from "vitest/config";
 
-/// <reference types="vitest" />
-export default {
+export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
+    setupFiles: ["tests/setup.js"], // if you have custom extensions
+    environmentOptions: {
+      jsdom: {
+        resources: "usable", // loads images/stylesheets if needed
+        runScripts: "dangerously", // only if you ever render <script>
+      },
+    },
     testTimeout: 9000,
   },
-}
+});
