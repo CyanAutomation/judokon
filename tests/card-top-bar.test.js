@@ -1,4 +1,4 @@
-import { generateCardTopBar } from "../utils";
+import { generateCardTopBar } from "../utils/cardRender";
 
 const judoka = {
   firstname: "Clarisse",
