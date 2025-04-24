@@ -1,6 +1,13 @@
 import {generateCardSignatureMove} from "../utils"
-import {axe, toHaveNoViolations} from "vitest-axe"
-expect.extend(toHaveNoViolations)
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['test/setup.js'],
+  },
+});
 
 // Mock data for tests
 const mockGokyo = [{id: "uchi-mata", name: "Uchi Mata"}]
