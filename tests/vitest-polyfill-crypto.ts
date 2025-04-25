@@ -1,5 +1,5 @@
-import { webcrypto } from 'node:crypto';
+import {webcrypto} from "node:crypto"
 
 if (!globalThis.crypto) {
-  globalThis.crypto = webcrypto;
+  globalThis.crypto = webcrypto
 }

@@ -6,8 +6,8 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: [
-      './tests/vitest-polyfill-crypto.ts', // 👈 comes first!
-      './tests/setup.ts'
+      "./tests/vitest-polyfill-crypto.ts", // 👈 comes first!
+      "./tests/setup.ts",
     ],
     testTimeout: 9000,
   },
