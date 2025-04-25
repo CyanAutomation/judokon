@@ -37,7 +37,7 @@ jobs:
           VALIDATE_GITHUB_ACTIONS: true
 
   test:
-    name: Run Unit Tests
+    name: ✅ Run Unit Tests
     runs-on: ubuntu-latest
     needs: lint
     strategy:
@@ -51,39 +51,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "npm"
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run Vitest
-        run: npx vitest run --reporter=verbose
+        run: npm run test
 
   build:
-    name: Build Project
+    name: 🏗️ Build Vite Project
     runs-on: ubuntu-latest
     needs: test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build Vite project
-        run: NODE_ENV=production npm run build
-
-  deploy:
-    name: Build and Deploy to GitHub Pages
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -97,13 +76,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Rebuild Vite project
+      - name: Build with Vite
         run: npm run build
 
-      - name: Create .nojekyll file
-        run: echo > ./dist/.nojekyll
+  deploy:
+    name: 🚀 Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: 🚀 Deploy to GitHub Pages
+      - name: Deploy using gh-pages action
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
