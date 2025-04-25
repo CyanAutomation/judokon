@@ -1,5 +1,6 @@
-import {defineConfig} from "vite"
+import { defineConfig } from "vite"
 
 export default defineConfig({
-  base: "/judokon/",
+  root: ".", // 👈 important if index.html is in root
+  base: "/judokon/", // 👈 required for GitHub Pages
 })
