@@ -101,8 +101,8 @@ jobs:
       - name: Rebuild Vite project
         run: npm run build
 
-      # - name: Create .nojekyll file
-      #   run: echo > ./dist/.nojekyll
+      - name: Create .nojekyll file
+        run: echo > ./dist/.nojekyll
 
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -110,3 +110,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
           publish_branch: gh-pages
+          force_orphan: true
