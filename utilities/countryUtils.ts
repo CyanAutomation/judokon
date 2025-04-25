@@ -1,13 +1,17 @@
 import countryCodeMapping from "../data/countryCodeMapping.json"
 
+interface CountryCodeEntry {
+  code: string
+  country: string
+  active: boolean
+}
+
 /**
  * Returns the country name for a given code, or 'Unknown' if not found/active.
- * @param {string} code
- * @returns {string}
  */
-export function getCountryNameFromCode(code) {
+export function getCountryNameFromCode(code: string): string {
   if (typeof code !== "string" || !code.trim()) return "Unknown"
-  const match = countryCodeMapping.find(
+  const match = (countryCodeMapping as CountryCodeEntry[]).find(
     (entry) => entry.code.toLowerCase() === code.toLowerCase() && entry.active,
   )
   return match ? match.country : "Unknown"
@@ -15,13 +19,11 @@ export function getCountryNameFromCode(code) {
 
 /**
  * Returns the flag URL for a given country code, or a placeholder if missing/invalid.
- * @param {string} countryCode
- * @returns {string}
  */
-export function getFlagUrl(countryCode) {
+export function getFlagUrl(countryCode: string): string {
   if (
     !countryCode ||
-    !countryCodeMapping.some(
+    !(countryCodeMapping as CountryCodeEntry[]).some(
       (entry) => entry.code.toLowerCase() === countryCode.toLowerCase() && entry.active,
     )
   ) {

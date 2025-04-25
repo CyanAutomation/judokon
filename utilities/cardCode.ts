@@ -1,22 +1,39 @@
-const XOR_KEY = 37
-const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // 32 readable characters
-const CARD_CODE_VERSION = "v1"
+interface Stats {
+  power: number;
+  speed: number;
+  technique: number;
+  kumikata: number;
+  newaza: number;
+}
 
-function xorEncode(str, key = XOR_KEY) {
+interface Judoka {
+  firstname: string;
+  surname: string;
+  countryCode: string;
+  weightClass: string;
+  signatureMoveId: number;
+  stats: Stats;
+}
+
+const XOR_KEY: number = 37
+const ALPHABET: string = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // 32 readable characters
+const CARD_CODE_VERSION: string = "v1"
+
+function xorEncode(str: string, key: number = XOR_KEY): string {
   return str
     .split("")
     .map((char, i) => String.fromCharCode(char.charCodeAt(0) ^ (i + key) % 256))
     .join("")
 }
 
-function toReadableCharset(str) {
+function toReadableCharset(str: string): string {
   return str
     .split("")
     .map((c) => ALPHABET[c.charCodeAt(0) % ALPHABET.length])
     .join("")
 }
 
-function chunk(str, size = 4) {
+function chunk(str: string, size: number = 4): string {
   if (typeof str !== "string" || !str.length) return ""
   return str.match(new RegExp(`.{1,${size}}`, "g")).join("-")
 }
@@ -26,7 +43,7 @@ function chunk(str, size = 4) {
  * @param {Object} judoka - The judoka object.
  * @returns {string} The generated card code.
  */
-export function generateCardCode(judoka) {
+export function generateCardCode(judoka: Judoka): string {
   if (
     !judoka ||
     !judoka.firstname ||

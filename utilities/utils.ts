@@ -1,28 +1,29 @@
 // Escape special characters to prevent XSS
-const escapeMap = {
+const escapeMap: Record<string, string> = {
   "&": "&amp;",
   "<": "&lt;",
   ">": "&gt;",
   '"': "&quot;",
   "'": "&#039;",
 }
+
 /**
  * Escapes HTML special characters to prevent XSS.
- * @param {string} str
- * @returns {string}
+ * @param str - The string to escape.
+ * @returns The escaped string.
  */
-export function escapeHTML(str) {
-  return String(str).replace(/[&<>"']/g, (char) => escapeMap[char])
+export function escapeHTML(str: string): string {
+  return String(str).replace(/[&<>"']/g, (char) => escapeMap[char] || char)
 }
 
 /**
- * Gets a value or fallback to a default if the value is missing.
- * @param {*} value
- * @param {*} fallback
- * @returns {*}
+ * Gets a value or falls back to a default if the value is missing.
+ * @param value - The value to check.
+ * @param fallback - The fallback value if the input is invalid.
+ * @returns The value or the fallback.
  */
-export function getValue(value, fallback = "Unknown") {
-  if (typeof value === "string") return value.trim() || fallback
+export function getValue<T>(value: T, fallback: T = "Unknown" as T): T {
+  if (typeof value === "string") return (value.trim() || fallback) as T
   if (typeof value === "number" || typeof value === "boolean") return value
   // Return fallback for objects, arrays, functions, symbols, etc.
   if (typeof value === "object" || typeof value === "function" || typeof value === "symbol")
@@ -32,11 +33,11 @@ export function getValue(value, fallback = "Unknown") {
 
 /**
  * Formats a date string as YYYY-MM-DD or returns "Invalid Date".
- * @param {string} dateString
- * @param {string} [locale]
- * @returns {string}
+ * @param dateString - The date string to format.
+ * @param locale - The locale for formatting (currently unused).
+ * @returns The formatted date or "Invalid Date".
  */
-export function formatDate(dateString, locale = "en-GB") {
+export function formatDate(dateString: string, locale: string = "en-GB"): string {
   if (typeof dateString !== "string" || !dateString.trim()) {
     return "Invalid Date"
   }

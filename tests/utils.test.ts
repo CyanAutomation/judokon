@@ -1,8 +1,18 @@
-import {generateCardSignatureMove} from "../utilities/cardRender.ts"
+import { describe, it, expect } from "vitest";
+import { generateCardSignatureMove } from "../utilities/cardRender.ts";
+
+interface Technique {
+  id: string;
+  name: string;
+}
+
+interface Judoka {
+  signatureMoveId?: string;
+}
 
 // Mock data
-const mockGokyo = [{id: "uchi-mata", name: "Uchi Mata"}]
-const mockJudoka = {signatureMoveId: "uchi-mata"}
+const mockGokyo: Technique[] = [{ id: "uchi-mata", name: "Uchi Mata" }];
+const mockJudoka: Judoka = { signatureMoveId: "uchi-mata" };
 
 describe("generateCardSignatureMove", () => {
   describe("Valid Cases", () => {

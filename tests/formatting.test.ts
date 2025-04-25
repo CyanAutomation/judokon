@@ -1,4 +1,4 @@
-import {formatDate} from "../utilities/utils.ts"
+import { formatDate } from "../utilities/utils.ts"
 
 describe("formatDate", () => {
   test("formats YYYY-MM-DD correctly", () => {
@@ -18,19 +18,19 @@ describe("formatDate", () => {
   })
 
   test('returns "Invalid Date" for null', () => {
-    expect(formatDate(null)).toBe("Invalid Date")
+    expect(formatDate(null as unknown as string)).toBe("Invalid Date")
   })
 
   test('returns "Invalid Date" for undefined', () => {
-    expect(formatDate(undefined)).toBe("Invalid Date")
+    expect(formatDate(undefined as unknown as string)).toBe("Invalid Date")
   })
 
   test('returns "Invalid Date" for number input', () => {
-    expect(formatDate(123456)).toBe("Invalid Date")
+    expect(formatDate(123456 as unknown as string)).toBe("Invalid Date")
   })
 
   test('returns "Invalid Date" for object input', () => {
-    expect(formatDate({})).toBe("Invalid Date")
+    expect(formatDate({} as unknown as string)).toBe("Invalid Date")
   })
 
   test("formats leap year date correctly", () => {

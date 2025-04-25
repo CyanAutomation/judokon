@@ -1,7 +1,13 @@
+export interface Judoka {
+  firstname: string;
+  surname: string;
+  countryCode: string;
+}
+
 import {escapeHTML, getValue} from "./utils.ts"
 import {getCountryNameFromCode} from "./countryUtils.ts"
 
-const PLACEHOLDER_FLAG = "assets/images/placeholder-flag.png"
+const PLACEHOLDER_FLAG: string = "assets/images/placeholder-flag.png"
 
 /**
  * Generates the top bar HTML for a judoka card, including name and flag.
@@ -9,7 +15,10 @@ const PLACEHOLDER_FLAG = "assets/images/placeholder-flag.png"
  * @param {string} flagUrl - The URL of the flag image.
  * @returns {Object} An object with title, flagUrl, and html properties.
  */
-export function generateCardTopBar(judoka, flagUrl) {
+export function generateCardTopBar(
+  judoka: Judoka | null | undefined,
+  flagUrl?: string
+): { title: string; flagUrl: string; html: string } {
   if (!judoka) {
     console.error("Judoka object is missing!")
     return {

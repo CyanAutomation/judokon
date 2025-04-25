@@ -1,8 +1,17 @@
-import {generateCardSignatureMove} from "../utilities/cardRender.ts"
+import { generateCardSignatureMove } from "../utilities/cardRender.ts"
+
+interface Judoka {
+  signatureMoveId?: string
+}
+
+interface GokyoEntry {
+  id?: string
+  name?: string
+}
 
 // Mock data
-const mockJudoka = {signatureMoveId: "uchi-mata"}
-const mockGokyo = [{id: "uchi-mata", name: "Uchi Mata"}]
+const mockJudoka: Judoka = { signatureMoveId: "uchi-mata" }
+const mockGokyo: GokyoEntry[] = [{ id: "uchi-mata", name: "Uchi Mata" }]
 
 describe("generateCardSignatureMove", () => {
   describe("Valid Inputs", () => {
@@ -13,10 +22,10 @@ describe("generateCardSignatureMove", () => {
     })
 
     it("selects the correct technique from multiple gokyo entries", () => {
-      const extendedGokyo = [
-        {id: "seoi-nage", name: "Seoi Nage"},
-        {id: "uchi-mata", name: "Uchi Mata"},
-        {id: "osoto-gari", name: "Osoto Gari"},
+      const extendedGokyo: GokyoEntry[] = [
+        { id: "seoi-nage", name: "Seoi Nage" },
+        { id: "uchi-mata", name: "Uchi Mata" },
+        { id: "osoto-gari", name: "Osoto Gari" },
       ]
       const html = generateCardSignatureMove(mockJudoka, extendedGokyo)
       expect(html).toContain("Signature Move:")
@@ -31,10 +40,10 @@ describe("generateCardSignatureMove", () => {
 
   describe("Basic cases", () => {
     test.each([
-      [{signatureMoveId: "nonexistent"}, "Unknown"],
-      [{}, "Unknown"],
-      [null, "Unknown"],
-    ])('returns "%s" for given judoka', (input, expected) => {
+      [{ signatureMoveId: "nonexistent" } as Judoka, "Unknown"],
+      [{} as Judoka, "Unknown"],
+      [null as unknown as Judoka, "Unknown"],
+    ])('returns "%s" for given judoka', (input: Judoka, expected: string) => {
       const html = generateCardSignatureMove(input, mockGokyo)
       expect(html).toContain("Signature Move:")
       expect(html).toContain(expected)
@@ -43,27 +52,27 @@ describe("generateCardSignatureMove", () => {
 
   describe("Edge cases", () => {
     it("returns 'Unknown' for case-insensitive mismatch", () => {
-      const caseInsensitiveJudoka = {signatureMoveId: "UCHI-MATA"}
+      const caseInsensitiveJudoka: Judoka = { signatureMoveId: "UCHI-MATA" }
       const html = generateCardSignatureMove(caseInsensitiveJudoka, mockGokyo)
       expect(html).toContain("Signature Move:")
       expect(html).toContain("Unknown")
     })
 
     it("handles malformed gokyo entries gracefully", () => {
-      const malformedGokyo = [{id: "uchi-mata"}, {name: "Uchi Mata"}]
+      const malformedGokyo: GokyoEntry[] = [{ id: "uchi-mata" }, { name: "Uchi Mata" }]
       const html = generateCardSignatureMove(mockJudoka, malformedGokyo)
       expect(html).toContain("Signature Move:")
       expect(html).toContain("Unknown")
     })
 
     it("returns 'Unknown' if gokyo is not an array", () => {
-      const html = generateCardSignatureMove(mockJudoka, null)
+      const html = generateCardSignatureMove(mockJudoka, null as unknown as GokyoEntry[])
       expect(html).toContain("Signature Move:")
       expect(html).toContain("Unknown")
     })
 
     it("returns 'Unknown' if signatureMoveId is missing", () => {
-      const html = generateCardSignatureMove({}, mockGokyo)
+      const html = generateCardSignatureMove({} as Judoka, mockGokyo)
       expect(html).toContain("Signature Move:")
       expect(html).toContain("Unknown")
     })

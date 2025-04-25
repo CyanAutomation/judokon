@@ -1,6 +1,12 @@
-import {generateCardTopBar} from "../utilities/cardTopBar.ts"
+import { generateCardTopBar } from "../utilities/cardTopBar.ts"
 
-const judoka = {
+interface Judoka {
+  firstname: string
+  surname: string
+  countryCode?: string
+}
+
+const judoka: Judoka = {
   firstname: "Clarisse",
   surname: "Agbegnenou",
   countryCode: "fr",
@@ -32,13 +38,13 @@ describe("generateCardTopBar", () => {
   })
 
   test("should handle missing judoka gracefully", () => {
-    const result = generateCardTopBar(null, flagUrl)
+    const result = generateCardTopBar(null as unknown as Judoka, flagUrl)
     expect(result.title).toBe("No data")
     expect(result.html).toContain("No data available")
   })
 
   test("should handle missing countryCode gracefully", () => {
-    const incompleteJudoka = {firstname: "Clarisse", surname: "Agbegnenou"}
+    const incompleteJudoka: Judoka = { firstname: "Clarisse", surname: "Agbegnenou" }
     const result = generateCardTopBar(incompleteJudoka, flagUrl)
     expect(result.html).toContain('alt="Unknown flag"')
   })
