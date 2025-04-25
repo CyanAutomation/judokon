@@ -53,7 +53,7 @@ jobs:
     needs: lint
     strategy:
       matrix:
-        node-version: [16, 18, 20]
+        node-version: [18, 20]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -68,7 +68,7 @@ jobs:
         run: npm ci
 
       - name: Run Vitest
-        run: npx vitest run --reporter=verbose --import=./tests/vitest-polyfill-crypto.ts
+        run: npx vitest run --reporter=verbose
 
   build:
     name: Build Project
