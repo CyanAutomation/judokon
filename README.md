@@ -1,3 +1,9 @@
+# JU-DO-KON! 🥋
+
+[![CI/CD](https://github.com/CyanAutomation/judokon/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/CyanAutomation/judokon/actions/workflows/ci-cd.yml)
+[![Prettier Auto-Fix](https://github.com/CyanAutomation/judokon/actions/workflows/prettier-autofix-pr.yml/badge.svg)](https://github.com/CyanAutomation/judokon/actions/workflows/prettier-autofix-pr.yml)
+[![Super-Linter Auto-Fix](https://github.com/CyanAutomation/judokon/actions/workflows/superlinter-autofix-pr.yml/badge.svg)](https://github.com/CyanAutomation/judokon/actions/workflows/superlinter-autofix-pr.yml)
+
 ## License
 
 This project is licensed under the [GNU General Public License v3.0](LICENSE).

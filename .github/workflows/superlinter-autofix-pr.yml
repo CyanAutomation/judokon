@@ -1,0 +1,66 @@
+name: Super-Linter Auto-Fix and Pull Request
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  superlinter-autofix:
+    name: Super-Linter Auto-Fix and PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Super-Linter with Auto-Fix
+        uses: github/super-linter/slim@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BRANCH: main
+          VALIDATE_ALL_CODEBASE: false
+          AUTO_FIX: true
+          VALIDATE_HTML: true
+          VALIDATE_CSS: true
+          VALIDATE_JAVASCRIPT_ES: true
+          VALIDATE_MARKDOWN: true
+          VALIDATE_JSON: true
+          VALIDATE_YAML: true
+          VALIDATE_TYPESCRIPT_ES: true
+          VALIDATE_GITHUB_ACTIONS: true
+
+      - name: Check if Super-Linter Made Changes
+        id: changes
+        run: |
+          git add .
+          if git diff --cached --quiet; then
+            echo "No linter changes needed."
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Linter changes detected."
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Super-Linter Fix Pull Request
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "Auto-fix: Super-Linter code style fixes"
+          branch: "auto/superlinter-fixes-${{ github.run_number }}"
+          title: "Auto-fix: Super-Linter code style fixes"
+          body: "This PR contains automatically fixed code style issues detected by Super-Linter.\nPlease review and merge."
+          delete-branch: true
