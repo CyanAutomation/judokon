@@ -1,17 +1,16 @@
 // vitest.config.ts
 
-// 👇 Patch crypto manually BEFORE anything Vite or Vitest loads
+// ✅ Patch crypto BEFORE anything else
 import { webcrypto } from 'node:crypto';
 (globalThis as any).crypto ??= webcrypto;
 
-/// <reference types="vitest" />
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['tests/setup.ts'],
+    setupFiles: ['tests/setup.ts'], // your usual test setup
     testTimeout: 9000,
   },
 });
