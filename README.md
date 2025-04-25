@@ -17,7 +17,7 @@ The visual assets (e.g. card illustrations and logos) are © 2025 Marc Scheimann
 1. [Contributing](#contributing)
 2. [About JU-DO-KON!](#about-ju-do-kon)
 3. [Features](#features)
-4. [🎮 How to Play JU-DO-KON!](#how-to-play-judokon)
+4. [🎮 How to Play JU-DO-KON!](#how-to-play-ju-do-kon)
    - [🥋 The Rules](#-the-rules)
 5. [Live Demo](#live-demo)
 6. [Installation](#installation)
@@ -136,15 +136,3 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 - Add animations for card flips and stat comparisons
 - Implement difficulty levels for the computer opponent
 - Expand the card deck with more judoka and stats
-
-## Memo about Utils Structure
-
-/src/
-└── utils/
-├── stringUtils.js ← escapeHTML, chunking, etc.
-├── dateUtils.js ← formatDate
-├── countryUtils.js ← getFlagUrl, getCountryNameFromCode
-├── statUtils.js ← encodeStats, score formatting
-├── cardCode.js ← generateCardCode (XOR, readable output)
-├── cardRender.js ← generateCardTopBar, Portrait, Stats, SignatureMove
-└── judokaCardBuilder.js ← generateJudokaCardHTML (final composition)
