@@ -70,7 +70,6 @@ jobs:
           VALIDATE_GITHUB_ACTIONS: true
           VALIDATE_EDITORCONFIG: false
           ACTIONS_RUNNER_DEBUG: true
-          RUN_LOCAL: true
           AUTO_FIX: true
 
       - name: Commit and Push Changes
