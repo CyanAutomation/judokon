@@ -27,7 +27,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BRANCH: main
           VALIDATE_ALL_CODEBASE: false
-          AUTO_FIX: true
+          AUTO_FIX: false
           VALIDATE_HTML: true
           VALIDATE_CSS: true
           VALIDATE_JAVASCRIPT_ES: true
@@ -36,16 +36,6 @@ jobs:
           VALIDATE_YAML: true
           VALIDATE_TYPESCRIPT_ES: true
           VALIDATE_GITHUB_ACTIONS: true
-
-      - name: Check for Linter Fixes
-        run: |
-          git add .
-          if ! git diff --cached --quiet; then
-            echo "❌ Super-Linter fixed issues. Please run lint locally and push the changes."
-            exit 1
-          else
-            echo "✅ No lint fixes needed."
-          fi
 
   test:
     name: Run Unit Tests
