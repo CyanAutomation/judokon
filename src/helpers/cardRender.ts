@@ -30,9 +30,7 @@ const PLACEHOLDER_PORTRAIT = "/judokaPortraits/judokaPortrait-0.png"
  */
 export function generateCardPortrait(judoka: Judoka | null | undefined): string {
   const portraitUrl =
-    judoka && judoka.id
-      ? `/judokaPortraits/judokaPortrait-${judoka.id}.png`
-      : PLACEHOLDER_PORTRAIT
+    judoka && judoka.id ? `/judokaPortraits/judokaPortrait-${judoka.id}.png` : PLACEHOLDER_PORTRAIT
 
   return `
     <div class="card-portrait">
