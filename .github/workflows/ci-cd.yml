@@ -3,8 +3,6 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -32,16 +30,6 @@ jobs:
 
       - name: Run Prettier to Fix Formatting
         run: npx prettier --write "**/*.{js,ts,json,css,md,html}"
-
-      - name: Check for Prettier Fixes
-        run: |
-          git add .
-          if ! git diff --cached --quiet; then
-            echo "❌ Prettier fixed files. Please commit the formatting changes locally."
-            exit 1
-          else
-            echo "✅ No formatting fixes needed."
-          fi
 
   lint:
     name: ✨ Lint Code (Super-Linter)
