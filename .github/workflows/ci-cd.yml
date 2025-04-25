@@ -55,7 +55,6 @@ jobs:
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ENABLE_JSCPD: false
           VALIDATE_ALL_CODEBASE: false
           VALIDATE_HTML: true
           VALIDATE_CSS: true
