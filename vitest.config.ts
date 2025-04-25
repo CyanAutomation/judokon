@@ -5,7 +5,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
-    setupFiles: ["tests/setup.ts"], // make sure this path matches
+    setupFiles: [
+      './tests/vitest-polyfill-crypto.ts', // 👈 comes first!
+      './tests/setup.ts'
+    ],
     testTimeout: 9000,
   },
 })
