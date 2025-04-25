@@ -1,8 +1,7 @@
 {
   "name": "judokon",
   "version": "1.0.0",
-  "description": "This project is licensed under the [GNU General Public License v3.0](LICENSE).",
-  "main": "script.js",
+  "description": "JU-DO-KON! A web-based judo-themed card battle game featuring IJF judoka.",
   "directories": {
     "test": "tests"
   },
@@ -13,8 +12,8 @@
     "preview": "vite preview"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Marc Scheimann",
+  "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@eslint/js": "^9.25.1",
     "axe-core": "^4.10.3",
