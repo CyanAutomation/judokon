@@ -74,7 +74,7 @@ jobs:
           git config --global user.email "actions@github.com"
           git add .
           git diff --cached --quiet || git commit -m "Auto-fix linting issues with Super-Linter"
-          git push
+          git push origin HEAD:main
 
   test:
     name: Run Unit Tests
