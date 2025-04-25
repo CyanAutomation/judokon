@@ -1,5 +1,5 @@
-import { describe, test, expect } from "vitest";
-import { getValue } from "../utilities/utils.ts";
+import {describe, test, expect} from "vitest"
+import {getValue} from "../utilities/utils.ts"
 
 describe("getValue", () => {
   test("returns the value if it is a non-empty string", () => {
@@ -19,12 +19,12 @@ describe("getValue", () => {
   })
 
   test("returns the value if it is a non-string", () => {
-    const numValue: number = 42;
-    const boolValueFalse: boolean = false;
-    const boolValueTrue: boolean = true;
-    expect(getValue(numValue, "Fallback")).toBe(42);
-    expect(getValue(boolValueFalse, "Fallback")).toBe(false);
-    expect(getValue(boolValueTrue, "Fallback")).toBe(true);
+    const numValue: number = 42
+    const boolValueFalse: boolean = false
+    const boolValueTrue: boolean = true
+    expect(getValue(numValue, "Fallback")).toBe(42)
+    expect(getValue(boolValueFalse, "Fallback")).toBe(false)
+    expect(getValue(boolValueTrue, "Fallback")).toBe(true)
   })
 
   test("returns the fallback if the value is a whitespace string", () => {

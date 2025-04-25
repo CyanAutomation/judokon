@@ -1,4 +1,4 @@
-import { generateCardSignatureMove } from "../utilities/cardRender.ts"
+import {generateCardSignatureMove} from "../utilities/cardRender.ts"
 
 interface Judoka {
   signatureMoveId?: string
@@ -9,8 +9,8 @@ interface GokyoEntry {
   name?: string
 }
 
-const mockJudoka: Judoka = { signatureMoveId: "uchi-mata" }
-const mockGokyo: GokyoEntry[] = [{ id: "uchi-mata", name: "Uchi Mata" }]
+const mockJudoka: Judoka = {signatureMoveId: "uchi-mata"}
+const mockGokyo: GokyoEntry[] = [{id: "uchi-mata", name: "Uchi Mata"}]
 
 describe("generateCardSignatureMove", () => {
   it("renders the correct signature move when found", () => {
@@ -20,14 +20,14 @@ describe("generateCardSignatureMove", () => {
   })
 
   it("returns 'Unknown' for case-insensitive mismatch", () => {
-    const caseInsensitiveJudoka: Judoka = { signatureMoveId: "UCHI-MATA" }
+    const caseInsensitiveJudoka: Judoka = {signatureMoveId: "UCHI-MATA"}
     const html = generateCardSignatureMove(caseInsensitiveJudoka, mockGokyo)
     expect(html).toContain("Signature Move:")
     expect(html).toContain("Unknown")
   })
 
   it("handles malformed gokyo entries gracefully", () => {
-    const malformedGokyo: GokyoEntry[] = [{ id: "uchi-mata" }, { name: "Uchi Mata" }]
+    const malformedGokyo: GokyoEntry[] = [{id: "uchi-mata"}, {name: "Uchi Mata"}]
     const html = generateCardSignatureMove(mockJudoka, malformedGokyo)
     expect(html).toContain("Signature Move:")
     expect(html).toContain("Unknown")

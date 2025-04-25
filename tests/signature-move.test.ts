@@ -1,4 +1,4 @@
-import { generateCardSignatureMove } from "../utilities/cardRender.ts"
+import {generateCardSignatureMove} from "../utilities/cardRender.ts"
 
 interface Judoka {
   signatureMoveId?: string
@@ -10,8 +10,8 @@ interface GokyoEntry {
 }
 
 // Mock data
-const mockJudoka: Judoka = { signatureMoveId: "uchi-mata" }
-const mockGokyo: GokyoEntry[] = [{ id: "uchi-mata", name: "Uchi Mata" }]
+const mockJudoka: Judoka = {signatureMoveId: "uchi-mata"}
+const mockGokyo: GokyoEntry[] = [{id: "uchi-mata", name: "Uchi Mata"}]
 
 describe("generateCardSignatureMove", () => {
   describe("Valid Inputs", () => {
@@ -23,9 +23,9 @@ describe("generateCardSignatureMove", () => {
 
     it("selects the correct technique from multiple gokyo entries", () => {
       const extendedGokyo: GokyoEntry[] = [
-        { id: "seoi-nage", name: "Seoi Nage" },
-        { id: "uchi-mata", name: "Uchi Mata" },
-        { id: "osoto-gari", name: "Osoto Gari" },
+        {id: "seoi-nage", name: "Seoi Nage"},
+        {id: "uchi-mata", name: "Uchi Mata"},
+        {id: "osoto-gari", name: "Osoto Gari"},
       ]
       const html = generateCardSignatureMove(mockJudoka, extendedGokyo)
       expect(html).toContain("Signature Move:")
@@ -40,7 +40,7 @@ describe("generateCardSignatureMove", () => {
 
   describe("Basic cases", () => {
     test.each([
-      [{ signatureMoveId: "nonexistent" } as Judoka, "Unknown"],
+      [{signatureMoveId: "nonexistent"} as Judoka, "Unknown"],
       [{} as Judoka, "Unknown"],
       [null as unknown as Judoka, "Unknown"],
     ])('returns "%s" for given judoka', (input: Judoka, expected: string) => {
@@ -52,14 +52,14 @@ describe("generateCardSignatureMove", () => {
 
   describe("Edge cases", () => {
     it("returns 'Unknown' for case-insensitive mismatch", () => {
-      const caseInsensitiveJudoka: Judoka = { signatureMoveId: "UCHI-MATA" }
+      const caseInsensitiveJudoka: Judoka = {signatureMoveId: "UCHI-MATA"}
       const html = generateCardSignatureMove(caseInsensitiveJudoka, mockGokyo)
       expect(html).toContain("Signature Move:")
       expect(html).toContain("Unknown")
     })
 
     it("handles malformed gokyo entries gracefully", () => {
-      const malformedGokyo: GokyoEntry[] = [{ id: "uchi-mata" }, { name: "Uchi Mata" }]
+      const malformedGokyo: GokyoEntry[] = [{id: "uchi-mata"}, {name: "Uchi Mata"}]
       const html = generateCardSignatureMove(mockJudoka, malformedGokyo)
       expect(html).toContain("Signature Move:")
       expect(html).toContain("Unknown")

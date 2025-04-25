@@ -4,14 +4,14 @@ import {generateCardTopBar} from "./cardTopBar.ts"
 import {generateCardPortrait, generateCardStats, generateCardSignatureMove} from "./cardRender.js"
 
 interface Judoka {
-  countryCode: string;
-  lastUpdated: string;
-  [key: string]: any; // to accommodate other fields used in rendering
+  countryCode: string
+  lastUpdated: string
+  [key: string]: any // to accommodate other fields used in rendering
 }
 
 interface Technique {
-  id: string;
-  name: string;
+  id: string
+  name: string
 }
 
 /**
@@ -20,7 +20,7 @@ interface Technique {
  * @returns {string}
  */
 function generateCardLastUpdated(date: string): string {
-  return `<div class="card-updated">Last updated: ${escapeHTML(date)}</div>`;
+  return `<div class="card-updated">Last updated: ${escapeHTML(date)}</div>`
 }
 
 /**
@@ -30,8 +30,8 @@ function generateCardLastUpdated(date: string): string {
  * @returns {string}
  */
 export function generateJudokaCardHTML(judoka: Judoka, gokyo: Technique[]): string {
-  const flagUrl = getFlagUrl(judoka.countryCode);
-  const lastUpdated = formatDate(judoka.lastUpdated);
+  const flagUrl = getFlagUrl(judoka.countryCode)
+  const lastUpdated = formatDate(judoka.lastUpdated)
 
   return `
     <div class="card-container">
@@ -43,5 +43,5 @@ export function generateJudokaCardHTML(judoka: Judoka, gokyo: Technique[]): stri
         ${generateCardLastUpdated(lastUpdated)}
       </div>
     </div>
-  `;
+  `
 }

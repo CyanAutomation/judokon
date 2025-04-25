@@ -5,8 +5,8 @@
     "moduleResolution": "node",
     "strict": true,
     "esModuleInterop": true,
-    "allowJs": true,          // << Allow JS files!
-    "checkJs": false,         // << Don't type-check JS files (for now)
+    "allowJs": true, // << Allow JS files!
+    "checkJs": false, // << Don't type-check JS files (for now)
     "outDir": "dist"
   },
   "include": ["src/**/*"]

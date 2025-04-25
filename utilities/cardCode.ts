@@ -1,18 +1,18 @@
 interface Stats {
-  power: number;
-  speed: number;
-  technique: number;
-  kumikata: number;
-  newaza: number;
+  power: number
+  speed: number
+  technique: number
+  kumikata: number
+  newaza: number
 }
 
 interface Judoka {
-  firstname: string;
-  surname: string;
-  countryCode: string;
-  weightClass: string;
-  signatureMoveId: number;
-  stats: Stats;
+  firstname: string
+  surname: string
+  countryCode: string
+  weightClass: string
+  signatureMoveId: number
+  stats: Stats
 }
 
 const XOR_KEY: number = 37

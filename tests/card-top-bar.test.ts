@@ -1,4 +1,4 @@
-import { generateCardTopBar } from "../utilities/cardTopBar.ts"
+import {generateCardTopBar} from "../utilities/cardTopBar.ts"
 
 interface Judoka {
   firstname: string
@@ -44,7 +44,7 @@ describe("generateCardTopBar", () => {
   })
 
   test("should handle missing countryCode gracefully", () => {
-    const incompleteJudoka: Judoka = { firstname: "Clarisse", surname: "Agbegnenou" }
+    const incompleteJudoka: Judoka = {firstname: "Clarisse", surname: "Agbegnenou"}
     const result = generateCardTopBar(incompleteJudoka, flagUrl)
     expect(result.html).toContain('alt="Unknown flag"')
   })
