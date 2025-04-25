@@ -17,7 +17,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # important to fetch full history
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -36,10 +36,10 @@ jobs:
           git add .
           if git diff --cached --quiet; then
             echo "No formatting changes needed."
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "Formatting changes detected."
-            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Create Prettier Fix Pull Request
@@ -50,4 +50,6 @@ jobs:
           branch: "auto/prettier-fixes-${{ github.run_number }}"
           title: "Auto-format: Prettier fixes"
           body: "This PR contains automatically formatted code fixes from Prettier.\nPlease review and merge."
+          author: GitHub Actions <actions@github.com>
           delete-branch: true
+          labels: auto-fix, prettier
