@@ -30,7 +30,7 @@ The visual assets (e.g. card illustrations and logos) are © 2025 Marc Scheimann
 
 Contributions are welcome! Please fork the repository and submit a pull request.
 
-## Installation
+## Quick Start
 
 1. Clone the repository:
    ```bash
@@ -42,8 +42,9 @@ Contributions are welcome! Please fork the repository and submit a pull request.
 
 ## Dependencies
 
-- None (pure HTML, CSS, and JavaScript)
-- Modularized JavaScript with `utils.js` for reusable functions
+- **Vite**: For building and bundling the project.
+- **Serve**: For serving the project locally.
+- **Vitest**: For unit testing.
 
 ## Project Structure
 
@@ -109,9 +110,24 @@ This project is built with HTML, CSS, and JavaScript, and hosted on GitHub Pages
 
 ## Live Demo
 
-Play the game here: [JU-DO-KON!](https://cyanautomation.github.io/judokon/)
+Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io/judokon/)
 
-The live demo allows you to experience the full gameplay directly in your browser. No installation required!
+- No installation required.
+- Fully playable with all features.
+
+## Technologies Used
+
+- **HTML5**: For the structure of the game.
+- **CSS3**: For styling and layout.
+- **JavaScript (ES6)**: For game logic and interactivity.
+- **Vite**: For building and bundling the project.
+- **GitHub Pages**: For hosting the live demo.
+
+## Known Issues
+
+- The game currently does not support mobile devices.
+- Animations for card flips are not yet implemented.
+- Difficulty levels for the computer opponent are under development.
 
 ## Future Plans
 
