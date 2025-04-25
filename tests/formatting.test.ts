@@ -1,4 +1,4 @@
-import {formatDate} from "../utilities/utils.js"
+import {formatDate} from "../utilities/utils.ts"
 
 describe("formatDate", () => {
   test("formats YYYY-MM-DD correctly", () => {

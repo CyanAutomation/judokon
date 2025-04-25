@@ -1,6 +1,6 @@
-import {formatDate, escapeHTML, getValue} from "./utils.js"
-import {getFlagUrl} from "./countryUtils.js"
-import {generateCardTopBar} from "./cardTopBar.js"
+import {formatDate, escapeHTML, getValue} from "./utils.ts"
+import {getFlagUrl} from "./countryUtils.ts"
+import {generateCardTopBar} from "./cardTopBar.ts"
 import {generateCardPortrait, generateCardStats, generateCardSignatureMove} from "./cardRender.js"
 
 /**

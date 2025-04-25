@@ -1,4 +1,4 @@
-import {getValue} from "./utils.js"
+import {getValue} from "./utils.ts"
 
 const PLACEHOLDER_PORTRAIT = "assets/judokaPortraits/judokaPortrait-0.png"
 

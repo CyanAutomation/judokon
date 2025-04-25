@@ -1,5 +1,5 @@
-import {escapeHTML, getValue} from "./utils.js"
-import {getCountryNameFromCode} from "./countryUtils.js"
+import {escapeHTML, getValue} from "./utils.ts"
+import {getCountryNameFromCode} from "./countryUtils.ts"
 
 const PLACEHOLDER_FLAG = "assets/images/placeholder-flag.png"
 
