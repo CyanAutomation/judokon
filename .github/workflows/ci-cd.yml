@@ -68,7 +68,7 @@ jobs:
         run: npm ci
 
       - name: Run Vitest
-        run: npx vitest run --reporter=verbose
+        run: npx vitest run --reporter=verbose --import=./tests/vitest-polyfill-crypto.ts
 
   build:
     name: Build Project
