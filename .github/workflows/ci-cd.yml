@@ -65,12 +65,15 @@ jobs:
         VALIDATE_YAML: false
         VALIDATE_TYPESCRIPT_ES: false
 
-    - name: Check if Super-Linter fixed anything
+    - name: Check if Super-Linter Fixed Anything
+      if: success()
       run: |
         git add .
         if ! git diff --cached --quiet; then
-          echo "❌ Super-Linter fixed issues. Please run lint locally and push the changes."
-          exit 1
+            echo "❌ Super-Linter fixed issues. Please run lint locally and push the changes."
+            exit 1
+        else
+          echo "✅ No lint fixes needed. Continuing workflow."
         fi
 
   test:
