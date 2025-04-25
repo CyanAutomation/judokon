@@ -56,11 +56,20 @@ jobs:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ENABLE_JSCPD: false
-          VALIDATE_ALL_CODEBASE: true
+          VALIDATE_ALL_CODEBASE: false
           VALIDATE_HTML: true
           VALIDATE_CSS: true
           VALIDATE_JAVASCRIPT_ES: true
           VALIDATE_MARKDOWN: true
+          VALIDATE_JSON: true
+          VALIDATE_YAML: true
+          VALIDATE_TYPESCRIPT_ES: true
+          VALIDATE_DOCKERFILE: false
+          VALIDATE_PYTHON: false
+          VALIDATE_XML: false
+          VALIDATE_BASH: false
+          VALIDATE_GITHUB_ACTIONS: true
+          VALIDATE_EDITORCONFIG: false
           ACTIONS_RUNNER_DEBUG: true
           RUN_LOCAL: true
           AUTO_FIX: true

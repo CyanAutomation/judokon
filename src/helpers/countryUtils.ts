@@ -28,7 +28,7 @@ export function getFlagUrl(countryCode: string): string {
     )
   ) {
     console.warn("Missing or invalid country code. Using placeholder flag.")
-    return "assets/images/placeholder-flag.png"
+    return "/countryFlags/placeholder-flag.png"
   }
   return `https://flagcdn.com/w320/${countryCode.toLowerCase()}.png`
 }

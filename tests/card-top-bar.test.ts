@@ -1,4 +1,4 @@
-import {generateCardTopBar} from "../utilities/cardTopBar.ts"
+import {generateCardTopBar} from "../src/helpers/cardTopBar.ts"
 
 interface Judoka {
   firstname: string

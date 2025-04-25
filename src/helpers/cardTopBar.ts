@@ -7,7 +7,7 @@ export interface Judoka {
 import {escapeHTML, getValue} from "./utils.ts"
 import {getCountryNameFromCode} from "./countryUtils.ts"
 
-const PLACEHOLDER_FLAG: string = "assets/images/placeholder-flag.png"
+const PLACEHOLDER_FLAG: string = "/countryFlags/placeholder-flag.png"
 
 /**
  * Generates the top bar HTML for a judoka card, including name and flag.
