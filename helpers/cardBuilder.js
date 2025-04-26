@@ -20,8 +20,11 @@ function generateCardLastUpdated(date) {
  * @throws {Error} If required fields are missing.
  */
 function validateJudoka(judoka) {
-  if (!judoka.name || !judoka.surname || !judoka.country) {
-    throw new Error("Invalid Judoka object: Missing required fields.");
+  const requiredFields = ["firstname", "surname", "country"];
+  const missingFields = requiredFields.filter((field) => !judoka[field]);
+
+  if (missingFields.length > 0) {
+    throw new Error(`Invalid Judoka object: Missing required fields: ${missingFields.join(", ")}`);
   }
 }
 
