@@ -38,8 +38,10 @@ export function generateJudokaCardHTML(judoka: Judoka, gokyo: GokyoEntry[]): str
   // Generate the flag URL
   const flagUrl = getFlagUrl(judoka.country);
 
-  // Format the last updated date
-  const lastUpdated = formatDate(judoka.lastUpdated ?? '');
+  // Ensure lastUpdated is a string before passing it to formatDate
+  const lastUpdated = typeof judoka.lastUpdated === 'string'
+    ? judoka.lastUpdated
+    : judoka.lastUpdated?.toISOString().split('T')[0] || '';
 
   // Generate the complete HTML
   return `
