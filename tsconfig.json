@@ -5,9 +5,11 @@
     "moduleResolution": "node",
     "strict": true,
     "esModuleInterop": true,
-    "allowJs": true, // << Allow JS files!
-    "checkJs": false, // << Don't type-check JS files (for now)
-    "outDir": "dist"
+    "allowJs": false,         // << ❗ Turn off (since you're using only TS now)
+    "outDir": "dist",
+    "rootDir": "src",          // << 💡 (optional) Helps tsc know where to start from
+    "forceConsistentCasingInFileNames": true, // << 💡 avoid cross-platform case errors
+    "skipLibCheck": true       // << (optional) faster builds by skipping checking node_modules
   },
   "include": ["src/**/*"]
 }
