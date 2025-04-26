@@ -1,19 +1,7 @@
-// Import utility functions for generating flag URLs and judoka card HTML
+// Import utility functions and types
 import { generateJudokaCardHTML } from "./helpers/cardBuilder";
+import { Judoka, GokyoEntry } from "./types";
 import "../src/styles/style.css";
-
-// Define interfaces for Judoka and GokyoEntry
-interface Judoka {
-  id: string;
-  name: string;
-  countryCode: string;
-  signatureMoveId?: string;
-}
-
-interface GokyoEntry {
-  id: string;
-  name: string;
-}
 
 // Wait for the DOM to fully load before executing the script
 document.addEventListener("DOMContentLoaded", () => {
