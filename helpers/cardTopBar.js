@@ -19,10 +19,13 @@ export function generateCardTopBar(judoka, flagUrl) {
     };
   }
 
-  const firstname = escapeHTML(getValue(judoka.name, "Unknown"));
+  // Use `firstname` and `surname` instead of `name`
+  const firstname = escapeHTML(getValue(judoka.firstname, "Unknown"));
   const surname = escapeHTML(getValue(judoka.surname, ""));
-  const countryCode = getValue(judoka.country, "");
-  const countryName = getCountryNameFromCode(countryCode);
+  
+  // Use `countryCode` instead of `country`
+  const countryCode = getValue(judoka.countryCode, "unknown");
+  const countryName = countryCode !== "unknown" ? getCountryNameFromCode(countryCode) : "Unknown";
 
   const fullTitle = `${firstname} ${surname}`.trim();
   const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG;
