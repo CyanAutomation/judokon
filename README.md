@@ -1,5 +1,6 @@
 # JU-DO-KON! 🥋
 
+[![Run Vitest Tests](https://github.com/CyanAutomation/judokon/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/test.yml)
 [![pages-build-deployment](https://github.com/CyanAutomation/judokon/actions/workflows/pages/pages-build-deployment/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/pages/pages-build-deployment)
 
 ## License
