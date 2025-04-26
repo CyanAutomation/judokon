@@ -1,7 +1,7 @@
 // Import utility functions and types
 import {generateJudokaCardHTML} from "./helpers/cardBuilder"
 import {Judoka, GokyoEntry} from "./types"
-import "../src/styles/style.css"
+import "../style.css"
 
 // Wait for the DOM to fully load before executing the script
 document.addEventListener("DOMContentLoaded", () => {
