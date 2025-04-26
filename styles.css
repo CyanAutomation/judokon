@@ -48,6 +48,11 @@
     padding: var(--padding-small);
     box-sizing: border-box;
   }
+
+.noscript-warning {
+  color: red;
+  font-weight: bold;
+}
   
   /* General body styles */
   body {

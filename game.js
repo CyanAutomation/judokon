@@ -1,9 +1,6 @@
-// Import utility functions
 import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
 
-// Wait for the DOM to fully load before executing the script
 document.addEventListener("DOMContentLoaded", () => {
-  // Select DOM elements for the start button, game area, and loading indicator
   const startBtn = document.getElementById("startBtn");
   const gameArea = document.getElementById("gameArea");
   const loadingIndicator = document.getElementById("loading");
@@ -13,68 +10,68 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Add a click event listener to the "Start Game" button
   startBtn.addEventListener("click", async () => {
     console.log("Start button clicked!");
     startBtn.classList.add("hidden");
     gameArea.innerHTML = ""; // Clear the game area
-    loadingIndicator.classList.remove("hidden");
 
     try {
-      // Fetch the judoka and gokyo data
+      toggleLoading(true);
+
       const judokaData = await fetchDataWithErrorHandling("./data/judoka.json");
       const gokyoData = await fetchDataWithErrorHandling("./data/gokyo.json");
 
-      console.log("Judoka data fetched:", judokaData);
-      console.log("Gokyo data fetched:", gokyoData);
+      validateData(judokaData, "judoka");
+      validateData(gokyoData, "gokyo");
 
-      // Select a random judoka from the data
       const selectedJudoka = getRandomJudoka(judokaData);
-      console.log("Selected judoka:", selectedJudoka);
-
-      // Display the selected judoka's card
       displayJudokaCard(selectedJudoka, gokyoData);
     } catch (error) {
       console.error("Error loading card:", error);
-      gameArea.innerHTML = `<p>⚠️ Failed to load card. Please try again later.</p>`;
+      gameArea.innerHTML = `<p>⚠️ Failed to load card. ${error.message}. Please try again later.</p>`;
     } finally {
-      loadingIndicator.classList.add("hidden");
-      gameArea.classList.remove("hidden");
+      toggleLoading(false);
     }
   });
 
-  /**
-   * Fetches data from a given URL and parses it as JSON with error handling.
-   * @param {string} url - The URL to fetch data from.
-   * @returns {Promise<any>} The parsed JSON data.
-   */
+  function toggleLoading(isLoading) {
+    if (isLoading) {
+      loadingIndicator.classList.remove("hidden");
+      gameArea.classList.add("hidden");
+    } else {
+      loadingIndicator.classList.add("hidden");
+      gameArea.classList.remove("hidden");
+    }
+  }
+
   async function fetchDataWithErrorHandling(url) {
-    const response = await fetch(url);
-    if (!response.ok) {
-      const error = new Error(`Failed to fetch data from ${url} (HTTP ${response.status})`);
-      console.error(error);
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data from ${url} (HTTP ${response.status})`);
+      }
+      return response.json();
+    } catch (error) {
+      console.error(`Error fetching data from ${url}:`, error);
       throw error;
     }
-    return response.json(); 
   }
-  
 
-  /**
-   * Selects a random judoka from the data.
-   * @param {Array} data - The array of judoka data.
-   * @returns {Object} A random judoka object.
-   */
+  function validateData(data, type) {
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error(`Invalid or empty ${type} data.`);
+    }
+  }
+
   function getRandomJudoka(data) {
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error("No judoka data available to select.");
+    }
     const index = Math.floor(Math.random() * data.length);
     console.log("Random index:", index);
     return data[index];
   }
 
-  /**
-   * Displays the selected judoka's card in the game area.
-   * @param {Object} judoka - The selected judoka object.
-   * @param {Array} gokyo - The array of Gokyo entries.
-   */
   function displayJudokaCard(judoka, gokyo) {
     console.log("Judoka passed to displayJudokaCard:", judoka);
     if (!gameArea) {

@@ -5,14 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="keywords" content="judo, card game, web game, IJF, judoka" />
     <meta name="author" content="Marc Scheimann" />
-    <meta
-      name="description"
-      content="JU-DO-KON! A web-based judo-themed card battle game featuring IJF judoka."
-    />
+    <meta name="description" content="JU-DO-KON! A web-based judo-themed card battle game featuring IJF judoka." />
     <meta property="og:title" content="JU-DO-KON!" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cyanautomation.github.io/judokon/" />
+    <meta property="og:image" content="/judokon/images/og-image.png" />
+    <meta property="og:description" content="JU-DO-KON! A web-based judo-themed card battle game featuring IJF judoka." />
     <meta name="theme-color" content="#22223b" />
     <title>Ju-Do-Kon!</title>
+    <link rel="preload" href="/judokon/styles.css" as="style" />
     <link rel="stylesheet" href="/judokon/styles.css" />
+    <link rel="preload" href="./game.js" as="script" />
+    <link rel="icon" type="image/png" href="/judokon/images/favicon.png" />
   </head>
 
   <body>
@@ -23,13 +27,18 @@
 
     <main class="container" role="main">
       <section>
-        <button id="startBtn" aria-label="Start the game">Start Game</button>
+        <!-- Button to start the game -->
+        <button id="startBtn" aria-label="Start the game" title="Start the game">Start Game</button>
+
+        <!-- Loading indicator shown while data is being fetched -->
         <div id="loading" class="hidden" aria-live="polite">
           <p>Loading...</p>
-          <div class="spinner"></div>
+          <div class="spinner" aria-hidden="true"></div>
         </div>
+
+        <!-- Game area where the judoka card will be displayed -->
         <div id="gameArea" class="hidden" aria-live="polite">
-          <p>Get ready to play JU-DO-KON!  Click "Start Game" to begin.</p>
+          <p>Get ready to play JU-DO-KON! Click "Start Game" to begin.</p>
         </div>
       </section>
     </main>
@@ -39,11 +48,14 @@
     </footer>
 
     <noscript>
-      <p style="color: red; font-weight: bold">
+      <p class="noscript-warning">
         JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
       </p>
     </noscript>
 
     <script type="module" src="./game.js"></script>
+    <script nomodule>
+      alert("Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!");
+    </script>
   </body>
 </html>
