@@ -23,8 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       // Fetch the judoka and gokyo data
-      const judokaData = await fetchDataWithErrorHandling("data/judoka.json");
-      const gokyoData = await fetchDataWithErrorHandling("data/gokyo.json");
+      const judokaData = await fetchDataWithErrorHandling("/judokon/data/judoka.json");
+      const gokyoData = await fetchDataWithErrorHandling("/judokon/data/gokyo.json");
 
       console.log("Judoka data fetched:", judokaData);
       console.log("Gokyo data fetched:", gokyoData);
