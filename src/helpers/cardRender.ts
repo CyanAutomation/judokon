@@ -1,4 +1,4 @@
-import {getValue} from "./utils.ts"
+import {getValue} from "./utils"
 
 interface Stats {
   power?: number | string
