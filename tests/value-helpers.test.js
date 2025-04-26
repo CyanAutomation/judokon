@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { getValue } from "./helpers/utils.js";
+import { getValue } from "../helpers/utils.js";
 
 describe("getValue", () => {
   test("returns the value if it is a non-empty string", () => {
