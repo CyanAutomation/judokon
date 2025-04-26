@@ -1,5 +1,5 @@
-import { escapeHTML, getValue } from "./utils";
-import { getCountryNameFromCode } from "./countryUtils";
+import { escapeHTML, getValue } from "./utils.js";
+import { getCountryNameFromCode } from "./countryUtils.js";
 
 const PLACEHOLDER_FLAG = "/countryFlags/placeholder-flag.png";
 
