@@ -4,8 +4,8 @@ export interface Judoka {
   countryCode: string
 }
 
-import {escapeHTML, getValue} from "./utils.ts"
-import {getCountryNameFromCode} from "./countryUtils.ts"
+import {escapeHTML, getValue} from "./utils"
+import {getCountryNameFromCode} from "./countryUtils"
 
 const PLACEHOLDER_FLAG: string = "/countryFlags/placeholder-flag.png"
 
