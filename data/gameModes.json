@@ -1,0 +1,123 @@
+[
+    {
+      "id": "shiai",
+      "name": "Shiai (Battle Mode)",
+      "japaneseName": "試合 (バトルモード)",
+      "description": "A standard one-on-one battle mode where players compete to win.",
+      "category": "mainMenu",
+      "isHidden": false,
+      "rules": {
+        "rounds": 25,
+        "teamSize": 25,
+        "maxScore": 10,
+        "gender": "any"
+      }
+    },
+    {
+      "id": "teamBattleSelection",
+      "name": "Team Battle Selection",
+      "japaneseName": "団体戦選択",
+      "description": "Choose between Male, Female, or Mixed Team Battle modes.",
+      "category": "mainMenu",
+      "isHidden": true,
+      "rules": {
+        "options": ["teamBattleMale", "teamBattleFemale", "teamBattleMixed"]
+      }
+    },
+    {
+      "id": "judokaUpdateSelection",
+      "name": "Judoka Update Mode",
+      "japaneseName": "柔道家編集モード",
+      "description": "Choose to update or create a judoka.",
+      "category": "mainMenu",
+      "isHidden": true,
+      "rules": {
+        "options": ["createJudoka", "updateJudoka"]
+      }
+    },
+    {
+      "id": "teamBattleMale",
+      "name": "Team Battle (Male)",
+      "japaneseName": "男子団体戦",
+      "description": "A team-based mode where male players compete in groups.",
+      "category": "teamBattle",
+      "isHidden": true,
+      "rules": {
+        "base": "teamBattle",
+        "gender": "male"
+      }
+    },
+    {
+      "id": "teamBattleFemale",
+      "name": "Team Battle (Female)",
+      "japaneseName": "女子団体戦",
+      "description": "A team-based mode where female players compete in groups.",
+      "category": "teamBattle",
+      "isHidden": true,
+      "rules": {
+        "base": "teamBattle",
+        "gender": "female"
+      }
+    },
+    {
+      "id": "teamBattleMixed",
+      "name": "Team Battle (Mixed)",
+      "japaneseName": "混合団体戦",
+      "description": "A team-based mode where male and female players compete together in groups.",
+      "category": "teamBattle",
+      "isHidden": true,
+      "rules": {
+        "rounds": 6,
+        "teamSize": 6,
+        "maxScore": 6,
+        "gender": "mixed"
+      }
+    },
+    {
+      "id": "browseJudoka",
+      "name": "Browse Judoka",
+      "japaneseName": "柔道家を閲覧",
+      "description": "Explore the available judoka and their stats.",
+      "category": "mainMenu",
+      "isHidden": true,
+      "rules": {
+        "note": "Rules will be defined in the future."
+      }
+    },
+    {
+      "id": "createJudoka",
+      "name": "Create A Judoka",
+      "japaneseName": "柔道家を作成",
+      "description": "Create a new judoka by entering their details and stats.",
+      "category": "judokaUpdate",
+      "isHidden": true,
+      "rules": {
+        "note": "Rules will be defined in the future."
+      }
+    },
+    {
+      "id": "updateJudoka",
+      "name": "Update A Judoka",
+      "japaneseName": "柔道家を更新",
+      "description": "Edit the details of an existing judoka.",
+      "category": "judokaUpdate",
+      "isHidden": true,
+      "rules": {
+        "note": "Rules will be defined in the future."
+      }
+    },
+    {
+      "id": "teamBattle",
+      "name": "teamBattle Ruleset",
+      "japaneseName": "団体戦ルールセット",
+      "description": "Defining the common ruleset for Team Battles.",
+      "category": "none",
+      "isHidden": true,
+      "rules": {
+        "rounds": 5,
+        "teamSize": 5,
+        "maxScore": 5
+      }
+    }
+  ]
+  

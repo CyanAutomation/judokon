@@ -1,54 +1,21 @@
-{
-    "judo_moves": [
-        {
-            "name": "Ippon Seoi Nage",
-            "type": "Throw",
-            "description": "A one-arm shoulder throw."
-        },
-        {
-            "name": "O Goshi",
-            "type": "Throw",
-            "description": "A major hip throw."
-        },
-        {
-            "name": "Osoto Gari",
-            "type": "Throw",
-            "description": "A major outer reap."
-        },
-        {
-            "name": "Kesa Gatame",
-            "type": "Hold",
-            "description": "A scarf hold pinning technique."
-        },
-        {
-            "name": "Ude Garami",
-            "type": "Submission",
-            "description": "An arm entanglement lock."
-        },
-        {
-            "name": "Harai Goshi",
-            "type": "Throw",
-            "description": "A sweeping hip throw."
-        },
-        {
-            "name": "Tomoe Nage",
-            "type": "Throw",
-            "description": "A circular throw using the foot."
-        },
-        {
-            "name": "Juji Gatame",
-            "type": "Submission",
-            "description": "An armbar technique."
-        },
-        {
-            "name": "Tani Otoshi",
-            "type": "Throw",
-            "description": "A valley drop throw."
-        },
-        {
-            "name": "Uchi Mata",
-            "type": "Throw",
-            "description": "An inner thigh throw."
-        }
-    ]
-}
+[
+    {
+      "id": 1,
+      "name": "Uchi-mata",
+      "japanese": "内股",
+      "category": "Nage-waza",
+      "subCategory": "Koshi-waza",
+      "description": "A powerful inner thigh throw.",
+      "link": "https://en.wikipedia.org/wiki/Uchi_mata"
+    },
+    {
+      "id": 2,
+      "name": "O-soto-gari",
+      "japanese": "大外刈",
+      "category": "Nage-waza",
+      "subCategory": "Ashi-waza",
+      "description": "A major outer reap throw.",
+      "link": "https://en.wikipedia.org/wiki/O_soto_gari"
+    }
+  ]
+  
