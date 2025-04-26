@@ -1,7 +1,7 @@
 import { escapeHTML, getValue } from "./utils.js";
 import { getCountryNameFromCode } from "./countryUtils.js";
 
-const PLACEHOLDER_FLAG = "/countryFlags/placeholder-flag.png";
+const PLACEHOLDER_FLAG = "./assets/countryFlags/placeholder-flag.png";
 
 /**
  * Generates the top bar HTML for a judoka card, including name and flag.

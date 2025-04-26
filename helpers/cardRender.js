@@ -1,6 +1,6 @@
 import { getValue } from "./utils.js";
 
-const PLACEHOLDER_PORTRAIT = "/judokaPortraits/judokaPortrait-0.png";
+const PLACEHOLDER_PORTRAIT = "assets/judokaPortraits/judokaPortrait-0.png";
 
 /**
  * Generates the portrait HTML for a judoka card.
@@ -9,7 +9,7 @@ const PLACEHOLDER_PORTRAIT = "/judokaPortraits/judokaPortrait-0.png";
  */
 export function generateCardPortrait(judoka) {
   const portraitUrl =
-    judoka && judoka.id ? `/judokaPortraits/judokaPortrait-${judoka.id}.png` : PLACEHOLDER_PORTRAIT;
+    judoka && judoka.id ? `assets/judokaPortraits/judokaPortrait-${judoka.id}.png` : PLACEHOLDER_PORTRAIT;
 
   return `
     <div class="card-portrait">
