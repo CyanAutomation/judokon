@@ -5,7 +5,7 @@ const PLACEHOLDER_FLAG_URL = "./assets/countryFlags/placeholder-flag.png";
  * @returns {Promise<Array>} Resolves to an array of country code mappings.
  */
 async function loadCountryCodeMapping() {
-  const response = await fetch("./data/countryCodeMapping.json");
+  const response = await fetch("../data/countryCodeMapping.json");
   if (!response.ok) {
     throw new Error("Failed to load country code mapping");
   }
