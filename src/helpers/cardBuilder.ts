@@ -10,7 +10,8 @@ import { Judoka, GokyoEntry } from "../types";
  * @returns The HTML string for the "last updated" section.
  */
 function generateCardLastUpdated(date: string | Date | undefined): string {
-  const safeDate = date ? date.toString() : '';
+  if (!date) return ''; // if date is undefined, don't render anything
+  const safeDate = date instanceof Date ? date.toISOString().split('T')[0] : date;
   return `<div class="card-updated">Last updated: ${escapeHTML(safeDate)}</div>`;
 }
 
