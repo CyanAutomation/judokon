@@ -16,6 +16,16 @@ function escapeHTML(str) {
 }
 
 /**
+ * Safely retrieves a value from an object, returning a default value if the property is missing or undefined.
+ * @param {any} value - The value to check.
+ * @param {any} defaultValue - The default value to return if the value is undefined or null.
+ * @returns {any} The value or the default value.
+ */
+function getValue(value, defaultValue) {
+  return value !== undefined && value !== null ? value : defaultValue;
+}
+
+/**
  * Generates the top bar HTML for a judoka card, including name and flag.
  * @param {Object|null|undefined} judoka - The judoka object.
  * @param {string} [flagUrl] - The URL of the flag image.
