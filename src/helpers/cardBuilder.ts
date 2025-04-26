@@ -6,13 +6,23 @@ import { Judoka, GokyoEntry } from "../types";
 
 /**
  * Generates the "last updated" HTML for a judoka card.
- * @param date - The last updated date as a string.
+ * @param date - The last updated date as a string or Date.
  * @returns The HTML string for the "last updated" section.
  */
 function generateCardLastUpdated(date: string | Date | undefined): string {
-  if (!date) return ''; // if date is undefined, don't render anything
+  if (!date) return ''; // If date is undefined, don't render anything
   const safeDate = date instanceof Date ? date.toISOString().split('T')[0] : date;
   return `<div class="card-updated">Last updated: ${escapeHTML(safeDate)}</div>`;
+}
+
+/**
+ * Validates the required fields of a Judoka object.
+ * @param judoka - The judoka object to validate.
+ */
+function validateJudoka(judoka: Judoka): void {
+  if (!judoka.name || !judoka.surname || !judoka.country) {
+    throw new Error("Invalid Judoka object: Missing required fields.");
+  }
 }
 
 /**
@@ -22,9 +32,16 @@ function generateCardLastUpdated(date: string | Date | undefined): string {
  * @returns The complete HTML string for the judoka card.
  */
 export function generateJudokaCardHTML(judoka: Judoka, gokyo: GokyoEntry[]): string {
-  const flagUrl = getFlagUrl(judoka.country);
-  const lastUpdated = formatDate(judoka.lastUpdated);
+  // Validate the Judoka object
+  validateJudoka(judoka);
 
+  // Generate the flag URL
+  const flagUrl = getFlagUrl(judoka.country);
+
+  // Format the last updated date
+  const lastUpdated = formatDate(judoka.lastUpdated ?? '');
+
+  // Generate the complete HTML
   return `
     <div class="card-container">
       <div class="judoka-card">
@@ -32,7 +49,7 @@ export function generateJudokaCardHTML(judoka: Judoka, gokyo: GokyoEntry[]): str
         ${generateCardPortrait(judoka)}
         ${generateCardStats(judoka)}
         ${generateCardSignatureMove(judoka, gokyo)}
-        ${generateCardLastUpdated(lastUpdated?.toString() ?? '')}
+        ${generateCardLastUpdated(lastUpdated)}
       </div>
     </div>
   `;
