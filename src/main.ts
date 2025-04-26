@@ -19,7 +19,10 @@ interface GokyoEntry {
 document.addEventListener("DOMContentLoaded", () => {
   // Select DOM elements for the start button, game area, and loading indicator
   const startBtn = document.getElementById("startBtn") as HTMLButtonElement | null
-  const gameArea = document.getElementById("gameArea") as HTMLElement | null
+  const gameArea = document.getElementById('gameArea');
+  if (gameArea) {
+    gameArea.innerHTML = "something";
+  }  
   const loadingIndicator = document.getElementById("loading") as HTMLElement | null
 
   if (!startBtn || !gameArea || !loadingIndicator) {
