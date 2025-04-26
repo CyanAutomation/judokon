@@ -6,7 +6,7 @@
     "test": "tests"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp src/styles/style.css dist/style.css"
     "dev": "tsc --watch",
     "test": "vitest run"
   },
