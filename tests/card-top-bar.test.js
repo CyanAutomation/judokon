@@ -1,6 +1,9 @@
+import { vi } from "vitest";
+import * as countryUtils from "../helpers/countryUtils.js";
 import { generateCardTopBar } from "../helpers/cardTopBar.js";
 
 // Mock data
+vi.spyOn(countryUtils, "getCountryNameFromCode").mockResolvedValue("France");
 const judoka = {
   firstname: "Clarisse",
   surname: "Agbegnenou",
