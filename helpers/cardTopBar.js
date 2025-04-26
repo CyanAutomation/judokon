@@ -1,7 +1,4 @@
-import { escapeHTML, getValue } from "./utils.js";
-import { getCountryNameFromCode } from "./countryUtils.js";
-
-const PLACEHOLDER_FLAG = "./assets/countryFlags/placeholder-flag.png";
+const PLACEHOLDER_FLAG_URL = "./assets/countryFlags/placeholder-flag.png";
 
 /**
  * Generates the top bar HTML for a judoka card, including name and flag.
@@ -23,11 +20,11 @@ export async function generateCardTopBar(judoka, flagUrl) {
   const surname = escapeHTML(getValue(judoka.surname, ""));
   const countryCode = getValue(judoka.countryCode, "unknown");
 
-// Await the country name
+  // Await the country name
   const countryName = countryCode !== "unknown" ? await getCountryNameFromCode(countryCode) : "Unknown";
 
   const fullTitle = `${firstname} ${surname}`.trim();
-  const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG;
+  const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;
 
   return {
     title: fullTitle,
@@ -39,7 +36,7 @@ export async function generateCardTopBar(judoka, flagUrl) {
           <span class="surname">${surname}</span>
         </div>
         <img class="card-flag" src="${finalFlagUrl}" alt="${countryName} flag" 
-          onerror="this.src='${PLACEHOLDER_FLAG}'">
+          onerror="this.src='${PLACEHOLDER_FLAG_URL}'">
       </div>
     `,
   };
