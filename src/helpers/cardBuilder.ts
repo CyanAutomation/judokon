@@ -32,7 +32,7 @@ export function generateJudokaCardHTML(judoka: Judoka, gokyo: GokyoEntry[]): str
         ${generateCardPortrait(judoka)}
         ${generateCardStats(judoka)}
         ${generateCardSignatureMove(judoka, gokyo)}
-        ${generateCardLastUpdated(lastUpdated)}
+        ${generateCardLastUpdated(lastUpdated?.toString() ?? '')}
       </div>
     </div>
   `;
