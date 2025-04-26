@@ -1,4 +1,4 @@
-const PLACEHOLDER_FLAG_URL = "/countryFlags/placeholder-flag.png";
+const PLACEHOLDER_FLAG_URL = "../assets/countryFlags/placeholder-flag.png";
 
 /**
  * Loads the country code mapping JSON from the server.
