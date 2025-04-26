@@ -1,6 +1,6 @@
 // Import utility functions
-import { generateJudokaCardHTML } from "./helpers/cardBuilder";
-import "./style.css";
+import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
+import "./styles.css";
 
 // Wait for the DOM to fully load before executing the script
 document.addEventListener("DOMContentLoaded", () => {
