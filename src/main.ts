@@ -1,5 +1,5 @@
 // Import utility functions for generating flag URLs and judoka card HTML
-import {generateJudokaCardHTML} from "./helpers/cardBuilder.ts"
+import {generateJudokaCardHTML} from "./helpers/cardBuilder"
 import "../src/styles/style.css";
 
 // Define interfaces for Judoka and GokyoEntry

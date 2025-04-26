@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest"
-import {generateCardSignatureMove} from "../src/helpers/cardRender.ts"
+import {generateCardSignatureMove} from "../src/helpers/cardRender"
 
 interface Technique {
   id: string

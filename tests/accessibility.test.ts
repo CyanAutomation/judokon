@@ -1,4 +1,4 @@
-import {generateCardSignatureMove} from "../src/helpers/cardRender.ts"
+import {generateCardSignatureMove} from "../src/helpers/cardRender"
 
 interface Judoka {
   signatureMoveId?: string

@@ -1,5 +1,5 @@
 import {describe, test, expect} from "vitest"
-import {getValue} from "../src/helpers/utils.ts"
+import {getValue} from "../src/helpers/utils"
 
 describe("getValue", () => {
   test("returns the value if it is a non-empty string", () => {
