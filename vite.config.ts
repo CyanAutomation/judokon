@@ -1,6 +1,6 @@
-import {defineConfig} from "vite"
+// vite.config.js
+import { defineConfig } from 'vite';
 
 export default defineConfig({
-  root: ".", // 👈 important if index.html is in root
-  base: "/judokon/", // 👈 required for GitHub Pages
-})
+  base: '/judokon/', // Replace 'judokon' with your repository name
+});
