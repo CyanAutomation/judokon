@@ -1,8 +1,8 @@
-import { escapeHTML, getValue } from "./utils";
-import { getCountryNameFromCode } from "./countryUtils";
-import { Judoka } from "../types";
+import {escapeHTML, getValue} from "./utils"
+import {getCountryNameFromCode} from "./countryUtils"
+import {Judoka} from "../types"
 
-const PLACEHOLDER_FLAG: string = "/countryFlags/placeholder-flag.png";
+const PLACEHOLDER_FLAG: string = "/countryFlags/placeholder-flag.png"
 
 /**
  * Generates the top bar HTML for a judoka card, including name and flag.
@@ -13,23 +13,23 @@ const PLACEHOLDER_FLAG: string = "/countryFlags/placeholder-flag.png";
 export function generateCardTopBar(
   judoka: Judoka | null | undefined,
   flagUrl?: string,
-): { title: string; flagUrl: string; html: string } {
+): {title: string; flagUrl: string; html: string} {
   if (!judoka) {
-    console.error("Judoka object is missing!");
+    console.error("Judoka object is missing!")
     return {
       title: "No data",
       flagUrl: PLACEHOLDER_FLAG,
       html: `<div class="card-top-bar">No data available</div>`,
-    };
+    }
   }
 
-  const firstname = escapeHTML(getValue(judoka.name, "Unknown"));
-  const surname = escapeHTML(getValue(judoka.surname, ""));
-  const countryCode = getValue(judoka.country, "");
-  const countryName = getCountryNameFromCode(countryCode);
+  const firstname = escapeHTML(getValue(judoka.name, "Unknown"))
+  const surname = escapeHTML(getValue(judoka.surname, ""))
+  const countryCode = getValue(judoka.country, "")
+  const countryName = getCountryNameFromCode(countryCode)
 
-  const fullTitle = `${firstname} ${surname}`.trim();
-  const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG;
+  const fullTitle = `${firstname} ${surname}`.trim()
+  const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG
 
   return {
     title: fullTitle,
@@ -44,5 +44,5 @@ export function generateCardTopBar(
           onerror="this.src='${PLACEHOLDER_FLAG}'">
       </div>
     `,
-  };
+  }
 }

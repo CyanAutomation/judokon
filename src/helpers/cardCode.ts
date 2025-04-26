@@ -1,8 +1,8 @@
-import { Judoka } from "../types";
+import {Judoka} from "../types"
 
-const XOR_KEY: number = 37;
-const ALPHABET: string = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // 32 readable characters
-const CARD_CODE_VERSION: string = "v1";
+const XOR_KEY: number = 37
+const ALPHABET: string = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // 32 readable characters
+const CARD_CODE_VERSION: string = "v1"
 
 /**
  * Encodes a string using XOR encryption.
@@ -13,8 +13,8 @@ const CARD_CODE_VERSION: string = "v1";
 function xorEncode(str: string, key: number = XOR_KEY): string {
   return str
     .split("")
-    .map((char, i) => String.fromCharCode(char.charCodeAt(0) ^ ((i + key) % 256)))
-    .join("");
+    .map((char, i) => String.fromCharCode(char.charCodeAt(0) ^ (i + key) % 256))
+    .join("")
 }
 
 /**
@@ -26,7 +26,7 @@ function toReadableCharset(str: string): string {
   return str
     .split("")
     .map((c) => ALPHABET[c.charCodeAt(0) % ALPHABET.length])
-    .join("");
+    .join("")
 }
 
 /**
@@ -36,8 +36,8 @@ function toReadableCharset(str: string): string {
  * @returns The chunked string.
  */
 function chunk(str: string, size: number = 4): string {
-  if (typeof str !== "string" || !str.length) return "";
-  return str.match(new RegExp(`.{1,${size}}`, "g"))?.join("-") || "";
+  if (typeof str !== "string" || !str.length) return ""
+  return str.match(new RegExp(`.{1,${size}}`, "g"))?.join("-") || ""
 }
 
 /**
@@ -60,7 +60,7 @@ export function generateCardCode(judoka: Judoka): string {
     typeof judoka.stats.kumiKata === "undefined" ||
     typeof judoka.stats.neWaza === "undefined"
   ) {
-    throw new Error("Missing required judoka fields for card code generation.");
+    throw new Error("Missing required judoka fields for card code generation.")
   }
 
   const stats = [
@@ -69,7 +69,7 @@ export function generateCardCode(judoka: Judoka): string {
     judoka.stats.technique,
     judoka.stats.kumiKata,
     judoka.stats.neWaza,
-  ].join("");
+  ].join("")
 
   const raw = [
     CARD_CODE_VERSION,
@@ -79,9 +79,9 @@ export function generateCardCode(judoka: Judoka): string {
     judoka.weightClass,
     judoka.signatureMoveId?.toString() || "",
     stats,
-  ].join("-");
+  ].join("-")
 
-  const xor = xorEncode(raw);
-  const readable = toReadableCharset(xor);
-  return chunk(readable);
+  const xor = xorEncode(raw)
+  const readable = toReadableCharset(xor)
+  return chunk(readable)
 }

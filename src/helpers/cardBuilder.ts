@@ -1,8 +1,8 @@
-import { formatDate, escapeHTML, getValue } from "./utils";
-import { getFlagUrl } from "./countryUtils";
-import { generateCardTopBar } from "./cardTopBar";
-import { generateCardPortrait, generateCardStats, generateCardSignatureMove } from "./cardRender";
-import { Judoka, GokyoEntry } from "../types";
+import {formatDate, escapeHTML, getValue} from "./utils"
+import {getFlagUrl} from "./countryUtils"
+import {generateCardTopBar} from "./cardTopBar"
+import {generateCardPortrait, generateCardStats, generateCardSignatureMove} from "./cardRender"
+import {Judoka, GokyoEntry} from "../types"
 
 /**
  * Generates the "last updated" HTML for a judoka card.
@@ -10,9 +10,9 @@ import { Judoka, GokyoEntry } from "../types";
  * @returns The HTML string for the "last updated" section.
  */
 function generateCardLastUpdated(date: string | Date | undefined): string {
-  if (!date) return ''; // If date is undefined, don't render anything
-  const safeDate = date instanceof Date ? date.toISOString().split('T')[0] : date;
-  return `<div class="card-updated">Last updated: ${escapeHTML(safeDate)}</div>`;
+  if (!date) return "" // If date is undefined, don't render anything
+  const safeDate = date instanceof Date ? date.toISOString().split("T")[0] : date
+  return `<div class="card-updated">Last updated: ${escapeHTML(safeDate)}</div>`
 }
 
 /**
@@ -21,7 +21,7 @@ function generateCardLastUpdated(date: string | Date | undefined): string {
  */
 function validateJudoka(judoka: Judoka): void {
   if (!judoka.name || !judoka.surname || !judoka.country) {
-    throw new Error("Invalid Judoka object: Missing required fields.");
+    throw new Error("Invalid Judoka object: Missing required fields.")
   }
 }
 
@@ -33,15 +33,16 @@ function validateJudoka(judoka: Judoka): void {
  */
 export function generateJudokaCardHTML(judoka: Judoka, gokyo: GokyoEntry[]): string {
   // Validate the Judoka object
-  validateJudoka(judoka);
+  validateJudoka(judoka)
 
   // Generate the flag URL
-  const flagUrl = getFlagUrl(judoka.country);
+  const flagUrl = getFlagUrl(judoka.country)
 
   // Ensure lastUpdated is a string before passing it to formatDate
-  const lastUpdated = typeof judoka.lastUpdated === 'string'
-    ? judoka.lastUpdated
-    : judoka.lastUpdated?.toISOString().split('T')[0] || '';
+  const lastUpdated =
+    typeof judoka.lastUpdated === "string"
+      ? judoka.lastUpdated
+      : judoka.lastUpdated?.toISOString().split("T")[0] || ""
 
   // Generate the complete HTML
   return `
@@ -54,5 +55,5 @@ export function generateJudokaCardHTML(judoka: Judoka, gokyo: GokyoEntry[]): str
         ${generateCardLastUpdated(lastUpdated)}
       </div>
     </div>
-  `;
+  `
 }
