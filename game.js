@@ -49,17 +49,15 @@ document.addEventListener("DOMContentLoaded", () => {
    * @returns {Promise<any>} The parsed JSON data.
    */
   async function fetchDataWithErrorHandling(url) {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error(`Failed to fetch data from ${url}:`, error);
-      throw new Error(`Failed to fetch data from ${url}`);
+    const response = await fetch(url);
+    if (!response.ok) {
+      const error = new Error(`Failed to fetch data from ${url} (HTTP ${response.status})`);
+      console.error(error);
+      throw error;
     }
+    return response.json(); 
   }
+  
 
   /**
    * Selects a random judoka from the data.
