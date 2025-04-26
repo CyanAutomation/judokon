@@ -1,4 +1,4 @@
-import { formatDate } from "../src/helpers/utils";
+import { formatDate } from "./helpers/utils";
 
 describe("formatDate", () => {
   test("formats YYYY-MM-DD correctly", () => {

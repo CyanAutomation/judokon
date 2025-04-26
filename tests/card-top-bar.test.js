@@ -1,4 +1,4 @@
-import { generateCardTopBar } from "../src/helpers/cardTopBar";
+import { generateCardTopBar } from "./helpers/cardTopBar";
 
 // Mock data
 const judoka = {

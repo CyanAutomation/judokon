@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateCardSignatureMove } from "../src/helpers/cardRender";
+import { generateCardSignatureMove } from "./helpers/cardRender";
 
 // Mock data
 const mockGokyo = [{ id: "uchi-mata", name: "Uchi Mata" }];
