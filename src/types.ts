@@ -12,6 +12,7 @@ export interface Judoka {
     neWaza: number; // Groundwork rating (1-10)
   };
   signatureMoveId?: string; // Optional ID of the judoka's signature move
+  lastUpdated?: string | Date; // Can be a string (from JSON) or a Date object
 }
 
 export interface GokyoEntry {
