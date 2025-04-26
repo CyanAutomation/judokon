@@ -1,85 +1,87 @@
-interface Stats {
-  power: number
-  speed: number
-  technique: number
-  kumikata: number
-  newaza: number
-}
+import { Judoka } from "../types";
 
-interface Judoka {
-  firstname: string
-  surname: string
-  countryCode: string
-  weightClass: string
-  signatureMoveId: number
-  stats: Stats
-}
+const XOR_KEY: number = 37;
+const ALPHABET: string = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // 32 readable characters
+const CARD_CODE_VERSION: string = "v1";
 
-const XOR_KEY: number = 37
-const ALPHABET: string = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // 32 readable characters
-const CARD_CODE_VERSION: string = "v1"
-
+/**
+ * Encodes a string using XOR encryption.
+ * @param str - The string to encode.
+ * @param key - The XOR key (default is XOR_KEY).
+ * @returns The XOR-encoded string.
+ */
 function xorEncode(str: string, key: number = XOR_KEY): string {
   return str
     .split("")
-    .map((char, i) => String.fromCharCode(char.charCodeAt(0) ^ (i + key) % 256))
-    .join("")
+    .map((char, i) => String.fromCharCode(char.charCodeAt(0) ^ ((i + key) % 256)))
+    .join("");
 }
 
+/**
+ * Converts a string into a readable charset using a predefined alphabet.
+ * @param str - The string to convert.
+ * @returns The string converted to the readable charset.
+ */
 function toReadableCharset(str: string): string {
   return str
     .split("")
     .map((c) => ALPHABET[c.charCodeAt(0) % ALPHABET.length])
-    .join("")
+    .join("");
 }
 
+/**
+ * Splits a string into chunks of a specified size and joins them with a delimiter.
+ * @param str - The string to chunk.
+ * @param size - The size of each chunk (default is 4).
+ * @returns The chunked string.
+ */
 function chunk(str: string, size: number = 4): string {
-  if (typeof str !== "string" || !str.length) return ""
-  return str.match(new RegExp(`.{1,${size}}`, "g")).join("-")
+  if (typeof str !== "string" || !str.length) return "";
+  return str.match(new RegExp(`.{1,${size}}`, "g"))?.join("-") || "";
 }
 
 /**
  * Generates a unique, readable card code for a judoka.
- * @param {Object} judoka - The judoka object.
- * @returns {string} The generated card code.
+ * @param judoka - The judoka object.
+ * @returns The generated card code.
  */
 export function generateCardCode(judoka: Judoka): string {
   if (
     !judoka ||
-    !judoka.firstname ||
+    !judoka.name ||
     !judoka.surname ||
-    !judoka.countryCode ||
+    !judoka.country ||
     !judoka.weightClass ||
     typeof judoka.signatureMoveId === "undefined" ||
     !judoka.stats ||
     typeof judoka.stats.power === "undefined" ||
     typeof judoka.stats.speed === "undefined" ||
     typeof judoka.stats.technique === "undefined" ||
-    typeof judoka.stats.kumikata === "undefined" ||
-    typeof judoka.stats.newaza === "undefined"
+    typeof judoka.stats.kumiKata === "undefined" ||
+    typeof judoka.stats.neWaza === "undefined"
   ) {
-    throw new Error("Missing required judoka fields for card code generation.")
+    throw new Error("Missing required judoka fields for card code generation.");
   }
 
   const stats = [
     judoka.stats.power,
     judoka.stats.speed,
     judoka.stats.technique,
-    judoka.stats.kumikata,
-    judoka.stats.newaza,
-  ].join("")
+    judoka.stats.kumiKata,
+    judoka.stats.neWaza,
+  ].join("");
 
   const raw = [
     CARD_CODE_VERSION,
-    judoka.firstname.toUpperCase(),
+    judoka.name.toUpperCase(),
     judoka.surname.toUpperCase(),
-    judoka.countryCode.toUpperCase(),
+    judoka.country.toUpperCase(),
     judoka.weightClass,
-    judoka.signatureMoveId.toString(),
+    judoka.signatureMoveId?.toString() || "",
     stats,
-  ].join("-")
+  ].join("-");
 
-  const xor = xorEncode(raw)
-  const readable = toReadableCharset(xor)
-  return chunk(readable)
+  const xor = xorEncode(raw);
+  const readable = toReadableCharset(xor);
+  return chunk(readable);
 }

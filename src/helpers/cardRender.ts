@@ -1,27 +1,7 @@
-import {getValue} from "./utils"
+import { getValue } from "./utils";
+import { Judoka, GokyoEntry } from "../types";
 
-interface Stats {
-  power?: number | string
-  speed?: number | string
-  technique?: number | string
-  kumikata?: number | string
-  newaza?: number | string
-}
-
-export interface Judoka {
-  id?: number
-  firstname?: string
-  surname?: string
-  stats?: Stats
-  signatureMoveId?: string
-}
-
-export interface Technique {
-  id: string
-  name: string
-}
-
-const PLACEHOLDER_PORTRAIT = "/judokaPortraits/judokaPortrait-0.png"
+const PLACEHOLDER_PORTRAIT = "/judokaPortraits/judokaPortrait-0.png";
 
 /**
  * Generates the portrait HTML for a judoka card.
@@ -30,16 +10,16 @@ const PLACEHOLDER_PORTRAIT = "/judokaPortraits/judokaPortrait-0.png"
  */
 export function generateCardPortrait(judoka: Judoka | null | undefined): string {
   const portraitUrl =
-    judoka && judoka.id ? `/judokaPortraits/judokaPortrait-${judoka.id}.png` : PLACEHOLDER_PORTRAIT
+    judoka && judoka.id ? `/judokaPortraits/judokaPortrait-${judoka.id}.png` : PLACEHOLDER_PORTRAIT;
 
   return `
     <div class="card-portrait">
-      <img src="${portraitUrl}" alt="${getValue(judoka?.firstname, "Judoka")} ${getValue(
+      <img src="${portraitUrl}" alt="${getValue(judoka?.name, "Judoka")} ${getValue(
         judoka?.surname,
         "",
       )}'s portrait" onerror="this.src='${PLACEHOLDER_PORTRAIT}'">
     </div>
-  `
+  `;
 }
 
 /**
@@ -48,19 +28,19 @@ export function generateCardPortrait(judoka: Judoka | null | undefined): string 
  * @returns The HTML string for the stats.
  */
 export function generateCardStats(judoka: Judoka | null | undefined): string {
-  if (!judoka?.stats) return `<div class="card-stats">No stats available</div>`
-  const {power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?"} = judoka.stats
+  if (!judoka?.stats) return `<div class="card-stats">No stats available</div>`;
+  const { power = "?", speed = "?", technique = "?", kumiKata = "?", neWaza = "?" } = judoka.stats;
   return `
     <div class="card-stats">
       <ul>
         <li class="stat"><strong>Power:</strong> <span>${power}</span></li>
         <li class="stat"><strong>Speed:</strong> <span>${speed}</span></li>
         <li class="stat"><strong>Technique:</strong> <span>${technique}</span></li>
-        <li class="stat"><strong>Kumi-kata:</strong> <span>${kumikata}</span></li>
-        <li class="stat"><strong>Ne-waza:</strong> <span>${newaza}</span></li>
+        <li class="stat"><strong>Kumi-kata:</strong> <span>${kumiKata}</span></li>
+        <li class="stat"><strong>Ne-waza:</strong> <span>${neWaza}</span></li>
       </ul>
     </div>
-  `
+  `;
 }
 
 /**
@@ -71,20 +51,20 @@ export function generateCardStats(judoka: Judoka | null | undefined): string {
  */
 export function generateCardSignatureMove(
   judoka: Judoka | null | undefined,
-  gokyo: Technique[] | null | undefined,
+  gokyo: GokyoEntry[] | null | undefined,
 ): string {
-  const signatureMoveId = judoka?.signatureMoveId
-  const technique = Array.isArray(gokyo) ? gokyo.find((move) => move.id === signatureMoveId) : null
+  const signatureMoveId = judoka?.signatureMoveId;
+  const technique = Array.isArray(gokyo) ? gokyo.find((move) => move.id === signatureMoveId) : null;
 
   if (!technique) {
-    console.warn(`No technique found for signatureMoveId: ${signatureMoveId}`)
+    console.warn(`No technique found for signatureMoveId: ${signatureMoveId}`);
   }
 
-  const techniqueName = technique?.name ?? "Unknown"
+  const techniqueName = technique?.name ?? "Unknown";
   return `
     <div class="card-signature">
       <span class="signature-move-label"><strong>Signature Move:</strong></span>
       <span class="signature-move-value">${techniqueName}</span>
     </div>
-  `
+  `;
 }

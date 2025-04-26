@@ -1,37 +1,27 @@
-import {formatDate, escapeHTML, getValue} from "./utils.ts"
-import {getFlagUrl} from "./countryUtils.ts"
-import {generateCardTopBar} from "./cardTopBar.ts"
-import {generateCardPortrait, generateCardStats, generateCardSignatureMove} from "./cardRender.ts"
-
-interface Judoka {
-  countryCode: string
-  lastUpdated: string
-  [key: string]: any // to accommodate other fields used in rendering
-}
-
-interface Technique {
-  id: string
-  name: string
-}
+import { formatDate, escapeHTML, getValue } from "./utils";
+import { getFlagUrl } from "./countryUtils";
+import { generateCardTopBar } from "./cardTopBar";
+import { generateCardPortrait, generateCardStats, generateCardSignatureMove } from "./cardRender";
+import { Judoka, GokyoEntry } from "../types";
 
 /**
  * Generates the "last updated" HTML for a judoka card.
- * @param {string} date
- * @returns {string}
+ * @param date - The last updated date as a string.
+ * @returns The HTML string for the "last updated" section.
  */
 function generateCardLastUpdated(date: string): string {
-  return `<div class="card-updated">Last updated: ${escapeHTML(date)}</div>`
+  return `<div class="card-updated">Last updated: ${escapeHTML(date)}</div>`;
 }
 
 /**
  * Generates the complete HTML for a judoka card.
- * @param {Judoka} judoka
- * @param {Technique[]} gokyo
- * @returns {string}
+ * @param judoka - The judoka object.
+ * @param gokyo - The array of Gokyo entries (techniques).
+ * @returns The complete HTML string for the judoka card.
  */
-export function generateJudokaCardHTML(judoka: Judoka, gokyo: Technique[]): string {
-  const flagUrl = getFlagUrl(judoka.countryCode)
-  const lastUpdated = formatDate(judoka.lastUpdated)
+export function generateJudokaCardHTML(judoka: Judoka, gokyo: GokyoEntry[]): string {
+  const flagUrl = getFlagUrl(judoka.country);
+  const lastUpdated = formatDate(judoka.lastUpdated);
 
   return `
     <div class="card-container">
@@ -43,5 +33,5 @@ export function generateJudokaCardHTML(judoka: Judoka, gokyo: Technique[]): stri
         ${generateCardLastUpdated(lastUpdated)}
       </div>
     </div>
-  `
+  `;
 }
