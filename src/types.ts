@@ -24,3 +24,8 @@ export type JudokaCard = {
   judoka: Judoka; // The judoka displayed on the card
   signatureMove: string; // The name of the signature move
 };
+
+export interface CountryCodeEntry {
+  code: string;
+  name: string;
+}
