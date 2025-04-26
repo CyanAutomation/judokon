@@ -1,7 +1,7 @@
 import {formatDate, escapeHTML, getValue} from "./utils.ts"
 import {getFlagUrl} from "./countryUtils.ts"
 import {generateCardTopBar} from "./cardTopBar.ts"
-import {generateCardPortrait, generateCardStats, generateCardSignatureMove} from "./cardRender.js"
+import {generateCardPortrait, generateCardStats, generateCardSignatureMove} from "./cardRender.ts"
 
 interface Judoka {
   countryCode: string
