@@ -26,6 +26,9 @@ export type JudokaCard = {
 };
 
 export interface CountryCodeEntry {
-  code: string;
-  name: string;
+  country: string;      // full country name (e.g. "Japan")
+  code: string;         // 3-letter country code (e.g. "JPN")
+  lastUpdated: string;  // ISO date string
+  updatedBy: string;    // user name or ID
+  active: boolean;      // true/false
 }
