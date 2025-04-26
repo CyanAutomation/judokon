@@ -1,3 +1,5 @@
+import { getCountryNameFromCode } from "./countryUtils.js";
+
 const PLACEHOLDER_FLAG_URL = "./assets/countryFlags/placeholder-flag.png";
 
 /**
