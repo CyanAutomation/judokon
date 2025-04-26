@@ -4,6 +4,7 @@
     "module": "ES6",
     "moduleResolution": "node",
     "strict": true,
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowJs": false,         // << ❗ Turn off (since you're using only TS now)
     "outDir": "dist",
