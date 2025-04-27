@@ -128,8 +128,36 @@
   }
   
   /* Utility classes */
+  .spinner {
+    width: 40px;
+    height: 40px;
+    margin: 20px auto;
+    border: 5px solid #ccc;
+    border-top: 5px solid #0C3F7A; /* your dark blue */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  /* Animation Keyframes */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Optional: Hide spinner by default with the hidden class */
   .hidden {
-    display: none; /* Hide elements */
+    display: none;
+  }
+
+  .screen {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+  }
+  
+  .screen.active {
+    opacity: 1;
+    visibility: visible;
   }
   
   .text-center {

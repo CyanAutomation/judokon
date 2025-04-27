@@ -34,14 +34,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  const screens = {
+    home: document.getElementById('homeScreen'),
+    loading: document.getElementById('loadingScreen'),
+    battle: document.getElementById('battleScreen'),
+    browse: document.getElementById('browseScreen'),
+    edit: document.getElementById('editScreen'),
+  };
+
   function toggleLoading(isLoading) {
     if (isLoading) {
-      loadingIndicator.classList.remove("hidden");
-      gameArea.classList.add("hidden");
+      showScreen('loading');
     } else {
-      loadingIndicator.classList.add("hidden");
-      gameArea.classList.remove("hidden");
+      showScreen('battle'); // or whatever screen should appear after loading
     }
+  }
+
+  function showScreen(screenElement) {
+    document.querySelectorAll('.screen').forEach((el) => {
+      el.classList.remove('active');
+    });
+    screenElement.classList.add('active');
+  }
+
+  function showScreen(screenName) {
+    Object.values(screens).forEach(screen => screen.classList.remove('active'));
+    screens[screenName].classList.add('active');
   }
 
   async function fetchDataWithErrorHandling(url) {

@@ -135,3 +135,35 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 - Add animations for card flips and stat comparisons
 - Implement difficulty levels for the computer opponent
 - Expand the card deck with more judoka and stats
+
+## Intended Structure
+
++----------------+
+|    Home        |
+| [Start Game]   |
+| [Browse Cards] |
++--------+-------+
+         |
+         v
++----------------+
+|    Loading     |
+|  (Fetching...) |
++--------+-------+
+         |
+         v
++----------------+
+|    Battle      |
+|  (Play Cards)  |
++----+-----+-----+
+     |     |
+     |     v
+     |  +----------------+
+     |  |  Browse Cards   |
+     |  | (View All)      |
+     |  +---+--------+----+
+     |      |        |
+     |      v        v
+     |  Edit Card   Back to Battle
+     |  (Admin)     
+     |
+Back to Home
