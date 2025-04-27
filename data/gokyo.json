@@ -1,5 +1,14 @@
 [
   {
+    "id": 0,
+    "name": "Unknown",
+    "japanese": "内股",
+    "category": "Nage-waza",
+    "subCategory": "Koshi-waza",
+    "description": "A mysterious unknown move.",
+    "link": "https://en.wikipedia.org/wiki/judo"
+  },
+  {
     "id": 1,
     "name": "Uchi-mata",
     "japanese": "内股",

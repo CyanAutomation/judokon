@@ -80,32 +80,27 @@ export function generateCardStats(card) {
 }
 
 /**
- * Generates the signature move HTML for a judoka card.
- *
  * Pseudocode:
  * 1. Extract the `signatureMoveId` from the `judoka` object:
- *    - If `judoka` is null or undefined, `signatureMoveId` will also be undefined.
+ *    - If `judoka` is null or undefined, default `signatureMoveId` to 0.
  *
  * 2. Validate the `gokyo` array and search for a matching technique:
  *    - Check if `gokyo` is an array.
  *    - Use the `find` method to locate a technique where:
- *      a. The `id` matches `signatureMoveId` (case-insensitive).
+ *      a. The `id` matches `signatureMoveId`.
  *      b. The `name` property exists.
- *    - If no matching technique is found, set `technique` to `null`.
+ *    - If no matching technique is found, `technique` will be `null`.
  *
- * 3. Log a warning if no technique is found:
- *    - If `technique` is null, log a warning message with the `signatureMoveId`.
- *
- * 4. Determine the technique name:
+ * 3. Extract the technique name:
  *    - If a valid `technique` is found, use its `name` property.
- *    - If no valid `technique` is found, default the name to "Unknown".
+ *    - Since "Unknown" is guaranteed in `gokyo.json` for `id: 0`, no fallback is needed.
  *
- * 5. Construct the HTML for the signature move:
+ * 4. Construct the HTML for the signature move:
  *    - Create a `<div>` element with the class `card-signature`.
  *    - Add a `<span>` element with the label "Signature Move:" in bold.
  *    - Add another `<span>` element with the technique name.
  *
- * 6. Return the constructed HTML string.
+ * 5. Return the constructed HTML string.
  *
  * @param {JudokaCard} card - The card data containing the judoka and signature move.
  * @param {Array<GokyoEntry>} gokyo - The array of techniques.
@@ -113,20 +108,14 @@ export function generateCardStats(card) {
  */
 export function generateCardSignatureMove(card, gokyo) {
   const { judoka } = card;
-  const signatureMoveId = judoka?.signatureMoveId;
+  const signatureMoveId = judoka?.signatureMoveId ?? 0; // Default to 0 if undefined
 
   // Ensure gokyo is an array and find a valid technique
   const technique = Array.isArray(gokyo)
-    ? gokyo.find(
-      (move) => move.id === signatureMoveId && move.name // Compare as numbers if both are numeric
-    )
+    ? gokyo.find((move) => move.id === signatureMoveId)
     : null;
 
-  if (!technique) {
-    console.warn(`No technique found for signatureMoveId: ${signatureMoveId}`);
-  }
-
-  const techniqueName = technique?.name ?? "Unknown";
+  const techniqueName = technique?.name; // No need for fallback, "Unknown" is guaranteed in gokyo.json
   return `
     <div class="card-signature">
       <span class="signature-move-label"><strong>Signature Move:</strong></span>
