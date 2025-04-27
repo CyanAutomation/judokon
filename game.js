@@ -12,25 +12,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   startBtn.addEventListener("click", async () => {
     console.log("Start button clicked!");
-    startBtn.classList.add("hidden");
-    gameArea.innerHTML = ""; // Clear the game area
-
+    showScreen('loading'); // <-- instead of toggleLoading(true)
+  
     try {
-      toggleLoading(true);
-
-      const judokaData = await fetchDataWithErrorHandling("./data/judoka.json");
-      const gokyoData = await fetchDataWithErrorHandling("./data/gokyo.json");
-
-      validateData(judokaData, "judoka");
-      validateData(gokyoData, "gokyo");
-
+      const judokaData = await fetch("/judokon/data/judoka.json").then((response) => response.json());
+      const gokyoData = await fetch("/judokon/data/gokyo.json").then((response) => response.json());
+  
+      console.log("Judoka data fetched:", judokaData);
+      console.log("Gokyo data fetched:", gokyoData);
+  
       const selectedJudoka = getRandomJudoka(judokaData);
+      console.log("Selected judoka:", selectedJudoka);
+  
       displayJudokaCard(selectedJudoka, gokyoData);
+  
+      showScreen('battle'); // <-- instead of toggleLoading(false)
     } catch (error) {
       console.error("Error loading card:", error);
-      gameArea.innerHTML = `<p>⚠️ Failed to load card. ${error.message}. Please try again later.</p>`;
-    } finally {
-      toggleLoading(false);
+      screens.battle.innerHTML = `<p>⚠️ Failed to load card. Please try again later.</p>`;
+      showScreen('battle');
     }
   });
 
