@@ -43,8 +43,9 @@ describe("generateCardSignatureMove", () => {
   });
 
   it("handles numeric signatureMoveId correctly", () => {
-    const numericGokyo = [{ id: 1, name: "Ippon Seoi Nage" }];
-    const numericJudoka = { signatureMoveId: 1 };
+    const numericGokyo = { id: 1, name: "Ippon Seoi Nage" }; // Single technique
+    const numericJudoka = { signatureMoveId: 1 }; // Matches the technique
+  
     const html = generateCardSignatureMove(numericJudoka, numericGokyo);
     expect(html).toContain("Signature Move:");
     expect(html).toContain("Ippon Seoi Nage");
@@ -55,13 +56,13 @@ describe("generateCardSignatureMove", () => {
     expect(html).toBe(`
       <div class="card-signature">
         <span class="signature-move-label"><strong>Signature Move:</strong></span>
-        <span class="signature-move-value">Uchi Mata</span>
+        <span class="signature-move-value">Uchi-mata</span>
       </div>
     `);
   });
 
   it("handles special characters in technique names", () => {
-    const specialGokyo = [{ id: 1, name: "O-soto-gari" }];
+    const specialGokyo = { id: 1, name: "O-soto-gari" }; // Single technique
     const specialJudoka = { signatureMoveId: 1 };
     const html = generateCardSignatureMove(specialJudoka, specialGokyo);
     expect(html).toContain("Signature Move:");
@@ -69,19 +70,19 @@ describe("generateCardSignatureMove", () => {
   });
 
   it("handles empty strings in technique names", () => {
-    const emptyGokyo = [{ id: 1, name: "" }];
+    const emptyGokyo = { id: 1, name: "" }; // Single technique with an empty name
     const emptyJudoka = { signatureMoveId: 1 };
     const html = generateCardSignatureMove(emptyJudoka, emptyGokyo);
     expect(html).toContain("Signature Move:");
-    expect(html).toContain("Unknown");
+    expect(html).toContain("Unknown"); // Empty name should fallback to "Unknown"
   });
 
   it("handles null values in technique names", () => {
-    const nullGokyo = [{ id: 1, name: null }];
+    const nullGokyo = { id: 1, name: null }; // Single technique with a null name
     const nullJudoka = { signatureMoveId: 1 };
     const html = generateCardSignatureMove(nullJudoka, nullGokyo);
     expect(html).toContain("Signature Move:");
-    expect(html).toContain("Unknown");
+    expect(html).toContain("Unknown"); // Null name should fallback to "Unknown"
   });
 
   it("handles mismatched types between signatureMoveId and gokyo id", () => {

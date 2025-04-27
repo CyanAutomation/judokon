@@ -1,8 +1,8 @@
 import { generateCardSignatureMove } from "../helpers/cardRender.js";
 
 // Mock data
-const mockJudoka = { signatureMoveId: "uchi-mata" };
-const mockGokyo = { id: "uchi-mata", name: "Uchi Mata" }; // Single technique
+const mockJudoka = { signatureMoveId: 1 }; // Numeric ID
+const mockGokyo = { id: 1, name: "Uchi-mata" }; // Numeric ID and matching name
 
 describe("generateCardSignatureMove", () => {
   describe("Valid Inputs", () => {
