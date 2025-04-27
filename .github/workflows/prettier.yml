@@ -3,7 +3,10 @@ name: Prettier Auto-Format
 on:
   schedule:
     - cron: '0 3 * * *' # Runs at 3:00 AM UTC every day
-  workflow_dispatch: # (optional) allows manual triggering too
+  workflow_dispatch: # Allows manual triggering too
+
+permissions:
+  contents: write  # 👈🔥 Important! Allow pushing commits
 
 jobs:
   format:
@@ -30,5 +33,4 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add .
-          git diff --cached --quiet || git commit -m "chore: auto-format with Prettier"
-          git push
+          git diff --cached --quiet || (git commit -m "chore: auto-format with Prettier" && git push)

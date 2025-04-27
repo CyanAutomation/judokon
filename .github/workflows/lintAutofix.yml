@@ -1,13 +1,7 @@
 name: Lint and Auto-Fix
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-permissions:
-  contents: write  # 👈 Allow the GitHub Actions bot to push code changes
+  workflow_dispatch:
 
 jobs:
   lint:
@@ -24,12 +18,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run ESLint and Prettier auto-fix
-        run: |
-          npx eslint . --fix
-          npx prettier --write .
+      - name: Run ESLint with auto-fix
+        run: npx eslint . --fix
 
       - name: Auto-commit changes if any
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: auto-format with Prettier and ESLint"
+          commit_message: "chore: fix lint errors automatically"
