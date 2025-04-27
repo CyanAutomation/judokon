@@ -24,9 +24,8 @@ const PLACEHOLDER_PORTRAIT = "./assets/judokaPortraits/judokaPortrait-0.png";
  */
 export function generateCardPortrait(card) {
   console.log("Card object received:", card); // Debugging log
-  const { judoka } = card;
 
-  if (!judoka) {
+  if (!card) {
     console.warn("Judoka object is missing.");
     return `
       <div class="card-portrait">
@@ -36,17 +35,16 @@ export function generateCardPortrait(card) {
   }
 
   const portraitUrl =
-    judoka.id
-      ? `./assets/judokaPortraits/judokaPortrait-${judoka.id}.png`
+    card.id
+      ? `./assets/judokaPortraits/judokaPortrait-${card.id}.png`
       : PLACEHOLDER_PORTRAIT;
 
-  console.log("Judoka object:", judoka);
   console.log("Constructed portrait URL:", portraitUrl);
 
   return `
     <div class="card-portrait">
-      <img src="${portraitUrl}" alt="${getValue(judoka?.firstname, "Judoka")} ${getValue(
-        judoka?.surname,
+      <img src="${portraitUrl}" alt="${getValue(card?.firstname, "Judoka")} ${getValue(
+        card?.surname,
         ""
       )}'s portrait" onerror="this.src='${PLACEHOLDER_PORTRAIT}'">
     </div>
