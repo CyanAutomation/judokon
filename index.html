@@ -19,26 +19,29 @@
   </head>
 
   <body>
-    <div id="homeScreen" class="screen active">
+    <header>
       <h1>JU-DO-KON!</h1>
       <p class="subtitle">A web-based judo-themed card battle game featuring elite judoka</p>
-      <button id="startBtn" aria-label="Start the game">Start Game</button>
-    </div>
-  
-    <!-- Loading Screen -->
-    <div id="loadingScreen" class="screen">
-      <p>Loading...</p>
-      <div class="spinner"></div>
-    </div>
-  
-    <!-- Battle Screen -->
-    <div id="battleScreen" class="screen">
-      <h2>Battle Time!</h2>
-      <p>Prepare to face your opponent!</p>
-      <div id="gameArea"></div>
-      <button id="backToHomeBtn">Back to Home</button>
-    </div>
-  
+    </header>
+
+    <main class="container" role="main">
+      <section>
+        <!-- Button to start the game -->
+        <button id="startBtn" aria-label="Start the game" title="Start the game">Start Game</button>
+
+        <!-- Loading indicator shown while data is being fetched -->
+        <div id="loading" class="hidden" aria-live="polite">
+          <p>Loading...</p>
+          <div class="spinner" aria-hidden="true"></div>
+        </div>
+
+        <!-- Game area where the judoka card will be displayed -->
+        <div id="gameArea" class="hidden" aria-live="polite">
+          <p>Get ready to play JU-DO-KON! Click "Start Game" to begin.</p>
+        </div>
+      </section>
+    </main>
+
     <footer>
       <p>&copy; 2025 JU-DO-KON! All rights reserved.</p>
     </footer>
