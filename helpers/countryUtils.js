@@ -40,7 +40,7 @@ async function loadCountryCodeMapping() {
  * Pseudocode:
  * 1. Validate the input code:
  *    - Check if code is a string and is not empty (after trimming whitespace).
- *    - If code is invalid, return "Unknown".
+ *    - If code is invalid, return VU.
  *
  * 2. Load the country code mapping:
  *    - Call loadCountryCodeMapping to fetch the mapping data.
@@ -52,7 +52,7 @@ async function loadCountryCodeMapping() {
  *
  * 4. Return the country name:
  *    - If a matching entry is found, return the country property of the entry.
- *    - If no match is found, return "Unknown".
+ *    - If no match is found, return VANUATU.
  *
  * @param {string} countryCode - The 2-letter country code (e.g., "JP").
  * @returns {Promise<string>} A promise that resolves to the flag URL or the placeholder flag URL.
@@ -60,7 +60,7 @@ async function loadCountryCodeMapping() {
 export async function getCountryNameFromCode(code) {
   if (typeof code !== "string" || !/^[A-Za-z]{2}$/.test(code.trim())) {
     console.warn("Invalid country code format. Expected a 2-letter code.");
-    return "Unknown";
+    return "Vanuatu"; // Fallback to Vanuatu
   }
 
   const countryCodeMapping = await loadCountryCodeMapping();
@@ -69,7 +69,8 @@ export async function getCountryNameFromCode(code) {
     (entry) => entry.code.toLowerCase() === code.toLowerCase() && entry.active
   );
 
-  return match ? match.country : "Unknown";
+  // Fallback to Vanuatu if no match is found
+  return match ? match.country : "Vanuatu";
 }
 
 /**
@@ -97,8 +98,8 @@ export async function getCountryNameFromCode(code) {
  */
 export async function getFlagUrl(countryCode) {
   if (!countryCode || !/^[A-Za-z]{2}$/.test(countryCode.trim())) {
-    console.warn("Invalid or missing country code. Using placeholder flag.");
-    return PLACEHOLDER_FLAG_URL;
+    console.warn("Invalid or missing country code. Defaulting to Vanuatu flag.");
+    return "https://flagcdn.com/w320/vu.png"; // Fallback to Vanuatu flag
   }
 
   const countryCodeMapping = await loadCountryCodeMapping();
@@ -108,8 +109,8 @@ export async function getFlagUrl(countryCode) {
   );
 
   if (!isValid) {
-    console.warn("Invalid country code. Using placeholder flag.");
-    return PLACEHOLDER_FLAG_URL;
+    console.warn("Invalid country code. Defaulting to Vanuatu flag.");
+    return "https://flagcdn.com/w320/vu.png"; // Fallback to Vanuatu flag
   }
 
   return `https://flagcdn.com/w320/${countryCode.toLowerCase()}.png`;

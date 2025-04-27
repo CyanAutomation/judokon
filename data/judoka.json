@@ -1,5 +1,27 @@
 [
   {
+    "id": 0,
+    "firstname": "Tatsuuma",
+    "surname": "Ushiyama",
+    "country": "Vanuatu",
+    "countryCode": "vu",
+    "weightClass": "+100",
+    "stats": {
+      "power": 9,
+      "speed": 9,
+      "technique": 9,
+      "kumikata": 9,
+      "newaza": 9
+    },
+    "signatureMoveId": 0,
+    "lastUpdated": "2025-04-22T10:00:00Z",
+    "profileUrl": "https://en.wikipedia.org/wiki/Joana_Ramos",
+    "gender": "male",
+    "isHidden": true,
+    "rarity": "Legendary",
+    "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT8C"
+  },
+  {
     "id": 111,
     "firstname": "Joana",
     "surname": "Ramos",

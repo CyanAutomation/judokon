@@ -95,13 +95,13 @@ export async function generateCardTopBar(judoka, flagUrl) {
     };
   }
 
-  const firstname = escapeHTML(getValue(judoka.firstname, "Unknown"));
-  const surname = escapeHTML(getValue(judoka.surname, ""));
-  const countryCode = getValue(judoka.countryCode, "unknown");
+  const firstname = escapeHTML(getValue(judoka.firstname, "Tatsuuma"));
+  const surname = escapeHTML(getValue(judoka.surname, "Ushiyama"));
+  const countryCode = getValue(judoka.countryCode, "vu");
 
   // Await the resolved country name
   const countryName =
-    countryCode !== "unknown" ? await getCountryNameFromCode(countryCode) : "Unknown";
+    countryCode !== "unknown" ? await getCountryNameFromCode(countryCode) : "Vanuatu";
 
   const fullTitle = `${firstname} ${surname}`.trim();
   const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;

@@ -1,5 +1,12 @@
 [
   {
+    "country": "Vanuatu",
+    "code": "vu",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
     "country": "Portugal",
     "code": "pt",
     "lastUpdated": "2025-04-23T10:00:00Z",
