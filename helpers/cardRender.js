@@ -23,6 +23,7 @@ const PLACEHOLDER_PORTRAIT = "./assets/judokaPortraits/judokaPortrait-0.png";
  * @returns {string} The HTML string for the portrait.
  */
 export function generateCardPortrait(card) {
+  console.log("Card object received:", card); // Debugging log
   const { judoka } = card;
 
   if (!judoka) {
