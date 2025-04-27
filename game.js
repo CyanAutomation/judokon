@@ -2,7 +2,6 @@ import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const startBtn = document.getElementById("startBtn");
-  const browseBtn = document.getElementById("browseBtn");
   const backToHomeBtn = document.getElementById("backToHomeBtn");
   const gameArea = document.getElementById("gameArea");
   const loadingIndicator = document.getElementById("loading");
