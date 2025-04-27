@@ -34,4 +34,34 @@ describe("generateCardSignatureMove", () => {
     const html = generateCardSignatureMove({}, mockGokyo);
     expect(html).toContain("Unknown");
   });
+
+    it("returns 'Unknown' if no matching technique is found", () => {
+    const html = generateCardSignatureMove({ signatureMoveId: 999 }, mockGokyo);
+    expect(html).toContain("Signature Move:");
+    expect(html).toContain("Unknown");
+  });
+
+    it("returns 'Unknown' if gokyo is an empty array", () => {
+    const html = generateCardSignatureMove(mockJudoka, []);
+    expect(html).toContain("Signature Move:");
+    expect(html).toContain("Unknown");
+  });
+
+    it("handles numeric signatureMoveId correctly", () => {
+    const numericGokyo = [{ id: 1, name: "Ippon Seoi Nage" }];
+    const numericJudoka = { signatureMoveId: 1 };
+    const html = generateCardSignatureMove(numericJudoka, numericGokyo);
+    expect(html).toContain("Signature Move:");
+    expect(html).toContain("Ippon Seoi Nage");
+  });
+
+    it("generates the correct HTML structure", () => {
+    const html = generateCardSignatureMove(mockJudoka, mockGokyo);
+    expect(html).toBe(`
+      <div class="card-signature">
+        <span class="signature-move-label"><strong>Signature Move:</strong></span>
+        <span class="signature-move-value">Uchi Mata</span>
+      </div>
+    `);
+  });
 });

@@ -108,10 +108,12 @@ export function generateCardStats(card) {
  */
 export function generateCardSignatureMove(card, gokyo) {
   const { judoka } = card;
-  const signatureMoveId = judoka?.signatureMoveId ?? 0; // Default to 0 if undefined
+  const signatureMoveId = Number(judoka?.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
 
   // Ensure gokyo is an array and find a valid technique
-  const technique = Array.isArray(gokyo) ? gokyo.find((move) => move.id === signatureMoveId) : null;
+  const technique = Array.isArray(gokyo)
+    ? gokyo.find((move) => Number(move.id) === signatureMoveId) // Compare as numbers
+    : null;
 
   const techniqueName = technique?.name; // No need for fallback, "Unknown" is guaranteed in gokyo.json
   return `
