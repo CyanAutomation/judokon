@@ -1,7 +1,7 @@
 import { escapeHTML } from "./utils.js";
 import { getFlagUrl } from "./countryUtils.js";
 import { generateCardTopBar } from "./cardTopBar.js";
-import countryCodeMapping from "../data/countryCodeMapping.json";
+import { getCountryNameFromCode } from "./countryUtils.js";
 import {
   generateCardPortrait,
   generateCardStats,
@@ -32,13 +32,6 @@ function generateCardLastUpdated(date) {
   if (!date) return ""; // If date is undefined, don't render anything
   const safeDate = date instanceof Date ? date.toISOString().split("T")[0] : date;
   return `<div class="card-updated">Last updated: ${escapeHTML(safeDate)}</div>`;
-}
-
-function getCountryCodeFromName(countryName) {
-  const mapping = countryCodeMapping.find(
-    (entry) => entry.country.toLowerCase() === countryName.toLowerCase()
-  );
-  return mapping ? mapping.code : null; // Return the code if found, otherwise null
 }
 
 /**
@@ -91,11 +84,12 @@ function validateJudoka(judoka) {
  * @param {Object} gokyo - The single Gokyo entry (technique).
  * @returns {string} The complete HTML string for the judoka card.
  */
+
 export async function generateJudokaCardHTML(judoka, gokyo) {
   validateJudoka(judoka);
 
-  // Map country name to country code
-  const countryCode = getCountryCodeFromName(judoka.country);
+  // Map country name to country code using getCountryNameFromCode
+  const countryCode = await getCountryNameFromCode(judoka.country);
   if (!countryCode) {
     console.warn(`No country code found for country name: "${judoka.country}"`);
   }
