@@ -33,7 +33,7 @@ function getValue(value, defaultValue) {
  * @param {string} [flagUrl] - The URL of the flag image.
  * @returns {Object} An object with title, flagUrl, and html properties.
  */
-export function generateCardTopBar(judoka, flagUrl) {
+export async function generateCardTopBar(judoka, flagUrl) {
   if (!judoka) {
     console.error("Judoka object is missing!");
     return {

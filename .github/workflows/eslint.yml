@@ -1,0 +1,40 @@
+name: Run ESLint
+
+on:
+  push:
+    branches:
+      - main # Run on pushes to the main branch
+
+jobs:
+  lint:
+    name: Lint Code with ESLint
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 # Use Node.js version 18
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Run ESLint with auto-fixing
+      - name: Run ESLint with auto-fix
+        run: npx eslint . --fix # Lint all files and apply fixes
+
+      # Step 5: Commit and push fixes (if any)
+      - name: Commit and push fixes
+        if: success() && steps.lint.outcome == 'success'
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "chore: auto-fix ESLint issues"
+          git push
