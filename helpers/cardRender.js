@@ -112,7 +112,10 @@ export function generateCardStats(card) {
 export function generateCardSignatureMove(card, gokyo) {
   const { judoka } = card;
   const signatureMoveId = judoka?.signatureMoveId;
-  const technique = Array.isArray(gokyo) ? gokyo.find((move) => move.id === signatureMoveId) : null;
+
+  const technique = Array.isArray(gokyo)
+    ? gokyo.find((move) => move.id === signatureMoveId && move.name)
+    : null;
 
   if (!technique) {
     console.warn(`No technique found for signatureMoveId: ${signatureMoveId}`);

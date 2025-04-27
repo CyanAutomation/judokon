@@ -5,25 +5,24 @@ import { defineConfig } from "eslint/config";
 
 export default defineConfig([
   {
+    ignores: ["dist/**", "node_modules/**"], // 🔥 Replace your old .eslintignore here
     files: ["**/*.{js,mjs,cjs}"],
     plugins: {
       js,
       prettier: prettierPlugin
     },
-    extends: [
-      "js/recommended",
-      "plugin:prettier/recommended"
-    ],
     languageOptions: {
       globals: globals.browser
     },
     rules: {
+      ...js.configs.recommended.rules, // 🔥 Bring in "js/recommended" rules manually
+      ...prettierPlugin.configs.recommended.rules, // 🔥 Bring in Prettier rules manually
       semi: ["error", "always"],
       quotes: ["error", "double"],
       eqeqeq: "error",
       "no-unused-vars": "warn",
       indent: ["error", 2],
-      "prettier/prettier": "error"
+      "prettier/prettier": "error" // Show Prettier formatting issues as ESLint errors
     }
   },
   {
@@ -31,7 +30,7 @@ export default defineConfig([
     languageOptions: {
       globals: {
         ...globals.browser,
-        ...globals.jest // 👈 Add jest globals for test files
+        ...globals.jest // Enable jest globals in test files
       }
     }
   }
