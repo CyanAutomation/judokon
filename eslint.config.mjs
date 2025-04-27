@@ -6,12 +6,12 @@ import { defineConfig } from "eslint/config";
 export default defineConfig([
   {
     ignores: [
-      "dist/**", 
-      "node_modules/**", 
-      "build/**", 
-      "*.log", 
-      "*.tmp", 
-      ".eslintcache", 
+      "dist/**",
+      "node_modules/**",
+      "build/**",
+      "*.log",
+      "*.tmp",
+      ".eslintcache",
       ".git/**"
     ], // 🔥 Updated ignores
     files: ["**/*.{js,mjs,cjs}"],

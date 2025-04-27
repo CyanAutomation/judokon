@@ -2,7 +2,7 @@ name: Prettier Auto-Format
 
 on:
   schedule:
-    - cron: '0 3 * * *' # Runs at 3:00 AM UTC every day
+    - cron: "0 3 * * *" # Runs at 3:00 AM UTC every day
   workflow_dispatch: # Allows manual triggering too
 
 permissions:
