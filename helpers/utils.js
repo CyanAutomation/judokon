@@ -25,6 +25,7 @@ const escapeMap = {
  *
  * @param {string} str - The string to escape.
  * @returns {string} The escaped string.
+ * @typedef {string} EscapedHTML
  */
 export function escapeHTML(str) {
   return String(str).replace(/[&<>"']/g, (char) => escapeMap[char] || char);
@@ -80,6 +81,7 @@ export function getValue(value, fallback = "Unknown") {
  * @param {string} dateString - The date string to format.
  * @param {string} [locale="en-GB"] - The locale for formatting (currently unused).
  * @returns {string} The formatted date or "Invalid Date".
+ * @typedef {string} FormattedDate
  */
 export function formatDate(dateString, locale = "en-GB") {
   if (typeof dateString !== "string" || !dateString.trim()) {

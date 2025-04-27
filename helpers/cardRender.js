@@ -14,15 +14,16 @@ const PLACEHOLDER_PORTRAIT = "./assets/judokaPortraits/judokaPortrait-0.png";
  *    - Create a <div> element with the class CARD-PORTRAIT.
  *    - Inside the <div>, add an <img> element:
  *      a. Set the SRC attribute to the determined portrait URL.
- *      b. Set the ARL attribute to include the judoka's FIRSTNAME and SURNAME (fallback to "Judoka" if FIRSTNAME is missing).
+ *      b. Set the ALT attribute to include the judoka's FIRSTNAME and SURNAME (fallback to "Judoka" if FIRSTNAME is missing).
  *      c. Add an ONERROR handler to replace the image with the PLACEHOLDER_PORTRAIT if the image fails to load.
  *
  * 3. Return the constructed HTML string.
  *
- * @param {Object|null|undefined} judoka - The judoka object.
+ * @param {JudokaCard} card - The card data containing the judoka and signature move.
  * @returns {string} The HTML string for the portrait.
  */
-export function generateCardPortrait(judoka) {
+export function generateCardPortrait(card) {
+  const { judoka } = card;
   const portraitUrl =
     judoka && judoka.id
       ? `./assets/judokaPortraits/judokaPortrait-${judoka.id}.png`
@@ -58,10 +59,11 @@ export function generateCardPortrait(judoka) {
  *
  * 4. Return the constructed HTML string.
  *
- * @param {Object|null|undefined} judoka - The judoka object.
+ * @param {JudokaCard} card - The card data containing the judoka and signature move.
  * @returns {string} The HTML string for the stats.
  */
-export function generateCardStats(judoka) {
+export function generateCardStats(card) {
+  const { judoka } = card;
   if (!judoka?.stats) return '<div class="card-stats">No stats available</div>';
   const { power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?" } = judoka.stats;
   return `
@@ -103,11 +105,12 @@ export function generateCardStats(judoka) {
  *
  * 6. Return the constructed HTML string.
  *
- * @param {Object|null|undefined} judoka - The judoka object.
- * @param {Array|null|undefined} gokyo - The array of techniques.
+ * @param {JudokaCard} card - The card data containing the judoka and signature move.
+ * @param {Array<GokyoEntry>} gokyo - The array of techniques.
  * @returns {string} The HTML string for the signature move.
  */
-export function generateCardSignatureMove(judoka, gokyo) {
+export function generateCardSignatureMove(card, gokyo) {
+  const { judoka } = card;
   const signatureMoveId = judoka?.signatureMoveId;
   const technique = Array.isArray(gokyo) ? gokyo.find((move) => move.id === signatureMoveId) : null;
 

@@ -75,7 +75,6 @@ function validateJudoka(judoka) {
  *    - If it's undefined, use an empty string.
  *
  * 4. Generate the complete HTML for the judoka card:
- *    - Include the top bar HTML.
  *    - Include the top bar, portrait, stats, signature move, and last updated sections.
  *
  * 5. Return the complete HTML string.
@@ -85,23 +84,15 @@ function validateJudoka(judoka) {
  * @returns {string} The complete HTML string for the judoka card.
  */
 export async function generateJudokaCardHTML(judoka, gokyo) {
-  // Validate the Judoka object
   validateJudoka(judoka);
 
-  // Generate the flag URL
   const flagUrl = getFlagUrl(judoka.country);
 
-  // Ensure lastUpdated is a string before passing it to formatDate
   const lastUpdated =
     typeof judoka.lastUpdated === "string"
       ? judoka.lastUpdated
       : judoka.lastUpdated?.toISOString().split("T")[0] || "";
 
-  // Await the top bar HTML
-  const topBarHtml = await generateCardTopBar(judoka, flagUrl);
-  console.log("Generated card HTML:", topBar.html);
-
-  // Generate the complete HTML
   return `
     <div class="card-container">
       <div class="judoka-card">

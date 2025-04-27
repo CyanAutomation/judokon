@@ -21,7 +21,17 @@ async function loadCountryCodeMapping() {
   if (!response.ok) {
     throw new Error("Error - Failed to load the country code mapping");
   }
-  return response.json();
+
+  const data = await response.json();
+
+  // Validate that all entries have a 2-letter code
+  data.forEach((entry) => {
+    if (!/^[A-Za-z]{2}$/.test(entry.code)) {
+      console.warn(`Invalid country code found: ${entry.code}`);
+    }
+  });
+
+  return data;
 }
 
 /**
@@ -44,11 +54,14 @@ async function loadCountryCodeMapping() {
  *    - If a matching entry is found, return the country property of the entry.
  *    - If no match is found, return "Unknown".
  *
- * @param {string} code - The country code (e.g., "JP").
- * @returns {Promise<string>} A promise that resolves to the country name or "Unknown".
+ * @param {string} countryCode - The 2-letter country code (e.g., "JP").
+ * @returns {Promise<string>} A promise that resolves to the flag URL or the placeholder flag URL.
  */
 export async function getCountryNameFromCode(code) {
-  if (typeof code !== "string" || !code.trim()) return "Unknown";
+  if (typeof code !== "string" || !/^[A-Za-z]{2}$/.test(code.trim())) {
+    console.warn("Invalid country code format. Expected a 2-letter code.");
+    return "Unknown";
+  }
 
   const countryCodeMapping = await loadCountryCodeMapping();
 
@@ -79,12 +92,12 @@ export async function getCountryNameFromCode(code) {
  *    - Convert the countryCode to lowercase.
  *    - Return the URL in the format https://flagcdn.com/w320/{countryCode}.png.
  *
- * @param {string} countryCode - The country code (e.g., "JP").
+ * @param {string} countryCode - The 2-letter country code (e.g., "JP").
  * @returns {Promise<string>} A promise that resolves to the flag URL or the placeholder flag URL.
  */
 export async function getFlagUrl(countryCode) {
-  if (!countryCode) {
-    console.warn("Missing country code. Using placeholder flag instead.");
+  if (!countryCode || !/^[A-Za-z]{2}$/.test(countryCode.trim())) {
+    console.warn("Invalid or missing country code. Using placeholder flag.");
     return PLACEHOLDER_FLAG_URL;
   }
 

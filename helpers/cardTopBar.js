@@ -81,7 +81,7 @@ function getValue(value, defaultValue) {
  *
  * 9. Return the result object.
  *
- * @param {Object|null|undefined} judoka - The judoka object containing data for the card.
+ * @param {Judoka} judoka - The judoka object containing data for the card.
  * @param {string} [flagUrl] - The URL of the flag image.
  * @returns {Object} An object with `title`, `flagUrl`, and `html` properties.
  */
