@@ -5,7 +5,15 @@ import { defineConfig } from "eslint/config";
 
 export default defineConfig([
   {
-    ignores: ["dist/**", "node_modules/**"], // 🔥 Replace your old .eslintignore here
+    ignores: [
+      "dist/**", 
+      "node_modules/**", 
+      "build/**", 
+      "*.log", 
+      "*.tmp", 
+      ".eslintcache", 
+      ".git/**"
+    ], // 🔥 Updated ignores
     files: ["**/*.{js,mjs,cjs}"],
     plugins: {
       js,
