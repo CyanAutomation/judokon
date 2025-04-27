@@ -80,7 +80,7 @@ function validateJudoka(judoka) {
  * 5. Return the complete HTML string.
  *
  * @param {Object} judoka - The judoka object.
- * @param {Array} gokyo - The array of Gokyo entries (techniques).
+ * @param {Object} gokyo - The single Gokyo entry (technique).
  * @returns {string} The complete HTML string for the judoka card.
  */
 export async function generateJudokaCardHTML(judoka, gokyo) {

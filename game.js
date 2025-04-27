@@ -124,25 +124,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * Validates the provided data to ensure it is a non-empty array.
+   * Validates the provided data to ensure it is a valid object.
    *
-   * Pseudocode:
-   * 1. Check if the `data` is an array:
-   *    - Use `Array.isArray(data)` to verify if `data` is an array.
-   *
-   * 2. Check if the array has at least one element:
-   *    - Verify that `data.length` is greater than 0.
-   *
-   * 3. If either condition is not met:
-   *    - Throw an error with the message "Invalid or empty {type} data."
-   *
-   * @param {Array} data - The data to validate.
+   * @param {Object} data - The data to validate.
    * @param {string} type - A string describing the type of data (e.g., "judoka" or "gokyo").
-   * @throws {Error} If the data is not a valid non-empty array.
+   * @throws {Error} If the data is not a valid object.
    */
   function validateData(data, type) {
-    if (!Array.isArray(data) || data.length === 0) {
-      throw new Error(`Invalid or empty ${type} data.`);
+    if (typeof data !== "object" || data === null) {
+      throw new Error(`Invalid or missing ${type} data.`);
     }
   }
 
@@ -194,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
    *      b. Display an error message in the `gameArea` element.
    *
    * @param {Object} judoka - The judoka object containing data for the card.
-   * @param {Array} gokyo - The array of Gokyo entries (techniques).
+   * @param {Object} gokyo - The single Gokyo entry (technique).
    */
   async function displayJudokaCard(judoka, gokyo) {
     console.log("Judoka passed to displayJudokaCard:", judoka);
@@ -202,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Game area is not available.");
       return;
     }
-
+  
     try {
       const cardHTML = await generateJudokaCardHTML(judoka, gokyo);
       gameArea.innerHTML = cardHTML;
