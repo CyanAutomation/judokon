@@ -75,9 +75,8 @@ export function generateCardPortrait(card) {
  * @returns {string} The HTML string for the stats.
  */
 export function generateCardStats(card) {
-  const { judoka } = card;
-  if (!judoka?.stats) return '<div class="card-stats">No stats available</div>';
-  const { power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?" } = judoka.stats;
+  if (!card?.stats) return '<div class="card-stats">No stats available</div>';
+  const { power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?" } = card.stats;
   return `
     <div class="card-stats">
       <ul>
