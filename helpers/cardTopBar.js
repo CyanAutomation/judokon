@@ -47,14 +47,12 @@ export async function generateCardTopBar(judoka, flagUrl) {
   const surname = escapeHTML(getValue(judoka.surname, ""));
   const countryCode = getValue(judoka.countryCode, "unknown");
 
-  // Await the country name
   const countryName = countryCode !== "unknown" ? await getCountryNameFromCode(countryCode) : "Unknown";
 
   const fullTitle = `${firstname} ${surname}`.trim();
   const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;
-  
 
-  return {
+  const result = {
     title: fullTitle,
     flagUrl: finalFlagUrl,
     html: `
@@ -68,4 +66,7 @@ export async function generateCardTopBar(judoka, flagUrl) {
       </div>
     `,
   };
+
+  console.log("Generated top bar:", result);
+  return result;
 }
