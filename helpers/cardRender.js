@@ -32,9 +32,9 @@ export function generateCardPortrait(card) {
   return `
     <div class="card-portrait">
       <img src="${portraitUrl}" alt="${getValue(judoka?.firstname, "Judoka")} ${getValue(
-        judoka?.surname,
-        ""
-      )}'s portrait" onerror="this.src='${PLACEHOLDER_PORTRAIT}'">
+  judoka?.surname,
+  ""
+)}'s portrait" onerror="this.src='${PLACEHOLDER_PORTRAIT}'">
     </div>
   `;
 }
@@ -64,7 +64,7 @@ export function generateCardPortrait(card) {
  */
 export function generateCardStats(card) {
   const { judoka } = card;
-  if (!judoka?.stats) return '<div class="card-stats">No stats available</div>';
+  if (!judoka?.stats) return "<div class=\"card-stats\">No stats available</div>";
   const { power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?" } = judoka.stats;
   return `
     <div class="card-stats">
@@ -118,9 +118,8 @@ export function generateCardSignatureMove(card, gokyo) {
   // Ensure gokyo is an array and find a valid technique
   const technique = Array.isArray(gokyo)
     ? gokyo.find(
-        (move) =>
-          move.id === signatureMoveId && move.name // Compare as numbers if both are numeric
-      )
+      (move) => move.id === signatureMoveId && move.name // Compare as numbers if both are numeric
+    )
     : null;
 
   if (!technique) {
