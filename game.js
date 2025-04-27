@@ -2,51 +2,45 @@ import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const startBtn = document.getElementById("startBtn");
-  const backToHomeBtn = document.getElementById("backToHomeBtn");
   const gameArea = document.getElementById("gameArea");
   const loadingIndicator = document.getElementById("loading");
 
-  if (!startBtn || !gameArea ) {
+  if (!startBtn || !gameArea || !loadingIndicator) {
     console.error("Required DOM elements are missing.");
     return;
   }
 
-  const screens = {
-    home: document.getElementById('homeScreen'),
-    loading: document.getElementById('loadingScreen'),
-    battle: document.getElementById('battleScreen'),
-  };
-
   startBtn.addEventListener("click", async () => {
-    console.log("Start Game clicked!");
-    showScreen('loading');
+    console.log("Start button clicked!");
+    startBtn.classList.add("hidden");
+    gameArea.innerHTML = ""; // Clear the game area
 
     try {
-      // Simulate loading with timeout (replace with fetch later)
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      toggleLoading(true);
 
-      // After loading is done
-      gameArea.innerHTML = "<p>Random Judoka Card will appear here!</p>";
-      showScreen('battle');
+      const judokaData = await fetchDataWithErrorHandling("./data/judoka.json");
+      const gokyoData = await fetchDataWithErrorHandling("./data/gokyo.json");
+
+      validateData(judokaData, "judoka");
+      validateData(gokyoData, "gokyo");
+
+      const selectedJudoka = getRandomJudoka(judokaData);
+      displayJudokaCard(selectedJudoka, gokyoData);
     } catch (error) {
-      console.error("Error starting game:", error);
+      console.error("Error loading card:", error);
+      gameArea.innerHTML = `<p>⚠️ Failed to load card. ${error.message}. Please try again later.</p>`;
+    } finally {
+      toggleLoading(false);
     }
   });
 
-  backToHomeBtn.addEventListener("click", () => {
-    showScreen('home');
-  });
-
-  function showScreen(screenName) {
-    Object.values(screens).forEach(screen => {
-      if (screen) {
-        screen.classList.remove('active');
-      }
-    });
-    if (screens[screenName]) {
-      screens[screenName].classList.add('active');
+  function toggleLoading(isLoading) {
+    if (isLoading) {
+      loadingIndicator.classList.remove("hidden");
+      gameArea.classList.add("hidden");
     } else {
-      console.error(`Screen '${screenName}' does not exist.`);
+      loadingIndicator.classList.add("hidden");
+      gameArea.classList.remove("hidden");
     }
   }
 
