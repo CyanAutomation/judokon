@@ -25,16 +25,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # Step 4: Run ESLint with auto-fixing
-      - name: Run ESLint with auto-fix
-        run: npx eslint . --fix # Lint all files and apply fixes
-
-      # Step 5: Commit and push fixes (if any)
-      - name: Commit and push fixes
-        if: success() && steps.lint.outcome == 'success'
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add .
-          git commit -m "chore: auto-fix ESLint issues"
-          git push
+      # Step 4: Run ESLint without auto-fixing
+      - name: Run ESLint
+        run: npx eslint . # Lint all files without applying fixes
