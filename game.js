@@ -50,13 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function showScreen(screenElement) {
-    document.querySelectorAll('.screen').forEach((el) => {
-      el.classList.remove('active');
-    });
-    screenElement.classList.add('active');
-  }
-
   function showScreen(screenName) {
     Object.values(screens).forEach(screen => screen.classList.remove('active'));
     screens[screenName].classList.add('active');
