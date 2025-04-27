@@ -7,7 +7,7 @@ on:
 
 permissions:
   contents: write
-  workflows: write # 🔥 Allow editing workflow files too
+  workflows: write # Add this to allow modifying workflow files
 
 jobs:
   format:
@@ -30,6 +30,8 @@ jobs:
         run: npx prettier . --write
 
       - name: Commit and push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
