@@ -88,20 +88,32 @@ function getValue(value, defaultValue) {
 export async function generateCardTopBar(judoka, flagUrl) {
   if (!judoka) {
     console.error("Judoka object is missing!");
-    return '<div class="card-top-bar">No data available</div>';
+    return `
+      <div class="card-top-bar">
+        No data available
+      </div>
+    `;
   }
+
+  console.log("Judoka object received:", judoka);
 
   const firstname = escapeHTML(getValue(judoka.firstname, "Tatsuuma"));
   const surname = escapeHTML(getValue(judoka.surname, "Ushiyama"));
   const countryCode = getValue(judoka.countryCode, "vu");
 
+  console.log("Extracted values:", { firstname, surname, countryCode });
+
   // Await the resolved country name
   const countryName =
     countryCode !== "unknown" ? await getCountryNameFromCode(countryCode) : "Vanuatu";
 
+  console.log("Resolved country name:", countryName);
+
   const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;
 
-  return `
+  console.log("Final flag URL:", finalFlagUrl);
+
+  const html = `
     <div class="card-top-bar">
       <div class="card-name">
         <span class="firstname">${firstname}</span>
@@ -111,4 +123,8 @@ export async function generateCardTopBar(judoka, flagUrl) {
         onerror="this.src='${PLACEHOLDER_FLAG_URL}'">
     </div>
   `;
+
+  console.log("Generated HTML:", html);
+
+  return html;
 }
