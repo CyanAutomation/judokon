@@ -1,6 +1,7 @@
 import { escapeHTML } from "./utils.js";
 import { getFlagUrl } from "./countryUtils.js";
 import { generateCardTopBar } from "./cardTopBar.js";
+import countryCodeMapping from "../data/countryCodeMapping.json";
 import {
   generateCardPortrait,
   generateCardStats,
@@ -31,6 +32,13 @@ function generateCardLastUpdated(date) {
   if (!date) return ""; // If date is undefined, don't render anything
   const safeDate = date instanceof Date ? date.toISOString().split("T")[0] : date;
   return `<div class="card-updated">Last updated: ${escapeHTML(safeDate)}</div>`;
+}
+
+function getCountryCodeFromName(countryName) {
+  const mapping = countryCodeMapping.find(
+    (entry) => entry.country.toLowerCase() === countryName.toLowerCase()
+  );
+  return mapping ? mapping.code : null; // Return the code if found, otherwise null
 }
 
 /**
@@ -86,7 +94,13 @@ function validateJudoka(judoka) {
 export async function generateJudokaCardHTML(judoka, gokyo) {
   validateJudoka(judoka);
 
-  const flagUrl = getFlagUrl(judoka.country);
+  // Map country name to country code
+  const countryCode = getCountryCodeFromName(judoka.country);
+  if (!countryCode) {
+    console.warn(`No country code found for country name: "${judoka.country}"`);
+  }
+
+  const flagUrl = await getFlagUrl(countryCode || "vu"); // Default to "vu" (Vanuatu) if no code is found
 
   const lastUpdated =
     typeof judoka.lastUpdated === "string"
