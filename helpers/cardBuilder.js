@@ -1,7 +1,6 @@
 import { escapeHTML } from "./utils.js";
 import { getFlagUrl } from "./countryUtils.js";
 import { generateCardTopBar } from "./cardTopBar.js";
-import { getCountryNameFromCode } from "./countryUtils.js";
 import {
   generateCardPortrait,
   generateCardStats,
@@ -88,10 +87,10 @@ function validateJudoka(judoka) {
 export async function generateJudokaCardHTML(judoka, gokyo) {
   validateJudoka(judoka);
 
-  // Map country name to country code using getCountryNameFromCode
-  const countryCode = await getCountryNameFromCode(judoka.country);
+  // Use the countryCode directly from the judoka object
+  const countryCode = judoka.countryCode;
   if (!countryCode) {
-    console.warn(`No country code found for country name: "${judoka.country}"`);
+    console.warn(`No country code found for judoka: "${judoka.firstname} ${judoka.surname}"`);
   }
 
   const flagUrl = await getFlagUrl(countryCode || "vu"); // Default to "vu" (Vanuatu) if no code is found
