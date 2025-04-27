@@ -115,11 +115,11 @@ export function generateCardSignatureMove(card, gokyo) {
   const { judoka } = card;
   const signatureMoveId = judoka?.signatureMoveId;
 
-  // Ensure gokyo is an array and find a valid technique with case-insensitive comparison
+  // Ensure gokyo is an array and find a valid technique
   const technique = Array.isArray(gokyo)
     ? gokyo.find(
         (move) =>
-          move.id?.toLowerCase() === signatureMoveId?.toLowerCase() && move.name
+          move.id === signatureMoveId && move.name // Compare as numbers if both are numeric
       )
     : null;
 
