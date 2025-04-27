@@ -192,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Game area is not available.");
       return;
     }
-  
+
     try {
       const cardHTML = await generateJudokaCardHTML(judoka, gokyo);
       gameArea.innerHTML = cardHTML;

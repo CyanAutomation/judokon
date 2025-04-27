@@ -34,8 +34,8 @@ describe("generateCardSignatureMove", () => {
       expect(html).toContain("Signature Move:");
       expect(html).toContain("Uchi Mata");
     });
-  
-      it("returns 'Unknown' if no matching technique is found", () => {
+
+    it("returns 'Unknown' if no matching technique is found", () => {
       const html = generateCardSignatureMove({ signatureMoveId: "nonexistent" }, mockGokyo);
       expect(html).toContain("Signature Move:");
       expect(html).toContain("Unknown");
@@ -78,6 +78,5 @@ describe("generateCardSignatureMove", () => {
       expect(html).toContain("Signature Move:");
       expect(html).toContain("Unknown");
     });
-
   });
 });
