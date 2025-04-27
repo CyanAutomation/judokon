@@ -42,15 +42,11 @@ function validateJudoka(judoka) {
  *    - If it's a Date object, convert it to a string in "YYYY-MM-DD" format.
  *    - If it's undefined, use an empty string.
  * 
- * 4. Call `generateCardTopBar` (asynchronous) to generate the top bar HTML.
- *    - Pass the `judoka` object and the flag URL.
- *    - Await the result and extract the `html` property.
- * 
- * 5. Generate the complete HTML for the judoka card:
+ * 4. Generate the complete HTML for the judoka card:
  *    - Include the top bar HTML.
- *    - Include the portrait, stats, signature move, and last updated sections.
+ *    - Include the top bar, portrait, stats, signature move, and last updated sections.
  * 
- * 6. Return the complete HTML string.
+ * 5. Return the complete HTML string.
  * 
  * @param {Object} judoka - The judoka object.
  * @param {Array} gokyo - The array of Gokyo entries (techniques).
