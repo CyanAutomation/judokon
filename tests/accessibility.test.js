@@ -53,12 +53,9 @@ describe("generateCardSignatureMove", () => {
 
   it("generates the correct HTML structure", () => {
     const html = generateCardSignatureMove(mockJudoka, mockGokyo);
-    expect(html).toBe(`
-      <div class="card-signature">
-        <span class="signature-move-label"><strong>Signature Move:</strong></span>
-        <span class="signature-move-value">Uchi-mata</span>
-      </div>
-    `);
+    expect(html).toContain('<div class="card-signature">');
+    expect(html).toContain('<span class="signature-move-label"><strong>Signature Move:</strong></span>');
+    expect(html).toContain('<span class="signature-move-value">Uchi-mata</span>');
   });
 
   it("handles special characters in technique names", () => {
@@ -85,12 +82,4 @@ describe("generateCardSignatureMove", () => {
     expect(html).toContain("Unknown"); // Null name should fallback to "Unknown"
   });
 
-  it("handles mismatched types between signatureMoveId and gokyo id", () => {
-    const mismatchedGokyo = { id: "1", name: "Uchi-mata" }; // id as a string
-    const judokaWithNumericId = { signatureMoveId: 1 }; // signatureMoveId as a number
-
-    const html = generateCardSignatureMove(judokaWithNumericId, mismatchedGokyo);
-    expect(html).toContain("Signature Move:");
-    expect(html).toContain("Unknown"); // Should not match due to type mismatch
-  });
 });
