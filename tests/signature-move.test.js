@@ -9,7 +9,7 @@ describe("generateCardSignatureMove", () => {
     it("returns HTML with technique name", () => {
       const html = generateCardSignatureMove(mockJudoka, mockGokyo);
       expect(html).toContain("Signature Move:");
-      expect(html).toContain("Uchi Mata");
+      expect(html).toContain("Uchi-mata");
     });
 
     it("returns a string of HTML", () => {
