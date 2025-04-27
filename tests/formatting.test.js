@@ -9,27 +9,27 @@ describe("formatDate", () => {
     expect(formatDate("2025-04-24T15:30:00Z")).toBe("2025-04-24");
   });
 
-  test("returns \"Invalid Date\" for bad input", () => {
+  test('returns "Invalid Date" for bad input', () => {
     expect(formatDate("not-a-date")).toBe("Invalid Date");
   });
 
-  test("returns \"Invalid Date\" for empty string", () => {
+  test('returns "Invalid Date" for empty string', () => {
     expect(formatDate("")).toBe("Invalid Date");
   });
 
-  test("returns \"Invalid Date\" for null", () => {
+  test('returns "Invalid Date" for null', () => {
     expect(formatDate(null)).toBe("Invalid Date");
   });
 
-  test("returns \"Invalid Date\" for undefined", () => {
+  test('returns "Invalid Date" for undefined', () => {
     expect(formatDate(undefined)).toBe("Invalid Date");
   });
 
-  test("returns \"Invalid Date\" for number input", () => {
+  test('returns "Invalid Date" for number input', () => {
     expect(formatDate(123456)).toBe("Invalid Date");
   });
 
-  test("returns \"Invalid Date\" for object input", () => {
+  test('returns "Invalid Date" for object input', () => {
     expect(formatDate({})).toBe("Invalid Date");
   });
 

@@ -31,7 +31,7 @@ describe("getValue", () => {
     expect(getValue("   ", "Fallback")).toBe("Fallback");
   });
 
-  test("returns \"Unknown\" if value is undefined and no fallback is provided", () => {
+  test('returns "Unknown" if value is undefined and no fallback is provided', () => {
     expect(getValue(undefined)).toBe("Unknown");
   });
 

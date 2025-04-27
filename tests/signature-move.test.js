@@ -16,7 +16,7 @@ describe("generateCardSignatureMove", () => {
       const extendedGokyo = [
         { id: "seoi-nage", name: "Seoi Nage" },
         { id: "uchi-mata", name: "Uchi Mata" },
-        { id: "osoto-gari", name: "Osoto Gari" },
+        { id: "osoto-gari", name: "Osoto Gari" }
       ];
       const html = generateCardSignatureMove(mockJudoka, extendedGokyo);
       expect(html).toContain("Signature Move:");
@@ -32,9 +32,9 @@ describe("generateCardSignatureMove", () => {
   describe("Basic cases", () => {
     test.each([
       [{ signatureMoveId: "nonexistent" }, "Unknown"],
-      [{} , "Unknown"],
-      [null, "Unknown"],
-    ])("returns \"%s\" for given judoka", (input, expected) => {
+      [{}, "Unknown"],
+      [null, "Unknown"]
+    ])('returns "%s" for given judoka', (input, expected) => {
       const html = generateCardSignatureMove(input, mockGokyo);
       expect(html).toContain("Signature Move:");
       expect(html).toContain(expected);

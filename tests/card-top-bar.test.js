@@ -7,7 +7,7 @@ vi.spyOn(countryUtils, "getCountryNameFromCode").mockResolvedValue("France");
 const judoka = {
   firstname: "Clarisse",
   surname: "Agbegnenou",
-  countryCode: "fr",
+  countryCode: "fr"
 };
 
 const flagUrl = "https://flagcdn.com/w320/fr.png";
@@ -15,7 +15,7 @@ const flagUrl = "https://flagcdn.com/w320/fr.png";
 describe("generateCardTopBar", () => {
   test("should include the correct alt text for the flag", async () => {
     const result = await generateCardTopBar(judoka, flagUrl);
-    expect(result.html).toContain("alt=\"France flag\"");
+    expect(result.html).toContain('alt="France flag"');
   });
 
   test("should include the judoka's name in the HTML", async () => {
@@ -44,6 +44,6 @@ describe("generateCardTopBar", () => {
   test("should handle missing countryCode gracefully", async () => {
     const incompleteJudoka = { firstname: "Clarisse", surname: "Agbegnenou" };
     const result = await generateCardTopBar(incompleteJudoka, flagUrl);
-    expect(result.html).toContain("alt=\"Unknown flag\"");
+    expect(result.html).toContain('alt="Unknown flag"');
   });
 });

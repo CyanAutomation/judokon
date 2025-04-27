@@ -1,6 +1,6 @@
 # JU-DO-KON! 🥋
 
-Unit Tests: 
+Unit Tests:
 
 [![Run Vitest Tests](https://github.com/CyanAutomation/judokon/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/test.yml)
 
@@ -148,31 +148,31 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 ## Intended Structure
 
 +----------------+
-|    Home        |
-| [Start Game]   |
+| Home |
+| [Start Game] |
 | [Browse Cards] |
 +--------+-------+
-         |
-         v
+|
+v
 +----------------+
-|    Loading     |
-|  (Fetching...) |
+| Loading |
+| (Fetching...) |
 +--------+-------+
-         |
-         v
+|
+v
 +----------------+
-|    Battle      |
-|  (Play Cards)  |
+| Battle |
+| (Play Cards) |
 +----+-----+-----+
-     |     |
-     |     v
-     |  +----------------+
-     |  |  Browse Cards   |
-     |  | (View All)      |
-     |  +---+--------+----+
-     |      |        |
-     |      v        v
-     |  Edit Card   Back to Battle
-     |  (Admin)     
-     |
+| |
+| v
+| +----------------+
+| | Browse Cards |
+| | (View All) |
+| +---+--------+----+
+| | |
+| v v
+| Edit Card Back to Battle
+| (Admin)  
+ |
 Back to Home
