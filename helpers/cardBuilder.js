@@ -70,14 +70,14 @@ export async function generateJudokaCardHTML(judoka, gokyo) {
       : judoka.lastUpdated?.toISOString().split("T")[0] || "";
 
   // Await the top bar HTML
-  const topBar = await generateCardTopBar(judoka, flagUrl);
+  const topBarHtml = await generateCardTopBar(judoka, flagUrl);
   console.log("Generated card HTML:", topBar.html);
 
   // Generate the complete HTML
   return `
     <div class="card-container">
       <div class="judoka-card">
-        ${topBar.html}
+        ${generateCardTopBar(judoka, flagUrl)}
         ${generateCardPortrait(judoka)}
         ${generateCardStats(judoka)}
         ${generateCardSignatureMove(judoka, gokyo)}

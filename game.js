@@ -72,6 +72,27 @@ document.addEventListener("DOMContentLoaded", () => {
     return data[index];
   }
 
+  /**
+   * Displays a judoka card in the game area.
+   * 
+   * Pseudocode:
+   * 1. Log the `judoka` object to the console for debugging.
+   * 
+   * 2. Check if the `gameArea` element exists:
+   *    - If it does not exist, log an error and exit the function.
+   * 
+   * 3. Wrap the card generation and rendering process in a `try-catch` block:
+   *    - Try:
+   *      a. Call `generateJudokaCardHTML` (asynchronous) to generate the card's HTML.
+   *      b. Await the result and assign it to `cardHTML`.
+   *      c. Inject the generated `cardHTML` into the `gameArea` element.
+   *    - Catch:
+   *      a. Log any errors that occur during card generation.
+   *      b. Display an error message in the `gameArea` element.
+   * 
+   * @param {Object} judoka - The judoka object containing data for the card.
+   * @param {Array} gokyo - The array of Gokyo entries (techniques).
+   */
   async function displayJudokaCard(judoka, gokyo) {
     console.log("Judoka passed to displayJudokaCard:", judoka);
     if (!gameArea) {
