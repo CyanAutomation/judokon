@@ -45,7 +45,7 @@ describe("generateCardSignatureMove", () => {
   it("handles numeric signatureMoveId correctly", () => {
     const numericGokyo = { id: 1, name: "Ippon Seoi Nage" }; // Single technique
     const numericJudoka = { signatureMoveId: 1 }; // Matches the technique
-  
+
     const html = generateCardSignatureMove(numericJudoka, numericGokyo);
     expect(html).toContain("Signature Move:");
     expect(html).toContain("Ippon Seoi Nage");
@@ -54,7 +54,9 @@ describe("generateCardSignatureMove", () => {
   it("generates the correct HTML structure", () => {
     const html = generateCardSignatureMove(mockJudoka, mockGokyo);
     expect(html).toContain('<div class="card-signature">');
-    expect(html).toContain('<span class="signature-move-label"><strong>Signature Move:</strong></span>');
+    expect(html).toContain(
+      '<span class="signature-move-label"><strong>Signature Move:</strong></span>'
+    );
     expect(html).toContain('<span class="signature-move-value">Uchi-mata</span>');
   });
 
@@ -81,5 +83,4 @@ describe("generateCardSignatureMove", () => {
     expect(html).toContain("Signature Move:");
     expect(html).toContain("Unknown"); // Null name should fallback to "Unknown"
   });
-
 });
