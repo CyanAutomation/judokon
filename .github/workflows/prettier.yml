@@ -6,7 +6,8 @@ on:
   workflow_dispatch: # Allows manual triggering too
 
 permissions:
-  contents: write  # 👈🔥 Important! Allow pushing commits
+  contents: write
+  workflows: write # 🔥 Allow editing workflow files too
 
 jobs:
   format:
