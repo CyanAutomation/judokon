@@ -34,7 +34,7 @@ function validateJudoka(judoka) {
  * @param {Array} gokyo - The array of Gokyo entries (techniques).
  * @returns {string} The complete HTML string for the judoka card.
  */
-export function generateJudokaCardHTML(judoka, gokyo) {
+export async function generateJudokaCardHTML(judoka, gokyo) {
   // Validate the Judoka object
   validateJudoka(judoka);
 
@@ -47,11 +47,15 @@ export function generateJudokaCardHTML(judoka, gokyo) {
       ? judoka.lastUpdated
       : judoka.lastUpdated?.toISOString().split("T")[0] || "";
 
+  // Await the top bar HTML
+  const topBar = await generateCardTopBar(judoka, flagUrl);
+  console.log("Generated card HTML:", topBar.html);
+
   // Generate the complete HTML
   return `
     <div class="card-container">
       <div class="judoka-card">
-        ${generateCardTopBar(judoka, flagUrl).html}
+        ${topBar.html}
         ${generateCardPortrait(judoka)}
         ${generateCardStats(judoka)}
         ${generateCardSignatureMove(judoka, gokyo)}

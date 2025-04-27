@@ -52,6 +52,7 @@ export async function generateCardTopBar(judoka, flagUrl) {
 
   const fullTitle = `${firstname} ${surname}`.trim();
   const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;
+  
 
   return {
     title: fullTitle,
