@@ -4,6 +4,21 @@ const PLACEHOLDER_PORTRAIT = "./assets/judokaPortraits/judokaPortrait-0.png";
 
 /**
  * Generates the portrait HTML for a judoka card.
+ * 
+ * Pseudocode:
+ * 1. Determine the portrait URL:
+ *    - If the JUDOKA object exists and has a valid id, construct the URL using the id (e.g., ./assets/judokaPortraits/judokaPortrait-{id}.png).
+ *    - Otherwise, use the PLACEHOLDER_PORTRAIT as the default URL.
+ * 
+ * 2. Construct the HTML for the portrait:
+ *    - Create a <div> element with the class CARD-PORTRAIT.
+ *    - Inside the <div>, add an <img> element:
+ *      a. Set the SRC attribute to the determined portrait URL.
+ *      b. Set the ARL attribute to include the judoka's FIRSTNAME and SURNAME (fallback to "Judoka" if FIRSTNAME is missing).
+ *      c. Add an ONERROR handler to replace the image with the PLACEHOLDER_PORTRAIT if the image fails to load.
+ * 
+ * 3. Return the constructed HTML string.
+ * 
  * @param {Object|null|undefined} judoka - The judoka object.
  * @returns {string} The HTML string for the portrait.
  */
@@ -13,7 +28,7 @@ export function generateCardPortrait(judoka) {
 
   return `
     <div class="card-portrait">
-      <img src="${portraitUrl}" alt="${getValue(judoka?.name, "Judoka")} ${getValue(
+      <img src="${portraitUrl}" alt="${getValue(judoka?.firstname, "Judoka")} ${getValue(
   judoka?.surname,
   "",
 )}'s portrait" onerror="this.src='${PLACEHOLDER_PORTRAIT}'">
@@ -23,20 +38,38 @@ export function generateCardPortrait(judoka) {
 
 /**
  * Generates the stats HTML for a judoka card.
+ * 
+ * Pseudocode:
+ * 1. Check if the JUDOKA object has a STATS property:
+ *    - If STATS is missing or falsy, return a <div> element with the text "No stats available".
+ * 
+ * 2. Extract the stats from the JUDOKA.STATS object:
+ *    - Use destructuring to get POWER, SPEED, TECHNIQUE, KUMIKATA, and NEWAZA.
+ *    - If any of these values are missing, default them to "?".
+ * 
+ * 3. Construct the HTML for the stats:
+ *    - Create a <div> element with the class CARD-STATS.
+ *    - Inside the <div>, create an unordered list (<ul>).
+ *    - Add list items (<li>) for each stat:
+ *      a. Include the stat name (e.g., "Power") in bold.
+ *      b. Include the stat value inside a <span> element.
+ * 
+ * 4. Return the constructed HTML string.
+ * 
  * @param {Object|null|undefined} judoka - The judoka object.
  * @returns {string} The HTML string for the stats.
  */
 export function generateCardStats(judoka) {
   if (!judoka?.stats) return "<div class=\"card-stats\">No stats available</div>";
-  const { power = "?", speed = "?", technique = "?", kumiKata = "?", neWaza = "?" } = judoka.stats;
+  const { power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?" } = judoka.stats;
   return `
     <div class="card-stats">
       <ul>
         <li class="stat"><strong>Power:</strong> <span>${power}</span></li>
         <li class="stat"><strong>Speed:</strong> <span>${speed}</span></li>
         <li class="stat"><strong>Technique:</strong> <span>${technique}</span></li>
-        <li class="stat"><strong>Kumi-kata:</strong> <span>${kumiKata}</span></li>
-        <li class="stat"><strong>Ne-waza:</strong> <span>${neWaza}</span></li>
+        <li class="stat"><strong>Kumi-kata:</strong> <span>${kumikata}</span></li>
+        <li class="stat"><strong>Ne-waza:</strong> <span>${newaza}</span></li>
       </ul>
     </div>
   `;
@@ -44,6 +77,30 @@ export function generateCardStats(judoka) {
 
 /**
  * Generates the signature move HTML for a judoka card.
+ * 
+ * Pseudocode:
+ * 1. Retrieve the `signatureMoveId` from the `judoka` object:
+ *    - If `judoka` is null or undefined, `signatureMoveId` will be undefined.
+ * 
+ * 2. Search for the corresponding technique in the `gokyo` array:
+ *    - Check if `gokyo` is an array.
+ *    - Use the `find` method to locate the technique where the `id` matches `signatureMoveId`.
+ *    - If no matching technique is found, set `technique` to `null`.
+ * 
+ * 3. Log a warning if no technique is found:
+ *    - If `technique` is null, log a warning message with the `signatureMoveId`.
+ * 
+ * 4. Determine the technique name:
+ *    - If `technique` exists, use its `name` property.
+ *    - If `technique` is null, default the name to "Unknown".
+ * 
+ * 5. Construct the HTML for the signature move:
+ *    - Create a `<div>` element with the class `card-signature`.
+ *    - Add a `<span>` element with the label "Signature Move:" in bold.
+ *    - Add another `<span>` element with the technique name.
+ * 
+ * 6. Return the constructed HTML string.
+ * 
  * @param {Object|null|undefined} judoka - The judoka object.
  * @param {Array|null|undefined} gokyo - The array of techniques.
  * @returns {string} The HTML string for the signature move.
