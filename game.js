@@ -17,19 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
     battle: document.getElementById('battleScreen'),
   };
 
-  function showScreen(screenName) {
-    Object.values(screens).forEach(screen => {
-      if (screen) {
-        screen.classList.remove('active');
-      }
-    });
-    if (screens[screenName]) {
-      screens[screenName].classList.add('active');
-    } else {
-      console.error(`Screen '${screenName}' does not exist.`);
-    }
-  }
-
   startBtn.addEventListener("click", async () => {
     console.log("Start Game clicked!");
     showScreen('loading');
@@ -46,14 +33,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  browseBtn.addEventListener("click", () => {
-    alert("Browse Cards feature coming soon!");
-  });
-
   backToHomeBtn.addEventListener("click", () => {
     showScreen('home');
   });
 
+  function showScreen(screenName) {
+    Object.values(screens).forEach(screen => {
+      if (screen) {
+        screen.classList.remove('active');
+      }
+    });
+    if (screens[screenName]) {
+      screens[screenName].classList.add('active');
+    } else {
+      console.error(`Screen '${screenName}' does not exist.`);
+    }
+  }
 
   async function fetchDataWithErrorHandling(url) {
     try {
