@@ -42,8 +42,12 @@ describe("generateCardTopBar", () => {
   });
 
   test("should handle missing countryCode gracefully", async () => {
+    // Override the mock for this specific test
+    countryUtils.getCountryNameFromCode.mockResolvedValueOnce("Unknown");
+  
     const incompleteJudoka = { firstname: "Clarisse", surname: "Agbegnenou" };
     const result = await generateCardTopBar(incompleteJudoka, flagUrl);
+  
     expect(result.html).toContain('alt="Unknown flag"');
   });
 });

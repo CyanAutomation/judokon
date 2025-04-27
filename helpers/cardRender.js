@@ -107,15 +107,30 @@ export function generateCardStats(card) {
  * @returns {string} The HTML string for the signature move.
  */
 export function generateCardSignatureMove(card, gokyo) {
+  // Safeguard against null or undefined card
+  if (!card) {
+    return `
+      <div class="card-signature">
+        <span class="signature-move-label"><strong>Signature Move:</strong></span>
+        <span class="signature-move-value">Unknown</span>
+      </div>
+    `;
+  }
+
   const { judoka } = card;
   const signatureMoveId = Number(judoka?.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
 
   // Ensure gokyo is an array and find a valid technique
-  const technique = Array.isArray(gokyo)
+  let technique = Array.isArray(gokyo)
     ? gokyo.find((move) => Number(move.id) === signatureMoveId) // Compare as numbers
     : null;
 
-  const techniqueName = technique?.name; // No need for fallback, "Unknown" is guaranteed in gokyo.json
+  // Fallback to id=0 if no match is found
+  if (!technique && Array.isArray(gokyo)) {
+    technique = gokyo.find((move) => Number(move.id) === 0);
+  }
+
+  const techniqueName = technique?.name || "Unknown"; // Fallback to "Unknown" if no technique is found
   return `
     <div class="card-signature">
       <span class="signature-move-label"><strong>Signature Move:</strong></span>
