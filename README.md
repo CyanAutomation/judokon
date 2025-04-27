@@ -1,8 +1,13 @@
 # JU-DO-KON! 🥋
 
-Unit Tests: [![Run Vitest Tests](https://github.com/CyanAutomation/judokon/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/test.yml)
+Unit Tests: 
+[![Run Vitest Tests](https://github.com/CyanAutomation/judokon/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/test.yml)
 
-GitHub Pages Deployment: [![pages-build-deployment](https://github.com/CyanAutomation/judokon/actions/workflows/pages/pages-build-deployment/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/pages/pages-build-deployment)
+ESLint:
+[![Run ESLint](https://github.com/CyanAutomation/judokon/actions/workflows/eslint.yml/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/eslint.yml)
+
+GitHub Pages Deployment:
+[![pages-build-deployment](https://github.com/CyanAutomation/judokon/actions/workflows/pages/pages-build-deployment/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/pages/pages-build-deployment)
 
 ## License
 
