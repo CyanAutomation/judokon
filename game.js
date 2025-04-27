@@ -2,58 +2,59 @@ import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const startBtn = document.getElementById("startBtn");
+  const browseBtn = document.getElementById("browseBtn");
+  const backToHomeBtn = document.getElementById("backToHomeBtn");
   const gameArea = document.getElementById("gameArea");
   const loadingIndicator = document.getElementById("loading");
 
-  if (!startBtn || !gameArea || !loadingIndicator) {
+  if (!startBtn || !gameArea ) {
     console.error("Required DOM elements are missing.");
     return;
   }
-
-  startBtn.addEventListener("click", async () => {
-    console.log("Start button clicked!");
-    showScreen('loading'); // <-- instead of toggleLoading(true)
-  
-    try {
-      const judokaData = await fetch("/judokon/data/judoka.json").then((response) => response.json());
-      const gokyoData = await fetch("/judokon/data/gokyo.json").then((response) => response.json());
-  
-      console.log("Judoka data fetched:", judokaData);
-      console.log("Gokyo data fetched:", gokyoData);
-  
-      const selectedJudoka = getRandomJudoka(judokaData);
-      console.log("Selected judoka:", selectedJudoka);
-  
-      displayJudokaCard(selectedJudoka, gokyoData);
-  
-      showScreen('battle'); // <-- instead of toggleLoading(false)
-    } catch (error) {
-      console.error("Error loading card:", error);
-      screens.battle.innerHTML = `<p>⚠️ Failed to load card. Please try again later.</p>`;
-      showScreen('battle');
-    }
-  });
 
   const screens = {
     home: document.getElementById('homeScreen'),
     loading: document.getElementById('loadingScreen'),
     battle: document.getElementById('battleScreen'),
-    browse: document.getElementById('browseScreen'),
-    edit: document.getElementById('editScreen'),
   };
 
-  function toggleLoading(isLoading) {
-    if (isLoading) {
-      showScreen('loading');
+  function showScreen(screenName) {
+    Object.values(screens).forEach(screen => {
+      if (screen) {
+        screen.classList.remove('active');
+      }
+    });
+    if (screens[screenName]) {
+      screens[screenName].classList.add('active');
     } else {
-      showScreen('battle'); // or whatever screen should appear after loading
+      console.error(`Screen '${screenName}' does not exist.`);
     }
   }
 
-  function showScreen(screenName) {
-    Object.values(screens).forEach(screen => screen.classList.remove('active'));
-    screens[screenName].classList.add('active');
-  }
+  startBtn.addEventListener("click", async () => {
+    console.log("Start Game clicked!");
+    showScreen('loading');
+
+    try {
+      // Simulate loading with timeout (replace with fetch later)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // After loading is done
+      gameArea.innerHTML = "<p>Random Judoka Card will appear here!</p>";
+      showScreen('battle');
+    } catch (error) {
+      console.error("Error starting game:", error);
+    }
+  });
+
+  browseBtn.addEventListener("click", () => {
+    alert("Browse Cards feature coming soon!");
+  });
+
+  backToHomeBtn.addEventListener("click", () => {
+    showScreen('home');
+  });
+
 
   async function fetchDataWithErrorHandling(url) {
     try {
