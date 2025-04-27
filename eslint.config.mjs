@@ -23,15 +23,10 @@ export default defineConfig([
       globals: globals.browser
     },
     rules: {
-      ...js.configs.recommended.rules, // 🔥 Bring in "js/recommended" rules manually
-      ...prettierPlugin.configs.recommended.rules, // 🔥 Bring in Prettier rules manually
-      semi: ["error", "always"],
-      quotes: ["error", "double"],
       eqeqeq: "error",
       "no-unused-vars": "warn",
-      indent: ["error", 2],
-      "prettier/prettier": "error" // Show Prettier formatting issues as ESLint errors
-    }
+      "prettier/prettier": "error" // Let Prettier handle formatting (quotes, semi, indent)
+    }    
   },
   {
     files: ["**/*.test.js"],
