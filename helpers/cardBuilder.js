@@ -30,6 +30,28 @@ function validateJudoka(judoka) {
 
 /**
  * Generates the complete HTML for a judoka card.
+ * 
+ * Pseudocode:
+ * 1. Validate the `judoka` object to ensure all required fields are present.
+ *    - If validation fails, throw an error.
+ * 
+ * 2. Generate the flag URL for the judoka's country using `getFlagUrl`.
+ * 
+ * 3. Format the `lastUpdated` date:
+ *    - If it's a string, use it as-is.
+ *    - If it's a Date object, convert it to a string in "YYYY-MM-DD" format.
+ *    - If it's undefined, use an empty string.
+ * 
+ * 4. Call `generateCardTopBar` (asynchronous) to generate the top bar HTML.
+ *    - Pass the `judoka` object and the flag URL.
+ *    - Await the result and extract the `html` property.
+ * 
+ * 5. Generate the complete HTML for the judoka card:
+ *    - Include the top bar HTML.
+ *    - Include the portrait, stats, signature move, and last updated sections.
+ * 
+ * 6. Return the complete HTML string.
+ * 
  * @param {Object} judoka - The judoka object.
  * @param {Array} gokyo - The array of Gokyo entries (techniques).
  * @returns {string} The complete HTML string for the judoka card.

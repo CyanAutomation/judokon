@@ -72,12 +72,19 @@ document.addEventListener("DOMContentLoaded", () => {
     return data[index];
   }
 
-  function displayJudokaCard(judoka, gokyo) {
+  async function displayJudokaCard(judoka, gokyo) {
     console.log("Judoka passed to displayJudokaCard:", judoka);
     if (!gameArea) {
       console.error("Game area is not available.");
       return;
     }
-    gameArea.innerHTML = generateJudokaCardHTML(judoka, gokyo);
+  
+    try {
+      const cardHTML = await generateJudokaCardHTML(judoka, gokyo);
+      gameArea.innerHTML = cardHTML;
+    } catch (error) {
+      console.error("Error generating judoka card:", error);
+      gameArea.innerHTML = `<p>⚠️ Failed to generate judoka card. Please try again later.</p>`;
+    }
   }
 });
