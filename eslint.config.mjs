@@ -12,7 +12,7 @@ export default defineConfig([
     },
     extends: [
       "js/recommended",
-      "plugin:prettier/recommended" // 🔥 THIS auto-sets up Prettier rules
+      "plugin:prettier/recommended"
     ],
     languageOptions: {
       globals: globals.browser
@@ -23,7 +23,16 @@ export default defineConfig([
       eqeqeq: "error",
       "no-unused-vars": "warn",
       indent: ["error", 2],
-      "prettier/prettier": "error" // 🔥 This makes Prettier formatting errors show as ESLint errors
+      "prettier/prettier": "error"
+    }
+  },
+  {
+    files: ["**/*.test.js"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.jest // 👈 Add jest globals for test files
+      }
     }
   }
 ]);
