@@ -26,7 +26,7 @@ export default defineConfig([
       eqeqeq: "error",
       "no-unused-vars": "warn",
       "prettier/prettier": "error" // Let Prettier handle formatting (quotes, semi, indent)
-    }    
+    }
   },
   {
     files: ["**/*.test.js"],
