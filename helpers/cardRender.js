@@ -24,10 +24,23 @@ const PLACEHOLDER_PORTRAIT = "./assets/judokaPortraits/judokaPortrait-0.png";
  */
 export function generateCardPortrait(card) {
   const { judoka } = card;
+
+  if (!judoka) {
+    console.warn("Judoka object is missing.");
+    return `
+      <div class="card-portrait">
+        <img src="${PLACEHOLDER_PORTRAIT}" alt="Placeholder portrait">
+      </div>
+    `;
+  }
+
   const portraitUrl =
-    judoka && judoka.id
+    judoka.id
       ? `./assets/judokaPortraits/judokaPortrait-${judoka.id}.png`
       : PLACEHOLDER_PORTRAIT;
+
+  console.log("Judoka object:", judoka);
+  console.log("Constructed portrait URL:", portraitUrl);
 
   return `
     <div class="card-portrait">
