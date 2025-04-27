@@ -19,7 +19,7 @@ describe("generateCardSignatureMove", () => {
   });
 
   describe("Edge Cases", () => {
-    it('returns "Unknown" for unmatched ID', () => {
+    it("returns \"Unknown\" for unmatched ID", () => {
       const html = generateCardSignatureMove({ signatureMoveId: "nonexistent" }, mockGokyo);
       expect(html).toContain("Signature Move:");
       expect(html).toContain("Unknown");

@@ -14,9 +14,9 @@ export function generateCardPortrait(judoka) {
   return `
     <div class="card-portrait">
       <img src="${portraitUrl}" alt="${getValue(judoka?.name, "Judoka")} ${getValue(
-        judoka?.surname,
-        "",
-      )}'s portrait" onerror="this.src='${PLACEHOLDER_PORTRAIT}'">
+  judoka?.surname,
+  "",
+)}'s portrait" onerror="this.src='${PLACEHOLDER_PORTRAIT}'">
     </div>
   `;
 }
@@ -27,7 +27,7 @@ export function generateCardPortrait(judoka) {
  * @returns {string} The HTML string for the stats.
  */
 export function generateCardStats(judoka) {
-  if (!judoka?.stats) return `<div class="card-stats">No stats available</div>`;
+  if (!judoka?.stats) return "<div class=\"card-stats\">No stats available</div>";
   const { power = "?", speed = "?", technique = "?", kumiKata = "?", neWaza = "?" } = judoka.stats;
   return `
     <div class="card-stats">

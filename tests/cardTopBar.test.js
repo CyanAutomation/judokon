@@ -7,12 +7,12 @@ describe("escapeHTML", () => {
     expect(escapeHTML("&")).toBe("&amp;");
     expect(escapeHTML("<")).toBe("&lt;");
     expect(escapeHTML(">")).toBe("&gt;");
-    expect(escapeHTML('"')).toBe("&quot;");
+    expect(escapeHTML("\"")).toBe("&quot;");
     expect(escapeHTML("'")).toBe("&#039;");
   });
 
   test("escapes a string with multiple special characters", () => {
-    expect(escapeHTML('<div class="test">Hello & welcome!</div>')).toBe(
+    expect(escapeHTML("<div class=\"test\">Hello & welcome!</div>")).toBe(
       "&lt;div class=&quot;test&quot;&gt;Hello &amp; welcome!&lt;/div&gt;"
     );
   });

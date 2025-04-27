@@ -39,7 +39,7 @@ export function generateCardTopBar(judoka, flagUrl) {
     return {
       title: "No data",
       flagUrl: PLACEHOLDER_FLAG_URL,
-      html: `<div class="card-top-bar">No data available</div>`,
+      html: "<div class=\"card-top-bar\">No data available</div>",
     };
   }
 

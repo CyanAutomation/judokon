@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
       gameArea.innerHTML = cardHTML;
     } catch (error) {
       console.error("Error generating judoka card:", error);
-      gameArea.innerHTML = `<p>⚠️ Failed to generate judoka card. Please try again later.</p>`;
+      gameArea.innerHTML = "<p>⚠️ Failed to generate judoka card. Please try again later.</p>";
     }
   }
 });

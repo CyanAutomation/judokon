@@ -34,7 +34,7 @@ describe("generateCardSignatureMove", () => {
       [{ signatureMoveId: "nonexistent" }, "Unknown"],
       [{} , "Unknown"],
       [null, "Unknown"],
-    ])('returns "%s" for given judoka', (input, expected) => {
+    ])("returns \"%s\" for given judoka", (input, expected) => {
       const html = generateCardSignatureMove(input, mockGokyo);
       expect(html).toContain("Signature Move:");
       expect(html).toContain(expected);
