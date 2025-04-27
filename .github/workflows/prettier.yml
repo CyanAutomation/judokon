@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  workflows: write # Add this to allow modifying workflow files
 
 jobs:
   format:
