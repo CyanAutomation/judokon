@@ -1,4 +1,4 @@
-import { formatDate, escapeHTML, getValue } from "./utils.js";
+import { escapeHTML } from "./utils.js";
 import { getFlagUrl } from "./countryUtils.js";
 import { generateCardTopBar } from "./cardTopBar.js";
 import {

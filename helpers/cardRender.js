@@ -83,20 +83,22 @@ export function generateCardStats(card) {
  * Generates the signature move HTML for a judoka card.
  *
  * Pseudocode:
- * 1. Retrieve the `signatureMoveId` from the `judoka` object:
- *    - If `judoka` is null or undefined, `signatureMoveId` will be undefined.
+ * 1. Extract the `signatureMoveId` from the `judoka` object:
+ *    - If `judoka` is null or undefined, `signatureMoveId` will also be undefined.
  *
- * 2. Search for the corresponding technique in the `gokyo` array:
+ * 2. Validate the `gokyo` array and search for a matching technique:
  *    - Check if `gokyo` is an array.
- *    - Use the `find` method to locate the technique where the `id` matches `signatureMoveId`.
+ *    - Use the `find` method to locate a technique where:
+ *      a. The `id` matches `signatureMoveId` (case-insensitive).
+ *      b. The `name` property exists.
  *    - If no matching technique is found, set `technique` to `null`.
  *
  * 3. Log a warning if no technique is found:
  *    - If `technique` is null, log a warning message with the `signatureMoveId`.
  *
  * 4. Determine the technique name:
- *    - If `technique` exists, use its `name` property.
- *    - If `technique` is null, default the name to "Unknown".
+ *    - If a valid `technique` is found, use its `name` property.
+ *    - If no valid `technique` is found, default the name to "Unknown".
  *
  * 5. Construct the HTML for the signature move:
  *    - Create a `<div>` element with the class `card-signature`.
@@ -113,8 +115,12 @@ export function generateCardSignatureMove(card, gokyo) {
   const { judoka } = card;
   const signatureMoveId = judoka?.signatureMoveId;
 
+  // Ensure gokyo is an array and find a valid technique with case-insensitive comparison
   const technique = Array.isArray(gokyo)
-    ? gokyo.find((move) => move.id === signatureMoveId && move.name)
+    ? gokyo.find(
+        (move) =>
+          move.id?.toLowerCase() === signatureMoveId?.toLowerCase() && move.name
+      )
     : null;
 
   if (!technique) {
