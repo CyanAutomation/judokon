@@ -406,7 +406,7 @@ button:focus {
   background-color: var(--button-hover-bg); /* Change background color on hover */
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .judoka-card {
     width: 90%; /* Reduce card width for smaller screens */
     max-width: 90%; /* Ensure it doesn't exceed the screen width */
