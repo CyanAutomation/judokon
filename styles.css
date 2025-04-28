@@ -108,22 +108,6 @@ button:focus {
   outline-offset: 2px; /* Offset the outline */
 }
 
-/* Responsive styles for smaller screens (max-width: 768px) */
-@media (max-width: 768px) {
-  h1 {
-    font-size: 2rem; /* Reduce title font size */
-  }
-
-  .subtitle {
-    font-size: var(--font-medium); /* Reduce subtitle font size */
-  }
-
-  button {
-    padding: 0.75rem 1.5rem; /* Adjust button padding */
-    font-size: var(--padding-medium); /* Adjust button font size */
-  }
-}
-
 /* Utility classes */
 .spinner {
   width: 40px;
@@ -244,7 +228,7 @@ button:focus {
   display: block; /* Force the first name to appear on its own line */
   margin: 0; /* Remove margin */
   padding: 0;
-  letter-spacing: 0.2vw; /* Add spacing between letters */
+  letter-spacing: 0.15vw; /* Add spacing between letters */
 }
 
 .card-name .surname {
@@ -254,6 +238,7 @@ button:focus {
   display: block; /* Force the surname to appear on its own line */
   margin: 0; /* Remove margin */
   padding: 0;
+  letter-spacing: 0.2vw; /* Add spacing between letters */
 }
 
 /* Styles for the country flag */
@@ -408,6 +393,19 @@ button:focus {
 }
 
 @media (max-width: 1024px) {
+  h1 {
+    font-size: 2rem; /* Reduce title font size */
+  }
+
+  .subtitle {
+    font-size: var(--font-medium); /* Reduce subtitle font size */
+  }
+
+  button {
+    padding: 1rem 1rem; /* Adjust button padding */
+    font-size: var(--padding-medium); /* Adjust button font size */
+  }
+
   .judoka-card {
     width: 90%; /* Reduce card width for smaller screens */
     max-width: 90%; /* Ensure it doesn't exceed the screen width */
