@@ -434,15 +434,17 @@ button:focus {
   }
 
   .signature-move-value {
-    font-size: clamp(0.1rem, 1.2vw, 0.8rem); /* Further reduce font size */
+    font-size: clamp(0.1rem, 1vw, 0.8rem); /* Further reduce font size */
     padding: 0; /* Reduce padding */
     white-space: nowrap; /* Prevent text from wrapping */
+    letter-spacing: 0.1vw; /* Dynamic letter spacing based on viewport width */
   }
 
   .signature-move-label {
-    font-size: clamp(0.1rem, 1.2vw, 0.8rem); /* Further reduce font size */
+    font-size: clamp(0.1rem, 1vw, 0.8rem); /* Further reduce font size */
     padding: 0; /* Reduce padding */
     white-space: nowrap; /* Prevent text from wrapping */
+    letter-spacing: 0.1vw; /* Dynamic letter spacing based on viewport width */
   }
   .card-stats li {
     font-size: var(--font-small); /* Reduce font size for stats */
