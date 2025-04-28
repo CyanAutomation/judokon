@@ -74,13 +74,13 @@ body {
 h1 {
   font-size: 3rem; /* Large font size for the title */
   letter-spacing: 2px; /* Add spacing between letters */
-  margin-bottom: 0.5rem; /* Add space below the title */
+  margin-bottom: 0.25rem; /* Add space below the title */
 }
 
 /* Styles for the subtitle */
 .subtitle {
   font-size: 1.25rem; /* Medium font size */
-  margin-bottom: 2rem; /* Add space below the subtitle */
+  margin-bottom: 0.5rem; /* Add space below the subtitle */
 }
 
 /* Button styles */
