@@ -355,7 +355,7 @@ button:focus {
   border: 1px solid #fff;
   white-space: nowrap; /* Prevent text from wrapping */
   letter-spacing: 0.12vw; /* Dynamic letter spacing based on viewport width */
-  font-size: clamp(0.2rem, 1.5vw, 1rem); /* Dynamically adjust font size */
+  /* font-size: clamp(0.2rem, 1.5vw, 1rem); */
 }
 
 .signature-move-value {
