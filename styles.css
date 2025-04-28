@@ -200,6 +200,7 @@ button:focus {
   align-items: center; /* Center-align items vertically */
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
+  margin-bottom: 0; /* Add space below the title */
 }
 
 .card-name {
@@ -224,11 +225,12 @@ button:focus {
 
 /* Styles for the country flag */
 .card-flag {
-  /* The standard aspect ratio for most flags is 4:3 (width:height). For example, if you increase the width to 80px, the height should be 60px to maintain the 4:3 ratio. */
+  /* The standard aspect ratio for most flags is 4:3 (width:height). */
   width: 60px; /* Fixed width */
   height: 45px; /* Fixed height */
   background-size: cover; /* Cover the background */
-  border: 0px solid var(--card-border-color);
+  border: 1px solid var(--card-top-bar-bg); /* Border around the flag */
+  border-radius: 1px; /* Add rounded corners */
 }
 
 /* Portrait section of the card */
@@ -241,6 +243,7 @@ button:focus {
   text-align: center; /* Center-align text */
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
+  margin-bottom: 0; /* Add space below the title */
   position: relative; /* Position for child elements */
   display: flex; /* Flexbox layout */
 }
@@ -273,7 +276,7 @@ button:focus {
   margin: 0; /* Remove margin */
   font-size: var(--font-medium); /* Medium font size */
   margin-top: 0;
-  display: flex; /* Flexbox layout */
+  margin-bottom: 0; /* Add space below the title */
 }
 
 .card-stats ul {
