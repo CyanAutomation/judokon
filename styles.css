@@ -316,14 +316,14 @@ button:focus {
   color: #000;
   margin: 0;
   padding: 0px;
-  display: block;
+  display: inline-block;
 }
 
 .signature-move-value {
   color: var(--common-signature-move-text);
   margin: 0;
   padding: 0;
-  display: block;
+  display: inline-block;
   text-transform: uppercase; /* Uppercase text */
   font-weight: bold;
 }
