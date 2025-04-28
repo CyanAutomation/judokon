@@ -314,8 +314,9 @@ button:focus {
   align-items: center;
   width: 100%; /* Take up the full width of the parent */
   position: relative;
-  bottom: 0;
   padding: 1px; /* Add padding if needed */
+  margin: 0;
+  /* margin-top: auto; */
 }
 
 /* Ensure the label spans the full width */
