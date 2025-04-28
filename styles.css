@@ -13,8 +13,7 @@
   --common-top-bar-bg: #0c3f7a; /* Background color for the card's top bar */
   --common-stats-bg: #0c3f7a; /* Background color for card stats */
   --common-signature-move-bg: #003b88; /* Background color for signature section */
-  --common-signature-move-badge-bg: #003b88; /* Badge background color */
-  --common-signature-move-badge-text: #fed843; /* Badge text color */
+  --common-signature-move-text: #fed843; /* Badge text color */
 
   /* Font sizes */
   --font-small: 0.9rem;
@@ -230,12 +229,12 @@ button:focus {
 /* Styles for the country flag */
 .card-flag {
   /* The standard aspect ratio for most flags is 4:3 (width:height). */
-  width: 60px; /* Fixed width */
-  height: 45px; /* Fixed height */
+  width: 52px; /* Fixed width */
+  height: 39px; /* Fixed height */
   background-size: cover; /* Cover the background */
   border-radius: var(--border-radius-small); /* Rounded corners */
   padding: 0;
-  margin: 0;
+  margin-right: 2px;
 }
 
 /* Portrait section of the card */
@@ -316,13 +315,15 @@ button:focus {
   font-weight: bold;
   color: #000;
   margin: 0;
-  padding: 4px;
+  padding: 0px;
+  display: block;
 }
 
 .signature-move-value {
-  color: #8cff00;
+  color: var(--common-signature-move-text);
   margin: 0;
   padding: 0;
+  display: block;
   text-transform: uppercase; /* Uppercase text */
   font-weight: bold;
 }
