@@ -244,6 +244,7 @@ button:focus {
   display: block; /* Force the first name to appear on its own line */
   margin: 0; /* Remove margin */
   padding: 0;
+  letter-spacing: 0.2vw; /* Add spacing between letters */
 }
 
 .card-name .surname {
