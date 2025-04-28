@@ -321,6 +321,7 @@ button:focus {
 .card-stats .stat strong {
   text-align: left; /* Ensure the label is left-aligned */
   flex: 1; /* Allow the label to take up available space */
+  letter-spacing: 2px;
 }
 
 .card-stats .stat span {
