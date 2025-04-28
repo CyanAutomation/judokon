@@ -175,7 +175,7 @@ button:focus {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: var(--padding-extra-large); /* Add padding */
+  padding: var(--padding-small); /* Add padding */
 }
 
 .judoka-card {
