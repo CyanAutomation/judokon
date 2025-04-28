@@ -3,7 +3,10 @@ import { generateCardSignatureMove } from "../helpers/cardRender.js";
 
 // Mock data
 const mockJudoka = { signatureMoveId: 1 }; // Numeric ID
-const mockGokyo = { id: 1, name: "Uchi-mata" }; // Numeric ID and matching name
+const mockGokyo = {
+  1: { id: 1, name: "Uchi-mata" },
+  2: { id: 2, name: "O-soto-gari" }
+};
 
 describe("generateCardSignatureMove", () => {
   describe("Valid Cases", () => {
