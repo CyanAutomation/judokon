@@ -325,6 +325,7 @@ button:focus {
   display: block; /* Make the label span the full width */
   background-color: #fff; /* Badge background color */
   font-weight: bold;
+  width: 50%; /* Take up the full width of the parent */
   color: #000;
   margin: 0;
   padding: var(--padding-small); /* Add padding for spacing */
@@ -335,6 +336,7 @@ button:focus {
   display: block; /* Make the value span the full width */
   color: var(--common-signature-move-text);
   margin: 0;
+  width: 50%; /* Take up the full width of the parent */
   padding: var(--padding-small); /* Add padding for spacing */
   text-transform: uppercase; /* Uppercase text */
   font-weight: bold;
