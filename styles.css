@@ -197,7 +197,7 @@ button:focus {
   display: flex; /* Flexbox layout */
   justify-content: space-between; /* Space between elements */
   align-items: center; /* Center-align items vertically */
-  padding: var(--padding-small) var(--padding-medium); /* Remove padding */
+  padding: var(--padding-medium) var(--padding-medium); /* Remove padding */
   margin: 0; /* Remove margin */
 }
 
@@ -240,14 +240,11 @@ button:focus {
 
 /* Portrait section of the card */
 .card-portrait {
-  background: var(--common-top-bar-bg); /* Border around the flag */
   text-align: center; /* Center-align text */
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
   position: relative; /* Position for child elements */
   display: flex; /* Flexbox layout */
-  border: 6px solid var(--common-top-bar-bg); 
-  border-radius: var(--border-radius-medium);
 }
 
 .card-portrait img {
@@ -255,6 +252,8 @@ button:focus {
   height: auto;
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
+  border: 6px solid var(--common-top-bar-bg); 
+  border-radius: var(--border-radius-medium);
 }
 
 /* Weight class badge in the portrait section */
