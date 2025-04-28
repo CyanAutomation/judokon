@@ -198,6 +198,7 @@ button:focus {
   padding: var(--padding-small); /* Remove padding */
   margin: 0; /* Remove margin */
   border-radius: var(--border-radius-small); /* Rounded corners */
+  border-bottom: 1px solid var(--common-border-color); /* Add a top border */
 }
 
 .card-name {
@@ -325,6 +326,7 @@ button:focus {
   display: block; /* Make the label span the full width */
   background-color: #fff; /* Badge background color */
   font-weight: bold;
+  font-size: var(--font-small); /* Small font size for the first name */
   width: 100%; /* Take up the full width of the parent */
   color: #000;
   margin: 0;
