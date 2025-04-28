@@ -9,14 +9,12 @@
   --button-text-color: #1a1a1a; /* Button text color */
 
   /* Card-specific colors */
-  --card-border-color: #3c5ad6; /* Border color for cards */
-  --card-top-bar-bg: #0c3f7a; /* Background color for the card's top bar */
-  --card-portrait-gradient-start: #1c4b95; /* Gradient start for card portrait */
-  --card-portrait-gradient-end: #0c3f7a; /* Gradient end for card portrait */
-  --card-stats-bg: #0c3f7a; /* Background color for card stats */
-  --card-signature-move-bg: #003b88; /* Background color for signature section */
-  --card-signature-move-badge-bg: #fed843; /* Badge background color */
-  --card-signature-move-badge-text: #003b88; /* Badge text color */
+  --common-border-color: #3c5ad6; /* Border color for cards */
+  --common-top-bar-bg: #0c3f7a; /* Background color for the card's top bar */
+  --common-stats-bg: #0c3f7a; /* Background color for card stats */
+  --common-signature-move-bg: #003b88; /* Background color for signature section */
+  --common-signature-move-badge-bg: #003b88; /* Badge background color */
+  --common-signature-move-badge-text: #fed843; /* Badge text color */
 
   /* Font sizes */
   --font-small: 0.9rem;
@@ -183,10 +181,10 @@ button:focus {
   max-width: 300px;
   width: 100%; /* Full width for smaller screens */
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
-  border: 8px solid var(--card-border-color); /* Card border */
+  border: 8px solid var(--common-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
   overflow: hidden; /* Hide overflow content */
-  background-color: var(--card-top-bar-bg); /* White background for contrast */
+  background-color: var(--card-top-bar-bg); /
   box-shadow: var(--box-shadow); /* Add shadow for depth */
   font-family: "Inter", "Montserrat", "Nunito", sans-serif; /* Custom font family */
 }
@@ -216,6 +214,8 @@ button:focus {
   display: block; /* Force the first name to appear on its own line */
   margin: 0; /* Remove margin */
   margin-bottom: 0; /* Remove margin for the last stat */
+  margin-top: 0; /* Remove margin for the last stat */
+  padding: 0;
 }
 
 .card-name .surname {
@@ -231,7 +231,8 @@ button:focus {
   width: 60px; /* Fixed width */
   height: 45px; /* Fixed height */
   background-size: cover; /* Cover the background */
-  border-radius: var(--border-radius-small); /* Rounded corners */
+  border: 8px solid var(--common-top-bar-bg); /* Border around the flag */
+  border-radius: var(--border-radius-medium); /* Rounded corners */
 }
 
 /* Portrait section of the card */
@@ -247,7 +248,7 @@ button:focus {
   margin-bottom: 0; /* Add space below the title */
   position: relative; /* Position for child elements */
   display: flex; /* Flexbox layout */
-  border: 1px solid var(--card-top-bar-bg); /* Border around the flag */
+  border: 1px solid var(--common-top-bar-bg; /* Border around the flag */
   border-radius: var(--border-radius-small); /* Rounded corners */
 }
 
@@ -255,7 +256,7 @@ button:focus {
   width: 100%; /* Image width */
   height: auto;
   border-radius: 8px;
-  border: 0px solid var(--card-border-color);
+  border: 0px solid var(--common-border-color);
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
   margin-bottom: 0; /* Add space below the title */
@@ -275,7 +276,7 @@ button:focus {
 
 /* Stats section of the card */
 .card-stats {
-  background-color: var(--card-stats-bg); /* Background color */
+  background-color: var(--common-stats-bg); /* Background color */
   color: var(--text-color); /* Text color */
   font-size: var(--font-medium); /* Medium font size */
   border-radius: var(--border-radius-small); /* Rounded corners */
@@ -293,6 +294,7 @@ button:focus {
 .card-stats li {
   margin: 0 0;
   padding: var(--padding-none); /* Add padding */
+  border-top: 2px solid var(--common-border-color); /* Add a top border */
 }
 
 .card-stats .stat {
