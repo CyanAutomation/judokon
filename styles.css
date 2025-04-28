@@ -252,7 +252,7 @@ button:focus {
   height: auto;
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
-  border-radius: var(--border-radius-small); /* Rounded corners */
+  border-radius: var(--border-radius-medium); /* Rounded corners */
 }
 
 /* Weight class badge in the portrait section */
@@ -313,7 +313,8 @@ button:focus {
   justify-content: space-around;
   align-items: center;
   width: 100%; /* Take up the full width of the parent */
-  margin-top: auto;
+  position: absolute;
+  bottom: 0;
   padding: 1px; /* Add padding if needed */
 }
 
