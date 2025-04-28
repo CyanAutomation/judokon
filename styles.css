@@ -186,6 +186,7 @@ button:focus {
   background-color: var(--common-top-bar-bg); /* White background for contrast */
   box-shadow: var(--box-shadow); /* Add shadow for depth */
   font-family: "Inter", "Montserrat", "Nunito", sans-serif; /* Custom font family */
+  padding: 0;
 }
 
 /* Top bar of the card (name and flag) */
