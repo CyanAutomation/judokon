@@ -187,7 +187,7 @@ button:focus {
   max-width: 300px;
   width: 100%; /* Full width for smaller screens */
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
-  border: 2px solid var(--card-border-color); /* Card border */
+  border: 8px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
   overflow: hidden; /* Hide overflow content */
   background-color: #ffffff; /* White background for contrast */
@@ -246,10 +246,10 @@ button:focus {
 }
 
 .card-portrait img {
-  width: 90%; /* Image width */
+  width: 100%; /* Image width */
   height: auto;
   border-radius: 8px;
-  border: 1px solid var(--card-border-color);
+  border: 0px solid var(--card-border-color);
 }
 
 /* Weight class badge in the portrait section */
@@ -274,14 +274,9 @@ button:focus {
   margin-top: 0;
 }
 
-.card-stats h3 {
-  font-size: 1.2em;
-  margin-bottom: 2px;
-}
-
 .card-stats ul {
   list-style: none;
-  padding: var(--padding-none); /* Add padding */
+  padding: var(--padding-small); /* Add padding */
 }
 
 .card-stats li {
@@ -293,7 +288,7 @@ button:focus {
   display: flex; /* Use flexbox for layout */
   justify-content: space-between; /* Space between label and value */
   align-items: center; /* Align items vertically */
-  margin-bottom: var(--padding-none); /* Add spacing between stats */
+  margin-bottom: var(--padding-small); /* Add spacing between stats */
 }
 
 .card-stats .stat strong {
