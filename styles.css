@@ -336,7 +336,7 @@ button:focus {
   color: #000;
   margin: 0;
   text-align: center;
-  padding: var(--padding-small); /* Add padding for spacing */
+  padding: var(--padding-medium); /* Add padding for spacing */
   border-radius: 2px;
   border: 1px solid #fff;
 }
