@@ -417,11 +417,13 @@ button:focus {
   .signature-move-value {
     font-size: clamp(0.1rem, 1.2vw, 0.8rem); /* Further reduce font size */
     padding: 0.2rem; /* Reduce padding */
+    white-space: nowrap; /* Prevent text from wrapping */
   }
 
   .signature-move-label {
     font-size: clamp(0.1rem, 1.2vw, 0.8rem); /* Further reduce font size */
     padding: 0.2rem; /* Reduce padding */
+    white-space: nowrap; /* Prevent text from wrapping */
   }
   .card-stats li {
     font-size: var(--font-small); /* Reduce font size for stats */
