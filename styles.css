@@ -169,7 +169,8 @@ button:focus {
 
 /* Card styles */
 .card-container {
-  display: flex;
+  display: block;
+  /* display: flex; */
   justify-content: center;
   align-items: center;
   padding: var(--padding-large); /* Add padding */
@@ -414,15 +415,26 @@ button:focus {
     padding: 0.5rem; /* Reduce padding */
   }
 
+  .signature-move-container {
+    display: flex; /* Ensure the container spans the full width */
+    justify-content: space-around;
+    align-items: center;
+    width: 100%; /* Take up the full width of the parent */
+    position: relative;
+    padding: 0; /* Add padding if needed */
+    margin: 0;
+    /* margin-top: auto; */
+  }
+
   .signature-move-value {
     font-size: clamp(0.1rem, 1.2vw, 0.8rem); /* Further reduce font size */
-    padding: 0.2rem; /* Reduce padding */
+    padding: 0; /* Reduce padding */
     white-space: nowrap; /* Prevent text from wrapping */
   }
 
   .signature-move-label {
     font-size: clamp(0.1rem, 1.2vw, 0.8rem); /* Further reduce font size */
-    padding: 0.2rem; /* Reduce padding */
+    padding: 0; /* Reduce padding */
     white-space: nowrap; /* Prevent text from wrapping */
   }
   .card-stats li {
