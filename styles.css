@@ -313,7 +313,7 @@ button:focus {
   justify-content: space-around;
   align-items: center;
   width: 100%; /* Take up the full width of the parent */
-  position: absolute;
+  position: relative;
   bottom: 0;
   padding: 1px; /* Add padding if needed */
 }
