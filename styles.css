@@ -312,11 +312,11 @@ button:focus {
 
 /* Signature Move section of the card */
 .signature-move-label {
-  background-color: var(--common-signature-move-badge-bg); /* Badge background color */
+  background-color: #fff; /* Badge background color */
   font-weight: bold;
   color: #000;
   margin: 0;
-  padding: 0;
+  padding: 4px;
 }
 
 .signature-move-value {
