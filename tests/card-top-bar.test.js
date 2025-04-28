@@ -28,7 +28,8 @@ describe("generateCardTopBar", () => {
 
   test("should include the flag URL in the HTML", async () => {
     const result = await generateCardTopBar(judoka, flagUrl);
-    expect(result.html).toContain(flagUrl);
+    const htmlString = result.outerHTML;
+    expect(htmlString).toContain(flagUrl);
   });
 
   test("should handle missing flagUrl by using the placeholder", async () => {
