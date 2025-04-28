@@ -197,7 +197,7 @@ button:focus {
   display: flex; /* Flexbox layout */
   justify-content: space-between; /* Space between elements */
   align-items: center; /* Center-align items vertically */
-  padding: var(--padding-small); /* Remove padding */
+  padding: var(--padding-medium); /* Remove padding */
   margin: 0; /* Remove margin */
 }
 
@@ -246,15 +246,13 @@ button:focus {
   margin: 0; /* Remove margin */
   position: relative; /* Position for child elements */
   display: flex; /* Flexbox layout */
-  border: 1px solid var(--common-top-bar-bg); /* Border around the flag */
-  border-radius: var(--border-radius-small); /* Rounded corners */
+/*  border: 1px solid var(--common-top-bar-bg); 
+  border-radius: var(--border-radius-small); */
 }
 
 .card-portrait img {
-  width: 100%; /* Image width */
+  width: auto; /* Image width */
   height: auto;
-  border-radius: 6px;
-  border: 0px solid var(--common-border-color);
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
 }
@@ -276,7 +274,6 @@ button:focus {
   background-color: var(--common-stats-bg); /* Background color */
   color: var(--text-color); /* Text color */
   font-size: var(--font-small); /* Medium font size */
-  border-radius: var(--border-radius-small); /* Rounded corners */
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
   border-bottom: 1px solid var(--common-border-color); /* Add a top border */
@@ -318,7 +315,7 @@ button:focus {
   justify-content: space-around;
   align-items: center;
   width: 100%; /* Take up the full width of the parent */
-  margin: 0; /* Remove margin */
+  margin-top: auto;
   padding: 1px; /* Add padding if needed */
 }
 
