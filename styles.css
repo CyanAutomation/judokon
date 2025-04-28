@@ -287,9 +287,9 @@ button:focus {
 }
 
 .card-stats li {
-  margin: 0 0;
+  margin: 0;
   padding: var(--padding-none); /* Add padding */
-  border-top: 2px solid var(--common-border-color); /* Add a top border */
+  border-top: 1px solid var(--common-border-color); /* Add a top border */
   text-transform: uppercase; /* Uppercase text */
 }
 
@@ -313,7 +313,7 @@ button:focus {
 /* Signature Move section of the card */
 .signature-move-label {
   font-weight: bold;
-  color: #333;
+  color: #fff;
   margin: 0;
   padding: 0;
 }
