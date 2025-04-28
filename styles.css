@@ -169,8 +169,7 @@ button:focus {
 
 /* Card styles */
 .card-container {
-  display: block;
-  /* display: flex; */
+  display: flex;
   justify-content: center;
   align-items: center;
   padding: var(--padding-large); /* Add padding */
@@ -413,6 +412,13 @@ button:focus {
     max-width: 90%; /* Ensure it doesn't exceed the screen width */
     aspect-ratio: 3 / 4; /* Adjust aspect ratio for better fit */
     padding: 0.5rem; /* Reduce padding */
+  }
+
+  .card-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--padding-small); /* Add padding */
   }
 
   .signature-move-container {
