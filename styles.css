@@ -246,7 +246,7 @@ button:focus {
   position: relative; /* Position for child elements */
   display: flex; /* Flexbox layout */
   overflow: hidden;
-  height: 230px;
+  height: 215px;
   width: 100%;
   justify-content: center; /* Center horizontally */
   align-items: center; /* Center vertically */
