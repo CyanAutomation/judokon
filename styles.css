@@ -183,7 +183,7 @@ button:focus {
   max-width: 300px;
   width: 100%; /* Full width for smaller screens */
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
-  border: 2px solid var(--card-border-color); /* Card border */
+  border: 8px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
   overflow: hidden; /* Hide overflow content */
   background-color: #ffffff; /* White background for contrast */
@@ -198,7 +198,8 @@ button:focus {
   display: flex; /* Flexbox layout */
   justify-content: space-between; /* Space between elements */
   align-items: center; /* Center-align items vertically */
-  padding: var(--padding-none) var(--padding-small); /* Add padding */
+  padding: 0; /* Remove padding */
+  margin: 0; /* Remove margin */
 }
 
 .card-name {
@@ -238,7 +239,8 @@ button:focus {
     var(--card-portrait-gradient-end)
   ); /* Gradient background */
   text-align: center; /* Center-align text */
-  padding: var(--padding-none); /* Add padding */
+  padding: 0; /* Remove padding */
+  margin: 0; /* Remove margin */
   position: relative; /* Position for child elements */
 }
 
@@ -266,7 +268,8 @@ button:focus {
 .card-stats {
   background-color: var(--card-stats-bg); /* Background color */
   color: var(--text-color); /* Text color */
-  padding: var(--padding-none); /* Add padding */
+  padding: 0; /* Remove padding */
+  margin: 0; /* Remove margin */
   font-size: var(--font-medium); /* Medium font size */
   margin-top: 0;
 }
