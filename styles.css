@@ -246,8 +246,8 @@ button:focus {
   margin: 0; /* Remove margin */
   position: relative; /* Position for child elements */
   display: flex; /* Flexbox layout */
-  border: 1px solid var(--common-top-bar-bg); 
-  border-radius: var(--border-radius-small);
+  border: 6px solid var(--common-top-bar-bg); 
+  border-radius: var(--border-radius-medium);
 }
 
 .card-portrait img {
@@ -274,7 +274,7 @@ button:focus {
   background-color: var(--common-stats-bg); /* Background color */
   color: var(--text-color); /* Text color */
   font-size: var(--font-small); /* Medium font size */
-  padding: 0; /* Remove padding */
+  padding: 0 var(--padding-small); /* Remove padding */
   margin: 0; /* Remove margin */
   border-bottom: 1px solid var(--common-border-color); /* Add a top border */
 }
@@ -287,7 +287,7 @@ button:focus {
 
 .card-stats li {
   margin: 0;
-  padding: var(--padding-none) var(--padding-small); /* Add padding */
+  padding: var(--padding-none); /* Add padding */
   border-top: 1px solid var(--common-border-color); /* Add a top border */
   text-transform: uppercase; /* Uppercase text */
 }
