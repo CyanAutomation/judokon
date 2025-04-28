@@ -259,7 +259,7 @@ button:focus {
 .card-flag {
   /* The standard aspect ratio for most flags is 4:3 (width:height). */
   width: auto; /* Fixed width */
-  height: 40px; /* Fixed height */
+  height: 100%; /* Fixed height */
   background-size: cover; /* Cover the background */
   border-radius: var(--border-radius-small); /* Rounded corners */
   padding: 0;
