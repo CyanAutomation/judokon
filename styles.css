@@ -311,11 +311,11 @@ button:focus {
 
 /* Parent container for the signature move section */
 .signature-move-container {
-  display: block; /* Ensure the container spans the full width */
+  display: flex; /* Ensure the container spans the full width */
+  align-items: center;
   width: 100%; /* Take up the full width of the parent */
-  text-align: left; /* Align text to the left */
   margin: 0; /* Remove margin */
-  padding: var(--padding-small); /* Add padding if needed */
+  padding: 0; /* Add padding if needed */
 }
 
 /* Ensure the label spans the full width */

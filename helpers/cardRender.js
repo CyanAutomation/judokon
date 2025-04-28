@@ -124,7 +124,7 @@ export function generateCardSignatureMove(judoka, gokyo) {
   const techniqueName = technique?.name || "Unknown"; // Fallback to "Unknown" if no technique is found
   return `
     <div class="signature-move-container">
-      <span class="signature-move-label"><strong>Signature Move:</strong></span>
+      <span class="signature-move-label">Signature Move:</span>
       <span class="signature-move-value">${techniqueName}</span>
     </div>
   `;
