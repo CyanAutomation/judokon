@@ -198,16 +198,13 @@ button:focus {
   align-items: center; /* Center-align items vertically */
   padding: var(--padding-small); /* Remove padding */
   margin: 0; /* Remove margin */
-  margin-top: 0; /* Remove margin for the last stat */
-  margin-bottom: 0; /* Add space below the title */
   border-radius: var(--border-radius-small); /* Rounded corners */
 }
 
 .card-name {
   text-align: left; /* Left-align the text */
   flex-direction: column; /* Stack items vertically */
-  margin-top: 0; /* Remove margin for the last stat */
-  margin-bottom: 0; /* Add space below the title */
+  margin: 0; /* Remove margin */
 }
 
 /* Styles for the judoka's name */
@@ -216,8 +213,6 @@ button:focus {
   font-weight: normal; /* Normal font weight */
   display: block; /* Force the first name to appear on its own line */
   margin: 0; /* Remove margin */
-  margin-bottom: 0; /* Remove margin for the last stat */
-  margin-top: 0; /* Remove margin for the last stat */
 }
 
 .card-name .surname {
@@ -226,8 +221,6 @@ button:focus {
   text-transform: uppercase; /* Uppercase text */
   display: block; /* Force the surname to appear on its own line */
   margin: 0; /* Remove margin */
-  margin-bottom: 0; /* Remove margin for the last stat */
-  margin-top: 0; /* Remove margin for the last stat */
 }
 
 /* Styles for the country flag */
@@ -245,8 +238,6 @@ button:focus {
   text-align: center; /* Center-align text */
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
-  margin-top: 0;
-  margin-bottom: 0; /* Add space below the title */
   position: relative; /* Position for child elements */
   display: flex; /* Flexbox layout */
   border: 1px solid var(--common-top-bar-bg); /* Border around the flag */
@@ -260,8 +251,6 @@ button:focus {
   border: 0px solid var(--common-border-color);
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
-  margin-top: 0;
-  margin-bottom: 0; /* Add space below the title */
 }
 
 /* Weight class badge in the portrait section */
@@ -284,8 +273,6 @@ button:focus {
   border-radius: var(--border-radius-small); /* Rounded corners */
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
-  margin-top: 0;
-  margin-bottom: 0; /* Add space below the title */
 }
 
 .card-stats ul {
@@ -304,7 +291,7 @@ button:focus {
   display: flex; /* Use flexbox for layout */
   justify-content: space-between; /* Space between label and value */
   align-items: center; /* Align items vertically */
-  margin-bottom: var(--padding-small); /* Add spacing between stats */
+  margin-bottom: 0; /* Add spacing between stats */
 }
 
 .card-stats .stat strong {
