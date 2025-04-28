@@ -187,7 +187,7 @@ button:focus {
   max-width: 300px;
   width: 100%; /* Full width for smaller screens */
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
-  border: 6px solid var(--card-border-color); /* Card border */
+  border: 2px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
   overflow: hidden; /* Hide overflow content */
   background-color: #ffffff; /* White background for contrast */
@@ -286,6 +286,7 @@ button:focus {
 
 .card-stats li {
   margin: 0 0;
+  padding: var(--padding-none); /* Add padding */
 }
 
 .card-stats .stat {
