@@ -317,7 +317,7 @@ button:focus {
   align-items: center;
   width: 100%; /* Take up the full width of the parent */
   margin: 0; /* Remove margin */
-  padding: 0px; /* Add padding if needed */
+  padding: 1px; /* Add padding if needed */
 }
 
 /* Ensure the label spans the full width */
@@ -330,6 +330,8 @@ button:focus {
   margin: 0;
   text-align: center;
   padding: var(--padding-small); /* Add padding for spacing */
+  border-radius: 4px;
+  border: 1px solid #fff;
 }
 
 /* Ensure the value spans the full width */
