@@ -258,8 +258,8 @@ button:focus {
 /* Styles for the country flag */
 .card-flag {
   /* The standard aspect ratio for most flags is 4:3 (width:height). */
-  width: 52px; /* Fixed width */
-  height: 39px; /* Fixed height */
+  width: 50px; /* Fixed width */
+  height: 30px; /* Fixed height */
   background-size: cover; /* Cover the background */
   border-radius: var(--border-radius-small); /* Rounded corners */
   padding: 0;
@@ -384,8 +384,8 @@ button:focus {
 
   /* Ensure the text stays on one line and dynamically shrinks */
   white-space: nowrap; /* Prevent text from wrapping */
-  overflow: hidden; /* Hide overflowing text */
-  font-size: clamp(0.1rem, 1vw, 1.2rem); /* Dynamically adjust font size */
+  /* overflow: hidden; */
+  font-size: clamp(0.2rem, 0.8rem, 1.2rem); /* Dynamically adjust font size */
 }
 
 /* Profile link styles */
