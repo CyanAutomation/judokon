@@ -312,10 +312,12 @@ button:focus {
 /* Parent container for the signature move section */
 .signature-move-container {
   display: flex; /* Ensure the container spans the full width */
+  justify-content: space-between;
   align-items: center;
   width: 100%; /* Take up the full width of the parent */
   margin: 0; /* Remove margin */
-  padding: 0; /* Add padding if needed */
+  padding: 0px; /* Add padding if needed */
+  gap: var(--padding-small); /* Add gap between elements */
 }
 
 /* Ensure the label spans the full width */
