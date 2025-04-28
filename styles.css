@@ -246,12 +246,12 @@ button:focus {
   position: relative; /* Position for child elements */
   display: flex; /* Flexbox layout */
   overflow: hidden;
-  height: 250px;
+  height: 200px;
 }
 
 .card-portrait img {
   width: 100%;
-  height: auto;
+  /* height: auto; */
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
   border-radius: var(--border-radius-medium); /* Rounded corners */
