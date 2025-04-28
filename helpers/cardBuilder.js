@@ -103,7 +103,7 @@ export async function generateJudokaCardHTML(judoka, gokyo) {
   return `
     <div class="card-container">
       <div class="judoka-card">
-        ${generateCardTopBar(judoka, flagUrl)}
+        ${generateCardTopBar(judoka, flagUrl).html}
         ${generateCardPortrait(judoka)}
         ${generateCardStats(judoka)}
         ${generateCardSignatureMove(judoka, gokyo)}

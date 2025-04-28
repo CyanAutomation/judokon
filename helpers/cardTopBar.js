@@ -88,43 +88,35 @@ function getValue(value, defaultValue) {
 export async function generateCardTopBar(judoka, flagUrl) {
   if (!judoka) {
     console.error("Judoka object is missing!");
-    return `
-      <div class="card-top-bar">
-        No data available
-      </div>
-    `;
+    return {
+      title: "No data",
+      flagUrl: PLACEHOLDER_FLAG_URL,
+      html: `<div class="card-top-bar">No data available</div>`,
+    };
   }
 
-  console.log("Judoka object received:", judoka);
+  const firstname = escapeHTML(getValue(judoka.firstname, "Unknown"));
+  const surname = escapeHTML(getValue(judoka.surname, ""));
+  const countryCode = getValue(judoka.countryCode, "unknown");
 
-  const firstname = escapeHTML(getValue(judoka.firstname, "Tatsuuma"));
-  const surname = escapeHTML(getValue(judoka.surname, "Ushiyama"));
-  const countryCode = getValue(judoka.countryCode, "vu");
+  // Await the country name
+  const countryName = countryCode !== "unknown" ? await getCountryNameFromCode(countryCode) : "Unknown";
 
-  console.log("Extracted values:", { firstname, surname, countryCode });
-
-  // Await the resolved country name
-  const countryName =
-    countryCode !== "unknown" ? await getCountryNameFromCode(countryCode) : "Vanuatu";
-
-  console.log("Resolved country name:", countryName);
-
+  const fullTitle = `${firstname} ${surname}`.trim();
   const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;
 
-  console.log("Final flag URL:", finalFlagUrl);
-
-  const html = `
-    <div class="card-top-bar">
-      <div class="card-name">
-        <span class="firstname">${firstname}</span>
-        <span class="surname">${surname}</span>
+  return {
+    title: fullTitle,
+    flagUrl: finalFlagUrl,
+    html: `
+      <div class="card-top-bar">
+        <div class="card-name">
+          <span class="firstname">${firstname}</span>
+          <span class="surname">${surname}</span>
+        </div>
+        <img class="card-flag" src="${finalFlagUrl}" alt="${countryName} flag" 
+          onerror="this.src='${PLACEHOLDER_FLAG_URL}'">
       </div>
-      <img class="card-flag" src="${finalFlagUrl}" alt="${countryName} flag" 
-        onerror="this.src='${PLACEHOLDER_FLAG_URL}'">
-    </div>
-  `;
-
-  console.log("Generated HTML:", html);
-
-  return html;
+    `,
+  };
 }
