@@ -138,7 +138,8 @@ export function generateCardSignatureMove(judoka, gokyo, cardType = "common") {
   const technique = gokyo[signatureMoveId] || gokyo[0];
 
   // Validate the technique structure and extract the name
-  const techniqueName = technique?.name && typeof technique.name === "string" ? technique.name : "Unknown";
+  const techniqueName =
+    technique?.name && typeof technique.name === "string" ? technique.name : "Unknown";
 
   // Ensure the cardType is lowercase for consistency
   const cardClass = cardType.toLowerCase();
