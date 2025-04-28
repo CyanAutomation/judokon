@@ -1,11 +1,11 @@
 import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const startBtn = document.getElementById("startBtn");
+  const randomBtn = document.getElementById("randomBtn");
   const gameArea = document.getElementById("gameArea");
   const loadingIndicator = document.getElementById("loading");
 
-  if (!startBtn || !gameArea || !loadingIndicator) {
+  if (!randomBtn || !gameArea || !loadingIndicator) {
     console.error("Required DOM elements are missing.");
     return;
   }
@@ -36,11 +36,14 @@ document.addEventListener("DOMContentLoaded", () => {
    *    - Finally:
    *      a. Hide the loading indicator by calling `toggleLoading(false)`.
    *
-   * @event Click - Triggered when the "Start" button is clicked.
+   * @event Click - Triggered when the "Random" button is clicked.
    */
-  startBtn.addEventListener("click", async () => {
-    console.log("Start button clicked!");
-    startBtn.classList.add("hidden");
+
+  // Update the button label to "Random"
+  randomBtn.textContent = "Random";
+
+  randomBtn.addEventListener("click", async () => {
+    randomBtn.classList.add("hidden");
     gameArea.innerHTML = ""; // Clear the game area
 
     try {
