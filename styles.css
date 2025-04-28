@@ -197,7 +197,6 @@ button:focus {
   align-items: center; /* Center-align items vertically */
   padding: var(--padding-small); /* Remove padding */
   margin: 0; /* Remove margin */
-  border-radius: var(--border-radius-small); /* Rounded corners */
   border-bottom: 1px solid var(--common-border-color); /* Add a top border */
 }
 
@@ -253,7 +252,7 @@ button:focus {
 .card-portrait img {
   width: 100%; /* Image width */
   height: auto;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 0px solid var(--common-border-color);
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
@@ -332,7 +331,7 @@ button:focus {
   margin: 0;
   text-align: center;
   padding: var(--padding-small); /* Add padding for spacing */
-  border-radius: 4px;
+  border-radius: 2px;
   border: 1px solid #fff;
 }
 
@@ -346,8 +345,8 @@ button:focus {
   text-transform: uppercase; /* Uppercase text */
   font-weight: bold;
   text-align: center;
-  border-radius: 4px;
-  border: 1px solid #fff;
+  border-radius: 2px;
+  border: 0px solid #fff;
 }
 
 /* Profile link styles */
