@@ -34,10 +34,9 @@ export function generateCardPortrait(card) {
     `;
   }
 
-  const portraitUrl =
-    card.id
-      ? `./assets/judokaPortraits/judokaPortrait-${card.id}.png`
-      : PLACEHOLDER_PORTRAIT;
+  const portraitUrl = card.id
+    ? `./assets/judokaPortraits/judokaPortrait-${card.id}.png`
+    : PLACEHOLDER_PORTRAIT;
 
   console.log("Constructed portrait URL:", portraitUrl);
 
