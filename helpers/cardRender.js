@@ -74,7 +74,8 @@ export function generateCardPortrait(card) {
  * @returns {string} The HTML string for the stats.
  */
 export function generateCardStats(card, cardType = "common") {
-  if (!card?.stats) return `<div class="card-stats ${cardType.toLowerCase()}">No stats available</div>`;
+  if (!card?.stats)
+    return `<div class="card-stats ${cardType.toLowerCase()}">No stats available</div>`;
 
   const { power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?" } = card.stats;
 
