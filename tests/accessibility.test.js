@@ -54,9 +54,7 @@ describe("generateCardSignatureMove", () => {
   it("generates the correct HTML structure", () => {
     const html = generateCardSignatureMove(mockJudoka, mockGokyo);
     expect(html).toContain('<div class="signature-move-container">');
-    expect(html).toContain(
-      '<span class="signature-move-label">Signature Move:</span>'
-    );
+    expect(html).toContain('<span class="signature-move-label">Signature Move:</span>');
     expect(html).toContain('<span class="signature-move-value">Uchi-mata</span>');
   });
 
