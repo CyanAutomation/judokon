@@ -180,19 +180,43 @@ button:focus {
   max-width: 300px;
   width: 100%; /* Full width for smaller screens */
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
-  border: 10px solid var(--common-border-color); /* Card border */
+  border: 10px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
   overflow: hidden; /* Hide overflow content */
-  background-color: var(--common-top-bar-bg); /* White background for contrast */
+  background-color: var(--card-bg-color);
   box-shadow: var(--box-shadow); /* Add shadow for depth */
   font-family: "Inter", "Montserrat", "Nunito", sans-serif; /* Custom font family */
   padding: 0;
   margin: 0;
 }
 
+/* Common card variables */
+.judoka-card.common {
+  --card-bg-color: #3c5ad6;
+  --card-border-color: #3c5ad6;
+  --card-signature-move-bg: #003b88;
+  --card-stats-bg: #0c3f7a;
+}
+
+/* Epic card variables */
+.judoka-card.epic {
+  --card-bg-color: #6a1b9a;
+  --card-border-color: #9c27b0;
+  --card-signature-move-bg: #003b88;
+  --card-stats-bg: #0c3f7a;
+}
+
+/* Legendary card variables */
+.judoka-card.legendary {
+  --card-bg-color: #ff9800;
+  --card-border-color: #ffb74d;
+  --card-signature-move-bg: #003b88;
+  --card-stats-bg: #0c3f7a;
+}
+
 /* Top bar of the card (name and flag) */
 .card-top-bar {
-  background-color: var(--common-top-bar-bg); /* Background color */
+  background-color: var(--card-bg-color); /* Background color */
   color: var(--text-color); /* Text color */
   display: flex; /* Flexbox layout */
   justify-content: space-between; /* Space between elements */
@@ -276,12 +300,12 @@ button:focus {
 
 /* Stats section of the card */
 .card-stats {
-  background-color: var(--common-stats-bg); /* Background color */
+  background-color: var(--card-bg-color); /* Background color */
   color: var(--text-color); /* Text color */
   font-size: var(--font-small); /* Medium font size */
-  padding: 0 var(--padding-medium); /* Remove padding */
+  padding: 0 2px; /* Remove padding */
   margin: 0; /* Remove margin */
-  border-bottom: 1px solid var(--common-border-color); /* Add a top border */
+  border-bottom: 1px solid var(--card-border-color); /* Add a top border */
 }
 
 .card-stats ul {
@@ -293,7 +317,7 @@ button:focus {
 .card-stats li {
   margin: 0;
   padding: 0; /* Add padding */
-  border-top: 1px solid var(--common-border-color); /* Add a top border */
+  border-top: 1px solid var(--card-border-color); /* Add a top border */
   text-transform: uppercase; /* Uppercase text */
 }
 
@@ -344,7 +368,7 @@ button:focus {
 /* Ensure the value spans the full width */
 .signature-move-value {
   display: block; /* Make the value span the full width */
-  color: var(--common-signature-move-text);
+  color: #fed843;
   margin: 0;
   width: 100%; /* Take up the full width of the parent */
   padding: 0.2rem; /* Add padding for spacing */

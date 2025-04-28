@@ -73,11 +73,16 @@ export function generateCardPortrait(card) {
  * @param {JudokaCard} card - The card data containing the judoka and signature move.
  * @returns {string} The HTML string for the stats.
  */
-export function generateCardStats(card) {
-  if (!card?.stats) return '<div class="card-stats">No stats available</div>';
+export function generateCardStats(card, cardType = "common") {
+  if (!card?.stats) return `<div class="card-stats ${cardType.toLowerCase()}">No stats available</div>`;
+
   const { power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?" } = card.stats;
+
+  // Ensure the cardType is lowercase for consistency
+  const cardClass = cardType.toLowerCase();
+
   return `
-    <div class="card-stats">
+    <div class="card-stats ${cardClass}">
       <ul>
         <li class="stat"><strong>Power</strong> <span>${power}</span></li>
         <li class="stat"><strong>Speed</strong> <span>${speed}</span></li>
@@ -115,7 +120,7 @@ export function generateCardStats(card) {
  * @param {Object} gokyo - The single technique object.
  * @returns {string} The HTML string for the signature move.
  */
-export function generateCardSignatureMove(judoka, gokyo) {
+export function generateCardSignatureMove(judoka, gokyo, cardType = "common") {
   const signatureMoveId = Number(judoka?.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
 
   // Retrieve the technique from gokyo using the signatureMoveId as the key
@@ -124,8 +129,11 @@ export function generateCardSignatureMove(judoka, gokyo) {
   // Extract the technique name or fallback to "Unknown"
   const techniqueName = technique?.name || "Unknown";
 
+  // Ensure the cardType is lowercase for consistency
+  const cardClass = cardType.toLowerCase();
+
   return `
-    <div class="signature-move-container">
+    <div class="signature-move-container ${cardClass}">
       <span class="signature-move-label">Signature Move:</span>
       <span class="signature-move-value">${techniqueName}</span>
     </div>
