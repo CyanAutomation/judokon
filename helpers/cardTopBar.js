@@ -50,98 +50,150 @@ function getValue(value, defaultValue) {
 }
 
 /**
- * Generates the top bar HTML for a judoka card, including name and flag.
+ * Creates a DOM element to display a "No Data Available" message.
  *
  * Pseudocode:
- * 1. Check if the `judoka` object is provided:
- *    - If not, log an error and return a default object with placeholder data.
+ * 1. Create a `<div>` element:
+ *    - Set its `className` to `"card-top-bar"`.
+ *    - Set its `textContent` to `"No data available"`.
  *
- * 2. Extract and sanitize the judoka's `firstname` and `surname`:
- *    - Use `escapeHTML` to prevent XSS attacks.
- *    - Use `getValue` to provide default values if the properties are missing.
+ * 2. Log the generated container to the console for debugging.
  *
- * 3. Extract the `countryCode` from the judoka object:
- *    - Use `getValue` to provide a default value of "unknown" if missing.
+ * 3. Return the created `<div>` element.
  *
- * 4. Resolve the country name:
- *    - If the `countryCode` is not "unknown", call `getCountryNameFromCode` (asynchronous) to get the country name.
- *    - Otherwise, use "Unknown" as the country name.
- *
- * 5. Construct the full title for the judoka:
- *    - Combine the sanitized `firstname` and `surname`.
- *
- * 6. Determine the flag URL:
- *    - Use the provided `flagUrl` if available.
- *    - Otherwise, use the `PLACEHOLDER_FLAG_URL`.
- *
- * 7. Construct the result object:
- *    - Include the `title` (full name), `flagUrl`, and `html` (the generated HTML string for the top bar).
- *
- * 8. Log the generated result for debugging.
- *
- * 9. Return the result object.
- *
- * @param {Judoka} judoka - The judoka object containing data for the card.
- * @param {string} [flagUrl] - The URL of the flag image.
- * @returns {Object} An object with `title`, `flagUrl`, and `html` properties.
+ * @returns {HTMLElement} The DOM element containing the "No data available" message.
  */
-export async function generateCardTopBar(judoka, flagUrl) {
-  if (!judoka) {
-    console.error("Judoka object is missing!");
+function createNoDataContainer() {
+  const container = document.createElement("div");
+  container.className = "card-top-bar";
+  container.textContent = "No data available";
+  console.log("Generated container for missing judoka:", container);
+  return container;
+}
 
-    // Create a container div with a "No data available" message
-    const container = document.createElement("div");
-    container.className = "card-top-bar";
-    container.textContent = "No data available";
-
-    console.log("Generated container for missing judoka:", container);
-    return container;
-  }
-
-  console.log("Judoka object received:", judoka);
-
+/**
+ * Extracts and sanitizes judoka data (firstname, surname, and countryCode).
+ *
+ * Pseudocode:
+ * 1. Extract the `firstname` from the `judoka` object:
+ *    - Use `getValue` to provide a default value of `"Unknown"` if `firstname` is missing or undefined.
+ *    - Use `escapeHTML` to sanitize the `firstname` to prevent XSS attacks.
+ *
+ * 2. Extract the `surname` from the `judoka` object:
+ *    - Use `getValue` to provide a default value of an empty string (`""`) if `surname` is missing or undefined.
+ *    - Use `escapeHTML` to sanitize the `surname` to prevent XSS attacks.
+ *
+ * 3. Extract the `countryCode` from the `judoka` object:
+ *    - Use `getValue` to provide a default value of `"unknown"` if `countryCode` is missing or undefined.
+ *
+ * 4. Log the extracted and sanitized values (`firstname`, `surname`, `countryCode`) for debugging.
+ *
+ * 5. Return an object containing the sanitized `firstname`, `surname`, and `countryCode`.
+ *
+ * @param {Object} judoka - The judoka object containing the data to extract.
+ * @returns {Object} An object with the sanitized `firstname`, `surname`, and `countryCode`.
+ */
+function extractJudokaData(judoka) {
   const firstname = escapeHTML(getValue(judoka.firstname, "Unknown"));
   const surname = escapeHTML(getValue(judoka.surname, ""));
   const countryCode = getValue(judoka.countryCode, "unknown");
-
   console.log("Extracted values:", { firstname, surname, countryCode });
+  return { firstname, surname, countryCode };
+}
 
-  // Await the resolved country name
-  const countryName =
-    countryCode !== "unknown" ? await getCountryNameFromCode(countryCode) : "Unknown";
+/**
+ * Resolves the country name based on the provided country code.
+ *
+ * Pseudocode:
+ * 1. Check if the `countryCode` is not `"unknown"`:
+ *    - If true:
+ *      a. Call the `getCountryNameFromCode` function (asynchronous) with the `countryCode`.
+ *      b. Log the resolved country name to the console for debugging.
+ *      c. Return the resolved country name.
+ *
+ * 2. If the `countryCode` is `"unknown"`:
+ *    - Log a message indicating that the country name is unknown.
+ *    - Return `"Unknown"` as the fallback country name.
+ *
+ * @param {string} countryCode - The country code to resolve.
+ * @returns {Promise<string>} A promise that resolves to the country name or `"Unknown"`.
+ */
+async function resolveCountryName(countryCode) {
+  if (countryCode !== "unknown") {
+    const countryName = await getCountryNameFromCode(countryCode);
+    console.log("Resolved country name:", countryName);
+    return countryName;
+  }
+  console.log("Country name is unknown.");
+  return "Unknown";
+}
 
-  console.log("Resolved country name:", countryName);
-
-  const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;
-
-  console.log("Final flag URL:", finalFlagUrl);
-
-  // Create the container div
-  const container = document.createElement("div");
-  container.className = "card-top-bar";
-
-  // Create the name container
+/**
+ * Creates a DOM element to display the judoka's name (firstname and surname).
+ *
+ * Pseudocode:
+ * 1. Create a `<div>` element:
+ *    - Set its `className` to `"card-name"`.
+ *
+ * 2. Create a `<span>` element for the `firstname`:
+ *    - Set its `className` to `"firstname"`.
+ *    - Set its `textContent` to the provided `firstname`.
+ *    - Append this `<span>` to the `<div>` container.
+ *
+ * 3. Create a `<span>` element for the `surname`:
+ *    - Set its `className` to `"surname"`.
+ *    - Set its `textContent` to the provided `surname`.
+ *    - Append this `<span>` to the `<div>` container.
+ *
+ * 4. Log the generated name container to the console for debugging.
+ *
+ * 5. Return the `<div>` container containing the `firstname` and `surname`.
+ *
+ * @param {string} firstname - The judoka's first name.
+ * @param {string} surname - The judoka's surname.
+ * @returns {HTMLElement} The DOM element containing the judoka's name.
+ */
+function createNameContainer(firstname, surname) {
   const nameContainer = document.createElement("div");
   nameContainer.className = "card-name";
 
-  // Create and append the firstname span
   const firstnameSpan = document.createElement("span");
   firstnameSpan.className = "firstname";
   firstnameSpan.textContent = firstname;
-  nameContainer.appendChild(firstnameSpan);
 
-  // Create and append the surname span
   const surnameSpan = document.createElement("span");
   surnameSpan.className = "surname";
   surnameSpan.textContent = surname;
+
+  nameContainer.appendChild(firstnameSpan);
   nameContainer.appendChild(surnameSpan);
 
-  // Append the name container to the main container
-  container.appendChild(nameContainer);
-
   console.log("Name container generated:", nameContainer);
+  return nameContainer;
+}
 
-  // Create the flag image
+/**
+ * Creates a DOM element for the flag image.
+ *
+ * Pseudocode:
+ * 1. Create an `<img>` element:
+ *    - Set its `className` to `"card-flag"`.
+ *    - Set its `src` attribute to the provided `finalFlagUrl`.
+ *    - Set its `alt` attribute to the `countryName` followed by "flag".
+ *
+ * 2. Add an `onerror` event handler to the `<img>` element:
+ *    - If the image fails to load, set the `src` to the `PLACEHOLDER_FLAG_URL`.
+ *    - Log a warning to the console indicating that the placeholder flag is being used.
+ *
+ * 3. Log the generated flag image element to the console for debugging.
+ *
+ * 4. Return the created `<img>` element.
+ *
+ * @param {string} finalFlagUrl - The URL of the flag image.
+ * @param {string} countryName - The name of the country for the flag.
+ * @returns {HTMLElement} The DOM element for the flag image.
+ */
+function createFlagImage(finalFlagUrl, countryName) {
   const flagImg = document.createElement("img");
   flagImg.className = "card-flag";
   flagImg.src = finalFlagUrl;
@@ -151,12 +203,79 @@ export async function generateCardTopBar(judoka, flagUrl) {
     console.warn("Flag image failed to load, using placeholder:", PLACEHOLDER_FLAG_URL);
   };
 
-  // Append the flag image to the main container
+  console.log("Flag image generated:", flagImg);
+  return flagImg;
+}
+
+/**
+ * Generates the top bar DOM element for a judoka card, including the name and flag.
+ *
+ * Pseudocode:
+ * 1. Check if the `judoka` object is provided:
+ *    - If not, log an error and return a container with a "No data available" message.
+ *
+ * 2. Log the received `judoka` object for debugging.
+ *
+ * 3. Extract and sanitize the judoka's data:
+ *    - Call `extractJudokaData` to retrieve the `firstname`, `surname`, and `countryCode`.
+ *
+ * 4. Resolve the country name:
+ *    - Call `resolveCountryName` asynchronously with the `countryCode`.
+ *
+ * 5. Determine the flag URL:
+ *    - Use the provided `flagUrl` if available.
+ *    - Otherwise, use the `PLACEHOLDER_FLAG_URL`.
+ *    - Log the final flag URL for debugging.
+ *
+ * 6. Create the main container:
+ *    - Create a `<div>` element with the class `card-top-bar`.
+ *
+ * 7. Create and append the name container:
+ *    - Call `createNameContainer` with the `firstname` and `surname`.
+ *    - Append the returned DOM element to the main container.
+ *
+ * 8. Create and append the flag image:
+ *    - Call `createFlagImage` with the `finalFlagUrl` and `countryName`.
+ *    - Append the returned DOM element to the main container.
+ *
+ * 9. Log the final generated container for debugging.
+ *
+ * 10. Return the main container DOM element.
+ *
+ * @param {Object} judoka - The judoka object containing data for the card.
+ * @param {string} [flagUrl] - The URL of the flag image.
+ * @returns {HTMLElement} The DOM element for the top bar.
+ */
+export async function generateCardTopBar(judoka, flagUrl) {
+  if (!judoka) {
+    console.error("Judoka object is missing!");
+    return createNoDataContainer();
+  }
+
+  console.log("Judoka object received:", judoka);
+
+  // Extract and sanitize judoka data
+  const { firstname, surname, countryCode } = extractJudokaData(judoka);
+
+  // Resolve the country name
+  const countryName = await resolveCountryName(countryCode);
+
+  // Determine the final flag URL
+  const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;
+  console.log("Final flag URL:", finalFlagUrl);
+
+  // Create the main container
+  const container = document.createElement("div");
+  container.className = "card-top-bar";
+
+  // Create and append the name container
+  const nameContainer = createNameContainer(firstname, surname);
+  container.appendChild(nameContainer);
+
+  // Create and append the flag image
+  const flagImg = createFlagImage(finalFlagUrl, countryName);
   container.appendChild(flagImg);
 
-  console.log("Flag image generated:", flagImg);
-
   console.log("Final generated container:", container);
-
   return container; // Return the DOM element
 }

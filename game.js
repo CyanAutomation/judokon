@@ -176,15 +176,16 @@ document.addEventListener("DOMContentLoaded", () => {
    *
    * 3. Wrap the card generation and rendering process in a `try-catch` block:
    *    - Try:
-   *      a. Call `generateJudokaCardHTML` (asynchronous) to generate the card's HTML.
-   *      b. Await the result and assign it to `cardHTML`.
-   *      c. Inject the generated `cardHTML` into the `gameArea` element.
+   *      a. Clear the `gameArea` by setting its `innerHTML` to an empty string.
+   *      b. Call `generateJudokaCardHTML` (asynchronous) to generate the card's DOM element.
+   *      c. Append the generated DOM element to the `gameArea` using `appendChild`.
+   *      d. Log a success message to the console.
    *    - Catch:
-   *      a. Log any errors that occur during card generation.
-   *      b. Display an error message in the `gameArea` element.
+   *      a. Log any errors that occur during card generation to the console.
+   *      b. Display an error message in the `gameArea` by setting its `innerHTML`.
    *
    * @param {Object} judoka - The judoka object containing data for the card.
-   * @param {Object} gokyo - The single Gokyo entry (technique).
+   * @param {Object} gokyo - The Gokyo data (technique information).
    */
   async function displayJudokaCard(judoka, gokyo) {
     console.log("Judoka passed to displayJudokaCard:", judoka);

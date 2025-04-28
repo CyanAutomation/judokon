@@ -61,27 +61,54 @@ function validateJudoka(judoka) {
 }
 
 /**
- * Generates the complete HTML for a judoka card.
+ * Generates the complete DOM structure for a judoka card.
  *
  * Pseudocode:
- * 1. Validate the `judoka` object to ensure all required fields are present.
+ * 1. Validate the `judoka` object:
+ *    - Call `validateJudoka` to ensure all required fields are present.
  *    - If validation fails, throw an error.
  *
- * 2. Generate the flag URL for the judoka's country using `getFlagUrl`.
+ * 2. Generate the flag URL:
+ *    - Extract the `countryCode` from the `judoka` object.
+ *    - If `countryCode` is missing, log a warning and use a default value ("vu").
+ *    - Call `getFlagUrl` asynchronously to get the flag URL.
  *
  * 3. Format the `lastUpdated` date:
- *    - If it's a string, use it as-is.
- *    - If it's a Date object, convert it to a string in "YYYY-MM-DD" format.
- *    - If it's undefined, use an empty string.
+ *    - If `lastUpdated` is a string, use it as-is.
+ *    - If `lastUpdated` is a `Date` object, convert it to a string in "YYYY-MM-DD" format.
+ *    - If `lastUpdated` is undefined, use an empty string.
  *
- * 4. Generate the complete HTML for the judoka card:
- *    - Include the top bar, portrait, stats, signature move, and last updated sections.
+ * 4. Create the main card container:
+ *    - Create a `<div>` element with the class `card-container`.
+ *    - Create a child `<div>` element with the class `judoka-card`.
  *
- * 5. Return the complete HTML string.
+ * 5. Append the top bar:
+ *    - Call `generateCardTopBar` asynchronously with the `judoka` object and `flagUrl`.
+ *    - Append the returned DOM element to the `judoka-card` container.
  *
- * @param {Object} judoka - The judoka object.
- * @param {Object} gokyo - The single Gokyo entry (technique).
- * @returns {string} The complete HTML string for the judoka card.
+ * 6. Append the portrait section:
+ *    - Call `generateCardPortrait` to get the portrait HTML string.
+ *    - Create a `<div>` element, set its `innerHTML` to the portrait HTML, and append it to the `judoka-card`.
+ *
+ * 7. Append the stats section:
+ *    - Call `generateCardStats` to get the stats HTML string.
+ *    - Create a `<div>` element, set its `innerHTML` to the stats HTML, and append it to the `judoka-card`.
+ *
+ * 8. Append the signature move section:
+ *    - Call `generateCardSignatureMove` with the `judoka` and `gokyo` objects to get the signature move HTML string.
+ *    - Create a `<div>` element, set its `innerHTML` to the signature move HTML, and append it to the `judoka-card`.
+ *
+ * 9. Append the last updated section:
+ *    - Call `generateCardLastUpdated` with the formatted `lastUpdated` date to get the last updated HTML string.
+ *    - Create a `<div>` element, set its `innerHTML` to the last updated HTML, and append it to the `judoka-card`.
+ *
+ * 10. Append the `judoka-card` to the `card-container`.
+ *
+ * 11. Return the `card-container` DOM element.
+ *
+ * @param {Object} judoka - The judoka object containing data for the card.
+ * @param {Object} gokyo - The Gokyo data (technique information).
+ * @returns {HTMLElement} The DOM element for the complete judoka card.
  */
 
 export async function generateJudokaCardHTML(judoka, gokyo) {

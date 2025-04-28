@@ -202,7 +202,7 @@ button:focus {
   display: flex; /* Flexbox layout */
   justify-content: space-between; /* Space between elements */
   align-items: center; /* Center-align items vertically */
-  padding: var(--padding-small) var(--padding-small); /* Add padding */
+  padding: var(--padding-none) var(--padding-small); /* Add padding */
 }
 
 .card-name {
@@ -241,15 +241,15 @@ button:focus {
     var(--card-portrait-gradient-end)
   ); /* Gradient background */
   text-align: center; /* Center-align text */
-  padding: var(--padding-small); /* Add padding */
+  padding: var(--padding-none); /* Add padding */
   position: relative; /* Position for child elements */
 }
 
 .card-portrait img {
-  width: 80%; /* Image width */
+  width: 90%; /* Image width */
   height: auto;
   border-radius: 8px;
-  border: 2px solid var(--card-border-color);
+  border: 1px solid var(--card-border-color);
 }
 
 /* Weight class badge in the portrait section */
