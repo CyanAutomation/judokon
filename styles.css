@@ -206,7 +206,7 @@ button:focus {
   flex-direction: column; /* Stack items vertically */
   margin: 0; /* Remove margin */
   padding: 0;
-  margin-left: 4px;
+  margin-left: 2px;
 }
 
 /* Styles for the judoka's name */
@@ -235,7 +235,7 @@ button:focus {
   background-size: cover; /* Cover the background */
   border-radius: var(--border-radius-small); /* Rounded corners */
   padding: 1;
-  margin-right: 4px;
+  margin-right: 2px;
 }
 
 /* Portrait section of the card */
@@ -310,28 +310,29 @@ button:focus {
   flex-shrink: 0; /* Prevent the value from shrinking */
 }
 
-.card-stats .stat:last-child {
-  margin-bottom: 0; /* Remove margin for the last stat */
-}
-
 /* Signature Move section of the card */
 .signature-move-label {
   font-weight: bold;
   color: #333;
+  margin: 0;
+  padding: 0;
 }
 
 .signature-move-value {
-  font-style: italic;
-  color: #555;
+  color: #8cff00;
+  margin: 0;
+  padding: 0;
+  text-transform: uppercase; /* Uppercase text */
 }
 
 .card-signature-move .badge {
-  background-color: var(common-signature-move-badge-bg); /* Badge background color */
-  color: var(common-signature-move-badge-text); /* Badge text color */
+  background-color: var(--common-signature-move-badge-bg); /* Badge background color */
+  color: var(--common-signature-move-badge-text); /* Badge text color */
   font-weight: bold; /* Bold text */
-  padding: var(--padding-small) var(--padding-medium); /* Add padding */
   border-radius: var(--border-radius-small); /* Rounded corners */
   font-size: var(--font-small); /* Small font size */
+  margin: 0;
+  padding: 0;
 }
 
 /* Profile link styles */
