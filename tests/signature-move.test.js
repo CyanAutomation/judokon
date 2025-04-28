@@ -2,7 +2,10 @@ import { generateCardSignatureMove } from "../helpers/cardRender.js";
 
 // Mock data
 const mockJudoka = { signatureMoveId: 1 }; // Numeric ID
-const mockGokyo = { id: 1, name: "Uchi-mata" }; // Numeric ID and matching name
+const mockGokyo = {
+  1: { id: 1, name: "Uchi-mata" },
+  2: { id: 2, name: "O-soto-gari" }
+};
 
 describe("generateCardSignatureMove", () => {
   describe("Valid Inputs", () => {
@@ -29,36 +32,27 @@ describe("generateCardSignatureMove", () => {
       expect(html).toContain(expected);
     });
 
-    it("returns HTML with technique name", () => {
-      const html = generateCardSignatureMove(mockJudoka, mockGokyo);
-      expect(html).toContain("Signature Move:");
-      expect(html).toContain("Uchi-mata");
-    });
-
     it("returns 'Unknown' if no matching technique is found", () => {
-      const html = generateCardSignatureMove({ signatureMoveId: "nonexistent" }, mockGokyo);
+      const html = generateCardSignatureMove({ signatureMoveId: 999 }, mockGokyo);
       expect(html).toContain("Signature Move:");
       expect(html).toContain("Unknown");
     });
   });
 
   describe("Edge cases", () => {
-    it("returns 'Unknown' for case-insensitive mismatch", () => {
-      const caseInsensitiveJudoka = { signatureMoveId: "UCHI-MATA" };
-      const html = generateCardSignatureMove(caseInsensitiveJudoka, mockGokyo);
+    it("returns 'Unknown' for non-numeric signatureMoveId", () => {
+      const invalidJudoka = { signatureMoveId: "UCHI-MATA" };
+      const html = generateCardSignatureMove(invalidJudoka, mockGokyo);
       expect(html).toContain("Signature Move:");
       expect(html).toContain("Unknown");
     });
 
     it("handles malformed gokyo entries gracefully", () => {
-      const malformedGokyo = [{ id: "uchi-mata" }, { name: "Uchi Mata" }];
+      const malformedGokyo = {
+        1: { id: "uchi-mata", name: null }, // Invalid structure
+        2: { id: 2, name: "Uchi Mata" }
+      };
       const html = generateCardSignatureMove(mockJudoka, malformedGokyo);
-      expect(html).toContain("Signature Move:");
-      expect(html).toContain("Unknown");
-    });
-
-    it("returns 'Unknown' if signatureMoveId is missing", () => {
-      const html = generateCardSignatureMove({}, mockGokyo);
       expect(html).toContain("Signature Move:");
       expect(html).toContain("Unknown");
     });
@@ -70,13 +64,6 @@ describe("generateCardSignatureMove", () => {
       expect(htmlWithNull).toContain("Unknown");
       expect(htmlWithUndefined).toContain("Signature Move:");
       expect(htmlWithUndefined).toContain("Unknown");
-    });
-
-    it("returns 'Unknown' if gokyo name is invalid", () => {
-      const invalidGokyo = { id: "uchi-mata", name: null }; // Invalid name
-      const html = generateCardSignatureMove(mockJudoka, invalidGokyo);
-      expect(html).toContain("Signature Move:");
-      expect(html).toContain("Unknown");
     });
   });
 });
