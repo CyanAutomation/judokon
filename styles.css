@@ -385,7 +385,7 @@ button:focus {
   /* Ensure the text stays on one line and dynamically shrinks */
   white-space: nowrap; /* Prevent text from wrapping */
   /* overflow: hidden; */
-  font-size: clamp(0.15rem, 1.5vw, 1.2rem); /* Dynamically adjust font size */
+  font-size: clamp(0.15rem, 2vw, 1.2rem); /* Dynamically adjust font size */
 }
 
 /* Profile link styles */
