@@ -277,9 +277,9 @@ button:focus {
 .card-stats {
   background-color: var(--card-stats-bg); /* Background color */
   color: var(--text-color); /* Text color */
+  font-size: var(--font-medium); /* Medium font size */
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
-  font-size: var(--font-medium); /* Medium font size */
   margin-top: 0;
   margin-bottom: 0; /* Add space below the title */
 }
