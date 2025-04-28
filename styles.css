@@ -254,7 +254,7 @@ button:focus {
 
 .card-portrait img {
   width: auto;
-  height: auto%;
+  height: auto;
   max-height: 100%; /* Ensure the image fits within the height */
   max-width: 100%; /* Ensure the image fits within the width */
   padding: 0; /* Remove padding */
