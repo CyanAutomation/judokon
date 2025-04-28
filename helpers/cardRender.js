@@ -124,16 +124,6 @@ export function generateCardStats(card, cardType = "common") {
 export function generateCardSignatureMove(judoka, gokyo, cardType = "common") {
   const signatureMoveId = Number(judoka?.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
 
-  // Check if gokyo is valid
-  if (!gokyo) {
-    return `
-      <div class="signature-move-container ${cardType.toLowerCase()}">
-        <span class="signature-move-label">Signature Move:</span>
-        <span class="signature-move-value">Unknown</span>
-      </div>
-    `;
-  }
-
   // Retrieve the technique from gokyo using the signatureMoveId as the key
   const technique = gokyo[signatureMoveId] || null;
 
