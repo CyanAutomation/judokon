@@ -221,6 +221,8 @@ button:focus {
   font-weight: bold; /* Bold font weight */
   text-transform: uppercase; /* Uppercase text */
   display: block; /* Force the surname to appear on its own line */
+  margin: 0; /* Remove margin */
+  margin-bottom: 0; /* Remove margin for the last stat */
 }
 
 /* Styles for the country flag */
@@ -287,6 +289,7 @@ button:focus {
 .card-stats li {
   margin: 0 0;
   padding: var(--padding-none); /* Add padding */
+  border-top: 2px solid var(--common-border-color); /* Add a top border */
 }
 
 .card-stats .stat {
