@@ -321,7 +321,6 @@ button:focus {
 .card-stats .stat strong {
   text-align: left; /* Ensure the label is left-aligned */
   flex: 1; /* Allow the label to take up available space */
-  letter-spacing: 2px;
 }
 
 .card-stats .stat span {
@@ -395,7 +394,7 @@ button:focus {
   background-color: var(--button-hover-bg); /* Change background color on hover */
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   h1 {
     font-size: 2rem; /* Reduce title font size */
   }
@@ -435,13 +434,13 @@ button:focus {
   }
 
   .signature-move-value {
-    font-size: clamp(0.1rem, 1vw, 0.8rem); /* Further reduce font size */
+    font-size: clamp(0.1rem, 1.2vw, 0.8rem); /* Further reduce font size */
     padding: 0; /* Reduce padding */
     white-space: nowrap; /* Prevent text from wrapping */
   }
 
   .signature-move-label {
-    font-size: clamp(0.1rem, 1vw, 0.8rem); /* Further reduce font size */
+    font-size: clamp(0.1rem, 1.2vw, 0.8rem); /* Further reduce font size */
     padding: 0; /* Reduce padding */
     white-space: nowrap; /* Prevent text from wrapping */
   }
