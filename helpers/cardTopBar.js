@@ -88,36 +88,58 @@ function getValue(value, defaultValue) {
 export async function generateCardTopBar(judoka, flagUrl) {
   if (!judoka) {
     console.error("Judoka object is missing!");
-    return {
-      title: "No data",
-      flagUrl: PLACEHOLDER_FLAG_URL,
-      html: `<div class="card-top-bar">No data available</div>`
-    };
+
+    // Create a container div with a "No data available" message
+    const container = document.createElement("div");
+    container.className = "card-top-bar";
+    container.textContent = "No data available";
+    return container;
   }
 
   const firstname = escapeHTML(getValue(judoka.firstname, "Unknown"));
   const surname = escapeHTML(getValue(judoka.surname, ""));
   const countryCode = getValue(judoka.countryCode, "unknown");
 
-  // Await the country name
+  // Await the resolved country name
   const countryName =
     countryCode !== "unknown" ? await getCountryNameFromCode(countryCode) : "Unknown";
 
-  const fullTitle = `${firstname} ${surname}`.trim();
   const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;
 
-  return {
-    title: fullTitle,
-    flagUrl: finalFlagUrl,
-    html: `
-      <div class="card-top-bar">
-        <div class="card-name">
-          <span class="firstname">${firstname}</span>
-          <span class="surname">${surname}</span>
-        </div>
-        <img class="card-flag" src="${finalFlagUrl}" alt="${countryName} flag" 
-          onerror="this.src='${PLACEHOLDER_FLAG_URL}'">
-      </div>
-    `
+  // Create the container div
+  const container = document.createElement("div");
+  container.className = "card-top-bar";
+
+  // Create the name container
+  const nameContainer = document.createElement("div");
+  nameContainer.className = "card-name";
+
+  // Create and append the firstname span
+  const firstnameSpan = document.createElement("span");
+  firstnameSpan.className = "firstname";
+  firstnameSpan.textContent = firstname;
+  nameContainer.appendChild(firstnameSpan);
+
+  // Create and append the surname span
+  const surnameSpan = document.createElement("span");
+  surnameSpan.className = "surname";
+  surnameSpan.textContent = surname;
+  nameContainer.appendChild(surnameSpan);
+
+  // Append the name container to the main container
+  container.appendChild(nameContainer);
+
+  // Create the flag image
+  const flagImg = document.createElement("img");
+  flagImg.className = "card-flag";
+  flagImg.src = finalFlagUrl;
+  flagImg.alt = `${countryName} flag`;
+  flagImg.onerror = () => {
+    flagImg.src = PLACEHOLDER_FLAG_URL;
   };
+
+  // Append the flag image to the main container
+  container.appendChild(flagImg);
+
+  return container; // Return the DOM element
 }

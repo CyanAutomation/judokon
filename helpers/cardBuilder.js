@@ -100,15 +100,43 @@ export async function generateJudokaCardHTML(judoka, gokyo) {
       ? judoka.lastUpdated
       : judoka.lastUpdated?.toISOString().split("T")[0] || "";
 
-  return `
-    <div class="card-container">
-      <div class="judoka-card">
-        ${generateCardTopBar(judoka, flagUrl).html}
-        ${generateCardPortrait(judoka)}
-        ${generateCardStats(judoka)}
-        ${generateCardSignatureMove(judoka, gokyo)}
-        ${generateCardLastUpdated(lastUpdated)}
-      </div>
-    </div>
-  `;
+  // Create the main card container
+  const cardContainer = document.createElement("div");
+  cardContainer.className = "card-container";
+
+  const judokaCard = document.createElement("div");
+  judokaCard.className = "judoka-card";
+
+  // Append the top bar (DOM element returned by generateCardTopBar)
+  const topBarElement = await generateCardTopBar(judoka, flagUrl);
+  judokaCard.appendChild(topBarElement);
+
+  // Append the portrait (HTML string converted to DOM)
+  const portraitHTML = generateCardPortrait(judoka);
+  const portraitElement = document.createElement("div");
+  portraitElement.innerHTML = portraitHTML;
+  judokaCard.appendChild(portraitElement);
+
+  // Append the stats (HTML string converted to DOM)
+  const statsHTML = generateCardStats(judoka);
+  const statsElement = document.createElement("div");
+  statsElement.innerHTML = statsHTML;
+  judokaCard.appendChild(statsElement);
+
+  // Append the signature move (HTML string converted to DOM)
+  const signatureMoveHTML = generateCardSignatureMove(judoka, gokyo);
+  const signatureMoveElement = document.createElement("div");
+  signatureMoveElement.innerHTML = signatureMoveHTML;
+  judokaCard.appendChild(signatureMoveElement);
+
+  // Append the last updated section (HTML string converted to DOM)
+  const lastUpdatedHTML = generateCardLastUpdated(lastUpdated);
+  const lastUpdatedElement = document.createElement("div");
+  lastUpdatedElement.innerHTML = lastUpdatedHTML;
+  judokaCard.appendChild(lastUpdatedElement);
+
+  // Append the judoka card to the card container
+  cardContainer.appendChild(judokaCard);
+
+  return cardContainer; // Return the DOM element
 }
