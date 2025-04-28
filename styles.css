@@ -386,7 +386,7 @@ button:focus {
   white-space: nowrap; /* Prevent text from wrapping */
   overflow: hidden; /* Hide overflowing text */
   text-overflow: ellipsis; /* Add ellipsis for overflowing text */
-  font-size: clamp(0.8rem, 2vw, 1.2rem); /* Dynamically adjust font size */
+  font-size: clamp(0.6rem, 2vw, 1rem); /* Dynamically adjust font size */
 }
 
 /* Profile link styles */
