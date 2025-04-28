@@ -240,6 +240,7 @@ button:focus {
   text-align: center; /* Center-align text */
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
+  margin-top: 0;
   margin-bottom: 0; /* Add space below the title */
   position: relative; /* Position for child elements */
   display: flex; /* Flexbox layout */
@@ -254,6 +255,7 @@ button:focus {
   border: 0px solid var(--common-border-color);
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
+  margin-top: 0;
   margin-bottom: 0; /* Add space below the title */
 }
 
@@ -290,6 +292,7 @@ button:focus {
   margin: 0 0;
   padding: var(--padding-none); /* Add padding */
   border-top: 2px solid var(--common-border-color); /* Add a top border */
+  text-transform: uppercase; /* Uppercase text */
 }
 
 .card-stats .stat {

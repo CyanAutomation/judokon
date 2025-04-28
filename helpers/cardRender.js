@@ -79,11 +79,11 @@ export function generateCardStats(card) {
   return `
     <div class="card-stats">
       <ul>
-        <li class="stat"><strong>Power:</strong> <span>${power}</span></li>
-        <li class="stat"><strong>Speed:</strong> <span>${speed}</span></li>
-        <li class="stat"><strong>Technique:</strong> <span>${technique}</span></li>
-        <li class="stat"><strong>Kumi-kata:</strong> <span>${kumikata}</span></li>
-        <li class="stat"><strong>Ne-waza:</strong> <span>${newaza}</span></li>
+        <li class="stat"><strong>Power</strong> <span>${power}</span></li>
+        <li class="stat"><strong>Speed</strong> <span>${speed}</span></li>
+        <li class="stat"><strong>Technique</strong> <span>${technique}</span></li>
+        <li class="stat"><strong>Kumi-kata</strong> <span>${kumikata}</span></li>
+        <li class="stat"><strong>Ne-waza</strong> <span>${newaza}</span></li>
       </ul>
     </div>
   `;
