@@ -197,9 +197,10 @@ button:focus {
   display: flex; /* Flexbox layout */
   justify-content: space-between; /* Space between elements */
   align-items: center; /* Center-align items vertically */
-  padding: var(--padding-small) var(--padding-medium); /* Remove padding */
-  margin-top: 2px;
-  margin-bottom: 0;
+  padding: var(--padding-medium) var(--padding-medium); /* Remove padding */
+  /*margin-top: 2px;
+  margin-bottom: 0;*/
+  margin: 0;
 }
 
 .card-name {
@@ -241,11 +242,12 @@ button:focus {
 
 /* Portrait section of the card */
 .card-portrait {
-  text-align: center; /* Center-align text */
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
   position: relative; /* Position for child elements */
   display: flex; /* Flexbox layout */
+  border: 6px solid var(--common-top-bar-bg); 
+  border-radius: var(--border-radius-medium);
 }
 
 .card-portrait img {
