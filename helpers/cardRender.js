@@ -118,10 +118,12 @@ export function generateCardStats(card) {
 export function generateCardSignatureMove(judoka, gokyo) {
   const signatureMoveId = Number(judoka?.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
 
-  // Check if gokyo matches the signatureMoveId
-  const technique = gokyo && Number(gokyo.id) === signatureMoveId ? gokyo : null;
+  // Retrieve the technique from gokyo using the signatureMoveId as the key
+  const technique = gokyo[signatureMoveId] || null;
 
-  const techniqueName = technique?.name || "Unknown"; // Fallback to "Unknown" if no technique is found
+  // Extract the technique name or fallback to "Unknown"
+  const techniqueName = technique?.name || "Unknown";
+
   return `
     <div class="signature-move-container">
       <span class="signature-move-label">Signature Move:</span>
