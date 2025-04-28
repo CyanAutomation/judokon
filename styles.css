@@ -173,7 +173,7 @@ button:focus {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: var(--padding-small); /* Add padding */
+  padding: var(--padding-extra-largelarge); /* Add padding */
 }
 
 .judoka-card {
@@ -205,6 +205,7 @@ button:focus {
   text-align: left; /* Left-align the text */
   flex-direction: column; /* Stack items vertically */
   margin: 0; /* Remove margin */
+  padding: 0;
 }
 
 /* Styles for the judoka's name */
@@ -213,6 +214,7 @@ button:focus {
   font-weight: normal; /* Normal font weight */
   display: block; /* Force the first name to appear on its own line */
   margin: 0; /* Remove margin */
+  padding: 0;
 }
 
 .card-name .surname {
@@ -221,6 +223,7 @@ button:focus {
   text-transform: uppercase; /* Uppercase text */
   display: block; /* Force the surname to appear on its own line */
   margin: 0; /* Remove margin */
+  padding: 0;
 }
 
 /* Styles for the country flag */
@@ -230,6 +233,7 @@ button:focus {
   height: 45px; /* Fixed height */
   background-size: cover; /* Cover the background */
   border-radius: var(--border-radius-small); /* Rounded corners */
+  padding: 0;
 }
 
 /* Portrait section of the card */
@@ -269,7 +273,7 @@ button:focus {
 .card-stats {
   background-color: var(--common-stats-bg); /* Background color */
   color: var(--text-color); /* Text color */
-  font-size: var(--font-medium); /* Medium font size */
+  font-size: var(--font-small); /* Medium font size */
   border-radius: var(--border-radius-small); /* Rounded corners */
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
@@ -277,7 +281,7 @@ button:focus {
 
 .card-stats ul {
   list-style: none;
-  padding: var(--padding-small); /* Add padding */
+  padding: 0;
 }
 
 .card-stats li {
@@ -343,24 +347,4 @@ button:focus {
 
 .card-profile .profile-link:hover {
   background-color: var(--button-hover-bg); /* Change background color on hover */
-}
-
-/* Responsive styles for smaller screens (max-width: 768px) */
-@media (max-width: 768px) {
-  .judoka-card {
-    width: 90%; /* Adjust card width */
-    margin: 0 auto; /* Center the card */
-  }
-
-  .card-name .surname {
-    font-size: var(--font-medium); /* Adjust font size */
-  }
-
-  .card-stats {
-    font-size: var(--font-small); /* Adjust font size */
-  }
-
-  .card-signature-move .badge {
-    font-size: calc(var(--font-small) - 0.1rem); /* Adjust badge font size */
-  }
 }
