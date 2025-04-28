@@ -127,19 +127,19 @@ export async function generateJudokaCardHTML(judoka, gokyo) {
       ? judoka.lastUpdated
       : judoka.lastUpdated?.toISOString().split("T")[0] || "";
 
+  // Determine the card type (default to "common" if not provided)
+  const cardType = judoka.rarity?.toLowerCase() || "common";
+
   // Create the main card container
   const cardContainer = document.createElement("div");
   cardContainer.className = "card-container";
 
   const judokaCard = document.createElement("div");
-  judokaCard.className = "judoka-card";
+  judokaCard.className = `judoka-card ${cardType}`; // Add the card type as a class
 
   // Append the top bar (DOM element returned by generateCardTopBar)
   const topBarElement = await generateCardTopBar(judoka, flagUrl);
-  console.log("Top bar element generated:", topBarElement);
-  console.log("Appending top bar to judoka card...");
   judokaCard.appendChild(topBarElement);
-  console.log("Judoka card after appending top bar:", judokaCard);
 
   // Append the portrait (HTML string converted to DOM)
   const portraitHTML = generateCardPortrait(judoka);
@@ -148,13 +148,13 @@ export async function generateJudokaCardHTML(judoka, gokyo) {
   judokaCard.appendChild(portraitElement);
 
   // Append the stats (HTML string converted to DOM)
-  const statsHTML = generateCardStats(judoka);
+  const statsHTML = generateCardStats(judoka, cardType); // Pass cardType to stats
   const statsElement = document.createElement("div");
   statsElement.innerHTML = statsHTML;
   judokaCard.appendChild(statsElement);
 
   // Append the signature move (HTML string converted to DOM)
-  const signatureMoveHTML = generateCardSignatureMove(judoka, gokyo);
+  const signatureMoveHTML = generateCardSignatureMove(judoka, gokyo, cardType); // Pass cardType to signature move
   const signatureMoveElement = document.createElement("div");
   signatureMoveElement.innerHTML = signatureMoveHTML;
   judokaCard.appendChild(signatureMoveElement);
