@@ -1,11 +1,17 @@
-name: Lint and Auto-Fix
+name: Format and Lint
 
 on:
-  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *" # Runs at 3:00 AM UTC every day
+  workflow_dispatch: # Allows manual triggering
+
+permissions:
+  contents: write
 
 jobs:
-  lint:
+  format_and_lint:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -18,10 +24,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run Prettier
+        run: npx prettier . --write
+
       - name: Run ESLint with auto-fix
         run: npx eslint . --fix
 
-      - name: Auto-commit changes if any
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
         with:
-          commit_message: "chore: fix lint errors automatically"
+          commit-message: "chore: auto-format and lint fix"
+          title: "chore: Auto-format and lint fixes"
+          body: "This PR includes automated formatting via Prettier and lint fixes via ESLint. Please review before merging."
+          branch: "auto/format-lint-fixes"
