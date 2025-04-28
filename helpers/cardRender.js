@@ -124,8 +124,8 @@ export function generateCardStats(card, cardType = "common") {
 export function generateCardSignatureMove(judoka, gokyo, cardType = "common") {
   const signatureMoveId = Number(judoka?.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
 
-  // Check if gokyo is valid
-  if (!gokyo || typeof gokyo !== "object") {
+  // Check if gokyo is valid and is an object (not an array)
+  if (!gokyo || typeof gokyo !== "object" || Array.isArray(gokyo)) {
     return `
       <div class="signature-move-container ${cardType.toLowerCase()}">
         <span class="signature-move-label">Signature Move:</span>
@@ -137,8 +137,8 @@ export function generateCardSignatureMove(judoka, gokyo, cardType = "common") {
   // Retrieve the technique from gokyo using the signatureMoveId as the key, fallback to ID=0
   const technique = gokyo[signatureMoveId] || gokyo[0];
 
-  // Extract the technique name or fallback to "Unknown"
-  const techniqueName = technique?.name || "Unknown";
+  // Validate the technique structure and extract the name
+  const techniqueName = technique?.name && typeof technique.name === "string" ? technique.name : "Unknown";
 
   // Ensure the cardType is lowercase for consistency
   const cardClass = cardType.toLowerCase();
