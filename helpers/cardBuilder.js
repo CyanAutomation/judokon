@@ -159,12 +159,6 @@ export async function generateJudokaCardHTML(judoka, gokyo) {
   signatureMoveElement.innerHTML = signatureMoveHTML;
   judokaCard.appendChild(signatureMoveElement);
 
-  // Append the last updated section (HTML string converted to DOM)
-  const lastUpdatedHTML = generateCardLastUpdated(lastUpdated);
-  const lastUpdatedElement = document.createElement("div");
-  lastUpdatedElement.innerHTML = lastUpdatedHTML;
-  judokaCard.appendChild(lastUpdatedElement);
-
   // Append the judoka card to the card container
   cardContainer.appendChild(judokaCard);
 

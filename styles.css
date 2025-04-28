@@ -312,7 +312,7 @@ button:focus {
 /* Parent container for the signature move section */
 .signature-move-container {
   display: flex; /* Ensure the container spans the full width */
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
   width: 100%; /* Take up the full width of the parent */
   margin: 0; /* Remove margin */
