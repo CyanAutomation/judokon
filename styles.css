@@ -368,7 +368,6 @@ button:focus {
   border-radius: 2px;
   border: 1px solid #fff;
   white-space: nowrap; /* Prevent text from wrapping */
-  font-size: clamp(0.2rem, 2vw, 1rem); /* Dynamically adjust font size */
 }
 
 .signature-move-value {
@@ -416,12 +415,12 @@ button:focus {
   }
 
   .signature-move-value {
-    font-size: clamp(0.1rem, 1.2vw, 0.9rem); /* Further reduce font size */
+    font-size: clamp(0.1rem, 1.2vw, 0.8rem); /* Further reduce font size */
     padding: 0.2rem; /* Reduce padding */
   }
 
   .signature-move-label {
-    font-size: clamp(0.1rem, 1.2vw, 0.9rem); /* Further reduce font size */
+    font-size: clamp(0.1rem, 1.2vw, 0.8rem); /* Further reduce font size */
     padding: 0.2rem; /* Reduce padding */
   }
   .card-stats li {
