@@ -61,9 +61,9 @@ describe("generateCardSignatureMove", () => {
       const htmlWithNull = generateCardSignatureMove(mockJudoka, null);
       const htmlWithUndefined = generateCardSignatureMove(mockJudoka, undefined);
       expect(htmlWithNull).toContain("Signature Move:");
-      expect(htmlWithNull).toContain("Unknown");
+      expect(htmlWithNull).toContain("Jigoku-guruma");
       expect(htmlWithUndefined).toContain("Signature Move:");
-      expect(htmlWithUndefined).toContain("Unknown");
+      expect(htmlWithUndefined).toContain("Jigoku-guruma");
     });
   });
 });

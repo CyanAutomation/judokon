@@ -40,7 +40,7 @@ describe("generateCardSignatureMove", () => {
 
     it("handles null judoka gracefully", () => {
       const html = generateCardSignatureMove(null, mockGokyo);
-      expect(html).toContain("Unknown");
+      expect(html).toContain("Jigoku-guruma");
     });
 
     it("handles null or undefined gokyo gracefully", () => {
