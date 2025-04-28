@@ -93,18 +93,28 @@ export async function generateCardTopBar(judoka, flagUrl) {
     const container = document.createElement("div");
     container.className = "card-top-bar";
     container.textContent = "No data available";
+
+    console.log("Generated container for missing judoka:", container);
     return container;
   }
+
+  console.log("Judoka object received:", judoka);
 
   const firstname = escapeHTML(getValue(judoka.firstname, "Unknown"));
   const surname = escapeHTML(getValue(judoka.surname, ""));
   const countryCode = getValue(judoka.countryCode, "unknown");
 
+  console.log("Extracted values:", { firstname, surname, countryCode });
+
   // Await the resolved country name
   const countryName =
     countryCode !== "unknown" ? await getCountryNameFromCode(countryCode) : "Unknown";
 
+  console.log("Resolved country name:", countryName);
+
   const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;
+
+  console.log("Final flag URL:", finalFlagUrl);
 
   // Create the container div
   const container = document.createElement("div");
@@ -129,6 +139,8 @@ export async function generateCardTopBar(judoka, flagUrl) {
   // Append the name container to the main container
   container.appendChild(nameContainer);
 
+  console.log("Name container generated:", nameContainer);
+
   // Create the flag image
   const flagImg = document.createElement("img");
   flagImg.className = "card-flag";
@@ -136,10 +148,15 @@ export async function generateCardTopBar(judoka, flagUrl) {
   flagImg.alt = `${countryName} flag`;
   flagImg.onerror = () => {
     flagImg.src = PLACEHOLDER_FLAG_URL;
+    console.warn("Flag image failed to load, using placeholder:", PLACEHOLDER_FLAG_URL);
   };
 
   // Append the flag image to the main container
   container.appendChild(flagImg);
+
+  console.log("Flag image generated:", flagImg);
+
+  console.log("Final generated container:", container);
 
   return container; // Return the DOM element
 }
