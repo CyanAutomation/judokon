@@ -91,7 +91,7 @@ export async function generateCardTopBar(judoka, flagUrl) {
     return {
       title: "No data",
       flagUrl: PLACEHOLDER_FLAG_URL,
-      html: `<div class="card-top-bar">No data available</div>`,
+      html: `<div class="card-top-bar">No data available</div>`
     };
   }
 
@@ -100,7 +100,8 @@ export async function generateCardTopBar(judoka, flagUrl) {
   const countryCode = getValue(judoka.countryCode, "unknown");
 
   // Await the country name
-  const countryName = countryCode !== "unknown" ? await getCountryNameFromCode(countryCode) : "Unknown";
+  const countryName =
+    countryCode !== "unknown" ? await getCountryNameFromCode(countryCode) : "Unknown";
 
   const fullTitle = `${firstname} ${surname}`.trim();
   const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;
@@ -117,6 +118,6 @@ export async function generateCardTopBar(judoka, flagUrl) {
         <img class="card-flag" src="${finalFlagUrl}" alt="${countryName} flag" 
           onerror="this.src='${PLACEHOLDER_FLAG_URL}'">
       </div>
-    `,
+    `
   };
 }
