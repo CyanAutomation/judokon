@@ -245,6 +245,8 @@ button:focus {
   margin: 0; /* Remove margin */
   position: relative; /* Position for child elements */
   display: flex; /* Flexbox layout */
+  overflow: hidden;
+  height: 250px;
 }
 
 .card-portrait img {
