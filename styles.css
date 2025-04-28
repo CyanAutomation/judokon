@@ -378,6 +378,7 @@ button:focus {
   width: 100%; /* Take up the full width of the parent */
   text-transform: uppercase; /* Uppercase text */
   font-weight: bold;
+  font-size: var(--font-small); /* Small font size for the first name */
   text-align: center;
   padding: 0.4rem; /* Add padding for spacing */
   border-radius: 2px;
