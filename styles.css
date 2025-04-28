@@ -196,6 +196,7 @@ button:focus {
   --card-border-color: #3c5ad6;
   --card-signature-move-bg: #003b88;
   --card-stats-bg: #0c3f7a;
+  --card-portrait-bg: #0c3f7a;
 }
 
 /* Epic card variables */
@@ -204,6 +205,7 @@ button:focus {
   --card-border-color: #9c27b0;
   --card-signature-move-bg: #003b88;
   --card-stats-bg: #0c3f7a;
+  --card-portrait-bg: #0c3f7a;
 }
 
 /* Legendary card variables */
@@ -212,6 +214,7 @@ button:focus {
   --card-border-color: #ffb74d;
   --card-signature-move-bg: #000;
   --card-stats-bg: #0c3f7a;
+  --card-portrait-bg: #000;
 }
 
 /* Top bar of the card (name and flag) */
@@ -274,6 +277,7 @@ button:focus {
   width: 100%;
   justify-content: center; /* Center horizontally */
   align-items: center; /* Center vertically */
+  background-color: var(--card-portrait-bg);
 }
 
 .card-portrait img {
