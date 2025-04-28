@@ -197,7 +197,7 @@ button:focus {
   display: flex; /* Flexbox layout */
   justify-content: space-between; /* Space between elements */
   align-items: center; /* Center-align items vertically */
-  padding: var(--padding-medium); /* Remove padding */
+  padding: 0 var(--padding-medium); /* Remove padding */
   margin: 0; /* Remove margin */
 }
 
