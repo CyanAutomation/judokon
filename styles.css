@@ -317,7 +317,6 @@ button:focus {
   width: 100%; /* Take up the full width of the parent */
   margin: 0; /* Remove margin */
   padding: 0px; /* Add padding if needed */
-  gap: var(--padding-small); /* Add gap between elements */
 }
 
 /* Ensure the label spans the full width */
@@ -325,9 +324,10 @@ button:focus {
   display: block; /* Make the label span the full width */
   background-color: #fff; /* Badge background color */
   font-weight: bold;
-  width: 50%; /* Take up the full width of the parent */
+  width: 100%; /* Take up the full width of the parent */
   color: #000;
   margin: 0;
+  text-align: center;
   padding: var(--padding-small); /* Add padding for spacing */
 }
 
@@ -336,10 +336,11 @@ button:focus {
   display: block; /* Make the value span the full width */
   color: var(--common-signature-move-text);
   margin: 0;
-  width: 50%; /* Take up the full width of the parent */
+  width: 100%; /* Take up the full width of the parent */
   padding: var(--padding-small); /* Add padding for spacing */
   text-transform: uppercase; /* Uppercase text */
   font-weight: bold;
+  text-align: center;
 }
 
 /* Profile link styles */
