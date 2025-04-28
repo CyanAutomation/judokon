@@ -198,7 +198,7 @@ button:focus {
   justify-content: space-between; /* Space between elements */
   align-items: center; /* Center-align items vertically */
   padding: var(--padding-small) var(--padding-medium); /* Remove padding */
-  margin-top: 2px;
+  margin-top: 4px;
   margin-bottom: 0;
 }
 
@@ -245,17 +245,14 @@ button:focus {
   margin: 0; /* Remove margin */
   position: relative; /* Position for child elements */
   display: flex; /* Flexbox layout */
-  border: 6px solid var(--common-top-bar-bg); 
-  border-radius: var(--border-radius-medium);
 }
 
 .card-portrait img {
-  width: 100%; /* Image width */
+  width: 100%;
   height: auto;
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
-  border: 6px solid var(--common-top-bar-bg); 
-  border-radius: var(--border-radius-medium);
+  border-radius: var(--border-radius-small); /* Rounded corners */
 }
 
 /* Weight class badge in the portrait section */
