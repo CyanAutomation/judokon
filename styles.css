@@ -208,9 +208,9 @@ button:focus {
 
 /* Legendary card variables */
 .judoka-card.legendary {
-  --card-bg-color: #ff9800;
+  --card-bg-color: #0c3f7a;
   --card-border-color: #ffb74d;
-  --card-signature-move-bg: #003b88;
+  --card-signature-move-bg: #000;
   --card-stats-bg: #0c3f7a;
 }
 
