@@ -376,10 +376,12 @@ button:focus {
   color: #fed843;
   margin: 0;
   width: 100%; /* Take up the full width of the parent */
-  padding: 0.2rem; /* Add padding for spacing */
   text-transform: uppercase; /* Uppercase text */
   font-weight: bold;
   text-align: center;
+  padding: 0.4rem; /* Add padding for spacing */
+  border-radius: 2px;
+  border: 1px solid var(--card-signature-move-bg);
 }
 
 /* Profile link styles */
