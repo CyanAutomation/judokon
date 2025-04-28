@@ -180,7 +180,7 @@ button:focus {
   max-width: 300px;
   width: 100%; /* Full width for smaller screens */
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
-  border: 8px solid var(--common-border-color); /* Card border */
+  border: 10px solid var(--common-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
   overflow: hidden; /* Hide overflow content */
   background-color: var(--common-top-bar-bg); /* White background for contrast */
@@ -328,7 +328,7 @@ button:focus {
   color: #000;
   margin: 0;
   text-align: center;
-  padding: var(--padding-medium); /* Add padding for spacing */
+  padding: var(--padding-small); /* Add padding for spacing */
 }
 
 /* Ensure the value spans the full width */
