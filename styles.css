@@ -206,6 +206,7 @@ button:focus {
   flex-direction: column; /* Stack items vertically */
   margin: 0; /* Remove margin */
   padding: 0;
+  margin-left: 4px;
 }
 
 /* Styles for the judoka's name */
@@ -233,7 +234,8 @@ button:focus {
   height: 45px; /* Fixed height */
   background-size: cover; /* Cover the background */
   border-radius: var(--border-radius-small); /* Rounded corners */
-  padding: 0;
+  padding: 1;
+  margin-right: 4px;
 }
 
 /* Portrait section of the card */
