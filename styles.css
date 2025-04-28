@@ -25,7 +25,7 @@
   --font-extra-large: 3rem;
 
   /* Spacing */
-  --padding-none: 0rem;
+  --padding-none: 0;
   --padding-small: 0.2rem;
   --padding-medium: 0.5rem;
   --padding-large: 1rem;
@@ -227,6 +227,7 @@ button:focus {
   width: 60px; /* Fixed width */
   height: 45px; /* Fixed height */
   background-size: cover; /* Cover the background */
+  border: 0px solid var(--card-border-color);
 }
 
 /* Portrait section of the card */
