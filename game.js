@@ -192,10 +192,18 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Game area is not available.");
       return;
     }
-
+  
     try {
-      const cardHTML = await generateJudokaCardHTML(judoka, gokyo);
-      gameArea.innerHTML = cardHTML;
+      // Clear the game area before appending the new card
+      gameArea.innerHTML = "";
+  
+      // Generate the DOM element for the judoka card
+      const cardElement = await generateJudokaCardHTML(judoka, gokyo);
+  
+      // Append the DOM element to the game area
+      gameArea.appendChild(cardElement);
+  
+      console.log("Judoka card successfully displayed:", cardElement);
     } catch (error) {
       console.error("Error generating judoka card:", error);
       gameArea.innerHTML = "<p>⚠️ Failed to generate judoka card. Please try again later.</p>";

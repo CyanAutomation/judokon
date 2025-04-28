@@ -109,7 +109,10 @@ export async function generateJudokaCardHTML(judoka, gokyo) {
 
   // Append the top bar (DOM element returned by generateCardTopBar)
   const topBarElement = await generateCardTopBar(judoka, flagUrl);
+  console.log("Top bar element generated:", topBarElement);
+  console.log("Appending top bar to judoka card...");
   judokaCard.appendChild(topBarElement);
+  console.log("Judoka card after appending top bar:", judokaCard);
 
   // Append the portrait (HTML string converted to DOM)
   const portraitHTML = generateCardPortrait(judoka);
