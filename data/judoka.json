@@ -65,4 +65,26 @@
     "rarity": "Common",
     "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT8D"
   }
+  {
+    "id": 776,
+    "firstname": "Shōzō",
+    "surname": "Fujii",
+    "country": "Japan",
+    "countryCode": "jp",
+    "weightClass": "-81",
+    "stats": {
+      "power": 8,
+      "speed": 8,
+      "technique": 8,
+      "kumikata": 7,
+      "newaza": 8
+    },
+    "signatureMoveId": 3,
+    "lastUpdated": "2025-04-28T15:30:00Z",
+    "profileUrl": "https://en.wikipedia.org/wiki/Shōzō_Fujii",
+    "gender": "male",
+    "isHidden": false,
+    "rarity": "Epic",
+    "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT9D"
+  }
 ]
