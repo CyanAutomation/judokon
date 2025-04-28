@@ -354,7 +354,7 @@ button:focus {
   border-radius: 2px;
   border: 1px solid #fff;
   white-space: nowrap; /* Prevent text from wrapping */
-  letter-spacing: 0.15vw; /* Dynamic letter spacing based on viewport width */
+  letter-spacing: 0.2vw; /* Dynamic letter spacing based on viewport width */
 }
 
 .signature-move-value {
@@ -369,7 +369,7 @@ button:focus {
   padding: 0.4rem; /* Add padding for spacing */
   border-radius: 2px;
   border: 1px solid var(--card-signature-move-bg);
-  letter-spacing: 0.15vw; /* Dynamic letter spacing based on viewport width */
+  letter-spacing: 0.2vw; /* Dynamic letter spacing based on viewport width */
 
   /* Ensure the text stays on one line and dynamically shrinks */
   white-space: nowrap; /* Prevent text from wrapping */
