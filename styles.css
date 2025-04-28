@@ -170,10 +170,6 @@ button:focus {
   text-align: center; /* Center-align text */
 }
 
-.mt-2 {
-  margin-top: 2rem; /* Add top margin */
-}
-
 /* Card styles */
 .card-container {
   display: flex;
@@ -187,7 +183,7 @@ button:focus {
   max-width: 300px;
   width: 100%; /* Full width for smaller screens */
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
-  border: 8px solid var(--card-border-color); /* Card border */
+  border: 2px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
   overflow: hidden; /* Hide overflow content */
   background-color: #ffffff; /* White background for contrast */
@@ -215,6 +211,7 @@ button:focus {
   font-size: var(--font-small); /* Small font size for the first name */
   font-weight: normal; /* Normal font weight */
   display: block; /* Force the first name to appear on its own line */
+  margin-bottom: 0; /* Remove margin for the last stat */
 }
 
 .card-name .surname {
@@ -230,7 +227,6 @@ button:focus {
   width: 60px; /* Fixed width */
   height: 45px; /* Fixed height */
   background-size: cover; /* Cover the background */
-  border: 1px solid var(--text-color); /* Add border */
 }
 
 /* Portrait section of the card */
