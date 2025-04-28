@@ -349,7 +349,7 @@ button:focus {
   align-items: center;
   width: 100%; /* Take up the full width of the parent */
   position: relative;
-  padding: 1px; /* Add padding if needed */
+  padding: 0; /* Add padding if needed */
   margin: 0;
   /* margin-top: auto; */
 }
@@ -385,7 +385,7 @@ button:focus {
   /* Ensure the text stays on one line and dynamically shrinks */
   white-space: nowrap; /* Prevent text from wrapping */
   overflow: hidden; /* Hide overflowing text */
-  font-size: clamp(0.6rem, 2vw, 1rem); /* Dynamically adjust font size */
+  font-size: clamp(0.5rem, 2vw, 1rem); /* Dynamically adjust font size */
 }
 
 /* Profile link styles */
