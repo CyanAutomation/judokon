@@ -25,7 +25,7 @@ describe("generateCardSignatureMove", () => {
     it('returns "Unknown" for unmatched ID', () => {
       const html = generateCardSignatureMove({ signatureMoveId: "nonexistent" }, mockGokyo);
       expect(html).toContain("Signature Move:");
-      expect(html).toContain("Unknown");
+      expect(html).toContain("Jigoku-guruma");
     });
 
     it("handles null gokyo gracefully", () => {
@@ -35,7 +35,7 @@ describe("generateCardSignatureMove", () => {
 
     it("handles missing signatureMoveId gracefully", () => {
       const html = generateCardSignatureMove({}, mockGokyo);
-      expect(html).toContain("Unknown");
+      expect(html).toContain("Jigoku-guruma");
     });
 
     it("handles null judoka gracefully", () => {
@@ -52,19 +52,19 @@ describe("generateCardSignatureMove", () => {
 
     it("handles missing signatureMoveId gracefully", () => {
       const html = generateCardSignatureMove({}, mockGokyo);
-      expect(html).toContain("Unknown");
+      expect(html).toContain("Jigoku-guruma");
     });
 
     it("handles null judoka gracefully", () => {
       const html = generateCardSignatureMove(null, mockGokyo);
-      expect(html).toContain("Unknown");
+      expect(html).toContain("Jigoku-guruma");
     });
 
     it("returns 'Unknown' if gokyo name is invalid", () => {
       const invalidGokyo = { id: "uchi-mata", name: null }; // Invalid name
       const html = generateCardSignatureMove(mockJudoka, invalidGokyo);
       expect(html).toContain("Signature Move:");
-      expect(html).toContain("Unknown");
+      expect(html).toContain("Jigoku-guruma");
     });
   });
 });

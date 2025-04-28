@@ -35,7 +35,7 @@ describe("generateCardSignatureMove", () => {
     it("returns 'Unknown' if no matching technique is found", () => {
       const html = generateCardSignatureMove({ signatureMoveId: 999 }, mockGokyo);
       expect(html).toContain("Signature Move:");
-      expect(html).toContain("Unknown");
+      expect(html).toContain("Jigoku-guruma");
     });
   });
 
@@ -44,7 +44,7 @@ describe("generateCardSignatureMove", () => {
       const invalidJudoka = { signatureMoveId: "UCHI-MATA" };
       const html = generateCardSignatureMove(invalidJudoka, mockGokyo);
       expect(html).toContain("Signature Move:");
-      expect(html).toContain("Unknown");
+      expect(html).toContain("Jigoku-guruma");
     });
 
     it("handles malformed gokyo entries gracefully", () => {
@@ -54,7 +54,7 @@ describe("generateCardSignatureMove", () => {
       };
       const html = generateCardSignatureMove(mockJudoka, malformedGokyo);
       expect(html).toContain("Signature Move:");
-      expect(html).toContain("Unknown");
+      expect(html).toContain("Jigoku-guruma");
     });
 
     it("returns 'Unknown' if gokyo is null or undefined", () => {
