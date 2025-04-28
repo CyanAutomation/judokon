@@ -283,6 +283,7 @@ button:focus {
 .card-stats ul {
   list-style: none;
   padding: 0;
+  margin: 0; /* Remove margin */
 }
 
 .card-stats li {
@@ -337,7 +338,7 @@ button:focus {
   color: var(--common-signature-move-text);
   margin: 0;
   width: 100%; /* Take up the full width of the parent */
-  padding: 0.3rem; /* Add padding for spacing */
+  padding: 0.2rem; /* Add padding for spacing */
   text-transform: uppercase; /* Uppercase text */
   font-weight: bold;
   text-align: center;

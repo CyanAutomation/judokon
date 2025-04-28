@@ -58,7 +58,7 @@ Contributions are welcome! Please fork the repository and submit a pull request.
 
 ## Features
 
-- 99-card deck featuring real-life elite judoka
+- 99-card deck featuring elite judoka
 - One-on-one stat battles
 - Designed for kids and judo fans alike
 - Playable directly in the browser
