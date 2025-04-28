@@ -242,6 +242,7 @@ button:focus {
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
   position: relative; /* Position for child elements */
+  display: flex; /* Flexbox layout */
 }
 
 .card-portrait img {
@@ -272,6 +273,7 @@ button:focus {
   margin: 0; /* Remove margin */
   font-size: var(--font-medium); /* Medium font size */
   margin-top: 0;
+  display: flex; /* Flexbox layout */
 }
 
 .card-stats ul {
