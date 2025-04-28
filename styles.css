@@ -369,7 +369,6 @@ button:focus {
   border: 1px solid #fff;
 }
 
-/* Ensure the value spans the full width */
 .signature-move-value {
   display: block; /* Make the value span the full width */
   background-color: var(--card-signature-move-bg); /* Badge background color */
@@ -378,11 +377,16 @@ button:focus {
   width: 100%; /* Take up the full width of the parent */
   text-transform: uppercase; /* Uppercase text */
   font-weight: bold;
-  /* font-size: var(--font-small); */
   text-align: center;
   padding: 0.4rem; /* Add padding for spacing */
   border-radius: 2px;
   border: 1px solid var(--card-signature-move-bg);
+
+  /* Ensure the text stays on one line and dynamically shrinks */
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflowing text */
+  text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+  font-size: clamp(0.8rem, 2vw, 1.2rem); /* Dynamically adjust font size */
 }
 
 /* Profile link styles */
