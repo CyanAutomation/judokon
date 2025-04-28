@@ -186,7 +186,7 @@ button:focus {
   border: 8px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
   overflow: hidden; /* Hide overflow content */
-  background-color: #ffffff; /* White background for contrast */
+  background-color: var(--card-top-bar-bg); /* White background for contrast */
   box-shadow: var(--box-shadow); /* Add shadow for depth */
   font-family: "Inter", "Montserrat", "Nunito", sans-serif; /* Custom font family */
 }
@@ -201,6 +201,7 @@ button:focus {
   padding: var(--padding-small); /* Remove padding */
   margin: 0; /* Remove margin */
   margin-bottom: 0; /* Add space below the title */
+  border-radius: var(--border-radius-small); /* Rounded corners */
 }
 
 .card-name {
@@ -230,8 +231,7 @@ button:focus {
   width: 60px; /* Fixed width */
   height: 45px; /* Fixed height */
   background-size: cover; /* Cover the background */
-  border: 4px solid var(--card-top-bar-bg); /* Border around the flag */
-  border-radius: 4px; /* Add rounded corners */
+  border-radius: var(--border-radius-small); /* Rounded corners */
 }
 
 /* Portrait section of the card */
@@ -248,7 +248,7 @@ button:focus {
   position: relative; /* Position for child elements */
   display: flex; /* Flexbox layout */
   border: 1px solid var(--card-top-bar-bg); /* Border around the flag */
-  border-radius: 4px; /* Add rounded corners */
+  border-radius: var(--border-radius-small); /* Rounded corners */
 }
 
 .card-portrait img {
@@ -278,7 +278,7 @@ button:focus {
   background-color: var(--card-stats-bg); /* Background color */
   color: var(--text-color); /* Text color */
   font-size: var(--font-medium); /* Medium font size */
-  border-radius: var(--border-radius-large); /* Rounded corners */
+  border-radius: var(--border-radius-small); /* Rounded corners */
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
   margin-top: 0;
