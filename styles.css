@@ -309,21 +309,31 @@ button:focus {
   flex-shrink: 0; /* Prevent the value from shrinking */
 }
 
-/* Signature Move section of the card */
+/* Parent container for the signature move section */
+.signature-move-container {
+  display: block; /* Ensure the container spans the full width */
+  width: 100%; /* Take up the full width of the parent */
+  text-align: left; /* Align text to the left */
+  margin: 0; /* Remove margin */
+  padding: var(--padding-small); /* Add padding if needed */
+}
+
+/* Ensure the label spans the full width */
 .signature-move-label {
+  display: block; /* Make the label span the full width */
   background-color: #fff; /* Badge background color */
   font-weight: bold;
   color: #000;
   margin: 0;
-  padding: 0px;
-  display: inline-block;
+  padding: var(--padding-small); /* Add padding for spacing */
 }
 
+/* Ensure the value spans the full width */
 .signature-move-value {
+  display: block; /* Make the value span the full width */
   color: var(--common-signature-move-text);
   margin: 0;
-  padding: 0;
-  display: inline-block;
+  padding: var(--padding-small); /* Add padding for spacing */
   text-transform: uppercase; /* Uppercase text */
   font-weight: bold;
 }
