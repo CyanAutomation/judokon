@@ -160,7 +160,7 @@ button:focus {
 }
 
 .judoka-card {
-  width: 300px; /* Fixed width for cards */
+  width: max(300px,80%); /* Fixed width for cards */
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
   border: 10px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
