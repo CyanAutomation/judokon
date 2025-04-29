@@ -160,9 +160,9 @@ button:focus {
 }
 
 .judoka-card {
-  /* width: 300px; */
-  max-width: 300px;
-  /* width: 100%;  */
+  width: 300px; /* Fixed width for cards */
+  /* max-width: 300px;
+  width: 100%;  */
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
   border: 10px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
@@ -170,7 +170,8 @@ button:focus {
   background-color: var(--card-bg-color);
   box-shadow: var(--box-shadow); /* Add shadow for depth */
   font-family: "Inter", "Montserrat", "Nunito", sans-serif; /* Custom font family */
-  display: flex;
+  padding: 0;
+  margin: 0;
 }
 
 /* Common card variables */
