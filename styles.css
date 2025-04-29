@@ -156,7 +156,7 @@ button:focus {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* padding: var(--padding-large); */
+  padding: var(--padding-large); /* Add padding */
 }
 
 .judoka-card {
@@ -334,6 +334,8 @@ button:focus {
   align-items: center;
   width: 100%; /* Take up the full width of the parent */
   position: relative;
+  margin: 0;
+  padding: 0;
 }
 
 /* Ensure the label spans the full width */
@@ -345,7 +347,7 @@ button:focus {
   width: 100%; /* Take up the full width of the parent */
   color: #000;
   margin: 0;
-  padding 0;
+  padding: 0;
   text-align: center;
   /* padding: 0.4rem; */
   border-radius: 2px;
@@ -365,7 +367,7 @@ button:focus {
   font-weight: bold;
   text-align: center;
   margin: 0;
-  padding 0;
+  padding: 0;
   /* padding: 0.4rem; */
   border-radius: 2px;
   border: 1px solid var(--card-signature-move-bg);
