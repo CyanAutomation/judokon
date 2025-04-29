@@ -335,8 +335,8 @@ button:focus {
   align-items: center;
   width: 100%; /* Take up the full width of the parent */
   position: relative;
-  padding: 0; /* Add padding if needed */
-  /* min-height: max(50px, 10vw); */
+  margin: 0;
+  padding 0;
 }
 
 /* Ensure the label spans the full width */
@@ -348,6 +348,7 @@ button:focus {
   width: 100%; /* Take up the full width of the parent */
   color: #000;
   margin: 0;
+  padding 0;
   text-align: center;
   /* padding: 0.4rem; */
   border-radius: 2px;
@@ -362,10 +363,12 @@ button:focus {
   background-color: var(--card-signature-move-bg); /* Badge background color */
   color: #fed843;
   margin: 0;
-  width: 100%; /* Take up the full width of the parent */
+  /* width: max(auto, 50%); */
   text-transform: uppercase; /* Uppercase text */
   font-weight: bold;
   text-align: center;
+  margin: 0;
+  padding 0;
   /* padding: 0.4rem; */
   border-radius: 2px;
   border: 1px solid var(--card-signature-move-bg);
