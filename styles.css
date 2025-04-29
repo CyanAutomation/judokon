@@ -341,11 +341,11 @@ button:focus {
 
 /* Ensure the label spans the full width */
 .signature-move-label {
-  display: block; /* Make the label span the full width */
+  display: flex; /* Make the label span the full width */
   background-color: #fff; /* Badge background color */
   font-weight: bold;
   font-size: var(--font-small); /* Small font size for the first name */
-  width: min(150x, 50%); /* Take up the full width of the parent */
+  width: 100%;
   color: #000;
   margin: 0;
   padding: 0;
@@ -359,11 +359,11 @@ button:focus {
 }
 
 .signature-move-value {
-  display: block; /* Make the value span the full width */
+  display: flex; /* Make the value span the full width */
   background-color: var(--card-signature-move-bg); /* Badge background color */
   color: #fed843;
   margin: 0;
-  width: min(150px, 50%);
+  width: 100%;
   text-transform: uppercase; /* Uppercase text */
   font-weight: bold;
   text-align: center;
