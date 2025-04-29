@@ -366,14 +366,14 @@ button:focus {
   text-transform: uppercase; /* Uppercase text */
   font-weight: bold;
   text-align: center;
-  padding: 0.4rem; /* Add padding for spacing */
+  /* padding: 0.4rem; */
   border-radius: 2px;
   border: 1px solid var(--card-signature-move-bg);
   /* letter-spacing: 0.1vw; /* Dynamic letter spacing based on viewport width */
 
   /* Ensure the text stays on one line and dynamically shrinks */
   white-space: nowrap; /* Prevent text from wrapping */
-  font-size: clamp(0.6rem, 2vw, 1rem); /* Dynamically adjust font size */
+  font-size: clamp(0.6rem, 1rem, 1.6rem); /* Dynamically adjust font size */
 }
 
 /* Profile link styles */
