@@ -313,7 +313,7 @@ button:focus {
 
 .card-stats .stat {
   display: flex; /* Use flexbox for layout */
-  justify-content: space-between; /* Space between label and value */
+  justify-content: space-around; /* Space between label and value */
   align-items: center; /* Align items vertically */
   margin-bottom: 0; /* Add spacing between stats */
 }
@@ -373,7 +373,7 @@ button:focus {
 
   /* Ensure the text stays on one line and dynamically shrinks */
   white-space: nowrap; /* Prevent text from wrapping */
-  font-size: clamp(0.6rem, 1.5dvw, 1rem); /* Dynamically adjust font size */
+  font-size: clamp(0.6rem, 2vw, 1rem); /* Dynamically adjust font size */
 }
 
 /* Profile link styles */
