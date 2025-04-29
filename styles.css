@@ -160,9 +160,7 @@ button:focus {
 }
 
 .judoka-card {
-  max-width: 300px; /* Fixed width for cards */
-  /* max-width: 300px;
-  width: 100%;  */
+  width: 300px; /* Fixed width for cards */
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
   border: 10px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
@@ -332,7 +330,7 @@ button:focus {
 .signature-move-container {
   display: flex; /* Ensure the container spans the full width */
   justify-content: space-between;
-  align-items: center;
+  align-items: bottom;
   width: 100%; /* Take up the full width of the parent */
   position: relative;
   margin: 0;
@@ -348,7 +346,9 @@ button:focus {
   width: 100%;
   color: #000;
   margin: 0;
-  padding: 0;
+  padding: clamp(1px, 2px, 3px); /* Dynamic padding */
+  align-items: center;
+  justify-content: center;
   text-align: center;
   /* padding: 0.4rem; */
   border-radius: 2px;
@@ -366,9 +366,11 @@ button:focus {
   width: 100%;
   text-transform: uppercase; /* Uppercase text */
   font-weight: bold;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   margin: 0;
-  padding: 0;
+  padding: clamp(1px, 2px, 3px); /* Dynamic padding */
   /* padding: 0.4rem; */
   border-radius: 2px;
   border: 1px solid var(--card-signature-move-bg);
