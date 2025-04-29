@@ -336,9 +336,8 @@ button:focus {
   width: 100%; /* Take up the full width of the parent */
   position: relative;
   padding: 0; /* Add padding if needed */
-  margin: 0;
+  margin-bottom: 1px;
   /* min-height: max(50px, 10vw); */
-  /* margin-top: auto; */
 }
 
 /* Ensure the label spans the full width */
@@ -351,7 +350,7 @@ button:focus {
   color: #000;
   margin: 0;
   text-align: center;
-  padding: 0.4rem; /* Add padding for spacing */
+  /* padding: 0.4rem; */
   border-radius: 2px;
   border: 1px solid #fff;
   white-space: nowrap; /* Prevent text from wrapping */
@@ -375,7 +374,7 @@ button:focus {
 
   /* Ensure the text stays on one line and dynamically shrinks */
   white-space: nowrap; /* Prevent text from wrapping */
-  font-size: clamp(0.2rem, 1.5vw, 1rem); /* Dynamically adjust font size */
+  font-size: clamp(0.6rem, 0.8rem, 1rem); /* Dynamically adjust font size */
 }
 
 /* Profile link styles */
