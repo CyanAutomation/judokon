@@ -336,7 +336,6 @@ button:focus {
   width: 100%; /* Take up the full width of the parent */
   position: relative;
   padding: 0; /* Add padding if needed */
-  margin-bottom: 1px;
   /* min-height: max(50px, 10vw); */
 }
 
@@ -374,7 +373,7 @@ button:focus {
 
   /* Ensure the text stays on one line and dynamically shrinks */
   white-space: nowrap; /* Prevent text from wrapping */
-  font-size: clamp(0.6rem, 0.8rem, 1rem); /* Dynamically adjust font size */
+  font-size: clamp(0.6rem, 1.5dvw, 1rem); /* Dynamically adjust font size */
 }
 
 /* Profile link styles */
