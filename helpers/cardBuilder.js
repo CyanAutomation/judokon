@@ -1,4 +1,3 @@
-import { escapeHTML } from "./utils.js";
 import { getFlagUrl } from "./countryUtils.js";
 import { generateCardTopBar } from "./cardTopBar.js";
 import {
@@ -27,11 +26,11 @@ import {
  * @param {string|Date|undefined} date - The last updated date as a string or Date.
  * @returns {string} The HTML string for the "last updated" section.
  */
-function generateCardLastUpdated(date) {
-  if (!date) return ""; // If date is undefined, don't render anything
-  const safeDate = date instanceof Date ? date.toISOString().split("T")[0] : date;
-  return `<div class="card-updated">Last updated: ${escapeHTML(safeDate)}</div>`;
-}
+// function generateCardLastUpdated(date) {
+//   if (!date) return ""; // If date is undefined, don't render anything
+//   const safeDate = date instanceof Date ? date.toISOString().split("T")[0] : date;
+//   return `<div class="card-updated">Last updated: ${escapeHTML(safeDate)}</div>`;
+// }
 
 /**
  * Validates the required fields of a Judoka object.
@@ -122,10 +121,10 @@ export async function generateJudokaCardHTML(judoka, gokyo) {
 
   const flagUrl = await getFlagUrl(countryCode || "vu"); // Default to "vu" (Vanuatu) if no code is found
 
-  const lastUpdated =
-    typeof judoka.lastUpdated === "string"
-      ? judoka.lastUpdated
-      : judoka.lastUpdated?.toISOString().split("T")[0] || "";
+  // const lastUpdated =
+  //   typeof judoka.lastUpdated === "string"
+  //     ? judoka.lastUpdated
+  //     : judoka.lastUpdated?.toISOString().split("T")[0] || "";
 
   // Determine the card type (default to "common" if not provided)
   const cardType = judoka.rarity?.toLowerCase() || "common";

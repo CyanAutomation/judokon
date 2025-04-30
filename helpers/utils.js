@@ -79,11 +79,10 @@ export function getValue(value, fallback = "Unknown") {
  * 4. Return the formatted date string (YYYY-MM-DD).
  *
  * @param {string} dateString - The date string to format.
- * @param {string} [locale="en-GB"] - The locale for formatting (currently unused).
  * @returns {string} The formatted date or "Invalid Date".
  * @typedef {string} FormattedDate
  */
-export function formatDate(dateString, locale = "en-GB") {
+export function formatDate(dateString) {
   if (typeof dateString !== "string" || !dateString.trim()) {
     return "Invalid Date";
   }
