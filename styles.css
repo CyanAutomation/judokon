@@ -42,7 +42,7 @@
 *::before,
 *::after {
   margin: 0;
-  padding: var(--padding-small);
+  padding: 0;
   box-sizing: border-box;
 }
 
@@ -63,6 +63,7 @@ body {
   text-align: center; /* Center-align text */
   margin: 0;
   padding: var(--padding-small); /* Add padding */
+  min-height: 100vh; /* Ensure the body takes up the full height */
 }
 
 /* Container for main content */
