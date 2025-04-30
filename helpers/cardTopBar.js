@@ -203,7 +203,6 @@ function createFlagImage(finalFlagUrl, countryName) {
     console.warn("Flag image failed to load, using placeholder:", PLACEHOLDER_FLAG_URL);
   };
 
-  console.log("Flag image generated:", flagImg);
   return flagImg;
 }
 
@@ -252,8 +251,6 @@ export async function generateCardTopBar(judoka, flagUrl) {
     return createNoDataContainer();
   }
 
-  console.log("Judoka object received:", judoka);
-
   // Extract and sanitize judoka data
   const { firstname, surname, countryCode } = extractJudokaData(judoka);
 
@@ -262,7 +259,6 @@ export async function generateCardTopBar(judoka, flagUrl) {
 
   // Determine the final flag URL
   const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;
-  console.log("Final flag URL:", finalFlagUrl);
 
   // Create the main container
   const container = document.createElement("div");
@@ -276,6 +272,5 @@ export async function generateCardTopBar(judoka, flagUrl) {
   const flagImg = createFlagImage(finalFlagUrl, countryName);
   container.appendChild(flagImg);
 
-  console.log("Final generated container:", container);
   return container; // Return the DOM element
 }
