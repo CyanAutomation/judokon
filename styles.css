@@ -160,7 +160,7 @@ button:focus {
 }
 
 .judoka-card {
-  width: max(300px, 20%); /* Fixed width for cards */
+  width: max(300px, 15%); /* Fixed width for cards */
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
   border: 10px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
@@ -294,6 +294,9 @@ button:focus {
   padding: 0 2px; /* Remove padding */
   margin: 0; /* Remove margin */
   border-bottom: 1px solid var(--card-border-color); /* Add a top border */
+  display: flex; /* Use flexbox for layout */
+  justify-content: space-around; /* Space between label and value */
+  align-items: center; /* Align items vertically */
 }
 
 .card-stats ul {
@@ -314,6 +317,7 @@ button:focus {
   justify-content: space-around; /* Space between label and value */
   align-items: center; /* Align items vertically */
   margin-bottom: 0; /* Add spacing between stats */
+  letter-spacing: clamp(0.1rem, 0.2rem, 0.3rem); /* Dynamic letter spacing */
 }
 
 .card-stats .stat strong {
