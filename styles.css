@@ -205,7 +205,7 @@ button:focus {
   color: var(--text-color); /* Text color */
   display: flex; /* Flexbox layout */
   justify-content: space-between; /* Space between elements */
-  align-items: center; /* Center-align items vertically */
+  align-items: flex-start; /* Center-align items vertically */
   padding: var(--padding-small) var(--padding-medium); /* Remove padding */
   margin-top: 4px;
   margin-bottom: 0;
@@ -330,9 +330,8 @@ button:focus {
 .signature-move-container {
   display: flex; /* Ensure the container spans the full width */
   justify-content: space-between;
-  align-items: bottom;
+  align-items: flex-end;
   width: 100%; /* Take up the full width of the parent */
-  /* position: relative; */
   margin: 0;
   padding: 0;
 }
