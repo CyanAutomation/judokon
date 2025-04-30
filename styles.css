@@ -294,9 +294,6 @@ button:focus {
   padding: 0 2px; /* Remove padding */
   margin: 0; /* Remove margin */
   border-bottom: 1px solid var(--card-border-color); /* Add a top border */
-  display: flex; /* Use flexbox for layout */
-  justify-content: space-around; /* Space between label and value */
-  align-items: center; /* Align items vertically */
 }
 
 .card-stats ul {
