@@ -161,7 +161,7 @@ button:focus {
 }
 
 .judoka-card {
-  width: max(300px, 15%); /* Fixed width for cards */
+  width: 300px
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
   border: 10px solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
@@ -258,21 +258,23 @@ button:focus {
   position: relative; /* Position for child elements */
   display: flex; /* Flexbox layout */
   overflow: hidden;
-  height: 215px;
-  width: 100%;
+  aspect-ratio: 4/3;;
+  /* height: auto; */
+  /* width: 100%; */
   justify-content: center; /* Center horizontally */
   align-items: center; /* Center vertically */
   background-color: var(--card-portrait-bg);
 }
 
 .card-portrait img {
-  width: auto;
-  height: auto;
-  max-height: 100%; /* Ensure the image fits within the height */
-  max-width: 100%; /* Ensure the image fits within the width */
+  width: 100%;
+  /* height: auto; */
+  /* max-height: 100%; */
+  aspect-ratio: 4/3;;
+  max-width: 100%;
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
-  border-radius: var(--border-radius-medium); /* Rounded corners */
+  /* border-radius: var(--border-radius-medium); */
 }
 
 /* Weight class badge in the portrait section */
@@ -290,17 +292,23 @@ button:focus {
 /* Stats section of the card */
 .card-stats {
   background-color: var(--card-bg-color); /* Background color */
-  color: var(--text-color); /* Text color */
-  font-size: var(--font-small); /* Medium font size */
-  padding: 0 2px; /* Remove padding */
-  margin: 0; /* Remove margin */
+  color: var(--text-color);
+  padding: 2px 2vw; 
+  margin: 0; 
   border-bottom: 1px solid var(--card-border-color); /* Add a top border */
+  display: flex;
+  justify-content: space-between;
+  flex: 1 1 auto
+  width: 100%;
+  align-items: stretch;
 }
 
 .card-stats ul {
   list-style: none;
   padding: 0;
   margin: 0; /* Remove margin */
+  width: 100%; 
+  justify-content: space-between;
 }
 
 .card-stats li {
@@ -308,24 +316,27 @@ button:focus {
   padding: 0; /* Add padding */
   border-top: 1px solid var(--card-border-color); /* Add a top border */
   text-transform: uppercase; /* Uppercase text */
+  /* flex: 1 1 auto;  */
 }
 
 .card-stats .stat {
-  display: flex; /* Use flexbox for layout */
-  justify-content: space-around; /* Space between label and value */
-  align-items: center; /* Align items vertically */
-  margin-bottom: 0; /* Add spacing between stats */
-  letter-spacing: clamp(0.1rem, 0.2rem, 0.3rem); /* Dynamic letter spacing */
+  display: flex; 
+  justify-content: space-around; 
+  /* align-items: center; */
+  margin-bottom: 0;
+  /* letter-spacing: clamp(0.2rem, 1vw, 1rem);  */
+  /* font-size: clamp(0.8rem, 2vw, 4rem);  */
 }
 
 .card-stats .stat strong {
   text-align: left; /* Ensure the label is left-aligned */
-  flex: 1; /* Allow the label to take up available space */
+  flex: 1 1 auto;
+  /* width: 100%; */
 }
 
 .card-stats .stat span {
   text-align: right; /* Ensure the value is right-aligned */
-  flex-shrink: 0; /* Prevent the value from shrinking */
+  /* flex-shrink: 0; */
 }
 
 /* Parent container for the signature move section */
