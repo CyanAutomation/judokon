@@ -64,6 +64,9 @@ body {
   margin: 0;
   padding: var(--padding-small); /* Add padding */
   min-height: 100vh; /* Ensure the body takes up the full height */
+  background-image: url('./assets/locationTiles/bgTileGeneral.png');
+  background-repeat: repeat; /* Tile the background */
+  background-size: clamp(240px, 35vw, 420px); /* Responsive background size */
 }
 
 /* Container for main content */
@@ -218,11 +221,12 @@ button:focus {
   margin: 0; /* Remove margin */
   padding: 0;
   margin-left: 2px;
+  white-space: nowrap; 
 }
 
 /* Styles for the judoka's name */
 .card-name .firstname {
-  font-size: var(--font-small); /* Small font size for the first name */
+  font-size: clamp(0.4rem, 5vw, 1.2rem); /* Responsive font size for the surname */
   font-weight: normal; /* Normal font weight */
   display: block; /* Force the first name to appear on its own line */
   margin: 0; /* Remove margin */
@@ -231,13 +235,14 @@ button:focus {
 }
 
 .card-name .surname {
-  font-size: var(--font-large); /* Larger font size for the surname */
+  font-size: clamp(0.8rem, 6vw, 1.5rem); /* Responsive font size for the surname */
   font-weight: bold; /* Bold font weight */
   text-transform: uppercase; /* Uppercase text */
   display: block; /* Force the surname to appear on its own line */
   margin: 0; /* Remove margin */
   padding: 0;
   letter-spacing: 0.2vw; /* Add spacing between letters */
+  /* white-space: nowrap;  */
 }
 
 /* Styles for the country flag */
@@ -301,6 +306,8 @@ button:focus {
   flex: 1 1 auto;
   width: 100%;
   align-items: stretch;
+  font-size: clamp(0.6rem, 5vw, 1.2rem); 
+  align-items: flex-end;
 }
 
 .card-stats ul {
@@ -309,6 +316,8 @@ button:focus {
   margin: 0; /* Remove margin */
   width: 100%; 
   justify-content: space-between;
+  /* font-size: clamp(0.6rem, 6vw, 1.2rem);  */
+
 }
 
 .card-stats li {
