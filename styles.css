@@ -66,6 +66,7 @@ body {
   min-height: 100vh; /* Ensure the body takes up the full height */
   background-image: url('./assets/locationTiles/bgTileGeneral.png');
   background-repeat: repeat; /* Tile the background */
+  backdrop-filter: brightness(0.9); /* Apply brightness filter */
   background-size: clamp(240px, 35vw, 420px); /* Responsive background size */
 }
 
@@ -217,10 +218,10 @@ button:focus {
 .card-top-bar {
   background-color: var(--card-bg-color); /* Background color */
   color: var(--text-color); /* Text color */
-  /* justify-content: space-around;  */
-  display: flex; /* Flexbox layout */
+  justify-content: space-around; 
+  display: inline-flex;
   align-items: center; /* Center-align items vertically */
-  padding: clamp(3px, 4px, 4px) clamp(1px, 4px, 6px); /* Add padding */
+  padding: clamp(3px, 4px, 5px) clamp(1px, 2px, 6px); /* Add padding */
   /* margin-top: 4px; */
   /* margin-bottom: 0; */
   flex-direction: row;
@@ -228,16 +229,12 @@ button:focus {
   /* flex: 1 1 auto; */
   /* gap: 20px;  */
 }
-.card-top-bar :: :last-child {
-  margin-right: 0px; /* Push the last item to the right */
-}
 
 .card-name {
   text-align: left; /* Left-align the text */
   flex-direction: column; /* Stack items vertically */
   margin: 0; /* Remove margin */
   padding: 0;
-  margin-left: 2px;
   white-space: nowrap; 
   display: flex;
 }
@@ -249,7 +246,7 @@ button:focus {
   display: block;
   margin: 0; /* Remove margin */
   padding: 0;
-  letter-spacing: 0.15vw; /* Add spacing between letters */
+  letter-spacing: clamp(0.5px, 0.5px, 1px);
 }
 
 .card-name .surname {
@@ -258,20 +255,23 @@ button:focus {
   text-transform: uppercase; /* Uppercase text */
   margin: 0; /* Remove margin */
   padding: 0;
-  letter-spacing: 0.2vw; /* Add spacing between letters */
+  letter-spacing: clamp(0.5px, 0.5px, 1px);
 }
 
 /* Styles for the country flag */
 .card-flag {
-  /* position: relative; 
-  display: inline-block; */
+  /* position: relative; */
+  /* display: inline-block; */
   padding: 0; 
   margin: 0;
-  position: relative;
+  /* position: relative; */
   display: flex;
   /* overflow: hidden; */
   justify-content: right;
   align-items: center; 
+  flex-basis: 25%;
+  flex-shrink: 1;
+  padding-left: 5px;
 }
 
 .card-flag img {
