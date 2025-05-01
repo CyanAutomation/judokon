@@ -184,7 +184,7 @@ button:focus {
 .judoka-card:hover {
   box-shadow: 8px 8px 12px rgba(0, 0, 0, 0.4); /* Add a larger shadow on hover */
   transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out; /* Smooth transition for the shadow */
-  transform: scale(1.01); /* Slightly enlarge the card on hover */
+  transform: scale(1.01); 
 }
 
 /* Common card variables */
