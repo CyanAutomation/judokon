@@ -256,7 +256,7 @@ button:focus {
 
 /* Styles for the country flag */
 .card-flag {
-  /* position: relative; */
+  position: relative;
   /* display: inline-block; */
   padding: 0; 
   margin: 0;
