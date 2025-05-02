@@ -237,6 +237,8 @@ button:focus {
   padding: 0;
   white-space: nowrap;
   display: flex;
+  position: relative;
+  justify-content: left;
 }
 
 /* Styles for the judoka's name */
@@ -276,6 +278,9 @@ button:focus {
   max-width: 60px;
   border-radius: clamp(1px, 1vw, 5px);
   /* padding: 0; */
+  position: relative;
+  margin-right: 0;
+  justify-content: right;
 }
 /* Portrait section of the card */
 .card-portrait {

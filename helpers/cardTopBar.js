@@ -97,7 +97,6 @@ function extractJudokaData(judoka) {
   const firstname = escapeHTML(getValue(judoka.firstname, "Unknown"));
   const surname = escapeHTML(getValue(judoka.surname, ""));
   const countryCode = getValue(judoka.countryCode, "unknown");
-  console.log("Extracted values:", { firstname, surname, countryCode });
   return { firstname, surname, countryCode };
 }
 
