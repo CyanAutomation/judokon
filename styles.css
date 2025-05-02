@@ -279,6 +279,7 @@ button:focus {
   max-height: 40px;
   display: block;
   border-radius: 3px; */
+  display: flex;
   width: 100%;
   aspect-ratio: 3/2;
   max-width: 100%;
