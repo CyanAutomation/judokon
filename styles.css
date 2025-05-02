@@ -64,7 +64,7 @@ body {
   margin: 0;
   padding: var(--padding-small); /* Add padding */
   min-height: 100vh; /* Ensure the body takes up the full height */
-  background-image: url('./assets/locationTiles/bgTileGeneral.png');
+  background-image: url("./assets/locationTiles/bgTileGeneral.png");
   background-repeat: repeat; /* Tile the background */
   backdrop-filter: brightness(0.9); /* Apply brightness filter */
   background-size: clamp(240px, 35vw, 420px); /* Responsive background size */
@@ -161,7 +161,7 @@ button:focus {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: var(--padding-large); 
+  padding: var(--padding-large);
 }
 
 .judoka-card {
@@ -172,7 +172,9 @@ button:focus {
   /* overflow: hidden; */
   background-color: var(--card-bg-color);
   box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3); /* Add a larger shadow on hover */
-  transition: box-shadow 0.2s ease-in-out, transform 0.1s ease-in-out; /* Smooth transition for the shadow */
+  transition:
+    box-shadow 0.2s ease-in-out,
+    transform 0.1s ease-in-out; /* Smooth transition for the shadow */
   font-family: "Inter", "Montserrat", "Nunito", sans-serif; /* Custom font family */
   padding: 0;
   margin: 0;
@@ -183,8 +185,10 @@ button:focus {
 
 .judoka-card:hover {
   box-shadow: 8px 8px 12px rgba(0, 0, 0, 0.4); /* Add a larger shadow on hover */
-  transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out; /* Smooth transition for the shadow */
-  transform: scale(1.01); 
+  transition:
+    box-shadow 0.2s ease-in-out,
+    transform 0.2s ease-in-out; /* Smooth transition for the shadow */
+  transform: scale(1.01);
 }
 
 /* Common card variables */
@@ -218,12 +222,12 @@ button:focus {
 .card-top-bar {
   background-color: var(--card-bg-color); /* Background color */
   color: var(--text-color); /* Text color */
-  justify-content: space-around; 
+  justify-content: space-around;
   display: inline-flex;
   align-items: center; /* Center-align items vertically */
   padding: clamp(3px, 10vw, 5px) clamp(3px, 5vw, 5px);
   flex-direction: row;
-  margin: 0
+  margin: 0;
 }
 
 .card-name {
@@ -231,7 +235,7 @@ button:focus {
   flex-direction: column; /* Stack items vertically */
   margin: 0; /* Remove margin */
   padding: 0;
-  white-space: nowrap; 
+  white-space: nowrap;
   display: flex;
 }
 
@@ -246,7 +250,7 @@ button:focus {
 }
 
 .card-name .surname {
-  font-size: clamp(0.7rem, 6vw, 1.4rem); 
+  font-size: clamp(0.7rem, 6vw, 1.4rem);
   font-weight: bold; /* Bold font weight */
   text-transform: uppercase; /* Uppercase text */
   margin: 0; /* Remove margin */
@@ -258,13 +262,13 @@ button:focus {
 .card-flag {
   position: relative;
   /* display: inline-block; */
-  padding: 0; 
+  padding: 0;
   margin: 0;
   /* position: relative; */
   display: flex;
   /* overflow: hidden; */
   justify-content: right;
-  align-items: center; 
+  align-items: center;
   flex-basis: 25%;
   flex-shrink: 1;
   padding-left: 5px;
@@ -280,18 +284,18 @@ button:focus {
   aspect-ratio: 3/2;
   max-width: 100%;
   padding: 0;
-  margin: 0; 
+  margin: 0;
 }
 
 /* Portrait section of the card */
 .card-portrait {
-  padding: 0; 
+  padding: 0;
   margin: 0;
   position: relative;
   display: flex;
   overflow: hidden;
   justify-content: center;
-  align-items: center; 
+  align-items: center;
   background-color: var(--card-portrait-bg);
 }
 
@@ -300,7 +304,7 @@ button:focus {
   aspect-ratio: 4/3;
   max-width: 100%;
   padding: 0;
-  margin: 0; 
+  margin: 0;
 }
 
 /* Weight class badge in the portrait section */
@@ -320,31 +324,30 @@ button:focus {
   background-color: var(--card-bg-color); /* Background color */
   color: var(--text-color);
   padding: clamp(2px, 0.5vw, 6px) clamp(6px, 2vw, 10px);
-  margin: 0; 
+  margin: 0;
   display: flex;
   justify-content: space-between;
   width: 100%;
   align-items: space-between;
-  font-size: clamp(12px, 5.0vw, 1.1rem); 
+  font-size: clamp(12px, 5vw, 1.1rem);
   align-items: flex-end;
   flex-direction: column; /* Stack items vertically */
-  letter-spacing: clamp(0px, 0.5px, 1px); 
+  letter-spacing: clamp(0px, 0.5px, 1px);
 }
 
 .card-stats ul {
   list-style: none;
   padding: 0;
   margin: 0; /* Remove margin */
-  width: 100%; 
+  width: 100%;
   justify-content: space-between;
   flex-direction: row;
-
 }
 
 .card-stats li {
   margin: 0;
   padding: 3px 0; /* Add padding */
-  border-top: 1px solid var(--card-border-color); 
+  border-top: 1px solid var(--card-border-color);
   text-transform: uppercase; /* Uppercase text */
 }
 
@@ -354,10 +357,9 @@ button:focus {
 }
 
 .card-stats .stat {
-  display: flex; 
-  justify-content: space-around; 
+  display: flex;
+  justify-content: space-around;
   margin-bottom: 0;
-
 }
 
 .card-stats .stat strong {
@@ -390,9 +392,9 @@ button:focus {
   justify-content: center;
   border-radius: 2px;
   border: 1px solid #fff;
-  white-space: nowrap; 
-  padding: clamp(5px, 2.3vw, 9px); 
-  font-size: clamp(9px, 4vw, 14px); 
+  white-space: nowrap;
+  padding: clamp(5px, 2.3vw, 9px);
+  font-size: clamp(9px, 4vw, 14px);
 }
 
 .signature-move-value {
@@ -405,9 +407,9 @@ button:focus {
   justify-content: center;
   border-radius: 2px;
   border: 1px solid var(--card-signature-move-bg);
-  white-space: nowrap; 
-  padding: clamp(5px, 2.3vw, 9px); 
-  font-size: clamp(10px, 5vw, 17px); 
+  white-space: nowrap;
+  padding: clamp(5px, 2.3vw, 9px);
+  font-size: clamp(10px, 5vw, 17px);
 }
 
 /* Profile link styles */
