@@ -233,12 +233,16 @@ button:focus {
 .card-name {
   text-align: left; /* Left-align the text */
   flex-direction: column; /* Stack items vertically */
-  margin: 0; /* Remove margin */
+  /* margin: 0;  */
   padding: 0;
   white-space: nowrap;
   display: flex;
-  position: relative;
+  /* position: relative; */
   justify-content: left;
+  max-width: 250px;
+  min-width: 100px;
+  flex: 1 1 0; 
+  margin-left: clamp(1px, 1.6vw, 7px);
 }
 
 /* Styles for the judoka's name */
@@ -246,41 +250,44 @@ button:focus {
   font-size: clamp(0.7rem, 5vw, 1.1rem);
   font-weight: normal; /* Normal font weight */
   display: block;
-  margin: 0; /* Remove margin */
-  padding: 0;
+  /* margin: 0; */
+  /* padding: 0; */
   letter-spacing: clamp(0.5px, 0.5px, 1px);
 }
 
 .card-name .surname {
-  font-size: clamp(0.7rem, 6vw, 1.4rem);
+  font-size: clamp(0.7rem, 6vw, 1.5rem);
   font-weight: bold; /* Bold font weight */
   text-transform: uppercase; /* Uppercase text */
-  margin: 0; /* Remove margin */
-  padding: 0;
+  /* margin: 0;  */
+  /* padding: 0; */
   letter-spacing: clamp(0.5px, 0.5px, 1px);
 }
 
 /* Styles for the country flag */
 .card-flag {
-  position: relative;
+  /* position: relative; */
   padding: 0;
   margin: 0;
   display: flex;
   align-items: center;
   padding-left: 5px;
-  justify-content: flex-end;
+  justify-content: right;
+  max-width: 60px;
+  min-width: 35px;
+  flex: 1 1 0;
+  margin-right: clamp(1px, 1.4vw, 7px);
 }
 
 .card-flag img {
-  width: clamp(35px, 16vw, 60px); /* Responsive width */
+  width: clamp(36px, 16vw, 60px); /* Responsive width */
   height: auto;
   aspect-ratio: 3/2;
   max-width: 60px;
   border-radius: clamp(1px, 1vw, 5px);
   /* padding: 0; */
-  position: relative;
-  margin-right: 0;
-  justify-content: right;
+  /* position: relative; */
+  /* justify-content: right; */
 }
 /* Portrait section of the card */
 .card-portrait {
@@ -341,7 +348,7 @@ button:focus {
 
 .card-stats li {
   margin: 0;
-  padding: 3px 0; /* Add padding */
+  padding: 3px clamp(1px, 0.6vh, 6px); /* Add padding */
   border-top: 1px solid var(--card-border-color);
   text-transform: uppercase; /* Uppercase text */
 }
@@ -369,42 +376,47 @@ button:focus {
 /* Parent container for the signature move section */
 .signature-move-container {
   display: inline-flex;
-  justify-content: space-between;
+  /* justify-content: space-between; */
   align-items: center;
   flex-direction: row;
-  height: max-content;
+  /* height: max-content; */
   width: 100%;
-  margin-top: 0;
+  /* margin-top: 0; */
+  font-weight: bold;
 }
 
 /* Ensure the label spans the full width */
 .signature-move-label {
   display: flex; /* Make the label span the full width */
   background-color: #fff; /* Badge background color */
-  font-weight: bold;
   width: 100%;
   color: #000;
   justify-content: center;
   border-radius: 2px;
   border: 1px solid #fff;
   white-space: nowrap;
-  padding: clamp(5px, 2.3vw, 9px);
-  font-size: clamp(9px, 4vw, 14px);
+  padding: clamp(5px, 2.3vw, 9px) 6px;
+  font-size: clamp(8px, 4vw, 13px);
+  /* letter-spacing: 0.4px; */
+  max-width: 150px;
+  min-width: 90px;
+  flex: 1 1 0;
 }
 
 .signature-move-value {
   display: flex; /* Make the value span the full width */
   background-color: var(--card-signature-move-bg); /* Badge background color */
-  color: #fed843;
   width: 100%;
+  color: #fed843;
   text-transform: uppercase; /* Uppercase text */
-  font-weight: bold;
   justify-content: center;
   border-radius: 2px;
   border: 1px solid var(--card-signature-move-bg);
   white-space: nowrap;
-  padding: clamp(5px, 2.3vw, 9px);
-  font-size: clamp(10px, 5vw, 17px);
+  padding: clamp(5px, 2.3vw, 9px) 8px;
+  font-size: clamp(9px, 4vw, 15px);
+  max-width: 150px;
+  flex: 1 1 0;
 }
 
 /* Profile link styles */
