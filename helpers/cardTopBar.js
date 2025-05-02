@@ -194,8 +194,12 @@ function createNameContainer(firstname, surname) {
  * @returns {HTMLElement} The DOM element for the flag image.
  */
 function createFlagImage(finalFlagUrl, countryName) {
+  // Create the container div
+  const flagContainer = document.createElement("div");
+  flagContainer.className = "card-flag";
+
+  // Create the flag image
   const flagImg = document.createElement("img");
-  flagImg.className = "card-flag";
   flagImg.src = finalFlagUrl;
   flagImg.alt = `${countryName} flag`;
   flagImg.onerror = () => {
@@ -203,7 +207,10 @@ function createFlagImage(finalFlagUrl, countryName) {
     console.warn("Flag image failed to load, using placeholder:", PLACEHOLDER_FLAG_URL);
   };
 
-  return flagImg;
+  // Append the image to the container
+  flagContainer.appendChild(flagImg);
+
+  return flagContainer; // Return the container div
 }
 
 /**
