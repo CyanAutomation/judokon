@@ -268,7 +268,7 @@ button:focus {
   /* overflow: hidden; */
   justify-content: right;
   align-items: center;
-  flex-basis: 25%;
+  flex-basis: 15%;
   flex-shrink: 1;
   padding-left: 5px;
 }
@@ -279,7 +279,7 @@ button:focus {
   aspect-ratio: 3/2;
   display: block;
   border-radius: 3px; */
-  width: auto;
+  width: 100%;
   aspect-ratio: 3/2;
   max-width: 100%;
   padding: 0;
