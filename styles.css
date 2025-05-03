@@ -247,7 +247,7 @@ button:focus {
   justify-content: left;
   max-width: 250px;
   min-width: 100px;
-  flex: 1 1 0; 
+  flex: 1 1 0;
   margin-left: clamp(1px, 1.6vw, 7px);
 }
 
