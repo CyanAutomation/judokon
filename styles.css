@@ -294,6 +294,7 @@ button:focus {
   /* padding: 0; */
   /* position: relative; */
   /* justify-content: right; */
+  border: 1px solid #fff;
 }
 /* Portrait section of the card */
 .card-portrait {
@@ -314,10 +315,11 @@ button:focus {
 
 .card-portrait img {
   width: 100%;
-  aspect-ratio: 4/3;
+  /* aspect-ratio: 4/3; */
   max-width: 100%;
   padding: 0;
   margin: 0;
+  z-index: 5;
 }
 
 /* Weight class badge in the portrait section */
@@ -406,18 +408,21 @@ button:focus {
   border-radius: 2px;
   border: 1px solid #fff;
   white-space: nowrap;
-  padding: clamp(5px, 2.3vw, 9px) 6px;
+  /* padding: clamp(5px, 2.3vw, 9px) 6px; */
   font-size: clamp(8px, 4vw, 13px);
   /* letter-spacing: 0.4px; */
   max-width: 150px;
   min-width: 90px;
   flex: 1 1 0;
+  height: 100%;
+  align-items: center;
 }
 
 .signature-move-value {
   display: flex; /* Make the value span the full width */
   background-color: var(--card-signature-move-bg); /* Badge background color */
   width: 100%;
+  height: 100%;
   color: #fed843;
   text-transform: uppercase; /* Uppercase text */
   justify-content: center;
@@ -428,6 +433,7 @@ button:focus {
   font-size: clamp(9px, 4vw, 15px);
   max-width: 150px;
   flex: 1 1 0;
+  align-items: center;
 }
 
 /* Profile link styles */
