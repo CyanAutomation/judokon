@@ -193,11 +193,13 @@ button:focus {
 
 /* Common card variables */
 .judoka-card.common {
-  --card-bg-color: #0c3f7a;
-  --card-border-color: #3c5ad6;
+  --card-bg-color: #001749;
+  --card-border-color: #003fab;
   --card-signature-move-bg: #0c3f7a;
   --card-stats-bg: #0c3f7a;
   --card-portrait-bg: #0c3f7a;
+  --card-portrait-gradient-start: #00328d;
+  --card-portrait-gradient-end: #002061;
 }
 
 /* Epic card variables */
@@ -207,6 +209,8 @@ button:focus {
   --card-signature-move-bg: #003b88;
   --card-stats-bg: #0c3f7a;
   --card-portrait-bg: #0c3f7a;
+  --card-portrait-gradient-start: #00328d;
+  --card-portrait-gradient-end: #002061;
 }
 
 /* Legendary card variables */
@@ -216,6 +220,8 @@ button:focus {
   --card-signature-move-bg: #000;
   --card-stats-bg: #0c3f7a;
   --card-portrait-bg: #000;
+  --card-portrait-gradient-start: #00328d;
+  --card-portrait-gradient-end: #002061;
 }
 
 /* Top bar of the card (name and flag) */
@@ -298,7 +304,12 @@ button:focus {
   overflow: hidden;
   justify-content: center;
   align-items: center;
-  background-color: var(--card-portrait-bg);
+  /* background-color: var(--card-portrait-bg); */
+  background: linear-gradient(
+    to bottom,
+    var(--card-portrait-gradient-start),
+    var(--card-portrait-gradient-end)
+  );
 }
 
 .card-portrait img {
