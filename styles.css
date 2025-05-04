@@ -294,6 +294,7 @@ button:focus {
   /* padding: 0; */
   /* position: relative; */
   /* justify-content: right; */
+  margin-right: 0;
   border: 1px solid #fff;
 }
 /* Portrait section of the card */
@@ -325,7 +326,7 @@ button:focus {
 .card-weight-class {
   position: absolute;
   margin-top: 5px;
-  right: 8px; 
+  right: 5px; 
   background-color: rgba(0, 0, 0, 0.4); 
   border-radius: 4px;
   color: #fff; 
