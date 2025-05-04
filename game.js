@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("showCarousel").addEventListener("click", async () => {
     try {
-      const carouselContainer = document.getElementById("carousel");
+      const carouselContainer = document.getElementById("carousel-container");
 
       // Prevent rebuilding if it already exists
       if (carouselContainer.hasChildNodes()) {
