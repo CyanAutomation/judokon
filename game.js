@@ -140,6 +140,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  renderCarousel();
+
   /**
    * Selects a random judoka from the provided data array.
    *
@@ -218,5 +220,4 @@ document.addEventListener("DOMContentLoaded", () => {
       gameArea.innerHTML = "<p>⚠️ Failed to generate judoka card. Please try again later.</p>";
     }
   }
-  renderCarousel();
 })
