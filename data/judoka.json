@@ -86,5 +86,71 @@
     "isHidden": false,
     "rarity": "Epic",
     "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT9D"
+  },
+  {
+    "id": 40,
+    "firstname": "Askley",
+    "surname": "McKenzie",
+    "country": "Jamaica",
+    "countryCode": "jm",
+    "weightClass": "-60",
+    "stats": {
+      "power": 7,
+      "speed": 8,
+      "technique": 6,
+      "kumikata": 7,
+      "newaza": 8
+    },
+    "signatureMoveId": 3,
+    "lastUpdated": "2025-04-28T15:30:00Z",
+    "profileUrl": "https://en.wikipedia.org/wiki/Ashley_McKenzie",
+    "gender": "male",
+    "isHidden": false,
+    "rarity": "Common",
+    "cardCode": "WKZ3-H4NF-MXT2-LQ93-AA9D"
+  },
+  {
+    "id": 42,
+    "firstname": "Ilia",
+    "surname": "Sulamanidize",
+    "country": "Georgia",
+    "countryCode": "ge",
+    "weightClass": "-100",
+    "stats": {
+      "power": 9,
+      "speed": 8,
+      "technique": 8,
+      "kumikata": 9,
+      "newaza": 7
+    },
+    "signatureMoveId": 1,
+    "lastUpdated": "2025-04-28T15:30:00Z",
+    "profileUrl": "https://en.wikipedia.org/wiki/Ilia_Sulamanidze",
+    "gender": "male",
+    "isHidden": false,
+    "rarity": "Common",
+    "cardCode": "WKZ3-H4NF-MXT2-LQ93-AB9D"
+  },
+  {
+    "id": 44,
+    "firstname": "Leilani",
+    "surname": "Akiyama",
+    "country": "United States",
+    "countryCode": "us",
+    "weightClass": "-57",
+    "stats": {
+      "power": 6,
+      "speed": 7,
+      "technique": 7,
+      "kumikata": 6,
+      "newaza": 6
+    },
+    "signatureMoveId": 1,
+    "lastUpdated": "2025-04-28T15:30:00Z",
+    "profileUrl": "https://en.wikipedia.org/wiki/Leilani_Akiyama",
+    "gender": "female",
+    "isHidden": false,
+    "rarity": "Common",
+    "cardCode": "WKZ3-H4NF-MXT2-LQ93-AC9D"
   }
 ]
