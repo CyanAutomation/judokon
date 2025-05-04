@@ -248,7 +248,7 @@ button:focus {
   max-width: 250px;
   min-width: 100px;
   flex: 1 1 0;
-  margin-left: clamp(1px, 1.6vw, 7px);
+  margin-left: clamp(1px, 1.6vw, 6px);
 }
 
 /* Styles for the judoka's name */
@@ -282,7 +282,7 @@ button:focus {
   max-width: 60px;
   min-width: 35px;
   flex: 1 1 0;
-  margin-right: clamp(1px, 1.4vw, 7px);
+  margin-right: clamp(1px, 1.4vw, 6px);
 }
 
 .card-flag img {
@@ -294,7 +294,7 @@ button:focus {
   /* padding: 0; */
   /* position: relative; */
   /* justify-content: right; */
-  margin-right: 0;
+  /* margin-right: 0; */
   border: 1px solid #fff;
 }
 /* Portrait section of the card */
