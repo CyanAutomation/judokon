@@ -24,7 +24,10 @@ export async function buildCardCarousel(judokaList) {
       // Add the card to the carousel container
       container.appendChild(card);
     } catch (error) {
-      console.error(`Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`, error);
+      console.error(
+        `Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`,
+        error
+      );
     }
   }
 
