@@ -326,8 +326,8 @@ button:focus {
 /* Weight class badge in the portrait section */
 .card-weight-class {
   position: absolute;
-  margin-top: 5px;
-  right: 5px; 
+  margin-top: 8px;
+  right: 8px; 
   background-color: rgba(0, 0, 0, 0.4); 
   border-radius: 4px;
   color: #fff; 
@@ -420,7 +420,7 @@ button:focus {
   border: 1px solid #fff;
   white-space: nowrap;
   padding: clamp(5px, 2.3vw, 9px) 8px;
-  font-size: clamp(8px, 4vw, 13px);
+  font-size: clamp(8px, 4vw, 15px);
   /* letter-spacing: 0.4px; */
   max-width: 150px;
   min-width: 90px;
