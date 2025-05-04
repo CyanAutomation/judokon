@@ -12,11 +12,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  document.getElementById("showCarousel").addEventListener("click", async () => {
+  showCarouselButton.addEventListener("click", async () => {
     try {
-      const carouselContainer = document.getElementById("carousel-container");
-
-      // Prevent rebuilding if it already exists
+      // Prevent rebuilding if the carousel already exists
       if (carouselContainer.hasChildNodes()) {
         carouselContainer.classList.remove("hidden");
         return;
