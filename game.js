@@ -12,24 +12,24 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-document.getElementById("showCarousel").addEventListener("click", async () => {
-  try {
-    const carouselContainer = document.getElementById("carousel");
-  
-    // Prevent rebuilding if it already exists
-    if (carouselContainer.hasChildNodes()) {
+  document.getElementById("showCarousel").addEventListener("click", async () => {
+    try {
+      const carouselContainer = document.getElementById("carousel");
+
+      // Prevent rebuilding if it already exists
+      if (carouselContainer.hasChildNodes()) {
+        carouselContainer.classList.remove("hidden");
+        return;
+      }
+
+      const judokaData = await fetch("./data/judoka.json").then((res) => res.json());
+      const carousel = await buildCardCarousel(judokaData);
+      carouselContainer.appendChild(carousel);
       carouselContainer.classList.remove("hidden");
-      return;
-    }
-  
-    const judokaData = await fetch("./data/judoka.json").then((res) => res.json());
-    const carousel = await buildCardCarousel(judokaData);
-    carouselContainer.appendChild(carousel);
-    carouselContainer.classList.remove("hidden");
-  
-    console.log("Carousel displayed on demand.");
+
+      console.log("Carousel displayed on demand.");
     } catch (error) {
-    console.error("Failed to build carousel:", error);
+      console.error("Failed to build carousel:", error);
     }
   });
 
