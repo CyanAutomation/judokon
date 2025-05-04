@@ -132,6 +132,7 @@ export async function generateJudokaCardHTML(judoka, gokyo) {
   // Add the weight class badge inside the portrait element
   const portraitHTML = generateCardPortrait(judoka);
   const portraitElement = document.createElement("div");
+  portraitElement.className = "card-portrait"; // Ensure the correct class is applied
   portraitElement.innerHTML = portraitHTML;
 
   // Create and append the weight class badge
