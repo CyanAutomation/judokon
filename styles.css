@@ -460,3 +460,28 @@ button:focus {
 .card-profile .profile-link:hover {
   background-color: var(--button-hover-bg); /* Change background color on hover */
 }
+
+/* Carousel container */
+#carousel-container {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: #22223b;
+  overflow: hidden;
+  padding: 10px 0;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Carousel */
+#carousel {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 10px;
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar */
+#carousel::-webkit-scrollbar {
+  display: none;
+}
