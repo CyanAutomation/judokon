@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  renderCarousel();
+  // renderCarousel();
 
   /**
    * Selects a random judoka from the provided data array.
