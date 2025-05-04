@@ -1,6 +1,6 @@
 import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
 
-async function renderCarousel() {
+export async function renderCarousel() {
   const carousel = document.getElementById("carousel");
 
   try {
@@ -24,6 +24,3 @@ async function renderCarousel() {
     console.error("Error rendering carousel:", error);
   }
 }
-
-// Call the function to render the carousel
-document.addEventListener("DOMContentLoaded", renderCarousel);
