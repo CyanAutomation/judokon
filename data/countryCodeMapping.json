@@ -110,5 +110,19 @@
     "lastUpdated": "2025-04-23T10:00:00Z",
     "updatedBy": "user",
     "active": true
+  },
+  {
+    "country": "Georgia",
+    "code": "ge",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "Jamaica",
+    "code": "jm",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
   }
 ]

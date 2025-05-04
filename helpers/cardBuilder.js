@@ -113,20 +113,9 @@ function validateJudoka(judoka) {
 export async function generateJudokaCardHTML(judoka, gokyo) {
   validateJudoka(judoka);
 
-  // Use the countryCode directly from the judoka object
   const countryCode = judoka.countryCode;
-  if (!countryCode) {
-    console.warn(`No country code found for judoka: "${judoka.firstname} ${judoka.surname}"`);
-  }
+  const flagUrl = await getFlagUrl(countryCode || "vu"); // Default to "vu" (Vanuatu)
 
-  const flagUrl = await getFlagUrl(countryCode || "vu"); // Default to "vu" (Vanuatu) if no code is found
-
-  // const lastUpdated =
-  //   typeof judoka.lastUpdated === "string"
-  //     ? judoka.lastUpdated
-  //     : judoka.lastUpdated?.toISOString().split("T")[0] || "";
-
-  // Determine the card type (default to "common" if not provided)
   const cardType = judoka.rarity?.toLowerCase() || "common";
 
   // Create the main card container
@@ -134,26 +123,32 @@ export async function generateJudokaCardHTML(judoka, gokyo) {
   cardContainer.className = "card-container";
 
   const judokaCard = document.createElement("div");
-  judokaCard.className = `judoka-card ${cardType}`; // Add the card type as a class
+  judokaCard.className = `judoka-card ${cardType}`;
 
-  // Append the top bar (DOM element returned by generateCardTopBar)
+  // Append the top bar
   const topBarElement = await generateCardTopBar(judoka, flagUrl);
   judokaCard.appendChild(topBarElement);
 
-  // Append the portrait (HTML string converted to DOM)
+  // Add the weight class badge
+  const weightClassElement = document.createElement("div");
+  weightClassElement.className = "card-weight-class";
+  weightClassElement.textContent = judoka.weightClass;
+  judokaCard.appendChild(weightClassElement);
+
+  // Append the portrait
   const portraitHTML = generateCardPortrait(judoka);
   const portraitElement = document.createElement("div");
   portraitElement.innerHTML = portraitHTML;
   judokaCard.appendChild(portraitElement);
 
-  // Append the stats (HTML string converted to DOM)
-  const statsHTML = generateCardStats(judoka, cardType); // Pass cardType to stats
+  // Append the stats
+  const statsHTML = generateCardStats(judoka, cardType);
   const statsElement = document.createElement("div");
   statsElement.innerHTML = statsHTML;
   judokaCard.appendChild(statsElement);
 
-  // Append the signature move (HTML string converted to DOM)
-  const signatureMoveHTML = generateCardSignatureMove(judoka, gokyo, cardType); // Pass cardType to signature move
+  // Append the signature move
+  const signatureMoveHTML = generateCardSignatureMove(judoka, gokyo, cardType);
   const signatureMoveElement = document.createElement("div");
   signatureMoveElement.innerHTML = signatureMoveHTML;
   judokaCard.appendChild(signatureMoveElement);
