@@ -120,7 +120,6 @@ function extractJudokaData(judoka) {
 async function resolveCountryName(countryCode) {
   if (countryCode !== "unknown") {
     const countryName = await getCountryNameFromCode(countryCode);
-    console.log("Resolved country name:", countryName);
     return countryName;
   }
   console.log("Country name is unknown.");
@@ -167,7 +166,6 @@ function createNameContainer(firstname, surname) {
   nameContainer.appendChild(firstnameSpan);
   nameContainer.appendChild(surnameSpan);
 
-  console.log("Name container generated:", nameContainer);
   return nameContainer;
 }
 

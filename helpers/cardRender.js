@@ -23,7 +23,6 @@ const PLACEHOLDER_PORTRAIT = "./assets/judokaPortraits/judokaPortrait-0.png";
  * @returns {string} The HTML string for the portrait.
  */
 export function generateCardPortrait(card) {
-  console.log("Card object received:", card); // Debugging log
 
   if (!card) {
     console.warn("Judoka object is missing.");
@@ -37,8 +36,6 @@ export function generateCardPortrait(card) {
   const portraitUrl = card.id
     ? `./assets/judokaPortraits/judokaPortrait-${card.id}.png`
     : PLACEHOLDER_PORTRAIT;
-
-  console.log("Constructed portrait URL:", portraitUrl);
 
   return `
     <div class="card-portrait">
