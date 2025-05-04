@@ -217,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
       gameArea.innerHTML = "<p>⚠️ Failed to generate judoka card. Please try again later.</p>";
     }
   }
-  export async function renderCarousel() {
+  async function renderCarousel() {
     const carousel = document.getElementById("carousel");
   
     try {
