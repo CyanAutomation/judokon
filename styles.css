@@ -473,7 +473,7 @@ button:focus {
 }
 
 /* Carousel */
-#carousel {
+.card-carousel {
   display: flex;
   gap: 10px;
   overflow-x: auto;
@@ -481,7 +481,6 @@ button:focus {
   scroll-behavior: smooth;
 }
 
-/* Hide scrollbar */
-#carousel::-webkit-scrollbar {
-  display: none;
+.card-carousel::-webkit-scrollbar {
+  display: none; /* Hide the scrollbar */
 }

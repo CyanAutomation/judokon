@@ -5,10 +5,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const randomBtn = document.getElementById("randomBtn");
   const gameArea = document.getElementById("gameArea");
   const loadingIndicator = document.getElementById("loading");
+  const carouselContainer = document.getElementById("carousel");
 
   if (!randomBtn || !gameArea || !loadingIndicator) {
     console.error("Required DOM elements are missing.");
     return;
+  }
+
+  try {
+    const judokaData = await fetch("./data/judoka.json").then((res) => res.json());
+    const carousel = await buildCardCarousel(judokaData);
+    carouselContainer.appendChild(carousel);
+    console.log("Carousel rendered successfully.");
+  } catch (error) {
+    console.error("Error rendering carousel:", error);
   }
 
   /**
@@ -139,8 +149,6 @@ document.addEventListener("DOMContentLoaded", () => {
       throw new Error(`Invalid or missing ${type} data.`);
     }
   }
-
-  renderCarousel();
 
   /**
    * Selects a random judoka from the provided data array.
