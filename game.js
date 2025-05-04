@@ -1,5 +1,5 @@
 import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
-import { renderCarousel } from "./helpers/carouselBuilder.js";
+// import { renderCarousel } from "./helpers/carouselBuilder.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const randomBtn = document.getElementById("randomBtn");

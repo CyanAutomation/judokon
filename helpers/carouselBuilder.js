@@ -1,3 +1,5 @@
+import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
+
 /**
  * Renders a carousel of judoka cards at the bottom of the screen.
  *
@@ -22,8 +24,6 @@
  *
  * @returns {Promise<void>} A promise that resolves when the carousel is rendered.
  */
-import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
-
 export async function renderCarousel() {
   const carousel = document.getElementById("carousel");
 
@@ -36,8 +36,7 @@ export async function renderCarousel() {
       const gokyoData = {}; // Pass an empty object or fetch gokyo data if needed
       const cardElement = await generateJudokaCardHTML(judoka, gokyoData);
 
-      // Add a "small" class to the card container
-      cardElement.classList.add("small");
+      // cardElement.classList.add("small");
 
       // Append the card to the carousel
       carousel.appendChild(cardElement);
