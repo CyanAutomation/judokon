@@ -1,5 +1,5 @@
 import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
-import { renderCarousel } from "./helpers/carouselBuilder.js";
+import { buildCardCarousel } from "./helpers/carouselBuilder.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const randomBtn = document.getElementById("randomBtn");
@@ -12,16 +12,26 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  (async () => {
-    try {
-      const judokaData = await fetch("./data/judoka.json").then((res) => res.json());
-      const carousel = await buildCardCarousel(judokaData);
-      carouselContainer.appendChild(carousel);
-      console.log("Carousel rendered successfully.");
-    } catch (error) {
-      console.error("Error rendering carousel:", error);
+document.getElementById("showCarousel").addEventListener("click", async () => {
+  try {
+    const carouselContainer = document.getElementById("carousel");
+  
+    // Prevent rebuilding if it already exists
+    if (carouselContainer.hasChildNodes()) {
+      carouselContainer.classList.remove("hidden");
+      return;
     }
-  })();
+  
+    const judokaData = await fetch("./data/judoka.json").then((res) => res.json());
+    const carousel = await buildCardCarousel(judokaData);
+    carouselContainer.appendChild(carousel);
+    carouselContainer.classList.remove("hidden");
+  
+    console.log("Carousel displayed on demand.");
+    } catch (error) {
+    console.error("Failed to build carousel:", error);
+    }
+  });
 
   /**
    * Handles the "Start" button click event to load and display a random judoka card.
