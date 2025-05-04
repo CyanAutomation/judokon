@@ -6,7 +6,7 @@ import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
  * @param {Array} judokaList - An array of judoka objects to render in the carousel.
  * @returns {Promise<HTMLElement>} A promise that resolves to the carousel container DOM element.
  */
-export async function buildCardCarousel(judokaList) {
+export async function buildCardCarousel(judokaList, gokyoData) {
   // Create a new container for the carousel
   const container = document.createElement("div");
   container.className = "card-carousel";
@@ -14,6 +14,8 @@ export async function buildCardCarousel(judokaList) {
   // Loop through each judoka and generate their card
   for (const judoka of judokaList) {
     try {
+      // Find the gokyo data for the judoka's signature move
+      const gokyo = gokyoData.find((move) => move.code === judoka.signatureMove) || {};
 
       // Generate the judoka card
       const card = await generateJudokaCardHTML(judoka, gokyo);
