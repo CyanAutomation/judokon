@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  const initialize = async () => {
+  (async () => {
     try {
       const judokaData = await fetch("./data/judoka.json").then((res) => res.json());
       const carousel = await buildCardCarousel(judokaData);
@@ -21,10 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Error rendering carousel:", error);
     }
-  };
-
-  // Call the async function
-  await initialize();
+  })();
 
   /**
    * Handles the "Start" button click event to load and display a random judoka card.
