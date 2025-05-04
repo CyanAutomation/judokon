@@ -304,8 +304,7 @@ button:focus {
   display: flex;
   overflow: hidden;
   justify-content: center;
-  align-items: center;
-  /* background-color: var(--card-portrait-bg); */
+  /* align-items: center; */
   background: linear-gradient(
     to bottom,
     var(--card-portrait-gradient-start),
@@ -324,18 +323,20 @@ button:focus {
 
 /* Weight class badge in the portrait section */
 .card-weight-class {
-  position: relative;
-  top: var(--padding-medium);
-  right: var(--padding-medium); /* Position at the right */
-  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
-  color: var(--text-color); /* Text color */
-  font-weight: bold; /* Bold text */
-  padding: var(--padding-small) var(--padding-medium); /* Add padding */
-  font-size: var(--font-small); /* Small font size */
+  position: absolute;
+  margin-top: 5px;
+  right: 8px; 
+  background-color: rgba(0, 0, 0, 0.4); 
+  border-radius: 4px;
+  color: #fff; 
+  font-weight: bold; 
+  padding: var(--padding-small) var(--padding-medium); 
+  font-size: var(--font-small); 
+  z-index: 8;
 }
 
 .card-weight-class::after {
-  content: " kg";
+  content: "kg";
   font-weight: normal;
   color: inherit; 
 }
