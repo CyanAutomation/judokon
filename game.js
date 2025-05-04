@@ -22,8 +22,13 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const judokaData = await fetch("./data/judoka.json").then((res) => res.json());
-      const carousel = await buildCardCarousel(judokaData);
+      const judokaData = await fetchDataWithErrorHandling("./data/judoka.json");
+      const gokyoData = await fetchDataWithErrorHandling("./data/gokyo.json");
+
+      validateData(judokaData, "judoka");
+      validateData(gokyoData, "gokyo");
+
+      const carousel = await buildCardCarousel(judokaData, gokyoData);
       carouselContainer.appendChild(carousel);
       carouselContainer.classList.remove("hidden");
 

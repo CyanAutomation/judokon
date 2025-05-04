@@ -1,5 +1,4 @@
 import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
-import { getGokyoByCode } from "./helpers/gokyoHelper.js"; // Assuming this function exists
 
 /**
  * Builds a carousel of judoka cards and returns it as a DOM element.
@@ -15,8 +14,6 @@ export async function buildCardCarousel(judokaList) {
   // Loop through each judoka and generate their card
   for (const judoka of judokaList) {
     try {
-      // Fetch the Gokyo data for the judoka's signature move
-      const gokyo = await getGokyoByCode(judoka.signatureMove);
 
       // Generate the judoka card
       const card = await generateJudokaCardHTML(judoka, gokyo);
