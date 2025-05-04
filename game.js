@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const randomBtn = document.getElementById("randomBtn");
   const gameArea = document.getElementById("gameArea");
   const loadingIndicator = document.getElementById("loading");
-  const carouselContainer = document.getElementById("carousel");
+  const carouselContainer = document.getElementById("carousel-container");
 
   if (!randomBtn || !gameArea || !loadingIndicator) {
     console.error("Required DOM elements are missing.");
