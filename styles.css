@@ -299,15 +299,13 @@ button:focus {
 }
 /* Portrait section of the card */
 .card-portrait {
-  padding: 0;
-  margin: 0;
   position: relative;
   display: flex;
-  max-height: 220px;
-  width: auto;
-  overflow: hidden;
   justify-content: center;
-  /* align-items: center; */
+  align-items: center; /* Center the image vertically */
+  max-height: 220px; /* Set the maximum height for the container */
+  width: auto;
+  overflow: hidden; /* Hide any part of the image that overflows the container */
   background: linear-gradient(
     to bottom,
     var(--card-portrait-gradient-start),
@@ -316,13 +314,10 @@ button:focus {
 }
 
 .card-portrait img {
-  width: 100%;
-  /* aspect-ratio: 4/3; */
-  max-width: 100%;
-  height: auto;
-  padding: 0;
-  margin: 0;
-  z-index: 5;
+  width: auto; /* Maintain the image's aspect ratio */
+  height: 100%; /* Ensure the image fills the container's height */
+  object-fit: cover; /* Crop the image to fit the container without squashing */
+  overflow: hidden; /* Ensure any overflow is hidden */
 }
 
 /* Weight class badge in the portrait section */
