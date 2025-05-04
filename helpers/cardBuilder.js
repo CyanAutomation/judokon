@@ -129,16 +129,18 @@ export async function generateJudokaCardHTML(judoka, gokyo) {
   const topBarElement = await generateCardTopBar(judoka, flagUrl);
   judokaCard.appendChild(topBarElement);
 
-  // Add the weight class badge
-  const weightClassElement = document.createElement("div");
-  weightClassElement.className = "card-weight-class";
-  weightClassElement.textContent = judoka.weightClass;
-  judokaCard.appendChild(weightClassElement);
-
-  // Append the portrait
+  // Add the weight class badge inside the portrait element
   const portraitHTML = generateCardPortrait(judoka);
   const portraitElement = document.createElement("div");
   portraitElement.innerHTML = portraitHTML;
+
+  // Create and append the weight class badge
+  const weightClassElement = document.createElement("div");
+  weightClassElement.className = "card-weight-class";
+  weightClassElement.textContent = judoka.weightClass;
+  portraitElement.appendChild(weightClassElement); // Append to the portrait element
+
+  // Append the portrait element to the judoka card
   judokaCard.appendChild(portraitElement);
 
   // Append the stats
