@@ -220,4 +220,4 @@ document.addEventListener("DOMContentLoaded", () => {
       gameArea.innerHTML = "<p>⚠️ Failed to generate judoka card. Please try again later.</p>";
     }
   }
-})
+});
