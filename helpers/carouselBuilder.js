@@ -11,14 +11,20 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   const container = document.createElement("div");
   container.className = "card-carousel";
 
+  // Transform gokyoData into a lookup object for quick access
+  const gokyoLookup = gokyoData.reduce((acc, move) => {
+    acc[move.id] = move.name; // Map the id to the technique name
+    return acc;
+  }, {});
+
   // Loop through each judoka and generate their card
   for (const judoka of judokaList) {
     try {
-      // Find the gokyo data for the judoka's signature move
-      const gokyo = gokyoData.find((move) => move.code === judoka.signatureMove) || {};
+      // Retrieve the technique name using the judoka's signatureMoveId
+      const techniqueName = gokyoLookup[judoka.signatureMoveId] || "Unknown Technique";
 
-      // Generate the judoka card
-      const card = await generateJudokaCardHTML(judoka, gokyo);
+      // Pass the technique name to generateJudokaCardHTML
+      const card = await generateJudokaCardHTML(judoka, techniqueName);
 
       // Add the card to the carousel container
       container.appendChild(card);
