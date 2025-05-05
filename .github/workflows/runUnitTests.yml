@@ -1,0 +1,44 @@
+# Workflow Name: Run Unit Tests (Vitest)
+# This workflow is triggered on specific events in the repository.
+
+# Trigger Events:
+# 1. When code is pushed to the 'main' branch.
+# 2. When a pull request is created or updated.
+
+# Define a job named 'test':
+# - The job runs on the latest version of Ubuntu.
+
+# Steps in the 'test' job:
+# 1. Check out the repository's code:
+#    - Use the 'actions/checkout' action to clone the repository into the workflow environment.
+
+# 2. Set up Node.js:
+#    - Use the 'actions/setup-node' action to install Node.js version 18.
+
+# 3. Install project dependencies:
+#    - Run 'npm install' to install all dependencies defined in the 'package.json' file.
+
+# 4. Run the test suite:
+#    - Execute 'npm run test' to run the project's tests using Vitest.
+name: Run Unit Tests (Vitest)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm install
+      - name: Run Vitest
+        run: npm run test
