@@ -15,7 +15,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   for (const judoka of judokaList) {
     try {
       // Find the gokyo data for the judoka's signature move
-      // const gokyo = gokyoData.find((move) => move.code === judoka.signatureMoveId) || {};
+      const gokyo = gokyoData.find((move) => move.code === judoka.signatureMoveId) || {};
 
       // Generate the judoka card
       const card = await generateJudokaCardHTML(judoka, gokyo);
