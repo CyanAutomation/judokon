@@ -458,7 +458,7 @@ button:focus {
 }
 
 .card-profile .profile-link:hover {
-  background-color: var(--button-hover-bg); 
+  background-color: var(--button-hover-bg);
 }
 
 /* Carousel container */
@@ -468,7 +468,7 @@ button:focus {
   justify-content: center;
   align-items: center;
   width: 100%;
-  background-color: rgba(34, 34, 59, 0.8); 
+  background-color: rgba(34, 34, 59, 0.8);
   backdrop-filter: blur(10px);
   overflow: hidden;
   padding: 10px 0;
