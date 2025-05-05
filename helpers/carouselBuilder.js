@@ -55,18 +55,8 @@ export async function buildCardCarousel(judokaList, gokyoData) {
     try {
       console.log("Processing Judoka:", judoka);
 
-      const signatureMoveId = judoka?.signatureMoveId ?? "0"; // Ensure signatureMoveId is a string
-      console.log("Signature Move ID:", signatureMoveId);
-
-      // Retrieve the technique from gokyoLookup using the signatureMoveId as the key
-      const technique = gokyoLookup[signatureMoveId] || { id: "0", name: "Jigoku-guruma" };
-      if (!gokyoLookup[signatureMoveId]) {
-        console.warn(`Fallback technique used for signatureMoveId: ${signatureMoveId}`);
-      }
-      console.log("Retrieved Technique:", technique);
-
-      // Pass the technique object to generateJudokaCardHTML
-      const card = await generateJudokaCardHTML(judoka, technique);
+      // Pass the judoka and the entire gokyoLookup to generateJudokaCardHTML
+      const card = await generateJudokaCardHTML(judoka, gokyoLookup);
 
       // Add the card to the carousel container
       container.appendChild(card);

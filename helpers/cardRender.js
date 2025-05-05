@@ -117,18 +117,13 @@ export function generateCardStats(card, cardType = "common") {
  * @param {Object} gokyo - The single technique object.
  * @returns {string} The HTML string for the signature move.
  */
-export function generateCardSignatureMove(judoka, gokyo, cardType = "common") {
+export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
   const signatureMoveId = Number(judoka?.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
 
-  // Check if gokyo is valid
-  if (!gokyo || typeof gokyo !== "object") {
-    gokyo = { 0: { id: 0, name: "Jigoku-guruma" } }; // Fallback to default gokyo with ID=0
-  }
+  // Retrieve the technique from gokyoLookup using the signatureMoveId as the key
+  const technique = gokyoLookup[signatureMoveId] || gokyoLookup[0] || { id: 0, name: "Jigoku-guruma" };
 
-  // Retrieve the technique from gokyo using the signatureMoveId as the key, fallback to ID=0
-  const technique = gokyo[signatureMoveId] || gokyo[0];
-
-  // Extract the technique name or fallback to "Unknown"
+  // Extract the technique name or fallback to "Jigoku-guruma"
   const techniqueName = technique?.name || "Jigoku-guruma";
 
   // Ensure the cardType is lowercase for consistency

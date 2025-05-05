@@ -110,7 +110,7 @@ function validateJudoka(judoka) {
  * @returns {HTMLElement} The DOM element for the complete judoka card.
  */
 
-export async function generateJudokaCardHTML(judoka, gokyo) {
+export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   validateJudoka(judoka);
 
   const countryCode = judoka.countryCode;
@@ -151,7 +151,7 @@ export async function generateJudokaCardHTML(judoka, gokyo) {
   judokaCard.appendChild(statsElement);
 
   // Append the signature move
-  const signatureMoveHTML = generateCardSignatureMove(judoka, gokyo, cardType);
+  const signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
   const signatureMoveElement = document.createElement("div");
   signatureMoveElement.innerHTML = signatureMoveHTML;
   judokaCard.appendChild(signatureMoveElement);
