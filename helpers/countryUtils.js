@@ -97,7 +97,6 @@ export async function getCountryNameFromCode(code) {
  * @returns {Promise<string>} A promise that resolves to the flag URL or the placeholder flag URL.
  */
 export async function getFlagUrl(countryCode) {
-  console.log(`Country code received: "${countryCode}"`); // Debugging log
 
   if (typeof countryCode !== "string" || !/^[A-Za-z]{2}$/.test(countryCode.trim())) {
     console.warn("Invalid or missing country code. Defaulting to Vanuatu flag.");

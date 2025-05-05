@@ -29,12 +29,17 @@ import { generateJudokaCardHTML } from "./cardBuilder.js";
  * @returns {Promise<HTMLElement>} A promise that resolves to the carousel container DOM element.
  */
 export async function buildCardCarousel(judokaList, gokyoData) {
+  console.log("buildCardCarousel function called");
+
   // Create a new container for the carousel
   const container = document.createElement("div");
   container.className = "card-carousel";
 
   // Log the raw gokyoData to verify its structure
   console.log("Raw Gokyo Data:", gokyoData);
+  if (!gokyoData || gokyoData.length === 0) {
+    console.error("gokyoData is empty or undefined");
+  }
 
   // Transform gokyoData into a lookup object for quick access
   const gokyoLookup = gokyoData.reduce((acc, move) => {
@@ -48,18 +53,16 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   // Loop through each judoka and generate their card
   for (const judoka of judokaList) {
     try {
-      // Log the current judoka being processed
       console.log("Processing Judoka:", judoka);
 
       const signatureMoveId = judoka?.signatureMoveId ?? "0"; // Ensure signatureMoveId is a string
-
-      // Log the signatureMoveId to verify what is being used for the lookup
       console.log("Signature Move ID:", signatureMoveId);
 
       // Retrieve the technique from gokyoLookup using the signatureMoveId as the key
       const technique = gokyoLookup[signatureMoveId] || { id: "0", name: "Jigoku-guruma" };
-
-      // Log the retrieved technique to verify the lookup result
+      if (!gokyoLookup[signatureMoveId]) {
+        console.warn(`Fallback technique used for signatureMoveId: ${signatureMoveId}`);
+      }
       console.log("Retrieved Technique:", technique);
 
       // Pass the technique object to generateJudokaCardHTML
