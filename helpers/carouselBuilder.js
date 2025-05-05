@@ -1,4 +1,4 @@
-import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
+import { generateJudokaCardHTML } from "./cardBuilder.js";
 
 /**
  * Builds a carousel of judoka cards and returns it as a DOM element.
@@ -15,7 +15,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   for (const judoka of judokaList) {
     try {
       // Find the gokyo data for the judoka's signature move
-      // const gokyo = gokyoData.find((move) => move.code === judoka.signatureMove) || {};
+      // const gokyo = gokyoData.find((move) => move.code === judoka.signatureMoveId) || {};
 
       // Generate the judoka card
       const card = await generateJudokaCardHTML(judoka, gokyo);
