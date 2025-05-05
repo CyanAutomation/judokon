@@ -42,10 +42,10 @@ export async function buildCardCarousel(judokaList, gokyoData) {
       if (!gokyo || typeof gokyo !== "object") {
         gokyo = { 0: { id: 0, name: "Jigoku-guruma" } }; // Fallback to default gokyo with ID=0
       }
-    
+
       // Retrieve the technique from gokyo using the signatureMoveId as the key, fallback to ID=0
       const technique = gokyo[signatureMoveId] || gokyo[0];
-    
+
       // Extract the technique name or fallback to "Unknown"
       const techniqueName = technique?.name || "Jigoku-guruma";
 
