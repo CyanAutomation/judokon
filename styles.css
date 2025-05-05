@@ -458,15 +458,18 @@ button:focus {
 }
 
 .card-profile .profile-link:hover {
-  background-color: var(--button-hover-bg); /* Change background color on hover */
+  background-color: var(--button-hover-bg); 
 }
 
 /* Carousel container */
 #carousel-container {
-  position: fixed;
-  bottom: 0;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
-  background-color: #22223b;
+  background-color: rgba(34, 34, 59, 0.8); 
+  backdrop-filter: blur(10px);
   overflow: hidden;
   padding: 10px 0;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
@@ -475,12 +478,21 @@ button:focus {
 /* Carousel */
 .card-carousel {
   display: flex;
-  gap: 10px;
-  overflow-x: auto;
+  gap: 12px;
+  overflow-x: auto; /* Enable horizontal scrolling */
   padding: 10px;
-  scroll-behavior: smooth;
+  scroll-behavior: smooth; /* Smooth scrolling */
 }
 
 .card-carousel::-webkit-scrollbar {
-  display: none; /* Hide the scrollbar */
+  height: 8px; /* Set the height of the horizontal scroll bar */
+}
+
+.card-carousel::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.5); /* Dark gray thumb */
+  border-radius: 4px; /* Rounded corners for the thumb */
+}
+
+.card-carousel::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.1); /* Light gray track */
 }
