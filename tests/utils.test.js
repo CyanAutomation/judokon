@@ -12,6 +12,7 @@ describe("generateCardSignatureMove", () => {
   describe("Valid Cases", () => {
     it("returns the correct technique name when matched", () => {
       const html = generateCardSignatureMove(mockJudoka, mockGokyo);
+      expect(html).toContain("Signature Move:");
       expect(html).toContain("Uchi-mata");
     });
 
@@ -21,48 +22,69 @@ describe("generateCardSignatureMove", () => {
     });
   });
 
-  describe("Edge Cases", () => {
-    it('returns "Unknown" for unmatched ID', () => {
-      const html = generateCardSignatureMove({ signatureMoveId: "nonexistent" }, mockGokyo);
+  describe("Fallback Behavior", () => {
+    it("falls back to 'Jigoku-guruma' if no matching technique is found", () => {
+      const html = generateCardSignatureMove({ signatureMoveId: 999 }, mockGokyo);
       expect(html).toContain("Signature Move:");
       expect(html).toContain("Jigoku-guruma");
     });
 
-    it("handles null gokyo gracefully", () => {
-      const html = generateCardSignatureMove(mockJudoka, null);
-      expect(html).toContain("Jigoku-guruma");
-    });
-
-    it("handles missing signatureMoveId gracefully", () => {
-      const html = generateCardSignatureMove({}, mockGokyo);
-      expect(html).toContain("Jigoku-guruma");
-    });
-
-    it("handles null judoka gracefully", () => {
-      const html = generateCardSignatureMove(null, mockGokyo);
-      expect(html).toContain("Jigoku-guruma");
-    });
-
-    it("handles null or undefined gokyo gracefully", () => {
+    it("falls back to 'Jigoku-guruma' if gokyoLookup is null or undefined", () => {
       const htmlWithNull = generateCardSignatureMove(mockJudoka, null);
       const htmlWithUndefined = generateCardSignatureMove(mockJudoka, undefined);
+      expect(htmlWithNull).toContain("Signature Move:");
       expect(htmlWithNull).toContain("Jigoku-guruma");
+      expect(htmlWithUndefined).toContain("Signature Move:");
       expect(htmlWithUndefined).toContain("Jigoku-guruma");
     });
 
-    it("handles missing signatureMoveId gracefully", () => {
-      const html = generateCardSignatureMove({}, mockGokyo);
+    it("falls back to 'Jigoku-guruma' if gokyoLookup is empty", () => {
+      const emptyGokyo = {};
+      const html = generateCardSignatureMove(mockJudoka, emptyGokyo);
+      expect(html).toContain("Signature Move:");
       expect(html).toContain("Jigoku-guruma");
     });
 
-    it("handles null judoka gracefully", () => {
-      const html = generateCardSignatureMove(null, mockGokyo);
-      expect(html).toContain("Jigoku-guruma");
-    });
-
-    it("returns 'Unknown' if gokyo name is invalid", () => {
-      const invalidGokyo = { id: "uchi-mata", name: null }; // Invalid name
+    it("falls back to 'Jigoku-guruma' if gokyo name is invalid", () => {
+      const invalidGokyo = {
+        1: { id: 1, name: null } // Invalid name
+      };
       const html = generateCardSignatureMove(mockJudoka, invalidGokyo);
+      expect(html).toContain("Signature Move:");
+      expect(html).toContain("Jigoku-guruma");
+    });
+
+    it("falls back to 'Jigoku-guruma' if signatureMoveId is missing", () => {
+      const html = generateCardSignatureMove({}, mockGokyo);
+      expect(html).toContain("Signature Move:");
+      expect(html).toContain("Jigoku-guruma");
+    });
+  });
+
+  describe("Edge Cases", () => {
+    it("handles special characters in technique names", () => {
+      const specialGokyo = {
+        1: { id: 1, name: "Ō-soto-gari" }
+      };
+      const specialJudoka = { signatureMoveId: 1 };
+      const html = generateCardSignatureMove(specialJudoka, specialGokyo);
+      expect(html).toContain("Signature Move:");
+      expect(html).toContain("Ō-soto-gari");
+    });
+
+    it("handles non-numeric signatureMoveId gracefully", () => {
+      const invalidJudoka = { signatureMoveId: "UCHI-MATA" };
+      const html = generateCardSignatureMove(invalidJudoka, mockGokyo);
+      expect(html).toContain("Signature Move:");
+      expect(html).toContain("Jigoku-guruma");
+    });
+
+    it("handles malformed gokyo entries gracefully", () => {
+      const malformedGokyo = {
+        1: { id: "uchi-mata", name: null }, // Invalid structure
+        2: { id: 2, name: "Uchi Mata" }
+      };
+      const html = generateCardSignatureMove(mockJudoka, malformedGokyo);
       expect(html).toContain("Signature Move:");
       expect(html).toContain("Jigoku-guruma");
     });

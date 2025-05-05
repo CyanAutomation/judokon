@@ -29,14 +29,11 @@ import { generateJudokaCardHTML } from "./cardBuilder.js";
  * @returns {Promise<HTMLElement>} A promise that resolves to the carousel container DOM element.
  */
 export async function buildCardCarousel(judokaList, gokyoData) {
-  console.log("buildCardCarousel function called");
 
   // Create a new container for the carousel
   const container = document.createElement("div");
   container.className = "card-carousel";
 
-  // Log the raw gokyoData to verify its structure
-  console.log("Raw Gokyo Data:", gokyoData);
   if (!gokyoData || gokyoData.length === 0) {
     console.error("gokyoData is empty or undefined");
   }
@@ -47,13 +44,9 @@ export async function buildCardCarousel(judokaList, gokyoData) {
     return acc;
   }, {});
 
-  // Log the gokyoLookup object to verify the transformation
-  console.log("Gokyo Lookup Object:", gokyoLookup);
-
   // Loop through each judoka and generate their card
   for (const judoka of judokaList) {
     try {
-      console.log("Processing Judoka:", judoka);
 
       // Pass the judoka and the entire gokyoLookup to generateJudokaCardHTML
       const card = await generateJudokaCardHTML(judoka, gokyoLookup);
