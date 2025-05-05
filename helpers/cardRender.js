@@ -120,10 +120,8 @@ export function generateCardStats(card, cardType = "common") {
 export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
   const signatureMoveId = Number(judoka?.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
 
-  const technique =
-    (gokyoLookup && gokyoLookup[signatureMoveId]) ||
-    (gokyoLookup && gokyoLookup[0]) ||
-    { id: 0, name: "Jigoku-guruma" };
+  const technique = (gokyoLookup && gokyoLookup[signatureMoveId]) ||
+    (gokyoLookup && gokyoLookup[0]) || { id: 0, name: "Jigoku-guruma" };
 
   // Extract the technique name or fallback to "Jigoku-guruma"
   const techniqueName = technique?.name || "Jigoku-guruma";
