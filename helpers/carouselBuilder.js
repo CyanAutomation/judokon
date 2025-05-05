@@ -33,18 +33,19 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   const container = document.createElement("div");
   container.className = "card-carousel";
 
+  // Transform gokyoData into a lookup object for quick access
+  const gokyoLookup = gokyoData.reduce((acc, move) => {
+    acc[move.id] = move; // Map the id to the technique object
+    return acc;
+  }, {});
+
   // Loop through each judoka and generate their card
   for (const judoka of judokaList) {
     try {
       const signatureMoveId = Number(judoka?.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
 
-      // Check if gokyo is valid
-      if (!gokyo || typeof gokyo !== "object") {
-        gokyo = { 0: { id: 0, name: "Jigoku-guruma" } }; // Fallback to default gokyo with ID=0
-      }
-
-      // Retrieve the technique from gokyo using the signatureMoveId as the key, fallback to ID=0
-      const technique = gokyo[signatureMoveId] || gokyo[0];
+      // Retrieve the technique from gokyoLookup using the signatureMoveId as the key
+      const technique = gokyoLookup[signatureMoveId] || { id: 0, name: "Jigoku-guruma" };
 
       // Extract the technique name or fallback to "Unknown"
       const techniqueName = technique?.name || "Jigoku-guruma";
