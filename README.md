@@ -1,10 +1,18 @@
 # JU-DO-KON! 🥋
 
-Unit Tests: [![Run Vitest Tests](https://github.com/CyanAutomation/judokon/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/test.yml)
+Unit Tests: [![Run Vitest Tests](https://github.com/CyanAutomation/judokon/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/runUnitTests.yml)
 
 ESLint: [![Run ESLint](https://github.com/CyanAutomation/judokon/actions/workflows/eslint.yml/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/eslint.yml)
 
 GitHub Pages Deployment: [![pages-build-deployment](https://github.com/CyanAutomation/judokon/actions/workflows/pages/pages-build-deployment/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/pages/pages-build-deployment)
+
+[![GitHub Release][releases-shield]][releases]
+[![License][license-shield]](LICENSE.md)
+[![GitHub Activity][commits-shield]][commits]
+
+**JU-DO-KON!** is a fast-paced, web-based card game, featuring real-life elite judoka. Designed for ages 8–12, the game uses simplified stats, vibrant collectible cards, and a player-vs-computer battle format. First to win 10 rounds takes the match!
+
+![Example card](assets/judokaCards/judokaCard-117.png)
 
 ## License
 
@@ -16,10 +24,9 @@ The visual assets (e.g. card illustrations and logos) are © 2025 Marc Scheimann
 
 ## Table of Contents
 
-1. [Contributing](#contributing)
-2. [About JU-DO-KON!](#about-ju-do-kon)
-3. [Features](#features)
-4. [🎮 How to Play JU-DO-KON!](#how-to-play-ju-do-kon)
+1. [About JU-DO-KON!](#about-ju-do-kon)
+2. [Features](#features)
+3. [🎮 How to Play JU-DO-KON!](#how-to-play-ju-do-kon)
    - [🥋 The Rules](#-the-rules)
 5. [Live Demo](#live-demo)
 6. [Installation](#installation)
@@ -28,9 +35,6 @@ The visual assets (e.g. card illustrations and logos) are © 2025 Marc Scheimann
 9. [Changelog](#changelog)
 10. [Future Plans](#future-plans)
 
-## Contributing
-
-Contributions are welcome! Please fork the repository and submit a pull request.
 
 ## Quick Start
 
