@@ -16,10 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
   showCarouselButton.addEventListener("click", async () => {
     try {
       // Prevent rebuilding if the carousel already exists
-      if (carouselContainer.hasChildNodes()) {
-        carouselContainer.classList.remove("hidden");
-        return;
-      }
+      // if (carouselContainer.hasChildNodes()) {
+      //   carouselContainer.classList.remove("hidden");
+      //   return;
+      // }
 
       const judokaData = await fetchDataWithErrorHandling("./data/judoka.json");
       const gokyoData = await fetchDataWithErrorHandling("./data/gokyo.json");
