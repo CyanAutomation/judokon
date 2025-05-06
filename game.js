@@ -73,8 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
     gameArea.innerHTML = ""; // Clear the game area
 
     try {
-      toggleLoading(true);
-
       const judokaData = await fetchDataWithErrorHandling("./data/judoka.json");
       const gokyoData = await fetchDataWithErrorHandling("./data/gokyo.json");
 
@@ -86,8 +84,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Error loading card:", error);
       gameArea.innerHTML = `<p>⚠️ Failed to load card. ${error.message}. Please try again later.</p>`;
-    } finally {
-      toggleLoading(false);
     }
   });
 
