@@ -4,7 +4,6 @@ import { buildCardCarousel } from "./helpers/carouselBuilder.js";
 document.addEventListener("DOMContentLoaded", () => {
   const randomBtn = document.getElementById("randomBtn");
   const gameArea = document.getElementById("gameArea");
-  const loadingIndicator = document.getElementById("loading");
   const carouselContainer = document.getElementById("carousel-container");
   const showCarouselButton = document.getElementById("showCarousel");
 
@@ -91,30 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
       toggleLoading(false);
     }
   });
-
-  /**
-   * Toggles the visibility of the loading indicator and the game area.
-   *
-   * Pseudocode:
-   * 1. Check the value of the `isLoading` parameter:
-   *    - If `isLoading` is `true`:
-   *      a. Remove the "hidden" class from the `loadingIndicator` element to make it visible.
-   *      b. Add the "hidden" class to the `gameArea` element to hide it.
-   *    - If `isLoading` is `false`:
-   *      a. Add the "hidden" class to the `loadingIndicator` element to hide it.
-   *      b. Remove the "hidden" class from the `gameArea` element to make it visible.
-   *
-   * @param {boolean} isLoading - A boolean indicating whether to show the loading indicator (`true`) or the game area (`false`).
-   */
-  function toggleLoading(isLoading) {
-    if (isLoading) {
-      loadingIndicator.classList.remove("hidden");
-      gameArea.classList.add("hidden");
-    } else {
-      loadingIndicator.classList.add("hidden");
-      gameArea.classList.remove("hidden");
-    }
-  }
 
   /**
    * Fetches JSON data from a given URL with error handling.

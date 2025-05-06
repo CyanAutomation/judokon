@@ -1,18 +1,17 @@
 # JU-DO-KON! 🥋
-
-Unit Tests: [![Run Vitest Tests](https://github.com/CyanAutomation/judokon/actions/workflows/runUnitTests.yml/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/runUnitTests.yml)
-
-ESLint: [![Run ESLint](https://github.com/CyanAutomation/judokon/actions/workflows/eslint.yml/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/eslint.yml)
-
-GitHub Pages Deployment: [![pages-build-deployment](https://github.com/CyanAutomation/judokon/actions/workflows/pages/pages-build-deployment/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/pages/pages-build-deployment)
-
-[![GitHub Release][releases-shield]][releases]
-[![License][license-shield]](LICENSE.md)
-[![GitHub Activity][commits-shield]][commits]
+| Aspect | Value |
+|---|---:|
+|1. Unit Tests|![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CyanAutomation/judokon/runUnitTests.yml?logo=githubactions&style=for-the-badge&label=Unit%20Tests)|
+|2. Linting|![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CyanAutomation/judokon/eslint.yml?logo=eslint&style=for-the-badge&label=ESLint)|
+|3. GitHub Pages Deployment|![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CyanAutomation/judokon/pages%2Fpages-build-deployment?logo=githubpages&style=for-the-badge&label=GitHub%20Pages)|
+|4. JU-DO-KON! Website|![Website](https://img.shields.io/website?url=https%3A%2F%2Fcyanautomation.github.io%2Fjudokon%2F&logo=googlechrome&style=for-the-badge&label=JU-DO-KON!%20Website)|
+| |
+|5. GitHub Last Commit|![GitHub last commit](https://img.shields.io/github/last-commit/CyanAutomation/judokon?logo=github&style=for-the-badge&color=blue)|
+|6. Repo Size|![GitHub repo size](https://img.shields.io/github/repo-size/CyanAutomation/judokon?logo=github&style=for-the-badge)|
+|7. Licence|![Static Badge](https://img.shields.io/badge/License-gnu_general_public_licence_v3.0-blue?logo=gnu&style=for-the-badge)|
+|8. Currently Maintained?|![Maintenance](https://img.shields.io/maintenance/yes/2025?style=for-the-badge&logo=cachet&label=Currently%20Maintained)|
 
 **JU-DO-KON!** is a fast-paced, web-based card game, featuring real-life elite judoka. Designed for ages 8–12, the game uses simplified stats, vibrant collectible cards, and a player-vs-computer battle format. First to win 10 rounds takes the match!
-
-![Example card](assets/judokaCards/judokaCard-117.png)
 
 ## License
 
