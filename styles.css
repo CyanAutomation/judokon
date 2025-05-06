@@ -64,10 +64,14 @@ body {
   margin: 0;
   padding: var(--padding-small); /* Add padding */
   min-height: 100vh; /* Ensure the body takes up the full height */
+  min-width: 100vw; /* Ensure the body takes up the full width */
   background-image: url("./assets/locationTiles/bgTileGeneral.jpg");
   background-repeat: repeat; /* Tile the background */
   backdrop-filter: brightness(0.9); /* Apply brightness filter */
   background-size: clamp(240px, 35vw, 420px); /* Responsive background size */
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
 }
 
 /* Container for main content */
@@ -505,7 +509,7 @@ button:focus {
   align-items: flex-end;
   /* flex-direction: row; */
   /* left: 0; */
-  width: 100%;
+  width: 100vw;
   justify-content: space-evenly;
   background-color: #22223b;
   color: #fff;
