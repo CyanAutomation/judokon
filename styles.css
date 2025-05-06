@@ -160,6 +160,12 @@ button:focus {
   text-align: center; /* Center-align text */
 }
 
+#gameArea {
+  display: block; /* Ensure it is visible */
+  padding: 1rem;
+  background-color: #f9f9f9; /* Optional: Add a background for clarity */
+}
+
 /* Card styles */
 .card-container {
   display: flex;
