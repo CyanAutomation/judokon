@@ -1,6 +1,6 @@
 # JU-DO-KON! 🥋
 
-Unit Tests: [![Run Vitest Tests](https://github.com/CyanAutomation/judokon/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/runUnitTests.yml)
+Unit Tests: [![Run Vitest Tests](https://github.com/CyanAutomation/judokon/actions/workflows/runUnitTests.yml/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/runUnitTests.yml)
 
 ESLint: [![Run ESLint](https://github.com/CyanAutomation/judokon/actions/workflows/eslint.yml/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/eslint.yml)
 
