@@ -161,9 +161,9 @@ button:focus {
 }
 
 #gameArea {
-  display: block; /* Ensure it is visible */
+  display: flex;
   padding: 1rem;
-  background-color: #f9f9f9; /* Optional: Add a background for clarity */
+  backdrop-filter: blur(10px);
 }
 
 /* Card styles */
