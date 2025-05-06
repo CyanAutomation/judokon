@@ -162,6 +162,8 @@ button:focus {
 
 #gameArea {
   display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 1rem;
   backdrop-filter: blur(10px);
 }
