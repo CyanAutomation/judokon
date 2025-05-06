@@ -468,11 +468,11 @@ button:focus {
 /* Carousel container */
 #carousel-container {
   position: relative;
-  display: flex;
+  /* display: flex; */
   justify-content: center;
   align-items: center;
   width: 100vw;
-  height: 400px;
+  height: auto;
   background-color: rgba(34, 34, 59, 0.8);
   backdrop-filter: blur(10px);
   padding: 5px 0;

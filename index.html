@@ -32,26 +32,23 @@
     </header>
 
     <main class="container" role="main">
-      <section>
-        <!-- Button to start the game -->
+      <!-- Section for the game area -->
+      <section id="game-section">
+        <h2>Game Area</h2>
         <button id="randomBtn" aria-label="Random Judoka" title="Random">Random</button>
-
-        <!-- Loading indicator shown while data is being fetched -->
-        <div id="loading" class="hidden" aria-live="polite">
-          <p>Loading...</p>
-          <div class="spinner" aria-hidden="true"></div>
-        </div>
-
-        <!-- Game area where the judoka card will be displayed -->
         <div id="gameArea" class="hidden" aria-live="polite">
           <p>Get ready to play JU-DO-KON! Click "Start Game" to begin.</p>
         </div>
       </section>
+    
+      <!-- Section for the carousel -->
+      <section id="carousel-section">
+        <h2>All Cards</h2>
+        <button id="showCarousel">Show All Cards</button>
+        <div id="carousel-container" class="hidden">Get ready to play JU-DO-KON! Click "Start Game" to begin.</div>
+      </section>
     </main>
-
-    <button id="showCarousel">Show All Cards</button>
-    <div id="carousel-container" class="hidden"></div>
-
+    
     <footer>
       <nav class="bottom-navbar">
         <ul>
