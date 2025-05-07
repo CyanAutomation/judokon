@@ -1,7 +1,7 @@
 # JU-DO-KON! 🥋
 
 | Aspect                     |                                                                                                                                                                                                    Value |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| :-------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | 1. Unit Tests              |               ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CyanAutomation/judokon/runUnitTests.yml?logo=githubactions&style=for-the-badge&label=Unit%20Tests) |
 | 2. Linting                 |                                  ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CyanAutomation/judokon/eslint.yml?logo=eslint&style=for-the-badge&label=ESLint) |
 | 3. GitHub Pages Deployment | ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CyanAutomation/judokon/pages%2Fpages-build-deployment?logo=githubpages&style=for-the-badge&label=GitHub%20Pages) |
