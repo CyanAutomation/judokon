@@ -6,21 +6,12 @@
 | 2. Linting                 |                                  ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CyanAutomation/judokon/eslint.yml?logo=eslint&style=for-the-badge&label=ESLint) |
 | 3. GitHub Pages Deployment | ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CyanAutomation/judokon/pages%2Fpages-build-deployment?logo=githubpages&style=for-the-badge&label=GitHub%20Pages) |
 | 4. JU-DO-KON! Website      |                                      ![Website](https://img.shields.io/website?url=https%3A%2F%2Fcyanautomation.github.io%2Fjudokon%2F&logo=googlechrome&style=for-the-badge&label=JU-DO-KON!%20Website) |
-|                            |
 | 5. GitHub Last Commit      |                                                                       ![GitHub last commit](https://img.shields.io/github/last-commit/CyanAutomation/judokon?logo=github&style=for-the-badge&color=blue) |
 | 6. Repo Size               |                                                                                      ![GitHub repo size](https://img.shields.io/github/repo-size/CyanAutomation/judokon?logo=github&style=for-the-badge) |
 | 7. Licence                 |                                                                                  ![Static Badge](https://img.shields.io/badge/License-gnu_general_public_licence_v3.0-blue?logo=gnu&style=for-the-badge) |
 | 8. Currently Maintained?   |                                                                                 ![Maintenance](https://img.shields.io/maintenance/yes/2025?style=for-the-badge&logo=cachet&label=Currently%20Maintained) |
 
 **JU-DO-KON!** is a fast-paced, web-based card game, featuring real-life elite judoka. Designed for ages 8–12, the game uses simplified stats, vibrant collectible cards, and a player-vs-computer battle format. First to win 10 rounds takes the match!
-
-## License
-
-This project is licensed under the [GNU General Public License v3.0](LICENSE).
-
-You are free to use, modify, and share this project under the same terms — but any redistributed or modified versions must also be open-source and released under the GPL v3 license.
-
-The visual assets (e.g. card illustrations and logos) are © 2025 Marc Scheimann. They may not be used, copied, or republished for commercial purposes without written permission.
 
 ## Table of Contents
 
