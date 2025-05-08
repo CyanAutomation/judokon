@@ -1,5 +1,7 @@
 # JU-DO-KON! 🥋
 
+**JU-DO-KON!** is a fast-paced, web-based card game, featuring real-life elite judoka. Designed for ages 8–12, the game uses simplified stats, vibrant collectible cards, and a player-vs-computer battle format. First to win 10 rounds takes the match!
+
 | Aspect                     |                                                                                                                                                                                                    Value |
 | :------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | 1. Unit Tests              |               ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CyanAutomation/judokon/runUnitTests.yml?logo=githubactions&style=for-the-badge&label=Unit%20Tests) |
@@ -10,8 +12,6 @@
 | 6. Repo Size               |                                                                                      ![GitHub repo size](https://img.shields.io/github/repo-size/CyanAutomation/judokon?logo=github&style=for-the-badge) |
 | 7. Licence                 |                                                                                  ![Static Badge](https://img.shields.io/badge/License-gnu_general_public_licence_v3.0-blue?logo=gnu&style=for-the-badge) |
 | 8. Currently Maintained?   |                                                                                 ![Maintenance](https://img.shields.io/maintenance/yes/2025?style=for-the-badge&logo=cachet&label=Currently%20Maintained) |
-
-**JU-DO-KON!** is a fast-paced, web-based card game, featuring real-life elite judoka. Designed for ages 8–12, the game uses simplified stats, vibrant collectible cards, and a player-vs-computer battle format. First to win 10 rounds takes the match!
 
 ## Table of Contents
 
