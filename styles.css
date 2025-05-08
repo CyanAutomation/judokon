@@ -76,30 +76,41 @@ body {
 
 /* Container for main content */
 .container {
-  padding: var(--padding-small);
+  padding: 0;
 }
 
 /* Styles for the main title (h1) */
 h1 {
-  font-size: 3rem; /* Large font size for the title */
+  font-size: 2rem; /* Large font size for the title */
   letter-spacing: 2px; /* Add spacing between letters */
-  margin-bottom: 0.25rem; /* Add space below the title */
+  margin-bottom: 0.2rem; /* Add space below the title */
 }
 
 /* Styles for the subtitle */
 .subtitle {
-  font-size: 1.25rem; /* Medium font size */
-  margin-bottom: 0.5rem; /* Add space below the subtitle */
+  font-size: 1rem; /* Medium font size */
+  margin-bottom: 0.2rem; /* Add space below the subtitle */
 }
 
 /* Button styles */
 button {
+  font-size: 1rem;
+  background: none; /* Remove default button background */
+  border: none; /* Remove default button border */
+  color: #fff; /* Match the text color of navbar links */
+  font-weight: bold; /* Match the font weight of navbar links */
+  text-decoration: none; /* Remove underline */
+  cursor: pointer; /* Change cursor to pointer */
+  padding: 0; /* Remove default padding */
 }
 
 button:hover {
+  text-decoration: underline; /* Add underline on hover */
 }
 
 button:focus {
+  outline: none; /* Remove default focus outline */
+  text-decoration: underline; /* Add underline for focus */
 }
 
 /* Utility classes */
@@ -162,30 +173,53 @@ button:focus {
 }
 
 .judoka-card {
+  position: relative; /* Ensure the pseudo-element is positioned relative to the card */
   width: 300px;
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
   border: clamp(9px, 4vw, 14px) solid var(--card-border-color); /* Card border */
   border-radius: var(--border-radius-large); /* Rounded corners */
-  /* overflow: hidden; */
-  background-color: var(--card-bg-color);
-  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3); /* Add a larger shadow on hover */
-  transition:
-    box-shadow 0.2s ease-in-out,
-    transform 0.1s ease-in-out; /* Smooth transition for the shadow */
-  font-family: "Inter", "Montserrat", "Nunito", sans-serif; /* Custom font family */
-  padding: 0;
-  margin: 0;
-  flex-direction: column; /* Stack items vertically */
+  background-color: var(--card-bg-color); /* Card background color */
+  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3); /* Add shadow */
+  overflow: hidden; /* Ensure the pseudo-element stays within the card */
   display: flex;
-  justify-content: space-between; /* Space between elements */
+  flex-direction: column;
+  justify-content: space-between;
+  transition: box-shadow 0.2s ease-in-out, transform 0.1s ease-in-out;
 }
 
+/* Default state: card back is hidden */
+.judoka-card::before {
+  content: ""; /* Required for pseudo-elements */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('./assets/cardBacks/cardBack-2.png'); /* Path to the card back image */
+  background-size: cover; /* Ensure the image covers the entire card */
+  background-position: center; /* Center the image */
+  z-index: 3; /* Place the pseudo-element above the card content */
+  opacity: 0; /* Hidden by default */
+  pointer-events: none; /* Prevent interaction */
+  transition: opacity 0.3s ease; /* Smooth transition */
+}
+
+/* When the card back is active */
+.judoka-card.show-card-back::before {
+  opacity: 1; /* Make the pseudo-element visible */
+  pointer-events: auto; /* Allow interaction if needed */
+}
+
+/* Hide the card back on hover */
+.judoka-card:hover::before {
+  opacity: 0; /* Hide the pseudo-element on hover */
+  pointer-events: none;
+}
+
+/* Add hover effects for the card itself */
 .judoka-card:hover {
   box-shadow: 8px 8px 12px rgba(0, 0, 0, 0.4); /* Add a larger shadow on hover */
-  transition:
-    box-shadow 0.2s ease-in-out,
-    transform 0.2s ease-in-out; /* Smooth transition for the shadow */
-  transform: scale(1.01);
+  transform: scale(1.01); /* Slightly scale up the card */
 }
 
 /* Common card variables */
@@ -328,7 +362,7 @@ button:focus {
   font-weight: bold;
   padding: var(--padding-small) var(--padding-medium);
   font-size: var(--font-small);
-  z-index: 8;
+  z-index: 2;
 }
 
 .card-weight-class::after {
@@ -468,7 +502,7 @@ button:focus {
   height: auto;
   background-color: rgba(34, 34, 59, 0.8);
   backdrop-filter: blur(10px);
-  padding: 5px 0;
+  padding: 10px 0;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
 }
 
@@ -496,18 +530,17 @@ button:focus {
 
 /* Bottom Navbar */
 .bottom-navbar {
-  /* position: fixed; */
   display: inline-flex;
   align-items: flex-end;
-  /* flex-direction: row; */
-  /* left: 0; */
   width: 100vw;
   justify-content: space-evenly;
   background-color: #22223b;
   color: #fff;
   text-align: center;
-  padding: 10px 0;
+  padding: 1.5vh 0;
+  /* margin-bottom: 5px; */
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+  border: solid 1px #22223b;
 }
 
 .bottom-navbar ul {
@@ -521,6 +554,7 @@ button:focus {
 
 .bottom-navbar li {
   display: inline;
+  margin: 0;
 }
 
 .bottom-navbar a {

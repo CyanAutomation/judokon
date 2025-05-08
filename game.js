@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const gameArea = document.getElementById("gameArea");
   const carouselContainer = document.getElementById("carousel-container");
   const showCarouselButton = document.getElementById("showCarousel");
+  const hideCard = document.getElementById("hideCard");
+  const judokaCard = document.querySelector(".judoka-card");
 
   if (!showRandom || !gameArea) {
     console.error("Required DOM elements are missing.");
@@ -34,6 +36,12 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Failed to build carousel:", error);
     }
+  });
+
+  // Add a click event listener to the button
+  hideCard.addEventListener("click", () => {
+    // Toggle the "show-card-back" class on the judoka card
+    judokaCard.classList.toggle("show-card-back");
   });
 
   /**
