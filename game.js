@@ -16,10 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
   showCarouselButton.addEventListener("click", async () => {
     try {
       // Prevent rebuilding if the carousel already exists
-      // if (carouselContainer.hasChildNodes()) {
-      //   carouselContainer.classList.remove("hidden");
-      //   return;
-      // }
+      if (carouselContainer.hasChildNodes()) {
+        carouselContainer.classList.remove("hidden");
+        return;
+      }
 
       const judokaData = await fetchDataWithErrorHandling("./data/judoka.json");
       const gokyoData = await fetchDataWithErrorHandling("./data/gokyo.json");
@@ -37,14 +37,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Add a click event listener to the button
   hideCard.addEventListener("click", () => {
-    const judokaCard = document.querySelector(".judoka-card"); // Re-select the card
-    if (judokaCard) {
-      judokaCard.classList.toggle("show-card-back");
-    } else {
-      console.error("No judoka card found to toggle.");
+    // Select all judoka cards in the carousel
+    const judokaCards = document.querySelectorAll(".judoka-card");
+    if (judokaCards.length === 0) {
+      console.error("No judoka cards found to toggle.");
+      return;
     }
+    // Loop through each card and toggle the "show-card-back" class
+    judokaCards.forEach((card) => {
+      card.classList.toggle("show-card-back");
+    });
   });
 
   /**
