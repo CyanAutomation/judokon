@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const carouselContainer = document.getElementById("carousel-container");
   const showCarouselButton = document.getElementById("showCarousel");
   const hideCard = document.getElementById("hideCard");
-  const judokaCard = document.querySelector(".judoka-card");
 
   if (!showRandom || !gameArea) {
     console.error("Required DOM elements are missing.");
@@ -40,8 +39,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Add a click event listener to the button
   hideCard.addEventListener("click", () => {
-    // Toggle the "show-card-back" class on the judoka card
-    judokaCard.classList.toggle("show-card-back");
+    const judokaCard = document.querySelector(".judoka-card"); // Re-select the card
+    if (judokaCard) {
+      judokaCard.classList.toggle("show-card-back");
+    } else {
+      console.error("No judoka card found to toggle.");
+    }
   });
 
   /**
