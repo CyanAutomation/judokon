@@ -73,26 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
   //   });
   // });
 
-  hideCard.addEventListener("click", () => {
-    const carouselContainer = document.querySelector(".card-carousel");
-
-    if (!carouselContainer) {
-      console.error("Carousel container not found.");
-      return;
-    }
-
-    const judokaCards = carouselContainer.querySelectorAll(".judoka-card");
-
-    if (judokaCards.length === 0) {
-      console.error("No judoka cards found in the carousel to toggle.");
-      return;
-    }
-
-    judokaCards.forEach((card) => {
-      card.classList.toggle("show-card-back");
-    });
-  });
-
   /**
    * Handles the "Start" button click event to load and display a random judoka card.
    *
