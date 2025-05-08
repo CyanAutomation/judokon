@@ -94,27 +94,12 @@ h1 {
 
 /* Button styles */
 button {
-  padding: 1rem 2rem; /* Add padding inside the button */
-  font-size: 1.1rem; /* Medium font size */
-  background-color: var(--button-bg); /* Button background color */
-  color: var(--button-text-color); /* Button text color */
-  border: none; /* Remove border */
-  font-weight: bold; /* Make text bold */
-  cursor: pointer; /* Change cursor to pointer on hover */
-  border-radius: 8px; /* Rounded corners */
-  transition:
-    background-color 0.3s ease,
-    transform 0.2s ease; /* Smooth transitions */
 }
 
 button:hover {
-  background-color: var(--button-hover-bg); /* Change background color on hover */
-  transform: scale(1.05); /* Slightly enlarge the button on hover */
 }
 
 button:focus {
-  outline: 2px solid #1c4b95; /* Add focus outline */
-  outline-offset: 2px; /* Offset the outline */
 }
 
 /* Utility classes */
