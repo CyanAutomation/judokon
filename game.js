@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const showCarouselButton = document.getElementById("showCarousel");
   const hideCard = document.getElementById("hideCard");
 
+  let isCarouselBuilt = false; // Flag to track if the carousel has been built
+
   if (!showRandom || !gameArea) {
     console.error("Required DOM elements are missing.");
     return;
@@ -15,9 +17,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   showCarouselButton.addEventListener("click", async () => {
     try {
-      // Prevent rebuilding if the carousel already exists
-      if (carouselContainer.hasChildNodes()) {
-        carouselContainer.classList.remove("hidden");
+      // Check if the carousel has already been built
+      if (isCarouselBuilt) {
+        carouselContainer.classList.remove("hidden"); // Show the existing carousel
         return;
       }
 
@@ -31,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
       carouselContainer.appendChild(carousel);
       carouselContainer.classList.remove("hidden");
 
+      isCarouselBuilt = true; // Set the flag to true after building the carousel
       console.log("Carousel displayed on demand.");
     } catch (error) {
       console.error("Failed to build carousel:", error);
@@ -38,13 +41,53 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   hideCard.addEventListener("click", () => {
-    // Select all judoka cards in the carousel
-    const judokaCards = document.querySelectorAll(".judoka-card");
-    if (judokaCards.length === 0) {
-      console.error("No judoka cards found to toggle.");
+    const carouselContainer = document.querySelector(".card-carousel");
+
+    if (!carouselContainer) {
+      console.error("Carousel container not found.");
       return;
     }
-    // Loop through each card and toggle the "show-card-back" class
+
+    const judokaCards = carouselContainer.querySelectorAll(".judoka-card");
+
+    if (judokaCards.length === 0) {
+      console.error("No judoka cards found in the carousel to toggle.");
+      return;
+    }
+
+    judokaCards.forEach((card) => {
+      card.classList.toggle("show-card-back");
+    });
+  });
+
+  // hideCard.addEventListener("click", () => {
+  //   // Select all judoka cards in the carousel
+  //   const judokaCards = document.querySelectorAll(".judoka-card");
+  //   if (judokaCards.length === 0) {
+  //     console.error("No judoka cards found to toggle.");
+  //     return;
+  //   }
+  //   // Loop through each card and toggle the "show-card-back" class
+  //   judokaCards.forEach((card) => {
+  //     card.classList.toggle("show-card-back");
+  //   });
+  // });
+
+  hideCard.addEventListener("click", () => {
+    const carouselContainer = document.querySelector(".card-carousel");
+
+    if (!carouselContainer) {
+      console.error("Carousel container not found.");
+      return;
+    }
+
+    const judokaCards = carouselContainer.querySelectorAll(".judoka-card");
+
+    if (judokaCards.length === 0) {
+      console.error("No judoka cards found in the carousel to toggle.");
+      return;
+    }
+
     judokaCards.forEach((card) => {
       card.classList.toggle("show-card-back");
     });
