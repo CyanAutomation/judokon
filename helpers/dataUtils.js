@@ -31,3 +31,22 @@ export async function loadJSON(url) {
     throw error;
   }
 }
+
+export async function fetchDataWithErrorHandling(url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data from ${url} (HTTP ${response.status})`);
+    }
+    return response.json();
+  } catch (error) {
+    console.error(`Error fetching data from ${url}:`, error);
+    throw error;
+  }
+}
+
+export function validateData(data, type) {
+  if (typeof data !== "object" || data === null) {
+    throw new Error(`Invalid or missing ${type} data.`);
+  }
+}
