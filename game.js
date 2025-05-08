@@ -2,12 +2,12 @@ import { generateJudokaCardHTML } from "./helpers/cardBuilder.js";
 import { buildCardCarousel } from "./helpers/carouselBuilder.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const randomBtn = document.getElementById("randomBtn");
+  const showRandom = document.getElementById("showRandom");
   const gameArea = document.getElementById("gameArea");
   const carouselContainer = document.getElementById("carousel-container");
   const showCarouselButton = document.getElementById("showCarousel");
 
-  if (!randomBtn || !gameArea) {
+  if (!showRandom || !gameArea) {
     console.error("Required DOM elements are missing.");
     return;
   }
@@ -66,10 +66,10 @@ document.addEventListener("DOMContentLoaded", () => {
    */
 
   // Update the button label to "Random"
-  randomBtn.textContent = "Random";
+  showRandom.textContent = "Random";
 
-  randomBtn.addEventListener("click", async () => {
-    randomBtn.classList.add("hidden");
+  showRandom.addEventListener("click", async () => {
+    showRandom.classList.add("hidden");
     gameArea.innerHTML = ""; // Clear the game area
 
     try {
@@ -208,8 +208,8 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Judoka card successfully displayed:", cardElement);
 
       // Move the random button below the rendered card
-      randomBtn.classList.remove("hidden"); // Ensure the button is visible
-      gameArea.appendChild(randomBtn); // Append the button below the card
+      showRandom.classList.remove("hidden"); // Ensure the button is visible
+      gameArea.appendChild(showRandom); // Append the button below the card
     } catch (error) {
       console.error("Error generating judoka card:", error);
       gameArea.innerHTML = "<p>⚠️ Failed to generate judoka card. Please try again later.</p>";

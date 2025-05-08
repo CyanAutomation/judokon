@@ -35,16 +35,14 @@
       <!-- Section for the game area -->
       <section id="game-section">
         <h2>Game Area</h2>
-        <button id="randomBtn" aria-label="Random Judoka" title="Random">Random</button>
         <div id="gameArea" class="hidden" aria-live="polite">
           <p>Get ready to play JU-DO-KON! Click "Start Game" to begin.</p>
         </div>
       </section>
-
+    
       <!-- Section for the carousel -->
       <section id="carousel-section">
         <h2>All Cards</h2>
-        <button id="showCarousel">Show All Cards</button>
         <div id="carousel-container" class="hidden">
           Get ready to play JU-DO-KON! Click "Start Game" to begin.
         </div>
@@ -55,8 +53,8 @@
       <nav class="bottom-navbar">
         <ul>
           <li><a href="https://cyanautomation.github.io/judokon/" aria-label="Reset">Reset</a></li>
-          <li><a href="#carousel-container" aria-label="View All Cards">Cards</a></li>
-          <li><a href="#randomBtn" aria-label="Random Judoka">Random</a></li>
+          <li><button id="showRandom" aria-label="Random Judoka" title="Random">Random</button></li>
+          <li><button id="showCarousel">Show All Cards</button></li>
         </ul>
       </nav>
     </footer>
