@@ -185,7 +185,9 @@ button:focus {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: box-shadow 0.2s ease-in-out, transform 0.1s ease-in-out;
+  transition:
+    box-shadow 0.2s ease-in-out,
+    transform 0.1s ease-in-out;
 }
 
 /* Default state: card back is hidden */
@@ -196,7 +198,7 @@ button:focus {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('./assets/cardBacks/cardBack-2.png'); /* Path to the card back image */
+  background-image: url("./assets/cardBacks/cardBack-2.png"); /* Path to the card back image */
   background-size: cover; /* Ensure the image covers the entire card */
   background-position: center; /* Center the image */
   z-index: 3; /* Place the pseudo-element above the card content */
