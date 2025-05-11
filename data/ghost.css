@@ -1,3 +1,11 @@
+p {
+  text-align: justify;
+}
+
+blockquote {
+  font-style: italic;
+}
+  
 .gh-article-image.kg-width-wide img {
   max-width: 720px !important;
   width: 100%;
@@ -27,7 +35,7 @@
 
 /* Smaller, tighter headings within post content */
 .gh-content h2 {
-  font-size: 2rem !important;
+  font-size: 2.5rem !important;
   margin-top: 1.25rem !important; 
   margin-bottom: 0.75rem !important; 
   line-height: 1.3 !important;
@@ -44,6 +52,7 @@
 .gh-content blockquote {
   margin: 1rem 0 !important;
   padding: 0.75rem 1rem !important;
+  font-style: italic;
 }
 
 /* Divider (hr): compress vertical space */
