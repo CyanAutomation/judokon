@@ -534,25 +534,28 @@ button:focus {
 
 /* Scroll button styles */
 .scroll-button {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  position: relative;
+  /* top: 50%; */
+  /* transform: translateY(-50%); */
+  background-color: rgba(0, 0, 0, 0.1); 
   color: white;
-  border: none;
+  border: 1px solid #838383;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  min-width: 2em;
+  aspect-ratio: 1/1;
   display: flex;
+  flex: 1 1 auto;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
-  z-index: 10; /* Ensure buttons are above the carousel */
-  transition: background-color 0.3s ease;
+  /* cursor: pointer; */
+  z-index: 10; 
+  transition: background-color scale box-shadow 0.9s ease-in-out;
 }
 
 .scroll-button:hover {
-  background-color: rgba(0, 0, 0, 0.8); /* Darker background on hover */
+  background-color: rgba(89, 0, 255, 0.9); /* Darker background on hover */
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Add shadow on hover */
 }
 
 .scroll-button.left {
