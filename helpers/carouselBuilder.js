@@ -1,94 +1,89 @@
 import { generateJudokaCardHTML } from "./cardBuilder.js";
 
 /**
- * Function: buildCardCarousel
- * Purpose:
- * - This function generates a carousel of judoka cards using a list of judoka objects and gokyo data.
- * - It returns a DOM element containing the carousel, which can be appended to the page.
- *
- * Inputs:
- * - `judokaList`: An array of judoka objects, each representing a judoka with attributes like `signatureMoveId`.
- * - `gokyoData`: An array of gokyo objects, each containing information about judo techniques (e.g., `id` and `name`).
- *
- * Process:
- * 1. Create a container element for the carousel and assign it a CSS class for styling.
- * 2. Transform the `gokyoData` array into a lookup object (`gokyoLookup`) for quick access to technique names by their IDs.
- * 3. Loop through the `judokaList`:
- *    - For each judoka, retrieve the corresponding technique name from the `gokyoLookup` using the `signatureMoveId`.
- *    - If no matching technique is found, default to "Unknown Technique".
- *    - Generate a card for the judoka using the `generateJudokaCardHTML` function, passing the judoka and the technique name.
- *    - Append the generated card to the carousel container.
- * 4. Handle any errors that occur during card generation and log them to the console.
- * 5. Return the completed carousel container as a DOM element.
- *
- * Output:
- * - A DOM element (`<div>`) containing the carousel of judoka cards.
- *
- *
- * @param {Array} judokaList - An array of judoka objects to render in the carousel.
- * @returns {Promise<HTMLElement>} A promise that resolves to the carousel container DOM element.
+ * Transforms gokyoData into a lookup object for quick access.
+ * @param {Array} gokyoData - Array of gokyo objects.
+ * @returns {Object} A lookup object with gokyo IDs as keys.
+ */
+function createGokyoLookup(gokyoData) {
+  if (!gokyoData || gokyoData.length === 0) {
+    console.error("gokyoData is empty or undefined");
+    return {};
+  }
+
+  return gokyoData.reduce((acc, move) => {
+    acc[move.id] = move; // Use string keys for consistency
+    return acc;
+  }, {});
+}
+
+/**
+ * Generates a single judoka card and appends it to the container.
+ * @param {Object} judoka - A judoka object.
+ * @param {Object} gokyoLookup - A lookup object for gokyo data.
+ * @param {HTMLElement} container - The container to append the card to.
+ */
+async function generateJudokaCard(judoka, gokyoLookup, container) {
+  try {
+    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+    container.appendChild(card);
+  } catch (error) {
+    console.error(`Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`, error);
+  }
+}
+
+/**
+ * Creates a scroll button with the specified direction and functionality.
+ * @param {String} direction - Either "left" or "right".
+ * @param {HTMLElement} container - The carousel container to scroll.
+ * @param {Number} scrollAmount - The amount to scroll in pixels.
+ * @returns {HTMLElement} The scroll button element.
+ */
+function createScrollButton(direction, container, scrollAmount) {
+  const button = document.createElement("button");
+  button.className = `scroll-button ${direction}`;
+  button.innerHTML = direction === "left" ? "&lt;" : "&gt;";
+  button.setAttribute(
+    "aria-label",
+    `Scroll ${direction.charAt(0).toUpperCase() + direction.slice(1)}`
+  );
+
+  button.addEventListener("click", () => {
+    container.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth"
+    });
+  });
+
+  return button;
+}
+
+/**
+ * Builds a carousel of judoka cards with scroll buttons.
+ * @param {Array} judokaList - An array of judoka objects.
+ * @param {Array} gokyoData - An array of gokyo objects.
+ * @returns {Promise<HTMLElement>} A promise that resolves to the carousel wrapper element.
  */
 export async function buildCardCarousel(judokaList, gokyoData) {
   // Create a new container for the carousel
   const container = document.createElement("div");
   container.className = "card-carousel";
 
-  if (!gokyoData || gokyoData.length === 0) {
-    console.error("gokyoData is empty or undefined");
-  }
+  // Transform gokyoData into a lookup object
+  const gokyoLookup = createGokyoLookup(gokyoData);
 
-  // Transform gokyoData into a lookup object for quick access
-  const gokyoLookup = gokyoData.reduce((acc, move) => {
-    acc[move.id] = move; // Use string keys for consistency
-    return acc;
-  }, {});
-
-  // Loop through each judoka and generate their card
+  // Generate cards for each judoka
   for (const judoka of judokaList) {
-    try {
-      // Pass the judoka and the entire gokyoLookup to generateJudokaCardHTML
-      const card = await generateJudokaCardHTML(judoka, gokyoLookup);
-
-      // Add the card to the carousel container
-      container.appendChild(card);
-    } catch (error) {
-      console.error(
-        `Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`,
-        error
-      );
-    }
+    await generateJudokaCard(judoka, gokyoLookup, container);
   }
 
   // Create a wrapper for the carousel and buttons
   const wrapper = document.createElement("div");
   wrapper.className = "carousel-wrapper";
 
-  // Create left scroll button
-  const leftButton = document.createElement("button");
-  leftButton.className = "scroll-button left";
-  leftButton.innerHTML = "&lt;"; // Left arrow
-  leftButton.setAttribute("aria-label", "Scroll Left");
-
-  // Create right scroll button
-  const rightButton = document.createElement("button");
-  rightButton.className = "scroll-button right";
-  rightButton.innerHTML = "&gt;"; // Right arrow
-  rightButton.setAttribute("aria-label", "Scroll Right");
-
-  // Add scroll functionality to buttons
-  leftButton.addEventListener("click", () => {
-    container.scrollBy({
-      left: -300, // Adjust scroll distance as needed
-      behavior: "smooth"
-    });
-  });
-
-  rightButton.addEventListener("click", () => {
-    container.scrollBy({
-      left: 300, // Adjust scroll distance as needed
-      behavior: "smooth"
-    });
-  });
+  // Create scroll buttons
+  const leftButton = createScrollButton("left", container, 300);
+  const rightButton = createScrollButton("right", container, 300);
 
   // Append buttons and carousel to the wrapper
   wrapper.appendChild(leftButton);
