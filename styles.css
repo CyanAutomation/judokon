@@ -536,8 +536,8 @@ button:focus {
 /* Scroll button styles */
 .scroll-button {
   position: relative;
-  /* top: 50%; */
-  /* transform: translateY(-50%); */
+  top: 50%;
+  transform: translateY(-50%);
   background-color: rgba(0, 0, 0, 0.1); 
   color: white;
   border: 1px solid #838383;
