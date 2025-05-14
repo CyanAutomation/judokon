@@ -59,6 +59,42 @@ export async function buildCardCarousel(judokaList, gokyoData) {
     }
   }
 
-  // Return the completed carousel container
-  return container;
+  // Create a wrapper for the carousel and buttons
+  const wrapper = document.createElement("div");
+  wrapper.className = "carousel-wrapper";
+
+  // Create left scroll button
+  const leftButton = document.createElement("button");
+  leftButton.className = "scroll-button left";
+  leftButton.innerHTML = "&lt;"; // Left arrow
+  leftButton.setAttribute("aria-label", "Scroll Left");
+
+  // Create right scroll button
+  const rightButton = document.createElement("button");
+  rightButton.className = "scroll-button right";
+  rightButton.innerHTML = "&gt;"; // Right arrow
+  rightButton.setAttribute("aria-label", "Scroll Right");
+
+  // Add scroll functionality to buttons
+  leftButton.addEventListener("click", () => {
+    container.scrollBy({
+      left: -300, // Adjust scroll distance as needed
+      behavior: "smooth"
+    });
+  });
+
+  rightButton.addEventListener("click", () => {
+    container.scrollBy({
+      left: 300, // Adjust scroll distance as needed
+      behavior: "smooth"
+    });
+  });
+
+  // Append buttons and carousel to the wrapper
+  wrapper.appendChild(leftButton);
+  wrapper.appendChild(container);
+  wrapper.appendChild(rightButton);
+
+  // Return the completed wrapper
+  return wrapper;
 }

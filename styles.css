@@ -507,6 +507,7 @@ button:focus {
   backdrop-filter: blur(10px);
   padding: 10px 0;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+  overflow: hidden; 
 }
 
 /* Carousel */
@@ -529,6 +530,42 @@ button:focus {
 
 .card-carousel::-webkit-scrollbar-track {
   background-color: rgba(0, 0, 0, 0.1); /* Light gray track */
+}
+
+/* Scroll button styles */
+.scroll-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10; /* Ensure buttons are above the carousel */
+  transition: background-color 0.3s ease;
+}
+
+.scroll-button:hover {
+  background-color: rgba(0, 0, 0, 0.8); /* Darker background on hover */
+}
+
+.scroll-button.left {
+  left: 10px; /* Position the left button */
+}
+
+.scroll-button.right {
+  right: 10px; /* Position the right button */
+}
+
+.judoka-card:target {
+  outline: 2px solid #007bff; /* Highlight the active card */
+  outline-offset: 4px;
 }
 
 /* Bottom Navbar */
