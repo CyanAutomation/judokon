@@ -501,9 +501,9 @@ button:focus {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-width: 100vw;
+  width: 100vw;
   /* height: 35vh; */
-  min-height: 15rem;
+  min-height: 12rem;
   background-color: rgba(34, 34, 59, 0.8);
   backdrop-filter: blur(10px);
   padding: 10px 0;
