@@ -497,7 +497,7 @@ button:focus {
 
 /* Carousel container */
 #carousel-container {
-  /* position: relative; */
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
