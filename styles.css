@@ -497,12 +497,13 @@ button:focus {
 
 /* Carousel container */
 #carousel-container {
-  position: relative;
-  /* display: flex; */
+  /* position: relative; */
+  display: flex;
   justify-content: center;
   align-items: center;
-  width: 100vw;
-  height: auto;
+  min-width: 100vw;
+  /* height: 35vh; */
+  min-height: 15rem;
   background-color: rgba(34, 34, 59, 0.8);
   backdrop-filter: blur(10px);
   padding: 10px 0;
@@ -513,14 +514,14 @@ button:focus {
 /* Carousel */
 .card-carousel {
   display: flex;
-  gap: 12px;
-  overflow-x: auto; /* Enable horizontal scrolling */
+  gap: 1em;
+  overflow-x: auto; 
   padding: 10px;
-  scroll-behavior: smooth; /* Smooth scrolling */
+  scroll-behavior: smooth; 
 }
 
 .card-carousel::-webkit-scrollbar {
-  height: 8px; /* Set the height of the horizontal scroll bar */
+  height: 8px;
 }
 
 .card-carousel::-webkit-scrollbar-thumb {
