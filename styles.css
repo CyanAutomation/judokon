@@ -508,16 +508,16 @@ button:focus {
   backdrop-filter: blur(10px);
   padding: 10px 0;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 /* Carousel */
 .card-carousel {
   display: flex;
   gap: 1em;
-  overflow-x: auto; 
+  overflow-x: auto;
   padding: 10px;
-  scroll-behavior: smooth; 
+  scroll-behavior: smooth;
 }
 
 .card-carousel::-webkit-scrollbar {
@@ -538,7 +538,7 @@ button:focus {
   position: relative;
   /* top: 50%; */
   /* transform: translateY(-50%); */
-  background-color: rgba(0, 0, 0, 0.1); 
+  background-color: rgba(0, 0, 0, 0.1);
   color: white;
   border: 1px solid #838383;
   border-radius: 50%;
@@ -549,7 +549,7 @@ button:focus {
   justify-content: center;
   align-items: center;
   /* cursor: pointer; */
-  z-index: 10; 
+  z-index: 10;
   transition: background-color scale box-shadow 0.9s ease-in-out;
 }
 
