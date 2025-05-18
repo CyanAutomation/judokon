@@ -69,9 +69,9 @@ body {
   background-repeat: repeat; /* Tile the background */
   backdrop-filter: brightness(0.9); /* Apply brightness filter */
   background-size: clamp(240px, 35vw, 420px); /* Responsive background size */
-  display: flex;
-  justify-content: space-between;
-  flex-direction: column;
+  /* display: flex; */
+  /* justify-content: space-between; */
+  /* flex-direction: column; */
 }
 
 /* Container for main content */
@@ -509,6 +509,36 @@ button:focus {
   padding: 10px 0;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
   overflow: hidden;
+}
+
+.scrollCarousel {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  scroll-snap-type: x mandatory; /* Enable snap scrolling */
+  overscroll-behavior-x: contain; /* Prevent overscroll */
+  scroll-behavior: smooth; /* Smooth scrolling */
+}
+
+.locationCarousel {
+  overflow-x: auto;
+  width: 100vw;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  & li {
+    scroll-snap-align: center;
+  }
+}
+
+.locationTile {
+  max-height: 50vh;
+  width: auto;
 }
 
 /* Carousel */

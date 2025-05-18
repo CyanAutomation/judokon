@@ -3,56 +3,61 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="keywords" content="judo, card game, web game, IJF, judoka" />
+    <meta name="keywords" content="judo, card game, web game, judoka" />
     <meta name="author" content="Marc Scheimann" />
     <meta
       name="description"
-      content="JU-DO-KON! A web-based judo-themed card battle game featuring IJF judoka."
+      content="JU-DO-KON! A web-based judo-themed card battle game featuring elite judoka."
     />
     <meta property="og:title" content="JU-DO-KON!" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://cyanautomation.github.io/judokon/" />
     <meta
       property="og:description"
-      content="JU-DO-KON! A web-based judo-themed card battle game featuring IJF judoka."
+      content="JU-DO-KON! A web-based judo-themed card battle game featuring elite judoka."
     />
     <meta name="theme-color" content="#22223b" />
     <title>Ju-Do-Kon!</title>
-    <link rel="preload" href="styles.css" as="style" />
-    <!-- <link rel="stylesheet" href="/judokon/styles.css" /> -->
-    <link rel="stylesheet" href="styles.css" />
-    <!-- <link rel="preload" href="game.js" as="script" /> -->
+    <link rel="preload" href="/styles.css" as="style" />
+    <link rel="stylesheet" href="/styles.css" />
     <link rel="icon" type="image/png" href="/judokon/images/favicon.ico" />
   </head>
 
   <body>
     <header>
-      <h1>JU-DO-KON!</h1>
-      <p class="subtitle">A web-based judo-themed card battle game featuring elite judoka</p>
+      <nav class="bottom-navbar">
+        <ul>
+          <li>JU-DO-KON!</li>
+        </ul>
+      </nav>
     </header>
 
     <main class="container" role="main">
-      <!-- Section for the game area -->
-      <section id="game-section">
-        <div id="gameArea" class="hidden" aria-live="polite"></div>
-      </section>
-
-      <!-- Section for the carousel -->
-      <section id="carousel-section">
-        <div id="carousel-container" class="hidden"></div>
+      <section id="locationNavigation">
+        <div id="scrollCarousel" class="scrollCarousel">
+          <div id="locationCarousel" class="locationCarousel">
+            <ul class="content">
+              <li><a href="pages/randomJudoka.html"><img src="/assets/locationTiles/bgTileKodokan.png" class="locationTile"></a></li>
+              <li><a href="pages/createJudoka.html"><img src="/assets/locationTiles/bgTileDojo.png" class="locationTile"></a></li>
+              <li><a href="pages/updateJudoka.html"><img src="/assets/locationTiles/bgTileDojo.png" class="locationTile"></a></li>
+              <li><a href="pages/battleJudoka.html"><img src="/assets/locationTiles/bgTileBudokan.png" class="locationTile"></a></li>
+            </ul>
+          </div>
+        </div>    
       </section>
     </main>
 
     <footer>
       <nav class="bottom-navbar">
         <ul>
-          <li><a href="pages/randomJudoka.html" aria-label="Random Judoka">Random Judoka</a></li>
-          <li><a href="pages/updateJudoka.html" aria-label="Update Judoka">Update Judoka</a></li>
-          <li><button id="showRandom" aria-label="Random Judoka" title="Random">Random</button></li>
-          <li><button id="showCarousel">Show All Cards</button></li>
-          <li>
+          <li><a href="pages/randomJudoka.html">Random Judoka</a></li>
+          <li><a href="pages/createJudoka.html">Create Judoka</a></li>
+          <li><a href="pages/updateJudoka.html">Update Judoka</a></li>
+          <li><a href="pages/battleJudoka.html">Battle!</a></li>
+          <!-- <li><button id="showCarousel">Show All Cards</button></li> -->
+          <!-- <li>
             <button id="hideCard" aria-label="Hide Cards" title="Hide Cards">Hide Cards</button>
-          </li>
+          </li> -->
         </ul>
       </nav>
     </footer>
