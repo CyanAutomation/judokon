@@ -553,7 +553,6 @@ button:focus {
   outline-offset: 4px;
 }
 
-/* Bottom Navbar */
 .top-navbar {
   display: inline-flex;
   position: relative;
@@ -563,7 +562,7 @@ button:focus {
   background-color: #22223b;
   color: #fff;
   text-align: center;
-  padding: 1.5vh 0;
+  /* padding: 1.5vh 0; */
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
   border: solid 1px #22223b;
   list-style-type: none;
