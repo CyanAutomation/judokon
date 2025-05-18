@@ -43,7 +43,7 @@
 *::after {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  /* box-sizing: border-box; */
 }
 
 .noscript-warning {
@@ -53,44 +53,32 @@
 
 /* General body styles */
 body {
-  font-family: Arial, Helvetica, sans-serif; /* Default font family */
+  font-family: Arial, Helvetica, sans-serif;
   background: linear-gradient(
     to bottom,
     var(--primary-bg),
     var(--secondary-bg)
   ); /* Gradient background */
   color: var(--text-color); /* Default text color */
-  text-align: center; /* Center-align text */
-  margin: 0;
-  /* padding: var(--padding-small); */
+  /* text-align: center; */
   min-height: 100vh; /* Ensure the body takes up the full height */
   min-width: 100vw; /* Ensure the body takes up the full width */
-  background-image: url("./assets/locationTiles/bgTileGeneral.jpg");
-  background-repeat: repeat; /* Tile the background */
-  backdrop-filter: brightness(0.9); /* Apply brightness filter */
-  background-size: clamp(240px, 35vw, 420px); /* Responsive background size */
-  /* display: flex; */
-  /* justify-content: space-between; */
-  /* flex-direction: column; */
+  /* background-image: url("./assets/locationTiles/bgTileGeneral.jpg"); */
+  /* background-repeat: repeat; */
+  backdrop-filter: brightness(0.9);
+  background-size: clamp(240px, 35vw, 420px);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  /* display: flex;
+  flex-direction: column;  */
 }
 
-/* Container for main content */
-.container {
-  padding: 0;
-  margin: 0;
-}
-
-/* Styles for the main title (h1) */
-h1 {
-  font-size: 2rem; /* Large font size for the title */
-  letter-spacing: 2px; /* Add spacing between letters */
-  margin-bottom: 0.2rem; /* Add space below the title */
-}
-
-/* Styles for the subtitle */
-.subtitle {
-  font-size: 1rem; /* Medium font size */
-  margin-bottom: 0.2rem; /* Add space below the subtitle */
+.containerHome {
+  /* display: grid; */
+  /* flex: 1; */
+  /* border: 10px solid red; */
+  display: flex;
+  align-items: center;
 }
 
 /* Button styles */
@@ -114,47 +102,9 @@ button:focus {
   text-decoration: underline; /* Add underline for focus */
 }
 
-/* Utility classes */
-.spinner {
-  width: 40px;
-  height: 40px;
-  margin: 20px auto;
-  border: 5px solid #ccc;
-  border-top: 5px solid #0c3f7a; /* your dark blue */
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-/* Animation Keyframes */
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 /* Optional: Hide spinner by default with the hidden class */
 .hidden {
   display: none;
-}
-
-.screen {
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.5s ease,
-    visibility 0.5s ease;
-}
-
-.screen.active {
-  opacity: 1;
-  visibility: visible;
-}
-
-.text-center {
-  text-align: center; /* Center-align text */
 }
 
 #gameArea {
@@ -273,11 +223,9 @@ button:focus {
 .card-name {
   text-align: left; /* Left-align the text */
   flex-direction: column; /* Stack items vertically */
-  /* margin: 0;  */
   padding: 0;
   white-space: nowrap;
   display: flex;
-  /* position: relative; */
   justify-content: left;
   max-width: 250px;
   min-width: 100px;
@@ -290,8 +238,7 @@ button:focus {
   font-size: clamp(0.7rem, 5vw, 1.1rem);
   font-weight: normal; /* Normal font weight */
   display: block;
-  /* margin: 0; */
-  /* padding: 0; */
+
   letter-spacing: clamp(0.5px, 0.5px, 1px);
 }
 
@@ -299,14 +246,11 @@ button:focus {
   font-size: clamp(0.7rem, 6vw, 1.5rem);
   font-weight: bold; /* Bold font weight */
   text-transform: uppercase; /* Uppercase text */
-  /* margin: 0;  */
-  /* padding: 0; */
   letter-spacing: clamp(0.5px, 0.5px, 1px);
 }
 
 /* Styles for the country flag */
 .card-flag {
-  /* position: relative; */
   padding: 0;
   margin: 0;
   display: flex;
@@ -325,10 +269,6 @@ button:focus {
   aspect-ratio: 3/2;
   max-width: 60px;
   border-radius: clamp(1px, 1vw, 5px);
-  /* padding: 0; */
-  /* position: relative; */
-  /* justify-content: right; */
-  /* margin-right: 0; */
   border: 1px solid #fff;
 }
 /* Portrait section of the card */
@@ -429,14 +369,11 @@ button:focus {
 /* Parent container for the signature move section */
 .signature-move-container {
   display: inline-flex;
-  /* justify-content: space-between; */
   align-items: center;
   flex-direction: row;
-  /* height: max-content; */
   width: 100%;
   height: 100%;
   max-height: 40px;
-  /* margin-top: 0; */
   font-weight: bold;
 }
 
@@ -452,7 +389,6 @@ button:focus {
   white-space: nowrap;
   padding: clamp(5px, 2.3vw, 9px) 8px;
   font-size: clamp(8px, 4vw, 15px);
-  /* letter-spacing: 0.4px; */
   max-width: 150px;
   min-width: 90px;
   flex: 1 1 0;
@@ -512,7 +448,7 @@ button:focus {
 }
 
 .scrollCarousel {
-  display: inline-flex;
+  display: flex;
   justify-content: center;
   align-items: center;
   width: 100vw;
@@ -520,6 +456,8 @@ button:focus {
   scroll-snap-type: x mandatory; /* Enable snap scrolling */
   overscroll-behavior-x: contain; /* Prevent overscroll */
   scroll-behavior: smooth; /* Smooth scrolling */
+  justify-content: space-evenly;
+  align-items: center;
 }
 
 .locationCarousel {
@@ -528,7 +466,7 @@ button:focus {
   scroll-snap-type: x mandatory;
   overscroll-behavior-x: contain;
   scroll-behavior: smooth;
-  display: inline-flex;
+  display: flex;
   justify-content: center;
   align-items: center;
   & li {
@@ -536,9 +474,22 @@ button:focus {
   }
 }
 
+.locationTileContainer {
+  width: 100vw;
+  padding: 20px;
+  display: flex;
+  gap: 2vw;
+  list-style-type: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
 .locationTile {
-  max-height: 50vh;
+  max-height: 36vh;
   width: auto;
+  border-radius: 1rem;
+  flex: 0 0 100%;
+  scroll-snap-align: center;
 }
 
 /* Carousel */
@@ -603,38 +554,46 @@ button:focus {
 }
 
 /* Bottom Navbar */
-.bottom-navbar {
+.top-navbar {
   display: inline-flex;
-  align-items: flex-end;
+  position: relative;
+  top: 0;
   width: 100vw;
   justify-content: space-evenly;
   background-color: #22223b;
   color: #fff;
   text-align: center;
   padding: 1.5vh 0;
-  /* margin-bottom: 5px; */
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
   border: solid 1px #22223b;
+  list-style-type: none;
+}
+
+.top-navbar ul {  
+  list-style: none;
+}
+
+.bottom-navbar {
+  padding: 1.5vh 0;
+  height: auto; /* Ensure it adjusts to its content */
+  width: 100%; /* Make it span the full width */
+  background-color: #22223b; /* Background color */
+  text-align: center;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2); 
+  /* border: solid 1px #22223b;  */
 }
 
 .bottom-navbar ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-}
-
-.bottom-navbar li {
-  display: inline;
-  margin: 0;
+  display: inline-flex;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 1rem;
+  list-style-type: none; 
 }
 
 .bottom-navbar a {
   color: #fff;
-  text-decoration: none;
-  font-weight: bold;
+  text-decoration: none
 }
 
 .bottom-navbar a:hover {
