@@ -61,18 +61,21 @@ body {
   ); /* Gradient background */
   color: var(--text-color); /* Default text color */
   /* text-align: center; */
-  min-height: 98dvh;
+  min-height: 100dvh;
   /* height: 100%; */
-  min-width: 100vw; /* Ensure the body takes up the full width */
+  /* min-width: 98vw; */
+  min-width: 100vw;
   /* background-image: url("./assets/locationTiles/bgTileGeneral.jpg"); */
   /* background-repeat: repeat; */
   backdrop-filter: brightness(0.9);
-  background-size: clamp(240px, 35vw, 420px);
+  /* background-size: clamp(240px, 35vw, 420px); */
   display: grid;
   grid-template-rows: auto 1fr auto;
   /* display: flex;
   flex-direction: column;  */
   flex: 1;
+  /* border: solid 5px red; */
+  overflow: hidden;
 }
 
 .containerHome {
@@ -453,18 +456,18 @@ button:focus {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100vw;
+  /* width: 100vw; */
   overflow-x: auto; /* Enable horizontal scrolling */
   scroll-snap-type: x mandatory; /* Enable snap scrolling */
   overscroll-behavior-x: contain; /* Prevent overscroll */
   scroll-behavior: smooth; /* Smooth scrolling */
   justify-content: space-evenly;
-  align-items: center;
+  /* border: solid 5px red; */
 }
 
 .locationCarousel {
   overflow-x: auto;
-  width: 100vw;
+  /* width: 100vw; */
   scroll-snap-type: x mandatory;
   overscroll-behavior-x: contain;
   scroll-behavior: smooth;
@@ -474,24 +477,29 @@ button:focus {
   & li {
     scroll-snap-align: center;
   }
+  /* border: solid 5px red; */
 }
 
 .locationTileContainer {
-  width: 100vw;
+  /* width: 100vw; */
   padding: 20px;
   display: flex;
   gap: 2vw;
+  flex: 0 1 100%;
   list-style-type: none;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
+  border: solid 5px red;
 }
 
 .locationTile {
   max-height: 36vh;
   width: auto;
   border-radius: 1rem;
-  flex: 0 0 100%;
+  flex: 0 1 100%;
+  aspect-ratio: 1/1;
   scroll-snap-align: center;
+  border: solid 5px red;
 }
 
 /* Carousel */
@@ -560,7 +568,7 @@ button:focus {
   position: relative;
   top: 0;
   min-height: 2dvh;
-  width: 100vw;
+  min-width: 100vw;
   justify-content: space-evenly;
   background-color: #22223b;
   color: #fff;
@@ -569,6 +577,7 @@ button:focus {
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
   border: solid 1px #22223b;
   list-style-type: none;
+  /* border: solid 5px red; */
 }
 
 .top-navbar ul {
@@ -578,11 +587,12 @@ button:focus {
 .bottom-navbar {
   padding: 1vh 0;
   min-height: 2dvh;
-  width: 100%; /* Make it span the full width */
+  min-width: 100vw; /* Make it span the full width */
   background-color: #22223b; /* Background color */
   text-align: center;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
   /* border: solid 1px #22223b;  */
+  /* border: solid 5px red; */
 }
 
 .bottom-navbar ul {
