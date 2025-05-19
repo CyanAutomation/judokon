@@ -61,7 +61,7 @@ body {
   ); /* Gradient background */
   color: var(--text-color); /* Default text color */
   /* text-align: center; */
-  min-height: 100dvh;
+  min-height: 98dvh;
   /* height: 100%; */
   min-width: 100vw; /* Ensure the body takes up the full width */
   /* background-image: url("./assets/locationTiles/bgTileGeneral.jpg"); */
@@ -559,7 +559,7 @@ button:focus {
   display: inline-flex;
   position: relative;
   top: 0;
-  min-height: 5vh;
+  min-height: 3dvh;
   width: 100vw;
   justify-content: space-evenly;
   background-color: #22223b;
@@ -577,7 +577,7 @@ button:focus {
 
 .bottom-navbar {
   padding: 1.5vh 0;
-  min-height: 5vh;
+  min-height: 3dvh;
   width: 100%; /* Make it span the full width */
   background-color: #22223b; /* Background color */
   text-align: center;
