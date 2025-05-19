@@ -58,12 +58,9 @@ body {
     to bottom,
     var(--primary-bg),
     var(--secondary-bg)
-  ); /* Gradient background */
+  );
   color: var(--text-color); /* Default text color */
-  /* text-align: center; */
   min-height: 100dvh;
-  /* height: 100%; */
-  /* min-width: 98vw; */
   min-width: 100vw;
   /* background-image: url("./assets/locationTiles/bgTileGeneral.jpg"); */
   /* background-repeat: repeat; */
@@ -71,22 +68,38 @@ body {
   /* background-size: clamp(240px, 35vw, 420px); */
   display: grid;
   grid-template-rows: auto 1fr auto;
-  /* display: flex;
-  flex-direction: column;  */
   flex: 1 1 auto;
   /* border: solid 5px red; */
   overflow: hidden;
 }
 
 .containerHome {
-  /* display: grid; */
-  /* flex: 1; */
-  border: 10px solid red;
   display: inline-flex;
   align-items: center;
   flex: 1 1 auto;
   justify-content: center;
   object-fit: contain;
+  /* border: 10px solid red; */
+}
+
+.locationTileContainer {
+  padding: 10px;
+  display: inline-flex;
+  gap: 2vw;
+  flex: 1 1 auto;
+  list-style-type: none;
+  border: solid 5px red;
+}
+
+.locationTile {
+  max-width: 100%; 
+  max-height: 36vh;
+  width: auto;
+  aspect-ratio: 1 / 1; 
+  border-radius: 1rem;
+  flex: 1 1 auto;
+  border: solid 5px red;
+  object-fit: contain; 
 }
 
 /* Button styles */
@@ -453,25 +466,6 @@ button:focus {
   padding: 10px 0;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-}
-
-.locationTileContainer {
-  /* width: 100vw; */
-  padding: 10px;
-  display: inline-flex;
-  gap: 2vw;
-  flex: 1 1 auto;
-  list-style-type: none;
-  border: solid 5px red;
-}
-
-.locationTile {
-  max-height: 36vh;
-  width: auto;
-  border-radius: 1rem;
-  flex: 1 1 auto;
-  aspect-ratio: 1/1;
-  border: solid 5px red;
 }
 
 /* Carousel */

@@ -18,15 +18,18 @@
     />
     <meta name="theme-color" content="#22223b" />
     <title>Ju-Do-Kon!</title>
-    <link rel="preload" href="/styles.css" as="style" />
-    <link rel="stylesheet" href="/styles.css" />
-    <link rel="icon" type="image/png" href="/judokon/images/favicon.ico" />
+    <link rel="preload" href="styles.css" as="style" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" type="image/png" href="images/favicon.ico" />
   </head>
 
   <body>
     <header>
-      <h1>JU-DO-KON!</h1>
-      <p class="subtitle">A web-based judo-themed card battle game featuring elite judoka</p>
+      <nav class="top-navbar">
+        <ul>
+          <li><a href="index.html">JU-DO-KON!</a></li>
+        </ul>
+      </nav>
     </header>
 
     <main class="container" role="main">
@@ -44,12 +47,9 @@
     <footer>
       <nav class="bottom-navbar">
         <ul>
-          <li><a href="https://cyanautomation.github.io/judokon/" aria-label="Reset">Reset</a></li>
-          <li><button id="showRandom" aria-label="Random Judoka" title="Random">Random</button></li>
-          <li><button id="showCarousel">Show All Cards</button></li>
-          <li>
-            <button id="hideCard" aria-label="Hide Cards" title="Hide Cards">Hide Cards</button>
-          </li>
+          <li><a href="pages/randomJudoka.html">View Judoka</a></li>
+          <li><a href="pages/updateJudoka.html">Update Judoka</a></li>
+          <li><a href="pages/battleJudoka.html">Battle!</a></li>
         </ul>
       </nav>
     </footer>
