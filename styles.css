@@ -559,6 +559,7 @@ button:focus {
   display: inline-flex;
   position: relative;
   top: 0;
+  min-height: 5vh;
   width: 100vw;
   justify-content: space-evenly;
   background-color: #22223b;
@@ -576,7 +577,7 @@ button:focus {
 
 .bottom-navbar {
   padding: 1.5vh 0;
-  height: auto; /* Ensure it adjusts to its content */
+  min-height: 5vh;
   width: 100%; /* Make it span the full width */
   background-color: #22223b; /* Background color */
   text-align: center;
