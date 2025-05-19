@@ -73,7 +73,7 @@ body {
   grid-template-rows: auto 1fr auto;
   /* display: flex;
   flex-direction: column;  */
-  flex: 1;
+  flex: 1 1 auto;
   /* border: solid 5px red; */
   overflow: hidden;
 }
@@ -81,9 +81,12 @@ body {
 .containerHome {
   /* display: grid; */
   /* flex: 1; */
-  /* border: 10px solid red; */
-  display: flex;
+  border: 10px solid red;
+  display: inline-flex;
   align-items: center;
+  flex: 1 1 auto;
+  justify-content: center;
+  object-fit: contain;
 }
 
 /* Button styles */
@@ -452,43 +455,13 @@ button:focus {
   overflow: hidden;
 }
 
-.scrollCarousel {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  /* width: 100vw; */
-  overflow-x: auto; /* Enable horizontal scrolling */
-  scroll-snap-type: x mandatory; /* Enable snap scrolling */
-  overscroll-behavior-x: contain; /* Prevent overscroll */
-  scroll-behavior: smooth; /* Smooth scrolling */
-  justify-content: space-evenly;
-  /* border: solid 5px red; */
-}
-
-.locationCarousel {
-  overflow-x: auto;
-  /* width: 100vw; */
-  scroll-snap-type: x mandatory;
-  overscroll-behavior-x: contain;
-  scroll-behavior: smooth;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  & li {
-    scroll-snap-align: center;
-  }
-  /* border: solid 5px red; */
-}
-
 .locationTileContainer {
   /* width: 100vw; */
-  padding: 20px;
-  display: flex;
+  padding: 10px;
+  display: inline-flex;
   gap: 2vw;
-  flex: 0 1 100%;
+  flex: 1 1 auto;
   list-style-type: none;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
   border: solid 5px red;
 }
 
@@ -496,9 +469,8 @@ button:focus {
   max-height: 36vh;
   width: auto;
   border-radius: 1rem;
-  flex: 0 1 100%;
+  flex: 1 1 auto;
   aspect-ratio: 1/1;
-  scroll-snap-align: center;
   border: solid 5px red;
 }
 
