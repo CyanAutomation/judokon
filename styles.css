@@ -62,7 +62,7 @@ body {
   color: var(--text-color); /* Default text color */
   /* text-align: center; */
   /* min-height: 98vh; */
-  height: 100%
+  height: 100%;
   min-width: 100vw; /* Ensure the body takes up the full width */
   /* background-image: url("./assets/locationTiles/bgTileGeneral.jpg"); */
   /* background-repeat: repeat; */
