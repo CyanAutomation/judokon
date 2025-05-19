@@ -20,7 +20,7 @@
     <title>Ju-Do-Kon!</title>
     <link rel="preload" href="../styles.css" as="style" />
     <link rel="stylesheet" href="../styles.css" />
-    <link rel="icon" type="image/png" href="images/favicon.ico" />
+    <link rel="icon" type="image/png" href="../images/favicon.ico" />
   </head>
 
   <body>
@@ -33,10 +33,6 @@
     </header>
 
     <main class="container" role="main">
-      <!-- Section for the game area -->
-      <section id="game-section">
-        <div id="gameArea" class="hidden" aria-live="polite"></div>
-      </section>
 
       <!-- Section for the carousel -->
       <section id="carousel-section">
@@ -60,11 +56,5 @@
       </p>
     </noscript>
 
-    <script type="module" src="./game.js" defer></script>
-    <script nomodule>
-      alert(
-        "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
-      );
-    </script>
   </body>
 </html>
