@@ -53,12 +53,8 @@
 
 /* General body styles */
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(
-    to bottom,
-    var(--primary-bg),
-    var(--secondary-bg)
-  );
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(to bottom, var(--primary-bg), var(--secondary-bg));
   color: var(--text-color); /* Default text color */
   min-height: 100dvh;
   min-width: 100vw;
@@ -161,14 +157,14 @@ body {
 }
 
 .locationTile {
-  max-width: 100%; 
+  max-width: 100%;
   max-height: 36vh;
   width: auto;
-  aspect-ratio: 1 / 1; 
+  aspect-ratio: 1 / 1;
   border-radius: 1rem;
   flex: 1 1 auto;
   border: solid 5px red;
-  object-fit: contain; 
+  object-fit: contain;
 }
 
 .locationTileSmall {
@@ -184,7 +180,7 @@ body {
 .locationTileSmall img {
   max-width: 10vh;
   height: auto;
-  aspect-ratio: 1 / 1; 
+  aspect-ratio: 1 / 1;
   border-radius: 1rem;
   flex: 1 1 auto;
 }
@@ -656,7 +652,7 @@ button:focus {
   list-style-type: none;
 }
 
-.bottom-navbar a, 
+.bottom-navbar a,
 .top-navbar a {
   color: #fff;
   text-decoration: none;
