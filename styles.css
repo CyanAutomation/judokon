@@ -85,12 +85,33 @@ body {
   align-items: center;
 }
 
+.kodokan-screen {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  min-height: 100dvh;
+  max-width: 100%;
+  align-items: center;
+}
+
+.kodokan-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+}
+
+.helper-container {
+  grid-column: 1/1;
+  /* max-height: max-content%; */
+  /* width: auto; */
+  background-color: red;
+}
+
 .header {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   /* padding: 1rem 2rem; */
   background-color: #a71916;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .character-slot {
@@ -108,7 +129,7 @@ body {
   height: 5dvh;
 }
 
-.main-grid {
+.game-mode-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 1rem;
@@ -560,28 +581,29 @@ button:focus {
 }
 
 /* Carousel container */
-#carousel-container {
+.carousel-container {
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100vw;
+  /* width: 100dvw; */
   /* height: 35vh; */
-  min-height: 12rem;
+  /* min-height: auto; */
   background-color: rgba(34, 34, 59, 0.8);
   backdrop-filter: blur(10px);
-  padding: 10px 0;
+  /* padding: 10px 0; */
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
   overflow: hidden;
 }
 
-/* Carousel */
 .card-carousel {
   display: flex;
   gap: 1em;
   overflow-x: auto;
-  padding: 10px;
+  /* padding: 10px; */
   scroll-behavior: smooth;
+  /* max-height: 90dvh; */
+  background-color: royalblue;
 }
 
 .card-carousel::-webkit-scrollbar {
@@ -687,7 +709,7 @@ button:focus {
 }
 
 .country-flag-slider {
-	background: rgb(0, 0, 0, 0.5);
+	background: rgba(0, 32, 82, 0.5);
 	/* box-shadow: 0 10px 20px -5px rgba(0, 0, 0, .125); */
 	/* height: 100px; */
 	/* margin: auto; */
@@ -695,10 +717,10 @@ button:focus {
 	position: relative;
 	width: 100%;
 	
-	&::before,
+	/* &::before,
 	&::after {
 		content: "";
-		/* height: 100px; */
+		height: auto;
 		position: absolute;
 		width: 200px;
 		z-index: 2;
@@ -713,12 +735,12 @@ button:focus {
 	&::before {
 		left: 0;
 		top: 0;
-	}
+	} */
 
   .country-flag-slide-track {
 		animation: scroll var(--slide-track-speed) linear infinite;
 		display: flex;
-		width: calc(250px * 14);
+		/* width: calc(250px * 14); */
 	}
 
   .slide {

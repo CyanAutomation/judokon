@@ -24,49 +24,78 @@
   </head>
 
   <body>
-    <header class="header">
-      <div class="character-slot left"></div>
-      <div class="logo-container">
-        <img src="judokonLogoFull.png" alt="JU-DO-KON! Logo" class="logo" />
-      </div>
-      <div class="character-slot right"></div>
-    </header>
+    <div class="kodokan-screen">
+      <header class="header">
+        <div class="character-slot left"></div>
+        <div class="logo-container">
+          <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
+        </div>
+        <div class="character-slot right"></div>
+      </header>
 
-    <div class="country-flag-slider">
-      <div class="country-flag-slide-track" id="country-list">
+      <main class="kodokan-grid" role="main">
+        <div class="helper-container">TEST</div>
+        <div class="carousel-container"></div>
+      </main>
+
+      <div class="country-flag-slider">
+        <div class="country-flag-slide-track" id="country-list">
           <!-- Country names will be dynamically inserted here -->
+        </div>
       </div>
+
+      <footer>
+        <nav class="bottom-navbar">
+          <ul>
+            <li><a href="randomJudoka.html">View Judoka</a></li>
+            <li><a href="updateJudoka.html">Update Judoka</a></li>
+            <li><a href="battleJudoka.html">Battle!</a></li>
+          </ul>
+        </nav>
+      </footer>
+
+      <noscript>
+        <p class="noscript-warning">
+          JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
+        </p>
+      </noscript>
+
+      <script type="module">
+        import { buildCardCarousel } from "../helpers/carouselBuilder.js";
+        import { populateCountryList } from "../helpers/countryUtils.js";
+
+        document.addEventListener("DOMContentLoaded", async () => {
+          // Build the carousel
+          const carouselContainer = document.querySelector(".carousel-container");
+          const judokaList = [
+            { id: 1, firstname: "Teddy", surname: "Riner", country: "France" },
+            { id: 2, firstname: "Shohei", surname: "Ono", country: "Japan" },
+            { id: 3, firstname: "Clarisse", surname: "Agbegnenou", country: "France" },
+          ];
+          const gokyoData = [
+            { id: 1, name: "Ippon Seoi Nage" },
+            { id: 2, name: "Uchi Mata" },
+            { id: 3, name: "Ouchi Gari" },
+          ];
+
+          try {
+            const carousel = await buildCardCarousel(judokaList, gokyoData);
+            carouselContainer.appendChild(carousel);
+          } catch (error) {
+            console.error("Error building the carousel:", error);
+          }
+
+          // Populate the country list
+          const countryListContainer = document.getElementById("country-list");
+          populateCountryList(countryListContainer);
+        });
+      </script>
+
+      <script nomodule>
+        alert(
+          "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
+        );
+      </script>
     </div>
-
-    <footer>
-      <nav class="bottom-navbar">
-        <ul>
-          <li><a href="randomJudoka.html">View Judoka</a></li>
-          <li><a href="updateJudoka.html">Update Judoka</a></li>
-          <li><a href="battleJudoka.html">Battle!</a></li>
-        </ul>
-      </nav>
-    </footer>
-
-    <noscript>
-      <p class="noscript-warning">
-        JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
-      </p>
-    </noscript>
-
-    <script type="module">
-      import { populateCountryList } from "../helpers/countryUtils.js";
-    
-      document.addEventListener("DOMContentLoaded", () => {
-        const countryListContainer = document.getElementById("country-list");
-        populateCountryList(countryListContainer);
-      });
-    </script>
-
-    <script nomodule>
-      alert(
-        "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
-      );
-    </script>
   </body>
 </html>
