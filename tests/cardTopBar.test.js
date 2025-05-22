@@ -139,7 +139,7 @@ describe("cardTopBar.js", () => {
         const flagImage = createFlagImage(finalFlagUrl, countryName);
 
         // Normalize whitespace and quotes for comparison
-        const normalizeHtml = (html) => html.replace(/\s+/g, " ").trim();
+        const normalizeHtml = (html) => html.replace(/\s+/g, " ").replace(/"/g, "'").trim();
         expect(normalizeHtml(flagImage.outerHTML)).toBe(normalizeHtml(expectedHtml));
       }
     );

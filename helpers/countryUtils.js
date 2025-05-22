@@ -34,6 +34,7 @@ async function loadCountryCodeMapping() {
       console.warn(`Invalid country code entry found:`, entry);
     }
   });
+  console.log("Loaded country code mapping:", data);
 
   return data;
 }
@@ -74,7 +75,8 @@ export async function getCountryNameFromCode(code) {
     (entry) => entry.code.toLowerCase() === code.toLowerCase() && entry.active
   );
 
-  // Fallback to Vanuatu if no match is found
+  console.log(`Resolved country name for code "${code}":`, match ? match.country : "Vanuatu");
+
   return match ? match.country : "Vanuatu";
 }
 
