@@ -24,35 +24,57 @@
   </head>
 
   <body>
-    <header class="header">
-      <div class="character-slot left"></div>
-      <div class="logo-container">
-        <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
-      </div>
-      <div class="character-slot right"></div>
-    </header>
+    <div class="home-screen">
+      <header class="header">
+        <div class="character-slot left"></div>
+        <div class="logo-container">
+          <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
+        </div>
+        <div class="character-slot right"></div>
+      </header>
 
-    <main class="container" role="main">
-      <!-- Section for the carousel -->
-      <section id="carousel-section">
-        <div id="carousel-container" class="hidden"></div>
-      </section>
-    </main>
+      <div id="card-container" class="card-container"></div>
 
-    <footer>
-      <nav class="bottom-navbar">
-        <ul>
-          <li><a href="randomJudoka.html">View Judoka</a></li>
-          <li><a href="updateJudoka.html">Update Judoka</a></li>
-          <li><a href="battleJudoka.html">Battle!</a></li>
-        </ul>
-      </nav>
-    </footer>
-
-    <noscript>
-      <p class="noscript-warning">
-        JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
-      </p>
-    </noscript>
+      <footer>
+        <nav class="bottom-navbar">
+          <ul>
+            <li><a href="randomJudoka.html">View Judoka</a></li>
+            <li><a href="updateJudoka.html">Update Judoka</a></li>
+            <li><a href="battleJudoka.html">Battle!</a></li>
+          </ul>
+        </nav>
+      </footer>
+      <script type="module">
+        import { fetchDataWithErrorHandling } from "../helpers/dataUtils.js";
+        import { generateJudokaCardHTML } from "../helpers/cardBuilder.js";
+        import { getRandomJudoka } from "../helpers/cardUtils.js";
+      
+        async function displayRandomJudoka() {
+          const cardContainer = document.getElementById("card-container");
+      
+          try {
+            const judokaData = await fetchDataWithErrorHandling("../data/judoka.json");
+            console.log("Fetched judoka data:", judokaData);           
+             
+            const randomJudoka = getRandomJudoka(judokaData);
+      
+            const judokaCard = await generateJudokaCardHTML(randomJudoka);
+      
+            cardContainer.innerHTML = ""; // Clear any existing content
+            cardContainer.appendChild(judokaCard);
+          } catch (error) {
+            console.error("Error displaying random judoka:", error);
+            cardContainer.innerHTML = "<p>⚠️ Failed to load judoka data. Please try again later.</p>";
+          }
+        }
+      
+        // Call the function to display a random judoka when the page loads
+        displayRandomJudoka();
+      </script>
+      <noscript>
+        <p class="noscript-warning">
+          JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
+        </p>
+      </noscript>
   </body>
 </html>

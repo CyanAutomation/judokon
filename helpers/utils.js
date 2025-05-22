@@ -113,19 +113,20 @@ export function formatDate(dateString) {
  * @returns {Object<string, GokyoEntry>} A lookup object with gokyo IDs as keys.
  */
 export function createGokyoLookup(gokyoData) {
-  // Step 1: Check if gokyoData is valid
   if (!Array.isArray(gokyoData) || gokyoData.length === 0) {
-    console.error("gokyoData is empty or undefined");
-    return {}; // Return an empty object if gokyoData is invalid
+    console.error("Invalid gokyoData: Expected a non-empty array.");
+    return {};
   }
 
-  // Step 2: Transform gokyoData into a lookup object
-  return gokyoData.reduce((acc, move) => {
+  const lookup = gokyoData.reduce((acc, move) => {
     if (!move.id || !move.name) {
       console.warn("Invalid GokyoEntry:", move);
-      return acc; // Skip invalid entries
+      return acc;
     }
-    acc[move.id] = move; // Use the move's ID as the key and the move object as the value
+    acc[move.id] = move;
     return acc;
-  }, {}); // Initialize the accumulator as an empty object
+  }, {});
+
+  console.log("Created Gokyo Lookup:", lookup);
+  return lookup;
 }

@@ -270,6 +270,8 @@ button:focus {
   justify-content: center;
   align-items: center;
   padding: var(--padding-large);
+  background-color: seagreen;
+  min-height: 400px;
 }
 
 .judoka-card {

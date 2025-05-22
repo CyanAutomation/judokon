@@ -1,6 +1,6 @@
 import { getValue } from "./utils.js";
 
-const PLACEHOLDER_PORTRAIT = "./assets/judokaPortraits/judokaPortrait-0.png";
+const PLACEHOLDER_PORTRAIT = "../assets/judokaPortraits/judokaPortrait-0.png";
 
 /**
  * Generates the portrait HTML for a judoka card.
@@ -23,6 +23,8 @@ const PLACEHOLDER_PORTRAIT = "./assets/judokaPortraits/judokaPortrait-0.png";
  * @returns {string} The HTML string for the portrait.
  */
 export function generateCardPortrait(card) {
+  console.log("Card object received:", card);
+
   if (!card) {
     console.warn("Judoka object is missing.");
     return `
@@ -32,14 +34,15 @@ export function generateCardPortrait(card) {
     `;
   }
 
-  const portraitUrl = card.judoka?.id
-    ? `./assets/judokaPortraits/judokaPortrait-${card.judoka.id}.png`
+  // Construct the portrait URL using the card's id
+  const portraitUrl = card.id
+    ? `../assets/judokaPortraits/judokaPortrait-${card.id}.png`
     : PLACEHOLDER_PORTRAIT;
 
-  const altText = `${getValue(card.judoka?.firstname, "Judoka")} ${getValue(
-    card.judoka?.surname,
-    ""
-  )}'s portrait`;
+  const altText = `${getValue(card.firstname, "Judoka")} ${getValue(card.surname, "")}'s portrait`;
+
+  console.log("Constructed portrait URL:", portraitUrl);
+  console.log("Constructed alt text:", altText);
 
   return `
     <div class="card-portrait">
@@ -119,7 +122,10 @@ export function generateCardStats(card, cardType = "common") {
  * @returns {string} The HTML string for the signature move.
  */
 export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
-  const signatureMoveId = Number(card.judoka?.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
+  const signatureMoveId = Number(judoka.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
+
+  console.log("Signature Move ID:", signatureMoveId);
+  console.log("Gokyo Lookup Object:", gokyoLookup);
 
   const technique = (gokyoLookup && gokyoLookup[signatureMoveId]) ||
     (gokyoLookup && gokyoLookup[0]) || { id: 0, name: "Jigoku-guruma" };

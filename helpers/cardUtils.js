@@ -26,20 +26,20 @@ export function getRandomJudoka(data) {
     throw new Error("No judoka data available to select.");
   }
 
-  const index = Math.floor(Math.random() * data.length);
-  const selectedJudoka = data[index];
+  // Filter out invalid entries
+  const validJudoka = data.filter(
+    (judoka) =>
+      judoka.firstname && judoka.surname && judoka.country && judoka.stats && judoka.signatureMoveId
+  );
 
-  if (
-    !selectedJudoka.firstname ||
-    !selectedJudoka.surname ||
-    !selectedJudoka.country ||
-    !selectedJudoka.stats ||
-    !selectedJudoka.signatureMoveId
-  ) {
-    throw new Error("Selected judoka is missing required fields.");
+  if (validJudoka.length === 0) {
+    throw new Error("No valid judoka data available to select.");
   }
 
-  console.log("Random index:", index);
+  const index = Math.floor(Math.random() * validJudoka.length);
+  const selectedJudoka = validJudoka[index];
+
+  console.log("Selected judoka:", selectedJudoka);
   return selectedJudoka;
 }
 

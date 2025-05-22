@@ -133,9 +133,6 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   const countryCode = judoka.countryCode;
   const flagUrl = await getFlagUrl(countryCode || "vu"); // Default to "vu" (Vanuatu)
 
-  const genderClass = judoka.gender === "female" ? "female-card" : "male-card";
-  judokaCard.classList.add(genderClass);
-
   const cardType = judoka.rarity?.toLowerCase() || "common";
 
   // Create the main card container
@@ -144,6 +141,10 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
 
   const judokaCard = document.createElement("div");
   judokaCard.className = `judoka-card ${cardType}`;
+
+  // Add gender-specific class after initializing judokaCard
+  const genderClass = judoka.gender === "female" ? "female-card" : "male-card";
+  judokaCard.classList.add(genderClass);
 
   const topBarElement = await generateCardTopBar(judoka, flagUrl);
   judokaCard.appendChild(topBarElement);
