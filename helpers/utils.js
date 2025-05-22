@@ -90,3 +90,34 @@ export function formatDate(dateString) {
   if (isNaN(date.getTime())) return "Invalid Date";
   return date.toISOString().split("T")[0];
 }
+
+/**
+ * Transforms gokyoData into a lookup object for quick access.
+ *
+ * Pseudocode:
+ * 1. Check if `gokyoData` is valid:
+ *    - If `gokyoData` is `null`, `undefined`, or an empty array, log an error message and return an empty object.
+ *
+ * 2. Use the `reduce` method to transform the `gokyoData` array into a lookup object:
+ *    - Iterate over each `move` in the array.
+ *    - Use the `id` property of each `move` as the key in the lookup object.
+ *    - Assign the entire `move` object as the value for the corresponding key.
+ *
+ * 3. Return the resulting lookup object.
+ *
+ * @param {Array} gokyoData - Array of gokyo objects.
+ * @returns {Object} A lookup object with gokyo IDs as keys.
+ */
+export function createGokyoLookup(gokyoData) {
+  // Step 1: Check if gokyoData is valid
+  if (!gokyoData || gokyoData.length === 0) {
+    console.error("gokyoData is empty or undefined");
+    return {}; // Return an empty object if gokyoData is invalid
+  }
+
+  // Step 2: Transform gokyoData into a lookup object
+  return gokyoData.reduce((acc, move) => {
+    acc[move.id] = move; // Use the move's ID as the key and the move object as the value
+    return acc;
+  }, {}); // Initialize the accumulator as an empty object
+}

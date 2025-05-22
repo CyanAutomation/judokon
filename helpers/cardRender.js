@@ -75,7 +75,6 @@ export function generateCardStats(card, cardType = "common") {
 
   const { power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?" } = card.stats;
 
-  // Ensure the cardType is lowercase for consistency
   const cardClass = cardType.toLowerCase();
 
   return `
@@ -123,10 +122,8 @@ export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "commo
   const technique = (gokyoLookup && gokyoLookup[signatureMoveId]) ||
     (gokyoLookup && gokyoLookup[0]) || { id: 0, name: "Jigoku-guruma" };
 
-  // Extract the technique name or fallback to "Jigoku-guruma"
   const techniqueName = technique?.name || "Jigoku-guruma";
 
-  // Ensure the cardType is lowercase for consistency
   const cardClass = cardType.toLowerCase();
 
   return `

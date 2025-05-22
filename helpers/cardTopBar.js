@@ -1,6 +1,6 @@
 import { getCountryNameFromCode } from "./countryUtils.js";
 
-const PLACEHOLDER_FLAG_URL = "./assets/countryFlags/placeholder-flag.png";
+const PLACEHOLDER_FLAG_URL = "../assets/countryFlags/placeholder-flag.png";
 
 /**
  * Escapes special HTML characters in a string to prevent XSS (Cross-Site Scripting) attacks.
@@ -195,7 +195,6 @@ function createFlagImage(finalFlagUrl, countryName) {
   const flagContainer = document.createElement("div");
   flagContainer.className = "card-flag";
 
-  // Create the flag image
   const flagImg = document.createElement("img");
   flagImg.src = finalFlagUrl;
   flagImg.alt = `${countryName} flag`;
@@ -204,7 +203,6 @@ function createFlagImage(finalFlagUrl, countryName) {
     console.warn("Flag image failed to load, using placeholder:", PLACEHOLDER_FLAG_URL);
   };
 
-  // Append the image to the container
   flagContainer.appendChild(flagImg);
 
   return flagContainer; // Return the container div
@@ -254,25 +252,18 @@ export async function generateCardTopBar(judoka, flagUrl) {
     console.error("Judoka object is missing!");
     return createNoDataContainer();
   }
-
-  // Extract and sanitize judoka data
   const { firstname, surname, countryCode } = extractJudokaData(judoka);
 
-  // Resolve the country name
   const countryName = await resolveCountryName(countryCode);
 
-  // Determine the final flag URL
   const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;
 
-  // Create the main container
   const container = document.createElement("div");
   container.className = "card-top-bar";
 
-  // Create and append the name container
   const nameContainer = createNameContainer(firstname, surname);
   container.appendChild(nameContainer);
 
-  // Create and append the flag image
   const flagImg = createFlagImage(finalFlagUrl, countryName);
   container.appendChild(flagImg);
 

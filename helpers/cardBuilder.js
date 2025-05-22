@@ -26,11 +26,11 @@ import {
  * @param {string|Date|undefined} date - The last updated date as a string or Date.
  * @returns {string} The HTML string for the "last updated" section.
  */
-// function generateCardLastUpdated(date) {
-//   if (!date) return ""; // If date is undefined, don't render anything
-//   const safeDate = date instanceof Date ? date.toISOString().split("T")[0] : date;
-//   return `<div class="card-updated">Last updated: ${escapeHTML(safeDate)}</div>`;
-// }
+function generateCardLastUpdated(date) {
+  if (!date) return ""; // If date is undefined, don't render anything
+  const safeDate = date instanceof Date ? date.toISOString().split("T")[0] : date;
+  return `<div class="card-updated">Last updated: ${escapeHTML(safeDate)}</div>`;
+}
 
 /**
  * Validates the required fields of a Judoka object.
@@ -51,11 +51,29 @@ import {
  * @throws {Error} If required fields are missing.
  */
 function validateJudoka(judoka) {
-  const requiredFields = ["firstname", "surname", "country", "stats", "weightClass"];
+  const requiredFields = [
+    "firstname",
+    "surname",
+    "country",
+    "countryCode",
+    "stats",
+    "weightClass",
+    "signatureMoveId",
+    "rarity"
+  ];
   const missingFields = requiredFields.filter((field) => !judoka[field]);
 
   if (missingFields.length > 0) {
     throw new Error(`Invalid Judoka object: Missing required fields: ${missingFields.join(", ")}`);
+  }
+
+  const requiredStatsFields = ["power", "speed", "technique", "kumikata", "newaza"];
+  const missingStatsFields = requiredStatsFields.filter((field) => !judoka.stats?.[field]);
+
+  if (missingStatsFields.length > 0) {
+    throw new Error(
+      `Invalid Judoka stats: Missing required fields: ${missingStatsFields.join(", ")}`
+    );
   }
 }
 
@@ -109,12 +127,14 @@ function validateJudoka(judoka) {
  * @param {Object} gokyo - The Gokyo data (technique information).
  * @returns {HTMLElement} The DOM element for the complete judoka card.
  */
-
 export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   validateJudoka(judoka);
 
   const countryCode = judoka.countryCode;
   const flagUrl = await getFlagUrl(countryCode || "vu"); // Default to "vu" (Vanuatu)
+
+  const genderClass = judoka.gender === "female" ? "female-card" : "male-card";
+  judokaCard.classList.add(genderClass);
 
   const cardType = judoka.rarity?.toLowerCase() || "common";
 
@@ -125,39 +145,57 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   const judokaCard = document.createElement("div");
   judokaCard.className = `judoka-card ${cardType}`;
 
-  // Append the top bar
   const topBarElement = await generateCardTopBar(judoka, flagUrl);
   judokaCard.appendChild(topBarElement);
 
-  // Add the weight class badge inside the portrait element
   const portraitHTML = generateCardPortrait(judoka);
   const portraitElement = document.createElement("div");
-  portraitElement.className = "card-portrait"; // Ensure the correct class is applied
+  portraitElement.className = "card-portrait";
   portraitElement.innerHTML = portraitHTML;
 
-  // Create and append the weight class badge
   const weightClassElement = document.createElement("div");
   weightClassElement.className = "card-weight-class";
   weightClassElement.textContent = judoka.weightClass;
-  portraitElement.appendChild(weightClassElement); // Append to the portrait element
+  portraitElement.appendChild(weightClassElement);
 
-  // Append the portrait element to the judoka card
   judokaCard.appendChild(portraitElement);
 
-  // Append the stats
   const statsHTML = generateCardStats(judoka, cardType);
   const statsElement = document.createElement("div");
   statsElement.innerHTML = statsHTML;
   judokaCard.appendChild(statsElement);
 
-  // Append the signature move
   const signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
   const signatureMoveElement = document.createElement("div");
   signatureMoveElement.innerHTML = signatureMoveHTML;
   judokaCard.appendChild(signatureMoveElement);
 
-  // Append the judoka card to the card container
   cardContainer.appendChild(judokaCard);
 
-  return cardContainer; // Return the DOM element
+  return cardContainer;
+}
+
+/**
+ * Generates a single judoka card and appends it to the container.
+ *
+ * Pseudocode:
+ * 1. Call the `generateJudokaCardHTML` function:
+ *    - Pass the `judoka` object and `gokyoLookup` to generate the card's HTML structure.
+ * 2. Append the generated card to the specified container:
+ *    - Use the `appendChild` method to add the card to the DOM.
+ * 3. Handle errors:
+ *    - If an error occurs during card generation, log an error message to the console.
+ *    - Include the judoka's name in the error message for easier debugging.
+ *
+ * @param {Object} judoka - A judoka object containing data for the card.
+ * @param {Object} gokyoLookup - A lookup object for gokyo data.
+ * @param {HTMLElement} container - The container to append the card to.
+ */
+async function generateJudokaCard(judoka, gokyoLookup, container) {
+  try {
+    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+    container.appendChild(card);
+  } catch (error) {
+    console.error(`Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`, error);
+  }
 }

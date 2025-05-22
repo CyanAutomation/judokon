@@ -587,7 +587,7 @@ button:focus {
   justify-content: center;
   align-items: center;
   /* width: 100dvw; */
-  /* height: 35vh; */
+  height: 35vh;
   /* min-height: auto; */
   background-color: rgba(34, 34, 59, 0.8);
   backdrop-filter: blur(10px);
@@ -600,9 +600,9 @@ button:focus {
   display: flex;
   gap: 1em;
   overflow-x: auto;
-  /* padding: 10px; */
+  padding: 10px;
   scroll-behavior: smooth;
-  /* max-height: 90dvh; */
+  max-height: 90dvh;
   background-color: royalblue;
 }
 

@@ -1,95 +1,101 @@
-import { generateJudokaCardHTML } from "./cardBuilder.js";
-
-/**
- * Transforms gokyoData into a lookup object for quick access.
- * @param {Array} gokyoData - Array of gokyo objects.
- * @returns {Object} A lookup object with gokyo IDs as keys.
- */
-function createGokyoLookup(gokyoData) {
-  if (!gokyoData || gokyoData.length === 0) {
-    console.error("gokyoData is empty or undefined");
-    return {};
-  }
-
-  return gokyoData.reduce((acc, move) => {
-    acc[move.id] = move; // Use string keys for consistency
-    return acc;
-  }, {});
-}
-
-/**
- * Generates a single judoka card and appends it to the container.
- * @param {Object} judoka - A judoka object.
- * @param {Object} gokyoLookup - A lookup object for gokyo data.
- * @param {HTMLElement} container - The container to append the card to.
- */
-async function generateJudokaCard(judoka, gokyoLookup, container) {
-  try {
-    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
-    container.appendChild(card);
-  } catch (error) {
-    console.error(`Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`, error);
-  }
-}
+import { createGokyoLookup } from "./utils.js";
+import { generateJudokaCard } from "./cardBuilder.js";
 
 /**
  * Creates a scroll button with the specified direction and functionality.
+ *
+ * Pseudocode:
+ * 1. Create a button element.
+ * 2. Assign a class to the button based on the direction (e.g., "scroll-button left" or "scroll-button right").
+ * 3. Set the button's inner HTML to display an arrow symbol:
+ *    - Use "<" for left and ">" for right.
+ * 4. Add an accessible label (`aria-label`) to the button for screen readers:
+ *    - Example: "Scroll Left" or "Scroll Right".
+ * 5. Add a click event listener to the button:
+ *    - When clicked, scroll the container by the specified amount.
+ *    - Scroll left if the direction is "left", otherwise scroll right.
+ *    - Use smooth scrolling for a better user experience.
+ * 6. Return the created button element.
+ *
  * @param {String} direction - Either "left" or "right".
  * @param {HTMLElement} container - The carousel container to scroll.
  * @param {Number} scrollAmount - The amount to scroll in pixels.
  * @returns {HTMLElement} The scroll button element.
  */
 function createScrollButton(direction, container, scrollAmount) {
+  // Step 1: Create a button element
   const button = document.createElement("button");
+
+  // Step 2: Assign a class to the button based on the direction
   button.className = `scroll-button ${direction}`;
+
+  // Step 3: Set the button's inner HTML to display an arrow symbol
   button.innerHTML = direction === "left" ? "&lt;" : "&gt;";
+
+  // Step 4: Add an accessible label to the button for screen readers
   button.setAttribute(
     "aria-label",
     `Scroll ${direction.charAt(0).toUpperCase() + direction.slice(1)}`
   );
 
+  // Step 5: Add a click event listener to the button
   button.addEventListener("click", () => {
     container.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth"
+      left: direction === "left" ? -scrollAmount : scrollAmount, // Negative for left, positive for right
+      behavior: "smooth" // Smooth scrolling animation
     });
   });
 
+  // Step 6: Return the created button element
   return button;
 }
 
 /**
  * Builds a carousel of judoka cards with scroll buttons.
+ *
+ * Pseudocode:
+ * 1. Create a container element for the carousel and assign it a class name.
+ * 2. Transform the `gokyoData` array into a lookup object for quick access.
+ * 3. Loop through the `judokaList` array:
+ *    - For each judoka, generate a card using the `generateJudokaCard` function.
+ *    - Append the generated card to the carousel container.
+ * 4. Create a wrapper element for the carousel and assign it a class name.
+ * 5. Create scroll buttons for navigating the carousel:
+ *    - A left scroll button to scroll the carousel to the left.
+ *    - A right scroll button to scroll the carousel to the right.
+ * 6. Append the scroll buttons and the carousel container to the wrapper.
+ * 7. Return the completed wrapper element.
+ *
  * @param {Array} judokaList - An array of judoka objects.
  * @param {Array} gokyoData - An array of gokyo objects.
  * @returns {Promise<HTMLElement>} A promise that resolves to the carousel wrapper element.
  */
 export async function buildCardCarousel(judokaList, gokyoData) {
-  // Create a new container for the carousel
+  // Step 1: Create a container element for the carousel
   const container = document.createElement("div");
   container.className = "card-carousel";
 
-  // Transform gokyoData into a lookup object
+  // Step 2: Transform gokyoData into a lookup object
   const gokyoLookup = createGokyoLookup(gokyoData);
 
-  // Generate cards for each judoka
+  // Step 3: Loop through the judokaList and generate cards
   for (const judoka of judokaList) {
     await generateJudokaCard(judoka, gokyoLookup, container);
   }
 
-  // Create a wrapper for the carousel and buttons
+  // Step 4: Create a wrapper element for the carousel
   const wrapper = document.createElement("div");
-  wrapper.className = "carousel-wrapper";
+  wrapper.className = "carousel-container";
 
-  // Create scroll buttons
+  // Step 5: Create scroll buttons
   const leftButton = createScrollButton("left", container, 300);
   const rightButton = createScrollButton("right", container, 300);
 
-  // Append buttons and carousel to the wrapper
+  // Step 6: Append the scroll buttons and carousel container to the wrapper
   wrapper.appendChild(leftButton);
   wrapper.appendChild(container);
   wrapper.appendChild(rightButton);
 
-  // Return the completed wrapper
+  // Step 7: Return the completed wrapper element
   return wrapper;
 }

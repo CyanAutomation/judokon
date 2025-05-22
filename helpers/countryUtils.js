@@ -118,18 +118,41 @@ export async function getFlagUrl(countryCode) {
 
 /**
  * Populates the country list in the specified container with country names and flags.
+ *
+ * Pseudocode:
+ * 1. Fetch the country data:
+ *    - Call `loadCountryCodeMapping` to retrieve the country data from the JSON file.
+ *
+ * 2. Filter active countries:
+ *    - Use the `filter` method to include only countries where the `active` property is `true`.
+ *
+ * 3. Loop through the filtered country data:
+ *    - For each country:
+ *      a. Create a `div` element to serve as the slide container.
+ *      b. Add a flag image:
+ *         - Create an `img` element.
+ *         - Use `getFlagUrl` to fetch the flag URL for the country.
+ *         - Set the `src` attribute of the `img` element to the flag URL.
+ *         - If the flag URL cannot be fetched, use a fallback flag URL.
+ *      c. Add the country name:
+ *         - Create a `p` element.
+ *         - Set its text content to the country's name.
+ *         - Append the `p` element to the slide container.
+ *      d. Append the slide container to the specified container.
+ *
+ * 4. Handle errors:
+ *    - If an error occurs while fetching the country data or generating the slides, log the error to the console.
+ *
  * @param {HTMLElement} container - The DOM element where the country list will be appended.
  */
 export async function populateCountryList(container) {
   try {
     const countryData = await loadCountryCodeMapping();
 
-    // Filter active countries and dynamically create slides
     for (const country of countryData.filter((country) => country.active)) {
       const slide = document.createElement("div");
       slide.className = "slide";
 
-      // Add the flag image
       const flagImg = document.createElement("img");
       flagImg.alt = `${country.country} Flag`;
       flagImg.className = "flag-image";
@@ -143,12 +166,11 @@ export async function populateCountryList(container) {
       }
 
       slide.appendChild(flagImg);
-      // Add the country name
+
       const countryName = document.createElement("p");
       countryName.textContent = country.country;
       slide.appendChild(countryName);
 
-      // Append the slide to the container
       container.appendChild(slide);
     }
   } catch (error) {

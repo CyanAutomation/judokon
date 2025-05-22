@@ -32,12 +32,36 @@ export async function loadJSON(url) {
   }
 }
 
+/**
+ * Fetches data from a given URL with error handling.
+ *
+ * Pseudocode:
+ * 1. Use the `fetch` API to send a GET request to the specified `url`.
+ *
+ * 2. Check the response status:
+ *    - If the response is not OK (`response.ok` is false), throw an error with the HTTP status code.
+ *
+ * 3. Parse the response body as JSON:
+ *    - Use `response.json()` to convert the response body into a JavaScript object.
+ *
+ * 4. Return the parsed JSON data.
+ *
+ * 5. Handle errors:
+ *    - If any error occurs during the fetch or JSON parsing, log the error to the console.
+ *    - Rethrow the error to allow the caller to handle it.
+ *
+ * @param {string} url - The URL to fetch data from.
+ * @returns {Promise<any>} A promise that resolves to the parsed JSON data.
+ * @throws {Error} If the fetch request fails or the response is not OK.
+ */
 export async function fetchDataWithErrorHandling(url) {
   try {
     const response = await fetch(url);
+
     if (!response.ok) {
       throw new Error(`Failed to fetch data from ${url} (HTTP ${response.status})`);
     }
+
     return response.json();
   } catch (error) {
     console.error(`Error fetching data from ${url}:`, error);
@@ -45,6 +69,21 @@ export async function fetchDataWithErrorHandling(url) {
   }
 }
 
+/**
+ * Validates the provided data to ensure it is a non-null object.
+ *
+ * Pseudocode:
+ * 1. Check if the `data` is an object:
+ *    - Use `typeof data` to verify that the data is of type "object".
+ *    - If the data is not an object or is `null`, throw an error.
+ *
+ * 2. Throw an error with a descriptive message:
+ *    - Include the `type` parameter in the error message to specify what kind of data is invalid or missing.
+ *
+ * @param {any} data - The data to validate.
+ * @param {string} type - A descriptive name for the type of data being validated (e.g., "judoka", "country").
+ * @throws {Error} If the `data` is not an object or is `null`.
+ */
 export function validateData(data, type) {
   if (typeof data !== "object" || data === null) {
     throw new Error(`Invalid or missing ${type} data.`);
