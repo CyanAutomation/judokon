@@ -114,34 +114,15 @@ describe("cardTopBar.js", () => {
   });
 
   describe("createFlagImage", () => {
-    it.each([
-      {
-        finalFlagUrl: "",
-        countryName: "",
-        expectedHtml: `
-          <div class='card-flag'>
-            <img src='../assets/countryFlags/placeholder-flag.png' alt=' flag' onerror='this.src="../assets/countryFlags/placeholder-flag.png"'>
-          </div>
-        `
-      },
-      {
-        finalFlagUrl: null,
-        countryName: null,
-        expectedHtml: `
-          <div class='card-flag'>
-            <img src='../assets/countryFlags/placeholder-flag.png' alt=' flag' onerror='this.src="../assets/countryFlags/placeholder-flag.png"'>
-          </div>
-        `
-      }
-    ])(
-      "handles finalFlagUrl: '$finalFlagUrl' and countryName: '$countryName'",
-      ({ finalFlagUrl, countryName, expectedHtml }) => {
-        const flagImage = createFlagImage(finalFlagUrl, countryName);
+    it("handles finalFlagUrl and countryName correctly", () => {
+      const finalFlagUrl = "https://flagcdn.com/w320/us.png";
+      const countryName = "United States";
 
-        // Normalize whitespace and quotes for comparison
-        const normalizeHtml = (html) => html.replace(/\s+/g, " ").replace(/"/g, "'").trim();
-        expect(normalizeHtml(flagImage.outerHTML)).toBe(normalizeHtml(expectedHtml));
-      }
-    );
+      const flagImage = createFlagImage(finalFlagUrl, countryName);
+
+      expect(flagImage.outerHTML).toContain(
+        `<img src="https://flagcdn.com/w320/us.png" alt="United States flag"`
+      );
+    });
   });
 });

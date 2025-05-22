@@ -191,6 +191,8 @@ export function createNameContainer(firstname, surname) {
  * @returns {HTMLElement} The DOM element for the flag image.
  */
 export function createFlagImage(finalFlagUrl, countryName) {
+  console.log(`Creating flag image with country name: ${countryName}`); // Debugging
+
   const flagContainer = document.createElement("div");
   flagContainer.className = "card-flag";
 
@@ -254,8 +256,10 @@ export async function generateCardTopBar(judoka, flagUrl) {
   const { firstname, surname, countryCode } = extractJudokaData(judoka);
 
   const countryName = await resolveCountryName(countryCode);
+  console.log(`Resolved country name: ${countryName}`); // Debugging
 
   const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;
+  console.log(`Final flag URL: ${finalFlagUrl}`); // Debugging
 
   const container = document.createElement("div");
   container.className = "card-top-bar";
