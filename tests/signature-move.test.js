@@ -7,7 +7,26 @@ const mockGokyo = {
   2: { id: 2, name: "O-soto-gari" }
 };
 
-describe("generateCardSignatureMove", () => {
+describe("generateCardSignatureMove1", () => {
+  it("returns a valid HTML string for a judoka's signature move", () => {
+    const judoka = { signatureMoveId: 1 };
+    const gokyoLookup = {
+      1: { id: 1, name: "Uchi-mata" }
+    };
+
+    const expectedHtml = `
+      <div class="signature-move-container common">
+        <span class="signature-move-label">Signature Move:</span>
+        <span class="signature-move-value">Uchi-mata</span>
+      </div>
+    `;
+
+    const result = generateCardSignatureMove(judoka, gokyoLookup);
+    expect(result.replace(/\s+/g, " ").trim()).toBe(expectedHtml.replace(/\s+/g, " ").trim());
+  });
+});
+
+describe("generateCardSignatureMove2", () => {
   describe("Valid Inputs", () => {
     it("returns HTML with technique name", () => {
       const html = generateCardSignatureMove(mockJudoka, mockGokyo);

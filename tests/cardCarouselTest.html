@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Judoka Card Carousel Test</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>JU-DO-KON!</h1>
+      <p class="subtitle">A web-based judo-themed card battle game featuring elite judoka</p>
+    </header>
+    <div id="carousel-container" class="card-carousel">
+      <button class="scroll-button left" aria-label="Scroll Left">&lt;</button>
+      <!-- Judoka Card 1 -->
+      <div class="judoka-card common">
+        <div class="card-top-bar">
+          <div class="card-name">
+            <span class="firstname">Nina</span>
+            <span class="surname">SULAMANIDZE</span>
+          </div>
+          <div class="card-flag">
+            <img src="https://flagcdn.com/w320/us.png" alt="United States flag" />
+          </div>
+        </div>
+        <div class="card-portrait">
+          <img
+            src="../assets/judokaPortraits/judokaPortrait-61.png"
+            alt="Judoka Portrait"
+            class="portrait-image"
+          />
+          <div class="card-weight-class">+78</div>
+        </div>
+        <div class="card-stats">
+          <ul>
+            <li class="stat"><strong>POWER</strong> <span>9</span></li>
+            <li class="stat"><strong>SPEED</strong> <span>6</span></li>
+            <li class="stat"><strong>TECHNIQUE</strong> <span>7</span></li>
+            <li class="stat"><strong>KUMI-KATA</strong> <span>7</span></li>
+            <li class="stat"><strong>NE-WAZA</strong> <span>8</span></li>
+          </ul>
+        </div>
+        <div class="signature-move-container">
+          <div class="signature-move-label">Signature Move:</div>
+          <div class="signature-move-value">tsuri-komi-goshi</div>
+        </div>
+      </div>
+
+      <!-- Duplicate Judoka Cards -->
+      <!-- Judoka Card 2 -->
+      <div class="judoka-card common">
+        <div class="card-top-bar">
+          <div class="card-name">
+            <span class="firstname">Teddy</span>
+            <span class="surname">RINER</span>
+          </div>
+          <div class="card-flag">
+            <img src="https://flagcdn.com/w320/fr.png" alt="France flag" />
+          </div>
+        </div>
+        <div class="card-portrait">
+          <img
+            src="../assets/judokaPortraits/judokaPortrait-62.png"
+            alt="Judoka Portrait"
+            class="portrait-image"
+          />
+          <div class="card-weight-class">+100</div>
+        </div>
+        <div class="card-stats">
+          <ul>
+            <li class="stat"><strong>POWER</strong> <span>10</span></li>
+            <li class="stat"><strong>SPEED</strong> <span>8</span></li>
+            <li class="stat"><strong>TECHNIQUE</strong> <span>9</span></li>
+            <li class="stat"><strong>KUMI-KATA</strong> <span>9</span></li>
+            <li class="stat"><strong>NE-WAZA</strong> <span>10</span></li>
+          </ul>
+        </div>
+        <div class="signature-move-container">
+          <div class="signature-move-label">Signature Move:</div>
+          <div class="signature-move-value">uchi-mata</div>
+        </div>
+      </div>
+
+      <!-- Add more cards as needed -->
+      <div class="judoka-card common">Card 3</div>
+      <div class="judoka-card common">Card 4</div>
+      <div class="judoka-card common">Card 5</div>
+      <div class="judoka-card common">Card 6</div>
+      <div class="judoka-card common">Card 7</div>
+      <div class="judoka-card common">Card 8</div>
+      <button class="scroll-button right" aria-label="Scroll Right">&gt;</button>
+    </div>
+
+    <footer>
+      <nav class="bottom-navbar">
+        <ul>
+          <li><a href="https://cyanautomation.github.io/judokon/" aria-label="Reset">Reset</a></li>
+          <li><button id="showRandom" aria-label="Random Judoka" title="Random">Random</button></li>
+          <li><button id="showCarousel">Show All Cards</button></li>
+          <li>
+            <button id="hideCard" aria-label="Hide Cards" title="Hide Cards">Hide Cards</button>
+          </li>
+        </ul>
+      </nav>
+    </footer>
+  </body>
+</html>

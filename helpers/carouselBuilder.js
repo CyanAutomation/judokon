@@ -22,23 +22,18 @@ import { generateJudokaCard } from "./cardBuilder.js";
  * @param {Number} scrollAmount - The amount to scroll in pixels.
  * @returns {HTMLElement} The scroll button element.
  */
-function createScrollButton(direction, container, scrollAmount) {
-  // Step 1: Create a button element
+export function createScrollButton(direction, container, scrollAmount) {
   const button = document.createElement("button");
 
-  // Step 2: Assign a class to the button based on the direction
   button.className = `scroll-button ${direction}`;
 
-  // Step 3: Set the button's inner HTML to display an arrow symbol
   button.innerHTML = direction === "left" ? "&lt;" : "&gt;";
 
-  // Step 4: Add an accessible label to the button for screen readers
   button.setAttribute(
     "aria-label",
     `Scroll ${direction.charAt(0).toUpperCase() + direction.slice(1)}`
   );
 
-  // Step 5: Add a click event listener to the button
   button.addEventListener("click", () => {
     container.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount, // Negative for left, positive for right
@@ -46,7 +41,6 @@ function createScrollButton(direction, container, scrollAmount) {
     });
   });
 
-  // Step 6: Return the created button element
   return button;
 }
 

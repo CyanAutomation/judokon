@@ -13,7 +13,24 @@ const judoka = {
 
 const flagUrl = "https://flagcdn.com/w320/fr.png";
 
-describe("generateCardTopBar", () => {
+describe("generateCardTopBar1", () => {
+  it("returns a valid HTML string for a judoka's top bar", async () => {
+    const judoka = {
+      firstname: "John",
+      surname: "Doe",
+      countryCode: "us"
+    };
+    const flagUrl = "https://flagcdn.com/w320/us.png";
+    const expectedHtml =
+      "<div class='card-name'><span class='firstname'>John</span><span class='surname'>Doe</span></div>" +
+      "<div class='card-flag'><img src='https://flagcdn.com/w320/us.png' alt='United States flag'></div>";
+
+    const result = await generateCardTopBar(judoka, flagUrl);
+    expect(result.replace(/\s+/g, " ").trim()).toBe(expectedHtml.replace(/\s+/g, " ").trim());
+  });
+});
+
+describe("generateCardTopBar2", () => {
   test("should include the correct alt text for the flag", async () => {
     const result = await generateCardTopBar(judoka, flagUrl);
     const htmlString = result.outerHTML;

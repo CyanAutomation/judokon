@@ -63,7 +63,7 @@ function getValue(value, defaultValue) {
  *
  * @returns {HTMLElement} The DOM element containing the "No data available" message.
  */
-function createNoDataContainer() {
+export function createNoDataContainer() {
   const container = document.createElement("div");
   container.className = "card-top-bar";
   container.textContent = "No data available";
@@ -190,7 +190,7 @@ function createNameContainer(firstname, surname) {
  * @param {string} countryName - The name of the country for the flag.
  * @returns {HTMLElement} The DOM element for the flag image.
  */
-function createFlagImage(finalFlagUrl, countryName) {
+export function createFlagImage(finalFlagUrl, countryName) {
   // Create the container div
   const flagContainer = document.createElement("div");
   flagContainer.className = "card-flag";
