@@ -1,7 +1,8 @@
 /* Define global CSS variables for colors, font sizes, spacing, and other reusable styles */
 :root {
-  --button-scale: 1.04;
+  --button-scale: 1.03;
   --scale-duration: 0.4s;
+  --slide-track-speed: 40s;
   /* Colors */
   --primary-bg: #1c4b95; 
   --secondary-bg: #0c3f7a;
@@ -48,6 +49,11 @@
 .noscript-warning {
   color: red;
   font-weight: bold;
+}
+
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-250px * 7))}
 }
 
 /* General body styles */
@@ -181,7 +187,7 @@ body {
   aspect-ratio: 1 / 1;
   border-radius: 1rem;
   flex: 1 1 auto;
-  border: solid 5px red;
+  /* border: solid 5px red; */
   object-fit: contain;
 }
 
@@ -191,7 +197,7 @@ body {
   flex: 1 1 auto;
   /* object-fit: contain;  */
   /* border: solid 5px red; */
-  border: 2px dashed #a71916;
+  /* border: 2px dashed #a71916; */
   max-width: 10vh;
 }
 
@@ -678,4 +684,46 @@ button:focus {
 
 .bottom-navbar a:hover {
   text-decoration: underline;
+}
+
+.country-flag-slider {
+	background: white;
+	box-shadow: 0 10px 20px -5px rgba(0, 0, 0, .125);
+	height: 100px;
+	margin: auto;
+	overflow:hidden;
+	position: relative;
+	width: 100%;
+	
+	&::before,
+	&::after {
+		content: "";
+		height: 100px;
+		position: absolute;
+		width: 200px;
+		z-index: 2;
+	}
+	
+	&::after {
+		right: 0;
+		top: 0;
+		transform: rotateZ(180deg);
+	}
+
+	&::before {
+		left: 0;
+		top: 0;
+	}
+
+  .country-flag-slide-track {
+		animation: scroll var(--slide-track-speed) linear infinite;
+		display: flex;
+		width: calc(250px * 14);
+	}
+
+  .slide {
+		height: 100px;
+		width: 250px;
+	}
+
 }

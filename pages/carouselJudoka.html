@@ -24,22 +24,19 @@
   </head>
 
   <body>
-    <header>
-      <nav class="top-navbar">
-        <ul>
-          <li><a href="../index.html">JU-DO-KON!</a></li>
-        </ul>
-      </nav>
+    <header class="header">
+      <div class="character-slot left"></div>
+      <div class="logo-container">
+        <img src="judokonLogoFull.png" alt="JU-DO-KON! Logo" class="logo" />
+      </div>
+      <div class="character-slot right"></div>
     </header>
 
-    <main class="container" role="main">
-      <!-- Section for the game area -->
-
-      <!-- Section for the carousel -->
-      <section id="carousel-section">
-        <div id="carousel-container" class="hidden"></div>
-      </section>
-    </main>
+    <div class="country-flag-slider">
+      <div class="country-flag-slide-track" id="country-list">
+          <!-- Country names will be dynamically inserted here -->
+      </div>
+    </div>
 
     <footer>
       <nav class="bottom-navbar">
@@ -56,6 +53,29 @@
         JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
       </p>
     </noscript>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        const countryListContainer = document.getElementById("country-list");
+    
+        try {
+          // Fetch the JSON data
+          const response = await fetch("../data/countryCodeMapping.json");
+          const countryData = await response.json();
+    
+          // Filter active countries and dynamically create slides
+          countryData.filter((country) => country.active) // Only include active countries
+            .forEach((country) => {
+              const slide = document.createElement("div");
+              slide.className = "slide";
+              slide.textContent = country.country; // Add the country name
+              countryListContainer.appendChild(slide);
+            });
+        } catch (error) {
+          console.error("Error fetching country data:", error);
+        }
+      });
+    </script>
 
     <script nomodule>
       alert(
