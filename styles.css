@@ -1,40 +1,37 @@
 /* Define global CSS variables for colors, font sizes, spacing, and other reusable styles */
 :root {
   /* Colors */
-  --primary-bg: #1c4b95; /* Primary background color (royal blue) */
-  --secondary-bg: #0c3f7a; /* Secondary background color (dark blue) */
-  --button-bg: #fed843; /* Button background color (yellow) */
-  --button-hover-bg: #f2c027; /* Button hover background color (darker yellow) */
-  --text-color: white; /* Default text color */
-  --button-text-color: #1a1a1a; /* Button text color */
+  --primary-bg: #1c4b95; 
+  --secondary-bg: #0c3f7a;
+  --text-color: white; 
 
   /* Card-specific colors */
-  --common-border-color: #3c5ad6; /* Border color for cards */
-  --common-top-bar-bg: #0c3f7a; /* Background color for the card's top bar */
-  --common-stats-bg: #0c3f7a; /* Background color for card stats */
-  --common-signature-move-bg: #003b88; /* Background color for signature section */
-  --common-signature-move-text: #fed843; /* Badge text color */
+  /* --common-border-color: #3c5ad6; 
+  --common-top-bar-bg: #0c3f7a;
+  --common-stats-bg: #0c3f7a; 
+  --common-signature-move-bg: #003b88; 
+  --common-signature-move-text: #fed843; */
 
   /* Font sizes */
-  --font-small: 0.9rem;
+  /* --font-small: 0.9rem;
   --font-medium: 1rem;
   --font-large: 1.2rem;
-  --font-extra-large: 3rem;
+  --font-extra-large: 3rem; */
 
   /* Spacing */
-  --padding-none: 0;
+  /* --padding-none: 0;
   --padding-small: 0.2rem;
   --padding-medium: 0.5rem;
   --padding-large: 1rem;
-  --padding-extra-large: 2rem;
+  --padding-extra-large: 2rem; */
 
   /* Border radius */
-  --border-radius-small: 4px;
+  /* --border-radius-small: 4px;
   --border-radius-medium: 8px;
-  --border-radius-large: 12px;
+  --border-radius-large: 12px; */
 
   /* Box shadow */
-  --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for cards */
+  /* --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); */
 }
 
 /* Reset default browser styles for all elements */
@@ -43,7 +40,7 @@
 *::after {
   margin: 0;
   padding: 0;
-  /* box-sizing: border-box; */
+  box-sizing: border-box;
 }
 
 .noscript-warning {
@@ -53,7 +50,7 @@
 
 /* General body styles */
 body {
-  font-family: "Segoe UI", sans-serif;
+  font-family: 'Open Sans', sans-serif;
   background: linear-gradient(to bottom, var(--primary-bg), var(--secondary-bg));
   color: var(--text-color); /* Default text color */
   min-height: 100dvh;
@@ -66,16 +63,17 @@ body {
   /* grid-template-rows: auto 1fr auto; */
   /* flex: 1 1 auto; */
   /* border: solid 5px red; */
-  /* overflow: hidden; */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  /* overflow-x: hidden; */
+  /* display: flex; */
+  /* flex-direction: column; */
+  /* justify-content: center; */
 }
 
 .home-screen {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  height: 100vh;
+  min-height: 100dvh;
+  max-width: 100%;
   align-items: center;
 }
 
@@ -107,9 +105,6 @@ body {
   grid-template-columns: 2fr 1fr;
   gap: 1rem;
   padding: 1rem;
-  /* max-height: 50vh; */
-  /* justify-items: center; */
-  /* align-items: center; */
 }
 
 .game-tile {
@@ -117,7 +112,6 @@ body {
   border: 2px solid #000000;
   border-radius: 12px;
   padding: 1rem;
-  /* margin: 1rem; */
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -126,7 +120,6 @@ body {
 }
 
 .tile-content h2 {
-  /* margin: 0 0 0.5rem; */
   border: 2px dashed #a71916;
 }
 
@@ -136,8 +129,21 @@ body {
   border-radius: 12px;
   padding: 1rem;
   text-align: center;
-  grid-row: 1/3;
+  grid-row: 1/5;
   grid-column: 2;
+}
+
+@media (max-width: 40em) {
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    align-items: center;
+  }
+  .card-of-day {
+    display: none;
+  }
 }
 
 .card-preview {
