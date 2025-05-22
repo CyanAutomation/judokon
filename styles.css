@@ -89,7 +89,7 @@ body {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  padding: 1rem 2rem;
+  /* padding: 1rem 2rem; */
   background-color: #a71916;
 }
 
@@ -105,7 +105,7 @@ body {
 }
 
 .logo {
-  height: 20px;
+  height: 5dvh;
 }
 
 .main-grid {
