@@ -17,7 +17,7 @@
  * @returns {Promise<Array>} Resolves to an array of country code mappings.
  */
 async function loadCountryCodeMapping() {
-  const response = await fetch("./data/countryCodeMapping.json");
+  const response = await fetch("../data/countryCodeMapping.json");
   if (!response.ok) {
     throw new Error("Error - Failed to load the country code mapping");
   }
@@ -114,4 +114,44 @@ export async function getFlagUrl(countryCode) {
   }
 
   return `https://flagcdn.com/w320/${countryCode.toLowerCase()}.png`;
+}
+
+/**
+ * Populates the country list in the specified container with country names and flags.
+ * @param {HTMLElement} container - The DOM element where the country list will be appended.
+ */
+export async function populateCountryList(container) {
+  try {
+    const countryData = await loadCountryCodeMapping();
+
+    // Filter active countries and dynamically create slides
+    for (const country of countryData.filter((country) => country.active)) {
+      const slide = document.createElement("div");
+      slide.className = "slide";
+
+      // Add the flag image
+      const flagImg = document.createElement("img");
+      flagImg.alt = `${country.country} Flag`;
+      flagImg.className = "flag-image";
+
+      try {
+        const flagUrl = await getFlagUrl(country.code);
+        flagImg.src = flagUrl;
+      } catch (error) {
+        console.warn(`Failed to load flag for ${country.country}:`, error);
+        flagImg.src = "https://flagcdn.com/w320/vu.png"; // Fallback to Vanuatu flag
+      }
+
+      slide.appendChild(flagImg);
+      // Add the country name
+      const countryName = document.createElement("p");
+      countryName.textContent = country.country;
+      slide.appendChild(countryName);
+
+      // Append the slide to the container
+      container.appendChild(slide);
+    }
+  } catch (error) {
+    console.error("Error fetching country data:", error);
+  }
 }

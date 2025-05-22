@@ -54,26 +54,12 @@
       </p>
     </noscript>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", async () => {
+    <script type="module">
+      import { populateCountryList } from "../helpers/countryUtils.js";
+    
+      document.addEventListener("DOMContentLoaded", () => {
         const countryListContainer = document.getElementById("country-list");
-    
-        try {
-          // Fetch the JSON data
-          const response = await fetch("../data/countryCodeMapping.json");
-          const countryData = await response.json();
-    
-          // Filter active countries and dynamically create slides
-          countryData.filter((country) => country.active) // Only include active countries
-            .forEach((country) => {
-              const slide = document.createElement("div");
-              slide.className = "slide";
-              slide.textContent = country.country; // Add the country name
-              countryListContainer.appendChild(slide);
-            });
-        } catch (error) {
-          console.error("Error fetching country data:", error);
-        }
+        populateCountryList(countryListContainer);
       });
     </script>
 
