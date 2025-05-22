@@ -2,44 +2,31 @@ import { describe, test, expect } from "vitest";
 import { getValue } from "../helpers/utils.js";
 
 describe("getValue", () => {
-  test("returns the value if it is a non-empty string", () => {
-    expect(getValue("Hello")).toBe("Hello");
+  test.each([
+    ["Hello", "Fallback", "Hello"], // Non-empty string
+    ["", "Fallback", "Fallback"], // Empty string
+    [undefined, "Fallback", "Fallback"], // Undefined with fallback
+    [null, "Fallback", "Fallback"], // Null with fallback
+    ["   ", "Fallback", "Fallback"], // Whitespace string
+    [42, "Fallback", 42], // Number
+    [false, "Fallback", false], // Boolean false
+    [true, "Fallback", true], // Boolean true
+    [{}, "Fallback", "Fallback"], // Object
+    [[], "Fallback", "Fallback"], // Array
+    [undefined, undefined, "Unknown"] // Undefined with no fallback
+  ])("returns %p for input %p with fallback %p", (value, fallback, expected) => {
+    expect(getValue(value, fallback)).toBe(expected);
   });
 
-  test("returns the fallback if the value is an empty string", () => {
-    expect(getValue("", "Fallback")).toBe("Fallback");
+  test.each([
+    [0, 0], // Falsy number
+    [NaN, NaN] // NaN
+  ])("returns the value for falsy inputs like %p", (value, expected) => {
+    expect(getValue(value, "Fallback")).toBe(expected);
   });
 
-  test("returns the fallback if the value is undefined", () => {
-    expect(getValue(undefined, "Fallback")).toBe("Fallback");
-  });
-
-  test("returns the fallback if the value is null", () => {
-    expect(getValue(null, "Fallback")).toBe("Fallback");
-  });
-
-  test("returns the value if it is a non-string", () => {
-    const numValue = 42;
-    const boolValueFalse = false;
-    const boolValueTrue = true;
-    expect(getValue(numValue, "Fallback")).toBe(42);
-    expect(getValue(boolValueFalse, "Fallback")).toBe(false);
-    expect(getValue(boolValueTrue, "Fallback")).toBe(true);
-  });
-
-  test("returns the fallback if the value is a whitespace string", () => {
-    expect(getValue("   ", "Fallback")).toBe("Fallback");
-  });
-
-  test('returns "Unknown" if value is undefined and no fallback is provided', () => {
-    expect(getValue(undefined)).toBe("Unknown");
-  });
-
-  test("returns the fallback if the value is an object", () => {
-    expect(getValue({}, "Fallback")).toBe("Fallback");
-  });
-
-  test("returns the fallback if the value is an array", () => {
-    expect(getValue([], "Fallback")).toBe("Fallback");
+  test("returns a custom fallback if provided", () => {
+    const customFallback = { key: "value" };
+    expect(getValue(null, customFallback)).toBe(customFallback);
   });
 });
