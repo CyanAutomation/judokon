@@ -13,7 +13,7 @@ const judoka = {
 
 const flagUrl = "https://flagcdn.com/w320/fr.png";
 
-describe("generateCardTopBar1", () => {
+describe("generateCardTopBar", () => {
   it("returns a valid HTML string for a judoka's top bar", async () => {
     const judoka = {
       firstname: "John",
@@ -35,7 +35,7 @@ describe("generateCardTopBar1", () => {
 
     const result = await generateCardTopBar(judoka, flagUrl);
 
-    // Normalize whitespace and quotes for comparison
+    // Normalize whitespace for comparison
     const normalizeHtml = (html) => html.replace(/\s+/g, " ").trim();
     expect(normalizeHtml(result.outerHTML)).toBe(normalizeHtml(expectedHtml));
   });
@@ -139,7 +139,7 @@ describe("cardTopBar.js", () => {
         const flagImage = createFlagImage(finalFlagUrl, countryName);
 
         // Normalize whitespace and quotes for comparison
-        const normalizeHtml = (html) => html.replace(/\s+/g, " ").replace(/"/g, "'").trim();
+        const normalizeHtml = (html) => html.replace(/\s+/g, " ").trim();
         expect(normalizeHtml(flagImage.outerHTML)).toBe(normalizeHtml(expectedHtml));
       }
     );
