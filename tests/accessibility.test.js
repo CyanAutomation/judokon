@@ -8,17 +8,15 @@ const mockGokyo = {
 };
 
 describe("generateCardSignatureMove", () => {
-  describe("generateCardSignatureMove", () => {
-    it("escapes special characters in technique names", () => {
-      const mockJudoka = { signatureMoveId: 1 };
-      const specialGokyo = {
-        1: { id: 1, name: "<script>alert('XSS')</script>" }
-      };
+  it("escapes special characters in technique names", () => {
+    const mockJudoka = { signatureMoveId: 1 };
+    const specialGokyo = {
+      1: { id: 1, name: "<script>alert('XSS')</script>" }
+    };
 
-      const html = generateCardSignatureMove(mockJudoka, specialGokyo);
-      expect(html).toContain("Signature Move:");
-      expect(html).toContain("&lt;script&gt;alert(&#039;XSS&#039;)&lt;/script&gt;");
-    });
+    const html = generateCardSignatureMove(mockJudoka, specialGokyo);
+    expect(html).toContain("Signature Move:");
+    expect(html).toContain("&lt;script&gt;alert(&#039;XSS&#039;)&lt;/script&gt;");
   });
 
   const fallbackCases = [

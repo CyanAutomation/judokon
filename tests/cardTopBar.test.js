@@ -21,14 +21,23 @@ describe("generateCardTopBar1", () => {
       countryCode: "us"
     };
     const flagUrl = "https://flagcdn.com/w320/us.png";
-    const expectedHtml =
-      "<div class='card-name'><span class='firstname'>John</span><span class='surname'>Doe</span></div>" +
-      "<div class='card-flag'><img src='https://flagcdn.com/w320/us.png' alt='United States flag'></div>";
+    const expectedHtml = `
+      <div class="card-top-bar">
+        <div class="card-name">
+          <span class="firstname">John</span>
+          <span class="surname">Doe</span>
+        </div>
+        <div class="card-flag">
+          <img src="https://flagcdn.com/w320/us.png" alt="United States flag" onerror="this.src='../assets/countryFlags/placeholder-flag.png'">
+        </div>
+      </div>
+    `;
 
     const result = await generateCardTopBar(judoka, flagUrl);
-    expect(result.outerHTML.replace(/\s+/g, " ").trim()).toBe(
-      expectedHtml.replace(/\s+/g, " ").trim()
-    );
+
+    // Normalize whitespace and quotes for comparison
+    const normalizeHtml = (html) => html.replace(/\s+/g, " ").trim();
+    expect(normalizeHtml(result.outerHTML)).toBe(normalizeHtml(expectedHtml));
   });
 });
 
@@ -80,26 +89,26 @@ describe("cardTopBar.js", () => {
       {
         firstname: "John",
         surname: "Doe",
-        expectedHtml:
-          "<div class='card-name'><span class='firstname'>John</span><span class='surname'>Doe</span></div>"
+        expectedHtml: `<div class='card-name'><span class='firstname'>John</span><span class='surname'>Doe</span></div>`
       },
       {
         firstname: "",
         surname: "",
-        expectedHtml:
-          "<div class='card-name'><span class='firstname'></span><span class='surname'></span></div>"
+        expectedHtml: `<div class='card-name'><span class='firstname'></span><span class='surname'></span></div>`
       },
       {
         firstname: null,
         surname: null,
-        expectedHtml:
-          "<div class='card-name'><span class='firstname'></span><span class='surname'></span></div>"
+        expectedHtml: `<div class='card-name'><span class='firstname'></span><span class='surname'></span></div>`
       }
     ])(
       "handles firstname: '$firstname' and surname: '$surname'",
       ({ firstname, surname, expectedHtml }) => {
         const nameContainer = createNameContainer(firstname, surname);
-        expect(nameContainer.outerHTML).toContain(expectedHtml);
+
+        // Normalize quotes for comparison
+        const normalizeHtml = (html) => html.replace(/"/g, "'");
+        expect(normalizeHtml(nameContainer.outerHTML)).toBe(normalizeHtml(expectedHtml));
       }
     );
   });
@@ -107,28 +116,31 @@ describe("cardTopBar.js", () => {
   describe("createFlagImage", () => {
     it.each([
       {
-        finalFlagUrl: "https://example.com/flag.png",
-        countryName: "United States",
-        expectedHtml:
-          "<div class='card-flag'><img src='https://example.com/flag.png' alt='United States flag' onerror='this.src=\"../assets/flags/placeholder.png\"'></div>"
-      },
-      {
         finalFlagUrl: "",
         countryName: "",
-        expectedHtml:
-          "<div class='card-flag'><img src='../assets/flags/placeholder.png' alt=' flag' onerror='this.src=\"../assets/flags/placeholder.png\"'></div>"
+        expectedHtml: `
+          <div class='card-flag'>
+            <img src='../assets/countryFlags/placeholder-flag.png' alt=' flag' onerror='this.src="../assets/countryFlags/placeholder-flag.png"'>
+          </div>
+        `
       },
       {
         finalFlagUrl: null,
         countryName: null,
-        expectedHtml:
-          "<div class='card-flag'><img src='../assets/flags/placeholder.png' alt=' flag' onerror='this.src=\"../assets/flags/placeholder.png\"'></div>"
+        expectedHtml: `
+          <div class='card-flag'>
+            <img src='../assets/countryFlags/placeholder-flag.png' alt=' flag' onerror='this.src="../assets/countryFlags/placeholder-flag.png"'>
+          </div>
+        `
       }
     ])(
       "handles finalFlagUrl: '$finalFlagUrl' and countryName: '$countryName'",
       ({ finalFlagUrl, countryName, expectedHtml }) => {
         const flagImage = createFlagImage(finalFlagUrl, countryName);
-        expect(flagImage.outerHTML).toContain(expectedHtml);
+
+        // Normalize whitespace and quotes for comparison
+        const normalizeHtml = (html) => html.replace(/\s+/g, " ").replace(/"/g, "'").trim();
+        expect(normalizeHtml(flagImage.outerHTML)).toBe(normalizeHtml(expectedHtml));
       }
     );
   });

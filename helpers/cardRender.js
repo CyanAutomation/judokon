@@ -124,6 +124,11 @@ export function generateCardStats(card, cardType = "common") {
 import { escapeHTML } from "./utils.js";
 
 export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
+  // Handle null or undefined judoka
+  if (!judoka) {
+    judoka = {}; // Default to an empty object
+  }
+
   const signatureMoveId = Number(judoka.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
 
   console.log("Signature Move ID:", signatureMoveId);
