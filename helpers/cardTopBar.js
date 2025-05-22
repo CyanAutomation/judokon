@@ -151,7 +151,7 @@ async function resolveCountryName(countryCode) {
  * @param {string} surname - The judoka's surname.
  * @returns {HTMLElement} The DOM element containing the judoka's name.
  */
-function createNameContainer(firstname, surname) {
+export function createNameContainer(firstname, surname) {
   const nameContainer = document.createElement("div");
   nameContainer.className = "card-name";
 
@@ -191,17 +191,16 @@ function createNameContainer(firstname, surname) {
  * @returns {HTMLElement} The DOM element for the flag image.
  */
 export function createFlagImage(finalFlagUrl, countryName) {
-  // Create the container div
   const flagContainer = document.createElement("div");
   flagContainer.className = "card-flag";
 
   const flagImg = document.createElement("img");
-  flagImg.src = finalFlagUrl;
-  flagImg.alt = `${countryName} flag`;
-  flagImg.onerror = () => {
-    flagImg.src = PLACEHOLDER_FLAG_URL;
-    console.warn("Flag image failed to load, using placeholder:", PLACEHOLDER_FLAG_URL);
-  };
+
+  flagImg.src = finalFlagUrl || PLACEHOLDER_FLAG_URL;
+
+  flagImg.alt = `${countryName || ""} flag`;
+
+  flagImg.setAttribute("onerror", `this.src='${PLACEHOLDER_FLAG_URL}'`);
 
   flagContainer.appendChild(flagImg);
 

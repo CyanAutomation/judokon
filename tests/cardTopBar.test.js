@@ -26,7 +26,9 @@ describe("generateCardTopBar1", () => {
       "<div class='card-flag'><img src='https://flagcdn.com/w320/us.png' alt='United States flag'></div>";
 
     const result = await generateCardTopBar(judoka, flagUrl);
-    expect(result.replace(/\s+/g, " ").trim()).toBe(expectedHtml.replace(/\s+/g, " ").trim());
+    expect(result.outerHTML.replace(/\s+/g, " ").trim()).toBe(
+      expectedHtml.replace(/\s+/g, " ").trim()
+    );
   });
 });
 

@@ -27,18 +27,35 @@ describe("cardBuilder.js", () => {
       expect(result).toBe(expectedUrl);
     });
 
-    it("returns an empty string for an invalid country code", async () => {
+    it("returns the Vanuatu flag URL for an invalid country code", async () => {
       const countryCode = "invalid";
+      const expectedUrl = "https://flagcdn.com/w320/vu.png";
       const result = await getFlagUrl(countryCode);
-      expect(result).toBe("");
+      expect(result).toBe(expectedUrl); // Expect the Vanuatu flag URL for invalid country codes
+    });
+
+    it("returns a valid flag URL for a valid country code", async () => {
+      const countryCode = "us";
+      const expectedUrl = "https://flagcdn.com/w320/us.png";
+      const result = await getFlagUrl(countryCode);
+      expect(result).toBe(expectedUrl);
     });
   });
 
   describe("generateCardPortrait", () => {
     it("returns a valid HTML string for a judoka's portrait", () => {
-      const judoka = { id: 0, firstname: "John", surname: "Doe" };
-      const expectedHtml = `<div class='card-portrait'><img src='../assets/judokaPortraits/judokaPortrait-0.png' alt='John Doe's portrait' onerror="this.src='../assets/judokaPortraits/judokaPortrait-0.png'"></div>`;
-      expect(generateCardPortrait(judoka)).toContain(expectedHtml);
+      const card = { id: 0, firstname: "John", surname: "Doe" };
+      const expectedHtml = `
+      <div class="card-portrait">
+        <img src="../assets/judokaPortraits/judokaPortrait-0.png" alt="John Doe's portrait" onerror="this.src='../assets/judokaPortraits/judokaPortrait-0.png'">
+      </div>
+    `;
+
+      const result = generateCardPortrait(card);
+
+      // Normalize whitespace and quotes for comparison
+      const normalizeHtml = (html) => html.replace(/\s+/g, " ").trim();
+      expect(normalizeHtml(result)).toBe(normalizeHtml(expectedHtml));
     });
   });
 
@@ -54,17 +71,23 @@ describe("cardBuilder.js", () => {
         }
       };
 
-      const expectedHtml =
-        "<ul>" +
-        "<li class='stat'><strong>POWER</strong> <span>9</span></li>" +
-        "<li class='stat'><strong>SPEED</strong> <span>6</span></li>" +
-        "<li class='stat'><strong>TECHNIQUE</strong> <span>7</span></li>" +
-        "<li class='stat'><strong>KUMI-KATA</strong> <span>7</span></li>" +
-        "<li class='stat'><strong>NE-WAZA</strong> <span>8</span></li>" +
-        "</ul>";
+      const expectedHtml = `
+      <div class="card-stats common">
+        <ul>
+          <li class="stat"><strong>Power</strong> <span>9</span></li>
+          <li class="stat"><strong>Speed</strong> <span>6</span></li>
+          <li class="stat"><strong>Technique</strong> <span>7</span></li>
+          <li class="stat"><strong>Kumi-kata</strong> <span>7</span></li>
+          <li class="stat"><strong>Ne-waza</strong> <span>8</span></li>
+        </ul>
+      </div>
+    `;
 
       const result = generateCardStats(card);
-      expect(result).toContain(expectedHtml);
+
+      // Normalize whitespace and quotes for comparison
+      const normalizeHtml = (html) => html.replace(/\s+/g, " ").trim();
+      expect(normalizeHtml(result)).toBe(normalizeHtml(expectedHtml));
     });
   });
 

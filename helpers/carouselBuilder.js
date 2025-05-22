@@ -23,6 +23,11 @@ import { generateJudokaCard } from "./cardBuilder.js";
  * @returns {HTMLElement} The scroll button element.
  */
 export function createScrollButton(direction, container, scrollAmount) {
+  // Validate the direction
+  if (direction !== "left" && direction !== "right") {
+    throw new Error("Invalid direction: must be 'left' or 'right'");
+  }
+
   const button = document.createElement("button");
 
   button.className = `scroll-button ${direction}`;
