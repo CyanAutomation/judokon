@@ -26,11 +26,11 @@ import {
  * @param {string|Date|undefined} date - The last updated date as a string or Date.
  * @returns {string} The HTML string for the "last updated" section.
  */
-function generateCardLastUpdated(date) {
-  if (!date) return ""; // If date is undefined, don't render anything
-  const safeDate = date instanceof Date ? date.toISOString().split("T")[0] : date;
-  return `<div class="card-updated">Last updated: ${escapeHTML(safeDate)}</div>`;
-}
+// function generateCardLastUpdated(date) {
+//   if (!date) return ""; // If date is undefined, don't render anything
+//   const safeDate = date instanceof Date ? date.toISOString().split("T")[0] : date;
+//   return `<div class="card-updated">Last updated: ${escapeHTML(safeDate)}</div>`;
+// }
 
 /**
  * Validates the required fields of a Judoka object.
@@ -192,11 +192,11 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
  * @param {Object} gokyoLookup - A lookup object for gokyo data.
  * @param {HTMLElement} container - The container to append the card to.
  */
-async function generateJudokaCard(judoka, gokyoLookup, container) {
-  try {
-    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
-    container.appendChild(card);
-  } catch (error) {
-    console.error(`Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`, error);
-  }
-}
+// async function generateJudokaCard(judoka, gokyoLookup, container) {
+//   try {
+//     const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+//     container.appendChild(card);
+//   } catch (error) {
+//     console.error(`Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`, error);
+//   }
+// }

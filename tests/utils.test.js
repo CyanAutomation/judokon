@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { generateCardSignatureMove } from "../helpers/cardRender.js";
-import { XOR_KEY, ALPHABET, CARD_CODE_VERSION } from "../helpers/cardCode.js";
-import { selectRandomJudoka } from "../helpers/cardUtils.js";
-import { getFlagUrl } from "../helpers/countryUtils.js";
-import { loadJsonFile } from "../helpers/dataUtils.js";
 
 // Mock data
 const mockJudoka = { signatureMoveId: 1 }; // Numeric ID

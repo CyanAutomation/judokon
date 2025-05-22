@@ -1,12 +1,6 @@
 import { vi } from "vitest";
 import { getFlagUrl } from "../helpers/countryUtils.js";
-import { generateCardTopBar } from "../helpers/cardTopBar.js";
-import {
-  generateCardPortrait,
-  generateCardStats,
-  generateCardSignatureMove
-} from "../helpers/cardRender.js";
-import { generateJudokaCardHTML } from "../helpers/cardBuilder.js";
+import { generateCardPortrait, generateCardStats } from "../helpers/cardRender.js";
 import { createScrollButton } from "../helpers/carouselBuilder.js";
 
 // Mock fetch globally
