@@ -1,5 +1,7 @@
 /* Define global CSS variables for colors, font sizes, spacing, and other reusable styles */
 :root {
+  --button-scale: 1.04;
+  --scale-duration: 0.4s;
   /* Colors */
   --primary-bg: #1c4b95; 
   --secondary-bg: #0c3f7a;
@@ -119,6 +121,13 @@ body {
   flex: 1 1 auto;
   color: #fff;
   text-decoration: none;
+}
+
+.game-tile:hover {
+  background: #880000;
+  color: #fff;
+  scale: var(--button-scale);
+  transition: scale var(--scale-duration) ease-in-out;
 }
 
 .tile-content h2 {
