@@ -117,10 +117,13 @@ body {
   justify-content: flex-start;
   grid-column: 1;
   flex: 1 1 auto;
+  color: #fff;
+  text-decoration: none;
 }
 
 .tile-content h2 {
   border: 2px dashed #a71916;
+  padding-left: 1rem;
 }
 
 .card-of-day {
