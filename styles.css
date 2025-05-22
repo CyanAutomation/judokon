@@ -687,7 +687,7 @@ button:focus {
 }
 
 .country-flag-slider {
-	background: rgb(0, 0, 0);
+	background: rgb(0, 0, 0, 0.5);
 	/* box-shadow: 0 10px 20px -5px rgba(0, 0, 0, .125); */
 	/* height: 100px; */
 	/* margin: auto; */
@@ -722,26 +722,19 @@ button:focus {
 	}
 
   .slide {
-    display: flex;
+    display: inline-flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    /* padding: 1rem; */
-    /* border: 1px solid #ccc; */
-    /* border-radius: 8px; */
-    /* background-color: #f9f9f9; */
+    padding: 0.3em 3dvw;
     text-align: center;
-    width: 150px;
-    /* height: 200px; */
-    /* margin: 0.5rem; */
+    max-width: 45vw;
+    white-space: pre;
   }
   
   .flag-image {
-    max-width: 10dvh;
-    height: auto;
+    max-height: 5dvh;
     margin: 0.5rem;
-    /* border-radius: 4px; */
-    /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+    border-radius: 4px;
   }
-
 }
