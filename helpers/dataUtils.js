@@ -16,8 +16,9 @@
  *    - If any error occurs during the fetch or JSON parsing, log the error to the console.
  *    - Rethrow the error to allow the caller to handle it.
  *
+ * @template T
  * @param {string} url - Path to the JSON file (e.g., './data/judoka.json').
- * @returns {Promise<any>} A promise that resolves to the parsed JSON data.
+ * @returns {Promise<T>} A promise that resolves to the parsed JSON data.
  */
 export async function loadJSON(url) {
   try {
@@ -50,8 +51,9 @@ export async function loadJSON(url) {
  *    - If any error occurs during the fetch or JSON parsing, log the error to the console.
  *    - Rethrow the error to allow the caller to handle it.
  *
+ * @template T
  * @param {string} url - The URL to fetch data from.
- * @returns {Promise<any>} A promise that resolves to the parsed JSON data.
+ * @returns {Promise<T>} A promise that resolves to the parsed JSON data.
  * @throws {Error} If the fetch request fails or the response is not OK.
  */
 export async function fetchDataWithErrorHandling(url) {
@@ -87,5 +89,13 @@ export async function fetchDataWithErrorHandling(url) {
 export function validateData(data, type) {
   if (typeof data !== "object" || data === null) {
     throw new Error(`Invalid or missing ${type} data.`);
+  }
+
+  if (type === "judoka") {
+    const requiredFields = ["firstname", "surname", "country", "stats", "signatureMoveId"];
+    const missingFields = requiredFields.filter((field) => !data[field]);
+    if (missingFields.length > 0) {
+      throw new Error(`Invalid judoka data: Missing fields: ${missingFields.join(", ")}`);
+    }
   }
 }

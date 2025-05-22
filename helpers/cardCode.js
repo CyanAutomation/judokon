@@ -116,8 +116,9 @@ function chunk(str, size = 4) {
  *
  * 7. Return the final chunked, readable card code.
  *
- * @param {Object} judoka - The judoka object.
+ * @param {Judoka} judoka - The judoka object.
  * @returns {string} The generated card code.
+ * @throws {Error} If required fields are missing from the judoka object.
  */
 export function generateCardCode(judoka) {
   if (
@@ -126,13 +127,13 @@ export function generateCardCode(judoka) {
     !judoka.surname ||
     !judoka.country ||
     !judoka.weightClass ||
-    typeof judoka.signatureMoveId === "undefined" ||
+    !judoka.signatureMoveId ||
     !judoka.stats ||
     typeof judoka.stats.power === "undefined" ||
     typeof judoka.stats.speed === "undefined" ||
     typeof judoka.stats.technique === "undefined" ||
-    typeof judoka.stats.kumiKata === "undefined" ||
-    typeof judoka.stats.neWaza === "undefined"
+    typeof judoka.stats.kumikata === "undefined" ||
+    typeof judoka.stats.newaza === "undefined"
   ) {
     throw new Error("Missing required judoka fields for card code generation.");
   }

@@ -32,16 +32,18 @@ export function generateCardPortrait(card) {
     `;
   }
 
-  const portraitUrl = card.id
-    ? `./assets/judokaPortraits/judokaPortrait-${card.id}.png`
+  const portraitUrl = card.judoka?.id
+    ? `./assets/judokaPortraits/judokaPortrait-${card.judoka.id}.png`
     : PLACEHOLDER_PORTRAIT;
+
+  const altText = `${getValue(card.judoka?.firstname, "Judoka")} ${getValue(
+    card.judoka?.surname,
+    ""
+  )}'s portrait`;
 
   return `
     <div class="card-portrait">
-      <img src="${portraitUrl}" alt="${getValue(card?.firstname, "Judoka")} ${getValue(
-        card?.surname,
-        ""
-      )}'s portrait" onerror="this.src='${PLACEHOLDER_PORTRAIT}'">
+      <img src="${portraitUrl}" alt="${altText}" onerror="this.src='${PLACEHOLDER_PORTRAIT}'">
     </div>
   `;
 }
@@ -117,7 +119,7 @@ export function generateCardStats(card, cardType = "common") {
  * @returns {string} The HTML string for the signature move.
  */
 export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
-  const signatureMoveId = Number(judoka?.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
+  const signatureMoveId = Number(card.judoka?.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
 
   const technique = (gokyoLookup && gokyoLookup[signatureMoveId]) ||
     (gokyoLookup && gokyoLookup[0]) || { id: 0, name: "Jigoku-guruma" };

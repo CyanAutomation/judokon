@@ -14,7 +14,8 @@
  *
  * 4. Return the parsed JSON data.
  *
- * @returns {Promise<Array>} Resolves to an array of country code mappings.
+ *
+ * @returns {Promise<CountryCodeEntry[]>} Resolves to an array of country code mappings.
  */
 async function loadCountryCodeMapping() {
   const response = await fetch("../data/countryCodeMapping.json");
@@ -24,10 +25,13 @@ async function loadCountryCodeMapping() {
 
   const data = await response.json();
 
-  // Validate that all entries have a 2-letter code
   data.forEach((entry) => {
-    if (!/^[A-Za-z]{2}$/.test(entry.code)) {
-      console.warn(`Invalid country code found: ${entry.code}`);
+    if (
+      typeof entry.country !== "string" ||
+      !/^[A-Za-z]{2}$/.test(entry.code) ||
+      typeof entry.active !== "boolean"
+    ) {
+      console.warn(`Invalid country code entry found:`, entry);
     }
   });
 
@@ -54,8 +58,9 @@ async function loadCountryCodeMapping() {
  *    - If a matching entry is found, return the country property of the entry.
  *    - If no match is found, return VANUATU.
  *
+ *
  * @param {string} countryCode - The 2-letter country code (e.g., "JP").
- * @returns {Promise<string>} A promise that resolves to the flag URL or the placeholder flag URL.
+ * @returns {Promise<string>} A promise that resolves to the country name or "Unknown".
  */
 export async function getCountryNameFromCode(code) {
   if (typeof code !== "string" || !/^[A-Za-z]{2}$/.test(code.trim())) {
@@ -92,6 +97,7 @@ export async function getCountryNameFromCode(code) {
  * 4. Construct the flag URL:
  *    - Convert the countryCode to lowercase.
  *    - Return the URL in the format https://flagcdn.com/w320/{countryCode}.png.
+ *
  *
  * @param {string} countryCode - The 2-letter country code (e.g., "JP").
  * @returns {Promise<string>} A promise that resolves to the flag URL or the placeholder flag URL.
@@ -150,6 +156,11 @@ export async function populateCountryList(container) {
     const countryData = await loadCountryCodeMapping();
 
     for (const country of countryData.filter((country) => country.active)) {
+      if (!country.country || !country.code) {
+        console.warn("Skipping invalid country entry:", country);
+        continue;
+      }
+
       const slide = document.createElement("div");
       slide.className = "slide";
 

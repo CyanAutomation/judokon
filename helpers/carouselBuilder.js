@@ -66,36 +66,55 @@ function createScrollButton(direction, container, scrollAmount) {
  * 6. Append the scroll buttons and the carousel container to the wrapper.
  * 7. Return the completed wrapper element.
  *
- * @param {Array} judokaList - An array of judoka objects.
- * @param {Array} gokyoData - An array of gokyo objects.
+ * @param {Judoka[]} judokaList - An array of judoka objects.
+ * @param {GokyoEntry[]} gokyoData - An array of gokyo objects.
+ * @returns {Promise<HTMLElement>} A promise that resolves to the carousel wrapper element.
+ */
+/**
+ * Builds a carousel of judoka cards with scroll buttons.
+ *
+ * @param {Judoka[]} judokaList - An array of judoka objects.
+ * @param {GokyoEntry[]} gokyoData - An array of gokyo objects.
  * @returns {Promise<HTMLElement>} A promise that resolves to the carousel wrapper element.
  */
 export async function buildCardCarousel(judokaList, gokyoData) {
-  // Step 1: Create a container element for the carousel
+  if (!Array.isArray(judokaList) || judokaList.length === 0) {
+    console.error("No judoka data available to build the carousel.");
+    return document.createElement("div"); // Return an empty container
+  }
+
+  if (!Array.isArray(gokyoData) || gokyoData.length === 0) {
+    console.warn("No gokyo data provided. Defaulting to an empty lookup.");
+  }
+
   const container = document.createElement("div");
   container.className = "card-carousel";
 
-  // Step 2: Transform gokyoData into a lookup object
   const gokyoLookup = createGokyoLookup(gokyoData);
 
-  // Step 3: Loop through the judokaList and generate cards
   for (const judoka of judokaList) {
+    if (
+      !judoka.firstname ||
+      !judoka.surname ||
+      !judoka.country ||
+      !judoka.stats ||
+      !judoka.signatureMoveId
+    ) {
+      console.error("Invalid judoka object:", judoka);
+      continue; // Skip invalid judoka objects
+    }
     await generateJudokaCard(judoka, gokyoLookup, container);
   }
 
-  // Step 4: Create a wrapper element for the carousel
   const wrapper = document.createElement("div");
   wrapper.className = "carousel-container";
 
-  // Step 5: Create scroll buttons
   const leftButton = createScrollButton("left", container, 300);
   const rightButton = createScrollButton("right", container, 300);
 
-  // Step 6: Append the scroll buttons and carousel container to the wrapper
   wrapper.appendChild(leftButton);
   wrapper.appendChild(container);
   wrapper.appendChild(rightButton);
 
-  // Step 7: Return the completed wrapper element
   return wrapper;
 }

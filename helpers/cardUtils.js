@@ -17,17 +17,30 @@ import { generateJudokaCardHTML } from "./cardBuilder.js";
  *
  * 4. Return the judoka object at the randomly selected index.
  *
- * @param {Array} data - An array of judoka objects.
- * @returns {Object} A randomly selected judoka object.
+ * @param {Judoka[]} data - An array of judoka objects.
+ * @returns {Judoka} A randomly selected judoka object.
  * @throws {Error} If the `data` array is invalid or empty.
  */
 export function getRandomJudoka(data) {
   if (!Array.isArray(data) || data.length === 0) {
     throw new Error("No judoka data available to select.");
   }
+
   const index = Math.floor(Math.random() * data.length);
+  const selectedJudoka = data[index];
+
+  if (
+    !selectedJudoka.firstname ||
+    !selectedJudoka.surname ||
+    !selectedJudoka.country ||
+    !selectedJudoka.stats ||
+    !selectedJudoka.signatureMoveId
+  ) {
+    throw new Error("Selected judoka is missing required fields.");
+  }
+
   console.log("Random index:", index);
-  return data[index];
+  return selectedJudoka;
 }
 
 /**
@@ -50,17 +63,33 @@ export function getRandomJudoka(data) {
  *    - If an error occurs during card generation, log the error to the console.
  *    - Display a fallback error message in the `gameArea`.
  *
- * @param {Object} judoka - The judoka object containing data for the card.
+ *
+ * @param {Judoka} judoka - The judoka object containing data for the card.
  * @param {Object} gokyo - The gokyo data used to enrich the card.
  * @param {HTMLElement} gameArea - The DOM element where the card will be displayed.
  * @param {HTMLElement} showRandom - The "random" button element to be displayed.
  */
 export async function displayJudokaCard(judoka, gokyo, gameArea, showRandom) {
   console.log("Judoka passed to displayJudokaCard:", judoka);
+
+  if (
+    !judoka ||
+    !judoka.firstname ||
+    !judoka.surname ||
+    !judoka.country ||
+    !judoka.stats ||
+    !judoka.signatureMoveId
+  ) {
+    console.error("Invalid judoka object:", judoka);
+    gameArea.innerHTML = "<p>⚠️ Invalid judoka data. Unable to display card.</p>";
+    return;
+  }
+
   if (!gameArea) {
     console.error("Game area is not available.");
     return;
   }
+
   try {
     gameArea.innerHTML = "";
     const cardElement = await generateJudokaCardHTML(judoka, gokyo);

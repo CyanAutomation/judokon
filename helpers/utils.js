@@ -78,11 +78,14 @@ export function getValue(value, fallback = "Unknown") {
  *
  * 4. Return the formatted date string (YYYY-MM-DD).
  *
- * @param {string} dateString - The date string to format.
+ *
+ * @param {string|Date} dateString - The date string or Date object to format.
  * @returns {string} The formatted date or "Invalid Date".
- * @typedef {string} FormattedDate
  */
 export function formatDate(dateString) {
+  if (dateString instanceof Date) {
+    return isNaN(dateString.getTime()) ? "Invalid Date" : dateString.toISOString().split("T")[0];
+  }
   if (typeof dateString !== "string" || !dateString.trim()) {
     return "Invalid Date";
   }
@@ -105,18 +108,23 @@ export function formatDate(dateString) {
  *
  * 3. Return the resulting lookup object.
  *
- * @param {Array} gokyoData - Array of gokyo objects.
- * @returns {Object} A lookup object with gokyo IDs as keys.
+ *
+ * @param {GokyoEntry[]} gokyoData - Array of gokyo objects.
+ * @returns {Object<string, GokyoEntry>} A lookup object with gokyo IDs as keys.
  */
 export function createGokyoLookup(gokyoData) {
   // Step 1: Check if gokyoData is valid
-  if (!gokyoData || gokyoData.length === 0) {
+  if (!Array.isArray(gokyoData) || gokyoData.length === 0) {
     console.error("gokyoData is empty or undefined");
     return {}; // Return an empty object if gokyoData is invalid
   }
 
   // Step 2: Transform gokyoData into a lookup object
   return gokyoData.reduce((acc, move) => {
+    if (!move.id || !move.name) {
+      console.warn("Invalid GokyoEntry:", move);
+      return acc; // Skip invalid entries
+    }
     acc[move.id] = move; // Use the move's ID as the key and the move object as the value
     return acc;
   }, {}); // Initialize the accumulator as an empty object
