@@ -125,12 +125,15 @@ export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "commo
   const signatureMoveId = Number(judoka.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
 
   console.log("Signature Move ID:", signatureMoveId);
+  console.log("Judoka Object:", judoka);
   console.log("Gokyo Lookup Object:", gokyoLookup);
 
   const technique = (gokyoLookup && gokyoLookup[signatureMoveId]) ||
     (gokyoLookup && gokyoLookup[0]) || { id: 0, name: "Jigoku-guruma" };
 
   const techniqueName = technique?.name || "Jigoku-guruma";
+
+  console.log("Selected Technique:", technique);
 
   const cardClass = cardType.toLowerCase();
 

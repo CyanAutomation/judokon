@@ -29,9 +29,9 @@
   --padding-extra-large: 2rem; */
 
   /* Border radius */
-  /* --border-radius-small: 4px;
+  --border-radius-small: 4px;
   --border-radius-medium: 8px;
-  --border-radius-large: 12px; */
+  --border-radius-large: 12px;
 
   /* Box shadow */
   /* --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); */
@@ -271,14 +271,14 @@ button:focus {
   align-items: center;
   padding: var(--padding-large);
   background-color: seagreen;
-  min-height: 400px;
+  min-height: 500px;
 }
 
 .judoka-card {
   position: relative; /* Ensure the pseudo-element is positioned relative to the card */
   width: 300px;
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
-  border: clamp(9px, 4vw, 14px) solid var(--card-border-color); /* Card border */
+  border: max(13px, 1dvh) solid var(--card-border-color);
   border-radius: var(--border-radius-large); /* Rounded corners */
   background-color: var(--card-bg-color); /* Card background color */
   box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3); /* Add shadow */
@@ -366,9 +366,10 @@ button:focus {
   justify-content: space-around;
   display: inline-flex;
   align-items: center; /* Center-align items vertically */
-  padding: clamp(3px, 10vw, 5px) clamp(3px, 5vw, 5px);
+  /* padding: clamp(3px, 10vw, 5px) clamp(3px, 5vw, 5px); */
+  padding: min(5px, 4dvh) min(5px, 1dvw);
   flex-direction: row;
-  margin: 0;
+  /* margin: 0; */
 }
 
 .card-name {
@@ -381,23 +382,22 @@ button:focus {
   max-width: 250px;
   min-width: 100px;
   flex: 1 1 0;
-  margin-left: clamp(1px, 1.6vw, 6px);
+  margin-left: min(5px, 5dvw);
 }
 
 /* Styles for the judoka's name */
 .card-name .firstname {
-  font-size: clamp(0.7rem, 5vw, 1.1rem);
+  font-size: min(5vw, 1.1rem);
   font-weight: normal; /* Normal font weight */
   display: block;
-
-  letter-spacing: clamp(0.5px, 0.5px, 1px);
+  /* letter-spacing: clamp(0.5px, 0.5px, 1px); */
 }
 
 .card-name .surname {
-  font-size: clamp(0.7rem, 6vw, 1.5rem);
+  font-size: min(6vw, 1.5rem);
   font-weight: bold; /* Bold font weight */
   text-transform: uppercase; /* Uppercase text */
-  letter-spacing: clamp(0.5px, 0.5px, 1px);
+  /* letter-spacing: clamp(0.5px, 0.5px, 1px); */
 }
 
 /* Styles for the country flag */
@@ -411,15 +411,15 @@ button:focus {
   max-width: 60px;
   min-width: 35px;
   flex: 1 1 0;
-  margin-right: clamp(1px, 1.4vw, 6px);
+  margin-right: min(4px, 1.4vw);
 }
 
 .card-flag img {
-  width: clamp(36px, 16vw, 60px); /* Responsive width */
+  width: min(50px, 60dvw);
   height: auto;
   aspect-ratio: 3/2;
   max-width: 60px;
-  border-radius: clamp(1px, 1vw, 5px);
+  border-radius: min(4px, 1vw);
   border: 1px solid #fff;
 }
 /* Portrait section of the card */
@@ -469,16 +469,16 @@ button:focus {
 .card-stats {
   background-color: var(--card-bg-color); /* Background color */
   color: var(--text-color);
-  padding: clamp(2px, 0.5vw, 6px) clamp(6px, 2vw, 10px);
+  padding: min(2px, 0.5vw) min(6px, 2vw);
   margin: 0;
   display: flex;
   justify-content: space-between;
   width: 100%;
   align-items: space-between;
-  font-size: clamp(12px, 5vw, 1.1rem);
+  font-size: min(16px, 8vw);
   align-items: flex-end;
   flex-direction: column; /* Stack items vertically */
-  letter-spacing: clamp(0px, 0.5px, 1px);
+  /* letter-spacing: min(0.5px, 1px); */
 }
 
 .card-stats ul {
@@ -492,7 +492,7 @@ button:focus {
 
 .card-stats li {
   margin: 0;
-  padding: 3px clamp(1px, 0.6vh, 6px); /* Add padding */
+  padding: 3px min(1px, 0.6vh);
   border-top: 1px solid var(--card-border-color);
   text-transform: uppercase; /* Uppercase text */
 }
@@ -538,8 +538,8 @@ button:focus {
   border-radius: 2px;
   border: 1px solid #fff;
   white-space: nowrap;
-  padding: clamp(5px, 2.3vw, 9px) 8px;
-  font-size: clamp(8px, 4vw, 15px);
+  padding: min(10px, 2.3vw) 8px;
+  font-size: min(14px, 4dvw);
   max-width: 150px;
   min-width: 90px;
   flex: 1 1 0;
@@ -558,8 +558,8 @@ button:focus {
   border-radius: 2px;
   border: 1px solid var(--card-signature-move-bg);
   white-space: nowrap;
-  padding: clamp(5px, 2.3vw, 9px) 8px;
-  font-size: clamp(8px, 4vw, 13px);
+  padding: min(5px, 2.3vw) 8px;
+  font-size: min(12px, 4vw);
   max-width: 150px;
   flex: 1 1 0;
   align-items: center;
