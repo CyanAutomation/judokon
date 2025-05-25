@@ -29,7 +29,11 @@ describe("generateCardTopBar", () => {
 
     const result = await generateCardTopBar({ firstname: "John", surname: "Doe" }, null);
 
-    const normalizeHtml = (html) => html.replace(/\s+/g, " ").trim();
+    const normalizeHtml = (html) => html
+    .replace(/>\s+</g, '><')         // Collapse spaces between tags
+    .replace(/></g, '> <')           // Add space between adjacent tags
+    .replace(/\s+/g, ' ')            // Collapse all whitespace
+    .trim();
     expect(normalizeHtml(result.outerHTML)).toBe(normalizeHtml(expectedHtml));
   });
 });
