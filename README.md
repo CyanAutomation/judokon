@@ -2,6 +2,8 @@
 
 **JU-DO-KON!** is a fast-paced, web-based card game, featuring real-life elite judoka. Designed for ages 8–12, the game uses simplified stats, vibrant collectible cards, and a player-vs-computer battle format. First to win 10 rounds takes the match!
 
+Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io/judokon/)
+
 | Aspect                     |                                                                                                                                                                                                    Value |
 | :------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | 1. Unit Tests              |               ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CyanAutomation/judokon/runUnitTests.yml?logo=githubactions&style=for-the-badge&label=Unit%20Tests) |
@@ -36,17 +38,11 @@
    # Then visit: http://localhost:5000
    ```
 
-## Dependencies
-
-- **Vite**: For building and bundling the project.
-- **Serve**: For serving the project locally.
-- **Vitest**: For unit testing.
-
 ## Project Structure
 
 - index.html: The main HTML file for the game.
 - style.css: The stylesheet for the game's design.
-- script.js: The main JavaScript file for game logic.
+- game.js: The main JavaScript file for game logic.
 - utils.js: A utility file containing reusable functions like generating flag URLs and card HTML.
 - judoka.json: The JSON file containing judoka card data.
 
