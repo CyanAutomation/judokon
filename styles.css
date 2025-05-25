@@ -4,9 +4,9 @@
   --scale-duration: 0.4s;
   --slide-track-speed: 40s;
   /* Colors */
-  --primary-bg: #1c4b95; 
+  --primary-bg: #1c4b95;
   --secondary-bg: #0c3f7a;
-  --text-color: white; 
+  --text-color: white;
 
   /* Card-specific colors */
   /* --common-border-color: #3c5ad6; 
@@ -52,13 +52,17 @@
 }
 
 @keyframes scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(calc(-250px * 7))}
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-250px * 7));
+  }
 }
 
 /* General body styles */
 body {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   background: linear-gradient(to bottom, var(--primary-bg), var(--secondary-bg));
   color: var(--text-color); /* Default text color */
   min-height: 100dvh;
@@ -711,15 +715,15 @@ button:focus {
 }
 
 .country-flag-slider {
-	background: rgba(0, 32, 82, 0.5);
-	/* box-shadow: 0 10px 20px -5px rgba(0, 0, 0, .125); */
-	/* height: 100px; */
-	/* margin: auto; */
-	overflow: hidden;
-	position: relative;
-	width: 100%;
-	
-	/* &::before,
+  background: rgba(0, 32, 82, 0.5);
+  /* box-shadow: 0 10px 20px -5px rgba(0, 0, 0, .125); */
+  /* height: 100px; */
+  /* margin: auto; */
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+
+  /* &::before,
 	&::after {
 		content: "";
 		height: auto;
@@ -740,10 +744,10 @@ button:focus {
 	} */
 
   .country-flag-slide-track {
-		animation: scroll var(--slide-track-speed) linear infinite;
-		display: flex;
-		/* width: calc(250px * 14); */
-	}
+    animation: scroll var(--slide-track-speed) linear infinite;
+    display: flex;
+    /* width: calc(250px * 14); */
+  }
 
   .slide {
     display: inline-flex;
@@ -755,7 +759,7 @@ button:focus {
     max-width: 45vw;
     white-space: pre;
   }
-  
+
   .flag-image {
     max-height: 5dvh;
     margin: 0.5rem;
