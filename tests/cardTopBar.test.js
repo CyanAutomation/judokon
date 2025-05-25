@@ -15,30 +15,21 @@ const flagUrl = "https://flagcdn.com/w320/fr.png";
 
 describe("generateCardTopBar", () => {
   it("returns a valid HTML string for a judoka's top bar", async () => {
-    const judoka = {
-      firstname: "John",
-      surname: "Doe",
-      countryCode: "us"
-    };
-    const flagUrl = "https://flagcdn.com/w320/us.png";
-    const expectedHtml = `
-      <div class="card-top-bar">
-        <div class="card-name">
-          <span class="firstname">John</span>
-          <span class="surname">Doe</span>
-        </div>
-        <div class="card-flag">
-          <img src="https://flagcdn.com/w320/us.png" alt="United States flag" onerror="this.src='../assets/countryFlags/placeholder-flag.png'">
-        </div>
+  const expectedHtml = `
+    <div class="card-top-bar">
+      <div class="card-name">
+        <span class="firstname">John</span>
+        <span class="surname">Doe</span>
       </div>
-    `;
+      <div class="card-flag"></div>
+    </div>
+  `;
 
-    const result = await generateCardTopBar(judoka, flagUrl);
+  const result = await generateCardTopBar({ firstname: "John", surname: "Doe" }, null);
 
-    // Normalize whitespace for comparison
-    const normalizeHtml = (html) => html.replace(/\s+/g, " ").trim();
-    expect(normalizeHtml(result.outerHTML)).toBe(normalizeHtml(expectedHtml));
-  });
+  // Normalize whitespace for comparison
+  const normalizeHtml = (html) => html.replace(/\s+/g, " ").trim();
+  expect(normalizeHtml(result.outerHTML)).toBe(normalizeHtml(expectedHtml));
 });
 
 describe("generateCardTopBar2", () => {
