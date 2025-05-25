@@ -48,31 +48,32 @@
         import { fetchDataWithErrorHandling } from "../helpers/dataUtils.js";
         import { createGokyoLookup } from "../helpers/utils.js";
         import { generateJudokaCardHTML } from "../helpers/cardBuilder.js";
-        
+
         async function displayRandomJudoka() {
           const cardContainer = document.getElementById("card-container");
-        
+
           try {
             // Fetch the judoka data
             const judokaData = await fetchDataWithErrorHandling("../data/judoka.json");
             const randomJudoka = judokaData[Math.floor(Math.random() * judokaData.length)];
-        
+
             // Fetch the gokyo data and create the lookup object
             const gokyoData = await fetchDataWithErrorHandling("../data/gokyo.json");
             const gokyoLookup = createGokyoLookup(gokyoData);
-        
+
             // Generate the judoka card
             const judokaCard = await generateJudokaCardHTML(randomJudoka, gokyoLookup);
-        
+
             // Display the card
             cardContainer.innerHTML = ""; // Clear any existing content
             cardContainer.appendChild(judokaCard);
           } catch (error) {
             console.error("Error displaying random judoka:", error);
-            cardContainer.innerHTML = "<p>⚠️ Failed to load judoka data. Please try again later.</p>";
+            cardContainer.innerHTML =
+              "<p>⚠️ Failed to load judoka data. Please try again later.</p>";
           }
         }
-        
+
         // Call the function to display a random judoka when the page loads
         displayRandomJudoka();
       </script>
