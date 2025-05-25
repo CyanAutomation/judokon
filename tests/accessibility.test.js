@@ -73,6 +73,6 @@ describe("generateCardSignatureMove", () => {
     };
     const html = generateCardSignatureMove(mockJudoka, specialGokyo);
     expect(html).toContain("Signature Move:");
-    expect(html).toContain("&lt;script&gt;alert('XSS')&lt;/script&gt;");
+    expect(html).toContain("&lt;script&gt;alert(&#039;XSS&#039;)&lt;/script&gt;");
   });
 });
