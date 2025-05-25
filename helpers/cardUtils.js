@@ -69,7 +69,7 @@ export function getRandomJudoka(data) {
  * @param {HTMLElement} gameArea - The DOM element where the card will be displayed.
  * @param {HTMLElement} showRandom - The "random" button element to be displayed.
  */
-export async function displayJudokaCard(judoka, gokyo, gameArea, showRandom) {
+export async function displayJudokaCard(judoka, gokyo, gameArea) {
   console.log("Judoka passed to displayJudokaCard:", judoka);
 
   if (

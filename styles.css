@@ -63,14 +63,14 @@
 /* General body styles */
 body {
   font-family: "Open Sans", sans-serif;
-  background: linear-gradient(to bottom, var(--primary-bg), var(--secondary-bg));
+  /* background: linear-gradient(to bottom, var(--primary-bg), var(--secondary-bg)); */
   color: var(--text-color); /* Default text color */
   min-height: 100dvh;
   min-width: 100vw;
-  /* background-image: url("./assets/locationTiles/bgTileGeneral.jpg"); */
-  /* background-repeat: repeat; */
+  background-image: url("./assets/images/bgTileBlue.png");
+  background-repeat: repeat;
   /* backdrop-filter: brightness(0.9); */
-  /* background-size: clamp(240px, 35vw, 420px); */
+  background-size: 50vw auto;
   /* display: grid; */
   /* grid-template-rows: auto 1fr auto; */
   /* flex: 1 1 auto; */
@@ -135,9 +135,12 @@ body {
 
 .game-mode-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: auto minmax(200px, 15%);
   gap: 1rem;
   padding: 1rem;
+  flex: 1 1 auto;
+  min-height: 85%;
+  /* border: 5px red solid; */
 }
 
 .game-tile {
@@ -177,13 +180,6 @@ body {
 }
 
 @media (orientation: portrait) {
-  .main-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    padding: 1rem;
-    align-items: center;
-  }
   .card-of-day {
     display: none;
   }
@@ -212,8 +208,8 @@ body {
   aspect-ratio: 1 / 1;
   border-radius: 1rem;
   flex: 1 1 auto;
-  /* border: solid 5px red; */
   object-fit: contain;
+  align-items: center;
 }
 
 .locationTileSmall {
@@ -232,6 +228,22 @@ body {
   aspect-ratio: 1 / 1;
   border-radius: 1rem;
   flex: 1 1 auto;
+}
+
+.svgTile {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* max-width: 20px; */
+  /* flex: 1 1 auto; */
+  /* border: red solid 2px; */
+}
+svg {
+  width: 10vh;
+  aspect-ratio: 1 / 1;
+  /* border: red solid 2px; */
+  fill: #e1e1e1;
 }
 
 /* Button styles */
