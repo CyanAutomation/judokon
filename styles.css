@@ -176,7 +176,7 @@ body {
   grid-column: 2;
 }
 
-@media (max-width: 40em) {
+@media (orientation: portrait) {
   .main-grid {
     display: grid;
     grid-template-columns: 1fr;
