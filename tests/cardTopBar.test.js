@@ -15,21 +15,21 @@ const flagUrl = "https://flagcdn.com/w320/fr.png";
 
 describe("generateCardTopBar", () => {
   it("returns a valid HTML string for a judoka's top bar", async () => {
-  const expectedHtml = `
-    <div class="card-top-bar">
-      <div class="card-name">
-        <span class="firstname">John</span>
-        <span class="surname">Doe</span>
+    const expectedHtml = `
+      <div class="card-top-bar">
+        <div class="card-name">
+          <span class="firstname">John</span>
+          <span class="surname">Doe</span>
+        </div>
+        <div class="card-flag"></div>
       </div>
-      <div class="card-flag"></div>
-    </div>
-  `;
+    `;
 
-  const result = await generateCardTopBar({ firstname: "John", surname: "Doe" }, null);
+    const result = await generateCardTopBar({ firstname: "John", surname: "Doe" }, null);
 
-  // Normalize whitespace for comparison
-  const normalizeHtml = (html) => html.replace(/\s+/g, " ").trim();
-  expect(normalizeHtml(result.outerHTML)).toBe(normalizeHtml(expectedHtml));
+    const normalizeHtml = (html) => html.replace(/\s+/g, " ").trim();
+    expect(normalizeHtml(result.outerHTML)).toBe(normalizeHtml(expectedHtml));
+  });
 });
 
 describe("generateCardTopBar2", () => {
