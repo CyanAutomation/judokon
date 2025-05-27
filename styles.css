@@ -142,6 +142,8 @@ body {
   flex: 1 1 auto;
   min-height: 85%;
   /* border: 5px red solid; */
+  /* max-width: 90vw; */
+  justify-content: center;
 }
 
 .game-tile {
@@ -193,8 +195,12 @@ body {
 }
 
 @media (orientation: portrait) {
-  .card-of-day {
+  .homeHelperContainer {
     display: none;
+  }
+  .game-tile {
+    justify-content: center;
+    border-radius: 12px;
   }
 }
 
