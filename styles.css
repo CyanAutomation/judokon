@@ -144,7 +144,7 @@ body {
   /* min-width: 75%; */
   /* border: 5px red solid; */
   /* max-width: 90vw; */
-  /* justify-content: center; */
+  justify-content: center;
 }
 
 .game-tile {
