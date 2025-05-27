@@ -20,7 +20,10 @@
     "gender": "male",
     "isHidden": true,
     "rarity": "Legendary",
-    "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT8C"
+    "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT8C",
+    "matchesWon": 0,
+    "matchesLost": 0,
+    "matchesDrew": 0
   },
   {
     "id": 111,
@@ -43,7 +46,10 @@
     "gender": "female",
     "isHidden": false,
     "rarity": "Common",
-    "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT8C"
+    "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT8C",
+    "matchesWon": 0,
+    "matchesLost": 0,
+    "matchesDrew": 0
   },
   {
     "id": 114,
@@ -66,7 +72,10 @@
     "gender": "female",
     "isHidden": false,
     "rarity": "Common",
-    "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT8D"
+    "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT8D",
+    "matchesWon": 0,
+    "matchesLost": 0,
+    "matchesDrew": 0
   },
   {
     "id": 776,
@@ -89,7 +98,10 @@
     "gender": "male",
     "isHidden": false,
     "rarity": "Epic",
-    "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT9D"
+    "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT9D",
+    "matchesWon": 0,
+    "matchesLost": 0,
+    "matchesDrew": 0
   },
   {
     "id": 40,
@@ -112,7 +124,10 @@
     "gender": "male",
     "isHidden": false,
     "rarity": "Common",
-    "cardCode": "WKZ3-H4NF-MXT2-LQ93-AA9D"
+    "cardCode": "WKZ3-H4NF-MXT2-LQ93-AA9D",
+    "matchesWon": 0,
+    "matchesLost": 0,
+    "matchesDrew": 0
   },
   {
     "id": 42,
@@ -135,7 +150,10 @@
     "gender": "male",
     "isHidden": false,
     "rarity": "Common",
-    "cardCode": "WKZ3-H4NF-MXT2-LQ93-AB9D"
+    "cardCode": "WKZ3-H4NF-MXT2-LQ93-AB9D",
+    "matchesWon": 0,
+    "matchesLost": 0,
+    "matchesDrew": 0
   },
   {
     "id": 44,
@@ -158,6 +176,9 @@
     "gender": "female",
     "isHidden": false,
     "rarity": "Common",
-    "cardCode": "WKZ3-H4NF-MXT2-LQ93-AC9D"
+    "cardCode": "WKZ3-H4NF-MXT2-LQ93-AC9D",
+    "matchesWon": 0,
+    "matchesLost": 0,
+    "matchesDrew": 0
   }
 ]
