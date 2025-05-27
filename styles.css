@@ -1,6 +1,6 @@
 /* Define global CSS variables for colors, font sizes, spacing, and other reusable styles */
 :root {
-  --button-scale: 1.03;
+  --button-scale: 1.02;
   --scale-duration: 0.4s;
   --slide-track-speed: 40s;
   /* Colors */
@@ -116,6 +116,7 @@ body {
   /* padding: 1rem 2rem; */
   background-color: #a71916;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 100%;
 }
 
 .character-slot {
@@ -136,7 +137,7 @@ body {
 .game-mode-grid {
   display: grid;
   grid-template-columns: auto minmax(200px, 15%);
-  gap: 1rem;
+  gap: 1rem 0;
   padding: 1rem;
   flex: 1 1 auto;
   min-height: 85%;
@@ -144,9 +145,9 @@ body {
 }
 
 .game-tile {
-  background: #0b5400;
-  border: 2px solid #000000;
-  border-radius: 12px;
+  background: rgba(107, 107, 107, 0.5);
+  /* border: 2px solid #000000; */
+  border-radius: 8px 0 0 8px;
   padding: 1rem;
   display: flex;
   align-items: center;
@@ -155,6 +156,8 @@ body {
   flex: 1 1 auto;
   color: #fff;
   text-decoration: none;
+  margin: 1vh 0;;
+  /* z-index: -10; */
 }
 
 .game-tile:hover {
@@ -165,18 +168,28 @@ body {
 }
 
 .tile-content h2 {
-  border: 2px dashed #a71916;
+  /* border: 2px dashed #a71916; */
   padding-left: 1rem;
 }
 
-.card-of-day {
-  background: #fbe8d4;
-  border: 2px dashed #a71916;
-  border-radius: 12px;
-  padding: 1rem;
+.homeHelperContainer {
+  background: var(--secondary-bg);
+  border: 2px solid var(--secondary-bg);
+  border-radius: 4px 12px 12px 4px;
+  /* border-radius: 12px; */
+  /* padding: 1rem; */
   text-align: center;
   grid-row: 1/5;
   grid-column: 2;
+  z-index: 2;
+}
+
+.homeHelperContainer img {
+  width: 100%;
+  /* max-width: 300px; */
+  height: auto;
+  /* aspect-ratio: 1 / 1; */
+  border-radius: 4px;
 }
 
 @media (orientation: portrait) {
@@ -243,7 +256,8 @@ svg {
   width: 10vh;
   aspect-ratio: 1 / 1;
   /* border: red solid 2px; */
-  fill: #e1e1e1;
+  /* fill: #e1e1e1; */
+  fill: #ffffff;
 }
 
 /* Button styles */
