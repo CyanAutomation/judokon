@@ -141,9 +141,10 @@ body {
   padding: 1rem;
   flex: 1 1 auto;
   min-height: 85%;
+  /* min-width: 75%; */
   /* border: 5px red solid; */
   /* max-width: 90vw; */
-  justify-content: center;
+  /* justify-content: center; */
 }
 
 .game-tile {
@@ -156,9 +157,11 @@ body {
   justify-content: flex-start;
   grid-column: 1;
   flex: 1 1 auto;
+  /* max-width: 75%; */
   color: #fff;
   text-decoration: none;
-  margin: 1vh 0;;
+  margin: 1vh 0;
+  margin-left: 25vw;
   /* z-index: -10; */
 }
 
