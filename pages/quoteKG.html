@@ -64,44 +64,50 @@
         "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
       );
     </script>
-    <script>
-    async function displayRandomQuote() {
-      try {
-        // Fetch the JSON data
-        const response = await fetch("../data/aesopsFables.json");
-        if (!response.ok) {
-          throw new Error("Failed to fetch aesopsFables.json");
+        <script>
+      async function displayRandomQuote() {
+        try {
+          // Fetch the JSON data
+          const response = await fetch("../data/aesopsFables.json");
+          if (!response.ok) {
+            throw new Error("Failed to fetch aesopsFables.json");
+          }
+          const fables = await response.json();
+    
+          // Get the highest ID
+          const maxId = Math.max(...fables.map(fable => fable.id));
+    
+          // Generate a random ID
+          const randomId = Math.floor(Math.random() * maxId) + 1;
+    
+          // Find the fable with the random ID
+          const randomFable = fables.find(fable => fable.id === randomId);
+    
+          // Display the title and story in the quote div
+          const quoteDiv = document.getElementById("quote");
+          if (randomFable) {
+            // Convert \n\n into paragraphs
+            const formattedStory = randomFable.story
+              .split("\\n\\n") // Split the story into paragraphs
+              .map(paragraph => `<p>${paragraph}</p><br>`) // Wrap each paragraph in <p> tags
+              .join(""); // Join the paragraphs back into a single string
+    
+            quoteDiv.innerHTML = `
+              <div class="quote-heading">${randomFable.title}</div>
+              <div class="quote-content">${formattedStory}</div>
+            `;
+          } else {
+            quoteDiv.innerHTML = "<p>Fable not found. Please try again.</p>";
+          }
+        } catch (error) {
+          console.error("Error fetching or displaying the fable:", error);
+          const quoteDiv = document.getElementById("quote");
+          quoteDiv.innerHTML = "<p>Failed to load a random fable. Please try again later.</p>";
         }
-        const fables = await response.json();
-  
-        // Get the highest ID
-        const maxId = Math.max(...fables.map(fable => fable.id));
-  
-        // Generate a random ID
-        const randomId = Math.floor(Math.random() * maxId) + 1;
-  
-        // Find the fable with the random ID
-        const randomFable = fables.find(fable => fable.id === randomId);
-  
-        // Display the title and story in the quote div
-        const quoteDiv = document.getElementById("quote");
-        if (randomFable) {
-          quoteDiv.innerHTML = `
-            <div class="quote-heading">${randomFable.title}</div>
-            <div class="quote-content">${randomFable.story}</div>
-          `;
-        } else {
-          quoteDiv.innerHTML = "<p>Fable not found. Please try again.</p>";
-        }
-      } catch (error) {
-        console.error("Error fetching or displaying the fable:", error);
-        const quoteDiv = document.getElementById("quote");
-        quoteDiv.innerHTML = "<p>Failed to load a random fable. Please try again later.</p>";
       }
-    }
-  
-    // Call the function when the page loads
-    document.addEventListener("DOMContentLoaded", displayRandomQuote);
-  </script>
+    
+      // Call the function when the page loads
+      document.addEventListener("DOMContentLoaded", displayRandomQuote);
+    </script>
   </body>
 </html>
