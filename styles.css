@@ -805,27 +805,45 @@ button:focus {
 
 .quote-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 5fr;
   background-color: saddlebrown;
-  max-height: 75vh;
+  /* max-height: 85vh; */
   /* border: 2px solid #ff0000; */
+  /* align-items: center; */
 }
 
 .kg-sprite {
   display: flex;
-  /* max-height: 100%; */
-  align-items: center;
-  /* object-fit: contain; */
-  /* border: 2px solid #ff0000; */
-  flex: 0 1 auto;
+  justify-content: center; 
+  align-items: flex-start; 
+  /* max-height: 75vh;  */
+  width: auto;
+  padding: 5vh;
 }
 
 .kg-sprite img {
-  /* width: auto; */
-  /* height: 100%; */
-  /* object-fit: contain; */
-  /* max-height: 100%; */
-  border: 2px solid #ff0000;
-  flex: 0 1 auto;
-  display: flex;
+  width: auto;
+  height: 100%;
+  max-height: 75vh;
+  object-fit: cover;
+  overflow: hidden; 
+  /* border: 2px solid #ff0000; */
+}
+
+.quote-heading {
+  color: #fff;
+  font-size: 1.5rem;
+  text-align: center;
+  align-self: center;
+  justify-self: center;
+  padding: 1rem
+}
+.quote-content {
+  color: #fff;
+  font-size: 1rem;
+  text-align: justify;
+  align-self: center;
+  justify-self: center;
+  padding: 0 1rem;
+  padding-bottom: 1rem;
 }
