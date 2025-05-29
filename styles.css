@@ -802,3 +802,30 @@ button:focus {
     border-radius: 4px;
   }
 }
+
+.quote-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background-color: saddlebrown;
+  max-height: 75vh;
+  /* border: 2px solid #ff0000; */
+}
+
+.kg-sprite {
+  display: flex;
+  /* max-height: 100%; */
+  align-items: center;
+  /* object-fit: contain; */
+  /* border: 2px solid #ff0000; */
+  flex: 0 1 auto;
+}
+
+.kg-sprite img {
+  /* width: auto; */
+  /* height: 100%; */
+  /* object-fit: contain; */
+  /* max-height: 100%; */
+  border: 2px solid #ff0000;
+  flex: 0 1 auto;
+  display: flex;
+}
