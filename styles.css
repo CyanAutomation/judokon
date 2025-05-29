@@ -136,9 +136,9 @@ body {
 
 .game-mode-grid {
   display: grid;
-  grid-template-columns: auto minmax(200px, 15%);
+  grid-template-columns: auto minmax(300px, 25%);
   gap: 1rem 0;
-  /* padding: 1rem; */
+  padding: 0 10vw;
   flex: 1 1 auto;
   min-height: 85%;
   /* min-width: 75%; */
