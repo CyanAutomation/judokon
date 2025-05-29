@@ -86,15 +86,14 @@
           // Display the title and story in the quote div
           const quoteDiv = document.getElementById("quote");
           if (randomFable) {
-            // Convert \n\n into paragraphs
+            // Convert \n\n into paragraphs and handle single \n for line breaks
             const formattedStory = randomFable.story
-              .split("\\n\\n") // Split the story into paragraphs
-              .map(paragraph => `<p>${paragraph}</p><br>`) // Wrap each paragraph in <p> tags
-              .join(""); // Join the paragraphs back into a single string
+              .replace(/\\n\\n/g, "</p><p><br>") // Replace double \n with paragraph breaks
+              .replace(/\\n/g, "<br>"); // Replace single \n with line breaks
     
             quoteDiv.innerHTML = `
               <div class="quote-heading">${randomFable.title}</div>
-              <div class="quote-content">${formattedStory}</div>
+              <div class="quote-content"><p>${formattedStory}</p></div>
             `;
           } else {
             quoteDiv.innerHTML = "<p>Fable not found. Please try again.</p>";

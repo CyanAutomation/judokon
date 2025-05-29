@@ -805,7 +805,7 @@ button:focus {
 
 .quote-container {
   display: grid;
-  grid-template-columns: 1fr 5fr;
+  grid-template-columns: 1fr 6fr;
   background-color: saddlebrown;
   /* max-height: 85vh; */
   /* border: 2px solid #ff0000; */
@@ -844,6 +844,6 @@ button:focus {
   text-align: justify;
   align-self: center;
   justify-self: center;
-  padding: 0 1rem;
+  padding: 0 2rem;
   padding-bottom: 1rem;
 }
