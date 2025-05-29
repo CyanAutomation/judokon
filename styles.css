@@ -138,13 +138,13 @@ body {
   display: grid;
   grid-template-columns: auto minmax(200px, 15%);
   gap: 1rem 0;
-  padding: 1rem;
+  /* padding: 1rem; */
   flex: 1 1 auto;
   min-height: 85%;
   /* min-width: 75%; */
   /* border: 5px red solid; */
   /* max-width: 90vw; */
-  justify-content: center;
+  /* justify-content: center; */
 }
 
 .game-tile {
@@ -161,15 +161,16 @@ body {
   color: #fff;
   text-decoration: none;
   margin: 1vh 0;
-  margin-left: 25vw;
+  margin-left: 18vw;
   /* z-index: -10; */
 }
 
 .game-tile:hover {
   background: #880000;
   color: #fff;
-  scale: var(--button-scale);
-  transition: scale var(--scale-duration) ease-in-out;
+  /* scale: var(--button-scale); */
+  margin-left: 17vw;
+  transition: margin var(--scale-duration) ease-in-out;
 }
 
 .tile-content h2 {
