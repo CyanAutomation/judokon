@@ -1,10 +1,8 @@
 PRD Generation Rule for Game Development (Ju-Do-Kon! Ready)
 
-
 Goal
 
 Guide the AI assistant to create a detailed, actionable, game-specific PRD in Markdown format based on an initial user prompt. The PRD should be clear, consistent, and detailed enough for a junior developer or junior game designer to understand and implement the feature.
-
 
 Process
 
@@ -19,7 +17,6 @@ Process
 • Scope, balancing, edge cases
 
 3. Generate PRD: Based on the user’s answers, create a PRD following the structure below.
-
 
 Clarifying Questions (Game Development Focus)
 
@@ -47,7 +44,6 @@ Adapt questions based on the feature. Key areas to always clarify:
 
 • Dependencies: “What existing systems, mechanics, or engines does this feature rely on?”
 
-
 PRD Structure
 
 The PRD must include the following sections:
@@ -58,11 +54,9 @@ The PRD must include the following sections:
 
 • State the problem it solves and the goal.
 
-
 2. Goals
 
 • List specific, measurable objectives in bullet format.
-
 
 3. User Stories
 
@@ -71,7 +65,6 @@ The PRD must include the following sections:
 • As a [player type], I want to [do something] so that [benefit].
 
 • Provide at least three examples.
-
 
 4. Functional Requirements
 
@@ -91,7 +84,6 @@ The PRD must include the following sections:
 
 • FR-1 (P1): The player must receive a daily login reward at 00:00 UTC reset.
 
-
 5. Acceptance Criteria
 
 • Clear checklist defining “Done”.
@@ -104,11 +96,9 @@ The PRD must include the following sections:
 
 • Feature functions on mobile and desktop
 
-
 6. Non-Goals (Out of Scope)
 
 • Explicitly list what is NOT included to prevent scope creep.
-
 
 7. Design Considerations
 
@@ -120,18 +110,15 @@ The PRD must include the following sections:
 
 • Follow Ju-Do-Kon!’s signature card art style (bold vector, clean gradients).
 
-
 8. Technical Considerations
 
 • Mention technical constraints, APIs, or modules.
 
 • Performance considerations.
 
-
 9. Dependencies and Integrations
 
 • List any systems the feature depends on (e.g., Points, Player Progression System).
-
 
 10. Edge Cases / Failure States
 
@@ -143,11 +130,9 @@ The PRD must include the following sections:
 
 • If a player misses 3 days, their login reward streak resets to Day 1.
 
-
 11. Open Questions
 
 • Remaining uncertainties or decisions still needed.
-
 
 12. Metadata
 
@@ -159,13 +144,11 @@ The PRD must include the following sections:
 
 • Related Features (if any)
 
-
 Output Requirements
 
 • Format: Markdown (.md)
 
 • Filename: prd[FeatureName].md
-
 
 Final Instructions
 
@@ -179,11 +162,9 @@ Final Instructions
 
 5. Prioritize clarity, player experience, and practical detail.
 
-
 Example Prompt for the AI
 
 “Please create a PRD for a Daily Login Reward System for Ju-Do-Kon! aimed at encouraging kids to play daily, with progression-based card rewards. Ensure it is actionable for a junior developer.”
-
 
 Example Clarifying Questions (if needed)
 
