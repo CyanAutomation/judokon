@@ -32,7 +32,7 @@ Players are motivated by meaningful, personalized rewards that mark major achiev
 ## Functional Requirements
 ### Priority 1 (P1)
 - Display KG character image and random quote when player wins all team battles.
-- Randomly select and display a quote from `aesopsFables.json` dataset.
+- Randomly select and display a quote from `aesopFables.json` dataset.
 
 ### Priority 2 (P2)
 - If quote data fails to load, display default message: “Well done, congratulations!”
@@ -59,8 +59,8 @@ Players are motivated by meaningful, personalized rewards that mark major achiev
 ## Edge Cases / Failure States
 - **Failure to load quote data**: Display default congratulatory message.
 - **App crash/restart mid-team battle**: Player progress persists; if victory conditions are met post-relaunch, quote screen appears.
-- **Handle offline mode**: Quote data cached locally.
-- **Prevent quote repetition**: Ensure no repeated quotes across multiple wins in the same session.
+- **Handle offline mode**: Display fallback quote.
+- **1uote repetition**: As there are over 100 quotes in aesopFables.json, it's unlikely that a player will see the same quote within a single session.
 
 ---
 
