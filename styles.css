@@ -814,8 +814,8 @@ button:focus {
 
 .kg-sprite {
   display: flex;
-  justify-content: center; 
-  align-items: flex-start; 
+  justify-content: center;
+  align-items: flex-start;
   /* max-height: 75vh;  */
   width: auto;
   padding: 5vh;
@@ -826,7 +826,7 @@ button:focus {
   height: 100%;
   max-height: 85vh;
   object-fit: cover;
-  overflow: hidden; 
+  overflow: hidden;
   /* border: 2px solid #ff0000; */
 }
 
@@ -836,7 +836,7 @@ button:focus {
   text-align: left;
   align-self: center;
   justify-self: center;
-  padding: 1rem
+  padding: 1rem;
 }
 .quote-content {
   color: #fff;
