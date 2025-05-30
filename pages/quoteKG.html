@@ -37,7 +37,7 @@
     <main class="container" role="main">
       <section id="quote-container" class="quote-container">
         <div class="kg-sprite">
-            <img src="../assets/helperKG/helperKG1.png">
+          <img src="../assets/helperKG/helperKG1.png" />
         </div>
         <div id="quote" class="quote"></div>
       </section>
@@ -64,7 +64,7 @@
         "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
       );
     </script>
-        <script>
+    <script>
       async function displayRandomQuote() {
         try {
           // Fetch the JSON data
@@ -73,16 +73,16 @@
             throw new Error("Failed to fetch aesopsFables.json");
           }
           const fables = await response.json();
-    
+
           // Get the highest ID
-          const maxId = Math.max(...fables.map(fable => fable.id));
-    
+          const maxId = Math.max(...fables.map((fable) => fable.id));
+
           // Generate a random ID
           const randomId = Math.floor(Math.random() * maxId) + 1;
-    
+
           // Find the fable with the random ID
-          const randomFable = fables.find(fable => fable.id === randomId);
-    
+          const randomFable = fables.find((fable) => fable.id === randomId);
+
           // Display the title and story in the quote div
           const quoteDiv = document.getElementById("quote");
           if (randomFable) {
@@ -90,7 +90,7 @@
             const formattedStory = randomFable.story
               .replace(/\\n\\n/g, "</p><p><br>") // Replace double \n with paragraph breaks
               .replace(/\\n/g, "<br>"); // Replace single \n with line breaks
-    
+
             quoteDiv.innerHTML = `
               <div class="quote-heading">${randomFable.title}</div>
               <div class="quote-content"><p>${formattedStory}</p></div>
@@ -104,7 +104,7 @@
           quoteDiv.innerHTML = "<p>Failed to load a random fable. Please try again later.</p>";
         }
       }
-    
+
       // Call the function when the page loads
       document.addEventListener("DOMContentLoaded", displayRandomQuote);
     </script>
