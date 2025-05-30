@@ -19,7 +19,6 @@ You must give a numerical score for each criterion and actionable feedback for i
   - User Stories
   - Functional Requirements
   - Acceptance Criteria
-  - KPIs/Success Metrics
   - Design Notes
   - etc.
 

@@ -37,9 +37,9 @@
     <main class="container" role="main">
       <section id="quote-container" class="quote-container">
         <div class="kg-sprite">
-          <img src="../assets/helperKG/helperKG1.png" />
+          <img src="../assets/helperKG/helperKG1.png" alt="KG character congratulating the player" />
         </div>
-        <div id="quote" class="quote"></div>
+        <div id="quote" class="quote" aria-labelledby="quote-heading" aria-describedby="quote-content"></div>
       </section>
     </main>
 
@@ -92,16 +92,16 @@
               .replace(/\\n/g, "<br>"); // Replace single \n with line breaks
 
             quoteDiv.innerHTML = `
-              <div class="quote-heading">${randomFable.title}</div>
-              <div class="quote-content"><p>${formattedStory}</p></div>
+              <div class="quote-heading" id="quote-heading">${randomFable.title}</div>
+              <div class="quote-content" id="quote-content"><p>${formattedStory}</p></div>
             `;
           } else {
-            quoteDiv.innerHTML = "<p>Fable not found. Please try again.</p>";
+            quoteDiv.innerHTML = "<p>Well done, congratulations!</p>";
           }
         } catch (error) {
           console.error("Error fetching or displaying the fable:", error);
           const quoteDiv = document.getElementById("quote");
-          quoteDiv.innerHTML = "<p>Failed to load a random fable. Please try again later.</p>";
+          quoteDiv.innerHTML = "<p>Well done, congratulations!</p>";
         }
       }
 
