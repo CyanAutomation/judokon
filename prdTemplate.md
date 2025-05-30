@@ -20,16 +20,12 @@ Process
 
 3. Generate PRD: Based on the user’s answers, create a PRD following the structure below.
 
-4. Save PRD: Save the file as prd-[feature-name].md inside the /tasks/ directory.
-
 
 Clarifying Questions (Game Development Focus)
 
 Adapt questions based on the feature. Key areas to always clarify:
 
 • Problem/Goal: “What player problem or gameplay gap does this feature solve?”
-
-• Target Player: “Who is the primary user? (e.g., casual players, competitive players, young players)”
 
 • Core Functionality: “What are the key actions or outcomes expected from this feature?”
 
@@ -51,8 +47,6 @@ Adapt questions based on the feature. Key areas to always clarify:
 
 • Dependencies: “What existing systems, mechanics, or engines does this feature rely on?”
 
-• Success Metrics / KPIs: “How will we measure if the feature is successful? (e.g., retention, session length)”
-
 
 PRD Structure
 
@@ -63,8 +57,6 @@ The PRD must include the following sections:
 • Briefly describe the feature.
 
 • State the problem it solves and the goal.
-
-• Specify the intended player experience or emotion (e.g., excitement, progression, collection joy).
 
 
 2. Goals
@@ -133,28 +125,15 @@ The PRD must include the following sections:
 
 • Mention technical constraints, APIs, or modules.
 
-• Performance considerations if relevant.
+• Performance considerations.
 
 
 9. Dependencies and Integrations
 
-• List any systems the feature depends on (e.g., Inventory System, Player Progression System, Currency System).
+• List any systems the feature depends on (e.g., Points, Player Progression System).
 
 
-10. Success Metrics / KPIs
-
-• How will success be measured?
-
-• Include at least one player behavior metric and one technical metric.
-
-• Example:
-
-• 5% increase in D1 retention
-
-• 99.5% uptime for reward claim service
-
-
-11. Edge Cases / Failure States
+10. Edge Cases / Failure States
 
 • Identify unusual, extreme, or broken scenarios.
 
@@ -165,12 +144,12 @@ The PRD must include the following sections:
 • If a player misses 3 days, their login reward streak resets to Day 1.
 
 
-12. Open Questions
+11. Open Questions
 
 • Remaining uncertainties or decisions still needed.
 
 
-13. Metadata
+12. Metadata
 
 • Author
 
@@ -185,9 +164,7 @@ Output Requirements
 
 • Format: Markdown (.md)
 
-• Location: /tasks/
-
-• Filename: prd-[feature-name].md
+• Filename: prd[FeatureName].md
 
 
 Final Instructions
