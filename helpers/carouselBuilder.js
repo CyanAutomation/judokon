@@ -28,6 +28,11 @@ export function createScrollButton(direction, container, scrollAmount) {
     throw new Error("Invalid direction: must be 'left' or 'right'");
   }
 
+  // Validate the container
+  if (!container) {
+    throw new Error("Container is required");
+  }
+
   const button = document.createElement("button");
 
   button.className = `scroll-button ${direction}`;

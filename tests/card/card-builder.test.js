@@ -37,6 +37,12 @@ describe("createScrollButton", () => {
     container.innerHTML = '<div style="width: 1000px;">Content</div>';
     container.scrollLeft = 0;
     const scrollAmount = 100;
+
+    // Mock scrollBy
+    container.scrollBy = jest.fn(({ left }) => {
+      container.scrollLeft += left;
+    });
+
     const button = createScrollButton(direction, container, scrollAmount);
 
     button.click();
@@ -51,6 +57,12 @@ describe("createScrollButton", () => {
     container.innerHTML = '<div style="width: 1000px;">Content</div>';
     container.scrollLeft = 0;
     const scrollAmount = 100;
+
+    // Mock scrollBy
+    container.scrollBy = jest.fn(({ left }) => {
+      container.scrollLeft += left;
+    });
+
     const button = createScrollButton(direction, container, scrollAmount);
 
     button.click();
