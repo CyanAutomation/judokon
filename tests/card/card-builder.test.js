@@ -1,7 +1,6 @@
 import { createScrollButton } from "../../helpers/carouselBuilder.js";
 import { generateCardPortrait, generateCardStats } from "../../helpers/cardRender.js";
 
-
 describe("createScrollButton", () => {
   it("should create a scroll button with the correct class and inner HTML when direction is left", () => {
     const direction = "left";
