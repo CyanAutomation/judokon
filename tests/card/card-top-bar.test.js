@@ -1,13 +1,17 @@
 import { vi } from "vitest";
 import * as countryUtils from "../../helpers/countryUtils.js";
-import { generateCardTopBar, createNameContainer, createFlagImage } from "../../helpers/cardTopBar.js";
+import {
+  generateCardTopBar,
+  createNameContainer,
+  createFlagImage
+} from "../../helpers/cardTopBar.js";
 
 // Utility function for normalization
 const normalizeHtml = (html) =>
   html
     .replace(/>\s+</g, "><") // Collapse spaces between tags
-    .replace(/></g, "> <")   // Add space between adjacent tags
-    .replace(/\s+/g, " ")    // Collapse all whitespace
+    .replace(/></g, "> <") // Add space between adjacent tags
+    .replace(/\s+/g, " ") // Collapse all whitespace
     .trim();
 
 // Mock Data
