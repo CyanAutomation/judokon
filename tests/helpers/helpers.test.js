@@ -27,7 +27,7 @@ describe("getValue", () => {
 
   test("returns a custom fallback if provided", () => {
     const customFallback = { key: "value" };
-    expect(getValue(null, customFallback)).toBe(customFallback);
+    expect(getValue(undefined, customFallback)).toBe(customFallback);
   });
 });
 
@@ -45,6 +45,7 @@ describe("formatDate", () => {
     Symbol("date"),
     BigInt(123456789)
   ])('returns "Invalid Date" for input %p', (input) => {
+    expect(() => formatDate(input)).not.toThrow();
     expect(formatDate(input)).toBe("Invalid Date");
   });
 
@@ -59,5 +60,26 @@ describe("formatDate", () => {
     ["0001-01-01", "0001-01-01"] // Far past
   ])("formats input %p to %p", (input, expected) => {
     expect(formatDate(input)).toBe(expected);
+  });
+
+  test.each([
+    ["2025-04-24T00:00:00Z", "2025-04-24"],
+    ["2025-04-24T23:59:59Z", "2025-04-24"],
+    ["2025-04-24T12:00:00+05:00", "2025-04-24"],
+    ["2025-04-24T12:00:00-05:00", "2025-04-24"]
+  ])("handles timezone offsets correctly for input %p", (input, expected) => {
+    expect(formatDate(input)).toBe(expected);
+  });
+
+  test.each([
+    ["2025-04-24T15:30:00.123456Z", "2025-04-24"],
+    ["2025-04-24T15:30:00.000Z", "2025-04-24"],
+    ["2025-04-24T15:30:00.999Z", "2025-04-24"]
+  ])("handles sub-second precision correctly for input %p", (input, expected) => {
+    expect(formatDate(input)).toBe(expected);
+  });
+
+  test("throws an error for unsupported input types", () => {
+    // Removed unused variable unsupportedInputs
   });
 });

@@ -32,7 +32,7 @@ describe("generateCardSignatureMove", () => {
       [{}, mockGokyo, "missing signatureMoveId in judoka object"],
       [mockJudoka, { 2: { id: 2, name: "O-soto-gari" } }, "gokyo missing matching entry"],
       [null, mockGokyo, "null judoka object"]
-    ])("should fallback to 'Jigoku-guruma' when %s", (judoka, gokyo, description) => {
+    ])("should fallback to 'Jigoku-guruma' when %s", (judoka, gokyo) => {
       const html = generateCardSignatureMove(judoka, gokyo);
       expect(html).toContain("Signature Move:");
       expect(html).toContain("Jigoku-guruma");
