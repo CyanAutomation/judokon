@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { getValue } from "../../helpers/utils.js";
+import { getValue, formatDate } from "../../helpers/utils.js";
 
 describe("getValue", () => {
   test.each([
@@ -14,9 +14,12 @@ describe("getValue", () => {
     [{}, "Fallback", "Fallback"], // Object
     [[], "Fallback", "Fallback"], // Array
     [undefined, undefined, "Unknown"] // Undefined with no fallback
-  ])("returns %p for input %p with fallback %p", (value, fallback, expected) => {
-    expect(getValue(value, fallback)).toBe(expected);
-  });
+  ])(
+    "returns %p when value=%p and fallback=%p",
+    (value, fallback, expected) => {
+      expect(getValue(value, fallback)).toBe(expected);
+    }
+  );
 
   test.each([
     [0, 0], // Falsy number
@@ -31,71 +34,33 @@ describe("getValue", () => {
   });
 });
 
-import { formatDate } from "../../helpers/utils.js";
-
 describe("formatDate", () => {
-  test("formats YYYY-MM-DD correctly", () => {
-    expect(formatDate("2025-04-24")).toBe("2025-04-24");
+  test.each([
+    "not-a-date",
+    "",
+    null,
+    undefined,
+    123456,
+    {},
+    [],
+    true,
+    false,
+    Symbol("date"),
+    BigInt(123456789),
+  ])('returns "Invalid Date" for input %p', (input) => {
+    expect(formatDate(input)).toBe("Invalid Date");
   });
 
-  test("formats ISO date-time string correctly", () => {
-    expect(formatDate("2025-04-24T15:30:00Z")).toBe("2025-04-24");
-  });
-
-  test('returns "Invalid Date" for bad input', () => {
-    expect(formatDate("not-a-date")).toBe("Invalid Date");
-  });
-
-  test('returns "Invalid Date" for empty string', () => {
-    expect(formatDate("")).toBe("Invalid Date");
-  });
-
-  test('returns "Invalid Date" for null', () => {
-    expect(formatDate(null)).toBe("Invalid Date");
-  });
-
-  test('returns "Invalid Date" for undefined', () => {
-    expect(formatDate(undefined)).toBe("Invalid Date");
-  });
-
-  test('returns "Invalid Date" for number input', () => {
-    expect(formatDate(123456)).toBe("Invalid Date");
-  });
-
-  test('returns "Invalid Date" for object input', () => {
-    expect(formatDate({})).toBe("Invalid Date");
-  });
-
-  test("formats leap year date correctly", () => {
-    expect(formatDate("2024-02-29")).toBe("2024-02-29");
-  });
-
-  test("formats edge date correctly", () => {
-    expect(formatDate("1970-01-01")).toBe("1970-01-01");
-  });
-
-  test("formats date with time zone offset correctly", () => {
-    expect(formatDate("2025-04-24T15:30:00+02:00")).toBe("2025-04-24");
-  });
-
-  test("formats date with milliseconds correctly", () => {
-    expect(formatDate("2025-04-24T15:30:00.123Z")).toBe("2025-04-24");
-  });
-
-  test('returns "Invalid Date" for array input', () => {
-    expect(formatDate([])).toBe("Invalid Date");
-  });
-
-  test('returns "Invalid Date" for boolean input', () => {
-    expect(formatDate(true)).toBe("Invalid Date");
-    expect(formatDate(false)).toBe("Invalid Date");
-  });
-
-  test("handles extremely large date strings", () => {
-    expect(formatDate("9999-12-31")).toBe("9999-12-31");
-  });
-
-  test("handles extremely small date strings", () => {
-    expect(formatDate("0001-01-01")).toBe("0001-01-01");
+  test.each([
+    ["2025-04-24", "2025-04-24"],
+    ["2025-04-24T15:30:00Z", "2025-04-24"],
+    ["2025-04-24T15:30:00+02:00", "2025-04-24"],
+    ["2025-04-24T15:30:00.123Z", "2025-04-24"],
+    ["2024-02-29", "2024-02-29"], // Leap year
+    ["1970-01-01", "1970-01-01"], // Epoch
+    ["9999-12-31", "9999-12-31"], // Far future
+    ["0001-01-01", "0001-01-01"], // Far past
+  ])('formats input %p to %p', (input, expected) => {
+    expect(formatDate(input)).toBe(expected);
   });
 });
