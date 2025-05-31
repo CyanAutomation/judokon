@@ -14,12 +14,9 @@ describe("getValue", () => {
     [{}, "Fallback", "Fallback"], // Object
     [[], "Fallback", "Fallback"], // Array
     [undefined, undefined, "Unknown"] // Undefined with no fallback
-  ])(
-    "returns %p when value=%p and fallback=%p",
-    (value, fallback, expected) => {
-      expect(getValue(value, fallback)).toBe(expected);
-    }
-  );
+  ])("returns %p when value=%p and fallback=%p", (value, fallback, expected) => {
+    expect(getValue(value, fallback)).toBe(expected);
+  });
 
   test.each([
     [0, 0], // Falsy number
@@ -46,7 +43,7 @@ describe("formatDate", () => {
     true,
     false,
     Symbol("date"),
-    BigInt(123456789),
+    BigInt(123456789)
   ])('returns "Invalid Date" for input %p', (input) => {
     expect(formatDate(input)).toBe("Invalid Date");
   });
@@ -59,8 +56,8 @@ describe("formatDate", () => {
     ["2024-02-29", "2024-02-29"], // Leap year
     ["1970-01-01", "1970-01-01"], // Epoch
     ["9999-12-31", "9999-12-31"], // Far future
-    ["0001-01-01", "0001-01-01"], // Far past
-  ])('formats input %p to %p', (input, expected) => {
+    ["0001-01-01", "0001-01-01"] // Far past
+  ])("formats input %p to %p", (input, expected) => {
     expect(formatDate(input)).toBe(expected);
   });
 });
