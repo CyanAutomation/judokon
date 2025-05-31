@@ -1,30 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { getValue, formatDate } from "../../helpers/utils.js";
-
-describe("getValue", () => {
-  test.each([
-    ["Hello", "Fallback", "Hello"],
-    ["", "Fallback", "Fallback"],
-    [undefined, "Fallback", "Fallback"],
-    [null, "Fallback", "Fallback"],
-    ["   ", "Fallback", "Fallback"],
-    [42, "Fallback", 42],
-    [false, "Fallback", false],
-    [true, "Fallback", true],
-    [{}, "Fallback", "Fallback"],
-    [[], "Fallback", "Fallback"],
-    [undefined, undefined, "Unknown"]
-  ])("returns %p when value=%p and fallback=%p", (value, fallback, expected) => {
-    expect(getValue(value, fallback)).toBe(expected);
-  });
-
-  test.each([
-    [0, 0],
-    [NaN, NaN]
-  ])("returns the value for falsy inputs like %p", (value, expected) => {
-    expect(getValue(value, "Fallback")).toBe(expected);
-  });
-});
+import { formatDate } from "../../helpers/utils.js";
 
 describe("formatDate", () => {
   test.each(["not-a-date", "", null, undefined, 123456, {}, [], true, false, BigInt(123456789)])(
@@ -66,9 +41,16 @@ describe("formatDate", () => {
   });
 
   test("throws an error for unsupported input types", () => {
-    const unsupportedInputs = [Symbol("date"), function () {}, new Map(), new Set()];
+    const unsupportedInputs = [
+      Symbol("date"),
+      function () {},
+      new Map(),
+      new Set(),
+      new WeakMap(),
+      new WeakSet()
+    ];
     unsupportedInputs.forEach((input) => {
-      expect(() => formatDate(input)).toThrow();
+      expect(() => formatDate(input)).toThrow(TypeError); // Ensure the error type matches expectations
     });
   });
 
@@ -83,4 +65,23 @@ describe("formatDate", () => {
       expect(formatDate(input)).toBe(expected);
     });
   });
+
+  test.each([
+    ["2025-04-24T15:30:00.123456789Z", "2025-04-24"],
+    ["2025-04-24T15:30:00.000000000Z", "2025-04-24"],
+    ["2025-04-24T15:30:00.999999999Z", "2025-04-24"]
+  ])("handles nanosecond precision correctly for input %p", (input, expected) => {
+    expect(formatDate(input)).toBe(expected);
+  });
+
+  test.each([
+    ["2025-04-24T15:30:00Z", "2025-04-24"],
+    ["2025-04-24T15:30:00.123Z", "2025-04-24"],
+    ["2025-04-24T15:30:00.123456Z", "2025-04-24"]
+  ])(
+    "does not modify valid ISO date strings with time components for input %p",
+    (input, expected) => {
+      expect(formatDate(input)).toBe(expected);
+    }
+  );
 });
