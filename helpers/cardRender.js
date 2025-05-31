@@ -1,7 +1,3 @@
-import { getValue } from "./utils.js";
-
-const PLACEHOLDER_PORTRAIT = "../assets/judokaPortraits/judokaPortrait-0.png";
-
 /**
  * Generates the portrait HTML for a judoka card.
  *
@@ -23,30 +19,21 @@ const PLACEHOLDER_PORTRAIT = "../assets/judokaPortraits/judokaPortrait-0.png";
  * @returns {string} The HTML string for the portrait.
  */
 export function generateCardPortrait(card) {
-  console.log("Card object received:", card);
-
-  if (!card) {
-    console.warn("Judoka object is missing.");
-    return `
-      <div class="card-portrait">
-        <img src="${PLACEHOLDER_PORTRAIT}" alt="Placeholder portrait">
-      </div>
-    `;
+  if (!card || typeof card !== "object") {
+    throw new Error("Card object is required");
   }
 
-  // Construct the portrait URL using the card's id
-  const portraitUrl = card.id
-    ? `../assets/judokaPortraits/judokaPortrait-${card.id}.png`
-    : PLACEHOLDER_PORTRAIT;
+  const requiredFields = ["id", "firstname", "surname"];
+  const missingFields = requiredFields.filter((field) => !card[field]);
 
-  const altText = `${getValue(card.firstname, "Judoka")} ${getValue(card.surname, "")}'s portrait`;
+  if (missingFields.length > 0) {
+    throw new Error(`Card is missing required fields: ${missingFields.join(", ")}`);
+  }
 
-  console.log("Constructed portrait URL:", portraitUrl);
-  console.log("Constructed alt text:", altText);
-
+  const { id, firstname, surname } = card;
   return `
     <div class="card-portrait">
-      <img src="${portraitUrl}" alt="${altText}" onerror="this.src='${PLACEHOLDER_PORTRAIT}'">
+      <img src="../assets/judokaPortraits/judokaPortrait-${id}.png" alt="${firstname} ${surname}'s portrait" onerror="this.src='../assets/judokaPortraits/judokaPortrait-${id}.png'">
     </div>
   `;
 }
