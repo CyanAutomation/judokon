@@ -69,11 +69,7 @@ export function generateCardStats(card, cardType = "common") {
   }
 
   if (!card.stats || typeof card.stats !== "object") {
-    return `
-      <div class="card-stats ${cardType}">
-        <p>No stats available</p>
-      </div>
-    `;
+    throw new Error("Stats object is required");
   }
 
   const { power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?" } = card.stats;

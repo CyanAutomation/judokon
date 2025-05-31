@@ -23,12 +23,10 @@ import { generateJudokaCard } from "./cardBuilder.js";
  * @returns {HTMLElement} The scroll button element.
  */
 export function createScrollButton(direction, container, scrollAmount) {
-  // Validate the direction
   if (direction !== "left" && direction !== "right") {
     throw new Error("Invalid direction: must be 'left' or 'right'");
   }
 
-  // Validate the container
   if (!container) {
     throw new Error("Container is required");
   }
@@ -46,8 +44,8 @@ export function createScrollButton(direction, container, scrollAmount) {
 
   button.addEventListener("click", () => {
     container.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount, // Negative for left, positive for right
-      behavior: "smooth" // Smooth scrolling animation
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth"
     });
   });
 
@@ -84,7 +82,7 @@ export function createScrollButton(direction, container, scrollAmount) {
 export async function buildCardCarousel(judokaList, gokyoData) {
   if (!Array.isArray(judokaList) || judokaList.length === 0) {
     console.error("No judoka data available to build the carousel.");
-    return document.createElement("div"); // Return an empty container
+    return document.createElement("div");
   }
 
   if (!Array.isArray(gokyoData) || gokyoData.length === 0) {
@@ -93,6 +91,18 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   const container = document.createElement("div");
   container.className = "card-carousel";
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "carousel-container";
+
+  // Add loading spinner
+  const spinner = document.createElement("div");
+  spinner.className = "loading-spinner";
+  wrapper.appendChild(spinner);
+
+  const timeoutId = setTimeout(() => {
+    spinner.style.display = "block";
+  }, 2000);
 
   const gokyoLookup = createGokyoLookup(gokyoData);
 
@@ -105,13 +115,22 @@ export async function buildCardCarousel(judokaList, gokyoData) {
       !judoka.signatureMoveId
     ) {
       console.error("Invalid judoka object:", judoka);
-      continue; // Skip invalid judoka objects
+      continue;
     }
-    await generateJudokaCard(judoka, gokyoLookup, container);
+
+    const card = await generateJudokaCard(judoka, gokyoLookup, container);
+
+    // Handle broken card images
+    const img = card.querySelector("img");
+    if (img) {
+      img.onerror = () => {
+        img.src = "path/to/default-image.png"; // Replace with actual path to fallback image
+      };
+    }
   }
 
-  const wrapper = document.createElement("div");
-  wrapper.className = "carousel-container";
+  clearTimeout(timeoutId);
+  spinner.style.display = "none";
 
   const leftButton = createScrollButton("left", container, 300);
   const rightButton = createScrollButton("right", container, 300);
@@ -119,6 +138,36 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   wrapper.appendChild(leftButton);
   wrapper.appendChild(container);
   wrapper.appendChild(rightButton);
+
+  container.tabIndex = 0; // Make the carousel focusable
+
+  container.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") {
+      container.scrollBy({ left: -300, behavior: "smooth" });
+    } else if (event.key === "ArrowRight") {
+      container.scrollBy({ left: 300, behavior: "smooth" });
+    }
+  });
+
+  container.addEventListener("touchstart", handleSwipeStart);
+  container.addEventListener("touchend", handleSwipeEnd);
+
+  let touchStartX = 0;
+
+  function handleSwipeStart(event) {
+    touchStartX = event.touches[0].clientX;
+  }
+
+  function handleSwipeEnd(event) {
+    const touchEndX = event.changedTouches[0].clientX;
+    const swipeDistance = touchEndX - touchStartX;
+
+    if (swipeDistance > 50) {
+      container.scrollBy({ left: -300, behavior: "smooth" });
+    } else if (swipeDistance < -50) {
+      container.scrollBy({ left: 300, behavior: "smooth" });
+    }
+  }
 
   return wrapper;
 }

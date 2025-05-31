@@ -85,6 +85,23 @@
             carouselContainer.appendChild(carousel);
           } catch (error) {
             console.error("Error building the carousel:", error);
+            const errorMessage = document.createElement("div");
+            errorMessage.className = "error-message";
+            errorMessage.textContent = "Network error occurred. Please check your connection and try again.";
+            carouselContainer.appendChild(errorMessage);
+          }
+
+          if (judokaList.length === 0) {
+            const noResultsMessage = document.createElement("div");
+            noResultsMessage.className = "no-results-message";
+            noResultsMessage.textContent = "No results found. Please broaden your search criteria.";
+            carouselContainer.appendChild(noResultsMessage);
+
+            const retryButton = document.createElement("button");
+            retryButton.className = "retry-button";
+            retryButton.textContent = "Retry";
+            retryButton.addEventListener("click", () => location.reload());
+            carouselContainer.appendChild(retryButton);
           }
 
           // Populate the country list
