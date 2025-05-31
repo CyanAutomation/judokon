@@ -44,10 +44,18 @@ describe("formatDate", () => {
     expect(() => formatDate(Symbol("date"))).toThrow(TypeError);
   });
 
-  test("returns 'Invalid Date' for other unsupported input types", () => {
-    const unsupportedInputs = [function () {}, new Map(), new Set(), new WeakMap(), new WeakSet()];
+  test("returns 'Invalid Date' for unsupported input types", () => {
+    const unsupportedInputs = [
+      Symbol("date"),
+      function () {},
+      new Map(),
+      new Set(),
+      new WeakMap(),
+      new WeakSet()
+    ];
     unsupportedInputs.forEach((input) => {
-      expect(formatDate(input)).toBe("Invalid Date");
+      expect(() => formatDate(input)).not.toThrow(); // It won't throw
+      expect(formatDate(input)).toBe("Invalid Date"); // It returns 'Invalid Date'
     });
   });
 
