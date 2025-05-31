@@ -1,7 +1,7 @@
 import { vi } from "vitest";
-import * as countryUtils from "../helpers/countryUtils.js";
-import { generateCardTopBar } from "../helpers/cardTopBar.js";
-import { createNameContainer, createFlagImage } from "../helpers/cardTopBar.js";
+import * as countryUtils from "../../helpers/countryUtils.js";
+import { generateCardTopBar } from "../../helpers/cardTopBar.js";
+import { createNameContainer, createFlagImage } from "../../helpers/cardTopBar.js";
 
 // Mock data
 vi.spyOn(countryUtils, "getCountryNameFromCode").mockResolvedValue("France");

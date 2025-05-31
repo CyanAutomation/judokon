@@ -1,7 +1,7 @@
 import { vi } from "vitest";
-import { getFlagUrl } from "../helpers/countryUtils.js";
-import { generateCardPortrait, generateCardStats } from "../helpers/cardRender.js";
-import { createScrollButton } from "../helpers/carouselBuilder.js";
+import { getFlagUrl } from "../../helpers/countryUtils.js";
+import { generateCardPortrait, generateCardStats } from "../../helpers/cardRender.js";
+import { createScrollButton } from "../../helpers/carouselBuilder.js";
 
 // Mock fetch globally
 vi.stubGlobal("fetch", (url) => {
