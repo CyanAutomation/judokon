@@ -64,49 +64,6 @@
         "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
       );
     </script>
-    <script>
-      async function displayRandomQuote() {
-        try {
-          // Fetch the JSON data
-          const response = await fetch("../data/aesopsFables.json");
-          if (!response.ok) {
-            throw new Error("Failed to fetch aesopsFables.json");
-          }
-          const fables = await response.json();
-
-          // Get the highest ID
-          const maxId = Math.max(...fables.map((fable) => fable.id));
-
-          // Generate a random ID
-          const randomId = Math.floor(Math.random() * maxId) + 1;
-
-          // Find the fable with the random ID
-          const randomFable = fables.find((fable) => fable.id === randomId);
-
-          // Display the title and story in the quote div
-          const quoteDiv = document.getElementById("quote");
-          if (randomFable) {
-            // Convert \n\n into paragraphs and handle single \n for line breaks
-            const formattedStory = randomFable.story
-              .replace(/\\n\\n/g, "</p><p><br>") // Replace double \n with paragraph breaks
-              .replace(/\\n/g, "<br>"); // Replace single \n with line breaks
-
-            quoteDiv.innerHTML = `
-              <div class="quote-heading" id="quote-heading">${randomFable.title}</div>
-              <div class="quote-content" id="quote-content"><p>${formattedStory}</p></div>
-            `;
-          } else {
-            quoteDiv.innerHTML = "<p>Well done, congratulations!</p>";
-          }
-        } catch (error) {
-          console.error("Error fetching or displaying the fable:", error);
-          const quoteDiv = document.getElementById("quote");
-          quoteDiv.innerHTML = "<p>Well done, congratulations!</p>";
-        }
-      }
-
-      // Call the function when the page loads
-      document.addEventListener("DOMContentLoaded", displayRandomQuote);
-    </script>
+    <script type="module" src="../helpers/quoteBuilder.js"></script>
   </body>
 </html>
