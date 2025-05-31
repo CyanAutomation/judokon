@@ -40,8 +40,9 @@ describe("formatDate", () => {
     expect(formatDate(input)).toBe(expected);
   });
 
-  test("throws an error for Symbol input", () => {
-    expect(() => formatDate(Symbol("date"))).toThrow(TypeError);
+  test("returns 'Invalid Date' for unsupported inputs like Symbol", () => {
+    expect(() => formatDate(Symbol("date"))).not.toThrow();
+    expect(formatDate(Symbol("date"))).toBe("Invalid Date");
   });
 
   test("handles edge cases for valid date strings", () => {
