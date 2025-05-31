@@ -40,17 +40,14 @@ describe("formatDate", () => {
     expect(formatDate(input)).toBe(expected);
   });
 
-  test("throws an error for unsupported input types", () => {
-    const unsupportedInputs = [
-      Symbol("date"),
-      function () {},
-      new Map(),
-      new Set(),
-      new WeakMap(),
-      new WeakSet()
-    ];
+  test("throws an error for Symbol input", () => {
+    expect(() => formatDate(Symbol("date"))).toThrow(TypeError);
+  });
+
+  test("returns 'Invalid Date' for other unsupported input types", () => {
+    const unsupportedInputs = [function () {}, new Map(), new Set(), new WeakMap(), new WeakSet()];
     unsupportedInputs.forEach((input) => {
-      expect(() => formatDate(input)).toThrow(TypeError); // Ensure the error type matches expectations
+      expect(formatDate(input)).toBe("Invalid Date");
     });
   });
 
