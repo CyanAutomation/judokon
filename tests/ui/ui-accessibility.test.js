@@ -37,14 +37,11 @@ describe("generateCardSignatureMove", () => {
       ["gokyo name is invalid", mockJudoka, { 1: { id: 1, name: null } }],
       ["missing signatureMoveId", {}, mockGokyo],
       ["invalid gokyo structure", mockJudoka, { 1: { invalidKey: "value" } }]
-    ])(
-      "should fallback to 'Jigoku-guruma' when %s",
-      (_, judoka, gokyo) => {
-        const html = generateCardSignatureMove(judoka, gokyo);
-        expect(html).toContain("Signature Move:");
-        expect(html).toContain("Jigoku-guruma");
-      }
-    );
+    ])("should fallback to 'Jigoku-guruma' when %s", (_, judoka, gokyo) => {
+      const html = generateCardSignatureMove(judoka, gokyo);
+      expect(html).toContain("Signature Move:");
+      expect(html).toContain("Jigoku-guruma");
+    });
   });
 
   describe("Invalid Type Inputs", () => {
@@ -55,13 +52,10 @@ describe("generateCardSignatureMove", () => {
       ["non-object gokyo (number)", mockJudoka, 12345],
       ["judoka as array", [], mockGokyo],
       ["gokyo as array", mockJudoka, []]
-    ])(
-      "should fallback to 'Jigoku-guruma' when %s",
-      (_, judoka, gokyo) => {
-        const html = generateCardSignatureMove(judoka, gokyo);
-        expect(html).toContain("Signature Move:");
-        expect(html).toContain("Jigoku-guruma");
-      }
-    );
+    ])("should fallback to 'Jigoku-guruma' when %s", (_, judoka, gokyo) => {
+      const html = generateCardSignatureMove(judoka, gokyo);
+      expect(html).toContain("Signature Move:");
+      expect(html).toContain("Jigoku-guruma");
+    });
   });
 });
