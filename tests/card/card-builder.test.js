@@ -1,3 +1,5 @@
+import { getFlagUrl } from "../../helpers/countryUtils.js";
+
 describe("getFlagUrl", () => {
   it("should handle empty country code mapping gracefully", async () => {
     vi.stubGlobal("fetch", () =>

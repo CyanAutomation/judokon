@@ -30,7 +30,7 @@ describe("generateCardSignatureMove", () => {
       [mockJudoka, { 1: { id: 1, name: null } }, "gokyo with invalid name"],
       [{}, mockGokyo, "missing signatureMoveId in judoka object"],
       [null, mockGokyo, "null judoka object"],
-      [mockJudoka, { 2: { id: 2, name: "O-soto-gari" } }, "gokyo missing entry for signatureMoveId"],
+      [mockJudoka, { 2: { id: 2, name: "O-soto-gari" } }, "gokyo missing entry for signatureMoveId"]
     ];
 
     it.each(fallbackCases)(
@@ -78,7 +78,7 @@ describe("generateCardSignatureMove", () => {
       ["non-object gokyo", mockJudoka, 12345],
       ["both judoka and gokyo non-objects", "string", "string"],
       ["judoka array instead of object", [], mockGokyo],
-      ["gokyo array instead of object", mockJudoka, []],
+      ["gokyo array instead of object", mockJudoka, []]
     ])("should fallback to 'Jigoku-guruma' when %s", (_, judoka, gokyo) => {
       const html = generateCardSignatureMove(judoka, gokyo);
       expect(html).toContain("Signature Move:");
