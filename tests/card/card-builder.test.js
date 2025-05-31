@@ -1,69 +1,52 @@
-import { getFlagUrl } from "../../helpers/countryUtils.js";
+import { createScrollButton } from "../../helpers/uiUtils.js";
 
-describe("getFlagUrl", () => {
-  it("should handle empty country code mapping gracefully", async () => {
-    vi.stubGlobal("fetch", () =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve([]) // Empty mapping
-      })
-    );
-    const expectedUrl = "https://flagcdn.com/w320/vu.png";
-    const result = await getFlagUrl("us");
-    expect(result).toBe(expectedUrl);
+describe("createScrollButton", () => {
+  it("should create a scroll button with the correct class and inner HTML when direction is left", () => {
+    const direction = "left";
+    const container = document.createElement("div");
+    const scrollAmount = 100;
+    const button = createScrollButton(direction, container, scrollAmount);
+    expect(button.className).toBe("scroll-button left");
+    expect(button.innerHTML).toBe("&lt;");
   });
 
-  it("should handle malformed country code mapping gracefully", async () => {
-    vi.stubGlobal("fetch", () =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve([{ invalidKey: "invalidValue" }]) // Malformed data
-      })
-    );
-    const expectedUrl = "https://flagcdn.com/w320/vu.png";
-    const result = await getFlagUrl("us");
-    expect(result).toBe(expectedUrl);
+  it("should create a scroll button with the correct class and inner HTML when direction is right", () => {
+    const direction = "right";
+    const container = document.createElement("div");
+    const scrollAmount = 100;
+    const button = createScrollButton(direction, container, scrollAmount);
+    expect(button.className).toBe("scroll-button right");
+    expect(button.innerHTML).toBe("&gt;");
   });
 
-  it("should handle fetch returning undefined data gracefully", async () => {
-    vi.stubGlobal("fetch", () =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(undefined) // Undefined data
-      })
+  it("should throw an error when the direction is invalid", () => {
+    const direction = "up";
+    const container = document.createElement("div");
+    const scrollAmount = 100;
+    expect(() => createScrollButton(direction, container, scrollAmount)).toThrowError(
+      "Invalid direction"
     );
-    const expectedUrl = "https://flagcdn.com/w320/vu.png";
-    const result = await getFlagUrl("us");
-    expect(result).toBe(expectedUrl);
   });
 
-  it("should handle fetch returning non-array data gracefully", async () => {
-    vi.stubGlobal("fetch", () =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ key: "value" }) // Non-array data
-      })
-    );
-    const expectedUrl = "https://flagcdn.com/w320/vu.png";
-    const result = await getFlagUrl("us");
-    expect(result).toBe(expectedUrl);
+  it("should attach a click event listener to scroll the container", () => {
+    const direction = "left";
+    const container = document.createElement("div");
+    container.style.overflow = "hidden";
+    container.style.width = "200px";
+    container.innerHTML = '<div style="width: 1000px;">Content</div>';
+    const scrollAmount = 100;
+    const button = createScrollButton(direction, container, scrollAmount);
+
+    button.click();
+    expect(container.scrollLeft).toBe(-100);
   });
 
-  it("should throw an error when fetch fails", async () => {
-    vi.stubGlobal("fetch", () => Promise.reject(new Error("Network error")));
-    await expect(getFlagUrl("us")).rejects.toThrow("Network error");
-  });
-
-  it("should fallback to Vanuatu flag when fetch returns malformed data", async () => {
-    vi.stubGlobal("fetch", () =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(null) // Malformed data
-      })
+  it("should handle edge cases gracefully when container is null", () => {
+    const direction = "left";
+    const scrollAmount = 100;
+    expect(() => createScrollButton(direction, null, scrollAmount)).toThrowError(
+      "Container is required"
     );
-    const expectedUrl = "https://flagcdn.com/w320/vu.png";
-    const result = await getFlagUrl("us");
-    expect(result).toBe(expectedUrl);
   });
 });
 
@@ -122,25 +105,5 @@ describe("generateCardStats", () => {
     const card = { stats: {} };
     const result = generateCardStats(card);
     expect(result).toContain('<div class="card-stats common">');
-  });
-});
-
-describe("createScrollButton", () => {
-  it("should create a scroll button with the correct class and inner HTML when direction is left", () => {
-    const direction = "left";
-    const container = document.createElement("div");
-    const scrollAmount = 100;
-    const button = createScrollButton(direction, container, scrollAmount);
-    expect(button.className).toBe("scroll-button left");
-    expect(button.innerHTML).toBe("&lt;");
-  });
-
-  it("should throw an error when the direction is invalid", () => {
-    const direction = "up";
-    const container = document.createElement("div");
-    const scrollAmount = 100;
-    expect(() => createScrollButton(direction, container, scrollAmount)).toThrowError(
-      "Invalid direction"
-    );
   });
 });

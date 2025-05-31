@@ -113,7 +113,7 @@ export async function getFlagUrl(countryCode) {
   const countryCodeMapping = await loadCountryCodeMapping();
 
   const isValid = countryCodeMapping.some(
-    (entry) => entry.code.toLowerCase() === countryCode.toLowerCase() && entry.active
+    (entry) => entry.code && entry.code.toLowerCase() === countryCode.toLowerCase() && entry.active
   );
 
   if (!isValid) {
