@@ -1,5 +1,6 @@
 import { createScrollButton } from "../../helpers/carouselBuilder.js";
 import { generateCardPortrait, generateCardStats } from "../../helpers/cardRender.js";
+import { vi } from "vitest";
 
 describe("createScrollButton", () => {
   it("should create a scroll button with the correct class and inner HTML when direction is left", () => {
@@ -39,7 +40,7 @@ describe("createScrollButton", () => {
     const scrollAmount = 100;
 
     // Mock scrollBy
-    container.scrollBy = jest.fn(({ left }) => {
+    container.scrollBy = vi.fn(({ left }) => {
       container.scrollLeft += left;
     });
 
@@ -59,7 +60,7 @@ describe("createScrollButton", () => {
     const scrollAmount = 100;
 
     // Mock scrollBy
-    container.scrollBy = jest.fn(({ left }) => {
+    container.scrollBy = vi.fn(({ left }) => {
       container.scrollLeft += left;
     });
 
@@ -107,9 +108,16 @@ describe("generateCardPortrait", () => {
     expect(normalizeHtml(result)).toBe(normalizeHtml(expectedHtml));
   });
 
-  it("should throw an error or handle gracefully if card is missing required fields", () => {
-    const card = {};
-    expect(() => generateCardPortrait(card)).toThrow();
+  it("should throw an error if card is missing required fields", () => {
+    const card = { id: 0 }; // Missing firstname and surname
+    expect(() => generateCardPortrait(card)).toThrowError(
+      "Card is missing required fields: firstname, surname"
+    );
+  });
+
+  it("should handle gracefully if card is null or undefined", () => {
+    expect(() => generateCardPortrait(null)).toThrowError("Card object is required");
+    expect(() => generateCardPortrait(undefined)).toThrowError("Card object is required");
   });
 });
 
@@ -145,6 +153,17 @@ describe("generateCardStats", () => {
 
   it("should handle missing stats gracefully", () => {
     const card = { stats: {} };
+    const result = generateCardStats(card);
+    expect(result).toContain('<div class="card-stats common">');
+  });
+
+  it("should throw an error if stats object is missing", () => {
+    const card = {};
+    expect(() => generateCardStats(card)).toThrowError("Stats object is required");
+  });
+
+  it("should handle null or undefined stats gracefully", () => {
+    const card = { stats: null };
     const result = generateCardStats(card);
     expect(result).toContain('<div class="card-stats common">');
   });
