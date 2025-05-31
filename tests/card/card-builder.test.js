@@ -1,4 +1,6 @@
 import { createScrollButton } from "../../helpers/carouselBuilder.js";
+import { generateCardPortrait, generateCardStats } from "../../helpers/cardRender.js";
+
 
 describe("createScrollButton", () => {
   it("should create a scroll button with the correct class and inner HTML when direction is left", () => {
@@ -34,11 +36,26 @@ describe("createScrollButton", () => {
     container.style.overflow = "hidden";
     container.style.width = "200px";
     container.innerHTML = '<div style="width: 1000px;">Content</div>';
+    container.scrollLeft = 0;
     const scrollAmount = 100;
     const button = createScrollButton(direction, container, scrollAmount);
 
     button.click();
     expect(container.scrollLeft).toBe(-100);
+  });
+
+  it("should correctly scroll the container to the right", () => {
+    const direction = "right";
+    const container = document.createElement("div");
+    container.style.overflow = "hidden";
+    container.style.width = "200px";
+    container.innerHTML = '<div style="width: 1000px;">Content</div>';
+    container.scrollLeft = 0;
+    const scrollAmount = 100;
+    const button = createScrollButton(direction, container, scrollAmount);
+
+    button.click();
+    expect(container.scrollLeft).toBe(100); // Test for right scroll
   });
 
   it("should handle edge cases gracefully when container is null", () => {
@@ -47,6 +64,20 @@ describe("createScrollButton", () => {
     expect(() => createScrollButton(direction, null, scrollAmount)).toThrowError(
       "Container is required"
     );
+  });
+
+  it("should not scroll the container if scrollAmount is zero", () => {
+    const direction = "left";
+    const container = document.createElement("div");
+    container.style.overflow = "hidden";
+    container.style.width = "200px";
+    container.innerHTML = '<div style="width: 1000px;">Content</div>';
+    container.scrollLeft = 0;
+    const scrollAmount = 0;
+    const button = createScrollButton(direction, container, scrollAmount);
+
+    button.click();
+    expect(container.scrollLeft).toBe(0);
   });
 });
 
@@ -66,7 +97,7 @@ describe("generateCardPortrait", () => {
   });
 
   it("should throw an error or handle gracefully if card is missing required fields", () => {
-    const card = {}; // Incomplete data
+    const card = {};
     expect(() => generateCardPortrait(card)).toThrow();
   });
 });
