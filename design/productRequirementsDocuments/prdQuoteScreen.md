@@ -74,6 +74,6 @@ Players are motivated by meaningful, personalized rewards that mark major achiev
 
 ## Mockup
 
-![End Game Quote Screen Mockup](/design/mockups/mockupQuoteScreen.png)
+![End Game Quote Screen Mockup](/design/mockups/mockupQuoteScreen1.png)
 
 This mockup illustrates the layout and design of the End Game Quote Screen, showcasing the placement of the KG character, the quote text, and the proceed button. It adheres to the described UX considerations for both landscape and portrait orientations.
