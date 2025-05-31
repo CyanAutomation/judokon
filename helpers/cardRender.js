@@ -24,7 +24,9 @@ export function generateCardPortrait(card) {
   }
 
   const requiredFields = ["id", "firstname", "surname"];
-  const missingFields = requiredFields.filter((field) => !card[field]);
+  const missingFields = requiredFields.filter(
+    (field) => card[field] === undefined || card[field] === null
+  );
 
   if (missingFields.length > 0) {
     throw new Error(`Card is missing required fields: ${missingFields.join(", ")}`);
@@ -62,8 +64,13 @@ export function generateCardPortrait(card) {
  * @returns {string} The HTML string for the stats.
  */
 export function generateCardStats(card, cardType = "common") {
-  if (!card?.stats)
-    return `<div class="card-stats ${cardType.toLowerCase()}">No stats available</div>`;
+  if (!card || typeof card !== "object") {
+    throw new Error("Card object is required");
+  }
+
+  if (!card.stats || typeof card.stats !== "object") {
+    throw new Error("Stats object is required");
+  }
 
   const { power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?" } = card.stats;
 

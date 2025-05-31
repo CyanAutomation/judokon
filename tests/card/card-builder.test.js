@@ -95,7 +95,7 @@ describe("createScrollButton", () => {
 
 describe("generateCardPortrait", () => {
   it("should return a valid HTML string for a judoka's portrait", () => {
-    const card = { id: 0, firstname: "John", surname: "Doe" };
+    const card = { id: 0, firstname: "John", surname: "Doe" }; // Ensure all required fields are present
     const expectedHtml = `
         <div class="card-portrait">
           <img src="../assets/judokaPortraits/judokaPortrait-0.png" alt="John Doe's portrait" onerror="this.src='../assets/judokaPortraits/judokaPortrait-0.png'">
