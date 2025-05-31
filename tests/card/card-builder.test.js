@@ -1,4 +1,4 @@
-import { createScrollButton } from "../../helpers/uiUtils.js";
+import { createScrollButton } from "../../helpers/carouselBuilder.js";
 
 describe("createScrollButton", () => {
   it("should create a scroll button with the correct class and inner HTML when direction is left", () => {
