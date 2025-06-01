@@ -42,7 +42,15 @@ async function fetchFables() {
  * @returns {string} The formatted story with HTML tags for rendering.
  */
 function formatFableStory(story) {
-  return `<p>${story.replace(/\n\n/g, "</p><p><br>").replace(/\n/g, "<br>")}</p>`;
+  story = story.replace(/\\n/g, "\n");
+
+  return story
+    .trim()
+    .split(/\n{2,}/) // Split on 2+ newlines
+    .map((paragraph) => paragraph.trim())
+    .filter((paragraph) => paragraph.length > 0)
+    .map((paragraph) => `<p>${paragraph.replace(/\n/g, "<br>")}</p><br>`)
+    .join("");
 }
 
 /**
@@ -70,7 +78,7 @@ function displayFable(fable) {
     const formattedStory = formatFableStory(fable.story);
     quoteDiv.innerHTML = `
       <div class="quote-heading" id="quote-heading">${fable.title}</div>
-      <div class="quote-content" id="quote-content"><p>${formattedStory}</p></div>
+      <div class="quote-content" id="quote-content">${formattedStory}</div>
     `;
   } else {
     quoteDiv.innerHTML = "<p>Well done, congratulations!</p>";
