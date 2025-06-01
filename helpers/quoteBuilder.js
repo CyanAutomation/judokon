@@ -42,7 +42,7 @@ async function fetchFables() {
  * @returns {string} The formatted story with HTML tags for rendering.
  */
 function formatFableStory(story) {
-  return story.replace(/\n\n/g, "</p><p><br>").replace(/\n/g, "<br>");
+  return `<p>${story.replace(/\n\n/g, "</p><p><br>").replace(/\n/g, "<br>")}</p>`;
 }
 
 /**
