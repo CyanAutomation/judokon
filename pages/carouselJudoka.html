@@ -87,7 +87,8 @@
             console.error("Error building the carousel:", error);
             const errorMessage = document.createElement("div");
             errorMessage.className = "error-message";
-            errorMessage.textContent = "Network error occurred. Please check your connection and try again.";
+            errorMessage.textContent =
+              "Network error occurred. Please check your connection and try again.";
             carouselContainer.appendChild(errorMessage);
           }
 

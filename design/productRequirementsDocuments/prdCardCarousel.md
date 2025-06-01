@@ -20,14 +20,14 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 ## Functional Requirements
 
-| Priority | Requirement |
-|----------|-------------|
-| P1       | Display all or filtered judoka in a carousel. |
-| P1       | Scroll left/right using on-screen buttons. |
-| P2       | Swipe gesture support on mobile devices. |
-| P2       | Cards slightly enlarge (10%) on hover. |
+| Priority | Requirement                                          |
+| -------- | ---------------------------------------------------- |
+| P1       | Display all or filtered judoka in a carousel.        |
+| P1       | Scroll left/right using on-screen buttons.           |
+| P2       | Swipe gesture support on mobile devices.             |
+| P2       | Cards slightly enlarge (10%) on hover.               |
 | P3       | Scroll markers show user’s position in the carousel. |
-| P3       | Keyboard arrow key navigation for accessibility. |
+| P3       | Keyboard arrow key navigation for accessibility.     |
 
 ---
 
