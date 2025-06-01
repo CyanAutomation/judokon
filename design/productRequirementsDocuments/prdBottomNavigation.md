@@ -10,8 +10,8 @@ Without a bottom navigation bar, players may become confused post-activity, disr
 
 This PRD proposes a persistent bottom navigation system to minimize user friction, aiming to:
 
-- Reduce navigation-related exits by 20%.
-- Increase session duration per player by 15%.
+- Reduce navigation-related.
+- Increase session duration per player.
 
 ---
 

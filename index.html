@@ -36,7 +36,7 @@
       <main class="game-mode-grid">
         <a href="pages/battleJudoka.html" class="game-tile">
           <div class="svgTile">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path
                 d="M762-96 645-212l-88 88-28-28q-23-23-23-57t23-57l169-169q23-23 57-23t57 23l28 28-88 88 116 117q12 12 12 28t-12 28l-50 50q-12 12-28 12t-28-12Zm118-628L426-270l5 4q23 23 23 57t-23 57l-28 28-88-88L198-96q-12 12-28 12t-28-12l-50-50q-12-12-12-28t12-28l116-117-88-88 28-28q23-23 57-23t57 23l4 5 454-454h160v160ZM334-583l24-23 23-24-23 24-24 23Zm-56 57L80-724v-160h160l198 198-57 56-174-174h-47v47l174 174-56 57Zm92 199 430-430v-47h-47L323-374l47 47Zm0 0-24-23-23-24 23 24 24 23Z"
               />
@@ -49,7 +49,7 @@
 
         <a href="pages/battleJudoka.html" class="game-tile">
           <div class="svgTile">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path
                 d="M620-360q-17 0-28.5-11.5T580-400v-160q0-17 11.5-28.5T620-600h100q17 0 28.5 11.5T760-560v160q0 17-11.5 28.5T720-360H620Zm20-60h60v-120h-60v120Zm-440 60v-100q0-17 11.5-28.5T240-500h80v-40H200v-60h140q17 0 28.5 11.5T380-560v60q0 17-11.5 28.5T340-460h-80v40h120v60H200Zm250-160v-60h60v60h-60Zm0 140v-60h60v60h-60ZM160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h120v-80h80v80h240v-80h80v80h120q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h290v-60h60v60h290v-480H510v60h-60v-60H160v480Zm0 0v-480 480Z"
               />
@@ -62,7 +62,7 @@
 
         <a href="pages/carouselJudoka.html" class="game-tile">
           <div class="svgTile">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path
                 d="M480-800q-33 0-56.5-23.5T400-880q0-33 23.5-56.5T480-960q33 0 56.5 23.5T560-880q0 33-23.5 56.5T480-800ZM360-200v-480q-60-5-122-15t-118-25l20-80q78 21 166 30.5t174 9.5q86 0 174-9.5T820-800l20 80q-56 15-118 25t-122 15v480h-80v-240h-80v240h-80ZM320 0q-17 0-28.5-11.5T280-40q0-17 11.5-28.5T320-80q17 0 28.5 11.5T360-40q0 17-11.5 28.5T320 0Zm160 0q-17 0-28.5-11.5T440-40q0-17 11.5-28.5T480-80q17 0 28.5 11.5T520-40q0 17-11.5 28.5T480 0Zm160 0q-17 0-28.5-11.5T600-40q0-17 11.5-28.5T640-80q17 0 28.5 11.5T680-40q0 17-11.5 28.5T640 0Z"
               />
@@ -75,7 +75,7 @@
 
         <a href="pages/updateJudoka.html" class="game-tile">
           <div class="svgTile">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="http://www.w3.org/2000/svg" viewBox="960 960">
               <path
                 d="M440-120v-240h80v80h320v80H520v80h-80Zm-320-80v-80h240v80H120Zm160-160v-80H120v-80h160v-80h80v240h-80Zm160-80v-80h400v80H440Zm160-160v-240h80v80h160v80H680v80h-80Zm-480-80v-80h400v80H120Z"
               />
@@ -90,15 +90,9 @@
           <img src="./assets/actionPortraits/actionPortait-40.png" />
         </div>
       </main>
-
       <footer>
         <nav class="bottom-navbar">
-          <ul>
-            <li><a href="pages/randomJudoka.html">View Judoka</a></li>
-            <li><a href="pages/updateJudoka.html">Update Judoka</a></li>
-            <li><a href="pages/battleJudoka.html">Battle!</a></li>
-            <li><a href="pages/quoteKG.html">KG Wisdom</a></li>
-          </ul>
+          <ul></ul>
         </nav>
       </footer>
 
@@ -114,6 +108,30 @@
           "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
         );
       </script>
+      <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        fetch('./data/gameModes.json')
+          .then(response => response.json())
+          .then(data => {
+            const navBar = document.querySelector('.bottom-navbar ul');
+            const activeModes = data.filter(mode => mode.category === 'mainMenu' && !mode.isHidden); // Filter by category and isHidden
+
+            if (activeModes.length === 0) {
+              navBar.innerHTML = '<li>No game modes available</li>';
+              return;
+            }
+
+            navBar.innerHTML = activeModes
+              .map(mode => `<li><a href="pages/${mode.id}.html">${mode.name}</a></li>`)
+              .join('');
+          })
+          .catch(() => {
+            const navBar = document.querySelector('.bottom-navbar ul');
+            navBar.innerHTML = '<li>Error loading game modes</li>';
+            console.error('Failed to load game modes');
+          });
+      });
+    </script>
     </div>
   </body>
 </html>
