@@ -109,29 +109,29 @@
         );
       </script>
       <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        fetch('./data/gameModes.json')
-          .then(response => response.json())
-          .then(data => {
-            const navBar = document.querySelector('.bottom-navbar ul');
-            const activeModes = data.filter(mode => mode.category === 'mainMenu' && !mode.isHidden); // Filter by category and isHidden
-
-            if (activeModes.length === 0) {
-              navBar.innerHTML = '<li>No game modes available</li>';
-              return;
-            }
-
-            navBar.innerHTML = activeModes
-              .map(mode => `<li><a href="pages/${mode.id}.html">${mode.name}</a></li>`)
-              .join('');
-          })
-          .catch(() => {
-            const navBar = document.querySelector('.bottom-navbar ul');
-            navBar.innerHTML = '<li>Error loading game modes</li>';
-            console.error('Failed to load game modes');
-          });
-      });
-    </script>
+        document.addEventListener('DOMContentLoaded', () => {
+          fetch('./data/gameModes.json')
+            .then(response => response.json())
+            .then(data => {
+              const navBar = document.querySelector('.bottom-navbar ul');
+              const activeModes = data.filter(mode => mode.category === 'mainMenu' && !mode.isHidden);
+      
+              if (activeModes.length === 0) {
+                navBar.innerHTML = '<li>No game modes available</li>';
+                return;
+              }
+      
+              navBar.innerHTML = activeModes
+                .map(mode => `<li><a href="pages/${mode.url}">${mode.name}</a></li>`)
+                .join('');
+            })
+            .catch(() => {
+              const navBar = document.querySelector('.bottom-navbar ul');
+              navBar.innerHTML = '<li>Error loading game modes</li>';
+              console.error('Failed to load game modes');
+            });
+        });
+      </script>
     </div>
   </body>
 </html>
