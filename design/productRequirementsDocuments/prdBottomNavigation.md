@@ -51,7 +51,7 @@ Expanded map view with clickable tiles for different game modes.
 
 ---
 
-*(For Portrait Mode, a vertical text list expansion would resemble the expanded view but simplified for vertical screens — no image was attached but a note here can clarify for the dev team.)*
+_(For Portrait Mode, a vertical text list expansion would resemble the expanded view but simplified for vertical screens — no image was attached but a note here can clarify for the dev team.)_
 
 ---
 
@@ -69,11 +69,11 @@ Expanded map view with clickable tiles for different game modes.
 
 ## Functional Requirements
 
-| Priority | Feature              | Description                                                                 |
-|----------|----------------------|-----------------------------------------------------------------------------|
-| P1       | Collapsed Nav Bar    | Fixed horizontal navigation with scalable links and central logo.           |
-| P2       | Expanded Map View    | Slide-up game map with clickable tiles in landscape orientation.            |
-| P3       | Portrait Text Menu   | Text-based vertical menu expansion on logo click for portrait orientation.  |
+| Priority | Feature            | Description                                                                |
+| -------- | ------------------ | -------------------------------------------------------------------------- |
+| P1       | Collapsed Nav Bar  | Fixed horizontal navigation with scalable links and central logo.          |
+| P2       | Expanded Map View  | Slide-up game map with clickable tiles in landscape orientation.           |
+| P3       | Portrait Text Menu | Text-based vertical menu expansion on logo click for portrait orientation. |
 
 - **Small Screens Support**: Adjust text menu for screens as small as 320px width — scale font and spacing.
 - **Dark/Light Theme Adaptability**: Support both themes.
