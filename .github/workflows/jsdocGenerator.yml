@@ -39,6 +39,11 @@ jobs:
             echo "Error: JSDoc generation failed"
             exit 1
           fi
+    
+      - name: Debug Git Changes
+        run: |
+          git status
+          git diff
 
       - name: Check for changes
         id: git-check
@@ -57,6 +62,7 @@ jobs:
           branch_name="auto/jsdoc-generator-$(date +'%Y%m%d%H%M%S')"
           git checkout -b $branch_name
           git add .
+          git status # Debugging step
           git commit -m "chore: auto-generate JSDoc comments [skip ci]"
           git push origin $branch_name --force
 
