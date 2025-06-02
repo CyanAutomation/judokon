@@ -46,9 +46,8 @@ Clear and consistent code documentation is essential for maintaining code qualit
 function buildCarousel(cards, container) { ... }
 ```
 
-### 2. Inline Comments and Pseudocode Standards
+### 2. Pseudocode Standards
 
-* Use `//` for inline and section-level comments.
 * Provide high-level pseudocode comments above logical blocks.
 * Explain *why* the code is doing something, especially when the reason is not obvious.
 * Keep comments clear, concise, and grammatically correct.
