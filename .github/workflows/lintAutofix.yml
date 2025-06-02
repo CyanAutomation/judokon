@@ -1,4 +1,41 @@
-# filepath: lintAutofix.yml
+# Workflow Name: Auto-format & LINT fix
+# This workflow ensures that the codebase is properly formatted and linted.
+
+# Trigger Events:
+# 1. Scheduled Trigger:
+#    - Runs every day at 3:00 AM UTC using a cron schedule.
+# 2. Manual Trigger:
+#    - Can be manually triggered via the GitHub Actions interface.
+
+# Permissions:
+# - Grants write access to the repository contents to allow creating pull requests.
+
+# Define a job named 'format_and_lint':
+# - The job runs on the latest version of Ubuntu.
+
+# Steps in the 'format_and_lint' job:
+# 1. Check out the repository:
+#    - Use the 'actions/checkout' action to clone the repository into the workflow environment.
+
+# 2. Set up Node.js:
+#    - Use the 'actions/setup-node' action to install Node.js version 20.
+
+# 3. Install project dependencies:
+#    - Run 'npm ci' to install dependencies in a clean environment.
+
+# 4. Run Prettier:
+#    - Execute 'npx prettier . --write' to format all files in the repository.
+
+# 5. Run ESLint with auto-fix:
+#    - Execute 'npx eslint . --fix' to lint the codebase and automatically fix issues.
+
+# 6. Create a Pull Request:
+#    - Use the 'peter-evans/create-pull-request' action to create a pull request with the following details:
+#      - Commit message: "PR: Auto-formatting and LINT fixes"
+#      - Pull request title: "PR: Auto-formatting and LINT fixes"
+#      - Pull request body: "This PR includes automated formatting via Prettier and lint fixes via ESLint. Please review before merging."
+#      - Branch name: "auto/format-lint-fixes"
+#    - The pull request is created using a token stored in the repository secrets (`AUTOFIX_TOKEN`).
 name: Auto-format & LINT fix
 
 on:
@@ -21,9 +58,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-    
-      - name: Verify Node.js Version
-        run: node -v
 
       - name: Install dependencies
         run: npm ci
@@ -34,40 +68,20 @@ jobs:
           TOKEN: ${{ secrets.AUTOFIX_TOKEN }}
 
       - name: Run Prettier
-        run: |
-          npx prettier . --write
-          if [ $? -ne 0 ]; then
-            echo "Error: Prettier failed"
-            exit 1
-          fi
+        run: npx prettier . --write
 
       - name: Run ESLint with auto-fix
-        run: |
-          npx eslint . --fix
-          if [ $? -ne 0 ]; then
-            echo "Error: ESLint failed"
-            exit 1
-          fi
-
-      - name: Check for changes
-        id: git-check
-        run: |
-          if git diff --quiet; then
-            echo "no_changes=true" >> $GITHUB_ENV
-          else
-            echo "no_changes=false" >> $GITHUB_ENV
-          fi
+        run: npx eslint . --fix
 
       - name: Create Pull Request
-        if: steps.git-check.outputs.no_changes == 'false'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.AUTOFIX_TOKEN }}
           commit-message: "PR: Auto-formatting and LINT fixes"
-          title: "PR: Auto-formatting and LINT fixes $(date +'%Y%m%d%H%M%S')"
+          title: "PR: Auto-formatting and LINT fixes"
           body: "This PR includes automated formatting via Prettier and LINT fixes via ESLint. Please review before merging."
           branch: "auto/format-lint-fixes"
           labels: |
             automated
-            formatting
+            documentation
           assignees: ${{ github.actor }}

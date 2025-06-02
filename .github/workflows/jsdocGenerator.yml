@@ -21,9 +21,6 @@ jobs:
         with:
           node-version: 20
 
-      - name: Verify Node.js Version
-        run: node -v
-
       - name: Install dependencies
         run: npm ci
 
@@ -40,23 +37,8 @@ jobs:
             exit 1
           fi
 
-      - name: Stage Changes
-        run: |
-          git add .
-          git status # Debugging step to confirm files are staged
-
-      - name: Check for changes
-        id: git-check
-        run: |
-          if git diff --quiet; then
-            echo "no_changes=true" >> $GITHUB_ENV
-          else
-            echo "no_changes=false" >> $GITHUB_ENV
-          fi
-
       - name: Create Pull Request
-        if: env.no_changes == 'false'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.AUTOFIX_TOKEN }}
           commit-message: "PR: Auto-generate JSDoc Comments"
