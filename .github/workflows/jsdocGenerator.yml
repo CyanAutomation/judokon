@@ -60,7 +60,7 @@ jobs:
         with:
           token: ${{ secrets.AUTOFIX_TOKEN }}
           commit-message: "PR: Auto-generate JSDoc Comments"
-          title: "PR: Auto-generate JSDoc Comments ${{ env.branch_name }}"
+          title: "PR: Auto-generate JSDoc Comments $(date +'%Y%m%d%H%M%S')"
           body: "This PR includes automated JSDoc comments that have been generated based on function signatures and body analysis. Please review before merging."
           branch: "auto/jsdoc-generator"
           labels: |
