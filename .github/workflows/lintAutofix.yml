@@ -21,6 +21,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+    
+      - name: Verify Node.js Version
+        run: node -v
 
       - name: Install dependencies
         run: npm ci
@@ -63,7 +66,6 @@ jobs:
           title: "PR: Auto-formatting and LINT fixes $(date +'%Y%m%d%H%M%S')"
           body: "This PR includes automated formatting via Prettier and LINT fixes via ESLint. Please review before merging."
           branch: "auto/format-lint-fixes"
-          delete-branch: true
           labels: |
             automated
             formatting

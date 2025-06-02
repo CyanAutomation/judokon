@@ -39,49 +39,24 @@ jobs:
             echo "Error: JSDoc generation failed"
             exit 1
           fi
-    
-      - name: Stage Changes
-        run: |
-          git add .
-          git status # Debugging step to confirm files are staged
 
       - name: Check for changes
         id: git-check
         run: |
-          if git diff --cached --quiet; then # Use --cached to check staged changes
+          if git diff --quiet; then
             echo "no_changes=true" >> $GITHUB_ENV
           else
             echo "no_changes=false" >> $GITHUB_ENV
-          fi
-          echo "no_changes=$no_changes" # Debugging output
-
-      - name: Generate Branch Name
-        id: generate-branch-name
-        run: echo "branch_name=auto/jsdoc-generator-$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
-
-      - name: Commit and Push Changes
-        if: env.no_changes == 'false'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b $branch_name
-          git commit -m "chore: auto-generate JSDoc comments [skip ci]"
-          git push origin $branch_name --force
 
       - name: Create Pull Request
-        if: env.no_changes == 'false'
+        if: steps.git-check.outputs.no_changes == 'false'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.AUTOFIX_TOKEN }}
-          branch: ${{ env.branch_name }}
-          title: "PR: Auto-generate JSDoc Comments ${{ env.branch_name }}"
-          body: |
-            This is an automated pull request created by GitHub Actions.
-
-            - 📝 JSDoc comments have been generated based on function signatures and body analysis.
-            - 🔍 Please review before merging.
           commit-message: "PR: Auto-generate JSDoc Comments"
-          delete-branch: true
+          title: "PR: Auto-generate JSDoc Comments ${{ env.branch_name }}"
+          body: "This PR includes automated JSDoc comments that have been generated based on function signatures and body analysis. Please review before merging."
+          branch: "auto/jsdoc-generator"
           labels: |
             automated
             documentation
