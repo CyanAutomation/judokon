@@ -73,7 +73,7 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.AUTOFIX_TOKEN }}
-          branch: $branch_name
+          branch: auto/jsdoc-generator-$(date +'%Y%m%d%H%M%S')
           title: "PR: Auto-generate JSDoc Comments $(date +'%Y%m%d%H%M%S')"
           body: |
             This is an automated pull request created by GitHub Actions.
