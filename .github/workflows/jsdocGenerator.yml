@@ -41,7 +41,9 @@ jobs:
           fi
     
       - name: Stage Changes
-        run: git add .
+        run: |
+          git add .
+          git status # Debugging step to confirm files are staged
 
       - name: Check for changes
         id: git-check
@@ -51,9 +53,10 @@ jobs:
           else
             echo "no_changes=false" >> $GITHUB_ENV
           fi
+          echo "no_changes=$no_changes" # Debugging output
 
       - name: Commit and Push Changes
-        if: steps.git-check.outputs.no_changes == 'false'
+        if: env.no_changes == 'false'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -63,7 +66,7 @@ jobs:
           git push origin $branch_name --force
 
       - name: Create Pull Request
-        if: steps.git-check.outputs.no_changes == 'false'
+        if: env.no_changes == 'false'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.AUTOFIX_TOKEN }}
