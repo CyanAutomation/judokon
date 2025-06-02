@@ -178,7 +178,7 @@ function processFile(filePath) {
 }
 
 /**
- * Main function
+ * The main function
  */
 function main() {
   const files = glob.sync(SOURCE_GLOB, {
