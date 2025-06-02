@@ -47,6 +47,7 @@ jobs:
             echo "no_changes=true" >> $GITHUB_ENV
           else
             echo "no_changes=false" >> $GITHUB_ENV
+          fi
 
       - name: Commit and Push Changes
         if: steps.git-check.outputs.no_changes == 'false'
