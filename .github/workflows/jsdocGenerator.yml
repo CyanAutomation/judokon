@@ -1,0 +1,66 @@
+name: Nightly JSDoc Generator
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Every night at 2:00 AM UTC
+  workflow_dispatch: # Manual trigger support
+
+jobs:
+  generate-jsdoc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20 
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run JSDoc Generator Script
+        run: |
+            node jsdoc-generator.js || echo "Error: JSDoc generation failed" && exit 1
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          if git diff --quiet; then
+            echo "no_changes=true" >> $GITHUB_ENV
+          else
+            echo "no_changes=false" >> $GITHUB_ENV
+          fi
+
+      - name: Commit and Push Changes
+        if: steps.git-check.outputs.no_changes == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          branch_name="jsdoc-auto-update-${{ github.run_id }}-$(date +'%Y%m%d%H%M%S')"
+          git checkout -b $branch_name
+          git add .
+          git commit -m "chore: auto-generate JSDoc comments [skip ci]"
+          git push origin $branch_name --force
+
+      - name: Create Pull Request
+        if: steps.git-check.outputs.no_changes == 'false'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.AUTOFIX_TOKEN }}
+          branch: $branch_name
+          title: "chore: Auto-generate JSDoc Comments"
+          body: |
+            This is an automated pull request created by GitHub Actions.
+
+            - 📝 JSDoc comments have been generated based on function signatures and body analysis.
+            - ✅ No TODO markers; inferred types and returns when possible.
+            - 🔍 Please review and adjust if needed.
+          commit-message: "chore: auto-generate JSDoc comments"
+          delete-branch: true
+          labels: |
+            automated
+            documentation
+          assignees: ${{ github.actor }}
