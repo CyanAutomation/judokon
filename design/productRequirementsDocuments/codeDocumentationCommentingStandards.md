@@ -52,15 +52,38 @@ function buildCarousel(cards, container) { ... }
 - Use an imperative style ("Initialize", "Render", "Handle", etc.).
 - Avoid restating what the code already expresses.
 - Remove any commented-out code before committing.
+- For complex functions or workflows, include detailed pseudocode within JSDoc blocks to outline the step-by-step logic.
 
 **Examples:**
 
 ```javascript
-// Initialize carousel with card data
-
-// Handle swipe gestures for mobile devices
-
-// Render a placeholder if card data is missing
+/**
+ * Populates the bottom navigation bar with game modes from a JSON file.
+ *
+ * Pseudocode:
+ * 1. Fetch the JSON file containing game modes (`gameModes.json`).
+ *    - If the fetch fails, log an error and display "Error loading game modes" in the navigation bar.
+ *
+ * 2. Parse the JSON response to retrieve the game modes data.
+ *    - If the response cannot be parsed, handle the error gracefully.
+ *
+ * 3. Filter the game modes:
+ *    - Include only modes where `category` is "mainMenu" and `isHidden` is `false`.
+ *
+ * 4. Sort the filtered game modes by their `order` property in ascending order.
+ *
+ * 5. Check if there are any active modes:
+ *    - If no modes are available, display "No game modes available" in the navigation bar.
+ *
+ * 6. Map the sorted game modes to HTML list items (`<li>`):
+ *    - Each list item contains a link (`<a>`) to the corresponding game mode's URL.
+ *
+ * 7. Update the navigation bar (`.bottom-navbar ul`) with the generated HTML.
+ *
+ * 8. Handle any errors during the process:
+ *    - Log the error to the console and display "Error loading game modes" in the navigation bar.
+ */
+function populateNavigationBar() { ... }
 ```
 
 ### 3. Language and Style
@@ -68,7 +91,7 @@ function buildCarousel(cards, container) { ... }
 - Comments must be written in clear, plain English.
 - Use proper grammar, spelling, and punctuation.
 - Maintain a neutral, light-hearted tone.
-- There should be no inline comments
+- There should be no inline comments.
 
 ---
 
@@ -79,6 +102,7 @@ function buildCarousel(cards, container) { ... }
 - All public APIs document parameters and return values accurately.
 - No commented-out code or obsolete TODOs in the committed code.
 - Pull requests must update documentation when function signatures or logic change.
+- Complex workflows or functions include detailed pseudocode within JSDoc blocks.
 
 ---
 
@@ -95,7 +119,7 @@ function buildCarousel(cards, container) { ... }
 - Prefer clarity over brevity; a longer, clearer comment is better than a short, confusing one.
 - Use standard formats like JSDoc for compatibility with documentation generation tools.
 - Self-documenting code is the ideal; comments should supplement, not replace, clear code.
-- There should be no inline comments
+- For complex workflows, pseudocode should be detailed and structured within JSDoc blocks.
 
 ---
 
