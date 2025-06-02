@@ -34,7 +34,7 @@ jobs:
 
       - name: Run JSDoc Generator Script
         run: |
-          node jsdoc-generator.js
+          node helpers/codeJSDocGenerator.js
           if [ $? -ne 0 ]; then
             echo "Error: JSDoc generation failed"
             exit 1
