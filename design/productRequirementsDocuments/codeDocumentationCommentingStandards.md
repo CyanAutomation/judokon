@@ -47,7 +47,7 @@ function buildCarousel(cards, container) { ... }
 ### 2. Pseudocode Standards
 
 - Provide high-level pseudocode comments above logical blocks.
-- Explain *why* the code is doing something, especially when the reason is not obvious.
+- Explain _why_ the code is doing something, especially when the reason is not obvious.
 - Keep comments clear, concise, and grammatically correct.
 - Use an imperative style ("Initialize", "Render", "Handle", etc.).
 - Avoid restating what the code already expresses.
@@ -123,4 +123,4 @@ function populateNavigationBar() { ... }
 
 ---
 
-*These standards form the baseline for all code written within the Ju-Do-Kon! project to ensure long-term code quality and developer productivity.*
+_These standards form the baseline for all code written within the Ju-Do-Kon! project to ensure long-term code quality and developer productivity._
