@@ -70,10 +70,10 @@ jobs:
 
       - name: Create Pull Request
         if: env.no_changes == 'false'
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.AUTOFIX_TOKEN }}
-          branch: auto/jsdoc-generator-$(date +'%Y%m%d%H%M%S')
+          branch: "auto/jsdoc-generator"
           title: "PR: Auto-generate JSDoc Comments $(date +'%Y%m%d%H%M%S')"
           body: |
             This is an automated pull request created by GitHub Actions.
