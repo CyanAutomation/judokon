@@ -1,6 +1,8 @@
 name: Nightly JSDoc Generator
 
 on:
+  schedule:
+    - cron: '0 2 * * *' # Every night at 2:00 AM UTC
   workflow_dispatch: # Manual trigger support
 
 permissions:
