@@ -39,6 +39,7 @@
     "estree-walker": "^3.0.3",
     "expect-type": "^1.2.1",
     "fdir": "^6.4.4",
+    "glob": "^7.2.0",
     "html-encoding-sniffer": "^4.0.0",
     "http-proxy-agent": "^7.0.2",
     "https-proxy-agent": "^7.0.6",
