@@ -1,8 +1,6 @@
 name: Nightly JSDoc Generator
 
 on:
-  schedule:
-    - cron: '0 2 * * *' # Every night at 2:00 AM UTC
   workflow_dispatch: # Manual trigger support
 
 permissions:
@@ -38,11 +36,11 @@ jobs:
           fi
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.AUTOFIX_TOKEN }}
           commit-message: "PR: Auto-generate JSDoc Comments"
-          title: "PR: Auto-generate JSDoc Comments $(date +'%Y%m%d%H%M%S')"
+          title: "PR: Auto-generate JSDoc Comments"
           body: "This PR includes automated JSDoc comments that have been generated based on function signatures and body analysis. Please review before merging."
           branch: "auto/jsdoc-generator"
           labels: |
