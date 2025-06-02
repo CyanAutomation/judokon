@@ -22,20 +22,13 @@ async function loadCountryCodeMapping() {
   if (!response.ok) {
     throw new Error("Error - Failed to load the country code mapping");
   }
-
   const data = await response.json();
-
-  data.forEach((entry) => {
-    if (
-      typeof entry.country !== "string" ||
-      !/^[A-Za-z]{2}$/.test(entry.code) ||
-      typeof entry.active !== "boolean"
-    ) {
+  data.forEach(entry => {
+    if (typeof entry.country !== "string" || !/^[A-Za-z]{2}$/.test(entry.code) || typeof entry.active !== "boolean") {
       console.warn(`Invalid country code entry found:`, entry);
     }
   });
   console.log("Loaded country code mapping:", data);
-
   return data;
 }
 
@@ -63,20 +56,19 @@ async function loadCountryCodeMapping() {
  * @param {string} countryCode - The 2-letter country code (e.g., "JP").
  * @returns {Promise<string>} A promise that resolves to the country name or "Unknown".
  */
-export async function getCountryNameFromCode(code) {
+export ///**
+ * Description.
+ * @param {any} code
+ * @returns {any}
+ */
+async function getCountryNameFromCode(code) {
   if (typeof code !== "string" || !/^[A-Za-z]{2}$/.test(code.trim())) {
     console.warn("Invalid country code format. Expected a 2-letter code.");
     return "Vanuatu"; // Fallback to Vanuatu
   }
-
   const countryCodeMapping = await loadCountryCodeMapping();
-
-  const match = countryCodeMapping.find(
-    (entry) => entry.code.toLowerCase() === code.toLowerCase() && entry.active
-  );
-
+  const match = countryCodeMapping.find(entry => entry.code.toLowerCase() === code.toLowerCase() && entry.active);
   console.log(`Resolved country name for code "${code}":`, match ? match.country : "Vanuatu");
-
   return match ? match.country : "Vanuatu";
 }
 
@@ -104,23 +96,22 @@ export async function getCountryNameFromCode(code) {
  * @param {string} countryCode - The 2-letter country code (e.g., "JP").
  * @returns {Promise<string>} A promise that resolves to the flag URL or the placeholder flag URL.
  */
-export async function getFlagUrl(countryCode) {
+export ///**
+ * Description.
+ * @param {number} countryCode
+ * @returns {any}
+ */
+async function getFlagUrl(countryCode) {
   if (typeof countryCode !== "string" || !/^[A-Za-z]{2}$/.test(countryCode.trim())) {
     console.warn("Invalid or missing country code. Defaulting to Vanuatu flag.");
     return "https://flagcdn.com/w320/vu.png"; // Fallback to Vanuatu flag
   }
-
   const countryCodeMapping = await loadCountryCodeMapping();
-
-  const isValid = countryCodeMapping.some(
-    (entry) => entry.code && entry.code.toLowerCase() === countryCode.toLowerCase() && entry.active
-  );
-
+  const isValid = countryCodeMapping.some(entry => entry.code && entry.code.toLowerCase() === countryCode.toLowerCase() && entry.active);
   if (!isValid) {
     console.warn("Invalid country code. Defaulting to Vanuatu flag.");
     return "https://flagcdn.com/w320/vu.png"; // Fallback to Vanuatu flag
   }
-
   return `https://flagcdn.com/w320/${countryCode.toLowerCase()}.png`;
 }
 
@@ -153,23 +144,24 @@ export async function getFlagUrl(countryCode) {
  *
  * @param {HTMLElement} container - The DOM element where the country list will be appended.
  */
-export async function populateCountryList(container) {
+export ///**
+ * Description.
+ * @param {any} container
+ * @returns {any}
+ */
+async function populateCountryList(container) {
   try {
     const countryData = await loadCountryCodeMapping();
-
-    for (const country of countryData.filter((country) => country.active)) {
+    for (const country of countryData.filter(country => country.active)) {
       if (!country.country || !country.code) {
         console.warn("Skipping invalid country entry:", country);
         continue;
       }
-
       const slide = document.createElement("div");
       slide.className = "slide";
-
       const flagImg = document.createElement("img");
       flagImg.alt = `${country.country} Flag`;
       flagImg.className = "flag-image";
-
       try {
         const flagUrl = await getFlagUrl(country.code);
         flagImg.src = flagUrl;
@@ -177,13 +169,10 @@ export async function populateCountryList(container) {
         console.warn(`Failed to load flag for ${country.country}:`, error);
         flagImg.src = "https://flagcdn.com/w320/vu.png"; // Fallback to Vanuatu flag
       }
-
       slide.appendChild(flagImg);
-
       const countryName = document.createElement("p");
       countryName.textContent = country.country;
       slide.appendChild(countryName);
-
       container.appendChild(slide);
     }
   } catch (error) {

@@ -25,10 +25,7 @@ const CARD_CODE_VERSION = "v1";
  * @returns {string} The XOR-encoded string.
  */
 function xorEncode(str, key = XOR_KEY) {
-  return str
-    .split("")
-    .map((char, i) => String.fromCharCode(char.charCodeAt(0) ^ (i + key) % 256))
-    .join("");
+  return str.split("").map((char, i) => String.fromCharCode(char.charCodeAt(0) ^ (i + key) % 256)).join("");
 }
 
 /**
@@ -50,10 +47,7 @@ function xorEncode(str, key = XOR_KEY) {
  * @returns {string} The string converted to the readable charset.
  */
 function toReadableCharset(str) {
-  return str
-    .split("")
-    .map((c) => ALPHABET[c.charCodeAt(0) % ALPHABET.length])
-    .join("");
+  return str.split("").map(c => ALPHABET[c.charCodeAt(0) % ALPHABET.length]).join("");
 }
 
 /**
@@ -120,42 +114,17 @@ function chunk(str, size = 4) {
  * @returns {string} The generated card code.
  * @throws {Error} If required fields are missing from the judoka object.
  */
-export function generateCardCode(judoka) {
-  if (
-    !judoka ||
-    !judoka.firstname ||
-    !judoka.surname ||
-    !judoka.country ||
-    !judoka.weightClass ||
-    !judoka.signatureMoveId ||
-    !judoka.stats ||
-    typeof judoka.stats.power === "undefined" ||
-    typeof judoka.stats.speed === "undefined" ||
-    typeof judoka.stats.technique === "undefined" ||
-    typeof judoka.stats.kumikata === "undefined" ||
-    typeof judoka.stats.newaza === "undefined"
-  ) {
+export ///**
+ * Description.
+ * @param {any} judoka
+ * @returns {any}
+ */
+function generateCardCode(judoka) {
+  if (!judoka || !judoka.firstname || !judoka.surname || !judoka.country || !judoka.weightClass || !judoka.signatureMoveId || !judoka.stats || typeof judoka.stats.power === "undefined" || typeof judoka.stats.speed === "undefined" || typeof judoka.stats.technique === "undefined" || typeof judoka.stats.kumikata === "undefined" || typeof judoka.stats.newaza === "undefined") {
     throw new Error("Missing required judoka fields for card code generation.");
   }
-
-  const stats = [
-    judoka.stats.power,
-    judoka.stats.speed,
-    judoka.stats.technique,
-    judoka.stats.kumikata,
-    judoka.stats.newaza
-  ].join("");
-
-  const raw = [
-    CARD_CODE_VERSION,
-    judoka.firstname.toUpperCase(),
-    judoka.surname.toUpperCase(),
-    judoka.country.toUpperCase(),
-    judoka.weightClass,
-    judoka.signatureMoveId?.toString() || "",
-    stats
-  ].join("-");
-
+  const stats = [judoka.stats.power, judoka.stats.speed, judoka.stats.technique, judoka.stats.kumikata, judoka.stats.newaza].join("");
+  const raw = [CARD_CODE_VERSION, judoka.firstname.toUpperCase(), judoka.surname.toUpperCase(), judoka.country.toUpperCase(), judoka.weightClass, judoka.signatureMoveId?.toString() || "", stats].join("-");
   const xor = xorEncode(raw);
   const readable = toReadableCharset(xor);
   return chunk(readable);

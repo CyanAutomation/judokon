@@ -20,7 +20,12 @@
  * @param {string} url - Path to the JSON file (e.g., './data/judoka.json').
  * @returns {Promise<T>} A promise that resolves to the parsed JSON data.
  */
-export async function loadJSON(url) {
+export ///**
+ * Description.
+ * @param {any} url
+ * @returns {any}
+ */
+async function loadJSON(url) {
   try {
     const response = await fetch(url);
     if (!response.ok) {
@@ -56,14 +61,17 @@ export async function loadJSON(url) {
  * @returns {Promise<T>} A promise that resolves to the parsed JSON data.
  * @throws {Error} If the fetch request fails or the response is not OK.
  */
-export async function fetchDataWithErrorHandling(url) {
+export ///**
+ * Description.
+ * @param {any} url
+ * @returns {any}
+ */
+async function fetchDataWithErrorHandling(url) {
   try {
     const response = await fetch(url);
-
     if (!response.ok) {
       throw new Error(`Failed to fetch data from ${url} (HTTP ${response.status})`);
     }
-
     return response.json();
   } catch (error) {
     console.error(`Error fetching data from ${url}:`, error);
@@ -86,14 +94,19 @@ export async function fetchDataWithErrorHandling(url) {
  * @param {string} type - A descriptive name for the type of data being validated (e.g., "judoka", "country").
  * @throws {Error} If the `data` is not an object or is `null`.
  */
-export function validateData(data, type) {
+export ///**
+ * Description.
+ * @param {any} data
+ * @param {any} type
+ * @returns {any}
+ */
+function validateData(data, type) {
   if (typeof data !== "object" || data === null) {
     throw new Error(`Invalid or missing ${type} data.`);
   }
-
   if (type === "judoka") {
     const requiredFields = ["firstname", "surname", "country", "stats", "signatureMoveId"];
-    const missingFields = requiredFields.filter((field) => !data[field]);
+    const missingFields = requiredFields.filter(field => !data[field]);
     if (missingFields.length > 0) {
       throw new Error(`Invalid judoka data: Missing fields: ${missingFields.join(", ")}`);
     }

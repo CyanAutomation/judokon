@@ -26,36 +26,32 @@
  *
  * @returns {void}
  */
-export function populateNavbar() {
-  fetch("./data/gameModes.json")
-    .then((response) => response.json())
-    .then((data) => {
-      const navBar = document.querySelector(".bottom-navbar ul");
-      const activeModes = data
-        .filter((mode) => mode.category === "mainMenu" && !mode.isHidden)
-        .sort((a, b) => a.order - b.order);
-
-      if (activeModes.length === 0) {
-        navBar.innerHTML = "<li>No game modes available</li>";
-        return;
-      }
-
-      navBar.innerHTML = activeModes
-        .map((mode) => `<li><a href="pages/${mode.url}">${mode.name}</a></li>`)
-        .join("");
-    })
-    .catch(() => {
-      const navBar = document.querySelector(".bottom-navbar ul");
-      const fallbackItems = [
-        { name: "Random Judoka", url: "/pages/randomJudoka.html" },
-        { name: "Home", url: "/index.html" },
-        { name: "Classic Battle", url: "/pages/battleJudoka.html" }
-      ];
-
-      navBar.innerHTML = fallbackItems
-        .map((item) => `<li><a href="${item.url}">${item.name}</a></li>`)
-        .join("");
-
-      console.error("Failed to load game modes");
-    });
+export ///**
+ * Description.
+ * @returns {any}
+ */
+function populateNavbar() {
+  fetch("./data/gameModes.json").then(response => response.json()).then(data => {
+    const navBar = document.querySelector(".bottom-navbar ul");
+    const activeModes = data.filter(mode => mode.category === "mainMenu" && !mode.isHidden).sort((a, b) => a.order - b.order);
+    if (activeModes.length === 0) {
+      navBar.innerHTML = "<li>No game modes available</li>";
+      return;
+    }
+    navBar.innerHTML = activeModes.map(mode => `<li><a href="pages/${mode.url}">${mode.name}</a></li>`).join("");
+  }).catch(() => {
+    const navBar = document.querySelector(".bottom-navbar ul");
+    const fallbackItems = [{
+      name: "Random Judoka",
+      url: "/pages/randomJudoka.html"
+    }, {
+      name: "Home",
+      url: "/index.html"
+    }, {
+      name: "Classic Battle",
+      url: "/pages/battleJudoka.html"
+    }];
+    navBar.innerHTML = fallbackItems.map(item => `<li><a href="${item.url}">${item.name}</a></li>`).join("");
+    console.error("Failed to load game modes");
+  });
 }

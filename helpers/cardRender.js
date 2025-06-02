@@ -18,21 +18,25 @@
  * @param {JudokaCard} card - The card data containing the judoka and signature move.
  * @returns {string} The HTML string for the portrait.
  */
-export function generateCardPortrait(card) {
+export ///**
+ * Description.
+ * @param {any} card
+ * @returns {any}
+ */
+function generateCardPortrait(card) {
   if (!card || typeof card !== "object") {
     throw new Error("Card object is required");
   }
-
   const requiredFields = ["id", "firstname", "surname"];
-  const missingFields = requiredFields.filter(
-    (field) => card[field] === undefined || card[field] === null
-  );
-
+  const missingFields = requiredFields.filter(field => card[field] === undefined || card[field] === null);
   if (missingFields.length > 0) {
     throw new Error(`Card is missing required fields: ${missingFields.join(", ")}`);
   }
-
-  const { id, firstname, surname } = card;
+  const {
+    id,
+    firstname,
+    surname
+  } = card;
   return `
     <div class="card-portrait">
       <img src="../assets/judokaPortraits/judokaPortrait-${id}.png" alt="${firstname} ${surname}'s portrait" onerror="this.src='../assets/judokaPortraits/judokaPortrait-${id}.png'">
@@ -63,17 +67,26 @@ export function generateCardPortrait(card) {
  * @param {JudokaCard} card - The card data containing the judoka and signature move.
  * @returns {string} The HTML string for the stats.
  */
-export function generateCardStats(card, cardType = "common") {
+export ///**
+ * Description.
+ * @param {any} card
+ * @param {any} undefined
+ * @returns {any}
+ */
+function generateCardStats(card, cardType = "common") {
   if (!card || typeof card !== "object") {
     throw new Error("Card object is required");
   }
-
   if (!card.stats || typeof card.stats !== "object") {
     throw new Error("Stats object is required");
   }
-
-  const { power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?" } = card.stats;
-
+  const {
+    power = "?",
+    speed = "?",
+    technique = "?",
+    kumikata = "?",
+    newaza = "?"
+  } = card.stats;
   return `
     <div class="card-stats ${cardType}">
       <ul>
@@ -114,31 +127,33 @@ export function generateCardStats(card, cardType = "common") {
  * @returns {string} The HTML string for the signature move.
  */
 import { escapeHTML } from "./utils.js";
-
-export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
+export ///**
+ * Description.
+ * @param {any} judoka
+ * @param {any} gokyoLookup
+ * @param {any} undefined
+ * @returns {any}
+ */
+function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
   // Handle null or undefined judoka
   if (!judoka) {
     judoka = {}; // Default to an empty object
   }
-
   const signatureMoveId = Number(judoka.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
 
   console.log("Signature Move ID:", signatureMoveId);
   console.log("Judoka Object:", judoka);
   console.log("Gokyo Lookup Object:", gokyoLookup);
-
-  const technique = (gokyoLookup && gokyoLookup[signatureMoveId]) ||
-    (gokyoLookup && gokyoLookup[0]) || { id: 0, name: "Jigoku-guruma" };
-
+  const technique = gokyoLookup && gokyoLookup[signatureMoveId] || gokyoLookup && gokyoLookup[0] || {
+    id: 0,
+    name: "Jigoku-guruma"
+  };
   const techniqueName = technique?.name || "Jigoku-guruma";
 
   // Escape the technique name to prevent XSS
   const escapedTechniqueName = escapeHTML(techniqueName);
-
   console.log("Selected Technique:", technique);
-
   const cardClass = cardType.toLowerCase();
-
   return `
     <div class="signature-move-container ${cardClass}">
       <span class="signature-move-label">Signature Move:</span>

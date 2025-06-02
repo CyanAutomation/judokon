@@ -1,5 +1,4 @@
 import { getCountryNameFromCode } from "./countryUtils.js";
-
 const PLACEHOLDER_FLAG_URL = "../assets/countryFlags/placeholder-flag.png";
 
 /**
@@ -23,12 +22,7 @@ const PLACEHOLDER_FLAG_URL = "../assets/countryFlags/placeholder-flag.png";
  */
 function escapeHTML(str) {
   if (typeof str !== "string") return str;
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
 /**
@@ -63,7 +57,11 @@ function getValue(value, defaultValue) {
  *
  * @returns {HTMLElement} The DOM element containing the "No data available" message.
  */
-export function createNoDataContainer() {
+export ///**
+ * Description.
+ * @returns {any}
+ */
+function createNoDataContainer() {
   const container = document.createElement("div");
   container.className = "card-top-bar";
   container.textContent = "No data available";
@@ -97,7 +95,11 @@ function extractJudokaData(judoka) {
   const firstname = escapeHTML(getValue(judoka.firstname, "Unknown"));
   const surname = escapeHTML(getValue(judoka.surname, ""));
   const countryCode = getValue(judoka.countryCode, "unknown");
-  return { firstname, surname, countryCode };
+  return {
+    firstname,
+    surname,
+    countryCode
+  };
 }
 
 /**
@@ -151,21 +153,23 @@ async function resolveCountryName(countryCode) {
  * @param {string} surname - The judoka's surname.
  * @returns {HTMLElement} The DOM element containing the judoka's name.
  */
-export function createNameContainer(firstname, surname) {
+export ///**
+ * Description.
+ * @param {string} firstname
+ * @param {string} surname
+ * @returns {any}
+ */
+function createNameContainer(firstname, surname) {
   const nameContainer = document.createElement("div");
   nameContainer.className = "card-name";
-
   const firstnameSpan = document.createElement("span");
   firstnameSpan.className = "firstname";
   firstnameSpan.textContent = firstname;
-
   const surnameSpan = document.createElement("span");
   surnameSpan.className = "surname";
   surnameSpan.textContent = surname;
-
   nameContainer.appendChild(firstnameSpan);
   nameContainer.appendChild(surnameSpan);
-
   return nameContainer;
 }
 
@@ -190,22 +194,22 @@ export function createNameContainer(firstname, surname) {
  * @param {string} countryName - The name of the country for the flag.
  * @returns {HTMLElement} The DOM element for the flag image.
  */
-export function createFlagImage(finalFlagUrl, countryName) {
+export ///**
+ * Description.
+ * @param {any} finalFlagUrl
+ * @param {number} countryName
+ * @returns {any}
+ */
+function createFlagImage(finalFlagUrl, countryName) {
   console.log(`Creating flag image with country name: ${countryName}`); // Debugging
 
   const flagContainer = document.createElement("div");
   flagContainer.className = "card-flag";
-
   const flagImg = document.createElement("img");
-
   flagImg.src = finalFlagUrl || PLACEHOLDER_FLAG_URL;
-
   flagImg.alt = `${countryName || ""} flag`;
-
   flagImg.setAttribute("onerror", `this.src='${PLACEHOLDER_FLAG_URL}'`);
-
   flagContainer.appendChild(flagImg);
-
   return flagContainer; // Return the container div
 }
 
@@ -248,13 +252,22 @@ export function createFlagImage(finalFlagUrl, countryName) {
  * @param {string} [flagUrl] - The URL of the flag image.
  * @returns {HTMLElement} The DOM element for the top bar.
  */
-export async function generateCardTopBar(judoka, flagUrl) {
+export ///**
+ * Description.
+ * @param {any} judoka
+ * @param {any} flagUrl
+ * @returns {any}
+ */
+async function generateCardTopBar(judoka, flagUrl) {
   if (!judoka) {
     console.error("Judoka object is missing!");
     return createNoDataContainer();
   }
-  const { firstname, surname, countryCode } = extractJudokaData(judoka);
-
+  const {
+    firstname,
+    surname,
+    countryCode
+  } = extractJudokaData(judoka);
   const countryName = await resolveCountryName(countryCode);
   console.log(`Resolved country name: ${countryName}`); // Debugging
 
@@ -263,12 +276,9 @@ export async function generateCardTopBar(judoka, flagUrl) {
 
   const container = document.createElement("div");
   container.className = "card-top-bar";
-
   const nameContainer = createNameContainer(firstname, surname);
   container.appendChild(nameContainer);
-
   const flagImg = createFlagImage(finalFlagUrl, countryName);
   container.appendChild(flagImg);
-
   return container; // Return the DOM element
 }

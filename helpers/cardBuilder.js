@@ -1,10 +1,6 @@
 import { getFlagUrl } from "./countryUtils.js";
 import { generateCardTopBar } from "./cardTopBar.js";
-import {
-  generateCardPortrait,
-  generateCardStats,
-  generateCardSignatureMove
-} from "./cardRender.js";
+import { generateCardPortrait, generateCardStats, generateCardSignatureMove } from "./cardRender.js";
 
 /**
  * Generates the "last updated" HTML for a judoka card.
@@ -51,29 +47,15 @@ import {
  * @throws {Error} If required fields are missing.
  */
 function validateJudoka(judoka) {
-  const requiredFields = [
-    "firstname",
-    "surname",
-    "country",
-    "countryCode",
-    "stats",
-    "weightClass",
-    "signatureMoveId",
-    "rarity"
-  ];
-  const missingFields = requiredFields.filter((field) => !judoka[field]);
-
+  const requiredFields = ["firstname", "surname", "country", "countryCode", "stats", "weightClass", "signatureMoveId", "rarity"];
+  const missingFields = requiredFields.filter(field => !judoka[field]);
   if (missingFields.length > 0) {
     throw new Error(`Invalid Judoka object: Missing required fields: ${missingFields.join(", ")}`);
   }
-
   const requiredStatsFields = ["power", "speed", "technique", "kumikata", "newaza"];
-  const missingStatsFields = requiredStatsFields.filter((field) => !judoka.stats?.[field]);
-
+  const missingStatsFields = requiredStatsFields.filter(field => !judoka.stats?.[field]);
   if (missingStatsFields.length > 0) {
-    throw new Error(
-      `Invalid Judoka stats: Missing required fields: ${missingStatsFields.join(", ")}`
-    );
+    throw new Error(`Invalid Judoka stats: Missing required fields: ${missingStatsFields.join(", ")}`);
   }
 }
 
@@ -127,9 +109,14 @@ function validateJudoka(judoka) {
  * @param {Object} gokyo - The Gokyo data (technique information).
  * @returns {HTMLElement} The DOM element for the complete judoka card.
  */
-export async function generateJudokaCardHTML(judoka, gokyoLookup) {
+export ///**
+ * Description.
+ * @param {any} judoka
+ * @param {any} gokyoLookup
+ * @returns {any}
+ */
+async function generateJudokaCardHTML(judoka, gokyoLookup) {
   validateJudoka(judoka);
-
   const countryCode = judoka.countryCode;
   const flagUrl = await getFlagUrl(countryCode || "vu"); // Default to "vu" (Vanuatu)
 
@@ -138,41 +125,32 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   // Create the main card container
   const cardContainer = document.createElement("div");
   cardContainer.className = "card-container";
-
   const judokaCard = document.createElement("div");
   judokaCard.className = `judoka-card ${cardType}`;
 
   // Add gender-specific class after initializing judokaCard
   const genderClass = judoka.gender === "female" ? "female-card" : "male-card";
   judokaCard.classList.add(genderClass);
-
   const topBarElement = await generateCardTopBar(judoka, flagUrl);
   judokaCard.appendChild(topBarElement);
-
   const portraitHTML = generateCardPortrait(judoka);
   const portraitElement = document.createElement("div");
   portraitElement.className = "card-portrait";
   portraitElement.innerHTML = portraitHTML;
-
   const weightClassElement = document.createElement("div");
   weightClassElement.className = "card-weight-class";
   weightClassElement.textContent = judoka.weightClass;
   portraitElement.appendChild(weightClassElement);
-
   judokaCard.appendChild(portraitElement);
-
   const statsHTML = generateCardStats(judoka, cardType);
   const statsElement = document.createElement("div");
   statsElement.innerHTML = statsHTML;
   judokaCard.appendChild(statsElement);
-
   const signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
   const signatureMoveElement = document.createElement("div");
   signatureMoveElement.innerHTML = signatureMoveHTML;
   judokaCard.appendChild(signatureMoveElement);
-
   cardContainer.appendChild(judokaCard);
-
   return cardContainer;
 }
 

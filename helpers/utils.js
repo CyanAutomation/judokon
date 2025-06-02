@@ -27,8 +27,13 @@ const escapeMap = {
  * @returns {string} The escaped string.
  * @typedef {string} EscapedHTML
  */
-export function escapeHTML(str) {
-  return String(str).replace(/[&<>"']/g, (char) => escapeMap[char] || char);
+export ///**
+ * Description.
+ * @param {any} str
+ * @returns {any}
+ */
+function escapeHTML(str) {
+  return String(str).replace(/[&<>"']/g, char => escapeMap[char] || char);
 }
 
 /**
@@ -54,7 +59,13 @@ export function escapeHTML(str) {
  * @param {*} fallback - The fallback value if the input is invalid.
  * @returns {*} The value or the fallback.
  */
-export function getValue(value, fallback = "Unknown") {
+export ///**
+ * Description.
+ * @param {any} value
+ * @param {any} undefined
+ * @returns {any}
+ */
+function getValue(value, fallback = "Unknown") {
   if (typeof value === "string") return value.trim() || fallback;
   if (typeof value === "number" || typeof value === "boolean") return value;
   if (typeof value === "object" || typeof value === "function" || typeof value === "symbol") {
@@ -82,7 +93,12 @@ export function getValue(value, fallback = "Unknown") {
  * @param {string|Date} dateString - The date string or Date object to format.
  * @returns {string} The formatted date or "Invalid Date".
  */
-export function formatDate(dateString) {
+export ///**
+ * Description.
+ * @param {any} dateString
+ * @returns {any}
+ */
+function formatDate(dateString) {
   if (dateString instanceof Date) {
     return isNaN(dateString.getTime()) ? "Invalid Date" : dateString.toISOString().split("T")[0];
   }
@@ -112,12 +128,16 @@ export function formatDate(dateString) {
  * @param {GokyoEntry[]} gokyoData - Array of gokyo objects.
  * @returns {Object<string, GokyoEntry>} A lookup object with gokyo IDs as keys.
  */
-export function createGokyoLookup(gokyoData) {
+export ///**
+ * Description.
+ * @param {any} gokyoData
+ * @returns {any}
+ */
+function createGokyoLookup(gokyoData) {
   if (!Array.isArray(gokyoData) || gokyoData.length === 0) {
     console.error("Invalid gokyoData: Expected a non-empty array.");
     return {};
   }
-
   const lookup = gokyoData.reduce((acc, move) => {
     if (!move.id || !move.name) {
       console.warn("Invalid GokyoEntry:", move);
@@ -126,7 +146,6 @@ export function createGokyoLookup(gokyoData) {
     acc[move.id] = move;
     return acc;
   }, {});
-
   console.log("Created Gokyo Lookup:", lookup);
   return lookup;
 }
