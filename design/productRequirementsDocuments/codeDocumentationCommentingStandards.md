@@ -68,6 +68,7 @@ function buildCarousel(cards, container) { ... }
 - Comments must be written in clear, plain English.
 - Use proper grammar, spelling, and punctuation.
 - Maintain a neutral, light-hearted tone.
+- There should be no inline comments
 
 ---
 
@@ -94,6 +95,7 @@ function buildCarousel(cards, container) { ... }
 - Prefer clarity over brevity; a longer, clearer comment is better than a short, confusing one.
 - Use standard formats like JSDoc for compatibility with documentation generation tools.
 - Self-documenting code is the ideal; comments should supplement, not replace, clear code.
+- There should be no inline comments
 
 ---
 
