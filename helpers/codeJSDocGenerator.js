@@ -1,12 +1,9 @@
-// jsdoc-generator.js
-
 const fs = require("fs");
 const glob = require("glob");
 const babelParser = require("@babel/parser");
 const traverse = require("@babel/traverse").default;
 const generator = require("@babel/generator").default;
 
-// Config
 const SOURCE_GLOB = "**/*.js";
 const IGNORE_FOLDERS = ["node_modules", "dist"];
 
