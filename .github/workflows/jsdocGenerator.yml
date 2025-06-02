@@ -40,6 +40,11 @@ jobs:
             exit 1
           fi
 
+      - name: Stage Changes
+        run: |
+          git add .
+          git status # Debugging step to confirm files are staged
+
       - name: Check for changes
         id: git-check
         run: |
@@ -49,7 +54,7 @@ jobs:
             echo "no_changes=false" >> $GITHUB_ENV
 
       - name: Create Pull Request
-        if: steps.git-check.outputs.no_changes == 'false'
+        if: env.no_changes == 'false'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.AUTOFIX_TOKEN }}
