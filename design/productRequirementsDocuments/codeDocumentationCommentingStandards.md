@@ -69,7 +69,7 @@ function buildCarousel(cards, container) { ... }
 
 * Comments must be written in clear, plain English.
 * Use proper grammar, spelling, and punctuation.
-* Maintain a neutral, professional tone.
+* Maintain a neutral, light-hearted tone.
 
 ---
 
