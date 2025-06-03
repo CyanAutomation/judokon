@@ -44,20 +44,20 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ## Wireframes / Visual Reference
 
-- **Collapsed Mode**: Horizontal navigation bar with clickable links and a bottom-left corner ju-do-kon logo. A simplified vertical text list expands on logo tap. *(Visual reference to be attached.)*
+- **Collapsed Mode**: Horizontal navigation bar with clickable links and a bottom-left corner ju-do-kon logo. A simplified vertical text list expands on logo tap. _(Visual reference to be attached.)_
 - **Portrait Mode**: A simplified vertical text list expands on logo tap.
 
 ---
 
 ## Functional Requirements
 
-| Priority | Feature                  | Description                                                                |
-| -------- | ------------------------ | -------------------------------------------------------------------------- |
-| P1       | Collapsed Nav Bar        | Fixed horizontal navigation with scalable links and bottom-left corner logo. |
-| P2       | Portrait Text Menu       | Text-based vertical menu expansion on logo click for portrait and landscape (collapsed) orientation. |
-| P2       | Small Screens Support    | Adjust text menu for screens as small as 320px — scale font and spacing.   |
-| P2       | Visual Feedback          | Positive click/tap feedback animation for all links and buttons.           |
-| P1       | Fallback Data Handling   | Hardcoded default mode list if `gameModes.json` fails to load.             |
+| Priority | Feature                | Description                                                                                          |
+| -------- | ---------------------- | ---------------------------------------------------------------------------------------------------- |
+| P1       | Collapsed Nav Bar      | Fixed horizontal navigation with scalable links and bottom-left corner logo.                         |
+| P2       | Portrait Text Menu     | Text-based vertical menu expansion on logo click for portrait and landscape (collapsed) orientation. |
+| P2       | Small Screens Support  | Adjust text menu for screens as small as 320px — scale font and spacing.                             |
+| P2       | Visual Feedback        | Positive click/tap feedback animation for all links and buttons.                                     |
+| P1       | Fallback Data Handling | Hardcoded default mode list if `gameModes.json` fails to load.                                       |
 
 ---
 
