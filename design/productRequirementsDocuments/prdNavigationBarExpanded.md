@@ -2,9 +2,9 @@
 
 ## Problem Statement
 
-Players have reported that the current navigation menus feel disconnected from the Ju-Do-Kon! theme, which weakens immersion and reduces excitement when switching game modes. A 10-year-old playtester noted, *"The menu feels boring compared to the rest of the game — can it look more exciting? Maybe like a judo dojo or village?"*
+Players have reported that the current navigation menus feel disconnected from the Ju-Do-Kon! theme, which weakens immersion and reduces excitement when switching game modes. A theoretical 10-year-old playtester noted, *"The menu feels boring compared to the rest of the game — can it look more exciting? Maybe like a judo dojo or village?"*
 
-Currently, the menu is purely functional but lacks the thematic cohesion that draws players deeper into the Ju-Do-Kon! world. Improving the navigation’s thematic fit is important now because new game modes have been added, and players are not easily discovering them through the existing menu.
+Currently, the menu is purely functional but lacks the thematic cohesion that draws players deeper into the Ju-Do-Kon! world. Additionally, important new modes are hard to find because the plain menu structure buries them below a list format, making discovery harder for players. Improving the navigation’s thematic fit is important now because new game modes have been added, and players are not easily discovering them through the existing menu.
 
 ## Player Actions & Flow
 
@@ -13,7 +13,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - **Navigation:** Tapping a tile smoothly transitions the player to the selected game mode.
 - **Cancel/Back Out:** Tapping outside the map area or pressing the map icon button again collapses the map. If device orientation changes mid-animation, the expansion is canceled and reverts to the default footer state.
 - **Fallback:** If the map fails to load, a simplified, high-contrast text menu appears instantly.
-- **Responsiveness:** If viewport height <400px or width <640px, hide the map icon entirely. Map and tiles dynamically resize based on screen size and resolution. Animations must maintain 60fps on devices with 2GB RAM.
+- **Responsiveness:** If viewport height <400px or width <640px, hide the map icon entirely. Map and tiles dynamically resize based on screen size and resolution. Animations must maintain 60fps on devices.
 
 ## Acceptance Criteria
 
@@ -25,7 +25,6 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 6. **Given** accessibility needs, **then** all tiles must have descriptive alt text and support screen readers.
 
 ### Edge Cases
-- **Double-clicking the map icon:** Only one map expansion allowed at a time; ignore second tap.
 - **Slow connections:** Graceful fallback to text menu without freezing or partial load.
 
 ## Player Settings (Optional)
@@ -63,12 +62,13 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 
 - [ ] **2.0 Implement Footer Map Expansion**
   - [ ] 2.1 Code smooth slide-up animation (<500ms, `ease-out` easing).
-  - [ ] 2.2 Implement tap-outside-to-close and back-button collapse behaviors.
-  - [ ] 2.3 Add logic to prevent double-tap expansion issues.
+  - [ ] 2.2 Implement tap-outside-to-close and map icon toggle behavior.
+  - [ ] 2.3 Handle device orientation changes mid-animation.
 
 - [ ] **3.0 Integrate Fallback Menu**
-  - [ ] 3.1 Detect map asset load failures.
-  - [ ] 3.2 Implement high-contrast text menu fallback that appears in under 1 second.
+  - [ ] 3.1 Detect if village map assets fail to load
+  - [ ] 3.2 Implement a high-contrast, text-only fallback menu.
+  - [ ] 3.3 Ensure fallback loads within 1 second.
 
 - [ ] **4.0 Ensure Accessibility & Performance**
   - [ ] 5.1 Add keyboard navigation and visible focus indicators for all tiles.
