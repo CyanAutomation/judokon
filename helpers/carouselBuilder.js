@@ -56,6 +56,72 @@ export function createScrollButton(direction, container, scrollAmount) {
   return button;
 }
 
+function validateJudokaList(judokaList) {
+  if (!Array.isArray(judokaList) || judokaList.length === 0) {
+    console.error("No judoka data available to build the carousel.");
+    return false;
+  }
+  return true;
+}
+
+function validateGokyoData(gokyoData) {
+  if (!Array.isArray(gokyoData) || gokyoData.length === 0) {
+    console.warn("No gokyo data provided. Defaulting to an empty lookup.");
+  }
+  return createGokyoLookup(gokyoData);
+}
+
+function createLoadingSpinner(wrapper) {
+  const spinner = document.createElement("div");
+  spinner.className = "loading-spinner";
+  wrapper.appendChild(spinner);
+
+  const timeoutId = setTimeout(() => {
+    spinner.style.display = "block";
+  }, 2000);
+
+  return { spinner, timeoutId };
+}
+
+function handleBrokenImages(card) {
+  const img = card.querySelector("img");
+  if (img) {
+    img.onerror = () => {
+      img.src = "path/to/default-image.png"; // Replace with actual path to fallback image
+    };
+  }
+}
+
+function setupKeyboardNavigation(container) {
+  container.tabIndex = 0; // Make the carousel focusable
+  container.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") {
+      container.scrollBy({ left: -300, behavior: "smooth" });
+    } else if (event.key === "ArrowRight") {
+      container.scrollBy({ left: 300, behavior: "smooth" });
+    }
+  });
+}
+
+function setupSwipeNavigation(container) {
+  let touchStartX = 0;
+
+  container.addEventListener("touchstart", (event) => {
+    touchStartX = event.touches[0].clientX;
+  });
+
+  container.addEventListener("touchend", (event) => {
+    const touchEndX = event.changedTouches[0].clientX;
+    const swipeDistance = touchEndX - touchStartX;
+
+    if (swipeDistance > 50) {
+      container.scrollBy({ left: -300, behavior: "smooth" });
+    } else if (swipeDistance < -50) {
+      container.scrollBy({ left: 300, behavior: "smooth" });
+    }
+  });
+}
+
 /**
  * Builds a carousel of judoka cards with scroll buttons.
  *
@@ -100,14 +166,11 @@ export function createScrollButton(direction, container, scrollAmount) {
  * @returns {Promise<HTMLElement>} A promise that resolves to the carousel wrapper element.
  */
 export async function buildCardCarousel(judokaList, gokyoData) {
-  if (!Array.isArray(judokaList) || judokaList.length === 0) {
-    console.error("No judoka data available to build the carousel.");
+  if (!validateJudokaList(judokaList)) {
     return document.createElement("div");
   }
 
-  if (!Array.isArray(gokyoData) || gokyoData.length === 0) {
-    console.warn("No gokyo data provided. Defaulting to an empty lookup.");
-  }
+  const gokyoLookup = validateGokyoData(gokyoData);
 
   const container = document.createElement("div");
   container.className = "card-carousel";
@@ -115,16 +178,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   const wrapper = document.createElement("div");
   wrapper.className = "carousel-container";
 
-  // Add loading spinner
-  const spinner = document.createElement("div");
-  spinner.className = "loading-spinner";
-  wrapper.appendChild(spinner);
-
-  const timeoutId = setTimeout(() => {
-    spinner.style.display = "block";
-  }, 2000);
-
-  const gokyoLookup = createGokyoLookup(gokyoData);
+  const { spinner, timeoutId } = createLoadingSpinner(wrapper);
 
   for (const judoka of judokaList) {
     if (
@@ -139,14 +193,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
     }
 
     const card = await generateJudokaCard(judoka, gokyoLookup, container);
-
-    // Handle broken card images
-    const img = card.querySelector("img");
-    if (img) {
-      img.onerror = () => {
-        img.src = "path/to/default-image.png"; // Replace with actual path to fallback image
-      };
-    }
+    handleBrokenImages(card);
   }
 
   clearTimeout(timeoutId);
@@ -159,35 +206,8 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   wrapper.appendChild(container);
   wrapper.appendChild(rightButton);
 
-  container.tabIndex = 0; // Make the carousel focusable
-
-  container.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowLeft") {
-      container.scrollBy({ left: -300, behavior: "smooth" });
-    } else if (event.key === "ArrowRight") {
-      container.scrollBy({ left: 300, behavior: "smooth" });
-    }
-  });
-
-  container.addEventListener("touchstart", handleSwipeStart);
-  container.addEventListener("touchend", handleSwipeEnd);
-
-  let touchStartX = 0;
-
-  function handleSwipeStart(event) {
-    touchStartX = event.touches[0].clientX;
-  }
-
-  function handleSwipeEnd(event) {
-    const touchEndX = event.changedTouches[0].clientX;
-    const swipeDistance = touchEndX - touchStartX;
-
-    if (swipeDistance > 50) {
-      container.scrollBy({ left: -300, behavior: "smooth" });
-    } else if (swipeDistance < -50) {
-      container.scrollBy({ left: 300, behavior: "smooth" });
-    }
-  }
+  setupKeyboardNavigation(container);
+  setupSwipeNavigation(container);
 
   return wrapper;
 }
