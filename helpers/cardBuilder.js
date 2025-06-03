@@ -186,11 +186,11 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
  * @param {Object} gokyoLookup - A lookup object for gokyo data.
  * @param {HTMLElement} container - The container to append the card to.
  */
-// async function generateJudokaCard(judoka, gokyoLookup, container) {
-//   try {
-//     const card = await generateJudokaCardHTML(judoka, gokyoLookup);
-//     container.appendChild(card);
-//   } catch (error) {
-//     console.error(`Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`, error);
-//   }
-// }
+export async function generateJudokaCard(judoka, gokyoLookup, container) {
+  try {
+    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+    container.appendChild(card);
+  } catch (error) {
+    console.error(`Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`, error);
+  }
+}
