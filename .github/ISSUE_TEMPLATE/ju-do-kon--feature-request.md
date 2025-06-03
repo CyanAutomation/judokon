@@ -4,20 +4,22 @@ about: Submit a new feature idea or enhancement for Ju-Do-Kon!
 title: "[Feature]:"
 labels: enhancement
 assignees: CyanAutomation
-
 ---
 
 # 🌴 Feature Request: [Feature Name]
 
 ## 1. Problem Statement
+
 _Describe the player pain point, real-world scenario, and why it matters now._
 
 Example:
+
 > Players currently find it difficult to locate judoka from a specific country. In playtests, younger players said, "I just want to find all the Japanese fighters without scrolling forever!" Without an easy filter, browsing engagement drops.
 
 ---
 
 ## 2. Player Actions and Game Flow
+
 _List player triggers and describe what happens in response._
 
 - **Trigger**: What the player does (click, tap, hover).
@@ -26,7 +28,8 @@ _List player triggers and describe what happens in response._
 - **Timing**: Expected timing for animations or responses.
 
 Example:
-- **Trigger**: Player clicks the *Country Filter* button.
+
+- **Trigger**: Player clicks the _Country Filter_ button.
 - **Outcome**: A flag picker overlay slides in.
 - **Cancel Option**: Tap outside or press "X" to close.
 - **Timing**: Slide-in completes in ≤ 300ms.
@@ -34,9 +37,10 @@ Example:
 ---
 
 ## 3. Acceptance Criteria
+
 _Define 3–5 specific, observable outcomes._
 
-- [ ] **When** the player clicks *Country Filter*, **then** a grid of country flags slides in from the right within 300ms.
+- [ ] **When** the player clicks _Country Filter_, **then** a grid of country flags slides in from the right within 300ms.
 - [ ] **When** a flag is selected, **then** the Browse view immediately filters to show only judoka from that country.
 - [ ] **When** no judoka match, **then** show "No Results" with an option to clear.
 - [ ] **When** the clear filter button is clicked, **then** all judoka reappear.
@@ -45,18 +49,22 @@ _Define 3–5 specific, observable outcomes._
 ---
 
 ## 4. Player Settings (If Applicable)
+
 _Describe any new settings, defaults, and behavior._
 
 Example:
+
 - No new settings introduced.
 - Filter is in-session only; not saved between sessions.
 
 ---
 
 ## 5. Visuals or UX Reference
+
 _Attach wireframes, mockups, or describe key visuals and animations._
 
 Example:
+
 - **Wireframe**: Browse Judoka screen with Country Filter button.
 - **Flag Picker Overlay**: Grid of country flags, 5 columns.
 - **Animation**: Smooth, 300ms slide-in from right, ease-out.
@@ -87,4 +95,5 @@ Upon clicking Country Filter:
 ---
 
 # 👇 Ready to Start!
+
 _Happy feature-building for Ju-Do-Kon!_
