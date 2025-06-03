@@ -4,7 +4,7 @@
 
 As part of the game, certain screens, such as “Browse Judoka,” require an intuitive and interactive way to present judoka cards. With more than 100 cards in the game, it would be cumbersome and frustrating for players to browse through all cards manually without an efficient filtering and navigation system.
 
-Failure to provide an efficient browsing experience may impact core gameplay — players might struggle to find and build optimal teams, leading to frustration and potential churn.
+Failure to provide an efficient browsing experience may impact core gameplay — players might struggle to find and build optimal teams, leading to frustration and potential churn. A smooth and intuitive browsing experience fosters a sense of mastery and control, enhancing overall player satisfaction and engagement.
 
 ---
 
@@ -15,6 +15,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - Support smooth browsing of up to 50 cards without noticeable lag.
 - Swipe gesture support for mobile browsing.
 - Keyboard navigation support for accessibility.
+- Users can browse through at least 10 cards within 30 seconds smoothly without lag.
 
 ---
 
@@ -95,3 +96,30 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - **Touch Interaction**: On mobile, swipe left/right; smooth snap after swipe.
 
 ![Card Carousel Mockup](/design/mockups/mockupCardCarousel1.png)
+
+## Tasks
+
+- [ ] 1.0 Set Up Card Carousel Structure (P1)
+  - [ ] 1.1 Develop carousel container and card components.
+  - [ ] 1.2 Implement dynamic loading for up to 100 cards.
+  - [ ] 1.3 Ensure responsive resizing for mobile and desktop.
+  
+- [ ] 2.0 Implement Filtering System (P2)
+  - [ ] 2.1 Develop filtering logic based on country.
+  - [ ] 2.2 Ensure filter response under 500ms.
+  - [ ] 2.3 Show "no results" state with retry and suggestions.
+
+- [ ] 3.0 Integrate Interaction Methods (P1)
+  - [ ] 3.1 Add left/right on-screen button scrolling.
+  - [ ] 3.2 Add swipe gesture support for mobile.
+  - [ ] 3.3 Add keyboard arrow navigation support.
+
+- [ ] 4.0 Add UI Enhancements (P2)
+  - [ ] 4.1 Implement hover enlargement effect.
+  - [ ] 4.2 Display scroll markers for carousel position.
+  - [ ] 4.3 Implement loading spinner for slow networks.
+
+- [ ] 5.0 Handle Edge Cases (P2)
+  - [ ] 5.1 Fallback image for broken card images.
+  - [ ] 5.2 Placeholder/error for network disconnections.
+  - [ ] 5.3 Retry option for empty filter results.
