@@ -84,4 +84,4 @@ function buildCarousel(cards, container) { ... }
 
 ---
 
-*These standards form the baseline for all code written within the Ju-Do-Kon! project to ensure long-term code quality and developer productivity.*
+_These standards form the baseline for all code written within the Ju-Do-Kon! project to ensure long-term code quality and developer productivity._

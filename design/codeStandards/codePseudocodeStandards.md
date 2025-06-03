@@ -93,4 +93,4 @@ function populateNavigationBar() { ... }
 
 ---
 
-*These standards form the baseline for pseudocode usage within the Ju-Do-Kon! project to ensure maintainable, understandable, and high-quality code.*
+_These standards form the baseline for pseudocode usage within the Ju-Do-Kon! project to ensure maintainable, understandable, and high-quality code._
