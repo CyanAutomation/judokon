@@ -11,10 +11,14 @@
  */
 function toggleExpandedMapView(gameModes) {
   const navBar = document.querySelector(".bottom-navbar");
+  clearBottomNavbar(); // Clear existing content
+
+  const validModes = validateGameModes(gameModes);
+
   const mapView = document.createElement("div");
   mapView.className = "expanded-map-view";
 
-  mapView.innerHTML = gameModes
+  mapView.innerHTML = validModes
     .map(
       (mode) =>
         `<div class="map-tile" style="background-image: url('${mode.image}')">
@@ -35,6 +39,18 @@ function toggleExpandedMapView(gameModes) {
 }
 
 /**
+ * Clears existing content in the bottom navigation bar.
+ *
+ * @pseudocode
+ * 1. Select the `.bottom-navbar` element.
+ * 2. Remove all child elements to prevent duplication.
+ */
+function clearBottomNavbar() {
+  const navBar = document.querySelector(".bottom-navbar");
+  navBar.innerHTML = ""; // Clear all existing content
+}
+
+/**
  * Toggles the vertical text menu for portrait mode.
  *
  * @pseudocode
@@ -47,10 +63,14 @@ function toggleExpandedMapView(gameModes) {
  */
 function togglePortraitTextMenu(gameModes) {
   const navBar = document.querySelector(".bottom-navbar");
+  clearBottomNavbar(); // Clear existing content
+
+  const validModes = validateGameModes(gameModes);
+
   const textMenu = document.createElement("ul");
   textMenu.className = "portrait-text-menu";
 
-  textMenu.innerHTML = gameModes
+  textMenu.innerHTML = validModes
     .map(
       (mode) => `<li><a href="pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a></li>`
     )
@@ -65,6 +85,22 @@ function togglePortraitTextMenu(gameModes) {
       ? "slide-down 500ms ease-in-out"
       : "slide-up 500ms ease-in-out";
   });
+}
+
+/**
+ * Validates game modes data to ensure all required properties are present.
+ *
+ * @pseudocode
+ * 1. Filter out items missing `name`, `url`, or `image` properties.
+ * 2. Return the filtered array.
+ *
+ * @param {Array} gameModes - The list of game modes to validate.
+ * @returns {Array} Validated game modes.
+ */
+function validateGameModes(gameModes) {
+  const validatedModes = gameModes.filter((mode) => mode.name && mode.url && mode.image);
+  console.log("Validated modes:", validatedModes); // Debug validated modes
+  return validatedModes;
 }
 
 /**
@@ -122,39 +158,66 @@ function addTouchFeedback() {
  */
 export function populateNavbar() {
   fetch("./data/gameModes.json")
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to fetch game modes: ${response.status}`);
+      }
+      return response.json();
+    })
     .then((data) => {
-      const navBar = document.querySelector(".bottom-navbar ul");
-      const activeModes = data
-        .filter((mode) => mode.category === "mainMenu" && !mode.isHidden)
-        .sort((a, b) => a.order - b.order);
+      console.log("Fetched game modes:", data); // Debug fetched data
+
+      const navBar = document.querySelector(".bottom-navbar");
+      clearBottomNavbar(); // Clear existing content
+
+      // Filter game modes to include only visible main menu items
+      const activeModes = validateGameModes(
+        data.filter((mode) => mode.category === "mainMenu" && mode.isHidden === false)
+      ).sort((a, b) => a.order - b.order);
+
+      console.log("Validated game modes:", activeModes); // Debug validated data
 
       if (activeModes.length === 0) {
-        navBar.innerHTML = "<li>No game modes available</li>";
+        navBar.innerHTML = "<ul><li>No game modes available</li></ul>";
         return;
       }
 
-      navBar.innerHTML = activeModes
+      const ul = document.createElement("ul");
+      ul.innerHTML = activeModes
         .map((mode) => `<li><a href="pages/${mode.url}">${mode.name}</a></li>`)
         .join("");
+      navBar.appendChild(ul);
 
-      // Integrate new features
       addTouchFeedback();
       toggleExpandedMapView(activeModes);
       togglePortraitTextMenu(activeModes);
     })
-    .catch(() => {
-      const navBar = document.querySelector(".bottom-navbar ul");
+    .catch((error) => {
+      console.error("Error loading game modes:", error);
+
+      const navBar = document.querySelector(".bottom-navbar");
+      clearBottomNavbar(); // Clear existing content
+
       const fallbackItems = [
-        { name: "Random Judoka", url: "/pages/randomJudoka.html" },
-        { name: "Home", url: "/index.html" },
-        { name: "Classic Battle", url: "/pages/battleJudoka.html" }
+        {
+          name: "Random Judoka",
+          url: "/pages/randomJudoka.html",
+          image: "./assets/images/randomJudoka.png"
+        },
+        { name: "Home", url: "/index.html", image: "./assets/images/home.png" },
+        {
+          name: "Classic Battle",
+          url: "/pages/battleJudoka.html",
+          image: "./assets/images/classicBattle.png"
+        }
       ];
 
-      navBar.innerHTML = fallbackItems
+      const ul = document.createElement("ul");
+      ul.innerHTML = fallbackItems
         .map((item) => `<li><a href="${item.url}">${item.name}</a></li>`)
         .join("");
+      navBar.appendChild(ul);
 
-      console.error("Failed to load game modes");
+      console.error("Fallback game modes loaded due to error.");
     });
 }
