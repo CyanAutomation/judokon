@@ -1,7 +1,7 @@
 ---
 name: Ju-Do-Kon! Feature Request
 about: Submit a new feature idea or enhancement for Ju-Do-Kon!
-title: "[Feature]:"
+title: 'Feature: TBC'
 labels: enhancement
 assignees: CyanAutomation
 
