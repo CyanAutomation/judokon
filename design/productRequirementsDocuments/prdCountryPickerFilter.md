@@ -8,6 +8,8 @@ Each judoka and judoka card is affiliated with a country (e.g., a judoka might b
 
 The lack of an intuitive country filter diminishes user experience, leading to inefficient browsing and potential drop-off. By including a country picker, we aim to increase session duration and card interaction rates — both critical, as longer, more engaged sessions correlate directly with higher player retention and in-game activity.
 
+This issue is timely as our player base is expanding internationally, and regional pride in athletes is becoming a key driver of engagement.
+
 ---
 
 ## Goals
@@ -24,23 +26,28 @@ The lack of an intuitive country filter diminishes user experience, leading to i
 On in-scope screens (e.g., the Browse Judoka screen), there should be an option to toggle an overlay or slide-in panel that presents all available countries.
 
 Key Details:
-- Only countries present in the judoka.json file will be displayed.
+- Only countries present in the `judoka.json` file will be displayed.
 - Instead of a list, the selector will use flag icons to represent each country.
 - When a user clicks on a flag:
   - The card carousel refreshes, filtering to display only judoka from the selected country (e.g., clicking Jamaica will filter to only Jamaican judoka).
-- The user can select only one country at a time, with an option to clear the selection to revert to displaying all judoka.
+  - The selected flag will be visually highlighted with a border.
+- Users can only select one country at a time.
+- A "Clear" button is provided to clear the selection and revert to displaying all judoka.
+- Default display mode when opened is **slide-in panel**.
 
 ---
 
-## Functional Requirements
+## Prioritized Functional Requirements Table
 
-- **P1**: Country selector toggle — filter cards based on selected country.
-- **P1**: Filtering and responsive time — filter must be applied within 1 second for the majority of users.
-- **P2**: Support for three display modes:
-  - Hidden (collapsed).
-  - Narrow vertical slide-in with vertical scrolling.
-  - Full-screen grid view.
-- **P3**: Performance optimizations for large datasets (supporting >50 countries efficiently with virtual scrolling or paging).
+| Priority | Feature                     | Description                                                                          |
+|---------|------------------------------|--------------------------------------------------------------------------------------|
+| **P1**  | Country selector toggle       | Allow users to toggle the country selector panel and filter judoka cards by country. |
+| **P1**  | Filtering and responsive time | Ensure filtering is completed within 1 second for 95% of users.                      |
+| **P2**  | Three display modes           | Provide hidden, slide-in (default), and full-screen grid views for the selector.     |
+| **P2**  | Clear button                  | Provide a clear, easy way to remove the current country filter.                     |
+| **P3**  | Performance optimizations     | Support large datasets (>50 countries) via virtual scrolling or paging.             |
+| **P3**  | Fallback icon for missing flags| Display a fallback generic flag if assets fail.                                     |
+| **P3**  | Accessibility compliance      | Ensure alt-text, color contrast, and touch target size are all accessible.           |
 
 ---
 
@@ -48,16 +55,15 @@ Key Details:
 
 ### Interaction
 - On screens where multiple cards are shown, users are presented with the country selector toggle.
-- Clicking a country selector:
+- Clicking a country flag:
   - Filters the card carousel to only show cards from that country.
-  - Users can only select one country at a time or clear the selection.
-  - Clear selection resets the card carousel to show all cards.
-  - Visually highlight the selected country flag.
+  - The selected country flag is visually highlighted.
+- A "Clear" button resets the card carousel to show all cards.
 
 ### Performance
 - The filtering operation completes within 1 second.
 - The selector appears in under 1 second when toggled open.
-- Country selector must:
+- The country selector must:
   - Support at least 100 countries without exceeding 200ms additional load time.
 
 ### Accessibility
@@ -65,6 +71,8 @@ Key Details:
 - Country flags must be displayed in alphabetical order.
 - Provide clear feedback if no judoka exist for a selected country (empty state messaging).
 - Handle missing flag assets gracefully with a fallback icon.
+- Tap target size must be at least 48x48dp.
+- Color contrast ratios must meet WCAG 2.1 AA standards.
 
 ---
 
@@ -85,54 +93,53 @@ Key Details:
   - Country name label beneath the flag.
 - Three display modes:
   - Hidden: No UI visible until toggled.
-  - Slide-in Panel: Narrow vertical panel with scroll.
+  - Slide-in Panel (default): Narrow vertical panel with scroll.
   - Full-Screen Grid: Grid layout showing all countries.
 - Mobile Optimization:
   - Minimum tap target size of 48x48dp for flags to ensure touch accessibility.
   - Color contrast ratios must meet WCAG 2.1 AA standards for readability.
   - Selected country should be visually highlighted (e.g., border or shading).
   - Selector should respond well to different screen sizes (responsive design).
+- Animation Considerations:
+  - Slide-in animation duration: 300ms.
+  - Flag grid fade-in duration: 200ms.
+
+### Wireframes
 
 ![Country Picker Mockup](/design/mockups/mockupCountryPicker1.png)
-
----
-
-## Prioritized Functional Requirements Table
-
-| Priority | Feature                     | Description                                                                          |
-|---------|------------------------------|--------------------------------------------------------------------------------------|
-| P1      | Country selector toggle       | Allow users to toggle the country selector panel and filter judoka cards by country. |
-| P1      | Filtering and responsive time | Ensure filtering is completed within 1 second for most users.                        |
-| P2      | Three display modes           | Provide hidden, slide-in, and full-screen grid views for the selector.                |
-| P3      | Performance optimizations     | Support large datasets (>50 countries) via virtual scrolling or paging.               |
 
 ---
 
 ## Tasks
 
 - [ ] 1.0 Implement Country Flag Picker UI
-  - [ ] 1.1 Create slide-in panel and full-screen grid layouts.
-  - [ ] 1.2 Add country flags with alt-text and labels.
-  - [ ] 1.3 Ensure responsive design for different screen sizes.
-  - [ ] 1.4 Implement highlight on selected flag.
-  - [ ] 1.5 Implement clear selection functionality.
+  - [ ] 1.1 Create hidden, slide-in panel (default), and full-screen grid layouts.
+  - [ ] 1.2 Load country flags with alt-text and labels.
+  - [ ] 1.3 Ensure responsive design for different screen sizes (mobile, tablet, desktop).
+  - [ ] 1.4 Implement selected flag highlighting (e.g., border, shading).
+  - [ ] 1.5 Implement "Clear Selection" button.
 
 - [ ] 2.0 Set Up Filtering Logic
-  - [ ] 2.1 Load judoka.json and extract available countries.
-  - [ ] 2.2 Implement filtering of judoka cards by selected country.
-  - [ ] 2.3 Handle empty state messaging if no judoka for selected country.
+  - [ ] 2.1 Load `judoka.json` and extract a list of available countries.
+  - [ ] 2.2 Implement filtering of the card carousel based on the selected country.
+  - [ ] 2.3 Display an empty state message if no judoka exist for the selected country.
 
 - [ ] 3.0 Optimize Performance
-  - [ ] 3.1 Implement virtual scrolling/paging for >50 countries.
-  - [ ] 3.2 Ensure filtering completes within 1 second.
-  - [ ] 3.3 Ensure selector appears within 1 second when toggled.
+  - [ ] 3.1 Implement virtual scrolling or paging for >50 countries.
+  - [ ] 3.2 Ensure the filtering action completes within 1 second for 95% of users.
+  - [ ] 3.3 Ensure the country selector appears within 1 second when toggled.
 
 - [ ] 4.0 Handle Edge Cases
-  - [ ] 4.1 Fallback to generic flag icon if flag asset fails to load.
-  - [ ] 4.2 Progressive loading on slow networks.
-  - [ ] 4.3 Verify graceful handling of large country lists.
+  - [ ] 4.1 Display a fallback icon if a flag asset fails to load.
+  - [ ] 4.2 Implement progressive flag loading on slow networks.
+  - [ ] 4.3 Verify performance and UX with large country lists (100+ countries).
 
 - [ ] 5.0 Ensure Accessibility and Compliance
-  - [ ] 5.1 Add alt-text to all flag icons.
-  - [ ] 5.2 Ensure WCAG 2.1 AA compliance (contrast ratios).
-  - [ ] 5.3 Ensure tap targets are at least 48x48dp.
+  - [ ] 5.1 Add alt-text for all flag icons based on country names.
+  - [ ] 5.2 Ensure color contrast ratios meet WCAG 2.1 AA standards.
+  - [ ] 5.3 Enforce minimum tap target size (48x48dp) for touch devices.
+  - [ ] 5.4 Ensure flags are displayed alphabetically.
+
+- [ ] 6.0 Add Visual Documentation
+  - [ ] 6.1 Create annotated wireframes for the slide-in panel and full-grid views.
+  - [ ] 6.2 Annotate wireframes with key UX and accessibility notes (tap sizes, highlight states, animation durations).
