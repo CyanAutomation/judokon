@@ -15,6 +15,16 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - **Fallback:** If the map fails to load, a simplified, high-contrast text menu appears instantly.
 - **Responsiveness:** If viewport height <400px or width <640px, hide the map icon entirely. Map and tiles dynamically resize based on screen size and resolution. Animations must maintain 60fps on devices.
 
+## Prioritized Functional Requirements
+
+| Priority | Feature                     | Description                                                                 |
+|---------|------------------------------|-----------------------------------------------------------------------------|
+| **P1**  | Design Village Map Navigation | Wireframes and tile layout with 48px+ targets and hover/tap animations.     |
+| **P1**  | Implement Footer Map Expansion| Smooth slide-up animation, toggle behavior, and orientation handling.      |
+| **P2**  | Integrate Fallback Menu       | High-contrast text fallback menu that loads within 1 second if assets fail.|
+| **P2**  | Ensure Accessibility & Performance | Keyboard navigation, screen reader support, 60fps performance, WCAG compliance. |
+| **P3**  | Add "Simple Menu Mode" Toggle to Settings | Optional toggle to disable map and simplify navigation.               |
+
 ## Acceptance Criteria
 
 1. **Given** the player is in `landscape` mode, **when** they tap the map icon in the bottom right corner, **then** the interactive village map slides up from the footer in under 500ms.
@@ -55,25 +65,25 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 
 ## Tasks
 
-- [ ] **1.0 Design Village Map Navigation**
+- [ ] **1.0 Design Village Map Navigation (P1)**
   - [ ] 1.1 Create updated wireframes for collapsed and expanded footer views.
   - [ ] 1.2 Design tile positions on the village map grid with 48px+ targets (Dojo, Budokan, Kodokan).
   - [ ] 1.3 Specify hover/tap animations for tiles (bounce effect).
 
-- [ ] **2.0 Implement Footer Map Expansion**
+- [ ] **2.0 Implement Footer Map Expansion (P1)**
   - [ ] 2.1 Code smooth slide-up animation (<500ms, `ease-out` easing).
   - [ ] 2.2 Implement tap-outside-to-close and map icon toggle behavior.
   - [ ] 2.3 Handle device orientation changes mid-animation.
 
-- [ ] **3.0 Integrate Fallback Menu**
+- [ ] **3.0 Integrate Fallback Menu (P2)**
   - [ ] 3.1 Detect if village map assets fail to load
   - [ ] 3.2 Implement a high-contrast, text-only fallback menu.
   - [ ] 3.3 Ensure fallback loads within 1 second.
 
-- [ ] **4.0 Ensure Accessibility & Performance**
+- [ ] **4.0 Ensure Accessibility & Performance (P2)**
   - [ ] 5.1 Add keyboard navigation and visible focus indicators for all tiles.
   - [ ] 5.2 Provide alt text and screen reader support for all tiles.
   - [ ] 5.3 Test animation performance on devices to ensure ≥60fps.
   - [ ] 5.4 Verify all text labels meet WCAG 2.1 AA contrast standards (≥4.5:1).
      
-- [ ] **5.0 Add "Simple Menu Mode" toggle to settings**
+- [ ] **5.0 Add "Simple Menu Mode" toggle to settings (P3)**
