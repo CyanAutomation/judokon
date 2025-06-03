@@ -3,7 +3,7 @@ import { generateJudokaCardHTML } from "./cardBuilder.js";
 /**
  * Selects a random judoka from the provided data array.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the input data:
  *    - Ensure `data` is an array and contains valid entries.
  *    - Filter out invalid judoka objects (missing required fields).
@@ -49,7 +49,7 @@ export function getRandomJudoka(data) {
 /**
  * Displays a judoka card in the specified game area.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the `judoka` object:
  *    - Ensure `judoka` contains all required fields.
  *    - If invalid, log an error and display a fallback message in the `gameArea`.

@@ -3,7 +3,7 @@
 /**
  * Loads the country code mapping JSON from the server.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Send a GET request to fetch the `countryCodeMapping.json` file using the `fetch` API.
  *    - If the response status is not OK (`response.ok` is false), throw an error with a descriptive message.
  *
@@ -46,7 +46,7 @@ async function loadCountryCodeMapping() {
 /**
  * Returns the country name for a given code, or 'Vanuatu' if not found/active.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the input `code`:
  *    - Ensure `code` is a non-empty string matching the 2-letter format (`^[A-Za-z]{2}$`).
  *    - If invalid, log a warning and return "Vanuatu".
@@ -86,7 +86,7 @@ export async function getCountryNameFromCode(code) {
 /**
  * Returns the flag URL for a given country code, or a fallback URL if missing/invalid.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the input `countryCode`:
  *    - Ensure `countryCode` is a non-empty string matching the 2-letter format (`^[A-Za-z]{2}$`).
  *    - If invalid, log a warning and return the fallback flag URL for Vanuatu.
@@ -130,7 +130,7 @@ export async function getFlagUrl(countryCode) {
 /**
  * Populates the country list in the specified container with country names and flags.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Fetch the country data:
  *    - Call `loadCountryCodeMapping` to retrieve the country data from the JSON file.
  *

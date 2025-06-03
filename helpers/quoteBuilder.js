@@ -1,7 +1,7 @@
 /**
  * Fetches Aesop's Fables data from a JSON file.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Send a GET request to retrieve the `aesopsFables.json` file using the `fetch` API.
  *    - Specify the relative path to the JSON file.
  *    - Await the server's response.
@@ -29,7 +29,7 @@ async function fetchFables() {
 /**
  * Formats a fable's story by replacing newline characters with HTML tags for proper rendering.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Normalize newline characters:
  *    - Replace escaped newline characters (`\\n`) with actual newline characters (`\n`).
  *
@@ -64,7 +64,7 @@ function formatFableStory(story) {
 /**
  * Displays a fable in the designated quote div on the page.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Locate the quote div in the DOM:
  *    - Use `document.getElementById("quote")` to retrieve the element.
  *
@@ -96,7 +96,7 @@ function displayFable(fable) {
 /**
  * Displays a random quote from Aesop's Fables in the designated quote div.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Fetch the fables data:
  *    - Call `fetchFables` to retrieve the JSON data containing Aesop's Fables.
  *    - Handle any errors that occur during the fetch process.

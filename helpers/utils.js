@@ -10,7 +10,7 @@ const escapeMap = {
 /**
  * Escapes HTML special characters to prevent XSS.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Ensure the input `str` is a string:
  *    - Convert `str` to a string using `String(str)` to handle non-string inputs.
  *
@@ -35,7 +35,7 @@ export function escapeHTML(str) {
 /**
  * Gets a value or falls back to a default if the value is missing.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Handle string values:
  *    - If `value` is a string, trim whitespace.
  *    - Return the trimmed string if it is not empty; otherwise, return `fallback`.
@@ -66,7 +66,7 @@ export function getValue(value, fallback = "Unknown") {
 /**
  * Formats a date string as YYYY-MM-DD or returns "Invalid Date".
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the input:
  *    - If `dateString` is a `Date` object, check if it is valid using `isNaN(date.getTime())`.
  *    - If `dateString` is not a string or is empty after trimming, return "Invalid Date".
@@ -100,7 +100,7 @@ export function formatDate(dateString) {
 /**
  * Transforms gokyoData into a lookup object for quick access.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the input:
  *    - Check if `gokyoData` is an array and is not empty.
  *    - If invalid, log an error message and return an empty object.

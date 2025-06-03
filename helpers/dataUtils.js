@@ -1,7 +1,7 @@
 /**
  * Generic function to load any JSON file from a given URL.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Send a GET request to the specified `url` using the `fetch` API.
  *    - If the response status is not OK (`response.ok` is false), throw an error with the HTTP status code.
  *
@@ -34,7 +34,7 @@ export async function loadJSON(url) {
 /**
  * Fetches data from a given URL with error handling.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Send a GET request to the specified `url` using the `fetch` API.
  *    - If the response status is not OK (`response.ok` is false), throw an error with the HTTP status code.
  *
@@ -70,7 +70,7 @@ export async function fetchDataWithErrorHandling(url) {
 /**
  * Validates the provided data to ensure it is a non-null object.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Verify that `data` is an object:
  *    - Use `typeof data` to check that the data is of type "object".
  *    - Ensure `data` is not `null`.

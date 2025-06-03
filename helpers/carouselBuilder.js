@@ -4,7 +4,7 @@ import { generateJudokaCard } from "./cardBuilder.js";
 /**
  * Creates a scroll button with the specified direction and functionality.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the input parameters:
  *    - Ensure `direction` is either "left" or "right".
  *    - Ensure `container` is a valid DOM element.
@@ -59,7 +59,7 @@ export function createScrollButton(direction, container, scrollAmount) {
 /**
  * Builds a carousel of judoka cards with scroll buttons.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the input parameters:
  *    - Ensure `judokaList` is a non-empty array.
  *    - Ensure `gokyoData` is an array (default to an empty lookup if missing).

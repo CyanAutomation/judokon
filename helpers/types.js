@@ -15,10 +15,14 @@
  * @property {string} signatureMoveId - ID of the judoka's signature move
  * @property {string|Date} [lastUpdated] - Can be a string (from JSON) or a Date object
  * @property {string} profileUrl - URL to the judoka's profile (e.g., Wikipedia link)
+ * @property {string} bio - Biography or description of the judoka
  * @property {string} gender - Gender of the judoka (e.g., "female")
  * @property {boolean} isHidden - Whether the judoka is hidden (default: false)
  * @property {string} rarity - Rarity of the judoka card (e.g., "Common", "Rare", "Legendary") (default: "Common")
  * @property {string} cardCode - Unique card code for the judoka
+ * @property {number} matchesWon - Number of matches won by the judoka
+ * @property {number} matchesLost - Number of matches lost by the judoka
+ * @property {number} matchesDrew - Number of matches drawn by the judoka
  * @example
  * {
  *   id: 1,
@@ -37,10 +41,14 @@
  *   signatureMoveId: "uchi-mata",
  *   lastUpdated: "2023-05-01",
  *   profileUrl: "https://en.wikipedia.org/wiki/Teddy_Riner",
+ *   bio: "Teddy Riner is a French judoka and one of the most decorated athletes in the sport.",
  *   gender: "male",
  *   isHidden: false,
  *   rarity: "Legendary",
- *   cardCode: "TR-Legendary"
+ *   cardCode: "TR-Legendary",
+ *   matchesWon: 100,
+ *   matchesLost: 5,
+ *   matchesDrew: 2
  * }
  */
 
