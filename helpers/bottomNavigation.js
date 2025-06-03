@@ -189,8 +189,8 @@ export function populateNavbar() {
       navBar.appendChild(ul);
 
       addTouchFeedback();
-      toggleExpandedMapView(activeModes);
-      togglePortraitTextMenu(activeModes);
+      // toggleExpandedMapView(activeModes);
+      // togglePortraitTextMenu(activeModes);
     })
     .catch((error) => {
       console.error("Error loading game modes:", error);
