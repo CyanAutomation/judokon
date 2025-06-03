@@ -18,7 +18,7 @@ When in landscape mode, clicking the central ju-do-kon logo triggers an upward s
 
 Expanded map view with clickable tiles for different game modes.
 
-*(Visual reference to be attached.)*
+_(Visual reference to be attached.)_
 
 ## Aims (Goals)
 
@@ -34,12 +34,12 @@ Expanded map view with clickable tiles for different game modes.
 
 ### Priority
 
-| Priority | Feature               | Description                                                                 |
-|----------|-----------------------|-----------------------------------------------------------------------------|
-| **P1**   | Expanded Map View     | Slide-up game map with clickable tiles in landscape orientation.            |
-|          | Responsive Scaling    | Map and tiles must scale and reposition appropriately.                      |
-|          | Hover/Focus States    | Tiles should have hover animations and keyboard focus indicators.           |
-|          | Fallback for Small Screens | Default to a simple text menu if the map cannot render.                  |
+| Priority | Feature                    | Description                                                       |
+| -------- | -------------------------- | ----------------------------------------------------------------- |
+| **P1**   | Expanded Map View          | Slide-up game map with clickable tiles in landscape orientation.  |
+|          | Responsive Scaling         | Map and tiles must scale and reposition appropriately.            |
+|          | Hover/Focus States         | Tiles should have hover animations and keyboard focus indicators. |
+|          | Fallback for Small Screens | Default to a simple text menu if the map cannot render.           |
 
 ### Acceptance Criteria
 
