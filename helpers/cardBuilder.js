@@ -9,7 +9,7 @@ import {
 /**
  * Generates the "last updated" HTML for a judoka card.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Check if the `date` parameter is provided:
  *    - If `date` is undefined or falsy, return an empty string.
  *
@@ -35,7 +35,7 @@ import {
 /**
  * Validates the required fields of a Judoka object.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Define required fields for the judoka object:
  *    - Include fields like "firstname", "surname", "country", etc.
  *
@@ -81,7 +81,7 @@ function validateJudoka(judoka) {
 /**
  * Generates the complete DOM structure for a judoka card.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the `judoka` object:
  *    - Ensure all required fields are present using `validateJudoka`.
  *
@@ -171,7 +171,7 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
 /**
  * Generates a single judoka card and appends it to the container.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Generate the card HTML:
  *    - Use `generateJudokaCardHTML` with the `judoka` and `gokyoLookup`.
  *

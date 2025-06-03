@@ -5,7 +5,7 @@ const PLACEHOLDER_FLAG_URL = "../assets/countryFlags/placeholder-flag.png";
 /**
  * Escapes special HTML characters in a string to prevent XSS (Cross-Site Scripting) attacks.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the input:
  *    - Check if `str` is a string.
  *    - If not, return the input unchanged.
@@ -16,8 +16,6 @@ const PLACEHOLDER_FLAG_URL = "../assets/countryFlags/placeholder-flag.png";
  *    - Replace `>` with `&gt;`.
  *    - Replace `"` with `&quot;`.
  *    - Replace `'` with `&#039;`.
- *
- * 3. Return the escaped string.
  */
 function escapeHTML(str) {
   if (typeof str !== "string") return str;
@@ -32,7 +30,7 @@ function escapeHTML(str) {
 /**
  * Safely retrieves a value from an object, returning a default value if the property is missing or undefined.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Check if the `value` is valid (not `undefined` or `null`):
  *    - If valid, return the `value`.
  *
@@ -46,7 +44,7 @@ function getValue(value, defaultValue) {
 /**
  * Creates a DOM element to display a "No Data Available" message.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Create a `<div>` element:
  *    - Set its `className` to `"card-top-bar"`.
  *    - Set its `textContent` to `"No data available"`.
@@ -66,7 +64,7 @@ export function createNoDataContainer() {
 /**
  * Extracts and sanitizes judoka data (firstname, surname, and countryCode).
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Extract and sanitize `firstname`:
  *    - Use `getValue` to default to `"Unknown"` if missing.
  *    - Use `escapeHTML` to sanitize the value.
@@ -90,7 +88,7 @@ function extractJudokaData(judoka) {
 /**
  * Resolves the country name based on the provided country code.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Check if `countryCode` is valid (not `"unknown"`):
  *    - If valid:
  *      a. Call `getCountryNameFromCode` asynchronously.
@@ -111,7 +109,7 @@ async function resolveCountryName(countryCode) {
 /**
  * Creates a DOM element to display the judoka's name (firstname and surname).
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Create a `<div>` element:
  *    - Set its `className` to `"card-name"`.
  *
@@ -146,7 +144,7 @@ export function createNameContainer(firstname, surname) {
 /**
  * Creates a DOM element for the flag image.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Create an `<img>` element:
  *    - Set its `className` to `"card-flag"`.
  *    - Set its `src` attribute to `finalFlagUrl` or fallback to `PLACEHOLDER_FLAG_URL`.
@@ -178,7 +176,7 @@ export function createFlagImage(finalFlagUrl, countryName) {
 /**
  * Generates the top bar DOM element for a judoka card, including the name and flag.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the `judoka` object:
  *    - If missing, return a container with a "No data available" message.
  *

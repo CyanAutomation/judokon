@@ -5,7 +5,7 @@ const CARD_CODE_VERSION = "v1";
 /**
  * Encodes a string using XOR encryption.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Split the input string `str` into an array of characters.
  * 2. For each character:
  *    - Get its ASCII code using `charCodeAt(0)`.
@@ -31,7 +31,7 @@ function xorEncode(str, key = XOR_KEY) {
 /**
  * Converts a string into a readable charset using a predefined alphabet.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Split the input string `str` into an array of characters.
  * 2. For each character:
  *    - Get its ASCII code using `charCodeAt(0)`.
@@ -53,7 +53,7 @@ function toReadableCharset(str) {
 /**
  * Splits a string into chunks of a specified size and joins them with a delimiter.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the input `str`:
  *    - Ensure `str` is a non-empty string.
  *    - If invalid, return an empty string.
@@ -75,7 +75,7 @@ function chunk(str, size = 4) {
 /**
  * Generates a unique, readable card code for a judoka.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the `judoka` object:
  *    - Ensure all required fields are present:
  *      a. `firstname`, `surname`, `country`, `weightClass`, `signatureMoveId`.

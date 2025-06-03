@@ -1,7 +1,7 @@
 /**
  * Populates the bottom navigation bar with game modes from a JSON file.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Fetch the JSON file containing game modes (`gameModes.json`).
  *    - If the fetch fails, log an error and display fallback items in the navigation bar.
  *

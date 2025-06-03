@@ -31,6 +31,7 @@ Clear and consistent JSDoc documentation is essential for maintaining code quali
 - Indicate optional parameters with square brackets, e.g., `@param {string} [optionalParam]`.
 - Mention default values in the parameter description if applicable.
 - Always match documentation with the actual function signature.
+- **Do not modify or remove any comments marked with `@pseudocode`.** These are high-level logical descriptions and must remain intact to preserve the intent and structure of the code.
 
 **Example:**
 
@@ -61,6 +62,7 @@ function buildCarousel(cards, container) { ... }
 - All public APIs document parameters and return values accurately.
 - No commented-out code or obsolete TODOs in the committed code.
 - Pull requests must update JSDoc documentation when function signatures or logic change.
+- **Pseudocode Preservation**: Any comments marked with `@pseudocode` must remain unchanged during updates to JSDoc documentation.
 
 ---
 
@@ -69,6 +71,7 @@ function buildCarousel(cards, container) { ... }
 - **Missing Documentation**: Code missing required JSDoc comments cannot be merged.
 - **Outdated Comments**: PR reviewers must verify that JSDoc comments match the current code.
 - **Complex Workarounds**: Any workaround or technical debt must include a JSDoc comment and reference to a tracking issue.
+- **Pseudocode Modification**: Modifying or removing `@pseudocode` blocks is prohibited unless explicitly approved during code review.
 
 ---
 
@@ -77,6 +80,7 @@ function buildCarousel(cards, container) { ... }
 - Prefer clarity over brevity; a longer, clearer comment is better than a short, confusing one.
 - Use standard formats like JSDoc for compatibility with documentation generation tools.
 - Self-documenting code is the ideal; comments should supplement, not replace, clear code.
+- **Pseudocode Integration**: The `@pseudocode` marker ensures that high-level logic descriptions are preserved and excluded from automated processing or formatting tools.
 
 ---
 

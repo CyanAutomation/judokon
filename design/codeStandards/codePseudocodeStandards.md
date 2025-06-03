@@ -20,6 +20,7 @@ Clear pseudocode descriptions are essential for explaining the underlying logic 
 ### Pseudocode Standards
 
 - Provide high-level pseudocode comments above logical blocks.
+- Use the `@pseudocode` marker at the beginning of pseudocode blocks to distinguish them from other comments.
 - Explain **why** the code is performing certain actions, not just **what** it is doing.
 - Use a clear, step-by-step, numbered list format for pseudocode within documentation blocks.
 - Maintain concise and grammatically correct language.
@@ -33,7 +34,7 @@ Clear pseudocode descriptions are essential for explaining the underlying logic 
 /**
  * Populates the bottom navigation bar with game modes from a JSON file.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Fetch the JSON file containing game modes ("gameModes.json").
  *    - If the fetch fails, log an error and display an error message.
  *
@@ -68,6 +69,7 @@ function populateNavigationBar() { ... }
 
 - Complex functions and workflows include detailed pseudocode.
 - Pseudocode is structured as a step-by-step numbered list.
+- All pseudocode blocks must begin with the `@pseudocode` marker.
 - No pseudocode restates code line-by-line; focus on logical structure.
 - Pseudocode explanations are updated as code logic changes.
 - Functions without clear, self-explanatory code must have a pseudocode overview.
@@ -78,6 +80,7 @@ function populateNavigationBar() { ... }
 
 - **Missing Pseudocode**: Complex workflows without pseudocode cannot be merged.
 - **Outdated Pseudocode**: Pseudocode that no longer reflects the current logic must be corrected during review.
+- **Missing Marker**: Pseudocode blocks without the `@pseudocode` marker must be updated to include it.
 - **Overly Detailed Pseudocode**: Avoid turning pseudocode into a line-by-line transcript of the code.
 
 ---
@@ -86,6 +89,7 @@ function populateNavigationBar() { ... }
 
 - Pseudocode should describe logic, not syntax.
 - Use pseudocode to communicate intent and structure, especially where complex control flows or data manipulations are involved.
+- The `@pseudocode` marker ensures that pseudocode blocks are easily identifiable and can be excluded from automated processing or formatting tools.
 
 ---
 

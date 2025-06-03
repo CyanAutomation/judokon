@@ -1,7 +1,7 @@
 /**
  * Generates the portrait HTML for a judoka card.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the input card object:
  *    - Ensure the card is an object and contains required fields (`id`, `firstname`, `surname`).
  *    - Throw an error if validation fails.
@@ -45,7 +45,7 @@ export function generateCardPortrait(card) {
 /**
  * Generates the stats HTML for a judoka card.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the input card object:
  *    - Ensure the card is an object and contains a valid `stats` property.
  *    - Throw an error if validation fails.
@@ -92,7 +92,7 @@ export function generateCardStats(card, cardType = "common") {
 /**
  * Generates the signature move HTML for a judoka card.
  *
- * Pseudocode:
+ * @pseudocode
  * 1. Validate the input `judoka` object:
  *    - Default `judoka` to an empty object if null or undefined.
  *    - Extract `signatureMoveId` and ensure it is a number.
