@@ -14,10 +14,10 @@ This issue is timely as our player base is expanding internationally, and region
 
 ## Goals
 
-- **Performance Goal**: Enable country filtering in under 1 second for 95% of users.
-- **Reliability Goal**: Achieve zero crashes related to the country selector over 10,000 sessions.
+- **Performance Goal**: Enable country filtering in under 1 second for 90% of sessions.
+- **Reliability Goal**: Achieve zero crashes related to the country selector over 100 sessions.
 - **Coverage Goal**: Ensure >90% of available countries are selectable via the flag interface.
-- **UX Goal**: Achieve a >95% success rate where users select the intended country without mis-taps, measured via interaction telemetry post-launch.
+- **UX Goal**: Achieve a >95% success rate where users select the intended country without mis-taps.
 
 ---
 
@@ -42,7 +42,7 @@ Key Details:
 | Priority | Feature                     | Description                                                                          |
 |---------|------------------------------|--------------------------------------------------------------------------------------|
 | **P1**  | Country selector toggle       | Allow users to toggle the country selector panel and filter judoka cards by country. |
-| **P1**  | Filtering and responsive time | Ensure filtering is completed within 1 second for 95% of users.                      |
+| **P1**  | Filtering and responsive time | Ensure filtering is completed within 1 second for 90% of sessions.                      |
 | **P2**  | Three display modes           | Provide hidden, slide-in (default), and full-screen grid views for the selector.     |
 | **P2**  | Clear button                  | Provide a clear, easy way to remove the current country filter.                     |
 | **P3**  | Performance optimizations     | Support large datasets (>50 countries) via virtual scrolling or paging.             |
@@ -126,13 +126,12 @@ Key Details:
 
 - [ ] 3.0 Optimize Performance
   - [ ] 3.1 Implement virtual scrolling or paging for >50 countries.
-  - [ ] 3.2 Ensure the filtering action completes within 1 second for 95% of users.
+  - [ ] 3.2 Ensure the filtering action completes within 1 second for 90% of sessions.
   - [ ] 3.3 Ensure the country selector appears within 1 second when toggled.
 
 - [ ] 4.0 Handle Edge Cases
   - [ ] 4.1 Display a fallback icon if a flag asset fails to load.
   - [ ] 4.2 Implement progressive flag loading on slow networks.
-  - [ ] 4.3 Verify performance and UX with large country lists (100+ countries).
 
 - [ ] 5.0 Ensure Accessibility and Compliance
   - [ ] 5.1 Add alt-text for all flag icons based on country names.
