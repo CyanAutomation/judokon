@@ -5,17 +5,21 @@ import { generateJudokaCard } from "./cardBuilder.js";
  * Creates a scroll button with the specified direction and functionality.
  *
  * Pseudocode:
- * 1. Create a button element.
- * 2. Assign a class to the button based on the direction (e.g., "scroll-button left" or "scroll-button right").
- * 3. Set the button's inner HTML to display an arrow symbol:
- *    - Use "<" for left and ">" for right.
- * 4. Add an accessible label (`aria-label`) to the button for screen readers:
- *    - Example: "Scroll Left" or "Scroll Right".
- * 5. Add a click event listener to the button:
- *    - When clicked, scroll the container by the specified amount.
- *    - Scroll left if the direction is "left", otherwise scroll right.
- *    - Use smooth scrolling for a better user experience.
- * 6. Return the created button element.
+ * 1. Validate the input parameters:
+ *    - Ensure `direction` is either "left" or "right".
+ *    - Ensure `container` is a valid DOM element.
+ *    - Throw an error if validation fails.
+ *
+ * 2. Create a button element:
+ *    - Assign a class based on the `direction` (e.g., "scroll-button left" or "scroll-button right").
+ *    - Set the inner HTML to display an arrow symbol ("<" for left, ">" for right).
+ *    - Add an accessible label (`aria-label`) for screen readers (e.g., "Scroll Left").
+ *
+ * 3. Add a click event listener to the button:
+ *    - Scroll the `container` by the specified `scrollAmount`.
+ *    - Use smooth scrolling for better user experience.
+ *
+ * 4. Return the created button element.
  *
  * @param {String} direction - Either "left" or "right".
  * @param {HTMLElement} container - The carousel container to scroll.
@@ -56,24 +60,40 @@ export function createScrollButton(direction, container, scrollAmount) {
  * Builds a carousel of judoka cards with scroll buttons.
  *
  * Pseudocode:
- * 1. Create a container element for the carousel and assign it a class name.
- * 2. Transform the `gokyoData` array into a lookup object for quick access.
- * 3. Loop through the `judokaList` array:
- *    - For each judoka, generate a card using the `generateJudokaCard` function.
- *    - Append the generated card to the carousel container.
- * 4. Create a wrapper element for the carousel and assign it a class name.
- * 5. Create scroll buttons for navigating the carousel:
- *    - A left scroll button to scroll the carousel to the left.
- *    - A right scroll button to scroll the carousel to the right.
- * 6. Append the scroll buttons and the carousel container to the wrapper.
- * 7. Return the completed wrapper element.
+ * 1. Validate the input parameters:
+ *    - Ensure `judokaList` is a non-empty array.
+ *    - Ensure `gokyoData` is an array (default to an empty lookup if missing).
+ *    - Log warnings or errors for invalid inputs.
  *
- * @param {Judoka[]} judokaList - An array of judoka objects.
- * @param {GokyoEntry[]} gokyoData - An array of gokyo objects.
- * @returns {Promise<HTMLElement>} A promise that resolves to the carousel wrapper element.
- */
-/**
- * Builds a carousel of judoka cards with scroll buttons.
+ * 2. Create the carousel container:
+ *    - Create a `<div>` element with the class `card-carousel`.
+ *
+ * 3. Create a wrapper element for the carousel:
+ *    - Create a `<div>` element with the class `carousel-container`.
+ *    - Add a loading spinner to indicate progress.
+ *
+ * 4. Transform `gokyoData` into a lookup object for quick access.
+ *
+ * 5. Loop through the `judokaList` array:
+ *    - Validate each judoka object (ensure required fields are present).
+ *    - Generate a card using `generateJudokaCard`.
+ *    - Handle broken card images by setting a fallback image.
+ *    - Append the generated card to the carousel container.
+ *
+ * 6. Remove the loading spinner once all cards are processed.
+ *
+ * 7. Create and append scroll buttons:
+ *    - Create a left scroll button to scroll the carousel left.
+ *    - Create a right scroll button to scroll the carousel right.
+ *    - Append both buttons to the wrapper.
+ *
+ * 8. Add keyboard navigation:
+ *    - Enable scrolling with the left and right arrow keys.
+ *
+ * 9. Add swipe functionality for touch devices:
+ *    - Detect swipe gestures to scroll the carousel left or right.
+ *
+ * 10. Return the completed wrapper element.
  *
  * @param {Judoka[]} judokaList - An array of judoka objects.
  * @param {GokyoEntry[]} gokyoData - An array of gokyo objects.

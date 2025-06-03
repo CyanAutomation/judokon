@@ -6,10 +6,11 @@ const PLACEHOLDER_FLAG_URL = "../assets/countryFlags/placeholder-flag.png";
  * Escapes special HTML characters in a string to prevent XSS (Cross-Site Scripting) attacks.
  *
  * Pseudocode:
- * 1. Check if the input `str` is a string:
- *    - If it is not a string, return the input as-is.
+ * 1. Validate the input:
+ *    - Check if `str` is a string.
+ *    - If not, return the input unchanged.
  *
- * 2. Replace special HTML characters in the string with their corresponding HTML entities:
+ * 2. Replace special HTML characters with their corresponding HTML entities:
  *    - Replace `&` with `&amp;`.
  *    - Replace `<` with `&lt;`.
  *    - Replace `>` with `&gt;`.
@@ -17,9 +18,6 @@ const PLACEHOLDER_FLAG_URL = "../assets/countryFlags/placeholder-flag.png";
  *    - Replace `'` with `&#039;`.
  *
  * 3. Return the escaped string.
- *
- * @param {string} str - The string to escape.
- * @returns {string} The escaped string.
  */
 function escapeHTML(str) {
   if (typeof str !== "string") return str;
@@ -35,15 +33,11 @@ function escapeHTML(str) {
  * Safely retrieves a value from an object, returning a default value if the property is missing or undefined.
  *
  * Pseudocode:
- * 1. Check if the `value` is not `undefined` or `null`:
- *    - If the `value` is valid, return it.
+ * 1. Check if the `value` is valid (not `undefined` or `null`):
+ *    - If valid, return the `value`.
  *
- * 2. If the `value` is `undefined` or `null`:
- *    - Return the `defaultValue` provided as a fallback.
- *
- * @param {any} value - The value to check.
- * @param {any} defaultValue - The default value to return if the value is undefined or null.
- * @returns {any} The value if valid, otherwise the default value.
+ * 2. If the `value` is invalid:
+ *    - Return the `defaultValue` provided.
  */
 function getValue(value, defaultValue) {
   return value !== undefined && value !== null ? value : defaultValue;
@@ -57,11 +51,9 @@ function getValue(value, defaultValue) {
  *    - Set its `className` to `"card-top-bar"`.
  *    - Set its `textContent` to `"No data available"`.
  *
- * 2. Log the generated container to the console for debugging.
+ * 2. Log the generated container for debugging.
  *
  * 3. Return the created `<div>` element.
- *
- * @returns {HTMLElement} The DOM element containing the "No data available" message.
  */
 export function createNoDataContainer() {
   const container = document.createElement("div");
@@ -75,23 +67,18 @@ export function createNoDataContainer() {
  * Extracts and sanitizes judoka data (firstname, surname, and countryCode).
  *
  * Pseudocode:
- * 1. Extract the `firstname` from the `judoka` object:
- *    - Use `getValue` to provide a default value of `"Unknown"` if `firstname` is missing or undefined.
- *    - Use `escapeHTML` to sanitize the `firstname` to prevent XSS attacks.
+ * 1. Extract and sanitize `firstname`:
+ *    - Use `getValue` to default to `"Unknown"` if missing.
+ *    - Use `escapeHTML` to sanitize the value.
  *
- * 2. Extract the `surname` from the `judoka` object:
- *    - Use `getValue` to provide a default value of an empty string (`""`) if `surname` is missing or undefined.
- *    - Use `escapeHTML` to sanitize the `surname` to prevent XSS attacks.
+ * 2. Extract and sanitize `surname`:
+ *    - Use `getValue` to default to an empty string (`""`) if missing.
+ *    - Use `escapeHTML` to sanitize the value.
  *
- * 3. Extract the `countryCode` from the `judoka` object:
- *    - Use `getValue` to provide a default value of `"unknown"` if `countryCode` is missing or undefined.
+ * 3. Extract `countryCode`:
+ *    - Use `getValue` to default to `"unknown"` if missing.
  *
- * 4. Log the extracted and sanitized values (`firstname`, `surname`, `countryCode`) for debugging.
- *
- * 5. Return an object containing the sanitized `firstname`, `surname`, and `countryCode`.
- *
- * @param {Object} judoka - The judoka object containing the data to extract.
- * @returns {Object} An object with the sanitized `firstname`, `surname`, and `countryCode`.
+ * 4. Return an object containing the sanitized `firstname`, `surname`, and `countryCode`.
  */
 function extractJudokaData(judoka) {
   const firstname = escapeHTML(getValue(judoka.firstname, "Unknown"));
@@ -104,18 +91,13 @@ function extractJudokaData(judoka) {
  * Resolves the country name based on the provided country code.
  *
  * Pseudocode:
- * 1. Check if the `countryCode` is not `"unknown"`:
- *    - If true:
- *      a. Call the `getCountryNameFromCode` function (asynchronous) with the `countryCode`.
- *      b. Log the resolved country name to the console for debugging.
- *      c. Return the resolved country name.
+ * 1. Check if `countryCode` is valid (not `"unknown"`):
+ *    - If valid:
+ *      a. Call `getCountryNameFromCode` asynchronously.
+ *      b. Return the resolved country name.
  *
- * 2. If the `countryCode` is `"unknown"`:
- *    - Log a message indicating that the country name is unknown.
+ * 2. If `countryCode` is `"unknown"`:
  *    - Return `"Unknown"` as the fallback country name.
- *
- * @param {string} countryCode - The country code to resolve.
- * @returns {Promise<string>} A promise that resolves to the country name or `"Unknown"`.
  */
 async function resolveCountryName(countryCode) {
   if (countryCode !== "unknown") {
@@ -133,23 +115,15 @@ async function resolveCountryName(countryCode) {
  * 1. Create a `<div>` element:
  *    - Set its `className` to `"card-name"`.
  *
- * 2. Create a `<span>` element for the `firstname`:
+ * 2. Create and append a `<span>` for `firstname`:
  *    - Set its `className` to `"firstname"`.
  *    - Set its `textContent` to the provided `firstname`.
- *    - Append this `<span>` to the `<div>` container.
  *
- * 3. Create a `<span>` element for the `surname`:
+ * 3. Create and append a `<span>` for `surname`:
  *    - Set its `className` to `"surname"`.
  *    - Set its `textContent` to the provided `surname`.
- *    - Append this `<span>` to the `<div>` container.
  *
- * 4. Log the generated name container to the console for debugging.
- *
- * 5. Return the `<div>` container containing the `firstname` and `surname`.
- *
- * @param {string} firstname - The judoka's first name.
- * @param {string} surname - The judoka's surname.
- * @returns {HTMLElement} The DOM element containing the judoka's name.
+ * 4. Return the `<div>` container.
  */
 export function createNameContainer(firstname, surname) {
   const nameContainer = document.createElement("div");
@@ -175,20 +149,12 @@ export function createNameContainer(firstname, surname) {
  * Pseudocode:
  * 1. Create an `<img>` element:
  *    - Set its `className` to `"card-flag"`.
- *    - Set its `src` attribute to the provided `finalFlagUrl`.
+ *    - Set its `src` attribute to `finalFlagUrl` or fallback to `PLACEHOLDER_FLAG_URL`.
  *    - Set its `alt` attribute to the `countryName` followed by "flag".
  *
- * 2. Add an `onerror` event handler to the `<img>` element:
- *    - If the image fails to load, set the `src` to the `PLACEHOLDER_FLAG_URL`.
- *    - Log a warning to the console indicating that the placeholder flag is being used.
+ * 2. Add an `onerror` handler to fallback to `PLACEHOLDER_FLAG_URL` if the image fails to load.
  *
- * 3. Log the generated flag image element to the console for debugging.
- *
- * 4. Return the created `<img>` element.
- *
- * @param {string} finalFlagUrl - The URL of the flag image.
- * @param {string} countryName - The name of the country for the flag.
- * @returns {HTMLElement} The DOM element for the flag image.
+ * 3. Return the `<img>` element.
  */
 export function createFlagImage(finalFlagUrl, countryName) {
   console.log(`Creating flag image with country name: ${countryName}`); // Debugging
@@ -213,40 +179,28 @@ export function createFlagImage(finalFlagUrl, countryName) {
  * Generates the top bar DOM element for a judoka card, including the name and flag.
  *
  * Pseudocode:
- * 1. Check if the `judoka` object is provided:
- *    - If not, log an error and return a container with a "No data available" message.
+ * 1. Validate the `judoka` object:
+ *    - If missing, return a container with a "No data available" message.
  *
- * 2. Log the received `judoka` object for debugging.
+ * 2. Extract and sanitize judoka data:
+ *    - Call `extractJudokaData` to retrieve `firstname`, `surname`, and `countryCode`.
  *
- * 3. Extract and sanitize the judoka's data:
- *    - Call `extractJudokaData` to retrieve the `firstname`, `surname`, and `countryCode`.
+ * 3. Resolve the country name:
+ *    - Call `resolveCountryName` asynchronously with `countryCode`.
  *
- * 4. Resolve the country name:
- *    - Call `resolveCountryName` asynchronously with the `countryCode`.
+ * 4. Determine the flag URL:
+ *    - Use `flagUrl` if provided, otherwise fallback to `PLACEHOLDER_FLAG_URL`.
  *
- * 5. Determine the flag URL:
- *    - Use the provided `flagUrl` if available.
- *    - Otherwise, use the `PLACEHOLDER_FLAG_URL`.
- *    - Log the final flag URL for debugging.
- *
- * 6. Create the main container:
+ * 5. Create the main container:
  *    - Create a `<div>` element with the class `card-top-bar`.
  *
- * 7. Create and append the name container:
- *    - Call `createNameContainer` with the `firstname` and `surname`.
- *    - Append the returned DOM element to the main container.
+ * 6. Append the name container:
+ *    - Call `createNameContainer` and append the result.
  *
- * 8. Create and append the flag image:
- *    - Call `createFlagImage` with the `finalFlagUrl` and `countryName`.
- *    - Append the returned DOM element to the main container.
+ * 7. Append the flag image:
+ *    - Call `createFlagImage` and append the result.
  *
- * 9. Log the final generated container for debugging.
- *
- * 10. Return the main container DOM element.
- *
- * @param {Object} judoka - The judoka object containing data for the card.
- * @param {string} [flagUrl] - The URL of the flag image.
- * @returns {HTMLElement} The DOM element for the top bar.
+ * 8. Return the main container.
  */
 export async function generateCardTopBar(judoka, flagUrl) {
   if (!judoka) {

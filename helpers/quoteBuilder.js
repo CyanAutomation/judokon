@@ -2,17 +2,18 @@
  * Fetches Aesop's Fables data from a JSON file.
  *
  * Pseudocode:
- * 1. Use the `fetch` API to retrieve the JSON file:
- *    - Specify the relative path to the `aesopsFables.json` file.
- *    - Await the response from the server.
+ * 1. Send a GET request to retrieve the `aesopsFables.json` file using the `fetch` API.
+ *    - Specify the relative path to the JSON file.
+ *    - Await the server's response.
  *
- * 2. Check if the response is successful:
- *    - Use `response.ok` to verify the HTTP status.
+ * 2. Verify the response status:
+ *    - Check if `response.ok` is `true`.
  *    - If the response is not successful, throw an error with a descriptive message.
  *
- * 3. Parse the JSON data:
- *    - Use `response.json()` to convert the response into a JavaScript object.
- *    - Return the parsed JSON data.
+ * 3. Parse the JSON response:
+ *    - Convert the response body into a JavaScript object using `response.json()`.
+ *
+ * 4. Return the parsed JSON data.
  *
  * @returns {Promise<Object[]>} A promise that resolves to an array of fables.
  * @throws {Error} If the fetch request fails or the response is not successful.
@@ -29,14 +30,21 @@ async function fetchFables() {
  * Formats a fable's story by replacing newline characters with HTML tags for proper rendering.
  *
  * Pseudocode:
- * 1. Replace double newline characters (`\n\n`) with paragraph breaks:
- *    - Use `.replace(/\n\n/g, "</p><p><br>")` to convert double newlines into `<p>` tags with a `<br>` for spacing.
+ * 1. Normalize newline characters:
+ *    - Replace escaped newline characters (`\\n`) with actual newline characters (`\n`).
  *
- * 2. Replace single newline characters (`\n`) with line breaks:
- *    - Use `.replace(/\n/g, "<br>")` to convert single newlines into `<br>` tags for proper line breaks.
+ * 2. Split the story into paragraphs:
+ *    - Use `.split(/\n{2,}/)` to divide the story into paragraphs based on double or more consecutive newlines.
+ *    - Trim each paragraph and filter out empty paragraphs.
  *
- * 3. Return the formatted story:
- *    - Ensure the story is ready for rendering in HTML.
+ * 3. Format each paragraph:
+ *    - Wrap each paragraph in `<p>` tags.
+ *    - Replace single newline characters (`\n`) within paragraphs with `<br>` tags for line breaks.
+ *
+ * 4. Combine formatted paragraphs:
+ *    - Join the paragraphs into a single HTML string.
+ *
+ * 5. Return the formatted story.
  *
  * @param {string} story - The fable's story text to format.
  * @returns {string} The formatted story with HTML tags for rendering.
@@ -58,16 +66,16 @@ function formatFableStory(story) {
  *
  * Pseudocode:
  * 1. Locate the quote div in the DOM:
- *    - Use `document.getElementById("quote")` to retrieve the element where the fable will be displayed.
+ *    - Use `document.getElementById("quote")` to retrieve the element.
  *
  * 2. Check if a fable is provided:
  *    - If a fable is provided:
- *      - Format the fable's story using the `formatFableStory` function.
- *      - Update the quote div's inner HTML with the fable's title and formatted story.
+ *      a. Format the fable's story using `formatFableStory`.
+ *      b. Update the quote div's inner HTML with the fable's title and formatted story.
  *    - If no fable is provided:
- *      - Display a default congratulatory message in the quote div.
+ *      a. Display a default congratulatory message in the quote div.
  *
- * 3. Ensure the quote div is updated with the appropriate content:
+ * 3. Update the quote div:
  *    - Use template literals to dynamically insert the fable's title and story into the HTML structure.
  *
  * @param {Object|null} fable - The fable object containing the title and story, or `null` if no fable is available.
@@ -90,7 +98,7 @@ function displayFable(fable) {
  *
  * Pseudocode:
  * 1. Fetch the fables data:
- *    - Call the `fetchFables` function to retrieve the JSON data containing Aesop's Fables.
+ *    - Call `fetchFables` to retrieve the JSON data containing Aesop's Fables.
  *    - Handle any errors that occur during the fetch process.
  *
  * 2. Select a random fable:
@@ -99,7 +107,7 @@ function displayFable(fable) {
  *    - Find the fable corresponding to the random ID.
  *
  * 3. Display the fable:
- *    - If a fable is found, pass it to the `displayFable` function to update the quote div.
+ *    - If a fable is found, pass it to `displayFable` to update the quote div.
  *    - If no fable is found or an error occurs, pass `null` to `displayFable` to display a default message.
  *
  * 4. Automatically call the function when the DOM is fully loaded:

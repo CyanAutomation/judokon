@@ -3,10 +3,10 @@
  *
  * Pseudocode:
  * 1. Fetch the JSON file containing game modes (`gameModes.json`).
- *    - If the fetch fails, log an error and display "Error loading game modes" in the navigation bar.
+ *    - If the fetch fails, log an error and display fallback items in the navigation bar.
  *
  * 2. Parse the JSON response to retrieve the game modes data.
- *    - If the response cannot be parsed, handle the error gracefully.
+ *    - Handle parsing errors gracefully.
  *
  * 3. Filter the game modes:
  *    - Include only modes where `category` is "mainMenu" and `isHidden` is `false`.
@@ -22,7 +22,7 @@
  * 7. Update the navigation bar (`.bottom-navbar ul`) with the generated HTML.
  *
  * 8. Handle any errors during the process:
- *    - Log the error to the console and display "Error loading game modes" in the navigation bar.
+ *    - Log the error to the console and display fallback items in the navigation bar.
  *
  * @returns {void}
  */

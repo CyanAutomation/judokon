@@ -4,16 +4,20 @@
  * Loads the country code mapping JSON from the server.
  *
  * Pseudocode:
- * 1. Use the `fetch` API to send a GET request to the `countryCodeMapping.json` file.
+ * 1. Send a GET request to fetch the `countryCodeMapping.json` file using the `fetch` API.
+ *    - If the response status is not OK (`response.ok` is false), throw an error with a descriptive message.
  *
- * 2. Check the response status:
- *    - If the response is not OK (`response.ok` is false), throw an error with the message "Failed to load country code mapping".
+ * 2. Parse the response body as JSON:
+ *    - Convert the response body into a JavaScript object using `response.json()`.
  *
- * 3. Parse the response body as JSON:
- *    - Use `response.json()` to convert the response body into a JavaScript object.
+ * 3. Validate the parsed JSON data:
+ *    - For each entry, check that:
+ *      a. `country` is a string.
+ *      b. `code` matches the 2-letter country code format (`^[A-Za-z]{2}$`).
+ *      c. `active` is a boolean.
+ *    - Log a warning for any invalid entries.
  *
- * 4. Return the parsed JSON data.
- *
+ * 4. Return the validated JSON data.
  *
  * @returns {Promise<CountryCodeEntry[]>} Resolves to an array of country code mappings.
  */
@@ -40,28 +44,27 @@ async function loadCountryCodeMapping() {
 }
 
 /**
- * Returns the country name for a given code, or 'Unknown' if not found/active.
+ * Returns the country name for a given code, or 'Vanuatu' if not found/active.
  *
  * Pseudocode:
- * 1. Validate the input code:
- *    - Check if code is a string and is not empty (after trimming whitespace).
- *    - If code is invalid, return VU.
+ * 1. Validate the input `code`:
+ *    - Ensure `code` is a non-empty string matching the 2-letter format (`^[A-Za-z]{2}$`).
+ *    - If invalid, log a warning and return "Vanuatu".
  *
- * 2. Load the country code mapping:
- *    - Call loadCountryCodeMapping to fetch the mapping data.
+ * 2. Fetch the country code mapping:
+ *    - Call `loadCountryCodeMapping` to retrieve the mapping data.
  *
- * 3. Search for a matching entry in the mapping:
- *    - Use the find method to locate an entry where:
- *      a. The code matches the input `code` (case-insensitive).
- *      b. The active property of the entry is true.
+ * 3. Search for a matching entry:
+ *    - Use `find` to locate an entry where:
+ *      a. `code` matches the input `code` (case-insensitive).
+ *      b. `active` is `true`.
  *
  * 4. Return the country name:
- *    - If a matching entry is found, return the country property of the entry.
- *    - If no match is found, return VANUATU.
+ *    - If a match is found, return the `country` property.
+ *    - Otherwise, return "Vanuatu".
  *
- *
- * @param {string} countryCode - The 2-letter country code (e.g., "JP").
- * @returns {Promise<string>} A promise that resolves to the country name or "Unknown".
+ * @param {string} code - The 2-letter country code (e.g., "JP").
+ * @returns {Promise<string>} A promise that resolves to the country name or "Vanuatu".
  */
 export async function getCountryNameFromCode(code) {
   if (typeof code !== "string" || !/^[A-Za-z]{2}$/.test(code.trim())) {
@@ -81,28 +84,28 @@ export async function getCountryNameFromCode(code) {
 }
 
 /**
- * Returns the flag URL for a given country code, or a placeholder if missing/invalid.
+ * Returns the flag URL for a given country code, or a fallback URL if missing/invalid.
  *
  * Pseudocode:
- * 1. Check if the countryCode is provided:
- *    - If countryCode is missing or false, log a warning and return the placeholder flag URL.
+ * 1. Validate the input `countryCode`:
+ *    - Ensure `countryCode` is a non-empty string matching the 2-letter format (`^[A-Za-z]{2}$`).
+ *    - If invalid, log a warning and return the fallback flag URL for Vanuatu.
  *
- * 2. Load the country code mapping:
- *    - Call loadCountryCodeMapping to fetch the mapping data.
+ * 2. Fetch the country code mapping:
+ *    - Call `loadCountryCodeMapping` to retrieve the mapping data.
  *
- * 3. Validate the countryCode
- *    - Use the SOME method to check if there is an entry in the mapping where:
- *      a. The code matches the input countryCode (case-insensitive).
- *      b. The active property of the entry is true.
- *    - If no valid entry is found, log a warning and return the placeholder flag URL.
+ * 3. Check for a valid entry:
+ *    - Use `some` to verify if an entry exists where:
+ *      a. `code` matches the input `countryCode` (case-insensitive).
+ *      b. `active` is `true`.
+ *    - If no valid entry is found, log a warning and return the fallback flag URL for Vanuatu.
  *
  * 4. Construct the flag URL:
- *    - Convert the countryCode to lowercase.
- *    - Return the URL in the format https://flagcdn.com/w320/{countryCode}.png.
- *
+ *    - Convert `countryCode` to lowercase.
+ *    - Return the URL in the format `https://flagcdn.com/w320/{countryCode}.png`.
  *
  * @param {string} countryCode - The 2-letter country code (e.g., "JP").
- * @returns {Promise<string>} A promise that resolves to the flag URL or the placeholder flag URL.
+ * @returns {Promise<string>} A promise that resolves to the flag URL or the fallback flag URL.
  */
 export async function getFlagUrl(countryCode) {
   if (typeof countryCode !== "string" || !/^[A-Za-z]{2}$/.test(countryCode.trim())) {
@@ -132,24 +135,22 @@ export async function getFlagUrl(countryCode) {
  *    - Call `loadCountryCodeMapping` to retrieve the country data from the JSON file.
  *
  * 2. Filter active countries:
- *    - Use the `filter` method to include only countries where the `active` property is `true`.
+ *    - Include only countries where the `active` property is `true`.
  *
- * 3. Loop through the filtered country data:
+ * 3. Generate slides for each active country:
  *    - For each country:
- *      a. Create a `div` element to serve as the slide container.
+ *      a. Create a `div` element for the slide container.
  *      b. Add a flag image:
  *         - Create an `img` element.
- *         - Use `getFlagUrl` to fetch the flag URL for the country.
- *         - Set the `src` attribute of the `img` element to the flag URL.
- *         - If the flag URL cannot be fetched, use a fallback flag URL.
+ *         - Fetch the flag URL using `getFlagUrl`.
+ *         - Set the `src` attribute to the flag URL or fallback URL if an error occurs.
  *      c. Add the country name:
  *         - Create a `p` element.
  *         - Set its text content to the country's name.
- *         - Append the `p` element to the slide container.
  *      d. Append the slide container to the specified container.
  *
  * 4. Handle errors:
- *    - If an error occurs while fetching the country data or generating the slides, log the error to the console.
+ *    - Log any errors encountered during the process.
  *
  * @param {HTMLElement} container - The DOM element where the country list will be appended.
  */

@@ -11,17 +11,18 @@ const escapeMap = {
  * Escapes HTML special characters to prevent XSS.
  *
  * Pseudocode:
- * 1. Convert the input `str` to a string using `String(str)` to ensure it is a string.
+ * 1. Ensure the input `str` is a string:
+ *    - Convert `str` to a string using `String(str)` to handle non-string inputs.
  *
- * 2. Use the `replace` method with a regular expression to find all occurrences of special HTML characters:
- *    - Match the characters `&`, `<`, `>`, `"`, and `'`.
+ * 2. Replace special HTML characters:
+ *    - Use the `replace` method with a regular expression to match characters `&`, `<`, `>`, `"`, and `'`.
+ *    - For each matched character:
+ *      a. Look up the corresponding escaped value in the `escapeMap` object.
+ *      b. Replace the character with its escaped value if found.
+ *      c. Leave the character unchanged if not found in `escapeMap`.
  *
- * 3. For each matched character:
- *    - Look up the corresponding escaped value in the `escapeMap` object.
- *    - If the character exists in `escapeMap`, replace it with the escaped value.
- *    - If the character does not exist in `escapeMap`, leave it unchanged.
- *
- * 4. Return the resulting string with all special characters escaped.
+ * 3. Return the escaped string:
+ *    - Ensure all special characters are replaced with their HTML-safe equivalents.
  *
  * @param {string} str - The string to escape.
  * @returns {string} The escaped string.
@@ -35,20 +36,19 @@ export function escapeHTML(str) {
  * Gets a value or falls back to a default if the value is missing.
  *
  * Pseudocode:
- * 1. Check if the `value` is a string:
- *    - If it is a string, trim any whitespace.
- *    - If the trimmed string is empty, return the `fallback`.
- *    - Otherwise, return the trimmed string.
+ * 1. Handle string values:
+ *    - If `value` is a string, trim whitespace.
+ *    - Return the trimmed string if it is not empty; otherwise, return `fallback`.
  *
- * 2. Check if the `value` is a number or a boolean:
- *    - If it is, return the `value` as-is.
+ * 2. Handle number and boolean values:
+ *    - If `value` is a number or boolean, return it as-is.
  *
- * 3. Check if the `value` is an object, function, or symbol:
- *    - If it is, return the `fallback`.
+ * 3. Handle invalid types:
+ *    - If `value` is an object, function, or symbol, return `fallback`.
  *
- * 4. For all other cases:
- *    - Use the nullish coalescing operator (`??`) to return the `value` if it is not `null` or `undefined`.
- *    - Otherwise, return the `fallback`.
+ * 4. Handle nullish values:
+ *    - Use the nullish coalescing operator (`??`) to return `value` if it is not `null` or `undefined`.
+ *    - Otherwise, return `fallback`.
  *
  * @param {*} value - The value to check.
  * @param {*} fallback - The fallback value if the input is invalid.
@@ -67,17 +67,20 @@ export function getValue(value, fallback = "Unknown") {
  * Formats a date string as YYYY-MM-DD or returns "Invalid Date".
  *
  * Pseudocode:
- * 1. Check if the `dateString` is a valid string:
- *    - If `dateString` is not a string or is empty (after trimming whitespace), return "Invalid Date".
+ * 1. Validate the input:
+ *    - If `dateString` is a `Date` object, check if it is valid using `isNaN(date.getTime())`.
+ *    - If `dateString` is not a string or is empty after trimming, return "Invalid Date".
  *
- * 2. Create a `Date` object using the `dateString`.
- *    - If the `Date` object is invalid (e.g., `isNaN(date.getTime())` is true), return "Invalid Date".
+ * 2. Parse the date:
+ *    - Create a `Date` object using `dateString`.
+ *    - If the `Date` object is invalid, return "Invalid Date".
  *
- * 3. Convert the valid `Date` object to an ISO string using `toISOString`.
- *    - Split the ISO string at the "T" character to extract the date portion (YYYY-MM-DD).
+ * 3. Format the date:
+ *    - Convert the valid `Date` object to an ISO string using `toISOString`.
+ *    - Extract the date portion (YYYY-MM-DD) by splitting the ISO string at the "T" character.
  *
- * 4. Return the formatted date string (YYYY-MM-DD).
- *
+ * 4. Return the formatted date string:
+ *    - Ensure the output is in the format YYYY-MM-DD or "Invalid Date".
  *
  * @param {string|Date} dateString - The date string or Date object to format.
  * @returns {string} The formatted date or "Invalid Date".
@@ -98,16 +101,19 @@ export function formatDate(dateString) {
  * Transforms gokyoData into a lookup object for quick access.
  *
  * Pseudocode:
- * 1. Check if `gokyoData` is valid:
- *    - If `gokyoData` is `null`, `undefined`, or an empty array, log an error message and return an empty object.
+ * 1. Validate the input:
+ *    - Check if `gokyoData` is an array and is not empty.
+ *    - If invalid, log an error message and return an empty object.
  *
- * 2. Use the `reduce` method to transform the `gokyoData` array into a lookup object:
- *    - Iterate over each `move` in the array.
- *    - Use the `id` property of each `move` as the key in the lookup object.
- *    - Assign the entire `move` object as the value for the corresponding key.
+ * 2. Create the lookup object:
+ *    - Use the `reduce` method to iterate over each `move` in the array.
+ *    - For each `move`:
+ *      a. Validate the `move` object (e.g., ensure `id` and `name` exist).
+ *      b. Use the `id` property as the key and the entire `move` object as the value.
+ *      c. Skip invalid entries and log a warning.
  *
- * 3. Return the resulting lookup object.
- *
+ * 3. Return the lookup object:
+ *    - Ensure the resulting object maps gokyo IDs to their corresponding entries.
  *
  * @param {GokyoEntry[]} gokyoData - Array of gokyo objects.
  * @returns {Object<string, GokyoEntry>} A lookup object with gokyo IDs as keys.

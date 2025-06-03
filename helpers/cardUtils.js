@@ -5,21 +5,24 @@ import { generateJudokaCardHTML } from "./cardBuilder.js";
  *
  * Pseudocode:
  * 1. Validate the input data:
- *    - Check if `data` is an array and is not empty.
- *    - If `data` is invalid, throw an error with a descriptive message.
+ *    - Ensure `data` is an array and contains valid entries.
+ *    - Filter out invalid judoka objects (missing required fields).
+ *    - Throw an error if no valid entries are found.
  *
  * 2. Generate a random index:
  *    - Use `Math.random()` to generate a random number between 0 and 1.
- *    - Multiply the random number by the length of the `data` array.
+ *    - Multiply the random number by the length of the filtered `data` array.
  *    - Use `Math.floor()` to round down to the nearest whole number.
  *
- * 3. Log the random index to the console for debugging purposes.
+ * 3. Select the judoka object at the generated index.
  *
- * 4. Return the judoka object at the randomly selected index.
+ * 4. Log the selected judoka object for debugging purposes.
+ *
+ * 5. Return the selected judoka object.
  *
  * @param {Judoka[]} data - An array of judoka objects.
  * @returns {Judoka} A randomly selected judoka object.
- * @throws {Error} If the `data` array is invalid or empty.
+ * @throws {Error} If the `data` array is invalid or contains no valid entries.
  */
 export function getRandomJudoka(data) {
   if (!Array.isArray(data) || data.length === 0) {
@@ -47,27 +50,29 @@ export function getRandomJudoka(data) {
  * Displays a judoka card in the specified game area.
  *
  * Pseudocode:
- * 1. Log the `judoka` object to the console for debugging purposes.
- * 2. Check if the `gameArea` element is available:
- *    - If `gameArea` is `null` or `undefined`, log an error and exit the function.
+ * 1. Validate the `judoka` object:
+ *    - Ensure `judoka` contains all required fields.
+ *    - If invalid, log an error and display a fallback message in the `gameArea`.
+ *
+ * 2. Validate the `gameArea` element:
+ *    - Ensure `gameArea` is not `null` or `undefined`.
+ *    - If invalid, log an error and exit the function.
  *
  * 3. Clear the `gameArea`:
- *    - Set its `innerHTML` to an empty string to remove any existing content.
+ *    - Set its `innerHTML` to an empty string to remove existing content.
  *
  * 4. Generate the judoka card:
- *    - Call `generateJudokaCardHTML` with the `judoka` and `gokyo` data to create the card element.
+ *    - Call `generateJudokaCardHTML` with the `judoka` and `gokyo` data.
  *    - Append the generated card element to the `gameArea`.
- *    - Log a success message to the console.
+ *    - Log a success message for debugging.
  *
- * 5. Handle errors:
- *    - If an error occurs during card generation, log the error to the console.
+ * 5. Handle errors during card generation:
+ *    - Log the error to the console.
  *    - Display a fallback error message in the `gameArea`.
- *
  *
  * @param {Judoka} judoka - The judoka object containing data for the card.
  * @param {Object} gokyo - The gokyo data used to enrich the card.
  * @param {HTMLElement} gameArea - The DOM element where the card will be displayed.
- * @param {HTMLElement} showRandom - The "random" button element to be displayed.
  */
 export async function displayJudokaCard(judoka, gokyo, gameArea) {
   console.log("Judoka passed to displayJudokaCard:", judoka);

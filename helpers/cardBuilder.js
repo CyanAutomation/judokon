@@ -11,17 +11,17 @@ import {
  *
  * Pseudocode:
  * 1. Check if the `date` parameter is provided:
- *    - If `date` is undefined or falsy, return an empty string (do not render anything).
+ *    - If `date` is undefined or falsy, return an empty string.
  *
- * 2. Determine the safe date format:
- *    - If `date` is a `Date` object, convert it to a string in "YYYY-MM-DD" format using `toISOString` and split it.
- *    - If `date` is already a string, use it as-is.
+ * 2. Format the date:
+ *    - If `date` is a `Date` object, convert it to "YYYY-MM-DD" format.
+ *    - If `date` is a string, use it as-is.
  *
- * 3. Escape the safe date string to prevent XSS attacks:
+ * 3. Sanitize the date string to prevent XSS attacks:
  *    - Use the `escapeHTML` function to sanitize the date string.
  *
- * 4. Return the HTML string for the "last updated" section:
- *    - Wrap the escaped date in a `<div>` with the class `card-updated`.
+ * 4. Generate the HTML for the "last updated" section:
+ *    - Wrap the sanitized date in a `<div>` with the class `card-updated`.
  *
  * @param {string|Date|undefined} date - The last updated date as a string or Date.
  * @returns {string} The HTML string for the "last updated" section.
@@ -36,16 +36,17 @@ import {
  * Validates the required fields of a Judoka object.
  *
  * Pseudocode:
- * 1. Define an array of required fields: ["firstname", "surname", "country", "stats", "weightClass"].
+ * 1. Define required fields for the judoka object:
+ *    - Include fields like "firstname", "surname", "country", etc.
  *
- * 2. Check if any of the required fields are missing:
- *    - Use the `filter` method to create an array of fields that are not present in the `judoka` object.
+ * 2. Check for missing fields:
+ *    - Use `filter` to find fields not present in the `judoka` object.
+ *    - Throw an error if any required fields are missing.
  *
- * 3. If there are missing fields:
- *    - Throw an error with a message listing the missing fields.
- *
- * 4. If all required fields are present:
- *    - Do nothing and allow the function to complete successfully.
+ * 3. Validate stats fields:
+ *    - Define required stats fields like "power", "speed", etc.
+ *    - Check for missing stats fields in the `judoka.stats` object.
+ *    - Throw an error if any required stats fields are missing.
  *
  * @param {Object} judoka - The judoka object to validate.
  * @throws {Error} If required fields are missing.
@@ -82,46 +83,37 @@ function validateJudoka(judoka) {
  *
  * Pseudocode:
  * 1. Validate the `judoka` object:
- *    - Call `validateJudoka` to ensure all required fields are present.
- *    - If validation fails, throw an error.
+ *    - Ensure all required fields are present using `validateJudoka`.
  *
  * 2. Generate the flag URL:
- *    - Extract the `countryCode` from the `judoka` object.
- *    - If `countryCode` is missing, log a warning and use a default value ("vu").
- *    - Call `getFlagUrl` asynchronously to get the flag URL.
+ *    - Use `getFlagUrl` with the `countryCode` from the `judoka` object.
+ *    - Default to "vu" if `countryCode` is missing.
  *
- * 3. Format the `lastUpdated` date:
- *    - If `lastUpdated` is a string, use it as-is.
- *    - If `lastUpdated` is a `Date` object, convert it to a string in "YYYY-MM-DD" format.
- *    - If `lastUpdated` is undefined, use an empty string.
+ * 3. Determine the card type:
+ *    - Use the `rarity` field to set the card type (e.g., "common").
  *
  * 4. Create the main card container:
- *    - Create a `<div>` element with the class `card-container`.
- *    - Create a child `<div>` element with the class `judoka-card`.
+ *    - Initialize a `<div>` with the class `card-container`.
+ *    - Create a child `<div>` with the class `judoka-card` and card type.
  *
- * 5. Append the top bar:
- *    - Call `generateCardTopBar` asynchronously with the `judoka` object and `flagUrl`.
- *    - Append the returned DOM element to the `judoka-card` container.
+ * 5. Add gender-specific styling:
+ *    - Add a class based on the `gender` field ("female-card" or "male-card").
  *
- * 6. Append the portrait section:
- *    - Call `generateCardPortrait` to get the portrait HTML string.
- *    - Create a `<div>` element, set its `innerHTML` to the portrait HTML, and append it to the `judoka-card`.
+ * 6. Append the top bar:
+ *    - Generate the top bar using `generateCardTopBar` and append it.
  *
- * 7. Append the stats section:
- *    - Call `generateCardStats` to get the stats HTML string.
- *    - Create a `<div>` element, set its `innerHTML` to the stats HTML, and append it to the `judoka-card`.
+ * 7. Append the portrait section:
+ *    - Generate portrait HTML using `generateCardPortrait`.
+ *    - Add weight class information to the portrait section.
  *
- * 8. Append the signature move section:
- *    - Call `generateCardSignatureMove` with the `judoka` and `gokyo` objects to get the signature move HTML string.
- *    - Create a `<div>` element, set its `innerHTML` to the signature move HTML, and append it to the `judoka-card`.
+ * 8. Append the stats section:
+ *    - Generate stats HTML using `generateCardStats` and append it.
  *
- * 9. Append the last updated section:
- *    - Call `generateCardLastUpdated` with the formatted `lastUpdated` date to get the last updated HTML string.
- *    - Create a `<div>` element, set its `innerHTML` to the last updated HTML, and append it to the `judoka-card`.
+ * 9. Append the signature move section:
+ *    - Generate signature move HTML using `generateCardSignatureMove` and append it.
  *
- * 10. Append the `judoka-card` to the `card-container`.
- *
- * 11. Return the `card-container` DOM element.
+ * 10. Return the complete card container:
+ *    - Append the `judoka-card` to the `card-container`.
  *
  * @param {Object} judoka - The judoka object containing data for the card.
  * @param {Object} gokyo - The Gokyo data (technique information).
@@ -180,13 +172,15 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
  * Generates a single judoka card and appends it to the container.
  *
  * Pseudocode:
- * 1. Call the `generateJudokaCardHTML` function:
- *    - Pass the `judoka` object and `gokyoLookup` to generate the card's HTML structure.
- * 2. Append the generated card to the specified container:
- *    - Use the `appendChild` method to add the card to the DOM.
+ * 1. Generate the card HTML:
+ *    - Use `generateJudokaCardHTML` with the `judoka` and `gokyoLookup`.
+ *
+ * 2. Append the card to the container:
+ *    - Use `appendChild` to add the card to the DOM.
+ *
  * 3. Handle errors:
- *    - If an error occurs during card generation, log an error message to the console.
- *    - Include the judoka's name in the error message for easier debugging.
+ *    - Log an error message if card generation fails.
+ *    - Include the judoka's name in the error message for debugging.
  *
  * @param {Object} judoka - A judoka object containing data for the card.
  * @param {Object} gokyoLookup - A lookup object for gokyo data.
