@@ -1,4 +1,98 @@
 /**
+ * Toggles the expanded map view for landscape mode.
+ *
+ * @pseudocode
+ * 1. Check if the device is in landscape orientation.
+ * 2. Create a map view with clickable tiles for game modes.
+ * 3. Add a slide-up animation when the logo is clicked.
+ * 4. Hide the map view when the logo is clicked again.
+ *
+ * @param {Array} gameModes - The list of game modes to display.
+ */
+function toggleExpandedMapView(gameModes) {
+  const navBar = document.querySelector(".bottom-navbar");
+  const mapView = document.createElement("div");
+  mapView.className = "expanded-map-view";
+
+  mapView.innerHTML = gameModes
+    .map(
+      (mode) =>
+        `<div class="map-tile" style="background-image: url('${mode.image}')">
+          <a href="pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a>
+        </div>`
+    )
+    .join("");
+
+  navBar.appendChild(mapView);
+
+  const logo = document.querySelector(".bottom-navbar .logo");
+  logo.addEventListener("click", () => {
+    mapView.classList.toggle("visible");
+    mapView.style.animation = mapView.classList.contains("visible")
+      ? "slide-up 500ms ease-in-out"
+      : "slide-down 500ms ease-in-out";
+  });
+}
+
+/**
+ * Toggles the vertical text menu for portrait mode.
+ *
+ * @pseudocode
+ * 1. Check if the device is in portrait orientation.
+ * 2. Create a vertical menu with game modes as list items.
+ * 3. Add a slide-down animation when the logo is clicked.
+ * 4. Hide the menu when the logo is clicked again.
+ *
+ * @param {Array} gameModes - The list of game modes to display.
+ */
+function togglePortraitTextMenu(gameModes) {
+  const navBar = document.querySelector(".bottom-navbar");
+  const textMenu = document.createElement("ul");
+  textMenu.className = "portrait-text-menu";
+
+  textMenu.innerHTML = gameModes
+    .map(
+      (mode) => `<li><a href="pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a></li>`
+    )
+    .join("");
+
+  navBar.appendChild(textMenu);
+
+  const logo = document.querySelector(".bottom-navbar .logo");
+  logo.addEventListener("click", () => {
+    textMenu.classList.toggle("visible");
+    textMenu.style.animation = textMenu.classList.contains("visible")
+      ? "slide-down 500ms ease-in-out"
+      : "slide-up 500ms ease-in-out";
+  });
+}
+
+/**
+ * Adds touch feedback animations to navigation links.
+ *
+ * @pseudocode
+ * 1. Loop through all navigation links.
+ * 2. Add a `mousedown` event listener to create a ripple effect.
+ * 3. Remove the ripple effect after the animation completes.
+ */
+function addTouchFeedback() {
+  const links = document.querySelectorAll(".bottom-navbar a");
+  links.forEach((link) => {
+    link.addEventListener("mousedown", (event) => {
+      const ripple = document.createElement("span");
+      ripple.className = "ripple";
+      ripple.style.left = `${event.clientX - link.offsetLeft}px`;
+      ripple.style.top = `${event.clientY - link.offsetTop}px`;
+      link.appendChild(ripple);
+
+      setTimeout(() => {
+        ripple.remove();
+      }, 500);
+    });
+  });
+}
+
+/**
  * Populates the bottom navigation bar with game modes from a JSON file.
  *
  * @pseudocode
@@ -43,6 +137,11 @@ export function populateNavbar() {
       navBar.innerHTML = activeModes
         .map((mode) => `<li><a href="pages/${mode.url}">${mode.name}</a></li>`)
         .join("");
+
+      // Integrate new features
+      addTouchFeedback();
+      toggleExpandedMapView(activeModes);
+      togglePortraitTextMenu(activeModes);
     })
     .catch(() => {
       const navBar = document.querySelector(".bottom-navbar ul");

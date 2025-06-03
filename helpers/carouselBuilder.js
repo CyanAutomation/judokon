@@ -56,6 +56,54 @@ export function createScrollButton(direction, container, scrollAmount) {
   return button;
 }
 
+/**
+ * Adds scroll markers to indicate the user's position in the carousel.
+ *
+ * @pseudocode
+ * 1. Create a `<div>` element with the class `scroll-markers`.
+ * 2. Add markers for each card in the carousel.
+ *    - Highlight the marker corresponding to the currently visible card.
+ * 3. Update the highlighted marker on scroll events.
+ *
+ * @param {HTMLElement} container - The carousel container element.
+ * @param {HTMLElement} wrapper - The carousel wrapper element.
+ */
+function addScrollMarkers(container, wrapper) {
+  const markers = document.createElement("div");
+  markers.className = "scroll-markers";
+
+  const cards = container.querySelectorAll(".judoka-card");
+  cards.forEach((_, index) => {
+    const marker = document.createElement("span");
+    marker.className = "scroll-marker";
+    if (index === 0) marker.classList.add("active");
+    markers.appendChild(marker);
+  });
+
+  wrapper.appendChild(markers);
+
+  container.addEventListener("scroll", () => {
+    const scrollLeft = container.scrollLeft;
+    const cardWidth = container.querySelector(".judoka-card").offsetWidth;
+    const activeIndex = Math.round(scrollLeft / cardWidth);
+
+    markers.querySelectorAll(".scroll-marker").forEach((marker, index) => {
+      marker.classList.toggle("active", index === activeIndex);
+    });
+  });
+}
+
+/**
+ * Validates the judoka list to ensure it is a non-empty array.
+ *
+ * @pseudocode
+ * 1. Check if `judokaList` is an array and contains at least one element.
+ *    - Log an error if validation fails.
+ * 2. Return `true` if validation passes, otherwise return `false`.
+ *
+ * @param {Judoka[]} judokaList - An array of judoka objects.
+ * @returns {Boolean} Whether the judoka list is valid.
+ */
 function validateJudokaList(judokaList) {
   if (!Array.isArray(judokaList) || judokaList.length === 0) {
     console.error("No judoka data available to build the carousel.");
@@ -64,6 +112,18 @@ function validateJudokaList(judokaList) {
   return true;
 }
 
+/**
+ * Validates gokyo data and transforms it into a lookup object.
+ *
+ * @pseudocode
+ * 1. Check if `gokyoData` is an array and contains at least one element.
+ *    - Log a warning if validation fails and default to an empty lookup.
+ * 2. Transform `gokyoData` into a lookup object using `createGokyoLookup`.
+ * 3. Return the lookup object.
+ *
+ * @param {GokyoEntry[]} gokyoData - An array of gokyo objects.
+ * @returns {Object} A lookup object for gokyo data.
+ */
 function validateGokyoData(gokyoData) {
   if (!Array.isArray(gokyoData) || gokyoData.length === 0) {
     console.warn("No gokyo data provided. Defaulting to an empty lookup.");
@@ -71,6 +131,18 @@ function validateGokyoData(gokyoData) {
   return createGokyoLookup(gokyoData);
 }
 
+/**
+ * Creates a loading spinner and sets a timeout to display it.
+ *
+ * @pseudocode
+ * 1. Create a `<div>` element with the class `loading-spinner`.
+ * 2. Append the spinner to the provided `wrapper` element.
+ * 3. Set a timeout to display the spinner after 2 seconds.
+ * 4. Return the spinner element and the timeout ID.
+ *
+ * @param {HTMLElement} wrapper - The wrapper element to append the spinner to.
+ * @returns {Object} An object containing the spinner element and timeout ID.
+ */
 function createLoadingSpinner(wrapper) {
   const spinner = document.createElement("div");
   spinner.className = "loading-spinner";
@@ -83,15 +155,36 @@ function createLoadingSpinner(wrapper) {
   return { spinner, timeoutId };
 }
 
+/**
+ * Handles broken images in a card by setting a fallback image.
+ *
+ * @pseudocode
+ * 1. Find the `<img>` element within the provided `card`.
+ * 2. Attach an `onerror` event handler to the image.
+ *    - Replace the image source with a fallback image if an error occurs.
+ *
+ * @param {HTMLElement} card - The card element containing the image.
+ */
 function handleBrokenImages(card) {
   const img = card.querySelector("img");
   if (img) {
     img.onerror = () => {
-      img.src = "path/to/default-image.png"; // Replace with actual path to fallback image
+      img.src = "./assets/cardBacks/cardBack-2.png";
     };
   }
 }
 
+/**
+ * Sets up keyboard navigation for the carousel container.
+ *
+ * @pseudocode
+ * 1. Make the container focusable by setting `tabIndex` to 0.
+ * 2. Add a `keydown` event listener to the container.
+ *    - Scroll left when the "ArrowLeft" key is pressed.
+ *    - Scroll right when the "ArrowRight" key is pressed.
+ *
+ * @param {HTMLElement} container - The carousel container element.
+ */
 function setupKeyboardNavigation(container) {
   container.tabIndex = 0; // Make the carousel focusable
   container.addEventListener("keydown", (event) => {
@@ -103,6 +196,18 @@ function setupKeyboardNavigation(container) {
   });
 }
 
+/**
+ * Sets up swipe navigation for the carousel container.
+ *
+ * @pseudocode
+ * 1. Track the starting X position of a touch event (`touchstart`).
+ * 2. Track the ending X position of a touch event (`touchend`).
+ * 3. Calculate the swipe distance and direction.
+ *    - Scroll left if the swipe distance is greater than 50 pixels.
+ *    - Scroll right if the swipe distance is less than -50 pixels.
+ *
+ * @param {HTMLElement} container - The carousel container element.
+ */
 function setupSwipeNavigation(container) {
   let touchStartX = 0;
 
@@ -208,6 +313,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   setupKeyboardNavigation(container);
   setupSwipeNavigation(container);
+  addScrollMarkers(container, wrapper);
 
   return wrapper;
 }
