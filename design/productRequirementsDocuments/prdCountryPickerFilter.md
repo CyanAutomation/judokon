@@ -93,6 +93,8 @@ Key Details:
   - Selected country should be visually highlighted (e.g., border or shading).
   - Selector should respond well to different screen sizes (responsive design).
 
+![Country Picker Mockup](/design/mockups/mockupCountryPicker1.png)
+
 ---
 
 ## Prioritized Functional Requirements Table
