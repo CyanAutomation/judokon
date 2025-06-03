@@ -1,77 +1,79 @@
-# Footer Expanded Navigation (Expanded Map View)
+# Footer Navigation: Expanded (Expanded Map View)
 
-## Description
+## Problem Statement
 
-The ju-do-kon! game features a need for a more immersive navigation experience that matches the game's theme. This expanded navigation aims to provide a **"Judo Training Village" visual metaphor** to guide players to various game modes. Current navigation menus feel disconnected from the game’s theme, reducing immersion.
+Players have reported that the current navigation menus feel disconnected from the Ju-Do-Kon! theme, which weakens immersion and reduces excitement when switching game modes. A 10-year-old playtester noted, *"The menu feels boring compared to the rest of the game — can it look more exciting? Maybe like a judo dojo or village?"*
 
-## How It Works
+Currently, the menu is purely functional but lacks the thematic cohesion that draws players deeper into the Ju-Do-Kon! world. Improving the navigation’s thematic fit is important now because new game modes have been added, and players are not easily discovering them through the existing menu.
 
-When in landscape mode, clicking the central ju-do-kon logo triggers an upward slide expansion from the footer bar:
+## Player Actions & Flow
 
-- A **“Judo Training Village” style map** appears.
-- Clickable **tiles** represent different game modes.
-- Each tile is a hot spot that navigates to a specific section of the game.
+- **Trigger:** In landscape mode, tapping the bottom right corner map icon expands a "Judo Training Village" map from the footer with a smooth upward slide animation (<500ms).
+- **Map Layout:** The map presents different game modes as a grid of image tiles representing village landmarks (Dojo, Budokan, Kodokan), with minimum 48px touch target size.
+- **Navigation:** Tapping a tile smoothly transitions the player to the selected game mode.
+- **Cancel/Back Out:** Tapping outside the map area or pressing the map icon button again collapses the map. If device orientation changes mid-animation, the expansion is canceled and reverts to the default footer state.
+- **Fallback:** If the map fails to load, a simplified, high-contrast text menu appears instantly.
+- **Responsiveness:** If viewport height <400px or width <640px, hide the map icon entirely. Map and tiles dynamically resize based on screen size and resolution. Animations must maintain 60fps on devices with 2GB RAM.
 
-## Wireframes / Visual Reference
+## Acceptance Criteria
 
-### Expanded Mode (Landscape)
+1. **Given** the player is in `landscape` mode, **when** they tap the map icon in the bottom right corner, **then** the interactive village map slides up from the footer in under 500ms.
+2. **Given** the village map is open, **when** the player taps a tile, **then** they are navigated to the corresponding game mode screen.
+3. **Given** a tile exists, **then** its touch/click target must be ≥48px and accessible via keyboard navigation with visible focus indicators.
+4. **Given** the map assets fail to load, **then** fallback to a default text-based menu within 1 second.
+5. **Given** the player rotates their device during map expansion, **then** the map closes and the footer returns to its default state without freezing.
+6. **Given** accessibility needs, **then** all tiles must have descriptive alt text and support screen readers.
 
-Expanded map view with clickable tiles for different game modes.
+### Edge Cases
+- **Double-clicking the map icon:** Only one map expansion allowed at a time; ignore second tap.
+- **Slow connections:** Graceful fallback to text menu without freezing or partial load.
 
-_(Visual reference to be attached.)_
+## Player Settings (Optional)
 
-## Aims (Goals)
+- **Simple Menu Mode:** In settings, players can toggle "Simple Menu Mode" ON, which hides the map icon and corresponding functionality. Default is OFF.
+- **Toggle Behavior:** If "Simple Menu Mode" is toggled ON or OFF mid-session, the footer immediately updates to reflect the selected mode without requiring a page reload.
 
-- **48px minimum touch target size** (WCAG guidelines).
-- Navigation expansion animation must complete in **<500ms**.
-- Maintain **≥60fps animation performance** on standard mid-tier devices (2GB RAM).
-- Text labels must have a **contrast ratio of at least 4.5:1** against the background.
-- Navigation task completion rate **≥98%**.
-- Increase player engagement with lesser-used game modes by **20%**.
-- Boost player-reported navigation satisfaction by **15%**.
+## Visuals & UX Reference
 
-## Functional Requirements
+- **Wireframe Description:**
+  - **Collapsed Footer:** Shows map icon in bottom right hand corner.
+  - **Expanded Map View:** Grid of image tiles representing:
+    - **Dojo:** Leads to Training Mode.
+    - **Budokan:** Leads to Battle Mode.
+    - **Kodokan:** Leads to Browse Mode.
+  - Tiles must be ≥48px with generous padding (≥8px).
+- **Animation:** Slide-up animation easing (`ease-out`) and bounce effect on tile hover/tap.
+- **Touch Areas:** All tiles ≥48px.
+- **Contrast:** Text labels must meet WCAG 2.1 AA contrast ratio (≥4.5:1).
+- **Performance:** Maintain ≥60fps animations on mid-tier devices.
+- **Responsiveness:** If viewport height <400px or width <640px, hide the map icon and corresponding functionality.
 
-### Priority
+## Accessibility Checklist
 
-| Priority | Feature                    | Description                                                       |
-| -------- | -------------------------- | ----------------------------------------------------------------- |
-| **P1**   | Expanded Map View          | Slide-up game map with clickable tiles in landscape orientation.  |
-|          | Responsive Scaling         | Map and tiles must scale and reposition appropriately.            |
-|          | Hover/Focus States         | Tiles should have hover animations and keyboard focus indicators. |
-|          | Fallback for Small Screens | Default to a simple text menu if the map cannot render.           |
+- [ ] Keyboard navigation and visible focus indicators for all tiles.
+- [ ] Alt text and screen reader support for all tiles.
+- [ ] Verify all text labels meet WCAG 2.1 AA contrast standards (≥4.5:1).
 
-### Acceptance Criteria
+## Tasks
 
-- Clicking the ju-do-kon logo in landscape triggers a slide-up animation.
-- A judo village map with clickable tiles appears.
-- Clicking a tile navigates to the corresponding screen.
-- Expansion/collapse animation completes in **<500ms**.
-- If assets fail to load, fallback to a text-based menu.
-- Touch targets must remain **≥48px**.
-- Text contrast must meet **WCAG 4.5:1**.
-- Animations must maintain **≥60fps**.
+- [ ] **1.0 Design Village Map Navigation**
+  - [ ] 1.1 Create updated wireframes for collapsed and expanded footer views.
+  - [ ] 1.2 Design tile positions on the village map grid with 48px+ targets (Dojo, Budokan, Kodokan).
+  - [ ] 1.3 Specify hover/tap animations for tiles (bounce effect).
 
-## Edge Cases / Failure States
+- [ ] **2.0 Implement Footer Map Expansion**
+  - [ ] 2.1 Code smooth slide-up animation (<500ms, `ease-out` easing).
+  - [ ] 2.2 Implement tap-outside-to-close and back-button collapse behaviors.
+  - [ ] 2.3 Add logic to prevent double-tap expansion issues.
 
-- **Map Asset Loading Failure**: Fallback to a default list menu if the map fails to load.
-- **Device Rotation Mid-Animation**: Cancel or reset animation smoothly.
+- [ ] **3.0 Integrate Fallback Menu**
+  - [ ] 3.1 Detect map asset load failures.
+  - [ ] 3.2 Implement high-contrast text menu fallback that appears in under 1 second.
 
-## Design and UX Considerations
-
-![Option 1 of Navigation Bar Expanded](/design/mockups/mockupFooterNavigationExpanded1.png)
-![Option 2 of Navigation Bar Expanded](/design/mockups/mockupFooterNavigationExpanded2.png)
-
-### Accessibility
-
-- All tiles must have text labels and alt descriptions.
-- Support keyboard navigation and screen readers, including that users can tab through all tiles and select them using the keyboard.
-
-### Responsiveness
-
-- Responsive scaling for different resolutions and screen sizes.
-
-### Interaction Feedback
-
-- Hover effects for clickable tiles.
-- Ripple/tap animation for tile selections.
+- [ ] **4.0 Ensure Accessibility & Performance**
+  - [ ] 5.1 Add keyboard navigation and visible focus indicators for all tiles.
+  - [ ] 5.2 Provide alt text and screen reader support for all tiles.
+  - [ ] 5.3 Test animation performance on devices to ensure ≥60fps.
+  - [ ] 5.4 Verify all text labels meet WCAG 2.1 AA contrast standards (≥4.5:1).
+     
+- [ ] **5.0 Add "Simple Menu Mode" toggle to settings**
