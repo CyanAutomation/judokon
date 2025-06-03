@@ -4,6 +4,7 @@ about: Submit a new feature idea or enhancement for Ju-Do-Kon!
 title: "[Feature]:"
 labels: enhancement
 assignees: CyanAutomation
+
 ---
 
 # 🌴 Feature Request: [Feature Name]
