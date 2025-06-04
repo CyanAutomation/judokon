@@ -298,7 +298,9 @@ export async function buildCardCarousel(judokaList, gokyoData) {
     }
 
     const card = await generateJudokaCard(judoka, gokyoLookup, container);
-    handleBrokenImages(card);
+    if (card) {
+      handleBrokenImages(card);
+    }
   }
 
   clearTimeout(timeoutId);
