@@ -1,126 +1,89 @@
+# JU-DO-KON! – Card Code Generation Function: Product Requirements Document (PRD)
 
+## 1. Overview
 
-⸻
+This document defines the specifications for the **Card Code Generation Function** in the *JU-DO-KON!* web-based card game.
 
-JU-DO-KON! – Card Code Generation Function: Product Requirements Document (PRD)
+The Card Code Generation Function transforms key attributes of a Judoka (player card) into a **unique, readable alphanumeric code**. This code allows players to easily share, recreate, and validate specific Judoka cards in the game.
 
-⸻
+> *"I want to show my best fighter to my friend and have them battle me with it!"* — Early playtest feedback from a 10-year-old user.
 
-1. Overview
+> *"Typing long names is annoying. Codes are cooler and easier!"* — Anonymous feedback from playtest logs.
 
-This document defines the specifications for the Card Code Generation Function in the JU-DO-KON! web-based card game.
-
-The Card Code Generation Function transforms key attributes of a Judoka (player card) into a unique, readable alphanumeric code. This code can be used for sharing, recreating, or validating specific Judoka cards in the game. Players feel a sense of ownership and pride by easily sharing their creations, and a lack of content sharing can lead to lower engagement.
+Players gain a sense of **ownership and pride** by sharing their custom Judoka quickly and easily. **Without simple sharing, engagement can drop**, especially for kids who expect fast, low-effort interactions.
 
 The system ensures that:
-	•	The code is unique to each Judoka’s stats and identity.
-	•	The code is obfuscated to prevent easy manipulation.
-	•	The code is readable, using a limited, friendly character set.
-	•	The code is formatted for ease of reading and entry.
+- The code is **unique** to each Judoka’s stats and identity.
+- The code is **obfuscated** to prevent easy manipulation.
+- The code is **readable**, using a limited, kid-friendly character set.
+- The code is **formatted** to improve readability and typing accuracy.
 
-The most important factors are security (obfuscated to prevent easy manipulation) and usability.
-	•	100ms maximum generation time for producing the card code.
-	•	The card code is auto-generated whenever a card is created or updated and saved into judoka.json.
-	•	The card code is made visible to the player on any screen where a card is displayed.
-	•	Players should be able to input shared codes with a <2% manual entry error rate.
-	•	In the UI, the code should support easy copying and input validation, including auto-hyphenation during code entry for better usability.
+Key Requirements:
+- **Security and Usability** are equally important.
+- **≤100ms generation time** for producing the code.
+- **Auto-generated** whenever a card is created or updated and saved into `judoka.json`.
+- Code is **visible** on card screens.
+- Players can **input shared codes** with a **<2% manual entry error rate**.
+- **Easy copying** and **auto-hyphenation** during code entry for better usability.
 
-⸻
+## 2. Purpose and Value
 
-2. Purpose and Value
-	•	For Players: Allows players to easily share and import/export custom Judoka using compact codes.
-	•	For the Game: Adds a layer of authenticity and integrity by encoding important Judoka attributes securely.
-	•	For Developers: Simplifies storage and retrieval of Judoka data without exposing raw stats or player data.
+- **For Players**: Enables easy sharing and import/export of Judoka using compact, friendly codes.
+- **For the Game**: Adds integrity and authenticity by encoding Judoka attributes securely.
+- **For Developers**: Simplifies storage and retrieval of Judoka data without exposing sensitive information.
 
-⸻
+## 3. Functional Requirements
 
-3. Functional Requirements
+| Priority | Feature                     | Description                                                        |
+|--------- |-----------------------------|-------------------------------------------------------------------- |
+| **P1**   | Input Validation             | Ensure all required Judoka fields are present and valid.           |
+| **P1**   | String Concatenation         | Build the raw code string from Judoka attributes and stats.        |
+| **P1**   | XOR Obfuscation              | Apply XOR encoding to obfuscate the raw string.                    |
+| **P1**   | Readable Charset Mapping     | Convert to a friendly 32-character readable code.                  |
+| **P1**   | Chunk Formatting             | Format the code into 4-character chunks separated by hyphens.      |
+| **P1**   | Save to File                 | Save the generated code into `judoka.json`.                        |
+| **P2**   | Error Handling               | Provide clear error messages or fallback to a generic code.        |
+| **P2**   | UI Surfacing                 | Display generated code with copy/paste support and input validation. |
+| **P2**   | Performance Compliance       | Ensure code generation completes within 100ms.
 
-Priority
-Feature
-Description
-P1
-Input Validation
-Ensure all required Judoka fields are present and valid.
-P1
-String Concatenation
-Build the raw code string from Judoka attributes and stats.
-P1
-XOR Obfuscation
-Apply XOR encoding to obfuscate the raw string.
-P1
-Readable Charset Mapping
-Convert to a friendly alphanumeric code using the specified 32-character set.
-P1
-Chunk Formatting
-Format final code into 4-character chunks separated by hyphens.
-P1
-Save to File
-Persist the generated code in judoka.json for use in the UI.
-P2
-Error Handling
-Provide clear error messages or fallback to a generic code on failure.
-P2
-UI Surfacing
-Display generated code and support copy/paste and auto-formatting UX.
-P2
-Performance Compliance
-Ensure code generation completes in under 100ms.
+### 3.2 Process (P1)
 
-⸻
+1. **Concatenate Stats**
+   - Combine power, speed, technique, kumikata, and newaza into a single string.
 
-3.2 Process (P1)
-	1.	Concatenate Stats
-	•	Combine power, speed, technique, kumikata, and newaza into a single string.
-	2.	Build Raw Code String
-	•	Format:
+2. **Build Raw Code String**
+   - Format: `v1-FIRSTNAME-SURNAME-COUNTRY-WEIGHTCLASS-SIGNATUREMOVEID-STATS`
+   - Example: `v1-TADAHIRO-NOMURA-JP-60-1234-98765`
 
-v1-FIRSTNAME-SURNAME-COUNTRY-WEIGHTCLASS-SIGNATUREMOVEID-STATS
+3. **Apply XOR Encoding**
+   - XOR each character’s ASCII code with `(index + 37) % 256`.
 
-Example:
+4. **Map to Readable Charset**
+   - Map to: `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (avoiding I, O, 1, 0).
 
-v1-TADAHIRO-NOMURA-JP-60-1234-98765
+5. **Chunking**
+   - Group characters into 4-character chunks, separated by hyphens (`-`).
 
+6. **Output**
+- F7KP-WQ9M-ZD23-HYTR
 
-	3.	Apply XOR Encoding
-	•	XOR each character’s ASCII code with (index + 37) % 256 to obfuscate the string.
-	4.	Map to Readable Charset
-	•	Convert each encoded character to one of 32 readable characters:
+### 3.3 Output (P1)
 
-ABCDEFGHJKLMNPQRSTUVWXYZ23456789
+- **Card Code**: A hyphen-separated, obfuscated alphanumeric code (e.g., `F7KP-WQ9M-ZD23-HYTR`).
 
+## 4. Non-Functional Requirements
 
-	•	Avoids confusing characters (e.g., no I, O, 1, 0).
+- **Readability**: Friendly character set.
+- **Security**: Light obfuscation deters casual reverse-engineering.
+- **Error Handling**: Standardized error messages.
+- **Performance**: Code generation under 100ms.
+- **Consistency**: Same input produces the same code.
 
-	5.	Chunking
-	•	Group the resulting string into chunks of 4 characters, separated by hyphens (-).
-	6.	Output
-	•	A hyphen-separated, readable, obfuscated card code (e.g., ABCD-EFGH-1234-5678).
+## 5. Example
 
-⸻
+**Input:**
 
-3.3 Output (P1)
-	•	Card Code: A string of alphanumeric characters (A-Z, 2–9), grouped in sets of 4 with hyphens, e.g.:
-
-F7KP-WQ9M-ZD23-HYTR
-
-
-
-⸻
-
-4. Non-Functional Requirements
-	•	Readability: Only user-friendly characters are used (no ambiguous characters).
-	•	Security: Light obfuscation prevents easy decoding without internal knowledge of the XOR key and mapping.
-	•	Error Handling: If required fields are missing, return a clear, standardized error message.
-	•	Performance: Must process and generate a code within 100 milliseconds.
-	•	Consistency: The same input must always generate the same code.
-
-⸻
-
-5. Example
-
-Input:
-
+```json
 {
   "firstname": "Tadahiro",
   "surname": "Nomura",
@@ -136,78 +99,71 @@ Input:
   }
 }
 
-Output:
-
-F7KP-WQ9M-ZD23-HYTR
-
-
 ⸻
+acceptance criteria 
+ID
+Criterion
+AC1
+Given a valid Judoka, When code generation runs, Then a valid code is produced.
+AC2
+Given a Judoka with missing fields, When code generation runs, Then a clear error message is shown.
+AC3
+Given a generated code, Then it must use only A–Z, 2–9, and hyphens.
+AC4
+Given a code, Then it must group characters into 4-character hyphenated chunks.
+AC5
+Given the same Judoka object, Then the output code must be identical.
+AC6
+When code generation runs, Then it must complete in under 100ms.
+AC7
+Given manual code input, Then error rate must be under 2% on average.
 
-6. Acceptance Criteria
 
-ID	Criterion	Pass/Fail
-AC1	If all required fields are present, a code is generated	
-AC2	Missing any required field causes a clear, standardized error	
-AC3	The code is readable, only using A–Z, 2–9, and hyphens	
-AC4	The code groups characters in chunks of 4 with hyphens	
-AC5	The same Judoka object always generates the same code	
-AC6	Generating a code for a Judoka completes in under 100ms	
-AC7	Player manual input error rate remains under 2%	
+Edge Cases / Failure States (P2)
+	•	Very large or malicious strings (e.g., 5000-character name).
+	•	Potential code collisions.
+	•	Encoding failures or memory issues.
+	•	Fallback: Display a generic code if any failure occurs.
 
+8. Wireframes
 
-⸻
+Card View (Display code):
+	•	Show code below the card’s main stats.
+	•	Copy-to-clipboard button with minimum 44x44px touch size.
+	•	Readable, large-font code.
 
-7. Edge Cases / Failure States (P2)
-	•	Very large strings/malicious input (e.g., a 5000-character name).
-	•	Potential collisions in the code.
-	•	Encoding logic failure (e.g., memory issues).
-	•	No server timeout or generation timeout consideration.
-
-Fallback: In case of any failure, fallback to a generic card code indicating failure.
-
-⸻
-
-8. Wireframe
-
-(Not applicable — function is backend logic; no visual output beyond the code string.)
-
-⸻
+Code Entry (Input field):
+	•	Input field accepts only valid characters.
+	•	Auto-hyphenates every 4 characters.
+	•	Invalid input prompts real-time error feedback.
 
 9. Developer Notes
 
 9.1 Encoding Strategy Rationale
-	•	XOR Obfuscation: Offers a lightweight method fast and reversible at low cost. It’s not cryptographic security but sufficient to deter casual reverse-engineering.
-	•	Readable Character Set:
-	•	ABCDEFGHJKLMNPQRSTUVWXYZ23456789
-	•	Improves readability and minimizes errors (no O, 0, I, 1).
-	•	Hyphenated Chunking:
-	•	Chunks of 4 characters improve readability and error detection.
-	•	Follows conventions used in serial numbers and license keys.
-	•	Versioning (CARD_CODE_VERSION):
-	•	Enables future-proofing and backward compatibility.
+	•	XOR Obfuscation: Lightweight, fast, non-cryptographic.
+	•	Readable Character Set: Improves accuracy (no I, O, 1, 0).
+	•	Hyphenation: Easier error detection.
+	•	Versioning: Ensures backward compatibility.
 
 9.2 Performance Considerations
-	•	In-Memory Operations: No disk I/O ensures real-time performance.
-	•	Time Complexity: Each transformation is O(n), manageable due to small input size (~50–70 characters).
+	•	In-memory operations; O(n) time complexity.
 
 9.3 Limitations
-	•	Security: XOR is not cryptographic-grade.
-	•	Uniqueness: No cryptographic collision-proof guarantees.
-	•	No Decoding: Prevents tampering by avoiding reversible decoding.
+	•	XOR is not cryptographic.
+	•	No cryptographic collision-proofing.
+	•	No decoding to avoid tampering.
 
 9.4 Potential Enhancements
-	•	Customizable chunk size for different platforms.
-	•	Add a checksum digit to catch manual entry errors.
+	•	Customizable chunk size.
+	•	Add checksum digit to detect manual entry errors.
 	•	Admin-only decode function for tournament verification.
-	•	Introduce a salt/nonce to further reduce collision chances.
+	•	Salt/nonce for reduced collisions.
 
-9.5 UI Input Considerations (P2)
-	•	The code should be displayed clearly on card detail screens.
-	•	Support copy-to-clipboard on click/tap.
-	•	Input fields for code entry should:
-	•	Accept only valid characters.
-	•	Auto-hyphenate after every 4 characters during typing for better UX, especially on mobile.
-
+9.5 UI Input Considerations
+	•	Code visible on card detail screens.
+	•	Copy-to-clipboard button (44x44px target size).
+	•	Input field with auto-hyphenation.
+	•	Invalid character prevention at input level.
 ⸻
 
 ## Tasks
