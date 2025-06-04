@@ -222,7 +222,7 @@ button:focus {
   justify-content: center;
   align-items: center;
   padding: var(--padding-large);
-  background-color: seagreen;
+/*   background-color: seagreen; */
   min-height: 500px;
 }
 
@@ -539,7 +539,7 @@ button:focus {
   scroll-behavior: smooth;
   max-height: 90vh;
   max-height: 90dvh;
-  background-color: royalblue;
+/*   background-color: royalblue; */
 }
 
 .card-carousel::-webkit-scrollbar {
