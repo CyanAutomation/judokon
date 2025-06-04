@@ -8,6 +8,7 @@ describe("fetchDataWithErrorHandling caching", () => {
       ok: true,
       json: vi.fn().mockResolvedValue(data)
     });
+    const originalFetch = global.fetch;
     global.fetch = fetchMock;
 
     const url = "/some.json";
