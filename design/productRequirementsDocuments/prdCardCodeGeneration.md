@@ -1,5 +1,7 @@
 # JU-DO-KON! – Card Code Generation Function: Product Requirements Document (PRD)
 
+---
+
 ## 1. Overview
 
 This document defines the specifications for the **Card Code Generation Function** in the *JU-DO-KON!* web-based card game.
@@ -26,11 +28,15 @@ Key Requirements:
 - Players can **input shared codes** with a **<2% manual entry error rate**.
 - **Easy copying** and **auto-hyphenation** during code entry for better usability.
 
+---
+
 ## 2. Purpose and Value
 
 - **For Players**: Enables easy sharing and import/export of Judoka using compact, friendly codes.
 - **For the Game**: Adds integrity and authenticity by encoding Judoka attributes securely.
 - **For Developers**: Simplifies storage and retrieval of Judoka data without exposing sensitive information.
+
+---
 
 ## 3. Functional Requirements
 
@@ -45,6 +51,8 @@ Key Requirements:
 | **P2**   | Error Handling               | Provide clear error messages or fallback to a generic code.        |
 | **P2**   | UI Surfacing                 | Display generated code with copy/paste support and input validation. |
 | **P2**   | Performance Compliance       | Ensure code generation completes within 100ms.
+
+---
 
 ### 3.2 Process (P1)
 
@@ -65,11 +73,15 @@ Key Requirements:
    - Group characters into 4-character chunks, separated by hyphens (`-`).
 
 6. **Output**
-- F7KP-WQ9M-ZD23-HYTR
+   - Example output: `F7KP-WQ9M-ZD23-HYTR`
+
+---
 
 ### 3.3 Output (P1)
 
 - **Card Code**: A hyphen-separated, obfuscated alphanumeric code (e.g., `F7KP-WQ9M-ZD23-HYTR`).
+
+---
 
 ## 4. Non-Functional Requirements
 
@@ -79,10 +91,11 @@ Key Requirements:
 - **Performance**: Code generation under 100ms.
 - **Consistency**: Same input produces the same code.
 
+---
+
 ## 5. Example
 
 **Input:**
-
 ```json
 {
   "firstname": "Tadahiro",
@@ -99,72 +112,75 @@ Key Requirements:
   }
 }
 
-⸻
-acceptance criteria 
-ID
-Criterion
-AC1
-Given a valid Judoka, When code generation runs, Then a valid code is produced.
-AC2
-Given a Judoka with missing fields, When code generation runs, Then a clear error message is shown.
-AC3
-Given a generated code, Then it must use only A–Z, 2–9, and hyphens.
-AC4
-Given a code, Then it must group characters into 4-character hyphenated chunks.
-AC5
-Given the same Judoka object, Then the output code must be identical.
-AC6
-When code generation runs, Then it must complete in under 100ms.
-AC7
-Given manual code input, Then error rate must be under 2% on average.
+Output: F7KP-WQ9M-ZD23-HYTR
 
+## 6. Acceptance Criteria
 
-Edge Cases / Failure States (P2)
-	•	Very large or malicious strings (e.g., 5000-character name).
-	•	Potential code collisions.
-	•	Encoding failures or memory issues.
-	•	Fallback: Display a generic code if any failure occurs.
+| ID   | Criterion                                                                 | Pass/Fail |
+|----- |-------------------------------------------------------------------------- |---------- |
+| AC1  | Given a valid Judoka, When code generation runs, Then a valid code is produced.   |          |
+| AC2  | Given a Judoka with missing fields, When code generation runs, Then a clear error message is shown. |          |
+| AC3  | Given a generated code, Then it must use only A–Z, 2–9, and hyphens.      |          |
+| AC4  | Given a code, Then it must group characters into 4-character hyphenated chunks. |          |
+| AC5  | Given the same Judoka object, Then the output code must be identical.     |          |
+| AC6  | When code generation runs, Then it must complete in under 100ms.          |          |
+| AC7  | Given manual code input, Then error rate must be under 2% on average.     |          |
 
-8. Wireframes
+---
 
-Card View (Display code):
-	•	Show code below the card’s main stats.
-	•	Copy-to-clipboard button with minimum 44x44px touch size.
-	•	Readable, large-font code.
+## 7. Edge Cases / Failure States (P2)
 
-Code Entry (Input field):
-	•	Input field accepts only valid characters.
-	•	Auto-hyphenates every 4 characters.
-	•	Invalid input prompts real-time error feedback.
+- Very large or malicious strings (e.g., 5000-character name).
+- Potential code collisions.
+- Encoding failures or memory issues.
 
-9. Developer Notes
+**Fallback:** Display a generic code if any failure occurs.
 
-9.1 Encoding Strategy Rationale
-	•	XOR Obfuscation: Lightweight, fast, non-cryptographic.
-	•	Readable Character Set: Improves accuracy (no I, O, 1, 0).
-	•	Hyphenation: Easier error detection.
-	•	Versioning: Ensures backward compatibility.
+---
 
-9.2 Performance Considerations
-	•	In-memory operations; O(n) time complexity.
+## 8. Wireframes
 
-9.3 Limitations
-	•	XOR is not cryptographic.
-	•	No cryptographic collision-proofing.
-	•	No decoding to avoid tampering.
+### Card View (Display code)
+- Show code below the card’s main stats.
+- Copy-to-clipboard button with minimum 44x44px touch size.
+- Readable, large-font code (18–24px recommended for visibility).
 
-9.4 Potential Enhancements
-	•	Customizable chunk size.
-	•	Add checksum digit to detect manual entry errors.
-	•	Admin-only decode function for tournament verification.
-	•	Salt/nonce for reduced collisions.
+### Code Entry (Input field)
+- Input field accepts only valid characters.
+- Auto-hyphenates every 4 characters.
+- Invalid input prompts real-time error feedback.
 
-9.5 UI Input Considerations
-	•	Code visible on card detail screens.
-	•	Copy-to-clipboard button (44x44px target size).
-	•	Input field with auto-hyphenation.
-	•	Invalid character prevention at input level.
-⸻
+---
+
+## 9. Developer Notes
+
+### 9.1 Encoding Strategy Rationale
+- **XOR Obfuscation:** Lightweight, fast, non-cryptographic.
+- **Readable Character Set:** Improves accuracy (no I, O, 1, 0).
+- **Hyphenation:** Easier error detection.
+- **Versioning:** Ensures backward compatibility.
+
+### 9.2 Performance Considerations
+- **In-memory operations**; O(n) time complexity.
+
+### 9.3 Limitations
+- XOR is not cryptographic.
+- No cryptographic collision-proofing.
+- No decoding to avoid tampering.
+
+### 9.4 Potential Enhancements
+- Customizable chunk size.
+- Add checksum digit to detect manual entry errors.
+- Admin-only decode function for tournament verification.
+- Salt/nonce for reduced collisions.
+
+### 9.5 UI Input Considerations
+- Code visible on card detail screens.
+- Copy-to-clipboard button (44x44px target size).
+- Input field with auto-hyphenation.
+- Invalid character prevention at input level.
+
+---
 
 ## Tasks
 
@@ -175,7 +191,7 @@ Code Entry (Input field):
   - [ ] 1.4 Map encoded string to 32-character readable alphabet.
   - [ ] 1.5 Format string into chunks of 4 characters with hyphens.
   - [ ] 1.6 Return the final formatted code.
-  - [ ] 1.7 Save the generated code into judoka.json.
+  - [ ] 1.7 Save the generated code into `judoka.json`.
 
 - [ ] 2.0 Error Handling and Edge Cases
   - [ ] 2.1 Throw clear, standardized error if a field is missing or invalid.
