@@ -94,15 +94,15 @@ Key Requirements:
 
 ## 6. Acceptance Criteria
 
-| ID   | Criterion                                                                 | Pass/Fail |
-|----- |-------------------------------------------------------------------------- |---------- |
-| AC1  | Given a valid Judoka, When code generation runs, Then a valid code is produced.   |          |
-| AC2  | Given a Judoka with missing fields, When code generation runs, Then a clear error message is shown. |          |
-| AC3  | Given a generated code, Then it must use only A–Z, 2–9, and hyphens.      |          |
-| AC4  | Given a code, Then it must group characters into 4-character hyphenated chunks. |          |
-| AC5  | Given the same Judoka object, Then the output code must be identical.     |          |
-| AC6  | When code generation runs, Then it must complete in under 100ms.          |          |
-| AC7  | Given manual code input, Then error rate must be under 2% on average.     |          |
+| ID   | Criterion                                                                 |
+|----- |-------------------------------------------------------------------------- |
+| AC1  | Given a valid Judoka, When code generation runs, Then a valid code is produced.   |
+| AC2  | Given a Judoka with missing fields, When code generation runs, Then a clear error message is shown. |
+| AC3  | Given a generated code, Then it must use only A–Z, 2–9, and hyphens.      |
+| AC4  | Given a code, Then it must group characters into 4-character hyphenated chunks. |
+| AC5  | Given the same Judoka object, Then the output code must be identical.     |
+| AC6  | When code generation runs, Then it must complete in under 100ms.          |
+| AC7  | Given manual code input, Then error rate must be under 2% on average.     |
 
 ---
 
