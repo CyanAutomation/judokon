@@ -12,7 +12,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 | 4. JU-DO-KON! Website      |                                      ![Website](https://img.shields.io/website?url=https%3A%2F%2Fcyanautomation.github.io%2Fjudokon%2F&logo=googlechrome&style=for-the-badge&label=JU-DO-KON!%20Website) |
 | 5. GitHub Last Commit      |                                                                       ![GitHub last commit](https://img.shields.io/github/last-commit/CyanAutomation/judokon?logo=github&style=for-the-badge&color=blue) |
 | 6. Repo Size               |                                                                                      ![GitHub repo size](https://img.shields.io/github/repo-size/CyanAutomation/judokon?logo=github&style=for-the-badge) |
-| 7. Licence                 |                                                                                  ![Static Badge](https://img.shields.io/badge/License-gnu_general_public_licence_v3.0-blue?logo=gnu&style=for-the-badge) |
+| 7. License                 |                                                                                  ![Static Badge](https://img.shields.io/badge/License-gnu_general_public_license_v3.0-blue?logo=gnu&style=for-the-badge) |
 | 8. Currently Maintained?   |                                                                                 ![Maintenance](https://img.shields.io/maintenance/yes/2025?style=for-the-badge&logo=cachet&label=Currently%20Maintained) |
 
 ## Table of Contents
