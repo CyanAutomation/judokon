@@ -170,6 +170,8 @@ export function createFlagImage(finalFlagUrl, countryName) {
 
   flagImg.alt = `${countryName || ""} flag`;
 
+  flagImg.setAttribute("loading", "lazy");
+
   flagImg.setAttribute("onerror", `this.src='${PLACEHOLDER_FLAG_URL}'`);
 
   flagContainer.appendChild(flagImg);

@@ -113,4 +113,10 @@ describe("generateCardPortrait", () => {
   it("should throw an error if card is undefined", () => {
     expect(() => generateCardPortrait(undefined)).toThrowError("Card object is required");
   });
+
+  it("should include loading attribute on the portrait image", () => {
+    const card = { id: 1, firstname: "John", surname: "Doe" };
+    const result = generateCardPortrait(card);
+    expect(result).toContain('loading="lazy"');
+  });
 });

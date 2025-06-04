@@ -37,7 +37,7 @@ export function generateCardPortrait(card) {
   const { id, firstname, surname } = card;
   return `
     <div class="card-portrait">
-      <img src="../assets/judokaPortraits/judokaPortrait-${id}.png" alt="${firstname} ${surname}'s portrait" onerror="this.src='../assets/judokaPortraits/judokaPortrait-${id}.png'">
+      <img src="../assets/judokaPortraits/judokaPortrait-${id}.png" alt="${firstname} ${surname}'s portrait" loading="lazy" onerror="this.src='../assets/judokaPortraits/judokaPortrait-${id}.png'">
     </div>
   `;
 }
