@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { formatDate } from "../../helpers/utils.js";
+import { formatDate, escapeHTML } from "../../helpers/utils.js";
 
 describe("formatDate", () => {
   test.each(["not-a-date", "", null, undefined, 123456, {}, [], true, false, BigInt(123456789)])(
@@ -89,5 +89,18 @@ describe("formatDate", () => {
     [new Date("1970-01-01T00:00:00Z"), "1970-01-01"]
   ])("formats Date instance %p to %p", (dateObj, expected) => {
     expect(formatDate(dateObj)).toBe(expected);
+  });
+});
+
+describe("escapeHTML", () => {
+  test.each([
+    ["<", "&lt;"],
+    [">", "&gt;"],
+    ["&", "&amp;"],
+    ["'", "&#039;"],
+    ['"', "&quot;"],
+    ["<div>&'\"</div>", "&lt;div&gt;&amp;&#039;&quot;&lt;/div&gt;"]
+  ])("escapes %p", (input, expected) => {
+    expect(escapeHTML(input)).toBe(expected);
   });
 });
