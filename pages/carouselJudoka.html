@@ -75,8 +75,10 @@
           const carouselContainer = document.querySelector(".carousel-container");
 
           try {
-            const judokaData = await fetchDataWithErrorHandling("../data/judoka.json");
-            const gokyoData = await fetchDataWithErrorHandling("../data/gokyo.json");
+            const [judokaData, gokyoData] = await Promise.all([
+              fetchDataWithErrorHandling("../data/judoka.json"),
+              fetchDataWithErrorHandling("../data/gokyo.json")
+            ]);
 
             validateData(judokaData, "judoka");
             validateData(gokyoData, "gokyo");
