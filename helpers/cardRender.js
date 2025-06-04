@@ -115,6 +115,7 @@ export function generateCardStats(card, cardType = "common") {
  * @returns {string} The HTML string for the signature move.
  */
 import { escapeHTML } from "./utils.js";
+import { debugLog } from "./debug.js";
 
 export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
   // Handle null or undefined judoka
@@ -124,9 +125,9 @@ export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "commo
 
   const signatureMoveId = Number(judoka.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
 
-  console.log("Signature Move ID:", signatureMoveId);
-  console.log("Judoka Object:", judoka);
-  console.log("Gokyo Lookup Object:", gokyoLookup);
+  debugLog("Signature Move ID:", signatureMoveId);
+  debugLog("Judoka Object:", judoka);
+  debugLog("Gokyo Lookup Object:", gokyoLookup);
 
   const technique = (gokyoLookup && gokyoLookup[signatureMoveId]) ||
     (gokyoLookup && gokyoLookup[0]) || { id: 0, name: "Jigoku-guruma" };
@@ -136,7 +137,7 @@ export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "commo
   // Escape the technique name to prevent XSS
   const escapedTechniqueName = escapeHTML(techniqueName);
 
-  console.log("Selected Technique:", technique);
+  debugLog("Selected Technique:", technique);
 
   const cardClass = cardType.toLowerCase();
 

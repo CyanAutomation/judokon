@@ -1,3 +1,5 @@
+import { debugLog } from "./debug.js";
+
 // Escape special characters to prevent XSS
 const escapeMap = {
   "&": "&amp;",
@@ -146,6 +148,6 @@ export function createGokyoLookup(gokyoData) {
     return acc;
   }, {});
 
-  console.log("Created Gokyo Lookup:", lookup);
+  debugLog("Created Gokyo Lookup:", lookup);
   return lookup;
 }

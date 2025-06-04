@@ -1,4 +1,5 @@
 import { getCountryNameFromCode } from "./countryUtils.js";
+import { debugLog } from "./debug.js";
 
 const PLACEHOLDER_FLAG_URL = "../assets/countryFlags/placeholder-flag.png";
 
@@ -57,7 +58,7 @@ export function createNoDataContainer() {
   const container = document.createElement("div");
   container.className = "card-top-bar";
   container.textContent = "No data available";
-  console.log("Generated container for missing judoka:", container);
+  debugLog("Generated container for missing judoka:", container);
   return container;
 }
 
@@ -102,7 +103,7 @@ async function resolveCountryName(countryCode) {
     const countryName = await getCountryNameFromCode(countryCode);
     return countryName;
   }
-  console.log("Country name is unknown.");
+  debugLog("Country name is unknown.");
   return "Unknown";
 }
 
@@ -159,7 +160,7 @@ export function createNameContainer(firstname, surname) {
  * 5. Return the container `<div>`.
  */
 export function createFlagImage(finalFlagUrl, countryName) {
-  console.log(`Creating flag image with country name: ${countryName}`); // Debugging
+  debugLog(`Creating flag image with country name: ${countryName}`); // Debugging
 
   const flagContainer = document.createElement("div");
   flagContainer.className = "card-flag";
@@ -214,10 +215,10 @@ export async function generateCardTopBar(judoka, flagUrl) {
   const { firstname, surname, countryCode } = extractJudokaData(judoka);
 
   const countryName = await resolveCountryName(countryCode);
-  console.log(`Resolved country name: ${countryName}`); // Debugging
+  debugLog(`Resolved country name: ${countryName}`); // Debugging
 
   const finalFlagUrl = flagUrl || PLACEHOLDER_FLAG_URL;
-  console.log(`Final flag URL: ${finalFlagUrl}`); // Debugging
+  debugLog(`Final flag URL: ${finalFlagUrl}`); // Debugging
 
   const container = document.createElement("div");
   container.className = "card-top-bar";

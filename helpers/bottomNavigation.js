@@ -1,3 +1,5 @@
+import { debugLog } from "./debug.js";
+
 /**
  * Toggles the expanded map view for landscape mode.
  *
@@ -99,7 +101,7 @@ function togglePortraitTextMenu(gameModes) {
  */
 function validateGameModes(gameModes) {
   const validatedModes = gameModes.filter((mode) => mode.name && mode.url);
-  console.log("Validated modes:", validatedModes); // Debug validated modes
+  debugLog("Validated modes:", validatedModes); // Debug validated modes
   return validatedModes;
 }
 
@@ -165,7 +167,7 @@ export function populateNavbar() {
       return response.json();
     })
     .then((data) => {
-      console.log("Fetched game modes:", data); // Debug fetched data
+      debugLog("Fetched game modes:", data); // Debug fetched data
 
       const navBar = document.querySelector(".bottom-navbar");
       clearBottomNavbar(); // Clear existing content
@@ -175,7 +177,7 @@ export function populateNavbar() {
         data.filter((mode) => mode.category === "mainMenu" && mode.isHidden === false)
       ).sort((a, b) => a.order - b.order);
 
-      console.log("Validated game modes:", activeModes); // Debug validated data
+      debugLog("Validated game modes:", activeModes); // Debug validated data
 
       if (activeModes.length === 0) {
         navBar.innerHTML = "<ul><li>No game modes available</li></ul>";
