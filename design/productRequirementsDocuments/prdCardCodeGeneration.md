@@ -22,7 +22,7 @@ Key Requirements:
 - **Security and Usability** are equally important.
 - **≤100ms generation time** for producing the code.
 - **Auto-generated** whenever a card is created or updated and saved into `judoka.json`.
-- Code is **visible** on card screens.
+- Code is **visible** on card screens (where relevant). 
 - Players can **input shared codes** with a **<2% manual entry error rate**.
 - **Easy copying** and **auto-hyphenation** during code entry for better usability.
 
@@ -91,12 +91,31 @@ Key Requirements:
 
 ---
 
+## 5. Example
+
+Input:
+  "firstname": "Tadahiro",
+  "surname": "Nomura",
+  "country": "JP",
+  "weightClass": 60,
+  "signatureMoveId": 1234,
+  "stats": {
+    "power": 9,
+    "speed": 8,
+    "technique": 7,
+    "kumikata": 6,
+    "newaza": 5
+
+Output: F7KP-WQ9M-ZD23-HYTR
+
+---
+
 ## 6. Acceptance Criteria
 
 | ID   | Criterion                                                                 |
 |----- |-------------------------------------------------------------------------- |
 | AC1  | Given a valid Judoka, When code generation runs, Then a valid code is produced.   |
-| AC2  | Given a Judoka with missing fields, When code generation runs, fallback to a generic code . |
+| AC2  | Given a Judoka with missing fields, When code generation runs, fallback to a generic code. |
 | AC3  | Given a generated code, Then it must use only A–Z, 2–9, and hyphens.      |
 | AC4  | Given a code, Then it must group characters into 4-character hyphenated chunks. |
 | AC5  | Given the same Judoka object, Then the output code must be identical.     |
@@ -111,14 +130,14 @@ Key Requirements:
 - Potential code collisions.
 - Encoding failures or memory issues.
 
-**Fallback:** Display a generic code if any failure occurs.
+**Fallback:** Display a generic card code if any failure occurs.
 
 ---
 
 ## 8. Wireframes
 
 ### Card View (Display code)
-- Show code below the card’s main stats.
+- Show code alongside the card, on relevant screens. 
 - Copy-to-clipboard button with minimum 44x44px touch size.
 - Readable, large-font code (18–24px recommended for visibility).
 
@@ -137,9 +156,6 @@ Key Requirements:
 - **Hyphenation:** Easier error detection.
 - **Versioning:** Ensures backward compatibility.
 
-### 9.2 Performance Considerations
-- **In-memory operations**; O(n) time complexity.
-
 ### 9.3 Limitations
 - XOR is not cryptographic.
 - No cryptographic collision-proofing.
@@ -152,29 +168,12 @@ Key Requirements:
 - Salt/nonce for reduced collisions.
 
 ### 9.5 UI Input Considerations
-- Code visible on card detail screens.
+- Code visible on card detail screens, where relevant.
 - Copy-to-clipboard button (44x44px target size).
 - Input field with auto-hyphenation.
 - Invalid character prevention at input level.
 
 ---
-
-## 5. Example
-
-Input:
-  "firstname": "Tadahiro",
-  "surname": "Nomura",
-  "country": "JP",
-  "weightClass": 60,
-  "signatureMoveId": 1234,
-  "stats": {
-    "power": 9,
-    "speed": 8,
-    "technique": 7,
-    "kumikata": 6,
-    "newaza": 5
-
-Output: F7KP-WQ9M-ZD23-HYTR
 
 ## Tasks
 
@@ -188,16 +187,11 @@ Output: F7KP-WQ9M-ZD23-HYTR
   - [ ] 1.7 Save the generated code into `judoka.json`.
 
 - [ ] 2.0 Error Handling and Edge Cases
-  - [ ] 2.1 Throw clear, standardized error if a field is missing or invalid.
   - [ ] 2.2 Fallback to a generic card code if encoding fails.
   - [ ] 2.3 Handle unusually large string input safely.
 
-- [ ] 3.0 Performance Testing
-  - [ ] 3.1 Benchmark code generation time on standard hardware.
-  - [ ] 3.2 Optimize if generation exceeds 100ms.
-
 - [ ] 4.0 UI Surface Interaction
-  - [ ] 4.1 Ensure the generated code is visible on all card display screens.
+  - [ ] 4.1 Ensure the generated code is visible on relevant card display screens.
   - [ ] 4.2 Support copy-to-clipboard functionality.
   - [ ] 4.3 Add input validation for code entry screens.
   - [ ] 4.4 Implement auto-hyphenation as players type shared codes.
@@ -208,6 +202,3 @@ Output: F7KP-WQ9M-ZD23-HYTR
   - [ ] 5.3 Test same input always results in the same output code.
   - [ ] 5.4 Simulate edge cases like large inputs and validate fallback behavior.
 
-- [ ] 6.0 Documentation
-  - [ ] 6.1 Document encoding method, character map, fallback behavior.
-  - [ ] 6.2 Document expected UX behavior (e.g., visible code on card view, copy functionality, input formatting).
