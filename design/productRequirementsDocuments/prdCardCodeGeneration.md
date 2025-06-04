@@ -91,28 +91,8 @@ Key Requirements:
 - **Performance**: Code generation under 100ms.
 - **Consistency**: Same input produces the same code.
 
----
+--
 
-## 5. Example
-
-**Input:**
-```json
-{
-  "firstname": "Tadahiro",
-  "surname": "Nomura",
-  "country": "JP",
-  "weightClass": 60,
-  "signatureMoveId": 1234,
-  "stats": {
-    "power": 9,
-    "speed": 8,
-    "technique": 7,
-    "kumikata": 6,
-    "newaza": 5
-  }
-}
-
-Output: F7KP-WQ9M-ZD23-HYTR
 
 ## 6. Acceptance Criteria
 
@@ -181,6 +161,23 @@ Output: F7KP-WQ9M-ZD23-HYTR
 - Invalid character prevention at input level.
 
 ---
+
+## 5. Example
+
+Input:
+  "firstname": "Tadahiro",
+  "surname": "Nomura",
+  "country": "JP",
+  "weightClass": 60,
+  "signatureMoveId": 1234,
+  "stats": {
+    "power": 9,
+    "speed": 8,
+    "technique": 7,
+    "kumikata": 6,
+    "newaza": 5
+
+Output: F7KP-WQ9M-ZD23-HYTR
 
 ## Tasks
 
