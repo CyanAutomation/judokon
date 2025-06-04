@@ -1,9 +1,10 @@
 ---
 name: Ju-Do-Kon! Bug Report
 about: Report a bug to help us improve Ju-Do-Kon!
-title: "BUG: TBC"
+title: 'BUG: TBC'
 labels: bug
-assignees: ""
+assignees: CyanAutomation
+
 ---
 
 ## 🐞 Bug Report
@@ -77,10 +78,11 @@ _How bad is the bug?_
 - [ ] Major (affects gameplay but not crashing)
 - [ ] Minor (UI issue, not blocking gameplay)
 - [ ] Cosmetic (small visual issue)
+- [ ] Internal (not affecting game)
 
 ---
 
 ### 📋 Checklist
 
-- [ ] I have tested this issue in a private/incognito window/cleared cache.
+- [ ] I have tested this issue in a private/incognito window/cleared cache, where relevant
 - [ ] I have checked for existing bug reports related to this issue.
