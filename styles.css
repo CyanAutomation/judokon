@@ -412,7 +412,9 @@ button:focus {
   display: inline-flex;
   align-items: center; /* Center-align items vertically */
   /* padding: clamp(3px, 10vw, 5px) clamp(3px, 5vw, 5px); */
+  padding: min(5px, 4vh) min(5px, 1vw);
   padding: min(5px, 4vh) min(5px, 1dvw);
+  padding: min(5px, 4dvh) min(5px, 1vw);
   padding: min(5px, 4dvh) min(5px, 1dvw);
   flex-direction: row;
   /* margin: 0; */
