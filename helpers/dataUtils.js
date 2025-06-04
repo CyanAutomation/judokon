@@ -18,6 +18,9 @@
  * @param {string} url - Path to the JSON file (e.g., './data/judoka.json').
  * @returns {Promise<T>} A promise that resolves to the parsed JSON data.
  */
+// In-memory cache for data fetched from URLs
+const dataCache = {};
+
 export async function loadJSON(url) {
   try {
     const response = await fetch(url);
@@ -54,13 +57,19 @@ export async function loadJSON(url) {
  */
 export async function fetchDataWithErrorHandling(url) {
   try {
+    if (dataCache[url]) {
+      return dataCache[url];
+    }
+
     const response = await fetch(url);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch data from ${url} (HTTP ${response.status})`);
     }
 
-    return response.json();
+    const json = await response.json();
+    dataCache[url] = json;
+    return json;
   } catch (error) {
     console.error(`Error fetching data from ${url}:`, error);
     throw error;
