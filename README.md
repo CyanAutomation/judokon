@@ -38,6 +38,22 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
    # Then visit: http://localhost:5000
    ```
 
+### Debug Logging
+
+To see verbose output from the helper modules during development, enable the
+`DEBUG_LOGGING` flag:
+
+```bash
+# Node/CLI
+DEBUG_LOGGING=true npx vitest run
+```
+
+In the browser you can enable it from the console before loading the page:
+
+```javascript
+window.DEBUG_LOGGING = true;
+```
+
 ## Project Structure
 
 - index.html: The main HTML file for the game.

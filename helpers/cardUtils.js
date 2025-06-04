@@ -1,4 +1,5 @@
 import { generateJudokaCardHTML } from "./cardBuilder.js";
+import { debugLog } from "./debug.js";
 
 /**
  * Selects a random judoka from the provided data array.
@@ -42,7 +43,7 @@ export function getRandomJudoka(data) {
   const index = Math.floor(Math.random() * validJudoka.length);
   const selectedJudoka = validJudoka[index];
 
-  console.log("Selected judoka:", selectedJudoka);
+  debugLog("Selected judoka:", selectedJudoka);
   return selectedJudoka;
 }
 
@@ -75,7 +76,7 @@ export function getRandomJudoka(data) {
  * @param {HTMLElement} gameArea - The DOM element where the card will be displayed.
  */
 export async function displayJudokaCard(judoka, gokyo, gameArea) {
-  console.log("Judoka passed to displayJudokaCard:", judoka);
+  debugLog("Judoka passed to displayJudokaCard:", judoka);
 
   if (
     !judoka ||
@@ -99,7 +100,7 @@ export async function displayJudokaCard(judoka, gokyo, gameArea) {
     gameArea.innerHTML = "";
     const cardElement = await generateJudokaCardHTML(judoka, gokyo);
     gameArea.appendChild(cardElement);
-    console.log("Judoka card successfully displayed:", cardElement);
+    debugLog("Judoka card successfully displayed:", cardElement);
   } catch (error) {
     console.error("Error generating judoka card:", error);
     gameArea.innerHTML = "<p>⚠️ Failed to generate judoka card. Please try again later.</p>";

@@ -21,6 +21,8 @@
  *
  * @returns {Promise<CountryCodeEntry[]>} Resolves to an array of country code mappings.
  */
+import { debugLog } from "./debug.js";
+
 let countryCodeMappingCache = null;
 const COUNTRY_CACHE_KEY = "countryCodeMappingCache";
 
@@ -57,7 +59,7 @@ async function loadCountryCodeMapping() {
       console.warn(`Invalid country code entry found:`, entry);
     }
   });
-  console.log("Loaded country code mapping:", data);
+  debugLog("Loaded country code mapping:", data);
 
   countryCodeMappingCache = data;
 
@@ -107,7 +109,7 @@ export async function getCountryNameFromCode(code) {
     (entry) => entry.code.toLowerCase() === code.toLowerCase() && entry.active
   );
 
-  console.log(`Resolved country name for code "${code}":`, match ? match.country : "Vanuatu");
+  debugLog(`Resolved country name for code "${code}":`, match ? match.country : "Vanuatu");
 
   return match ? match.country : "Vanuatu";
 }
