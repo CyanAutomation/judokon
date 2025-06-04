@@ -175,7 +175,7 @@ body {
 
 .tile-content h2 {
   /* border: 2px dashed #a71916; */
-  padding-left: var(--padding-large);
+  padding-left: var(--padding-large, 1rem);
   font-size: var(--font-large);
 }
 .locationTile {
