@@ -65,24 +65,40 @@
       <script type="module">
         import { buildCardCarousel } from "../helpers/carouselBuilder.js";
         import { populateCountryList } from "../helpers/countryUtils.js";
+        import {
+          fetchDataWithErrorHandling,
+          validateData
+        } from "../helpers/dataUtils.js";
 
         document.addEventListener("DOMContentLoaded", async () => {
           // Build the carousel
           const carouselContainer = document.querySelector(".carousel-container");
-          const judokaList = [
-            { id: 1, firstname: "Teddy", surname: "Riner", country: "France" },
-            { id: 2, firstname: "Shohei", surname: "Ono", country: "Japan" },
-            { id: 3, firstname: "Clarisse", surname: "Agbegnenou", country: "France" }
-          ];
-          const gokyoData = [
-            { id: 1, name: "Ippon Seoi Nage" },
-            { id: 2, name: "Uchi Mata" },
-            { id: 3, name: "Ouchi Gari" }
-          ];
 
           try {
-            const carousel = await buildCardCarousel(judokaList, gokyoData);
+            const [judokaData, gokyoData] = await Promise.all([
+              fetchDataWithErrorHandling("../data/judoka.json"),
+              fetchDataWithErrorHandling("../data/gokyo.json")
+            ]);
+
+            validateData(judokaData, "judoka");
+            validateData(gokyoData, "gokyo");
+
+            const carousel = await buildCardCarousel(judokaData, gokyoData);
             carouselContainer.appendChild(carousel);
+
+            if (judokaData.length === 0) {
+              const noResultsMessage = document.createElement("div");
+              noResultsMessage.className = "no-results-message";
+              noResultsMessage.textContent =
+                "No results found. Please broaden your search criteria.";
+              carouselContainer.appendChild(noResultsMessage);
+
+              const retryButton = document.createElement("button");
+              retryButton.className = "retry-button";
+              retryButton.textContent = "Retry";
+              retryButton.addEventListener("click", () => location.reload());
+              carouselContainer.appendChild(retryButton);
+            }
           } catch (error) {
             console.error("Error building the carousel:", error);
             const errorMessage = document.createElement("div");
@@ -90,19 +106,6 @@
             errorMessage.textContent =
               "Network error occurred. Please check your connection and try again.";
             carouselContainer.appendChild(errorMessage);
-          }
-
-          if (judokaList.length === 0) {
-            const noResultsMessage = document.createElement("div");
-            noResultsMessage.className = "no-results-message";
-            noResultsMessage.textContent = "No results found. Please broaden your search criteria.";
-            carouselContainer.appendChild(noResultsMessage);
-
-            const retryButton = document.createElement("button");
-            retryButton.className = "retry-button";
-            retryButton.textContent = "Retry";
-            retryButton.addEventListener("click", () => location.reload());
-            carouselContainer.appendChild(retryButton);
           }
 
           // Populate the country list
