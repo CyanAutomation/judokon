@@ -1,3 +1,152 @@
+/* Define global CSS variables for colors, font sizes, spacing, and other reusable styles */
+:root {
+  --button-scale: 1.02;
+  --scale-duration: 0.4s;
+  --slide-track-speed: 40s;
+  /* Colors */
+  --primary-bg: #1c4b95;
+  --secondary-bg: #0c3f7a;
+  --text-color: white;
+
+  /* Card-specific colors */
+  /* --common-border-color: #3c5ad6; 
+  --common-top-bar-bg: #0c3f7a;
+  --common-stats-bg: #0c3f7a; 
+  --common-signature-move-bg: #003b88; 
+  --common-signature-move-text: #fed843; */
+
+  /* Font sizes */
+  /* --font-small: 0.9rem;
+  --font-medium: 1rem;
+  --font-large: 1.2rem;
+  --font-extra-large: 3rem; */
+
+  /* Spacing */
+  /* --padding-none: 0;
+  --padding-small: 0.2rem;
+  --padding-medium: 0.5rem;
+  --padding-large: 1rem;
+  --padding-extra-large: 2rem; */
+
+  /* Border radius */
+  --border-radius-small: 4px;
+  --border-radius-medium: 8px;
+  --border-radius-large: 12px;
+
+  /* Box shadow */
+  /* --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); */
+}
+
+/* Reset default browser styles for all elements */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.noscript-warning {
+  color: red;
+  font-weight: bold;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-250px * 7));
+  }
+}
+
+/* General body styles */
+body {
+  font-family: "Open Sans", sans-serif;
+  /* background: linear-gradient(to bottom, var(--primary-bg), var(--secondary-bg)); */
+  color: var(--text-color); /* Default text color */
+  min-height: 100dvh;
+  min-width: 100vw;
+  background-image: url("./assets/images/bgTileBlue.png");
+  background-repeat: repeat;
+  /* backdrop-filter: brightness(0.9); */
+  background-size: 50vw auto;
+  /* display: grid; */
+  /* grid-template-rows: auto 1fr auto; */
+  /* flex: 1 1 auto; */
+  /* border: solid 5px red; */
+  /* overflow-x: hidden; */
+  /* display: flex; */
+  /* flex-direction: column; */
+  /* justify-content: center; */
+}
+
+.home-screen {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+  max-width: 100%;
+  align-items: center;
+}
+
+.kodokan-screen {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  min-height: 100dvh;
+  max-width: 100%;
+  align-items: center;
+}
+
+.kodokan-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+}
+
+.helper-container {
+  grid-column: 1/1;
+  /* max-height: max-content%; */
+  /* width: auto; */
+  background-color: red;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  /* padding: 1rem 2rem; */
+  background-color: #a71916;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 100%;
+}
+
+.character-slot {
+  height: 20px;
+  background-color: #e8d9c3;
+  opacity: 0.5;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+}
+
+.logo {
+  height: 5dvh;
+}
+
+.game-mode-grid {
+  display: grid;
+  grid-template-columns: auto minmax(300px, 25%);
+  gap: 1rem 0;
+  padding: 0 10vw;
+  flex: 1 1 auto;
+  min-height: 85%;
+  /* min-width: 75%; */
+  /* border: 5px red solid; */
+  /* max-width: 90vw; */
+  /* justify-content: center; */
+}
+
 .game-tile {
   background: rgba(107, 107, 107, 0.5);
   /* border: 2px solid #000000; */
@@ -106,6 +255,7 @@ button:focus {
   position: relative; /* Ensure the pseudo-element is positioned relative to the card */
   width: 300px;
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
+  border: max(13px, 1vh) solid var(--card-border-color);
   border: max(13px, 1dvh) solid var(--card-border-color);
   border-radius: var(--border-radius-large); /* Rounded corners */
   background-color: var(--card-bg-color); /* Card background color */
@@ -195,6 +345,9 @@ button:focus {
   display: inline-flex;
   align-items: center; /* Center-align items vertically */
   /* padding: clamp(3px, 10vw, 5px) clamp(3px, 5vw, 5px); */
+  padding: min(5px, 4vh) min(5px, 1vw);
+  padding: min(5px, 4vh) min(5px, 1dvw);
+  padding: min(5px, 4dvh) min(5px, 1vw);
   padding: min(5px, 4dvh) min(5px, 1dvw);
   flex-direction: row;
   /* margin: 0; */
@@ -431,6 +584,7 @@ button:focus {
   overflow-x: auto;
   padding: 10px;
   scroll-behavior: smooth;
+  max-height: 90vh;
   max-height: 90dvh;
   background-color: royalblue;
 }
@@ -487,3 +641,163 @@ button:focus {
   outline-offset: 4px;
 }
 
+.top-navbar {
+  display: inline-flex;
+  position: relative;
+  top: 0;
+  min-height: 2dvh;
+  min-width: 100vw;
+  justify-content: space-evenly;
+  background-color: #22223b;
+  color: #fff;
+  text-align: center;
+  padding: 1vh 0;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+  border: solid 1px #22223b;
+  list-style-type: none;
+  /* border: solid 5px red; */
+}
+
+.top-navbar ul {
+  list-style: none;
+}
+
+.bottom-navbar {
+  /* padding: 1vh 0; */
+  min-height: max(7vh, 12px);
+  display: inline-flex;
+  min-width: 100vw; /* Make it span the full width */
+  background-color: #22223b; /* Background color */
+  text-align: center;
+  align-items: center;
+  justify-content: space-evenly;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+  font-size: max(1.3rem, 1.8vw);
+  /* gap: 1rem; */
+  /* border: solid 1px #22223b;  */
+  /* border: solid 5px red; */
+}
+
+.bottom-navbar ul {
+  display: inline-flex;
+  /* text-wrap: nowrap; */
+  /* justify-content: space-evenly; */
+  /* align-items: center; */
+  gap: 2rem;
+  list-style-type: none;
+  text-transform: uppercase;
+}
+
+.bottom-navbar a,
+.top-navbar a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.bottom-navbar a {
+  position: relative;
+  overflow: hidden;
+}
+
+.bottom-navbar a:hover {
+  text-decoration: underline;
+}
+
+.country-flag-slider {
+  background: rgba(0, 32, 82, 0.5);
+  /* box-shadow: 0 10px 20px -5px rgba(0, 0, 0, .125); */
+  /* height: 100px; */
+  /* margin: auto; */
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+
+  /* &::before,
+	&::after {
+		content: "";
+		height: auto;
+		position: absolute;
+		width: 200px;
+		z-index: 2;
+	}
+	
+	&::after {
+		right: 0;
+		top: 0;
+		transform: rotateZ(180deg);
+	}
+
+	&::before {
+		left: 0;
+		top: 0;
+	} */
+
+  .country-flag-slide-track {
+    animation: scroll var(--slide-track-speed) linear infinite;
+    display: flex;
+    /* width: calc(250px * 14); */
+  }
+
+  .slide {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.3em 3dvw;
+    text-align: center;
+    max-width: 45vw;
+    white-space: pre;
+  }
+
+  .flag-image {
+    max-height: 5dvh;
+    margin: 0.5rem;
+    border-radius: 4px;
+  }
+}
+
+.quote-container {
+  display: grid;
+  grid-template-columns: 1fr 8fr;
+  background-color: saddlebrown;
+  /* max-height: 85vh; */
+  /* border: 2px solid #ff0000; */
+  /* align-items: center; */
+}
+
+.kg-sprite {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  /* max-height: 75vh;  */
+  width: auto;
+  padding: 5vh;
+}
+
+.kg-sprite img {
+  width: auto;
+  height: 100%;
+  max-height: 85vh;
+  object-fit: cover;
+  overflow: hidden;
+  /* border: 2px solid #ff0000; */
+}
+
+.quote-heading {
+  color: #fff;
+  font-size: 1.5rem;
+  text-align: left;
+  align-self: center;
+  justify-self: center;
+  padding: 1rem;
+}
+.quote-content {
+  color: #fff;
+  font-size: 1rem;
+  text-align: justify;
+  align-self: center;
+  justify-self: center;
+  padding: 0 1rem;
+  padding-bottom: 1rem;
+  padding-right: 3rem;
+}
