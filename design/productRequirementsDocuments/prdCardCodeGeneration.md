@@ -36,21 +36,36 @@ The most important factors are security (obfuscated to prevent easy manipulation
 
 3. Functional Requirements
 
-3.1 Inputs (P1)
-	•	Judoka Object: A JSON object with the following required fields:
-	•	firstname (string)
-	•	surname (string)
-	•	country (string, e.g., “JP”, “FR”)
-	•	weightClass (integer, e.g., 73)
-	•	signatureMoveId (integer or string)
-	•	stats (object) with:
-	•	power (integer 0–10)
-	•	speed (integer 0–10)
-	•	technique (integer 0–10)
-	•	kumikata (integer 0–10)
-	•	newaza (integer 0–10)
-
-If any required field is missing or invalid, the function must throw a standardized error.
+Priority
+Feature
+Description
+P1
+Input Validation
+Ensure all required Judoka fields are present and valid.
+P1
+String Concatenation
+Build the raw code string from Judoka attributes and stats.
+P1
+XOR Obfuscation
+Apply XOR encoding to obfuscate the raw string.
+P1
+Readable Charset Mapping
+Convert to a friendly alphanumeric code using the specified 32-character set.
+P1
+Chunk Formatting
+Format final code into 4-character chunks separated by hyphens.
+P1
+Save to File
+Persist the generated code in judoka.json for use in the UI.
+P2
+Error Handling
+Provide clear error messages or fallback to a generic code on failure.
+P2
+UI Surfacing
+Display generated code and support copy/paste and auto-formatting UX.
+P2
+Performance Compliance
+Ensure code generation completes in under 100ms.
 
 ⸻
 
@@ -194,3 +209,39 @@ Fallback: In case of any failure, fallback to a generic card code indicating fai
 	•	Auto-hyphenate after every 4 characters during typing for better UX, especially on mobile.
 
 ⸻
+
+## Tasks
+
+- [ ] 1.0 Card Code Generation Function
+  - [ ] 1.1 Validate input Judoka object for all required fields.
+  - [ ] 1.2 Concatenate Judoka stats and key attributes into raw string.
+  - [ ] 1.3 Apply XOR encoding with index-based key.
+  - [ ] 1.4 Map encoded string to 32-character readable alphabet.
+  - [ ] 1.5 Format string into chunks of 4 characters with hyphens.
+  - [ ] 1.6 Return the final formatted code.
+  - [ ] 1.7 Save the generated code into judoka.json.
+
+- [ ] 2.0 Error Handling and Edge Cases
+  - [ ] 2.1 Throw clear, standardized error if a field is missing or invalid.
+  - [ ] 2.2 Fallback to a generic card code if encoding fails.
+  - [ ] 2.3 Handle unusually large string input safely.
+
+- [ ] 3.0 Performance Testing
+  - [ ] 3.1 Benchmark code generation time on standard hardware.
+  - [ ] 3.2 Optimize if generation exceeds 100ms.
+
+- [ ] 4.0 UI Surface Interaction
+  - [ ] 4.1 Ensure the generated code is visible on all card display screens.
+  - [ ] 4.2 Support copy-to-clipboard functionality.
+  - [ ] 4.3 Add input validation for code entry screens.
+  - [ ] 4.4 Implement auto-hyphenation as players type shared codes.
+
+- [ ] 5.0 Unit Tests
+  - [ ] 5.1 Test valid Judoka object produces correct code format.
+  - [ ] 5.2 Test invalid input triggers correct error fallback.
+  - [ ] 5.3 Test same input always results in the same output code.
+  - [ ] 5.4 Simulate edge cases like large inputs and validate fallback behavior.
+
+- [ ] 6.0 Documentation
+  - [ ] 6.1 Document encoding method, character map, fallback behavior.
+  - [ ] 6.2 Document expected UX behavior (e.g., visible code on card view, copy functionality, input formatting).
