@@ -298,6 +298,10 @@ export async function buildCardCarousel(judokaList, gokyoData) {
     }
 
     const card = await generateJudokaCard(judoka, gokyoLookup, container);
+    if (!card) {
+      console.warn("Failed to generate card for judoka:", judoka);
+      continue;
+    }
     handleBrokenImages(card);
   }
 

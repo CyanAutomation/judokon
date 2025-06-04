@@ -190,7 +190,9 @@ export async function generateJudokaCard(judoka, gokyoLookup, container) {
   try {
     const card = await generateJudokaCardHTML(judoka, gokyoLookup);
     container.appendChild(card);
+    return card;
   } catch (error) {
     console.error(`Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`, error);
+    return null;
   }
 }
