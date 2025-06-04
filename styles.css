@@ -65,6 +65,7 @@ body {
   font-family: "Open Sans", sans-serif;
   /* background: linear-gradient(to bottom, var(--primary-bg), var(--secondary-bg)); */
   color: var(--text-color); /* Default text color */
+  min-height: 100vh;
   min-height: 100dvh;
   min-width: 100vw;
   background-image: url("./assets/images/bgTileBlue.png");
@@ -84,6 +85,7 @@ body {
 .home-screen {
   display: grid;
   grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
   min-height: 100dvh;
   max-width: 100%;
   align-items: center;
@@ -92,6 +94,7 @@ body {
 .kodokan-screen {
   display: grid;
   grid-template-rows: auto 1fr auto auto;
+  min-height: 100vh;
   min-height: 100dvh;
   max-width: 100%;
   align-items: center;
@@ -131,6 +134,7 @@ body {
 }
 
 .logo {
+  height: 5vh;
   height: 5dvh;
 }
 
@@ -318,6 +322,7 @@ button:focus {
   position: relative; /* Ensure the pseudo-element is positioned relative to the card */
   width: 300px;
   aspect-ratio: 2 / 3; /* Maintain aspect ratio */
+  border: max(13px, 1vh) solid var(--card-border-color);
   border: max(13px, 1dvh) solid var(--card-border-color);
   border-radius: var(--border-radius-large); /* Rounded corners */
   background-color: var(--card-bg-color); /* Card background color */
@@ -407,6 +412,7 @@ button:focus {
   display: inline-flex;
   align-items: center; /* Center-align items vertically */
   /* padding: clamp(3px, 10vw, 5px) clamp(3px, 5vw, 5px); */
+  padding: min(5px, 4vh) min(5px, 1dvw);
   padding: min(5px, 4dvh) min(5px, 1dvw);
   flex-direction: row;
   /* margin: 0; */
@@ -644,6 +650,7 @@ button:focus {
   overflow-x: auto;
   padding: 10px;
   scroll-behavior: smooth;
+  max-height: 90vh;
   max-height: 90dvh;
   background-color: royalblue;
 }
@@ -704,6 +711,7 @@ button:focus {
   display: inline-flex;
   position: relative;
   top: 0;
+  min-height: 2vh;
   min-height: 2dvh;
   min-width: 100vw;
   justify-content: space-evenly;
@@ -809,6 +817,7 @@ button:focus {
   }
 
   .flag-image {
+    max-height: 5vh;
     max-height: 5dvh;
     margin: 0.5rem;
     border-radius: 4px;
