@@ -17,29 +17,35 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Event listener for showing the carousel
-  showCarouselButton.addEventListener("click", async () => {
-    if (isCarouselBuilt) {
-      carouselContainer.classList.remove("hidden");
-      return;
-    }
+  if (!showCarouselButton) {
+    console.warn(
+      "Show carousel button not found. Skipping carousel initialization."
+    );
+  } else {
+    showCarouselButton.addEventListener("click", async () => {
+      if (isCarouselBuilt) {
+        carouselContainer.classList.remove("hidden");
+        return;
+      }
 
-    try {
-      const judokaData = await fetchDataWithErrorHandling("./data/judoka.json");
-      const gokyoData = await fetchDataWithErrorHandling("./data/gokyo.json");
+      try {
+        const judokaData = await fetchDataWithErrorHandling("./data/judoka.json");
+        const gokyoData = await fetchDataWithErrorHandling("./data/gokyo.json");
 
-      validateData(judokaData, "judoka");
-      validateData(gokyoData, "gokyo");
+        validateData(judokaData, "judoka");
+        validateData(gokyoData, "gokyo");
 
-      const carousel = await buildCardCarousel(judokaData, gokyoData);
-      carouselContainer.appendChild(carousel);
-      carouselContainer.classList.remove("hidden");
+        const carousel = await buildCardCarousel(judokaData, gokyoData);
+        carouselContainer.appendChild(carousel);
+        carouselContainer.classList.remove("hidden");
 
-      isCarouselBuilt = true;
-      console.log("Carousel displayed on demand.");
-    } catch (error) {
-      console.error("Failed to build carousel:", error);
-    }
-  });
+        isCarouselBuilt = true;
+        console.log("Carousel displayed on demand.");
+      } catch (error) {
+        console.error("Failed to build carousel:", error);
+      }
+    });
+  }
 
   // Event listener for hiding card backs
   hideCard.addEventListener("click", () => {
