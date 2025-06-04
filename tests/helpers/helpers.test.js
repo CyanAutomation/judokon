@@ -10,14 +10,12 @@ describe("formatDate", () => {
     }
   );
 
-  test.each([
-    "2025-02-30",
-    "2025-04-31",
-    "2025-13-01",
-    "2025-00-10"
-  ])('returns "Invalid Date" for impossible calendar date %p', (input) => {
-    expect(formatDate(input)).toBe("Invalid Date");
-  });
+  test.each(["2025-02-30", "2025-04-31", "2025-13-01", "2025-00-10"])(
+    'returns "Invalid Date" for impossible calendar date %p',
+    (input) => {
+      expect(formatDate(input)).toBe("Invalid Date");
+    }
+  );
 
   test.each([
     ["2025-04-24", "2025-04-24"],
