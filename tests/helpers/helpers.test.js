@@ -75,4 +75,12 @@ describe("formatDate", () => {
       expect(formatDate(input)).toBe(expected);
     }
   );
+
+  test.each([
+    [new Date("2025-04-24T00:00:00Z"), "2025-04-24"],
+    [new Date("2024-02-29T23:59:59Z"), "2024-02-29"],
+    [new Date("1970-01-01T00:00:00Z"), "1970-01-01"]
+  ])("formats Date instance %p to %p", (dateObj, expected) => {
+    expect(formatDate(dateObj)).toBe(expected);
+  });
 });
