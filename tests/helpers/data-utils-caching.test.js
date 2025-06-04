@@ -17,6 +17,7 @@ describe("fetchDataWithErrorHandling caching", () => {
     expect(first).toEqual(data);
     expect(second).toEqual(data);
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    vi.restoreAllMocks();
+
+    global.fetch = originalFetch; // Restore the original fetch
   });
 });
