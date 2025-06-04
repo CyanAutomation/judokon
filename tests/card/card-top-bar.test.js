@@ -35,7 +35,7 @@ describe("generateCardTopBar", () => {
           <span class="surname">Doe</span>
         </div>
         <div class="card-flag">
-          <img src="../assets/countryFlags/placeholder-flag.png" alt="Unknown flag" onerror="this.src='../assets/countryFlags/placeholder-flag.png'">
+          <img src="../assets/countryFlags/placeholder-flag.png" alt="Unknown flag" loading="lazy" onerror="this.src='../assets/countryFlags/placeholder-flag.png'">
         </div>
       </div>
     `;
@@ -129,5 +129,6 @@ describe("createFlagImage", () => {
     expect(flagImage.outerHTML).toContain(
       `<img src="https://flagcdn.com/w320/us.png" alt="United States flag"`
     );
+    expect(flagImage.outerHTML).toContain('loading="lazy"');
   });
 });
