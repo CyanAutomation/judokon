@@ -57,7 +57,7 @@ export async function loadJSON(url) {
  */
 export async function fetchDataWithErrorHandling(url) {
   try {
-    if (dataCache[url]) {
+    if (url in dataCache) {
       return dataCache[url];
     }
 
