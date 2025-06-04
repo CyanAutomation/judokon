@@ -18,9 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Event listener for showing the carousel
   if (!showCarouselButton) {
-    console.warn(
-      "Show carousel button not found. Skipping carousel initialization."
-    );
+    console.warn("Show carousel button not found. Skipping carousel initialization.");
   } else {
     showCarouselButton.addEventListener("click", async () => {
       if (isCarouselBuilt) {
