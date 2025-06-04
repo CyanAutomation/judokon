@@ -524,7 +524,7 @@ button:focus {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 45vh;
+  height: 75vh;
   background-color: rgba(34, 34, 59, 0.8);
   backdrop-filter: blur(10px);
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
