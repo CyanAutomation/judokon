@@ -4,8 +4,6 @@
 
 ## 1. Overview
 
-This document defines the specifications for the **Card Code Generation Function** in the *JU-DO-KON!* web-based card game.
-
 The Card Code Generation Function transforms key attributes of a Judoka (player card) into a **unique, readable alphanumeric code**. This code allows players to easily share, recreate, and validate specific Judoka cards in the game.
 
 > *"I want to show my best fighter to my friend and have them battle me with it!"* — Early playtest feedback from a 10-year-old user.
