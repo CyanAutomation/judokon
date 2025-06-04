@@ -65,7 +65,6 @@ body {
   font-family: "Open Sans", sans-serif;
   /* background: linear-gradient(to bottom, var(--primary-bg), var(--secondary-bg)); */
   color: var(--text-color); /* Default text color */
-  min-height: 100vh;
   min-height: 100dvh;
   min-width: 100vw;
   background-image: url("./assets/images/bgTileBlue.png");
@@ -85,7 +84,6 @@ body {
 .home-screen {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  min-height: 100vh;
   min-height: 100dvh;
   max-width: 100%;
   align-items: center;
@@ -94,7 +92,6 @@ body {
 .kodokan-screen {
   display: grid;
   grid-template-rows: auto 1fr auto auto;
-  min-height: 100vh;
   min-height: 100dvh;
   max-width: 100%;
   align-items: center;
@@ -134,7 +131,6 @@ body {
 }
 
 .logo {
-  height: 5vh;
   height: 5dvh;
 }
 
@@ -181,53 +177,6 @@ body {
   /* border: 2px dashed #a71916; */
   padding-left: 1rem;
 }
-
-.homeHelperContainer {
-  background: var(--secondary-bg);
-  border: 2px solid var(--secondary-bg);
-  border-radius: 4px 12px 12px 4px;
-  /* border-radius: 12px; */
-  /* padding: 1rem; */
-  text-align: center;
-  grid-row: 1/5;
-  grid-column: 2;
-  z-index: 5;
-}
-
-.homeHelperContainer img {
-  width: 100%;
-  /* max-width: 300px; */
-  height: auto;
-  /* aspect-ratio: 1 / 1; */
-  border-radius: 4px;
-}
-
-/* @media (orientation: portrait) {
-  .homeHelperContainer {
-    display: none;
-  }
-  .game-tile {
-    justify-content: center;
-    border-radius: 12px;
-  }
-} */
-
-.card-preview {
-  margin-top: 1rem;
-  height: 150px;
-  background: #fff;
-  border: 1px solid #ccc;
-}
-
-.locationTileContainer {
-  padding: 10px;
-  display: inline-flex;
-  gap: 2vw;
-  flex: 1 1 auto;
-  list-style-type: none;
-  border: solid 5px red;
-}
-
 .locationTile {
   max-width: 100%;
   max-height: 36vh;
@@ -256,7 +205,6 @@ body {
   border-radius: 1rem;
   flex: 1 1 auto;
 }
-
 .svgTile {
   aspect-ratio: 1 / 1;
   display: flex;
@@ -273,7 +221,6 @@ svg {
   /* fill: #e1e1e1; */
   fill: #ffffff;
 }
-
 /* Button styles */
 button {
   font-size: 1rem;
@@ -294,20 +241,6 @@ button:focus {
   outline: none; /* Remove default focus outline */
   text-decoration: underline; /* Add underline for focus */
 }
-
-/* Optional: Hide spinner by default with the hidden class */
-.hidden {
-  display: none;
-}
-
-#gameArea {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-  backdrop-filter: blur(10px);
-}
-
 /* Card styles */
 .card-container {
   display: flex;
@@ -629,7 +562,6 @@ button:focus {
 .card-profile .profile-link:hover {
   background-color: var(--button-hover-bg);
 }
-
 /* Carousel container */
 .carousel-container {
   position: relative;
@@ -713,7 +645,6 @@ button:focus {
   display: inline-flex;
   position: relative;
   top: 0;
-  min-height: 2vh;
   min-height: 2dvh;
   min-width: 100vw;
   justify-content: space-evenly;
@@ -819,7 +750,6 @@ button:focus {
   }
 
   .flag-image {
-    max-height: 5vh;
     max-height: 5dvh;
     margin: 0.5rem;
     border-radius: 4px;
