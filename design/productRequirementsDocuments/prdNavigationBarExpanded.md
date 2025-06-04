@@ -2,7 +2,7 @@
 
 ## Problem Statement
 
-Players have reported that the current navigation menus feel disconnected from the Ju-Do-Kon! theme, which weakens immersion and reduces excitement when switching game modes. A theoretical 10-year-old playtester noted, *"The menu feels boring compared to the rest of the game — can it look more exciting? Maybe like a judo dojo or village?"*
+Players have reported that the current navigation menus feel disconnected from the Ju-Do-Kon! theme, which weakens immersion and reduces excitement when switching game modes. A theoretical 10-year-old playtester noted, _"The menu feels boring compared to the rest of the game — can it look more exciting? Maybe like a judo dojo or village?"_
 
 Currently, the menu is purely functional but lacks the thematic cohesion that draws players deeper into the Ju-Do-Kon! world. Additionally, important new modes are hard to find because the plain menu structure buries them below a list format, making discovery harder for players. Improving the navigation’s thematic fit is important now because new game modes have been added, and players are not easily discovering them through the existing menu.
 
@@ -17,13 +17,13 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                     | Description                                                                 |
-|---------|------------------------------|-----------------------------------------------------------------------------|
-| **P1**  | Design Village Map Navigation | Wireframes and tile layout with 48px+ targets and hover/tap animations.     |
-| **P1**  | Implement Footer Map Expansion| Smooth slide-up animation, toggle behavior, and orientation handling.      |
-| **P2**  | Integrate Fallback Menu       | High-contrast text fallback menu that loads within 1 second if assets fail.|
-| **P2**  | Ensure Accessibility & Performance | Keyboard navigation, screen reader support, 60fps performance, WCAG compliance. |
-| **P3**  | Add "Simple Menu Mode" Toggle to Settings | Optional toggle to disable map and simplify navigation.               |
+| Priority | Feature                                   | Description                                                                     |
+| -------- | ----------------------------------------- | ------------------------------------------------------------------------------- |
+| **P1**   | Design Village Map Navigation             | Wireframes and tile layout with 48px+ targets and hover/tap animations.         |
+| **P1**   | Implement Footer Map Expansion            | Smooth slide-up animation, toggle behavior, and orientation handling.           |
+| **P2**   | Integrate Fallback Menu                   | High-contrast text fallback menu that loads within 1 second if assets fail.     |
+| **P2**   | Ensure Accessibility & Performance        | Keyboard navigation, screen reader support, 60fps performance, WCAG compliance. |
+| **P3**   | Add "Simple Menu Mode" Toggle to Settings | Optional toggle to disable map and simplify navigation.                         |
 
 ## Acceptance Criteria
 
@@ -35,6 +35,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 6. **Given** accessibility needs, **then** all tiles must have descriptive alt text and support screen readers.
 
 ### Edge Cases
+
 - **Slow connections:** Graceful fallback to text menu without freezing or partial load.
 
 ## Player Settings (Optional)
@@ -66,16 +67,19 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 ## Tasks
 
 - [ ] **1.0 Design Village Map Navigation (P1)**
+
   - [ ] 1.1 Create updated wireframes for collapsed and expanded footer views.
   - [ ] 1.2 Design tile positions on the village map grid with 48px+ targets (Dojo, Budokan, Kodokan).
   - [ ] 1.3 Specify hover/tap animations for tiles (bounce effect).
 
 - [ ] **2.0 Implement Footer Map Expansion (P1)**
+
   - [ ] 2.1 Code smooth slide-up animation (<500ms, `ease-out` easing).
   - [ ] 2.2 Implement tap-outside-to-close and map icon toggle behavior.
   - [ ] 2.3 Handle device orientation changes mid-animation.
 
 - [ ] **3.0 Integrate Fallback Menu (P2)**
+
   - [ ] 3.1 Detect if village map assets fail to load
   - [ ] 3.2 Implement a high-contrast, text-only fallback menu.
   - [ ] 3.3 Ensure fallback loads within 1 second.
@@ -85,5 +89,4 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
   - [ ] 5.2 Provide alt text and screen reader support for all tiles.
   - [ ] 5.3 Test animation performance on devices to ensure ≥60fps.
   - [ ] 5.4 Verify all text labels meet WCAG 2.1 AA contrast standards (≥4.5:1).
-     
 - [ ] **5.0 Add "Simple Menu Mode" toggle to settings (P3)**

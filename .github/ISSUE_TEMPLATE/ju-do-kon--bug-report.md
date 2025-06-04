@@ -1,19 +1,19 @@
 ---
 name: Ju-Do-Kon! Bug Report
 about: Report a bug to help us improve Ju-Do-Kon!
-title: 'BUG: TBC'
+title: "BUG: TBC"
 labels: bug
-assignees: ''
-
+assignees: ""
 ---
 
 ## 🐞 Bug Report
 
-Thanks for helping make *Ju-Do-Kon!* better! Please fill out the details below.
+Thanks for helping make _Ju-Do-Kon!_ better! Please fill out the details below.
 
 ---
 
 ### 📝 Summary
+
 _A short, clear description of the bug._
 
 **Example**:  
@@ -22,9 +22,11 @@ _A short, clear description of the bug._
 ---
 
 ### 🔢 Steps to Reproduce
+
 _How can we reproduce the issue?_
 
 **Example**:
+
 1. Go to 'Battle Mode'.
 2. Select two judoka cards.
 3. Click "Start Battle."
@@ -33,6 +35,7 @@ _How can we reproduce the issue?_
 ---
 
 ### ✅ Expected Result
+
 _What did you expect to happen?_
 
 **Example**:  
@@ -41,6 +44,7 @@ _What did you expect to happen?_
 ---
 
 ### ❌ Actual Result
+
 _What actually happened?_
 
 **Example**:  
@@ -49,6 +53,7 @@ _What actually happened?_
 ---
 
 ### 📷 Screenshots or Videos
+
 _If applicable, add screenshots or a short video to help explain your problem._
 
 (Drag and drop screenshots here)
@@ -56,6 +61,7 @@ _If applicable, add screenshots or a short video to help explain your problem._
 ---
 
 ### 🌐 Browser & Device Info
+
 _Include browser name, version, and device model._
 
 **Example**:  
@@ -64,6 +70,7 @@ _Include browser name, version, and device model._
 ---
 
 ### 🚨 Severity
+
 _How bad is the bug?_
 
 - [ ] Critical (game-breaking or crash)
@@ -74,5 +81,6 @@ _How bad is the bug?_
 ---
 
 ### 📋 Checklist
+
 - [ ] I have tested this issue in a private/incognito window/cleared cache.
 - [ ] I have checked for existing bug reports related to this issue.
