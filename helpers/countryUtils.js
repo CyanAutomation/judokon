@@ -21,7 +21,26 @@
  *
  * @returns {Promise<CountryCodeEntry[]>} Resolves to an array of country code mappings.
  */
+let countryCodeMappingCache = null;
+const COUNTRY_CACHE_KEY = "countryCodeMappingCache";
+
 async function loadCountryCodeMapping() {
+  if (countryCodeMappingCache) {
+    return countryCodeMappingCache;
+  }
+
+  if (typeof localStorage !== "undefined") {
+    const cached = localStorage.getItem(COUNTRY_CACHE_KEY);
+    if (cached) {
+      try {
+        countryCodeMappingCache = JSON.parse(cached);
+        return countryCodeMappingCache;
+      } catch (e) {
+        console.warn("Failed to parse cached country code mapping", e);
+      }
+    }
+  }
+
   const response = await fetch("../data/countryCodeMapping.json");
   if (!response.ok) {
     throw new Error("Error - Failed to load the country code mapping");
@@ -39,6 +58,16 @@ async function loadCountryCodeMapping() {
     }
   });
   console.log("Loaded country code mapping:", data);
+
+  countryCodeMappingCache = data;
+
+  if (typeof localStorage !== "undefined") {
+    try {
+      localStorage.setItem(COUNTRY_CACHE_KEY, JSON.stringify(data));
+    } catch (e) {
+      console.warn("Failed to cache country code mapping", e);
+    }
+  }
 
   return data;
 }
