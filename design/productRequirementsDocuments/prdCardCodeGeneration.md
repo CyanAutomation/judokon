@@ -1,4 +1,4 @@
-# JU-DO-KON! – Card Code Generation Function: Product Requirements Document (PRD)
+# PRD: Card Code Generation Function
 
 ---
 
