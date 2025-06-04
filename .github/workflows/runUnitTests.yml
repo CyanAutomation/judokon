@@ -21,6 +21,8 @@
 # 4. Run the test suite:
 #    - Execute 'npm run test' to run the project's tests using Vitest.
 name: Run Unit Tests (Vitest)
+permissions:
+  contents: read
 
 on:
   push:
