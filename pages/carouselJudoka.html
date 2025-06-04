@@ -66,8 +66,7 @@
         import { buildCardCarousel } from "../helpers/carouselBuilder.js";
         import { populateCountryList } from "../helpers/countryUtils.js";
         import {
-          fetchDataWithErrorHandling,
-          validateData
+          fetchDataWithErrorHandling
         } from "../helpers/dataUtils.js";
 
         document.addEventListener("DOMContentLoaded", async () => {
@@ -79,9 +78,6 @@
               fetchDataWithErrorHandling("../data/judoka.json"),
               fetchDataWithErrorHandling("../data/gokyo.json")
             ]);
-
-            validateData(judokaData, "judoka");
-            validateData(gokyoData, "gokyo");
 
             const carousel = await buildCardCarousel(judokaData, gokyoData);
             carouselContainer.appendChild(carousel);
