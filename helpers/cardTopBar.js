@@ -145,14 +145,18 @@ export function createNameContainer(firstname, surname) {
  * Creates a DOM element for the flag image.
  *
  * @pseudocode
- * 1. Create an `<img>` element:
+ * 1. Create a `<div>` container:
  *    - Set its `className` to `"card-flag"`.
+ *
+ * 2. Create an `<img>` element:
  *    - Set its `src` attribute to `finalFlagUrl` or fallback to `PLACEHOLDER_FLAG_URL`.
  *    - Set its `alt` attribute to the `countryName` followed by "flag".
  *
- * 2. Add an `onerror` handler to fallback to `PLACEHOLDER_FLAG_URL` if the image fails to load.
+ * 3. Add an `onerror` handler to fallback to `PLACEHOLDER_FLAG_URL` if the image fails to load.
  *
- * 3. Return the `<img>` element.
+ * 4. Append the `<img>` element to the container.
+ *
+ * 5. Return the container `<div>`.
  */
 export function createFlagImage(finalFlagUrl, countryName) {
   console.log(`Creating flag image with country name: ${countryName}`); // Debugging
