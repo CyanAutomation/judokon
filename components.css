@@ -16,17 +16,17 @@
   --common-signature-move-text: #fed843; */
 
   /* Font sizes */
-  /* --font-small: 0.9rem;
+  --font-small: 0.9rem;
   --font-medium: 1rem;
   --font-large: 1.2rem;
-  --font-extra-large: 3rem; */
+  --font-extra-large: 3rem;
 
   /* Spacing */
-  /* --padding-none: 0;
+  --padding-none: 0;
   --padding-small: 0.2rem;
   --padding-medium: 0.5rem;
   --padding-large: 1rem;
-  --padding-extra-large: 2rem; */
+  --padding-extra-large: 2rem;
 
   /* Border radius */
   --border-radius-small: 4px;
@@ -175,7 +175,8 @@ body {
 
 .tile-content h2 {
   /* border: 2px dashed #a71916; */
-  padding-left: 1rem;
+  padding-left: var(--padding-large);
+  font-size: var(--font-large);
 }
 .locationTile {
   max-width: 100%;
@@ -450,14 +451,13 @@ button:focus {
 .card-stats {
   background-color: var(--card-bg-color); /* Background color */
   color: var(--text-color);
-  padding: min(2px, 0.5vw) min(6px, 2vw);
+  padding: var(--padding-small) var(--padding-large);
   margin: 0;
   display: flex;
   justify-content: space-between;
   width: 100%;
-  align-items: space-between;
-  font-size: min(16px, 8vw);
   align-items: flex-end;
+  font-size: var(--font-medium);
   flex-direction: column; /* Stack items vertically */
   /* letter-spacing: min(0.5px, 1px); */
 }
@@ -549,8 +549,8 @@ button:focus {
 /* Profile link styles */
 .card-profile .profile-link {
   display: inline-block; /* Inline-block layout */
-  margin-top: 1rem; /* Add top margin */
-  padding: 0.5rem 1rem; /* Add padding */
+  margin-top: var(--padding-large); /* Add top margin */
+  padding: var(--padding-medium) var(--padding-large); /* Add padding */
   background-color: var(--button-bg); /* Background color */
   color: var(--button-text-color); /* Text color */
   text-decoration: none; /* Remove underline */

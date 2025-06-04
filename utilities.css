@@ -16,17 +16,17 @@
   --common-signature-move-text: #fed843; */
 
   /* Font sizes */
-  /* --font-small: 0.9rem;
+  --font-small: 0.9rem;
   --font-medium: 1rem;
   --font-large: 1.2rem;
-  --font-extra-large: 3rem; */
+  --font-extra-large: 3rem;
 
   /* Spacing */
-  /* --padding-none: 0;
+  --padding-none: 0;
   --padding-small: 0.2rem;
   --padding-medium: 0.5rem;
   --padding-large: 1rem;
-  --padding-extra-large: 2rem; */
+  --padding-extra-large: 2rem;
 
   /* Border radius */
   --border-radius-small: 4px;
