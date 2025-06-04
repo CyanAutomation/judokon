@@ -87,9 +87,7 @@ function addScrollMarkers(container, wrapper) {
 
   container.addEventListener("scroll", () => {
     const scrollLeft = container.scrollLeft;
-    const activeIndex = cardWidth
-      ? Math.round(scrollLeft / cardWidth)
-      : 0;
+    const activeIndex = cardWidth ? Math.round(scrollLeft / cardWidth) : 0;
 
     markers.querySelectorAll(".scroll-marker").forEach((marker, index) => {
       marker.classList.toggle("active", index === activeIndex);
