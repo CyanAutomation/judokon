@@ -6,23 +6,25 @@
 
 The Card Code Generation Function transforms key attributes of a Judoka (player card) into a **unique, readable alphanumeric code**. This code allows players to easily share, recreate, and validate specific Judoka cards in the game.
 
-> *"I want to show my best fighter to my friend!"* — Early playtest feedback from a hypothetical 10-year-old user.
-
-> *"Typing long names is annoying. Codes are cooler and easier!"* — Anonymous feedback from playtest logs.
+> **Player Feedback:**
+> - *"I want to show my best fighter to my friend!"* — Early playtest feedback from a hypothetical 10-year-old user.
+> - *"Typing long names is annoying. Codes are cooler and easier!"* — Anonymous feedback from playtest logs.
 
 Players gain a sense of **ownership and pride** by sharing their custom Judoka quickly and easily. **Without simple sharing, engagement can drop**, especially for kids who expect fast, low-effort interactions.
 
-The system ensures that:
-- The code is **unique** to each Judoka’s stats and identity.
-- The code is **obfuscated** to prevent easy manipulation.
-- The code is **readable**, using a limited, kid-friendly character set.
-- The code is **formatted** to improve readability and typing accuracy.
+### System Features
 
-Key Requirements:
+- **Unique**: Each Judoka’s stats and identity produce a distinct code.
+- **Obfuscated**: Prevents easy manipulation.
+- **Readable**: Uses a limited, kid-friendly character set.
+- **Formatted**: Improves readability and typing accuracy.
+
+### Key Requirements
+
 - **Security and Usability** are equally important.
 - **≤100ms generation time** for producing the code.
 - **Auto-generated** whenever a card is created or updated and saved into `judoka.json`.
-- Code is **visible** on card screens (where relevant). 
+- Code is **visible** on card screens (where relevant).
 - Players can **input shared codes** with a **<2% manual entry error rate**.
 - **Easy copying** and **auto-hyphenation** during code entry for better usability.
 
@@ -30,25 +32,30 @@ Key Requirements:
 
 ## 2. Purpose and Value
 
-- **For Players**: Enables easy sharing and import/export of Judoka using compact, friendly codes.
-- **For the Game**: Adds integrity and authenticity by encoding Judoka attributes securely.
-- **For Developers**: Simplifies storage and retrieval of Judoka data without exposing sensitive information.
+### For Players
+Enables easy sharing and import/export of Judoka using compact, friendly codes.
+
+### For the Game
+Adds integrity and authenticity by encoding Judoka attributes securely.
+
+### For Developers
+Simplifies storage and retrieval of Judoka data without exposing sensitive information.
 
 ---
 
 ## 3. Functional Requirements
 
-| Priority | Feature                     | Description                                                        |
-|--------- |-----------------------------|-------------------------------------------------------------------- |
-| **P1**   | Input Validation             | Ensure all required Judoka fields are present and valid.           |
-| **P1**   | String Concatenation         | Build the raw code string from Judoka attributes and stats.        |
-| **P1**   | XOR Obfuscation              | Apply XOR encoding to obfuscate the raw string.                    |
-| **P1**   | Readable Charset Mapping     | Convert to a friendly 32-character readable code.                  |
-| **P1**   | Chunk Formatting             | Format the code into 4-character chunks separated by hyphens.      |
-| **P1**   | Save to File                 | Save the generated code into `judoka.json`.                        |
-| **P2**   | Error Handling               | Provide clear error messages or fallback to a generic code.        |
-| **P2**   | UI Surfacing                 | Display generated code with copy/paste support and input validation. |
-| **P2**   | Performance Compliance       | Ensure code generation completes within 100ms.
+| **Priority** | **Feature**               | **Description**                                                    |
+|--------------|---------------------------|--------------------------------------------------------------------|
+| **P1**       | Input Validation          | Ensure all required Judoka fields are present and valid.           |
+| **P1**       | String Concatenation      | Build the raw code string from Judoka attributes and stats.        |
+| **P1**       | XOR Obfuscation           | Apply XOR encoding to obfuscate the raw string.                    |
+| **P1**       | Readable Charset Mapping  | Convert to a friendly 32-character readable code.                  |
+| **P1**       | Chunk Formatting          | Format the code into 4-character chunks separated by hyphens.      |
+| **P1**       | Save to File              | Save the generated code into `judoka.json`.                        |
+| **P2**       | Error Handling            | Provide clear error messages or fallback to a generic code.        |
+| **P2**       | UI Surfacing              | Display generated code with copy/paste support and input validation. |
+| **P2**       | Performance Compliance    | Ensure code generation completes within 100ms.                     |
 
 ---
 
@@ -93,7 +100,9 @@ Key Requirements:
 
 ## 5. Example
 
-Input:
+### Input
+```json
+{
   "firstname": "Tadahiro",
   "surname": "Nomura",
   "country": "JP",
@@ -105,22 +114,28 @@ Input:
     "technique": 7,
     "kumikata": 6,
     "newaza": 5
+  }
+}
+```
 
-Output: F7KP-WQ9M-ZD23-HYTR
+### Output
+```
+F7KP-WQ9M-ZD23-HYTR
+```
 
 ---
 
 ## 6. Acceptance Criteria
 
-| ID   | Criterion                                                                 |
-|----- |-------------------------------------------------------------------------- |
-| AC1  | Given a valid Judoka, When code generation runs, Then a valid code is produced.   |
-| AC2  | Given a Judoka with missing fields, When code generation runs, fallback to a generic code. |
-| AC3  | Given a generated code, Then it must use only A–Z, 2–9, and hyphens.      |
-| AC4  | Given a code, Then it must group characters into 4-character hyphenated chunks. |
-| AC5  | Given the same Judoka object, Then the output code must be identical.     |
-| AC6  | When code generation runs, Then it must complete in under 100ms.          |
-| AC7  | Given manual code input, Then error rate must be under 2% on average.     |
+| **ID**   | **Criterion**                                                                 |
+|----------|------------------------------------------------------------------------------|
+| **AC1**  | Given a valid Judoka, When code generation runs, Then a valid code is produced. |
+| **AC2**  | Given a Judoka with missing fields, When code generation runs, fallback to a generic code. |
+| **AC3**  | Given a generated code, Then it must use only A–Z, 2–9, and hyphens.          |
+| **AC4**  | Given a code, Then it must group characters into 4-character hyphenated chunks. |
+| **AC5**  | Given the same Judoka object, Then the output code must be identical.         |
+| **AC6**  | When code generation runs, Then it must complete in under 100ms.              |
+| **AC7**  | Given manual code input, Then error rate must be under 2% on average.         |
 
 ---
 
@@ -145,6 +160,8 @@ Output: F7KP-WQ9M-ZD23-HYTR
 - Input field accepts only valid characters.
 - Auto-hyphenates every 4 characters.
 - Invalid input prompts real-time error feedback.
+
+![Card Code Display and Entry Mockup](/design/mockups/mockupCardCode1.png)
 
 ---
 

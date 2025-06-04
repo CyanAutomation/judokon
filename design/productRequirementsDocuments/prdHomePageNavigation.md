@@ -10,14 +10,16 @@ The purpose of this menu is to allow players to access the core game modes quick
 
 A fast, accessible, and thematic navigation experience is crucial to ensure new players feel confident and engaged from their first visit.
 
+---
+
 ## Goals
 
-* Navigation menu loads within 2 seconds on standard 3G connections.
-* Tile navigable via keyboard (Tab navigation, Enter/Space activation).
-* Ensure all icons and text meet WCAG AA contrast ratio (minimum 4.5:1).
-* SVG icons <50KB to optimize load times.
-* Fallback icon (JU-DO-KON logo) displayed if SVG fails to load.
-* Achieve a navigation task success rate of ≥98%.
+- Navigation menu loads within 2 seconds on standard 3G connections.
+- Tile navigable via keyboard (Tab navigation, Enter/Space activation).
+- Ensure all icons and text meet WCAG AA contrast ratio (minimum 4.5:1).
+- SVG icons <50KB to optimize load times.
+- Fallback icon (JU-DO-KON logo) displayed if SVG fails to load.
+- Achieve a navigation task success rate of ≥98%.
 
 ---
 
@@ -35,16 +37,14 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 
 ### 2.1. Navigation Menu Layout
 
-* The main navigation is a **grid** layout containing **four clickable tiles**.
-* Each tile consists of:
-
-  * A **vector icon** (SVG).
-  * A **tile label** (textual title of the game mode).
-* Tiles are **visually consistent** and equally sized.
-* Hover and click behavior must be clearly indicated:
-
-  * Hover state: cursor changes to pointer, and tile zooms in slightly (scale 1.05) over 150ms with ease-in transition.
-* Tap targets must be at least 48px x 48px on touch devices.
+- The main navigation is a **grid** layout containing **four clickable tiles**.
+- Each tile consists of:
+  - A **vector icon** (SVG).
+  - A **tile label** (textual title of the game mode).
+- Tiles are **visually consistent** and equally sized.
+- Hover and click behavior must be clearly indicated:
+  - Hover state: cursor changes to pointer, and tile zooms in slightly (scale 1.05) over 150ms with ease-in transition.
+- Tap targets must be at least 48px x 48px on touch devices.
 
 ### 2.2. Tile Definitions
 
@@ -59,10 +59,10 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 
 ### 2.3. Behavior on Click
 
-* Clicking a tile navigates to the corresponding page immediately.
-* No page transition animation is required (standard browser navigation).
-* JavaScript ensures the tile is clickable across the whole tile area.
-* If the icon fails to load, a generic fallback icon (JU-DO-KON logo) must be displayed.
+- Clicking a tile navigates to the corresponding page immediately.
+- No page transition animation is required (standard browser navigation).
+- JavaScript ensures the tile is clickable across the whole tile area.
+- If the icon fails to load, a generic fallback icon (JU-DO-KON logo) must be displayed.
 
 > **Note on Back-out Flow**: Once a tile is clicked and navigation begins, browser back button behavior will be standard, allowing users to return to the previous page if needed.
 
@@ -92,10 +92,12 @@ Each tile contains:
 
 > **Visual Notes**:
 >
-> * Grid layout: 2 rows × 2 columns.
-> * Even spacing and alignment between tiles.
-> * Optimized for landscape desktop layout.
-> * Tap target sizes specified for touch devices.
+> - Grid layout: 2 rows × 2 columns.
+> - Even spacing and alignment between tiles.
+> - Optimized for landscape desktop layout.
+> - Tap target sizes specified for touch devices.
+
+![Main Screen Game Modes Mockup](/design/mockups/mockupGameModes1.png)
 
 ---
 
@@ -123,50 +125,50 @@ Each tile contains:
 
 ### 5.1. Responsiveness
 
-* The layout must adapt to different screen sizes:
-
-  * **Desktop (>=1024px):** 2 columns, 2 rows.
-  * **Tablet (>=768px and <1024px):** 2 columns, 2 rows.
-  * **Mobile (<768px):** Single column layout; tiles stack vertically.
+- The layout must adapt to different screen sizes:
+  - **Desktop (>=1024px):** 2 columns, 2 rows.
+  - **Tablet (>=768px and <1024px):** 2 columns, 2 rows.
+  - **Mobile (<768px):** Single column layout; tiles stack vertically.
 
 ### 5.2. Accessibility
 
-* Tiles must be:
-
-  * Focusable via keyboard (`tabindex=0` if needed).
-  * Activated via keyboard (`Enter` or `Space` key).
-* Labels must be screen-reader friendly (e.g., via `aria-label`).
-* SVG icons must have descriptive `title` or `aria-hidden="true"` if decorative.
-* Tap targets must meet WCAG minimum sizing standards (48px x 48px).
+- Tiles must be:
+  - Focusable via keyboard (`tabindex=0` if needed).
+  - Activated via keyboard (`Enter` or `Space` key).
+- Labels must be screen-reader friendly (e.g., via `aria-label`).
+- SVG icons must have descriptive `title` or `aria-hidden="true"` if decorative.
+- Tap targets must meet WCAG minimum sizing standards (48px x 48px).
 
 ### 5.3. Performance
 
-* SVG icons must be **optimized** to minimize page load times (<50KB).
-* Navigation interactions must be **instantaneous**, with interaction latency <100ms.
-* Ensure fallback behavior if network fails to load SVGs.
+- SVG icons must be **optimized** to minimize page load times (<50KB).
+- Navigation interactions must be **instantaneous**, with interaction latency <100ms.
+- Ensure fallback behavior if network fails to load SVGs.
+
+---
 
 ## 6. Edge Cases / Failure States
 
-* **Icon Load Failure**: Fall back to displaying a generic JU-DO-KON logo.
-* **Slow Network**: Navigation tiles and fallback icons should still be accessible.
-* **Broken Destination URL**: Log an error and redirect player to a default error page.
-* **Device Rotation During Navigation**: Maintain consistent layout after orientation change.
+- **Icon Load Failure**: Fall back to displaying a generic JU-DO-KON logo.
+- **Slow Network**: Navigation tiles and fallback icons should still be accessible.
+- **Broken Destination URL**: Log an error and redirect player to a default error page.
+- **Device Rotation During Navigation**: Maintain consistent layout after orientation change.
+
+---
 
 ## 7. Design and UX Considerations
 
-* **Mockups**:
+- **Mockups**:
+  - Annotated wireframes showcasing:
+    - Grid layout with hover state visuals (cursor change, 150ms zoom effect).
+    - Touch target sizing indicators.
+- **Style Guidelines**:
+  - Use consistent fonts and color palette from JU-DO-KON’s theme.
+  - Ensure text labels and background colors have contrast ratio ≥4.5:1.
+  - Consistent margin and padding for tile spacing.
+  - Hover interaction: scale tile to 1.05 over 150ms with ease-in transition for visual feedback.
 
-  * Annotated wireframes showcasing:
-
-    * Grid layout with hover state visuals (cursor change, 150ms zoom effect).
-    * Touch target sizing indicators.
-* **Style Guidelines**:
-
-  * Use consistent fonts and color palette from JU-DO-KON’s theme.
-  * Ensure text labels and background colors have contrast ratio ≥4.5:1.
-  * Consistent margin and padding for tile spacing.
-  * Hover interaction: scale tile to 1.05 over 150ms with ease-in transition for visual feedback.
-
+---
 
 ## Tasks
 

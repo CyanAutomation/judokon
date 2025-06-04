@@ -9,10 +9,10 @@ KG is the friendly, energetic guide character for the game. He provides players 
 ---
 
 ## 1. Body Proportions
-- Chibi style — KG is **3 heads tall**.
-- Large head relative to his body (approximately 1/3 of total height).
-- Stout, strong build — wide torso, thick limbs.
-- Large hands and feet for expressiveness and balance.
+- **Chibi style**: KG is **3 heads tall**.
+- **Head-to-body ratio**: Large head relative to his body (approximately 1/3 of total height).
+- **Build**: Stout, strong build — wide torso, thick limbs.
+- **Hands and feet**: Large for expressiveness and balance.
 
 ---
 
@@ -22,9 +22,9 @@ KG is the friendly, energetic guide character for the game. He provides players 
 - **Mouth**: Wide mouth, usually smiling with visible teeth.
 - **Beard**: Full, dark beard (neatly groomed) and matching thick eyebrows.
 - **Hair**: Bald on top (shaved) with hair around the sides.
-- **Expression**:  
-  - Default: Cheerful and friendly.
-  - Allowed: Serious, surprised, confident, depending on the context.
+- **Expression**:
+  - **Default**: Cheerful and friendly.
+  - **Allowed**: Serious, surprised, confident, depending on the context.
 - **Skin Tone**: Light to medium tone representing Japanese ethnicity.
 
 ---
@@ -62,9 +62,9 @@ KG is the friendly, energetic guide character for the game. He provides players 
   - Award poses: holding trophies, scrolls.
 - **Posture**: Open and confident, stable foot placement.
 - **Expression Variations**:
-  - Smile (default).
-  - Determined (brows furrowed, serious mouth).
-  - Surprised (wide eyes, open mouth).
+  - **Smile**: Default.
+  - **Determined**: Brows furrowed, serious mouth.
+  - **Surprised**: Wide eyes, open mouth.
 
 ---
 
@@ -99,13 +99,13 @@ KG is the friendly, energetic guide character for the game. He provides players 
 ---
 
 ## 9. Do’s and Don’ts
-✅ Do maintain the 3-heads tall proportion.  
-✅ Do use dynamic, energetic poses for most scenes.  
-✅ Do keep the gi neat and belt properly tied.  
-✅ Do maintain the friendly or expressive facial tone appropriate for the situation.  
-✅ Do keep the art style flat and cartoonish with bold outlines.
+✅ **Do** maintain the 3-heads tall proportion.  
+✅ **Do** use dynamic, energetic poses for most scenes.  
+✅ **Do** keep the gi neat and belt properly tied.  
+✅ **Do** maintain the friendly or expressive facial tone appropriate for the situation.  
+✅ **Do** keep the art style flat and cartoonish with bold outlines.
 
-❌ Don’t make KG realistic or overly detailed.  
-❌ Don’t remove or forget the Japan flag patch (default outfit).  
-❌ Don’t create heavily shaded or textured renders — flat shading only.
+❌ **Don’t** make KG realistic or overly detailed.  
+❌ **Don’t** remove or forget the Japan flag patch (default outfit).  
+❌ **Don’t** create heavily shaded or textured renders — flat shading only.
 

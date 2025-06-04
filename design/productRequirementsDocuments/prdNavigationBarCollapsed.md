@@ -1,6 +1,8 @@
+# PRD: Collapsed Navigation Bar
+
 ---
 
-## Description
+## 1. Description
 
 The **ju-do-kon!** game features multiple game modes and screens. Players need easy, intuitive navigation to seamlessly transition between activities such as battles, judoka browsing, and training. When navigation is unclear, players experience increased cognitive load and frustration, breaking immersion and potentially leading to session drop-offs.
 
@@ -12,7 +14,7 @@ Currently, the lack of a consistent navigation system leads to player disorienta
 
 ---
 
-## Goals
+## 2. Goals
 
 - Reduce navigation-related exits by **20%** within 30 days of implementation.
 - Increase average session duration per player by **15%** within 30 days.
@@ -24,7 +26,7 @@ Currently, the lack of a consistent navigation system leads to player disorienta
 
 ---
 
-## How It Works
+## 3. How It Works
 
 The bottom navigation bar appears consistently across all game screens, dynamically loading active game modes from `gameModes.json`.
 
@@ -42,14 +44,14 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ---
 
-## Wireframes / Visual Reference
+## 4. Wireframes / Visual Reference
 
 - **Collapsed Mode**: Horizontal navigation bar with clickable links and a bottom-left corner ju-do-kon logo. A simplified vertical text list expands on logo tap. _(Visual reference to be attached.)_
 - **Portrait Mode**: A simplified vertical text list expands on logo tap.
 
 ---
 
-## Functional Requirements
+## 5. Functional Requirements
 
 | Priority | Feature                | Description                                                                                          |
 | -------- | ---------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -61,7 +63,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ---
 
-## Acceptance Criteria
+## 6. Acceptance Criteria
 
 - Touch targets maintain **≥48px** size across all device resolutions.
 - Navigation is visible on **100%** of game screens.
@@ -79,7 +81,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ---
 
-## Edge Cases / Failure States
+## 7. Edge Cases / Failure States
 
 - **Data Source Failure**: If `gameModes.json` fails to load, fallback to a hardcoded list in under 2 seconds.
 - **Menu Loading Failure Mid-Session**: Notify the user and trigger an automatic reload.
@@ -88,7 +90,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ---
 
-## Design and UX Considerations
+## 8. Design and UX Considerations
 
 ![Wireframe of Navigation Bar Collapsed](/design/mockups/mockupFooterNavigationCollapsed1.png)
 

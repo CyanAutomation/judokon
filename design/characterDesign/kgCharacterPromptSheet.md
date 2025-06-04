@@ -120,6 +120,3 @@ Wearing casual clothes: a red t-shirt and blue shorts, barefoot. Friendly, smili
 Chibi cartoon style character, 3-heads tall, bald with thick black beard and eyebrows, light-medium beige skin tone.
 
 Dressed in a blue judo gi with a black belt and Japan flag patch. Smiling proudly, holding a gold trophy above his head with both hands. Background is a simple stage with spotlights and a cheering crowd, lightly blurred. Flat cell shading, bold black outlines, warm tone lighting.
-
-
-⸻
