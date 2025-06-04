@@ -19,7 +19,7 @@
  * @returns {Promise<T>} A promise that resolves to the parsed JSON data.
  */
 // In-memory cache for data fetched from URLs
-const dataCache = {};
+const dataCache = new Map();
 
 export async function loadJSON(url) {
   try {
