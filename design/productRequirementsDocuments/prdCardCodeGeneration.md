@@ -89,8 +89,7 @@ Key Requirements:
 - **Performance**: Code generation under 100ms.
 - **Consistency**: Same input produces the same code.
 
---
-
+---
 
 ## 6. Acceptance Criteria
 
