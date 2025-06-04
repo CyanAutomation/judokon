@@ -82,10 +82,14 @@ function addScrollMarkers(container, wrapper) {
 
   wrapper.appendChild(markers);
 
+  const firstCard = container.querySelector(".judoka-card");
+  const cardWidth = firstCard ? firstCard.offsetWidth : 0;
+
   container.addEventListener("scroll", () => {
     const scrollLeft = container.scrollLeft;
-    const cardWidth = container.querySelector(".judoka-card").offsetWidth;
-    const activeIndex = Math.round(scrollLeft / cardWidth);
+    const activeIndex = cardWidth
+      ? Math.round(scrollLeft / cardWidth)
+      : 0;
 
     markers.querySelectorAll(".scroll-marker").forEach((marker, index) => {
       marker.classList.toggle("active", index === activeIndex);
@@ -321,3 +325,5 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   return wrapper;
 }
+
+export { addScrollMarkers };
