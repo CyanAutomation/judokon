@@ -192,6 +192,7 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   try {
     const signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
     signatureMoveElement = document.createElement("div");
+    signatureMoveElement.className = "card-signature-move";
     signatureMoveElement.innerHTML = signatureMoveHTML;
   } catch (error) {
     console.error("Failed to generate signature move:", error);
