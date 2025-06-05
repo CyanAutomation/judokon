@@ -180,6 +180,7 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   try {
     const statsHTML = generateCardStats(judoka, cardType);
     statsElement = document.createElement("div");
+    statsElement.className = "card-stats";
     statsElement.innerHTML = statsHTML;
   } catch (error) {
     console.error("Failed to generate stats:", error);
