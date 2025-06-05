@@ -1,5 +1,5 @@
 import { getFlagUrl } from "./countryUtils.js";
-import { generateCardTopBar } from "./cardTopBar.js";
+import { generateCardTopBar, createNoDataContainer } from "./cardTopBar.js";
 import {
   generateCardPortrait,
   generateCardStats,
@@ -88,6 +88,7 @@ function validateJudoka(judoka) {
  * 2. Generate the flag URL:
  *    - Use `getFlagUrl` with the `countryCode` from the `judoka` object.
  *    - Default to "vu" if `countryCode` is missing.
+ *    - If fetching the flag fails, fallback to the Vanuatu flag.
  *
  * 3. Determine the card type:
  *    - Use the `rarity` field to set the card type (e.g., "common").
@@ -101,16 +102,20 @@ function validateJudoka(judoka) {
  *
  * 6. Append the top bar:
  *    - Generate the top bar using `generateCardTopBar` and append it.
+ *    - If generation fails, append a "No data available" container instead.
  *
  * 7. Append the portrait section:
  *    - Generate portrait HTML using `generateCardPortrait`.
+ *    - If generation fails, continue with an empty section.
  *    - Add weight class information to the portrait section.
  *
  * 8. Append the stats section:
  *    - Generate stats HTML using `generateCardStats` and append it.
+ *    - If generation fails, append an empty stats container.
  *
  * 9. Append the signature move section:
  *    - Generate signature move HTML using `generateCardSignatureMove` and append it.
+ *    - If generation fails, append an empty signature move container.
  *
  * 10. Return the complete card container:
  *    - Append the `judoka-card` to the `card-container`.
@@ -123,7 +128,13 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   validateJudoka(judoka);
 
   const countryCode = judoka.countryCode;
-  const flagUrl = await getFlagUrl(countryCode || "vu"); // Default to "vu" (Vanuatu)
+  let flagUrl;
+  try {
+    flagUrl = await getFlagUrl(countryCode || "vu"); // Default to "vu" (Vanuatu)
+  } catch (error) {
+    console.error("Failed to resolve flag URL:", error);
+    flagUrl = "https://flagcdn.com/w320/vu.png";
+  }
 
   const cardType = judoka.rarity?.toLowerCase() || "common";
 
@@ -138,10 +149,21 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   const genderClass = judoka.gender === "female" ? "female-card" : "male-card";
   judokaCard.classList.add(genderClass);
 
-  const topBarElement = await generateCardTopBar(judoka, flagUrl);
+  let topBarElement;
+  try {
+    topBarElement = await generateCardTopBar(judoka, flagUrl);
+  } catch (error) {
+    console.error("Failed to generate top bar:", error);
+    topBarElement = createNoDataContainer();
+  }
   judokaCard.appendChild(topBarElement);
 
-  const portraitHTML = generateCardPortrait(judoka);
+  let portraitHTML = "";
+  try {
+    portraitHTML = generateCardPortrait(judoka);
+  } catch (error) {
+    console.error("Failed to generate portrait:", error);
+  }
   const portraitElement = document.createElement("div");
   portraitElement.className = "card-portrait";
   portraitElement.innerHTML = portraitHTML;
@@ -153,12 +175,22 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
 
   judokaCard.appendChild(portraitElement);
 
-  const statsHTML = generateCardStats(judoka, cardType);
+  let statsHTML = "";
+  try {
+    statsHTML = generateCardStats(judoka, cardType);
+  } catch (error) {
+    console.error("Failed to generate stats:", error);
+  }
   const statsElement = document.createElement("div");
   statsElement.innerHTML = statsHTML;
   judokaCard.appendChild(statsElement);
 
-  const signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
+  let signatureMoveHTML = "";
+  try {
+    signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
+  } catch (error) {
+    console.error("Failed to generate signature move:", error);
+  }
   const signatureMoveElement = document.createElement("div");
   signatureMoveElement.innerHTML = signatureMoveHTML;
   judokaCard.appendChild(signatureMoveElement);
