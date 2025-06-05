@@ -101,21 +101,21 @@ function validateJudoka(judoka) {
  *    - Add a class based on the `gender` field ("female-card" or "male-card").
  *
  * 6. Append the top bar:
- *    - Generate the top bar using `generateCardTopBar` and append it.
+ *    - Generate the top bar using `generateCardTopBar` inside a `try...catch`.
  *    - If generation fails, append a "No data available" container instead.
  *
  * 7. Append the portrait section:
- *    - Generate portrait HTML using `generateCardPortrait`.
- *    - If generation fails, continue with an empty section.
- *    - Add weight class information to the portrait section.
+ *    - Generate portrait HTML using `generateCardPortrait` inside a `try...catch`.
+ *    - If generation fails, append a fallback container from `createNoDataContainer`.
+ *    - When successful, add weight class information to the portrait section.
  *
  * 8. Append the stats section:
- *    - Generate stats HTML using `generateCardStats` and append it.
- *    - If generation fails, append an empty stats container.
+ *    - Generate stats HTML using `generateCardStats` inside a `try...catch`.
+ *    - If generation fails, append a fallback container from `createNoDataContainer`.
  *
  * 9. Append the signature move section:
- *    - Generate signature move HTML using `generateCardSignatureMove` and append it.
- *    - If generation fails, append an empty signature move container.
+ *    - Generate signature move HTML using `generateCardSignatureMove` inside a `try...catch`.
+ *    - If generation fails, append a fallback container from `createNoDataContainer`.
  *
  * 10. Return the complete card container:
  *    - Append the `judoka-card` to the `card-container`.
@@ -158,41 +158,44 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   }
   judokaCard.appendChild(topBarElement);
 
-  let portraitHTML = "";
+  let portraitElement;
   try {
-    portraitHTML = generateCardPortrait(judoka);
+    const portraitHTML = generateCardPortrait(judoka);
+    portraitElement = document.createElement("div");
+    portraitElement.className = "card-portrait";
+    portraitElement.innerHTML = portraitHTML;
+
+    const weightClassElement = document.createElement("div");
+    weightClassElement.className = "card-weight-class";
+    weightClassElement.textContent = judoka.weightClass;
+    portraitElement.appendChild(weightClassElement);
   } catch (error) {
     console.error("Failed to generate portrait:", error);
+    portraitElement = createNoDataContainer();
   }
-  const portraitElement = document.createElement("div");
-  portraitElement.className = "card-portrait";
-  portraitElement.innerHTML = portraitHTML;
-
-  const weightClassElement = document.createElement("div");
-  weightClassElement.className = "card-weight-class";
-  weightClassElement.textContent = judoka.weightClass;
-  portraitElement.appendChild(weightClassElement);
 
   judokaCard.appendChild(portraitElement);
 
-  let statsHTML = "";
+  let statsElement;
   try {
-    statsHTML = generateCardStats(judoka, cardType);
+    const statsHTML = generateCardStats(judoka, cardType);
+    statsElement = document.createElement("div");
+    statsElement.innerHTML = statsHTML;
   } catch (error) {
     console.error("Failed to generate stats:", error);
+    statsElement = createNoDataContainer();
   }
-  const statsElement = document.createElement("div");
-  statsElement.innerHTML = statsHTML;
   judokaCard.appendChild(statsElement);
 
-  let signatureMoveHTML = "";
+  let signatureMoveElement;
   try {
-    signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
+    const signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
+    signatureMoveElement = document.createElement("div");
+    signatureMoveElement.innerHTML = signatureMoveHTML;
   } catch (error) {
     console.error("Failed to generate signature move:", error);
+    signatureMoveElement = createNoDataContainer();
   }
-  const signatureMoveElement = document.createElement("div");
-  signatureMoveElement.innerHTML = signatureMoveHTML;
   judokaCard.appendChild(signatureMoveElement);
 
   cardContainer.appendChild(judokaCard);
