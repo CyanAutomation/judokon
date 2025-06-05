@@ -58,7 +58,23 @@
           try {
             // Fetch the judoka data
             const judokaData = await fetchDataWithErrorHandling("../data/judoka.json");
-            const randomJudoka = judokaData[Math.floor(Math.random() * judokaData.length)];
+            const validJudoka = judokaData.filter((j) => {
+              const hasRequiredFields =
+                j.firstname &&
+                j.surname &&
+                j.countryCode &&
+                j.stats &&
+                j.weightClass &&
+                j.signatureMoveId !== undefined &&
+                j.rarity;
+              return !j.isHidden && hasRequiredFields;
+            });
+
+            if (validJudoka.length === 0) {
+              throw new Error("No valid judoka entries found");
+            }
+
+            const randomJudoka = validJudoka[Math.floor(Math.random() * validJudoka.length)];
 
             // Fetch the gokyo data and create the lookup object
             const gokyoData = await fetchDataWithErrorHandling("../data/gokyo.json");
