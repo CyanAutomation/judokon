@@ -165,6 +165,7 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   portraitElement.className = "card-portrait";
   portraitElement.innerHTML = portraitHTML;
 
+  try {
     const weightClassElement = document.createElement("div");
     weightClassElement.className = "card-weight-class";
     weightClassElement.textContent = judoka.weightClass;
@@ -179,8 +180,12 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   let statsHTML = "";
   try {
     statsHTML = generateCardStats(judoka, cardType);
+    statsElement = document.createElement("div");
+    statsElement.className = "card-stats";
+    statsElement.innerHTML = statsHTML;
   } catch (error) {
     console.error("Failed to generate stats:", error);
+    statsElement = createNoDataContainer();
   }
   const statsElement = document.createElement("div");
   statsElement.innerHTML = statsHTML;
