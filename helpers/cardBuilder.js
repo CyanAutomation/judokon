@@ -177,9 +177,9 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
 
   judokaCard.appendChild(portraitElement);
 
-  let statsHTML = "";
+  let statsElement;
   try {
-    statsHTML = generateCardStats(judoka, cardType);
+    const statsHTML = generateCardStats(judoka, cardType);
     statsElement = document.createElement("div");
     statsElement.className = "card-stats";
     statsElement.innerHTML = statsHTML;
@@ -187,8 +187,6 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
     console.error("Failed to generate stats:", error);
     statsElement = createNoDataContainer();
   }
-  const statsElement = document.createElement("div");
-  statsElement.innerHTML = statsHTML;
   judokaCard.appendChild(statsElement);
 
   let signatureMoveHTML = "";
