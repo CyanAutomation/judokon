@@ -1,14 +1,17 @@
 # Character Design Document (CDD)
 
 ## Character Name
+
 **KG**
 
 ## Overview
+
 KG is the friendly, energetic guide character for the game. He provides players with advice, encouragement, and tips at key points. His design is in a **chibi (super-deformed)** cartoon style with strong visual appeal for ages 8–12. He is approachable, confident, and slightly exaggerated to emphasize expressiveness.
 
 ---
 
 ## 1. Body Proportions
+
 - **Chibi style**: KG is **3 heads tall**.
 - **Head-to-body ratio**: Large head relative to his body (approximately 1/3 of total height).
 - **Build**: Stout, strong build — wide torso, thick limbs.
@@ -17,6 +20,7 @@ KG is the friendly, energetic guide character for the game. He provides players 
 ---
 
 ## 2. Facial Features
+
 - **Shape**: Rounded head with a broad, expressive face.
 - **Eyes**: Large, rounded eyes with thick black eyebrows.
 - **Mouth**: Wide mouth, usually smiling with visible teeth.
@@ -30,6 +34,7 @@ KG is the friendly, energetic guide character for the game. He provides players 
 ---
 
 ## 3. Outfit
+
 - **Default Outfit**:
   - Blue judo gi.
   - Black belt tied at the waist with proper knot detail.
@@ -42,6 +47,7 @@ KG is the friendly, energetic guide character for the game. He provides players 
 ---
 
 ## 4. Color Palette
+
 - **Gi (blue)**: HEX `#3C7DC4` (Pantone 285M).
 - **Belt (black)**: HEX `#1A1A1A`.
 - **Skin tone**: Representative of Japanese ethnicity — light-medium beige (e.g., HEX `#F0C8A0` to `#D9A57E`).
@@ -52,6 +58,7 @@ KG is the friendly, energetic guide character for the game. He provides players 
 ---
 
 ## 5. Poses and Expressions
+
 - **Default pose**: Dynamic, e.g., pointing upward, giving a thumbs-up.
 - **Common poses**:
   - Jumping energetically.
@@ -69,6 +76,7 @@ KG is the friendly, energetic guide character for the game. He provides players 
 ---
 
 ## 6. Accessories / Props
+
 - **Advice scenes**:
   - Holding a signboard.
   - Pointing with a stick.
@@ -82,6 +90,7 @@ KG is the friendly, energetic guide character for the game. He provides players 
 ---
 
 ## 7. Environments
+
 - **Typical backgrounds**:
   - Dojo (wooden floor, training mats).
   - Stadium (crowd, banners).
@@ -91,6 +100,7 @@ KG is the friendly, energetic guide character for the game. He provides players 
 ---
 
 ## 8. Art Style
+
 - **Line Work**: Clean, thick black outlines.
 - **Coloring**: Solid fill with slight warm shading.
 - **Shading**: Flat cell shading with simple gradients, soft highlights (no complex textures).
@@ -99,6 +109,7 @@ KG is the friendly, energetic guide character for the game. He provides players 
 ---
 
 ## 9. Do’s and Don’ts
+
 ✅ **Do** maintain the 3-heads tall proportion.  
 ✅ **Do** use dynamic, energetic poses for most scenes.  
 ✅ **Do** keep the gi neat and belt properly tied.  
@@ -108,4 +119,3 @@ KG is the friendly, energetic guide character for the game. He provides players 
 ❌ **Don’t** make KG realistic or overly detailed.  
 ❌ **Don’t** remove or forget the Japan flag patch (default outfit).  
 ❌ **Don’t** create heavily shaded or textured renders — flat shading only.
-

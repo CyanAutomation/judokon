@@ -72,7 +72,6 @@ body {
   /* backdrop-filter: brightness(0.9); */
   background-size: 50vw auto;
   /* border: solid 5px red; */
-
 }
 
 .home-screen {
@@ -199,13 +198,13 @@ svg {
 /* Button styles */
 button {
   font-size: 1rem;
-  background: none; 
-  border: none; 
-  color: #fff; 
-  font-weight: bold; 
-  text-decoration: none; 
-  cursor: pointer; 
-  padding: 0; 
+  background: none;
+  border: none;
+  color: #fff;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0;
 }
 
 button:hover {
@@ -213,8 +212,8 @@ button:hover {
 }
 
 button:focus {
-  outline: none; 
-  text-decoration: underline; 
+  outline: none;
+  text-decoration: underline;
 }
 /* Card styles */
 .card-container {
@@ -222,20 +221,20 @@ button:focus {
   justify-content: center;
   align-items: center;
   padding: var(--padding-large);
-/*   background-color: seagreen; */
+  /*   background-color: seagreen; */
   min-height: 500px;
 }
 
 .judoka-card {
-  position: relative; 
+  position: relative;
   width: 300px;
   aspect-ratio: 2 / 3;
   border: max(13px, 1vh) solid var(--card-border-color);
   border: max(13px, 1dvh) solid var(--card-border-color);
   border-radius: var(--border-radius-large);
-  background-color: var(--card-bg-color); 
-  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3); 
-  overflow: hidden; 
+  background-color: var(--card-bg-color);
+  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -245,33 +244,33 @@ button:focus {
 }
 
 .judoka-card::before {
-  content: ""; 
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url("./assets/cardBacks/cardBack-2.png"); 
-  background-size: cover; 
-  background-position: center; 
-  z-index: 3; 
-  opacity: 0; 
-  pointer-events: none; 
-  transition: opacity 0.3s ease; 
+  background-image: url("./assets/cardBacks/cardBack-2.png");
+  background-size: cover;
+  background-position: center;
+  z-index: 3;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 
 .judoka-card.show-card-back::before {
-  opacity: 1; 
-  pointer-events: auto; 
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .judoka-card:hover::before {
-  opacity: 0; 
+  opacity: 0;
   pointer-events: none;
 }
 
 .judoka-card:hover {
-  box-shadow: 8px 8px 12px rgba(0, 0, 0, 0.4); 
+  box-shadow: 8px 8px 12px rgba(0, 0, 0, 0.4);
   transform: scale(1.01);
 }
 
@@ -310,11 +309,11 @@ button:focus {
 
 /* Top bar of the card (name and flag) */
 .card-top-bar {
-  background-color: var(--card-bg-color); 
-  color: var(--text-color); 
+  background-color: var(--card-bg-color);
+  color: var(--text-color);
   justify-content: space-around;
   display: inline-flex;
-  align-items: center; 
+  align-items: center;
   padding: min(5px, 4vh) min(5px, 1vw);
   padding: min(5px, 4vh) min(5px, 1dvw);
   padding: min(5px, 4dvh) min(5px, 1vw);
@@ -323,8 +322,8 @@ button:focus {
 }
 
 .card-name {
-  text-align: left; 
-  flex-direction: column; 
+  text-align: left;
+  flex-direction: column;
   padding: 0;
   white-space: nowrap;
   display: flex;
@@ -337,14 +336,14 @@ button:focus {
 
 .card-name .firstname {
   font-size: min(5vw, 1.1rem);
-  font-weight: normal; 
+  font-weight: normal;
   display: block;
 }
 
 .card-name .surname {
   font-size: min(6vw, 1.5rem);
-  font-weight: bold; 
-  text-transform: uppercase; 
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
 .card-flag {
@@ -371,9 +370,9 @@ button:focus {
 .card-portrait {
   position: relative;
   display: flex;
-  justify-content: center; 
-  align-items: flex-start; 
-  max-height: 220px; 
+  justify-content: center;
+  align-items: flex-start;
+  max-height: 220px;
   width: auto;
   overflow: hidden;
   background: linear-gradient(
@@ -384,10 +383,10 @@ button:focus {
 }
 
 .card-portrait img {
-  width: auto; 
-  height: 100%; 
-  object-fit: cover; 
-  overflow: hidden; 
+  width: auto;
+  height: 100%;
+  object-fit: cover;
+  overflow: hidden;
 }
 
 .card-weight-class {
@@ -410,7 +409,7 @@ button:focus {
 }
 
 .card-stats {
-  background-color: var(--card-bg-color); 
+  background-color: var(--card-bg-color);
   color: var(--text-color);
   padding: var(--padding-small) var(--padding-large);
   margin: 0;
@@ -419,13 +418,13 @@ button:focus {
   width: 100%;
   align-items: flex-end;
   font-size: var(--font-medium);
-  flex-direction: column; 
+  flex-direction: column;
 }
 
 .card-stats ul {
   list-style: none;
   padding: 0;
-  margin: 0; 
+  margin: 0;
   width: 100%;
   justify-content: space-between;
   flex-direction: row;
@@ -435,11 +434,11 @@ button:focus {
   margin: 0;
   padding: 3px min(1px, 0.6vh);
   border-top: 1px solid var(--card-border-color);
-  text-transform: uppercase; 
+  text-transform: uppercase;
 }
 
 .card-stats li:last-child {
-  border-bottom: 1px solid var(--card-border-color); 
+  border-bottom: 1px solid var(--card-border-color);
   margin-bottom: 0;
 }
 
@@ -450,12 +449,12 @@ button:focus {
 }
 
 .card-stats .stat strong {
-  text-align: left; 
+  text-align: left;
   width: 100%;
 }
 
 .card-stats .stat span {
-  text-align: right; 
+  text-align: right;
 }
 
 .signature-move-container {
@@ -469,8 +468,8 @@ button:focus {
 }
 
 .signature-move-label {
-  display: flex; 
-  background-color: #fff; 
+  display: flex;
+  background-color: #fff;
   width: 100%;
   color: #000;
   justify-content: center;
@@ -488,11 +487,11 @@ button:focus {
 
 .signature-move-value {
   display: flex;
-  background-color: var(--card-signature-move-bg); 
+  background-color: var(--card-signature-move-bg);
   width: 100%;
   height: 100%;
   color: #fed843;
-  text-transform: uppercase; 
+  text-transform: uppercase;
   justify-content: center;
   border-radius: 2px;
   border: 1px solid var(--card-signature-move-bg);
@@ -505,15 +504,15 @@ button:focus {
 }
 
 .card-profile .profile-link {
-  display: inline-block; 
-  margin-top: var(--padding-large); 
-  padding: var(--padding-medium) var(--padding-large); 
+  display: inline-block;
+  margin-top: var(--padding-large);
+  padding: var(--padding-medium) var(--padding-large);
   background-color: var(--button-bg);
-  color: var(--button-text-color); 
-  text-decoration: none; 
-  font-weight: bold; 
-  border-radius: var(--border-radius-small); 
-  transition: background-color 0.3s ease; 
+  color: var(--button-text-color);
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: var(--border-radius-small);
+  transition: background-color 0.3s ease;
 }
 
 .card-profile .profile-link:hover {
@@ -539,7 +538,7 @@ button:focus {
   scroll-behavior: smooth;
   max-height: 90vh;
   max-height: 90dvh;
-/*   background-color: royalblue; */
+  /*   background-color: royalblue; */
 }
 
 .card-carousel::-webkit-scrollbar {
@@ -548,7 +547,7 @@ button:focus {
 
 .card-carousel::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.5);
-  border-radius: 4px; 
+  border-radius: 4px;
 }
 
 .card-carousel::-webkit-scrollbar-track {
@@ -572,9 +571,9 @@ button:focus {
 }
 
 .scroll-button:hover {
-  background-color: rgba(89, 0, 255, 0.9); 
+  background-color: rgba(89, 0, 255, 0.9);
   transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .scroll-button.left {
@@ -582,11 +581,11 @@ button:focus {
 }
 
 .scroll-button.right {
-  right: 10px; 
+  right: 10px;
 }
 
 .judoka-card:target {
-  outline: 2px solid #007bff; 
+  outline: 2px solid #007bff;
   outline-offset: 4px;
 }
 

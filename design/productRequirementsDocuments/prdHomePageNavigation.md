@@ -173,27 +173,32 @@ Each tile contains:
 ## Tasks
 
 - [ ] 1.0 Create Navigation Tile Component
+
   - [ ] 1.1 Design tile structure with SVG icon and label.
   - [ ] 1.2 Ensure full-tile clickability via JS/CSS.
   - [ ] 1.3 Implement hover and click feedback (cursor pointer, 150ms slight zoom).
 
 - [ ] 2.0 Implement Responsive Grid Layout
+
   - [ ] 2.1 Create 2x2 grid layout for desktop viewports.
   - [ ] 2.2 Implement 1-column stacking for mobile (<768px).
   - [ ] 2.3 Test layout on tablet and mobile orientations.
 
 - [ ] 3.0 Add Accessibility Features
+
   - [ ] 3.1 Add `aria-labels` to each tile.
   - [ ] 3.2 Ensure text contrast ratio ≥4.5:1.
   - [ ] 3.3 Make icons `aria-hidden` if decorative.
   - [ ] 3.4 Enable keyboard tabbing and activation via Enter/Space.
 
 - [ ] 4.0 Optimize and Integrate SVG Icons
+
   - [ ] 4.1 Compress SVG icons to <50KB.
   - [ ] 4.2 Add fallback icon logic for load failure.
   - [ ] 4.3 Verify all icons load under poor network conditions.
 
 - [ ] 5.0 Implement Keyboard Navigation and Focus Management
+
   - [ ] 5.1 Add `tabindex` attributes for tiles.
   - [ ] 5.2 Handle keyboard activation events.
   - [ ] 5.3 Ensure visual focus indicators are clear and accessible.
@@ -202,4 +207,3 @@ Each tile contains:
   - [ ] 6.1 Implement generic fallback icon on load failure.
   - [ ] 6.2 Redirect to default error page on broken link.
   - [ ] 6.3 Maintain layout stability during device rotation.
-
