@@ -5,6 +5,7 @@ import {
   generateCardStats,
   generateCardSignatureMove
 } from "./cardRender.js";
+import { safeGenerate } from "./errorUtils.js";
 
 /**
  * Generates the "last updated" HTML for a judoka card.
@@ -86,9 +87,9 @@ function validateJudoka(judoka) {
  *    - Ensure all required fields are present using `validateJudoka`.
  *
  * 2. Generate the flag URL:
- *    - Use `getFlagUrl` with the `countryCode` from the `judoka` object.
+ *    - Call `safeGenerate` with `getFlagUrl` and the `countryCode`.
  *    - Default to "vu" if `countryCode` is missing.
- *    - If fetching the flag fails, fallback to the Vanuatu flag.
+ *    - Fallback to the Vanuatu flag when an error occurs.
  *
  * 3. Determine the card type:
  *    - Use the `rarity` field to set the card type (e.g., "common").
@@ -101,21 +102,21 @@ function validateJudoka(judoka) {
  *    - Add a class based on the `gender` field ("female-card" or "male-card").
  *
  * 6. Append the top bar:
- *    - Generate the top bar using `generateCardTopBar` inside a `try...catch`.
+ *    - Generate the top bar using `generateCardTopBar` and append it.
  *    - If generation fails, append a "No data available" container instead.
  *
  * 7. Append the portrait section:
- *    - Generate portrait HTML using `generateCardPortrait` inside a `try...catch`.
- *    - If generation fails, append a fallback container from `createNoDataContainer`.
- *    - When successful, add weight class information to the portrait section.
+ *    - Generate portrait HTML using `generateCardPortrait`.
+ *    - If generation fails, continue with an empty section.
+ *    - Add weight class information to the portrait section.
  *
  * 8. Append the stats section:
- *    - Generate stats HTML using `generateCardStats` inside a `try...catch`.
- *    - If generation fails, append a fallback container from `createNoDataContainer`.
+ *    - Generate stats HTML using `generateCardStats` and append it.
+ *    - If generation fails, append an empty stats container.
  *
  * 9. Append the signature move section:
- *    - Generate signature move HTML using `generateCardSignatureMove` inside a `try...catch`.
- *    - If generation fails, append a fallback container from `createNoDataContainer`.
+ *    - Generate signature move HTML using `generateCardSignatureMove` and append it.
+ *    - If generation fails, append an empty signature move container.
  *
  * 10. Return the complete card container:
  *    - Append the `judoka-card` to the `card-container`.
@@ -128,13 +129,11 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   validateJudoka(judoka);
 
   const countryCode = judoka.countryCode;
-  let flagUrl;
-  try {
-    flagUrl = await getFlagUrl(countryCode || "vu"); // Default to "vu" (Vanuatu)
-  } catch (error) {
-    console.error("Failed to resolve flag URL:", error);
-    flagUrl = "https://flagcdn.com/w320/vu.png";
-  }
+  const flagUrl = await safeGenerate(
+    () => getFlagUrl(countryCode || "vu"),
+    "Failed to resolve flag URL:",
+    "https://flagcdn.com/w320/vu.png"
+  );
 
   const cardType = judoka.rarity?.toLowerCase() || "common";
 
@@ -149,21 +148,22 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   const genderClass = judoka.gender === "female" ? "female-card" : "male-card";
   judokaCard.classList.add(genderClass);
 
-  let topBarElement;
-  try {
-    topBarElement = await generateCardTopBar(judoka, flagUrl);
-  } catch (error) {
-    console.error("Failed to generate top bar:", error);
-    topBarElement = createNoDataContainer();
-  }
+  const topBarElement = await safeGenerate(
+    () => generateCardTopBar(judoka, flagUrl),
+    "Failed to generate top bar:",
+    createNoDataContainer()
+  );
   judokaCard.appendChild(topBarElement);
 
-  let portraitElement;
+  let portraitHTML = "";
   try {
-    const portraitHTML = generateCardPortrait(judoka);
-    portraitElement = document.createElement("div");
-    portraitElement.className = "card-portrait";
-    portraitElement.innerHTML = portraitHTML;
+    portraitHTML = generateCardPortrait(judoka);
+  } catch (error) {
+    console.error("Failed to generate portrait:", error);
+  }
+  const portraitElement = document.createElement("div");
+  portraitElement.className = "card-portrait";
+  portraitElement.innerHTML = portraitHTML;
 
     const weightClassElement = document.createElement("div");
     weightClassElement.className = "card-weight-class";
@@ -176,28 +176,24 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
 
   judokaCard.appendChild(portraitElement);
 
-  let statsElement;
+  let statsHTML = "";
   try {
-    const statsHTML = generateCardStats(judoka, cardType);
-    statsElement = document.createElement("div");
-    statsElement.className = "card-stats";
-    statsElement.innerHTML = statsHTML;
+    statsHTML = generateCardStats(judoka, cardType);
   } catch (error) {
     console.error("Failed to generate stats:", error);
-    statsElement = createNoDataContainer();
   }
+  const statsElement = document.createElement("div");
+  statsElement.innerHTML = statsHTML;
   judokaCard.appendChild(statsElement);
 
-  let signatureMoveElement;
+  let signatureMoveHTML = "";
   try {
-    const signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
-    signatureMoveElement = document.createElement("div");
-    signatureMoveElement.className = "card-signature-move";
-    signatureMoveElement.innerHTML = signatureMoveHTML;
+    signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
   } catch (error) {
     console.error("Failed to generate signature move:", error);
-    signatureMoveElement = createNoDataContainer();
   }
+  const signatureMoveElement = document.createElement("div");
+  signatureMoveElement.innerHTML = signatureMoveHTML;
   judokaCard.appendChild(signatureMoveElement);
 
   cardContainer.appendChild(judokaCard);
@@ -210,26 +206,26 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
  *
  * @pseudocode
  * 1. Generate the card HTML:
- *    - Use `generateJudokaCardHTML` with the `judoka` and `gokyoLookup`.
+ *    - Use `safeGenerate` with `generateJudokaCardHTML` and a fallback of `null`.
  *
  * 2. Append the card to the container:
- *    - Use `appendChild` to add the card to the DOM.
+ *    - If a card is returned, append it to the DOM.
  *
  * 3. Handle errors:
- *    - Log an error message if card generation fails.
- *    - Include the judoka's name in the error message for debugging.
+ *    - Error logging is managed by `safeGenerate`.
  *
  * @param {Object} judoka - A judoka object containing data for the card.
  * @param {Object} gokyoLookup - A lookup object for gokyo data.
  * @param {HTMLElement} container - The container to append the card to.
  */
 export async function generateJudokaCard(judoka, gokyoLookup, container) {
-  try {
-    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+  const card = await safeGenerate(
+    () => generateJudokaCardHTML(judoka, gokyoLookup),
+    `Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`,
+    null
+  );
+  if (card) {
     container.appendChild(card);
-    return card;
-  } catch (error) {
-    console.error(`Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`, error);
-    return null;
   }
+  return card;
 }
