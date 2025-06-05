@@ -1,9 +1,11 @@
 # Character Prompt Sheet (CPS)
 
 ## Character Name
+
 **KG**
 
 ## Overview
+
 KG is the friendly, energetic guide character for the game. He provides players with advice, encouragement, and tips at key points. His design is in a **chibi (super-deformed)** cartoon style with strong visual appeal for ages 8–12. He is approachable, confident, and slightly exaggerated to emphasize expressiveness.
 
 ---
@@ -21,18 +23,19 @@ Art style is bold black outlines, flat cell shading, and warm ambient lighting. 
 
 ## Scene-Specific Prompts
 
-| **Scene**             | **Prompt Additions**                                                                                 |
-|-----------------------|------------------------------------------------------------------------------------------------------|
-| **Giving Advice**      | Pointing upward with one hand, smiling brightly. Background: dojo with tatami mats and wooden walls, slightly blurred. |
-| **Dynamic Jump**       | Mid-air jump, fists raised in triumph, joyful expression. Background: stadium crowd cheering.         |
-| **Thinking Pose**      | Standing calmly, hand on chin, curious expression. Background: plain white with soft shadow.          |
-| **Holding a Sign**     | Holding a large signboard (“Welcome to Ju-Do-Kon!”) and a pointer stick. Background: dojo interior with mats. |
+| **Scene**              | **Prompt Additions**                                                                                                       |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **Giving Advice**      | Pointing upward with one hand, smiling brightly. Background: dojo with tatami mats and wooden walls, slightly blurred.     |
+| **Dynamic Jump**       | Mid-air jump, fists raised in triumph, joyful expression. Background: stadium crowd cheering.                              |
+| **Thinking Pose**      | Standing calmly, hand on chin, curious expression. Background: plain white with soft shadow.                               |
+| **Holding a Sign**     | Holding a large signboard (“Welcome to Ju-Do-Kon!”) and a pointer stick. Background: dojo interior with mats.              |
 | **Casual Clothes**     | Red t-shirt and blue shorts, barefoot, holding a water bottle, waving. Background: grassy outdoor training area, blue sky. |
-| **Trophy Celebration** | Holding a gold trophy above head, smiling proudly. Background: stage with spotlights and cheering crowd, blurred. |
+| **Trophy Celebration** | Holding a gold trophy above head, smiling proudly. Background: stage with spotlights and cheering crowd, blurred.          |
 
 ---
 
 ## Art Style Keywords
+
 - Chibi
 - Cartoon
 - Bold outlines
@@ -45,12 +48,12 @@ Art style is bold black outlines, flat cell shading, and warm ambient lighting. 
 
 ## Color Palette Quick Reference
 
-| **Item**                | **Color (Hex)**        |
-|--------------------------|-----------------------|
-| **Gi (Blue)**             | `#3C7DC4`             |
-| **Belt (Black)**          | `#1A1A1A`             |
+| **Item**                      | **Color (Hex)**        |
+| ----------------------------- | ---------------------- |
+| **Gi (Blue)**                 | `#3C7DC4`              |
+| **Belt (Black)**              | `#1A1A1A`              |
 | **Skin (Light-medium beige)** | `#F0C8A0` to `#D9A57E` |
-| **Outline**               | `#000000`             |
+| **Outline**                   | `#000000`              |
 
 ---
 
@@ -59,7 +62,7 @@ Art style is bold black outlines, flat cell shading, and warm ambient lighting. 
 ✅ 3-heads tall proportion  
 ✅ Dynamic or calm poses depending on context  
 ✅ Always wears black belt  
-✅ Flat cell shading and warm lighting  
+✅ Flat cell shading and warm lighting
 
 ❌ No realistic detailing  
 ❌ No heavy texturing or gradients  

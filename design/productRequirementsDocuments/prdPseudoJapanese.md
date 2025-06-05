@@ -23,14 +23,14 @@ Players unfamiliar with Japanese miss the authentic cultural feel. Translating t
 
 ## 3. Functional Requirements
 
-| **Priority** | **Requirement Description**                                                                                                                                                                                                 |
-|--------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **P1**       | API call and response handling: Query https://romaji2kana.com/api for conversion.                                                                                                                                           |
-| **P1**       | Local JSON fallback: If the API fails, map using a local JSON file.                                                                                                                                                         |
-| **P2**       | Input cleaning: Remove unsupported characters before conversion.                                                                                                                                                            |
-| **P2**       | Random fallback replacement: For unsupported characters, substitute random pseudo-Japanese character.                                                                                                                       |
+| **Priority** | **Requirement Description**                                                                                                                                                                                                                            |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **P1**       | API call and response handling: Query https://romaji2kana.com/api for conversion.                                                                                                                                                                      |
+| **P1**       | Local JSON fallback: If the API fails, map using a local JSON file.                                                                                                                                                                                    |
+| **P2**       | Input cleaning: Remove unsupported characters before conversion.                                                                                                                                                                                       |
+| **P2**       | Random fallback replacement: For unsupported characters, substitute random pseudo-Japanese character.                                                                                                                                                  |
 | **P3**       | Pre-converted static fallback: If both API and JSON fail, display predefined Japanese text: "おめでとうございます！よく頑張りましたね。本当に頑張って、そして成功したのが分かります。嘉納先生がおっしゃったように、「努力あるところに成果あり」です。" |
-| **P1**       | Toggle button: Switches display between English and pseudo-Japanese text, updates instantly (<200ms).                                                                                                                       |
+| **P1**       | Toggle button: Switches display between English and pseudo-Japanese text, updates instantly (<200ms).                                                                                                                                                  |
 
 ---
 
