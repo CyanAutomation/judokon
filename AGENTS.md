@@ -1,6 +1,6 @@
 # Ju-Do-Kon! Agent Guide
 
-This repository contains the source for **JU-DO-KON!**, a browser based card game about judo.
+This repository contains the source for **JU-DO-KON!**, a browser-based card game about judo.
 
 ## Key Directories
 
