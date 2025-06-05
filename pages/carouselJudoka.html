@@ -38,7 +38,7 @@
 
       <main class="kodokan-grid" role="main">
         <div class="helper-container">TEST</div>
-        <div class="carousel-container"></div>
+        <div id="carousel-container"></div>
       </main>
 
       <div class="country-flag-slider">
@@ -70,7 +70,7 @@
 
         document.addEventListener("DOMContentLoaded", async () => {
           // Build the carousel
-          const carouselContainer = document.querySelector(".carousel-container");
+          const carouselContainer = document.getElementById("carousel-container");
 
           try {
             const [judokaData, gokyoData] = await Promise.all([
