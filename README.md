@@ -56,11 +56,17 @@ window.DEBUG_LOGGING = true;
 
 ## Project Structure
 
-- index.html: The main HTML file for the game.
-- style.css: The stylesheet for the game's design.
-- game.js: The main JavaScript file for game logic.
-- utils.js: A utility file containing reusable functions like generating flag URLs and card HTML.
-- judoka.json: The JSON file containing judoka card data.
+JU-DO-KON! is a browser-based card game. The repository includes HTML pages, JavaScript modules and CSS styling, with JSON data for judoka information and game content. Development standards are documented in the design/ directory.
+
+index.html – main landing page with links to other modes.
+game.js – client-side logic for loading data, generating cards and handling carousel interactions.
+helpers/ – modular utilities for building cards, navigation and data access. Functions use extensive JSDoc with @pseudocode blocks. Example from utils.js
+pages/ – additional screens like random card, card carousel or quote viewer; each page loads modules dynamically
+data/ – JSON files (e.g., judoka.json, gokyo.json, gameModes.json) containing game assets and configuration.
+tests/ – unit tests run with Vitest. Configuration uses jsdom environment. Example tests cover utilities and UI helpers.
+Development standards
+
+The repository specifies commenting standards in design/codeStandards. JSDoc comments and @pseudocode blocks must remain intact, as shown in documentation excerpts.
 
 ## Features
 
@@ -144,35 +150,3 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 - Add animations for card flips and stat comparisons
 - Implement difficulty levels for the computer opponent
 - Expand the card deck with more judoka and stats
-
-## Intended Structure
-
-+----------------+
-| Home |
-| [Start Game] |
-| [Browse Cards] |
-+--------+-------+
-|
-v
-+----------------+
-| Loading |
-| (Fetching...) |
-+--------+-------+
-|
-v
-+----------------+
-| Battle |
-| (Play Cards) |
-+----+-----+-----+
-| |
-| v
-| +----------------+
-| | Browse Cards |
-| | (View All) |
-| +---+--------+----+
-| | |
-| v v
-| Edit Card Back to Battle
-| (Admin)  
- |
-Back to Home
