@@ -43,7 +43,7 @@ async function loadCountryCodeMapping() {
     }
   }
 
-  const response = await fetch("../data/countryCodeMapping.json");
+  const response = await fetch("./src/data/countryCodeMapping.json");
   if (!response.ok) {
     throw new Error("Error - Failed to load the country code mapping");
   }

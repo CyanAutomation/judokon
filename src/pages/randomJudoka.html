@@ -57,7 +57,7 @@
 
           try {
             // Fetch the judoka data
-            const judokaData = await fetchDataWithErrorHandling("../data/judoka.json");
+            const judokaData = await fetchDataWithErrorHandling("./src/data/judoka.json");
             const validJudoka = judokaData.filter((j) => {
               const hasRequiredFields =
                 j.firstname &&
@@ -77,7 +77,7 @@
             const randomJudoka = validJudoka[Math.floor(Math.random() * validJudoka.length)];
 
             // Fetch the gokyo data and create the lookup object
-            const gokyoData = await fetchDataWithErrorHandling("../data/gokyo.json");
+            const gokyoData = await fetchDataWithErrorHandling("./src/data/gokyo.json");
             const gokyoLookup = createGokyoLookup(gokyoData);
 
             // Generate the judoka card

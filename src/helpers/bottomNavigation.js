@@ -160,7 +160,7 @@ function addTouchFeedback() {
  * @returns {void}
  */
 export function populateNavbar() {
-  fetch("../data/gameModes.json")
+  fetch("./src/data/gameModes.json")
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch game modes: ${response.status}`);
