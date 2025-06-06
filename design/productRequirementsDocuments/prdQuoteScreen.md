@@ -84,6 +84,40 @@ Players are motivated by meaningful, personalized rewards that mark major achiev
 - Background is neutral and matches the tone of the team battle mode.
 - Quote text uses a legible, sans-serif font, sized 18px minimum.
 
+### 1. Victory Feedback Module
+
+**Contents:**
+- Large celebratory headline: “Victory!” or “Full Sweep Achieved!”
+- Trophy or confetti burst icon above quote block
+- KG image with pointer leading visually into the quote
+
+**Why:**  
+Players need an unmistakable emotional payoff for their achievement—text alone is sterile.
+
+---
+
+### 2. Quote Display Module
+
+**Contents:**
+- Responsive quote text block with max-width control
+- Dynamic font scaling for different screen sizes
+- Skeleton loader animation while quote loads
+
+**Why:**  
+Maintains readability and handles loading/failure elegantly without a jarring fallback experience.
+
+---
+
+### 3. Action Button Module
+
+**Contents:**
+- Large, thumb-friendly button (min 48px height)
+- Emotionally charged label: “Continue Your Journey” or “Claim Victory”
+- Button anchored close to quote with clear margin spacing
+
+**Why:**  
+Makes the CTA compelling and touch-friendly, minimizing accidental mis-taps and reinforcing the accomplishment.
+
 ## Mockup
 
 ![End Game Quote Screen Mockup](/design/mockups/mockupQuoteScreen1.png)
