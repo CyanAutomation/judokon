@@ -96,6 +96,83 @@ Without this feature, players would be forced to pre-select cards, leading to pr
   - If card loading fails, show a placeholder/error graphic (e.g., a “?” card).
 - **Tap Target Size**:
   - All interactive elements (Draw button) must be ≥48px in height and width, with a recommended 64px for kid-friendly ease.
+- **Button Size**: Minimum 64px high, 300px wide — central and dominant.
+- **Card Size**: Large enough for excitement, but responsive — 70% of viewport width on mobile, 40% on tablet/desktop.
+- **Spacing**: Tight vertical stacking (~24px between card and button).
+- **Animation Area**: Reserve transparent padding around card to allow for bounce/stretch without visual clipping.
+- **Accessibility**: High contrast placeholders; consider light text on dark backgrounds for error/fallback states.
+---
+
+### 1. Top Bar (Persistent Header)
+
+**Contents:**
+- **Player Info Module**: “You” + small avatar + status (e.g., “Your Turn” indicator).
+- **Settings Button**: Bigger tappable area (48px+), slight margin from edge, no tiny icons.
+- **Optional Timer** (future proof): If there’s a time limit per draw.
+
+**Why**: Clear identification + quick settings access without hunting for small buttons.
+
+---
+
+### 2. Central Interaction Block (Main Zone)
+
+**Contents:**
+- **Card Placeholder Module**:
+  - Start State: “?” icon card.
+  - Draw State: Fade-in random card.
+  - Fail State: Error card with soft warning text (“Oops! Try again!”).
+  - Animation Layer: Reserve transparent zone for bounce/fade animations.
+- **Action Button Module**:
+  - Giant “Draw Card!” button (64px height min, 90px optimal for kid-friendly tapping).
+  - **Loading State**: Button changes to a spinner or text (“Drawing…”).
+  - **Error State**: Subtle inline text under the button (“Connection Issue, Showing Backup Card”).
+
+**Why**: Separate content vs. action modules makes touch flow logical and easily adjustable.
+
+---
+
+### 3. Dynamic Feedback (Transitions)
+
+- **Animation Frames**:
+  - Stage 1: Button press triggers bounce/fade transition.
+  - Stage 2: Card flips to reveal.
+  - Stage 3: Celebratory swoosh + confetti (optional tiny burst).
+- **Fallback**:
+  - If fail → Error card slides in with reduced animation.
+- **Accessibility Setting Check**:
+  - Automatically downgrade if Reduced Motion is detected — immediately snap card reveal, no bounce.
+
+**Why**: Players should *feel* the result without being confused or left staring at nothing.
+
+---
+
+### 4. Modular Expandability
+
+- Add a “Card History” mini panel (expandable from side or bottom).
+- Add mute toggle for sound (little speaker icon on card corner or header).
+- Pre-wire zones for device scaling:
+  - Flexbox/grid layout so the card & button center stack on small screens, side-by-side on tablets.
+
+**Why**: Allows UX to evolve — not a dead-end screen.
+
+---
+
+## Quick Sketch Layout
+
+---
+
++—————————————————+
+| [Avatar] You      [Settings Gear Icon]    |
++—————————————————+
+|                                                   |
+|                  [ Card Placeholder ]             |
+|          (Animation Zone: Bounce / Fade)          |
+|                                                   |
+|              [ Draw Card! Button ]                |
+|             (Loading/Disabled State)              |
+|    (Error/Feedback Text Below Button Inline)      |
+|                                                   |
++—————————————————+
 
 ---
 
