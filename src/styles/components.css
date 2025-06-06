@@ -67,7 +67,7 @@ body {
   color: var(--text-color); /* Default text color */
   min-height: 100dvh;
   min-width: 100vw;
-  background-image: url("./assets/images/bgTileBlue.png");
+  background-image: url("../assets/images/bgTileBlue.png");
   background-repeat: repeat;
   /* backdrop-filter: brightness(0.9); */
   background-size: 50vw auto;

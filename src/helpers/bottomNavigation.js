@@ -205,7 +205,7 @@ export function populateNavbar() {
       const fallbackItems = [
         {
           name: "Random Judoka",
-          url: "./src/pages/randomJudoka.html",
+          url: "/src/pages/randomJudoka.html",
           image: "./src/assets/images/randomJudoka.png"
         },
         { name: "Home", url: "/index.html", image: "./src/assets/images/home.png" },
