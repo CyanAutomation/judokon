@@ -1,4 +1,4 @@
-import * as path from 'path';
+import * as path from "path";
 
 /**
  * Path to the directory containing JSON data files.
