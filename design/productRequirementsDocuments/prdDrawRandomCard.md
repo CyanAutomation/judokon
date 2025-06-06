@@ -32,15 +32,6 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 ---
 
-## Cancellation and Undo Flow
-
-To prevent frustration from accidental taps:
-- When a player taps “Draw Card,” show a short 2-second undo banner (“Undo Draw?”).
-- If the player taps Undo within the window, cancel the random draw action.
-- If not, complete the random card reveal.
-
----
-
 ## Edge Cases / Failure States
 
 - **Same Card Reselection**: Duplicates are possible and expected — randomness allows repeats.
@@ -73,7 +64,6 @@ To prevent frustration from accidental taps:
 - [ ] Random distribution passes chi-square test with 95% confidence over 100 draws.
 - [ ] If the active card set is empty, an error card is shown.
 - [ ] Animation is disabled if the user has enabled Reduced Motion settings.
-- [ ] A 2-second undo banner is shown immediately after tapping “Draw Card.”
 
 ---
 
@@ -84,7 +74,6 @@ To prevent frustration from accidental taps:
 | P1       | Random Card Selection       | Select a random card from the active card set dynamically.                               |
 | P1       | Display Selected Card       | Visually reveal the selected card with animation and sound feedback.                     |
 | P2       | Fallback on Failure         | Show fallback card and error message if draw fails or active set is empty.               |
-| P2       | Undo Draw Option            | Allow player to undo a draw within 2 seconds after triggering it.                        |
 | P2       | Reusable Random Draw Module | Make the random draw callable from multiple game states or screens.                      |
 | P3       | Accessibility Support       | Support Reduced Motion settings and maintain color contrast and readability.             |
 | P3       | UX Enhancements             | Optimize for 60fps animation, sound effect, and large tap targets.                       |
@@ -106,7 +95,7 @@ To prevent frustration from accidental taps:
 - **Fallback Visuals**:
   - If card loading fails, show a placeholder/error graphic (e.g., a “?” card).
 - **Tap Target Size**:
-  - All interactive elements (Draw button, Undo banner) must be ≥48px in height and width, with a recommended 64px for kid-friendly ease.
+  - All interactive elements (Draw button) must be ≥48px in height and width, with a recommended 64px for kid-friendly ease.
 
 ---
 
@@ -116,7 +105,6 @@ To prevent frustration from accidental taps:
   - [ ] 1.1 Create `generateRandomCard()` function to select random card from active set.
   - [ ] 1.2 Integrate card draw with UI trigger ("Draw Card" button).
   - [ ] 1.3 Handle duplicate cards as valid outcomes.
-  - [ ] 1.4 Implement chi-square test for randomness validation over 1,000 draws.
 - [ ] 2.0 Develop Card Reveal Animation
   - [ ] 2.1 Implement fade or bounce animation for card reveal.
   - [ ] 2.2 Ensure animation plays at ≥60fps on devices with ≥2GB RAM.
@@ -125,11 +113,8 @@ To prevent frustration from accidental taps:
   - [ ] 3.1 Display fallback card and error message if random draw fails.
   - [ ] 3.2 Show predefined error card if active card set is empty.
   - [ ] 3.3 Implement static reveal downgrade for low-performance devices.
-- [ ] 4.0 Undo Draw Functionality
-  - [ ] 4.1 Display 2-second undo banner after card draw initiation.
-  - [ ] 4.2 Cancel draw if Undo is tapped within 2 seconds.
-- [ ] 5.0 Accessibility and UX Enhancements
-  - [ ] 5.1 Support Reduced Motion settings.
-  - [ ] 5.2 Ensure color contrast on cards meets WCAG AA standards.
-  - [ ] 5.3 Set all tap targets to ≥48px, recommended 64px for better kid usability.
-  - [ ] 5.4 Add sound and animation toggle options for user preferences.
+- [ ] 4.0 Accessibility and UX Enhancements
+  - [ ] 4.1 Support Reduced Motion settings.
+  - [ ] 4.2 Ensure color contrast on cards meets WCAG AA standards.
+  - [ ] 4.3 Set all tap targets to ≥48px, recommended 64px for better kid usability.
+  - [ ] 4.4 Add sound and animation toggle options for user preferences.
