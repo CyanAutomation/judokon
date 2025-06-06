@@ -1,6 +1,7 @@
 import { fetchDataWithErrorHandling, validateData } from "./helpers/dataUtils.js";
 import { buildCardCarousel } from "./helpers/carouselBuilder.js";
 import { displayJudokaCard, getRandomJudoka } from "./helpers/cardUtils.js";
+import { DATA_DIR } from "./helpers/constants.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const showRandom = document.getElementById("showRandom");
@@ -27,8 +28,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
-        const judokaData = await fetchDataWithErrorHandling("./src/data/judoka.json");
-        const gokyoData = await fetchDataWithErrorHandling("./src/data/gokyo.json");
+        const judokaData = await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`);
+        const gokyoData = await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`);
 
         validateData(judokaData, "judoka");
         validateData(gokyoData, "gokyo");
@@ -72,8 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
     gameArea.innerHTML = "";
 
     try {
-      const judokaData = await fetchDataWithErrorHandling("./src/data/judoka.json");
-      const gokyoData = await fetchDataWithErrorHandling("./src/data/gokyo.json");
+      const judokaData = await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`);
+      const gokyoData = await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`);
 
       validateData(judokaData, "judoka");
       validateData(gokyoData, "gokyo");

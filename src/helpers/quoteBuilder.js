@@ -18,8 +18,10 @@
  * @returns {Promise<Object[]>} A promise that resolves to an array of fables.
  * @throws {Error} If the fetch request fails or the response is not successful.
  */
+import { DATA_DIR } from "./constants.js";
+
 async function fetchFables() {
-  const response = await fetch("./src/data/aesopsFables.json");
+  const response = await fetch(`${DATA_DIR}aesopsFables.json`);
   if (!response.ok) {
     throw new Error("Failed to fetch aesopsFables.json");
   }

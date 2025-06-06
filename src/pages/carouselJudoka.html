@@ -67,6 +67,7 @@
         import { buildCardCarousel } from "../helpers/carouselBuilder.js";
         import { populateCountryList } from "../helpers/countryUtils.js";
         import { fetchDataWithErrorHandling } from "../helpers/dataUtils.js";
+        import { DATA_DIR } from "../helpers/constants.js";
 
         document.addEventListener("DOMContentLoaded", async () => {
           // Build the carousel
@@ -74,8 +75,8 @@
 
           try {
             const [judokaData, gokyoData] = await Promise.all([
-              fetchDataWithErrorHandling("./src/data/judoka.json"),
-              fetchDataWithErrorHandling("./src/data/gokyo.json")
+              fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`),
+              fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`)
             ]);
 
             const carousel = await buildCardCarousel(judokaData, gokyoData);
