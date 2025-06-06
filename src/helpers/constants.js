@@ -1,8 +1,11 @@
 /**
  * Path to the directory containing JSON data files.
- * A simple string is used to maintain compatibility with both Node
- * and browser environments.
+ *
+ * Using `import.meta.url` ensures the correct absolute URL is
+ * generated regardless of which page imports this module. This
+ * prevents broken relative paths when pages are nested within the
+ * project directory structure.
  *
  * @constant {string}
  */
-export const DATA_DIR = "./src/data/";
+export const DATA_DIR = new URL("../data/", import.meta.url).href;
