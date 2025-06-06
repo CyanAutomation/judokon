@@ -67,6 +67,26 @@ Players unfamiliar with Japanese miss the authentic cultural feel. Translating t
   - Visually consistent with game UI (rounded rectangle, matching color scheme).
 - No plan for real Japanese localization — this feature is purely for stylistic effect.
 
+### 1. Quote Display + Language Toggle Module
+
+**Contents:**
+- Quote block with dynamic font and max-width.
+- Enlarged language toggle button (“日本語 / English”) above or below the quote.
+- 200ms fade animation when language is toggled.
+
+**Why:**  
+Enhances contextual clarity and smooth interaction, keeping actions tied to relevant content.
+
+---
+
+### 2. Action Button Module
+
+**Contents:**
+- Large, thumb-friendly “Continue Your Journey” button.
+- Clear visual separation from quote/toggle above.
+
+**Why:**  
+Prevents accidental taps and creates distinct flow—finish reading before proceeding.
 ---
 
 ## 7. Mockup Reference
