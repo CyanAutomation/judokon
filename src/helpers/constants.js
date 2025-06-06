@@ -1,9 +1,8 @@
-import * as path from "path";
-
 /**
  * Path to the directory containing JSON data files.
- * Constructed using `path.join` to ensure consistent concatenation.
+ * A simple string is used to maintain compatibility with both Node
+ * and browser environments.
  *
  * @constant {string}
  */
-export const DATA_DIR = path.join(".", "src", "data");
+export const DATA_DIR = "./src/data/";
