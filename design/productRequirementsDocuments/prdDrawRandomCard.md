@@ -1,42 +1,53 @@
-
-
-⸻
-
-Product Requirements Document – Function to Draw Random Card
+PRD – Function to Draw Random Card
 
 ⸻
 
 Problem Statement
 
-As part of a web browser-based game, there are points where users need to draw a random card. This mechanic adds vital excitement and unpredictability, as players don’t know what card will come next. The uncertainty enhances one-on-one battles, making matches feel dynamic and engaging. Without this feature, gameplay would require pre-selecting cards, resulting in a less dynamic and less exciting experience.
+As part of the web browser-based game Ju-Do-Kon!, players often need to draw a random card during matches. This mechanic injects vital excitement and unpredictability, ensuring players never know what card will come next. The uncertainty heightens the tension of one-on-one battles, making matches feel dynamic, surprising, and deeply engaging.
 
-This function is critical to:
-	•	Enhancing pacing — maintaining game flow without pauses for manual selection.
-	•	Increasing replayability — promoting different outcomes on each playthrough.
-	•	Boosting session duration and engagement — we expect session duration to increase by at least 10% due to the added tension and dynamism this mechanic brings.
+Without this feature, players would be forced to pre-select cards, leading to predictable, repetitive gameplay that diminishes replayability and player engagement.
+
+Playtest feedback:
+
+“I love not knowing what card will pop up next — it makes it so much more exciting!” — Sanshiro, age 10
+
+This function is critical for:
+	•	Enhancing pacing — sustaining game flow without manual selection delays.
+	•	Increasing replayability — ensuring different match outcomes on each playthrough.
+	•	Boosting session duration — expected to increase session time by at least 10% due to heightened player engagement and tension.
 
 ⸻
 
 How It Works
-	•	The user will hit a button or navigate to a certain page.
-	•	This action will auto-trigger the generateRandomCard() function.
-	•	The code logic will:
-	•	Select a random Judoka card from the active card set.
-	•	Render the selected card visually using JavaScript.
-	•	Include a fade or bounce animation on card reveal, accompanied by a sound effect.
-	•	Ensure animation smoothness at ≥60fps for a seamless experience on devices with ≥2GB RAM.
+	•	The player taps the “Draw Card” button or navigates to a designated card draw screen.
+	•	This action auto-triggers the generateRandomCard() function.
+	•	The system:
+	•	Selects a random Judoka card from the active card set.
+	•	Visually reveals the card with a fade or bounce animation.
+	•	Plays a short celebratory sound (e.g., swoosh or chime).
+	•	Ensures animation smoothness at ≥60fps for devices with ≥2GB RAM.
+	•	Active card set: The current pool of cards available in the player’s deck, dynamically updated based on the game state.
 
-Definition:
-	•	Active card set: The current pool of available cards in the player’s deck, dynamically updated based on game state.
+⸻
+
+Cancellation and Undo Flow
+
+To prevent frustration from accidental taps:
+	•	When a player taps “Draw Card”, show a short 2-second undo banner (“Undo Draw?”).
+	•	If the player taps Undo within the window, cancel the random draw action.
+	•	If not, complete the random card reveal.
 
 ⸻
 
 Edge Cases / Failure States
-	•	Same Card Reselection: Possible and expected; randomness allows duplicates.
-	•	Random Pick Failure: If the random draw fails (e.g., code error), display a predefined fallback card with a clear error notification.
-	•	Empty Card Set: Display an error card if no cards are available in the active set.
-	•	Low Performance Devices: Ensure minimal animation; fallback to static reveal if animation stutters detected.
-	•	Accessibility (Reduced Motion Settings): Respect system settings for reduced motion by disabling animations if enabled.
+	•	Same Card Reselection: Duplicates are possible and expected — randomness allows repeats.
+	•	Random Pick Failure: If random draw fails (e.g., due to a code error), show a fallback card with a clear error notification.
+	•	Empty Card Set: Display a predefined error card if no cards are available.
+	•	Low Performance Devices: Automatically downgrade to a static reveal if animations cannot sustain 60fps.
+	•	Accessibility:
+	•	Respect system Reduced Motion settings — disable animations if active.
+	•	Default: Animations ON, but respect system/user preferences.
 
 ⸻
 
@@ -44,46 +55,53 @@ Goals
 
 Goal	Metric
 Fast Response	Card draw completes in under 300ms.
-Smooth Animation	Animation plays at ≥60fps, with no visual glitches.
+Smooth Animation	Reveal animation plays at ≥60fps with no visual glitches.
 Fair Randomness	Random selection passes chi-square testing for uniformity, 95% confidence over 100 draws.
 Low Failure Rate	No more than 1% draw failures.
-Accessibility	Animation disabled automatically if system Reduced Motion setting is on.
+Accessibility	Automatically disable animations if system Reduced Motion is active.
 
 
 ⸻
 
 Acceptance Criteria
 	•	When “Draw Card” is triggered, a random card from the active set is displayed within 300ms.
-	•	Reveal animation (fade or bounce) completes within 500ms, maintaining ≥60fps on mid-tier devices.
-	•	If the random function fails, a fallback card is shown and an error message is presented.
-	•	The random distribution passes chi-square testing with 95% confidence over 100 draws.
+	•	A reveal animation (fade or bounce) completes within 500ms at ≥60fps on mid-tier devices.
+	•	If the random function fails, a fallback card is shown, and an error message is displayed.
+	•	Random distribution passes chi-square test with 95% confidence over 100 draws.
 	•	If the active card set is empty, an error card is shown.
-	•	Animation is disabled if the user has enabled Reduced Motion preferences.
+	•	Animation is disabled if the user has enabled Reduced Motion settings.
+	•	A 2-second undo banner is shown immediately after tapping “Draw Card”.
 
 ⸻
 
-## Prioritized Functional Requirements Table
+Prioritized Functional Requirements
 
-| Priority | Feature                   | Description                                                            |
-|---------|----------------------------|------------------------------------------------------------------------|
-| P1      | Random Card Selection       | Select a random card from the active card set.                          |
-| P1      | Display Selected Card       | Visually display the drawn card with fade or bounce animation and sound.|
-| P2      | Fallback on Failure         | Display a fallback card and error message if draw fails.                |
-| P2      | Reusable Random Draw Module | Make the random draw function callable from various screens.            |
-| P3      | Accessibility Support       | Provide reduced-motion support for users preferring less animation.     |
-| P3      | UX Enhancements             | Ensure 60fps animation smoothness and add sound effects on card reveal.  |
+Priority	Feature	Description
+P1	Random Card Selection	Select a random card from the active card set dynamically.
+P1	Display Selected Card	Visually reveal the selected card with animation and sound feedback.
+P2	Fallback on Failure	Show fallback card and error message if draw fails or active set is empty.
+P2	Undo Draw Option	Allow player to undo a draw within 2 seconds after triggering it.
+P2	Reusable Random Draw Module	Make the random draw callable from multiple game states or screens.
+P3	Accessibility Support	Support Reduced Motion settings and maintain color contrast and readability.
+P3	UX Enhancements	Optimize for 60fps animation, sound effect, and large tap targets.
+P3	Sound & Animation User Toggles	Allow users to manually mute sounds and disable animations if desired.
+
 
 ⸻
 
 Design and User Experience Considerations
-	•	Animation Style: Fade or bounce — no flip to keep transitions simple and polished.
-	•	Sound Effect: A short celebratory chime or swoosh when card appears.
-	•	Responsiveness: Ensure smooth transitions on devices with ≥2GB RAM; degrade gracefully on weaker devices.
+	•	Animation Style: Fade or bounce only — no flips or excessive transitions to keep visuals polished.
+	•	Sound Effect: Short celebratory chime or swoosh (<1 second).
+	•	Responsiveness:
+	•	Smooth transitions at ≥60fps on devices with ≥2GB RAM.
+	•	Degrade to static reveal if hardware performance is low.
 	•	Accessibility:
-	•	Respect Reduced Motion settings.
-	•	Ensure color contrast and text readability on cards.
+	•	Respect system Reduced Motion settings (disable animations automatically).
+	•	Ensure color contrast and text readability on cards (WCAG AA compliance).
+	•	Default Setting: Animations and sound ON unless user/system preferences state otherwise.
 	•	Fallback Visuals:
-	•	If card loading fails, show a placeholder or error graphic.
+	•	If card loading fails, show a placeholder/error graphic (e.g., a “?” card).
+	•	Tap Target Size:
+	•	All interactive elements (Draw button, Undo banner) must be ≥48px in height and width, with a recommended 64px for kid-friendly ease.
 
 ⸻
-
