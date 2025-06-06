@@ -22,6 +22,7 @@
  * @returns {Promise<CountryCodeEntry[]>} Resolves to an array of country code mappings.
  */
 import { debugLog } from "./debug.js";
+import { DATA_DIR } from "./constants.js";
 
 let countryCodeMappingCache = null;
 const COUNTRY_CACHE_KEY = "countryCodeMappingCache";
@@ -43,7 +44,7 @@ async function loadCountryCodeMapping() {
     }
   }
 
-  const response = await fetch("./src/data/countryCodeMapping.json");
+  const response = await fetch(`${DATA_DIR}countryCodeMapping.json`);
   if (!response.ok) {
     throw new Error("Error - Failed to load the country code mapping");
   }

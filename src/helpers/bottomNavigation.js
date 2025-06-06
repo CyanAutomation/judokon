@@ -1,4 +1,5 @@
 import { debugLog } from "./debug.js";
+import { DATA_DIR } from "./constants.js";
 
 /**
  * Toggles the expanded map view for landscape mode.
@@ -160,7 +161,7 @@ function addTouchFeedback() {
  * @returns {void}
  */
 export function populateNavbar() {
-  fetch("./src/data/gameModes.json")
+  fetch(`${DATA_DIR}gameModes.json`)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch game modes: ${response.status}`);
