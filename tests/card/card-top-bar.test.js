@@ -1,10 +1,10 @@
 import { vi } from "vitest";
-import * as countryUtils from "../../helpers/countryUtils.js";
+import * as countryUtils from "../../src/helpers/countryUtils.js";
 import {
   generateCardTopBar,
   createNameContainer,
   createFlagImage
-} from "../../helpers/cardTopBar.js";
+} from "../../src/helpers/cardTopBar.js";
 
 // Utility function for normalization
 const normalizeHtml = (html) =>

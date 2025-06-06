@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { formatDate, escapeHTML } from "../../helpers/utils.js";
+import { formatDate, escapeHTML } from "../../src/helpers/utils.js";
 
 describe("formatDate", () => {
   test.each(["not-a-date", "", null, undefined, 123456, {}, [], true, false, BigInt(123456789)])(

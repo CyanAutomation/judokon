@@ -1,5 +1,5 @@
-import { createScrollButton } from "../../helpers/carouselBuilder.js";
-import { generateCardPortrait, generateCardStats } from "../../helpers/cardRender.js";
+import { createScrollButton } from "../../src/helpers/carouselBuilder.js";
+import { generateCardPortrait, generateCardStats } from "../../src/helpers/cardRender.js";
 import { vi } from "vitest";
 
 // Utility to normalize HTML for comparison

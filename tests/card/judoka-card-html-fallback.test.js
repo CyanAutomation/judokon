@@ -1,6 +1,6 @@
 import { vi } from "vitest";
-import { generateJudokaCardHTML } from "../../helpers/cardBuilder.js";
-import * as cardRender from "../../helpers/cardRender.js";
+import { generateJudokaCardHTML } from "../../src/helpers/cardBuilder.js";
+import * as cardRender from "../../src/helpers/cardRender.js";
 
 const judoka = {
   id: 1,

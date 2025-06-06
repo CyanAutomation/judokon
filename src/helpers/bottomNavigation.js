@@ -24,7 +24,7 @@ function toggleExpandedMapView(gameModes) {
     .map(
       (mode) =>
         `<div class="map-tile" style="background-image: url('${mode.image}')">
-          <a href="pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a>
+          <a href="src/pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a>
         </div>`
     )
     .join("");
@@ -74,7 +74,8 @@ function togglePortraitTextMenu(gameModes) {
 
   textMenu.innerHTML = validModes
     .map(
-      (mode) => `<li><a href="pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a></li>`
+      (mode) =>
+        `<li><a href="src/pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a></li>`
     )
     .join("");
 
@@ -159,7 +160,7 @@ function addTouchFeedback() {
  * @returns {void}
  */
 export function populateNavbar() {
-  fetch("./data/gameModes.json")
+  fetch("../data/gameModes.json")
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch game modes: ${response.status}`);
@@ -186,7 +187,7 @@ export function populateNavbar() {
 
       const ul = document.createElement("ul");
       ul.innerHTML = activeModes
-        .map((mode) => `<li><a href="pages/${mode.url}">${mode.name}</a></li>`)
+        .map((mode) => `<li><a href="src/pages/${mode.url}">${mode.name}</a></li>`)
         .join("");
       navBar.appendChild(ul);
 
@@ -203,14 +204,14 @@ export function populateNavbar() {
       const fallbackItems = [
         {
           name: "Random Judoka",
-          url: "/pages/randomJudoka.html",
-          image: "./assets/images/randomJudoka.png"
+          url: "/src/pages/randomJudoka.html",
+          image: "./src/assets/images/randomJudoka.png"
         },
-        { name: "Home", url: "/index.html", image: "./assets/images/home.png" },
+        { name: "Home", url: "/index.html", image: "./src/assets/images/home.png" },
         {
           name: "Classic Battle",
-          url: "/pages/battleJudoka.html",
-          image: "./assets/images/classicBattle.png"
+          url: "/src/pages/battleJudoka.html",
+          image: "./src/assets/images/classicBattle.png"
         }
       ];
 

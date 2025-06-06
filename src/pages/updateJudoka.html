@@ -18,9 +18,9 @@
     />
     <meta name="theme-color" content="#22223b" />
     <title>Ju-Do-Kon!</title>
-    <link rel="stylesheet" href="../layout.css" />
-    <link rel="stylesheet" href="../components.css" />
-    <link rel="stylesheet" href="../utilities.css" />
+    <link rel="stylesheet" href="../styles/layout.css" />
+    <link rel="stylesheet" href="../styles/components.css" />
+    <link rel="stylesheet" href="../styles/utilities.css" />
     <link rel="icon" type="image/png" href="../assets/images/favicon.ico" />
   </head>
 
@@ -36,19 +36,9 @@
     </header>
 
     <main class="container" role="main">
-      <section id="quote-container" class="quote-container">
-        <div class="kg-sprite">
-          <img
-            src="../assets/helperKG/helperKG1.png"
-            alt="KG character congratulating the player"
-          />
-        </div>
-        <div
-          id="quote"
-          class="quote"
-          aria-labelledby="quote-heading"
-          aria-describedby="quote-content"
-        ></div>
+      <!-- Section for the carousel -->
+      <section id="carousel-section">
+        <div id="carousel-container" class="hidden"></div>
       </section>
     </main>
 
@@ -73,6 +63,5 @@
         "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
       );
     </script>
-    <script type="module" src="../helpers/quoteBuilder.js"></script>
   </body>
 </html>

@@ -1,4 +1,4 @@
-import { generateCardSignatureMove } from "../../helpers/cardRender.js";
+import { generateCardSignatureMove } from "../../src/helpers/cardRender.js";
 
 describe("generateCardSignatureMove", () => {
   describe("Valid Inputs", () => {
