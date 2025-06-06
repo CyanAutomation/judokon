@@ -105,3 +105,31 @@ Design and User Experience Considerations
 	•	All interactive elements (Draw button, Undo banner) must be ≥48px in height and width, with a recommended 64px for kid-friendly ease.
 
 ⸻
+
+## Tasks
+
+- [ ] 1.0 Implement Random Card Draw Function
+  - [ ] 1.1 Create `generateRandomCard()` function to select random card from active set.
+  - [ ] 1.2 Integrate card draw with UI trigger ("Draw Card" button).
+  - [ ] 1.3 Handle duplicate cards as valid outcomes.
+  - [ ] 1.4 Implement chi-square test for randomness validation over 1,000 draws.
+
+- [ ] 2.0 Develop Card Reveal Animation
+  - [ ] 2.1 Implement fade or bounce animation for card reveal.
+  - [ ] 2.2 Ensure animation plays at ≥60fps on devices with ≥2GB RAM.
+  - [ ] 2.3 Respect Reduced Motion settings and disable animation when active.
+
+- [ ] 3.0 Error and Fallback Handling
+  - [ ] 3.1 Display fallback card and error message if random draw fails.
+  - [ ] 3.2 Show predefined error card if active card set is empty.
+  - [ ] 3.3 Implement static reveal downgrade for low-performance devices.
+
+- [ ] 4.0 Undo Draw Functionality
+  - [ ] 4.1 Display 2-second undo banner after card draw initiation.
+  - [ ] 4.2 Cancel draw if Undo is tapped within 2 seconds.
+
+- [ ] 5.0 Accessibility and UX Enhancements
+  - [ ] 5.1 Support Reduced Motion settings.
+  - [ ] 5.2 Ensure color contrast on cards meets WCAG AA standards.
+  - [ ] 5.3 Set all tap targets to ≥48px, recommended 64px for better kid usability.
+  - [ ] 5.4 Add sound and animation toggle options for user preferences.
