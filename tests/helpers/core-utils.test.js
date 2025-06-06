@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateCardSignatureMove } from "../../helpers/cardRender.js";
+import { generateCardSignatureMove } from "../../src/helpers/cardRender.js";
 
 describe("generateCardSignatureMove", () => {
   describe("Valid Cases", () => {

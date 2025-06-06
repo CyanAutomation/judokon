@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { safeGenerate } from "../../helpers/errorUtils.js";
+import { safeGenerate } from "../../src/helpers/errorUtils.js";
 
 describe("safeGenerate", () => {
   test("returns fallback for synchronous errors", async () => {

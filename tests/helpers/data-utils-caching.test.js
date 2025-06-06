@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { fetchDataWithErrorHandling } from "../../helpers/dataUtils.js";
+import { fetchDataWithErrorHandling } from "../../src/helpers/dataUtils.js";
 
 describe("fetchDataWithErrorHandling caching", () => {
   it("reuses cached data on subsequent calls", async () => {

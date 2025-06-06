@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { addScrollMarkers } from "../../helpers/carouselBuilder.js";
+import { addScrollMarkers } from "../../src/helpers/carouselBuilder.js";
 
 describe("addScrollMarkers", () => {
   it("reads offsetWidth only once", () => {
