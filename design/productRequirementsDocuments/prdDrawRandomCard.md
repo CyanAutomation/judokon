@@ -35,8 +35,8 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 ## Edge Cases / Failure States
 
 - **Same Card Reselection**: Duplicates are possible and expected — randomness allows repeats.
-- **Random Pick Failure**: If random draw fails (e.g., due to a code error), show a fallback card with a clear error notification.
-- **Empty Card Set**: Display a predefined error card if no cards are available.
+- **Random Pick Failure**: If random draw fails (e.g., due to a code error), show a fallback card (judoka id=0, from judoka.json)
+- **Empty Card Set**: Display a predefined error card (judoka id=0, from judoka.json) if no cards are available.
 - **Low Performance Devices**: Automatically downgrade to a static reveal if animations cannot sustain 60fps.
 - **Accessibility**:
   - Respect system Reduced Motion settings — disable animations if active.
@@ -60,9 +60,9 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 - [ ] When “Draw Card” is triggered, a random card from the active set is displayed within 300ms.
 - [ ] A reveal animation (fade or bounce) completes within 500ms at ≥60fps on mid-tier devices.
-- [ ] If the random function fails, a fallback card is shown, and an error message is displayed.
+- [ ] If the random function fails, a fallback card is shown (judoka id=0, from judoka.json).
 - [ ] Random distribution passes chi-square test with 95% confidence over 100 draws.
-- [ ] If the active card set is empty, an error card is shown.
+- [ ] If the active card set is empty, a fallback card is shown (judoka id=0, from judoka.json).
 - [ ] Animation is disabled if the user has enabled Reduced Motion settings.
 
 ---
@@ -110,8 +110,8 @@ Without this feature, players would be forced to pre-select cards, leading to pr
   - [ ] 2.2 Ensure animation plays at ≥60fps on devices with ≥2GB RAM.
   - [ ] 2.3 Respect Reduced Motion settings and disable animation when active.
 - [ ] 3.0 Error and Fallback Handling
-  - [ ] 3.1 Display fallback card and error message if random draw fails.
-  - [ ] 3.2 Show predefined error card if active card set is empty.
+  - [ ] 3.1 Display fallback card (judoka id=0, from judoka.json) if random draw fails.
+  - [ ] 3.2 Show predefined error card (judoka id=0, from judoka.json) if active card set is empty.
   - [ ] 3.3 Implement static reveal downgrade for low-performance devices.
 - [ ] 4.0 Accessibility and UX Enhancements
   - [ ] 4.1 Support Reduced Motion settings.
