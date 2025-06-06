@@ -74,8 +74,8 @@
 
           try {
             const [judokaData, gokyoData] = await Promise.all([
-              fetchDataWithErrorHandling("../data/judoka.json"),
-              fetchDataWithErrorHandling("../data/gokyo.json")
+              fetchDataWithErrorHandling("./src/data/judoka.json"),
+              fetchDataWithErrorHandling("./src/data/gokyo.json")
             ]);
 
             const carousel = await buildCardCarousel(judokaData, gokyoData);

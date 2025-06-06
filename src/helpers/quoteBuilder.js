@@ -19,7 +19,7 @@
  * @throws {Error} If the fetch request fails or the response is not successful.
  */
 async function fetchFables() {
-  const response = await fetch("../data/aesopsFables.json");
+  const response = await fetch("./src/data/aesopsFables.json");
   if (!response.ok) {
     throw new Error("Failed to fetch aesopsFables.json");
   }

@@ -15,7 +15,7 @@
  *    - Rethrow the error to allow the caller to handle it.
  *
  * @template T
- * @param {string} url - Path to the JSON file (e.g., './data/judoka.json').
+ * @param {string} url - Path to the JSON file (e.g., './src/data/judoka.json').
  * @returns {Promise<T>} A promise that resolves to the parsed JSON data.
  */
 // In-memory cache for data fetched from URLs

@@ -27,8 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
-        const judokaData = await fetchDataWithErrorHandling("./data/judoka.json");
-        const gokyoData = await fetchDataWithErrorHandling("./data/gokyo.json");
+        const judokaData = await fetchDataWithErrorHandling("./src/data/judoka.json");
+        const gokyoData = await fetchDataWithErrorHandling("./src/data/gokyo.json");
 
         validateData(judokaData, "judoka");
         validateData(gokyoData, "gokyo");
@@ -72,8 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
     gameArea.innerHTML = "";
 
     try {
-      const judokaData = await fetchDataWithErrorHandling("./data/judoka.json");
-      const gokyoData = await fetchDataWithErrorHandling("./data/gokyo.json");
+      const judokaData = await fetchDataWithErrorHandling("./src/data/judoka.json");
+      const gokyoData = await fetchDataWithErrorHandling("./src/data/gokyo.json");
 
       validateData(judokaData, "judoka");
       validateData(gokyoData, "gokyo");
