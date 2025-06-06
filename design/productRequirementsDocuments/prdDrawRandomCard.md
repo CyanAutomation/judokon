@@ -62,16 +62,16 @@ Acceptance Criteria
 
 ⸻
 
-Functional Requirements
+## Prioritized Functional Requirements Table
 
-Priority	Feature	Description
-P1	Random Card Selection	Select a random card from the active card set using uniform probability.
-P1	Display Selected Card	Render the drawn card with fade or bounce animation and sound effect.
-P2	Fallback on Failure	If card generation fails, display a predefined fallback card and error message.
-P2	Reusable Random Draw Module	Expose the generateRandomCard() function for invocation from multiple screens.
-P3	Animation and Sound Effects	Play a simple fade or bounce animation on reveal with a short sound effect.
-P3	Accessibility Support	Detect system-level reduced motion settings and disable animations accordingly.
-
+| Priority | Feature                   | Description                                                            |
+|---------|----------------------------|------------------------------------------------------------------------|
+| P1      | Random Card Selection       | Select a random card from the active card set.                          |
+| P1      | Display Selected Card       | Visually display the drawn card with fade or bounce animation and sound.|
+| P2      | Fallback on Failure         | Display a fallback card and error message if draw fails.                |
+| P2      | Reusable Random Draw Module | Make the random draw function callable from various screens.            |
+| P3      | Accessibility Support       | Provide reduced-motion support for users preferring less animation.     |
+| P3      | UX Enhancements             | Ensure 60fps animation smoothness and add sound effects on card reveal.  |
 
 ⸻
 
