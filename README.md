@@ -56,15 +56,18 @@ window.DEBUG_LOGGING = true;
 
 ## Project Structure
 
-JU-DO-KON! is a browser-based card game. The repository includes HTML pages, JavaScript modules and CSS styling, with JSON data for judoka information and game content. Development standards are documented in the design/ directory.
+The repository follows a simple layout. GitHub Pages requires `index.html` to live at the project root.
 
-index.html – main landing page with links to other modes.
-game.js – client-side logic for loading data, generating cards and handling carousel interactions.
-helpers/ – modular utilities for building cards, navigation and data access. Functions use extensive JSDoc with @pseudocode blocks. Example from utils.js
-pages/ – additional screens like random card, card carousel or quote viewer; each page loads modules dynamically
-data/ – JSON files (e.g., judoka.json, gokyo.json, gameModes.json) containing game assets and configuration.
-tests/ – unit tests run with Vitest. Configuration uses jsdom environment. Example tests cover utilities and UI helpers.
-Development standards
+- `index.html` – landing page served by GitHub Pages.
+- `src/` – contains the game logic and assets:
+  - `game.js`
+  - `helpers/`
+  - `pages/`
+  - `data/`
+  - `assets/`
+  - `styles/`
+- `tests/` – Vitest unit tests.
+- `design/` – documentation and code standards.
 
 The repository specifies commenting standards in design/codeStandards. JSDoc comments and @pseudocode blocks must remain intact, as shown in documentation excerpts.
 
