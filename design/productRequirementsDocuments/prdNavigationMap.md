@@ -1,8 +1,10 @@
-# Footer Navigation: Expanded (Expanded Map View)
+# PRD: Navigation Map (Expanded Map View)
 
 ## Problem Statement
 
-Players have reported that the current navigation menus feel disconnected from the Ju-Do-Kon! theme, which weakens immersion and reduces excitement when switching game modes. A theoretical 10-year-old playtester noted, _"The menu feels boring compared to the rest of the game — can it look more exciting? Maybe like a judo dojo or village?"_
+Players have reported that the current navigation menus feel disconnected from the Ju-Do-Kon! theme, which weakens immersion and reduces excitement when switching game modes. A theoretical 10-year-old playtester noted, 
+
+> _"The menu feels boring compared to the rest of the game — can it look more exciting? Maybe like a judo dojo or village?"_
 
 Currently, the menu is purely functional but lacks the thematic cohesion that draws players deeper into the Ju-Do-Kon! world. Additionally, important new modes are hard to find because the plain menu structure buries them below a list format, making discovery harder for players. Improving the navigation’s thematic fit is important now because new game modes have been added, and players are not easily discovering them through the existing menu.
 
@@ -57,6 +59,10 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - **Contrast:** Text labels must meet WCAG 2.1 AA contrast ratio (≥4.5:1).
 - **Performance:** Maintain ≥60fps animations on mid-tier devices.
 - **Responsiveness:** If viewport height <400px or width <640px, hide the map icon and corresponding functionality.
+
+| **Navigation Map Mockup 1** | **Navigation Map Mockup 2**                         |
+|---|---:|
+|![Navigation Map Mockup 1](/design/mockups/mockupNavigationMap2.png)|![Navigation Map Mockup 2](/design/mockups/mockupNavigationMap3.png)|
 
 ## Accessibility Checklist
 

@@ -6,7 +6,7 @@
 
 As this game is about a Japanese martial art, authentic cultural immersion is key to the user experience. However, Japanese is complex, and most players are not literate in it. This language barrier prevents players from fully appreciating the cultural setting.
 
-Players unfamiliar with Japanese miss the authentic cultural feel. Translating to pseudo-Japanese bridges this gap by simulating the aesthetics without creating a comprehension barrier.
+> Players unfamiliar with Japanese miss the authentic cultural feel. Translating to pseudo-Japanese bridges this gap by simulating the aesthetics without creating a comprehension barrier.
 
 **Goal:** Improve immersion by simulating Japanese aesthetics, enhancing players’ perception of authenticity, without requiring them to read or understand real Japanese.
 
@@ -66,6 +66,10 @@ Players unfamiliar with Japanese miss the authentic cultural feel. Translating t
   - Instant text swap or quick fade transition (≤200ms) when toggled.
   - Visually consistent with game UI (rounded rectangle, matching color scheme).
 - No plan for real Japanese localization — this feature is purely for stylistic effect.
+
+| **Quote Screen Mockup 3** | **Quote Screen Mockup 4**                         |
+|---|---:|
+|![Quote Screen Mockup 3](/design/mockups/mockupQuoteScreen3.png)|![Quote Screen Mockup 4](/design/mockups/mockupQuoteScreen4.png)|
 
 ### 1. Quote Display + Language Toggle Module
 

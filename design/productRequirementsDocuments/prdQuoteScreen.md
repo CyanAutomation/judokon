@@ -10,7 +10,8 @@ Introduce a rewarding quote screen that appears when players achieve a perfect v
 
 ## Problem Statement
 
-Currently, players completing a full sweep of team battles receive no special acknowledgment. Without a distinctive reward, players may lack the emotional closure and reinforcement that drives continued engagement. Providing a “quote reward” with KG taps into the human drive for mastery and recognition. By celebrating this achievement, we encourage players to replay and improve. There is a concern that any lack of reward for challenging play could lead to reduced play time or negative player feedback. Full sweeps—winning all matches in a team battle—are likely challenging, and it is estimated that only 20% of players achieve this.
+Currently, players completing a full sweep of team battles receive no special acknowledgment. Without a distinctive reward, players may lack the emotional closure and reinforcement that drives continued engagement. Providing a “quote reward” with KG taps into the human drive for mastery and recognition. By celebrating this achievement, we encourage players to replay and improve. There is a concern that any lack of reward for challenging play could lead to reduced play time or negative player feedback. 
+> Full sweeps—winning all matches in a team battle—are likely challenging, and it is estimated that only 20% of players achieve this.
 
 ---
 
@@ -83,6 +84,10 @@ Players are motivated by meaningful, personalized rewards that mark major achiev
 - Proceed button is consistently placed at the bottom of the screen.
 - Background is neutral and matches the tone of the team battle mode.
 - Quote text uses a legible, sans-serif font, sized 18px minimum.
+
+| **Quote Screen Mockup 3** | **Quote Screen Mockup 4**                         |
+|---|---:|
+|![Quote Screen Mockup 3](/design/mockups/mockupQuoteScreen3.png)|![Quote Screen Mockup 4](/design/mockups/mockupQuoteScreen4.png)|
 
 ### 1. Victory Feedback Module
 

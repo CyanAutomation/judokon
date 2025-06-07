@@ -1,4 +1,4 @@
-# Feature: Home Page Main Navigation Menu
+# PRD: Home Page Main Navigation Menu
 
 ## 1. Overview
 

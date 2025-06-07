@@ -161,22 +161,10 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 ---
 
-## Quick Sketch Layout
 
----
-
-+—————————————————+
-| [Avatar] You [Settings Gear Icon] |
-+—————————————————+
-| |
-| [ Card Placeholder ] |
-| (Animation Zone: Bounce / Fade) |
-| |
-| [ Draw Card! Button ] |
-| (Loading/Disabled State) |
-| (Error/Feedback Text Below Button Inline) |
-| |
-+—————————————————+
+| **Draw Random Card Mockup 1**  | **Draw Random Card Mockup  2** |
+|----|----:|
+|![Draw Random Card Mockup 1](/design/mockups/mockupDrawCard1.png)|![Draw Random Card Mockup 2](/design/mockups/mockupDrawCard2.png)|
 
 ---
 
