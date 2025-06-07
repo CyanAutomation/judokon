@@ -13,6 +13,7 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 > “I love not knowing what card will pop up next — it makes it so much more exciting!” — Sanshiro, age 10
 
 **This function is critical for:**
+
 - Enhancing pacing — sustaining game flow without manual selection delays.
 - Increasing replayability — ensuring different match outcomes on each playthrough.
 - Boosting session duration — expected to increase session time by at least 10% due to heightened player engagement and tension.
@@ -46,13 +47,13 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 ## Goals
 
-| Goal             | Metric                                                                 |
-|------------------|------------------------------------------------------------------------|
-| Fast Response    | Card draw completes in under 300ms.                                    |
-| Smooth Animation | Reveal animation plays at ≥60fps with no visual glitches.              |
+| Goal             | Metric                                                                                    |
+| ---------------- | ----------------------------------------------------------------------------------------- |
+| Fast Response    | Card draw completes in under 300ms.                                                       |
+| Smooth Animation | Reveal animation plays at ≥60fps with no visual glitches.                                 |
 | Fair Randomness  | Random selection passes chi-square testing for uniformity, 95% confidence over 100 draws. |
-| Low Failure Rate | No more than 1% draw failures.                                          |
-| Accessibility    | Automatically disable animations if system Reduced Motion is active.   |
+| Low Failure Rate | No more than 1% draw failures.                                                            |
+| Accessibility    | Automatically disable animations if system Reduced Motion is active.                      |
 
 ---
 
@@ -69,15 +70,15 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                    | Description                                                                              |
-|--------- |----------------------------|------------------------------------------------------------------------------------------|
-| P1       | Random Card Selection       | Select a random card from the active card set dynamically.                               |
-| P1       | Display Selected Card       | Visually reveal the selected card with animation and sound feedback.                     |
-| P2       | Fallback on Failure         | Show fallback card and error message if draw fails or active set is empty.               |
-| P2       | Reusable Random Draw Module | Make the random draw callable from multiple game states or screens.                      |
-| P3       | Accessibility Support       | Support Reduced Motion settings and maintain color contrast and readability.             |
-| P3       | UX Enhancements             | Optimize for 60fps animation, sound effect, and large tap targets.                       |
-| P3       | Sound & Animation User Toggles | Allow users to manually mute sounds and disable animations if desired.                |
+| Priority | Feature                        | Description                                                                  |
+| -------- | ------------------------------ | ---------------------------------------------------------------------------- |
+| P1       | Random Card Selection          | Select a random card from the active card set dynamically.                   |
+| P1       | Display Selected Card          | Visually reveal the selected card with animation and sound feedback.         |
+| P2       | Fallback on Failure            | Show fallback card and error message if draw fails or active set is empty.   |
+| P2       | Reusable Random Draw Module    | Make the random draw callable from multiple game states or screens.          |
+| P3       | Accessibility Support          | Support Reduced Motion settings and maintain color contrast and readability. |
+| P3       | UX Enhancements                | Optimize for 60fps animation, sound effect, and large tap targets.           |
+| P3       | Sound & Animation User Toggles | Allow users to manually mute sounds and disable animations if desired.       |
 
 ---
 
@@ -101,11 +102,13 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 - **Spacing**: Tight vertical stacking (~24px between card and button).
 - **Animation Area**: Reserve transparent padding around card to allow for bounce/stretch without visual clipping.
 - **Accessibility**: High contrast placeholders; consider light text on dark backgrounds for error/fallback states.
+
 ---
 
 ### 1. Top Bar (Persistent Header)
 
 **Contents:**
+
 - **Player Info Module**: “You” + small avatar + status (e.g., “Your Turn” indicator).
 - **Settings Button**: Bigger tappable area (48px+), slight margin from edge, no tiny icons.
 - **Optional Timer** (future proof): If there’s a time limit per draw.
@@ -117,6 +120,7 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 ### 2. Central Interaction Block (Main Zone)
 
 **Contents:**
+
 - **Card Placeholder Module**:
   - Start State: “?” icon card.
   - Draw State: Fade-in random card.
@@ -142,7 +146,7 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 - **Accessibility Setting Check**:
   - Automatically downgrade if Reduced Motion is detected — immediately snap card reveal, no bounce.
 
-**Why**: Players should *feel* the result without being confused or left staring at nothing.
+**Why**: Players should _feel_ the result without being confused or left staring at nothing.
 
 ---
 
@@ -162,16 +166,16 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 ---
 
 +—————————————————+
-| [Avatar] You      [Settings Gear Icon]    |
+| [Avatar] You [Settings Gear Icon] |
 +—————————————————+
-|                                                   |
-|                  [ Card Placeholder ]             |
-|          (Animation Zone: Bounce / Fade)          |
-|                                                   |
-|              [ Draw Card! Button ]                |
-|             (Loading/Disabled State)              |
-|    (Error/Feedback Text Below Button Inline)      |
-|                                                   |
+| |
+| [ Card Placeholder ] |
+| (Animation Zone: Bounce / Fade) |
+| |
+| [ Draw Card! Button ] |
+| (Loading/Disabled State) |
+| (Error/Feedback Text Below Button Inline) |
+| |
 +—————————————————+
 
 ---

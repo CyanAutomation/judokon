@@ -87,6 +87,7 @@ Players are motivated by meaningful, personalized rewards that mark major achiev
 ### 1. Victory Feedback Module
 
 **Contents:**
+
 - Large celebratory headline: “Victory!” or “Full Sweep Achieved!”
 - Trophy or confetti burst icon above quote block
 - KG image with pointer leading visually into the quote
@@ -99,6 +100,7 @@ Players need an unmistakable emotional payoff for their achievement—text alone
 ### 2. Quote Display Module
 
 **Contents:**
+
 - Responsive quote text block with max-width control
 - Dynamic font scaling for different screen sizes
 - Skeleton loader animation while quote loads
@@ -111,6 +113,7 @@ Maintains readability and handles loading/failure elegantly without a jarring fa
 ### 3. Action Button Module
 
 **Contents:**
+
 - Large, thumb-friendly button (min 48px height)
 - Emotionally charged label: “Continue Your Journey” or “Claim Victory”
 - Button anchored close to quote with clear margin spacing
