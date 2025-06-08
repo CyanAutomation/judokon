@@ -19,4 +19,10 @@ test.describe("View Judoka screen", () => {
     const btn = page.getByRole("button", { name: /draw card/i });
     await expect(btn).toHaveAttribute("aria-label", /draw a random card/i);
   });
+
+  test("draw card populates container", async ({ page }) => {
+    await page.click("#draw-card-btn");
+    const card = page.locator("#card-container .judoka-card");
+    await expect(card).toBeVisible();
+  });
 });
