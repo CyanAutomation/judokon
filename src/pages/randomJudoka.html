@@ -62,6 +62,9 @@
         import { generateJudokaCardHTML } from "../helpers/cardBuilder.js";
         import { DATA_DIR } from "../helpers/constants.js";
 
+        // Check for Reduced Motion preference
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
         async function displayRandomJudoka() {
           const cardContainer = document.getElementById("card-container");
 
@@ -96,6 +99,11 @@
             // Display the card
             cardContainer.innerHTML = ""; // Clear any existing content
             cardContainer.appendChild(judokaCard);
+
+            // Skip animations if Reduced Motion is enabled
+            if (!prefersReducedMotion) {
+              judokaCard.classList.add("animate-card");
+            }
           } catch (error) {
             console.error("Error displaying random judoka:", error);
             cardContainer.innerHTML = "<p>⚠️ Failed to load judoka data. Please try again.</p>";

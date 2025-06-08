@@ -64,3 +64,13 @@
 .hidden {
   display: none;
 }
+
+/* Add Reduced Motion support */
+@media (prefers-reduced-motion: reduce) {
+  .card-container {
+    animation: none !important;
+  }
+  .draw-card-btn {
+    transition: none !important;
+  }
+}
