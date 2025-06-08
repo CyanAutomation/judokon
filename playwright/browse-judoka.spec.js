@@ -16,6 +16,11 @@ test.describe("Browse Judoka screen", () => {
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
 
+  test("logo has alt text", async ({ page }) => {
+    const logo = page.locator(".logo-container img");
+    await expect(logo).toHaveAttribute("alt", "JU-DO-KON! Logo");
+  });
+
   test("scroll buttons have labels", async ({ page }) => {
     const left = page.locator(".scroll-button.left");
     const right = page.locator(".scroll-button.right");
