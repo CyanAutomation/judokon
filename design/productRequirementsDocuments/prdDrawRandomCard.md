@@ -170,9 +170,8 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 ## Tasks
 
 - [ ] 1.0 Implement Random Card Draw Function
-  - [ ] 1.1 Create `generateRandomCard()` function to select random card from active set.
+  - [x] 1.1 Create `generateRandomCard()` function to select random card from active set.
   - [ ] 1.2 Integrate card draw with UI trigger ("Draw Card" button).
-  - [ ] 1.3 Handle duplicate cards as valid outcomes.
 - [ ] 2.0 Develop Card Reveal Animation
   - [ ] 2.1 Implement fade or bounce animation for card reveal.
   - [ ] 2.2 Ensure animation plays at ≥60fps on devices with ≥2GB RAM.
