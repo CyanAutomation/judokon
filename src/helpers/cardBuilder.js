@@ -155,17 +155,13 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   );
   judokaCard.appendChild(topBarElement);
 
-  let portraitHTML = "";
+  let portraitElement;
   try {
-    portraitHTML = generateCardPortrait(judoka);
-  } catch (error) {
-    console.error("Failed to generate portrait:", error);
-  }
-  const portraitElement = document.createElement("div");
-  portraitElement.className = "card-portrait";
-  portraitElement.innerHTML = portraitHTML;
+    const portraitHTML = generateCardPortrait(judoka);
+    portraitElement = document.createElement("div");
+    portraitElement.className = "card-portrait";
+    portraitElement.innerHTML = portraitHTML;
 
-  try {
     const weightClassElement = document.createElement("div");
     weightClassElement.className = "card-weight-class";
     weightClassElement.textContent = judoka.weightClass;
@@ -189,14 +185,15 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   }
   judokaCard.appendChild(statsElement);
 
-  let signatureMoveHTML = "";
+  let signatureMoveElement;
   try {
-    signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
+    const signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
+    signatureMoveElement = document.createElement("div");
+    signatureMoveElement.innerHTML = signatureMoveHTML;
   } catch (error) {
     console.error("Failed to generate signature move:", error);
+    signatureMoveElement = createNoDataContainer();
   }
-  const signatureMoveElement = document.createElement("div");
-  signatureMoveElement.innerHTML = signatureMoveHTML;
   judokaCard.appendChild(signatureMoveElement);
 
   cardContainer.appendChild(judokaCard);
