@@ -91,4 +91,5 @@ jobs:
           labels: |
             automated
             documentation
+            auto format
           assignees: ${{ github.actor }}
