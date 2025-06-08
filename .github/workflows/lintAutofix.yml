@@ -80,18 +80,20 @@ jobs:
       - name: Fetch Today in History
         id: today
         run: |
-          RESPONSE=$(curl -s https://today.ong/api || echo "")
+          RESPONSE=$(curl -s http://history.muffinlabs.com/date || echo "")
           if [ -n "$RESPONSE" ]; then
-            COUNT=$(echo "$RESPONSE" | jq '.events | length')
+            COUNT=$(echo "$RESPONSE" | jq '.data.Events | length')
             if [ "$COUNT" -gt 0 ]; then
               INDEX=$(( RANDOM % COUNT ))
-              FACT=$(echo "$RESPONSE" | jq -r ".events[$INDEX]")
-              echo "fact=$FACT" >> $GITHUB_OUTPUT
+              FACT_ITEM=$(echo "$RESPONSE" | jq -r ".data.Events[$INDEX]")
+              YEAR=$(echo "$FACT_ITEM" | jq -r '.year')
+              TEXT=$(echo "$FACT_ITEM" | jq -r '.text')
+              echo "fact=${YEAR}: ${TEXT}" >> $GITHUB_OUTPUT
             else
-              echo "fact=No interesting historical events found today. 🧐" >> $GITHUB_OUTPUT
+              echo "fact=No historical events found today. 🧐" >> $GITHUB_OUTPUT
             fi
           else
-            echo "fact=Couldn't fetch a historical fact today. 💤" >> $GITHUB_OUTPUT
+            echo "fact=Couldn't fetch today's historical fact. 💤" >> $GITHUB_OUTPUT
           fi
 
       - name: Fetch Weather Mood
