@@ -169,17 +169,16 @@ export function populateNavbar() {
       return response.json();
     })
     .then((data) => {
-      debugLog("Fetched game modes:", data); // Debug fetched data
+      debugLog("Fetched game modes:", data);
 
       const navBar = document.querySelector(".bottom-navbar");
-      clearBottomNavbar(); // Clear existing content
+      clearBottomNavbar();
 
-      // Filter game modes to include only visible main menu items
       const activeModes = validateGameModes(
         data.filter((mode) => mode.category === "mainMenu" && mode.isHidden === false)
       ).sort((a, b) => a.order - b.order);
 
-      debugLog("Validated game modes:", activeModes); // Debug validated data
+      debugLog("Validated game modes:", activeModes);
 
       if (activeModes.length === 0) {
         navBar.innerHTML = "<ul><li>No game modes available</li></ul>";
@@ -193,14 +192,12 @@ export function populateNavbar() {
       navBar.appendChild(ul);
 
       addTouchFeedback();
-      // toggleExpandedMapView(activeModes);
-      // togglePortraitTextMenu(activeModes);
     })
     .catch((error) => {
       console.error("Error loading game modes:", error);
 
       const navBar = document.querySelector(".bottom-navbar");
-      clearBottomNavbar(); // Clear existing content
+      clearBottomNavbar();
 
       const fallbackItems = [
         {

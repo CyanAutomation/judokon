@@ -125,6 +125,57 @@ function validateJudoka(judoka) {
  * @param {Object} gokyo - The Gokyo data (technique information).
  * @returns {HTMLElement} The DOM element for the complete judoka card.
  */
+async function createTopBar(judoka, flagUrl) {
+  return await safeGenerate(
+    () => generateCardTopBar(judoka, flagUrl),
+    "Failed to generate top bar:",
+    createNoDataContainer()
+  );
+}
+
+function createPortraitSection(judoka) {
+  const portraitElement = document.createElement("div");
+  portraitElement.className = "card-portrait";
+
+  try {
+    portraitElement.innerHTML = generateCardPortrait(judoka);
+    const weightClassElement = document.createElement("div");
+    weightClassElement.className = "card-weight-class";
+    weightClassElement.textContent = judoka.weightClass;
+    portraitElement.appendChild(weightClassElement);
+  } catch (error) {
+    console.error("Failed to generate portrait:", error);
+    return createNoDataContainer();
+  }
+
+  return portraitElement;
+}
+
+function createStatsSection(judoka, cardType) {
+  try {
+    const statsHTML = generateCardStats(judoka, cardType);
+    const statsElement = document.createElement("div");
+    statsElement.className = "card-stats";
+    statsElement.innerHTML = statsHTML;
+    return statsElement;
+  } catch (error) {
+    console.error("Failed to generate stats:", error);
+    return createNoDataContainer();
+  }
+}
+
+function createSignatureMoveSection(judoka, gokyoLookup, cardType) {
+  try {
+    const signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
+    const signatureMoveElement = document.createElement("div");
+    signatureMoveElement.innerHTML = signatureMoveHTML;
+    return signatureMoveElement;
+  } catch (error) {
+    console.error("Failed to generate signature move:", error);
+    return createNoDataContainer();
+  }
+}
+
 export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   validateJudoka(judoka);
 
@@ -137,67 +188,25 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
 
   const cardType = judoka.rarity?.toLowerCase() || "common";
 
-  // Create the main card container
   const cardContainer = document.createElement("div");
   cardContainer.className = "card-container";
 
   const judokaCard = document.createElement("div");
   judokaCard.className = `judoka-card ${cardType}`;
 
-  // Add gender-specific class after initializing judokaCard
   const genderClass = judoka.gender === "female" ? "female-card" : "male-card";
   judokaCard.classList.add(genderClass);
 
-  const topBarElement = await safeGenerate(
-    () => generateCardTopBar(judoka, flagUrl),
-    "Failed to generate top bar:",
-    createNoDataContainer()
-  );
+  const topBarElement = await createTopBar(judoka, flagUrl);
   judokaCard.appendChild(topBarElement);
 
-  let portraitHTML = "";
-  try {
-    portraitHTML = generateCardPortrait(judoka);
-  } catch (error) {
-    console.error("Failed to generate portrait:", error);
-  }
-  const portraitElement = document.createElement("div");
-  portraitElement.className = "card-portrait";
-  portraitElement.innerHTML = portraitHTML;
-
-  try {
-    const weightClassElement = document.createElement("div");
-    weightClassElement.className = "card-weight-class";
-    weightClassElement.textContent = judoka.weightClass;
-    portraitElement.appendChild(weightClassElement);
-  } catch (error) {
-    console.error("Failed to generate portrait:", error);
-    portraitElement = createNoDataContainer();
-  }
-
+  const portraitElement = createPortraitSection(judoka);
   judokaCard.appendChild(portraitElement);
 
-  let statsElement;
-  try {
-    const statsHTML = generateCardStats(judoka, cardType);
-    statsElement = document.createElement("div");
-    statsElement.className = "card-stats";
-    statsElement.innerHTML = statsHTML;
-  } catch (error) {
-    console.error("Failed to generate stats:", error);
-    statsElement = createNoDataContainer();
-  }
+  const statsElement = createStatsSection(judoka, cardType);
   judokaCard.appendChild(statsElement);
 
-  let signatureMoveElement;
-  try {
-    const signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
-    signatureMoveElement = document.createElement("div");
-    signatureMoveElement.innerHTML = signatureMoveHTML;
-  } catch (error) {
-    console.error("Failed to generate signature move:", error);
-    signatureMoveElement = createNoDataContainer();
-  }
+  const signatureMoveElement = createSignatureMoveSection(judoka, gokyoLookup, cardType);
   judokaCard.appendChild(signatureMoveElement);
 
   cardContainer.appendChild(judokaCard);
