@@ -216,9 +216,9 @@ F7KP-WQ9M-ZD23-HYTR
 - [ ] 1.0 Card Code Generation Function
 
   - [ ] 1.1 Validate input Judoka object for all required fields.
-  - [ ] 1.2 Concatenate Judoka stats and key attributes into raw string.
-  - [ ] 1.3 Apply XOR encoding with index-based key.
-  - [ ] 1.4 Map encoded string to 32-character readable alphabet.
+  - [x] 1.2 Concatenate Judoka stats and key attributes into raw string.
+  - [x] 1.3 Apply XOR encoding with index-based key.
+  - [x] 1.4 Map encoded string to 32-character readable alphabet.
   - [ ] 1.5 Format string into chunks of 4 characters with hyphens.
   - [ ] 1.6 Return the final formatted code.
   - [ ] 1.7 Save the generated code into `judoka.json`.
