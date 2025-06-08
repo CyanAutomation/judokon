@@ -23,14 +23,14 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 
 ## 3. Functional Requirements
 
-| **Priority** | **Requirement Description**                                                                                                                                                                                                                            |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **P1**       | API call and response handling: Query https://romaji2kana.com/api for conversion.                                                                                                                                                                      |
-| **P1**       | Local JSON fallback: If the API fails, map using a local JSON file.                                                                                                                                                                                    |
-| **P2**       | Input cleaning: Remove unsupported characters before conversion.                                                                                                                                                                                       |
-| **P2**       | Random fallback replacement: For unsupported characters, substitute random pseudo-Japanese character.                                                                                                                                                  |
-| **P3**       | Pre-converted static fallback: If both API and JSON fail, display predefined Japanese text: "おめでとうございます！よく頑張りましたね。本当に頑張って、そして成功したのが分かります。嘉納先生がおっしゃったように、「努力あるところに成果あり」です。" |
-| **P1**       | Toggle button: Switches display between English and pseudo-Japanese text, updates instantly (<200ms).                                                                                                                                                  |
+| Priority | Feature                        | Description                                                                                                 |
+|---------|---------------------------------|-------------------------------------------------------------------------------------------------------------|
+| **P1**  | API call and response handling  | Query and process text conversion using external API.                                                       |
+| **P1**  | Local JSON fallback             | Use local mapping if API fails.                                                                              |
+| **P1**  | Toggle button                   | Instantly switch between English and pseudo-Japanese text with minimal delay.                                |
+| **P2**  | Input cleaning                  | Remove unsupported characters before conversion.                                                            |
+| **P2**  | Random fallback replacement     | Insert random pseudo-Japanese characters where input is unsupported.                                         |
+| **P3**  | Pre-converted static fallback   | Display pre-rendered Japanese text if both API and JSON fallback fail.                                       |
 
 ---
 
@@ -96,15 +96,29 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
 
 ---
 
-## 7. Mockup Reference
+## Tasks
 
-### Updated Interaction Mockup (Toggle Behavior Proposal)
+- [ ] 1.0 Implement API Integration for testing
+  - [ ] 1.1 Set up API call to https://romaji2kana.com/api.
+  - [ ] 1.2 Handle API response parsing and error cases.
+  - [ ] 1.3 Log and report API failure events.
 
-Imagine the "Proceed" button area now includes a smaller button that appears as a split of the Japan and United Kingdom flags, with a diagonal split.
+- [ ] 2.0 Develop Local JSON Fallback
+  - [ ] 2.1 Load local JSON mapping file.
+  - [ ] 2.2 Implement character mapping logic.
+  - [ ] 2.3 Fallback to predefined static Japanese text if JSON fails.
 
-When tapped:
+- [ ] 3.0 Create Input Cleaning and Random Substitution
+  - [ ] 3.1 Strip unsupported characters from input.
+  - [ ] 3.2 Substitute random pseudo-Japanese characters for unsupported input.
 
-- Text in the quote box instantly fades and is replaced by the alternate language.
-- No screen reload.
+- [ ] 4.0 Design and Implement Toggle Button
+  - [ ] 4.1 Create "日本語風 / English" toggle button with split flags.
+  - [ ] 4.2 Implement 200ms fade animation for text switch.
+  - [ ] 4.3 Ensure toggle button fits into existing UI design guidelines.
 
-![Game Quote Screen With Language Toggle Mockup](/design/mockups/mockupQuoteScreen2.png)
+- [ ] 5.0 Testing and QA
+  - [ ] 5.1 Prepare five diverse test strings (short, max-length, special chars, mixed input).
+  - [ ] 5.2 Validate API, JSON fallback, and static fallback behavior.
+  - [ ] 5.3 Measure toggle response time (<200ms) and fallback conversion time (<500ms).
+  - [ ] 5.4 Perform UX testing on different screen sizes.
