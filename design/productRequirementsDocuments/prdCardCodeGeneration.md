@@ -174,9 +174,9 @@ F7KP-WQ9M-ZD23-HYTR
 - Auto-hyphenates every 4 characters.
 - Invalid input prompts real-time error feedback.
 
-| **Card Code Display and Entry Mockup 1**  | **Card Code Display and Entry Mockup 2** |
-|----|----:|
-|![Card Code Display and Entry Mockup 1](/design/mockups/mockupCardCode1.png)|![Card Code Display and Entry Mockup 2](/design/mockups/mockupCardCode2.png)|
+| **Card Code Display and Entry Mockup 1**                                     |                                     **Card Code Display and Entry Mockup 2** |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------: |
+| ![Card Code Display and Entry Mockup 1](/design/mockups/mockupCardCode1.png) | ![Card Code Display and Entry Mockup 2](/design/mockups/mockupCardCode2.png) |
 
 ---
 

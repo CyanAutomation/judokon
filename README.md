@@ -54,6 +54,14 @@ In the browser you can enable it from the console before loading the page:
 window.DEBUG_LOGGING = true;
 ```
 
+## Screenshot Tests (On-Demand)
+
+Run optional Playwright-based screenshot tests with:
+
+```bash
+npm run test:screenshot
+```
+
 ## Project Structure
 
 The repository follows a simple layout. GitHub Pages requires `index.html` to live at the project root.

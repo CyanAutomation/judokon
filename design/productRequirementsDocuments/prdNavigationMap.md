@@ -2,7 +2,7 @@
 
 ## Problem Statement
 
-Players have reported that the current navigation menus feel disconnected from the Ju-Do-Kon! theme, which weakens immersion and reduces excitement when switching game modes. A theoretical 10-year-old playtester noted, 
+Players have reported that the current navigation menus feel disconnected from the Ju-Do-Kon! theme, which weakens immersion and reduces excitement when switching game modes. A theoretical 10-year-old playtester noted,
 
 > _"The menu feels boring compared to the rest of the game — can it look more exciting? Maybe like a judo dojo or village?"_
 
@@ -60,9 +60,9 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - **Performance:** Maintain ≥60fps animations on mid-tier devices.
 - **Responsiveness:** If viewport height <400px or width <640px, hide the map icon and corresponding functionality.
 
-| **Navigation Map Mockup 1** | **Navigation Map Mockup 2**                         |
-|---|---:|
-|![Navigation Map Mockup 1](/design/mockups/mockupNavigationMap2.png)|![Navigation Map Mockup 2](/design/mockups/mockupNavigationMap3.png)|
+| **Navigation Map Mockup 1**                                          |                                          **Navigation Map Mockup 2** |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------: |
+| ![Navigation Map Mockup 1](/design/mockups/mockupNavigationMap2.png) | ![Navigation Map Mockup 2](/design/mockups/mockupNavigationMap3.png) |
 
 ## Accessibility Checklist
 

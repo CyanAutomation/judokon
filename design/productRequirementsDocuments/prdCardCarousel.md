@@ -4,7 +4,7 @@
 
 As part of the game, certain screens, such as “Browse Judoka,” require an intuitive and interactive way to present judoka cards. With more than 100 cards in the game, it would be cumbersome and frustrating for players to browse through all cards manually without an efficient filtering and navigation system.
 
-Failure to provide an efficient browsing experience may impact core gameplay — players might struggle to find and build optimal teams, leading to frustration and potential churn. 
+Failure to provide an efficient browsing experience may impact core gameplay — players might struggle to find and build optimal teams, leading to frustration and potential churn.
 
 > A smooth and intuitive browsing experience fosters a sense of mastery and control, enhancing overall player satisfaction and engagement.
 

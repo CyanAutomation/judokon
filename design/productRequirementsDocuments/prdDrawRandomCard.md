@@ -161,10 +161,9 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 ---
 
-
-| **Draw Random Card Mockup 1**  | **Draw Random Card Mockup  2** |
-|----|----:|
-|![Draw Random Card Mockup 1](/design/mockups/mockupDrawCard1.png)|![Draw Random Card Mockup 2](/design/mockups/mockupDrawCard2.png)|
+| **Draw Random Card Mockup 1**                                     |                                     **Draw Random Card Mockup 2** |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------: |
+| ![Draw Random Card Mockup 1](/design/mockups/mockupDrawCard1.png) | ![Draw Random Card Mockup 2](/design/mockups/mockupDrawCard2.png) |
 
 ---
 

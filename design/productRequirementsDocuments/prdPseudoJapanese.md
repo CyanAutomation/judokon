@@ -67,9 +67,9 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
   - Visually consistent with game UI (rounded rectangle, matching color scheme).
 - No plan for real Japanese localization — this feature is purely for stylistic effect.
 
-| **Quote Screen Mockup 3** | **Quote Screen Mockup 4**                         |
-|---|---:|
-|![Quote Screen Mockup 3](/design/mockups/mockupQuoteScreen3.png)|![Quote Screen Mockup 4](/design/mockups/mockupQuoteScreen4.png)|
+| **Quote Screen Mockup 3**                                        |                                        **Quote Screen Mockup 4** |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------: |
+| ![Quote Screen Mockup 3](/design/mockups/mockupQuoteScreen3.png) | ![Quote Screen Mockup 4](/design/mockups/mockupQuoteScreen4.png) |
 
 ### 1. Quote Display + Language Toggle Module
 
