@@ -15,6 +15,11 @@ test.describe("View Judoka screen", () => {
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
 
+  test("logo has alt text", async ({ page }) => {
+    const logo = page.getByRole('img', { name: 'JU-DO-KON! Logo' });
+    await expect(logo).toHaveAttribute("alt", "JU-DO-KON! Logo");
+  });
+
   test("draw button has label", async ({ page }) => {
     const btn = page.getByRole("button", { name: /draw card/i });
     await expect(btn).toHaveAttribute("aria-label", /draw a random card/i);
