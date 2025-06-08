@@ -35,7 +35,12 @@ function getContentType(filePath) {
 }
 
 const server = http.createServer((req, res) => {
-  let filePath = path.join(rootDir, req.url === "/" ? "index.html" : req.url);
+  let filePath = path.resolve(rootDir, req.url === "/" ? "index.html" : req.url);
+  if (path.relative(rootDir, filePath).startsWith("..")) {
+    res.statusCode = 403;
+    res.end("Forbidden");
+    return;
+  }
   if (existsSync(filePath) && statSync(filePath).isDirectory()) {
     filePath = path.join(filePath, "index.html");
   }
