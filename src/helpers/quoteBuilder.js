@@ -67,8 +67,9 @@ function formatFableStory(story) {
  * Displays a fable in the designated quote div on the page.
  *
  * @pseudocode
- * 1. Locate the quote div in the DOM:
- *    - Use `document.getElementById("quote")` to retrieve the element.
+ * 1. Locate the quote and loader elements in the DOM:
+ *    - Use `document.getElementById("quote")` to retrieve the quote element.
+ *    - Use `document.getElementById("quote-loader")` to retrieve the loader element.
  *
  * 2. Check if a fable is provided:
  *    - If a fable is provided:
@@ -79,11 +80,15 @@ function formatFableStory(story) {
  *
  * 3. Update the quote div:
  *    - Use template literals to dynamically insert the fable's title and story into the HTML structure.
+
+ * 4. Toggle visibility:
+ *    - Hide the loader element and remove the `hidden` class from the quote element.
  *
  * @param {Object|null} fable - The fable object containing the title and story, or `null` if no fable is available.
  */
 function displayFable(fable) {
   const quoteDiv = document.getElementById("quote");
+  const loaderDiv = document.getElementById("quote-loader");
   if (fable) {
     const formattedStory = formatFableStory(fable.story);
     quoteDiv.innerHTML = `
@@ -93,6 +98,8 @@ function displayFable(fable) {
   } else {
     quoteDiv.innerHTML = "<p>Well done, congratulations!</p>";
   }
+  loaderDiv.classList.add("hidden");
+  quoteDiv.classList.remove("hidden");
 }
 
 /**
