@@ -29,7 +29,7 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test("country filter updates carousel", async ({ page }) => {
-    const dropdown = page.getByRole("combobox", { name: /filter judoka by country/i });
+    const dropdown = page.getByRole("combobox", { name: FILTER_BY_COUNTRY_LOCATOR });
 
     // wait for cards to load
     await page.waitForSelector("#carousel-container .judoka-card");
