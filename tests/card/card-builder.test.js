@@ -24,12 +24,14 @@ describe("createScrollButton", () => {
     const button = createScrollButton("left", container, 100);
     expect(button.className).toBe("scroll-button left");
     expect(button.innerHTML).toBe("&lt;");
+    expect(button.getAttribute("aria-label")).toBe("Scroll Left");
   });
 
   it("should create a scroll button with the correct class and inner HTML when direction is right", () => {
     const button = createScrollButton("right", container, 100);
     expect(button.className).toBe("scroll-button right");
     expect(button.innerHTML).toBe("&gt;");
+    expect(button.getAttribute("aria-label")).toBe("Scroll Right");
   });
 
   it("should throw an error when the direction is invalid", () => {
