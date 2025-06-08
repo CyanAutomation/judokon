@@ -22,29 +22,25 @@ blockquote {
 .gh-content h3,
 .gh-content h4,
 .gh-content hr {
-  margin-top: 0.75rem !important;
-  margin-bottom: 0.75rem !important;
+  margin: 0.75rem 0 !important;
 }
 
 /* Optional: even tighter for paragraphs specifically */
 .gh-content p {
-  margin-top: 0.5rem !important;
-  margin-bottom: 0.5rem !important;
+  margin: 0.5rem 0 !important;
   line-height: 1.5 !important;
 }
 
 /* Smaller, tighter headings within post content */
 .gh-content h2 {
   font-size: 2.5rem !important;
-  margin-top: 1.25rem !important;
-  margin-bottom: 0.75rem !important;
+  margin: 1.25rem 0 0.75rem !important;
   line-height: 1.3 !important;
 }
 
 .gh-content h3 {
   font-size: 1.5rem !important;
-  margin-top: 1rem !important;
-  margin-bottom: 0.5rem !important;
+  margin: 1rem 0 0.5rem !important;
   line-height: 1.3 !important;
 }
 
@@ -64,8 +60,7 @@ blockquote {
 
 /* Ensure embedded video or images don’t add extra space */
 .gh-content figure.kg-card {
-  margin-top: 1.5rem !important;
-  margin-bottom: 1.5rem !important;
+  margin: 1.5rem 0 !important;
 }
 
 /* Table formatting (as you already had it) */
