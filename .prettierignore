@@ -2,3 +2,6 @@ node_modules/
 dist/
 build/
 *.log
+.github/ISSUE_TEMPLATE/*.md
+design/productRequirementsDocuments/*.md
+src/pages/quoteKG.html

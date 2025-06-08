@@ -24,7 +24,7 @@ describe("createScrollButton", () => {
     const button = createScrollButton("left", container, 100);
     expect(button.className).toBe("scroll-button left");
     expect(button.innerHTML).toBe("&lt;");
-    expect(button.getAttribute("aria-label")).toBe("Scroll Left");
+    expect(button).toHaveAttribute("aria-label", "Scroll Left");
   });
 
   it("should create a scroll button with the correct class and inner HTML when direction is right", () => {
