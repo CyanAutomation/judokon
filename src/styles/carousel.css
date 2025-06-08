@@ -6,11 +6,12 @@
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   gap: 16px;
+  scroll-behavior: smooth; /* Smooth scrolling effect */
 }
 
 .judoka-card {
   flex: 0 0 calc(33.33% - 16px); /* Show 3 cards on desktop */
-  scroll-snap-align: center;
+  scroll-snap-align: center; /* Snap each card to the center */
   transition: transform 0.3s ease;
 }
 
