@@ -66,14 +66,14 @@ body {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  background-color: #a71916;
+  background-color: var(--accent-red);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   width: 100%;
 }
 
 .character-slot {
   height: 20px;
-  background-color: #e8d9c3;
+  background-color: var(--accent-beige);
   opacity: 0.5;
 }
 
@@ -110,7 +110,7 @@ body {
 }
 
 .game-tile:hover {
-  background: #880000;
+  background: var(--accent-red-dark);
   color: #fff;
 }
 
@@ -559,12 +559,12 @@ button:focus {
   min-height: 2dvh;
   min-width: 100vw;
   justify-content: space-evenly;
-  background-color: #22223b;
+  background-color: var(--accent-blue-dark);
   color: #fff;
   text-align: center;
   padding: 1vh 0;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
-  border: solid 1px #22223b;
+  border: solid 1px var(--accent-blue-dark);
   list-style-type: none;
   /* border: solid 5px red; */
 }
@@ -650,7 +650,7 @@ button:focus {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #ccc;
+  background: var(--accent-grey);
   opacity: 0.7;
 }
 
@@ -662,7 +662,7 @@ button:focus {
 .loading-spinner {
   display: none;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #22223b;
+  border-top: 4px solid var(--accent-blue-dark);
   border-radius: 50%;
   width: 40px;
   height: 40px;

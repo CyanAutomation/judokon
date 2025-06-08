@@ -7,6 +7,12 @@
   --primary-bg: #1c4b95;
   --secondary-bg: #0c3f7a;
   --text-color: white;
+  /* Accent colors */
+  --accent-red: #a71916; /* primary action color */
+  --accent-red-dark: #880000; /* hover state for accent red */
+  --accent-beige: #e8d9c3; /* light highlight */
+  --accent-blue-dark: #22223b; /* navigation background */
+  --accent-grey: #ccc; /* neutral UI elements */
 
   /* Card-specific colors */
   /* --common-border-color: #3c5ad6;
