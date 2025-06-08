@@ -102,7 +102,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 ## Tasks
 
 - [ ] 1.0 Set Up Card Carousel Structure (P1)
-  - [ ] 1.1 Develop carousel container and card components.
+  - [x] 1.1 Develop carousel container and card components.
   - [ ] 1.2 Implement dynamic loading for up to 100 cards.
   - [ ] 1.3 Ensure responsive resizing for mobile and desktop.
 - [ ] 2.0 Implement Filtering System (P2)
@@ -113,7 +113,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 - [ ] 3.0 Integrate Interaction Methods (P1)
 
-  - [ ] 3.1 Add left/right on-screen button scrolling.
+  - [x] 3.1 Add left/right on-screen button scrolling.
   - [ ] 3.2 Add swipe gesture support for mobile.
   - [ ] 3.3 Add keyboard arrow navigation support.
 
