@@ -6,7 +6,7 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test("essential elements visible", async ({ page }) => {
-    await expect(page.getByRole("combobox", { name: /filter judoka by country/i })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: FILTER_BY_COUNTRY_LOCATOR })).toBeVisible();
     await expect(page.getByRole("navigation")).toBeVisible();
     await expect(page.getByRole("link", { name: /battle!/i })).toBeVisible();
   });
