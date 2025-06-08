@@ -65,12 +65,25 @@
         // Check for Reduced Motion preference
         const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+        // Preload and cache data
+        let cachedJudokaData = null;
+        let cachedGokyoData = null;
+
+        async function preloadData() {
+          try {
+            cachedJudokaData = await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`);
+            cachedGokyoData = await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`);
+          } catch (error) {
+            console.error("Error preloading data:", error);
+          }
+        }
+
         async function displayRandomJudoka() {
           const cardContainer = document.getElementById("card-container");
 
           try {
-            // Fetch the judoka data
-            const judokaData = await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`);
+            // Use cached data if available
+            const judokaData = cachedJudokaData || await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`);
             const validJudoka = judokaData.filter((j) => {
               const hasRequiredFields =
                 j.firstname &&
@@ -89,8 +102,8 @@
 
             const randomJudoka = validJudoka[Math.floor(Math.random() * validJudoka.length)];
 
-            // Fetch the gokyo data and create the lookup object
-            const gokyoData = await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`);
+            // Use cached gokyo data if available
+            const gokyoData = cachedGokyoData || await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`);
             const gokyoLookup = createGokyoLookup(gokyoData);
 
             // Generate the judoka card
@@ -102,13 +115,36 @@
 
             // Skip animations if Reduced Motion is enabled
             if (!prefersReducedMotion) {
-              judokaCard.classList.add("animate-card");
+              requestAnimationFrame(() => {
+                judokaCard.classList.add("animate-card");
+              });
             }
           } catch (error) {
             console.error("Error displaying random judoka:", error);
-            cardContainer.innerHTML = "<p>⚠️ Failed to load judoka data. Please try again.</p>";
+
+            // Display fallback card (judoka id=0)
+            const fallbackJudoka = {
+              id: 0,
+              firstname: "Unknown",
+              surname: "Judoka",
+              countryCode: "N/A",
+              stats: { wins: 0, losses: 0 },
+              weightClass: "N/A",
+              signatureMoveId: null,
+              rarity: "common",
+            };
+
+            const gokyoData = cachedGokyoData || await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`);
+            const gokyoLookup = createGokyoLookup(gokyoData);
+            const fallbackCard = await generateJudokaCardHTML(fallbackJudoka, gokyoLookup);
+
+            cardContainer.innerHTML = ""; // Clear any existing content
+            cardContainer.appendChild(fallbackCard);
           }
         }
+
+        // Preload data on page load
+        preloadData();
 
         // Call the function to display a random judoka when the page loads
         displayRandomJudoka();
