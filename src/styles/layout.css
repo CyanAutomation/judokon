@@ -33,8 +33,6 @@ body {
 
 .helper-container {
   grid-column: 1/1;
-
-  background-color: red;
 }
 
 .header {
@@ -96,7 +94,6 @@ body {
   gap: 2vw;
   flex: 1 1 auto;
   list-style-type: none;
-  border: solid 5px red;
 }
 #gameArea {
   display: flex;
