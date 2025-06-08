@@ -2,7 +2,7 @@
   min-height: max(7vh, 12px);
   display: inline-flex;
   min-width: 100vw;
-  background-color: #22223b;
+  background-color: var(--accent-blue-dark);
   text-align: center;
   align-items: center;
   justify-content: space-evenly;
