@@ -3,25 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="keywords" content="judo, card game, web game, judoka" />
-    <meta name="author" content="Marc Scheimann" />
-    <meta
-      name="description"
-      content="JU-DO-KON! A web-based judo-themed card battle game featuring elite judoka."
-    />
-    <meta property="og:title" content="JU-DO-KON!" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://cyanautomation.github.io/judokon/" />
-    <meta
-      property="og:description"
-      content="JU-DO-KON! A web-based judo-themed card battle game featuring elite judoka."
-    />
-    <meta name="theme-color" content="#22223b" />
     <title>Ju-Do-Kon!</title>
     <link rel="stylesheet" href="../styles/layout.css" />
     <link rel="stylesheet" href="../styles/components.css" />
     <link rel="stylesheet" href="../styles/utilities.css" />
-    <link rel="icon" type="image/png" href="../assets/images/favicon.ico" />
+    <!-- Page‑specific styling -->
+    <link rel="stylesheet" href="../styles/quote.css" />
   </head>
 
   <body>
@@ -29,27 +16,55 @@
       <div class="character-slot left"></div>
       <div class="logo-container">
         <a href="/judokon/index.html">
-          <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
+          <img
+            src="../assets/images/judokonLogoSmall.png"
+            alt="JU-DO-KON! Logo"
+            class="logo"
+          />
         </a>
       </div>
       <div class="character-slot right"></div>
     </header>
 
-    <main class="container" role="main">
+    <main class="container quote-screen" role="main">
+      <h1 class="victory-title">
+        <span aria-hidden="true" class="trophy">🏆</span> Full Sweep Achieved!
+      </h1>
+
       <section id="quote-container" class="quote-container">
         <div class="kg-sprite">
           <img
             src="../assets/helperKG/helperKG1.png"
-            alt="KG character congratulating the player"
+            alt="KG congratulates you"
           />
         </div>
-        <div
-          id="quote"
-          class="quote"
-          aria-labelledby="quote-heading"
-          aria-describedby="quote-content"
-        ></div>
+
+        <div class="quote-block">
+          <div
+            id="quote-loader"
+            class="quote-loader"
+            aria-live="polite"
+            aria-busy="true"
+          >
+            <span class="visually-hidden">Loading quote…</span>
+          </div>
+
+          <div
+            id="quote"
+            class="quote hidden"
+            aria-labelledby="quote-heading"
+            aria-describedby="quote-content"
+          ></div>
+        </div>
       </section>
+
+      <a
+        href="../../index.html"
+        class="cta-button"
+        aria-label="Continue Your Journey"
+      >
+        Continue Your Journey
+      </a>
     </main>
 
     <footer>
