@@ -84,7 +84,8 @@
 
           try {
             // Use cached data if available
-            const judokaData = cachedJudokaData || await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`);
+            const judokaData =
+              cachedJudokaData || (await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`));
             const validJudoka = judokaData.filter((j) => {
               const hasRequiredFields =
                 j.firstname &&
@@ -104,7 +105,8 @@
             const randomJudoka = validJudoka[Math.floor(Math.random() * validJudoka.length)];
 
             // Use cached gokyo data if available
-            const gokyoData = cachedGokyoData || await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`);
+            const gokyoData =
+              cachedGokyoData || (await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`));
             const gokyoLookup = createGokyoLookup(gokyoData);
 
             // Generate the judoka card
@@ -132,10 +134,11 @@
               stats: { wins: 0, losses: 0 },
               weightClass: "N/A",
               signatureMoveId: null,
-              rarity: "common",
+              rarity: "common"
             };
 
-            const gokyoData = cachedGokyoData || await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`);
+            const gokyoData =
+              cachedGokyoData || (await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`));
             const gokyoLookup = createGokyoLookup(gokyoData);
             const fallbackCard = await generateJudokaCardHTML(fallbackJudoka, gokyoLookup);
 
