@@ -28,7 +28,7 @@
 
 .kg-sprite img {
   width: 100%;
-  max-width: 120px;
+  max-width: 480px;
   height: auto;
 }
 
@@ -87,5 +87,38 @@
   .kg-sprite {
     flex: none;
     max-width: 60%;
+  }
+}
+
+/* Add responsive design for portrait and landscape orientations */
+@media (orientation: portrait) {
+  .quote-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .kg-sprite {
+    max-width: 40%;
+    margin-bottom: 1rem;
+  }
+
+  .quote {
+    text-align: center;
+  }
+}
+
+@media (orientation: landscape) {
+  .quote-container {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .kg-sprite {
+    max-width: 40%;
+    margin-right: 1rem;
+  }
+
+  .quote {
+    text-align: left;
   }
 }

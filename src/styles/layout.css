@@ -170,7 +170,7 @@ body {
 .quote-container {
   display: grid;
   grid-template-columns: 1fr 8fr;
-  background-color: saddlebrown;
+  background-color: rgb(0, 32, 82, 0.5);
 }
 
 .kg-sprite {
