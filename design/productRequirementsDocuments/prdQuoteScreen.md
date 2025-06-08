@@ -38,21 +38,11 @@ Players are motivated by meaningful, personalized rewards that mark major achiev
 
 ## Functional Requirements
 
-### Priority 1 (P1)
-
-- Display KG character image and random quote when player wins all team battles.
-- Randomly select and display a quote from `aesopsFables.json` dataset.
-
-### Priority 2 (P2)
-
-- If quote data fails to load, display default message: “Well done, congratulations!”
-- Ensure quote screen loads within 1 second.
-- Provide dynamic text formatting to adapt to various screen sizes (responsive design), especially portrait and landscape orientations. Design should use responsive grid and flexbox functionality, with text wrapping and image scaling. Quotes should reflow and resize appropriately on all major screen sizes (mobile, tablet, desktop).
-
-### Priority 3 (P3)
-
-- Future-proof for localization/multi-language support.
-- Accessibility: Ensure screen reader compatibility for quotes by including ARIA tags and implementing accessibility unit tests.
+| Priority | Feature                             | Description                                                          |
+|:--------:|:------------------------------------|:---------------------------------------------------------------------|
+| **P1**   | KG Image & Random Quote Display      | Show KG character and random quote on perfect victory.              |
+| **P2**   | Quote Fallback & Load Time Optimization | Display default message if data fails, ensure <1s load time, responsive design. |
+| **P3**   | Accessibility Support                | Enable screen reader compatibility for quote text display.          |
 
 ---
 
@@ -127,8 +117,25 @@ Maintains readability and handles loading/failure elegantly without a jarring fa
 **Why:**  
 Makes the CTA compelling and touch-friendly, minimizing accidental mis-taps and reinforcing the accomplishment.
 
-## Mockup
+## Tasks
 
-![End Game Quote Screen Mockup](/design/mockups/mockupQuoteScreen1.png)
+- [ ] 1.0 Implement Victory Feedback Module
+  - [x] 1.1 Load and display KG character image.
+  - [ ] 1.2 Add celebratory headline ("Victory!" or "Full Sweep Achieved!").
 
-This mockup illustrates the layout and design of the End Game Quote Screen, showcasing the placement of the KG character, the quote text, and the proceed button. It adheres to the described UX considerations for both landscape and portrait orientations.
+- [ ] 2.0 Implement Quote Display Module
+  - [x] 2.1 Randomly select a quote from `aesopsFables.json`.
+  - [ ] 2.2 Display the quote with dynamic, responsive text scaling.
+  - [ ] 2.3 Implement skeleton loader while fetching quote.
+  - [ ] 2.4 Fallback to default message if quote data fails.
+
+- [ ] 3.0 Implement Action Button Module
+  - [ ] 3.1 Add large, thumb-friendly CTA button ("Continue Your Journey" or "Claim Victory").
+  - [ ] 3.2 Ensure CTA button has minimum 48px height and proper spacing.
+
+- [ ] 4.0 Accessibility
+  - [ ] 4.1 Add ARIA tags for screen readers.
+
+- [ ] 5.0 Performance & Load Time Optimization
+  - [ ] 5.1 Optimize image and text asset load times to under 1 second.
+  - [ ] 5.2 Implement responsive grid and flexbox for various screen sizes (portrait/landscape).
