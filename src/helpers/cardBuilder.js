@@ -155,25 +155,24 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   );
   judokaCard.appendChild(topBarElement);
 
-  let portraitHTML = "";
-  try {
-    portraitHTML = generateCardPortrait(judoka);
-  } catch (error) {
-    console.error("Failed to generate portrait:", error);
-  }
-  const portraitElement = document.createElement("div");
-  portraitElement.className = "card-portrait";
-  portraitElement.innerHTML = portraitHTML;
+  const portraitElement = (() => {
+    try {
+      const portraitHTML = generateCardPortrait(judoka);
+      const element = document.createElement("div");
+      element.className = "card-portrait";
+      element.innerHTML = portraitHTML;
 
-  try {
-    const weightClassElement = document.createElement("div");
-    weightClassElement.className = "card-weight-class";
-    weightClassElement.textContent = judoka.weightClass;
-    portraitElement.appendChild(weightClassElement);
-  } catch (error) {
-    console.error("Failed to generate portrait:", error);
-    portraitElement = createNoDataContainer();
-  }
+      const weightClassElement = document.createElement("div");
+      weightClassElement.className = "card-weight-class";
+      weightClassElement.textContent = judoka.weightClass;
+      element.appendChild(weightClassElement);
+
+      return element;
+    } catch (error) {
+      console.error("Failed to generate portrait:", error);
+      return createNoDataContainer();
+    }
+  })();
 
   judokaCard.appendChild(portraitElement);
 
