@@ -107,7 +107,7 @@ function validateJudoka(judoka) {
  *
  * 7. Append the portrait section:
  *    - Generate portrait HTML using `generateCardPortrait`.
- *    - If generation fails, continue with an empty section.
+ *    - If generation fails, append a "No data available" container.
  *    - Add weight class information to the portrait section.
  *
  * 8. Append the stats section:
