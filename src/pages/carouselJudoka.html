@@ -38,6 +38,12 @@
 
       <main class="kodokan-grid" role="main">
         <div class="helper-container">TEST</div>
+        <div class="filter-bar">
+          <label for="country-filter">Filter by Country:</label>
+          <select id="country-filter" aria-label="Filter judoka by country">
+            <option value="all">All Countries</option>
+          </select>
+        </div>
         <div id="carousel-container"></div>
       </main>
 
@@ -70,30 +76,46 @@
         import { DATA_DIR } from "../helpers/constants.js";
 
         document.addEventListener("DOMContentLoaded", async () => {
-          // Build the carousel
           const carouselContainer = document.getElementById("carousel-container");
+          const countryListContainer = document.getElementById("country-list");
+          const filterSelect = document.getElementById("country-filter");
 
-          try {
-            const [judokaData, gokyoData] = await Promise.all([
+          let allJudoka = [];
+          let gokyoData = [];
+
+          async function loadData() {
+            [allJudoka, gokyoData] = await Promise.all([
               fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`),
               fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`)
             ]);
+          }
 
-            const carousel = await buildCardCarousel(judokaData, gokyoData);
+          function populateFilterOptions() {
+            const countries = [...new Set(allJudoka.map((j) => j.country).filter(Boolean))].sort();
+            for (const c of countries) {
+              const option = document.createElement("option");
+              option.value = c;
+              option.textContent = c;
+              filterSelect.appendChild(option);
+            }
+          }
+
+          async function renderCarousel(list) {
+            carouselContainer.innerHTML = "";
+            const carousel = await buildCardCarousel(list, gokyoData);
             carouselContainer.appendChild(carousel);
+          }
 
-            if (judokaData.length === 0) {
+          try {
+            await loadData();
+            populateFilterOptions();
+            await renderCarousel(allJudoka);
+            if (allJudoka.length === 0) {
               const noResultsMessage = document.createElement("div");
               noResultsMessage.className = "no-results-message";
               noResultsMessage.textContent =
                 "No results found. Please broaden your search criteria.";
               carouselContainer.appendChild(noResultsMessage);
-
-              const retryButton = document.createElement("button");
-              retryButton.className = "retry-button";
-              retryButton.textContent = "Retry";
-              retryButton.addEventListener("click", () => location.reload());
-              carouselContainer.appendChild(retryButton);
             }
           } catch (error) {
             console.error("Error building the carousel:", error);
@@ -104,8 +126,13 @@
             carouselContainer.appendChild(errorMessage);
           }
 
-          // Populate the country list
-          const countryListContainer = document.getElementById("country-list");
+          filterSelect.addEventListener("change", async () => {
+            const selected = filterSelect.value;
+            const filtered =
+              selected === "all" ? allJudoka : allJudoka.filter((j) => j.country === selected);
+            await renderCarousel(filtered);
+          });
+
           populateCountryList(countryListContainer);
         });
       </script>
