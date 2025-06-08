@@ -36,7 +36,7 @@ function getContentType(filePath) {
 
 const server = http.createServer((req, res) => {
   let filePath = path.resolve(rootDir, req.url === "/" ? "index.html" : req.url);
-  if (!filePath.startsWith(rootDir)) {
+  if (path.relative(rootDir, filePath).startsWith("..")) {
     res.statusCode = 403;
     res.end("Forbidden");
     return;
