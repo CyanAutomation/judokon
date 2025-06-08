@@ -31,7 +31,7 @@ describe("createScrollButton", () => {
     const button = createScrollButton("right", container, 100);
     expect(button.className).toBe("scroll-button right");
     expect(button.innerHTML).toBe("&gt;");
-    expect(button.getAttribute("aria-label")).toBe("Scroll Right");
+    expect(button).toHaveAttribute("aria-label", "Scroll Right");
   });
 
   it("should throw an error when the direction is invalid", () => {
