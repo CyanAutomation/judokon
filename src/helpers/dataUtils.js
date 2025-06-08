@@ -57,8 +57,8 @@ export async function loadJSON(url) {
  */
 export async function fetchDataWithErrorHandling(url) {
   try {
-    if (url in dataCache) {
-      return dataCache[url];
+    if (dataCache.has(url)) {
+      return dataCache.get(url);
     }
 
     const response = await fetch(url);
@@ -68,7 +68,7 @@ export async function fetchDataWithErrorHandling(url) {
     }
 
     const json = await response.json();
-    dataCache[url] = json;
+    dataCache.set(url, json);
     return json;
   } catch (error) {
     console.error(`Error fetching data from ${url}:`, error);
