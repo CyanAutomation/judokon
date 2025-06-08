@@ -1,9 +1,10 @@
 ---
 name: Ju-Do-Kon! Bug Report
 about: Report a bug to help us improve Ju-Do-Kon!
-title: "BUG: TBC"
+title: 'BUG: TBC'
 labels: bug
 assignees: CyanAutomation
+
 ---
 
 ## 🐞 Bug Report
