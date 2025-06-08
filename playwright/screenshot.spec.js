@@ -13,8 +13,8 @@ const pages = [
 
 for (const url of pages) {
   test(`screenshot ${url}`, async ({ page }) => {
-    await page.goto(url);
+    await page.goto(url, { waitUntil: "networkidle" });
     const name = url === "/" ? "homepage.png" : url.split("/").pop().replace(".html", ".png");
-    await expect(page).toHaveScreenshot(name);
+    await expect(page).toHaveScreenshot(name, { fullPage: true });
   });
 }
