@@ -6,7 +6,7 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test("essential elements visible", async ({ page }) => {
-    await expect(page.getByLabel("Filter judoka by country")).toBeVisible();
+    await expect(page.getByRole("combobox", { name: /filter judoka by country/i })).toBeVisible();
     await expect(page.getByRole("navigation")).toBeVisible();
     await expect(page.getByRole("link", { name: /battle!/i })).toBeVisible();
   });
@@ -29,7 +29,7 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test("country filter updates carousel", async ({ page }) => {
-    const dropdown = page.getByLabel("Filter judoka by country");
+    const dropdown = page.getByRole("combobox", { name: /filter judoka by country/i });
 
     // wait for cards to load
     await page.waitForSelector("#carousel-container .judoka-card");
