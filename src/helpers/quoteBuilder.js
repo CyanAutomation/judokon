@@ -85,11 +85,9 @@ function formatFableStory(story) {
  *
  * @param {Object|null} fable - The fable object containing the title and story, or `null` if no fable is available.
  */
-// Cache DOM lookups for quote and loader elements
-const quoteDiv = document.getElementById("quote");
-const loaderDiv = document.getElementById("quote-loader");
-
 function displayFable(fable) {
+  const quoteDiv = document.getElementById("quote");
+  const loaderDiv = document.getElementById("quote-loader");
   if (fable) {
     const formattedStory = formatFableStory(fable.story);
     quoteDiv.innerHTML = `
