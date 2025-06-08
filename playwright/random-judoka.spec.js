@@ -16,7 +16,7 @@ test.describe("View Judoka screen", () => {
   });
 
   test("logo has alt text", async ({ page }) => {
-    const logo = page.getByRole('img', { name: 'JU-DO-KON! Logo' });
+    const logo = page.getByRole("img", { name: "JU-DO-KON! Logo" });
     await expect(logo).toHaveAttribute("alt", "JU-DO-KON! Logo");
   });
 
