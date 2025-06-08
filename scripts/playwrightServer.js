@@ -7,7 +7,8 @@
  * 2. Create HTTP server to serve files.
  * 3. Resolve requested paths relative to root.
  * 4. Stream the file with correct Content-Type.
- * 5. Return 404 if file not found.
+ * 5. Handle file streaming errors gracefully.
+ * 6. Return 404 if file not found.
  */
 import http from "http";
 import { createReadStream, existsSync, statSync } from "fs";
@@ -40,7 +41,13 @@ const server = http.createServer((req, res) => {
   }
   if (existsSync(filePath)) {
     res.setHeader("Content-Type", getContentType(filePath));
-    createReadStream(filePath).pipe(res);
+    const stream = createReadStream(filePath);
+    stream.on("error", (err) => {
+      console.error(`Error reading file ${filePath}:`, err);
+      res.statusCode = 500;
+      res.end("Internal Server Error");
+    });
+    stream.pipe(res);
   } else {
     res.statusCode = 404;
     res.end("Not Found");
