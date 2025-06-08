@@ -792,3 +792,21 @@ button:focus {
     transform: translate(-50%, -50%) rotate(360deg);
   }
 }
+
+.draw-card-btn {
+  display: block;
+  margin: var(--padding-large) auto;
+  width: min(300px, 80vw);
+  min-height: 64px;
+  padding: var(--padding-medium) var(--padding-large);
+  background-color: var(--primary-bg);
+  color: var(--text-color);
+  border: 2px solid #fff;
+  border-radius: var(--border-radius-medium);
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.draw-card-btn:active {
+  transform: scale(var(--button-scale));
+}
