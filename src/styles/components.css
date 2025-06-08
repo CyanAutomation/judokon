@@ -33,7 +33,6 @@ body {
   background-repeat: repeat;
   /* backdrop-filter: brightness(0.9); */
   background-size: 50vw auto;
-  /* border: solid 5px red; */
 }
 
 .home-screen {
@@ -59,7 +58,6 @@ body {
 
 .helper-container {
   grid-column: 1/1;
-  background-color: red;
 }
 
 .header {
@@ -93,7 +91,6 @@ body {
   padding: 0 10vw;
   flex: 1 1 auto;
   min-height: 85%;
-  /* border: 5px red solid; */
 }
 
 .game-tile {
@@ -133,7 +130,6 @@ body {
   border-radius: 1rem;
   display: flex;
   flex: 1 1 auto;
-  /* border: solid 5px red; */
   max-width: 10vh;
 }
 
@@ -149,12 +145,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* border: red solid 2px; */
 }
 svg {
   width: 10vh;
   aspect-ratio: 1 / 1;
-  /* border: red solid 2px; */
   fill: #ffffff;
 }
 /* Button styles */
@@ -566,7 +560,6 @@ button:focus {
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
   border: solid 1px #22223b;
   list-style-type: none;
-  /* border: solid 5px red; */
 }
 
 .top-navbar ul {
