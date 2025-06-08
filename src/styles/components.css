@@ -1,3 +1,4 @@
+@import "./bottom-navbar.css";
 /* Reset default browser styles for all elements */
 *,
 *::before,
@@ -570,41 +571,6 @@ button:focus {
 
 .top-navbar ul {
   list-style: none;
-}
-
-.bottom-navbar {
-  min-height: max(7vh, 12px);
-  display: inline-flex;
-  min-width: 100vw;
-  background-color: #22223b;
-  text-align: center;
-  align-items: center;
-  justify-content: space-evenly;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
-  font-size: max(1.3rem, 1.8vw);
-  /* border: solid 5px red; */
-}
-
-.bottom-navbar ul {
-  display: inline-flex;
-  gap: 2rem;
-  list-style-type: none;
-  /* text-transform: uppercase; */
-}
-
-.bottom-navbar a,
-.top-navbar a {
-  color: #fff;
-  text-decoration: none;
-}
-
-.bottom-navbar a {
-  position: relative;
-  overflow: hidden;
-}
-
-.bottom-navbar a:hover {
-  text-decoration: underline;
 }
 
 .country-flag-slider {
