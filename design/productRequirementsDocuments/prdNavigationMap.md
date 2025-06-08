@@ -21,8 +21,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 
 | Priority | Feature                                   | Description                                                                     |
 | -------- | ----------------------------------------- | ------------------------------------------------------------------------------- |
-| **P1**   | Design Village Map Navigation             | Wireframes and tile layout with 48px+ targets and hover/tap animations.         |
-| **P1**   | Implement Footer Map Expansion            | Smooth slide-up animation, toggle behavior, and orientation handling.           |
+| **P1**   | Implement Map Expansion            | Smooth slide-up animation, toggle behavior, and orientation handling.           |
 | **P2**   | Integrate Fallback Menu                   | High-contrast text fallback menu that loads within 1 second if assets fail.     |
 | **P2**   | Ensure Accessibility & Performance        | Keyboard navigation, screen reader support, 60fps performance, WCAG compliance. |
 | **P3**   | Add "Simple Menu Mode" Toggle to Settings | Optional toggle to disable map and simplify navigation.                         |
@@ -74,9 +73,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 
 - [ ] **1.0 Design Village Map Navigation (P1)**
 
-  - [ ] 1.1 Create updated wireframes for collapsed and expanded footer views.
-  - [ ] 1.2 Design tile positions on the village map grid with 48px+ targets (Dojo, Budokan, Kodokan).
-  - [ ] 1.3 Specify hover/tap animations for tiles (bounce effect).
+  - [ ] 1.1 Design tile positions on the village map grid with 48px+ targets (Dojo, Budokan, Kodokan).
 
 - [ ] **2.0 Implement Footer Map Expansion (P1)**
 
