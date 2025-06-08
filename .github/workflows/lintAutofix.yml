@@ -77,6 +77,34 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
+      - name: Fetch Today in History
+        id: today
+        run: |
+          RESPONSE=$(curl -s https://today.ong/api || echo "")
+          if [ -n "$RESPONSE" ]; then
+            COUNT=$(echo "$RESPONSE" | jq '.events | length')
+            if [ "$COUNT" -gt 0 ]; then
+              INDEX=$(( RANDOM % COUNT ))
+              FACT=$(echo "$RESPONSE" | jq -r ".events[$INDEX]")
+              echo "fact=$FACT" >> $GITHUB_OUTPUT
+            else
+              echo "fact=No interesting historical events found today. 🧐" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "fact=Couldn't fetch a historical fact today. 💤" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Fetch Weather Mood
+        id: weather
+        run: |
+          CITY="Wokingham"
+          WEATHER=$(curl -s "wttr.in/$CITY?format=%t+%c" || echo "")
+          if [ -n "$WEATHER" ]; then
+            echo "weather=$WEATHER in $CITY" >> $GITHUB_OUTPUT
+          else
+            echo "weather=Weather not available, but the code shines bright! ✨" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
@@ -87,9 +115,16 @@ jobs:
             This PR includes automated formatting via Prettier and LINT fixes via ESLint.
             Date of creation: ${{ env.date }}
             Please review before merging.
+
+            📚 **Today in History**
+            ${{ steps.today.outputs.fact }}
+
+            🌤️ **Mood of the Day**
+            ${{ steps.weather.outputs.weather }}
           branch: "auto/format-lint-fixes"
           labels: |
             automated
             documentation
             auto format
           assignees: ${{ github.actor }}
+
