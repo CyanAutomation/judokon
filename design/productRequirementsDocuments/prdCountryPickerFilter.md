@@ -4,7 +4,7 @@
 
 ## Problem Statement
 
-Each judoka and judoka card is affiliated with a country (e.g., a judoka might be part of the Spanish team). Currently, there is no way for players to browse judoka by country, which frustrates players when searching for their favorite country’s athletes. The lack of an intuitive country filter diminishes user experience, leading to inefficient browsing and potential drop-off. 
+Each judoka and judoka card is affiliated with a country (e.g., a judoka might be part of the Spanish team). Currently, there is no way for players to browse judoka by country, which frustrates players when searching for their favorite country’s athletes. The lack of an intuitive country filter diminishes user experience, leading to inefficient browsing and potential drop-off.
 
 > By including a country picker, we aim to increase session duration and card interaction rates — both critical, as longer, more engaged sessions correlate directly with higher player retention and in-game activity.
 
@@ -109,9 +109,10 @@ Key Details:
   - Flag grid fade-in duration: 200ms.
 
 ### Wireframes
-| **Country Picker Mockup 1** | **Country Picker Mockup 2**                         |
-|---|---:|
-|![Country Picker Mockup 1](/design/mockups/mockupCountryPicker1.png)|![Country Picker Mockup 2](/design/mockups/mockupCountryPicker2.png)|
+
+| **Country Picker Mockup 1**                                          |                                          **Country Picker Mockup 2** |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------: |
+| ![Country Picker Mockup 1](/design/mockups/mockupCountryPicker1.png) | ![Country Picker Mockup 2](/design/mockups/mockupCountryPicker2.png) |
 
 ---
 
