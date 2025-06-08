@@ -55,11 +55,15 @@
 }
 
 .quote {
-  font-size: 1rem;
+  font-size: calc(16px + 1vw); /* Scales dynamically with viewport width */
   color: #fff;
-  line-height: 1.4;
+  line-height: 1.5;
+  max-width: 80%;
+  margin: 0 auto;
+  text-align: center;
 }
 
+/* cta button styles */
 .cta-button {
   display: inline-block;
   min-height: 48px;
