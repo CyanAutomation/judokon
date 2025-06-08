@@ -128,7 +128,7 @@ Key Details:
 
 - [ ] 2.0 Set Up Filtering Logic
 
-  - [ ] 2.1 Load `judoka.json` and extract a list of available countries.
+  - [x] 2.1 Load `judoka.json` and extract a list of available countries.
   - [ ] 2.2 Implement filtering of the card carousel based on the selected country.
   - [ ] 2.3 Display an empty state message if no judoka exist for the selected country.
 
