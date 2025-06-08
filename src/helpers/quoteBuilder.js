@@ -67,9 +67,8 @@ function formatFableStory(story) {
  * Displays a fable in the designated quote div on the page.
  *
  * @pseudocode
- * 1. Locate the quote and loader elements in the DOM:
- *    - Use `document.getElementById("quote")` to retrieve the quote element.
- *    - Use `document.getElementById("quote-loader")` to retrieve the loader element.
+ * 1. Reference the cached quote and loader elements:
+ *    - `quoteDiv` and `loaderDiv` are module-level references to `#quote` and `#quote-loader`.
  *
  * 2. Check if a fable is provided:
  *    - If a fable is provided:
