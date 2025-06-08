@@ -22,4 +22,30 @@ test.describe("Browse Judoka screen", () => {
     await expect(left).toHaveAttribute("aria-label", /scroll left/i);
     await expect(right).toHaveAttribute("aria-label", /scroll right/i);
   });
+
+  test("country filter updates carousel", async ({ page }) => {
+    const dropdown = page.getByLabel("Filter judoka by country");
+
+    // wait for cards to load
+    await page.waitForSelector("#carousel-container .judoka-card");
+
+    const allCards = page.locator("#carousel-container .judoka-card");
+    const initialCount = await allCards.count();
+
+    await dropdown.selectOption("Japan");
+
+    const filteredCards = page.locator("#carousel-container .judoka-card");
+    const filteredCount = await filteredCards.count();
+    expect(filteredCount).toBeLessThan(initialCount);
+    expect(filteredCount).toBeGreaterThan(0);
+
+    for (let i = 0; i < filteredCount; i++) {
+      const flag = filteredCards.nth(i).locator(".card-top-bar img");
+      await expect(flag).toHaveAttribute("alt", /Japan flag/i);
+    }
+
+    await dropdown.selectOption("all");
+
+    await expect(page.locator("#carousel-container .judoka-card")).toHaveCount(initialCount);
+  });
 });
