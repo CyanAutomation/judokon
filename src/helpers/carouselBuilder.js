@@ -229,6 +229,36 @@ function setupSwipeNavigation(container) {
   });
 }
 
+// Ensure WCAG compliance for touch target sizes and contrast ratios
+
+// Adjust button sizes for touch targets
+const MIN_TOUCH_TARGET_SIZE = 44;
+
+function ensureTouchTargetSize(element) {
+  const style = window.getComputedStyle(element);
+  const width = parseInt(style.width, 10);
+  const height = parseInt(style.height, 10);
+
+  if (width < MIN_TOUCH_TARGET_SIZE || height < MIN_TOUCH_TARGET_SIZE) {
+    element.style.minWidth = `${MIN_TOUCH_TARGET_SIZE}px`;
+    element.style.minHeight = `${MIN_TOUCH_TARGET_SIZE}px`;
+    element.style.padding = "10px"; // Add padding for better usability
+  }
+}
+
+// Apply touch target size adjustments to scroll buttons
+function applyAccessibilityImprovements(wrapper) {
+  const buttons = wrapper.querySelectorAll(".scroll-button");
+  buttons.forEach((button) => ensureTouchTargetSize(button));
+
+  // Ensure contrast ratios for text and background
+  const cards = wrapper.querySelectorAll(".judoka-card");
+  cards.forEach((card) => {
+    card.style.color = "#000"; // Ensure text is dark for contrast
+    card.style.backgroundColor = "#fff"; // Ensure background is light for contrast
+  });
+}
+
 /**
  * Builds a carousel of judoka cards with scroll buttons.
  *
@@ -320,6 +350,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   setupKeyboardNavigation(container);
   setupSwipeNavigation(container);
   addScrollMarkers(container, wrapper);
+  applyAccessibilityImprovements(wrapper);
 
   return wrapper;
 }

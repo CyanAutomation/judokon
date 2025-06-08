@@ -1,0 +1,52 @@
+/* Responsive styles for the Judoka Card Carousel */
+
+/* Default styles for desktop */
+.card-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 16px;
+}
+
+.judoka-card {
+  flex: 0 0 calc(33.33% - 16px); /* Show 3 cards on desktop */
+  scroll-snap-align: center;
+  transition: transform 0.3s ease;
+}
+
+/* Hover effect for desktop */
+.judoka-card:hover {
+  transform: scale(1.1);
+}
+
+/* Styles for tablets */
+@media (max-width: 1024px) {
+  .judoka-card {
+    flex: 0 0 calc(50% - 16px); /* Show 2 cards on tablets */
+  }
+}
+
+/* Styles for mobile */
+@media (max-width: 768px) {
+  .judoka-card {
+    flex: 0 0 calc(100% - 16px); /* Show 1 card on mobile */
+  }
+
+  .card-carousel {
+    gap: 8px; /* Reduce gap for smaller screens */
+  }
+}
+
+/* Portrait orientation adjustments */
+@media (orientation: portrait) {
+  .judoka-card {
+    flex: 0 0 calc(80% - 16px); /* Show 1.5 cards in portrait */
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (orientation: landscape) {
+  .judoka-card {
+    flex: 0 0 calc(50% - 16px); /* Show 2 cards in landscape */
+  }
+}
