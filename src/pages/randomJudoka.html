@@ -18,6 +18,7 @@
     />
     <meta name="theme-color" content="#22223b" />
     <title>Ju-Do-Kon!</title>
+    <link rel="stylesheet" href="../styles/base.css" />
     <link rel="stylesheet" href="../styles/layout.css" />
     <link rel="stylesheet" href="../styles/components.css" />
     <link rel="stylesheet" href="../styles/utilities.css" />
@@ -63,7 +64,7 @@
         import { DATA_DIR } from "../helpers/constants.js";
 
         // Check for Reduced Motion preference
-        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
         // Preload and cache data
         let cachedJudokaData = null;
