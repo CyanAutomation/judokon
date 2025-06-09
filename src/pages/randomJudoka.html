@@ -90,6 +90,13 @@
 
         document.getElementById("draw-card-btn").addEventListener("click", displayCard);
       </script>
+      <script type="module">
+        import { applySvgFallback } from "../helpers/svgFallback.js";
+
+        document.addEventListener("DOMContentLoaded", () => {
+          applySvgFallback("../assets/images/judokonLogoSmall.png");
+        });
+      </script>
       <noscript>
         <p class="noscript-warning">
           JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.

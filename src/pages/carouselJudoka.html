@@ -143,6 +143,13 @@
           "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
         );
       </script>
+      <script type="module">
+        import { applySvgFallback } from "../helpers/svgFallback.js";
+
+        document.addEventListener("DOMContentLoaded", () => {
+          applySvgFallback("../assets/images/judokonLogoSmall.png");
+        });
+      </script>
     </div>
   </body>
 </html>
