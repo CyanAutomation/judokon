@@ -75,7 +75,9 @@ export async function convertElementToPseudoJapanese(element) {
   while (walker.nextNode()) {
     nodes.push(walker.currentNode);
   }
-  const results = await Promise.allSettled(nodes.map((node) => convertToPseudoJapanese(node.nodeValue)));
+  const results = await Promise.allSettled(
+    nodes.map((node) => convertToPseudoJapanese(node.nodeValue))
+  );
   nodes.forEach((node, idx) => {
     if (results[idx].status === "fulfilled") {
       node.nodeValue = results[idx].value;
