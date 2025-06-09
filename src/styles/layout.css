@@ -60,20 +60,26 @@ body {
 }
 .game-mode-grid {
   display: grid;
-  grid-template-columns: auto minmax(300px, 25%);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem 0;
   padding: 0 10vw;
   flex: 1 1 auto;
   min-height: 85%;
 }
+
+@media (max-width: 768px) {
+  .game-mode-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .homeHelperContainer {
   background: var(--secondary-bg);
   border: 2px solid var(--secondary-bg);
   border-radius: 4px 12px 12px 4px;
-
   text-align: center;
-  grid-row: 1/5;
-  grid-column: 2;
+  position: absolute;
+  right: 0;
+  bottom: 0;
   z-index: 5;
 }
 
