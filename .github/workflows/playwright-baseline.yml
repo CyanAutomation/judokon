@@ -5,6 +5,9 @@ on:
     - cron: "0 4 * * *" # Runs daily at 04:00 UTC
   workflow_dispatch: {}
 
+concurrency:
+  group: "playwright-baseline"
+  cancel-in-progress: true
 permissions:
   contents: write
   pull-requests: write
