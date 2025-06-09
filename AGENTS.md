@@ -9,7 +9,7 @@ This repository contains the source for **JU-DO-KON!**, a browser-based card gam
 - `helpers/` – modular utilities used throughout the game. Functions include extensive JSDoc with `@pseudocode` blocks.
 - `data/` – JSON files for judoka, gokyo techniques and game configuration.
 - `tests/` – Vitest unit tests using the `jsdom` environment.
-- `design/` – documentation including code standards. Review `design/codeStandards` for JSDoc and pseudocode expectations.
+- `design/` – documentation including code standards. New contributors should read `design/codeStandards/codeJSDocStandards.md` and `design/codeStandards/codePseudocodeStandards.md`.
 
 ## Coding Standards
 
@@ -20,7 +20,7 @@ This repository contains the source for **JU-DO-KON!**, a browser-based card gam
 
 ## Programmatic Checks
 
-Run the following commands from the repository root before committing:
+Run the following commands from the repository root before committing. If any command fails, resolve the issues and rerun:
 
 ```bash
 npx prettier . --check      # verify formatting
@@ -28,8 +28,23 @@ npx eslint .                # lint the codebase
 npx vitest run              # execute unit tests
 ```
 
+Common fixes:
+
+```bash
+npx eslint . --fix          # auto-fix lint errors when possible
+npx prettier . --write      # rewrite files with correct formatting
+```
+
 ## Additional Notes
 
 - Debug logging can be enabled by setting `DEBUG_LOGGING=true` in the environment.
 - The `tests` directory covers helpers and UI functions. Ensure new functionality includes appropriate unit tests.
-- Keep commit messages concise and descriptive.
+- Optional screenshot tests live in the `playwright` directory and can be run with `npm run test:screenshot`. They are not required for every pull request.
+
+### Commit Messages
+
+- Keep commit messages short and in the imperative mood.
+- Reference related issues when applicable.
+- **Examples:**
+  - `Add carousel component to homepage`
+  - `Fix failing date formatter tests`
