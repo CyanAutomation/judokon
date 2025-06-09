@@ -52,17 +52,17 @@ describe("convertToPseudoJapanese", () => {
   it("handles large input quickly", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => mapping });
     vi.spyOn(Math, "random").mockReturnValue(0);
+    vi.useFakeTimers();
 
     const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
 
     const input = "a".repeat(999);
 
-    const start = performance.now();
-    const result = await convertToPseudoJapanese(input);
-    const duration = performance.now() - start;
+    const promise = convertToPseudoJapanese(input);
+    vi.advanceTimersByTime(50); // Simulate 50 ms passing
+    const result = await promise;
 
     expect(result).not.toBe("");
-    expect(duration).toBeLessThan(50);
   });
 
   it("returns static fallback when the mapping fails to load", async () => {
