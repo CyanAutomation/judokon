@@ -12,7 +12,7 @@ import { DATA_DIR } from "./constants.js";
  *
  * @param {Array} gameModes - The list of game modes to display.
  */
-function toggleExpandedMapView(gameModes) {
+export function toggleExpandedMapView(gameModes) {
   const navBar = document.querySelector(".bottom-navbar");
   clearBottomNavbar(); // Clear existing content
 
@@ -64,7 +64,7 @@ function clearBottomNavbar() {
  *
  * @param {Array} gameModes - The list of game modes to display.
  */
-function togglePortraitTextMenu(gameModes) {
+export function togglePortraitTextMenu(gameModes) {
   const navBar = document.querySelector(".bottom-navbar");
   clearBottomNavbar(); // Clear existing content
 
