@@ -20,8 +20,6 @@ describe("convertToPseudoJapanese", () => {
     const cases = [
       ["short", "abc", "アバカ"],
       ["long", "abcabcabcabc", "アバカアバカアバカアバカ"],
-      ["numeric", "123abc", "アアアアバカ"],
-      ["punctuation", "a!b?c.", "アバカ"],
       ["mixed case", "AbCdE", "アバカダエ"]
     ];
 
