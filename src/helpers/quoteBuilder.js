@@ -19,7 +19,6 @@
  * @throws {Error} If the fetch request fails or the response is not successful.
  */
 import { DATA_DIR } from "./constants.js";
-import { setupLanguageToggle } from "./pseudoJapanese.js";
 
 async function fetchFables() {
   const response = await fetch(`${DATA_DIR}aesopsFables.json`);
@@ -145,41 +144,3 @@ async function displayRandomQuote() {
 document.addEventListener("DOMContentLoaded", () => {
   displayRandomQuote();
 });
-
-// Add fallback logic for quote data
-const quoteElement = document.getElementById("quote");
-const quoteLoader = document.getElementById("quote-loader");
-
-function displayQuote(quote) {
-  quoteLoader.classList.add("hidden");
-  quoteElement.textContent = quote;
-  quoteElement.classList.remove("hidden");
-  const toggleBtn = document.getElementById("language-toggle");
-  if (toggleBtn) {
-    toggleBtn.classList.remove("hidden");
-  }
-}
-
-function displayFallbackMessage() {
-  const fallbackMessage = "Congratulations on your victory! Keep striving for greatness.";
-  displayQuote(fallbackMessage);
-}
-
-async function fetchQuote() {
-  try {
-    const response = await fetch("../data/aesopsFables.json");
-    if (!response.ok) throw new Error("Failed to fetch quotes");
-
-    const quotes = await response.json();
-    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-    const { story } = randomQuote;
-    displayQuote(story);
-    await setupLanguageToggle(quoteElement);
-  } catch (error) {
-    console.error("Error fetching quote:", error);
-    displayFallbackMessage();
-    // Skip language toggle for fallback message
-  }
-}
-
-fetchQuote();
