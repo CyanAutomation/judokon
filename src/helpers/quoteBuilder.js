@@ -178,7 +178,7 @@ async function fetchQuote() {
   } catch (error) {
     console.error("Error fetching quote:", error);
     displayFallbackMessage();
-    await setupLanguageToggle(quoteElement);
+    // Skip language toggle for fallback message
   }
 }
 
