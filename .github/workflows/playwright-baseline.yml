@@ -33,7 +33,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ github.token }}
           commit-message: "chore: update Playwright baseline images"
           title: "chore: update Playwright baseline images"
           body: |
