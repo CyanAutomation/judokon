@@ -83,8 +83,8 @@ export async function setupLanguageToggle(element, originalText) {
     element.style.opacity = "0";
     setTimeout(() => {
       element.textContent = showingPseudo ? originalText : pseudoText;
-      element.style.opacity = "1";
       element.classList.toggle("jp-font", !showingPseudo);
+      element.style.opacity = "1";
       showingPseudo = !showingPseudo;
     }, 200);
   });
