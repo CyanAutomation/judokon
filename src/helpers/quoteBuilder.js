@@ -19,6 +19,7 @@
  * @throws {Error} If the fetch request fails or the response is not successful.
  */
 import { DATA_DIR } from "./constants.js";
+import { setupLanguageToggle } from "./pseudoJapanese.js";
 
 async function fetchFables() {
   const response = await fetch(`${DATA_DIR}aesopsFables.json`);
@@ -172,9 +173,11 @@ async function fetchQuote() {
     const quotes = await response.json();
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
     displayQuote(randomQuote);
+    await setupLanguageToggle(quoteElement, randomQuote);
   } catch (error) {
     console.error("Error fetching quote:", error);
     displayFallbackMessage();
+    await setupLanguageToggle(quoteElement, "\u65e5\u672c\u8a9e\u98a8\u30c6\u30ad\u30b9\u30c8");
   }
 }
 
