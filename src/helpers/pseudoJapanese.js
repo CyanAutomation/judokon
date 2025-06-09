@@ -59,34 +59,41 @@ export async function convertToPseudoJapanese(text) {
  * Create a button that toggles an element's text between English and pseudo-Japanese.
  *
  * @pseudocode
- * 1. Generate pseudo-Japanese text from the element's text content using
- *    `convertToPseudoJapanese`.
- * 2. Find the existing button with id `language-toggle`.
- * 3. Attach a click handler that fades out the element, swaps the text,
- *    toggles a Japanese font class, then fades back in.
- * 4. Return the button so callers can further manipulate it if needed.
+ * 1. Find the existing button with id `language-toggle`.
+ * 2. Attach a click handler that fades out the element and then:
+ *    - On the first click, cache the element's HTML and generate
+ *      pseudo-Japanese text using `convertToPseudoJapanese`.
+ *    - Swap between the cached original HTML and the generated
+ *      pseudo-Japanese text while toggling a Japanese font class.
+ *    - Fade the element back in after the swap completes.
+ * 3. Return the button so callers can further manipulate it if needed.
  *
  * @param {HTMLElement} element - The element whose text will be toggled.
- * @returns {Promise<HTMLButtonElement>} A promise that resolves to the toggle button.
+ * @returns {HTMLButtonElement|null} The toggle button if found, otherwise `null`.
  */
-export async function setupLanguageToggle(element) {
+export function setupLanguageToggle(element) {
   const button = document.getElementById("language-toggle");
   if (!button) {
     return null;
   }
 
-  const originalHTML = element.innerHTML;
-  const originalText = element.textContent;
-  const pseudoText = await convertToPseudoJapanese(originalText);
-
+  let originalHTML = "";
+  let pseudoText = "";
+  let pseudoLoaded = false;
   let showingPseudo = false;
+
   button.addEventListener("click", () => {
     element.style.transition = "opacity 200ms";
     element.style.opacity = "0";
-    setTimeout(() => {
+    setTimeout(async () => {
       if (showingPseudo) {
         element.innerHTML = originalHTML;
       } else {
+        if (!pseudoLoaded) {
+          originalHTML = element.innerHTML;
+          pseudoText = await convertToPseudoJapanese(element.textContent);
+          pseudoLoaded = true;
+        }
         element.textContent = pseudoText;
       }
       element.classList.toggle("jp-font", !showingPseudo);
