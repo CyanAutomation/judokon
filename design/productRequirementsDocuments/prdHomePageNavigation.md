@@ -37,23 +37,35 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 
 ### 2.1. Navigation Menu Layout
 
-- The main navigation is a **grid** layout containing **four clickable tiles**.
-- Each tile consists of:
-  - A **vector icon** (SVG).
-  - A **tile label** (textual title of the game mode).
-- Tiles are **visually consistent** and equally sized.
-- Hover and click behavior must be clearly indicated:
-  - Hover state: cursor changes to pointer, and tile zooms in slightly (scale 1.05) over 150ms with ease-in transition.
-- Tap targets must be at least 48px x 48px on touch devices.
+- The main navigation is visually divided into **two thematic sections**, but **functionally structured as a 2×2 grid** for layout and responsiveness purposes.
+- Sections:
+  - **Battle Mode** — for core gameplay options.
+  - **Manage Your Judoka** — for browsing or editing cards.
+- Each section contains **two clickable tiles**, for a total of four.
+- Each tile includes:
+  - A **vector icon (SVG)** positioned **to the left** of the label, vertically centred.
+  - A **text label** (e.g., “Classic Battle”), in sentence case.
+- Tiles are **visually consistent**, equally sized, and arranged in:
+  - **Desktop (≥1024px):** 2×2 grid layout.
+  - **Tablet (768px–1023px):** 2×2 grid.
+  - **Mobile (<768px):** Tiles stack in a **single column**.
+- **Hover behavior**:
+  - Cursor changes to pointer.
+  - Tile scales to 1.05 over 150ms (ease-in transition).
+- **Touch targets** must meet a minimum size of **48px × 48px** for mobile usability.
+
+---
 
 ### 2.2. Tile Definitions
 
-| Tile Label               | Destination URL                                   | Function                                                                     |
-| ------------------------ | ------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Battle Mode: Classic     | `/pages/battleJudoka.html`                        | Launches a **1v1 battle mode** with classic single-player rules.             |
-| Battle Mode: Team Battle | `/pages/battleJudoka.html` (Future: distinct URL) | Launches a **team battle mode** (multi-judoka vs multi-judoka).              |
-| View Judoka              | `/pages/carouselJudoka.html`                      | Allows user to **browse all available Judoka cards**.                        |
-| Update Judoka            | `/pages/updateJudoka.html`                        | Allows user to **create or edit Judoka cards** (admin/editor functionality). |
+> _Note: Label text may vary slightly (e.g., “View” vs. “Browse”) to better suit audience understanding. Functionality must remain unchanged._
+
+| Tile Label       | Destination URL                  | Function                                                                 |
+|------------------|----------------------------------|--------------------------------------------------------------------------|
+| Classic Battle    | `/pages/battleJudoka.html`        | Launches a **1v1 battle mode** with classic rules.                       |
+| Team Battle       | `/pages/battleJudoka.html` *(placeholder)* | Launches a **multi-judoka team battle** mode. Distinct page planned.     |
+| Update Judoka     | `/pages/updateJudoka.html`        | Allows user to **create or edit Judoka cards**.                          |
+| Browse Judoka     | `/pages/carouselJudoka.html`      | Allows user to **view all Judoka cards** in a scrollable carousel.       |
 
 > **Note:** Currently, "Battle Mode: Classic" and "Battle Mode: Team Battle" point to the same URL. Distinct functionality is expected to be developed later.
 
@@ -71,23 +83,23 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 ## 3. Wireframe Diagram
 
 ```
-+------------------------------------------------------+
-|                                                      |
-|    +----------------+  +----------------+            |
-|    | Battle Mode:    |  | Battle Mode:    |            |
-|    | Classic         |  | Team Battle     |            |
-|    +----------------+  +----------------+            |
-|                                                      |
-|    +----------------+  +----------------+            |
-|    | View Judoka     |  | Update Judoka   |            |
-|    +----------------+  +----------------+            |
-|                                                      |
-+------------------------------------------------------+
++----------------------------------------------------------+
+|                       JU-DO-KON!                         |
+|               [Game Logo + Title Area]                   |
+|                                                          |
+|   ------------------  ------------------                |
+|   |  Classic Battle |  |   Team Battle  |    <-- Battle Mode section
+|   ------------------  ------------------                |
+|                                                          |
+|   ------------------  ------------------                |
+|   | Update Judoka   |  | Browse Judoka |    <-- Manage Your Judoka section
+|   ------------------  ------------------                |
++----------------------------------------------------------+
 
 Each tile contains:
-- Icon (SVG vector graphic)
-- Label (e.g., "Battle Mode: Classic")
-- Hover Effect: Slight zoom (scale 1.05) over 150ms, cursor pointer
+- Icon (SVG vector graphic), left-aligned.
+- Label in sentence case.
+- Hover Effect: Slight zoom (scale 1.05) over 150ms; cursor pointer.
 ```
 
 > **Visual Notes**:
