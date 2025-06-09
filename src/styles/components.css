@@ -102,7 +102,6 @@ body {
   color: #fff;
   cursor: pointer;
   transform: scale(1.05);
-  transition: transform 150ms ease-in;
 }
 
 .tile-content h2 {
