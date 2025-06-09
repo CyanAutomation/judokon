@@ -166,13 +166,13 @@ button:hover {
   text-decoration: underline;
 }
 
-button:focus {
+button:focus-visible {
   outline: 2px solid var(--accent-beige);
   outline-offset: 2px;
   text-decoration: underline;
 }
 
-a:focus {
+a:focus-visible {
   outline: 2px solid var(--accent-beige);
   outline-offset: 2px;
 }
