@@ -108,12 +108,6 @@
         setupLanguageToggle(quoteEl);
       });
     </script>
-    <script type="module">
-      import { applySvgFallback } from "../helpers/svgFallback.js";
-
-      document.addEventListener("DOMContentLoaded", () => {
-        applySvgFallback("../assets/images/judokonLogoSmall.png");
-      });
-    </script>
+    <script type="module" src="../helpers/setupSvgFallback.js"></script>
   </body>
 </html>
