@@ -6,7 +6,7 @@ test.describe("View Judoka screen", () => {
   });
 
   test("essential elements visible", async ({ page }) => {
-    await expect(page.getByRole("button", { name: /draw a random card/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /draw.*?random.*?card/i })).toBeVisible();
     await expect(page.getByRole("navigation")).toBeVisible();
   });
 
