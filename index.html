@@ -123,9 +123,11 @@
       </script>
       <script type="module">
         import { populateNavbar } from "./src/helpers/bottomNavigation.js";
+        import { applySvgFallback } from "./src/helpers/svgFallback.js";
 
         document.addEventListener("DOMContentLoaded", () => {
           populateNavbar();
+          applySvgFallback();
         });
       </script>
     </div>

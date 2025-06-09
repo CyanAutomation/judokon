@@ -142,6 +142,11 @@ svg {
   aspect-ratio: 1 / 1;
   fill: #ffffff;
 }
+.svg-fallback {
+  width: 10vh;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+}
 /* Button styles */
 button {
   font-size: 1rem;
