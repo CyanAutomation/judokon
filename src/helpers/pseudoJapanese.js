@@ -61,7 +61,8 @@ export async function convertToPseudoJapanese(text) {
  * @pseudocode
  * 1. Generate pseudo-Japanese text from `originalText` using `convertToPseudoJapanese`.
  * 2. Find the existing button with id `language-toggle`.
- * 3. Attach a click handler that fades out the element, swaps the text, then fades back in.
+ * 3. Attach a click handler that fades out the element, swaps the text,
+ *    toggles a Japanese font class, then fades back in.
  * 4. Return the button so callers can further manipulate it if needed.
  *
  * @param {HTMLElement} element - The element whose text will be toggled.
@@ -82,6 +83,7 @@ export async function setupLanguageToggle(element, originalText) {
     element.style.opacity = "0";
     setTimeout(() => {
       element.textContent = showingPseudo ? originalText : pseudoText;
+      element.classList.toggle("jp-font", !showingPseudo);
       element.style.opacity = "1";
       showingPseudo = !showingPseudo;
     }, 200);
