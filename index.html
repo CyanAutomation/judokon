@@ -133,15 +133,7 @@
           "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
         );
       </script>
-      <script type="module">
-        import { populateNavbar } from "./src/helpers/bottomNavigation.js";
-        import { applySvgFallback } from "./src/helpers/svgFallback.js";
-
-        document.addEventListener("DOMContentLoaded", () => {
-          populateNavbar();
-          applySvgFallback();
-        });
-      </script>
+      <script type="module" src="./src/helpers/setupSvgFallback.js"></script>
     </div>
   </body>
 </html>
