@@ -95,7 +95,7 @@
 }
 
 .cta-button:hover,
-.cta-button:focus {
+.cta-button:focus-visible {
   background-color: var(--accent-red-dark);
 }
 
@@ -162,7 +162,7 @@
 }
 
 .language-toggle:hover,
-.language-toggle:focus {
+.language-toggle:focus-visible {
   background-color: var(--accent-red-dark);
 }
 
