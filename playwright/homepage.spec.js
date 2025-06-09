@@ -7,12 +7,12 @@ test.describe("Homepage", () => {
 
   test("navigation links visible", async ({ page }) => {
     await expect(page.getByRole("navigation")).toBeVisible();
-    await expect(page.getByRole("link", { name: /view judoka/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /battle!/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /view all judoka/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /classic battle/i })).toBeVisible();
   });
 
   test("view judoka link navigates", async ({ page }) => {
-    await page.getByRole("link", { name: /view judoka/i }).click();
+    await page.getByRole("link", { name: /view all judoka/i }).click();
     await expect(page).toHaveURL(/randomJudoka\.html/);
   });
 });
