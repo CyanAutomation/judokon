@@ -22,7 +22,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 
 ## Quick Start
 
-1. Make sure you have **Node 18+** and `npm` (or another package manager) installed.
+1. Make sure you have **Node 19+** and `npm` (or another package manager) installed.
 2. Clone the repository, install dependencies, and launch a lightweight local dev server:
    ```bash
    git clone https://github.com/cyanautomation/judokon.git
@@ -75,7 +75,7 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
 
 ## Features
 
-- 99-card deck featuring elite judoka
+- 99-card deck featuring elite judoka (slowly building up to this)
 - One-on-one stat battles
 - Designed for kids and judo fans alike
 - Playable directly in the browser
