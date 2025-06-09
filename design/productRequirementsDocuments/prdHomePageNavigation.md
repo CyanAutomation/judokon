@@ -14,12 +14,11 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 
 ## Goals
 
-- Navigation menu loads within 2 seconds on standard 3G connections.
+- Navigation menu loads within 2 seconds.
 - Tile navigable via keyboard (Tab navigation, Enter/Space activation).
 - Ensure all icons and text meet WCAG AA contrast ratio (minimum 4.5:1).
 - SVG icons <50KB to optimize load times.
 - Fallback icon (JU-DO-KON logo) displayed if SVG fails to load.
-- Achieve a navigation task success rate of ≥98%.
 
 ---
 
