@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 
-const FILTER_BY_COUNTRY_LOCATOR = "Filter judoka by country";
+// locator for the country dropdown label in carouselJudoka.html
+const FILTER_BY_COUNTRY_LOCATOR = /Filter by Country:/i;
 
 test.describe("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
