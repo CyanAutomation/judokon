@@ -59,14 +59,11 @@
       </footer>
       <script type="module">
         import { fetchDataWithErrorHandling } from "../helpers/dataUtils.js";
-        import { createGokyoLookup } from "../helpers/utils.js";
-        import { generateJudokaCardHTML } from "../helpers/cardBuilder.js";
+        import { generateRandomCard } from "../helpers/randomCard.js";
         import { DATA_DIR } from "../helpers/constants.js";
 
-        // Check for Reduced Motion preference
         const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-        // Preload and cache data
         let cachedJudokaData = null;
         let cachedGokyoData = null;
 
@@ -79,81 +76,19 @@
           }
         }
 
-        async function displayRandomJudoka() {
+        async function displayCard() {
           const cardContainer = document.getElementById("card-container");
-
-          try {
-            // Use cached data if available
-            const judokaData =
-              cachedJudokaData || (await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`));
-            const validJudoka = judokaData.filter((j) => {
-              const hasRequiredFields =
-                j.firstname &&
-                j.surname &&
-                j.countryCode &&
-                j.stats &&
-                j.weightClass &&
-                j.signatureMoveId !== undefined &&
-                j.rarity;
-              return !j.isHidden && hasRequiredFields;
-            });
-
-            if (validJudoka.length === 0) {
-              throw new Error("No valid judoka entries found");
-            }
-
-            const randomJudoka = validJudoka[Math.floor(Math.random() * validJudoka.length)];
-
-            // Use cached gokyo data if available
-            const gokyoData =
-              cachedGokyoData || (await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`));
-            const gokyoLookup = createGokyoLookup(gokyoData);
-
-            // Generate the judoka card
-            const judokaCard = await generateJudokaCardHTML(randomJudoka, gokyoLookup);
-
-            // Display the card
-            cardContainer.innerHTML = ""; // Clear any existing content
-            cardContainer.appendChild(judokaCard);
-
-            // Skip animations if Reduced Motion is enabled
-            if (!prefersReducedMotion) {
-              requestAnimationFrame(() => {
-                judokaCard.classList.add("animate-card");
-              });
-            }
-          } catch (error) {
-            console.error("Error displaying random judoka:", error);
-
-            // Display fallback card (judoka id=0)
-            const fallbackJudoka = {
-              id: 0,
-              firstname: "Unknown",
-              surname: "Judoka",
-              countryCode: "N/A",
-              stats: { wins: 0, losses: 0 },
-              weightClass: "N/A",
-              signatureMoveId: null,
-              rarity: "common"
-            };
-
-            const gokyoData =
-              cachedGokyoData || (await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`));
-            const gokyoLookup = createGokyoLookup(gokyoData);
-            const fallbackCard = await generateJudokaCardHTML(fallbackJudoka, gokyoLookup);
-
-            cardContainer.innerHTML = ""; // Clear any existing content
-            cardContainer.appendChild(fallbackCard);
-          }
+          await generateRandomCard(
+            cachedJudokaData,
+            cachedGokyoData,
+            cardContainer,
+            prefersReducedMotion
+          );
         }
 
-        // Preload data on page load
-        preloadData();
+        preloadData().then(displayCard);
 
-        // Call the function to display a random judoka when the page loads
-        displayRandomJudoka();
-
-        document.getElementById("draw-card-btn").addEventListener("click", displayRandomJudoka);
+        document.getElementById("draw-card-btn").addEventListener("click", displayCard);
       </script>
       <noscript>
         <p class="noscript-warning">
