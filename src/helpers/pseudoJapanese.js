@@ -60,19 +60,21 @@ export async function convertToPseudoJapanese(text) {
  *
  * @pseudocode
  * 1. Generate pseudo-Japanese text from `originalText` using `convertToPseudoJapanese`.
- * 2. Create a button labeled "日本語風 / English" and attach a click handler.
- * 3. On click, fade out the element over 200ms, swap its text, then fade back in.
- * 4. Return the button so callers can insert it into the DOM.
+ * 2. Find the existing button with id `language-toggle`.
+ * 3. Attach a click handler that fades out the element, swaps the text, then fades back in.
+ * 4. Return the button so callers can further manipulate it if needed.
  *
  * @param {HTMLElement} element - The element whose text will be toggled.
  * @param {string} originalText - The English text to display when untoggled.
  * @returns {Promise<HTMLButtonElement>} A promise that resolves to the toggle button.
  */
 export async function setupLanguageToggle(element, originalText) {
+  const button = document.getElementById("language-toggle");
+  if (!button) {
+    return null;
+  }
+
   const pseudoText = await convertToPseudoJapanese(originalText);
-  const button = document.createElement("button");
-  button.className = "language-toggle";
-  button.textContent = "日本語風 / English";
 
   let showingPseudo = false;
   button.addEventListener("click", () => {

@@ -58,6 +58,10 @@
             role="region"
             aria-live="polite"
           ></div>
+          <button id="language-toggle" class="language-toggle hidden">
+            <span class="jp-flag"></span> 日本語風 / English
+            <span class="uk-flag"></span>
+          </button>
         </div>
       </section>
 
@@ -92,5 +96,12 @@
       );
     </script>
     <script type="module" src="../helpers/quoteBuilder.js"></script>
+    <script type="module">
+      import { setupLanguageToggle } from "../helpers/pseudoJapanese.js";
+      const quoteEl = document.getElementById("quote");
+      document.addEventListener("DOMContentLoaded", () => {
+        setupLanguageToggle(quoteEl, quoteEl.textContent);
+      });
+    </script>
   </body>
 </html>

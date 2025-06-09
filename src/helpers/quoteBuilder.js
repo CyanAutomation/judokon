@@ -99,6 +99,10 @@ function displayFable(fable) {
   }
   loaderDiv.classList.add("hidden");
   quoteDiv.classList.remove("hidden");
+  const toggleBtn = document.getElementById("language-toggle");
+  if (toggleBtn) {
+    toggleBtn.classList.remove("hidden");
+  }
 }
 
 /**
@@ -149,6 +153,10 @@ function displayQuote(quote) {
   quoteLoader.classList.add("hidden");
   quoteElement.textContent = quote;
   quoteElement.classList.remove("hidden");
+  const toggleBtn = document.getElementById("language-toggle");
+  if (toggleBtn) {
+    toggleBtn.classList.remove("hidden");
+  }
 }
 
 function displayFallbackMessage() {
