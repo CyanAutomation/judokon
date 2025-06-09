@@ -197,7 +197,7 @@ Each tile contains:
 
 - [ ] 3.0 Add Accessibility Features
 
-  - [ ] 3.1 Add `aria-labels` to each tile.
+  - [x] 3.1 Add `aria-labels` to each tile.
   - [ ] 3.2 Ensure text contrast ratio ≥4.5:1.
   - [ ] 3.3 Make icons `aria-hidden` if decorative.
   - [ ] 3.4 Enable keyboard tabbing and activation via Enter/Space.
@@ -205,7 +205,7 @@ Each tile contains:
 - [ ] 4.0 Optimize and Integrate SVG Icons
 
   - [ ] 4.1 Compress SVG icons to <50KB.
-  - [ ] 4.2 Add fallback icon logic for load failure.
+  - [x] 4.2 Add fallback icon logic for load failure.
   - [ ] 4.3 Verify all icons load under poor network conditions.
 
 - [ ] 5.0 Implement Keyboard Navigation and Focus Management
