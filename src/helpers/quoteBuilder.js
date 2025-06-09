@@ -174,11 +174,11 @@ async function fetchQuote() {
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
     const { story } = randomQuote;
     displayQuote(story);
-    await setupLanguageToggle(quoteElement, story);
+    await setupLanguageToggle(quoteElement);
   } catch (error) {
     console.error("Error fetching quote:", error);
     displayFallbackMessage();
-    await setupLanguageToggle(quoteElement, "\u65e5\u672c\u8a9e\u98a8\u30c6\u30ad\u30b9\u30c8");
+    await setupLanguageToggle(quoteElement);
   }
 }
 
