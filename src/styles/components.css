@@ -100,6 +100,8 @@ body {
 .game-tile:hover {
   background: var(--accent-red-dark);
   color: #fff;
+  cursor: pointer;
+  transform: scale(1.05);
 }
 
 .tile-content h2 {
