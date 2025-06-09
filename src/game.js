@@ -1,6 +1,6 @@
 import { fetchDataWithErrorHandling, validateData } from "./helpers/dataUtils.js";
 import { buildCardCarousel } from "./helpers/carouselBuilder.js";
-import { displayJudokaCard, getRandomJudoka } from "./helpers/cardUtils.js";
+import { generateRandomCard } from "./helpers/randomCard.js";
 import { DATA_DIR } from "./helpers/constants.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -72,18 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
     showRandom.classList.add("hidden");
     gameArea.innerHTML = "";
 
-    try {
-      const judokaData = await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`);
-      const gokyoData = await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`);
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      validateData(judokaData, "judoka");
-      validateData(gokyoData, "gokyo");
-
-      const selectedJudoka = getRandomJudoka(judokaData);
-      displayJudokaCard(selectedJudoka, gokyoData, gameArea, showRandom);
-    } catch (error) {
-      console.error("Error loading card:", error);
-      gameArea.innerHTML = `<p>⚠️ Failed to load card. ${error.message}. Please try again later.</p>`;
-    }
+    await generateRandomCard(null, null, gameArea, prefersReducedMotion);
   });
 });
