@@ -75,9 +75,14 @@ export async function convertElementToPseudoJapanese(element) {
   while (walker.nextNode()) {
     nodes.push(walker.currentNode);
   }
-  const converted = await Promise.all(nodes.map((node) => convertToPseudoJapanese(node.nodeValue)));
+  const results = await Promise.allSettled(nodes.map((node) => convertToPseudoJapanese(node.nodeValue)));
   nodes.forEach((node, idx) => {
-    node.nodeValue = converted[idx];
+    if (results[idx].status === "fulfilled") {
+      node.nodeValue = results[idx].value;
+    } else {
+      console.error(`Failed to convert text node: ${results[idx].reason}`);
+      node.nodeValue = node.nodeValue || STATIC_FALLBACK; // Fallback to original or static text
+    }
   });
 }
 
