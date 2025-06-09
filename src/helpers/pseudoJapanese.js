@@ -59,22 +59,24 @@ export async function convertToPseudoJapanese(text) {
  * Create a button that toggles an element's text between English and pseudo-Japanese.
  *
  * @pseudocode
- * 1. Generate pseudo-Japanese text from `originalText` using `convertToPseudoJapanese`.
+ * 1. Generate pseudo-Japanese text from the element's text content using
+ *    `convertToPseudoJapanese`.
  * 2. Find the existing button with id `language-toggle`.
  * 3. Attach a click handler that fades out the element, swaps the text,
  *    toggles a Japanese font class, then fades back in.
  * 4. Return the button so callers can further manipulate it if needed.
  *
  * @param {HTMLElement} element - The element whose text will be toggled.
- * @param {string} originalText - The English text to display when untoggled.
  * @returns {Promise<HTMLButtonElement>} A promise that resolves to the toggle button.
  */
-export async function setupLanguageToggle(element, originalText) {
+export async function setupLanguageToggle(element) {
   const button = document.getElementById("language-toggle");
   if (!button) {
     return null;
   }
 
+  const originalHTML = element.innerHTML;
+  const originalText = element.textContent;
   const pseudoText = await convertToPseudoJapanese(originalText);
 
   let showingPseudo = false;
@@ -82,7 +84,11 @@ export async function setupLanguageToggle(element, originalText) {
     element.style.transition = "opacity 200ms";
     element.style.opacity = "0";
     setTimeout(() => {
-      element.textContent = showingPseudo ? originalText : pseudoText;
+      if (showingPseudo) {
+        element.innerHTML = originalHTML;
+      } else {
+        element.textContent = pseudoText;
+      }
       element.classList.toggle("jp-font", !showingPseudo);
       element.style.opacity = "1";
       showingPseudo = !showingPseudo;
