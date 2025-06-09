@@ -14,7 +14,6 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP&display=swap"
       rel="stylesheet"
     />
-    <!-- Page‑specific styling -->
     <link rel="stylesheet" href="../styles/quote.css" />
   </head>
 
@@ -42,11 +41,15 @@
         <div class="kg-sprite">
           <img
             src="../assets/helperKG/helperKG1.png"
-            alt="KG congratulates you"
+            alt="KG congratulates you!"
           />
         </div>
 
         <div class="quote-block">
+          <button id="language-toggle" class="language-toggle hidden">
+            <span class="jp-flag flag-icon"></span> 日本語風 / English
+            <span class="uk-flag flag-icon"></span>
+          </button>
           <div
             id="quote-loader"
             class="quote-loader"
@@ -64,10 +67,6 @@
             role="region"
             aria-live="polite"
           ></div>
-          <button id="language-toggle" class="language-toggle hidden">
-            <span class="jp-flag flag-icon"></span> 日本語風 / English
-            <span class="uk-flag flag-icon"></span>
-          </button>
         </div>
       </section>
 

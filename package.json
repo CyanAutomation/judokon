@@ -1,6 +1,7 @@
 {
   "name": "judokon",
   "version": "1.0.0",
+  "type": "module",
   "description": "[![pages-build-deployment](https://github.com/CyanAutomation/judokon/actions/workflows/pages/pages-build-deployment/badge.svg?branch=main)](https://github.com/CyanAutomation/judokon/actions/workflows/pages/pages-build-deployment)",
   "main": "src/game.js",
   "directories": {
