@@ -80,8 +80,11 @@ jobs:
       - name: Fetch Today in History
         id: today
         run: |
-          RESPONSE=$(curl -s http://history.muffinlabs.com/date || echo "")
-          if [ -n "$RESPONSE" ]; then
+          RESPONSE=$(curl -fsL https://history.muffinlabs.com/date)
+          if [ $? -ne 0 ]; then
+            echo "Warning: Failed to fetch data from https://history.muffinlabs.com/date" >&2
+          fi
+          if echo "$RESPONSE" | jq -e . > /dev/null 2>&1; then
             COUNT=$(echo "$RESPONSE" | jq '.data.Events | length')
             if [ "$COUNT" -gt 0 ]; then
               INDEX=$(( RANDOM % COUNT ))
