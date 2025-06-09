@@ -18,6 +18,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 7. [Project Structure](#project-structure)
 8. [Changelog](#changelog)
 9. [Future Plans](#future-plans)
+10. [Contributing](#contributing)
 
 ## Quick Start
 
@@ -154,3 +155,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 - Add animations for card flips and stat comparisons
 - Implement difficulty levels for the computer opponent
 - Expand the card deck with more judoka and stats
+
+## Contributing
+
+Please format your code with **Prettier**, lint it with **ESLint**, and run **Vitest** before submitting a pull request. For full guidelines, see the [AGENTS.md](AGENTS.md) file.
