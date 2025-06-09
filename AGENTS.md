@@ -42,10 +42,11 @@ npx prettier . --write      # rewrite files with correct formatting
 To ensure the game remains visually consistent, we use Playwright for UI testing, including full-page screenshots and element snapshots.
 
 When updating or creating UI components:
--	Update or create Playwright tests in the playwright/ directory.
+
+- Update or create Playwright tests in the playwright/ directory.
 - Take full-page or element-specific screenshots during test runs.
 - Save manual screenshots to the screenshots/ directory (if needed).
-- Visual regression tests use the __screenshots__/ folders adjacent to test files.
+- Visual regression tests use the **screenshots**/ folders adjacent to test files.
 
 Run screenshot tests locally:
 
