@@ -6,6 +6,7 @@ test.describe("Homepage", () => {
   });
 
   test("navigation links visible", async ({ page }) => {
+    await page.waitForSelector(".bottom-navbar a");
     await expect(page.getByRole("navigation")).toBeVisible();
     await expect(page.getByRole("link", { name: /view all judoka/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /classic battle/i })).toBeVisible();
@@ -13,6 +14,6 @@ test.describe("Homepage", () => {
 
   test("view judoka link navigates", async ({ page }) => {
     await page.getByRole("link", { name: /view all judoka/i }).click();
-    await expect(page).toHaveURL(/randomJudoka\.html/);
+    await expect(page).toHaveURL(/carouselJudoka\.html/);
   });
 });
