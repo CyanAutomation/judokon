@@ -95,7 +95,9 @@
 }
 
 .cta-button:hover,
-.cta-button:focus-visible {
+.cta-button:focus-visible,
+.language-toggle:hover,
+.language-toggle:focus-visible {
   background-color: var(--accent-red-dark);
 }
 
