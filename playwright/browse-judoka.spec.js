@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+const FILTER_BY_COUNTRY_LOCATOR = /filter judoka by country/i;
 
 const FILTER_BY_COUNTRY_LOCATOR = "Filter judoka by country";
 
