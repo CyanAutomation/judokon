@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 
-const FILTER_BY_COUNTRY_LOCATOR = "Filter judoka by country";
+// constant for locating the country dropdown
+const FILTER_BY_COUNTRY_LOCATOR = /filter judoka by country/i;
 
 test.describe("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
