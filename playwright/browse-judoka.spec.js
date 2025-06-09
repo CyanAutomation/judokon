@@ -1,8 +1,6 @@
 import { test, expect } from "@playwright/test";
 const FILTER_BY_COUNTRY_LOCATOR = /filter judoka by country/i;
 
-const FILTER_BY_COUNTRY_LOCATOR = "Filter judoka by country";
-
 test.describe("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/carouselJudoka.html");
