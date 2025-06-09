@@ -94,6 +94,7 @@ body {
   flex: 1 1 auto;
   color: #fff;
   text-decoration: none;
+  transition: transform 150ms ease-in;
 }
 
 .game-tile:hover {
