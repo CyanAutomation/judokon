@@ -159,8 +159,14 @@ button:hover {
 }
 
 button:focus {
-  outline: none;
+  outline: 2px solid var(--accent-beige);
+  outline-offset: 2px;
   text-decoration: underline;
+}
+
+a:focus {
+  outline: 2px solid var(--accent-beige);
+  outline-offset: 2px;
 }
 /* Card styles */
 .card-container {
