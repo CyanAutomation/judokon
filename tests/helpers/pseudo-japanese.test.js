@@ -5,9 +5,13 @@ const mapping = {
   letters: { a: ["ア"], b: ["バ"], c: ["カ"], d: ["ダ"], e: ["エ"] }
 };
 
+const originalFetch = global.fetch;
+
 describe("convertToPseudoJapanese", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
+    global.fetch = originalFetch;
     vi.resetModules();
   });
 
