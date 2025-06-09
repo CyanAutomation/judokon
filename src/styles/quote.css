@@ -152,10 +152,31 @@
   background-color: var(--accent-red);
   color: var(--text-color);
   border: none;
-  border-radius: var(--border-radius-small);
+  border-radius: var(--border-radius-medium);
   padding: 0.5rem 0.75rem;
   margin-top: 0.5rem;
   cursor: pointer;
+  transition:
+    background-color 200ms,
+    color 200ms;
+}
+
+.language-toggle:hover,
+.language-toggle:focus {
+  background-color: var(--accent-red-dark);
+}
+
+.flag-icon {
+  display: inline-block;
+  font-size: 1.25rem;
+  line-height: 1;
+  border-radius: var(--border-radius-small);
+  border: 1px solid #fff;
+  padding: 0 0.1rem;
+}
+
+.jp-font {
+  font-family: "Noto Serif JP", serif;
 }
 
 .language-toggle .jp-flag::before {
