@@ -11,7 +11,7 @@ test.describe("View Judoka screen", () => {
   });
 
   test("battle link navigates", async ({ page }) => {
-    await page.getByRole("link", { name: /battle mode page/i }).click();
+    await page.getByRole("link", { name: /Battle Mode/i }).click();
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
 
