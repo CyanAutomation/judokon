@@ -19,10 +19,10 @@ async function loadConverter() {
  * @pseudocode
  * 1. Load the converter JSON once using `loadConverter`.
  *    - If loading fails, return `STATIC_FALLBACK`.
- * 2. Clean the `text` by removing characters other than letters, numbers, and spaces.
+ * 2. Clean the `text` by removing characters other than letters, numbers, and whitespace.
  * 3. Build a list of fallback characters from the mapping values.
  * 4. For each character in the cleaned text:
- *    - Preserve spaces as-is.
+ *    - Preserve whitespace characters as-is.
  *    - Map letters (case-insensitive) using the converter table.
  *    - Replace unmapped characters with a random fallback character.
  * 5. Join and return the converted string.
@@ -43,7 +43,7 @@ export async function convertToPseudoJapanese(text) {
   return cleaned
     .split("")
     .map((char) => {
-      if (char === " ") {
+      if (/\s/.test(char)) {
         return char;
       }
       const letters = mapping[char.toLowerCase()];

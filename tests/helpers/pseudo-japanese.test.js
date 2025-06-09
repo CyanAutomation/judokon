@@ -39,6 +39,16 @@ describe("convertToPseudoJapanese", () => {
     expect(result).toBe("アアバアカア");
   });
 
+  it("preserves newline characters", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => mapping });
+    vi.spyOn(Math, "random").mockReturnValue(0);
+
+    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+
+    const result = await convertToPseudoJapanese("one\ntwo");
+    expect(result).toBe("アアエ\nアアア");
+  });
+
   it("returns static fallback when the mapping fails to load", async () => {
     global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
 
