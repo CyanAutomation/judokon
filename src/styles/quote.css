@@ -144,3 +144,24 @@
     text-align: left;
   }
 }
+
+.language-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: var(--accent-red);
+  color: var(--text-color);
+  border: none;
+  border-radius: var(--border-radius-small);
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+}
+
+.language-toggle .jp-flag::before {
+  content: "\1F1EF\1F1F5"; /* 🇯🇵 */
+}
+
+.language-toggle .uk-flag::before {
+  content: "\1F1EC\1F1E7"; /* 🇬🇧 */
+}
