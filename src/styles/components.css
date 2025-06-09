@@ -189,7 +189,7 @@ button:focus {
 
 .judoka-card {
   position: relative;
-  width: 300px;
+  width: clamp(200px, 40vw, 300px);
   aspect-ratio: 2 / 3;
   border: max(13px, 1vh) solid var(--card-border-color);
   border: max(13px, 1dvh) solid var(--card-border-color);
@@ -502,6 +502,16 @@ button:focus {
   max-height: 90vh;
   max-height: 90dvh;
   /*   background-color: royalblue; */
+}
+
+.card-carousel .judoka-card {
+  width: 300px;
+}
+
+@media (max-width: 768px) {
+  #card-container .judoka-card {
+    width: 70vw;
+  }
 }
 
 .card-carousel::-webkit-scrollbar {
