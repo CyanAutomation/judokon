@@ -1,6 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 
-const mapping = { letters: { a: ["ア"], b: ["バ"], c: ["カ"] } };
+// Minimal mapping for predictable testing
+const mapping = {
+  letters: { a: ["ア"], b: ["バ"], c: ["カ"], d: ["ダ"], e: ["エ"] }
+};
 
 describe("convertToPseudoJapanese", () => {
   afterEach(() => {
@@ -8,18 +11,39 @@ describe("convertToPseudoJapanese", () => {
     vi.resetModules();
   });
 
-  it("converts letters and replaces unmapped characters", async () => {
+  it("converts letters using the JSON mapping", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => mapping });
     vi.spyOn(Math, "random").mockReturnValue(0);
+
     const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
-    const result = await convertToPseudoJapanese("Ab1!");
-    expect(result).toBe("アバア");
+
+    const cases = [
+      ["short", "abc", "アバカ"],
+      ["long", "abcabcabcabc", "アバカアバカアバカアバカ"],
+      ["mixed case", "AbCdE", "アバカダエ"]
+    ];
+
+    for (const [, input, expected] of cases) {
+      const result = await convertToPseudoJapanese(input);
+      expect(result).toBe(expected);
+    }
   });
 
-  it("returns static fallback when json fails to load", async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
+  it("removes or replaces unsupported characters", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => mapping });
+    vi.spyOn(Math, "random").mockReturnValue(0);
+
     const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
-    const result = await convertToPseudoJapanese("abc");
+
+    const result = await convertToPseudoJapanese("a1!b2?c3.");
+    expect(result).toBe("アアバアカア");
+  });
+
+  it("returns static fallback when the mapping fails to load", async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
+
+    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+    const result = await convertToPseudoJapanese("anything");
     expect(result).toBe("\u65e5\u672c\u8a9e\u98a8\u30c6\u30ad\u30b9\u30c8");
   });
 });
