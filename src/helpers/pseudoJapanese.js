@@ -56,15 +56,46 @@ export async function convertToPseudoJapanese(text) {
 }
 
 /**
+ * Convert all text nodes within an element to pseudo-Japanese while
+ * preserving the original HTML structure.
+ *
+ * @pseudocode
+ * 1. Traverse the element with a `TreeWalker` to collect all text nodes.
+ * 2. For each text node, asynchronously convert its value using
+ *    `convertToPseudoJapanese`.
+ * 3. Wait for all conversions to finish.
+ * 4. Replace each text node's value with the corresponding converted text.
+ *
+ * @param {HTMLElement} element - The element containing text to convert.
+ * @returns {Promise<void>} Resolves when conversion is complete.
+ */
+export async function convertElementToPseudoJapanese(element) {
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) {
+    nodes.push(walker.currentNode);
+  }
+  const results = await Promise.allSettled(nodes.map((node) => convertToPseudoJapanese(node.nodeValue)));
+  nodes.forEach((node, idx) => {
+    if (results[idx].status === "fulfilled") {
+      node.nodeValue = results[idx].value;
+    } else {
+      console.error(`Failed to convert text node: ${results[idx].reason}`);
+      node.nodeValue = node.nodeValue || STATIC_FALLBACK; // Fallback to original or static text
+    }
+  });
+}
+
+/**
  * Create a button that toggles an element's text between English and pseudo-Japanese.
  *
  * @pseudocode
  * 1. Find the existing button with id `language-toggle`.
  * 2. Attach a click handler that fades out the element and then:
- *    - On the first click, cache the element's HTML and generate
- *      pseudo-Japanese text using `convertToPseudoJapanese`.
+ *    - On the first click, cache the element's HTML and convert all
+ *      text nodes using `convertElementToPseudoJapanese`.
  *    - Swap between the cached original HTML and the generated
- *      pseudo-Japanese text while toggling a Japanese font class.
+ *      pseudo-Japanese HTML while toggling a Japanese font class.
  *    - Fade the element back in after the swap completes.
  * 3. Return the button so callers can further manipulate it if needed.
  *
@@ -78,7 +109,7 @@ export function setupLanguageToggle(element) {
   }
 
   let originalHTML = "";
-  let pseudoText = "";
+  let pseudoHTML = "";
   let pseudoLoaded = false;
   let showingPseudo = false;
 
@@ -91,10 +122,12 @@ export function setupLanguageToggle(element) {
       } else {
         if (!pseudoLoaded) {
           originalHTML = element.innerHTML;
-          pseudoText = await convertToPseudoJapanese(element.textContent);
+          const clone = element.cloneNode(true);
+          await convertElementToPseudoJapanese(clone);
+          pseudoHTML = clone.innerHTML;
           pseudoLoaded = true;
         }
-        element.textContent = pseudoText;
+        element.innerHTML = pseudoHTML;
       }
       element.classList.toggle("jp-font", !showingPseudo);
       element.style.opacity = "1";
