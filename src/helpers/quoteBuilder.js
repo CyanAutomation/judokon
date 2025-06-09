@@ -172,8 +172,8 @@ async function fetchQuote() {
 
     const quotes = await response.json();
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-    displayQuote(randomQuote);
-    await setupLanguageToggle(quoteElement, randomQuote);
+    displayQuote(randomQuote.story);
+    await setupLanguageToggle(quoteElement, randomQuote.story);
   } catch (error) {
     console.error("Error fetching quote:", error);
     displayFallbackMessage();
