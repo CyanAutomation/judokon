@@ -31,9 +31,9 @@ body {
   grid-template-columns: auto 1fr;
 }
 
-.helper-container {
+/* .helper-container {
   grid-column: 1/1;
-}
+} */
 
 .header {
   display: grid;
@@ -77,10 +77,10 @@ body {
   border: 2px solid var(--secondary-bg);
   border-radius: 4px 12px 12px 4px;
   text-align: center;
-  position: absolute;
-  right: 0;
+  /* position: absolute; */
+  /* right: 0;
   bottom: 0;
-  z-index: 5;
+  z-index: 5; */
 }
 
 .homeHelperContainer img {
