@@ -19,11 +19,11 @@ test.describe("Browse Judoka screen", () => {
   test("essential elements visible", async ({ page }) => {
     await expect(page.getByRole("combobox", { name: FILTER_BY_COUNTRY_LOCATOR })).toBeVisible();
     await expect(page.getByRole("navigation")).toBeVisible();
-    await expect(page.getByRole("link", { name: /battle!/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /classic battle/i })).toBeVisible();
   });
 
   test("battle link navigates", async ({ page }) => {
-    await page.getByRole("link", { name: /battle!/i }).click();
+    await page.getByRole("link", { name: /classic battle/i }).click();
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
 
