@@ -56,6 +56,13 @@ Run optional Playwright-based screenshot tests with:
 npm run test:screenshot
 ```
 
+Set `SKIP_SCREENSHOTS=true` to skip the screenshot suite if you only want to run
+the other Playwright tests:
+
+```bash
+SKIP_SCREENSHOTS=true npm run test:screenshot
+```
+
 ## Project Structure
 
 The repository follows a simple layout. GitHub Pages requires `index.html` to live at the project root.
