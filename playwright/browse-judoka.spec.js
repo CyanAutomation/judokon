@@ -69,4 +69,67 @@ test.describe("Browse Judoka screen", () => {
     await page.waitForSelector("#country-list .slide");
     await expect(page.locator("#country-list .slide")).toHaveCount(3);
   });
+
+  test("judoka card enlarges on hover", async ({ page }) => {
+    const card = page.locator("#carousel-container .judoka-card").first();
+    await card.waitFor();
+
+    const before = await card.boundingBox();
+    await card.hover();
+    const after = await card.boundingBox();
+
+    const widthRatio = after.width / before.width;
+    expect(widthRatio).toBeGreaterThan(1.08);
+    expect(widthRatio).toBeLessThan(1.12);
+  });
+
+  test("carousel responds to arrow keys", async ({ page }) => {
+    const container = page.locator(".card-carousel");
+    await container.waitFor();
+
+    await container.focus();
+    const start = await container.evaluate((el) => el.scrollLeft);
+
+    await page.keyboard.press("ArrowRight");
+    await expect.poll(() => container.evaluate((el) => el.scrollLeft)).toBeGreaterThan(start);
+  });
+
+  test("carousel responds to swipe gestures", async ({ page }) => {
+    const container = page.locator(".card-carousel");
+    await container.waitFor();
+
+    const box = await container.boundingBox();
+    const startX = box.x + box.width * 0.8;
+    const y = box.y + box.height / 2;
+
+    const before = await container.evaluate((el) => el.scrollLeft);
+
+    await page.mouse.move(startX, y);
+    await page.mouse.down();
+    await page.mouse.move(startX - 200, y, { steps: 10 });
+    await page.mouse.up();
+
+    await expect.poll(() => container.evaluate((el) => el.scrollLeft)).toBeGreaterThan(before);
+  });
+
+  test("shows loading spinner on slow network", async ({ page }) => {
+    await page.unroute("**/src/data/judoka.json");
+    await page.unroute("**/src/data/gokyo.json");
+
+    await page.route("**/src/data/judoka.json", async (route) => {
+      await new Promise((r) => setTimeout(r, 2500));
+      await route.fulfill({ path: "tests/fixtures/judoka.json" });
+    });
+    await page.route("**/src/data/gokyo.json", async (route) => {
+      await new Promise((r) => setTimeout(r, 2500));
+      await route.fulfill({ path: "tests/fixtures/gokyo.json" });
+    });
+
+    await page.reload();
+
+    const spinner = page.locator(".loading-spinner");
+    await spinner.waitFor({ state: "visible" });
+    await page.waitForSelector(".card-carousel .judoka-card");
+    await expect(spinner).toBeHidden();
+  });
 });

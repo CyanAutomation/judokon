@@ -49,6 +49,9 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - If network disconnection occurs, display a placeholder or error message.
 - If card image fails to load, display a default judoka image.
 - If a filter returns no results, show a retry option and a message suggesting a wider search.
+- Playwright tests simulate swipe gestures and arrow-key navigation.
+- Hovering over a card enlarges it by roughly 10%, verified via bounding box.
+- A loading spinner appears during simulated slow network conditions.
 
 ---
 
