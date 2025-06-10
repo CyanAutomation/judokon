@@ -124,8 +124,8 @@ test.describe("Browse Judoka screen", () => {
     // Simulate a slow network
     await context.setNetworkConditions({
       download: 50 * 1024, // 50 KB/s
-      upload: 20 * 1024,   // 20 KB/s
-      latency: 2000        // 2 seconds latency
+      upload: 20 * 1024, // 20 KB/s
+      latency: 2000 // 2 seconds latency
     });
 
     await page.reload();
