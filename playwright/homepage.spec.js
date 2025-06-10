@@ -27,7 +27,7 @@ test.describe("Homepage", () => {
   });
 
   test("view judoka link navigates", async ({ page }) => {
-    await page.getByRole("link", { name: /view all judoka/i }).click();
+    await page.getByRole("link", { name: /view judoka/i }).click();
     await expect(page).toHaveURL(/carouselJudoka\.html/);
   });
 });

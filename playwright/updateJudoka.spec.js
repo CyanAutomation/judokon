@@ -24,9 +24,7 @@ test.describe("Update Judoka page", () => {
     await page.getByRole("link", { name: /update judoka/i }).click();
     await expect(page).toHaveURL(/updateJudoka\.html/);
     await page.goBack();
-    await page
-      .getByRole("link", { name: "Battle!" })
-      .click();
+    await page.getByRole("link", { name: "Battle!" }).click();
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
 });
