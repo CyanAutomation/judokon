@@ -1,56 +1,53 @@
-# PRD: End Game Quote Screen from KG Character
-
----
+# PRD: Meditation Screen (formerly Victory Quote Screen)
 
 ## Description
 
-Introduce a rewarding quote screen that appears when players achieve a perfect victory in team battle mode. Upon winning all six battles, the helper character KG appears alongside a random wise quote (an excerpt from Aesop’s fables). This lighthearted moment aims to reinforce a sense of achievement and motivate players to strive for excellence.
+Introduce a **meditation screen** that players can access as a moment of calm between battles. The helper character **KG** appears alongside a random wise quote (an excerpt from Aesop’s Fables), helping players reset their mindset and reflect. Inspired by real-life judo practice—where athletes take time to breathe and refocus—this moment of stillness encourages resilience and clarity.
 
 ---
 
 ## Problem Statement
 
-Currently, players completing a full sweep of team battles receive no special acknowledgment. Without a distinctive reward, players may lack the emotional closure and reinforcement that drives continued engagement. Providing a “quote reward” with KG taps into the human drive for mastery and recognition. By celebrating this achievement, we encourage players to replay and improve. There is a concern that any lack of reward for challenging play could lead to reduced play time or negative player feedback.
-
-> Full sweeps—winning all matches in a team battle—are likely challenging, and it is estimated that only 20% of players achieve this.
+Currently, there’s no structured moment for players to mentally reset between intense card battles. Without a calming intermission, the game may feel relentless or emotionally taxing. The meditation screen provides intentional space to pause, reflect, and regain balance. This emotional pacing enhances player experience and keeps engagement healthy and sustainable.
 
 ---
 
 ## Impact if Not Solved
 
-Missed opportunity for player satisfaction and retention for high achievers.
+Players may experience cognitive fatigue or emotional burnout from back-to-back matches, leading to reduced enjoyment and decreased long-term retention.
 
 ---
 
 ## Behavioral Insight
 
-Players are motivated by meaningful, personalized rewards that mark major achievements.
+Players benefit from rhythm and pacing. Periods of calm after periods of intensity improve focus and enjoyment. Adding a reflective break strengthens overall game flow and user wellbeing.
 
 ---
 
 ## Goals
 
-- Display a quote screen 100% of the time upon a full-sweep (all six wins) in a team battle match.
-- Maintain load time for quote screen under 1 second.
+- Display a **meditation screen** 100% of the time after completing a team battle match with a full sweep (all six wins).
+- Allow players to access this screen optionally in future versions (TBD).
+- Maintain load time under 1 second.
 - Ensure error-free quote display across landscape and portrait orientations.
 
 ---
 
 ## Functional Requirements
 
-| Priority | Feature                             | Description                                                          |
-|:--------:|:------------------------------------|:---------------------------------------------------------------------|
-| **P1**   | KG Image & Random Quote Display      | Show KG character and random quote on perfect victory.              |
-| **P2**   | Quote Fallback & Load Time Optimization | Display default message if data fails, ensure <1s load time, responsive design. |
-| **P3**   | Accessibility Support                | Enable screen reader compatibility for quote text display.          |
+| Priority | Feature                               | Description                                                                 |
+|:--------:|:--------------------------------------|:----------------------------------------------------------------------------|
+| **P1**   | KG Image & Random Quote Display        | Show KG character and random quote as a moment of calm reflection.          |
+| **P2**   | Quote Fallback & Load Time Optimization| Display default reflection message if data fails, ensure <1s load time.     |
+| **P3**   | Accessibility Support                  | Enable screen reader compatibility for quote text display.                  |
 
 ---
 
 ## Acceptance Criteria
 
-- KG character appears on victory screen.
-- Random quote displayed from dataset.
-- If dataset not available, fallback message appears.
+- KG character appears on the meditation screen.
+- Random quote displayed from `aesopsFables.json`.
+- If dataset not available, fallback reflection quote appears.
 - Screen loads within 1 second.
 - Text is screen-reader accessible (ARIA tags).
 - Layout adapts to screen orientation (portrait/landscape).
@@ -60,10 +57,10 @@ Players are motivated by meaningful, personalized rewards that mark major achiev
 
 ## Edge Cases / Failure States
 
-- **Failure to load quote data**: Display default congratulatory message.
-- **App crash/restart mid-team battle**: Player progress persists; if victory conditions are met post-relaunch, quote screen appears.
-- **Handle offline mode**: Display fallback quote.
-- **1uote repetition**: As there are over 100 quotes in aesopsFables.json, it's unlikely that a player will see the same quote within a single session.
+- **Failure to load quote data**: Display a calming default message such as _“Take a breath. Even a still pond reflects the sky.”_
+- **App crash/restart mid-team battle**: Player progress persists; if victory conditions are met post-relaunch, meditation screen appears.
+- **Offline mode**: Display fallback quote.
+- **Quote repetition**: Avoid repeating quotes in-session, using quote ID tracking.
 
 ---
 
@@ -73,23 +70,25 @@ Players are motivated by meaningful, personalized rewards that mark major achiev
 - Quote occupies the right-hand side in desktop/landscape view.
 - On mobile/portrait view, KG image is above the quote.
 - Proceed button is consistently placed at the bottom of the screen.
-- Background is neutral and matches the tone of the team battle mode.
+- Background is soft and neutral, with subtle motion or ambient colour (optional later).
 - Quote text uses a legible, sans-serif font, sized 18px minimum.
 
-| **Quote Screen Mockup 3**                                        |                                        **Quote Screen Mockup 4** |
-| ---------------------------------------------------------------- | ---------------------------------------------------------------: |
-| ![Quote Screen Mockup 3](/design/mockups/mockupQuoteScreen3.png) | ![Quote Screen Mockup 4](/design/mockups/mockupQuoteScreen4.png) |
+| Meditation Screen Mockup A | Meditation Screen Mockup B |
+|----------------------------|-----------------------------|
+| ![Mockup A](/design/mockups/mockupQuoteScreen3.png) | ![Mockup B](/design/mockups/mockupQuoteScreen4.png) |
 
-### 1. Victory Feedback Module
+---
+
+### 1. Meditation Feedback Module
 
 **Contents:**
 
-- Large celebratory headline: “Victory!” or “Full Sweep Achieved!”
-- Trophy or confetti burst icon above quote block
-- KG image with pointer leading visually into the quote
+- Soothing headline: _“Pause. Breathe. Reflect.”_ or _“A Quiet Moment with KG”_
+- Gentle icon or ambient motion graphic above quote block (optional)
+- KG image with open hand or seated meditative pose, visually leading into the quote
 
 **Why:**  
-Players need an unmistakable emotional payoff for their achievement—text alone is sterile.
+Sets the emotional tone. Not a reward, but a rest—balancing the intensity of gameplay with stillness.
 
 ---
 
@@ -102,7 +101,7 @@ Players need an unmistakable emotional payoff for their achievement—text alone
 - Skeleton loader animation while quote loads
 
 **Why:**  
-Maintains readability and handles loading/failure elegantly without a jarring fallback experience.
+Ensures readability while preventing jarring fallback errors.
 
 ---
 
@@ -111,31 +110,33 @@ Maintains readability and handles loading/failure elegantly without a jarring fa
 **Contents:**
 
 - Large, thumb-friendly button (min 48px height)
-- Emotionally charged label: “Continue Your Journey” or “Claim Victory”
+- Calming label: _“Return to Battle”_ or _“Continue When Ready”_
 - Button anchored close to quote with clear margin spacing
 
 **Why:**  
-Makes the CTA compelling and touch-friendly, minimizing accidental mis-taps and reinforcing the accomplishment.
+Provides agency without pressure. Allows the player to re-enter gameplay at their own pace.
+
+---
 
 ## Tasks
 
-- [ ] 1.0 Implement Victory Feedback Module
+- [ ] **1.0 Implement Meditation Feedback Module**
   - [x] 1.1 Load and display KG character image.
-  - [ ] 1.2 Add celebratory headline ("Victory!" or "Full Sweep Achieved!").
+  - [ ] 1.2 Add calm headline (“Pause. Breathe. Reflect.” or similar).
 
-- [ ] 2.0 Implement Quote Display Module
+- [ ] **2.0 Implement Quote Display Module**
   - [x] 2.1 Randomly select a quote from `aesopsFables.json`.
   - [ ] 2.2 Display the quote with dynamic, responsive text scaling.
   - [ ] 2.3 Implement skeleton loader while fetching quote.
-  - [ ] 2.4 Fallback to default message if quote data fails.
+  - [ ] 2.4 Fallback to default calm message if quote data fails.
 
-- [ ] 3.0 Implement Action Button Module
-  - [ ] 3.1 Add large, thumb-friendly CTA button ("Continue Your Journey" or "Claim Victory").
+- [ ] **3.0 Implement Action Button Module**
+  - [ ] 3.1 Add large, thumb-friendly CTA button ("Continue When Ready").
   - [ ] 3.2 Ensure CTA button has minimum 48px height and proper spacing.
 
-- [ ] 4.0 Accessibility
+- [ ] **4.0 Accessibility**
   - [ ] 4.1 Add ARIA tags for screen readers.
 
-- [ ] 5.0 Performance & Load Time Optimization
+- [ ] **5.0 Performance & Load Time Optimization**
   - [ ] 5.1 Optimize image and text asset load times to under 1 second.
   - [ ] 5.2 Implement responsive grid and flexbox for various screen sizes (portrait/landscape).
