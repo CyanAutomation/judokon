@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import path from "node:path";
 
 // Allow skipping screenshots via the SKIP_SCREENSHOTS environment variable
 const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
@@ -19,7 +20,7 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
   for (const url of pages) {
     test(`screenshot ${url}`, async ({ page }) => {
       await page.goto(url, { waitUntil: "domcontentloaded" });
-      const name = url === "/" ? "homepage.png" : url.split("/").pop().replace(".html", ".png");
+      const name = url === "/" ? "homepage.png" : path.basename(url).replace(".html", ".png");
       await expect(page).toHaveScreenshot(name, { fullPage: true });
     });
   }
