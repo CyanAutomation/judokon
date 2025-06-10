@@ -23,6 +23,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -38,7 +39,7 @@ jobs:
         with:
           token: ${{ github.token }}
           commit-message: "chore: update Playwright baseline images"
-          title: "chore: update Playwright baseline images"
+          title: "chore: update Playwright baselines $(date -u +'%Y-%m-%d')"
           body: |
             This PR updates the Playwright baseline screenshots.
             New baseline images overwrite the previous ones.
