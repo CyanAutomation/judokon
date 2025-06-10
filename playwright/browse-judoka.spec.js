@@ -113,16 +113,19 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test("shows loading spinner on slow network", async ({ page }) => {
-    await page.unroute("**/src/data/judoka.json");
-    await page.unroute("**/src/data/gokyo.json");
+    const context = await page.context();
+    await context.route("**/src/data/judoka.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/judoka.json" })
+    );
+    await context.route("**/src/data/gokyo.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/gokyo.json" })
+    );
 
-    await page.route("**/src/data/judoka.json", async (route) => {
-      await new Promise((r) => setTimeout(r, 2500));
-      await route.fulfill({ path: "tests/fixtures/judoka.json" });
-    });
-    await page.route("**/src/data/gokyo.json", async (route) => {
-      await new Promise((r) => setTimeout(r, 2500));
-      await route.fulfill({ path: "tests/fixtures/gokyo.json" });
+    // Simulate a slow network
+    await context.setNetworkConditions({
+      download: 50 * 1024, // 50 KB/s
+      upload: 20 * 1024,   // 20 KB/s
+      latency: 2000        // 2 seconds latency
     });
 
     await page.reload();
