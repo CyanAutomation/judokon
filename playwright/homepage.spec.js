@@ -40,7 +40,11 @@ test.describe("Homepage", () => {
     const tile = page.locator(".game-tile").first();
     const before = await tile.boundingBox();
     await tile.hover();
-    await page.waitForTimeout(200);
+    await page.waitForFunction(async (tile) => {
+      const before = await tile.boundingBox();
+      const after = await tile.boundingBox();
+      return after.width > before.width;
+    }, tile);
     const after = await tile.boundingBox();
     const ratio = after.width / before.width;
     expect(ratio).toBeGreaterThan(1.03);
