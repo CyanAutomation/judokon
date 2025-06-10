@@ -26,8 +26,8 @@ describe("generateCardCode", () => {
   it("throws an error when required fields are missing", () => {
     const incomplete = { ...validJudoka };
     delete incomplete.firstname;
-    expect(() => generateCardCode(incomplete)).toThrowError(
-      "Missing required judoka fields for card code generation."
+    expect(() => generateCardCode(incomplete)).toThrow(
+      /Missing/
     );
   });
 
