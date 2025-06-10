@@ -1,6 +1,7 @@
+import * as path from "path";
 import { test, expect } from "@playwright/test";
 
-const FIXTURE_PATH = "tests/fixtures/aesopsFables.json";
+const FIXTURE_PATH = path.resolve(__dirname, "../tests/fixtures/aesopsFables.json");
 
 /**
  * Ensure the language toggle swaps between English and pseudo-Japanese text.
