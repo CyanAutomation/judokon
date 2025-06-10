@@ -169,17 +169,16 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 ## Tasks
 
-- [ ] 1.0 Implement Random Card Draw Function
+- [x] 1.0 Implement Random Card Draw Function
   - [x] 1.1 Create `generateRandomCard()` function to select random card from active set.
-  - [ ] 1.2 Integrate card draw with UI trigger ("Draw Card" button).
+  - [x] 1.2 Integrate card draw with UI trigger ("Draw Card" button).
 - [ ] 2.0 Develop Card Reveal Animation
-  - [ ] 2.1 Implement fade or bounce animation for card reveal.
-  - [ ] 2.2 Ensure animation plays at ≥60fps on devices with ≥2GB RAM.
+  - [ ] 2.1 Implement card slide for card reveal.
+  - [ ] 2.2 Ensure animation plays at ≥60fps.
   - [ ] 2.3 Respect Reduced Motion settings and disable animation when active.
 - [ ] 3.0 Error and Fallback Handling
   - [ ] 3.1 Display fallback card (judoka id=0, from judoka.json) if random draw fails.
   - [ ] 3.2 Show predefined error card (judoka id=0, from judoka.json) if active card set is empty.
-  - [ ] 3.3 Implement static reveal downgrade for low-performance devices.
 - [ ] 4.0 Accessibility and UX Enhancements
   - [ ] 4.1 Support Reduced Motion settings.
   - [ ] 4.2 Ensure color contrast on cards meets WCAG AA standards.
