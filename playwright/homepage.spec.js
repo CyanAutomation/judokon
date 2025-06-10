@@ -15,10 +15,12 @@ test.describe("Homepage", () => {
   });
 
   test("navigation links visible", async ({ page }) => {
-    await page.waitForSelector(".bottom-navbar a");
+    await page.waitForSelector("footer .bottom-navbar a");
     await expect(page.getByRole("navigation")).toBeVisible();
-    await expect(page.getByRole("link", { name: /view judoka/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /classic battle/i })).toBeVisible();
+    await expect(page.locator("footer").getByRole("link", { name: /view judoka/i })).toBeVisible();
+    await expect(
+      page.locator("footer").getByRole("link", { name: /classic battle/i })
+    ).toBeVisible();
   });
 
   test("footer navigation links present", async ({ page }) => {
@@ -27,7 +29,10 @@ test.describe("Homepage", () => {
   });
 
   test("view judoka link navigates", async ({ page }) => {
-    await page.getByRole("link", { name: /view judoka/i }).click();
+    await page
+      .locator("footer")
+      .getByRole("link", { name: /view judoka/i })
+      .click();
     await expect(page).toHaveURL(/carouselJudoka\.html/);
   });
 });
