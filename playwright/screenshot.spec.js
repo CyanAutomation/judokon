@@ -12,11 +12,10 @@ test.describe.skip("Screenshot suite", () => {
     "/src/pages/updateJudoka.html"
   ];
 
-  for (const url of pages) {
-    test(`screenshot ${url}`, async ({ page }) => {
-      await page.goto(url, { waitUntil: "networkidle" });
-      const name = url === "/" ? "homepage.png" : url.split("/").pop().replace(".html", ".png");
-      await expect(page).toHaveScreenshot(name, { fullPage: true });
-    });
-  }
-});
+for (const url of pages) {
+  test(`screenshot ${url}`, async ({ page }) => {
+    await page.goto(url, { waitUntil: "domcontentloaded" });
+    const name = url === "/" ? "homepage.png" : url.split("/").pop().replace(".html", ".png");
+    await expect(page).toHaveScreenshot(name, { fullPage: true });
+  });
+}

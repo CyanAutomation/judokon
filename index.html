@@ -74,7 +74,7 @@
             <h2>Battle Mode: Team Battle</h2>
           </div>
         </a>
-        <a href="./src/pages/carouselJudoka.html" class="game-tile" aria-label="View all judoka">
+        <a href="./src/pages/carouselJudoka.html" class="game-tile" aria-label="View Judoka">
           <div class="svgTile">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -133,15 +133,7 @@
           "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
         );
       </script>
-      <script type="module">
-        import { populateNavbar } from "./src/helpers/bottomNavigation.js";
-        import { applySvgFallback } from "./src/helpers/svgFallback.js";
-
-        document.addEventListener("DOMContentLoaded", () => {
-          populateNavbar();
-          applySvgFallback();
-        });
-      </script>
+      <script type="module" src="./src/helpers/setupSvgFallback.js"></script>
     </div>
   </body>
 </html>

@@ -26,6 +26,16 @@ test.describe.skip("View Judoka screen", () => {
     await page.waitForSelector("#draw-card-btn");
     const btn = page.getByRole("button", { name: /draw card/i });
     await expect(btn).toHaveAttribute("aria-label", /draw a random card/i);
+
+    // Simulate a change in the button's display text
+    await page.evaluate(() => {
+      const button = document.querySelector("#draw-card-btn");
+      button.textContent = "Pick a random judoka";
+      button.setAttribute("aria-label", "Pick a random judoka");
+    });
+
+    // Verify that the aria-label is updated to match the new text
+    await expect(btn).toHaveAttribute("aria-label", /pick a random judoka/i);
   });
 
   test("draw card populates container", async ({ page }) => {

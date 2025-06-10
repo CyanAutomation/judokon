@@ -38,7 +38,6 @@
       </header>
 
       <main class="kodokan-grid" role="main">
-        <div class="helper-container">TEST</div>
         <div class="filter-bar">
           <label for="country-filter">Filter by Country:</label>
           <select id="country-filter" aria-label="Filter judoka by country">
@@ -143,13 +142,7 @@
           "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
         );
       </script>
-      <script type="module">
-        import { applySvgFallback } from "../helpers/svgFallback.js";
-
-        document.addEventListener("DOMContentLoaded", () => {
-          applySvgFallback("../assets/images/judokonLogoSmall.png");
-        });
-      </script>
+      <script type="module" src="../helpers/setupSvgFallback.js"></script>
     </div>
   </body>
 </html>
