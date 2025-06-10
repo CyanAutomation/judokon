@@ -5,6 +5,7 @@ import path from "node:path";
 const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
 
 test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)", () => {
+  test.use({ viewport: { width: 1280, height: 720 } });
   test.skip(!runScreenshots);
   // List of pages to capture screenshots for
   const pages = [
