@@ -84,7 +84,7 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test("carousel responds to arrow keys", async ({ page }) => {
-    const container = page.locator(".card-carousel");
+    const container = page.locator("#carousel-container");
     await container.waitFor();
 
     await container.focus();
