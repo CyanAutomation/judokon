@@ -3,6 +3,22 @@ import { buildCardCarousel } from "./helpers/carouselBuilder.js";
 import { generateRandomCard } from "./helpers/randomCard.js";
 import { DATA_DIR } from "./helpers/constants.js";
 
+/**
+ * Initializes game interactions after the DOM is ready.
+ *
+ * Queries required DOM elements, wires up control buttons, and loads data for
+ * the judoka carousel when requested.
+ *
+ * @pseudocode
+ * 1. Wait for the `DOMContentLoaded` event.
+ * 2. Query elements used by the game (buttons, containers).
+ * 3. On carousel button click, fetch judoka and gokyo data if needed, validate
+ *    it, build the carousel, and reveal it.
+ * 4. On hide button click, toggle the card backs in the carousel.
+ * 5. On random button click, clear the game area, honor motion preferences, and
+ *    call `generateRandomCard`.
+ */
+
 document.addEventListener("DOMContentLoaded", () => {
   const showRandom = document.getElementById("showRandom");
   const gameArea = document.getElementById("gameArea");
