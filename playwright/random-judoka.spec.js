@@ -15,14 +15,15 @@ test.describe("View Judoka screen", () => {
   });
 
   test("essential elements visible", async ({ page }) => {
-    await page.waitForSelector("#draw-card-btn");
-    await expect(page.getByRole("button", { name: /draw card/i })).toBeVisible();
+    await page.getByRole("button", { name: /draw a random card/i }).waitFor();
+    await expect(page.getByRole("button", { name: /draw a random card/i })).toBeVisible();
     await expect(page.getByRole("navigation")).toBeVisible();
   });
 
   test("battle link navigates", async ({ page }) => {
-    await page.waitForSelector('a[href="battleJudoka.html"]');
-    await page.getByRole("link", { name: /battle!/i }).click();
+    const battleLink = page.getByRole("link", { name: /battle mode page/i });
+    await battleLink.waitFor();
+    await battleLink.click();
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
 
@@ -32,7 +33,7 @@ test.describe("View Judoka screen", () => {
   });
 
   test("draw button has label", async ({ page }) => {
-    await page.waitForSelector("#draw-card-btn");
+    await page.getByRole("button", { name: /draw a random card/i }).waitFor();
     const btn = page.locator("#draw-card-btn");
     await expect(btn).toHaveAttribute("aria-label", /draw a random card/i);
 
@@ -53,6 +54,6 @@ test.describe("View Judoka screen", () => {
     await expect(card).toHaveCount(1);
     await expect(card).toBeVisible();
     const flag = card.locator(".card-top-bar img");
-    await expect(flag).toHaveAttribute("alt", /(Portugal|United States|Japan) flag/i);
+    await expect(flag).toHaveAttribute("alt", /(Portugal|USA|Japan) flag/i);
   });
 });

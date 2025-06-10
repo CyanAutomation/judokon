@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 // Allow skipping screenshots via the SKIP_SCREENSHOTS environment variable
-const runScreenshots = process.env.SKIP_SCREENSHOTS !== 'true';
+const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
 
 test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)", () => {
   test.skip(!runScreenshots);
