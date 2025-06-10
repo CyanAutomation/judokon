@@ -2,7 +2,7 @@ name: Update Playwright Baselines
 
 on:
   schedule:
-    - cron: "0 4 * * *" # Runs daily at 04:00 UTC (adjust as needed)
+    - cron: "0 4 * * *" # Runs daily at 04:00 UTC
   workflow_dispatch: {}
 
 concurrency:
@@ -52,6 +52,32 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
+      # 🧮 Collect Repo Stats
+      - name: Get Repo Stats
+        id: stats
+        run: |
+          TOTAL_FILES=$(find . -type f | wc -l)
+          JS_TS_FILES=$(find . -type f \( -name "*.js" -o -name "*.ts" \) | wc -l)
+          LINE_COUNT=$(find . -type f -name "*.ts" -o -name "*.js" -o -name "*.css" -o -name "*.json" | xargs wc -l | tail -n 1 | awk '{print $1}')
+          echo "total=$TOTAL_FILES" >> $GITHUB_OUTPUT
+          echo "jsts=$JS_TS_FILES" >> $GITHUB_OUTPUT
+          echo "lines=$LINE_COUNT" >> $GITHUB_OUTPUT
+
+      # 🎲 Random Dice Roll
+      - name: Generate Judo Throw Dice Roll
+        id: dice
+        run: |
+          DICE=$(( RANDOM % 6 + 1 ))
+          case $DICE in
+            1) MOOD="🎲 Roll: 1 — *Seoi Nage* lightning strike! ⚡️ Shoulder throw supremacy." ;;
+            2) MOOD="🎲 Roll: 2 — *Osoto Gari* sweep! 🌪 The ground says hello." ;;
+            3) MOOD="🎲 Roll: 3 — *Uchi Mata* whirl! 🌀 You’re airborne now." ;;
+            4) MOOD="🎲 Roll: 4 — *Harai Goshi* slash! 🌊 A clean hip-and-leg combo." ;;
+            5) MOOD="🎲 Roll: 5 — *Tai Otoshi* drop! 💥 Straight to the tatami." ;;
+            6) MOOD="🎲 Roll: 6 — *Kouchi Gari* trip! 🎯 Small but deadly." ;;
+          esac
+          echo "mood=$MOOD" >> $GITHUB_OUTPUT
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
@@ -61,6 +87,13 @@ jobs:
           body: |
             This PR updates the Playwright baseline screenshots.
             New baseline images overwrite the previous ones.
+
+            🔍 **Repo Stats at time of PR**
+            - 📦 Total files: ${{ steps.stats.outputs.total }}
+            - 📁 JS/TS files: ${{ steps.stats.outputs.jsts }}
+            - 📜 Lines of code (approx.): ${{ steps.stats.outputs.lines }}
+
+            ${{ steps.dice.outputs.mood }}
           branch: ${{ env.BRANCH_NAME }}
           labels: |
             automated
