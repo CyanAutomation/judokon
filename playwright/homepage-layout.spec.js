@@ -4,9 +4,12 @@ test.describe("Homepage layout", () => {
   test.describe("desktop", () => {
     test.use({ viewport: { width: 1024, height: 800 } });
 
-    test("grid has two columns", async ({ page }) => {
+    test.beforeEach(async ({ page }) => {
       await page.goto("/index.html");
       await page.waitForSelector(".game-mode-grid");
+    });
+
+    test("grid has two columns", async ({ page }) => {
       const columnCount = await page.evaluate(() => {
         const style = getComputedStyle(document.querySelector(".game-mode-grid"));
         return style.gridTemplateColumns.split(/\s+/).filter(Boolean).length;
