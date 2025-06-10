@@ -5,3 +5,4 @@ build/
 .github/ISSUE_TEMPLATE/*.md
 design/productRequirementsDocuments/*.md
 src/pages/quoteKG.html
+test-results/
