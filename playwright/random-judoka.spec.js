@@ -1,7 +1,16 @@
 import { test, expect } from "@playwright/test";
 
-test.describe.skip("View Judoka screen", () => {
+test.describe("View Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
+    await page.route("**/src/data/judoka.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/judoka.json" })
+    );
+    await page.route("**/src/data/gokyo.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/gokyo.json" })
+    );
+    await page.route("**/src/data/countryCodeMapping.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/countryCodeMapping.json" })
+    );
     await page.goto("/src/pages/randomJudoka.html");
   });
 
@@ -41,6 +50,9 @@ test.describe.skip("View Judoka screen", () => {
   test("draw card populates container", async ({ page }) => {
     await page.click("#draw-card-btn");
     const card = page.locator("#card-container .judoka-card");
+    await expect(card).toHaveCount(1);
     await expect(card).toBeVisible();
+    const flag = card.locator(".card-top-bar img");
+    await expect(flag).toHaveAttribute("alt", /(Portugal|United States|Japan) flag/i);
   });
 });

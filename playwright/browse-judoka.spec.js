@@ -4,6 +4,15 @@ const FILTER_BY_COUNTRY_LOCATOR = /Filter( judokas?)? by country/i;
 
 test.describe("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
+    await page.route("**/src/data/judoka.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/judoka.json" })
+    );
+    await page.route("**/src/data/gokyo.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/gokyo.json" })
+    );
+    await page.route("**/src/data/countryCodeMapping.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/countryCodeMapping.json" })
+    );
     await page.goto("/src/pages/carouselJudoka.html");
   });
 
@@ -38,13 +47,13 @@ test.describe("Browse Judoka screen", () => {
 
     const allCards = page.locator("#carousel-container .judoka-card");
     const initialCount = await allCards.count();
+    expect(initialCount).toBe(3);
 
     await dropdown.selectOption("Japan");
 
     const filteredCards = page.locator("#carousel-container .judoka-card");
     const filteredCount = await filteredCards.count();
-    expect(filteredCount).toBeLessThan(initialCount);
-    expect(filteredCount).toBeGreaterThan(0);
+    expect(filteredCount).toBe(1);
 
     for (let i = 0; i < filteredCount; i++) {
       const flag = filteredCards.nth(i).locator(".card-top-bar img");
@@ -54,5 +63,10 @@ test.describe("Browse Judoka screen", () => {
     await dropdown.selectOption("all");
 
     await expect(page.locator("#carousel-container .judoka-card")).toHaveCount(initialCount);
+  });
+
+  test("displays country flags", async ({ page }) => {
+    await page.waitForSelector("#country-list .slide");
+    await expect(page.locator("#country-list .slide")).toHaveCount(3);
   });
 });

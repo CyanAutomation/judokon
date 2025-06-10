@@ -1,0 +1,23 @@
+[
+  {
+    "country": "Portugal",
+    "code": "pt",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "Japan",
+    "code": "jp",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  },
+  {
+    "country": "United States",
+    "code": "us",
+    "lastUpdated": "2025-04-23T10:00:00Z",
+    "updatedBy": "user",
+    "active": true
+  }
+]
