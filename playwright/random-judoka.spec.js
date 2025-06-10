@@ -24,7 +24,7 @@ test.describe.skip("View Judoka screen", () => {
 
   test("draw button has label", async ({ page }) => {
     await page.waitForSelector("#draw-card-btn");
-    const btn = page.getByRole("button", { name: /draw card/i });
+    const btn = page.locator("#draw-card-btn");
     await expect(btn).toHaveAttribute("aria-label", /draw a random card/i);
 
     // Simulate a change in the button's display text
