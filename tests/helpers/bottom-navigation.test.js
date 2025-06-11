@@ -33,9 +33,14 @@ afterEach(() => {
 });
 
 describe("toggleExpandedMapView", () => {
-  it("creates map tiles for valid game modes", async () => {
-    const navBar = setupDom();
+  let navBar;
+
+  beforeEach(() => {
+    navBar = setupDom();
     stubLogoQuery();
+  });
+
+  it("creates map tiles for valid game modes", async () => {
     const modes = [
       { name: "Mode1", url: "mode1.html", image: "img1.png" },
       { name: "Mode2", url: "mode2.html", image: "img2.png" },
