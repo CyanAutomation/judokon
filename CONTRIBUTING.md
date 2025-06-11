@@ -36,6 +36,13 @@ If a UI change is intended, update baseline screenshots with:
 npx playwright test --update-snapshots
 ```
 
+## Git Hooks
+
+The project uses [Husky](https://typicode.github.io/husky) for local Git hooks.
+Run `npm install` followed by `npm run prepare` after cloning to enable the
+pre-commit hook. The hook automatically runs `npm run lint` and `npm test` to
+catch issues before commits are created.
+
 ## Pseudocode and Documentation Rules
 
 JU-DO-KON! relies heavily on detailed JSDoc comments with `@pseudocode`
