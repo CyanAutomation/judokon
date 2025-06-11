@@ -30,9 +30,7 @@ const dataCache = new Map();
 // Ajv instance for JSON schema validation
 const ajv = new Ajv();
 // Cache compiled schema validators to avoid recompiling on each call
-const schemaCache = new Map();
-
-// Cache for compiled schema validators
+// WeakMap allows garbage collection of schema keys
 const schemaCache = new WeakMap();
 
 export async function loadJSON(url, schema) {
