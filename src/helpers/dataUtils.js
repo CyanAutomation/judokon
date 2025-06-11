@@ -1,4 +1,4 @@
-import Ajv from "ajv";
+import Ajv from "https://esm.sh/ajv@6";
 
 /**
  * Generic function to load any JSON file from a given URL.

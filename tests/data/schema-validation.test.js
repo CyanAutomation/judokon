@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { readFile } from "fs/promises";
-import Ajv from "ajv";
+import Ajv from "https://esm.sh/ajv@6";
 import { fileURLToPath } from "url";
 import path from "path";
 
