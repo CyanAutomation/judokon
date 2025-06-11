@@ -23,13 +23,17 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 ## Quick Start
 
 1. Make sure you have **Node 19+** and `npm` (or another package manager) installed.
-2. Clone the repository, install dependencies, and launch a lightweight local dev server:
+2. Clone the repository, install dependencies, and launch the development server:
    ```bash
    git clone https://github.com/cyanautomation/judokon.git
    cd judokon
    npm install
-   npx serve  # lightweight local dev server
+   npm start  # lightweight local dev server
    # Then visit: http://localhost:5000
+   ```
+3. Verify formatting and linting before committing:
+   ```bash
+   npm run lint
    ```
 
 ### Debug Logging
