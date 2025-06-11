@@ -73,10 +73,24 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
   - `helpers/`
   - `pages/`
   - `data/`
+  - `schemas/`  
+    JSON Schema definitions used to validate the data files.
   - `assets/`
   - `styles/`
 - `tests/` – Vitest unit tests.
 - `design/` – documentation and code standards.
+
+## Data Schemas and Validation
+
+JSON files in `src/data` are validated against matching schemas in `src/schemas`.
+Use the Ajv CLI to ensure files conform to their schema:
+
+```bash
+npx ajv validate -s src/schemas/judoka.schema.json -d src/data/judoka.json
+```
+
+See [design/dataSchemas/README.md](design/dataSchemas/README.md) for full details
+and instructions on updating schemas when data changes.
 
 The repository specifies commenting standards in design/codeStandards. JSDoc comments and @pseudocode blocks must remain intact, as shown in documentation excerpts.
 
