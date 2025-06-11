@@ -1,6 +1,6 @@
 # 🎴 Ju-Do-Kon! UI Design Document
 
-A unified design guide for developers, designers, and PMs working on Ju-Do-Kon!, the browser-based judo-themed collectible card game.
+this is a unified design guide for developers, designers, and PMs working on Ju-Do-Kon!, the browser-based judo-themed collectible card game.
 
 ---
 
@@ -28,25 +28,25 @@ This document defines the design system, visual identity, and component rules fo
 
 - **Consistency** – Shared components look and behave similarly across screens.
 - **Clarity** – UI elements must clearly communicate purpose and affordance.
-- **Responsiveness** – Layouts adapt fluidly to screen size (mobile, tablet, desktop).
+- **Responsiveness** – Modern layouts adapt fluidly to screen size (mobile, tablet, desktop).
 - **Accessibility** – Keyboard navigation and WCAG AA compliance are mandatory.
 - **Delight** – Interface should evoke excitement, mastery, and fantasy of collecting.
 - **Progressive Disclosure** – Surface key actions first, reveal detail as needed.
 - **Continuity** – Maintain component placement and user flow across breakpoints.
-- **Thematic Immersion** – Visual design must reinforce the game’s judo and Kodokan dojo theme.
+- **Thematic Immersion** – Visual design must reinforce the game’s modern judo and modern dojo theme.
 - **Dimensional Clarity** – Layer UI elements using subtle blur, shadows, and spacing to reinforce structure without overwhelming.
 
 ---
 
 ## 3. Thematic Visual Language
 
-Ju-Do-Kon! is a card battler rooted in martial arts heritage and card-collecting fantasy. All UI should reinforce this world:
+Ju-Do-Kon! is a card battler rooted in modern martial arts and card-collecting fantasy. All UI should reinforce this world:
 
-- **Primary motifs**: Dojo interiors, martial arts posters, judo belts, wooden signage, banners
-- **Textures**: Tatami floor patterns, ink brush strokes, subtle paper grain
+- **Primary motifs**: Modern dojo interiors, martial arts posters, judo belts, colourful signage, banners, minimalist backgrounds 
+- **Textures**: Ink brush strokes, subtle paper grain
 - **Emotive palette**: Rarity colours (gold, red, blue), vibrant gradients for card backgrounds
 - **Typography**: Strong, readable text with room for character in headings (see Typography section)
-- **Layout metaphors**: Game modes accessed through rooms in a Japanese village-style map
+- **Layout metaphors**: Game modes accessed through locations on a Japanese village-style map
 
 ---
 
@@ -76,7 +76,7 @@ Use semantic tokens that adapt to user system preferences:
 
 ### Rarity Palette
 
-| Rarity    | Background | Border  | Gi Colour       |
+| Rarity    | Background | Border  | Judogi Colour       |
 | --------- | ---------- | ------- | --------------- |
 | Common    | #1C4B95    | #3C5AD6 | White (#FFFFFF) |
 | Epic      | #efaf1b    | #D9910C | Blue (#3C7DC4)  |
@@ -146,7 +146,7 @@ Use semantic tokens that adapt to user system preferences:
 
 **States:**
 
-- `:hover`: Slight darken or scale-up (1.05x)
+- `:hover`: Slight scale-up (1.05x)
 - `:active`: Press-down effect
 - `:disabled`: 50% opacity, pointer-events: none
 
@@ -170,7 +170,7 @@ Use semantic tokens that adapt to user system preferences:
 
 #### 8.3.2 Japanese Village Map Navigation (Game Mode)
 
-- Each game mode is presented as a room within an interactive Japanese-village style map
+- Each game mode is presented as a location relevant to an interactive Japanese-village style map
 - Tappable locations:
   - Classic Battle Dojo
   - Team Battle Hall
@@ -244,7 +244,7 @@ Use semantic tokens that adapt to user system preferences:
 - Validation: Code pattern = v1-XXXX-XXXX-XX-#####
 - Live Preview: Updates card visually as you edit
 - Error Handling: Invalid code = red border + helper text
-- Call to Action: “Save & Generate Code”
+- Call to Action: “Save Card”
 
 ---
 
