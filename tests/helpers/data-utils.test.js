@@ -36,6 +36,22 @@ describe("loadJSON", () => {
     const { loadJSON } = await import("../../src/helpers/dataUtils.js");
     await expect(loadJSON("/bad.json")).rejects.toThrow("network");
   });
+
+  it("validates data against a schema", async () => {
+    const data = { a: "b" };
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
+    const schema = { type: "object", properties: { a: { type: "string" } }, required: ["a"] };
+    const { loadJSON } = await import("../../src/helpers/dataUtils.js");
+    await expect(loadJSON("/schema.json", schema)).resolves.toEqual(data);
+  });
+
+  it("throws when schema validation fails", async () => {
+    const data = { a: 1 };
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
+    const schema = { type: "object", properties: { a: { type: "string" } }, required: ["a"] };
+    const { loadJSON } = await import("../../src/helpers/dataUtils.js");
+    await expect(loadJSON("/schema.json", schema)).rejects.toThrow("Schema validation failed");
+  });
 });
 
 describe("fetchDataWithErrorHandling", () => {
@@ -69,6 +85,24 @@ describe("fetchDataWithErrorHandling", () => {
     expect(first).toEqual(data);
     expect(second).toBe(first);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("validates fetched data against a schema", async () => {
+    const data = { a: "b" };
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
+    const schema = { type: "object", properties: { a: { type: "string" } }, required: ["a"] };
+    const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
+    await expect(fetchDataWithErrorHandling("/schema.json", schema)).resolves.toEqual(data);
+  });
+
+  it("throws when fetched data fails schema validation", async () => {
+    const data = { a: 1 };
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
+    const schema = { type: "object", properties: { a: { type: "string" } }, required: ["a"] };
+    const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
+    await expect(fetchDataWithErrorHandling("/schema.json", schema)).rejects.toThrow(
+      "Schema validation failed"
+    );
   });
 
   it("throws an error when fetch rejects", async () => {
@@ -113,5 +147,19 @@ describe("validateData", () => {
   it("accepts generic object data for other types", async () => {
     const { validateData } = await import("../../src/helpers/dataUtils.js");
     expect(() => validateData({ foo: "bar" }, "other")).not.toThrow();
+  });
+});
+
+describe("validateWithSchema", () => {
+  it("throws when data does not match schema", async () => {
+    const schema = { type: "object", properties: { a: { type: "string" } }, required: ["a"] };
+    const { validateWithSchema } = await import("../../src/helpers/dataUtils.js");
+    expect(() => validateWithSchema({ a: 1 }, schema)).toThrow("Schema validation failed");
+  });
+
+  it("does not throw when data matches schema", async () => {
+    const schema = { type: "object", properties: { a: { type: "string" } }, required: ["a"] };
+    const { validateWithSchema } = await import("../../src/helpers/dataUtils.js");
+    expect(() => validateWithSchema({ a: "b" }, schema)).not.toThrow();
   });
 });

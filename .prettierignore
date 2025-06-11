@@ -4,5 +4,7 @@ build/
 *.log
 .github/ISSUE_TEMPLATE/*.md
 design/productRequirementsDocuments/*.md
+design/codeStandards/*.md
+src/schemas/*.json
 src/pages/quoteKG.html
 test-results/

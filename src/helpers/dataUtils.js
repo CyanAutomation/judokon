@@ -1,3 +1,5 @@
+import Ajv from "ajv";
+
 /**
  * Generic function to load any JSON file from a given URL.
  *
@@ -8,26 +10,37 @@
  * 2. Parse the response body as JSON:
  *    - Convert the response body into a JavaScript object using `response.json()`.
  *
- * 3. Return the parsed JSON data.
+ * 3. Validate the parsed data when a `schema` is provided:
+ *    - Use `validateWithSchema` to ensure the data matches the schema.
  *
- * 4. Handle errors:
+ * 4. Return the parsed JSON data.
+ *
+ * 5. Handle errors:
  *    - Log any errors encountered during the fetch or JSON parsing to the console.
  *    - Rethrow the error to allow the caller to handle it.
  *
  * @template T
  * @param {string} url - Path to the JSON file (e.g., `${DATA_DIR}judoka.json`).
+ * @param {object} [schema] - Optional JSON schema to validate the data.
  * @returns {Promise<T>} A promise that resolves to the parsed JSON data.
  */
 // In-memory cache for data fetched from URLs
 const dataCache = new Map();
 
-export async function loadJSON(url) {
+// Ajv instance for JSON schema validation
+const ajv = new Ajv();
+
+export async function loadJSON(url, schema) {
   try {
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Failed to load ${url} (HTTP ${response.status})`);
     }
-    return await response.json();
+    const data = await response.json();
+    if (schema) {
+      validateWithSchema(data, schema);
+    }
+    return data;
   } catch (error) {
     console.error(`Error loading ${url}:`, error);
     throw error;
@@ -44,18 +57,22 @@ export async function loadJSON(url) {
  * 2. Parse the response body as JSON:
  *    - Convert the response body into a JavaScript object using `response.json()`.
  *
- * 3. Return the parsed JSON data.
+ * 3. Validate the parsed data when a `schema` is provided:
+ *    - Use `validateWithSchema` to ensure the data matches the schema.
  *
- * 4. Handle errors:
+ * 4. Return the parsed JSON data.
+ *
+ * 5. Handle errors:
  *    - Log any errors encountered during the fetch or JSON parsing to the console.
  *    - Rethrow the error to allow the caller to handle it.
  *
  * @template T
  * @param {string} url - The URL to fetch data from.
+ * @param {object} [schema] - Optional JSON schema to validate the data.
  * @returns {Promise<T>} A promise that resolves to the parsed JSON data.
  * @throws {Error} If the fetch request fails or the response is not OK.
  */
-export async function fetchDataWithErrorHandling(url) {
+export async function fetchDataWithErrorHandling(url, schema) {
   try {
     if (dataCache.has(url)) {
       return dataCache.get(url);
@@ -68,6 +85,9 @@ export async function fetchDataWithErrorHandling(url) {
     }
 
     const json = await response.json();
+    if (schema) {
+      validateWithSchema(json, schema);
+    }
     dataCache.set(url, json);
     return json;
   } catch (error) {
@@ -105,5 +125,27 @@ export function validateData(data, type) {
     if (missingFields.length > 0) {
       throw new Error(`Invalid judoka data: Missing fields: ${missingFields.join(", ")}`);
     }
+  }
+}
+
+/**
+ * Validates data against a JSON schema using Ajv.
+ *
+ * @pseudocode
+ * 1. Compile the provided `schema` using the Ajv instance.
+ * 2. Validate `data` with the compiled function.
+ *    - If validation fails, build an error message from `validate.errors`.
+ *    - Throw an error including the validation details.
+ *
+ * @param {any} data - Data to validate.
+ * @param {object} schema - JSON schema to validate against.
+ * @throws {Error} If validation fails.
+ */
+export function validateWithSchema(data, schema) {
+  const validate = ajv.compile(schema);
+  const valid = validate(data);
+  if (!valid) {
+    const message = ajv.errorsText(validate.errors);
+    throw new Error(`Schema validation failed: ${message}`);
   }
 }
