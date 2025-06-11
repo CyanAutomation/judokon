@@ -6,3 +6,5 @@ build/
 design/productRequirementsDocuments/*.md
 src/pages/quoteKG.html
 test-results/
+design/codeStandards/codeUIDesignStandards.md
+src/schemas/*.json
