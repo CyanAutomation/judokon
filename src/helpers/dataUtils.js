@@ -25,14 +25,21 @@
 // In-memory cache for data fetched from URLs
 const dataCache = new Map();
 
+function isNodeEnvironment() {
+  return typeof process !== "undefined" && process.versions && process.versions.node;
+}
+
 export async function getAjv() {
-  if (typeof window !== "undefined") {
-    const module = await import("https://esm.sh/ajv@6");
-    return new module.default();
-  } else {
+  if (isNodeEnvironment()) {
     const Ajv = (await import("ajv")).default;
     return new Ajv();
   }
+  if (typeof window !== "undefined") {
+    const module = await import("https://esm.sh/ajv@6");
+    return new module.default();
+  }
+  const Ajv = (await import("ajv")).default;
+  return new Ajv();
 }
 
 // Ajv instance for JSON schema validation
