@@ -1,5 +1,3 @@
-import Ajv from "https://esm.sh/ajv@6";
-
 /**
  * Generic function to load any JSON file from a given URL.
  *
@@ -27,8 +25,18 @@ import Ajv from "https://esm.sh/ajv@6";
 // In-memory cache for data fetched from URLs
 const dataCache = new Map();
 
+export async function getAjv() {
+  if (typeof window !== "undefined") {
+    const module = await import("https://esm.sh/ajv@6");
+    return new module.default();
+  } else {
+    const Ajv = (await import("ajv")).default;
+    return new Ajv();
+  }
+}
+
 // Ajv instance for JSON schema validation
-const ajv = new Ajv();
+const ajv = await getAjv();
 // Cache compiled schema validators to avoid recompiling on each call
 // WeakMap allows garbage collection of schema keys
 const schemaCache = new WeakMap();
