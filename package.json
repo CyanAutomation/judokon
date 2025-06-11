@@ -9,7 +9,9 @@
   },
   "scripts": {
     "test": "vitest",
-    "test:screenshot": "playwright test"
+    "test:screenshot": "playwright test",
+    "lint": "eslint .",
+    "prepare": "husky install"
   },
   "keywords": [],
   "author": "",
@@ -23,7 +25,8 @@
     "globals": "^16.0.0",
     "jsdom": "^26.1.0",
     "prettier": "^3.5.3",
-    "vitest": "^3.1.2"
+    "vitest": "^3.1.2",
+    "husky": "^9.0.0"
   },
   "dependencies": {
     "agent-base": "^7.1.3",
