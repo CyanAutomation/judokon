@@ -158,67 +158,66 @@ function addTouchFeedback() {
  * 8. Handle any errors during the process:
  *    - Log the error to the console and display fallback items in the navigation bar.
  *
- * @returns {void}
+ * @returns {Promise<void>} A promise that resolves once the navbar is populated.
  */
-export function populateNavbar() {
-  return fetch(`${DATA_DIR}gameModes.json`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Failed to fetch game modes: ${response.status}`);
+
+export async function populateNavbar() {
+  try {
+    const response = await fetch(`${DATA_DIR}gameModes.json`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch game modes: ${response.status}`);
+    }
+    const data = await response.json();
+
+    debugLog("Fetched game modes:", data);
+
+    const navBar = document.querySelector(".bottom-navbar");
+    clearBottomNavbar();
+
+    const activeModes = validateGameModes(
+      data.filter((mode) => mode.category === "mainMenu" && mode.isHidden === false)
+    ).sort((a, b) => a.order - b.order);
+
+    debugLog("Validated game modes:", activeModes);
+
+    if (activeModes.length === 0) {
+      navBar.innerHTML = "<ul><li>No game modes available</li></ul>";
+      return;
+    }
+
+    const ul = document.createElement("ul");
+    ul.innerHTML = activeModes
+      .map((mode) => `<li><a href="src/pages/${mode.url}">${mode.name}</a></li>`)
+      .join("");
+    navBar.appendChild(ul);
+
+    addTouchFeedback();
+  } catch (error) {
+    console.error("Error loading game modes:", error);
+
+    const navBar = document.querySelector(".bottom-navbar");
+    clearBottomNavbar();
+
+    const fallbackItems = [
+      {
+        name: "Random Judoka",
+        url: "/src/pages/randomJudoka.html",
+        image: "./src/assets/images/randomJudoka.png"
+      },
+      { name: "Home", url: "/index.html", image: "./src/assets/images/home.png" },
+      {
+        name: "Classic Battle",
+        url: "/src/pages/battleJudoka.html",
+        image: "./src/assets/images/classicBattle.png"
       }
-      return response.json();
-    })
-    .then((data) => {
-      debugLog("Fetched game modes:", data);
+    ];
 
-      const navBar = document.querySelector(".bottom-navbar");
-      clearBottomNavbar();
+    const ul = document.createElement("ul");
+    ul.innerHTML = fallbackItems
+      .map((item) => `<li><a href="${item.url}">${item.name}</a></li>`)
+      .join("");
+    navBar.appendChild(ul);
 
-      const activeModes = validateGameModes(
-        data.filter((mode) => mode.category === "mainMenu" && mode.isHidden === false)
-      ).sort((a, b) => a.order - b.order);
-
-      debugLog("Validated game modes:", activeModes);
-
-      if (activeModes.length === 0) {
-        navBar.innerHTML = "<ul><li>No game modes available</li></ul>";
-        return;
-      }
-
-      const ul = document.createElement("ul");
-      ul.innerHTML = activeModes
-        .map((mode) => `<li><a href="src/pages/${mode.url}">${mode.name}</a></li>`)
-        .join("");
-      navBar.appendChild(ul);
-
-      addTouchFeedback();
-    })
-    .catch((error) => {
-      console.error("Error loading game modes:", error);
-
-      const navBar = document.querySelector(".bottom-navbar");
-      clearBottomNavbar();
-
-      const fallbackItems = [
-        {
-          name: "Random Judoka",
-          url: "/src/pages/randomJudoka.html",
-          image: "./src/assets/images/randomJudoka.png"
-        },
-        { name: "Home", url: "/index.html", image: "./src/assets/images/home.png" },
-        {
-          name: "Classic Battle",
-          url: "/src/pages/battleJudoka.html",
-          image: "./src/assets/images/classicBattle.png"
-        }
-      ];
-
-      const ul = document.createElement("ul");
-      ul.innerHTML = fallbackItems
-        .map((item) => `<li><a href="${item.url}">${item.name}</a></li>`)
-        .join("");
-      navBar.appendChild(ul);
-
-      console.error("Fallback game modes loaded due to error.");
-    });
+    console.error("Fallback game modes loaded due to error.");
+  }
 }
