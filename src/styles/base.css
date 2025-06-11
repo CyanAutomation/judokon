@@ -53,3 +53,24 @@
     --color-text: #ffffff;
   }
 }
+
+body {
+  font-family: system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+h1,
+h2 {
+  font-family: "Bungee", system-ui, sans-serif;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}

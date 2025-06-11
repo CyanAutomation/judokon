@@ -24,7 +24,7 @@
 
 /* General body styles */
 body {
-  font-family: "Open Sans", sans-serif;
+  font-family: system-ui, sans-serif;
   /* background: linear-gradient(to bottom, var(--color-primary), var(--color-surface)); */
   color: var(--color-text); /* Default text color */
   min-height: 100dvh;
