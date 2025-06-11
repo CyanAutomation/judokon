@@ -1,46 +1,8 @@
 import { getCountryNameFromCode } from "./countryUtils.js";
+import { escapeHTML, getValue } from "./utils.js";
 import { debugLog } from "./debug.js";
 
 const PLACEHOLDER_FLAG_URL = "../assets/countryFlags/placeholder-flag.png";
-
-/**
- * Escapes special HTML characters in a string to prevent XSS (Cross-Site Scripting) attacks.
- *
- * @pseudocode
- * 1. Validate the input:
- *    - Check if `str` is a string.
- *    - If not, return the input unchanged.
- *
- * 2. Replace special HTML characters with their corresponding HTML entities:
- *    - Replace `&` with `&amp;`.
- *    - Replace `<` with `&lt;`.
- *    - Replace `>` with `&gt;`.
- *    - Replace `"` with `&quot;`.
- *    - Replace `'` with `&#039;`.
- */
-function escapeHTML(str) {
-  if (typeof str !== "string") return str;
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-/**
- * Safely retrieves a value from an object, returning a default value if the property is missing or undefined.
- *
- * @pseudocode
- * 1. Check if the `value` is valid (not `undefined` or `null`):
- *    - If valid, return the `value`.
- *
- * 2. If the `value` is invalid:
- *    - Return the `defaultValue` provided.
- */
-function getValue(value, defaultValue) {
-  return value !== undefined && value !== null ? value : defaultValue;
-}
 
 /**
  * Creates a DOM element to display a "No Data Available" message.
