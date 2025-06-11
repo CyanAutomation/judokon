@@ -172,7 +172,9 @@
   padding: var(--space-small) var(--space-medium); /* Updated tokens */
   margin-top: var(--space-small); /* Updated token */
   cursor: pointer;
-  transition: background-color 200ms, color 200ms;
+  transition:
+    background-color 200ms,
+    color 200ms;
 }
 
 .language-toggle:hover,
