@@ -29,6 +29,8 @@ const dataCache = new Map();
 
 // Ajv instance for JSON schema validation
 const ajv = new Ajv();
+// Cache compiled schema validators to avoid recompiling on each call
+const schemaCache = new Map();
 
 export async function loadJSON(url, schema) {
   try {
@@ -132,8 +134,9 @@ export function validateData(data, type) {
  * Validates data against a JSON schema using Ajv.
  *
  * @pseudocode
- * 1. Compile the provided `schema` using the Ajv instance.
- * 2. Validate `data` with the compiled function.
+ * 1. Check the cache for a compiled validator for the given `schema`.
+ * 2. Compile the schema with Ajv and store it in the cache when needed.
+ * 3. Validate `data` with the compiled function.
  *    - If validation fails, build an error message from `validate.errors`.
  *    - Throw an error including the validation details.
  *
