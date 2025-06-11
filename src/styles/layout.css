@@ -40,7 +40,7 @@ body {
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   background-color: var(--color-accent);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-base);
   width: 100%;
 }
 
