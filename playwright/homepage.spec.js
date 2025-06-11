@@ -42,7 +42,9 @@ test.describe("Homepage", () => {
     await tile.hover();
 
     // Wait for the tile size to increase after hover
-    await expect.poll(async () => (await tile.boundingBox()).width, { timeout: 5000 }).toBeGreaterThan(before.width);
+    await expect
+      .poll(async () => (await tile.boundingBox()).width, { timeout: 5000 })
+      .toBeGreaterThan(before.width);
 
     const after = await tile.boundingBox();
     const ratio = after.width / before.width;
