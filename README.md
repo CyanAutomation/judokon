@@ -179,4 +179,4 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 
 ## Contributing
 
-Please format your code with **Prettier**, lint it with **ESLint**, and run **Vitest** before submitting a pull request. For full guidelines, see the [AGENTS.md](AGENTS.md) file.
+Please format your code with **Prettier**, lint it with **ESLint**, and run **Vitest** and **Playwright** before submitting a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full checklist.
