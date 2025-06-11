@@ -54,6 +54,53 @@ Clear pseudocode descriptions are essential for explaining the underlying logic 
 function populateNavigationBar() { ... }
 ```
 
+### Additional Examples
+
+```javascript
+/**
+ * Fetches data from an API with proper error handling.
+ *
+ * @pseudocode
+ * 1. Send an HTTP GET request to the desired API endpoint.
+ *    - If the request fails, log the error and return a fallback value.
+ *
+ * 2. Parse the JSON response.
+ *    - Handle JSON parsing errors gracefully.
+ *
+ * 3. Return the parsed data to the caller.
+ */
+function getApiData() { ... }
+```
+
+```javascript
+/**
+ * Dynamically builds DOM elements from a list of items.
+ *
+ * @pseudocode
+ * 1. Create a document fragment to store new elements.
+ *
+ * 2. For each item in the list:
+ *    - Create a DOM element representing the item.
+ *    - Append the element to the fragment.
+ *
+ * 3. Insert the fragment into the target container element.
+ */
+function buildDomElements() { ... }
+```
+
+```javascript
+/**
+ * Executes a function with safe error handling.
+ *
+ * @pseudocode
+ * 1. Wrap the function call in a try/catch block.
+ *    - If an error occurs, log it and return a safe fallback value.
+ *
+ * 2. Return the function result when successful.
+ */
+function safeGenerate(fn) { ... }
+```
+
 ---
 
 ## Language and Style
