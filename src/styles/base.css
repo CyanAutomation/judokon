@@ -31,11 +31,11 @@
   --font-extra-large: 3rem;
 
   /* Spacing */
-  --padding-none: 0;
-  --padding-small: 0.2rem;
-  --padding-medium: 0.5rem;
-  --padding-large: 1rem;
-  --padding-extra-large: 2rem;
+  --space-none: 0;
+  --space-small: 0.2rem;
+  --space-medium: 0.5rem;
+  --space-large: 1rem;
+  --space-extra-large: 2rem;
 
   /* Border radius */
   --radius-sm: 4px;
