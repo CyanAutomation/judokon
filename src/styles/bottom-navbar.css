@@ -1,25 +1,33 @@
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .bottom-navbar {
   min-height: max(7vh, 12px);
   display: inline-flex;
   min-width: 100vw;
-  background-color: var(--accent-blue-dark);
+  background-color: var(--color-primary); /* Updated token */
   text-align: center;
   align-items: center;
   justify-content: space-evenly;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-base); /* Updated token */
   font-size: max(1.3rem, 1.8vw);
 }
 
 .bottom-navbar ul {
   display: inline-flex;
-  gap: 2rem;
+  gap: var(--space-lg); /* Updated token */
   list-style-type: none;
   text-transform: uppercase;
 }
 
 .bottom-navbar a,
 .top-navbar a {
-  color: #fff;
+  color: var(--color-text); /* Updated token */
   text-decoration: none;
 }
 

@@ -1,18 +1,25 @@
 /* Responsive styles for the Judoka Card Carousel */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 /* Default styles for desktop */
 .card-carousel {
   display: flex;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  gap: 16px;
+  gap: var(--space-lg); /* Updated token */
   scroll-behavior: smooth; /* Smooth scrolling effect */
 }
 
 .judoka-card {
-  flex: 0 0 calc(33.33% - 16px); /* Show 3 cards on desktop */
+  flex: 0 0 calc(33.33% - var(--space-lg)); /* Updated token */
   scroll-snap-align: center; /* Snap each card to the center */
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-fast); /* Updated token */
 }
 
 /* Hover effect for desktop */
@@ -23,31 +30,31 @@
 /* Styles for tablets */
 @media (max-width: 1024px) {
   .judoka-card {
-    flex: 0 0 calc(50% - 16px); /* Show 2 cards on tablets */
+    flex: 0 0 calc(50% - var(--space-lg)); /* Updated token */
   }
 }
 
 /* Styles for mobile */
 @media (max-width: 768px) {
   .judoka-card {
-    flex: 0 0 calc(100% - 16px); /* Show 1 card on mobile */
+    flex: 0 0 calc(100% - var(--space-sm)); /* Updated token */
   }
 
   .card-carousel {
-    gap: 8px; /* Reduce gap for smaller screens */
+    gap: var(--space-sm); /* Updated token */
   }
 }
 
 /* Portrait orientation adjustments */
 @media (orientation: portrait) {
   .judoka-card {
-    flex: 0 0 calc(80% - 16px); /* Show 1.5 cards in portrait */
+    flex: 0 0 calc(80% - var(--space-lg)); /* Updated token */
   }
 }
 
 /* Landscape orientation adjustments */
 @media (orientation: landscape) {
   .judoka-card {
-    flex: 0 0 calc(50% - 16px); /* Show 2 cards in landscape */
+    flex: 0 0 calc(50% - var(--space-lg)); /* Updated token */
   }
 }

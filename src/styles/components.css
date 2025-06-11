@@ -25,13 +25,11 @@
 /* General body styles */
 body {
   font-family: system-ui, sans-serif;
-  /* background: linear-gradient(to bottom, var(--color-primary), var(--color-surface)); */
-  color: var(--color-text); /* Default text color */
+  color: var(--color-text); /* Updated token */
   min-height: 100dvh;
   min-width: 100vw;
   background-image: url("../assets/images/bgTileBlue.png");
   background-repeat: repeat;
-  /* backdrop-filter: brightness(0.9); */
   background-size: 50vw auto;
 }
 
@@ -64,8 +62,8 @@ body {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  background-color: var(--color-accent);
-  box-shadow: var(--shadow-base);
+  background-color: var(--color-accent); /* Updated token */
+  box-shadow: var(--shadow-base); /* Updated token */
   width: 100%;
 }
 
@@ -86,21 +84,21 @@ body {
 
 .game-tile {
   background: rgba(107, 107, 107, 0.5);
-  border-radius: 8px 0 0 8px;
-  padding: 1rem;
+  border-radius: var(--radius-md); /* Updated token */
+  padding: var(--space-medium); /* Updated token */
   display: flex;
   align-items: center;
   justify-content: flex-start;
   flex: 1 1 auto;
-  color: #fff;
+  color: var(--color-text); /* Updated token */
   text-decoration: none;
-  transition: transform var(--transition-fast);
+  transition: transform var(--transition-fast); /* Updated token */
   will-change: transform;
 }
 
 .game-tile:hover {
-  background: var(--color-accent-dark);
-  color: #fff;
+  background: var(--color-accent-dark); /* Updated token */
+  color: var(--color-text); /* Updated token */
   cursor: pointer;
   transform: scale(1.05);
 }
@@ -183,8 +181,7 @@ a:focus-visible {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: var(--space-large);
-  /*   background-color: seagreen; */
+  padding: var(--space-large); /* Updated token */
   min-height: 500px;
 }
 
@@ -193,17 +190,14 @@ a:focus-visible {
   width: clamp(200px, 40vw, 300px);
   aspect-ratio: 2 / 3;
   border: max(13px, 1vh) solid var(--card-border-color);
-  border: max(13px, 1dvh) solid var(--card-border-color);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-lg); /* Updated token */
   background-color: var(--card-bg-color);
-  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-base); /* Updated token */
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition:
-    box-shadow var(--transition-fast),
-    transform 0.1s ease-in-out;
+  transition: box-shadow var(--transition-fast), transform 0.1s ease-in-out; /* Updated token */
 }
 
 .judoka-card::before {
@@ -273,14 +267,11 @@ a:focus-visible {
 /* Top bar of the card (name and flag) */
 .card-top-bar {
   background-color: var(--card-bg-color);
-  color: var(--color-text);
+  color: var(--color-text); /* Updated token */
   justify-content: space-around;
   display: inline-flex;
   align-items: center;
-  padding: min(5px, 4vh) min(5px, 1vw);
-  padding: min(5px, 4vh) min(5px, 1dvw);
-  padding: min(5px, 4dvh) min(5px, 1vw);
-  padding: min(5px, 4dvh) min(5px, 1dvw);
+  padding: var(--space-small) var(--space-medium); /* Updated tokens */
   flex-direction: row;
 }
 
@@ -354,14 +345,14 @@ a:focus-visible {
 
 .card-weight-class {
   position: absolute;
-  margin-top: 8px;
-  right: 8px;
+  margin-top: var(--space-small); /* Updated token */
+  right: var(--space-small); /* Updated token */
   background-color: rgba(0, 0, 0, 0.4);
-  border-radius: 4px;
-  color: #fff;
+  border-radius: var(--radius-sm); /* Updated token */
+  color: var(--color-text); /* Updated token */
   font-weight: bold;
-  padding: var(--space-small) var(--space-medium);
-  font-size: var(--font-small);
+  padding: var(--space-small) var(--space-medium); /* Updated tokens */
+  font-size: var(--font-small); /* Updated token */
   z-index: 2;
 }
 
@@ -691,14 +682,14 @@ a:focus-visible {
 
 .draw-card-btn {
   display: block;
-  margin: var(--space-large) auto;
+  margin: var(--space-large) auto; /* Updated token */
   width: min(300px, 80vw);
   min-height: 64px;
-  padding: var(--space-medium) var(--space-large);
-  background-color: var(--color-primary);
-  color: var(--color-text);
-  border: 2px solid #fff;
-  border-radius: var(--radius-md);
+  padding: var(--space-medium) var(--space-large); /* Updated tokens */
+  background-color: var(--color-primary); /* Updated token */
+  color: var(--color-text); /* Updated token */
+  border: 2px solid var(--color-surface); /* Updated token */
+  border-radius: var(--radius-md); /* Updated token */
   font-size: 1.25rem;
   font-weight: bold;
 }

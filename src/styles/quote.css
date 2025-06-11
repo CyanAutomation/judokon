@@ -1,24 +1,32 @@
 /* Layout tweaks for quote screen */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .quote-screen {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  padding: 2rem 1rem;
+  gap: var(--space-large); /* Updated token */
+  padding: var(--space-xl) var(--space-medium); /* Updated tokens */
 }
 
 .victory-title {
   font-family: "Bungee", system-ui, sans-serif;
   font-size: clamp(2rem, 5vw, 3rem);
-  color: var(--color-text);
+  color: var(--color-text); /* Updated token */
   text-align: center;
-  margin-top: 0.5rem;
+  margin-top: var(--space-small); /* Updated token */
 }
 
 .quote-container {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
+  gap: var(--space-medium); /* Updated token */
   width: 100%;
 }
 
@@ -40,7 +48,7 @@
 
 .quote-loader {
   height: 6rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md); /* Updated token */
   background: linear-gradient(90deg, #444 25%, #666 50%, #444 75%);
   background-size: 200% 100%;
   animation: loading 1.2s infinite;
@@ -57,7 +65,7 @@
 
 .quote {
   font-size: calc(16px + 1vw); /* Scales dynamically with viewport width */
-  color: var(--color-text);
+  color: var(--color-text); /* Updated token */
   line-height: 1.5;
   max-width: 70ch;
   margin: 0 auto;
@@ -65,22 +73,22 @@
 }
 
 .quote-heading {
-  color: var(--color-text);
+  color: var(--color-text); /* Updated token */
   font-family: "Bungee", system-ui, sans-serif;
-  font-size: 1.5rem;
+  font-size: var(--font-medium); /* Updated token */
   text-align: left;
   align-self: center;
   justify-self: center;
-  padding: 1rem;
+  padding: var(--space-medium); /* Updated token */
 }
 
 .quote-content {
-  color: var(--color-text);
-  font-size: 1rem;
+  color: var(--color-text); /* Updated token */
+  font-size: var(--font-small); /* Updated token */
   text-align: justify;
   align-self: center;
   justify-self: center;
-  padding: 0 3rem 1rem 1rem;
+  padding: 0 var(--space-large) var(--space-medium) var(--space-medium); /* Updated tokens */
   max-width: 70ch;
   margin: 0 auto;
 }
@@ -89,13 +97,13 @@
 .cta-button {
   display: inline-block;
   min-height: 48px;
-  padding: 0.75rem 2rem;
-  font-size: 1.1rem;
-  color: var(--color-text);
-  background-color: var(--color-accent);
+  padding: var(--space-medium) var(--space-large); /* Updated tokens */
+  font-size: var(--font-medium); /* Updated token */
+  color: var(--color-text); /* Updated token */
+  background-color: var(--color-accent); /* Updated token */
   text-decoration: none;
-  border-radius: 8px;
-  margin-top: 1rem;
+  border-radius: var(--radius-md); /* Updated token */
+  margin-top: var(--space-medium); /* Updated token */
 }
 
 .cta-button:hover,
@@ -104,7 +112,7 @@
 .language-toggle:hover,
 .language-toggle:focus,
 .language-toggle:focus-visible {
-  background-color: var(--color-accent-dark);
+  background-color: var(--color-accent-dark); /* Updated token */
 }
 
 /* Responsive: KG image above quote on narrow screens */
@@ -156,30 +164,28 @@
 .language-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  background-color: var(--color-accent);
-  color: var(--color-text);
+  gap: var(--space-small); /* Updated token */
+  background-color: var(--color-accent); /* Updated token */
+  color: var(--color-text); /* Updated token */
   border: none;
-  border-radius: var(--radius-md);
-  padding: 0.5rem 0.75rem;
-  margin-top: 0.5rem;
+  border-radius: var(--radius-md); /* Updated token */
+  padding: var(--space-small) var(--space-medium); /* Updated tokens */
+  margin-top: var(--space-small); /* Updated token */
   cursor: pointer;
-  transition:
-    background-color 200ms,
-    color 200ms;
+  transition: background-color 200ms, color 200ms;
 }
 
 .language-toggle:hover,
 .language-toggle:focus,
 .language-toggle:focus-visible {
-  background-color: var(--color-accent-dark);
+  background-color: var(--color-accent-dark); /* Updated token */
 }
 
 .flag-icon {
   display: inline-block;
-  font-size: 1.25rem;
+  font-size: var(--font-medium); /* Updated token */
   line-height: 1;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-sm); /* Updated token */
   border: 1px solid #fff;
   padding: 0 0.1rem;
 }

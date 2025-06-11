@@ -61,6 +61,7 @@ This document defines the UI foundations for Ju-Do-Kon! It supports:
 | `--color-text`        | #1A1A1A  | Primary text                 |
 | `--color-muted`       | #808080  | Secondary, caption text      |
 | `--color-placeholder` | #C4C4C4  | Form placeholders            |
+| `--color-text-muted`  | #B0B0B0  | Muted text                   |
 
 ### Rarity Colours
 

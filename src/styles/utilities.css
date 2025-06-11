@@ -7,9 +7,21 @@
   box-sizing: border-box;
 }
 
+/* Updated to align with the design standards */
 .noscript-warning {
-  color: red;
+  color: var(--color-accent); /* Updated token */
   font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
+
+.long-form {
+  max-width: 70ch;
+  margin-inline: auto;
+  line-height: 1.5; /* Added for better readability */
+  color: var(--color-text); /* Updated token */
 }
 
 @keyframes scroll {

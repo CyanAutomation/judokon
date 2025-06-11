@@ -4,12 +4,12 @@
   --scale-duration: 0.4s;
   --slide-track-speed: 40s;
   /* Colors */
-  --color-primary: #3c5ad6;
+  --color-primary: #1A1A1A;
   --color-surface: #ffffff;
   --color-background: #f5f7fa;
   --color-text: #1a1a1a;
-  --color-accent: #e04f5f;
-  --color-text-muted: #4a5055;
+  --color-accent: #E04F5F;
+  --color-muted: #4a5055;
   --color-placeholder: #a0a0a0;
   /* Existing palette */
   --color-accent-dark: #880000; /* hover state for accent red */
@@ -32,10 +32,10 @@
 
   /* Spacing */
   --space-none: 0;
-  --space-small: 0.2rem;
-  --space-medium: 0.5rem;
-  --space-large: 1rem;
-  --space-extra-large: 2rem;
+  --space-small: 0.25rem;
+  --space-medium: 0.75rem;
+  --space-large: 1.5rem;
+  --space-extra-large: 3rem;
 
   /* Border radius */
   --radius-sm: 4px;
@@ -53,6 +53,14 @@
     --color-background: #000000;
     --color-text: #ffffff;
   }
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
