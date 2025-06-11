@@ -142,7 +142,11 @@ export function validateData(data, type) {
  * @throws {Error} If validation fails.
  */
 export function validateWithSchema(data, schema) {
-  const validate = ajv.compile(schema);
+  let validate = schemaCache.get(schema);
+  if (!validate) {
+    validate = ajv.compile(schema);
+    schemaCache.set(schema, validate);
+  }
   const valid = validate(data);
   if (!valid) {
     const message = ajv.errorsText(validate.errors);
