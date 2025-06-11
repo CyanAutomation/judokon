@@ -93,7 +93,7 @@ describe("populateNavbar", () => {
       { name: "A", url: "a.html", category: "mainMenu", order: 2, isHidden: false },
       { name: "B", url: "b.html", category: "mainMenu", order: 1, isHidden: false }
     ];
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => data });
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => data });
 
     const { populateNavbar } = await import("../../src/helpers/bottomNavigation.js");
 
