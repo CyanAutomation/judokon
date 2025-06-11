@@ -22,6 +22,20 @@ describe("loadJSON", () => {
     const { loadJSON } = await import("../../src/helpers/dataUtils.js");
     await expect(loadJSON("/bad.json")).rejects.toBeInstanceOf(SyntaxError);
   });
+
+  it("resolves with parsed JSON when the response is ok", async () => {
+    const data = { foo: "bar" };
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
+
+    const { loadJSON } = await import("../../src/helpers/dataUtils.js");
+    await expect(loadJSON("/good.json")).resolves.toEqual(data);
+  });
+
+  it("throws an error when fetch rejects", async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error("network"));
+    const { loadJSON } = await import("../../src/helpers/dataUtils.js");
+    await expect(loadJSON("/bad.json")).rejects.toThrow("network");
+  });
 });
 
 describe("fetchDataWithErrorHandling", () => {
@@ -39,6 +53,28 @@ describe("fetchDataWithErrorHandling", () => {
       .mockResolvedValue({ ok: true, json: vi.fn().mockRejectedValue(new SyntaxError("fail")) });
     const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
     await expect(fetchDataWithErrorHandling("/error.json")).rejects.toBeInstanceOf(SyntaxError);
+  });
+
+  it("resolves with parsed JSON and caches subsequent calls", async () => {
+    const data = { foo: "bar" };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
+    global.fetch = fetchMock;
+
+    const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
+    const first = await fetchDataWithErrorHandling("/data.json");
+    const second = await fetchDataWithErrorHandling("/data.json");
+
+    expect(first).toEqual(data);
+    expect(second).toBe(first);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("throws an error when fetch rejects", async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error("offline"));
+    const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
+    await expect(fetchDataWithErrorHandling("/err.json")).rejects.toThrow("offline");
   });
 });
 
@@ -64,5 +100,18 @@ describe("validateData", () => {
       signatureMoveId: 1
     };
     expect(() => validateData(goodData, "judoka")).not.toThrow();
+  });
+
+  it("throws when multiple judoka fields are missing", async () => {
+    const { validateData } = await import("../../src/helpers/dataUtils.js");
+    const badData = { firstname: "A" };
+    expect(() => validateData(badData, "judoka")).toThrow(
+      "Missing fields: surname, country, stats, signatureMoveId"
+    );
+  });
+
+  it("accepts generic object data for other types", async () => {
+    const { validateData } = await import("../../src/helpers/dataUtils.js");
+    expect(() => validateData({ foo: "bar" }, "other")).not.toThrow();
   });
 });
