@@ -40,14 +40,14 @@ test.describe("Homepage", () => {
     const tile = page.locator(".game-tile").first();
     const before = await tile.boundingBox();
     await tile.hover();
-    await page.waitForFunction(async (tile) => {
-      const before = await tile.boundingBox();
-      const after = await tile.boundingBox();
-      return after.width > before.width;
-    }, tile);
+
+    // Wait for the tile size to increase after hover
+    await expect.poll(async () => (await tile.boundingBox()).width, { timeout: 5000 }).toBeGreaterThan(before.width);
+
     const after = await tile.boundingBox();
     const ratio = after.width / before.width;
     expect(ratio).toBeGreaterThan(1.03);
+
     const cursor = await tile.evaluate((el) => getComputedStyle(el).cursor);
     expect(cursor).toBe("pointer");
   });
