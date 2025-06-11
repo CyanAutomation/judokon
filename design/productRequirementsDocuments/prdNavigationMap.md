@@ -21,7 +21,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 
 | Priority | Feature                                   | Description                                                                     |
 | -------- | ----------------------------------------- | ------------------------------------------------------------------------------- |
-| **P1**   | Implement Map Expansion            | Smooth slide-up animation, toggle behavior, and orientation handling.           |
+| **P1**   | Implement Map Expansion                   | Smooth slide-up animation, toggle behavior, and orientation handling.           |
 | **P2**   | Integrate Fallback Menu                   | High-contrast text fallback menu that loads within 1 second if assets fail.     |
 | **P2**   | Ensure Accessibility & Performance        | Keyboard navigation, screen reader support, 60fps performance, WCAG compliance. |
 | **P3**   | Add "Simple Menu Mode" Toggle to Settings | Optional toggle to disable map and simplify navigation.                         |
@@ -92,5 +92,4 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
   - [ ] 5.2 Provide alt text and screen reader support for all tiles.
   - [ ] 5.3 Test animation performance on devices to ensure ≥60fps.
   - [ ] 5.4 Verify all text labels meet WCAG 2.1 AA contrast standards (≥4.5:1).
-  
 - [ ] **5.0 Add "Simple Menu Mode" toggle to settings (P3)**

@@ -68,9 +68,9 @@ Use semantic tokens that adapt to user system preferences:
 
 ```css
 @media (prefers-color-scheme: dark) {
-  --color-surface: #1A1A1A;
+  --color-surface: #1a1a1a;
   --color-background: #000000;
-  --color-text: #FFFFFF;
+  --color-text: #ffffff;
 }
 ```
 

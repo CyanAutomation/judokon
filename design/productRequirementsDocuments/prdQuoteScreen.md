@@ -35,11 +35,11 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 ## Functional Requirements
 
-| Priority | Feature                               | Description                                                                 |
-|:--------:|:--------------------------------------|:----------------------------------------------------------------------------|
-| **P1**   | KG Image & Random Quote Display        | Show KG character and random quote as a moment of calm reflection.          |
-| **P2**   | Quote Fallback & Load Time Optimization| Display default reflection message if data fails, ensure <1s load time.     |
-| **P3**   | Accessibility Support                  | Enable screen reader compatibility for quote text display.                  |
+| Priority | Feature                                 | Description                                                             |
+| :------: | :-------------------------------------- | :---------------------------------------------------------------------- |
+|  **P1**  | KG Image & Random Quote Display         | Show KG character and random quote as a moment of calm reflection.      |
+|  **P2**  | Quote Fallback & Load Time Optimization | Display default reflection message if data fails, ensure <1s load time. |
+|  **P3**  | Accessibility Support                   | Enable screen reader compatibility for quote text display.              |
 
 ---
 
@@ -73,8 +73,8 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - Background is soft and neutral, with subtle motion or ambient colour (optional later).
 - Quote text uses a legible, sans-serif font, sized 18px minimum.
 
-| Meditation Screen Mockup A | Meditation Screen Mockup B |
-|----------------------------|-----------------------------|
+| Meditation Screen Mockup A                          | Meditation Screen Mockup B                          |
+| --------------------------------------------------- | --------------------------------------------------- |
 | ![Mockup A](/design/mockups/mockupQuoteScreen3.png) | ![Mockup B](/design/mockups/mockupQuoteScreen4.png) |
 
 ---
@@ -121,20 +121,24 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 ## Tasks
 
 - [ ] **1.0 Implement Meditation Feedback Module**
+
   - [x] 1.1 Load and display KG character image.
   - [ ] 1.2 Add calm headline (“Pause. Breathe. Reflect.” or similar).
 
 - [ ] **2.0 Implement Quote Display Module**
+
   - [x] 2.1 Randomly select a quote from `aesopsFables.json`.
   - [ ] 2.2 Display the quote with dynamic, responsive text scaling.
   - [ ] 2.3 Implement skeleton loader while fetching quote.
   - [ ] 2.4 Fallback to default calm message if quote data fails.
 
 - [ ] **3.0 Implement Action Button Module**
+
   - [ ] 3.1 Add large, thumb-friendly CTA button ("Continue When Ready").
   - [ ] 3.2 Ensure CTA button has minimum 48px height and proper spacing.
 
 - [ ] **4.0 Accessibility**
+
   - [ ] 4.1 Add ARIA tags for screen readers.
 
 - [ ] **5.0 Performance & Load Time Optimization**
