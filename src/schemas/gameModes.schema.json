@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Unique identifier for the game mode."
+      },
+      "name": {
+        "type": "string",
+        "description": "The name of the game mode."
+      },
+      "japaneseName": {
+        "type": "string",
+        "description": "The Japanese name of the game mode."
+      },
+      "description": {
+        "type": "string",
+        "description": "A brief description of the game mode."
+      },
+      "category": {
+        "type": "string",
+        "description": "The category to which the game mode belongs."
+      },
+      "order": {
+        "type": "integer",
+        "description": "The display order of the game mode."
+      },
+      "url": {
+        "type": ["string", "null"],
+        "description": "The URL associated with the game mode."
+      },
+      "isHidden": {
+        "type": "boolean",
+        "description": "Indicates whether the game mode is hidden."
+      },
+      "rules": {
+        "type": "object",
+        "description": "The rules associated with the game mode.",
+        "properties": {
+          "rounds": {
+            "type": "integer",
+            "description": "The number of rounds in the game mode."
+          },
+          "teamSize": {
+            "type": "integer",
+            "description": "The size of the team in the game mode."
+          },
+          "maxScore": {
+            "type": "integer",
+            "description": "The maximum score achievable in the game mode."
+          },
+          "gender": {
+            "type": "string",
+            "description": "The gender restriction for the game mode."
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Options available for the game mode."
+          },
+          "base": {
+            "type": "string",
+            "description": "The base ruleset for the game mode."
+          },
+          "note": {
+            "type": "string",
+            "description": "Additional notes about the rules."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "required": ["id", "name", "description", "category", "order", "isHidden", "rules"],
+    "additionalProperties": false
+  }
+}

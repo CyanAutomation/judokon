@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Gokyo Schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "description": "Unique identifier for the technique."
+      },
+      "name": {
+        "type": "string",
+        "description": "The name of the technique in English."
+      },
+      "japanese": {
+        "type": "string",
+        "description": "The name of the technique in Japanese."
+      },
+      "category": {
+        "type": "string",
+        "description": "The main category of the technique."
+      },
+      "subCategory": {
+        "type": "string",
+        "description": "The subcategory of the technique."
+      },
+      "description": {
+        "type": "string",
+        "description": "A brief description of the technique."
+      },
+      "link": {
+        "type": "string",
+        "format": "uri",
+        "description": "A URL link to more information about the technique."
+      }
+    },
+    "required": ["id", "name", "japanese", "category", "subCategory", "description", "link"]
+  }
+}

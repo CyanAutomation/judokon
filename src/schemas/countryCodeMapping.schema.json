@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "country": {
+        "type": "string",
+        "description": "The name of the country."
+      },
+      "code": {
+        "type": "string",
+        "description": "The country code in ISO 3166-1 alpha-2 format."
+      },
+      "lastUpdated": {
+        "type": "string",
+        "format": "date-time",
+        "description": "The timestamp of the last update."
+      },
+      "updatedBy": {
+        "type": "string",
+        "description": "The user who last updated the record."
+      },
+      "active": {
+        "type": "boolean",
+        "description": "Indicates whether the country is active."
+      }
+    },
+    "required": ["country", "code", "lastUpdated", "updatedBy", "active"],
+    "additionalProperties": false
+  }
+}
