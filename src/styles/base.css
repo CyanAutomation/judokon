@@ -4,12 +4,15 @@
   --scale-duration: 0.4s;
   --slide-track-speed: 40s;
   /* Colors */
-  --primary-bg: #1c4b95;
-  --secondary-bg: #0c3f7a;
-  --text-color: white;
-  /* Accent colors */
-  --accent-red: #a71916; /* primary action color */
-  --accent-red-dark: #880000; /* hover state for accent red */
+  --color-primary: #3c5ad6;
+  --color-surface: #ffffff;
+  --color-background: #f5f7fa;
+  --color-text: #1a1a1a;
+  --color-accent: #e04f5f;
+  --color-text-muted: #4a5055;
+  --color-placeholder: #a0a0a0;
+  /* Existing palette */
+  --color-accent-dark: #880000; /* hover state for accent red */
   --accent-beige: #e8d9c3; /* light highlight */
   --accent-blue-dark: #22223b; /* navigation background */
   --accent-grey: #ccc; /* neutral UI elements */
@@ -35,10 +38,18 @@
   --padding-extra-large: 2rem;
 
   /* Border radius */
-  --border-radius-small: 4px;
-  --border-radius-medium: 8px;
-  --border-radius-large: 12px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 
   /* Box shadow */
   /* --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-surface: #1a1a1a;
+    --color-background: #000000;
+    --color-text: #ffffff;
+  }
 }

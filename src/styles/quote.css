@@ -9,7 +9,7 @@
 
 .victory-title {
   font-size: 2rem;
-  color: var(--text-color);
+  color: var(--color-text);
   text-align: center;
   margin-top: 0.5rem;
 }
@@ -56,7 +56,7 @@
 
 .quote {
   font-size: calc(16px + 1vw); /* Scales dynamically with viewport width */
-  color: var(--text-color);
+  color: var(--color-text);
   line-height: 1.5;
   max-width: 80%;
   margin: 0 auto;
@@ -64,7 +64,7 @@
 }
 
 .quote-heading {
-  color: var(--text-color);
+  color: var(--color-text);
   font-size: 1.5rem;
   text-align: left;
   align-self: center;
@@ -73,7 +73,7 @@
 }
 
 .quote-content {
-  color: var(--text-color);
+  color: var(--color-text);
   font-size: 1rem;
   text-align: justify;
   align-self: center;
@@ -87,8 +87,8 @@
   min-height: 48px;
   padding: 0.75rem 2rem;
   font-size: 1.1rem;
-  color: var(--text-color);
-  background-color: var(--accent-red);
+  color: var(--color-text);
+  background-color: var(--color-accent);
   text-decoration: none;
   border-radius: 8px;
   margin-top: 1rem;
@@ -100,7 +100,7 @@
 .language-toggle:hover,
 .language-toggle:focus,
 .language-toggle:focus-visible {
-  background-color: var(--accent-red-dark);
+  background-color: var(--color-accent-dark);
 }
 
 /* Responsive: KG image above quote on narrow screens */
@@ -153,10 +153,10 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  background-color: var(--accent-red);
-  color: var(--text-color);
+  background-color: var(--color-accent);
+  color: var(--color-text);
   border: none;
-  border-radius: var(--border-radius-medium);
+  border-radius: var(--radius-md);
   padding: 0.5rem 0.75rem;
   margin-top: 0.5rem;
   cursor: pointer;
@@ -168,14 +168,14 @@
 .language-toggle:hover,
 .language-toggle:focus,
 .language-toggle:focus-visible {
-  background-color: var(--accent-red-dark);
+  background-color: var(--color-accent-dark);
 }
 
 .flag-icon {
   display: inline-block;
   font-size: 1.25rem;
   line-height: 1;
-  border-radius: var(--border-radius-small);
+  border-radius: var(--radius-sm);
   border: 1px solid #fff;
   padding: 0 0.1rem;
 }
