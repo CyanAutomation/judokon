@@ -1,6 +1,8 @@
 import * as path from "path";
+import { fileURLToPath } from "url";
 import { test, expect } from "@playwright/test";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_PATH = path.resolve(__dirname, "../tests/fixtures/aesopsFables.json");
 
 /**
