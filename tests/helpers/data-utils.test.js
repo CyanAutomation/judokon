@@ -154,12 +154,12 @@ describe("validateWithSchema", () => {
   it("throws when data does not match schema", async () => {
     const schema = { type: "object", properties: { a: { type: "string" } }, required: ["a"] };
     const { validateWithSchema } = await import("../../src/helpers/dataUtils.js");
-    expect(() => validateWithSchema({ a: 1 }, schema)).toThrow("Schema validation failed");
+    await expect(validateWithSchema({ a: 1 }, schema)).rejects.toThrow("Schema validation failed");
   });
 
   it("does not throw when data matches schema", async () => {
     const schema = { type: "object", properties: { a: { type: "string" } }, required: ["a"] };
     const { validateWithSchema } = await import("../../src/helpers/dataUtils.js");
-    expect(() => validateWithSchema({ a: "b" }, schema)).not.toThrow();
+    await expect(validateWithSchema({ a: "b" }, schema)).resolves.toBeUndefined();
   });
 });
