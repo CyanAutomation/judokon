@@ -25,9 +25,12 @@
 // In-memory cache for data fetched from URLs
 const dataCache = new Map();
 
+function isNodeEnvironment() {
+  return typeof process !== "undefined" && process.versions && process.versions.node;
+}
+
 export async function getAjv() {
-  const isNode = typeof process !== "undefined" && process?.versions?.node;
-  if (isNode) {
+  if (isNodeEnvironment()) {
     const Ajv = (await import("ajv")).default;
     return new Ajv();
   }
