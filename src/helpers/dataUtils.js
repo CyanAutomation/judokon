@@ -25,25 +25,29 @@
 // In-memory cache for data fetched from URLs
 const dataCache = new Map();
 
+// Lazily instantiated Ajv singleton
+let ajvInstance;
+
 function isNodeEnvironment() {
   return typeof process !== "undefined" && process.versions && process.versions.node;
 }
 
 export async function getAjv() {
+  if (ajvInstance) {
+    return ajvInstance;
+  }
   if (isNodeEnvironment()) {
     const Ajv = (await import("ajv")).default;
-    return new Ajv();
-  }
-  if (typeof window !== "undefined") {
+    ajvInstance = new Ajv();
+  } else if (typeof window !== "undefined") {
     const module = await import("https://esm.sh/ajv@6");
-    return new module.default();
+    ajvInstance = new module.default();
+  } else {
+    const Ajv = (await import("ajv")).default;
+    ajvInstance = new Ajv();
   }
-  const Ajv = (await import("ajv")).default;
-  return new Ajv();
+  return ajvInstance;
 }
-
-// Ajv instance for JSON schema validation
-const ajv = await getAjv();
 // Cache compiled schema validators to avoid recompiling on each call
 // WeakMap allows garbage collection of schema keys
 const schemaCache = new WeakMap();
@@ -56,7 +60,7 @@ export async function loadJSON(url, schema) {
     }
     const data = await response.json();
     if (schema) {
-      validateWithSchema(data, schema);
+      await validateWithSchema(data, schema);
     }
     return data;
   } catch (error) {
@@ -104,7 +108,7 @@ export async function fetchDataWithErrorHandling(url, schema) {
 
     const json = await response.json();
     if (schema) {
-      validateWithSchema(json, schema);
+      await validateWithSchema(json, schema);
     }
     dataCache.set(url, json);
     return json;
@@ -150,9 +154,10 @@ export function validateData(data, type) {
  * Validates data against a JSON schema using Ajv.
  *
  * @pseudocode
- * 1. Check the cache for a compiled validator for the given `schema`.
- * 2. Compile the schema with Ajv and store it in the cache when needed.
- * 3. Validate `data` with the compiled function.
+ * 1. Retrieve the Ajv instance by calling `getAjv()`.
+ * 2. Check the cache for a compiled validator for the given `schema`.
+ * 3. Compile the schema with Ajv and store it in the cache when needed.
+ * 4. Validate `data` with the compiled function.
  *    - If validation fails, build an error message from `validate.errors`.
  *    - Throw an error including the validation details.
  *
@@ -160,7 +165,8 @@ export function validateData(data, type) {
  * @param {object} schema - JSON schema to validate against.
  * @throws {Error} If validation fails.
  */
-export function validateWithSchema(data, schema) {
+export async function validateWithSchema(data, schema) {
+  const ajv = await getAjv();
   let validate = schemaCache.get(schema);
   if (!validate) {
     validate = ajv.compile(schema);

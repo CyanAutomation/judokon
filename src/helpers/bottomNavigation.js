@@ -160,6 +160,7 @@ function addTouchFeedback() {
  *
  * @returns {Promise<void>} A promise that resolves once the navbar is populated.
  */
+
 export async function populateNavbar() {
   try {
     const response = await fetch(`${DATA_DIR}gameModes.json`);
