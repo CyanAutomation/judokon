@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { readFile } from "fs/promises";
-import { getAjv } from "./src/helpers/dataUtils.js";
+import { getAjv } from "../../src/helpers/dataUtils.js";
 import { fileURLToPath } from "url";
 import path from "path";
 
