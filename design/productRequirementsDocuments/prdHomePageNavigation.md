@@ -59,12 +59,12 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 
 > _Note: Label text may vary slightly (e.g., “View” vs. “Browse”) to better suit audience understanding. Functionality must remain unchanged._
 
-| Tile Label       | Destination URL                  | Function                                                                 |
-|------------------|----------------------------------|--------------------------------------------------------------------------|
-| Classic Battle    | `/pages/battleJudoka.html`        | Launches a **1v1 battle mode** with classic rules.                       |
-| Team Battle       | `/pages/battleJudoka.html` *(placeholder)* | Launches a **multi-judoka team battle** mode. Distinct page planned.     |
-| Update Judoka     | `/pages/updateJudoka.html`        | Allows user to **create or edit Judoka cards**.                          |
-| Browse Judoka     | `/pages/carouselJudoka.html`      | Allows user to **view all Judoka cards** in a scrollable carousel.       |
+| Tile Label     | Destination URL                            | Function                                                             |
+| -------------- | ------------------------------------------ | -------------------------------------------------------------------- |
+| Classic Battle | `/pages/battleJudoka.html`                 | Launches a **1v1 battle mode** with classic rules.                   |
+| Team Battle    | `/pages/battleJudoka.html` _(placeholder)_ | Launches a **multi-judoka team battle** mode. Distinct page planned. |
+| Update Judoka  | `/pages/updateJudoka.html`                 | Allows user to **create or edit Judoka cards**.                      |
+| Browse Judoka  | `/pages/carouselJudoka.html`               | Allows user to **view all Judoka cards** in a scrollable carousel.   |
 
 > **Note:** Currently, "Battle Mode: Classic" and "Battle Mode: Team Battle" point to the same URL. Distinct functionality is expected to be developed later.
 
