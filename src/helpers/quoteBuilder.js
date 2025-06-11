@@ -92,7 +92,7 @@ function displayFable(fable) {
     const formattedStory = formatFableStory(fable.story);
     quoteDiv.innerHTML = `
       <div class="quote-heading" id="quote-heading">${fable.title}</div>
-      <div class="quote-content" id="quote-content">${formattedStory}</div>
+      <div class="quote-content long-form" id="quote-content">${formattedStory}</div>
     `;
   } else {
     quoteDiv.innerHTML = "<p>Well done, congratulations!</p>";

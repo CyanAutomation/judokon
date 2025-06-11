@@ -26,6 +26,12 @@
   display: none;
 }
 
+/* Utility: constrain long-form text to improve readability */
+.long-form {
+  max-width: 70ch;
+  margin-inline: auto;
+}
+
 /* Add Reduced Motion support */
 @media (prefers-reduced-motion: reduce) {
   .card-container {
