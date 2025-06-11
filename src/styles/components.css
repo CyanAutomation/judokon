@@ -106,7 +106,7 @@ body {
 }
 
 .tile-content h2 {
-  padding-left: var(--padding-large, 1rem);
+  padding-left: var(--space-large, 1rem);
   font-size: var(--font-large);
 }
 .locationTile {
@@ -183,7 +183,7 @@ a:focus-visible {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: var(--padding-large);
+  padding: var(--space-large);
   /*   background-color: seagreen; */
   min-height: 500px;
 }
@@ -360,7 +360,7 @@ a:focus-visible {
   border-radius: 4px;
   color: #fff;
   font-weight: bold;
-  padding: var(--padding-small) var(--padding-medium);
+  padding: var(--space-small) var(--space-medium);
   font-size: var(--font-small);
   z-index: 2;
 }
@@ -374,7 +374,7 @@ a:focus-visible {
 .card-stats {
   background-color: var(--card-bg-color);
   color: var(--color-text);
-  padding: var(--padding-small) var(--padding-large);
+  padding: var(--space-small) var(--space-large);
   margin: 0;
   display: flex;
   justify-content: space-between;
@@ -468,8 +468,8 @@ a:focus-visible {
 
 .card-profile .profile-link {
   display: inline-block;
-  margin-top: var(--padding-large);
-  padding: var(--padding-medium) var(--padding-large);
+  margin-top: var(--space-large);
+  padding: var(--space-medium) var(--space-large);
   background-color: var(--button-bg);
   color: var(--button-text-color);
   text-decoration: none;
@@ -691,10 +691,10 @@ a:focus-visible {
 
 .draw-card-btn {
   display: block;
-  margin: var(--padding-large) auto;
+  margin: var(--space-large) auto;
   width: min(300px, 80vw);
   min-height: 64px;
-  padding: var(--padding-medium) var(--padding-large);
+  padding: var(--space-medium) var(--space-large);
   background-color: var(--color-primary);
   color: var(--color-text);
   border: 2px solid #fff;

@@ -42,7 +42,7 @@ This document defines the design system, visual identity, and component rules fo
 
 Ju-Do-Kon! is a card battler rooted in modern martial arts and card-collecting fantasy. All UI should reinforce this world:
 
-- **Primary motifs**: Modern dojo interiors, martial arts posters, judo belts, colourful signage, banners, minimalist backgrounds 
+- **Primary motifs**: Modern dojo interiors, martial arts posters, judo belts, colourful signage, banners, minimalist backgrounds
 - **Textures**: Ink brush strokes, subtle paper grain
 - **Emotive palette**: Rarity colours (gold, red, blue), vibrant gradients for card backgrounds
 - **Typography**: Strong, readable text with room for character in headings (see Typography section)
@@ -76,7 +76,7 @@ Use semantic tokens that adapt to user system preferences:
 
 ### Rarity Palette
 
-| Rarity    | Background | Border  | Judogi Colour       |
+| Rarity    | Background | Border  | Judogi Colour   |
 | --------- | ---------- | ------- | --------------- |
 | Common    | #1C4B95    | #3C5AD6 | White (#FFFFFF) |
 | Epic      | #efaf1b    | #D9910C | Blue (#3C7DC4)  |
