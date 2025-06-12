@@ -44,20 +44,9 @@
       <button id="draw-card-btn" class="draw-card-btn">Draw Card!</button>
 
       <footer>
-        <nav class="bottom-navbar">
-          <ul>
-            <li>
-              <a href="randomJudoka.html">View Judoka</a>
-            </li>
-            <li>
-              <a href="updateJudoka.html">Update Judoka</a>
-            </li>
-            <li>
-              <a href="battleJudoka.html">Classic Battle</a>
-            </li>
-          </ul>
-        </nav>
+        <nav class="bottom-navbar"></nav>
       </footer>
+      <script type="module" src="../helpers/setupBottomNavbar.js"></script>
       <script type="module">
         import { fetchDataWithErrorHandling } from "../helpers/dataUtils.js";
         import { generateRandomCard } from "../helpers/randomCard.js";
