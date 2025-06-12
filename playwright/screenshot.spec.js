@@ -19,6 +19,13 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
 
   for (const { url, name } of pages) {
     test(`screenshot ${url}`, async ({ page }) => {
+      await page.route("**/src/data/*.json", (route) => {
+        const file = route.request().url().split("/").pop();
+        route.fulfill({ path: `tests/fixtures/${file}` });
+      });
+      await page.addInitScript(() => {
+        Math.random = () => 0.42;
+      });
       await page.goto(url, { waitUntil: "domcontentloaded" });
       await expect(page).toHaveScreenshot(name, { fullPage: true });
     });
