@@ -138,7 +138,7 @@ body {
 svg {
   width: 10vh;
   aspect-ratio: 1 / 1;
-  fill: #ffffff;
+  fill: var(--color-text);
 }
 .svg-fallback {
   width: 10vh;
@@ -150,7 +150,7 @@ button {
   font-size: 1rem;
   background: none;
   border: none;
-  color: #fff;
+  color: var(--color-text);
   font-weight: bold;
   text-decoration: none;
   cursor: pointer;
@@ -318,7 +318,7 @@ a:focus-visible {
   aspect-ratio: 3/2;
   max-width: 60px;
   border-radius: min(4px, 1vw);
-  border: 1px solid #fff;
+  border: 1px solid var(--color-tertiary);
 }
 .card-portrait {
   position: relative;
@@ -388,6 +388,9 @@ a:focus-visible {
   padding: 3px min(1px, 0.6vh);
   border-top: 1px solid var(--card-border-color);
   text-transform: uppercase;
+  font-family: "Noto Sans", sans-serif;
+  font-size: var(--font-small);
+  font-weight: bold;
 }
 
 .card-stats li:last-child {
@@ -422,15 +425,16 @@ a:focus-visible {
 
 .signature-move-label {
   display: flex;
-  background-color: #fff;
+  background-color: var(--color-tertiary);
   width: 100%;
-  color: #000;
+  color: var(--color-secondary);
   justify-content: center;
   border-radius: 2px;
-  border: 1px solid #fff;
+  border: 1px solid var(--color-tertiary);
   white-space: nowrap;
   padding: min(10px, 2.3vw) 8px;
   font-size: min(14px, 4dvw);
+  font-family: "Noto Sans", sans-serif;
   max-width: 150px;
   min-width: 90px;
   flex: 1 1 0;
@@ -549,7 +553,7 @@ a:focus-visible {
 }
 
 .judoka-card:target {
-  outline: 2px solid #007bff;
+  outline: 2px solid var(--color-primary);
   outline-offset: 4px;
 }
 
@@ -561,7 +565,7 @@ a:focus-visible {
   min-width: 100vw;
   justify-content: space-evenly;
   background-color: var(--accent-blue-dark);
-  color: #fff;
+  color: var(--color-text);
   text-align: center;
   padding: 1vh 0;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
@@ -650,12 +654,12 @@ a:focus-visible {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--accent-grey);
+  background: var(--color-tertiary);
   opacity: 0.7;
 }
 
 .scroll-marker.active {
-  background: #fff;
+  background: var(--color-primary);
   opacity: 1;
 }
 

@@ -185,7 +185,7 @@
   font-size: var(--font-medium); /* Updated token */
   line-height: 1;
   border-radius: var(--radius-sm); /* Updated token */
-  border: 1px solid #fff;
+  border: 1px solid var(--color-tertiary);
   padding: 0 0.1rem;
 }
 
