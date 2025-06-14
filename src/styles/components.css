@@ -434,7 +434,6 @@ a:focus-visible {
   white-space: nowrap;
   padding: min(10px, 2.3vw) 8px;
   font-size: min(14px, 4dvw);
-  font-family: "Noto Sans", sans-serif;
   max-width: 150px;
   min-width: 90px;
   flex: 1 1 0;
