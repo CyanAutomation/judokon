@@ -74,7 +74,7 @@
 
 .quote-heading {
   color: var(--color-text); /* Updated token */
-  font-family: "Bungee", system-ui, sans-serif;
+  font-family: "League Spartan", sans-serif;
   font-size: var(--font-medium); /* Updated token */
   text-align: left;
   align-self: center;
