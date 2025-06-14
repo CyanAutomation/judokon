@@ -52,24 +52,24 @@ This document defines the UI foundations for Ju-Do-Kon! It supports:
 
 ## 4. Colour System
 
-| Token Name            | Hex Code | Use                      |
-| --------------------- | -------- | ------------------------ |
-| `--color-primary`     | #1A1A1A  | Primary text, icons      |
-| `--color-accent`      | #E04F5F  | Errors, warnings         |
-| `--color-background`  | #F4F4F4  | App background           |
-| `--color-surface`     | #FFFFFF  | UI blocks, modals, cards |
-| `--color-text`        | #1A1A1A  | Primary text             |
-| `--color-muted`       | #808080  | Secondary, caption text  |
-| `--color-placeholder` | #C4C4C4  | Form placeholders        |
-| `--color-text-muted`  | #B0B0B0  | Muted text               |
+| Token Name            | Hex Code | Use                          |
+|-----------------------|----------|------------------------------|
+| `--color-primary`     | #1A1A1A  | Primary text, icons          |
+| `--color-accent`      | #E04F5F  | Errors, warnings             |
+| `--color-background`  | #F4F4F4  | App background               |
+| `--color-surface`     | #FFFFFF  | UI blocks, modals, cards     |
+| `--color-text`        | #1A1A1A  | Primary text                 |
+| `--color-muted`       | #808080  | Secondary, caption text      |
+| `--color-placeholder` | #C4C4C4  | Form placeholders            |
+| `--color-text-muted`  | #B0B0B0  | Muted text                   |
 
 ### Rarity Colours
 
-| Rarity    | Background | Border  | Judogi Colour  |
-| --------- | ---------- | ------- | -------------- |
-| Common    | #1C4B95    | #3C5AD6 | White (#FFF)   |
-| Epic      | #efaf1b    | #D9910C | Blue (#3C7DC4) |
-| Legendary | #4A5055    | #E5AC1A | Blue (#3C7DC4) |
+| Rarity    | Background | Border  | Judogi Colour   |
+|-----------|------------|---------|-----------------|
+| Common    | #1C4B95    | #3C5AD6 | White (#FFF)    |
+| Epic      | #efaf1b    | #D9910C | Blue (#3C7DC4)  |
+| Legendary | #4A5055    | #E5AC1A | Blue (#3C7DC4)  |
 
 > ⚠️ **Note:** Judoka cards retain their bright, vibrant, distinct colour palette and styling. They are visually separate from the muted, modern dojo-themed UI shell.
 
@@ -81,12 +81,12 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
 
 ## 5. Typography
 
-| Role       | Font Stack                      | Size                     | Weight |
-| ---------- | ------------------------------- | ------------------------ | ------ |
-| Title (H1) | 'Bungee', system-ui, sans-serif | `clamp(2rem, 5vw, 3rem)` | 700    |
-| Subtitle   | system-ui, sans-serif           | 1.5rem                   | 600    |
-| Body       | system-ui, sans-serif           | 1rem                     | 400    |
-| Caption    | system-ui, sans-serif           | 0.875rem                 | 400    |
+| Role        | Font Stack                      | Size                     | Weight |
+|-------------|----------------------------------|--------------------------|--------|
+| Title (H1)  | 'Bungee', system-ui, sans-serif | `clamp(2rem, 5vw, 3rem)` | 700    |
+| Subtitle    | system-ui, sans-serif           | 1.5rem                   | 600    |
+| Body        | system-ui, sans-serif           | 1rem                     | 400    |
+| Caption     | system-ui, sans-serif           | 0.875rem                 | 400    |
 
 - Max line width: 70ch
 - Line height: 1.5
@@ -134,11 +134,11 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
 
 **All components must visually align to the light UI aesthetic: white/grey surfaces, black or dark text, and clean separation from the colourful judoka cards.**
 
-| Type      | Style                         | Use                  |
-| --------- | ----------------------------- | -------------------- |
-| Primary   | `--color-primary`, white text | Main CTA             |
-| Secondary | White bg, primary border      | Minor action         |
-| Icon-only | Transparent background        | Compact interactions |
+| Type      | Style                         | Use                    |
+|-----------|-------------------------------|------------------------|
+| Primary   | `--color-primary`, white text | Main CTA               |
+| Secondary | White bg, primary border      | Minor action           |
+| Icon-only | Transparent background        | Compact interactions   |
 
 **States**:
 
@@ -262,13 +262,13 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
 
 ## 11. Tokens
 
-| Token Name          | Value                      | Purpose        |
-| ------------------- | -------------------------- | -------------- |
-| `--radius-sm`       | 4px                        | Inputs, badges |
-| `--radius-md`       | 8px                        | Buttons        |
-| `--radius-lg`       | 12px                       | Cards, modals  |
-| `--shadow-base`     | 0 4px 12px rgba(0,0,0,0.1) | Elevation      |
-| `--transition-fast` | all 150ms ease             | UI animations  |
+| Token Name         | Value                      | Purpose            |
+|--------------------|----------------------------|--------------------|
+| `--radius-sm`      | 4px                        | Inputs, badges     |
+| `--radius-md`      | 8px                        | Buttons            |
+| `--radius-lg`      | 12px                       | Cards, modals      |
+| `--shadow-base`    | 0 4px 12px rgba(0,0,0,0.1) | Elevation          |
+| `--transition-fast`| all 150ms ease             | UI animations      |
 
 ---
 
