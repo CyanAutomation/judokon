@@ -7,6 +7,8 @@
   --color-primary: #cb2504; /* Buttons, highlights */
   --color-secondary: #0c3f7a; /* Nav bar, stat blocks */
   --color-tertiary: #e8e8e8; /* Backgrounds, outlines */
+  --color-background: #ffffff; /* Light mode background */
+  --color-text: #000000; /* Light mode text */
 
   /* Updated spacing tokens */
   --space-xs: 4px;

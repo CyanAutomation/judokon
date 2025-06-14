@@ -17,6 +17,13 @@
   display: none;
 }
 
+/* Utility class for small annotations */
+.small-text {
+  font-family: "Noto Sans", sans-serif;
+  font-size: var(--font-small);
+  font-weight: 500;
+}
+
 .long-form {
   max-width: 70ch;
   margin-inline: auto;
