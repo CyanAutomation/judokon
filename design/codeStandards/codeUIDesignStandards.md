@@ -54,22 +54,17 @@ This document defines the UI foundations for Ju-Do-Kon! It supports:
 
 | Token Name            | Hex Code | Use                          |
 |-----------------------|----------|------------------------------|
-| `--color-primary`     | #1A1A1A  | Primary text, icons          |
-| `--color-accent`      | #E04F5F  | Errors, warnings             |
-| `--color-background`  | #F4F4F4  | App background               |
-| `--color-surface`     | #FFFFFF  | UI blocks, modals, cards     |
-| `--color-text`        | #1A1A1A  | Primary text                 |
-| `--color-muted`       | #808080  | Secondary, caption text      |
-| `--color-placeholder` | #C4C4C4  | Form placeholders            |
-| `--color-text-muted`  | #B0B0B0  | Muted text                   |
+| `--color-primary`     | #CB2504  | Buttons, highlights          |
+| `--color-secondary`   | #0C3F7A  | Nav bar, stat blocks         |
+| `--color-tertiary`    | #E8E8E8  | Backgrounds, outlines        |
 
 ### Rarity Colours
 
-| Rarity    | Background | Border  | Judogi Colour   |
-|-----------|------------|---------|-----------------|
-| Common    | #1C4B95    | #3C5AD6 | White (#FFF)    |
-| Epic      | #efaf1b    | #D9910C | Blue (#3C7DC4)  |
-| Legendary | #4A5055    | #E5AC1A | Blue (#3C7DC4)  |
+| Rarity    | Background       | Border         | Judogi Colour   |
+|-----------|------------------|----------------|-----------------|
+| Common    | #3C5AD6          | #3C5AD6        | White (#FFF)    |
+| Epic      | #C757DA          | #C757DA        | Blue (#3C7DC4)  |
+| Legendary | #E4AB19          | #E4AB19        | Blue (#3C7DC4)  |
 
 > ⚠️ **Note:** Judoka cards retain their bright, vibrant, distinct colour palette and styling. They are visually separate from the muted, modern dojo-themed UI shell.
 
@@ -81,18 +76,16 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
 
 ## 5. Typography
 
-| Role        | Font Stack                      | Size                     | Weight |
-|-------------|----------------------------------|--------------------------|--------|
-| Title (H1)  | 'Bungee', system-ui, sans-serif | `clamp(2rem, 5vw, 3rem)` | 700    |
-| Subtitle    | system-ui, sans-serif           | 1.5rem                   | 600    |
-| Body        | system-ui, sans-serif           | 1rem                     | 400    |
-| Caption     | system-ui, sans-serif           | 0.875rem                 | 400    |
+| Role        | Font                      | Size                     | Weight |
+|-------------|---------------------------|--------------------------|--------|
+| Headings    | League Spartan            | 32–40px                  | Bold   |
+| Body Text   | League Spartan                 | 16px                     | Regular|
+| Stat Labels | Noto Sans                 | 14px                     | Bold   |
+| Small Text  | Noto Sans                 | 12px                     | Medium |
 
-- Max line width: 70ch
-- Line height: 1.5
-- Use `rem` and `clamp()` for scalability
-- **Labels**: 1–2 words max, no abbreviations
-- **Button labels and headings** use black or very dark grey for strong contrast on light surfaces
+- Line-height: 1.4× font size
+- Letter-spacing: 0.5% (League Spartan), normal (Noto Sans)
+- Avoid using all caps in body text for readability
 
 ---
 
@@ -210,6 +203,38 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
 - Selection = glow + checkmark
 - Win/Lose state = animation glow
 
+### Card Design Rules
+
+#### Name Formatting
+- **First Name**: Smaller, sentence case
+- **Surname**: Larger, uppercase, bold
+- **Font**: League Spartan (both)
+
+#### Stat Area
+- **Alignment**: Stat block always bottom-aligned
+- **Background**: Dark blue (#0C3F7A)
+- **Font**: Noto Sans, bold
+
+#### Signature Move Band (Common Cards)
+- **Background**: #003B88
+- **Text**: Yellow (#FED843), left-aligned label + centered move name
+
+#### Rarity Markers
+- **Epic and Legendary Only**: Icon appears only on these tiers
+- **Placement**: Top-left of portrait area
+- **Templates**: Use standard templates only
+
+#### Portrait Area
+- **Style**: Vector cartoon-realism
+- **Background**: Clean, warm gradient (non-radial)
+- **Judogi Colour**: Blue judogi for Epic/Legendary (Pantone 285M, #3C7DC4)
+
+#### Interactions
+- **Hover**: Slight scale and shadow
+- **Tap**: Slide/reveal stats
+- **Selection**: Glow + checkmark
+- **Win/Lose State**: Animation glow
+
 ### 8.5 Card Carousel
 
 - Horizontal scroll with scroll-snap-x
@@ -298,3 +323,33 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
 - Use label-only icons
 - Truncate button labels
 - Leave score/result transitions static
+
+---
+
+## 14. Branding Aspects
+
+#### Logos & Emblems
+- **Full Logo**:
+  - Horizontal and stacked versions available
+  - Use on light/dark backgrounds with proper spacing
+  - Minimum size and safe zones must be respected
+- **SHIHO Emblem**:
+  - Represents endless knot → replayability & balance
+  - Usage rules:
+    - Do not rotate, stretch, recolour, or overlay on complex backgrounds
+    - Use emblem only in secondary branding contexts
+
+#### Cultural Respect
+- **Japanese Aesthetics**:
+  - Incorporate nods to traditional Japanese design elements (e.g., tatami textures, brush ink strokes)
+  - Avoid cultural misrepresentation or overuse of stereotypes
+- **Martial Values**:
+  - Reflect judo principles like balance, respect, and mastery in UI interactions
+
+#### Visual Identity
+- **High-Energy Design**:
+  - Bold, modular, and fast-moving interfaces
+  - Use vibrant colours sparingly to highlight key actions or elements
+- **Fun-First Approach**:
+  - Ensure interactions feel snappy and playful
+  - Maintain a kid-friendly tone with clear, accessible visuals
