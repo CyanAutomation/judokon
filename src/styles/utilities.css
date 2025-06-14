@@ -9,7 +9,7 @@
 
 /* Updated to align with the design standards */
 .noscript-warning {
-  color: var(--color-accent); /* Updated token */
+  color: var(--color-primary); /* Updated token */
   font-weight: bold;
 }
 
@@ -20,7 +20,7 @@
 .long-form {
   max-width: 70ch;
   margin-inline: auto;
-  line-height: 1.5; /* Added for better readability */
+  line-height: 1.4; /* Updated token */
   color: var(--color-text); /* Updated token */
 }
 

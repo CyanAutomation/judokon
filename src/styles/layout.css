@@ -9,8 +9,10 @@
 }
 
 body {
-  font-family: system-ui, sans-serif;
+  font-family: "League Spartan", sans-serif; /* Updated token */
   color: var(--color-text); /* Updated token */
+  background-color: var(--color-tertiary); /* Updated token */
+  line-height: 1.4; /* Updated token */
   min-height: 100dvh;
   min-width: 100vw;
   background-image: url("./assets/images/bgTileBlue.png");
@@ -47,7 +49,7 @@ body {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  background-color: var(--color-accent); /* Updated token */
+  background-color: var(--color-secondary); /* Updated token */
   box-shadow: var(--shadow-base); /* Updated token */
   width: 100%;
 }
@@ -69,7 +71,7 @@ body {
 .game-mode-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-large); /* Updated token */
+  gap: var(--space-lg); /* Updated token */
   padding: 0 var(--space-xl); /* Updated token */
   flex: 1 1 auto;
   min-height: 85%;
@@ -81,8 +83,8 @@ body {
   }
 }
 .homeHelperContainer {
-  background: var(--color-surface); /* Updated token */
-  border: 2px solid var(--color-surface); /* Updated token */
+  background: var(--color-tertiary); /* Updated token */
+  border: 2px solid var(--color-tertiary); /* Updated token */
   border-radius: var(--radius-md); /* Updated token */
   text-align: center;
 }
@@ -93,13 +95,12 @@ body {
   border-radius: 4px;
 }
 .card-preview {
-  margin-top: var(--space-medium); /* Updated token */
-  height: 150px;
-  background: var(--color-surface); /* Updated token */
-  border: 1px solid var(--accent-grey); /* Updated token */
+  margin-top: var(--space-md); /* Updated token */
+  background: var(--color-tertiary); /* Updated token */
+  border: 1px solid var(--color-secondary); /* Updated token */
 }
 .locationTileContainer {
-  padding: var(--space-medium); /* Updated token */
+  padding: var(--space-md); /* Updated token */
   display: inline-flex;
   gap: var(--space-lg); /* Updated token */
   flex: 1 1 auto;
@@ -129,7 +130,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-small) var(--space-lg); /* Updated tokens */
+  padding: var(--space-sm) var(--space-lg); /* Updated tokens */
   text-align: center;
   max-width: 45vw;
   white-space: pre;
@@ -137,6 +138,6 @@ body {
 
 .country-flag-slider .flag-image {
   max-height: 5dvh;
-  margin: var(--space-small); /* Updated token */
+  margin: var(--space-sm); /* Updated token */
   border-radius: var(--radius-sm); /* Updated token */
 }

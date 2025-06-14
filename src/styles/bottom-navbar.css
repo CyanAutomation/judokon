@@ -10,24 +10,24 @@
   min-height: max(7vh, 12px);
   display: inline-flex;
   min-width: 100vw;
-  background-color: var(--color-primary); /* Updated token */
+  background-color: var(--color-primary); /* Buttons, highlights */
   text-align: center;
   align-items: center;
   justify-content: space-evenly;
-  box-shadow: var(--shadow-base); /* Updated token */
+  box-shadow: var(--shadow-base); /* Elevation */
   font-size: max(1.3rem, 1.8vw);
 }
 
 .bottom-navbar ul {
   display: inline-flex;
-  gap: var(--space-lg); /* Updated token */
+  gap: var(--space-lg); /* Generous whitespace */
   list-style-type: none;
   text-transform: uppercase;
 }
 
 .bottom-navbar a,
 .top-navbar a {
-  color: var(--color-text); /* Updated token */
+  color: var(--color-text); /* Adaptive text color */
   text-decoration: none;
 }
 

@@ -4,47 +4,31 @@
   --scale-duration: 0.4s;
   --slide-track-speed: 40s;
   /* Colors */
-  --color-primary: #1a1a1a;
-  --color-surface: #ffffff;
-  --color-background: #f5f7fa;
-  --color-text: #fff;
-  --color-accent: #e04f5f;
-  --color-muted: #4a5055;
-  --color-placeholder: #a0a0a0;
-  /* Existing palette */
-  --color-accent-dark: #880000; /* hover state for accent red */
-  --accent-beige: #e8d9c3; /* light highlight */
-  --accent-blue-dark: #22223b; /* navigation background */
-  --accent-grey: #ccc; /* neutral UI elements */
+  --color-primary: #cb2504; /* Buttons, highlights */
+  --color-secondary: #0c3f7a; /* Nav bar, stat blocks */
+  --color-tertiary: #e8e8e8; /* Backgrounds, outlines */
 
-  /* Card-specific colors */
-  /* --common-border-color: #3c5ad6;
-  --common-top-bar-bg: #0c3f7a;
-  --common-stats-bg: #0c3f7a;
-  --common-signature-move-bg: #003b88;
-  --common-signature-move-text: #fed843; */
+  /* Updated spacing tokens */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Updated border radius */
+  --radius-sm: 4px; /* Inputs, badges */
+  --radius-md: 8px; /* Buttons */
+  --radius-lg: 12px; /* Cards, modals */
+
+  /* Updated shadows and transitions */
+  --shadow-base: 0 4px 12px rgba(0, 0, 0, 0.1); /* Elevation */
+  --transition-fast: all 150ms ease; /* UI animations */
 
   /* Font sizes */
   --font-small: 0.9rem;
   --font-medium: 1rem;
   --font-large: 1.2rem;
   --font-extra-large: 3rem;
-
-  /* Spacing */
-  --space-none: 0;
-  --space-small: 0.25rem;
-  --space-medium: 0.75rem;
-  --space-large: 1.5rem;
-  --space-extra-large: 3rem;
-
-  /* Border radius */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-
-  /* Shadows and transitions */
-  --shadow-base: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --transition-fast: 150ms ease;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -64,22 +48,22 @@
 }
 
 body {
-  font-family: system-ui, sans-serif;
-  font-size: 1rem;
-  line-height: 1.5;
+  font-family: "League Spartan", sans-serif;
+  font-size: 16px; /* Body text size */
+  line-height: 1.4; /* Line height */
 }
 
 h1,
 h2 {
-  font-family: "Bungee", system-ui, sans-serif;
+  font-family: "League Spartan", sans-serif;
 }
 
 h1 {
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 700;
+  font-size: clamp(32px, 5vw, 40px); /* Headings size */
+  font-weight: bold;
 }
 
 h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 32px;
+  font-weight: bold;
 }

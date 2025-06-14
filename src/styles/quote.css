@@ -11,22 +11,22 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-large); /* Updated token */
-  padding: var(--space-xl) var(--space-medium); /* Updated tokens */
+  gap: var(--space-lg); /* Updated token */
+  padding: var(--space-xl) var(--space-md); /* Updated tokens */
 }
 
 .victory-title {
-  font-family: "Bungee", system-ui, sans-serif;
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-family: "League Spartan", sans-serif; /* Updated token */
+  font-size: clamp(32px, 5vw, 40px); /* Updated token */
   color: var(--color-text); /* Updated token */
   text-align: center;
-  margin-top: var(--space-small); /* Updated token */
+  margin-top: var(--space-sm); /* Updated token */
 }
 
 .quote-container {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-medium); /* Updated token */
+  gap: var(--space-md); /* Updated token */
   width: 100%;
 }
 
@@ -64,9 +64,9 @@
 }
 
 .quote {
-  font-size: calc(16px + 1vw); /* Scales dynamically with viewport width */
+  font-size: var(--font-medium); /* Updated token */
   color: var(--color-text); /* Updated token */
-  line-height: 1.5;
+  line-height: 1.4; /* Updated token */
   max-width: 70ch;
   margin: 0 auto;
   text-align: center;
@@ -97,22 +97,19 @@
 .cta-button {
   display: inline-block;
   min-height: 48px;
-  padding: var(--space-medium) var(--space-large); /* Updated tokens */
+  padding: var(--space-md) var(--space-lg); /* Updated tokens */
   font-size: var(--font-medium); /* Updated token */
   color: var(--color-text); /* Updated token */
-  background-color: var(--color-accent); /* Updated token */
+  background-color: var(--color-primary); /* Updated token */
   text-decoration: none;
   border-radius: var(--radius-md); /* Updated token */
-  margin-top: var(--space-medium); /* Updated token */
+  margin-top: var(--space-md); /* Updated token */
 }
 
 .cta-button:hover,
 .cta-button:focus,
-.cta-button:focus-visible,
-.language-toggle:hover,
-.language-toggle:focus,
-.language-toggle:focus-visible {
-  background-color: var(--color-accent-dark); /* Updated token */
+.cta-button:focus-visible {
+  background-color: var(--color-secondary); /* Updated token */
 }
 
 /* Responsive: KG image above quote on narrow screens */

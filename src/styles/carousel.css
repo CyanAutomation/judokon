@@ -12,19 +12,21 @@
   display: flex;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  gap: var(--space-lg); /* Updated token */
+  gap: var(--space-lg); /* Generous whitespace */
   scroll-behavior: smooth; /* Smooth scrolling effect */
 }
 
 .judoka-card {
   flex: 0 0 calc(33.33% - var(--space-lg)); /* Updated token */
   scroll-snap-align: center; /* Snap each card to the center */
-  transition: transform var(--transition-fast); /* Updated token */
+  transition: transform var(--transition-fast); /* Smooth animations */
+  border-radius: var(--radius-lg); /* Rounded corners */
+  box-shadow: var(--shadow-base); /* Elevation */
 }
 
 /* Hover effect for desktop */
 .judoka-card:hover {
-  transform: scale(1.1);
+  transform: scale(1.1); /* Interactive feedback */
 }
 
 /* Styles for tablets */
@@ -41,7 +43,7 @@
   }
 
   .card-carousel {
-    gap: var(--space-sm); /* Updated token */
+    gap: var(--space-sm); /* Compact whitespace */
   }
 }
 
