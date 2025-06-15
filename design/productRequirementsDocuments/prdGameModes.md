@@ -94,11 +94,13 @@ Player Flow:
 
 **Acceptance Criteria**:
 
+- Cards are revealed in correct sequence.
+- Player can select stat.
+- Score updates per round outcome.
+- Summary screen shown at end.
 - Given 25 valid cards, When a match starts, Then the player sees 25 rounds or score capped at 10.
 - Given a revealed card, When a stat is selected, Then the system compares and updates score.
 - Given the final round, When conditions are met, Then a summary is shown and return enabled.
-- Given missing stats on a card, When revealed, Then show “Stat not available” overlay.
-- Given deck <25 cards, When match is triggered, Then block and alert: “Deck too small.”
 
 Visuals/UX:
 
@@ -109,7 +111,7 @@ Visuals/UX:
 Settings:
 
 - Difficulty Toggle (TBD): Easy/Medium/Hard (default: Medium).
-- Sound effects: ON by default, toggle in corner gear icon.
+- Sound effects: OFF by default, toggle in corner gear icon.
 
 **Edge Cases**:
 

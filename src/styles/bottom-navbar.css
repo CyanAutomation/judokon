@@ -22,7 +22,6 @@
   display: inline-flex;
   gap: var(--space-lg); /* Generous whitespace */
   list-style-type: none;
-  text-transform: uppercase;
 }
 
 .bottom-navbar a,
