@@ -52,19 +52,19 @@ This document defines the UI foundations for Ju-Do-Kon! It supports:
 
 ## 4. Colour System
 
-| Token Name            | Hex Code | Use                          |
-|-----------------------|----------|------------------------------|
-| `--color-primary`     | #CB2504  | Buttons, highlights          |
-| `--color-secondary`   | #0C3F7A  | Nav bar, stat blocks         |
-| `--color-tertiary`    | #E8E8E8  | Backgrounds, outlines        |
+| Token Name          | Hex Code | Use                   |
+| ------------------- | -------- | --------------------- |
+| `--color-primary`   | #CB2504  | Buttons, highlights   |
+| `--color-secondary` | #0C3F7A  | Nav bar, stat blocks  |
+| `--color-tertiary`  | #E8E8E8  | Backgrounds, outlines |
 
 ### Rarity Colours
 
-| Rarity    | Background       | Border         | Judogi Colour   |
-|-----------|------------------|----------------|-----------------|
-| Common    | #3C5AD6          | #3C5AD6        | White (#FFF)    |
-| Epic      | #C757DA          | #C757DA        | Blue (#3C7DC4)  |
-| Legendary | #E4AB19          | #E4AB19        | Blue (#3C7DC4)  |
+| Rarity    | Background | Border  | Judogi Colour  |
+| --------- | ---------- | ------- | -------------- |
+| Common    | #3C5AD6    | #3C5AD6 | White (#FFF)   |
+| Epic      | #C757DA    | #C757DA | Blue (#3C7DC4) |
+| Legendary | #E4AB19    | #E4AB19 | Blue (#3C7DC4) |
 
 > ⚠️ **Note:** Judoka cards retain their bright, vibrant, distinct colour palette and styling. They are visually separate from the muted, modern dojo-themed UI shell.
 
@@ -76,12 +76,12 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
 
 ## 5. Typography
 
-| Role        | Font                      | Size                     | Weight |
-|-------------|---------------------------|--------------------------|--------|
-| Headings    | League Spartan            | 32–40px                  | Bold   |
-| Body Text   | League Spartan                 | 16px                     | Regular|
-| Stat Labels | Noto Sans                 | 14px                     | Bold   |
-| Small Text  | Noto Sans                 | 12px                     | Medium |
+| Role        | Font           | Size    | Weight  |
+| ----------- | -------------- | ------- | ------- |
+| Headings    | League Spartan | 32–40px | Bold    |
+| Body Text   | League Spartan | 16px    | Regular |
+| Stat Labels | Noto Sans      | 14px    | Bold    |
+| Small Text  | Noto Sans      | 12px    | Medium  |
 
 - Line-height: 1.4× font size
 - Letter-spacing: 0.5% (League Spartan), normal (Noto Sans)
@@ -127,11 +127,11 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
 
 **All components must visually align to the light UI aesthetic: white/grey surfaces, black or dark text, and clean separation from the colourful judoka cards.**
 
-| Type      | Style                         | Use                    |
-|-----------|-------------------------------|------------------------|
-| Primary   | `--color-primary`, white text | Main CTA               |
-| Secondary | White bg, primary border      | Minor action           |
-| Icon-only | Transparent background        | Compact interactions   |
+| Type      | Style                         | Use                  |
+| --------- | ----------------------------- | -------------------- |
+| Primary   | `--color-primary`, white text | Main CTA             |
+| Secondary | White bg, primary border      | Minor action         |
+| Icon-only | Transparent background        | Compact interactions |
 
 **States**:
 
@@ -206,30 +206,36 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
 ### Card Design Rules
 
 #### Name Formatting
+
 - **First Name**: Smaller, sentence case
 - **Surname**: Larger, uppercase, bold
 - **Font**: League Spartan (both)
 
 #### Stat Area
+
 - **Alignment**: Stat block always bottom-aligned
 - **Background**: Dark blue (#0C3F7A)
 - **Font**: Noto Sans, bold
 
 #### Signature Move Band (Common Cards)
+
 - **Background**: #003B88
 - **Text**: Yellow (#FED843), left-aligned label + centered move name
 
 #### Rarity Markers
+
 - **Epic and Legendary Only**: Icon appears only on these tiers
 - **Placement**: Top-left of portrait area
 - **Templates**: Use standard templates only
 
 #### Portrait Area
+
 - **Style**: Vector cartoon-realism
 - **Background**: Clean, warm gradient (non-radial)
 - **Judogi Colour**: Blue judogi for Epic/Legendary (Pantone 285M, #3C7DC4)
 
 #### Interactions
+
 - **Hover**: Slight scale and shadow
 - **Tap**: Slide/reveal stats
 - **Selection**: Glow + checkmark
@@ -287,13 +293,13 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
 
 ## 11. Tokens
 
-| Token Name         | Value                      | Purpose            |
-|--------------------|----------------------------|--------------------|
-| `--radius-sm`      | 4px                        | Inputs, badges     |
-| `--radius-md`      | 8px                        | Buttons            |
-| `--radius-lg`      | 12px                       | Cards, modals      |
-| `--shadow-base`    | 0 4px 12px rgba(0,0,0,0.1) | Elevation          |
-| `--transition-fast`| all 150ms ease             | UI animations      |
+| Token Name          | Value                      | Purpose        |
+| ------------------- | -------------------------- | -------------- |
+| `--radius-sm`       | 4px                        | Inputs, badges |
+| `--radius-md`       | 8px                        | Buttons        |
+| `--radius-lg`       | 12px                       | Cards, modals  |
+| `--shadow-base`     | 0 4px 12px rgba(0,0,0,0.1) | Elevation      |
+| `--transition-fast` | all 150ms ease             | UI animations  |
 
 ---
 
@@ -329,6 +335,7 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
 ## 14. Branding Aspects
 
 #### Logos & Emblems
+
 - **Full Logo**:
   - Horizontal and stacked versions available
   - Use on light/dark backgrounds with proper spacing
@@ -340,6 +347,7 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
     - Use emblem only in secondary branding contexts
 
 #### Cultural Respect
+
 - **Japanese Aesthetics**:
   - Incorporate nods to traditional Japanese design elements (e.g., tatami textures, brush ink strokes)
   - Avoid cultural misrepresentation or overuse of stereotypes
@@ -347,6 +355,7 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
   - Reflect judo principles like balance, respect, and mastery in UI interactions
 
 #### Visual Identity
+
 - **High-Energy Design**:
   - Bold, modular, and fast-moving interfaces
   - Use vibrant colours sparingly to highlight key actions or elements
