@@ -83,6 +83,7 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
   - `styles/`
 - `tests/` – Vitest unit tests.
 - `design/` – documentation and code standards.
+- [Architecture Overview](design/architecture.md) – summary of key modules.
 
 ## Data Schemas and Validation
 
