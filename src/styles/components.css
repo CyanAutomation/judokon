@@ -80,22 +80,22 @@ body {
 }
 
 .game-tile {
-  background: rgba(107, 107, 107, 0.5);
+  background: var(--color-secondary);
   border-radius: var(--radius-md); /* Updated token */
   padding: var(--space-md); /* Updated token */
   display: flex;
   align-items: center;
   justify-content: flex-start;
   flex: 1 1 auto;
-  color: var(--color-text); /* Updated token */
+  color: #fff;
   text-decoration: none;
   transition: transform var(--transition-fast); /* Updated token */
   will-change: transform;
 }
 
 .game-tile:hover {
-  background: var(--color-accent-dark); /* Updated token */
-  color: var(--color-text); /* Updated token */
+  background: var(--color-text); 
+  color: #fff;
   cursor: pointer;
   transform: scale(1.05); /* Updated token */
 }

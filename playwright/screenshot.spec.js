@@ -1,9 +1,10 @@
 import { test, expect } from "@playwright/test";
+import fs from "fs";
 
 // Allow skipping screenshots via the SKIP_SCREENSHOTS environment variable
 const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
 
-test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)", () => {
+test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)", () => {
   test.use({ viewport: { width: 1280, height: 720 } });
   test.skip(!runScreenshots);
   // List of pages to capture screenshots for
@@ -21,7 +22,12 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
     test(`screenshot ${url}`, async ({ page }) => {
       await page.route("**/src/data/*.json", (route) => {
         const file = route.request().url().split("/").pop();
-        route.fulfill({ path: `tests/fixtures/${file}` });
+        const fixturePath = `tests/fixtures/${file}`;
+        if (fs.existsSync(fixturePath)) {
+          route.fulfill({ path: fixturePath });
+        } else {
+          route.continue();
+        }
       });
       await page.addInitScript(() => {
         Math.random = () => 0.42;

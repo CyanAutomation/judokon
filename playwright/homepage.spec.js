@@ -33,7 +33,7 @@ test.describe("Homepage", () => {
       .locator("footer")
       .getByRole("link", { name: /view judoka/i })
       .click();
-    await expect(page).toHaveURL(/carouselJudoka\.html/);
+    await expect(page).toHaveURL(/randomJudoka\.html/);
   });
 
   test("tile hover zoom and cursor", async ({ page }) => {
