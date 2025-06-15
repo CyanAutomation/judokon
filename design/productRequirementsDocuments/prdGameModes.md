@@ -5,17 +5,17 @@
 
 ---
 
-## Overview
+### Overview
 
-Ju-Do-Kon! offers a range of game modes designed for different player experiences—competitive battles, team-based challenges, customization, and exploration. Each mode enhances the game’s variety, replayability, and educational value.
+Ju-Do-Kon! offers a range of game modes tailored for different play styles—competitive battles, team-based challenges, creative customization, exploratory discovery, and quiet reflection. These modes diversify the experience, increase replayability, and promote deeper engagement.
 
 ### Problem Statement
 
-Returning players currently disengage after short sessions, citing repetitive gameplay and a lack of progression opportunities. Most usage clusters around the core 1v1 mode, with limited engagement in creative or reflective experiences.
+Returning players often exit after short sessions due to repetitive gameplay loops and limited creative expression. In a recent survey, one player said, “I like battling, but after a while, it’s the same thing over and over.” Usage data confirms that >80% of playtime occurs in the core 1v1 mode, with under 20% in creative or reflective features.
 
-### Solution
+### Why It Matters Now
 
-Introduce new and diversified modes to support multiple motivations: mastery (Shiai), teamwork (Team Battle), self-expression (Judoka Creation), exploration (Browse), and reflection (Meditation).
+Improving session variety directly supports retention and encourages more personalized play, especially as competition from other collectible games increases.
 
 ### Goals (SMART)
 
@@ -30,7 +30,7 @@ Introduce new and diversified modes to support multiple motivations: mastery (Sh
 
 - All game modes must support **keyboard navigation** and **screen reader** compatibility.
 - Layouts must be responsive on **desktop and tablet**.
-- Game data must be loaded dynamically from **judoka.json** or equivalent datasets.
+- Judoka data must dynamically load from judoka.json or equivalent.
 - All URLs must function without console errors or missing asset warnings.
 
 ---
@@ -38,9 +38,11 @@ Introduce new and diversified modes to support multiple motivations: mastery (Sh
 ## Design and UX Considerations
 
 - All mode entry points must visually and thematically align with the **“Judo Training Village”** map-based navigation system.
-- Animations for transitions (≤500ms) and optional sound cues must reinforce key actions (e.g., scoring, judoka reveal).
+- Entry points are represented on the Judo Training Village Map as clickable, animated hotspots (≥48px).
+- UI contrast ratio must meet WCAG 2.1 (≥4.5:1).
 - Touch targets must be ≥48px, with WCAG 2.1 contrast compliance (≥4.5:1).
 - Mode entry and exit flows should be clearly defined to prevent user disorientation.
+- Mode exit returns to Map with confirmation (“Are you sure?”) to avoid disorientation
 
 ---
 
@@ -72,6 +74,14 @@ A 1v1 stat-based match against an AI opponent using a deck of 25 judoka. First t
 - 25 Rounds maximum
 - Deck size: 25
 - Score cap: 10 points
+- Player selects one stat per round to compare.
+- Higher stat wins, +1 point
+
+Player Flow:
+	1.	Player enters via Map icon → transition to Shiai Arena.
+	2.	Decks load and validate (min. 25 cards).
+	3.	Cards are revealed → player picks stat → score resolves.
+	4.	End state = First to 10 or 25 rounds → summary → return to Map.
 
 **Functional Requirements**:
 - Draw one random card from each deck per round.
@@ -80,11 +90,20 @@ A 1v1 stat-based match against an AI opponent using a deck of 25 judoka. First t
 - End match on 10 points or after 25 rounds.
 
 **Acceptance Criteria**:
-- Cards are revealed in correct sequence.
-- Player can select stat.
-- Score updates per round outcome.
-- Summary screen shown at end.
-- Invalid cards or missing stats trigger fallback popup.
+- Given 25 valid cards, When a match starts, Then the player sees 25 rounds or score capped at 10.
+	•	Given a revealed card, When a stat is selected, Then the system compares and updates score.
+	•	Given the final round, When conditions are met, Then a summary is shown and return enabled.
+	•	Given missing stats on a card, When revealed, Then show “Stat not available” overlay.
+	•	Given deck <25 cards, When match is triggered, Then block and alert: “Deck too small.”
+
+Visuals/UX:
+	•	Score display always visible.
+	•	Card stats animated on reveal.
+	•	“Back to Village” button enabled post-match with fade-out transition.
+
+Settings:
+	•	Difficulty Toggle (TBD): Easy/Medium/Hard (default: Medium).
+	•	Sound effects: ON by default, toggle in corner gear icon.
 
 **Edge Cases**:
 - If fewer than 25 cards are present, block match with warning.
@@ -108,6 +127,8 @@ Choose between Male, Female, or Mixed team battles.
 - Option buttons are visible and interactive.
 - Click leads to correct mode.
 - Invalid route fallback returns to selection screen.
+- Given 3 options, When clicked, Then route to selected mode.
+- Given an invalid route, Then return to selection screen and show modal.
 
 ---
 
@@ -135,7 +156,16 @@ Team battles consist of sequential 1v1s between gender-filtered squads.
 - Follows team match sequence.
 - End state triggers win screen at cap.
 - Missing URL redirects to error message page.
+	•	Team validated on gender before match.
+	•	Sub-match order shown as visual queue.
+	•	At score cap, show win animation and return to Village.
 
+Edge Cases:
+	•	If team is invalid (e.g., wrong gender): block with tooltip “Judoka does not meet team criteria.”
+	•	If URL missing (e.g., Female): redirect to error page with option to report bug.
+
+UX Note:
+	•	Mini avatars shown in a lineup before match begins.
 ---
 
 ### 4. Browse Judoka
@@ -151,7 +181,9 @@ View all available judoka with stats and visuals.
 - Stats sourced from `judoka.json`.
 - Responsive across screen sizes.
 - Invalid entries replaced with placeholder.
-
+- If list is empty, show “No cards available” message.
+- Scrollable interface; all cards show name, nationality, and stats.
+	•	Sourced from judoka.json.
 ---
 
 ### 5. Judoka Update Mode
@@ -179,7 +211,14 @@ Choose to create or edit a judoka.
 - Live preview updates on change.
 - Save adds to data store and confirms.
 - Invalid form fields trigger error indicators.
+	•	All inputs required before save.
+	•	Given completed form, When saved, Then judoka appears in judoka.json and preview confirms.
 
+Invalid Case:
+	•	Red outlines on errors with tooltip (“Strength must be between 1–100”).
+
+UX Note:
+	•	Responsive preview area right of form.
 ---
 
 ### 7. Update A Judoka
@@ -192,6 +231,10 @@ Choose to create or edit a judoka.
 - Edits persist after save.
 - Field validation enforces legal stat limits.
 - If selected judoka is deleted/missing, display retry prompt.
+	•	Judoka list loads correctly.
+	•	Edits persist after save.
+	•	Stat bounds enforced.
+	•	If no judoka found, prompt “No saved judoka found. Create one?”
 
 ---
 
@@ -202,9 +245,9 @@ Choose to create or edit a judoka.
 
 **Acceptance Criteria**:
 - Random judoka displayed on load/refresh.
-- “Show Another” reloads a different profile.
-- If list is empty, show “No data available” message.
-
+- “Draw” reloads a different profile.
+	•	On load, show one random judoka.
+	•	Button “Draw” refreshes content.
 ---
 
 ### 9. Meditation
@@ -215,5 +258,5 @@ Choose to create or edit a judoka.
 **Acceptance Criteria**:
 - Loads random quote per visit.
 - English / Japanese toggle works.
-- Ambient visuals and sounds reinforce restful tone.
+- Ambient visuals reinforce restful tone.
 - Text is legible; character art is scaled correctly.
