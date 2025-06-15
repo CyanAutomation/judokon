@@ -25,7 +25,7 @@ export function toggleExpandedMapView(gameModes) {
     .map(
       (mode) =>
         `<div class="map-tile" style="background-image: url('${mode.image}')">
-          <a href="src/pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a>
+          <a href="/src/pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a>
         </div>`
     )
     .join("");
@@ -76,7 +76,7 @@ export function togglePortraitTextMenu(gameModes) {
   textMenu.innerHTML = validModes
     .map(
       (mode) =>
-        `<li><a href="src/pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a></li>`
+        `<li><a href="/src/pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a></li>`
     )
     .join("");
 
@@ -187,7 +187,7 @@ export async function populateNavbar() {
 
     const ul = document.createElement("ul");
     ul.innerHTML = activeModes
-      .map((mode) => `<li><a href="src/pages/${mode.url}">${mode.name}</a></li>`)
+      .map((mode) => `<li><a href="/src/pages/${mode.url}">${mode.name}</a></li>`)
       .join("");
     navBar.appendChild(ul);
 

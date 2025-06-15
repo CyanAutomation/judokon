@@ -6,7 +6,7 @@
     "description": "A standard one-on-one battle mode where players compete to win.",
     "category": "mainMenu",
     "order": 20,
-    "url": "shiai.html",
+    "url": "battleJudoka.html",
     "isHidden": false,
     "rules": {
       "rounds": 25,
