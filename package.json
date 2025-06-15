@@ -12,7 +12,8 @@
     "test": "vitest",
     "test:screenshot": "playwright test",
     "lint": "npx prettier . --check && npx eslint .",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "validate:data": "npx ajv validate -s src/schemas/judoka.schema.json -d src/data/judoka.json && npx ajv validate -s src/schemas/gameModes.schema.json -d src/data/gameModes.json && npx ajv validate -s src/schemas/weightCategories.schema.json -d src/data/weightCategories.json && npx ajv validate -s src/schemas/countryCodeMapping.schema.json -d src/data/countryCodeMapping.json && npx ajv validate -s src/schemas/gokyo.schema.json -d src/data/gokyo.json"
   },
   "keywords": [],
   "author": "",

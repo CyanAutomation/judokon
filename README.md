@@ -87,7 +87,13 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
 ## Data Schemas and Validation
 
 JSON files in `src/data` are validated against matching schemas in `src/schemas`.
-Use the Ajv CLI to ensure files conform to their schema:
+Validate all data files at once with the npm script:
+
+```bash
+npm run validate:data
+```
+
+You can also validate a single pair manually:
 
 ```bash
 npx ajv validate -s src/schemas/judoka.schema.json -d src/data/judoka.json
