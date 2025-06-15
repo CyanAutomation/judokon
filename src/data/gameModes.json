@@ -1,13 +1,13 @@
 [
   {
     "id": "shiai",
-    "name": "Shiai (Battle Mode)",
+    "name": "Classic Battle",
     "japaneseName": "試合 (バトルモード)",
     "description": "A standard one-on-one battle mode where players compete to win.",
     "category": "mainMenu",
     "order": 20,
     "url": "shiai.html",
-    "isHidden": true,
+    "isHidden": false,
     "rules": {
       "rounds": 25,
       "teamSize": 25,
@@ -112,11 +112,11 @@
   },
   {
     "id": "updateJudoka",
-    "name": "Update A Judoka",
+    "name": "Update Judoka",
     "japaneseName": "柔道家を更新",
     "description": "Edit the details of an existing judoka.",
-    "category": "judokaUpdate",
-    "order": 55,
+    "category": "mainMenu",
+    "order": 30,
     "url": "updateJudoka.html",
     "isHidden": false,
     "rules": {
@@ -153,11 +153,11 @@
   },
   {
     "id": "randomJudoka",
-    "name": "Random Judoka",
+    "name": "View Judoka",
     "japaneseName": "ランダム柔道家",
     "description": "Displays a random judoka from the available list.",
     "category": "mainMenu",
-    "order": 72,
+    "order": 40,
     "url": "randomJudoka.html",
     "isHidden": false,
     "rules": {
