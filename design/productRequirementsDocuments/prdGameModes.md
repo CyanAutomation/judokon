@@ -48,15 +48,15 @@ Improving session variety directly supports retention and encourages more person
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature            | Description                                                       |
-|----------|--------------------|-------------------------------------------------------------------|
-| P1       | Shiai Mode         | 1v1 AI battle, stat-based combat to 10 points                     |
-| P1       | Team Battle Modes  | Gender-specific team-based battles with 1v1 submatches            |
-| P1       | Judoka Creation    | Interface for new character creation with preview and save logic |
-| P2       | Judoka Update      | Edit existing characters and save changes                         |
-| P2       | Browse Judoka      | Explore all characters with future filtering/sorting              |
-| P2       | Random Judoka      | View a new random profile per visit                               |
-| P3       | Meditation Mode    | Non-interactive rest screen with quotes and visuals               |
+| Priority | Feature           | Description                                                      |
+| -------- | ----------------- | ---------------------------------------------------------------- |
+| P1       | Shiai Mode        | 1v1 AI battle, stat-based combat to 10 points                    |
+| P1       | Team Battle Modes | Gender-specific team-based battles with 1v1 submatches           |
+| P1       | Judoka Creation   | Interface for new character creation with preview and save logic |
+| P2       | Judoka Update     | Edit existing characters and save changes                        |
+| P2       | Browse Judoka     | Explore all characters with future filtering/sorting             |
+| P2       | Random Judoka     | View a new random profile per visit                              |
+| P3       | Meditation Mode   | Non-interactive rest screen with quotes and visuals              |
 
 ---
 
@@ -71,6 +71,7 @@ Improving session variety directly supports retention and encourages more person
 A 1v1 stat-based match against an AI opponent using a deck of 25 judoka. First to 10 points wins.
 
 **Rules**:
+
 - 25 Rounds maximum
 - Deck size: 25
 - Score cap: 10 points
@@ -78,34 +79,40 @@ A 1v1 stat-based match against an AI opponent using a deck of 25 judoka. First t
 - Higher stat wins, +1 point
 
 Player Flow:
-	1.	Player enters via Map icon → transition to Shiai Arena.
-	2.	Decks load and validate (min. 25 cards).
-	3.	Cards are revealed → player picks stat → score resolves.
-	4.	End state = First to 10 or 25 rounds → summary → return to Map.
+
+1. Player enters via Map icon → transition to Shiai Arena.
+2. Decks load and validate (min. 25 cards).
+3. Cards are revealed → player picks stat → score resolves.
+4. End state = First to 10 or 25 rounds → summary → return to Map.
 
 **Functional Requirements**:
+
 - Draw one random card from each deck per round.
 - Player selects a stat to compare.
 - Higher stat wins; score increases by one.
 - End match on 10 points or after 25 rounds.
 
 **Acceptance Criteria**:
+
 - Given 25 valid cards, When a match starts, Then the player sees 25 rounds or score capped at 10.
-	•	Given a revealed card, When a stat is selected, Then the system compares and updates score.
-	•	Given the final round, When conditions are met, Then a summary is shown and return enabled.
-	•	Given missing stats on a card, When revealed, Then show “Stat not available” overlay.
-	•	Given deck <25 cards, When match is triggered, Then block and alert: “Deck too small.”
+- Given a revealed card, When a stat is selected, Then the system compares and updates score.
+- Given the final round, When conditions are met, Then a summary is shown and return enabled.
+- Given missing stats on a card, When revealed, Then show “Stat not available” overlay.
+- Given deck <25 cards, When match is triggered, Then block and alert: “Deck too small.”
 
 Visuals/UX:
-	•	Score display always visible.
-	•	Card stats animated on reveal.
-	•	“Back to Village” button enabled post-match with fade-out transition.
+
+- Score display always visible.
+- Card stats animated on reveal.
+- “Back to Village” button enabled post-match with fade-out transition.
 
 Settings:
-	•	Difficulty Toggle (TBD): Easy/Medium/Hard (default: Medium).
-	•	Sound effects: ON by default, toggle in corner gear icon.
+
+- Difficulty Toggle (TBD): Easy/Medium/Hard (default: Medium).
+- Sound effects: ON by default, toggle in corner gear icon.
 
 **Edge Cases**:
+
 - If fewer than 25 cards are present, block match with warning.
 - Missing stat on a card triggers "Stat not available" overlay.
 
@@ -120,10 +127,12 @@ Settings:
 Choose between Male, Female, or Mixed team battles.
 
 **Functional Requirements**:
+
 - All three options visible.
 - Routes correctly to selected battle variant.
 
 **Acceptance Criteria**:
+
 - Option buttons are visible and interactive.
 - Click leads to correct mode.
 - Invalid route fallback returns to selection screen.
@@ -136,6 +145,7 @@ Choose between Male, Female, or Mixed team battles.
 
 **Japanese**: 男子団体戦 / 女子団体戦 / 混合団体戦  
 **URLs**:
+
 - Male: `teamBattleMale.html`
 - Female: **TBD (MISSING URL)**
 - Mixed: `teamBattleMixed.html`
@@ -146,26 +156,30 @@ Team battles consist of sequential 1v1s between gender-filtered squads.
 **Mode Parameters**:
 
 | Mode   | Rounds | Team Size | Max Score | Gender |
-|--------|--------|-----------|-----------|--------|
+| ------ | ------ | --------- | --------- | ------ |
 | Male   | 5      | 5         | 5         | Male   |
 | Female | 5      | 5         | 5         | Female |
 | Mixed  | 6      | 6         | 6         | Mixed  |
 
 **Acceptance Criteria**:
+
 - Validates team composition by gender.
 - Follows team match sequence.
 - End state triggers win screen at cap.
 - Missing URL redirects to error message page.
-	•	Team validated on gender before match.
-	•	Sub-match order shown as visual queue.
-	•	At score cap, show win animation and return to Village.
+- Team validated on gender before match.
+- Sub-match order shown as visual queue.
+- At score cap, show win animation and return to Village.
 
 Edge Cases:
-	•	If team is invalid (e.g., wrong gender): block with tooltip “Judoka does not meet team criteria.”
-	•	If URL missing (e.g., Female): redirect to error page with option to report bug.
+
+- If team is invalid (e.g., wrong gender): block with tooltip “Judoka does not meet team criteria.”
+- If URL missing (e.g., Female): redirect to error page with option to report bug.
 
 UX Note:
-	•	Mini avatars shown in a lineup before match begins.
+
+- Mini avatars shown in a lineup before match begins.
+
 ---
 
 ### 4. Browse Judoka
@@ -177,13 +191,15 @@ UX Note:
 View all available judoka with stats and visuals.
 
 **Acceptance Criteria**:
+
 - Scrollable card interface.
 - Stats sourced from `judoka.json`.
 - Responsive across screen sizes.
 - Invalid entries replaced with placeholder.
 - If list is empty, show “No cards available” message.
 - Scrollable interface; all cards show name, nationality, and stats.
-	•	Sourced from judoka.json.
+- Sourced from judoka.json.
+
 ---
 
 ### 5. Judoka Update Mode
@@ -195,6 +211,7 @@ View all available judoka with stats and visuals.
 Choose to create or edit a judoka.
 
 **Acceptance Criteria**:
+
 - Two path options visible.
 - Routing to creation/update works.
 - Fallback if no judoka are available to edit.
@@ -207,18 +224,22 @@ Choose to create or edit a judoka.
 **URL**: `createJudoka.html`
 
 **Acceptance Criteria**:
+
 - Inputs for name, nationality, stats, weight class, signature move.
 - Live preview updates on change.
 - Save adds to data store and confirms.
 - Invalid form fields trigger error indicators.
-	•	All inputs required before save.
-	•	Given completed form, When saved, Then judoka appears in judoka.json and preview confirms.
+- All inputs required before save.
+- Given completed form, When saved, Then judoka appears in judoka.json and preview confirms.
 
 Invalid Case:
-	•	Red outlines on errors with tooltip (“Strength must be between 1–100”).
+
+- Red outlines on errors with tooltip (“Strength must be between 1–100”).
 
 UX Note:
-	•	Responsive preview area right of form.
+
+- Responsive preview area right of form.
+
 ---
 
 ### 7. Update A Judoka
@@ -227,14 +248,15 @@ UX Note:
 **URL**: `updateJudoka.html`
 
 **Acceptance Criteria**:
+
 - Judoka list loads from dataset.
 - Edits persist after save.
 - Field validation enforces legal stat limits.
 - If selected judoka is deleted/missing, display retry prompt.
-	•	Judoka list loads correctly.
-	•	Edits persist after save.
-	•	Stat bounds enforced.
-	•	If no judoka found, prompt “No saved judoka found. Create one?”
+- Judoka list loads correctly.
+- Edits persist after save.
+- Stat bounds enforced.
+- If no judoka found, prompt “No saved judoka found. Create one?”
 
 ---
 
@@ -244,10 +266,12 @@ UX Note:
 **URL**: `randomJudoka.html`
 
 **Acceptance Criteria**:
+
 - Random judoka displayed on load/refresh.
 - “Draw” reloads a different profile.
-	•	On load, show one random judoka.
-	•	Button “Draw” refreshes content.
+- On load, show one random judoka.
+- Button “Draw” refreshes content.
+
 ---
 
 ### 9. Meditation
@@ -256,6 +280,7 @@ UX Note:
 **URL**: `quoteKG.html`
 
 **Acceptance Criteria**:
+
 - Loads random quote per visit.
 - English / Japanese toggle works.
 - Ambient visuals reinforce restful tone.
