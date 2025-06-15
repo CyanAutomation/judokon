@@ -46,15 +46,15 @@ Introduce new and diversified modes to support multiple motivations: mastery (Sh
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature            | Description                                                       |
-|----------|--------------------|-------------------------------------------------------------------|
-| P1       | Shiai Mode         | 1v1 AI battle, stat-based combat to 10 points                     |
-| P1       | Team Battle Modes  | Gender-specific team-based battles with 1v1 submatches            |
-| P1       | Judoka Creation    | Interface for new character creation with preview and save logic |
-| P2       | Judoka Update      | Edit existing characters and save changes                         |
-| P2       | Browse Judoka      | Explore all characters with future filtering/sorting              |
-| P2       | Random Judoka      | View a new random profile per visit                               |
-| P3       | Meditation Mode    | Non-interactive rest screen with quotes and visuals               |
+| Priority | Feature           | Description                                                      |
+| -------- | ----------------- | ---------------------------------------------------------------- |
+| P1       | Shiai Mode        | 1v1 AI battle, stat-based combat to 10 points                    |
+| P1       | Team Battle Modes | Gender-specific team-based battles with 1v1 submatches           |
+| P1       | Judoka Creation   | Interface for new character creation with preview and save logic |
+| P2       | Judoka Update     | Edit existing characters and save changes                        |
+| P2       | Browse Judoka     | Explore all characters with future filtering/sorting             |
+| P2       | Random Judoka     | View a new random profile per visit                              |
+| P3       | Meditation Mode   | Non-interactive rest screen with quotes and visuals              |
 
 ---
 
@@ -69,17 +69,20 @@ Introduce new and diversified modes to support multiple motivations: mastery (Sh
 A 1v1 stat-based match against an AI opponent using a deck of 25 judoka. First to 10 points wins.
 
 **Rules**:
+
 - 25 Rounds maximum
 - Deck size: 25
 - Score cap: 10 points
 
 **Functional Requirements**:
+
 - Draw one random card from each deck per round.
 - Player selects a stat to compare.
 - Higher stat wins; score increases by one.
 - End match on 10 points or after 25 rounds.
 
 **Acceptance Criteria**:
+
 - Cards are revealed in correct sequence.
 - Player can select stat.
 - Score updates per round outcome.
@@ -87,6 +90,7 @@ A 1v1 stat-based match against an AI opponent using a deck of 25 judoka. First t
 - Invalid cards or missing stats trigger fallback popup.
 
 **Edge Cases**:
+
 - If fewer than 25 cards are present, block match with warning.
 - Missing stat on a card triggers "Stat not available" overlay.
 
@@ -101,10 +105,12 @@ A 1v1 stat-based match against an AI opponent using a deck of 25 judoka. First t
 Choose between Male, Female, or Mixed team battles.
 
 **Functional Requirements**:
+
 - All three options visible.
 - Routes correctly to selected battle variant.
 
 **Acceptance Criteria**:
+
 - Option buttons are visible and interactive.
 - Click leads to correct mode.
 - Invalid route fallback returns to selection screen.
@@ -115,6 +121,7 @@ Choose between Male, Female, or Mixed team battles.
 
 **Japanese**: 男子団体戦 / 女子団体戦 / 混合団体戦  
 **URLs**:
+
 - Male: `teamBattleMale.html`
 - Female: **TBD (MISSING URL)**
 - Mixed: `teamBattleMixed.html`
@@ -125,12 +132,13 @@ Team battles consist of sequential 1v1s between gender-filtered squads.
 **Mode Parameters**:
 
 | Mode   | Rounds | Team Size | Max Score | Gender |
-|--------|--------|-----------|-----------|--------|
+| ------ | ------ | --------- | --------- | ------ |
 | Male   | 5      | 5         | 5         | Male   |
 | Female | 5      | 5         | 5         | Female |
 | Mixed  | 6      | 6         | 6         | Mixed  |
 
 **Acceptance Criteria**:
+
 - Validates team composition by gender.
 - Follows team match sequence.
 - End state triggers win screen at cap.
@@ -147,6 +155,7 @@ Team battles consist of sequential 1v1s between gender-filtered squads.
 View all available judoka with stats and visuals.
 
 **Acceptance Criteria**:
+
 - Scrollable card interface.
 - Stats sourced from `judoka.json`.
 - Responsive across screen sizes.
@@ -163,6 +172,7 @@ View all available judoka with stats and visuals.
 Choose to create or edit a judoka.
 
 **Acceptance Criteria**:
+
 - Two path options visible.
 - Routing to creation/update works.
 - Fallback if no judoka are available to edit.
@@ -175,6 +185,7 @@ Choose to create or edit a judoka.
 **URL**: `createJudoka.html`
 
 **Acceptance Criteria**:
+
 - Inputs for name, nationality, stats, weight class, signature move.
 - Live preview updates on change.
 - Save adds to data store and confirms.
@@ -188,6 +199,7 @@ Choose to create or edit a judoka.
 **URL**: `updateJudoka.html`
 
 **Acceptance Criteria**:
+
 - Judoka list loads from dataset.
 - Edits persist after save.
 - Field validation enforces legal stat limits.
@@ -201,6 +213,7 @@ Choose to create or edit a judoka.
 **URL**: `randomJudoka.html`
 
 **Acceptance Criteria**:
+
 - Random judoka displayed on load/refresh.
 - “Show Another” reloads a different profile.
 - If list is empty, show “No data available” message.
@@ -213,6 +226,7 @@ Choose to create or edit a judoka.
 **URL**: `quoteKG.html`
 
 **Acceptance Criteria**:
+
 - Loads random quote per visit.
 - English / Japanese toggle works.
 - Ambient visuals and sounds reinforce restful tone.
