@@ -103,7 +103,8 @@ jobs:
         id: weather
         run: |
           CITY="Wokingham"
-          WEATHER=$(curl -s "wttr.in/$CITY?format=%t+%c" || echo "")
+          # '&m' forces temperature in Celsius
+          WEATHER=$(curl -s "wttr.in/$CITY?format=%t+%c&m" || echo "")
           if [ -n "$WEATHER" ]; then
             echo "weather=$WEATHER in $CITY" >> $GITHUB_OUTPUT
           else
