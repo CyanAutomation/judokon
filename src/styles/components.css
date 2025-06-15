@@ -148,17 +148,32 @@ svg {
 /* Button styles */
 button {
   font-size: 1rem;
+  font-family: "Noto Sans", sans-serif;
   background: none;
   border: none;
   color: var(--color-text);
   font-weight: bold;
   text-decoration: none;
   cursor: pointer;
-  padding: 0;
+  padding: var(--space-sm) var(--space-md);
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  /* Removed will-change to optimize memory usage */
 }
 
 button:hover {
   text-decoration: underline;
+  transform: scale(1.05);
+  will-change: transform;
+}
+
+button:active {
+  transform: scale(0.95);
+  will-change: transform;
 }
 
 button:focus,
@@ -172,6 +187,22 @@ a:focus,
 a:focus-visible {
   outline: 2px solid var(--accent-beige);
   outline-offset: 2px;
+}
+
+button .ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+  transform: scale(0);
+  animation: ripple var(--transition-fast);
+  pointer-events: none;
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
 }
 /* Card styles */
 .card-container {
