@@ -162,16 +162,18 @@ button {
   transition:
     transform var(--transition-fast),
     box-shadow var(--transition-fast);
-  will-change: transform;
+  /* Removed will-change to optimize memory usage */
 }
 
 button:hover {
   text-decoration: underline;
   transform: scale(1.05);
+  will-change: transform;
 }
 
 button:active {
   transform: scale(0.95);
+  will-change: transform;
 }
 
 button:focus,
