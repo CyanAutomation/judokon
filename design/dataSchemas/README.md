@@ -4,7 +4,7 @@ This project stores gameplay data in JSON files under `src/data`. Each file has 
 
 ## Running Validation
 
-Use the [Ajv](https://ajv.js.org/) CLI (installed globally or via `npx`) to validate data files:
+Use the [Ajv](https://ajv.js.org/) CLI (installed globally or via `npx`) to validate data files, or run `npm run validate:data` to check all pairs at once:
 
 ```bash
 npx ajv validate -s src/schemas/judoka.schema.json -d src/data/judoka.json
