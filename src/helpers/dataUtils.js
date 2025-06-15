@@ -28,6 +28,16 @@ const dataCache = new Map();
 // Lazily instantiated Ajv singleton
 let ajvInstance;
 
+/**
+ * Determine if the code is running in a Node environment.
+ *
+ * @pseudocode
+ * 1. Verify that `process` is defined.
+ * 2. Confirm `process.versions.node` exists.
+ * 3. Return `true` when both checks succeed.
+ *
+ * @returns {boolean} `true` if running under Node.
+ */
 function isNodeEnvironment() {
   return typeof process !== "undefined" && process.versions && process.versions.node;
 }
