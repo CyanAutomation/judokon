@@ -99,9 +99,10 @@ Sets the emotional tone. Not a reward, but a rest—balancing the intensity of g
 - Responsive quote text block with max-width control
 - Dynamic font scaling for different screen sizes
 - Skeleton loader animation while quote loads
+- - 200ms fade animation when language is toggled
 
 **Why:**  
-Ensures readability while preventing jarring fallback errors.
+Ensures readability while preventing jarring fallback errors, and enhances contextual clarity and smooth interaction, keeping actions tied to relevant content.
 
 ---
 
@@ -110,11 +111,12 @@ Ensures readability while preventing jarring fallback errors.
 **Contents:**
 
 - Large, thumb-friendly button (min 48px height)
-- Calming label: _“Return to Battle”_ or _“Continue When Ready”_
+- Calming label: _“Return to Battle”_ or _“Continue Your Journey”_
 - Button anchored close to quote with clear margin spacing
+- Clear visual separation from quote/toggle above
 
 **Why:**  
-Provides agency without pressure. Allows the player to re-enter gameplay at their own pace.
+Provides agency without pressure. Allows the player to re-enter gameplay at their own pace. And prevents accidental taps and creates distinct flow—finish reading before proceeding.
 
 ---
 
