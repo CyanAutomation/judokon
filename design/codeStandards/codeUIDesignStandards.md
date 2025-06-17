@@ -1,32 +1,34 @@
-# 🎴 Ju-Do-Kon! UI Design Document
+# Ju-Do-Kon! UI Design Standards
 
 This unified design guide is for developers, designers, and PMs building **Ju-Do-Kon!**, the web-based judo-themed collectible card game. It combines visual identity, interaction design, and component rules into a single reference.
 
 ---
 
-## 1. Introduction
+## 1. Purpose
 
-### Purpose
+This document defines the **visual identity**, **component rules**, and **interaction principles** used throughout Ju-Do-Kon!'s user interface. It ensures the experience is:
 
-This document defines the UI foundations for Ju-Do-Kon! It supports:
-
-- Consistent design language across screens
-- Responsive and accessible UI implementation
-- Clear feedback, immersion, and touch-first interaction
-
-### Audience
-
-- Frontend Developers
-- UI/UX Designers
-- Product Managers
-
-### Stack
-
-- HTML, CSS, Vanilla JavaScript
+- Visually consistent
+- Game-appropriate for ages 8–12
+- Optimised for both desktop and mobile
+- Scalable and maintainable for future features
 
 ---
 
-## 2. Design Principles
+## 2. Design Language
+
+### 2.1 Overview
+
+Ju-Do-Kon! uses a **bold, high-contrast design system** grounded in clear hierarchy, playful colour, and expressive character visuals.
+
+#### Key Visual Themes
+
+- Flat colour + geometric background textures
+- Layered judoka cards
+- Emphasis typography (caps, bold, white-on-colour)
+- Panelled layout with z-depth and modular sections
+
+### 2.2 Design Principles
 
 - **Touch-first Interaction** – Minimum 44x44px targets, swipeable areas, and tap feedback.
 - **Responsive Feedback** – Every interaction must give feedback (scale, glow, ripple, animation).
@@ -40,138 +42,164 @@ This document defines the UI foundations for Ju-Do-Kon! It supports:
 
 ---
 
-## 3. Thematic Visual Language
+## 3. Colour System
 
-- **Motifs**: Judo dojo interiors, martial arts posters, tatami textures, light grey cards, monochrome line UI, soft shadows
-- **Textures**: Subtle grain, brush ink strokes
-- **Palette**: Muted greys, soft whites, dark accents for labels and icons. Cards maintain vibrant rarity colours.
-- **Typography**: Bold headlines, readable body
-- **Layout Metaphor**: Navigation is themed as rooms within a dojo or Japanese map
+### Core Strategy
 
----
-
-## 4. Colour System
-
-| Token Name          | Hex Code | Use                   |
-| ------------------- | -------- | --------------------- |
-| `--color-primary`   | #CB2504  | Buttons, highlights   |
-| `--color-secondary` | #0C3F7A  | Nav bar, stat blocks  |
-| `--color-tertiary`  | #E8E8E8  | Backgrounds, outlines |
+| Token Name         | Hex Code | Use                  |
+|--------------------|----------|----------------------|
+| --color-primary    | #CB2504  | Buttons, highlights  |
+| --color-secondary  | #0C3F7A  | Nav bar, stat blocks |
+| --color-tertiary   | #E8E8E8  | Backgrounds, outlines|
 
 ### Rarity Colours
 
-| Rarity    | Background | Border  | Judogi Colour  |
-| --------- | ---------- | ------- | -------------- |
-| Common    | #3C5AD6    | #3C5AD6 | White (#FFF)   |
-| Epic      | #C757DA    | #C757DA | Blue (#3C7DC4) |
-| Legendary | #E4AB19    | #E4AB19 | Blue (#3C7DC4) |
+| Rarity     | Background | Border    | Judogi Colour |
+|------------|------------|-----------|---------------|
+| Common     | #3C5AD6    | #3C5AD6   | White (#FFF)  |
+| Epic       | #C757DA    | #C757DA   | Blue (#3C7DC4)|
+| Legendary  | #E4AB19    | #E4AB19   | Blue (#3C7DC4)|
 
-> ⚠️ **Note:** Judoka cards retain their bright, vibrant, distinct colour palette and styling. They are visually separate from the muted, modern dojo-themed UI shell.
+⚠️ **Note:** Judoka cards retain their bright, vibrant, distinct colour palette and styling. They are visually separate from the muted, modern dojo-themed UI shell.
 
-### Dark Mode Support
+Each **game mode or feature area** is assigned a **unique dominant colour**, creating intuitive navigation through visual identity.
 
-Use semantic tokens for adaptive styling with `prefers-color-scheme`.
+| Feature / Mode       | Colour     | Notes                          |
+|----------------------|------------|--------------------------------|
+| Classic Battle       | #E53935    | High-energy, competitive       |
+| Team Battle          | #8E24AA    | Cooperative and strategic      |
+| Update Judoka        | #00897B    | Constructive, calm             |
+| Browse Judoka        | #3949AB    | Archival, structured           |
+| Meditation           | #F9A825    | Calm, reflective               |
+
+### Gradient & Texture Usage
+
+- Use **linear gradients** or **subtle diagonal patterns** in background areas.
+- Avoid visual clutter; keep texture light and geometric.
 
 ---
 
-## 5. Typography
+## 4. Typography
 
-| Role        | Font           | Size    | Weight  |
-| ----------- | -------------- | ------- | ------- |
-| Headings    | League Spartan | 32–40px | Bold    |
-| Body Text   | League Spartan | 16px    | Regular |
-| Stat Labels | Noto Sans      | 14px    | Bold    |
-| Small Text  | Noto Sans      | 12px    | Medium  |
+### Font Family
 
+- **Primary:** `Inter`, `Montserrat`, or `League Spartan`
+- Geometric, sans-serif, and legible across screen sizes
+
+### Typographic Hierarchy
+
+| Element             | Style                        | Notes                         |
+|---------------------|-----------------------------|-------------------------------|
+| Section Titles      | ALL CAPS, Bold, Large       | Use tracking for emphasis     |
+| Action Buttons      | Uppercase, Bold             | Primary CTA focus             |
+| Judoka Surnames     | Bold, Uppercase, Larger     | E.g. ONO                      |
+| Judoka First Names  | Light, Small caps           | E.g. Shohei                   |
+| Supporting Info     | Light, Small                | Country, Weight class, etc.   |
+
+### Contrast & Readability
+
+- Always meet **WCAG AA** contrast.
+- Pair bold white or black text against vibrant fills for CTAs and banners.
 - Line-height: 1.4× font size
 - Letter-spacing: 0.5% (League Spartan), normal (Noto Sans)
 - Avoid using all caps in body text for readability
 
 ---
 
-## 6. Layout & Spacing
+## 5. Imagery & Iconography
 
-- Grid: 12-column with 16px gutter
+### Judoka Cards
+
+- Use **cut-out portrait art** with:
+  - Clean edges
+  - Expressive poses
+  - Subtle drop shadows for pop
+
+### Overlay & Layering
+
+- Characters should visually **layer over** their background panels.
+- Use drop shadows and blur behind portraits to aid depth.
+
+---
+
+## 6. Visual Hierarchy
+
+### Structure by Importance
+
+- **Rarity tiers**, **modes**, and **ranking** must be reflected visually:
+  - Size (larger for higher status)
+  - Colour weight
+  - Position (centre/focus)
+
+### Panels & Sections
+
+- Use **boxes**, **lines**, or **alternating backgrounds** to group content.
+- Example: a vertical list of modes should use clearly segmented tiles.
+
+### Z-Index & Elevation
+
+- Cards and CTAs should visually **pop forward** from the backdrop.
+- Use blur, scale, or shadow to indicate interactivity.
+
+---
+
+## 7. Grid & Layout System
+
+### Grid System
+
+- Use a **4-column responsive grid**
+- Align all components to the grid baseline
 - Stack: Responsive vertical stacking on mobile
 - Containers: Soft drop shadows and generous whitespace
 
-### Spacing Tokens
+### Spacing Scale
 
-```css
---space-xs: 4px;
---space-sm: 8px;
---space-md: 16px;
---space-lg: 24px;
---space-xl: 32px;
-```
+- Use **8px** rhythm (8, 16, 24, 32, 40, etc.)
+- Apply consistent **padding/margin** values across blocks
 
-- Border Radius:
-  - Pills: `radius = 50% height`
-  - Cards/Modals: 12px rounded corners
+### Modular Blocks
 
----
+- Design core layout with **reusable modules**:
+  - Card Viewer Block
+  - Mode Selector Tiles
+  - Quote Panel
+  - Trivia Display
+  - Gallery Carousel
 
-## 7. Iconography
+### Alignment Patterns
 
-- Style: Monochrome, flat, rounded, minimal detail
-- Size: 24x24px standard
-- Icon + label combinations always visible
-- Button icons sit left of labels with consistent padding
-- Footer navigation must avoid label truncation
+- **Centre-aligned** for single CTAs or title areas
+- **Left-aligned** for judoka info and ranking blocks
+- Use **background diagonals** or geometry for layout anchoring
 
 ---
 
-## 8. Components
+## 8. Component Examples
 
-### 8.1 Buttons
+### 8.1 Overview
 
-**All components must visually align to the light UI aesthetic: white/grey surfaces, black or dark text, and clean separation from the colourful judoka cards.**
+| Component            | Features                                                                 |
+|----------------------|-------------------------------------------------------------------------|
+| Card Carousel        | 3–5 visible cards, scroll snap, swipe area, visual edge indicators     |
+| Mode Selection Panel | Bold icon + label tiles, hover/press feedback, stacked vertically on mobile |
+| Create/Edit Modal    | Floating modal, left-aligned Cancel + right-aligned Save, live card preview |
+| Quote Screen         | Language toggle, fade transition, vertical CTA separation              |
+| Landing Header       | Judoka illustration overlay, game logo, dynamic mode buttons          |
 
-| Type      | Style                         | Use                  |
-| --------- | ----------------------------- | -------------------- |
-| Primary   | `--color-primary`, white text | Main CTA             |
-| Secondary | White bg, primary border      | Minor action         |
-| Icon-only | Transparent background        | Compact interactions |
-
-**States**:
-
-- Hover: scale 1.05x
-- Active: depress animation
-- Disabled: 50% opacity
-- Tap Feedback: ripple/scale + color tint
-
-**Sizing**:
-
-- Small, Medium, Large
-- Edge-aware padding for mobile reach zones
-
-**Contextual Showcase**:
-
-- Capsule in HUD
-- Fixed button in footer bar
-
-### 8.2 Inputs
-
-- Padding: 12px 16px
-- Border-radius: 6px
-- Real-time validation indicator
-- Focus: 2px solid primary
-- Placeholder: muted colour
-
-### 8.3 Navigation
+### 8.2 Navigation
 
 #### Top Bar
 
 - Fixed, screen reader accessible
 - Logo left, menu right
 
-#### Map Navigation (Game Mode Rooms)
+#### Map Navigation (Game Mode Locations)
 
 - Tappable map tiles
 - On hover: glow or scale effect
 - On select: animate tile (scale up)
 - Label + icon (e.g. 💪 BATTLE!)
-- Role: `button`, with ARIA labels
+- Role: button, with ARIA labels
 
 #### Footer Nav
 
@@ -180,69 +208,52 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
 - Clear active/focus state
 - Do not truncate labels
 
-### 8.4 Judoka Cards
+### 8.3 Judoka Cards
 
-- Aspect Ratio: 2:3
-- Zones:
-  - Top Left: Rarity (Epic/Legendary only)
-  - Top Right: Weight Class
-  - Portrait: Stylized illustration
-  - Stat Block: 0–10 scale bars or chips
-  - Signature Move: Common cards only
+#### Aspect Ratio
 
-**Stat Colour Codes**:
+- 2:3
+
+#### Zones
+
+- Top Left: Rarity (Epic/Legendary only)
+- Top Right: Weight Class
+- Portrait: Stylized illustration
+- Stat Block: 0–10 scale bars or chips
+- Signature Move: Common cards only
+
+#### Stat Colour Codes
 
 - 0–3: Red
 - 4–7: Yellow
 - 8–10: Green
 
-**Interactions**:
+#### Interactions
 
 - Tap = slide/reveal stats
 - Hover = slight scale and shadow
 - Selection = glow + checkmark
-- Win/Lose state = animation glow
-
-### Card Design Rules
 
 #### Name Formatting
-
-- **First Name**: Smaller, sentence case
-- **Surname**: Larger, uppercase, bold
-- **Font**: League Spartan (both)
-
-#### Stat Area
-
-- **Alignment**: Stat block always bottom-aligned
-- **Background**: Dark blue (#0C3F7A)
-- **Font**: Noto Sans, bold
-
+- First Name: Smaller, sentence case
+- Surname: Larger, uppercase, bold
+- Alignment: Stat block always bottom-aligned
+- Background: Dark blue (#0C3F7A)
 #### Signature Move Band (Common Cards)
 
-- **Background**: #003B88
-- **Text**: Yellow (#FED843), left-aligned label + centered move name
-
+- Background: #003B88
+- Text: Yellow (#FED843), left-aligned label + centered move name
 #### Rarity Markers
 
-- **Epic and Legendary Only**: Icon appears only on these tiers
-- **Placement**: Top-left of portrait area
-- **Templates**: Use standard templates only
+- Epic and Legendary Only: Icon appears only on these tiers
+- Placement: Top-left of portrait area
 
 #### Portrait Area
+- Style: Vector cartoon-realism
+- Background: Clean, warm gradient (non-radial)
+- Judogi Colour: Blue judogi for Epic/Legendary (Pantone 285M, #3C7DC4)
 
-- **Style**: Vector cartoon-realism
-- **Background**: Clean, warm gradient (non-radial)
-- **Judogi Colour**: Blue judogi for Epic/Legendary (Pantone 285M, #3C7DC4)
-
-#### Interactions
-
-- **Hover**: Slight scale and shadow
-- **Tap**: Slide/reveal stats
-- **Selection**: Glow + checkmark
-- **Win/Lose State**: Animation glow
-
-### 8.5 Card Carousel
-
+### 8.4  Card Carousel
 - Horizontal scroll with scroll-snap-x
 - Shows 3–5 cards depending on screen size
 - Central card slightly zoomed
@@ -251,114 +262,71 @@ Use semantic tokens for adaptive styling with `prefers-color-scheme`.
 - Swipe and keyboard navigation
 - Scroll-edge blur to signal limits
 
-### 8.6 Modals
-
+### 8.5 Modals
 - Max Width: 600px
 - Centered with dim backdrop
 - Cancel (left), Save/Continue (right)
 - Action buttons always visible on mobile
 - Confirmation toast on Save
 
-### 8.7 Judoka Editor
-
+### 8.6 Judoka Editor
 - Input sliders or steppers for stats (0–10)
 - Live card preview (collapsible on mobile)
 - Signature move: dropdown select
-- Inline error messages
 - Sticky footer bar: Cancel + Save
 
 ---
 
-## 9. Game States
+## 9. Accessibility & Responsiveness
 
-- **Score Display**: animated number flip
-- Carousel and stat feedback use scale and blur motion rather than bright flashes
-- **Result Feedback**: WIN/LOSE/DRAW overlay flashes (green/red/grey)
-- **Next Round**: loader + bounce CTA
-- **Stat Selection**:
-  - Tap = highlight + glow
-  - Lock others on pick
-
----
-
-## 10. Accessibility
-
-- Use semantic HTML tags
-- All buttons must be keyboard reachable
+- Keyboard accessible
+- Tap targets ≥ 44px
 - Minimum contrast ratio: 4.5:1
 - Carousel: swipe, arrow key, screen reader friendly
 - Modals must trap focus when open
+- Fully responsive across breakpoints:
+  - Mobile-first
+  - Desktop-focused layout enhancements
+  - Tablet scaling
 
 ---
 
-## 11. Tokens
+## 10. Tokens
 
-| Token Name          | Value                      | Purpose        |
-| ------------------- | -------------------------- | -------------- |
-| `--radius-sm`       | 4px                        | Inputs, badges |
-| `--radius-md`       | 8px                        | Buttons        |
-| `--radius-lg`       | 12px                       | Cards, modals  |
-| `--shadow-base`     | 0 4px 12px rgba(0,0,0,0.1) | Elevation      |
-| `--transition-fast` | all 150ms ease             | UI animations  |
-
----
-
-## 12. Accessibility Checklist
-
-- [x] Lighthouse score ≥ 90
-- [x] Axe DevTools pass
-- [x] Tab navigation test
-- [x] Screen reader roles
-- [x] High-contrast checks for card backgrounds
+| Token Name       | Value               | Purpose                     |
+|------------------|---------------------|-----------------------------|
+| --radius-sm      | 4px                | Inputs, badges              |
+| --radius-md      | 8px                | Buttons                     |
+| --radius-lg      | 12px               | Cards, modals               |
+| --shadow-base    | 0 4px 12px rgba(0,0,0,0.1) | Elevation                  |
+| --transition-fast| all 150ms ease     | UI animations               |
 
 ---
 
-## 13. Do & Don’t
+## 11. Branding Aspects
 
-### Do
+### Logos & Emblems
 
-- Use ripple/tap feedback on all interactive items
-- Animate card state transitions
-- Collapse panels for mobile
-- Show button states clearly in context
-- UI components adopt a restrained, modern, grayscale palette to increase the impact of vibrant judoka cards. This separation helps keep the core game interface accessible, readable, and immersive, without visual overload.
+#### Full Logo
 
-### Don’t
+- Horizontal and stacked versions available
+- Use on light/dark backgrounds with proper spacing
+- Minimum size and safe zones must be respected
 
-- Assume hover = feedback
-- Use label-only icons
-- Truncate button labels
-- Leave score/result transitions static
+#### SHIHO Emblem
 
----
+- Represents endless knot → replayability & balance
+- Usage rules:
+  - Do not rotate, stretch, recolour, or overlay on complex backgrounds
+  - Use emblem only in secondary branding contexts
 
-## 14. Branding Aspects
+### High-Energy Design
 
-#### Logos & Emblems
+- Bold, modular, and fast-moving interfaces
+- Use vibrant colours sparingly to highlight key actions or elements
 
-- **Full Logo**:
-  - Horizontal and stacked versions available
-  - Use on light/dark backgrounds with proper spacing
-  - Minimum size and safe zones must be respected
-- **SHIHO Emblem**:
-  - Represents endless knot → replayability & balance
-  - Usage rules:
-    - Do not rotate, stretch, recolour, or overlay on complex backgrounds
-    - Use emblem only in secondary branding contexts
+### Fun-First Approach
 
-#### Cultural Respect
+- Ensure interactions feel snappy and playful
+- Maintain a kid-friendly tone with clear, accessible visuals
 
-- **Japanese Aesthetics**:
-  - Incorporate nods to traditional Japanese design elements (e.g., tatami textures, brush ink strokes)
-  - Avoid cultural misrepresentation or overuse of stereotypes
-- **Martial Values**:
-  - Reflect judo principles like balance, respect, and mastery in UI interactions
-
-#### Visual Identity
-
-- **High-Energy Design**:
-  - Bold, modular, and fast-moving interfaces
-  - Use vibrant colours sparingly to highlight key actions or elements
-- **Fun-First Approach**:
-  - Ensure interactions feel snappy and playful
-  - Maintain a kid-friendly tone with clear, accessible visuals
