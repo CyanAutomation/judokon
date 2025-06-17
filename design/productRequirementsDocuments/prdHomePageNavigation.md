@@ -1,6 +1,6 @@
 # PRD: Home Page Main Navigation Menu
 
-## 1. Overview
+## Overview
 
 This document describes the **Home Page Main Navigation Menu** for the JU-DO-KON! web-based judo-themed card battle game.
 
@@ -22,7 +22,9 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 
 ---
 
-## 2. Functional Requirements
+## Functional Requirements
+
+### Features
 
 | Priority | Feature                     | Description                                                                    |
 | -------- | --------------------------- | ------------------------------------------------------------------------------ |
@@ -34,7 +36,7 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 | P3       | SVG Optimization            | Icons must be <50KB and optimized for fast loading.                            |
 | P3       | Accessibility Compliance    | Text contrast ≥4.5:1 and screen-reader friendly (aria-labels, alt text).       |
 
-### 2.1. Navigation Menu Layout
+### Navigation Menu Layout
 
 - The main navigation is visually divided into **two thematic sections**, but **functionally structured as a 2×2 grid** for layout and responsiveness purposes.
 - Sections:
@@ -53,9 +55,7 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
   - Tile scales to 1.05 over 150ms (ease-in transition).
 - **Touch targets** must meet a minimum size of **48px × 48px** for mobile usability.
 
----
-
-### 2.2. Tile Definitions
+### Tile Definitions
 
 > _Note: Label text may vary slightly (e.g., “View” vs. “Browse”) to better suit audience understanding. Functionality must remain unchanged._
 
@@ -68,7 +68,7 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 
 > **Note:** Currently, "Battle Mode: Classic" and "Battle Mode: Team Battle" point to the same URL. Distinct functionality is expected to be developed later.
 
-### 2.3. Behavior on Click
+### Behavior on Click
 
 - Clicking a tile navigates to the corresponding page immediately.
 - No page transition animation is required (standard browser navigation).
@@ -79,7 +79,7 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 
 ---
 
-## 3. Wireframe Diagram
+## Wireframe Diagram
 
 ```
 +----------------------------------------------------------+
@@ -112,7 +112,7 @@ Each tile contains:
 
 ---
 
-## 4. Acceptance Criteria
+## Acceptance Criteria
 
 | ID   | Acceptance Criterion                                                                     |
 | ---- | ---------------------------------------------------------------------------------------- |
@@ -132,16 +132,16 @@ Each tile contains:
 
 ---
 
-## 5. Non-Functional Requirements
+## Non-Functional Requirements
 
-### 5.1. Responsiveness
+### Responsiveness
 
 - The layout must adapt to different screen sizes:
   - **Desktop (>=1024px):** 2 columns, 2 rows.
   - **Tablet (>=768px and <1024px):** 2 columns, 2 rows.
   - **Mobile (<768px):** Single column layout; tiles stack vertically.
 
-### 5.2. Accessibility
+### Accessibility
 
 - Tiles must be:
   - Focusable via keyboard (`tabindex=0` if needed).
@@ -150,7 +150,7 @@ Each tile contains:
 - SVG icons must have descriptive `title` or `aria-hidden="true"` if decorative.
 - Tap targets must meet WCAG minimum sizing standards (48px x 48px).
 
-### 5.3. Performance
+### Performance
 
 - SVG icons must be **optimized** to minimize page load times (<50KB).
 - Navigation interactions must be **instantaneous**, with interaction latency <100ms.
@@ -158,7 +158,7 @@ Each tile contains:
 
 ---
 
-## 6. Edge Cases / Failure States
+## Edge Cases / Failure States
 
 - **Icon Load Failure**: Fall back to displaying a generic JU-DO-KON logo.
 - **Slow Network**: Navigation tiles and fallback icons should still be accessible.
@@ -167,54 +167,76 @@ Each tile contains:
 
 ---
 
-## 7. Design and UX Considerations
+## Design and UX Considerations
 
-- **Mockups**:
-  - Annotated wireframes showcasing:
-    - Grid layout with hover state visuals (cursor change, 150ms zoom effect).
-    - Touch target sizing indicators.
-- **Style Guidelines**:
-  - Use consistent fonts and color palette from JU-DO-KON’s theme.
-  - Ensure text labels and background colors have contrast ratio ≥4.5:1.
-  - Consistent margin and padding for tile spacing.
-  - Hover interaction: scale tile to 1.05 over 150ms with ease-in transition for visual feedback.
+### Mockups
+
+- Annotated wireframes showcasing:
+  - Grid layout with hover state visuals (cursor change, 150ms zoom effect).
+  - Touch target sizing indicators.
+
+### Style Guidelines
+
+- Use consistent fonts and color palette from JU-DO-KON’s theme.
+- Ensure text labels and background colors have contrast ratio ≥4.5:1.
+- Consistent margin and padding for tile spacing.
+- Hover interaction: scale tile to 1.05 over 150ms with ease-in transition for visual feedback.
+
+### Battle Mode Section
+
+- **Contents**:
+  - Header: “Battle Mode” with clear divider or label.
+  - Tile 1: “Classic Battle” — icon left, label centered vertically.
+  - Tile 2: “Team Battle” — same size and visual weight as Classic.
+
+- **Why**: Re-establishes semantic clarity between gameplay options and restores equal prominence to two core actions. Without this, Team Battle feels like a weak afterthought.
+
+### Responsive Tile Stack Module
+
+- **Contents**:
+  - Implement column-stacking at <768px with equal vertical spacing.
+  - Ensure each tile remains fully visible without scroll.
+  - Tile container should use Flex/Grid with breakpoint control.
+
+- **Why**: Mobile-friendliness must be structural, not decorative. “View Judoka” disappearing into the footer is a catastrophic failure for tablet/mobile users.
 
 ---
 
 ## Tasks
 
-- [ ] 1.0 Create Navigation Tile Component
+### Create Navigation Tile Component
 
-  - [ ] 1.1 Design tile structure with SVG icon and label.
-  - [ ] 1.2 Ensure full-tile clickability via JS/CSS.
-  - [x] 1.3 Implement hover and click feedback (cursor pointer, 150ms slight zoom).
+- Design tile structure with SVG icon and label.
+- Ensure full-tile clickability via JS/CSS.
+- Implement hover and click feedback (cursor pointer, 150ms slight zoom).
 
-- [ ] 2.0 Implement Responsive Grid Layout
+### Implement Responsive Grid Layout
 
-  - [ ] 2.1 Create 2x2 grid layout for desktop viewports.
-  - [ ] 2.2 Implement 1-column stacking for mobile (<768px).
-  - [ ] 2.3 Test layout on tablet and mobile orientations.
+- Create 2x2 grid layout for desktop viewports.
+- Implement 1-column stacking for mobile (<768px).
+- Test layout on tablet and mobile orientations.
 
-- [ ] 3.0 Add Accessibility Features
+### Add Accessibility Features
 
-  - [x] 3.1 Add `aria-labels` to each tile.
-  - [x] 3.2 Ensure text contrast ratio ≥4.5:1.
-  - [ ] 3.3 Make icons `aria-hidden` if decorative.
-  - [x] 3.4 Enable keyboard tabbing and activation via Enter/Space.
+- Add `aria-labels` to each tile.
+- Ensure text contrast ratio ≥4.5:1.
+- Make icons `aria-hidden` if decorative.
+- Enable keyboard tabbing and activation via Enter/Space.
 
-- [ ] 4.0 Optimize and Integrate SVG Icons
+### Optimize and Integrate SVG Icons
 
-  - [ ] 4.1 Compress SVG icons to <50KB.
-  - [x] 4.2 Add fallback icon logic for load failure.
-  - [ ] 4.3 Verify all icons load under poor network conditions.
+- Compress SVG icons to <50KB.
+- Add fallback icon logic for load failure.
+- Verify all icons load under poor network conditions.
 
-- [ ] 5.0 Implement Keyboard Navigation and Focus Management
+### Implement Keyboard Navigation and Focus Management
 
-  - [x] 5.1 Add `tabindex` attributes for tiles.
-  - [x] 5.2 Handle keyboard activation events.
-  - [ ] 5.3 Ensure visual focus indicators are clear and accessible.
+- Add `tabindex` attributes for tiles.
+- Handle keyboard activation events.
+- Ensure visual focus indicators are clear and accessible.
 
-- [ ] 6.0 Handle Edge Cases and Failure States
-  - [x] 6.1 Implement generic fallback icon on load failure.
-  - [ ] 6.2 Redirect to default error page on broken link.
-  - [ ] 6.3 Maintain layout stability during device rotation.
+### Handle Edge Cases and Failure States
+
+- Implement generic fallback icon on load failure.
+- Redirect to default error page on broken link.
+- Maintain layout stability during device rotation.

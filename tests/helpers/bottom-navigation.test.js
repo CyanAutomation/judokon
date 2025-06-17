@@ -55,7 +55,7 @@ describe("toggleExpandedMapView", () => {
     expect(view).toBeTruthy();
     const tiles = view.querySelectorAll(".map-tile");
     expect(tiles).toHaveLength(2);
-    expect(tiles[0].querySelector("a")).toHaveAttribute("href", "/src/pages/mode1.html");
+    expect(tiles[0].querySelector("a")).toHaveAttribute("href", "/judokon/src/pages/mode1.html");
     expect(tiles[0].querySelector("a")).toHaveAttribute("aria-label", "Mode1");
     expect(tiles[0].textContent).toContain("Mode1");
   });
@@ -79,7 +79,7 @@ describe("togglePortraitTextMenu", () => {
     expect(menu).toBeTruthy();
     const items = menu.querySelectorAll("li");
     expect(items).toHaveLength(2);
-    expect(items[1].querySelector("a")).toHaveAttribute("href", "/src/pages/mode2.html");
+    expect(items[1].querySelector("a")).toHaveAttribute("href", "/judokon/src/pages/mode2.html");
     expect(items[1].querySelector("a")).toHaveAttribute("aria-label", "Mode2");
     expect(items[1].textContent).toContain("Mode2");
   });
