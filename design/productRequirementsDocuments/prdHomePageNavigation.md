@@ -188,8 +188,11 @@ Each tile contains:
   - Header: “Battle Mode” with clear divider or label.
   - Tile 1: “Classic Battle” — icon left, label centered vertically.
   - Tile 2: “Team Battle” — same size and visual weight as Classic.
+  - “Classic Battle” and “Team Battle” use identical tile formats
+  - Match icon styles and ensure equal visual weight
+  - Add subtext beneath labels for quick description (e.g., “1v1 classic rules” / “3v3 team showdown”)
 
-- **Why**: Re-establishes semantic clarity between gameplay options and restores equal prominence to two core actions. Without this, Team Battle feels like a weak afterthought.
+- **Why**: Re-establishes semantic clarity between gameplay options and restores equal prominence to two core actions. Without this, Team Battle feels like a weak afterthought. As well as Prevents one mode from visually dominating the other and helps new users instantly understand what each mode means without clicking
 
 ### Responsive Tile Stack Module
 
@@ -197,10 +200,22 @@ Each tile contains:
   - Implement column-stacking at <768px with equal vertical spacing.
   - Ensure each tile remains fully visible without scroll.
   - Tile container should use Flex/Grid with breakpoint control.
+  - Single-column layout for mobile view (portrait resolution)
+  - Tiles stretch to 100% width with top and bottom padding
+  - Tap targets clearly bounded with shadow or color background
+  - Include visible focus outline for keyboard navigation
 
 - **Why**: Mobile-friendliness must be structural, not decorative. “View Judoka” disappearing into the footer is a catastrophic failure for tablet/mobile users.
 
----
+### Judoka Management Module
+
+- **Contents**:
+  - One large tile labeled “Manage Judoka”
+  - On click, expands or opens modal with:
+	  - Create Judoka
+    - Edit Judoka
+
+- **Why**: Reduces visual clutter, eliminates duplicate tiles, and provides a single intuitive access point to all Judoka-related actions—grouped by function, not guesswork.
 
 ## Tasks
 
