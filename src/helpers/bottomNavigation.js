@@ -76,7 +76,7 @@ export function togglePortraitTextMenu(gameModes) {
   textMenu.innerHTML = validModes
     .map(
       (mode) =>
-        `<li><a href="/src/pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a></li>`
+        `<li><a href="/judokon/src/pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a></li>`
     )
     .join("");
 
@@ -187,7 +187,7 @@ export async function populateNavbar() {
 
     const ul = document.createElement("ul");
     ul.innerHTML = activeModes
-      .map((mode) => `<li><a href="/src/pages/${mode.url}">${mode.name}</a></li>`)
+      .map((mode) => `<li><a href="/judokon/src/pages/${mode.url}">${mode.name}</a></li>`)
       .join("");
     navBar.appendChild(ul);
 
@@ -201,13 +201,13 @@ export async function populateNavbar() {
     const fallbackItems = [
       {
         name: "Random Judoka",
-        url: "/src/pages/randomJudoka.html",
+        url: "/judokon/src/pages/randomJudoka.html",
         image: "./src/assets/images/randomJudoka.png"
       },
       { name: "Home", url: "/index.html", image: "./src/assets/images/home.png" },
       {
         name: "Classic Battle",
-        url: "/src/pages/battleJudoka.html",
+        url: "/judokon/src/pages/battleJudoka.html",
         image: "./src/assets/images/classicBattle.png"
       }
     ];
