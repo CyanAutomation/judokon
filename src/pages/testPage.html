@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ju-Do-Kon! Menu Wireframe</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      font-size: 2.5rem;
+      font-weight: bold;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      max-width: 1000px;
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+
+    .tile {
+      background: #fff;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      font-size: 1rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: transform 0.15s ease-in-out;
+    }
+
+    .tile:hover {
+      transform: scale(1.05);
+    }
+
+    .tile.red { background: #e94f37; color: white; }
+    .tile.teal { background: #2cb1bc; color: white; }
+    .tile.blue { background: #3c7dc4; color: white; }
+    .tile.purple { background: #6a4bc9; color: white; }
+    .tile.gold { background: #efaf1b; color: white; }
+
+    .card-of-the-day {
+      background: white;
+      border: 2px dashed #aaa;
+      padding: 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">JU-DO-KON!</div>
+    <div style="font-size: 1.25rem; margin-top: 0.5rem;">Choose Your Path</div>
+  </header>
+
+  <section class="grid">
+    <div class="tile red">🔥 Classic Battle</div>
+    <div class="tile purple">👥 Team Battle</div>
+    <div class="tile teal">✏️ Create Judoka</div>
+    <div class="tile gold">🧘 Meditation Mode</div>
+    <div class="tile blue" style="grid-column: span 2;">📚 Browse Judoka</div>
+  </section>
+</body>
+</html>
