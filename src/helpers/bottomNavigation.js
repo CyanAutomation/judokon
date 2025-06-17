@@ -25,7 +25,7 @@ export function toggleExpandedMapView(gameModes) {
     .map(
       (mode) =>
         `<div class="map-tile" style="background-image: url('${mode.image}')">
-          <a href="/src/pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a>
+          <a href="/judokon/src/pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a>
         </div>`
     )
     .join("");
