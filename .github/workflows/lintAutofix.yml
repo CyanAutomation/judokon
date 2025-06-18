@@ -118,14 +118,15 @@ jobs:
           commit-message: "PR: Auto-formatting and LINT fixes"
           title: "PR: Auto-formatting and LINT fixes - ${{ env.date }}"
           body: |
+            📣 **PR Details**
             This PR includes automated formatting via Prettier and LINT fixes via ESLint.
-            Date of creation: ${{ env.date }}
-            Please review before merging.
+            Date of creation: ${{ env.date }}.
+            Please review before merging!
 
             📚 **Today in History**
             ${{ steps.today.outputs.fact }}
 
-            🌤️ **Mood of the Day**
+            🌤️ **Weather Report**
             ${{ steps.weather.outputs.weather }}
           branch: "auto/format-lint-fixes"
           labels: |
