@@ -127,7 +127,7 @@ jobs:
             ${{ steps.today.outputs.fact }}
 
             🌤️ **Weather Report**
-            ${{ steps.weather.outputs.weather }}
+            ${{ steps.weather.outputs.weather }}.
           branch: "auto/format-lint-fixes"
           labels: |
             automated
