@@ -286,6 +286,13 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Signature move: dropdown select
 - Sticky footer bar: Cancel + Save
 
+### 8.7 Button Style
+
+- Default: `var(--button-bg)`
+- Hover: `var(--button-hover-bg)` with drop shadow (`--shadow-base`)
+- Active: `var(--button-active-bg)`
+- Capsule shape using `--radius-pill`
+
 ---
 
 ## 9. Accessibility & Responsiveness
@@ -304,18 +311,18 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 ## 10. Tokens
 
-| Token Name          | Value                      | Purpose                   |
-| ------------------- | -------------------------- | ------------------------- |
-| --radius-sm         | 4px                        | Inputs, badges            |
-| --radius-md         | 8px                        | Buttons                   |
-| --radius-lg         | 12px                       | Cards, modals             |
-| --radius-pill       | 9999px                     | Capsule buttons           |
-| --button-bg         | #CB2504                    | Primary button background |
-| --button-hover-bg   | #0B5BB0                    | Hover state for buttons   |
-| --button-active-bg  | #0C3F7A                    | Active button state       |
-| --button-text-color | #ffffff                    | Button text               |
-| --shadow-base       | 0 4px 12px rgba(0,0,0,0.1) | Elevation                 |
-| --transition-fast   | all 150ms ease             | UI animations             |
+| Token Name          | Value                      | Purpose                                   |
+| ------------------- | -------------------------- | ----------------------------------------- |
+| --radius-sm         | 4px                        | Inputs, badges                            |
+| --radius-md         | 8px                        | Buttons                                   |
+| --radius-lg         | 12px                       | Cards, modals                             |
+| --radius-pill       | 9999px                     | Capsule buttons                           |
+| --button-bg         | #CB2504                    | Primary button background                 |
+| --button-hover-bg   | #0B5BB0                    | Hover state for buttons; adds drop shadow |
+| --button-active-bg  | #0C3F7A                    | Active button state                       |
+| --button-text-color | #ffffff                    | Button text                               |
+| --shadow-base       | 0 4px 12px rgba(0,0,0,0.1) | Elevation; hover drop-shadow              |
+| --transition-fast   | all 150ms ease             | UI animations                             |
 
 ---
 
