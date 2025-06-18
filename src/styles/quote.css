@@ -106,6 +106,12 @@
   margin-top: var(--space-md); /* Updated token */
 }
 
+.cta-button:link,
+.cta-button:visited {
+  color: var(--button-text-color);
+  background-color: var(--button-bg);
+}
+
 .cta-button:hover,
 .cta-button:focus,
 .cta-button:focus-visible {
