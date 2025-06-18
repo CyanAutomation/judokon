@@ -222,39 +222,34 @@ Each tile contains:
 
 ## Tasks
 
-### Create Navigation Tile Component
+- [ ] Create Navigation Tile Component
+  - [ ] Design tile structure with SVG icon and label.
+  - [ ] Ensure full-tile clickability via JS/CSS.
+  - [ ] Implement hover and click feedback (cursor pointer, 150ms slight zoom).
+  
+- [ ]  Implement Responsive Grid Layout
+  - [ ] Create 2x2 grid layout for desktop viewports.
+  - [ ] Implement 1-column stacking for mobile (<768px).
+  - [ ] Test layout on tablet and mobile orientations.
 
-- Design tile structure with SVG icon and label.
-- Ensure full-tile clickability via JS/CSS.
-- Implement hover and click feedback (cursor pointer, 150ms slight zoom).
+- [ ] Add Accessibility Features
+  - [ ] Add `aria-labels` to each tile.
+  - [ ] Ensure text contrast ratio ≥4.5:1.
+  - [ ] Make icons `aria-hidden` if decorative.
+  - [ ] Enable keyboard tabbing and activation via Enter/Space.
 
-### Implement Responsive Grid Layout
+- [ ] Optimize and Integrate SVG Icons
+  - [ ] Compress SVG icons to <50KB.
+  - [ ] Add fallback icon logic for load failure.
+  - [ ] Verify all icons load under poor network conditions.
+  
+- [ ] Implement Keyboard Navigation and Focus Management
+  - [ ] Add `tabindex` attributes for tiles.
+  - [ ] Handle keyboard activation events.
+  - [ ] Ensure visual focus indicators are clear and accessible.
 
-- Create 2x2 grid layout for desktop viewports.
-- Implement 1-column stacking for mobile (<768px).
-- Test layout on tablet and mobile orientations.
-
-### Add Accessibility Features
-
-- Add `aria-labels` to each tile.
-- Ensure text contrast ratio ≥4.5:1.
-- Make icons `aria-hidden` if decorative.
-- Enable keyboard tabbing and activation via Enter/Space.
-
-### Optimize and Integrate SVG Icons
-
-- Compress SVG icons to <50KB.
-- Add fallback icon logic for load failure.
-- Verify all icons load under poor network conditions.
-
-### Implement Keyboard Navigation and Focus Management
-
-- Add `tabindex` attributes for tiles.
-- Handle keyboard activation events.
-- Ensure visual focus indicators are clear and accessible.
-
-### Handle Edge Cases and Failure States
-
-- Implement generic fallback icon on load failure.
-- Redirect to default error page on broken link.
-- Maintain layout stability during device rotation.
+- [ ] Handle Edge Cases and Failure States
+  - [ ] Implement generic fallback icon on load failure.
+  - [ ] Redirect to default error page on broken link.
+  - [ ] Maintain layout stability during device rotation.
+  
