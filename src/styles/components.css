@@ -96,17 +96,17 @@ body {
 }
 
 .game-tile.red {
-  background: #e94f37;
+  background: #CB2504;
   color: white;
 }
 
 .game-tile.teal {
-  background: #2cb1bc;
+  background: #00838e;
   color: white;
 }
 
 .game-tile.blue {
-  background: #3c7dc4;
+  background: #07498D;
   color: white;
 }
 
@@ -116,7 +116,7 @@ body {
 }
 
 .game-tile.gold {
-  background: #efaf1b;
+  background: #E4AB19;
   color: white;
 }
 

@@ -38,17 +38,18 @@ test.describe("Homepage", () => {
 
   test("tile hover zoom and cursor", async ({ page }) => {
     const tile = page.locator(".game-tile").first();
-    const before = await tile.boundingBox();
     await tile.hover();
 
-    // Wait for the tile size to increase after hover
     await expect
-      .poll(async () => (await tile.boundingBox()).width, { timeout: 5000 })
-      .toBeGreaterThan(before.width);
-
-    const after = await tile.boundingBox();
-    const ratio = after.width / before.width;
-    expect(ratio).toBeGreaterThan(1.03);
+      .poll(
+        async () => {
+          const transform = await tile.evaluate((el) => getComputedStyle(el).transform);
+          const match = transform.match(/matrix\(([^)]+)\)/);
+          return match ? parseFloat(match[1].split(",")[0]) : 1;
+        },
+        { timeout: 5000 }
+      )
+      .toBeGreaterThan(1.03);
 
     const cursor = await tile.evaluate((el) => getComputedStyle(el).cursor);
     expect(cursor).toBe("pointer");
