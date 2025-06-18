@@ -185,6 +185,7 @@ Each tile contains:
 ### Battle Mode Section
 
 - **Contents**:
+
   - Header: “Battle Mode” with clear divider or label.
   - Tile 1: “Classic Battle” — icon left, label centered vertically.
   - Tile 2: “Team Battle” — same size and visual weight as Classic.
@@ -197,6 +198,7 @@ Each tile contains:
 ### Responsive Tile Stack Module
 
 - **Contents**:
+
   - Implement column-stacking at <768px with equal vertical spacing.
   - Ensure each tile remains fully visible without scroll.
   - Tile container should use Flex/Grid with breakpoint control.
@@ -210,9 +212,10 @@ Each tile contains:
 ### Judoka Management Module
 
 - **Contents**:
+
   - One large tile labeled “Manage Judoka”
   - On click, expands or opens modal with:
-	  - Create Judoka
+    - Create Judoka
     - Edit Judoka
 
 - **Why**: Reduces visual clutter, eliminates duplicate tiles, and provides a single intuitive access point to all Judoka-related actions—grouped by function, not guesswork.
