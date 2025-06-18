@@ -226,13 +226,14 @@ Each tile contains:
   - [ ] Design tile structure with SVG icon and label.
   - [ ] Ensure full-tile clickability via JS/CSS.
   - [ ] Implement hover and click feedback (cursor pointer, 150ms slight zoom).
-  
-- [ ]  **Implement Responsive Grid Layout**
+- [ ] **Implement Responsive Grid Layout**
+
   - [ ] Create 2x2 grid layout for desktop viewports.
   - [ ] Implement 1-column stacking for mobile (<768px).
   - [ ] Test layout on tablet and mobile orientations.
 
 - [ ] **Add Accessibility Features**
+
   - [ ] Add `aria-labels` to each tile.
   - [ ] Ensure text contrast ratio ≥4.5:1.
   - [ ] Make icons `aria-hidden` if decorative.
@@ -242,8 +243,8 @@ Each tile contains:
   - [ ] Compress SVG icons to <50KB.
   - [ ] Add fallback icon logic for load failure.
   - [ ] Verify all icons load under poor network conditions.
-  
 - [ ] **Implement Keyboard Navigation and Focus Management**
+
   - [ ] Add `tabindex` attributes for tiles.
   - [ ] Handle keyboard activation events.
   - [ ] Ensure visual focus indicators are clear and accessible.
@@ -252,4 +253,3 @@ Each tile contains:
   - [ ] Implement generic fallback icon on load failure.
   - [ ] Redirect to default error page on broken link.
   - [ ] Maintain layout stability during device rotation.
-  

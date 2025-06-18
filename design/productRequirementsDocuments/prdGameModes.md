@@ -50,7 +50,7 @@ Improving session variety directly supports retention and encourages more person
 
 | Priority | Feature           | Description                                                      |
 | -------- | ----------------- | ---------------------------------------------------------------- |
-| P1       | Shiai Mode        | 1v1 battle vs CPU, stat-based combat to 10 points                    |
+| P1       | Shiai Mode        | 1v1 battle vs CPU, stat-based combat to 10 points                |
 | P1       | Team Battle Modes | Gender-specific team-based battles with 1v1 submatches           |
 | P1       | Judoka Creation   | Interface for new character creation with preview and save logic |
 | P2       | Judoka Update     | Edit existing characters and save changes                        |
