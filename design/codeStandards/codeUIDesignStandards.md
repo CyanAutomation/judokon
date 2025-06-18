@@ -46,31 +46,31 @@ Ju-Do-Kon! uses a **bold, high-contrast design system** grounded in clear hierar
 
 ### Core Strategy
 
-| Token Name         | Hex Code | Use                  |
-|--------------------|----------|----------------------|
-| --color-primary    | #CB2504  | Buttons, highlights  |
-| --color-secondary  | #0C3F7A  | Nav bar, stat blocks |
-| --color-tertiary   | #E8E8E8  | Backgrounds, outlines|
+| Token Name        | Hex Code | Use                   |
+| ----------------- | -------- | --------------------- |
+| --color-primary   | #CB2504  | Buttons, highlights   |
+| --color-secondary | #0C3F7A  | Nav bar, stat blocks  |
+| --color-tertiary  | #E8E8E8  | Backgrounds, outlines |
 
 ### Rarity Colours
 
-| Rarity     | Background | Border    | Judogi Colour |
-|------------|------------|-----------|---------------|
-| Common     | #3C5AD6    | #3C5AD6   | White (#FFF)  |
-| Epic       | #C757DA    | #C757DA   | Blue (#3C7DC4)|
-| Legendary  | #E4AB19    | #E4AB19   | Blue (#3C7DC4)|
+| Rarity    | Background | Border  | Judogi Colour  |
+| --------- | ---------- | ------- | -------------- |
+| Common    | #3C5AD6    | #3C5AD6 | White (#FFF)   |
+| Epic      | #C757DA    | #C757DA | Blue (#3C7DC4) |
+| Legendary | #E4AB19    | #E4AB19 | Blue (#3C7DC4) |
 
 ⚠️ **Note:** Judoka cards retain their bright, vibrant, distinct colour palette and styling. They are visually separate from the muted, modern dojo-themed UI shell.
 
 Each **game mode or feature area** is assigned a **unique dominant colour**, creating intuitive navigation through visual identity.
 
-| Feature / Mode       | Colour     | Notes                          |
-|----------------------|------------|--------------------------------|
-| Classic Battle       | #E53935    | High-energy, competitive       |
-| Team Battle          | #8E24AA    | Cooperative and strategic      |
-| Update Judoka        | #00897B    | Constructive, calm             |
-| Browse Judoka        | #3949AB    | Archival, structured           |
-| Meditation           | #F9A825    | Calm, reflective               |
+| Feature / Mode | Colour  | Notes                     |
+| -------------- | ------- | ------------------------- |
+| Classic Battle | #E53935 | High-energy, competitive  |
+| Team Battle    | #8E24AA | Cooperative and strategic |
+| Update Judoka  | #00897B | Constructive, calm        |
+| Browse Judoka  | #3949AB | Archival, structured      |
+| Meditation     | #F9A825 | Calm, reflective          |
 
 ### Gradient & Texture Usage
 
@@ -88,13 +88,13 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 ### Typographic Hierarchy
 
-| Element             | Style                        | Notes                         |
-|---------------------|-----------------------------|-------------------------------|
-| Section Titles      | ALL CAPS, Bold, Large       | Use tracking for emphasis     |
-| Action Buttons      | Uppercase, Bold             | Primary CTA focus             |
-| Judoka Surnames     | Bold, Uppercase, Larger     | E.g. ONO                      |
-| Judoka First Names  | Light, Small caps           | E.g. Shohei                   |
-| Supporting Info     | Light, Small                | Country, Weight class, etc.   |
+| Element            | Style                   | Notes                       |
+| ------------------ | ----------------------- | --------------------------- |
+| Section Titles     | ALL CAPS, Bold, Large   | Use tracking for emphasis   |
+| Action Buttons     | Uppercase, Bold         | Primary CTA focus           |
+| Judoka Surnames    | Bold, Uppercase, Larger | E.g. ONO                    |
+| Judoka First Names | Light, Small caps       | E.g. Shohei                 |
+| Supporting Info    | Light, Small            | Country, Weight class, etc. |
 
 ### Contrast & Readability
 
@@ -178,13 +178,13 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 ### 8.1 Overview
 
-| Component            | Features                                                                 |
-|----------------------|-------------------------------------------------------------------------|
-| Card Carousel        | 3–5 visible cards, scroll snap, swipe area, visual edge indicators     |
+| Component            | Features                                                                    |
+| -------------------- | --------------------------------------------------------------------------- |
+| Card Carousel        | 3–5 visible cards, scroll snap, swipe area, visual edge indicators          |
 | Mode Selection Panel | Bold icon + label tiles, hover/press feedback, stacked vertically on mobile |
 | Create/Edit Modal    | Floating modal, left-aligned Cancel + right-aligned Save, live card preview |
-| Quote Screen         | Language toggle, fade transition, vertical CTA separation              |
-| Landing Header       | Judoka illustration overlay, game logo, dynamic mode buttons          |
+| Quote Screen         | Language toggle, fade transition, vertical CTA separation                   |
+| Landing Header       | Judoka illustration overlay, game logo, dynamic mode buttons                |
 
 ### 8.2 Navigation
 
@@ -235,25 +235,30 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Selection = glow + checkmark
 
 #### Name Formatting
+
 - First Name: Smaller, sentence case
 - Surname: Larger, uppercase, bold
 - Alignment: Stat block always bottom-aligned
 - Background: Dark blue (#0C3F7A)
+
 #### Signature Move Band (Common Cards)
 
 - Background: #003B88
 - Text: Yellow (#FED843), left-aligned label + centered move name
+
 #### Rarity Markers
 
 - Epic and Legendary Only: Icon appears only on these tiers
 - Placement: Top-left of portrait area
 
 #### Portrait Area
+
 - Style: Vector cartoon-realism
 - Background: Clean, warm gradient (non-radial)
 - Judogi Colour: Blue judogi for Epic/Legendary (Pantone 285M, #3C7DC4)
 
-### 8.4  Card Carousel
+### 8.4 Card Carousel
+
 - Horizontal scroll with scroll-snap-x
 - Shows 3–5 cards depending on screen size
 - Central card slightly zoomed
@@ -263,6 +268,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Scroll-edge blur to signal limits
 
 ### 8.5 Modals
+
 - Max Width: 600px
 - Centered with dim backdrop
 - Cancel (left), Save/Continue (right)
@@ -270,6 +276,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Confirmation toast on Save
 
 ### 8.6 Judoka Editor
+
 - Input sliders or steppers for stats (0–10)
 - Live card preview (collapsible on mobile)
 - Signature move: dropdown select
@@ -293,13 +300,13 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 ## 10. Tokens
 
-| Token Name       | Value               | Purpose                     |
-|------------------|---------------------|-----------------------------|
-| --radius-sm      | 4px                | Inputs, badges              |
-| --radius-md      | 8px                | Buttons                     |
-| --radius-lg      | 12px               | Cards, modals               |
-| --shadow-base    | 0 4px 12px rgba(0,0,0,0.1) | Elevation                  |
-| --transition-fast| all 150ms ease     | UI animations               |
+| Token Name        | Value                      | Purpose        |
+| ----------------- | -------------------------- | -------------- |
+| --radius-sm       | 4px                        | Inputs, badges |
+| --radius-md       | 8px                        | Buttons        |
+| --radius-lg       | 12px                       | Cards, modals  |
+| --shadow-base     | 0 4px 12px rgba(0,0,0,0.1) | Elevation      |
+| --transition-fast | all 150ms ease             | UI animations  |
 
 ---
 
@@ -329,4 +336,3 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 - Ensure interactions feel snappy and playful
 - Maintain a kid-friendly tone with clear, accessible visuals
-
