@@ -736,7 +736,9 @@ button .ripple {
   width: min(300px, 80vw);
   min-height: 64px;
   padding: var(--space-md) var(--space-lg); /* Updated tokens */
-  /* colors come from the base button styles */
+  color: var(--button-text-color);
+  background-color: var(--button-bg);
+  /* border uses surface color for dark theme */
   border: 2px solid var(--color-surface); /* Updated token */
   border-radius: var(--radius-md); /* Updated token */
   font-size: 1.25rem;
