@@ -10,6 +10,12 @@
   --color-background: #ffffff; /* Light mode background */
   --color-text: #000000; /* Light mode text */
 
+  --button-bg: #cb2504;
+  --button-hover-bg: #0b5bb0;
+  --button-active-bg: #0c3f7a;
+  --button-text-color: #ffffff;
+  --radius-pill: 9999px; /* capsule */
+
   /* Updated spacing tokens */
   --space-xs: 4px;
   --space-sm: 8px;

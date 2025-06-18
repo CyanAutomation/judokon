@@ -46,11 +46,15 @@ Ju-Do-Kon! uses a **bold, high-contrast design system** grounded in clear hierar
 
 ### Core Strategy
 
-| Token Name        | Hex Code | Use                   |
-| ----------------- | -------- | --------------------- |
-| --color-primary   | #CB2504  | Buttons, highlights   |
-| --color-secondary | #0C3F7A  | Nav bar, stat blocks  |
-| --color-tertiary  | #E8E8E8  | Backgrounds, outlines |
+| Token Name          | Hex Code | Use                       |
+| ------------------- | -------- | ------------------------- |
+| --color-primary     | #CB2504  | Buttons, highlights       |
+| --color-secondary   | #0C3F7A  | Nav bar, stat blocks      |
+| --color-tertiary    | #E8E8E8  | Backgrounds, outlines     |
+| --button-bg         | #CB2504  | Primary button background |
+| --button-hover-bg   | #0B5BB0  | Hover state for buttons   |
+| --button-active-bg  | #0C3F7A  | Active button state       |
+| --button-text-color | #FFFFFF  | Button text               |
 
 ### Rarity Colours
 
@@ -300,13 +304,18 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 ## 10. Tokens
 
-| Token Name        | Value                      | Purpose        |
-| ----------------- | -------------------------- | -------------- |
-| --radius-sm       | 4px                        | Inputs, badges |
-| --radius-md       | 8px                        | Buttons        |
-| --radius-lg       | 12px                       | Cards, modals  |
-| --shadow-base     | 0 4px 12px rgba(0,0,0,0.1) | Elevation      |
-| --transition-fast | all 150ms ease             | UI animations  |
+| Token Name          | Value                      | Purpose                   |
+| ------------------- | -------------------------- | ------------------------- |
+| --radius-sm         | 4px                        | Inputs, badges            |
+| --radius-md         | 8px                        | Buttons                   |
+| --radius-lg         | 12px                       | Cards, modals             |
+| --radius-pill       | 9999px                     | Capsule buttons           |
+| --button-bg         | #CB2504                    | Primary button background |
+| --button-hover-bg   | #0B5BB0                    | Hover state for buttons   |
+| --button-active-bg  | #0C3F7A                    | Active button state       |
+| --button-text-color | #ffffff                    | Button text               |
+| --shadow-base       | 0 4px 12px rgba(0,0,0,0.1) | Elevation                 |
+| --transition-fast   | all 150ms ease             | UI animations             |
 
 ---
 
