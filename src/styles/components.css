@@ -96,7 +96,7 @@ body {
 }
 
 .game-tile.red {
-  background: #CB2504;
+  background: #cb2504;
   color: white;
 }
 
@@ -106,7 +106,7 @@ body {
 }
 
 .game-tile.blue {
-  background: #07498D;
+  background: #07498d;
   color: white;
 }
 
@@ -116,7 +116,7 @@ body {
 }
 
 .game-tile.gold {
-  background: #E4AB19;
+  background: #e4ab19;
   color: white;
 }
 
