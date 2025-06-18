@@ -56,15 +56,19 @@ jobs:
       - name: Get Test Suite Stats
         id: stats
         run: |
-          SNAPSHOTS=$(find . -type f -path "*/__snapshots__/*" | wc -l)
-          TESTFILES=$(find tests/playwright -type f -name "*.spec.ts" | wc -l || echo "0")
-          TESTCASES=$(grep -rE "test\\(|it\\(" tests/playwright | wc -l || echo "0")
-          UPDATED_SNAPSHOTS=$(git diff --name-only | grep "__snapshots__" | wc -l || echo "0")
-
+          SNAPSHOTS=$(find playwright/test-results/screenshots -type f -name "*.png" 2>/dev/null | wc -l)
+          PLAYWRIGHT_TESTS=$(find playwright -type f -name "*.spec.ts" | wc -l)
+          VITEST_TESTS=$(find tests -type f \( -name "*.spec.ts" -o -name "*.test.ts" \) | wc -l)
+          TESTFILES=$((PLAYWRIGHT_TESTS + VITEST_TESTS))
+      
+          TESTCASES=$(grep -rE "test\\(|it\\(" tests playwright --include="*.ts" | wc -l)
+          UPDATED_SNAPSHOTS=$(git diff --name-only | grep -E 'playwright/test-results/screenshots/.*\.png$' | wc -l)
+      
           echo "snapshots=$SNAPSHOTS" >> $GITHUB_OUTPUT
           echo "testfiles=$TESTFILES" >> $GITHUB_OUTPUT
           echo "testcases=$TESTCASES" >> $GITHUB_OUTPUT
           echo "updated=$UPDATED_SNAPSHOTS" >> $GITHUB_OUTPUT
+
 
       # 🎲 Random Dice Roll
       - name: Generate Judo Throw Dice Roll
