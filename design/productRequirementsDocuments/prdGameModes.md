@@ -19,7 +19,7 @@ Improving session variety directly supports retention and encourages more person
 
 ### Goals (SMART)
 
-- Increase returning player average session length by **20%** within 4 weeks.
+- Increase returning player average session length by **20%**.
 - At least **80%** of users who begin a Team Battle complete the match.
 - **70%** of new players use Judoka Creation within their first week.
 - **60%** of all players trigger Meditation mode at least once weekly.
@@ -50,7 +50,7 @@ Improving session variety directly supports retention and encourages more person
 
 | Priority | Feature           | Description                                                      |
 | -------- | ----------------- | ---------------------------------------------------------------- |
-| P1       | Shiai Mode        | 1v1 AI battle, stat-based combat to 10 points                    |
+| P1       | Shiai Mode        | 1v1 battle vs CPU, stat-based combat to 10 points                    |
 | P1       | Team Battle Modes | Gender-specific team-based battles with 1v1 submatches           |
 | P1       | Judoka Creation   | Interface for new character creation with preview and save logic |
 | P2       | Judoka Update     | Edit existing characters and save changes                        |
