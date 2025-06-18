@@ -99,8 +99,8 @@
   min-height: 48px;
   padding: var(--space-md) var(--space-lg); /* Updated tokens */
   font-size: var(--font-medium); /* Updated token */
-  color: var(--color-text); /* Updated token */
-  background-color: var(--color-primary); /* Updated token */
+  color: var(--button-text-color);
+  background-color: var(--button-bg);
   text-decoration: none;
   border-radius: var(--radius-md); /* Updated token */
   margin-top: var(--space-md); /* Updated token */
@@ -109,7 +109,7 @@
 .cta-button:hover,
 .cta-button:focus,
 .cta-button:focus-visible {
-  background-color: var(--color-secondary); /* Updated token */
+  background-color: var(--button-hover-bg);
 }
 
 /* Responsive: KG image above quote on narrow screens */
@@ -158,6 +158,7 @@
   }
 }
 
+/* This toggle keeps its accent colors intentionally */
 .language-toggle {
   display: inline-flex;
   align-items: center;
