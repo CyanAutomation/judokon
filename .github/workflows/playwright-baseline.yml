@@ -56,13 +56,13 @@ jobs:
       - name: Get Test Suite Stats
         id: stats
         run: |
-          SNAPSHOTS=$(find playwright/test-results/screenshots -type f -name "*.png" 2>/dev/null | wc -l)
+          SNAPSHOTS=$(find test-results -type f -name "*.png" 2>/dev/null | wc -l)
           PLAYWRIGHT_TESTS=$(find playwright -type f \( -name "*.spec.js" -o -name "*.spec.ts" \) | wc -l)
           VITEST_TESTS=$(find tests -type f \( -name "*.test.js" -o -name "*.spec.js" -o -name "*.test.ts" -o -name "*.spec.ts" \) | wc -l)
           TESTFILES=$((PLAYWRIGHT_TESTS + VITEST_TESTS))
 
           TESTCASES=$(grep -rE "test\\(|it\\(" tests playwright --include="*.js" --include="*.ts" | wc -l)
-          UPDATED_SNAPSHOTS=$(git diff --name-only | grep -E 'playwright/test-results/screenshots/.*\.png$' | wc -l)
+          UPDATED_SNAPSHOTS=$(git diff --name-only | grep -E 'test-results/.+\.png$' | wc -l)
 
           echo "snapshots=$SNAPSHOTS" >> $GITHUB_OUTPUT
           echo "testfiles=$TESTFILES" >> $GITHUB_OUTPUT
