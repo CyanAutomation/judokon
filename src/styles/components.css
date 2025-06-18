@@ -181,7 +181,8 @@ button {
   border-radius: var(--radius-pill);
   transition:
     transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
   /* Removed will-change to optimize memory usage */
 }
 
