@@ -1,23 +1,19 @@
 # Ju-Do-Kon! Game Modes – Product Requirements Document
 
-**Audience**: Internal – Developers, Designers, Product Managers, QA Testers  
-**Purpose**: Define and describe the primary and secondary game modes available in Ju-Do-Kon!, including functionality, validation conditions, and fallback handling.
-
----
-
 ### Overview
 
 Ju-Do-Kon! offers a range of game modes tailored for different play styles—competitive battles, team-based challenges, creative customization, exploratory discovery, and quiet reflection. These modes diversify the experience, increase replayability, and promote deeper engagement.
 
 ### Problem Statement
 
-Returning players often exit after short sessions due to repetitive gameplay loops and limited creative expression. In a recent survey, one player said, “I like battling, but after a while, it’s the same thing over and over.” Usage data confirms that >80% of playtime occurs in the core 1v1 mode, with under 20% in creative or reflective features.
+Returning players often exit after short sessions due to repetitive gameplay loops and limited creative expression. In a recent survey, one player said, 
+> “I like battling, but after a while, it’s the same thing over and over.”
 
 ### Why It Matters Now
 
 Improving session variety directly supports retention and encourages more personalized play, especially as competition from other collectible games increases.
 
-### Goals (SMART)
+### Goals
 
 - Increase returning player average session length by **20%**.
 - At least **80%** of users who begin a Team Battle complete the match.
