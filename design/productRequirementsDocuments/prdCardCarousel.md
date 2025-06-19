@@ -62,7 +62,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 ---
 
-## Design and UX Considerations
+## Design and UX: Considerations
 
 ### Visuals
 
@@ -89,7 +89,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 ---
 
-## Wireframe / Mockup Suggestion
+## Design and UX: Wireframes / Mockups
 
 ### Conceptual Layout
 
