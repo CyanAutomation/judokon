@@ -46,7 +46,7 @@ Improving session variety directly supports retention and encourages more person
 
 | Priority | Feature           | Description                                                      |
 | -------- | ----------------- | ---------------------------------------------------------------- |
-| P1       | Shiai Mode        | 1v1 battle vs CPU, stat-based combat to 10 points                |
+| P1       | Classic Battle        | 1v1 battle vs CPU, stat-based combat to 10 points                |
 | P1       | Team Battle Modes | Gender-specific team-based battles with 1v1 submatches           |
 | P1       | Judoka Creation   | Interface for new character creation with preview and save logic |
 | P2       | Judoka Update     | Edit existing characters and save changes                        |
@@ -58,13 +58,13 @@ Improving session variety directly supports retention and encourages more person
 
 ## Game Modes
 
-### 1. Shiai (Battle Mode)
+### 1. Classic Battle (Shiai)
 
 **Japanese**: 試合 (バトルモード)  
-**URL**: `shiai.html`
+**URL**: `battleJudoka.html`
 
 **Description**:  
-A 1v1 stat-based match against an AI opponent using a deck of 25 judoka. First to 10 points wins.
+A 1v1 stat-based match against a CPU opponent using a deck of 25 random judoka cards. First to 10 points wins.
 
 **Rules**:
 
@@ -76,7 +76,7 @@ A 1v1 stat-based match against an AI opponent using a deck of 25 judoka. First t
 
 Player Flow:
 
-1. Player enters via Map icon → transition to Shiai Arena.
+1. Player enters via Map icon → transition to Classic Battle (Budokan Arena).
 2. Decks load and validate (min. 25 cards).
 3. Cards are revealed → player picks stat → score resolves.
 4. End state = First to 10 or 25 rounds → summary → return to Map.
@@ -102,17 +102,16 @@ Visuals/UX:
 
 - Score display always visible.
 - Card stats animated on reveal.
-- “Back to Village” button enabled post-match with fade-out transition.
+- “Return to Training Village” button enabled post-match, or Re-play button (which resets the Classic Battle mode).
 
 Settings:
 
 - Difficulty Toggle (TBD): Easy/Medium/Hard (default: Medium).
-- Sound effects: OFF by default, toggle in corner gear icon.
+- Sound effects: OFF by default, toggle in Settings menu.
 
 **Edge Cases**:
 
 - If fewer than 25 cards are present, block match with warning.
-- Missing stat on a card triggers "Stat not available" overlay.
 
 ---
 
@@ -145,7 +144,7 @@ Choose between Male, Female, or Mixed team battles.
 **URLs**:
 
 - Male: `teamBattleMale.html`
-- Female: **TBD (MISSING URL)**
+- Female: `teamBattleFemale.html`
 - Mixed: `teamBattleMixed.html`
 
 **Description**:  
@@ -200,10 +199,10 @@ View all available judoka with stats and visuals.
 
 ---
 
-### 5. Judoka Update Mode
+### 5. Judoka Manager Mode
 
 **Japanese**: 柔道家編集モード  
-**URL**: `judokaUpdateSelection.html`
+**URL**: `manageJudoka.html`
 
 **Description**:  
 Choose to create or edit a judoka.
@@ -275,7 +274,7 @@ UX Note:
 ### 9. Meditation
 
 **Japanese**: メディテーション  
-**URL**: `quoteKG.html`
+**URL**: `quoteKG.html` (should become meditation.html)
 
 **Acceptance Criteria**:
 
