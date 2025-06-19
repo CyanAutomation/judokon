@@ -101,9 +101,9 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - **Touch Interaction**: On mobile, swipe left/right; smooth snap after swipe.
 
 
-| **Card Carousel Mockup 1**  | **Card Carousel Mockup 2**                                                                              |
-| ---| ------------------------------------------------------------------------------------------ |
-| ![Card Carousel Mockup](/design/mockups/mockupCardCarousel1.png) | TBC  |
+| **Card Carousel Mockup 1**  | **Card Carousel Mockup 2**                                                                              | **Card Carousel Mockup 3**    |
+| ---| --- | --- |
+| ![Card Carousel Mockup](/design/mockups/mockupCardCarousel1.png) | ![Card Carousel Mockup](/design/mockups/mockupCardCarouse2.png)  | ![Card Carousel Mockup](/design/mockups/mockupCardCarousel3.png) |
 
 
 
