@@ -2,7 +2,7 @@
 
 ## Problem Statement
 
-As part of the game, certain screens, such as “Browse Judoka,” require an intuitive and interactive way to present judoka cards. With more than 100 cards in the game, it would be cumbersome and frustrating for players to browse through all cards manually without an efficient filtering and navigation system.
+As part of the game, certain screens, such as “Browse Judoka,” require an intuitive and interactive way to present judoka cards. With more than 100 cards in the game (ultimate goal), it would be cumbersome and frustrating for players to browse through all cards manually without an efficient filtering and navigation system.
 
 Failure to provide an efficient browsing experience may impact core gameplay — players might struggle to find and build optimal teams, leading to frustration and potential churn.
 
@@ -12,7 +12,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 ## Goals
 
-- Carousel loads within 1 second for up to 100 cards.
+- Carousel loads within 1 second for up to 150 cards.
 - Filter judoka by country with response time under 500ms.
 - Support smooth browsing of up to 50 cards without noticeable lag.
 - Swipe gesture support for mobile browsing.
@@ -36,30 +36,28 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 ## Acceptance Criteria
 
-- Carousel loads within 1 second for up to 100 cards.
+- Carousel loads within 1 second for up to 150 cards.
 - Filter judoka by country with a response time of <500ms.
 - User can scroll left/right via on-screen buttons.
 - Carousel updates dynamically when filters are applied.
 - User can see an indicator (scroll markers) showing current position.
-- Cards enlarge by 10% when hovered over on desktop.
+- Hovering over a card enlarges it by 10%, verified via bounding box.
 - Carousel is responsive, adapting to both portrait and landscape orientations.
 - Swipe gestures work on mobile (left/right swipe to move cards).
 - Keyboard arrow keys allow navigation through cards.
 - Displays a loading spinner if load time exceeds 2 seconds.
-- If network disconnection occurs, display a placeholder or error message.
-- If card image fails to load, display a default judoka image.
-- If a filter returns no results, show a retry option and a message suggesting a wider search.
+- If card image fails to load, display a default judoka card (judoka id=0).
+- If a filter returns no results, display a default judoka card (judoka id=0).
 - Playwright tests simulate swipe gestures and arrow-key navigation.
-- Hovering over a card enlarges it by roughly 10%, verified via bounding box.
 - A loading spinner appears during simulated slow network conditions.
 
 ---
 
 ## Edge Cases / Failure States
 
-- **Network Disconnection**: Display a placeholder or an error message.
-- **Missing/Broken Card Images**: Default fallback image is shown.
-- **No Filter Results**: Show a retry option and suggest broadening the search.
+- **Network Disconnection**: Display a default judoka card (judoka id=0).
+- **Missing/Broken Card Images**: Default fallback card is shown, display a default judoka card (judoka id=0).
+- **No Filter Results**: Show a default judoka card (judoka id=0), and suggest broadening the search.
 - **Slow Network**: Show a loading spinner if loading exceeds 2 seconds.
 
 ---
@@ -103,7 +101,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 | **Card Carousel Mockup 1**  | **Card Carousel Mockup 2**                                                                              | **Card Carousel Mockup 3**    |
 | ---| --- | --- |
-| ![Card Carousel Mockup](/design/mockups/mockupCardCarousel1.png) | ![Card Carousel Mockup](/design/mockups/mockupCardCarouse2.png)  | ![Card Carousel Mockup](/design/mockups/mockupCardCarousel3.png) |
+| ![Card Carousel Mockup](/design/mockups/mockupCardCarousel1.png) | ![Card Carousel Mockup](/design/mockups/mockupCardCarousel2.png)  | ![Card Carousel Mockup](/design/mockups/mockupCardCarousel3.png) |
 
 
 
@@ -111,27 +109,26 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 - [ ] 1.0 Set Up Card Carousel Structure (P1)
   - [x] 1.1 Develop carousel container and card components.
-  - [ ] 1.2 Implement dynamic loading for up to 100 cards.
+  - [x] 1.2 Implement dynamic loading for up to 100 cards.
   - [ ] 1.3 Ensure responsive resizing for mobile and desktop.
 - [ ] 2.0 Implement Filtering System (P2)
 
-  - [ ] 2.1 Develop filtering logic based on country.
-  - [ ] 2.2 Ensure filter response under 500ms.
+  - [x] 2.1 Develop filtering logic based on country.
+  - [x] 2.2 Ensure filter response under 500ms.
   - [ ] 2.3 Show "no results" state with retry and suggestions.
 
 - [ ] 3.0 Integrate Interaction Methods (P1)
 
   - [x] 3.1 Add left/right on-screen button scrolling.
-  - [ ] 3.2 Add swipe gesture support for mobile.
+  - [x] 3.2 Add swipe gesture support for mobile.
   - [ ] 3.3 Add keyboard arrow navigation support.
 
 - [ ] 4.0 Add UI Enhancements (P2)
 
-  - [ ] 4.1 Implement hover enlargement effect.
+  - [x] 4.1 Implement hover enlargement effect.
   - [ ] 4.2 Display scroll markers for carousel position.
   - [ ] 4.3 Implement loading spinner for slow networks.
 
 - [ ] 5.0 Handle Edge Cases (P2)
-  - [ ] 5.1 Fallback image for broken card images.
-  - [ ] 5.2 Placeholder/error for network disconnections.
-  - [ ] 5.3 Retry option for empty filter results.
+  - [ ] 5.1 Fallback judoka card (judoka id=0) for broken card images.
+  - [ ] 5.2 Retry option for empty filter results.
