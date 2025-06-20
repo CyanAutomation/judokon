@@ -6,7 +6,8 @@ Ju-Do-Kon! offers a range of game modes tailored for different play styles—com
 
 ### Problem Statement
 
-Returning players often exit after short sessions due to repetitive gameplay loops and limited creative expression. In a recent survey, one player said, 
+Returning players often exit after short sessions due to repetitive gameplay loops and limited creative expression. In a recent survey, one player said,
+
 > “I like battling, but after a while, it’s the same thing over and over.”
 
 ### Why It Matters Now
@@ -46,7 +47,7 @@ Improving session variety directly supports retention and encourages more person
 
 | Priority | Feature           | Description                                                      |
 | -------- | ----------------- | ---------------------------------------------------------------- |
-| P1       | Classic Battle        | 1v1 battle vs CPU, stat-based combat to 10 points                |
+| P1       | Classic Battle    | 1v1 battle vs CPU, stat-based combat to 10 points                |
 | P1       | Team Battle Modes | Gender-specific team-based battles with 1v1 submatches           |
 | P1       | Judoka Creation   | Interface for new character creation with preview and save logic |
 | P2       | Judoka Update     | Edit existing characters and save changes                        |
