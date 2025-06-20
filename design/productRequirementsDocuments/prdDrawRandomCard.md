@@ -22,12 +22,12 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 ## How It Works
 
-- The player taps the “Draw Card” button or navigates to a designated card draw screen.
-- This action auto-triggers the `generateRandomCard()` function.
+- The player taps the “Draw Card” button which triggers the `generateRandomCard()` function, or 
+- The player navigates to a designated card draw screen, and this action auto-triggers the `generateRandomCard()` function.
 - The system:
-  - Selects a random Judoka card from the active card set.
-  - Visually reveals the card with a fade or bounce animation.
-  - Plays a short celebratory sound (e.g., swoosh or chime).
+  - Selects a random Judoka card from the active card set (isActive = True).
+  - Visually reveals the card with a slide animation.
+  - Future Enhancement: Plays a short celebratory sound (e.g., swoosh or chime)
   - Ensures animation smoothness at ≥60fps for devices with ≥2GB RAM.
 - **Active card set**: The current pool of cards available in the player’s deck, dynamically updated based on the game state.
 
@@ -60,9 +60,8 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 ## Acceptance Criteria
 
 - [ ] When “Draw Card” is triggered, a random card from the active set is displayed within 300ms.
-- [ ] A reveal animation (fade or bounce) completes within 500ms at ≥60fps on mid-tier devices.
+- [ ] A reveal animation (fade or bounce) completes within 500ms at ≥60fps.
 - [ ] If the random function fails, a fallback card is shown (judoka id=0, from judoka.json).
-- [ ] Random distribution passes chi-square test with 95% confidence over 100 draws.
 - [ ] If the active card set is empty, a fallback card is shown (judoka id=0, from judoka.json).
 - [ ] Animation is disabled if the user has enabled Reduced Motion settings.
 
@@ -84,23 +83,22 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 ## Design and User Experience Considerations
 
-- **Animation Style**: Fade or bounce only — no flips or excessive transitions to keep visuals polished.
-- **Sound Effect**: Short celebratory chime or swoosh (<1 second).
+- **Animation Style**: Fade or slide only — no flips or excessive transitions to keep visuals polished.
+- **Sound Effect**: Short celebratory chime or swoosh (<1 second) - future enhancement 
 - **Responsiveness**:
-  - Smooth transitions at ≥60fps on devices with ≥2GB RAM.
+  - Smooth transitions at ≥60fps.
   - Degrade to static reveal if hardware performance is low.
 - **Accessibility**:
   - Respect system Reduced Motion settings (disable animations automatically).
   - Ensure color contrast and text readability on cards (WCAG AA compliance).
-- **Default Setting**: Animations and sound ON unless user/system preferences state otherwise.
+- **Default Setting**: Animations and sound OFF unless user/system preferences state otherwise.
 - **Fallback Visuals**:
-  - If card loading fails, show a placeholder/error graphic (e.g., a “?” card).
+  - If card loading fails, show a placeholder/error graphic (judoka id=0, from judoka.json).
 - **Tap Target Size**:
   - All interactive elements (Draw button) must be ≥48px in height and width, with a recommended 64px for kid-friendly ease.
 - **Button Size**: Minimum 64px high, 300px wide — central and dominant.
 - **Card Size**: Large enough for excitement, but responsive — 70% of viewport width on mobile, 40% on tablet/desktop.
 - **Spacing**: Tight vertical stacking (~24px between card and button).
-- **Animation Area**: Reserve transparent padding around card to allow for bounce/stretch without visual clipping.
 - **Accessibility**: High contrast placeholders; consider light text on dark backgrounds for error/fallback states.
 
 ---
@@ -111,7 +109,7 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 - **Player Info Module**: “You” + small avatar + status (e.g., “Your Turn” indicator).
 - **Settings Button**: Bigger tappable area (48px+), slight margin from edge, no tiny icons.
-- **Optional Timer** (future proof): If there’s a time limit per draw.
+- **Optional Timer** (future feature): If there’s a time limit per draw.
 
 **Why**: Clear identification + quick settings access without hunting for small buttons.
 
@@ -138,13 +136,12 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 ### 3. Dynamic Feedback (Transitions)
 
 - **Animation Frames**:
-  - Stage 1: Button press triggers bounce/fade transition.
-  - Stage 2: Card flips to reveal.
-  - Stage 3: Celebratory swoosh + confetti (optional tiny burst).
+  - Stage 1: Button press triggers card slide transition.
+  - Stage 2: Card slides to reveal.
 - **Fallback**:
-  - If fail → Error card slides in with reduced animation.
+  - If fail → fallback card (judoka id=0, from judoka.json) slides in with reduced animation.
 - **Accessibility Setting Check**:
-  - Automatically downgrade if Reduced Motion is detected — immediately snap card reveal, no bounce.
+  - Automatically downgrade if Reduced Motion is detected — immediately snap card reveal, no slide.
 
 **Why**: Players should _feel_ the result without being confused or left staring at nothing.
 
@@ -156,8 +153,6 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 - Add mute toggle for sound (little speaker icon on card corner or header).
 - Pre-wire zones for device scaling:
   - Flexbox/grid layout so the card & button center stack on small screens, side-by-side on tablets.
-
-**Why**: Allows UX to evolve — not a dead-end screen.
 
 ---
 
