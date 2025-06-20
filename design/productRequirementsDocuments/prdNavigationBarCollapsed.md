@@ -1,10 +1,10 @@
-# PRD: Collapsed Navigation Bar
+# PRD: Standard Navigation Bar
 
 ---
 
 ## 1. Description
 
-The **ju-do-kon!** game features multiple game modes and screens. Players need easy, intuitive navigation to seamlessly transition between activities such as battles, judoka browsing, and training. When navigation is unclear, players experience increased cognitive load and frustration, breaking immersion and potentially leading to session drop-offs.
+The **JU-DO-KON!** game features multiple game modes and screens. Players need easy, intuitive navigation to seamlessly transition between activities such as battles, judoka browsing, and training. When navigation is unclear, players experience increased cognitive load and frustration, breaking immersion and potentially leading to session drop-offs.
 
 ### Example Scenario
 
@@ -16,13 +16,12 @@ Currently, the lack of a consistent navigation system leads to player disorienta
 
 ## 2. Goals
 
-- Reduce navigation-related exits by **20%** within 30 days of implementation.
-- Increase average session duration per player by **15%** within 30 days.
+- Reduce navigation-related exits by **20%**.
+- Increase average session duration per player by **15%**.
 - Ensure **48px minimum** touch target size (per WCAG guidelines).
-- Achieve **≥60fps** animation performance on standard mid-tier devices (2GB RAM).
+- Achieve **≥60fps** animation performance on standard mid-tier devices.
 - Guarantee fallback loading time of **<2 seconds** if `gameModes.json` fails.
 - Meet a text contrast ratio of at least **4.5:1** against the navigation bar background.
-- Reach a navigation task completion rate of **≥98%** in usability tests.
 
 ---
 
@@ -30,7 +29,7 @@ Currently, the lack of a consistent navigation system leads to player disorienta
 
 The bottom navigation bar appears consistently across all game screens, dynamically loading active game modes from `gameModes.json`.
 
-### Collapsed Mode (Default View)
+### Standard Mode (Default View)
 
 - Navigation links are laid out in a horizontal row.
 - A bottom-left corner **ju-do-kon!** logo acts as an interactive button.
@@ -46,7 +45,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ## 4. Wireframes / Visual Reference
 
-- **Collapsed Mode**: Horizontal navigation bar with clickable links and a bottom-left corner ju-do-kon logo. A simplified vertical text list expands on logo tap. _(Visual reference to be attached.)_
+- **Default Mode**: Horizontal navigation bar with clickable links and a bottom-left corner ju-do-kon logo. A simplified vertical text list expands on logo tap. _(Visual reference to be attached.)_
 - **Portrait Mode**: A simplified vertical text list expands on logo tap.
 
 ---
@@ -55,7 +54,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 | Priority | Feature                | Description                                                                                          |
 | -------- | ---------------------- | ---------------------------------------------------------------------------------------------------- |
-| P1       | Collapsed Nav Bar      | Fixed horizontal navigation with scalable links and bottom-left corner logo.                         |
+| P1       | Standard Nav Bar      | Fixed horizontal navigation with scalable links and bottom-left corner logo.                         |
 | P2       | Portrait Text Menu     | Text-based vertical menu expansion on logo click for portrait and landscape (collapsed) orientation. |
 | P2       | Small Screens Support  | Adjust text menu for screens as small as 320px — scale font and spacing.                             |
 | P2       | Visual Feedback        | Positive click/tap feedback animation for all links and buttons.                                     |
@@ -67,7 +66,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 - Touch targets maintain **≥48px** size across all device resolutions.
 - Navigation is visible on **100%** of game screens.
-- Collapsed nav bar displays active game modes loaded from `gameModes.json`.
+- Standard nav bar displays active game modes loaded from `gameModes.json`.
 - Portrait mode initially shows only the logo in the bottom left corner (no links in the navigation bar); tapping reveals a vertical list.
 - The function of tapping the icon in the bottom left corner works in landscape or portrait mode.
 - Clicking a link navigates successfully to the intended screen.
