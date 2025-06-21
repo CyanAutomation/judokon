@@ -91,6 +91,8 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ## 8. Design and UX Considerations
 
+The standard navbar should be JDK Secondary Blue (#tbc), with white text (#tbc)
+
 ![Wireframe of Navigation Bar Collapsed](/design/mockups/mockupFooterNavigationCollapsed1.png)
 
 ### Accessibility
