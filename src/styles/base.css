@@ -4,9 +4,9 @@
   --scale-duration: 0.4s;
   --slide-track-speed: 40s;
   /* Colors */
-  --color-primary: #cb2504; /* Buttons, highlights */
-  --color-secondary: #0c3f7a; /* Nav bar, stat blocks */
-  --color-tertiary: #e8e8e8; /* Backgrounds, outlines */
+  --color-primary: #cb2504; /* For logo, emblem and accents (10% of screen) */
+  --color-secondary: #0c3f7a; /* Nav bar, UI elements (30% of screen) */
+  --color-tertiary: #e8e8e8; /* Backgrounds (60% of screen) */
   --color-surface: #ffffff; /* Light mode surfaces */
   --color-background: #ffffff; /* Light mode background */
   --color-text: #000000; /* Light mode text */
