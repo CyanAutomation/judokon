@@ -22,7 +22,7 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 ## How It Works
 
-- The player taps the “Draw Card” button which triggers the `generateRandomCard()` function, or 
+- The player taps the “Draw Card” button which triggers the `generateRandomCard()` function, or
 - The player navigates to a designated card draw screen, and this action auto-triggers the `generateRandomCard()` function.
 - The system:
   - Selects a random Judoka card from the active card set (isActive = True).
@@ -84,7 +84,7 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 ## Design and User Experience Considerations
 
 - **Animation Style**: Fade or slide only — no flips or excessive transitions to keep visuals polished.
-- **Sound Effect**: Short celebratory chime or swoosh (<1 second) - future enhancement 
+- **Sound Effect**: Short celebratory chime or swoosh (<1 second) - future enhancement
 - **Responsiveness**:
   - Smooth transitions at ≥60fps.
   - Degrade to static reveal if hardware performance is low.
