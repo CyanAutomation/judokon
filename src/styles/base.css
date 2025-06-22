@@ -10,9 +10,8 @@
   --color-surface: #ffffff; /* Light mode surfaces */
   --color-background: #ffffff; /* Light mode background */
   --color-text: #000000; /* Light mode text */
-  --color-button-text: #ffffff; /* Button text colour */
 
-  --button-bg: #cb2504;
+  --button-bg: #0c3f7a;
   --button-hover-bg: #0b5bb0;
   --button-active-bg: #0c3f7a;
   --button-text-color: #ffffff;
