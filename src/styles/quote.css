@@ -44,6 +44,7 @@
 .quote-block {
   flex: 1 1 80%;
   position: relative;
+  background: (--color-secondary);
 }
 
 .quote-loader {
