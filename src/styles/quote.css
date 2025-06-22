@@ -171,7 +171,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-small); /* Updated token */
-  background-color: var(--color-accent); /* Updated token */
+  background-color: var(--color-secondary); /* Updated token */
   color: var(--color-text); /* Updated token */
   border: none;
   border-radius: var(--radius-md); /* Updated token */
@@ -186,7 +186,7 @@
 .language-toggle:hover,
 .language-toggle:focus,
 .language-toggle:focus-visible {
-  background-color: var(--color-accent-dark); /* Updated token */
+  background-color: var(--color-secondary-dark); /* Updated token */
 }
 
 .flag-icon {
