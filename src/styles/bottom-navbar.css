@@ -26,7 +26,7 @@
 
 .bottom-navbar a,
 .top-navbar a {
-  color: var(--color-button-text); /* Adaptive text color */
+  color: var(--button-text-color); /* Adaptive text color */
   text-decoration: none;
 }
 
