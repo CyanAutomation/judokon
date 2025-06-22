@@ -21,6 +21,7 @@
   color: var(--color-text); /* Updated token */
   text-align: center;
   margin-top: var(--space-sm); /* Updated token */
+  background-color: var(--color-primary);
 }
 
 .quote-container {
