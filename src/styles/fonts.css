@@ -1,0 +1,15 @@
+@font-face {
+  font-family: "League Spartan";
+  src: url("../assets/fonts/LeagueSpartan.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Sans";
+  src: url("../assets/fonts/NotoSans.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
