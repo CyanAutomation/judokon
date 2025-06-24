@@ -30,6 +30,9 @@ describe("base.css color contrast", () => {
 
   it.each(pairs)("%s vs %s should be >= 4.5", (a, b) => {
     const ratio = hex(vars[a], vars[b]);
-    expect(ratio).toBeGreaterThanOrEqual(4.5, `Contrast ratio between ${a} (${vars[a]}) and ${b} (${vars[b]}) is ${ratio}, which is less than the required 4.5.`);
+    expect(ratio).toBeGreaterThanOrEqual(
+      4.5,
+      `Contrast ratio between ${a} (${vars[a]}) and ${b} (${vars[b]}) is ${ratio}, which is less than the required 4.5.`
+    );
   });
 });
