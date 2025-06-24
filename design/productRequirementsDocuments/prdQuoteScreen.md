@@ -1,8 +1,8 @@
-# PRD: Meditation Screen (formerly Victory Quote Screen)
+# PRD: Meditation Screen
 
 ## Description
 
-Introduce a **meditation screen** that players can access as a moment of calm between battles. The helper character **KG** appears alongside a random wise quote (an excerpt from Aesop’s Fables), helping players reset their mindset and reflect. Inspired by real-life judo practice—where athletes take time to breathe and refocus—this moment of stillness encourages resilience and clarity.
+Introduce a **meditation screen** (meditation.html) that players can access as a moment of calm between battles. The helper character **KG** appears alongside a random wise quote (an excerpt from Aesop’s Fables), helping players reset their mindset and reflect. Inspired by real-life judo practice—where athletes take time to breathe and refocus—this moment of stillness encourages resilience and clarity.
 
 ---
 
@@ -26,8 +26,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 ## Goals
 
-- Display a **meditation screen** 100% of the time after completing a team battle match with a full sweep (all six wins).
-- Allow players to access this screen optionally in future versions (TBD).
+- Allow players to access this screen optionally by the main menu or main navigation bar
 - Maintain load time under 1 second.
 - Ensure error-free quote display across landscape and portrait orientations.
 
@@ -51,16 +50,13 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - Screen loads within 1 second.
 - Text is screen-reader accessible (ARIA tags).
 - Layout adapts to screen orientation (portrait/landscape).
-- No repeated quotes within a session.
 
 ---
 
 ## Edge Cases / Failure States
 
 - **Failure to load quote data**: Display a calming default message such as _“Take a breath. Even a still pond reflects the sky.”_
-- **App crash/restart mid-team battle**: Player progress persists; if victory conditions are met post-relaunch, meditation screen appears.
 - **Offline mode**: Display fallback quote.
-- **Quote repetition**: Avoid repeating quotes in-session, using quote ID tracking.
 
 ---
 
@@ -70,7 +66,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - Quote occupies the right-hand side in desktop/landscape view.
 - On mobile/portrait view, KG image is above the quote.
 - Proceed button is consistently placed at the bottom of the screen.
-- Background is soft and neutral, with subtle motion or ambient colour (optional later).
+- Background is soft and neutral
 - Quote text uses a legible, sans-serif font, sized 18px minimum.
 
 | Meditation Screen Mockup A                          | Meditation Screen Mockup B                          |
@@ -83,8 +79,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 **Contents:**
 
-- Soothing headline: _“Pause. Breathe. Reflect.”_ or _“A Quiet Moment with KG”_
-- Gentle icon or ambient motion graphic above quote block (optional)
+- Soothing headline: _“Pause. Breathe. Reflect.”_ 
 - KG image with open hand or seated meditative pose, visually leading into the quote
 
 **Why:**  
@@ -111,7 +106,7 @@ Ensures readability while preventing jarring fallback errors, and enhances conte
 **Contents:**
 
 - Large, thumb-friendly button (min 48px height)
-- Calming label: _“Return to Battle”_ or _“Continue Your Journey”_
+- Calming label: _“Continue Your Journey”_
 - Button anchored close to quote with clear margin spacing
 - Clear visual separation from quote/toggle above
 
@@ -125,7 +120,7 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 - [ ] **1.0 Implement Meditation Feedback Module**
 
   - [x] 1.1 Load and display KG character image.
-  - [ ] 1.2 Add calm headline (“Pause. Breathe. Reflect.” or similar).
+  - [ ] 1.2 Add calm headline (“Pause. Breathe. Reflect.”).
 
 - [ ] **2.0 Implement Quote Display Module**
 
