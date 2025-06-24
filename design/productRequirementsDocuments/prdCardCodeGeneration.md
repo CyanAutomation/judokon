@@ -229,6 +229,7 @@ F7KP-WQ9M-ZD23-HYTR
   - [ ] 2.2 Handle unusually large string input safely.
 
 - [ ] 3.0 Unit Tests
+
   - [ ] 3.1 Test valid Judoka object produces correct code format.
   - [ ] 3.2 Test invalid input triggers correct error fallback.
   - [ ] 3.3 Test same input always results in the same output code.
@@ -240,5 +241,3 @@ F7KP-WQ9M-ZD23-HYTR
   - [ ] 4.2 Support copy-to-clipboard functionality.
   - [ ] 4.3 Add input validation for code entry screens.
   - [ ] 4.4 Implement auto-hyphenation as players type shared codes.
-
-

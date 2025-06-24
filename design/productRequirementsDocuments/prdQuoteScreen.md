@@ -79,7 +79,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 **Contents:**
 
-- Soothing headline: _“Pause. Breathe. Reflect.”_ 
+- Soothing headline: _“Pause. Breathe. Reflect.”_
 - KG image with open hand or seated meditative pose, visually leading into the quote
 
 **Why:**  

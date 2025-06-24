@@ -13,7 +13,7 @@ test.describe("Pseudo-Japanese toggle", () => {
     await page.route("**/src/data/aesopsFables.json", (route) =>
       route.fulfill({ path: FIXTURE_PATH })
     );
-    await page.goto("/src/pages/quoteKG.html");
+    await page.goto("/src/pages/meditation.html");
     await page.waitForSelector("#quote .quote-content");
   });
 

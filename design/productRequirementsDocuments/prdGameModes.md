@@ -275,7 +275,7 @@ UX Note:
 ### 9. Meditation
 
 **Japanese**: メディテーション  
-**URL**: `quoteKG.html` (should become meditation.html)
+**URL**: `meditation.html`
 
 **Acceptance Criteria**:
 

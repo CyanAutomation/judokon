@@ -145,7 +145,7 @@
     "description": "KG shares his wisdom.",
     "category": "mainMenu",
     "order": 85,
-    "url": "quoteKG.html",
+    "url": "meditation.html",
     "isHidden": false,
     "rules": {
       "note": "Rules will be defined in the future."
