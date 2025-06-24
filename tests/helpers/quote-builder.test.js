@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { waitFor } from "../waitFor.js";
 
 const originalFetch = global.fetch;
 
@@ -27,7 +28,7 @@ describe("displayRandomQuote", () => {
 
     await import("../../src/helpers/quoteBuilder.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
-    await new Promise((r) => setTimeout(r, 0));
+    await waitFor(() => !quoteDiv.classList.contains("hidden"));
 
     expect(quoteDiv.classList.contains("hidden")).toBe(false);
     expect(loader.classList.contains("hidden")).toBe(true);
@@ -46,7 +47,7 @@ describe("displayRandomQuote", () => {
 
     await import("../../src/helpers/quoteBuilder.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
-    await new Promise((r) => setTimeout(r, 0));
+    await waitFor(() => quoteDiv.textContent.length > 0);
 
     expect(quoteDiv.textContent).toContain("Take a breath. Even a still pond reflects the sky.");
   });
