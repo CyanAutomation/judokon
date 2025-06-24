@@ -35,7 +35,7 @@ Players gain a sense of **ownership and pride** by sharing their custom Judoka q
 
 ### For Players
 
-Enables easy sharing and import/export of Judoka using compact, friendly codes.
+Enables easy sharing and potential import/export of Judoka using compact, friendly codes.
 
 ### For the Game
 
@@ -156,7 +156,7 @@ F7KP-WQ9M-ZD23-HYTR
 - Potential code collisions.
 - Encoding failures or memory issues.
 
-**Fallback:** Display a generic card code if any failure occurs.
+**Fallback:** Display a generic card code (judoka id=0) if any failure occurs.
 
 ---
 
@@ -225,8 +225,14 @@ F7KP-WQ9M-ZD23-HYTR
 
 - [ ] 2.0 Error Handling and Edge Cases
 
-  - [ ] 2.2 Fallback to a generic card code if encoding fails.
-  - [ ] 2.3 Handle unusually large string input safely.
+  - [ ] 2.1 Fallback to a generic card code (judoka id=0] if encoding fails.
+  - [ ] 2.2 Handle unusually large string input safely.
+
+- [ ] 3.0 Unit Tests
+  - [ ] 3.1 Test valid Judoka object produces correct code format.
+  - [ ] 3.2 Test invalid input triggers correct error fallback.
+  - [ ] 3.3 Test same input always results in the same output code.
+  - [ ] 3.4 Simulate edge cases like large inputs and validate fallback behavior.
 
 - [ ] 4.0 UI Surface Interaction
 
@@ -235,8 +241,4 @@ F7KP-WQ9M-ZD23-HYTR
   - [ ] 4.3 Add input validation for code entry screens.
   - [ ] 4.4 Implement auto-hyphenation as players type shared codes.
 
-- [ ] 5.0 Unit Tests
-  - [ ] 5.1 Test valid Judoka object produces correct code format.
-  - [ ] 5.2 Test invalid input triggers correct error fallback.
-  - [ ] 5.3 Test same input always results in the same output code.
-  - [ ] 5.4 Simulate edge cases like large inputs and validate fallback behavior.
+
