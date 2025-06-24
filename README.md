@@ -88,7 +88,7 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
 ## Data Schemas and Validation
 
 JSON files in `src/data` are validated against matching schemas in `src/schemas`.
-Validate all data files at once with the npm script:
+Validate all data files at once with the npm script (which runs `scripts/validateData.js`):
 
 ```bash
 npm run validate:data
