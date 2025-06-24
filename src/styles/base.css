@@ -40,14 +40,6 @@
   --font-extra-large: 3rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-surface: #1a1a1a;
-    --color-background: #000000;
-    --color-text: #ffffff;
-  }
-}
-
 *,
 *::before,
 *::after {
