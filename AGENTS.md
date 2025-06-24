@@ -26,6 +26,7 @@ Run the following commands from the repository root before committing. If any co
 ```bash
 npx prettier . --check       # verify formatting
 npx eslint .                 # lint the codebase
+npm run check:contrast       # ensure CSS meets WCAG AA contrast
 npx vitest run                # run unit tests
 npx playwright test          # run Playwright UI tests
 ```

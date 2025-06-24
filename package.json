@@ -12,6 +12,7 @@
     "test": "vitest",
     "test:screenshot": "playwright test",
     "lint": "npx prettier . --check && npx eslint .",
+    "check:contrast": "wcag-contrast-checker src/styles/*.css",
     "prepare": "husky install",
     "validate:data": "node scripts/validateData.js"
   },
@@ -29,7 +30,8 @@
     "jsdom": "^26.1.0",
     "prettier": "^3.5.3",
     "vitest": "^3.1.2",
-    "wcag-contrast": "^3.0.0"
+    "wcag-contrast": "^3.0.0",
+    "wcag-contrast-checker": "^1.0.0"
   },
   "dependencies": {
     "agent-base": "^7.1.3",
