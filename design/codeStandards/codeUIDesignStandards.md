@@ -107,7 +107,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Line-height: 1.4× font size
 - Letter-spacing: 0.5% (League Spartan), normal (Noto Sans)
 - Avoid using all caps in body text for readability
-- Use the `wcag-contrast-checker` tool (`npm run check:contrast`) to validate new CSS styles
+- Use the `wcag-contrast` CLI (`npm run check:contrast`) to validate new CSS styles
 
 ---
 
