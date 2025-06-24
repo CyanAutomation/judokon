@@ -95,7 +95,7 @@ function displayFable(fable) {
       <div class="quote-content long-form" id="quote-content">${formattedStory}</div>
     `;
   } else {
-    quoteDiv.innerHTML = "<p>Well done, congratulations!</p>";
+    quoteDiv.innerHTML = "<p>Take a breath. Even a still pond reflects the sky.</p>";
   }
   loaderDiv.classList.add("hidden");
   quoteDiv.classList.remove("hidden");

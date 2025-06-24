@@ -48,6 +48,6 @@ describe("displayRandomQuote", () => {
     document.dispatchEvent(new Event("DOMContentLoaded"));
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(quoteDiv.textContent).toContain("Well done, congratulations!");
+    expect(quoteDiv.textContent).toContain("Take a breath. Even a still pond reflects the sky.");
   });
 });
