@@ -31,7 +31,6 @@
     "prettier": "^3.5.3",
     "vitest": "^3.1.2",
     "wcag-contrast": "^3.0.0",
-    "wcag-contrast-checker": "^1.0.0"
   },
   "dependencies": {
     "agent-base": "^7.1.3",
