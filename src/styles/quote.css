@@ -15,7 +15,7 @@
   padding: var(--space-xl) var(--space-md); /* Updated tokens */
 }
 
-.victory-title {
+.meditation-title {
   font-family: "League Spartan", sans-serif; /* Updated token */
   font-size: clamp(32px, 5vw, 40px); /* Updated token */
   color: var(--color-text); /* Updated token */
