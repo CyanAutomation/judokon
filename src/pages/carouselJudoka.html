@@ -124,20 +124,21 @@
             }
 
             if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
-              const buttons = Array.from(
-                countryListContainer.querySelectorAll("button.flag-button")
-              );
-              const current = document.activeElement;
-              const index = buttons.indexOf(current);
-              if (index !== -1) {
-                e.preventDefault();
-                const offset = e.key === "ArrowRight" ? 1 : -1;
-                const next = (index + offset + buttons.length) % buttons.length;
-                buttons[next].focus();
-              }
+              handleKeyboardNavigation(e, countryListContainer, "flag-button");
             }
           });
 
+          function handleKeyboardNavigation(event, container, buttonClass) {
+            const buttons = Array.from(container.querySelectorAll(`button.${buttonClass}`));
+            const current = document.activeElement;
+            const index = buttons.indexOf(current);
+            if (index !== -1) {
+              event.preventDefault();
+              const offset = event.key === "ArrowRight" ? 1 : -1;
+              const next = (index + offset + buttons.length) % buttons.length;
+              buttons[next].focus();
+            }
+          }
           function highlightSelection(button) {
             const buttons = countryListContainer.querySelectorAll("button.flag-button");
             buttons.forEach((b) => b.classList.remove("selected"));
