@@ -53,6 +53,7 @@
             <!-- Country names will be dynamically inserted here -->
           </div>
         </div>
+        <button id="clear-filter" class="clear-filter-button">Clear selection</button>
       </aside>
 
       <footer>
@@ -121,12 +122,42 @@
             if (e.key === "Escape") {
               toggleCountryPanel(toggleBtn, countryPanel, false);
             }
+
+            if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+              const buttons = Array.from(
+                countryListContainer.querySelectorAll("button.flag-button")
+              );
+              const current = document.activeElement;
+              const index = buttons.indexOf(current);
+              if (index !== -1) {
+                e.preventDefault();
+                const offset = e.key === "ArrowRight" ? 1 : -1;
+                const next = (index + offset + buttons.length) % buttons.length;
+                buttons[next].focus();
+              }
+            }
+          });
+
+          function highlightSelection(button) {
+            const buttons = countryListContainer.querySelectorAll("button.flag-button");
+            buttons.forEach((b) => b.classList.remove("selected"));
+            button.classList.add("selected");
+          }
+
+          const clearBtn = document.getElementById("clear-filter");
+
+          clearBtn.addEventListener("click", async () => {
+            const buttons = countryListContainer.querySelectorAll("button.flag-button");
+            buttons.forEach((b) => b.classList.remove("selected"));
+            await renderCarousel(allJudoka);
+            toggleCountryPanel(toggleBtn, countryPanel, false);
           });
 
           countryListContainer.addEventListener("click", async (e) => {
             const button = e.target.closest("button.flag-button");
             if (!button) return;
             const selected = button.value;
+            highlightSelection(button);
             const filtered =
               selected === "all" ? allJudoka : allJudoka.filter((j) => j.country === selected);
             await renderCarousel(filtered);

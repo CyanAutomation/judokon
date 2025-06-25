@@ -780,3 +780,18 @@ button .ripple {
 .flag-button:focus {
   outline: 2px solid var(--color-primary);
 }
+
+.flag-button.selected {
+  border: 2px solid var(--color-primary);
+  border-radius: 4px;
+}
+
+.clear-filter-button {
+  margin: 1rem auto 0;
+  padding: 0.3rem 0.5rem;
+  background: var(--button-bg);
+  color: var(--button-text-color);
+  border: none;
+  border-radius: 4px;
+  display: block;
+}

@@ -172,17 +172,16 @@ export async function getFlagUrl(countryCode) {
  * 3. Sort the countries alphabetically:
  *    - Order the filtered countries using `localeCompare` on the `country` name.
  *
- * 4. Generate slides for each active country:
+ * 4. Generate a button slide for each active country:
  *    - For each country:
- *      a. Create a `div` element for the slide container.
- *      b. Add a flag image:
+ *      a. Create a `button` element with classes `flag-button` and `slide`.
+ *      b. Set the `value` to the country's name and add an `aria-label`.
+ *      c. Add a flag image:
  *         - Create an `img` element.
  *         - Fetch the flag URL using `getFlagUrl`.
- *         - Set the `src` attribute to the flag URL or fallback URL if an error occurs.
- *      c. Add the country name:
- *         - Create a `p` element.
- *         - Set its text content to the country's name.
- *      d. Append the slide container to the specified container.
+ *         - Set the `src` attribute to the flag URL or a fallback URL on error.
+ *      d. Add the country name inside a `p` element.
+ *      e. Append the button directly to the specified container.
  *
  * 5. Handle errors:
  *    - Log any errors encountered during the process.
@@ -197,10 +196,8 @@ export async function populateCountryList(container) {
       .filter((country) => country.active)
       .sort((a, b) => a.country.localeCompare(b.country));
 
-    const allSlide = document.createElement("div");
-    allSlide.className = "slide";
     const allButton = document.createElement("button");
-    allButton.className = "flag-button";
+    allButton.className = "flag-button slide";
     allButton.value = "all";
     allButton.setAttribute("aria-label", "All Countries");
     const allImg = document.createElement("img");
@@ -211,8 +208,7 @@ export async function populateCountryList(container) {
     allLabel.textContent = "All";
     allButton.appendChild(allImg);
     allButton.appendChild(allLabel);
-    allSlide.appendChild(allButton);
-    container.appendChild(allSlide);
+    container.appendChild(allButton);
 
     for (const country of activeCountries) {
       if (!country.country || !country.code) {
@@ -220,11 +216,8 @@ export async function populateCountryList(container) {
         continue;
       }
 
-      const slide = document.createElement("div");
-      slide.className = "slide";
-
       const button = document.createElement("button");
-      button.className = "flag-button";
+      button.className = "flag-button slide";
       button.value = country.country;
       button.setAttribute("aria-label", country.country);
 
@@ -244,9 +237,8 @@ export async function populateCountryList(container) {
       countryName.textContent = country.country;
       button.appendChild(flagImg);
       button.appendChild(countryName);
-      slide.appendChild(button);
 
-      container.appendChild(slide);
+      container.appendChild(button);
     }
   } catch (error) {
     console.error("Error fetching country data:", error);
