@@ -169,7 +169,10 @@ export async function getFlagUrl(countryCode) {
  * 2. Filter active countries:
  *    - Include only countries where the `active` property is `true`.
  *
- * 3. Generate slides for each active country:
+ * 3. Sort the countries alphabetically:
+ *    - Order the filtered countries using `localeCompare` on the `country` name.
+ *
+ * 4. Generate slides for each active country:
  *    - For each country:
  *      a. Create a `div` element for the slide container.
  *      b. Add a flag image:
@@ -181,7 +184,7 @@ export async function getFlagUrl(countryCode) {
  *         - Set its text content to the country's name.
  *      d. Append the slide container to the specified container.
  *
- * 4. Handle errors:
+ * 5. Handle errors:
  *    - Log any errors encountered during the process.
  *
  * @param {HTMLElement} container - The DOM element where the country list will be appended.
@@ -190,7 +193,11 @@ export async function populateCountryList(container) {
   try {
     const countryData = await loadCountryCodeMapping();
 
-    for (const country of countryData.filter((country) => country.active)) {
+    const activeCountries = countryData
+      .filter((country) => country.active)
+      .sort((a, b) => a.country.localeCompare(b.country));
+
+    for (const country of activeCountries) {
       if (!country.country || !country.code) {
         console.warn("Skipping invalid country entry:", country);
         continue;
