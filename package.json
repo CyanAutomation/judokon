@@ -12,7 +12,7 @@
     "test": "vitest",
     "test:screenshot": "playwright test",
     "lint": "npx prettier . --check && npx eslint .",
-    "check:contrast": "pa11y --config pa11y.config.cjs http://localhost:5000",
+    "check:contrast": "node scripts/runPa11y.js",
     "prepare": "husky install",
     "validate:data": "node scripts/validateData.js"
   },

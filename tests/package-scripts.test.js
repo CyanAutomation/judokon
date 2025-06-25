@@ -8,9 +8,7 @@ const pkgPath = path.join(__dirname, "../package.json");
 const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
 
 describe("npm scripts", () => {
-  it("check:contrast uses pa11y", () => {
-    expect(pkg.scripts["check:contrast"]).toBe(
-      "pa11y --config pa11y.config.cjs http://localhost:5000"
-    );
+  it("check:contrast uses runPa11y", () => {
+    expect(pkg.scripts["check:contrast"]).toBe("node scripts/runPa11y.js");
   });
 });
