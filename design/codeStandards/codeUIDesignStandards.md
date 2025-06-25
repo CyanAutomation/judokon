@@ -106,7 +106,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Line-height: 1.4× font size
 - Letter-spacing: 0.5% (League Spartan), normal (Noto Sans)
 - Avoid using all caps in body text for readability
-- Use the **Pa11y** CLI (`npm run check:contrast`) to validate contrast on the running site at http://localhost:3000
+- Use the **Pa11y** CLI (`npm run check:contrast`) to validate contrast on the running site at http://localhost:5000
 
 ---
 
