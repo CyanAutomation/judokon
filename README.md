@@ -34,7 +34,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 3. Verify formatting, linting, and color contrast before committing:
    ```bash
    npm run lint
-   npm run check:contrast  # runs Pa11y against http://localhost:3000
+   npm run check:contrast  # runs Pa11y against http://localhost:5000
    ```
 
 ### Debug Logging

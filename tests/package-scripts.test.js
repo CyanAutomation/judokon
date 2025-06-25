@@ -9,6 +9,6 @@ const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
 
 describe("npm scripts", () => {
   it("check:contrast uses pa11y", () => {
-    expect(pkg.scripts["check:contrast"]).toBe("pa11y http://localhost:3000");
+    expect(pkg.scripts["check:contrast"]).toBe("pa11y http://localhost:5000");
   });
 });
