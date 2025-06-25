@@ -26,7 +26,7 @@ Run the following commands from the repository root before committing. If any co
 ```bash
 npx prettier . --check       # verify formatting
 npx eslint .                 # lint the codebase
-npm run check:contrast       # run Pa11y accessibility audit on http://localhost:5000
+npm run check:contrast       # run Pa11y accessibility audit on http://localhost:5000 (start a dev server first)
 npx vitest run                # run unit tests
 npx playwright test          # run Playwright UI tests
 ```
