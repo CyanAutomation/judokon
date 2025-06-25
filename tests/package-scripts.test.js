@@ -10,7 +10,7 @@ const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
 describe("npm scripts", () => {
   it("check:contrast uses pa11y", () => {
     expect(pkg.scripts["check:contrast"]).toBe(
-      "pa11y --chrome-launch-flags=--no-sandbox http://localhost:5000"
+      "pa11y --config pa11y.config.js http://localhost:5000"
     );
   });
 });
