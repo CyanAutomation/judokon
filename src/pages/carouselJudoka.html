@@ -40,19 +40,20 @@
 
       <main class="kodokan-grid" role="main">
         <div class="filter-bar">
-          <label for="country-filter">Filter by Country:</label>
-          <select id="country-filter" aria-label="Filter judoka by country">
-            <option value="all">All Countries</option>
-          </select>
+          <button id="country-toggle" aria-controls="country-panel" aria-expanded="false">
+            Choose Country
+          </button>
         </div>
         <div id="carousel-container"></div>
       </main>
 
-      <div class="country-flag-slider">
-        <div class="country-flag-slide-track" id="country-list">
-          <!-- Country names will be dynamically inserted here -->
+      <aside id="country-panel" class="country-panel" role="region" hidden>
+        <div class="country-flag-slider">
+          <div class="country-flag-slide-track" id="country-list">
+            <!-- Country names will be dynamically inserted here -->
+          </div>
         </div>
-      </div>
+      </aside>
 
       <footer>
         <nav class="bottom-navbar"></nav>
@@ -69,13 +70,15 @@
       <script type="module">
         import { buildCardCarousel } from "../helpers/carouselBuilder.js";
         import { populateCountryList } from "../helpers/countryUtils.js";
+        import { toggleCountryPanel } from "../helpers/countryPanel.js";
         import { fetchDataWithErrorHandling } from "../helpers/dataUtils.js";
         import { DATA_DIR } from "../helpers/constants.js";
 
         document.addEventListener("DOMContentLoaded", async () => {
           const carouselContainer = document.getElementById("carousel-container");
           const countryListContainer = document.getElementById("country-list");
-          const filterSelect = document.getElementById("country-filter");
+          const toggleBtn = document.getElementById("country-toggle");
+          const countryPanel = document.getElementById("country-panel");
 
           let allJudoka = [];
           let gokyoData = [];
@@ -87,16 +90,6 @@
             ]);
           }
 
-          function populateFilterOptions() {
-            const countries = [...new Set(allJudoka.map((j) => j.country).filter(Boolean))].sort();
-            for (const c of countries) {
-              const option = document.createElement("option");
-              option.value = c;
-              option.textContent = c;
-              filterSelect.appendChild(option);
-            }
-          }
-
           async function renderCarousel(list) {
             carouselContainer.innerHTML = "";
             const carousel = await buildCardCarousel(list, gokyoData);
@@ -105,7 +98,6 @@
 
           try {
             await loadData();
-            populateFilterOptions();
             await renderCarousel(allJudoka);
             if (allJudoka.length === 0) {
               const noResultsMessage = document.createElement("div");
@@ -123,11 +115,22 @@
             carouselContainer.appendChild(errorMessage);
           }
 
-          filterSelect.addEventListener("change", async () => {
-            const selected = filterSelect.value;
+          toggleBtn.addEventListener("click", () => toggleCountryPanel(toggleBtn, countryPanel));
+
+          countryPanel.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+              toggleCountryPanel(toggleBtn, countryPanel, false);
+            }
+          });
+
+          countryListContainer.addEventListener("click", async (e) => {
+            const button = e.target.closest("button.flag-button");
+            if (!button) return;
+            const selected = button.value;
             const filtered =
               selected === "all" ? allJudoka : allJudoka.filter((j) => j.country === selected);
             await renderCarousel(filtered);
+            toggleCountryPanel(toggleBtn, countryPanel, false);
           });
 
           populateCountryList(countryListContainer);

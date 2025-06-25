@@ -114,6 +114,7 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
 - Playable directly in the browser
 - Loading indicator for better user experience
 - Modularized JavaScript for better maintainability
+- Slide-in country picker for filtering judoka by flag
 
 ## About JU-DO-KON!
 

@@ -682,9 +682,12 @@ button .ripple {
   justify-content: center;
 }
 
-.filter-bar select {
+.filter-bar button {
   padding: 0.3rem 0.5rem;
   border-radius: 4px;
+  background: var(--button-bg);
+  color: var(--button-text-color);
+  border: none;
 }
 
 .scroll-markers {
@@ -742,4 +745,38 @@ button .ripple {
   border-radius: var(--radius-md); /* Updated token */
   font-size: 1.25rem;
   font-weight: bold;
+}
+
+.country-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 75vw;
+  max-width: 320px;
+  height: 100%;
+  background: rgba(0, 32, 82, 0.9);
+  overflow-y: auto;
+  padding: var(--space-md);
+  transform: translateX(100%);
+  transition: transform 300ms ease-in-out;
+  z-index: 50;
+}
+
+.country-panel.open {
+  transform: translateX(0);
+}
+
+.country-panel[hidden] {
+  display: none;
+}
+
+.flag-button {
+  background: transparent;
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.flag-button:focus {
+  outline: 2px solid var(--color-primary);
 }

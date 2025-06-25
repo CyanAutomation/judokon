@@ -29,6 +29,9 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
           route.continue();
         }
       });
+      await page.route("https://flagcdn.com/**", (route) =>
+        route.fulfill({ path: "src/assets/countryFlags/placeholder-flag.png" })
+      );
       await page.addInitScript(() => {
         Math.random = () => 0.42;
       });
