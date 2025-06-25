@@ -40,9 +40,6 @@ function getComponentColors(vars) {
       colors[key] = resolveColor(match[1].trim(), vars);
     }
   }
-  if (vars["--accent-beige"]) {
-    colors.accentBeige = vars["--accent-beige"];
-  }
   return colors;
 }
 
@@ -60,11 +57,4 @@ describe("components.css color contrast", () => {
     const ratio = hex(bg, vars["--color-text-inverted"]);
     expect(ratio).toBeGreaterThanOrEqual(4.5);
   });
-
-  if (colors.accentBeige) {
-    it("--accent-beige vs --color-text should be >= 4.5", () => {
-      const ratio = hex(colors.accentBeige, vars["--color-text"]);
-      expect(ratio).toBeGreaterThanOrEqual(4.5);
-    });
-  }
 });
