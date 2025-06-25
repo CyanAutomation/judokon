@@ -52,7 +52,7 @@ Run screenshot tests locally:
 
 npm run test:screenshot
 
-Check generated screenshots and diffs carefully. 
+Check generated screenshots and diffs carefully.
 
 📝 Note: Screenshot tests are optional for minor changes but strongly encouraged for any updates affecting layout, components, or styles.
 
