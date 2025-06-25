@@ -317,7 +317,7 @@ button .ripple {
 /* Top bar of the card (name and flag) */
 .card-top-bar {
   background-color: var(--card-bg-color);
-  color: var(--color-text); /* Updated token */
+  color: var(--color-text-inverted);
   justify-content: space-around;
   display: inline-flex;
   align-items: center;
@@ -398,7 +398,7 @@ button .ripple {
   right: var(--space-small); /* Updated token */
   background-color: rgba(0, 0, 0, 0.4);
   border-radius: var(--radius-sm); /* Updated token */
-  color: var(--color-text); /* Updated token */
+  color: var(--color-text-inverted);
   font-weight: bold;
   padding: var(--space-small) var(--space-medium); /* Updated tokens */
   font-size: var(--font-small); /* Updated token */
@@ -413,7 +413,7 @@ button .ripple {
 
 .card-stats {
   background-color: var(--card-bg-color);
-  color: var(--color-text);
+  color: var(--color-text-inverted);
   padding: var(--space-small) var(--space-large);
   margin: 0;
   display: flex;
@@ -612,7 +612,7 @@ button .ripple {
   min-width: 100vw;
   justify-content: space-evenly;
   background-color: var(--color-secondary);
-  color: var(--color-text);
+  color: var(--color-text-inverted);
   text-align: center;
   padding: 1vh 0;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
@@ -773,7 +773,7 @@ button .ripple {
 .flag-button {
   background: transparent;
   border: none;
-  color: var(--color-text);
+  color: var(--color-text-inverted);
   cursor: pointer;
 }
 
