@@ -44,7 +44,6 @@ To ensure the game remains visually consistent, we use Playwright for UI testing
 
 When updating or creating UI components:
 
-- Update or create Playwright tests in the playwright/ directory.
 - Take full-page or element-specific screenshots during test runs.
 - Save manual screenshots to the screenshots/ directory (if needed).
 - Visual regression tests use the **screenshots**/ folders adjacent to test files.
@@ -53,9 +52,7 @@ Run screenshot tests locally:
 
 npm run test:screenshot
 
-Check generated screenshots and diffs carefully. If a UI change is intended, update the baseline snapshots:
-
-npx playwright test --update-snapshots
+Check generated screenshots and diffs carefully. 
 
 📝 Note: Screenshot tests are optional for minor changes but strongly encouraged for any updates affecting layout, components, or styles.
 
@@ -73,4 +70,4 @@ npx playwright test --update-snapshots
 - **Examples:**
   - `Add carousel component to homepage`
   - `Fix failing date formatter tests`
-  - 'Update Battle Mode layout and regenerate screenshots'
+  - 'Update Battle Mode layout'
