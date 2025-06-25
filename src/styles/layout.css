@@ -56,7 +56,6 @@ body {
 
 .character-slot {
   height: 20px;
-  background-color: var(--accent-beige);
   opacity: 0.5;
 }
 
