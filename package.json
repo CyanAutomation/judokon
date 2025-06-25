@@ -12,7 +12,7 @@
     "test": "vitest",
     "test:screenshot": "playwright test",
     "lint": "npx prettier . --check && npx eslint .",
-    "check:contrast": "pa11y --chrome-launch-flags=--no-sandbox http://localhost:5000",
+    "check:contrast": "pa11y --config pa11y.config.js http://localhost:5000",
     "prepare": "husky install",
     "validate:data": "node scripts/validateData.js"
   },
