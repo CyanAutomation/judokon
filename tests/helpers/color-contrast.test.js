@@ -25,7 +25,12 @@ describe("base.css color contrast", () => {
     ["--button-active-bg", "--button-text-color"],
     ["--color-secondary", "--color-surface"],
     ["--color-primary", "--color-surface"],
-    ["--color-tertiary", "--color-secondary"]
+    ["--color-tertiary", "--color-secondary"],
+    ["--color-text", "--color-background"],
+    ["--color-primary", "--color-background"],
+    ["--color-secondary", "--color-background"],
+    ["--color-tertiary", "--color-text"],
+    ["--color-surface", "--color-text"]
   ];
 
   it.each(pairs)("%s vs %s should be >= 4.5", (a, b) => {
