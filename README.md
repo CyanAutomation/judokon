@@ -31,7 +31,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
    npm start  # lightweight local dev server
    # Then visit: http://localhost:5000
    ```
-3. Verify formatting, linting, and color contrast before committing:
+3. Verify formatting, linting, and color contrast before committing. Make sure a local server (for example `npm start`) is running so Pa11y can access http://localhost:5000:
    ```bash
    npm run lint
    npm run check:contrast  # runs Pa11y against http://localhost:5000
@@ -192,4 +192,4 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 
 ## Contributing
 
-Please format your code with **Prettier**, lint it with **ESLint**, run **Vitest** and **Playwright**, and verify color contrast with `npm run check:contrast` (Pa11y) before submitting a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full checklist.
+Please format your code with **Prettier**, lint it with **ESLint**, run **Vitest** and **Playwright**, and verify color contrast with `npm run check:contrast` (Pa11y) while the development server is running before submitting a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full checklist.

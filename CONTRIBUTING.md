@@ -13,7 +13,7 @@ root. Fix any issues and rerun the checks until they all pass.
 ```bash
 npx prettier . --check       # verify formatting
 npx eslint .                 # lint the codebase
-npm run check:contrast       # run Pa11y accessibility audit on http://localhost:5000
+npm run check:contrast       # run Pa11y accessibility audit on http://localhost:5000 (requires the dev server to be running)
 npx vitest run               # run unit tests
 npx playwright test          # run Playwright UI tests
 ```
