@@ -18,7 +18,7 @@
 .meditation-title {
   font-family: "League Spartan", sans-serif; /* Updated token */
   font-size: clamp(32px, 5vw, 40px); /* Updated token */
-  color: var(--color-text); /* Updated token */
+  color: var(--color-text-inverted);
   text-align: center;
   margin-top: var(--space-sm); /* Updated token */
   background-color: var(--color-primary);
@@ -67,7 +67,7 @@
 
 .quote {
   font-size: clamp(18px, 2vw, 24px);
-  color: var(--color-text); /* Updated token */
+  color: var(--color-text-inverted);
   line-height: 1.4; /* Updated token */
   max-width: 70ch;
   margin: 0 auto;
@@ -75,7 +75,7 @@
 }
 
 .quote-heading {
-  color: var(--color-text); /* Updated token */
+  color: var(--color-text-inverted);
   font-family: "League Spartan", sans-serif;
   font-size: clamp(18px, 2vw, 24px);
   text-align: left;
@@ -85,7 +85,7 @@
 }
 
 .quote-content {
-  color: var(--color-text); /* Updated token */
+  color: var(--color-text-inverted);
   font-size: clamp(18px, 2vw, 24px);
   text-align: justify;
   align-self: center;
@@ -172,7 +172,7 @@
   align-items: center;
   gap: var(--space-small); /* Updated token */
   background-color: var(--color-secondary); /* Updated token */
-  color: var(--color-text); /* Updated token */
+  color: var(--color-text-inverted);
   border: none;
   border-radius: var(--radius-md); /* Updated token */
   padding: var(--space-small) var(--space-medium); /* Updated tokens */
