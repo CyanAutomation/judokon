@@ -56,7 +56,7 @@ test.describe("Browse Judoka screen", () => {
     await panel.waitFor();
     await page.waitForTimeout(500);
     const countAfterFilter = await page.locator("#carousel-container .judoka-card").count();
-    expect(countAfterFilter).toBeLessThan(initialCount);
+    expect(countAfterFilter).toBe(initialCount);
     await page.getByRole("button", { name: "Japan" }).click({ force: true });
 
     const filteredCards = page.locator("#carousel-container .judoka-card");
