@@ -34,11 +34,10 @@ Ju-Do-Kon! uses a **bold, high-contrast design system** grounded in clear hierar
 - **Responsive Feedback** – Every interaction must give feedback (scale, glow, ripple, animation).
 - **Visual Hierarchy** – Layout must surface the most important info and reinforce progression.
 - **Progressive Disclosure** – Show only essential actions up front; reveal detail as needed.
-- **Thematic Immersion** – UI should reflect modern judo dojo themes and collectible energy.
 - **Consistency** – Reuse shared UI patterns to improve familiarity.
 - **Accessibility** – WCAG AA, keyboard navigation, screen reader support.
 - **Continuity** – Layout and navigation must remain familiar across breakpoints.
-- **Momentum** – Game flow must feel lively and animated, especially for kids.
+- **Momentum** – Game flow must feel lively and animated.
 
 ---
 
