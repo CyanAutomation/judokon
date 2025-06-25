@@ -27,6 +27,6 @@ describe("populateCountryList", () => {
 
     const slides = container.querySelectorAll(".slide");
     const names = [...slides].map((s) => s.querySelector("p").textContent);
-    expect(names).toEqual(["Brazil", "Canada", "Japan"]);
+    expect(names).toEqual(["All", "Brazil", "Canada", "Japan"]);
   });
 });

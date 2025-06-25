@@ -197,6 +197,23 @@ export async function populateCountryList(container) {
       .filter((country) => country.active)
       .sort((a, b) => a.country.localeCompare(b.country));
 
+    const allSlide = document.createElement("div");
+    allSlide.className = "slide";
+    const allButton = document.createElement("button");
+    allButton.className = "flag-button";
+    allButton.value = "all";
+    allButton.setAttribute("aria-label", "All Countries");
+    const allImg = document.createElement("img");
+    allImg.alt = "All countries";
+    allImg.className = "flag-image";
+    allImg.src = "https://flagcdn.com/w320/vu.png";
+    const allLabel = document.createElement("p");
+    allLabel.textContent = "All";
+    allButton.appendChild(allImg);
+    allButton.appendChild(allLabel);
+    allSlide.appendChild(allButton);
+    container.appendChild(allSlide);
+
     for (const country of activeCountries) {
       if (!country.country || !country.code) {
         console.warn("Skipping invalid country entry:", country);
@@ -205,6 +222,11 @@ export async function populateCountryList(container) {
 
       const slide = document.createElement("div");
       slide.className = "slide";
+
+      const button = document.createElement("button");
+      button.className = "flag-button";
+      button.value = country.country;
+      button.setAttribute("aria-label", country.country);
 
       const flagImg = document.createElement("img");
       flagImg.alt = `${country.country} Flag`;
@@ -218,11 +240,11 @@ export async function populateCountryList(container) {
         flagImg.src = "https://flagcdn.com/w320/vu.png"; // Fallback to Vanuatu flag
       }
 
-      slide.appendChild(flagImg);
-
       const countryName = document.createElement("p");
       countryName.textContent = country.country;
-      slide.appendChild(countryName);
+      button.appendChild(flagImg);
+      button.appendChild(countryName);
+      slide.appendChild(button);
 
       container.appendChild(slide);
     }

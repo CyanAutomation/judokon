@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const FILTER_BY_COUNTRY_LOCATOR = /Filter( judokas?)? by country/i;
+const COUNTRY_TOGGLE_LOCATOR = /choose country/i;
 
 test.describe("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
@@ -13,11 +13,14 @@ test.describe("Browse Judoka screen", () => {
     await page.route("**/src/data/countryCodeMapping.json", (route) =>
       route.fulfill({ path: "tests/fixtures/countryCodeMapping.json" })
     );
+    await page.route("https://flagcdn.com/**", (route) =>
+      route.fulfill({ path: "src/assets/countryFlags/placeholder-flag.png" })
+    );
     await page.goto("/src/pages/carouselJudoka.html");
   });
 
   test("essential elements visible", async ({ page }) => {
-    await expect(page.getByRole("combobox", { name: FILTER_BY_COUNTRY_LOCATOR })).toBeVisible();
+    await expect(page.getByRole("button", { name: COUNTRY_TOGGLE_LOCATOR })).toBeVisible();
     await expect(page.getByRole("navigation")).toBeVisible();
     await expect(page.getByRole("link", { name: /classic battle/i })).toBeVisible();
   });
@@ -40,16 +43,19 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test("country filter updates carousel", async ({ page }) => {
-    const dropdown = page.getByRole("combobox", { name: FILTER_BY_COUNTRY_LOCATOR });
+    const toggle = page.getByRole("button", { name: COUNTRY_TOGGLE_LOCATOR });
 
-    // wait for cards to load
     await page.waitForSelector("#carousel-container .judoka-card");
 
     const allCards = page.locator("#carousel-container .judoka-card");
     const initialCount = await allCards.count();
     expect(initialCount).toBe(3);
 
-    await dropdown.selectOption("Japan");
+    await toggle.click();
+    const panel = page.getByRole("region");
+    await panel.waitFor();
+    await expect(page.locator("#carousel-container .judoka-card")).toHaveCountLessThan(initialCount);
+    await page.getByRole("button", { name: "Japan" }).click({ force: true });
 
     const filteredCards = page.locator("#carousel-container .judoka-card");
     const filteredCount = await filteredCards.count();
@@ -60,14 +66,21 @@ test.describe("Browse Judoka screen", () => {
       await expect(flag).toHaveAttribute("alt", /Japan flag/i);
     }
 
-    await dropdown.selectOption("all");
+    await toggle.click();
+    await panel.waitFor();
+    await page.waitForTimeout(350);
+    await page.getByRole("button", { name: "All" }).click({ force: true });
 
     await expect(page.locator("#carousel-container .judoka-card")).toHaveCount(initialCount);
   });
 
   test("displays country flags", async ({ page }) => {
+    const toggle = page.getByRole("button", { name: COUNTRY_TOGGLE_LOCATOR });
+    await toggle.click();
     await page.waitForSelector("#country-list .slide");
-    await expect(page.locator("#country-list .slide")).toHaveCount(3);
+    const slides = page.locator("#country-list .slide");
+    await expect(slides).toHaveCount(4);
+    await expect(slides.first().locator("img")).toHaveAttribute("alt", /all countries/i);
   });
 
   test.skip("judoka card enlarges on hover", async ({ page }) => {
