@@ -7,10 +7,10 @@ describe("setupBottomNavbar module", () => {
       ok: true,
       json: () => Promise.resolve([])
     });
-    
+
     // Clear DOM
     document.body.innerHTML = "";
-    
+
     // Add required DOM elements
     const navbar = document.createElement("nav");
     navbar.className = "bottom-navbar";
@@ -34,7 +34,7 @@ describe("setupBottomNavbar module", () => {
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
     // Wait for async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 10));
 
     // Test that button effects are working
     const event = new MouseEvent("mousedown");
