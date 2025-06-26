@@ -34,7 +34,7 @@ describe("setupBottomNavbar module", () => {
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
     // Wait for async operations to complete
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    vi.advanceTimersByTime(10);
 
     // Test that button effects are working
     const event = new MouseEvent("mousedown");
