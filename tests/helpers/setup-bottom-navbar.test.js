@@ -19,6 +19,7 @@ describe("setupBottomNavbar module", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
     document.body.innerHTML = "";
   });
 
@@ -26,6 +27,9 @@ describe("setupBottomNavbar module", () => {
     // Create a button to test button effects
     const button = document.createElement("button");
     document.body.appendChild(button);
+
+    // Setup fake timers for testing
+    vi.useFakeTimers();
 
     // Import the module to trigger the DOMContentLoaded listener
     await import("../../src/helpers/setupBottomNavbar.js");
