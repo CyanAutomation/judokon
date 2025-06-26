@@ -2,19 +2,11 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { hex } from "wcag-contrast";
+import { parseCssVariables } from "../../src/helpers/cssVariableParser.js";
 
 function getCssVars() {
   const css = readFileSync(resolve("src/styles/base.css"), "utf8");
-  const rootBlock = css.match(/:root\s*{([\s\S]*?)}/);
-  const vars = {};
-  if (rootBlock) {
-    const regex = /--([\w-]+)\s*:\s*([^;]+);/g;
-    let m;
-    while ((m = regex.exec(rootBlock[1])) !== null) {
-      vars[`--${m[1]}`] = m[2].trim();
-    }
-  }
-  return vars;
+  return parseCssVariables(css);
 }
 
 describe("base.css color contrast", () => {
