@@ -14,6 +14,9 @@
   scroll-snap-type: x mandatory;
   gap: var(--space-lg); /* Generous whitespace */
   scroll-behavior: smooth; /* Smooth scrolling effect */
+  width: 100%; /* Ensure carousel doesn't exceed container width */
+  max-width: 100%; /* Prevent overflow */
+  padding: 10px; /* Add padding for visual spacing */
 }
 
 .judoka-card {

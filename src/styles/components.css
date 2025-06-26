@@ -532,26 +532,7 @@ button .ripple {
   width: 100%;
 }
 
-.card-carousel {
-  display: flex;
-  gap: 1em;
-  overflow-x: auto;
-  padding: 10px;
-  scroll-behavior: smooth;
-  max-height: 90vh;
-  max-height: 90dvh;
-  /*   background-color: royalblue; */
-}
-
-.card-carousel .judoka-card {
-  width: 300px;
-}
-
-@media (max-width: 768px) {
-  #card-container .judoka-card {
-    width: 70vw;
-  }
-}
+/* Carousel styles moved to carousel.css for better responsive design */
 
 .card-carousel::-webkit-scrollbar {
   height: 8px;
