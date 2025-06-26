@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carousel Test</title>
+    <style>
+        /* Import the carousel styles */
+        :root {
+          --space-xs: 4px;
+          --space-sm: 8px;
+          --space-md: 16px;
+          --space-lg: 24px;
+          --space-xl: 32px;
+          --radius-sm: 4px;
+          --radius-md: 8px;
+          --radius-lg: 12px;
+          --shadow-base: 0 4px 12px rgba(0, 0, 0, 0.1);
+          --transition-fast: all 150ms ease;
+        }
+        
+        /* Copy styles from carousel.css */
+        .card-carousel {
+          display: flex;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          gap: var(--space-lg);
+          scroll-behavior: smooth;
+          width: 100%;
+          max-width: 100%;
+          padding: 10px;
+          border: 2px solid red; /* For visual debugging */
+        }
+
+        .judoka-card {
+          flex: 0 0 calc(33.33% - var(--space-lg));
+          scroll-snap-align: center;
+          transition: transform var(--transition-fast);
+          border-radius: var(--radius-lg);
+          box-shadow: var(--shadow-base);
+          background: lightblue;
+          height: 200px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        /* Styles for tablets */
+        @media (max-width: 1024px) {
+          .judoka-card {
+            flex: 0 0 calc(50% - var(--space-lg));
+          }
+        }
+
+        /* Styles for mobile */
+        @media (max-width: 768px) {
+          .judoka-card {
+            flex: 0 0 calc(100% - var(--space-sm));
+          }
+          .card-carousel {
+            gap: var(--space-sm);
+          }
+        }
+        
+        .container {
+          width: 100%;
+          max-width: 100%;
+          overflow: hidden;
+          border: 2px solid blue; /* For visual debugging */
+        }
+        
+        body {
+          margin: 0;
+          padding: 20px;
+          font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <h1>Carousel Responsive Test</h1>
+    <p>Resize the window to test responsive behavior</p>
+    
+    <div class="container">
+        <div class="card-carousel">
+            <div class="judoka-card">Card 1</div>
+            <div class="judoka-card">Card 2</div>
+            <div class="judoka-card">Card 3</div>
+            <div class="judoka-card">Card 4</div>
+            <div class="judoka-card">Card 5</div>
+        </div>
+    </div>
+    
+    <p>Desktop: 3 cards per row<br>
+    Tablet (≤1024px): 2 cards per row<br>
+    Mobile (≤768px): 1 card per row</p>
+</body>
+</html>
