@@ -13,7 +13,7 @@
  *    - Add an `<img>` element:
  *      a. Set the `src` attribute to the portrait URL based on `id`.
  *      b. Set the `alt` attribute to include the judoka's name.
- *      c. Add an `onerror` handler to fallback to the placeholder portrait if the image fails to load.
+ *      c. Add an `onerror` handler to fallback to the placeholder portrait (id 0) if the image fails to load.
  *
  * 4. Return the constructed HTML string.
  *
@@ -37,7 +37,7 @@ export function generateCardPortrait(card) {
   const { id, firstname, surname } = card;
   return `
     <div class="card-portrait">
-      <img src="../assets/judokaPortraits/judokaPortrait-${id}.png" alt="${firstname} ${surname}'s portrait" loading="lazy" onerror="this.src='../assets/judokaPortraits/judokaPortrait-${id}.png'">
+      <img src="../assets/judokaPortraits/judokaPortrait-${id}.png" alt="${firstname} ${surname}'s portrait" loading="lazy" onerror="this.src='../assets/judokaPortraits/judokaPortrait-0.png'">
     </div>
   `;
 }
