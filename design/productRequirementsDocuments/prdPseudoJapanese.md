@@ -70,7 +70,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 
 | **Meditation Screen Mockup 3**                                        |                                        **Meditation Screen Mockup 4** |
 | ---------------------------------------------------------------- | ---------------------------------------------------------------: |
-| ![Meditation Screen Mockup 3](/design/mockups/mockupQuoteScreen3.png) | ![Meditation Screen Mockup 4](/design/mockups/mockupQuoteScreen4.png) |
+| ![Meditation Screen Mockup 3](/design/mockups/mockupMeditationScreen3.png) | ![Meditation Screen Mockup 4](/design/mockups/mockupMeditationScreen4.png) |
 
 ### 1. Quote Display + Language Toggle Module
 
