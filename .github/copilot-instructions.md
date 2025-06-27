@@ -3,6 +3,7 @@
 This file guides GitHub Copilot agents contributing to the JU-DO-KON! repository. It consolidates the contributor notes from `AGENTS.md` and `CONTRIBUTING.md`.
 
 ## Key Directories
+
 - `index.html` – landing page
 - `game.js` – main browser logic
 - `helpers/` – modular utilities with extensive JSDoc `@pseudocode` blocks
@@ -12,12 +13,14 @@ This file guides GitHub Copilot agents contributing to the JU-DO-KON! repository
 - `design/` – code standards and other docs. Review `design/codeStandards/codeJSDocStandards.md` and `design/codeStandards/codePseudocodeStandards.md`
 
 ## Coding Standards
+
 - Use ES modules and modern JavaScript (Node 18+ expected)
 - Format code with Prettier and lint with ESLint (`eslint.config.mjs`)
 - **Preserve all JSDoc comments and `@pseudocode` blocks**; update them when the code changes
 - Public functions require JSDoc following the design docs
 
 ## Required Programmatic Checks
+
 Run these commands from the repository root before committing. Resolve issues and rerun until they succeed:
 
 ```bash
@@ -29,22 +32,27 @@ npx playwright test          # Playwright UI tests
 ```
 
 Useful fixes:
+
 ```bash
 npx eslint . --fix    # auto-fix lint errors
 npx prettier . --write # reformat files
 ```
 
 Screenshot tests:
+
 ```bash
 npm run test:screenshot              # run visual regression tests
 npx playwright test --update-snapshots  # update baseline screenshots when needed
 ```
+
 Screenshot tests are optional for minor changes but strongly encouraged when UI layout or style updates occur.
 
 ## Git Hooks
+
 After cloning, run `npm install` and `npm run prepare` to enable Husky pre-commit hooks. The hook automatically runs `npm run lint` and `npm test`.
 
 ## Pseudocode and Documentation Rules
+
 - Begin each pseudocode block with `@pseudocode`
 - Write numbered, step‑by‑step explanations describing **why** the code acts as it does
 - Keep language concise and avoid repeating the code line by line
@@ -52,10 +60,12 @@ After cloning, run `npm install` and `npm run prepare` to enable Husky pre-commi
 - Do not remove existing `@pseudocode` blocks without discussion
 
 ## Additional Notes
+
 - Set `DEBUG_LOGGING=true` to enable debug logging
 - Ensure new functionality includes unit tests and Playwright validation when relevant
 
 ## Commit Messages
+
 - Keep commit messages short and in the imperative mood
 - Reference related issues when applicable
 - Examples:
