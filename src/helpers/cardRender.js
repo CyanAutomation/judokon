@@ -1,3 +1,6 @@
+// Constants
+const PLACEHOLDER_ID = 0;
+
 /**
  * Generates the portrait HTML for a judoka card.
  *
@@ -13,7 +16,7 @@
  *    - Add an `<img>` element:
  *      a. Set the `src` attribute to the portrait URL based on `id`.
  *      b. Set the `alt` attribute to include the judoka's name.
- *      c. Add an `onerror` handler to fallback to the placeholder portrait (id 0) if the image fails to load.
+ *      c. Add an `onerror` handler to fallback to the placeholder portrait (PLACEHOLDER_ID) if the image fails to load.
  *
  * 4. Return the constructed HTML string.
  *
@@ -37,7 +40,7 @@ export function generateCardPortrait(card) {
   const { id, firstname, surname } = card;
   return `
     <div class="card-portrait">
-      <img src="../assets/judokaPortraits/judokaPortrait-${id}.png" alt="${firstname} ${surname}'s portrait" loading="lazy" onerror="this.onerror=null; this.src='../assets/judokaPortraits/judokaPortrait-0.png'">
+      <img src="../assets/judokaPortraits/judokaPortrait-${id}.png" alt="${firstname} ${surname}'s portrait" loading="lazy" onerror="this.onerror=null; this.src='../assets/judokaPortraits/judokaPortrait-${PLACEHOLDER_ID}.png'">
     </div>
   `;
 }
@@ -99,7 +102,7 @@ export function generateCardStats(card, cardType = "common") {
  *
  * 2. Lookup the technique in the `gokyoLookup` object:
  *    - Use `signatureMoveId` to find the matching technique.
- *    - Fallback to the default technique (`id: 0`) if no match is found.
+ *    - Fallback to the default technique (PLACEHOLDER_ID) if no match is found.
  *
  * 3. Escape the technique name to prevent XSS.
  *
@@ -123,14 +126,14 @@ export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "commo
     judoka = {}; // Default to an empty object
   }
 
-  const signatureMoveId = Number(judoka.signatureMoveId ?? 0); // Ensure signatureMoveId is a number
+  const signatureMoveId = Number(judoka.signatureMoveId ?? PLACEHOLDER_ID); // Ensure signatureMoveId is a number
 
   debugLog("Signature Move ID:", signatureMoveId);
   debugLog("Judoka Object:", judoka);
   debugLog("Gokyo Lookup Object:", gokyoLookup);
 
   const technique = (gokyoLookup && gokyoLookup[signatureMoveId]) ||
-    (gokyoLookup && gokyoLookup[0]) || { id: 0, name: "Jigoku-guruma" };
+    (gokyoLookup && gokyoLookup[PLACEHOLDER_ID]) || { id: PLACEHOLDER_ID, name: "Jigoku-guruma" };
 
   const techniqueName = technique?.name || "Jigoku-guruma";
 
