@@ -187,7 +187,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 | Card Carousel        | 3–5 visible cards, scroll snap, swipe area, visual edge indicators          |
 | Mode Selection Panel | Bold icon + label tiles, hover/press feedback, stacked vertically on mobile |
 | Create/Edit Modal    | Floating modal, left-aligned Cancel + right-aligned Save, live card preview |
-| Quote Screen         | Language toggle, fade transition, vertical CTA separation                   |
+| Meditation Screen    | Language toggle, fade transition, vertical CTA separation                   |
 | Landing Header       | Judoka illustration overlay, game logo, dynamic mode buttons                |
 
 ### 8.2 Navigation

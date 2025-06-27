@@ -21,6 +21,9 @@ coverage/
 dist/
 build/
 
+# Test results
+test-results/
+
 # Environment variables
 .env
 .env.local

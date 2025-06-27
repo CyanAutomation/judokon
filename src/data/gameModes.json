@@ -139,10 +139,10 @@
     }
   },
   {
-    "id": "kgWisdom",
-    "name": "KG's Wisdom",
-    "japaneseName": "KGの知恵",
-    "description": "KG shares his wisdom.",
+    "id": "meditation",
+    "name": "Meditation",
+    "japaneseName": "メディテーション",
+    "description": "Take a moment to pause, breathe, and reflect.",
     "category": "mainMenu",
     "order": 85,
     "url": "meditation.html",

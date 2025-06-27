@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Quote screen", () => {
+test.describe("Meditation screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/meditation.html");
   });

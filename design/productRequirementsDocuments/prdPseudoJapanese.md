@@ -44,7 +44,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 - Local conversion for up to 999 characters completes in <500ms.
 - Validation API (https://romaji2kana.com/api) used during testing phase only, not in live gameplay.
 - Validation testing passes: local conversion is at least 90% identical to API conversion output in test cases.
-- Feature is deployed on 100% of quote screens.
+- Feature is deployed on 100% of meditation screens.
 - Five diverse test strings are processed successfully without errors.
 
 ---
@@ -68,9 +68,9 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
   - Visually consistent with game UI (rounded rectangle, matching color scheme).
 - No plan for real Japanese localization — this feature is purely for stylistic effect.
 
-| **Quote Screen Mockup 3**                                        |                                        **Quote Screen Mockup 4** |
+| **Meditation Screen Mockup 3**                                        |                                        **Meditation Screen Mockup 4** |
 | ---------------------------------------------------------------- | ---------------------------------------------------------------: |
-| ![Quote Screen Mockup 3](/design/mockups/mockupQuoteScreen3.png) | ![Quote Screen Mockup 4](/design/mockups/mockupQuoteScreen4.png) |
+| ![Meditation Screen Mockup 3](/design/mockups/mockupMeditationScreen3.png) | ![Meditation Screen Mockup 4](/design/mockups/mockupMeditationScreen4.png) |
 
 ### 1. Quote Display + Language Toggle Module
 
@@ -110,7 +110,7 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
 
   - [ ] 2.1 Design "日本語風 / English" toggle button with split flags.
   - [ ] 2.2 Implement text toggle with 200ms fade animation.
-  - [ ] 2.3 Ensure toggle integrates cleanly with the quote screen UI.
+  - [ ] 2.3 Ensure toggle integrates cleanly with the meditation screen UI.
 
 - [ ] 3.0 Implement Static Fallback Mechanism
 
@@ -128,4 +128,4 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
   - [ ] 5.2 Validate local conversion, static fallback activation, and toggle performance.
   - [ ] 5.3 Ensure <500ms conversion time and <200ms toggle response.
   - [ ] 5.4 Conduct UX testing on different screen sizes and platforms.
-  - [ ] 5.5 Add Playwright test `pseudo-japanese-toggle.spec.js` verifying the language toggle on the quote screen.
+  - [ ] 5.5 Add Playwright test `pseudo-japanese-toggle.spec.js` verifying the language toggle on the meditation screen.
