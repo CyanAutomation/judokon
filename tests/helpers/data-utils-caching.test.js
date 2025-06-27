@@ -16,7 +16,7 @@ describe("fetchDataWithErrorHandling caching", () => {
       ok: true,
       json: vi.fn().mockResolvedValue(data)
     });
-    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal("fetch", fetchMock);
 
     const url = "/some.json";
     const first = await fetchDataWithErrorHandling(url);
