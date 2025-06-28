@@ -1,11 +1,11 @@
-# 📌 PRD: Settings Menu
+# PRD: Settings Menu
 
 **Problem Statement:**  
 As a user of the game *ju-do-kon!*, I want to be able to change settings such as display mode, navigation map, motion effects, and sound, to tailor my experience and reduce frustration — especially for players sensitive to motion or needing visual adjustments. Playtesting shows **35% of users quit early when unable to adjust motion effects**, indicating the need for accessible, customizable gameplay.
 
 ---
 
-## 🎯 Goals (Outcome-Focused)
+## Goals
 - **G1:** Users experience an immediate reflection of setting changes in the UI, with updates to the data source completing within 50ms of interaction.
 - **G2:** All settings changes persist across page refreshes during the same session, ensuring a consistent user experience.
 - **G3:** When errors occur during reading or writing to `settings.json`, users see a clear CSS popup error message within 200ms, maintaining transparency and trust.
@@ -13,7 +13,7 @@ As a user of the game *ju-do-kon!*, I want to be able to change settings such as
 
 ---
 
-## 🔧 Functional Requirements (Prioritized)
+## Functional Requirements
 
 | Priority | Feature                      | Description                                                      |
 |----------|------------------------------|------------------------------------------------------------------|
@@ -28,7 +28,7 @@ As a user of the game *ju-do-kon!*, I want to be able to change settings such as
 
 ---
 
-## 📝 Settings Features
+## Settings Features
 - **Sound (binary):** ON/OFF (default: ON)
 - **Full navigation map (binary):** ON/OFF (default: ON)
 - **Motion effects (binary):** ON/OFF (default: ON)
@@ -38,7 +38,7 @@ As a user of the game *ju-do-kon!*, I want to be able to change settings such as
 
 ---
 
-## 🔁 Data & Persistence
+## Data & Persistence
 - The Settings page **must pull current states** from data sources (`settings.json` and `gameModes.json`) on load.
 - Changes should trigger **immediate data writes** without requiring a “Save Changes” button.
 - All live updates must persist across page refreshes within the same session.
@@ -46,44 +46,44 @@ As a user of the game *ju-do-kon!*, I want to be able to change settings such as
 
 ---
 
-## ✅ Acceptance Criteria Checklist
+## Acceptance Criteria Checklist
 
-### ✅ Sound Toggle
+### Sound Toggle
 - AC-1.1 When the sound toggle is switched ON/OFF, the change is immediately reflected in `settings.json` within 50ms.
 - AC-1.2 Toggling sound updates the UI indicator (toggle visually reflects ON/OFF state).
 - AC-1.3 Toggling sound causes no console errors or JS exceptions.
 
-### ✅ Full Navigation Map Toggle
+### Full Navigation Map Toggle
 - AC-2.1 When toggled ON/OFF, updates `settings.json` within 50ms.
 - AC-2.2 Toggle correctly updates the UI indicator.
 - AC-2.3 Navigation behavior updates immediately if functionality is active.
 
-### ✅ Motion Effects Toggle
+### Motion Effects Toggle
 - AC-3.1 Switching motion ON/OFF updates `settings.json` live within 50ms.
 - AC-3.2 Motion effects on UI start or stop instantly (e.g., animations stop when OFF).
 - AC-3.3 UI toggle reflects the current motion setting accurately on page load.
 
-### ✅ Display Mode Selector
+### Display Mode Selector
 - AC-4.1 Selecting a new display mode (light/dark/gray) applies changes instantly across all relevant UI components.
 - AC-4.2 Selected mode persists through a page refresh within the same session.
 - AC-4.3 Current display mode is correctly pulled from `settings.json` on page load.
 - AC-4.4 Transition to new display mode completes without visible flickering or rendering artifacts.
 
-### ✅ Game Modes Toggles
+### Game Modes Toggles
 - AC-5.1 Toggling any game mode ON/OFF updates `settings.json` live within 50ms.
 - AC-5.2 Each game mode toggle accurately reflects its state on page reload.
 - AC-5.3 If `gameModes.json` is missing or invalid, the game modes list does not render, and an error message appears in the settings UI.
 
-### ✅ Data Persistence & Refresh
+### Data Persistence & Refresh
 - AC-6.1 All settings changes persist through page refresh within the same session.
 - AC-6.2 Reopening `settings.html` shows the most up-to-date settings state from `settings.json`.
 
-### ✅ Error Handling & Feedback
+### Error Handling & Feedback
 - AC-7.1 If reading `settings.json` fails, a CSS popup error message appears within 200ms.
 - AC-7.2 If writing to `settings.json` fails, a CSS popup error message appears within 200ms, and the toggle/selector reverts to its previous state.
 - AC-7.3 The settings screen remains stable and usable if an error occurs (no frozen or unresponsive UI).
 
-### ✅ Accessibility & UX
+### Accessibility & UX
 - AC-8.1 All toggles/selectors have keyboard focus indicators.
 - AC-8.2 Users can tab through all interactive elements in a logical order.
 - AC-8.3 Color contrast of text and controls meets WCAG 2.1 minimum (4.5:1) in all display modes.
@@ -91,7 +91,7 @@ As a user of the game *ju-do-kon!*, I want to be able to change settings such as
 
 ---
 
-## 🎨 UX & Accessibility
+## UX & Accessibility
 - **Consistency:** Settings page must match the game’s visual identity, including fonts, colors, and button styles.
 - **Touch targets:** All toggles and selectors must have touch targets ≥48px.
 - **Accessibility:**
@@ -104,7 +104,7 @@ As a user of the game *ju-do-kon!*, I want to be able to change settings such as
 
 ---
 
-## 📱 Responsive Design Notes
+## Responsive Design Notes
 - **Mobile-first layout:** Vertical stacking of controls for narrow screens (<600px wide).
 - **Tablet & Desktop:** Side-by-side arrangement where space allows, maintaining touch target spacing.
 - **Orientation handling:** Smoothly adapt when rotating devices; controls should reflow without overlap or cropping.
@@ -112,7 +112,7 @@ As a user of the game *ju-do-kon!*, I want to be able to change settings such as
 
 ---
 
-## 🖼️ Wireframe
+## Wireframe
 
 ───────────────────────────────  
 |         SETTINGS            |  
@@ -151,7 +151,7 @@ As a user of the game *ju-do-kon!*, I want to be able to change settings such as
 
 ---
 
-## ✅ Tasks
+## Tasks
 
 - [ ] 1.0 Finalize UX & Accessibility
   - [ ] 1.1 Implement tab order and keyboard focus indicators.
