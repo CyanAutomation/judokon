@@ -209,6 +209,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 - Always visible
 - Icon + label pairs
+- Inline icons use Material Symbols SVGs with `viewBox="0 -960 960 960"`.
 - Clear active/focus state
 - Do not truncate labels
 
