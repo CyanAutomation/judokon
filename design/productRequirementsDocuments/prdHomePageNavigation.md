@@ -18,6 +18,7 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 - Tile navigable via keyboard (Tab navigation, Enter/Space activation).
 - Ensure all icons and text meet WCAG AA contrast ratio (minimum 4.5:1).
 - SVG icons <50KB to optimize load times.
+- SVG icons use Material Symbols and require `viewBox="0 -960 960 960"` to render correctly.
 - Fallback icon (JU-DO-KON logo) displayed if SVG fails to load.
 
 ---
@@ -241,6 +242,7 @@ Each tile contains:
 
 - [ ] **Optimize and Integrate SVG Icons**
   - [ ] Compress SVG icons to <50KB.
+  - [ ] Use Material Symbols inline with `viewBox="0 -960 960 960"`.
   - [ ] Add fallback icon logic for load failure.
   - [ ] Verify all icons load under poor network conditions.
 - [ ] **Implement Keyboard Navigation and Focus Management**
