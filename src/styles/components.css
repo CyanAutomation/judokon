@@ -95,27 +95,27 @@ body {
 }
 
 .game-tile.red {
-  background: #cb2504;
+  background: var(--color-secondary);
   color: white;
 }
 
 .game-tile.teal {
-  background: #00838e;
+  background: var(--color-secondary);
   color: white;
 }
 
 .game-tile.blue {
-  background: #07498d;
+  background: var(--color-secondary);
   color: white;
 }
 
 .game-tile.purple {
-  background: #6a4bc9;
+  background: var(--color-secondary);
   color: white;
 }
 
 .game-tile.gold {
-  background: #e4ab19;
+  background: var(--color-secondary);
   color: white;
 }
 
@@ -157,7 +157,7 @@ body {
 svg {
   width: 10vh;
   aspect-ratio: 1 / 1;
-  fill: var(--color-text);
+  fill: var(--color-text-inverted);
 }
 .svg-fallback {
   width: 10vh;
