@@ -11,7 +11,7 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
   const pages = [
     { url: "/", name: "homepage.png" },
     { url: "/src/pages/battleJudoka.html", name: "battleJudoka.png" },
-    { url: "/src/pages/carouselJudoka.html", name: "carouselJudoka.png" },
+    { url: "/src/pages/browseJudoka.html", name: "browseJudoka.png" },
     { url: "/src/pages/createJudoka.html", name: "createJudoka.png" },
     { url: "/src/pages/randomJudoka.html", name: "randomJudoka.png" },
     { url: "/src/pages/meditation.html", name: "meditation.png" },

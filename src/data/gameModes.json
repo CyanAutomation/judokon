@@ -91,7 +91,7 @@
     "description": "Explore the available judoka and their stats.",
     "category": "mainMenu",
     "order": 80,
-    "url": "carouselJudoka.html",
+    "url": "browseJudoka.html",
     "isHidden": false,
     "rules": {
       "note": "Rules will be defined in the future."
