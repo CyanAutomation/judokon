@@ -102,6 +102,10 @@ As a user of the game *ju-do-kon!*, I want to be able to change settings such as
   - Tab order should proceed top-to-bottom: sound → nav map → motion → display mode → game mode toggles.
   - Users can navigate and activate each control without needing a mouse.
 
+  | **Settings Menu Mockup 1**                                          |                                          **Settings Menu Mockup 2** |  **Settings Menu Mockup 2**
+| -------------------------------------------------------------------- | ------------------------------------------------------------------- | --- |
+| ![Settings Menu Mockup 1](/design/mockups/mockupGameSettings1.png) | ![Settings Menu Mockup 2](/design/mockups/mockupGameSettings2.png) | ![Settings Menu Mockup 3](/design/mockups/mockupGameSettings3.png) 
+
 ---
 
 ## Responsive Design Notes
