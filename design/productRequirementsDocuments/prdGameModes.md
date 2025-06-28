@@ -183,7 +183,7 @@ UX Note:
 ### 4. Browse Judoka
 
 **Japanese**: 柔道家を閲覧  
-**URL**: `carouselJudoka.html`
+**URL**: `browseJudoka.html`
 
 **Description**:  
 View all available judoka with stats and visuals.

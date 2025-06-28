@@ -16,7 +16,7 @@ test.describe("Browse Judoka screen", () => {
     await page.route("https://flagcdn.com/**", (route) =>
       route.fulfill({ path: "src/assets/countryFlags/placeholder-flag.png" })
     );
-    await page.goto("/src/pages/carouselJudoka.html");
+    await page.goto("/src/pages/browseJudoka.html");
   });
 
   test("essential elements visible", async ({ page }) => {
