@@ -2,15 +2,28 @@
 
 ---
 
+## TL;DR
+This PRD defines a persistent, responsive bottom navigation bar for Ju-Do-Kon! to provide clear, consistent navigation across all screens. It improves player flow, reduces confusion, and increases session duration by offering quick access to core game modes with accessible, high-performance interactions.
+
+---
+
 ## 1. Description
 
 The **JU-DO-KON!** game features multiple game modes and screens. Players need easy, intuitive navigation to seamlessly transition between activities such as battles, judoka browsing, and training. When navigation is unclear, players experience increased cognitive load and frustration, breaking immersion and potentially leading to session drop-offs.
+
+> After an intense battle, Kenta sees the familiar JU-DO-KON! logo in the bottom-left corner. He taps it, revealing a smooth, scrolling list of game modes. In a couple of seconds, he’s exploring his Judoka roster without friction — he feels confident, immersed, and eager to keep playing.
 
 ### Example Scenario
 
 > Player finishes battle → confusion navigating back → flow disruption → early session exit.
 
 Currently, the lack of a consistent navigation system leads to player disorientation post-activity. This PRD proposes a persistent bottom navigation bar to minimize friction, reduce cognitive load, and maintain gameplay flow.
+
+### User Stories
+
+- As a new player, I want an always-visible navigation bar so I don’t get lost between screens.
+- As a mobile user, I want touch-friendly buttons so I can navigate confidently with my thumb.
+- As a player who uses screen readers, I want navigation elements to be labeled properly so I can move around the game without barriers.
 
 ---
 
@@ -22,6 +35,8 @@ Currently, the lack of a consistent navigation system leads to player disorienta
 - Achieve **≥60fps** animation performance on standard mid-tier devices.
 - Guarantee fallback loading time of **<2 seconds** if `gameModes.json` fails.
 - Meet a text contrast ratio of at least **4.5:1** against the navigation bar background.
+- Allow players to confidently navigate between modes without frustration.
+- Ensure a consistent, easy-to-use navigation experience across devices.
 
 ---
 
@@ -41,6 +56,22 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 - In portrait orientation, the navigation collapses into just the logo.
 - Tapping the logo reveals a vertically unrolled text menu listing the available game modes (functions in both landscape and portrait orientation).
 
+### Player Flow
+- Player finishes activity → sees persistent nav bar.
+- In landscape, clickable links visible along the bottom bar.
+- In portrait, nav collapses to logo only.
+- Player taps logo → vertical text list expands.
+- Player taps desired game mode → navigates to selected screen.
+- If gameModes.json fails: Hardcoded modes load in <2s, then User sees notification if mid-session load fails → auto-reload.
+
+### Technical Considerations
+
+- Load active game modes dynamically from `gameModes.json`, fallback to default on failure.
+- Cache loaded mode list to avoid redundant fetches across sessions.
+- Use hardware-accelerated CSS transforms for nav animations (e.g., `translate3d`).
+- Optimize for devices as small as 320px width (typical of older low-end Android devices).
+- Listen for device orientation events to trigger smooth re-layout without stutter.
+ 
 ---
 
 ## 4. Wireframes / Visual Reference
