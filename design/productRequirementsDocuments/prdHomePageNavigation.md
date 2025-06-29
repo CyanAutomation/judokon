@@ -4,11 +4,17 @@
 
 This document describes the **Home Page Main Navigation Menu** for the JU-DO-KON! web-based judo-themed card battle game.
 
-The purpose of this menu is to allow players to access the core game modes quickly and intuitively. Poor navigation would impact player engagement and retention, as players might become confused while trying to figure out how to navigate around the game or to different game modes. Additionally, a navigation system that does not reflect the game's judo theme could reduce overall immersion and thematic consistency.
+The purpose of this menu is to allow players to access the core game modes quickly and intuitively. New players struggle to find and understand game modes quickly, leading to frustration, early churn, and reduced engagement. A clear, immersive, and fast-loading navigation menu is needed to orient players instantly, maintain the judo theme, and ensure accessibility across devices.
 
 > **Player Feedback Example**: "I want to play the Team Battle, but I can't see the right button." — hypothetical playtest participant, age 10
 
 A fast, accessible, and thematic navigation experience is crucial to ensure new players feel confident and engaged from their first visit.
+
+### User Stories
+
+> As a new player, I want to see all game modes clearly when I launch the game so that I don’t get lost.
+> As a player using keyboard-only navigation, I want to move between tiles using Tab and select using Enter/Space so that I can navigate without a mouse.
+> As a visually impaired player, I want tile icons and labels with sufficient contrast and screen reader support so I can access the game.
 
 ---
 
@@ -20,6 +26,9 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 - SVG icons <50KB to optimize load times.
 - SVG icons use Material Symbols and require `viewBox="0 -960 960 960"` to render correctly.
 - Fallback icon (JU-DO-KON logo) displayed if SVG fails to load.
+- Quickly and confidently access desired game modes.
+- Experience a navigation interface that feels consistent with the judo theme.
+- Navigate easily regardless of device or ability.
 
 ---
 
