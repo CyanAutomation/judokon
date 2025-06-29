@@ -2,6 +2,13 @@
 
 ---
 
+## TL;DR
+This PRD defines a Pseudo-Japanese Text Conversion Function for Ju-Do-Kon!’s meditation screen. By instantly toggling quotes between English and simulated Japanese aesthetics, it deepens immersion without requiring players to read real Japanese. The feature includes a performant local mapping system, fallback strategies, and a fast, intuitive toggle.
+
+> After an intense battle, Mia opens the meditation screen. She taps the toggle — the quote transforms into stylized Japanese script, beautifully rendered in Mincho font. Though she doesn’t read Japanese, the aesthetic transports her to the spirit of judo, deepening her connection to the game.
+
+---
+
 ## 1. Problem Statement
 
 As this game is about a Japanese martial art, authentic cultural immersion is key to the user experience. However, Japanese is complex, and most players are not literate in it. This language barrier prevents players from fully appreciating the cultural setting.
@@ -18,6 +25,14 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 - Ensure local JSON fallback conversion completes within 500ms.
 - Toggle feature allows players to switch between original English text and pseudo-Japanese output, with response times under 200ms.
 - Support input text up to 999 characters without degradation of performance.
+- Provide an authentic-feeling Japanese aesthetic without requiring language proficiency.
+- Enable quick, easy switching between English and pseudo-Japanese text.
+
+### User Stories
+
+- As a player who loves Japanese culture, I want meditation quotes to look authentically Japanese so I feel more immersed.
+- As a player unfamiliar with Japanese, I want to toggle back to English instantly so I can understand the quotes.
+- As a player on a slow connection, I want fallback text so the experience isn’t interrupted.
 
 ---
 
@@ -94,6 +109,25 @@ Enhances contextual clarity and smooth interaction, keeping actions tied to rele
 
 **Why:**  
 Prevents accidental taps and creates distinct flow—finish reading before proceeding.
+
+---
+
+## Player Flow
+- Player opens meditation screen → quote displays in English by default.
+- Player taps toggle button → text fades to pseudo-Japanese in ≤200ms.
+- Player can tap toggle again to return to English.
+- If local mapping fails → fallback static pseudo-Japanese text shown.
+- Player continues journey by tapping “Continue Your Journey.”
+
+---
+
+## Technical Considerations
+
+- Local JSON mapping must be version-controlled and easily updatable without full client redeploys.
+- Conversion should avoid re-rendering entire DOM — only update text nodes for performance.
+- Random fallback character set must match game’s aesthetic guidelines.
+- Static fallback text must be preloaded with meditation screen assets.
+- Validation API only used in testing; ensure it is fully excluded in production builds.
 
 ---
 
