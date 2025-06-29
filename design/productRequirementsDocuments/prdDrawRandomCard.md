@@ -2,6 +2,13 @@
 
 ---
 
+## TL;DR
+This PRD defines the Draw Random Card function for Ju-Do-Kon!, providing a fast, engaging, and accessible way to select random cards during matches. The feature increases excitement, replayability, and average session time, with performance targets of ≤300ms draw speed and ≥60fps animations.
+
+> Hiroshi faces his rival in Ju-Do-Kon!’s Classic Battle. He taps “Draw Card” — a new Judoka card slides onto the screen, its stats flashing dramatically. Hiroshi’s heart races, knowing the outcome could change the match. This suspense keeps players coming back for more, fueling longer, more thrilling sessions.
+
+--- 
+
 ## Problem Statement
 
 As part of the web browser-based game **Ju-Do-Kon!**, players often need to draw a random card during matches. This mechanic injects vital excitement and unpredictability, ensuring players never know what card will come next. The uncertainty heightens the tension of one-on-one battles, making matches feel dynamic, surprising, and deeply engaging.
@@ -20,6 +27,14 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 ---
 
+## User Stories
+
+- As a player who loves surprises, I want each card draw to feel random so battles stay exciting.
+- As a player sensitive to motion, I want to disable animations so I can play comfortably.
+- As a parent watching my child play, I want the draw button to be large and responsive so they can use it easily.
+
+---
+
 ## How It Works
 
 - The player taps the “Draw Card” button which triggers the `generateRandomCard()` function, or
@@ -30,6 +45,16 @@ Without this feature, players would be forced to pre-select cards, leading to pr
   - Future Enhancement: Plays a short celebratory sound (e.g., swoosh or chime)
   - Ensures animation smoothness at ≥60fps for devices with ≥2GB RAM.
 - **Active card set**: The current pool of cards available in the player’s deck, dynamically updated based on the game state.
+
+---
+
+## Technical Considerations
+
+- Use `crypto.getRandomValues()` or equivalent for secure randomness, avoiding predictable PRNG.
+- Optimize DOM updates for minimal reflows/repaints during animation.
+- Implement debounce to prevent double taps on “Draw Card” button.
+- Ensure fallback logic uses a single, consistent error card (judoka id=0).
+- Log random draw failures for post-launch debugging and analytics.
 
 ---
 
@@ -54,6 +79,20 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 | Fair Randomness  | Random selection passes chi-square testing for uniformity, 95% confidence over 100 draws. |
 | Low Failure Rate | No more than 1% draw failures.                                                            |
 | Accessibility    | Automatically disable animations if system Reduced Motion is active.                      |
+
+### User Goals
+- Provide an exciting, quick card reveal to keep players engaged.
+- Allow players sensitive to motion to control animation settings for comfort.
+
+---
+
+## Draw Card Flow
+
+- Player taps “Draw Card” button.
+- System triggers generateRandomCard() function.
+- If active card set is not empty: Random card selected, then Card reveal animation plays.
+- If active card set is empty or error occurs: Fallback card (judoka id=0) displayed, then Error message shown if applicable.
+- User can draw again or exit screen.
 
 ---
 
