@@ -3,6 +3,7 @@
 ---
 
 ## TL;DR
+
 This PRD defines a Pseudo-Japanese Text Conversion Function for Ju-Do-Kon!’s meditation screen. By instantly toggling quotes between English and simulated Japanese aesthetics, it deepens immersion without requiring players to read real Japanese. The feature includes a performant local mapping system, fallback strategies, and a fast, intuitive toggle.
 
 > After an intense battle, Mia opens the meditation screen. She taps the toggle — the quote transforms into stylized Japanese script, beautifully rendered in Mincho font. Though she doesn’t read Japanese, the aesthetic transports her to the spirit of judo, deepening her connection to the game.
@@ -113,6 +114,7 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
 ---
 
 ## Player Flow
+
 - Player opens meditation screen → quote displays in English by default.
 - Player taps toggle button → text fades to pseudo-Japanese in ≤200ms.
 - Player can tap toggle again to return to English.

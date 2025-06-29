@@ -1,6 +1,7 @@
 # PRD: Judoka Card Carousel
 
 ## TL;DR
+
 This PRD defines a responsive, interactive carousel for browsing Judoka cards in Ju-Do-Kon! It supports smooth swiping, filtering by country, hover/keyboard interactions, and accessibility features — ensuring players can quickly find and select cards, enhancing team-building and engagement.
 
 ## Problem Statement
@@ -73,7 +74,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - **No Filter Results**: Show a default judoka card (judoka id=0), and suggest broadening the search.
 - **Slow Network**: Show a loading spinner if loading exceeds 2 seconds.
 
---- 
+---
 
 ## Technical Considerations
 

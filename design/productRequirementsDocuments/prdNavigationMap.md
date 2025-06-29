@@ -3,6 +3,7 @@
 ---
 
 ## TL;DR
+
 This PRD defines an immersive, thematic expanded map view for Ju-Do-Kon!’s navigation, transforming mode selection into a “Judo Training Village” experience. It improves discovery of new modes, reduces confusion, and deepens immersion, with fallback and accessibility options to ensure seamless, inclusive navigation across devices.
 
 > Mei finishes a match and taps the glowing map icon. The Judo Training Village slides up, revealing the Dojo, Budokan, and Kodokan — each beautifully rendered and inviting. She feels transported into a living judo world, exploring new modes with excitement and confidence.
@@ -20,6 +21,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 ---
 
 ## Goals
+
 - Make switching modes exciting and intuitive, matching the game’s theme.
 - Allow quick, frustration-free discovery of all game modes.
 
@@ -32,6 +34,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - As a player with limited vision, I want accessible text and screen reader support so I can navigate confidently.
 
 ---
+
 ## Player Actions
 
 - **Trigger:** In landscape mode, tapping the bottom right corner map icon expands a "Judo Training Village" map from the footer with a smooth upward slide animation (<500ms).
@@ -41,9 +44,10 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - **Fallback:** If the map fails to load, a simplified, high-contrast text menu appears instantly.
 - **Responsiveness:** If viewport height <400px or width <640px, hide the map icon entirely. Map and tiles dynamically resize based on screen size and resolution. Animations must maintain 60fps on devices.
 
---- 
+---
 
 ## Player Flow
+
 - Player taps map icon in bottom right corner.
 - Village map expands with slide-up animation (<500ms).
 - Player browses tiles representing different modes.
@@ -124,7 +128,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - [ ] Alt text and screen reader support for all tiles.
 - [ ] Verify all text labels meet WCAG 2.1 AA contrast standards (≥4.5:1).
 
---- 
+---
 
 ## Tasks
 

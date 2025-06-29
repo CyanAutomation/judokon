@@ -3,6 +3,7 @@
 ---
 
 ## TL;DR
+
 This PRD defines a persistent, responsive bottom navigation bar for Ju-Do-Kon! to provide clear, consistent navigation across all screens. It improves player flow, reduces confusion, and increases session duration by offering quick access to core game modes with accessible, high-performance interactions.
 
 ---
@@ -57,6 +58,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 - Tapping the logo reveals a vertically unrolled text menu listing the available game modes (functions in both landscape and portrait orientation).
 
 ### Player Flow
+
 - Player finishes activity → sees persistent nav bar.
 - In landscape, clickable links visible along the bottom bar.
 - In portrait, nav collapses to logo only.
@@ -71,7 +73,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 - Use hardware-accelerated CSS transforms for nav animations (e.g., `translate3d`).
 - Optimize for devices as small as 320px width (typical of older low-end Android devices).
 - Listen for device orientation events to trigger smooth re-layout without stutter.
- 
+
 ---
 
 ## 4. Wireframes / Visual Reference
