@@ -3,12 +3,17 @@
 ### Overview
 
 Ju-Do-Kon! offers a range of game modes tailored for different play styles—competitive battles, team-based challenges, creative customization, exploratory discovery, and quiet reflection. These modes diversify the experience, increase replayability, and promote deeper engagement.
+> After a tough Classic Battle, Hiroshi takes a break by entering Meditation Mode. Soft music and inspiring quotes help him reconnect with why he loves judo. Later, he updates his Judoka’s signature move, making his fighter truly his own. By offering more than just battles, Ju-Do-Kon! becomes a game players want to return to every day — whether they crave intense combat or quiet reflection.
 
 ### Problem Statement
 
 Returning players often exit after short sessions due to repetitive gameplay loops and limited creative expression. In a recent survey, one player said,
 
 > “I like battling, but after a while, it’s the same thing over and over.”
+
+#### User Stories
+- As a player who’s tired of pure competition, I want a Meditation mode so I can relax and still feel connected to the game.
+- As a player with a favorite judoka, I want to update their stats and appearance so they grow with me.
 
 ### Why It Matters Now
 
@@ -20,6 +25,8 @@ Improving session variety directly supports retention and encourages more person
 - At least **80%** of users who begin a Team Battle complete the match.
 - **70%** of new players use Judoka Creation within their first week.
 - **60%** of all players trigger Meditation mode at least once weekly.
+- Experience diverse ways to interact with their judoka.
+- Find modes matching their mood: competitive, creative, or relaxing.
 
 ---
 
