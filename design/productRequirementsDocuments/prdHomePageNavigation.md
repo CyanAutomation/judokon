@@ -14,9 +14,9 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 
 ### User Stories
 
-> As a new player, I want to see all game modes clearly when I launch the game so that I don’t get lost.
-> As a player using keyboard-only navigation, I want to move between tiles using Tab and select using Enter/Space so that I can navigate without a mouse.
-> As a visually impaired player, I want tile icons and labels with sufficient contrast and screen reader support so I can access the game.
+- As a new player, I want to see all game modes clearly when I launch the game so that I don’t get lost.
+- As a player using keyboard-only navigation, I want to move between tiles using Tab and select using Enter/Space so that I can navigate without a mouse.
+- As a visually impaired player, I want tile icons and labels with sufficient contrast and screen reader support so I can access the game.
 
 ---
 
