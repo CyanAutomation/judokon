@@ -2,6 +2,11 @@
 
 ---
 
+## TL;DR
+This PRD defines a Country Flag Picker Filter for Ju-Do-Kon! that lets players filter Judoka cards by country using an intuitive, accessible flag selector. The goal is to improve user engagement by enabling fast, pride-driven exploration of favorite countries’ athletes, with a performant, responsive, and accessible UI.
+
+> Jamal logs into Ju-Do-Kon! after seeing a clip of his country’s top Judoka. He taps the country picker, slides open the panel, and spots his flag among dozens. One tap later, the screen fills with fierce fighters from his homeland. He feels proud — and motivated to start collecting more.
+
 ## Problem Statement
 
 Each judoka and judoka card is affiliated with a country (e.g., a judoka might be part of the Spanish team). Currently, there is no way for players to browse judoka by country, which frustrates players when searching for their favorite country’s athletes. The lack of an intuitive country filter diminishes user experience, leading to inefficient browsing and potential drop-off.
@@ -18,6 +23,16 @@ This issue is timely as our player base is expanding internationally, and region
 - **Reliability Goal**: Achieve zero crashes related to the country selector over 100 sessions.
 - **Coverage Goal**: Ensure >90% of available countries are selectable via the flag interface.
 - **UX Goal**: Achieve a >95% success rate where users select the intended country without mis-taps.
+- Let players easily find Judoka from their favorite countries.
+- Provide a visually engaging, pride-driven exploration of the card roster.
+
+---
+
+## User Stories
+
+- As a player who supports my national team, I want to quickly filter Judoka by my country so I can see my favorite athletes.
+- As a mobile player, I want country flags large enough to tap accurately so I don’t get frustrated with mistaps.
+- As a player with limited vision, I want alt-text and good contrast on flags so I can recognize countries clearly.
 
 ---
 
@@ -35,6 +50,17 @@ Key Details:
 - Users can only select one country at a time.
 - A "Clear" button is provided to clear the selection and revert to displaying all judoka.
 - Default display mode when opened is **slide-in panel**.
+
+---
+
+## Player Flow
+
+- Player opens Browse Judoka screen.
+- Player taps country selector toggle.
+- Slide-in panel animates open in ≤1s.
+- Player taps a country flag: Card carousel filters to show only Judoka from that country, then Selected flag gains highlight.
+- Player taps “Clear” → resets to all Judoka.
+- Player continues browsing or closes selector.
 
 ---
 
@@ -86,6 +112,16 @@ Key Details:
 - If a flag asset fails to load, display a generic fallback flag icon.
 - For collections larger than 50 countries, implement virtual scrolling or paging to prevent UI overload.
 - On slow networks, implement graceful degradation with progressive flag loading to prioritize interactivity.
+
+---
+
+## Technical Considerations
+
+- Pull available countries dynamically from `judoka.json` to avoid hardcoding.
+- Use image sprite sheets or CDN hosting for flag assets to reduce HTTP requests.
+- Prioritize lazy-loading flag images if >50 countries are available.
+- Fallback flag asset should be a small, lightweight SVG or PNG.
+- Ensure caching headers on flags to minimize repeat loads.
 
 ---
 
