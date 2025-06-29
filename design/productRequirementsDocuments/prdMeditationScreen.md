@@ -1,5 +1,12 @@
 # PRD: Meditation Screen
 
+---
+
+## TL;DR
+This PRD defines a Meditation Screen for Ju-Do-Kon! to provide a moment of calm between intense battles. By combining a wise quote with the soothing presence of helper character KG, players are encouraged to pause, reflect, and regain balance, improving pacing, focus, and long-term engagement.
+
+---
+
 ## Description
 
 Introduce a **meditation screen** (meditation.html) that players can access as a moment of calm between battles. The helper character **KG** appears alongside a random wise quote (an excerpt from Aesop’s Fables), helping players reset their mindset and reflect. Inspired by real-life judo practice—where athletes take time to breathe and refocus—this moment of stillness encourages resilience and clarity.
@@ -29,6 +36,16 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - Allow players to access this screen optionally by the main menu or main navigation bar
 - Maintain load time under 1 second.
 - Ensure error-free quote display across landscape and portrait orientations.
+- Give players a mindful moment to reset between matches.
+- Offer an experience that aligns with judo’s real-world ethos of reflection.
+
+---
+
+## User Stories
+
+- As a player feeling overwhelmed after a tough battle, I want a calm screen so I can reset before the next match.
+- As a player using a screen reader, I want the quote to be accessible so I don’t miss the reflection.
+- As a mobile player, I want a clear, large “Continue” button so I can resume gameplay at my own pace.
 
 ---
 
@@ -57,6 +74,17 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 - **Failure to load quote data**: Display a calming default message such as _“Take a breath. Even a still pond reflects the sky.”_
 - **Offline mode**: Display fallback quote.
+
+---
+
+## Player Flow
+
+- Player selects Meditation from main menu or navigation bar.
+- Meditation screen loads in ≤1s.
+- Skeleton loader appears if quote data is still fetching.
+- KG image and random quote fade in smoothly.
+- Player reads quote → taps “Continue Your Journey” button.
+- Player returns to main menu or resumes gameplay.
 
 ---
 
