@@ -1,12 +1,23 @@
 # PRD: Judoka Card Carousel
 
+## TL;DR
+This PRD defines a responsive, interactive carousel for browsing Judoka cards in Ju-Do-Kon! It supports smooth swiping, filtering by country, hover/keyboard interactions, and accessibility features — ensuring players can quickly find and select cards, enhancing team-building and engagement.
+
 ## Problem Statement
 
 As part of the game, certain screens, such as “Browse Judoka,” require an intuitive and interactive way to present judoka cards. With more than 100 cards in the game (ultimate goal), it would be cumbersome and frustrating for players to browse through all cards manually without an efficient filtering and navigation system.
 
+> Emi wants to create her ultimate Japanese Judoka team. She opens the carousel and filters by country. Within seconds, she’s swiping through beautifully animated cards, instantly comparing stats. She feels in control, excited, and invested in building the perfect team — that’s the experience this carousel delivers.
+
 Failure to provide an efficient browsing experience may impact core gameplay — players might struggle to find and build optimal teams, leading to frustration and potential churn.
 
 > A smooth and intuitive browsing experience fosters a sense of mastery and control, enhancing overall player satisfaction and engagement.
+
+## User Stories
+
+- As a player building my team, I want to filter Judoka by country so I can quickly find compatible teammates.
+- As a player using keyboard navigation, I want to scroll through cards using arrow keys so I can browse without a mouse.
+- As a mobile player, I want to swipe to move between cards so the experience feels natural and fast.
 
 ---
 
@@ -18,6 +29,8 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - Swipe gesture support for mobile browsing.
 - Keyboard navigation support for accessibility.
 - Users can browse through at least 10 cards within 30 seconds smoothly without lag.
+- Easily browse a large set of cards with smooth scrolling and filters.
+- Find desired cards quickly to assemble optimized teams.
 
 ---
 
@@ -59,6 +72,30 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - **Missing/Broken Card Images**: Default fallback card is shown, display a default judoka card (judoka id=0).
 - **No Filter Results**: Show a default judoka card (judoka id=0), and suggest broadening the search.
 - **Slow Network**: Show a loading spinner if loading exceeds 2 seconds.
+
+--- 
+
+## Technical Considerations
+
+- Cards should lazy-load images as they enter the viewport to reduce initial load time.
+- Use hardware-accelerated CSS transforms (e.g., `translate3d`) for smooth scrolling and animations.
+- Carousel should debounce swipe/scroll events to prevent rapid-fire performance hits.
+- Card metadata must be dynamically fetched from `judoka.json`; errors should gracefully fallback to judoka id=0.
+
+---
+
+## Player Flow
+
+1. Player opens the Browse Judoka screen.
+2. Carousel loads cards within 1 second; a loading spinner appears if delayed.
+3. Player uses:
+   - On-screen arrows to scroll,
+   - Swipe gestures on mobile,
+   - Or keyboard arrows for navigation.
+4. Player filters by country → carousel updates in ≤500ms.
+5. Hovering enlarges cards (desktop).
+6. Scroll markers show current position.
+7. If no results → default judoka card displayed + suggestion to broaden search.
 
 ---
 
