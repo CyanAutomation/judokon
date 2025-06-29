@@ -2,6 +2,9 @@
 
 ---
 
+## TL;DR
+This PRD defines a Card Code Generation Function for Ju-Do-Kon!, creating short, obfuscated, human-friendly codes representing individual Judoka cards. Players can easily share, recreate, and validate their cards, boosting engagement and social play. Codes are fast to generate (<100ms), readable, tamper-resistant, and optimized for low manual entry error rates.
+
 ## 1. Overview
 
 The Card Code Generation Function transforms key attributes of a Judoka (player card) into a **unique, readable alphanumeric code**. This code allows players to easily share, recreate, and validate specific Judoka cards in the game.
@@ -12,6 +15,10 @@ The Card Code Generation Function transforms key attributes of a Judoka (player 
 > - _"Typing long names is annoying. Codes are cooler and easier!"_ — Anonymous feedback from playtest logs.
 
 Players gain a sense of **ownership and pride** by sharing their custom Judoka quickly and easily. **Without simple sharing, engagement can drop**, especially for kids who expect fast, low-effort interactions.
+
+### Goals
+- Share and recreate favorite Judoka with a short, easy-to-type code.
+- Avoid frustration with typos or unreadable characters.
 
 ### System Features
 
@@ -37,6 +44,8 @@ Players gain a sense of **ownership and pride** by sharing their custom Judoka q
 
 Enables easy sharing and potential import/export of Judoka using compact, friendly codes.
 
+> Toshi finishes creating his dream Judoka. He taps “Copy Code” and sends it to his friend on chat. His friend enters the code on their own device and instantly sees Toshi’s powerful fighter appear, ready for battle. Sharing feels magical — effortless, exciting, and social.
+
 ### For the Game
 
 Adds integrity and authenticity by encoding Judoka attributes securely.
@@ -44,6 +53,11 @@ Adds integrity and authenticity by encoding Judoka attributes securely.
 ### For Developers
 
 Simplifies storage and retrieval of Judoka data without exposing sensitive information.
+
+## User Stories
+
+- As a player who’s proud of my Judoka, I want to share a short code with friends so they can battle with or against my creation.
+- As a player on mobile, I want the code entry to auto-format with hyphens so it’s easy to type and reduces errors.
 
 ---
 
@@ -210,6 +224,15 @@ F7KP-WQ9M-ZD23-HYTR
 - Invalid character prevention at input level.
 
 ---
+
+## 10. Player Flow
+Code Generation and Sharing Flow
+- Player creates or updates Judoka → system generates code.
+- Code saved to judoka.json and displayed on card detail screen.
+- Player taps copy button → code copied to clipboard.
+- Player sends code to friend.
+- Friend opens code entry screen → types or pastes code.
+- System validates and reconstructs Judoka or shows error
 
 ## Tasks
 
