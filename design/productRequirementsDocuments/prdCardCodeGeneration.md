@@ -3,6 +3,7 @@
 ---
 
 ## TL;DR
+
 This PRD defines a Card Code Generation Function for Ju-Do-Kon!, creating short, obfuscated, human-friendly codes representing individual Judoka cards. Players can easily share, recreate, and validate their cards, boosting engagement and social play. Codes are fast to generate (<100ms), readable, tamper-resistant, and optimized for low manual entry error rates.
 
 ## 1. Overview
@@ -17,6 +18,7 @@ The Card Code Generation Function transforms key attributes of a Judoka (player 
 Players gain a sense of **ownership and pride** by sharing their custom Judoka quickly and easily. **Without simple sharing, engagement can drop**, especially for kids who expect fast, low-effort interactions.
 
 ### Goals
+
 - Share and recreate favorite Judoka with a short, easy-to-type code.
 - Avoid frustration with typos or unreadable characters.
 
@@ -226,7 +228,9 @@ F7KP-WQ9M-ZD23-HYTR
 ---
 
 ## 10. Player Flow
+
 Code Generation and Sharing Flow
+
 - Player creates or updates Judoka → system generates code.
 - Code saved to judoka.json and displayed on card detail screen.
 - Player taps copy button → code copied to clipboard.

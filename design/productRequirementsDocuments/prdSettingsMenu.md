@@ -1,6 +1,7 @@
 # PRD: Settings Menu
 
 ## TL;DR
+
 This PRD defines the Settings Menu for Ju-Do-Kon!, enabling players to control sound, motion effects, navigation map, display mode, and active game modes. These options improve accessibility, personalization, and retention by empowering users to tailor the game to their needs.
 
 **Problem Statement:**  
@@ -125,6 +126,7 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 ---
 
 ## Settings Menu: User Flow
+
 - Player clicks “Settings” on the Judo Training Village Map.
 - Settings page loads in ≤200ms.
 - Toggles/selectors pull values from settings.json and render current state.

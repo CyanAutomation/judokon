@@ -3,11 +3,12 @@
 ---
 
 ## TL;DR
+
 This PRD defines the Draw Random Card function for Ju-Do-Kon!, providing a fast, engaging, and accessible way to select random cards during matches. The feature increases excitement, replayability, and average session time, with performance targets of ≤300ms draw speed and ≥60fps animations.
 
 > Hiroshi faces his rival in Ju-Do-Kon!’s Classic Battle. He taps “Draw Card” — a new Judoka card slides onto the screen, its stats flashing dramatically. Hiroshi’s heart races, knowing the outcome could change the match. This suspense keeps players coming back for more, fueling longer, more thrilling sessions.
 
---- 
+---
 
 ## Problem Statement
 
@@ -81,6 +82,7 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 | Accessibility    | Automatically disable animations if system Reduced Motion is active.                      |
 
 ### User Goals
+
 - Provide an exciting, quick card reveal to keep players engaged.
 - Allow players sensitive to motion to control animation settings for comfort.
 

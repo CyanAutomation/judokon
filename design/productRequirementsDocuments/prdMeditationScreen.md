@@ -3,6 +3,7 @@
 ---
 
 ## TL;DR
+
 This PRD defines a Meditation Screen for Ju-Do-Kon! to provide a moment of calm between intense battles. By combining a wise quote with the soothing presence of helper character KG, players are encouraged to pause, reflect, and regain balance, improving pacing, focus, and long-term engagement.
 
 ---
