@@ -1,16 +1,29 @@
 # PRD: Settings Menu
 
+## TL;DR
+This PRD defines the Settings Menu for Ju-Do-Kon!, enabling players to control sound, motion effects, navigation map, display mode, and active game modes. These options improve accessibility, personalization, and retention by empowering users to tailor the game to their needs.
+
 **Problem Statement:**  
 As a user of the game _ju-do-kon!_, I want to be able to change settings such as display mode, navigation map, motion effects, and sound, to tailor my experience and reduce frustration — especially for players sensitive to motion or needing visual adjustments. Playtesting shows **35% of users quit early when unable to adjust motion effects**, indicating the need for accessible, customizable gameplay.
+
+> Kazuki, a player who’s prone to motion sickness, launches Ju-Do-Kon! for the first time. The opening animations make him dizzy, but he quickly finds the Settings Menu on the Judo Training Village Map. Within seconds, he toggles Motion Effects off — the UI instantly calms, and Kazuki can now enjoy battles without discomfort. By empowering players like Kazuki to control their experience, Ju-Do-Kon! becomes welcoming and inclusive.
+
+### User Stories
+
+- As a player sensitive to motion, I want to disable motion effects so I can play comfortably without nausea.
+- As a player who prefers dark mode, I want to switch the display instantly so I’m not blinded in low light.
+- As a parent, I want to turn off sound so my kids can play quietly.
 
 ---
 
 ## Goals
 
-- **G1:** Users experience an immediate reflection of setting changes in the UI, with updates to the data source completing within 50ms of interaction.
-- **G2:** All settings changes persist across page refreshes during the same session, ensuring a consistent user experience.
-- **G3:** When errors occur during reading or writing to `settings.json`, users see a clear CSS popup error message within 200ms, maintaining transparency and trust.
-- **G4:** The settings screen loads fully within 200ms on mid-tier devices (e.g., 2GB RAM smartphones), avoiding delays that could frustrate players.
+- Users experience an immediate reflection of setting changes in the UI, with updates to the data source completing within 50ms of interaction.
+- All settings changes persist across page refreshes during the same session, ensuring a consistent user experience.
+- When errors occur during reading or writing to `settings.json`, users see a clear CSS popup error message within 200ms, maintaining transparency and trust.
+- The settings screen loads fully within 200ms on mid-tier devices (e.g., 2GB RAM smartphones), avoiding delays that could frustrate players.
+- Allow players to personalize visual and audio experience to match their comfort.
+- Provide immediate and persistent feedback when changing settings.
 
 ---
 
@@ -37,6 +50,15 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 - **Display mode (three options):** Light, Dark, Gray (default: Light)
   - _Gray mode_ provides a grayscale display to reduce visual noise for neurodivergent users.
 - **Game modes list:** Dynamically populated from `gameModes.json`, with binary toggles per mode.
+
+---
+
+## Technical Considerations
+
+- All data reads/writes should use asynchronous, promise-based functions with error handling.
+- `settings.json` must persist in localStorage/sessionStorage for session retention.
+- Updates should debounce writes to avoid excessive file operations if toggles are changed rapidly.
+- Game mode toggles should dynamically bind to game modes in `gameModes.json`, avoiding hardcoding.
 
 ---
 
@@ -99,6 +121,16 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 - AC-8.2 Users can tab through all interactive elements in a logical order.
 - AC-8.3 Color contrast of text and controls meets WCAG 2.1 minimum (4.5:1) in all display modes.
 - AC-8.4 Touch targets meet or exceed a 48px minimum size.
+
+---
+
+## Settings Menu: User Flow
+- Player clicks “Settings” on the Judo Training Village Map.
+- Settings page loads in ≤200ms.
+- Toggles/selectors pull values from settings.json and render current state.
+- Player makes changes → UI updates instantly → data writes within 50ms.
+- On error during update: Toggle reverts, then CSS popup error displayed
+- Player exits → settings persist for the rest of the session.
 
 ---
 
