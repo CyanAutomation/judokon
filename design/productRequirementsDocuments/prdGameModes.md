@@ -290,3 +290,10 @@ UX Note:
 - English / Japanese toggle works.
 - Ambient visuals reinforce restful tone.
 - Text is legible; character art is scaled correctly.
+
+**Player Flow**
+1. Player clicks Meditation hotspot on Judo Training Village Map.
+2. Transition screen.
+3. Meditation screen displays random inspirational quote.
+4. Player can toggle between English/Japanese using language button.
+5. Player exits Meditation via “Return” button, which confirms before transitioning back to Judo Village Map.
