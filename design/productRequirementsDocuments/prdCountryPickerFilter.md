@@ -54,14 +54,12 @@ Key Details:
 
 ---
 
-## Player Flow
+### Flow
 
-- Player opens Browse Judoka screen.
-- Player taps country selector toggle.
-- Slide-in panel animates open in ≤1s.
-- Player taps a country flag: Card carousel filters to show only Judoka from that country, then Selected flag gains highlight.
-- Player taps “Clear” → resets to all Judoka.
-- Player continues browsing or closes selector.
+1. Player opens the Browse Judoka screen and taps the country selector toggle.
+2. The slide-in panel opens in under one second.
+3. Tapping a flag filters the carousel and highlights the selected country.
+4. The "Clear" button resets the view and the player continues browsing or closes the selector.
 
 ---
 
@@ -102,7 +100,7 @@ Key Details:
 - Country flags must be displayed in alphabetical order.
 - Provide clear feedback if no judoka exist for a selected country (empty state messaging).
 - Handle missing flag assets gracefully with a fallback icon.
-- Tap target size must be at least 48x48dp.
+- Tap target size must be at least 48x48dp (see sizing tokens in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)).
 - Color contrast ratios must meet WCAG 2.1 AA standards.
 
 ---
@@ -128,7 +126,7 @@ Key Details:
 
 ## Design and UX Considerations
 
-- Background of the country selector should use a dark color to help flags and text stand out.
+- Background of the country selector should use the `--color-secondary` token (or another dark token from [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)) to help flags and text stand out.
 - Each country is represented by:
   - Flag icon.
   - Country name label beneath the flag.
@@ -137,7 +135,7 @@ Key Details:
   - Slide-in Panel (default): Narrow vertical panel with scroll.
   - Full-Screen Grid: Grid layout showing all countries.
 - Mobile Optimization:
-  - Minimum tap target size of 48x48dp for flags to ensure touch accessibility.
+  - Minimum tap target size of 48x48dp for flags to ensure touch accessibility (see sizing tokens in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)).
   - Color contrast ratios must meet WCAG 2.1 AA standards for readability.
   - Selected country should be visually highlighted (e.g., border or shading).
   - Selector should respond well to different screen sizes (responsive design).
@@ -184,7 +182,7 @@ Key Details:
 
   - [ ] 5.1 Add alt-text for all flag icons based on country names.
   - [ ] 5.2 Ensure color contrast ratios meet WCAG 2.1 AA standards.
-  - [ ] 5.3 Enforce minimum tap target size (48x48dp) for touch devices.
+  - [ ] 5.3 Enforce minimum tap target size (48x48dp) for touch devices (see sizing tokens in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)).
   - [ ] 5.4 Ensure flags are displayed alphabetically.
 
 - [ ] 6.0 Add Visual Documentation

@@ -95,6 +95,13 @@ Upon clicking Country Filter:
 
 ---
 
+### 📋 Checklist
+- [ ] I searched for existing feature requests.
+- [ ] I attached relevant visuals or links.
+- [ ] I reviewed `design/codeStandards/codeUIDesignStandards.md` for token usage.
+
+---
+
 # 👇 Ready to Start!
 
 _Happy feature-building for Ju-Do-Kon!_
