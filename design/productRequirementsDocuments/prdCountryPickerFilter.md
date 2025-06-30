@@ -126,7 +126,7 @@ Key Details:
 
 ## Design and UX Considerations
 
-- Background of the country selector should use the `--color-secondary` token (or another dark token from [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)) to help flags and text stand out.
+- Background of the country selector uses `var(--color-secondary)` so flags and text meet the required 4.5:1 contrast ratio.
 - Each country is represented by:
   - Flag icon.
   - Country name label beneath the flag.
@@ -140,8 +140,8 @@ Key Details:
   - Selected country should be visually highlighted (e.g., border or shading).
   - Selector should respond well to different screen sizes (responsive design).
 - Animation Considerations:
-  - Slide-in animation duration: 300ms.
-  - Flag grid fade-in duration: 200ms.
+  - Slide-in animation duration: 300ms and respects the user's `prefers-reduced-motion` setting.
+  - Flag grid fade-in duration uses `var(--transition-fast)`.
 
 ### Wireframes
 
@@ -188,3 +188,27 @@ Key Details:
 - [ ] 6.0 Add Visual Documentation
   - [ ] 6.1 Create annotated wireframes for the slide-in panel and full-grid views.
   - [ ] 6.2 Annotate wireframes with key UX and accessibility notes (tap sizes, highlight states, animation durations).
+
+---
+
+## Non-Goals
+
+- Does not cover creation of new flag assets outside the existing judoka roster.
+- Omits multi-country selection to keep interactions simple.
+
+## Dependencies and Integrations
+
+- `judoka.json` data file for country information.
+- Card carousel component which displays filtered judoka cards.
+
+## Open Questions
+
+- Should users be able to search countries by name in addition to flag selection?
+- Do we need analytics events for every country selection?
+
+## Metadata
+
+- **Author:** Game Design Team
+- **Last Edited:** 2025-06-29
+- **Target Game Version:** 1.0.0
+- **Related Features:** Card Carousel Filtering

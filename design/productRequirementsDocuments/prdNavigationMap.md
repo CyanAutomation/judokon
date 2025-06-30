@@ -154,3 +154,30 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
   - [ ] 5.3 Test animation performance on devices to ensure ≥60fps.
   - [ ] 5.4 Verify all text labels meet WCAG 2.1 AA contrast standards (≥4.5:1).
 - [ ] **5.0 Add "Simple Menu Mode" toggle to settings (P3)**
+
+---
+
+## Non-Goals
+
+- No dynamic pathfinding or open-world navigation beyond the village map.
+- Does not introduce multiplayer map interactions.
+- Excludes voice-over or cutscene content.
+
+## Dependencies & Integrations
+
+- Relies on existing footer navigation and settings modules.
+- Uses current asset loader for map imagery.
+- Stores preferences in local storage.
+
+## Open Questions
+
+- Should future game modes appear on the map automatically?
+- Are audio cues required for map interactions?
+- Do we support landscape-only layouts?
+
+## Metadata
+
+- **Author:** Ju-Do-Kon! Team
+- **Last Edited:** 2024-05-01
+- **Target Version:** v1.2
+- **Related Features:** Navigation Bar, Settings Menu

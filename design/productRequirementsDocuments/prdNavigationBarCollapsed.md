@@ -39,6 +39,11 @@ Currently, the lack of a consistent navigation system leads to player disorienta
 - Allow players to confidently navigate between modes without frustration.
 - Ensure a consistent, easy-to-use navigation experience across devices.
 
+## Non-Goals
+
+- Custom color themes or advanced 3D animations.
+- Offline caching beyond the default fallback list.
+
 ---
 
 ## 3. How It Works
@@ -59,10 +64,10 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ### Flow
 
-1. Player finishes an activity and sees the persistent nav bar.
-2. In landscape, links are visible along the bottom bar; in portrait, the bar collapses to the logo only.
-3. Tapping the logo expands a vertical list of game modes.
-4. Player selects a mode to navigate. If `gameModes.json` fails, fallback modes load in under 2 seconds and a reload notice appears.
+- After any activity, the persistent nav bar is visible.
+- In portrait view only the logo shows; tapping it expands the text list.
+- Player selects a mode and is taken to that screen.
+- If `gameModes.json` fails, load the fallback list and auto-reload.
 
 ### Technical Considerations
 
@@ -71,6 +76,12 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 - Use hardware-accelerated CSS transforms for nav animations (e.g., `translate3d`).
 - Optimize for devices as small as 320px width (typical of older low-end Android devices).
 - Listen for device orientation events to trigger smooth re-layout without stutter.
+
+### Dependencies / Integrations
+
+- `gameModes.json` data file for mode list.
+- CSS variables `--color-secondary` and `--button-text-color` for styling.
+- Existing footer layout modules.
 
 ---
 
@@ -113,16 +124,16 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ## 7. Edge Cases / Failure States
 
-- **Data Source Failure**: If `gameModes.json` fails to load, fallback to a hardcoded list in under 2 seconds.
-- **Menu Loading Failure Mid-Session**: Notify the user and trigger an automatic reload.
-- **Device Rotation Mid-Animation**: Cancel or adjust the animation smoothly with re-layout.
-- **Small Devices**: Text menu dynamically resizes for screens as narrow as 320px.
+- Data source fails → load default list in <2s.
+- Menu fails mid-session → notify user and auto-reload.
+- Device rotates mid-animation → cancel and re-layout.
+- Small devices (<320px) → menu scales to fit.
 
 ---
 
 ## 8. Design and UX Considerations
 
-The standard navbar should use the `--color-secondary` token for its background and `--button-text-color` for text. Refer to the token list in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens).
+The standard navbar uses `--color-secondary` for its background and `--button-text-color` for text.
 
 ![Wireframe of Navigation Bar Collapsed](/design/mockups/mockupFooterNavigationCollapsed1.png)
 
@@ -141,3 +152,15 @@ The standard navbar should use the `--color-secondary` token for its background 
 
 - Tap animation on navigation interactions.
 - Smooth slide-in/slide-out transitions (**<500ms**).
+
+## Open Questions
+
+- Should the bar auto-hide after a period of inactivity?
+- Which screens, if any, should suppress the nav bar entirely?
+
+## Metadata
+
+- **Author:** Design Team
+- **Last Edited:** 2024-05-12
+- **Target Version:** 1.0.0
+- **Related Features:** Navigation Map, Home Page Menu

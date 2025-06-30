@@ -232,7 +232,7 @@ function setupSwipeNavigation(container) {
 // Ensure WCAG compliance for touch target sizes and contrast ratios
 
 // Adjust button sizes for touch targets
-const MIN_TOUCH_TARGET_SIZE = 44;
+const MIN_TOUCH_TARGET_SIZE = 48;
 
 function ensureTouchTargetSize(element) {
   const style = window.getComputedStyle(element);
