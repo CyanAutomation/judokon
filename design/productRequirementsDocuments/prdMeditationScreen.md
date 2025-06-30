@@ -155,13 +155,13 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 
   - [x] 2.1 Randomly select a quote from `aesopsFables.json`.
   - [ ] 2.2 Display the quote with dynamic, responsive text scaling.
-  - [ ] 2.3 Implement skeleton loader while fetching quote.
+  - [ ] 2.3 Implement skeleton loader while fetching quote using the existing loading spinner styled with `var(--button-bg)`.
   - [ ] 2.4 Fallback to default calm message if quote data fails.
 
 - [ ] **3.0 Implement Action Button Module**
 
   - [ ] 3.1 Add large, thumb-friendly CTA button ("Continue When Ready").
-  - [ ] 3.2 Ensure CTA button has minimum 48px height and proper spacing.
+  - [ ] 3.2 Style CTA button with `var(--button-bg)` and `var(--button-hover-bg)`; ensure minimum 48px height and proper spacing.
 
 - [ ] **4.0 Accessibility**
 
@@ -170,3 +170,35 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 - [ ] **5.0 Performance & Load Time Optimization**
   - [ ] 5.1 Optimize image and text asset load times to under 1 second.
   - [ ] 5.2 Implement responsive grid and flexbox for various screen sizes (portrait/landscape).
+
+## 6. Non-Goals
+
+- Provide guided breathing audio or meditation music.
+- Introduce scoring or competitive mechanics.
+- Replace existing downtime screens outside the Meditation feature.
+
+## 7. Technical Considerations
+
+- Fetch quotes asynchronously with graceful error handling.
+- Reuse existing HTML template and component structure.
+- Loading spinner and CTA button use design tokens such as `var(--button-bg)` and `var(--button-hover-bg)`.
+- Keep page weight minimal to meet the 1s load target.
+
+## 8. Dependencies and Integrations
+
+- Quote data file: `aesopsFables.json`.
+- KG character assets from the core game.
+- Navigation system for entering and exiting the screen.
+
+## 9. Open Questions
+
+- Should players be able to disable the Meditation screen entirely?
+- Will background audio be added in a later version?
+- Are translations needed beyond English and Japanese?
+
+## 10. Metadata
+
+- **Author:** Design Team
+- **Last Edited:** 2024-05-29
+- **Target Game Version:** v1.0
+- **Related Features:** Game Modes, Navigation Map
