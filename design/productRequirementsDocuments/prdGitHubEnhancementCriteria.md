@@ -1,7 +1,9 @@
 ---
 # 🎴 Ju-Do-Kon! Game Feature Request Criteria (Tailored)
 
-These criteria help ensure each feature or enhancement is clear, player-focused, and easily implementable by the dev team. **Every Ju-Do-Kon! feature request should meet these 5 criteria**:
+These criteria help ensure each feature or enhancement is clear, player-focused, and easily implementable by the dev team. **Every Ju-Do-Kon! feature request should meet these 5 criteria**.
+
+Once a request is approved, draft a PRD using `prdTemplate.md` in this directory.
 ---
 
 ## 1. ✅ **Clear Problem Statement**
