@@ -7,7 +7,7 @@ test.describe("Meditation screen", () => {
 
   test("elements are visible", async ({ page }) => {
     await expect(page.getByRole("heading", { name: /pause\. breathe\. reflect\./i })).toBeVisible();
-    await expect(page.getByAltText(/KG congratulates you/i)).toBeVisible();
+    await expect(page.getByAltText(/KG is ready to meditate/i)).toBeVisible();
     await expect(page.locator("#quote")).toBeVisible();
     await expect(page.getByRole("link", { name: /continue your journey/i })).toBeVisible();
   });
