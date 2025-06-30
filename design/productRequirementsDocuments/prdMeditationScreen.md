@@ -62,12 +62,37 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 ## Acceptance Criteria
 
-- KG character appears on the meditation screen.
-- Random quote displayed from `aesopsFables.json`.
-- If dataset not available, fallback reflection quote appears.
-- Screen loads within 1 second.
-- Text is screen-reader accessible (ARIA tags).
-- Layout adapts to screen orientation (portrait/landscape).
+- AC-1 KG character appears on the meditation screen.
+- AC-2 Random quote displayed from `aesopsFables.json`; fallback reflection quote appears if the dataset is unavailable.
+- AC-3 Screen loads within 1 second.
+- AC-4 Quote text has ARIA markup and maintains contrast ratio of at least **4.5:1**.
+- AC-5 "Continue Your Journey" button uses `--radius-md`, stays ≥48px tall with tap target ≥44px × 44px, and is keyboard focusable.
+- AC-6 Layout adapts to screen orientation (portrait/landscape) and all interactive elements remain keyboard accessible.
+
+---
+
+## Non-Goals
+
+- Provide detailed meditation instruction or audio guidance.
+- Translate the entire UI into Japanese.
+
+## Dependencies / Integrations
+
+- Quote data from `aesopsFables.json`.
+- KG character assets and image loader.
+- Linked from the main navigation menu.
+
+## Open Questions
+
+- Should quotes rotate automatically after a delay?
+- Do players need a skip option to bypass the screen entirely?
+
+## Metadata
+
+- **Author:** Game Design Team
+- **Last Edited:** 2025-06-29
+- **Target Game Version:** v1.0
+- **Related Features:** Pseudo-Japanese Text Conversion, Navigation Bar
 
 ---
 
@@ -92,11 +117,10 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 ## Design and UX Considerations
 
 - KG character is placed on the left side, taking approximately 1/8th of the screen.
-- Quote occupies the right-hand side in desktop/landscape view.
-- On mobile/portrait view, KG image is above the quote.
-- Proceed button is consistently placed at the bottom of the screen.
-- Background is soft and neutral
-- Quote text uses a legible, sans-serif font, sized 18px minimum.
+- Quote occupies the right-hand side in desktop/landscape view and moves below the image on mobile/portrait.
+- The "Continue Your Journey" button uses `var(--button-bg)` with `var(--button-text-color)` text and `--radius-md` corners.
+- Background color comes from `var(--color-tertiary)` for a neutral tone.
+- Quote text uses the base sans-serif font at 18px minimum.
 
 | Meditation Screen Mockup A                          | Meditation Screen Mockup B                          |
 | --------------------------------------------------- | --------------------------------------------------- |
@@ -134,10 +158,10 @@ Ensures readability while preventing jarring fallback errors, and enhances conte
 
 **Contents:**
 
-- Large, thumb-friendly button (min 48px height)
+- Large, thumb-friendly button (min 48px height) with `--radius-md` corners
 - Calming label: _“Continue Your Journey”_
-- Button anchored close to quote with clear margin spacing
-- Clear visual separation from quote/toggle above
+- Uses `var(--button-bg)` and `var(--button-text-color)`
+- Anchored close to the quote with clear margin spacing
 
 **Why:**  
 Provides agency without pressure. Allows the player to re-enter gameplay at their own pace. And prevents accidental taps and creates distinct flow—finish reading before proceeding.
@@ -155,13 +179,13 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 
   - [x] 2.1 Randomly select a quote from `aesopsFables.json`.
   - [ ] 2.2 Display the quote with dynamic, responsive text scaling.
-  - [ ] 2.3 Implement skeleton loader while fetching quote.
+  - [ ] 2.3 Implement skeleton loader while fetching quote using the existing loading spinner styled with `var(--button-bg)`.
   - [ ] 2.4 Fallback to default calm message if quote data fails.
 
 - [ ] **3.0 Implement Action Button Module**
 
   - [ ] 3.1 Add large, thumb-friendly CTA button ("Continue When Ready").
-  - [ ] 3.2 Ensure CTA button has minimum 48px height and proper spacing.
+  - [ ] 3.2 Style CTA button with `var(--button-bg)` and `var(--button-hover-bg)`; ensure minimum 48px height and proper spacing.
 
 - [ ] **4.0 Accessibility**
 
@@ -170,3 +194,35 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 - [ ] **5.0 Performance & Load Time Optimization**
   - [ ] 5.1 Optimize image and text asset load times to under 1 second.
   - [ ] 5.2 Implement responsive grid and flexbox for various screen sizes (portrait/landscape).
+
+## 6. Non-Goals
+
+- Provide guided breathing audio or meditation music.
+- Introduce scoring or competitive mechanics.
+- Replace existing downtime screens outside the Meditation feature.
+
+## 7. Technical Considerations
+
+- Fetch quotes asynchronously with graceful error handling.
+- Reuse existing HTML template and component structure.
+- Loading spinner and CTA button use design tokens such as `var(--button-bg)` and `var(--button-hover-bg)`.
+- Keep page weight minimal to meet the 1s load target.
+
+## 8. Dependencies and Integrations
+
+- Quote data file: `aesopsFables.json`.
+- KG character assets from the core game.
+- Navigation system for entering and exiting the screen.
+
+## 9. Open Questions
+
+- Should players be able to disable the Meditation screen entirely?
+- Will background audio be added in a later version?
+- Are translations needed beyond English and Japanese?
+
+## 10. Metadata
+
+- **Author:** Design Team
+- **Last Edited:** 2024-05-29
+- **Target Game Version:** v1.0
+- **Related Features:** Game Modes, Navigation Map

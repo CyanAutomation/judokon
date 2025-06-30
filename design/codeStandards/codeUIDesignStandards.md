@@ -30,7 +30,7 @@ Ju-Do-Kon! uses a **bold, high-contrast design system** grounded in clear hierar
 
 ### 2.2 Design Principles
 
-- **Touch-first Interaction** – Minimum 44x44px targets, swipeable areas, and tap feedback.
+- **Touch-first Interaction** – Minimum 44x44px targets, swipeable areas, and tap feedback (see sizing tokens in [Tokens](#10-tokens)).
 - **Responsive Feedback** – Every interaction must give feedback (scale, glow, ripple, animation).
 - **Visual Hierarchy** – Layout must surface the most important info and reinforce progression.
 - **Progressive Disclosure** – Show only essential actions up front; reveal detail as needed.
@@ -54,6 +54,8 @@ Ju-Do-Kon! uses a **bold, high-contrast design system** grounded in clear hierar
 | --button-hover-bg   | #0B5BB0  | Hover state for buttons   |
 | --button-active-bg  | #0C3F7A  | Active button state       |
 | --button-text-color | #FFFFFF  | Button text               |
+
+The hex values above correspond to CSS custom properties used throughout the project. See [Tokens](#10-tokens) for the complete list.
 
 ### Rarity Colours
 
@@ -159,7 +161,8 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 ### Spacing Scale
 
 - Use **8px** rhythm (8, 16, 24, 32, 40, etc.)
-- Apply consistent **padding/margin** values across blocks
+- Apply consistent **padding/margin** values across blocks.
+- Spacing values correspond to the tokens listed in [Tokens](#10-tokens).
 
 ### Modular Blocks
 

@@ -1,6 +1,6 @@
 # PRD: Home Page Main Navigation Menu
 
-## Overview
+## Introduction
 
 This document describes the **Home Page Main Navigation Menu** for the JU-DO-KON! web-based judo-themed card battle game.
 
@@ -11,14 +11,6 @@ The purpose of this menu is to allow players to access the core game modes quick
 > **Player Feedback Example**: "I want to play the Team Battle, but I can't see the right button." — hypothetical playtest participant, age 10
 
 A fast, accessible, and thematic navigation experience is crucial to ensure new players feel confident and engaged from their first visit.
-
-### User Stories
-
-- As a new player, I want to see all game modes clearly when I launch the game so that I don’t get lost.
-- As a player using keyboard-only navigation, I want to move between tiles using Tab and select using Enter/Space so that I can navigate without a mouse.
-- As a visually impaired player, I want tile icons and labels with sufficient contrast and screen reader support so I can access the game.
-
----
 
 ## Goals
 
@@ -31,6 +23,12 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 - Quickly and confidently access desired game modes.
 - Experience a navigation interface that feels consistent with the judo theme.
 - Navigate easily regardless of device or ability.
+
+## User Stories
+
+- As a new player, I want to see all game modes clearly when I launch the game so that I don't get lost.
+- As a player using keyboard-only navigation, I want to move between tiles using Tab and select using Enter/Space so that I can navigate without a mouse.
+- As a visually impaired player, I want tile icons and labels with sufficient contrast and screen reader support so I can access the game.
 
 ---
 
@@ -91,7 +89,7 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 
 ---
 
-## Wireframe Diagram
+### Wireframe Diagram
 
 ```
 +----------------------------------------------------------+
@@ -145,10 +143,8 @@ Each tile contains:
 ---
 
 ## Non-Goals
-
 - The home page will not expose account or profile management.
 - Advanced battle or team composition settings are out of scope.
-- No monetization or store links are included.
 
 ---
 
@@ -185,17 +181,12 @@ Each tile contains:
 - **Broken Destination URL**: Log an error and redirect player to a default error page.
 - **Device Rotation During Navigation**: Maintain consistent layout after orientation change.
 
----
-
 ## Dependencies / Integrations
-
-- Relies on the router module for page navigation.
-- Icons come from the Material Symbols library.
 - Uses global CSS tokens (`--button-bg`, `--radius-md`, etc.) defined in `src/styles/base.css`.
 
 ---
 
-## Design and UX Considerations
+## Design/UX Considerations
 
 ### Mockups
 
@@ -209,6 +200,7 @@ Each tile contains:
 - Tile backgrounds use `var(--button-bg)` and corners `var(--radius-md)`.
 - Hover animation uses `var(--transition-fast)` to scale tiles to **1.05**.
 - Ensure text labels and background colors have contrast ratio ≥4.5:1.
+- Follow UI design tokens for fonts and color contrast as outlined in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md).
 - Consistent margin and padding for tile spacing.
 
 ### Battle Mode Section
@@ -248,6 +240,55 @@ Each tile contains:
     - Edit Judoka
 
 - **Why**: Reduces visual clutter, eliminates duplicate tiles, and provides a single intuitive access point to all Judoka-related actions—grouped by function, not guesswork.
+
+## Technical Considerations
+
+### Responsiveness
+
+- The layout must adapt to different screen sizes:
+  - **Desktop (>=1024px):** 2 columns, 2 rows.
+  - **Tablet (>=768px and <1024px):** 2 columns, 2 rows.
+  - **Mobile (<768px):** Single column layout; tiles stack vertically.
+
+### Accessibility
+
+- Tiles must be:
+  - Focusable via keyboard (`tabindex=0` if needed).
+  - Activated via keyboard (`Enter` or `Space` key).
+- Labels must be screen-reader friendly (e.g., via `aria-label`).
+- SVG icons must have descriptive `title` or `aria-hidden="true"` if decorative.
+- Tap targets must meet WCAG minimum sizing standards (48px x 48px).
+
+### Performance
+
+- SVG icons must be **optimized** to minimize page load times (<50KB).
+- Navigation interactions must be **instantaneous**, with interaction latency <100ms.
+- Ensure fallback behavior if network fails to load SVGs.
+
+---
+
+## Dependencies/Integrations
+
+- Uses Material Symbols icon set for tile icons.
+- Relies on routes defined in `judoka.json` for navigation targets.
+
+## Edge Cases
+
+- **Icon Load Failure**: Fall back to displaying a generic JU-DO-KON logo.
+- **Slow Network**: Navigation tiles and fallback icons should still be accessible.
+- **Broken Destination URL**: Log an error and redirect player to a default error page.
+- **Device Rotation During Navigation**: Maintain consistent layout after orientation change.
+
+## Open Questions
+
+- Should Team Battle get its own dedicated URL before launch?
+
+## Metadata
+
+- Author: Game Design Team
+- Last Edited: 2024-05-01
+
+---
 
 ## Tasks
 
