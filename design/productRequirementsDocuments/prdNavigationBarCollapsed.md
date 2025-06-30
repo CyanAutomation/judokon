@@ -32,7 +32,7 @@ Currently, the lack of a consistent navigation system leads to player disorienta
 
 - Reduce navigation-related exits by **20%**.
 - Increase average session duration per player by **15%**.
-- Ensure **48px minimum** touch target size (per WCAG guidelines).
+- Ensure **48px minimum** touch target size (per sizing tokens in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)).
 - Achieve **≥60fps** animation performance on standard mid-tier devices.
 - Guarantee fallback loading time of **<2 seconds** if `gameModes.json` fails.
 - Meet a text contrast ratio of at least **4.5:1** against the navigation bar background.
@@ -62,7 +62,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 - In portrait orientation, the navigation collapses into just the logo.
 - Tapping the logo reveals a vertically unrolled text menu listing the available game modes (functions in both landscape and portrait orientation).
 
-### Player Flow
+### Flow
 
 - After any activity, the persistent nav bar is visible.
 - In portrait view only the logo shows; tapping it expands the text list.
@@ -106,7 +106,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ## 6. Acceptance Criteria
 
-- Touch targets maintain **≥48px** size across all device resolutions.
+- Touch targets maintain **≥48px** size across all device resolutions (see sizing tokens in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)).
 - Navigation is visible on **100%** of game screens.
 - Standard nav bar displays active game modes loaded from `gameModes.json`.
 - Portrait mode initially shows only the logo in the bottom left corner (no links in the navigation bar); tapping reveals a vertical list.
@@ -139,7 +139,7 @@ The standard navbar uses `--color-secondary` for its background and `--button-te
 
 ### Accessibility
 
-- **48px+** touch targets.
+- **48px+** touch targets (see sizing tokens in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)).
 - High-contrast text labels (WCAG 4.5:1).
 - Screen reader support: all navigation elements properly labeled.
 - Respect OS **reduced motion** settings.
