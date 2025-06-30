@@ -98,3 +98,5 @@ Upon clicking Country Filter:
 # 👇 Ready to Start!
 
 _Happy feature-building for Ju-Do-Kon!_
+
+_Once approved, draft a PRD using the standard template (`design/productRequirementsDocuments/prdTemplate.md`)._
