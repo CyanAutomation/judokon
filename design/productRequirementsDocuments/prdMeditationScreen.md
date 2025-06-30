@@ -62,12 +62,37 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 ## Acceptance Criteria
 
-- KG character appears on the meditation screen.
-- Random quote displayed from `aesopsFables.json`.
-- If dataset not available, fallback reflection quote appears.
-- Screen loads within 1 second.
-- Text is screen-reader accessible (ARIA tags).
-- Layout adapts to screen orientation (portrait/landscape).
+- AC-1 KG character appears on the meditation screen.
+- AC-2 Random quote displayed from `aesopsFables.json`; fallback reflection quote appears if the dataset is unavailable.
+- AC-3 Screen loads within 1 second.
+- AC-4 Quote text has ARIA markup and maintains contrast ratio of at least **4.5:1**.
+- AC-5 "Continue Your Journey" button uses `--radius-md`, stays ≥48px tall with tap target ≥44px × 44px, and is keyboard focusable.
+- AC-6 Layout adapts to screen orientation (portrait/landscape) and all interactive elements remain keyboard accessible.
+
+---
+
+## Non-Goals
+
+- Provide detailed meditation instruction or audio guidance.
+- Translate the entire UI into Japanese.
+
+## Dependencies / Integrations
+
+- Quote data from `aesopsFables.json`.
+- KG character assets and image loader.
+- Linked from the main navigation menu.
+
+## Open Questions
+
+- Should quotes rotate automatically after a delay?
+- Do players need a skip option to bypass the screen entirely?
+
+## Metadata
+
+- **Author:** Game Design Team
+- **Last Edited:** 2025-06-29
+- **Target Game Version:** v1.0
+- **Related Features:** Pseudo-Japanese Text Conversion, Navigation Bar
 
 ---
 
@@ -92,11 +117,10 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 ## Design and UX Considerations
 
 - KG character is placed on the left side, taking approximately 1/8th of the screen.
-- Quote occupies the right-hand side in desktop/landscape view.
-- On mobile/portrait view, KG image is above the quote.
-- Proceed button is consistently placed at the bottom of the screen.
-- Background is soft and neutral
-- Quote text uses a legible, sans-serif font, sized 18px minimum.
+- Quote occupies the right-hand side in desktop/landscape view and moves below the image on mobile/portrait.
+- The "Continue Your Journey" button uses `var(--button-bg)` with `var(--button-text-color)` text and `--radius-md` corners.
+- Background color comes from `var(--color-tertiary)` for a neutral tone.
+- Quote text uses the base sans-serif font at 18px minimum.
 
 | Meditation Screen Mockup A                          | Meditation Screen Mockup B                          |
 | --------------------------------------------------- | --------------------------------------------------- |
@@ -134,10 +158,10 @@ Ensures readability while preventing jarring fallback errors, and enhances conte
 
 **Contents:**
 
-- Large, thumb-friendly button (min 48px height)
+- Large, thumb-friendly button (min 48px height) with `--radius-md` corners
 - Calming label: _“Continue Your Journey”_
-- Button anchored close to quote with clear margin spacing
-- Clear visual separation from quote/toggle above
+- Uses `var(--button-bg)` and `var(--button-text-color)`
+- Anchored close to the quote with clear margin spacing
 
 **Why:**  
 Provides agency without pressure. Allows the player to re-enter gameplay at their own pace. And prevents accidental taps and creates distinct flow—finish reading before proceeding.
