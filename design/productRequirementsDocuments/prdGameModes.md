@@ -2,15 +2,13 @@
 
 ### Overview
 
-Ju-Do-Kon! offers a range of game modes tailored for different play styles—competitive battles, team-based challenges, creative customization, exploratory discovery, and quiet reflection. These modes diversify the experience, increase replayability, and promote deeper engagement.
+Ju-Do-Kon! offers a range of game modes tailored for different play styles—competitive battles, team-based challenges, creative customization, exploratory discovery and quiet reflection. These modes diversify the experience, increase replayability and promote deeper engagement.
 
-> After a tough Classic Battle, Hiroshi takes a break by entering Meditation Mode. Soft music and inspiring quotes help him reconnect with why he loves judo. Later, he updates his Judoka’s signature move, making his fighter truly his own. By offering more than just battles, Ju-Do-Kon! becomes a game players want to return to every day — whether they crave intense combat or quiet reflection.
+> After a tough Classic Battle, Hiroshi takes a break by entering Meditation Mode. Soft music and inspiring quotes help him reconnect with why he loves judo. Later, he updates his Judoka’s signature move, making his fighter truly his own. By offering more than just battles, Ju-Do-Kon! becomes a game players want to return to every day—whether they crave intense combat or quiet reflection.
 
 ### Problem Statement
 
-Returning players often exit after short sessions due to repetitive gameplay loops and limited creative expression. In a recent survey, one player said,
-
-> “I like battling, but after a while, it’s the same thing over and over.”
+Returning players often exit after short sessions due to repetitive gameplay loops and limited creative expression.
 
 #### User Stories
 
@@ -28,7 +26,7 @@ Improving session variety directly supports retention and encourages more person
 - **70%** of new players use Judoka Creation within their first week.
 - **60%** of all players trigger Meditation mode at least once weekly.
 - Experience diverse ways to interact with their judoka.
-- Find modes matching their mood: competitive, creative, or relaxing.
+- Find modes matching their mood: competitive, creative or relaxing.
 
 ---
 
@@ -36,267 +34,413 @@ Improving session variety directly supports retention and encourages more person
 
 - All game modes must support **keyboard navigation** and **screen reader** compatibility.
 - Layouts must be responsive on **desktop and tablet**.
-- Judoka data must dynamically load from judoka.json or equivalent.
+- Judoka data must dynamically load from `judoka.json` or equivalent.
 - All URLs must function without console errors or missing asset warnings.
 
 ---
 
 ## Design and UX Considerations
 
-- All mode entry points must visually and thematically align with the **“Judo Training Village”** map-based navigation system.
-- Entry points are represented on the Judo Training Village Map as clickable, animated hotspots (≥48px).
+- All mode entry points must align with the **Judo Training Village** map-based navigation system.
+- Entry points are represented on the map as clickable, animated hotspots (≥48px).
 - UI contrast ratio must meet WCAG 2.1 (≥4.5:1).
-- Touch targets must be ≥48px, with WCAG 2.1 contrast compliance (≥4.5:1).
-- Mode entry and exit flows should be clearly defined to prevent user disorientation.
-- Mode exit returns to Map with confirmation (“Are you sure?”) to avoid disorientation
+- Touch targets must be ≥48px with WCAG 2.1 contrast compliance.
+- Mode entry and exit flows should be clear to prevent disorientation.
+- Mode exit returns to the map with confirmation ("Are you sure?").
 
 ---
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature           | Description                                                      |
-| -------- | ----------------- | ---------------------------------------------------------------- |
-| P1       | Classic Battle    | 1v1 battle vs CPU, stat-based combat to 10 points                |
-| P1       | Team Battle Modes | Gender-specific team-based battles with 1v1 submatches           |
-| P1       | Judoka Creation   | Interface for new character creation with preview and save logic |
-| P2       | Judoka Update     | Edit existing characters and save changes                        |
-| P2       | Browse Judoka     | Explore all characters with future filtering/sorting             |
-| P2       | Random Judoka     | View a new random profile per visit                              |
-| P3       | Meditation Mode   | Non-interactive rest screen with quotes and visuals              |
+| Priority | Feature           | Description                                    |
+| -------- | ----------------- | ---------------------------------------------- |
+| P1       | Classic Battle    | 1v1 battle vs CPU, stat-based combat to 10 pts |
+| P1       | Team Battle Modes | Gender-specific team-based battles             |
+| P1       | Judoka Creation   | Interface for new character creation           |
+| P2       | Judoka Update     | Edit existing characters and save changes      |
+| P2       | Browse Judoka     | Explore all characters with filtering          |
+| P2       | Random Judoka     | View a new random profile per visit            |
+| P3       | Meditation Mode   | Non-interactive rest screen with quotes        |
 
 ---
 
 ## Game Modes
 
-### 1. Classic Battle (Shiai)
+### Classic Battle (Shiai)
 
-**Japanese**: 試合 (バトルモード)  
+#### Overview
+
+**Japanese**: 試合 (バトルモード)
 **URL**: `battleJudoka.html`
-
-**Description**:  
 A 1v1 stat-based match against a CPU opponent using a deck of 25 random judoka cards. First to 10 points wins.
 
-**Rules**:
+#### Goals
 
-- 25 Rounds maximum
-- Deck size: 25
-- Score cap: 10 points
-- Player selects one stat per round to compare.
-- Higher stat wins, +1 point
+- Deliver a quick head‑to‑head mode for new players.
+- Encourage replay through a simple scoring system.
 
-Player Flow:
-
-1. Player enters via Map icon → transition to Classic Battle (Budokan Arena).
-2. Decks load and validate (min. 25 cards).
-3. Cards are revealed → player picks stat → score resolves.
-4. End state = First to 10 or 25 rounds → summary → return to Map.
-
-**Functional Requirements**:
+#### Functional Requirements
 
 - Draw one random card from each deck per round.
 - Player selects a stat to compare.
 - Higher stat wins; score increases by one.
 - End match on 10 points or after 25 rounds.
 
-**Acceptance Criteria**:
+#### Acceptance Criteria
 
 - Cards are revealed in correct sequence.
 - Player can select stat.
 - Score updates per round outcome.
 - Summary screen shown at end.
-- Given 25 valid cards, When a match starts, Then the player sees 25 rounds or score capped at 10.
-- Given a revealed card, When a stat is selected, Then the system compares and updates score.
-- Given the final round, When conditions are met, Then a summary is shown and return enabled.
 
-Visuals/UX:
+#### Non‑Goals
 
-- Score display always visible.
-- Card stats animated on reveal.
-- “Return to Training Village” button enabled post-match, or Re-play button (which resets the Classic Battle mode).
+- Online multiplayer battles.
 
-Settings:
+#### Dependencies
 
-- Difficulty Toggle (TBD): Easy/Medium/Hard (default: Medium).
-- Sound effects: OFF by default, toggle in Settings menu.
+- Judoka dataset loaded from `judoka.json`.
 
-**Edge Cases**:
+#### Open Questions
 
-- If fewer than 25 cards are present, block match with warning.
+- Will difficulty levels change AI stat selection?
+
+#### Metadata
+
+- Author: Game Design Team
+- Last Edited: 2025‑06‑29
 
 ---
 
-### 2. Team Battle Selection
+### Team Battle Selection
 
-**Japanese**: 団体戦選択  
+#### Overview
+
+**Japanese**: 団体戦選択
 **URL**: `teamBattleSelection.html`
+Choose between Male, Female or Mixed team battles.
 
-**Description**:  
-Choose between Male, Female, or Mixed team battles.
+#### Goals
 
-**Functional Requirements**:
+- Guide players to the appropriate team format.
 
-- All three options visible.
+#### Functional Requirements
+
+- Three options visible.
 - Routes correctly to selected battle variant.
 
-**Acceptance Criteria**:
+#### Acceptance Criteria
 
-- Option buttons are visible and interactive.
-- Click leads to correct mode.
+- Option buttons are interactive.
+- Click leads to the correct mode.
 - Invalid route fallback returns to selection screen.
-- Given 3 options, When clicked, Then route to selected mode.
-- Given an invalid route, Then return to selection screen and show modal.
+
+#### Non‑Goals
+
+- Team management beyond choosing a mode.
+
+#### Dependencies
+
+- Navigation map must provide a link to this screen.
+
+#### Open Questions
+
+- Should last chosen mode be remembered?
+
+#### Metadata
+
+- Author: Game Design Team
+- Last Edited: 2025‑06‑29
 
 ---
 
-### 3. Team Battle Modes
+### Team Battle Modes
 
-**Japanese**: 男子団体戦 / 女子団体戦 / 混合団体戦  
-**URLs**:
+#### Overview
 
-- Male: `teamBattleMale.html`
-- Female: `teamBattleFemale.html`
-- Mixed: `teamBattleMixed.html`
-
-**Description**:  
+**Japanese**: 男子団体戦 / 女子団体戦 / 混合団体戦
+**URLs**: `teamBattleMale.html`, `teamBattleFemale.html`, `teamBattleMixed.html`
 Team battles consist of sequential 1v1s between gender-filtered squads.
 
-**Mode Parameters**:
+#### Goals
 
-| Mode   | Rounds | Team Size | Max Score | Gender |
-| ------ | ------ | --------- | --------- | ------ |
-| Male   | 5      | 5         | 5         | Male   |
-| Female | 5      | 5         | 5         | Female |
-| Mixed  | 6      | 6         | 6         | Mixed  |
+- Provide structured team competition with gender rules.
 
-**Acceptance Criteria**:
+#### Functional Requirements
 
-- Validates team composition by gender.
-- Follows team match sequence.
-- End state triggers win screen at cap.
-- Missing URL redirects to error message page.
+- Validate team composition by gender.
+- Follow team match sequence.
+- End state triggers win screen at score cap.
+
+#### Acceptance Criteria
+
 - Team validated on gender before match.
-- Sub-match order shown as visual queue.
+- Sub-match order shown as visual cue.
 - At score cap, show win animation and return to Village.
 
-Edge Cases:
+#### Non‑Goals
 
-- If team is invalid (e.g., wrong gender): block with tooltip “Judoka does not meet team criteria.”
-- If URL missing (e.g., Female): redirect to error page with option to report bug.
+- Online matchmaking.
 
-UX Note:
+#### Dependencies
 
-- Mini avatars shown in a lineup before match begins.
+- Judoka data must include gender field.
+
+#### Open Questions
+
+- Should Mixed mode allow flexible team sizes?
+
+#### Metadata
+
+- Author: Game Design Team
+- Last Edited: 2025‑06‑29
 
 ---
 
-### 4. Browse Judoka
+### Browse Judoka
 
-**Japanese**: 柔道家を閲覧  
+#### Overview
+
+**Japanese**: 柔道家を閲覧
 **URL**: `browseJudoka.html`
-
-**Description**:  
 View all available judoka with stats and visuals.
 
-**Acceptance Criteria**:
+#### Goals
+
+- Allow players to explore the full roster.
+
+#### Functional Requirements
 
 - Scrollable card interface.
 - Stats sourced from `judoka.json`.
 - Responsive across screen sizes.
 - Invalid entries replaced with placeholder.
+
+#### Acceptance Criteria
+
 - If list is empty, show “No cards available” message.
-- Scrollable interface; all cards show name, nationality, and stats.
-- Sourced from judoka.json.
+
+#### Non‑Goals
+
+- Advanced filtering and sorting options.
+
+#### Dependencies
+
+- Carousel and card components.
+
+#### Open Questions
+
+- Should search be included in a future update?
+
+#### Metadata
+
+- Author: Game Design Team
+- Last Edited: 2025‑06‑29
 
 ---
 
-### 5. Judoka Manager Mode
+### Judoka Manager Mode
 
-**Japanese**: 柔道家編集モード  
+#### Overview
+
+**Japanese**: 柔道家編集モード
 **URL**: `manageJudoka.html`
-
-**Description**:  
 Choose to create or edit a judoka.
 
-**Acceptance Criteria**:
+#### Goals
+
+- Provide a hub for judoka creation and updates.
+
+#### Functional Requirements
 
 - Two path options visible.
-- Routing to creation/update works.
+- Routing to creation or update works.
 - Fallback if no judoka are available to edit.
+
+#### Acceptance Criteria
+
+- Selecting a path leads to the correct screen.
+
+#### Non‑Goals
+
+- Deep stat editing beyond current fields.
+
+#### Dependencies
+
+- Local storage or backend for saving judoka data.
+
+#### Open Questions
+
+- Should unsaved changes warn the player before exit?
+
+#### Metadata
+
+- Author: Game Design Team
+- Last Edited: 2025‑06‑29
 
 ---
 
-### 6. Create A Judoka
+### Create A Judoka
 
-**Japanese**: 柔道家を作成  
+#### Overview
+
+**Japanese**: 柔道家を作成
 **URL**: `createJudoka.html`
+Create a new judoka with custom stats and appearance.
 
-**Acceptance Criteria**:
+#### Goals
 
-- Inputs for name, nationality, stats, weight class, signature move.
+- Let players add new characters to their roster.
+
+#### Functional Requirements
+
+- Inputs for name, nationality, stats, weight class and signature move.
 - Live preview updates on change.
 - Save adds to data store and confirms.
 - Invalid form fields trigger error indicators.
+
+#### Acceptance Criteria
+
 - All inputs required before save.
-- Given completed form, When saved, Then judoka appears in judoka.json and preview confirms.
+- Given completed form, when saved, judoka appears in `judoka.json`.
 
-Invalid Case:
+#### Non‑Goals
 
-- Red outlines on errors with tooltip (“Strength must be between 1–100”).
+- Sharing created judoka online.
 
-UX Note:
+#### Dependencies
 
-- Responsive preview area right of form.
+- Form validation utilities.
+
+#### Open Questions
+
+- Should there be limits on the number of custom judoka?
+
+#### Metadata
+
+- Author: Game Design Team
+- Last Edited: 2025‑06‑29
 
 ---
 
-### 7. Update A Judoka
+### Update A Judoka
 
-**Japanese**: 柔道家を更新  
+#### Overview
+
+**Japanese**: 柔道家を更新
 **URL**: `updateJudoka.html`
+Edit an existing judoka.
 
-**Acceptance Criteria**:
+#### Goals
+
+- Allow players to refine stats and appearance over time.
+
+#### Functional Requirements
 
 - Judoka list loads from dataset.
 - Edits persist after save.
 - Field validation enforces legal stat limits.
-- If selected judoka is deleted/missing, display retry prompt.
-- Judoka list loads correctly.
-- Edits persist after save.
-- Stat bounds enforced.
-- If no judoka found, prompt “No saved judoka found. Create one?”
+- If selected judoka is missing, display retry prompt.
+
+#### Acceptance Criteria
+
+- Edits save correctly and persist on reload.
+
+#### Non‑Goals
+
+- Full version history of edits.
+
+#### Dependencies
+
+- Same storage used by the creation screen.
+
+#### Open Questions
+
+- Should we lock edits once a judoka enters ranked play?
+
+#### Metadata
+
+- Author: Game Design Team
+- Last Edited: 2025‑06‑29
 
 ---
 
-### 8. Random Judoka
+### Random Judoka
 
-**Japanese**: ランダム柔道家  
+#### Overview
+
+**Japanese**: ランダム柔道家
 **URL**: `randomJudoka.html`
+Display a random judoka profile.
 
-**Acceptance Criteria**:
+#### Goals
 
-- Random judoka displayed on load/refresh.
-- “Draw” reloads a different profile.
-- On load, show one random judoka.
-- Button “Draw” refreshes content.
+- Give players quick inspiration for new team ideas.
+
+#### Functional Requirements
+
+- Show one random judoka on load or refresh.
+- “Draw” button refreshes content.
+
+#### Acceptance Criteria
+
+- Random judoka displayed each visit.
+
+#### Non‑Goals
+
+- Complex filters or search.
+
+#### Dependencies
+
+- Access to the full judoka list.
+
+#### Open Questions
+
+- Should favourites influence the random selection?
+
+#### Metadata
+
+- Author: Game Design Team
+- Last Edited: 2025‑06‑29
 
 ---
 
-### 9. Meditation
+### Meditation
 
-**Japanese**: メディテーション  
+#### Overview
+
+**Japanese**: メディテーション
 **URL**: `meditation.html`
+A calm screen offering inspirational quotes and ambient visuals.
 
-**Acceptance Criteria**:
+#### Goals
 
-- Loads random quote per visit.
-- English / Japanese toggle works.
+- Provide a restful break between battles.
+
+#### Functional Requirements
+
+- Load random quote per visit.
+- English/Japanese toggle.
 - Ambient visuals reinforce restful tone.
-- Text is legible; character art is scaled correctly.
 
-**Player Flow**
+#### Acceptance Criteria
 
-1. Player clicks Meditation hotspot on Judo Training Village Map.
-2. Transition screen.
-3. Meditation screen displays random inspirational quote.
-4. Player can toggle between English/Japanese using language button.
-5. Player exits Meditation via “Return” button, which confirms before transitioning back to Judo Village Map.
+- Text is legible and character art scales correctly.
+- Player exits via “Return” button confirming transition back to the map.
+
+#### Non‑Goals
+
+- Rewarding players with items or XP.
+
+#### Dependencies
+
+- Quote data set and language toggle component.
+
+#### Open Questions
+
+- Should quotes rotate daily or on every visit?
+
+#### Metadata
+
+- Author: Game Design Team
+- Last Edited: 2025‑06‑29
