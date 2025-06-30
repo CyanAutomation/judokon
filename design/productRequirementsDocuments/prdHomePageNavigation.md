@@ -143,9 +143,48 @@ Each tile contains:
 ---
 
 ## Non-Goals
+- The home page will not expose account or profile management.
+- Advanced battle or team composition settings are out of scope.
 
-- Does not add new game modes.
-- Does not include complex page transition animations.
+---
+
+## Non-Functional Requirements
+
+### Responsiveness
+
+- The layout must adapt to different screen sizes:
+  - **Desktop (>=1024px):** 2 columns, 2 rows.
+  - **Tablet (>=768px and <1024px):** 2 columns, 2 rows.
+  - **Mobile (<768px):** Single column layout; tiles stack vertically.
+
+### Accessibility
+
+- Tiles must be:
+  - Focusable via keyboard (`tabindex=0` if needed).
+  - Activated via keyboard (`Enter` or `Space` key).
+- Labels must be screen-reader friendly (e.g., via `aria-label`).
+- SVG icons must have descriptive `title` or `aria-hidden="true"` if decorative.
+- Tap targets must meet WCAG minimum sizing standards (48px x 48px).
+
+### Performance
+
+- SVG icons must be **optimized** to minimize page load times (<50KB).
+- Navigation interactions must be **instantaneous**, with interaction latency <100ms.
+- Ensure fallback behavior if network fails to load SVGs.
+
+---
+
+## Edge Cases / Failure States
+
+- **Icon Load Failure**: Fall back to displaying a generic JU-DO-KON logo.
+- **Slow Network**: Navigation tiles and fallback icons should still be accessible.
+- **Broken Destination URL**: Log an error and redirect player to a default error page.
+- **Device Rotation During Navigation**: Maintain consistent layout after orientation change.
+
+## Dependencies / Integrations
+- Uses global CSS tokens (`--button-bg`, `--radius-md`, etc.) defined in `src/styles/base.css`.
+
+---
 
 ## Design/UX Considerations
 
@@ -158,10 +197,11 @@ Each tile contains:
 ### Style Guidelines
 
 - Use consistent fonts and color palette from JU-DO-KON’s theme.
+- Tile backgrounds use `var(--button-bg)` and corners `var(--radius-md)`.
+- Hover animation uses `var(--transition-fast)` to scale tiles to **1.05**.
 - Ensure text labels and background colors have contrast ratio ≥4.5:1.
 - Follow UI design tokens for fonts and color contrast as outlined in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md).
 - Consistent margin and padding for tile spacing.
-- Hover interaction: scale tile to 1.05 over 150ms with ease-in transition for visual feedback.
 
 ### Battle Mode Section
 
@@ -284,3 +324,10 @@ Each tile contains:
   - [ ] Implement generic fallback icon on load failure.
   - [ ] Redirect to default error page on broken link.
   - [ ] Maintain layout stability during device rotation.
+
+## Metadata
+
+- Author: Game Team
+- Last Edited: 2024-06-29
+- Target Game Version: v0.1
+- Related Features: Home Page Navigation
