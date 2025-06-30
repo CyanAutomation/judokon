@@ -144,6 +144,14 @@ Each tile contains:
 
 ---
 
+## Non-Goals
+
+- The home page will not expose account or profile management.
+- Advanced battle or team composition settings are out of scope.
+- No monetization or store links are included.
+
+---
+
 ## Non-Functional Requirements
 
 ### Responsiveness
@@ -179,6 +187,14 @@ Each tile contains:
 
 ---
 
+## Dependencies / Integrations
+
+- Relies on the router module for page navigation.
+- Icons come from the Material Symbols library.
+- Uses global CSS tokens (`--button-bg`, `--radius-md`, etc.) defined in `src/styles/base.css`.
+
+---
+
 ## Design and UX Considerations
 
 ### Mockups
@@ -190,9 +206,10 @@ Each tile contains:
 ### Style Guidelines
 
 - Use consistent fonts and color palette from JU-DO-KON’s theme.
+- Tile backgrounds use `var(--button-bg)` and corners `var(--radius-md)`.
+- Hover animation uses `var(--transition-fast)` to scale tiles to **1.05**.
 - Ensure text labels and background colors have contrast ratio ≥4.5:1.
 - Consistent margin and padding for tile spacing.
-- Hover interaction: scale tile to 1.05 over 150ms with ease-in transition for visual feedback.
 
 ### Battle Mode Section
 
@@ -266,3 +283,10 @@ Each tile contains:
   - [ ] Implement generic fallback icon on load failure.
   - [ ] Redirect to default error page on broken link.
   - [ ] Maintain layout stability during device rotation.
+
+## Metadata
+
+- Author: Game Team
+- Last Edited: 2024-06-29
+- Target Game Version: v0.1
+- Related Features: Home Page Navigation
