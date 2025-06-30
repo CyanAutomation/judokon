@@ -59,6 +59,14 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 ---
 
+## Dependencies and Integrations
+
+- `judoka.json` and `gokyo.json` datasets for card and technique data.
+- `generateJudokaCardHTML()` and `getRandomJudoka()` helper functions.
+- Existing game UI shell built from `game.js` and navigation modules.
+
+---
+
 ## Edge Cases / Failure States
 
 - **Same Card Reselection**: Duplicates are possible and expected — randomness allows repeats.
@@ -108,6 +116,15 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 ---
 
+## Non-Goals
+
+- Balancing or adjusting card rarity odds.
+- Complex particle effects or 3D animations.
+- Deck customization, trading, or collection management.
+- Expansive sound design beyond a simple chime.
+
+---
+
 ## Prioritized Functional Requirements
 
 | Priority | Feature                        | Description                                                                  |
@@ -131,13 +148,13 @@ Without this feature, players would be forced to pre-select cards, leading to pr
   - Degrade to static reveal if hardware performance is low.
 - **Accessibility**:
   - Respect system Reduced Motion settings (disable animations automatically).
-  - Ensure color contrast and text readability on cards (WCAG AA compliance).
+  - Ensure color contrast and text readability on cards (WCAG AA compliance; validate with `npm run check:contrast`).
 - **Default Setting**: Animations and sound OFF unless user/system preferences state otherwise.
 - **Fallback Visuals**:
   - If card loading fails, show a placeholder/error graphic (judoka id=0, from judoka.json).
 - **Tap Target Size**:
   - All interactive elements (Draw button) must be ≥48px in height and width, with a recommended 64px for kid-friendly ease.
-- **Button Size**: Minimum 64px high, 300px wide — central and dominant.
+- **Button Size**: Minimum 64px high, 300px wide — central and dominant. Use `--radius-pill` for a capsule shape.
 - **Card Size**: Large enough for excitement, but responsive — 70% of viewport width on mobile, 40% on tablet/desktop.
 - **Spacing**: Tight vertical stacking (~24px between card and button).
 - **Accessibility**: High contrast placeholders; consider light text on dark backgrounds for error/fallback states.
@@ -219,4 +236,11 @@ Without this feature, players would be forced to pre-select cards, leading to pr
   - [ ] 4.1 Support Reduced Motion settings.
   - [ ] 4.2 Ensure color contrast on cards meets WCAG AA standards.
   - [ ] 4.3 Set all tap targets to ≥48px, recommended 64px for better kid usability.
-  - [ ] 4.4 Add sound and animation toggle options for user preferences.
+- [ ] 4.4 Add sound and animation toggle options for user preferences.
+
+---
+
+## Metadata
+
+- Author: Ju-Do-Kon Core Team
+- Last Edited: 2025-06-29
