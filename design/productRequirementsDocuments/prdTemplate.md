@@ -98,7 +98,13 @@ The PRD must include the following sections:
 
 6. Non-Goals (Out of Scope)
 
-• Explicitly list what is NOT included to prevent scope creep.
+• Define boundaries so the feature does **not** balloon in scope.
+• Do **not** create new colour or typography tokens. Reuse the tokens in
+[codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md), e.g.
+`--color-primary`, `Inter`.
+• Large-scale visual redesigns are excluded. Follow existing layout rules,
+including the **44&nbsp;px minimum, 48&nbsp;px ideal** tap target sizes from the
+UI guide.
 
 7. Design Considerations
 
@@ -118,7 +124,13 @@ The PRD must include the following sections:
 
 9. Dependencies and Integrations
 
-• List any systems the feature depends on (e.g., Points, Player Progression System).
+• Identify existing modules or APIs that must be used (e.g., Points,
+Player Progression).
+• Reference shared UI components that already implement the
+**44/48&nbsp;px tap target rule**.
+• Apply colour and typography tokens from the UI guide
+([codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md)) so the
+feature visually matches the rest of the game.
 
 10. Edge Cases / Failure States
 
@@ -132,17 +144,18 @@ The PRD must include the following sections:
 
 11. Open Questions
 
-• Remaining uncertainties or decisions still needed.
+• What colour token (e.g., `--color-primary`) best fits this feature?
+• Do any typography styles require clarification beyond the defaults in the UI
+guide?
+• Is a 44&nbsp;px touch target sufficient or is 48&nbsp;px required for this
+context?
 
 12. Metadata
 
-• Author
-
-• Last Edited Date
-
-• Target Game Version
-
-• Related Features (if any)
+• **Author** – PRD creator’s name or team.
+• **Last Edited Date** – Use ISO format (YYYY-MM-DD).
+• **Target Game Version** – Release number where this feature should land.
+• **Related Features** – Link to other PRDs or epics that this work depends on.
 
 Output Requirements
 
