@@ -143,6 +143,7 @@ Each tile contains:
 ---
 
 ## Non-Goals
+
 - The home page will not expose account or profile management.
 - Advanced battle or team composition settings are out of scope.
 
@@ -182,6 +183,7 @@ Each tile contains:
 - **Device Rotation During Navigation**: Maintain consistent layout after orientation change.
 
 ## Dependencies / Integrations
+
 - Uses global CSS tokens (`--button-bg`, `--radius-md`, etc.) defined in `src/styles/base.css`.
 
 ---
