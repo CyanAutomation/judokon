@@ -181,3 +181,4 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - **Last Edited:** 2024-05-01
 - **Target Version:** v1.2
 - **Related Features:** Navigation Bar, Settings Menu
+  [Back to Game Modes Overview](prdGameModes.md)

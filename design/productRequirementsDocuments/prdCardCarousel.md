@@ -167,3 +167,4 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - [ ] 5.0 Handle Edge Cases (P2)
   - [ ] 5.1 Fallback judoka card (judoka id=0) for broken card images.
   - [ ] 5.2 Retry option for empty filter results.
+        [Back to Game Modes Overview](prdGameModes.md)

@@ -212,3 +212,4 @@ Key Details:
 - **Last Edited:** 2025-06-29
 - **Target Game Version:** 1.0.0
 - **Related Features:** Card Carousel Filtering
+  [Back to Game Modes Overview](prdGameModes.md)
