@@ -72,7 +72,7 @@ Improving session variety directly supports retention and encourages more person
 
 **Japanese**: 試合 (バトルモード)
 **URL**: `battleJudoka.html`
-A 1v1 stat-based match against a CPU opponent using a deck of 25 random judoka cards. First to 10 points wins.
+A 1v1 stat-based match against a CPU opponent using a deck of 25 random judoka cards. First to 10 points wins. [Read full PRD](prdClassicBattle.md)
 
 #### Goals
 
@@ -118,7 +118,7 @@ A 1v1 stat-based match against a CPU opponent using a deck of 25 random judoka c
 
 **Japanese**: 団体戦選択
 **URL**: `teamBattleSelection.html`
-Choose between Male, Female or Mixed team battles.
+Choose between Male, Female or Mixed team battles. [Read full PRD](prdTeamBattleSelection.md)
 
 #### Goals
 
@@ -160,7 +160,7 @@ Choose between Male, Female or Mixed team battles.
 
 **Japanese**: 男子団体戦 / 女子団体戦 / 混合団体戦
 **URLs**: `teamBattleMale.html`, `teamBattleFemale.html`, `teamBattleMixed.html`
-Team battles consist of sequential 1v1s between gender-filtered squads.
+Team battles consist of sequential 1v1s between gender-filtered squads. [Read full PRD](prdTeamBattleMixed.md)
 
 #### Goals
 
@@ -203,7 +203,7 @@ Team battles consist of sequential 1v1s between gender-filtered squads.
 
 **Japanese**: 柔道家を閲覧
 **URL**: `browseJudoka.html`
-View all available judoka with stats and visuals.
+View all available judoka with stats and visuals. [Read full PRD](prdBrowseJudoka.md)
 
 #### Goals
 
@@ -329,7 +329,7 @@ Create a new judoka with custom stats and appearance.
 
 **Japanese**: 柔道家を更新
 **URL**: `updateJudoka.html`
-Edit an existing judoka.
+Edit an existing judoka. [Read full PRD](prdUpdateJudoka.md)
 
 #### Goals
 
@@ -371,7 +371,7 @@ Edit an existing judoka.
 
 **Japanese**: ランダム柔道家
 **URL**: `randomJudoka.html`
-Display a random judoka profile.
+Display a random judoka profile. [Read full PRD](prdRandomJudoka.md)
 
 #### Goals
 
@@ -411,7 +411,7 @@ Display a random judoka profile.
 
 **Japanese**: メディテーション
 **URL**: `meditation.html`
-A calm screen offering inspirational quotes and ambient visuals.
+A calm screen offering inspirational quotes and ambient visuals. [Read full PRD](prdMeditationScreen.md)
 
 #### Goals
 

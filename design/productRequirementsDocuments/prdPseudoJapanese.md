@@ -165,3 +165,4 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
   - [ ] 5.3 Ensure <500ms conversion time and <200ms toggle response.
   - [ ] 5.4 Conduct UX testing on different screen sizes and platforms.
   - [ ] 5.5 Add Playwright test `pseudo-japanese-toggle.spec.js` verifying the language toggle on the meditation screen.
+        [Back to Game Modes Overview](prdGameModes.md)

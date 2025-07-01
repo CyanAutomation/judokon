@@ -129,3 +129,5 @@ Explain any new settings or toggles, defaults, and behavior.
 
 Attach wireframes, mockups, or describe key visuals and animations.
 ```
+
+[Back to Game Modes Overview](prdGameModes.md)

@@ -164,3 +164,4 @@ The standard navbar uses `--color-secondary` for its background and `--button-te
 - **Last Edited:** 2024-05-12
 - **Target Version:** 1.0.0
 - **Related Features:** Navigation Map, Home Page Menu
+  [Back to Game Modes Overview](prdGameModes.md)

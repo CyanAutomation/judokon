@@ -230,3 +230,4 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 - [ ] 5.0 Performance Optimization
   - [ ] 5.1 Profile settings page load times on mid-tier devices.
   - [ ] 5.2 Optimize for ≤200ms initial render.
+        [Back to Game Modes Overview](prdGameModes.md)

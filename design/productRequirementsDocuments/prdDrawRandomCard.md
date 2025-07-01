@@ -244,3 +244,4 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 - Author: Ju-Do-Kon Core Team
 - Last Edited: 2025-06-29
+  [Back to Game Modes Overview](prdGameModes.md)

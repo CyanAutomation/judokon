@@ -188,3 +188,4 @@ Example Clarifying Questions (if needed)
 • Should rewards escalate over time?
 
 • Is this feature available to both guest and registered players?
+[Back to Game Modes Overview](prdGameModes.md)

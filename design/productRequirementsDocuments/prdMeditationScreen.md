@@ -226,3 +226,4 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 - **Last Edited:** 2024-05-29
 - **Target Game Version:** v1.0
 - **Related Features:** Game Modes, Navigation Map
+  [Back to Game Modes Overview](prdGameModes.md)
