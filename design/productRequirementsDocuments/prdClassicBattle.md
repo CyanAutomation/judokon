@@ -9,6 +9,11 @@
 
 Classic Battle is the main and simplest mode of the game. Without it, new players lack a quick, low-stakes mode to learn stats and grasp the core mechanics. This leads to higher early player drop-off, increased frustration, and fewer repeat sessions because players don’t build mastery or confidence. By providing a fast, engaging way to compare stats, Classic Battle helps new players onboard smoothly and encourages early retention.
 
+> **Player Feedback Example:**  
+> “I tried Ranked Mode first and felt lost — I didn’t know which stat to pick or what the cards meant.” – Playtester, Age 10
+
+This feedback highlights why Classic Battle is needed now: new players currently face an overwhelming experience without a safe mode to experiment with card stats and turn flow.
+
 ---
 
 ## Goals
@@ -22,10 +27,9 @@ Classic Battle is the main and simplest mode of the game. Without it, new player
 
 ## User Stories
 
-*(To be fleshed out later, but examples could include):*
-
 - As a new player, I want a simple match format so I can learn game mechanics quickly.
 - As a player, I want clear feedback on round outcomes so I know how I’m doing.
+- As a player, I want the ability to exit a match early if I need to stop playing suddenly.
 
 ---
 
@@ -35,24 +39,27 @@ Classic Battle is the main and simplest mode of the game. Without it, new player
 - Player selects a stat to compare.
 - Higher stat wins; score increases by one.
 - End match on 10 points or after 25 rounds.
+- Allow player to exit match early via a visible "Quit Match" button with confirmation prompt; quitting counts as a loss.
 
 **Additional Behavioral Requirements:**
 - Behavior on tie rounds: round ends with a message explaining the tie and an option to start the next round.
 - Match start conditions: both players begin with a score of zero; player goes first by drawing their card.
-- Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card.
+- Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card.  
+  - **Default:** 30-second timer is fixed (not adjustable by the player at launch), but can be reviewed for future difficulty settings.
 
 ---
 
-### Prioritized Functional Requirements Table
+## Prioritized Functional Requirements Table
 
 | Priority | Feature                  | Description                                                    |
 |----------|--------------------------|----------------------------------------------------------------|
 | P1       | Random Card Draw         | Draw one random card per player each round.                    |
-| P1       | Stat Selection           | Player selects stat within 30 seconds; otherwise, random stat is chosen. |
+| P1       | Stat Selection Timer     | Player selects stat within 30 seconds; otherwise, random stat is chosen. Default timer is fixed at 30s. |
 | P1       | Scoring                  | Increase score by one for each round win.                      |
 | P1       | Match End Condition      | End match on 10 points or after 25 rounds.                     |
 | P2       | Tie Handling             | Show tie message; round ends without score change; continue to next round. |
-| P3       | AI Stat Selection Logic  | Optional: vary AI stat selection by difficulty level.          |
+| P2       | Player Quit Flow         | Allow player to exit match early with confirmation; counts as a loss. |
+| P3       | AI Stat Selection Logic  | Optional: vary AI stat selection by difficulty level; fallback to random if not specified. |
 
 ---
 
@@ -63,6 +70,7 @@ Classic Battle is the main and simplest mode of the game. Without it, new player
 - After selection, the correct comparison is made, and the score updates based on round outcome.
 - If the selected stats are equal, a tie message displays and the round ends.
 - Summary screen shows match result (win/loss/tie), player stats, and option to replay.
+- Player can quit mid-match; confirmation prompt appears; if confirmed, match ends with player loss recorded.
 - If AI difficulty affects stat selection, AI uses correct logic per difficulty setting.
 - Animation flow: transitions between card reveal, stat selection, and result screens complete smoothly without stalling.
 - If the Judoka dataset fails to load, an error message appears with option to reload.
@@ -82,6 +90,7 @@ Classic Battle is the main and simplest mode of the game. Without it, new player
 
 - Use consistent color coding for player (blue) vs computer (red) as shown in attached mockups.
 - Display clear, large call-to-action text for "Choose an attribute to challenge!" to guide new players.
+- Include visible "Quit Match" button in the match UI with clear, child-friendly language like “Quit and Go Back to Menu.”
 - Match screens should follow the style and layouts demonstrated in shared mockups:
   - Player and computer cards side-by-side.
   - Central score prominently displayed.
@@ -90,7 +99,7 @@ Classic Battle is the main and simplest mode of the game. Without it, new player
 - **Accessibility:**
   - Minimum text contrast ratio: ≥4.5:1 (per WCAG).
   - Minimum touch target size: ≥48px.
-  - Support keyboard navigation for stat selection and match progression.
+  - Support keyboard navigation for stat selection, match progression, and quit confirmation.
   - Provide alt text for cards and labels readable by screen readers.
 - Animations must run at ≥60fps on mid-tier devices (2GB RAM) to ensure smooth experience.
 
@@ -99,6 +108,7 @@ Classic Battle is the main and simplest mode of the game. Without it, new player
 ## Non-Goals
 
 - Online multiplayer battles.
+- Adjustable timer settings for stat selection (may be considered in future versions).
 
 ---
 
@@ -110,29 +120,26 @@ Classic Battle is the main and simplest mode of the game. Without it, new player
 
 ## Open Questions
 
-- Will difficulty levels change AI stat selection?
+- Will difficulty levels change AI stat selection? If yes, how should difficulty levels affect AI’s stat choice logic?
 
 ---
 
 ## Tasks
 
 - [ ] 1.0 Finalize Problem Statement and Goals
-  - [ ] 1.1 Confirm problem statement with stakeholders.
+  - [ ] 1.1 Confirm problem statement with stakeholders, adding real player feedback.
   - [ ] 1.2 Validate quantitative goals with analytics team.
-
 - [ ] 2.0 Finalize Functional Requirements
   - [ ] 2.1 Review priority assignments with dev team.
-  - [ ] 2.2 Ensure all requirements align with mockups and gameplay flow.
-
+  - [ ] 2.2 Confirm match flow includes player quit/back-out logic.
+  - [ ] 2.3 Decide on AI stat selection logic for each difficulty level.
 - [ ] 3.0 Complete Acceptance Criteria
-  - [ ] 3.1 Add automated tests to validate timeout, tie, and AI behavior.
-  - [ ] 3.2 Document criteria for successful summary screen display.
-
+  - [ ] 3.1 Add automated tests covering stat timeout, tie handling, match end conditions, and dataset loading errors.
+  - [ ] 3.2 Document success criteria for summary screen (correct scores, win/loss message, replay option).
 - [ ] 4.0 Implement Edge Case Handling
-  - [ ] 4.1 Add error handling for dataset load failures.
-  - [ ] 4.2 Implement reconnect flow for player disconnections.
-
+  - [ ] 4.1 Add error handling for Judoka dataset load failures with retry logic.
+  - [ ] 4.2 Implement player disconnect and quit match flow; confirm consequences (e.g., match forfeiture).
 - [ ] 5.0 Polish Design & Accessibility
-  - [ ] 5.1 Annotate mockups with interaction details.
-  - [ ] 5.2 Verify color contrast and font sizes meet accessibility guidelines.
-  - [ ] 5.3 Add keyboard and screen reader support.
+  - [ ] 5.1 Annotate mockups with interactive elements, expected animations, and transitions.
+  - [ ] 5.2 Verify color contrast ratios, font sizes, and touch target dimensions against WCAG.
+  - [ ] 5.3 Implement keyboard and screen reader navigation support for selecting stats, progressing rounds, and quitting matches.
