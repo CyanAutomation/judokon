@@ -89,7 +89,6 @@
   font-size: clamp(18px, 3vw, 24px);
   text-align: center;
   align-self: center;
-  justify-self: center;
   padding: var(--space-medium);
   text-transform: uppercase;
 }
