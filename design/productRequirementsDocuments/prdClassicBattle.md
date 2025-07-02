@@ -127,20 +127,28 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ## Tasks
 
-- [ ] 1.0 Finalize Problem Statement and Goals
-  - [ ] 1.1 Confirm problem statement with stakeholders, adding real player feedback.
-  - [ ] 1.2 Validate quantitative goals with analytics team.
-- [ ] 2.0 Finalize Functional Requirements
-  - [ ] 2.1 Review priority assignments with dev team.
-  - [ ] 2.2 Confirm match flow includes player quit/back-out logic.
-  - [ ] 2.3 Decide on AI stat selection logic for each difficulty level.
-- [ ] 3.0 Complete Acceptance Criteria
-  - [ ] 3.1 Add automated tests covering stat timeout, tie handling, match end conditions, and dataset loading errors.
-  - [ ] 3.2 Document success criteria for summary screen (correct scores, win/loss message, replay option).
-- [ ] 4.0 Implement Edge Case Handling
-  - [ ] 4.1 Add error handling for Judoka dataset load failures with retry logic.
-  - [ ] 4.2 Implement player disconnect and quit match flow; confirm consequences (e.g., match forfeiture).
-- [ ] 5.0 Polish Design & Accessibility
-  - [ ] 5.1 Annotate mockups with interactive elements, expected animations, and transitions.
-  - [ ] 5.2 Verify color contrast ratios, font sizes, and touch target dimensions against WCAG.
-  - [ ] 5.3 Implement keyboard and screen reader navigation support for selecting stats, progressing rounds, and quitting matches.
+- [ ] 1.0 Implement Classic Battle Match Flow
+  - [ ] 1.1 Create round loop: random card draw, stat selection, comparison
+  - [ ] 1.2 Implement 30-second stat selection timer with auto-selection fallback
+  - [ ] 1.3 Handle scoring updates on win, loss, and tie
+  - [ ] 1.4 End match after 10 points or 25 rounds
+
+- [ ] 2.0 Add Early Quit Functionality
+  - [ ] 2.1 Add "Quit Match" button to match UI
+  - [ ] 2.2 Create confirmation prompt flow
+  - [ ] 2.3 Record match as player loss upon quit confirmation
+
+- [ ] 3.0 Handle Edge Cases
+  - [ ] 3.1 Implement player disconnect logic: abandon match and redirect to main menu
+  - [ ] 3.2 Handle Judoka dataset load failure with error prompt and reload option
+  - [ ] 3.3 Add fallback stat selection for AI if difficulty logic fails
+
+- [ ] 4.0 Polish UX and Accessibility
+  - [ ] 4.1 Integrate consistent color coding (blue for player, red for AI)
+  - [ ] 4.2 Apply WCAG-compliant contrast ratios
+  - [ ] 4.3 Ensure touch targets ≥48px and support keyboard navigation
+  - [ ] 4.4 Add alt text to cards and UI elements
+
+- [ ] 5.0 Optimize Animations
+  - [ ] 5.1 Implement card reveal, stat selection, and result transitions
+  - [ ] 5.2 Ensure animations maintain ≥60fps on 2GB RAM devices
