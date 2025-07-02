@@ -80,7 +80,7 @@
   line-height: 1.4; /* Updated token */
   max-width: 70ch;
   margin: 0 auto;
-  text-align: center;
+  text-align: justify;
 }
 
 .quote-heading {
