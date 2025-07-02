@@ -62,6 +62,7 @@
     "description": "A team-based mode where female players compete in groups.",
     "category": "teamBattle",
     "order": 60,
+    "url": "teamBattleFemale.html",
     "isHidden": true,
     "rules": {
       "base": "teamBattle",
