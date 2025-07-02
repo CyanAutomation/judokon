@@ -50,6 +50,11 @@
   background-color: var(--color-secondary);
   border: 2px solid var(--color-primary);
   border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-md);
 }
 
 .quote-loader {
@@ -82,9 +87,8 @@
   color: var(--color-text-inverted);
   font-family: "League Spartan", sans-serif;
   font-size: clamp(18px, 3vw, 24px);
-  text-align: left;
+  text-align: center;
   align-self: center;
-  justify-self: center;
   padding: var(--space-medium);
   text-transform: uppercase;
 }
@@ -92,7 +96,7 @@
 .quote-content {
   color: var(--color-text-inverted);
   font-size: clamp(18px, 2vw, 24px);
-  text-align: justify;
+  text-align: center;
   align-self: center;
   justify-self: center;
   padding: 5dvh 5dvw;
