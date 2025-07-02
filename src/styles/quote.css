@@ -96,9 +96,9 @@
 .quote-content {
   color: var(--color-text-inverted);
   font-size: clamp(18px, 2vw, 24px);
-  text-align: center;
-  align-self: center;
-  justify-self: center;
+  text-align: justify;
+  /* align-self: center; */
+  /* justify-self: center; */
   padding: 5dvh 5dvw;
   max-width: 70ch;
   margin: 0 auto;
