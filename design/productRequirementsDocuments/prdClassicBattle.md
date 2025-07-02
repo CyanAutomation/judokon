@@ -42,24 +42,25 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Allow player to exit match early via a visible "Quit Match" button with confirmation prompt; quitting counts as a loss.
 
 **Additional Behavioral Requirements:**
+
 - Behavior on tie rounds: round ends with a message explaining the tie and an option to start the next round.
 - Match start conditions: both players begin with a score of zero; player goes first by drawing their card.
-- Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card.  
+- Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card.
   - **Default:** 30-second timer is fixed (not adjustable by the player at launch), but can be reviewed for future difficulty settings.
 
 ---
 
 ## Prioritized Functional Requirements Table
 
-| Priority | Feature                  | Description                                                    |
-|----------|--------------------------|----------------------------------------------------------------|
-| P1       | Random Card Draw         | Draw one random card per player each round.                    |
-| P1       | Stat Selection Timer     | Player selects stat within 30 seconds; otherwise, random stat is chosen. Default timer is fixed at 30s. |
-| P1       | Scoring                  | Increase score by one for each round win.                      |
-| P1       | Match End Condition      | End match on 10 points or after 25 rounds.                     |
-| P2       | Tie Handling             | Show tie message; round ends without score change; continue to next round. |
-| P2       | Player Quit Flow         | Allow player to exit match early with confirmation; counts as a loss. |
-| P3       | AI Stat Selection Logic  | Optional: vary AI stat selection by difficulty level; fallback to random if not specified. |
+| Priority | Feature                 | Description                                                                                             |
+| -------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| P1       | Random Card Draw        | Draw one random card per player each round.                                                             |
+| P1       | Stat Selection Timer    | Player selects stat within 30 seconds; otherwise, random stat is chosen. Default timer is fixed at 30s. |
+| P1       | Scoring                 | Increase score by one for each round win.                                                               |
+| P1       | Match End Condition     | End match on 10 points or after 25 rounds.                                                              |
+| P2       | Tie Handling            | Show tie message; round ends without score change; continue to next round.                              |
+| P2       | Player Quit Flow        | Allow player to exit match early with confirmation; counts as a loss.                                   |
+| P3       | AI Stat Selection Logic | Optional: vary AI stat selection by difficulty level; fallback to random if not specified.              |
 
 ---
 
