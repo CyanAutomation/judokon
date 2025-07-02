@@ -65,6 +65,13 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 - `generateJudokaCardHTML()` and `getRandomJudoka()` helper functions.
 - Existing game UI shell built from `game.js` and navigation modules.
 
+## Implementation
+
+The random draw logic is implemented in `src/helpers/randomCard.js`. Its
+`generateRandomCard()` function handles dataset loading, card selection, and
+rendering. This module is used in **Classic Battle** as well as all **Team
+Battle** variants (Female, Male, and Mixed).
+
 ---
 
 ## Edge Cases / Failure States
