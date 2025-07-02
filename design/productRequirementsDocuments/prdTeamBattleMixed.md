@@ -33,6 +33,7 @@
 ## Dependencies
 
 - Relies on the base Team Battle ruleset for scoring and rounds.
+- Matches call `generateRandomCard` as described in [prdDrawRandomCard.md](prdDrawRandomCard.md).
 
 ## Open Questions
 
