@@ -1,6 +1,6 @@
-# PRD: Team Battle (Mixed)
+# PRD: Team Battle (Male)
 
-**Game Mode ID:** teamBattleMixed (URL: teamBattleMixed.html)
+**Game Mode ID:** teamBattleMale (URL: teamBattleMale.html)
 
 ---
 
