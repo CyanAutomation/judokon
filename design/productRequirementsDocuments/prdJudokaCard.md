@@ -197,4 +197,32 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 - **Portrait Priority:** On narrow devices, prioritize portrait and name placement; wrap stats below if needed.
 - **Text Scaling:** Allow dynamic font sizing to avoid clipping on smaller screens.
 
+--- 
+
+## Tasks
+
+- [ ] 1.0 Implement Card Acquisition Flow
+  - [ ] 1.1 Trigger card reward after match completion or pack purchase.
+  - [ ] 1.2 Navigate player to Card Pack screen.
+  - [ ] 1.3 Animate card pack opening with 400ms flip animation.
+
+- [ ] 2.0 Build Card Collection Interface
+  - [ ] 2.1 Display card list/grid maintaining 2:3 ratio.
+  - [ ] 2.2 Implement card flipping interaction.
+  - [ ] 2.3 Add info button opening achievement modal.
+
+- [ ] 3.0 Integrate Real-Time Stats Updates
+  - [ ] 3.1 Subscribe to backend stat updates.
+  - [ ] 3.2 Update card UI instantly without reload.
+
+- [ ] 4.0 Handle Edge Cases
+  - [ ] 4.1 Show silhouette placeholder for missing portraits.
+  - [ ] 4.2 Cap extreme stats and log errors.
+  - [ ] 4.3 Display error messages for corrupted data.
+
+- [ ] 5.0 Implement Accessibility Features
+  - [ ] 5.1 Add alt text for portraits.
+  - [ ] 5.2 Ensure text contrast ratio ≥4.5:1.
+  - [ ] 5.3 Support keyboard and screen reader navigation.
+  - [ ] 5.4 Ensure ≥48px touch targets for interactive elements.
 
