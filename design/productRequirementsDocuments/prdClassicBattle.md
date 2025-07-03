@@ -3,6 +3,10 @@
 **Game Mode ID:** `classicBattle` (URL: battleJudoka.html)  
 [Back to Game Modes Overview](prdGameModes.md)
 
+## TL;DR
+Classic Battle is Ju-Do-Kon!’s introductory, head-to-head mode. By offering a fast-paced, low-stakes way for new players to learn stats and game flow, it boosts retention and confidence while maintaining quick matches. This PRD defines how the mode operates, from random draws to scoring and end conditions, ensuring a smooth, accessible, and engaging experience.
+>Sora starts a Classic Battle and draws her first card. She confidently taps “Speed,” seeing her stat triumph over the AI’s card. The score ticks up with a satisfying sound. Round after round, she learns which stats matter most. By the end, she feels ready to tackle harder battles — and wants to play again.
+
 ---
 
 ## Problem Statement
@@ -22,6 +26,8 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Encourage replay through a simple, rewarding scoring system.
 - Increase daily plays by new users by 15%.
 - ≥70% of new players complete a Classic Battle within their first session.
+- Give new players an approachable mode to learn how judoka stats impact outcomes.
+- Reduce frustration by providing immediate, clear feedback on round results.
 
 ---
 
@@ -30,23 +36,18 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - As a new player, I want a simple match format so I can learn game mechanics quickly.
 - As a player, I want clear feedback on round outcomes so I know how I’m doing.
 - As a player, I want the ability to exit a match early if I need to stop playing suddenly.
+- As a cautious new player, I want an easy mode to test the game without risking losses in competitive play.
+- As a child learning the game, I want a colorful, exciting match flow so I stay interested and keep playing.
+- As a player with motor limitations, I want enough time to make stat selections without feeling rushed.
 
 ---
 
-## Functional Requirements
+## Technical Considerations
 
-- Draw one random card from each deck per round.
-- Player selects a stat to compare.
-- Higher stat wins; score increases by one.
-- End match on 10 points or after 25 rounds.
-- Allow player to exit match early via a visible "Quit Match" button with confirmation prompt; quitting counts as a loss.
-
-**Additional Behavioral Requirements:**
-
-- Behavior on tie rounds: round ends with a message explaining the tie and an option to start the next round.
-- Match start conditions: both players begin with a score of zero; player goes first by drawing their card.
-- Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card.
-  - **Default:** 30-second timer is fixed (not adjustable by the player at launch), but can be reviewed for future difficulty settings.
+- Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
+- Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices.
+- Timeout for stat selection must pause if game tab is inactive or device goes to sleep, resuming on focus.
+- Backend must send real-time stat updates via WebSocket or polling for smooth live updates.
 
 ---
 
@@ -61,6 +62,22 @@ This feedback highlights why Classic Battle is needed now: new players currently
 | P2       | Tie Handling            | Show tie message; round ends without score change; continue to next round.                              |
 | P2       | Player Quit Flow        | Allow player to exit match early with confirmation; counts as a loss.                                   |
 | P3       | AI Stat Selection Logic | Optional: vary AI stat selection by difficulty level; fallback to random if not specified.              |
+
+**Additional Behavioral Requirements:**
+
+- Behavior on tie rounds: round ends with a message explaining the tie and an option to start the next round.
+- Match start conditions: both players begin with a score of zero; player goes first by drawing their card.
+- Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card.
+- **Default:** 30-second timer is fixed (not adjustable by the player at launch), but can be reviewed for future difficulty settings.
+
+---
+
+## Future Considerations
+
+- Add easy/medium/hard modes changing AI stat selection strategy:
+  - **Easy**: AI selects randomly.
+  - **Medium**: AI favors stats where it’s average or better.
+  - **Hard**: AI prefers its highest stat each round.
 
 ---
 
