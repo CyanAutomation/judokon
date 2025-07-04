@@ -6,9 +6,9 @@ Game Mode ID: browseJudoka (URL: browseJudoka.html)
 
 ## TL;DR
 
-**Browse Judoka** is a scrollable, responsive carousel that allows players to view every available judoka card, fostering exploration, strategic team building, and a sense of ownership. This PRD defines how to implement a performant, accessible browsing experience across mobile and desktop.
+**Browse Judoka** includes a scrollable, responsive carousel that allows players to view every available judoka card, fostering exploration, strategic team building, and a sense of ownership. This PRD defines how to implement a performant, accessible browsing experience across mobile and desktop.
 
-> Kai unlocks a new rare judoka and excitedly visits the Browse Judoka screen. Swiping through his collection, he sees cards elegantly snap into place. The center card zooms slightly as it comes into focus, making it feel like a physical binder. He plans his next team with ease, deepening his connection to his judoka roster.
+> Kai hears that a new rare judoka has been added to the game, and excitedly visits the Browse Judoka screen. Swiping through the collection, he sees cards elegantly snap into place. The center card zooms slightly as it comes into focus, making it feel like a physical binder. He starts planning his next team with ease, deepening his connection to the judoka roster.
 
 ---
 
@@ -18,7 +18,7 @@ Players currently lack a centralized way to view all available judoka, making ro
 
 > _“I want to see all judoka in one place so I don’t waste time hunting for cards.”_ — Player feedback
 
-This problem is especially pressing now as the roster grows, and players want a quick, easy way to plan their team.
+This problem is especially pressing now as the roster grows, and players want a quick, easy way to plan their team or see which cards are available in the game.
 
 ---
 
@@ -36,7 +36,7 @@ This problem is especially pressing now as the roster grows, and players want a 
 
 - As a player interested in building my team, I want to browse all judoka cards quickly so I can plan my roster effectively.
 - As a mobile player, I want the roster to display correctly on my phone so I can explore judoka anywhere.
-- As a keyboard-only user, I want to navigate the list using arrow keys so I can browse without a mouse.
+- As a keyboard-only user, I want to navigate the listed cards using arrow keys so I can browse without a mouse.
 - As a visually impaired player, I want focus highlights and alt text so I can browse judoka using assistive technologies.
 - As a collector, I want smooth, satisfying animations when scrolling so I feel excited about exploring my roster.
 - As a fan of my national team, I want to filter judoka by country so I can focus on athletes from my homeland.
@@ -140,12 +140,6 @@ No player settings or toggles are applicable for this feature.
 
 ---
 
-## Non-Goals
-
-- Advanced filtering and sorting options are out of scope for this release to maintain focus on core browsing functionality.
-
----
-
 ## Dependencies
 
 - buildCardCarousel helper for rendering cards
@@ -164,7 +158,7 @@ No player settings or toggles are applicable for this feature.
 
 **Entry**
 
-- Player selects “Browse Judoka” from the main menu or roster management screen.
+- Player selects “Browse Judoka” from the main menu, navigation map or bottom navigation bar.
 - System loads `judoka.json` data asynchronously.
 - If loading fails, show error message with “Retry” button.
 - If list empty, show “No cards available” message.
@@ -188,7 +182,7 @@ No player settings or toggles are applicable for this feature.
 
 **Error Handling**
 
-- If any card data or image fails to load, show default placeholder card.
+- If a card image fails, show the default judoka card (judoka id=0).
 - On network issues during loading, prompt with retry.
 
 **Exit**
@@ -267,10 +261,6 @@ No player settings or toggles are applicable for this feature.
 
   - [ ] 6.1 Enable arrow key navigation left/right through cards
   - [ ] 6.2 Manage focus state and ensure visible outlines
-
-- [ ] 7.0 QA and Testing
-  - [ ] 7.1 Test responsiveness on devices ≥320px width
-  - [ ] 7.2 Test acceptance criteria including edge cases and failure states
 
 ---
 [Back to Game Modes Overview](prdGameModes.md)
