@@ -225,7 +225,7 @@ export async function populateCountryList(container) {
     allButton.appendChild(allLabel);
     container.appendChild(allButton);
 
-    const scrollContainer = container.parentElement || container;
+    const scrollContainer = options.scrollContainer || container;
     const BATCH_SIZE = 50;
     let rendered = 0;
 
