@@ -3,6 +3,8 @@
 Game Mode ID: browseJudoka (URL: browseJudoka.html)
 
 [Back to Game Modes Overview](prdGameModes.md)
+Browse Judoka is accessible from the Navigation Map and opens a full-screen roster view.
+Players first see a country filter panel alongside a card carousel. The carousel relies on the `buildCardCarousel` helper ([prdCardCarousel.md](prdCardCarousel.md)) and filtering uses the Country Flag Picker ([prdCountryPickerFilter.md](prdCountryPickerFilter.md)).
 
 ## TL;DR
 
@@ -24,13 +26,11 @@ This problem is especially pressing now as the roster grows, and players want a 
 
 ## Goals
 
-- Provide access to 100% of judoka cards from `judoka.json`.
-- Ensure scrollable list loads within 1 second for up to 100 judoka cards.
-- Maintain scroll performance ≥30fps during rapid scrolling.
-- Display judoka cards correctly on screens ≥320px wide.
-- Increase average session duration by encouraging players to explore their rosters.
-- Drive player attachment to judoka, boosting in-game purchases of card packs.
-- Reduce churn by making team-building easier and more enjoyable.
+- Allow players to explore the entire roster in one place.
+- Encourage discovery of new judoka to build creative teams.
+- Support smooth browsing on phones and desktops.
+- Increase attachment to favorite fighters through easy access.
+- Keep players engaged by making team planning enjoyable.
 
 ---
 
@@ -41,6 +41,8 @@ This problem is especially pressing now as the roster grows, and players want a 
 - As a keyboard-only user, I want to navigate the list using arrow keys so I can browse without a mouse.
 - As a visually impaired player, I want focus highlights and alt text so I can browse judoka using assistive technologies.
 - As a collector, I want smooth, satisfying animations when scrolling so I feel excited about exploring my roster.
+
+- As a fan of my national team, I want to filter judoka by country so I can focus on athletes from my homeland.
 
 ---
 
@@ -145,7 +147,8 @@ No player settings or toggles are applicable for this feature.
 
 ## Dependencies
 
-- Carousel and card components.
+- buildCardCarousel helper for rendering cards
+- Country Flag Picker for filtering
 
 ---
 
@@ -196,11 +199,9 @@ No player settings or toggles are applicable for this feature.
 
 ## Technical Considerations
 
-- Judoka data must be lazy-loaded if initial JSON size grows beyond reasonable limits (e.g., >2MB).
-- Carousel snapping should use hardware-accelerated transforms for smooth performance.
-- Avoid re-rendering all cards on scroll; render only visible cards (virtualization) for large rosters.
-- Scroll markers must update accurately on both programmatic and manual scrolls.
-- Ensure keyboard focus wraps (looping left/right) or stops at the ends as per UX design decision.
+- Built on `src/pages/browseJudoka.html` to load data.
+- Uses `src/helpers/carouselBuilder.js` via `buildCardCarousel`.
+- Integrates the Country Flag Picker for filtering.
 
 ---
 
@@ -231,11 +232,12 @@ No player settings or toggles are applicable for this feature.
 
 ## Tasks
 
-- [ ] 1.0 Implement Scrollable Judoka Card Interface
+- [ ] 1.0 Initialize Browse Judoka
 
-  - [ ] 1.1 Load `judoka.json` and bind stats to cards
-  - [ ] 1.2 Render cards in a horizontal scrollable carousel
-  - [ ] 1.3 Implement smooth snap scrolling behavior with animation
+  - [ ] 1.1 Load `judoka.json` roster data.
+  - [ ] 1.2 Display the Country Flag Picker filter panel.
+  - [ ] 1.3 Invoke `buildCardCarousel` with loaded data.
+  - [ ] 1.4 Handle exit or back navigation to return to the Navigation Map.
 
 - [ ] 2.0 Responsive Layout and Accessibility
 
