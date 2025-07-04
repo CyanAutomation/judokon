@@ -41,7 +41,6 @@ This problem is especially pressing now as the roster grows, and players want a 
 - As a keyboard-only user, I want to navigate the list using arrow keys so I can browse without a mouse.
 - As a visually impaired player, I want focus highlights and alt text so I can browse judoka using assistive technologies.
 - As a collector, I want smooth, satisfying animations when scrolling so I feel excited about exploring my roster.
-
 - As a fan of my national team, I want to filter judoka by country so I can focus on athletes from my homeland.
 
 ---
@@ -130,6 +129,10 @@ And the focused card is visually highlighted and enlarged
   - Show scroll markers below the card carousel to indicate progress through the roster.
 - **Exit Interaction**:
   - Include a close (X) button in the header that immediately exits browsing mode without confirmation.
+
+| **Card Carousel Mockup 1**                                       | **Card Carousel Mockup 2**                                       |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------- |
+| ![Card Carousel Mockup](/design/mockups/mockupCardCarousel2.png) | ![Card Carousel Mockup](/design/mockups/mockupCardCarousel3.png) |
 
 ---
 
