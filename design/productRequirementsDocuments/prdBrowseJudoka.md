@@ -2,7 +2,7 @@
 
 Game Mode ID: browseJudoka (URL: browseJudoka.html)
 
-**Browse Judoka** is accessible from the Main Page ([prdCardCarousel.md](prdCardCarousel.md)), Navigation Bar ([prdCardCarousel.md](prdCardCarousel.md)) or Navigation Map ([prdCardCarousel.md](prdCardCarousel.md)) and opens a full-screen roster view. Players first see a country filter panel alongside a card carousel. The carousel relies on the `buildCardCarousel` helper ([prdCardCarousel.md](prdCardCarousel.md)) and filtering uses the Country Flag Picker ([prdCountryPickerFilter.md](prdCountryPickerFilter.md)).
+**Browse Judoka** is accessible from the Main Page ([prdHomePageNavigation.md](prdHomePageNavigation.md)), Navigation Bar ([prdCardCarousel.md](prdCardCarousel.md)) or Navigation Map ([prdCardCarousel.md](prdCardCarousel.md)) and opens a full-screen roster view. Players first see a country filter panel alongside a card carousel. The carousel relies on the `buildCardCarousel` helper ([prdCardCarousel.md](prdCardCarousel.md)) and filtering uses the Country Flag Picker ([prdCountryPickerFilter.md](prdCountryPickerFilter.md)).
 
 ## TL;DR
 
