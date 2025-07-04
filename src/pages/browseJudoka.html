@@ -166,6 +166,12 @@
             const filtered =
               selected === "all" ? allJudoka : allJudoka.filter((j) => j.country === selected);
             await renderCarousel(filtered);
+            if (filtered.length === 0) {
+              const noResultsMessage = document.createElement("div");
+              noResultsMessage.className = "no-results-message";
+              noResultsMessage.textContent = "No judoka available for this country";
+              carouselContainer.appendChild(noResultsMessage);
+            }
             toggleCountryPanel(toggleBtn, countryPanel, false);
           });
 
