@@ -650,6 +650,8 @@ button .ripple {
     max-height: 5dvh;
     margin: 0.5rem;
     border-radius: 4px;
+    min-width: var(--touch-target-size);
+    min-height: var(--touch-target-size);
   }
 }
 
@@ -780,6 +782,8 @@ button .ripple {
   border: none;
   color: var(--color-text-inverted);
   cursor: pointer;
+  min-width: 48px;
+  min-height: 48px;
 }
 
 .flag-button:focus {
