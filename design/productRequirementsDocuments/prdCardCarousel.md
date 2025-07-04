@@ -2,13 +2,13 @@
 
 ## TL;DR
 
-This PRD defines a responsive, interactive carousel for browsing Judoka cards in Ju-Do-Kon! It supports smooth swiping, filtering by country, hover/keyboard interactions, and accessibility features — ensuring players can quickly find and select cards, enhancing team-building and engagement.
+This PRD defines a responsive, interactive carousel for browsing Judoka cards in Ju-Do-Kon! It supports smooth swiping, keyboard interactions, and accessibility features — ensuring players can quickly scan and select cards.
 
 ## Problem Statement
 
-As part of the game, certain screens, such as “Browse Judoka,” require an intuitive and interactive way to present judoka cards. With more than 100 cards in the game (ultimate goal), it would be cumbersome and frustrating for players to browse through all cards manually without an efficient filtering and navigation system.
+As part of the game, several screens require an intuitive and interactive way to present judoka cards. With more than 100 cards in the game (ultimate goal), it would be cumbersome and frustrating for players to browse through all cards manually without an efficient navigation system.
 
-> Emi wants to create her ultimate Japanese Judoka team. She opens the carousel and filters by country. Within seconds, she’s swiping through beautifully animated cards, instantly comparing stats. She feels in control, excited, and invested in building the perfect team — that’s the experience this carousel delivers.
+> Emi wants to create her ultimate Japanese Judoka team. She opens the carousel and quickly swipes through beautifully animated cards, instantly comparing stats. She feels in control, excited, and invested in building the perfect team — that’s the experience this carousel delivers.
 
 Failure to provide an efficient browsing experience may impact core gameplay — players might struggle to find and build optimal teams, leading to frustration and potential churn.
 
@@ -16,7 +16,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 ## User Stories
 
-- As a player building my team, I want to filter Judoka by country so I can quickly find compatible teammates.
+- As a player, I want smooth scrolling so I can quickly browse a large roster of cards.
 - As a player using keyboard navigation, I want to scroll through cards using arrow keys so I can browse without a mouse.
 - As a mobile player, I want to swipe to move between cards so the experience feels natural and fast.
 
@@ -25,12 +25,11 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 ## Goals
 
 - Carousel loads within 1 second for up to 150 cards.
-- Filter judoka by country with response time under 500ms.
 - Support smooth browsing of up to 50 cards without noticeable lag.
 - Swipe gesture support for mobile browsing.
 - Keyboard navigation support for accessibility.
 - Users can browse through at least 10 cards within 30 seconds smoothly without lag.
-- Easily browse a large set of cards with smooth scrolling and filters.
+- Easily browse a large set of cards with smooth scrolling.
 - Find desired cards quickly to assemble optimized teams.
 
 ---
@@ -39,7 +38,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 | Priority | Requirement                                          |
 | -------- | ---------------------------------------------------- |
-| P1       | Display all or filtered judoka in a carousel.        |
+| P1       | Display judoka in a carousel.                        |
 | P1       | Scroll left/right using on-screen buttons.           |
 | P2       | Swipe gesture support on mobile devices.             |
 | P2       | Cards slightly enlarge (10%) on hover.               |
@@ -51,9 +50,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 ## Acceptance Criteria
 
 - Carousel loads within 1 second for up to 150 cards.
-- Filter judoka by country with a response time of <500ms.
 - User can scroll left/right via on-screen buttons.
-- Carousel updates dynamically when filters are applied.
 - User can see an indicator (scroll markers) showing current position.
 - Hovering over a card enlarges it by 10%, verified via bounding box.
 - Carousel is responsive, adapting to both portrait and landscape orientations.
@@ -61,7 +58,6 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - Keyboard arrow keys allow navigation through cards.
 - Displays a loading spinner if load time exceeds 2 seconds.
 - If card image fails to load, display a default judoka card (judoka id=0).
-- If a filter returns no results, display a default judoka card (judoka id=0).
 - Playwright tests simulate swipe gestures and arrow-key navigation.
 - A loading spinner appears during simulated slow network conditions.
 
@@ -71,7 +67,6 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 - **Network Disconnection**: Display a default judoka card (judoka id=0).
 - **Missing/Broken Card Images**: Default fallback card is shown, display a default judoka card (judoka id=0).
-- **No Filter Results**: Show a default judoka card (judoka id=0), and suggest broadening the search.
 - **Slow Network**: Show a loading spinner if loading exceeds 2 seconds.
 
 ---
@@ -87,16 +82,24 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 ## Player Flow
 
-1. Player opens the Browse Judoka screen.
-2. Carousel loads cards within 1 second; a loading spinner appears if delayed.
-3. Player uses:
+1. A page calls `buildCardCarousel(judokaList, gokyoData)` from `src/helpers/carouselBuilder.js`.
+2. The returned element is mounted into the page (for example, `browseJudoka.html` inserts it into `#carousel-container`).
+3. Carousel loads cards within 1 second; a loading spinner appears if delayed.
+4. Player uses:
    - On-screen arrows to scroll,
    - Swipe gestures on mobile,
    - Or keyboard arrows for navigation.
-4. Player filters by country → carousel updates in ≤500ms.
 5. Hovering enlarges cards (desktop).
 6. Scroll markers show current position.
-7. If no results → default judoka card displayed + suggestion to broaden search.
+7. If an image fails to load → default judoka card is displayed.
+
+---
+
+## Implementation Notes
+
+The carousel is built by `buildCardCarousel` in `src/helpers/carouselBuilder.js`.
+Pages such as `src/pages/browseJudoka.html` call this helper and append the
+returned element to an empty container (e.g., `#carousel-container`).
 
 ---
 
@@ -146,25 +149,13 @@ Failure to provide an efficient browsing experience may impact core gameplay —
   - [x] 1.1 Develop carousel container and card components.
   - [x] 1.2 Implement dynamic loading for up to 100 cards.
   - [ ] 1.3 Ensure responsive resizing for mobile and desktop.
-- [ ] 2.0 Implement Filtering System (P2)
-
-  - [x] 2.1 Develop filtering logic based on country.
-  - [x] 2.2 Ensure filter response under 500ms.
-  - [ ] 2.3 Show "no results" state with retry and suggestions.
-
-- [ ] 3.0 Integrate Interaction Methods (P1)
-
-  - [x] 3.1 Add left/right on-screen button scrolling.
-  - [x] 3.2 Add swipe gesture support for mobile.
-  - [ ] 3.3 Add keyboard arrow navigation support.
-
-- [ ] 4.0 Add UI Enhancements (P2)
-
-  - [x] 4.1 Implement hover enlargement effect.
-  - [ ] 4.2 Display scroll markers for carousel position.
-  - [ ] 4.3 Implement loading spinner for slow networks.
-
-- [ ] 5.0 Handle Edge Cases (P2)
-  - [ ] 5.1 Fallback judoka card (judoka id=0) for broken card images.
-  - [ ] 5.2 Retry option for empty filter results.
-        [Back to Game Modes Overview](prdGameModes.md)
+- [ ] 2.0 Integrate Navigation Methods (P1)
+  - [x] 2.1 Add left/right on-screen button scrolling.
+  - [x] 2.2 Add swipe gesture support for mobile.
+  - [ ] 2.3 Add keyboard arrow navigation support.
+- [ ] 3.0 Add UI Enhancements (P2)
+  - [x] 3.1 Implement hover enlargement effect.
+  - [ ] 3.2 Display scroll markers for carousel position.
+  - [ ] 3.3 Implement loading spinner for slow networks.
+- [ ] 4.0 Handle Edge Cases (P2)
+  - [ ] 4.1 Fallback judoka card (judoka id=0) for broken card images.
