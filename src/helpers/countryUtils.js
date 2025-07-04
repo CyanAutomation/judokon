@@ -163,16 +163,19 @@ export async function getFlagUrl(countryCode) {
  * Populates the country list in the specified container with country names and flags.
  *
  * @pseudocode
- * 1. Fetch the country data:
- *    - Call `loadCountryCodeMapping` to retrieve the country data from the JSON file.
+ * 1. Load judoka data and build a unique list of country names.
+ *    - Fetch `judoka.json` and extract the `country` property from each entry.
+ *    - Store the unique names in a `Set`.
  *
- * 2. Filter active countries:
- *    - Include only countries where the `active` property is `true`.
+ * 2. Retrieve the country code mapping.
+ *    - Call `loadCountryCodeMapping` to get country code/name pairs.
  *
- * 3. Sort the countries alphabetically:
- *    - Order the filtered countries using `localeCompare` on the `country` name.
+ * 3. Filter and sort countries:
+ *    - For each unique country name, find a matching entry in the mapping where
+ *      `active` is `true`.
+ *    - Sort the resulting list alphabetically using `localeCompare`.
  *
- * 4. Generate a button slide for each active country:
+ * 4. Generate a button slide for each country:
  *    - For each country:
  *      a. Create a `button` element with classes `flag-button` and `slide`.
  *      b. Set the `value` to the country's name and add an `aria-label`.
@@ -190,10 +193,21 @@ export async function getFlagUrl(countryCode) {
  */
 export async function populateCountryList(container) {
   try {
+    const judokaResponse = await fetch(`${DATA_DIR}judoka.json`);
+    if (!judokaResponse.ok) {
+      throw new Error("Failed to load judoka data");
+    }
+    const judoka = await judokaResponse.json();
+
+    const uniqueCountries = new Set(
+      Array.isArray(judoka) ? judoka.map((j) => j.country).filter(Boolean) : []
+    );
+
     const countryData = await loadCountryCodeMapping();
 
-    const activeCountries = countryData
-      .filter((country) => country.active)
+    const activeCountries = [...uniqueCountries]
+      .map((name) => countryData.find((entry) => entry.country === name && entry.active))
+      .filter(Boolean)
       .sort((a, b) => a.country.localeCompare(b.country));
 
     const allButton = document.createElement("button");
