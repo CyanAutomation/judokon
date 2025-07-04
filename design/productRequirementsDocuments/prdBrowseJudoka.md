@@ -4,6 +4,13 @@ Game Mode ID: browseJudoka (URL: browseJudoka.html)
 
 [Back to Game Modes Overview](prdGameModes.md)
 
+## TL;DR
+Browse Judoka is a scrollable, responsive carousel that allows players to view every available judoka card, fostering exploration, strategic team building, and a sense of ownership. This PRD defines how to implement a performant, accessible browsing experience across mobile and desktop.
+
+>Kai unlocks a new rare judoka and excitedly visits the Browse Judoka screen. Swiping through his collection, he sees cards elegantly snap into place. The center card zooms slightly as it comes into focus, making it feel like a physical binder. He plans his next team with ease, deepening his connection to his judoka roster.
+
+---
+
 ## Problem Statement
 
 Players currently lack a centralized way to view all available judoka, making roster exploration cumbersome — leading to frustration and disengagement.
@@ -12,18 +19,29 @@ Players currently lack a centralized way to view all available judoka, making ro
 
 This problem is especially pressing now as the roster grows, and players want a quick, easy way to plan their team.
 
+---
+
 ## Goals
 
 - Provide access to 100% of judoka cards from `judoka.json`.
 - Ensure scrollable list loads within 1 second for up to 100 judoka cards.
 - Maintain scroll performance ≥30fps during rapid scrolling.
 - Display judoka cards correctly on screens ≥320px wide.
+- Increase average session duration by encouraging players to explore their rosters.
+- Drive player attachment to judoka, boosting in-game purchases of card packs.
+- Reduce churn by making team-building easier and more enjoyable.
+
+---
 
 ## User Stories
 
 - As a player interested in building my team, I want to browse all judoka cards quickly so I can plan my roster effectively.
 - As a mobile player, I want the roster to display correctly on my phone so I can explore judoka anywhere.
 - As a keyboard-only user, I want to navigate the list using arrow keys so I can browse without a mouse.
+- As a visually impaired player, I want focus highlights and alt text so I can browse judoka using assistive technologies.
+- As a collector, I want smooth, satisfying animations when scrolling so I feel excited about exploring my roster.
+
+---
 
 ## Functional Requirements
 
@@ -36,6 +54,8 @@ This problem is especially pressing now as the roster grows, and players want a 
 | P2       | Carousel Display of Cards       | Present cards in a swipe/scroll carousel for efficient browsing. |
 | P2       | Hover/Keyboard Navigation       | Support interactions for accessibility.                          |
 | P3       | Scroll Markers                  | Indicate the user’s current position in the carousel.            |
+
+---
 
 ## Acceptance Criteria
 
@@ -79,11 +99,15 @@ When they press left/right arrows
 Then the focus moves to the previous/next card respectively  
 And the focused card is visually highlighted and enlarged  
 
+---
+
 ## Edge Cases / Failure States
 
 - If `judoka.json` fails to load, display an error message: “Unable to load roster.”
 - If a card image fails, show the default judoka card (judoka id=0).
 - On network interruption during data fetch, prompt the user to retry.
+
+---
 
 ## Design and UX Considerations
 
@@ -103,22 +127,32 @@ And the focused card is visually highlighted and enlarged
 - **Exit Interaction**:
   - Include a close (X) button in the header that immediately exits browsing mode without confirmation.
 
+---
+
 ## Player Settings
 
 No player settings or toggles are applicable for this feature.
+
+---
 
 ## Non-Goals
 
 - Advanced filtering and sorting options are out of scope for this release to maintain focus on core browsing functionality.
 
+---
+
 ## Dependencies
 
 - Carousel and card components.
+
+---
 
 ## Open Questions
 
 - Should search be included in a future update?  
   *Search is planned as a future enhancement to keep initial scope focused.*
+
+---
 
 ## User Flow: Browse Judoka
 
@@ -150,6 +184,16 @@ No player settings or toggles are applicable for this feature.
 **Exit**  
 - Player clicks/taps the back or close (X) button on the header.  
 - Browse Judoka screen closes and returns to the previous screen immediately.
+
+---
+
+## Technical Considerations
+
+- Judoka data must be lazy-loaded if initial JSON size grows beyond reasonable limits (e.g., >2MB).
+- Carousel snapping should use hardware-accelerated transforms for smooth performance.
+- Avoid re-rendering all cards on scroll; render only visible cards (virtualization) for large rosters.
+- Scroll markers must update accurately on both programmatic and manual scrolls.
+- Ensure keyboard focus wraps (looping left/right) or stops at the ends as per UX design decision.
 
 ---
 
