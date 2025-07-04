@@ -10,7 +10,7 @@ Game Mode ID: updateJudoka (URL: updateJudoka.html)
 
 Players want the ability to refine and customize their judoka’s stats and appearance over time as they gain experience and strategy insight. Currently, there is no way to update existing judoka, which limits player engagement and personalization.
 
-> *“I want to tweak my judoka’s stats after playing to make them better suited to my style.”* — Player feedback
+> _“I want to tweak my judoka’s stats after playing to make them better suited to my style.”_ — Player feedback
 
 This feature will empower players to develop their roster continuously, enhancing long-term retention and strategic depth. Player surveys show **65% of active users** request customization options post-creation, highlighting this as a priority for sustained engagement.
 
@@ -18,22 +18,22 @@ This feature will empower players to develop their roster continuously, enhancin
 
 ## Goals (SMART)
 
-* **G1**: Allow players to edit designated judoka stats (Strength, Speed, Technique, Endurance) and appearance fields (Gi color, Belt, Hairstyle) with real-time feedback.
-* **G2**: Enforce stat validation rules to prevent illegal values, achieving **100% prevention of invalid saves** during tests.
-* **G3**: Persist edits reliably with **≥95% successful save rate within 1 second** of save action.
-* **G4**: Provide clear confirmation or error feedback for **100% of save attempts**, with animation feedback.
-* **G5**: Handle missing or corrupted judoka data gracefully with a retry prompt appearing **100% of the time** in such cases.
-* **G6**: Decide and implement whether to lock edits once a judoka enters ranked play (pending).
+- **G1**: Allow players to edit designated judoka stats (Strength, Speed, Technique, Endurance) and appearance fields (Gi color, Belt, Hairstyle) with real-time feedback.
+- **G2**: Enforce stat validation rules to prevent illegal values, achieving **100% prevention of invalid saves** during tests.
+- **G3**: Persist edits reliably with **≥95% successful save rate within 1 second** of save action.
+- **G4**: Provide clear confirmation or error feedback for **100% of save attempts**, with animation feedback.
+- **G5**: Handle missing or corrupted judoka data gracefully with a retry prompt appearing **100% of the time** in such cases.
+- **G6**: Decide and implement whether to lock edits once a judoka enters ranked play (pending).
 
 ---
 
 ## User Stories
 
-* As a player, I want to update my judoka’s stats so they reflect my evolving strategy.
-* As a player, I want my edits to save so I don’t lose changes after leaving the screen.
-* As a player, I want validation feedback if I enter invalid stat values so I can correct them.
-* As a player, I want to retry loading a judoka if data is missing or corrupted.
-* As a ranked player, I want my judoka’s stats to lock after entering ranked play to keep competition fair (subject to decision).
+- As a player, I want to update my judoka’s stats so they reflect my evolving strategy.
+- As a player, I want my edits to save so I don’t lose changes after leaving the screen.
+- As a player, I want validation feedback if I enter invalid stat values so I can correct them.
+- As a player, I want to retry loading a judoka if data is missing or corrupted.
+- As a ranked player, I want my judoka’s stats to lock after entering ranked play to keep competition fair (subject to decision).
 
 ---
 
@@ -84,7 +84,7 @@ Given a player attempts to save edits while another device has saved conflicting
 When the system detects conflicting edits  
 Then the latest valid save is applied  
 And the player sees an inline message near the Save button:  
-*"Your changes have been updated due to a recent save on another device. Please review the latest stats."*  
+_"Your changes have been updated due to a recent save on another device. Please review the latest stats."_  
 This message fades out after 5 seconds  
 And the form fields refresh with the newest data
 
@@ -92,84 +92,90 @@ And the form fields refresh with the newest data
 
 ## Edge Cases / Failure States
 
-* Network or storage failures during save show an error with retry option modal.  
-* Invalid or incomplete inputs block saving with clear inline error messages.  
-* Missing or corrupted judoka data triggers a retry prompt modal before editing can proceed.  
-* Conflicting edits (e.g., simultaneous updates from multiple devices) resolve by accepting the latest valid save and notifying the player.  
+- Network or storage failures during save show an error with retry option modal.
+- Invalid or incomplete inputs block saving with clear inline error messages.
+- Missing or corrupted judoka data triggers a retry prompt modal before editing can proceed.
+- Conflicting edits (e.g., simultaneous updates from multiple devices) resolve by accepting the latest valid save and notifying the player.
 
 ---
 
 ## Design and UX Considerations
 
-* Provide an intuitive form layout grouping editable stats and appearance fields.  
-* Use inline validation feedback next to fields with fade-in/out animations for immediate correction.  
-* Ensure save and cancel buttons are prominent, accessible, and clearly labeled.  
-* Save button is disabled until all validations pass.  
-* Support keyboard navigation and screen readers for accessibility, including ARIA labels.  
-* Show loading spinners or progress indicators when fetching judoka data.  
-* Display retry prompt as a modal with focus trap and keyboard dismissal.  
-* If edits are locked due to ranked play, display a semi-transparent overlay with dismissible message.  
-* Confirmation and error messages appear near the Save button with smooth slide and fade animations for better UX.
+- Provide an intuitive form layout grouping editable stats and appearance fields.
+- Use inline validation feedback next to fields with fade-in/out animations for immediate correction.
+- Ensure save and cancel buttons are prominent, accessible, and clearly labeled.
+- Save button is disabled until all validations pass.
+- Support keyboard navigation and screen readers for accessibility, including ARIA labels.
+- Show loading spinners or progress indicators when fetching judoka data.
+- Display retry prompt as a modal with focus trap and keyboard dismissal.
+- If edits are locked due to ranked play, display a semi-transparent overlay with dismissible message.
+- Confirmation and error messages appear near the Save button with smooth slide and fade animations for better UX.
 
 ---
 
 ## Player Settings
 
-* No player toggles or settings apply to this feature.  
-* Edit locking policy will be controlled by game rules, not player choice.
+- No player toggles or settings apply to this feature.
+- Edit locking policy will be controlled by game rules, not player choice.
 
 ---
 
 ## Non-Goals
 
-* Full version history or undo/redo for edits is not included.  
-* Advanced stat calculation or suggestions are out of scope.
+- Full version history or undo/redo for edits is not included.
+- Advanced stat calculation or suggestions are out of scope.
 
 ---
 
 ## Dependencies
 
-* Storage system shared with the judoka creation screen.  
-* Validation rules as defined by the game’s stat limits.
+- Storage system shared with the judoka creation screen.
+- Validation rules as defined by the game’s stat limits.
 
 ---
 
 ## Open Questions
 
-* Should we lock edits once a judoka enters ranked play?  
-  * If yes, what triggers the lock (e.g., match acceptance, ranking threshold)?  
-  * How is the player notified (modal overlay, inline message, both)?  
+- Should we lock edits once a judoka enters ranked play?
+  - If yes, what triggers the lock (e.g., match acceptance, ranking threshold)?
+  - How is the player notified (modal overlay, inline message, both)?
 
 ---
 
 ## User Flow: Update Judoka
 
-**Entry**  
-* Player selects a judoka to update from the roster or edit screen.  
-* System loads the judoka data into an editable form with loading indicator.  
-* If data load fails, show retry prompt modal.
+**Entry**
 
-**Editing**  
-* Player edits allowed fields (stats and appearance).  
-* System validates inputs in real time with inline errors showing via fade-in animation if invalid.  
-* Save button is enabled only if all validations pass.
+- Player selects a judoka to update from the roster or edit screen.
+- System loads the judoka data into an editable form with loading indicator.
+- If data load fails, show retry prompt modal.
 
-**Saving**  
-* Player clicks “Save” to persist changes.  
-* System saves data within 1 second.  
-* Success confirmation slides up near the Save button and fades out after 3 seconds.  
-* Edits persist and are visible after page reload.
+**Editing**
 
-**Conflict Handling**  
-* If conflicting save detected, system updates fields and shows conflict message inline for 5 seconds.
+- Player edits allowed fields (stats and appearance).
+- System validates inputs in real time with inline errors showing via fade-in animation if invalid.
+- Save button is enabled only if all validations pass.
 
-**Error Handling**  
-* If save fails (network/storage issues), show retry error modal.  
-* If judoka data is missing or corrupted, player can retry loading.
+**Saving**
 
-**Exit**  
-* Player can cancel edits to discard changes and return to roster.  
-* If edits are locked due to ranked play, editing UI is disabled with a dismissible overlay message.
+- Player clicks “Save” to persist changes.
+- System saves data within 1 second.
+- Success confirmation slides up near the Save button and fades out after 3 seconds.
+- Edits persist and are visible after page reload.
+
+**Conflict Handling**
+
+- If conflicting save detected, system updates fields and shows conflict message inline for 5 seconds.
+
+**Error Handling**
+
+- If save fails (network/storage issues), show retry error modal.
+- If judoka data is missing or corrupted, player can retry loading.
+
+**Exit**
+
+- Player can cancel edits to discard changes and return to roster.
+- If edits are locked due to ranked play, editing UI is disabled with a dismissible overlay message.
 
 ---
 
@@ -207,37 +213,41 @@ Contents:
 Why:
 Header and action layout are inconsistent, cluttered, and violate basic navigation standards. Centralizing actions at the bottom with proper grouping reduces confusion and supports touch ergonomics.
 
-
 ---
 
 ## Tasks
 
-- [ ] 1.0 Implement Judoka Edit Interface  
-  - [ ] 1.1 Load judoka data into editable fields with loading spinner  
-  - [ ] 1.2 Design form UI for stats (Strength, Speed, Technique, Endurance) and appearance (Gi color, Belt, Hairstyle)  
-  - [ ] 1.3 Add real-time validation with inline error messages and fade-in animation  
+- [ ] 1.0 Implement Judoka Edit Interface
 
-- [ ] 2.0 Save and Persistence  
-  - [ ] 2.1 Save edits to shared storage reliably within 1 second  
-  - [ ] 2.2 Show confirmation message with slide-up and fade-out animation on successful save  
-  - [ ] 2.3 Load saved edits correctly on reload  
+  - [ ] 1.1 Load judoka data into editable fields with loading spinner
+  - [ ] 1.2 Design form UI for stats (Strength, Speed, Technique, Endurance) and appearance (Gi color, Belt, Hairstyle)
+  - [ ] 1.3 Add real-time validation with inline error messages and fade-in animation
 
-- [ ] 3.0 Error Handling  
-  - [ ] 3.1 Display retry prompt modal when judoka data fails to load  
-  - [ ] 3.2 Show errors and retry option modal on save failures  
-  - [ ] 3.3 Handle simultaneous edits with clear conflict resolution messaging and data refresh  
+- [ ] 2.0 Save and Persistence
 
-- [ ] 4.0 Accessibility and UX Enhancements  
-  - [ ] 4.1 Support keyboard navigation and screen readers with ARIA labels  
-  - [ ] 4.2 Provide clear visual feedback on validation and save status including animations  
-  - [ ] 4.3 Implement disabled state and dismissible overlay message for edit locking  
+  - [ ] 2.1 Save edits to shared storage reliably within 1 second
+  - [ ] 2.2 Show confirmation message with slide-up and fade-out animation on successful save
+  - [ ] 2.3 Load saved edits correctly on reload
 
-- [ ] 5.0 Edit Locking Policy (pending decision)  
-  - [ ] 5.1 Lock editing when judoka enters ranked play  
-  - [ ] 5.2 Notify player with explanatory dismissible overlay  
+- [ ] 3.0 Error Handling
 
-- [ ] 6.0 QA and Testing  
-  - [ ] 6.1 Test full edit, validation, save/load workflows including animation timing  
-  - [ ] 6.2 Test error cases: missing data, save failure, invalid input  
-  - [ ] 6.3 Test conflicting edits across devices with conflict messaging  
-  - [ ] 6.4 Test accessibility compliance  
+  - [ ] 3.1 Display retry prompt modal when judoka data fails to load
+  - [ ] 3.2 Show errors and retry option modal on save failures
+  - [ ] 3.3 Handle simultaneous edits with clear conflict resolution messaging and data refresh
+
+- [ ] 4.0 Accessibility and UX Enhancements
+
+  - [ ] 4.1 Support keyboard navigation and screen readers with ARIA labels
+  - [ ] 4.2 Provide clear visual feedback on validation and save status including animations
+  - [ ] 4.3 Implement disabled state and dismissible overlay message for edit locking
+
+- [ ] 5.0 Edit Locking Policy (pending decision)
+
+  - [ ] 5.1 Lock editing when judoka enters ranked play
+  - [ ] 5.2 Notify player with explanatory dismissible overlay
+
+- [ ] 6.0 QA and Testing
+  - [ ] 6.1 Test full edit, validation, save/load workflows including animation timing
+  - [ ] 6.2 Test error cases: missing data, save failure, invalid input
+  - [ ] 6.3 Test conflicting edits across devices with conflict messaging
+  - [ ] 6.4 Test accessibility compliance
