@@ -173,6 +173,43 @@ And the form fields refresh with the newest data
 
 ---
 
+## UI Design
+
+Feedback & Modal Layer
+Contents:
+• Modular status/confirmation bar above Save button, with slide-up and fade animation for both success and conflict messages
+• Inline validation error area directly under each editable stat/appearance field (auto-expanding, 200ms fade)
+• Reusable modal overlay component for error/retry, loading spinner, and edit-locked state, with focus trap and dismiss/OK button
+
+Why:
+Your current design provides zero feedback for success, error, or locked states, in direct violation of nearly every requirement and game state. Modularizing feedback and overlays ensures every edge case is handled and future features can be slotted in without redesigning the whole screen.
+
+⸻
+
+Responsive & Touch-Optimized Form Module
+Contents:
+• All editable fields refactored into clearly labeled, interactive controls (sliders or steppers for stats, dropdowns for Gi/Belt, tappable avatar tiles for Hairstyle)
+• Minimum 44px vertical height per input for touch targets
+• Logical, single-column flow with clear focus order, tab/keyboard support, and section dividers for Stats/Appearance
+• Flexible width—auto-scaling to screen size, using grid or flexbox
+
+Why:
+Current controls are static and too small for any touch or keyboard user. Responsive, interactive controls are non-negotiable for a modern web game UI.
+
+⸻
+
+Header & Action Bar Module
+Contents:
+• Consistent header with dominant title, smaller back button, and safe padding
+• Save/Cancel action bar pinned at the bottom, grouped together, with Save as primary (high contrast color) and clear disabled state if form invalid
+• Optional: floating help/info button for future accessibility hints
+
+Why:
+Header and action layout are inconsistent, cluttered, and violate basic navigation standards. Centralizing actions at the bottom with proper grouping reduces confusion and supports touch ergonomics.
+
+
+---
+
 ## Tasks
 
 - [ ] 1.0 Implement Judoka Edit Interface  
