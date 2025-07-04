@@ -733,7 +733,7 @@ button .ripple {
   width: 75vw;
   max-width: 320px;
   height: 100%;
-  background: rgba(0, 32, 82, 0.9);
+  background: var(--color-secondary);
   overflow-y: auto;
   padding: var(--space-md);
   transform: translateX(100%);

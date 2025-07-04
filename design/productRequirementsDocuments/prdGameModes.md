@@ -293,7 +293,6 @@ Create a new judoka with custom stats and appearance.
 
 - Should there be limits on the number of custom judoka?
 
-
 ---
 
 ### Update A Judoka (Admin Mode)
@@ -363,7 +362,6 @@ Display a random judoka profile. [Read full PRD](prdRandomJudoka.md)
 
 - Should favourites influence the random selection?
 
-
 ---
 
 ### Meditation
@@ -400,4 +398,3 @@ A calm screen offering inspirational quotes and ambient visuals. [Read full PRD]
 #### Open Questions
 
 - Should quotes rotate daily or on every visit?
-
