@@ -115,11 +115,11 @@ Battle** variants (Female, Male, and Mixed).
 
 ## Acceptance Criteria
 
-- [ ] When “Draw Card” is triggered, a random card from the active set is displayed within 300ms.
-- [ ] A reveal animation (fade or bounce) completes within 500ms at ≥60fps.
-- [ ] If the random function fails, a fallback card is shown (judoka id=0, from judoka.json).
-- [ ] If the active card set is empty, a fallback card is shown (judoka id=0, from judoka.json).
-- [ ] Animation is disabled if the user has enabled Reduced Motion settings.
+- When “Draw Card” is triggered, a random card from the active set is displayed within 300ms.
+- A reveal animation (fade or bounce) completes within 500ms at ≥60fps.
+- If the random function fails, a fallback card is shown (judoka id=0, from judoka.json).
+- If the active card set is empty, a fallback card is shown (judoka id=0, from judoka.json).
+- Animation is disabled if the user has enabled Reduced Motion settings.
 
 ---
 
@@ -244,11 +244,3 @@ Battle** variants (Female, Male, and Mixed).
   - [ ] 4.2 Ensure color contrast on cards meets WCAG AA standards.
   - [ ] 4.3 Set all tap targets to ≥48px, recommended 64px for better kid usability.
 - [ ] 4.4 Add sound and animation toggle options for user preferences.
-
----
-
-## Metadata
-
-- Author: Ju-Do-Kon Core Team
-- Last Edited: 2025-06-29
-  [Back to Game Modes Overview](prdGameModes.md)
