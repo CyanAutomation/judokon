@@ -124,6 +124,23 @@ Key Details:
 
 ---
 
+## Non-Goals
+
+- Does not cover creation of new flag assets outside the existing judoka roster.
+- Omits multi-country selection to keep interactions simple.
+
+## Dependencies and Integrations
+
+- `judoka.json` data file for country information.
+- Card carousel component which displays filtered judoka cards.
+
+## Open Questions
+
+- Should users be able to search countries by name in addition to flag selection?
+- Do we need analytics events for every country selection?
+
+---
+
 ## Design and UX Considerations
 
 - Background of the country selector uses `var(--color-secondary)` so flags and text meet the required 4.5:1 contrast ratio.
@@ -188,28 +205,3 @@ Key Details:
 - [ ] 6.0 Add Visual Documentation
   - [ ] 6.1 Create annotated wireframes for the slide-in panel and full-grid views.
   - [ ] 6.2 Annotate wireframes with key UX and accessibility notes (tap sizes, highlight states, animation durations).
-
----
-
-## Non-Goals
-
-- Does not cover creation of new flag assets outside the existing judoka roster.
-- Omits multi-country selection to keep interactions simple.
-
-## Dependencies and Integrations
-
-- `judoka.json` data file for country information.
-- Card carousel component which displays filtered judoka cards.
-
-## Open Questions
-
-- Should users be able to search countries by name in addition to flag selection?
-- Do we need analytics events for every country selection?
-
-## Metadata
-
-- **Author:** Game Design Team
-- **Last Edited:** 2025-06-29
-- **Target Game Version:** 1.0.0
-- **Related Features:** Card Carousel Filtering
-  [Back to Game Modes Overview](prdGameModes.md)
