@@ -328,4 +328,5 @@ Each tile contains:
   - [ ] Maintain layout stability during device rotation.
 
 ---
-  [Back to Game Modes Overview](prdGameModes.md)
+
+[Back to Game Modes Overview](prdGameModes.md)
