@@ -2,12 +2,11 @@
 
 Game Mode ID: browseJudoka (URL: browseJudoka.html)
 
-Browse Judoka is accessible from the Navigation Map and opens a full-screen roster view.
-Players first see a country filter panel alongside a card carousel. The carousel relies on the `buildCardCarousel` helper ([prdCardCarousel.md](prdCardCarousel.md)) and filtering uses the Country Flag Picker ([prdCountryPickerFilter.md](prdCountryPickerFilter.md)).
+**Browse Judoka** is accessible from the Main Page ([prdCardCarousel.md](prdCardCarousel.md)), Navigation Bar ([prdCardCarousel.md](prdCardCarousel.md)) or Navigation Map ([prdCardCarousel.md](prdCardCarousel.md)) and opens a full-screen roster view. Players first see a country filter panel alongside a card carousel. The carousel relies on the `buildCardCarousel` helper ([prdCardCarousel.md](prdCardCarousel.md)) and filtering uses the Country Flag Picker ([prdCountryPickerFilter.md](prdCountryPickerFilter.md)).
 
 ## TL;DR
 
-Browse Judoka is a scrollable, responsive carousel that allows players to view every available judoka card, fostering exploration, strategic team building, and a sense of ownership. This PRD defines how to implement a performant, accessible browsing experience across mobile and desktop.
+**Browse Judoka** is a scrollable, responsive carousel that allows players to view every available judoka card, fostering exploration, strategic team building, and a sense of ownership. This PRD defines how to implement a performant, accessible browsing experience across mobile and desktop.
 
 > Kai unlocks a new rare judoka and excitedly visits the Browse Judoka screen. Swiping through his collection, he sees cards elegantly snap into place. The center card zooms slightly as it comes into focus, making it feel like a physical binder. He plans his next team with ease, deepening his connection to his judoka roster.
 
