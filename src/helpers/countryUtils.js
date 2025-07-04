@@ -270,7 +270,7 @@ export async function populateCountryList(container) {
       const handleScroll = async () => {
         if (
           scrollContainer.scrollTop + scrollContainer.clientHeight >=
-          scrollContainer.scrollHeight - 5
+          scrollContainer.scrollHeight - SCROLL_THRESHOLD_PX
         ) {
           await renderBatch();
           if (rendered >= activeCountries.length) {
