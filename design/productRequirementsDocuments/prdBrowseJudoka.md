@@ -2,7 +2,6 @@
 
 Game Mode ID: browseJudoka (URL: browseJudoka.html)
 
-[Back to Game Modes Overview](prdGameModes.md)
 Browse Judoka is accessible from the Navigation Map and opens a full-screen roster view.
 Players first see a country filter panel alongside a card carousel. The carousel relies on the `buildCardCarousel` helper ([prdCardCarousel.md](prdCardCarousel.md)) and filtering uses the Country Flag Picker ([prdCountryPickerFilter.md](prdCountryPickerFilter.md)).
 
@@ -237,10 +236,10 @@ No player settings or toggles are applicable for this feature.
 
 - [ ] 1.0 Initialize Browse Judoka
 
-  - [ ] 1.1 Load `judoka.json` roster data.
+  - [x] 1.1 Load `judoka.json` roster data.
   - [ ] 1.2 Display the Country Flag Picker filter panel.
-  - [ ] 1.3 Invoke `buildCardCarousel` with loaded data.
-  - [ ] 1.4 Handle exit or back navigation to return to the Navigation Map.
+  - [x] 1.3 Invoke `buildCardCarousel` with loaded data.
+  - [x] 1.4 Handle exit or back navigation to return to the Navigation Map.
 
 - [ ] 2.0 Responsive Layout and Accessibility
 
@@ -273,3 +272,6 @@ No player settings or toggles are applicable for this feature.
 - [ ] 7.0 QA and Testing
   - [ ] 7.1 Test responsiveness on devices ≥320px width
   - [ ] 7.2 Test acceptance criteria including edge cases and failure states
+
+---
+[Back to Game Modes Overview](prdGameModes.md)
