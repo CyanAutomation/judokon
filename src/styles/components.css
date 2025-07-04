@@ -745,6 +745,32 @@ button .ripple {
   transform: translateX(0);
 }
 
+.country-panel.grid {
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: none;
+  transform: none;
+  display: flex;
+  justify-content: center;
+}
+
+.country-panel.grid .country-flag-slider {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.country-panel.grid .country-flag-slide-track {
+  animation: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: var(--space-md);
+}
+
+.country-panel.grid .slide {
+  display: flex;
+}
+
 .country-panel[hidden] {
   display: none;
 }

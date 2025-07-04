@@ -44,6 +44,7 @@
           <button id="country-toggle" aria-controls="country-panel" aria-expanded="false">
             Choose Country
           </button>
+          <button id="layout-toggle" aria-controls="country-panel">Grid View</button>
         </div>
         <div id="carousel-container"></div>
       </main>
@@ -71,7 +72,7 @@
       <script type="module">
         import { buildCardCarousel } from "../helpers/carouselBuilder.js";
         import { populateCountryList } from "../helpers/countryUtils.js";
-        import { toggleCountryPanel } from "../helpers/countryPanel.js";
+        import { toggleCountryPanel, toggleCountryPanelMode } from "../helpers/countryPanel.js";
         import { fetchDataWithErrorHandling } from "../helpers/dataUtils.js";
         import { DATA_DIR } from "../helpers/constants.js";
 
@@ -79,6 +80,7 @@
           const carouselContainer = document.getElementById("carousel-container");
           const countryListContainer = document.getElementById("country-list");
           const toggleBtn = document.getElementById("country-toggle");
+          const layoutToggle = document.getElementById("layout-toggle");
           const countryPanel = document.getElementById("country-panel");
 
           let allJudoka = [];
@@ -117,6 +119,8 @@
           }
 
           toggleBtn.addEventListener("click", () => toggleCountryPanel(toggleBtn, countryPanel));
+
+          layoutToggle.addEventListener("click", () => toggleCountryPanelMode(countryPanel));
 
           countryPanel.addEventListener("keydown", (e) => {
             if (e.key === "Escape") {

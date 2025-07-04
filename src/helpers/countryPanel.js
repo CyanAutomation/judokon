@@ -37,3 +37,26 @@ export function toggleCountryPanel(toggleButton, panel, show) {
     toggleButton.focus();
   }
 }
+
+/**
+ * Toggle the panel between slide-in and full-screen grid modes.
+ *
+ * @pseudocode
+ * 1. Check if the panel currently has the `grid` class.
+ * 2. Determine the desired state using the optional `enable` parameter
+ *    or by inverting the current state.
+ * 3. If enabling grid mode, add the `grid` class; otherwise remove it.
+ *
+ * @param {HTMLElement} panel - The panel element to update.
+ * @param {boolean} [enable] - Force grid mode on (`true`) or off (`false`).
+ */
+export function toggleCountryPanelMode(panel, enable) {
+  const isGrid = panel.classList.contains("grid");
+  const shouldGrid = typeof enable === "boolean" ? enable : !isGrid;
+
+  if (shouldGrid) {
+    panel.classList.add("grid");
+  } else {
+    panel.classList.remove("grid");
+  }
+}
