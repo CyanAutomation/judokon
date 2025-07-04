@@ -804,3 +804,11 @@ button .ripple {
   border-radius: 4px;
   display: block;
 }
+
+/* Reduce motion for the country panel */
+@media (prefers-reduced-motion: reduce) {
+  .country-panel[hidden],
+  .country-panel.grid {
+    transition: none;
+  }
+}
