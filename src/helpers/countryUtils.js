@@ -24,6 +24,8 @@
 import { debugLog } from "./debug.js";
 import { DATA_DIR } from "./constants.js";
 
+const SCROLL_THRESHOLD_PX = 50;
+
 let countryCodeMappingCache = null;
 const COUNTRY_CACHE_KEY = "countryCodeMappingCache";
 
@@ -225,7 +227,7 @@ export async function populateCountryList(container) {
     allButton.appendChild(allLabel);
     container.appendChild(allButton);
 
-    const scrollContainer = options.scrollContainer || container;
+    const scrollContainer = container.parentElement || container;
     const BATCH_SIZE = 50;
     let rendered = 0;
 
