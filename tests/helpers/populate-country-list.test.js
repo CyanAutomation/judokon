@@ -11,14 +11,23 @@ afterEach(() => {
 });
 
 describe("populateCountryList", () => {
-  it("renders active countries alphabetically", async () => {
-    const data = [
+  it("renders countries found in judoka.json alphabetically", async () => {
+    const judoka = [
+      { id: 1, firstname: "A", surname: "B", country: "Japan" },
+      { id: 2, firstname: "C", surname: "D", country: "Brazil" },
+      { id: 3, firstname: "E", surname: "F", country: "Japan" }
+    ];
+
+    const mapping = [
       { country: "Japan", code: "jp", active: true },
       { country: "Brazil", code: "br", active: true },
       { country: "Canada", code: "ca", active: true }
     ];
 
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => data });
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => judoka })
+      .mockResolvedValueOnce({ ok: true, json: async () => mapping });
 
     const { populateCountryList } = await import("../../src/helpers/countryUtils.js");
 
@@ -27,6 +36,6 @@ describe("populateCountryList", () => {
 
     const slides = container.querySelectorAll(".slide");
     const names = [...slides].map((s) => s.querySelector("p").textContent);
-    expect(names).toEqual(["All", "Brazil", "Canada", "Japan"]);
+    expect(names).toEqual(["All", "Brazil", "Japan"]);
   });
 });
