@@ -38,4 +38,46 @@ describe("populateCountryList", () => {
     const names = [...slides].map((s) => s.querySelector("p").textContent);
     expect(names).toEqual(["All", "Brazil", "Japan"]);
   });
+
+  it("lazy loads additional countries on scroll", async () => {
+    const judoka = Array.from({ length: 60 }, (_, i) => ({
+      id: i,
+      firstname: "A",
+      surname: "B",
+      country: `Country${i}`
+    }));
+
+    const mapping = judoka.map((j, i) => ({
+      country: j.country,
+      code: `c${i}`,
+      active: true
+    }));
+
+    global.fetch = vi.fn().mockImplementation((url) => {
+      if (url.includes("judoka.json")) {
+        return Promise.resolve({ ok: true, json: async () => judoka });
+      }
+      return Promise.resolve({ ok: true, json: async () => mapping });
+    });
+
+    const { populateCountryList } = await import("../../src/helpers/countryUtils.js");
+
+    const track = document.createElement("div");
+    const scrollContainer = document.createElement("div");
+    scrollContainer.appendChild(track);
+
+    Object.defineProperty(scrollContainer, "clientHeight", { value: 100, configurable: true });
+    Object.defineProperty(scrollContainer, "scrollHeight", { value: 200, configurable: true });
+    scrollContainer.scrollTop = 0;
+
+    await populateCountryList(track);
+
+    expect(track.querySelectorAll(".slide").length).toBe(51);
+
+    scrollContainer.scrollTop = 200;
+    scrollContainer.dispatchEvent(new Event("scroll"));
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(track.querySelectorAll(".slide").length).toBe(61);
+  });
 });
