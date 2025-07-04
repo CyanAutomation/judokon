@@ -2,9 +2,9 @@
 
 ### Overview
 
-Ju-Do-Kon! offers a range of game modes tailored for different play styles—competitive battles, team-based challenges, creative customization, exploratory discovery and quiet reflection. These modes diversify the experience, increase replayability and promote deeper engagement.
+**Ju-Do-Kon!** offers a range of game modes tailored for different play styles—competitive battles, team-based challenges, creative customization, exploratory discovery and quiet reflection. These modes diversify the experience, increase replayability and promote deeper engagement.
 
-> After a tough Classic Battle, Hiroshi takes a break by entering Meditation Mode. Soft music and inspiring quotes help him reconnect with why he loves judo. Later, he updates his Judoka’s signature move, making his fighter truly his own. By offering more than just battles, Ju-Do-Kon! becomes a game players want to return to every day—whether they crave intense combat or quiet reflection.
+> After a tough **Classic Battle**, Hiroshi takes a break by entering **Meditation** Mode. Soft music and inspiring quotes help him reconnect with why he loves judo. Later, he updates his Judoka’s signature move, making his fighter truly his own. By offering more than just battles, Ju-Do-Kon! becomes a game players want to return to every day—whether they crave intense combat or quiet reflection.
 
 ### Problem Statement
 
@@ -41,7 +41,7 @@ Improving session variety directly supports retention and encourages more person
 
 ## Design and UX Considerations
 
-- All mode entry points must align with the **Judo Training Village** map-based navigation system.
+- All mode entry points must align with the bottom navigation bar, or map-based navigation system.
 - Entry points are represented on the map as clickable, animated hotspots (≥48px).
 - UI contrast ratio must meet WCAG 2.1 (≥4.5:1).
 - Touch targets must be ≥48px with WCAG 2.1 contrast compliance.
@@ -66,7 +66,7 @@ Improving session variety directly supports retention and encourages more person
 
 ## Game Modes
 
-### Classic Battle (Shiai)
+### Classic Battle
 
 #### Overview
 
@@ -105,11 +105,6 @@ A 1v1 stat-based match against a CPU opponent using a deck of 25 random judoka c
 
 - Will difficulty levels change AI stat selection?
 
-#### Metadata
-
-- Author: Game Design Team
-- Last Edited: 2025‑06‑29
-
 ---
 
 ### Team Battle Selection
@@ -146,11 +141,6 @@ Choose between Male, Female or Mixed team battles. [Read full PRD](prdTeamBattle
 #### Open Questions
 
 - Should last chosen mode be remembered?
-
-#### Metadata
-
-- Author: Game Design Team
-- Last Edited: 2025‑06‑29
 
 ---
 
@@ -190,11 +180,6 @@ Team battles consist of sequential 1v1s between gender-filtered squads. [Read fu
 
 - Should Mixed mode allow flexible team sizes?
 
-#### Metadata
-
-- Author: Game Design Team
-- Last Edited: 2025‑06‑29
-
 ---
 
 ### Browse Judoka
@@ -232,14 +217,9 @@ View all available judoka with stats and visuals. [Read full PRD](prdBrowseJudok
 
 - Should search be included in a future update?
 
-#### Metadata
-
-- Author: Game Design Team
-- Last Edited: 2025‑06‑29
-
 ---
 
-### Judoka Manager Mode
+### Team Manager Mode (Admin Mode)
 
 #### Overview
 
@@ -249,13 +229,14 @@ Choose to create or edit a judoka.
 
 #### Goals
 
-- Provide a hub for judoka creation and updates.
+- Provide an admin hub for judoka creation and updates.
 
 #### Functional Requirements
 
 - Two path options visible.
 - Routing to creation or update works.
 - Fallback if no judoka are available to edit.
+- Will be only available to access via an Admin entry point
 
 #### Acceptance Criteria
 
@@ -267,20 +248,15 @@ Choose to create or edit a judoka.
 
 #### Dependencies
 
-- Local storage or backend for saving judoka data.
+- Backend for saving judoka data.
 
 #### Open Questions
 
 - Should unsaved changes warn the player before exit?
 
-#### Metadata
-
-- Author: Game Design Team
-- Last Edited: 2025‑06‑29
-
 ---
 
-### Create A Judoka
+### Create A Judoka (Admin Mode)
 
 #### Overview
 
@@ -290,7 +266,7 @@ Create a new judoka with custom stats and appearance.
 
 #### Goals
 
-- Let players add new characters to their roster.
+- Let Admins add new characters to the game roster.
 
 #### Functional Requirements
 
@@ -298,6 +274,7 @@ Create a new judoka with custom stats and appearance.
 - Live preview updates on change.
 - Save adds to data store and confirms.
 - Invalid form fields trigger error indicators.
+- Will be only available to access via an Admin entry point
 
 #### Acceptance Criteria
 
@@ -316,14 +293,10 @@ Create a new judoka with custom stats and appearance.
 
 - Should there be limits on the number of custom judoka?
 
-#### Metadata
-
-- Author: Game Design Team
-- Last Edited: 2025‑06‑29
 
 ---
 
-### Update A Judoka
+### Update A Judoka (Admin Mode)
 
 #### Overview
 
@@ -333,7 +306,7 @@ Edit an existing judoka. [Read full PRD](prdUpdateJudoka.md)
 
 #### Goals
 
-- Allow players to refine stats and appearance over time.
+- Allow Admins to refine stats and appearance over time.
 
 #### Functional Requirements
 
@@ -341,6 +314,7 @@ Edit an existing judoka. [Read full PRD](prdUpdateJudoka.md)
 - Edits persist after save.
 - Field validation enforces legal stat limits.
 - If selected judoka is missing, display retry prompt.
+- Will be only available to access via an Admin entry point
 
 #### Acceptance Criteria
 
@@ -353,15 +327,6 @@ Edit an existing judoka. [Read full PRD](prdUpdateJudoka.md)
 #### Dependencies
 
 - Same storage used by the creation screen.
-
-#### Open Questions
-
-- Should we lock edits once a judoka enters ranked play?
-
-#### Metadata
-
-- Author: Game Design Team
-- Last Edited: 2025‑06‑29
 
 ---
 
@@ -398,10 +363,6 @@ Display a random judoka profile. [Read full PRD](prdRandomJudoka.md)
 
 - Should favourites influence the random selection?
 
-#### Metadata
-
-- Author: Game Design Team
-- Last Edited: 2025‑06‑29
 
 ---
 
@@ -440,7 +401,3 @@ A calm screen offering inspirational quotes and ambient visuals. [Read full PRD]
 
 - Should quotes rotate daily or on every visit?
 
-#### Metadata
-
-- Author: Game Design Team
-- Last Edited: 2025‑06‑29
