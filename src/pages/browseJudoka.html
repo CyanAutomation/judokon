@@ -118,7 +118,16 @@
             carouselContainer.appendChild(errorMessage);
           }
 
-          toggleBtn.addEventListener("click", () => toggleCountryPanel(toggleBtn, countryPanel));
+          let countriesLoaded = false;
+
+          toggleBtn.addEventListener("click", async () => {
+            const wasOpen = countryPanel.classList.contains("open");
+            toggleCountryPanel(toggleBtn, countryPanel);
+            if (!wasOpen && !countriesLoaded) {
+              await populateCountryList(countryListContainer);
+              countriesLoaded = true;
+            }
+          });
 
           layoutToggle.addEventListener("click", () => toggleCountryPanelMode(countryPanel));
 
@@ -180,8 +189,6 @@
             }
             toggleCountryPanel(toggleBtn, countryPanel, false);
           });
-
-          populateCountryList(countryListContainer);
         });
       </script>
 

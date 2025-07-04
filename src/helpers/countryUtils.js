@@ -175,16 +175,17 @@ export async function getFlagUrl(countryCode) {
  *      `active` is `true`.
  *    - Sort the resulting list alphabetically using `localeCompare`.
  *
- * 4. Generate a button slide for each country:
- *    - For each country:
- *      a. Create a `button` element with classes `flag-button` and `slide`.
- *      b. Set the `value` to the country's name and add an `aria-label`.
- *      c. Add a flag image:
- *         - Create an `img` element.
- *         - Fetch the flag URL using `getFlagUrl`.
- *         - Set the `src` attribute to the flag URL or a fallback URL on error.
- *      d. Add the country name inside a `p` element.
- *      e. Append the button directly to the specified container.
+ * 4. Render the country buttons in batches to limit DOM nodes:
+ *    - Only create DOM elements for the first 50 countries initially.
+ *    - Attach a `scroll` listener to the panel's scroll container.
+ *    - When scrolling near the bottom, generate the next batch of 50 until all
+ *      countries are rendered.
+ *    - Each button is created as follows:
+ *      a. Create a `button.flag-button.slide` element and set its value/label.
+ *      b. Add an `img` for the flag using `getFlagUrl` with a fallback on
+ *         failure.
+ *      c. Append the country name in a `p` element.
+ *      d. Append the button to the container.
  *
  * 5. Handle errors:
  *    - Log any errors encountered during the process.
@@ -224,35 +225,60 @@ export async function populateCountryList(container) {
     allButton.appendChild(allLabel);
     container.appendChild(allButton);
 
-    for (const country of activeCountries) {
-      if (!country.country || !country.code) {
-        console.warn("Skipping invalid country entry:", country);
-        continue;
+    const scrollContainer = container.parentElement || container;
+    const BATCH_SIZE = 50;
+    let rendered = 0;
+
+    const renderBatch = async () => {
+      const batch = activeCountries.slice(rendered, rendered + BATCH_SIZE);
+      for (const country of batch) {
+        if (!country.country || !country.code) {
+          console.warn("Skipping invalid country entry:", country);
+          continue;
+        }
+
+        const button = document.createElement("button");
+        button.className = "flag-button slide";
+        button.value = country.country;
+        button.setAttribute("aria-label", country.country);
+
+        const flagImg = document.createElement("img");
+        flagImg.alt = `${country.country} Flag`;
+        flagImg.className = "flag-image";
+
+        try {
+          const flagUrl = await getFlagUrl(country.code);
+          flagImg.src = flagUrl;
+        } catch (error) {
+          console.warn(`Failed to load flag for ${country.country}:`, error);
+          flagImg.src = "https://flagcdn.com/w320/vu.png"; // Fallback to Vanuatu flag
+        }
+
+        const countryName = document.createElement("p");
+        countryName.textContent = country.country;
+        button.appendChild(flagImg);
+        button.appendChild(countryName);
+
+        container.appendChild(button);
       }
+      rendered += batch.length;
+    };
 
-      const button = document.createElement("button");
-      button.className = "flag-button slide";
-      button.value = country.country;
-      button.setAttribute("aria-label", country.country);
+    await renderBatch();
 
-      const flagImg = document.createElement("img");
-      flagImg.alt = `${country.country} Flag`;
-      flagImg.className = "flag-image";
-
-      try {
-        const flagUrl = await getFlagUrl(country.code);
-        flagImg.src = flagUrl;
-      } catch (error) {
-        console.warn(`Failed to load flag for ${country.country}:`, error);
-        flagImg.src = "https://flagcdn.com/w320/vu.png"; // Fallback to Vanuatu flag
-      }
-
-      const countryName = document.createElement("p");
-      countryName.textContent = country.country;
-      button.appendChild(flagImg);
-      button.appendChild(countryName);
-
-      container.appendChild(button);
+    if (activeCountries.length > rendered) {
+      const handleScroll = async () => {
+        if (
+          scrollContainer.scrollTop + scrollContainer.clientHeight >=
+          scrollContainer.scrollHeight - 5
+        ) {
+          await renderBatch();
+          if (rendered >= activeCountries.length) {
+            scrollContainer.removeEventListener("scroll", handleScroll);
+          }
+        }
+      };
+      scrollContainer.addEventListener("scroll", handleScroll);
     }
   } catch (error) {
     console.error("Error fetching country data:", error);
