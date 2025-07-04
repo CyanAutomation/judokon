@@ -3,11 +3,14 @@
 Game Mode ID: browseJudoka (URL: browseJudoka.html)
 
 [Back to Game Modes Overview](prdGameModes.md)
+Browse Judoka is accessible from the Navigation Map and opens a full-screen roster view.
+Players first see a country filter panel alongside a card carousel. The carousel relies on the `buildCardCarousel` helper ([prdCardCarousel.md](prdCardCarousel.md)) and filtering uses the Country Flag Picker ([prdCountryPickerFilter.md](prdCountryPickerFilter.md)).
 
 ## TL;DR
+
 Browse Judoka is a scrollable, responsive carousel that allows players to view every available judoka card, fostering exploration, strategic team building, and a sense of ownership. This PRD defines how to implement a performant, accessible browsing experience across mobile and desktop.
 
->Kai unlocks a new rare judoka and excitedly visits the Browse Judoka screen. Swiping through his collection, he sees cards elegantly snap into place. The center card zooms slightly as it comes into focus, making it feel like a physical binder. He plans his next team with ease, deepening his connection to his judoka roster.
+> Kai unlocks a new rare judoka and excitedly visits the Browse Judoka screen. Swiping through his collection, he sees cards elegantly snap into place. The center card zooms slightly as it comes into focus, making it feel like a physical binder. He plans his next team with ease, deepening his connection to his judoka roster.
 
 ---
 
@@ -15,7 +18,7 @@ Browse Judoka is a scrollable, responsive carousel that allows players to view e
 
 Players currently lack a centralized way to view all available judoka, making roster exploration cumbersome — leading to frustration and disengagement.
 
-> *“I want to see all judoka in one place so I don’t waste time hunting for cards.”* — Player feedback
+> _“I want to see all judoka in one place so I don’t waste time hunting for cards.”_ — Player feedback
 
 This problem is especially pressing now as the roster grows, and players want a quick, easy way to plan their team.
 
@@ -23,13 +26,11 @@ This problem is especially pressing now as the roster grows, and players want a 
 
 ## Goals
 
-- Provide access to 100% of judoka cards from `judoka.json`.
-- Ensure scrollable list loads within 1 second for up to 100 judoka cards.
-- Maintain scroll performance ≥30fps during rapid scrolling.
-- Display judoka cards correctly on screens ≥320px wide.
-- Increase average session duration by encouraging players to explore their rosters.
-- Drive player attachment to judoka, boosting in-game purchases of card packs.
-- Reduce churn by making team-building easier and more enjoyable.
+- Allow players to explore the entire roster in one place.
+- Encourage discovery of new judoka to build creative teams.
+- Support smooth browsing on phones and desktops.
+- Increase attachment to favorite fighters through easy access.
+- Keep players engaged by making team planning enjoyable.
 
 ---
 
@@ -40,6 +41,8 @@ This problem is especially pressing now as the roster grows, and players want a 
 - As a keyboard-only user, I want to navigate the list using arrow keys so I can browse without a mouse.
 - As a visually impaired player, I want focus highlights and alt text so I can browse judoka using assistive technologies.
 - As a collector, I want smooth, satisfying animations when scrolling so I feel excited about exploring my roster.
+
+- As a fan of my national team, I want to filter judoka by country so I can focus on athletes from my homeland.
 
 ---
 
@@ -62,42 +65,43 @@ This problem is especially pressing now as the roster grows, and players want a 
 **Empty List Handling**  
 Given the judoka list is empty  
 When the player opens the Browse Judoka screen  
-Then display a message saying “No cards available”  
+Then display a message saying “No cards available”
 
 **Load Time Performance**  
 Given there are 100 judoka cards in `judoka.json`  
 When the player opens the Browse Judoka screen  
-Then the full list of cards loads and is visible within 1 second  
+Then the full list of cards loads and is visible within 1 second
 
 **Responsive Layout**  
 Given the player’s device screen width is ≥320px  
 When the player views the Browse Judoka screen  
-Then the cards display as:  
-- 1–2 cards visible on mobile (320px to ~600px width)  
+Then the cards display as:
+
+- 1–2 cards visible on mobile (320px to ~600px width)
 - 3–5 cards visible on desktop (>600px width)  
-And card layout adapts fluidly on window resize  
+  And card layout adapts fluidly on window resize
 
 **Invalid Entries**  
 Given `judoka.json` contains an invalid or missing card entry  
 When the player scrolls to that entry  
-Then show a default placeholder card instead  
+Then show a default placeholder card instead
 
 **Scroll Performance**  
 Given the player scrolls rapidly through the card carousel  
 When scrolling occurs  
-Then the frame rate stays at or above 30fps  
+Then the frame rate stays at or above 30fps
 
 **Error Handling on Data Load Failure**  
 Given the network fails to load `judoka.json`  
 When the player opens the Browse Judoka screen  
 Then display an error message: “Unable to load roster”  
-And provide a button to retry the load  
+And provide a button to retry the load
 
 **Keyboard Navigation**  
 Given the player uses keyboard arrow keys  
 When they press left/right arrows  
 Then the focus moves to the previous/next card respectively  
-And the focused card is visually highlighted and enlarged  
+And the focused card is visually highlighted and enlarged
 
 ---
 
@@ -143,117 +147,126 @@ No player settings or toggles are applicable for this feature.
 
 ## Dependencies
 
-- Carousel and card components.
+- buildCardCarousel helper for rendering cards
+- Country Flag Picker for filtering
 
 ---
 
 ## Open Questions
 
 - Should search be included in a future update?  
-  *Search is planned as a future enhancement to keep initial scope focused.*
+  _Search is planned as a future enhancement to keep initial scope focused._
 
 ---
 
 ## User Flow: Browse Judoka
 
-**Entry**  
-- Player selects “Browse Judoka” from the main menu or roster management screen.  
-- System loads `judoka.json` data asynchronously.  
-- If loading fails, show error message with “Retry” button.  
+**Entry**
+
+- Player selects “Browse Judoka” from the main menu or roster management screen.
+- System loads `judoka.json` data asynchronously.
+- If loading fails, show error message with “Retry” button.
 - If list empty, show “No cards available” message.
 
-**Browsing**  
-- Cards display in a horizontal carousel.  
-- On mobile: 1–2 cards visible; on desktop: 3–5 cards visible.  
-- Player can scroll/swipe cards horizontally.  
-- Smooth snapping behavior to center cards on scroll end.  
-- Center card is visually enlarged (~10%) for focus.  
+**Browsing**
+
+- Cards display in a horizontal carousel.
+- On mobile: 1–2 cards visible; on desktop: 3–5 cards visible.
+- Player can scroll/swipe cards horizontally.
+- Smooth snapping behavior to center cards on scroll end.
+- Center card is visually enlarged (~10%) for focus.
 - Scroll markers update to reflect current carousel position.
 
-**Navigation**  
-- Player can navigate cards by:  
-  - Touch/swipe on mobile.  
-  - Mouse hover (enlarges card).  
-  - Keyboard arrow keys (left/right) move focus and enlarge card.  
+**Navigation**
+
+- Player can navigate cards by:
+  - Touch/swipe on mobile.
+  - Mouse hover (enlarges card).
+  - Keyboard arrow keys (left/right) move focus and enlarge card.
 - Focused card is highlighted visually for accessibility.
 
-**Error Handling**  
-- If any card data or image fails to load, show default placeholder card.  
+**Error Handling**
+
+- If any card data or image fails to load, show default placeholder card.
 - On network issues during loading, prompt with retry.
 
-**Exit**  
-- Player clicks/taps the back or close (X) button on the header.  
+**Exit**
+
+- Player clicks/taps the back or close (X) button on the header.
 - Browse Judoka screen closes and returns to the previous screen immediately.
 
 ---
 
 ## Technical Considerations
 
-- Judoka data must be lazy-loaded if initial JSON size grows beyond reasonable limits (e.g., >2MB).
-- Carousel snapping should use hardware-accelerated transforms for smooth performance.
-- Avoid re-rendering all cards on scroll; render only visible cards (virtualization) for large rosters.
-- Scroll markers must update accurately on both programmatic and manual scrolls.
-- Ensure keyboard focus wraps (looping left/right) or stops at the ends as per UX design decision.
+- Built on `src/pages/browseJudoka.html` to load data.
+- Uses `src/helpers/carouselBuilder.js` via `buildCardCarousel`.
+- Integrates the Country Flag Picker for filtering.
 
 ---
 
 ## UI/UX Wireframe
 
-
 +---------------------------------------------------------+
-| [Browse Judoka]                                         X|  <-- Header with close/back button
+| [Browse Judoka] X| <-- Header with close/back button
 +---------------------------------------------------------+
-|                                                         |
-|  < [Card]  [Card]  [Card]  [Card]  [Card]  >           |  <-- Carousel with scroll arrows
-|                                                         |
-|  [Scroll Markers]                                        |  <-- Dots or progress bar below cards
-|                                                         |
-|  [Message or Error area]                                |  <-- Dynamic messages (loading, errors)
+| |
+| < [Card] [Card] [Card] [Card] [Card] > | <-- Carousel with scroll arrows
+| |
+| [Scroll Markers] | <-- Dots or progress bar below cards
+| |
+| [Message or Error area] | <-- Dynamic messages (loading, errors)
 +---------------------------------------------------------+
 
+**Wireframe Annotations:**
 
-**Wireframe Annotations:**  
-- Header: “Browse Judoka” title with a close (X) button top-right that exits browsing immediately.  
-- Carousel: Horizontally scrollable row of cards with left/right arrow buttons on desktop; swipe gestures on mobile.  
-- Cards: Each card displays judoka stats; center card is enlarged by ~10%.  
-- Scroll Markers: Dots below carousel indicate the current position in the list.  
-- Messages: Area below markers for dynamic feedback such as “No cards available” or error messages.  
-- Touch Targets: Cards and buttons sized ≥48px for accessibility compliance.  
+- Header: “Browse Judoka” title with a close (X) button top-right that exits browsing immediately.
+- Carousel: Horizontally scrollable row of cards with left/right arrow buttons on desktop; swipe gestures on mobile.
+- Cards: Each card displays judoka stats; center card is enlarged by ~10%.
+- Scroll Markers: Dots below carousel indicate the current position in the list.
+- Messages: Area below markers for dynamic feedback such as “No cards available” or error messages.
+- Touch Targets: Cards and buttons sized ≥48px for accessibility compliance.
 - Responsive Adaptation: On mobile, 1–2 cards visible; on desktop, 3–5 cards visible.
 
 ---
 
 ## Tasks
 
-- [ ] 1.0 Implement Scrollable Judoka Card Interface  
-  - [ ] 1.1 Load `judoka.json` and bind stats to cards  
-  - [ ] 1.2 Render cards in a horizontal scrollable carousel  
-  - [ ] 1.3 Implement smooth snap scrolling behavior with animation  
+- [ ] 1.0 Initialize Browse Judoka
 
-- [ ] 2.0 Responsive Layout and Accessibility  
-  - [ ] 2.1 Design card layouts for mobile (1-2 cards) and desktop (3-5 cards)  
-  - [ ] 2.2 Ensure touch targets ≥48px and WCAG 4.5:1 contrast compliance  
-  - [ ] 2.3 Add card enlargement on hover and keyboard focus highlighting  
+  - [ ] 1.1 Load `judoka.json` roster data.
+  - [ ] 1.2 Display the Country Flag Picker filter panel.
+  - [ ] 1.3 Invoke `buildCardCarousel` with loaded data.
+  - [ ] 1.4 Handle exit or back navigation to return to the Navigation Map.
 
-- [ ] 3.0 Error Handling and Edge Case Management  
-  - [ ] 3.1 Display “No cards available” if list empty  
-  - [ ] 3.2 Show error message with retry if `judoka.json` fails to load  
-  - [ ] 3.3 Use default card for invalid/missing entries or failed images  
-  - [ ] 3.4 Handle network interruptions with retry prompt  
+- [ ] 2.0 Responsive Layout and Accessibility
 
-- [ ] 4.0 Performance Optimization  
-  - [ ] 4.1 Ensure full list loads within 1 second for 100 cards  
-  - [ ] 4.2 Maintain ≥30fps during rapid scrolling  
+  - [ ] 2.1 Design card layouts for mobile (1-2 cards) and desktop (3-5 cards)
+  - [ ] 2.2 Ensure touch targets ≥48px and WCAG 4.5:1 contrast compliance
+  - [ ] 2.3 Add card enlargement on hover and keyboard focus highlighting
 
-- [ ] 5.0 Interaction Enhancements  
-  - [ ] 5.1 Add ripple or scaling animation on tap/click  
-  - [ ] 5.2 Implement scroll markers indicating carousel position  
+- [ ] 3.0 Error Handling and Edge Case Management
 
-- [ ] 6.0 Keyboard and Accessibility Support  
-  - [ ] 6.1 Enable arrow key navigation left/right through cards  
-  - [ ] 6.2 Manage focus state and ensure visible outlines  
+  - [ ] 3.1 Display “No cards available” if list empty
+  - [ ] 3.2 Show error message with retry if `judoka.json` fails to load
+  - [ ] 3.3 Use default card for invalid/missing entries or failed images
+  - [ ] 3.4 Handle network interruptions with retry prompt
 
-- [ ] 7.0 QA and Testing  
-  - [ ] 7.1 Test responsiveness on devices ≥320px width  
-  - [ ] 7.2 Test acceptance criteria including edge cases and failure states  
+- [ ] 4.0 Performance Optimization
 
+  - [ ] 4.1 Ensure full list loads within 1 second for 100 cards
+  - [ ] 4.2 Maintain ≥30fps during rapid scrolling
+
+- [ ] 5.0 Interaction Enhancements
+
+  - [ ] 5.1 Add ripple or scaling animation on tap/click
+  - [ ] 5.2 Implement scroll markers indicating carousel position
+
+- [ ] 6.0 Keyboard and Accessibility Support
+
+  - [ ] 6.1 Enable arrow key navigation left/right through cards
+  - [ ] 6.2 Manage focus state and ensure visible outlines
+
+- [ ] 7.0 QA and Testing
+  - [ ] 7.1 Test responsiveness on devices ≥320px width
+  - [ ] 7.2 Test acceptance criteria including edge cases and failure states
