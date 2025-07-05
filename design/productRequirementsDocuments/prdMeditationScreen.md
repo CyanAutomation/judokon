@@ -87,13 +87,6 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - Should quotes rotate automatically after a delay?
 - Do players need a skip option to bypass the screen entirely?
 
-## Metadata
-
-- **Author:** Game Design Team
-- **Last Edited:** 2025-06-29
-- **Target Game Version:** v1.0
-- **Related Features:** Pseudo-Japanese Text Conversion, Navigation Bar
-
 ---
 
 ## Edge Cases / Failure States
@@ -167,7 +160,32 @@ Ensures readability while preventing jarring fallback errors, and enhances conte
 Provides agency without pressure. Allows the player to re-enter gameplay at their own pace. And prevents accidental taps and creates distinct flow—finish reading before proceeding.
 
 ---
+## 6. Non-Goals
 
+- Provide guided breathing audio or meditation music.
+- Introduce scoring or competitive mechanics.
+- Replace existing downtime screens outside the Meditation feature.
+
+## 7. Technical Considerations
+
+- Fetch quotes asynchronously with graceful error handling.
+- Reuse existing HTML template and component structure.
+- Loading spinner and CTA button use design tokens such as `var(--button-bg)` and `var(--button-hover-bg)`.
+- Keep page weight minimal to meet the 1s load target.
+
+## 8. Dependencies and Integrations
+
+- Quote data file: `aesopsFables.json`.
+- KG character assets from the core game.
+- Navigation system for entering and exiting the screen.
+
+## 9. Open Questions
+
+- Should players be able to disable the Meditation screen entirely?
+- Will background audio be added in a later version?
+- Are translations needed beyond English and Japanese?
+
+---
 ## Tasks
 
 - [ ] **1.0 Implement Meditation Feedback Module**
@@ -195,35 +213,6 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
   - [ ] 5.1 Optimize image and text asset load times to under 1 second.
   - [ ] 5.2 Implement responsive grid and flexbox for various screen sizes (portrait/landscape).
 
-## 6. Non-Goals
+---
 
-- Provide guided breathing audio or meditation music.
-- Introduce scoring or competitive mechanics.
-- Replace existing downtime screens outside the Meditation feature.
-
-## 7. Technical Considerations
-
-- Fetch quotes asynchronously with graceful error handling.
-- Reuse existing HTML template and component structure.
-- Loading spinner and CTA button use design tokens such as `var(--button-bg)` and `var(--button-hover-bg)`.
-- Keep page weight minimal to meet the 1s load target.
-
-## 8. Dependencies and Integrations
-
-- Quote data file: `aesopsFables.json`.
-- KG character assets from the core game.
-- Navigation system for entering and exiting the screen.
-
-## 9. Open Questions
-
-- Should players be able to disable the Meditation screen entirely?
-- Will background audio be added in a later version?
-- Are translations needed beyond English and Japanese?
-
-## 10. Metadata
-
-- **Author:** Design Team
-- **Last Edited:** 2024-05-29
-- **Target Game Version:** v1.0
-- **Related Features:** Game Modes, Navigation Map
   [Back to Game Modes Overview](prdGameModes.md)
