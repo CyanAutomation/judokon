@@ -160,6 +160,7 @@ Ensures readability while preventing jarring fallback errors, and enhances conte
 Provides agency without pressure. Allows the player to re-enter gameplay at their own pace. And prevents accidental taps and creates distinct flow—finish reading before proceeding.
 
 ---
+
 ## 6. Non-Goals
 
 - Provide guided breathing audio or meditation music.
@@ -186,6 +187,7 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 - Are translations needed beyond English and Japanese?
 
 ---
+
 ## Tasks
 
 - [ ] **1.0 Implement Meditation Feedback Module**
@@ -215,4 +217,4 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 
 ---
 
-  [Back to Game Modes Overview](prdGameModes.md)
+[Back to Game Modes Overview](prdGameModes.md)
