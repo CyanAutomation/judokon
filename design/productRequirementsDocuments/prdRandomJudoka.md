@@ -79,6 +79,13 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 ---
 
+## Technical Considerations
+
+- Ensure judoka list is cached locally after first fetch to minimize repeated server requests.
+- If list size exceeds 1000 judoka, implement lazy-loading or paging.
+- Confirm random selection logic avoids bias or clustering patterns (run chi-squared randomness test as part of QA).
+
+--- 
 ## Edge Cases / Failure States
 
 - **Empty judoka list** → show fallback card, display “No Judokas Available.”
