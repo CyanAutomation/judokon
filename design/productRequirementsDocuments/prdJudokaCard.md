@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Judoka cards are collectible, interactive virtual cards representing elite fighters in JU-DO-KON! They deepen player immersion through ownership, mastery, and strategic gameplay, with responsive animations, rarity systems, and accessible design — ensuring all players can engage with and feel connected to their judoka roster.
+Judoka cards are interactive virtual cards representing elite fighters in JU-DO-KON! They deepen player immersion through ownership, mastery, and strategic gameplay, with responsive animations, rarity systems, and accessible design — ensuring all players can engage with and feel connected to their judoka roster.
 The main element of the JU-DO-KON! game is the use of **judoka cards**. These virtual cards show elite judoka along with their stats and form the core gameplay piece, giving players a sense of ownership, mastery, and strategic choice.
 
 ---
@@ -11,56 +11,39 @@ The main element of the JU-DO-KON! game is the use of **judoka cards**. These vi
 
 Players currently lack a tangible sense of progression and connection to elite judoka; without this, engagement drops significantly after initial matches. Judoka cards aim to **provide ownership, mastery, and strategic choice**, addressing the need for deeper attachment to in-game characters.
 
-> Sota opens a new card pack. The pack explodes with a satisfying flip animation, revealing a rare Judoka in shimmering red borders. Sota’s eyes light up. He reads the stats, flips the card to see achievements, and adds it to his lineup — feeling mastery and excitement that keeps him coming back.
-
----
-
-## Player Flow
-
-- **Acquisition:** After completing a match or purchasing a card pack, players receive new Judoka Cards.
-- **Opening:** Players navigate to the “Card Pack” screen and tap a pack → triggers flip/reveal animation → reveals new card(s).
-- **Collection:** Cards are stored in the player’s collection, where they can view, compare, or select cards.
-- **Selection:** Players select cards for use in matches; selected cards appear in the pre-match screen. Card added to collection → displayed with rarity border, stats, portrait.
-- **Interaction:** Players can flip cards to view stats or tap the info icon for more details on the judoka’s achievements. Player browses collection → flips cards for stats, taps info for achievements.
-- **Cancellation:** At any point in the collection or selection screens, players can press the back button to return to the previous menu. Player selects cards for match roster → selection reflected on pre-match screen
+> Sota clicks "Draw!" on his draw pile. The pack shows a card with a slide animation, revealing a rare Judoka in shimmering red borders. Sota’s eyes light up. He reads the stats, and plans which stat to use — feeling mastery and excitement that keeps him coming back.
 
 ---
 
 ## Goals
 
 - Increase average match duration by **15%** through deeper strategic card use.
-- Achieve **80% of players collecting at least one rare card within the first week**.
 - Ensure card stat balance leads to **<5% match outcome variance attributed to chance**.
-- Give players a sense of ownership and pride in their collection.
 - Enable deeper strategic choices when selecting judoka for matches.
 
 ---
 
 ## User Stories
 
-- As a player who loves collecting, I want judoka cards that look unique and reflect rarity so I can show them off.
-- As a competitive player, I want to view stats easily so I can build the best team.
+- As a player who loves browsing cards, I want judoka cards that look unique and reflect rarity.
+- As a competitive player, I want to view stats easily so I can build select the right stat in a match.
 - As a player with visual impairments, I want high-contrast text and alt text on portraits so I can understand card details.
 
 ---
 
 ## Acceptance Criteria
 
-- **Given** a player opens their collection,  
+- **Given** a player draws a card, or browses the JU-DO-KON! collection,  
   **When** they view a judoka card,  
   **Then** the card displays the correct portrait, stats, nationality flag, and signature move.
 
 - **Given** a judoka portrait is missing,  
   **When** the card loads,  
-  **Then** a silhouette placeholder is displayed.
+  **Then** a placeholde silhouette (judoka id=0) placeholder is displayed.
 
-- **Given** backend stats change,  
-  **When** the player is viewing their collection,  
-  **Then** the card stats update in real time without requiring a reload.
-
-- **Given** a player taps the flip button,  
-  **When** the card flip animation starts,  
-  **Then** it completes within **400ms** using ease-out cubic-bezier timing, and cancels if the player taps again quickly.
+- **Given** a player taps the draw button,  
+  **When** the card reveal (slide) animation starts,  
+  **Then** it completes within **400ms** using ease-out cubic-bezier timing.
 
 - **Given** the card displays text,  
   **When** viewed on any device,  
@@ -74,10 +57,10 @@ Players currently lack a tangible sense of progression and connection to elite j
 
 ## Edge Cases / Failure States
 
-- **Missing Portrait →** Show silhouette placeholder image.
+- **Missing Portrait →** Show silhouette fallback image (judoka id=0).
 - **Corrupted Stats Data →** Hide stats and display error message “Stats unavailable”.
 - **Unsupported Weight Class →** Default to “Unknown” label.
-- **Stats Exceed Expected Range →** Cap displayed stats at 10 and log error for review.
+- **Stats Exceed Expected Range →** Cap displayed stats at 10.
 - **Failed Asset Load →** Use fallback fonts, generic flag, and placeholder visuals.
 
 ---
@@ -85,8 +68,7 @@ Players currently lack a tangible sense of progression and connection to elite j
 ## Technical Considerations
 
 - Portrait images should use optimized formats (e.g., WebP) to balance quality and performance.
-- Card flip animations must use hardware-accelerated CSS transforms for smooth performance.
-- Stats updates should subscribe to real-time backend events to avoid polling.
+- Card slide/reveal animations must use hardware-accelerated CSS transforms for smooth performance.
 - Placeholder assets for missing portraits/flags should be bundled with the client for offline scenarios.
 - Ensure card sizing calculations consistently maintain 2:3 ratio on all screen aspect ratios and resolutions.
 
@@ -128,7 +110,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 | **P1**   | Real-time Stats Update | Ensure UI reflects backend stat changes instantly.                           |
 | **P2**   | Rarity Coloring        | Apply blue/red/gold coloring based on rarity.                                |
 | **P2**   | Card Aspect Ratio      | Maintain **2:3 ratio** on all devices.                                       |
-| **P3**   | Animations             | Smooth, cancellable flip/reveal animations within **400ms** duration.        |
+| **P3**   | Animations             | Smooth, cancellable slide/reveal animations within **400ms** duration.        |
 | **P3**   | Accessibility Features | Implement alt text, WCAG contrast, keyboard/touch navigation.                |
 
 ---
@@ -172,7 +154,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 
 ### Interactive Elements
 
-- **Flip Button:** Player taps/clicks → triggers 400ms card flip animation revealing card back or additional details.
+- **Draw Button:** Player taps/clicks → triggers 400ms card slide/reveal animation revealing the card.
 - **Info Icon:** Opens modal with expanded description of judoka’s achievements or lore.
 - **Card Area:** Entire card reacts to hover/tap with a subtle scaling effect (max 1.05x) to show it’s interactive.
 - **Error States:** If portrait fails, replace image with a centered silhouette icon + “Portrait unavailable” text.
@@ -199,22 +181,6 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 
 ## Tasks
 
-- [ ] 1.0 Implement Card Acquisition Flow
-
-  - [ ] 1.1 Trigger card reward after match completion or pack purchase.
-  - [ ] 1.2 Navigate player to Card Pack screen.
-  - [ ] 1.3 Animate card pack opening with 400ms flip animation.
-
-- [ ] 2.0 Build Card Collection Interface
-
-  - [ ] 2.1 Display card list/grid maintaining 2:3 ratio.
-  - [ ] 2.2 Implement card flipping interaction.
-  - [ ] 2.3 Add info button opening achievement modal.
-
-- [ ] 3.0 Integrate Real-Time Stats Updates
-
-  - [ ] 3.1 Subscribe to backend stat updates.
-  - [ ] 3.2 Update card UI instantly without reload.
 
 - [ ] 4.0 Handle Edge Cases
 
