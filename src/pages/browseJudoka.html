@@ -120,6 +120,7 @@
             const retryButton = document.createElement("button");
             retryButton.className = "retry-button";
             retryButton.textContent = "Retry";
+            retryButton.setAttribute("type", "button");
             retryButton.setAttribute("aria-label", "Retry loading judoka data");
             retryButton.addEventListener("click", async () => {
               await loadData();
