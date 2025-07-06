@@ -189,8 +189,8 @@ function handleBrokenImages(card) {
  */
 function setupKeyboardNavigation(container) {
   container.tabIndex = 0; // Make the carousel focusable
+  const cards = container.querySelectorAll(".judoka-card"); // Cache the NodeList
   container.addEventListener("keydown", (event) => {
-    const cards = container.querySelectorAll(".judoka-card");
     const active = document.activeElement;
     const index = Array.from(cards).indexOf(active);
 
