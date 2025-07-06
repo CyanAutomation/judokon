@@ -125,8 +125,6 @@ And the focused card is visually highlighted and enlarged
 - **Interaction Cues**:
   - Use subtle ripple or scaling animations when cards are tapped or clicked.
   - Show scroll markers below the card carousel to indicate progress through the roster.
-- **Exit Interaction**:
-  - Include a close (X) button in the header that immediately exits browsing mode without confirmation.
 
 | **Card Carousel Mockup 1**                                       | **Card Carousel Mockup 2**                                       |
 | ---------------------------------------------------------------- | ---------------------------------------------------------------- |
