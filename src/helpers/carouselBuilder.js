@@ -345,10 +345,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
       continue;
     }
     handleBrokenImages(card);
-    const focusable = card.querySelector(".judoka-card");
-    if (focusable) {
-      focusable.tabIndex = 0;
-    }
+    card.tabIndex = 0;
   }
 
   clearTimeout(timeoutId);
