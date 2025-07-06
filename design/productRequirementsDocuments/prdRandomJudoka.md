@@ -44,7 +44,6 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 - Show one random judoka when the screen loads.
 - "Draw" button calls the shared random card module to refresh the card.
-- Provide a manual animation toggle alongside Reduced Motion support.
 
 ---
 
@@ -55,10 +54,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - Draw button reliably refreshes card on tap (≥99% tap success).
 - Show fallback card if judoka list is empty (displays in <1s in 99% of cases).
 - Respect OS-level Reduced Motion settings (disable animations when active).
-- Provide manual animation toggle (default: animations ON).
 - Sound is off by default.
-- Spam-tap or repeated input protection exists.
-- If player navigates away during draw, draw cancels without errors.
 
 ---
 
@@ -106,12 +102,10 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
   - **Card Display Area**: Centered large card placeholder with dynamic content.
   - **Action Buttons**:
     - Prominent “Draw” button below the card, centered, clear label.
-    - Mute icon (toggle sound) and Animation icon (toggle animations) positioned next to the Draw button for easy access.
 - **Draw Flow**:
   1. Player loads the screen → random judoka card appears automatically.
   2. Player taps “Draw” button → new random card slides or fades in.
   3. If Reduced Motion or manual animation toggle is active, card changes instantly without animation.
-  4. If player navigates away mid-draw, the draw silently cancels, avoiding stuck states.
 - **Button Size**:
   - Minimum: 64px height × 300px width for easy tapping, especially for kids.
   - Style: Capsule shape using `--radius-pill` for consistent branding.
