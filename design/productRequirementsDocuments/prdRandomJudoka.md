@@ -1,4 +1,4 @@
-# PRD: Display Random Judoka 
+# PRD: Display Random Judoka
 
 **Game Mode ID:** randomJudoka (URL: randomJudoka.html)
 
@@ -8,10 +8,9 @@ TL;DR: Display Random Judoka gives players instant, inspiring roster ideas by dr
 
 > Mia taps “Draw” and a new judoka slides up instantly, surprising her with a powerful pick she hadn’t considered. She taps again, excitedly building a fresh team, and spends twice as long experimenting compared to when she built manually. The bright animations and satisfying feel keep her engaged.
 
-
 ## Problem Statement
 
-Players currently experience predictable, repetitive gameplay when they pre-select cards, leading to decreased engagement and shorter session times. Without randomness, team composition lacks inspiration and novelty, causing players to churn or lose interest more quickly.  
+Players currently experience predictable, repetitive gameplay when they pre-select cards, leading to decreased engagement and shorter session times. Without randomness, team composition lacks inspiration and novelty, causing players to churn or lose interest more quickly.
 
 > _“I always pick the same cards because it’s easier. I get bored of my team really fast.” — 10-year-old player during playtest session_
 
@@ -43,11 +42,9 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 ## Functional Requirements
 
-- Show one random judoka on load or refresh.
-- “Draw” button refreshes content.
-- User cannot stop draw once function is triggered.
-- If the user **navigates away or refreshes mid-draw**, draw is silently canceled and fallback card or new random card appears on reload.
-- Provide **manual animation toggle** (in addition to Reduced Motion detection) for player choice.
+- Show one random judoka when the screen loads.
+- "Draw" button calls the shared random card module to refresh the card.
+- Provide a manual animation toggle alongside Reduced Motion support.
 
 ---
 
@@ -71,27 +68,25 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - Persistent card history or logs of previous draws.
 - Weighted draws (favoring certain judoka).
 - Advanced filters or rarity-based restrictions.
+
 ---
 
 ## Dependencies
 
 - Access to the full judoka list.
+- Uses `generateRandomCard` as described in [prdDrawRandomCard.md](prdDrawRandomCard.md).
 
 ---
 
 ## Technical Considerations
 
-- Ensure judoka list is cached locally after first fetch to minimize repeated server requests.
-- If list size exceeds 1000 judoka, implement lazy-loading or paging.
-- Confirm random selection logic avoids bias or clustering patterns (run chi-squared randomness test as part of QA).
+- Caching, randomness, and fallback logic are handled by `generateRandomCard`.
 
---- 
+---
+
 ## Edge Cases / Failure States
 
-- **Empty judoka list** → show fallback card, display “No Judokas Available.”
-- **Draw function errors** → log error, show fallback card with soft error message.
-- **Slow devices or network issues** → degrade animations to static reveal if 60fps cannot be maintained.
-- **Navigation away during draw** → cancel draw, display fallback or new random card on next load.
+- Handled by `generateRandomCard` (empty list fallback, error logging, and graceful cancellation).
 
 ---
 
@@ -106,6 +101,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 ### Design and UX Considerations
 
 #### Layout and Interaction
+
 - **Main Screen Structure**:
   - **Card Display Area**: Centered large card placeholder with dynamic content.
   - **Action Buttons**:
@@ -121,6 +117,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
   - Style: Capsule shape using `--radius-pill` for consistent branding.
 
 #### Animation and Transitions
+
 - **Card Reveal Animation**:
   - Slide-in from bottom or fade-in (duration: 300–500ms).
   - Maintain ≥60fps on devices with ≥2GB RAM.
@@ -131,6 +128,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
   - Disabled state: Lower opacity (50%), disable input if judoka list is empty or draw is in progress.
 
 #### Accessibility
+
 - Detect OS-level Reduced Motion; disable animations if active.
 - Provide manual animation toggle (default ON).
 - Tap targets ≥48px × 48px (64px recommended for kid-friendly design).
@@ -139,15 +137,18 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - All buttons and states require clear text labels.
 
 #### Responsiveness
+
 - **Mobile (<600px)**: card fills ~70% of viewport; draw button spans nearly full width.
 - **Tablet/Desktop (>600px)**: card ~40% of viewport; centered draw button with spacing.
 - **Landscape Support**: components reposition vertically or side-by-side.
 
 #### Audio Feedback (Optional Enhancement)
+
 - Chime/swoosh sound <1 second, volume at 60% of system volume.
 - Mute option via toggle icon near the draw button (default: sound off).
 
 #### Visual Mockup Description
+
 - **Top Bar**: minimal header with “Random Judoka” title centered.
 - **Central Card Area**: large placeholder card with question mark icon on initial state.
 - **Draw Button Area**: prominent pill-shaped “Draw New Judoka!” button with mute and animation toggles ~24px below the card.
@@ -157,45 +158,26 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                        | Description                                                                                 |
-| -------- | ------------------------------ | ------------------------------------------------------------------------------------------- |
-| **P1**   | Random Card Selection          | Randomly pick a judoka from the list and ensure immediate display.                          |
-| **P1**   | Draw Button Interaction        | Provide responsive, animated button with spam-tap protection.                               |
-| **P1**   | Card Display & Animation       | Smooth reveal of the selected card, respecting Reduced Motion settings and manual toggle.   |
-| **P2**   | Fallback on Failure            | Show fallback card with clear error message if draw fails or list is empty.                 |
-| **P2**   | Accessibility Features         | Reduced Motion support, WCAG contrast, large tap targets, and cancellation handling.        |
-| **P3**   | Optional Audio Feedback        | Chime on draw with mute toggle, sound off by default.                                       |
-| **P3**   | Manual Animation User Toggle   | Provide player control to disable animations regardless of OS Reduced Motion setting.       |
+| Priority | Feature                  | Description                                                   |
+| -------- | ------------------------ | ------------------------------------------------------------- |
+| **P1**   | Use `generateRandomCard` | Selects and displays a random judoka via the shared module.   |
+| **P1**   | Screen Layout & Controls | Large Draw button plus animation and sound toggles.           |
+| **P2**   | Accessibility            | WCAG contrast, large tap targets, and Reduced Motion support. |
+| **P3**   | Optional Audio Feedback  | Chime on draw with mute toggle (sound off by default).        |
 
 ---
 
 ## Tasks
 
-- [ ] 1.0 Implement Random Judoka Selection Logic
-  - [ ] 1.1 Fetch full judoka list on screen load.
-  - [ ] 1.2 Randomly select a judoka each time the screen loads or the draw button is tapped.
-  - [ ] 1.3 Handle empty list by triggering fallback card display.
-- [ ] 2.0 Build Card Display and Animation System
-  - [ ] 2.1 Create card placeholder UI component.
-  - [ ] 2.2 Animate card reveal with slide or fade effect.
-  - [ ] 2.3 Respect Reduced Motion setting and manual animation toggle.
-- [ ] 3.0 Develop Draw Button Interaction
-  - [ ] 3.1 Build prominent “Draw” button with capsule styling.
-  - [ ] 3.2 Add button press feedback (scale-in effect).
-  - [ ] 3.3 Disable button during draw-in-progress to prevent rapid taps.
-- [ ] 4.0 Integrate Accessibility Features
-  - [ ] 4.1 Implement detection for Reduced Motion OS settings.
-  - [ ] 4.2 Provide manual animation toggle control with clear state.
-  - [ ] 4.3 Ensure button and card UI meet WCAG 2.1 contrast requirements.
-  - [ ] 4.4 Verify tap target sizes meet or exceed 64px for children.
-- [ ] 5.0 Error Handling and Fallback States
-  - [ ] 5.1 Display fallback card and error text if judoka list is empty or draw fails.
-  - [ ] 5.2 Log errors for debugging without disrupting the player experience.
-  - [ ] 5.3 Handle player navigation away mid-draw by canceling draw gracefully.
-- [ ] 6.0 Add Optional Audio Feedback
-  - [ ] 6.1 Play chime/swoosh on successful card draw.
-  - [ ] 6.2 Build toggle icon to mute/unmute sound effects.
-  - [ ] 6.3 Set and store the default state for the sound toggle.
+- [ ] 1.0 Integrate `generateRandomCard`
+  - [ ] 1.1 Trigger the function on screen load.
+  - [ ] 1.2 Call it again when the Draw button is tapped.
+- [ ] 2.0 Build layout and controls
+  - [ ] 2.1 Create card display area and prominent Draw button.
+  - [ ] 2.2 Add manual animation and sound toggles.
+- [ ] 3.0 Accessibility & fallback
+  - [ ] 3.1 Verify WCAG contrast and tap target sizes.
+  - [ ] 3.2 Display fallback card on error using the module.
 
 ---
 
