@@ -182,18 +182,26 @@ function handleBrokenImages(card) {
  * @pseudocode
  * 1. Make the container focusable by setting `tabIndex` to 0.
  * 2. Add a `keydown` event listener to the container.
- *    - Scroll left when the "ArrowLeft" key is pressed.
- *    - Scroll right when the "ArrowRight" key is pressed.
+ *    - Scroll left when the "ArrowLeft" key is pressed and focus the previous card.
+ *    - Scroll right when the "ArrowRight" key is pressed and focus the next card.
  *
  * @param {HTMLElement} container - The carousel container element.
  */
 function setupKeyboardNavigation(container) {
   container.tabIndex = 0; // Make the carousel focusable
   container.addEventListener("keydown", (event) => {
+    const cards = container.querySelectorAll(".judoka-card");
+    const active = document.activeElement;
+    const index = Array.from(cards).indexOf(active);
+
     if (event.key === "ArrowLeft") {
       container.scrollBy({ left: -300, behavior: "smooth" });
+      const prevIndex = index > 0 ? index - 1 : 0;
+      cards[prevIndex]?.focus();
     } else if (event.key === "ArrowRight") {
       container.scrollBy({ left: 300, behavior: "smooth" });
+      const nextIndex = index >= 0 ? Math.min(cards.length - 1, index + 1) : 0;
+      cards[nextIndex]?.focus();
     }
   });
 }
@@ -282,6 +290,7 @@ function applyAccessibilityImprovements(wrapper) {
  *    - Generate a card using `generateJudokaCard`.
  *    - Handle broken card images by setting a fallback image.
  *    - Append the generated card to the carousel container.
+ *    - Make the card focusable by setting `tabIndex`.
  *
  * 6. Remove the loading spinner once all cards are processed.
  *
@@ -292,6 +301,7 @@ function applyAccessibilityImprovements(wrapper) {
  *
  * 8. Add keyboard navigation:
  *    - Enable scrolling with the left and right arrow keys.
+ *    - Move focus to the next or previous card after scrolling.
  *
  * 9. Add swipe functionality for touch devices:
  *    - Detect swipe gestures to scroll the carousel left or right.
@@ -335,6 +345,10 @@ export async function buildCardCarousel(judokaList, gokyoData) {
       continue;
     }
     handleBrokenImages(card);
+    const focusable = card.querySelector(".judoka-card");
+    if (focusable) {
+      focusable.tabIndex = 0;
+    }
   }
 
   clearTimeout(timeoutId);

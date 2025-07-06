@@ -278,6 +278,12 @@ button .ripple {
   transform: scale(1.1); /* Updated token */
 }
 
+/* Keyboard focus outline */
+.judoka-card:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+}
+
 /* Common card variables */
 .judoka-card.common {
   --card-bg-color: #001749;
