@@ -279,11 +279,15 @@ button .ripple {
 }
 
 /* Keyboard focus outline */
-.judoka-card:focus {
+.judoka-card:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 4px;
 }
 
+/* Fallback for older browsers */
+.judoka-card:focus:not(:focus-visible) {
+  outline: none;
+}
 /* Common card variables */
 .judoka-card.common {
   --card-bg-color: #001749;
