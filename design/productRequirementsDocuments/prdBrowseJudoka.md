@@ -228,9 +228,8 @@ No player settings or toggles are applicable for this feature.
 - [ ] 1.0 Initialize Browse Judoka
 
   - [x] 1.1 Load `judoka.json` roster data.
-  - [ ] 1.2 Display the Country Flag Picker filter panel.
+  - [x] 1.2 Display the Country Flag Picker filter panel.
   - [x] 1.3 Invoke `buildCardCarousel` with loaded data.
-  - [x] 1.4 Handle exit or back navigation to return to the Navigation Map.
 
 - [ ] 2.0 Responsive Layout and Accessibility
 
@@ -240,7 +239,7 @@ No player settings or toggles are applicable for this feature.
 
 - [ ] 3.0 Error Handling and Edge Case Management
 
-  - [ ] 3.1 Display “No cards available” if list empty
+  - [x] 3.1 Display “No cards available” if list empty
   - [ ] 3.2 Show error message with retry if `judoka.json` fails to load
   - [ ] 3.3 Use default card for invalid/missing entries or failed images
   - [ ] 3.4 Handle network interruptions with retry prompt
@@ -257,7 +256,7 @@ No player settings or toggles are applicable for this feature.
 
 - [ ] 6.0 Keyboard and Accessibility Support
 
-  - [ ] 6.1 Enable arrow key navigation left/right through cards
+  - [x] 6.1 Enable arrow key navigation left/right through cards
   - [ ] 6.2 Manage focus state and ensure visible outlines
 
 ---
