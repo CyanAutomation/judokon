@@ -759,7 +759,7 @@ button .ripple {
 
 .country-panel.grid .country-flag-slider {
   height: 100%;
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 .country-panel.grid .country-flag-slide-track {
