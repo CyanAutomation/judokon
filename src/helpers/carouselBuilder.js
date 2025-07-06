@@ -1,5 +1,38 @@
 import { createGokyoLookup } from "./utils.js";
 import { generateJudokaCard } from "./cardBuilder.js";
+import { fetchDataWithErrorHandling } from "./dataUtils.js";
+import { DATA_DIR } from "./constants.js";
+
+let fallbackJudoka;
+
+async function getFallbackJudoka() {
+  if (fallbackJudoka) {
+    return fallbackJudoka;
+  }
+  try {
+    const data = await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`);
+    if (Array.isArray(data)) {
+      fallbackJudoka = data.find((j) => j.id === 0) || null;
+    }
+    if (!fallbackJudoka) {
+      throw new Error("Fallback judoka with id 0 not found");
+    }
+  } catch (error) {
+    console.error("Failed to load fallback judoka:", error);
+    fallbackJudoka = {
+      id: 0,
+      firstname: "Unknown",
+      surname: "Judoka",
+      country: "Unknown",
+      countryCode: "N/A",
+      weightClass: "N/A",
+      stats: { power: 0, speed: 0, technique: 0, kumikata: 0, newaza: 0 },
+      signatureMoveId: 0,
+      rarity: "common"
+    };
+  }
+  return fallbackJudoka;
+}
 
 /**
  * Creates a scroll button with the specified direction and functionality.
@@ -288,6 +321,8 @@ function applyAccessibilityImprovements(wrapper) {
  * 5. Loop through the `judokaList` array:
  *    - Validate each judoka object (ensure required fields are present).
  *    - Generate a card using `generateJudokaCard`.
+ *    - If validation fails or card generation returns `null`, load the fallback
+ *      judoka (id `0`) and generate its card instead.
  *    - Handle broken card images by setting a fallback image.
  *    - Append the generated card to the carousel container.
  *    - Make the card focusable by setting `tabIndex`.
@@ -328,24 +363,31 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   const { spinner, timeoutId } = createLoadingSpinner(wrapper);
 
   for (const judoka of judokaList) {
+    let entry = judoka;
+
     if (
       !judoka.firstname ||
       !judoka.surname ||
       !judoka.country ||
       !judoka.stats ||
-      !judoka.signatureMoveId
+      judoka.signatureMoveId === undefined
     ) {
       console.error("Invalid judoka object:", judoka);
-      continue;
+      entry = await getFallbackJudoka();
     }
 
-    const card = await generateJudokaCard(judoka, gokyoLookup, container);
+    let card = await generateJudokaCard(entry, gokyoLookup, container);
+
     if (!card) {
-      console.warn("Failed to generate card for judoka:", judoka);
-      continue;
+      console.warn("Failed to generate card for judoka:", entry);
+      const fallback = await getFallbackJudoka();
+      card = await generateJudokaCard(fallback, gokyoLookup, container);
     }
-    handleBrokenImages(card);
-    card.tabIndex = 0;
+
+    if (card) {
+      handleBrokenImages(card);
+      card.tabIndex = 0;
+    }
   }
 
   clearTimeout(timeoutId);
