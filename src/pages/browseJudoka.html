@@ -116,6 +116,16 @@
             errorMessage.textContent =
               "Network error occurred. Please check your connection and try again.";
             carouselContainer.appendChild(errorMessage);
+
+            const retryButton = document.createElement("button");
+            retryButton.className = "retry-button";
+            retryButton.textContent = "Retry";
+            retryButton.setAttribute("aria-label", "Retry loading judoka data");
+            retryButton.addEventListener("click", async () => {
+              await loadData();
+              await renderCarousel(allJudoka);
+            });
+            carouselContainer.appendChild(retryButton);
           }
 
           let countriesLoaded = false;
