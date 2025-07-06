@@ -1,8 +1,13 @@
-# PRD: Display Random Judoka (Updated)
+# PRD: Display Random Judoka 
 
 **Game Mode ID:** randomJudoka (URL: randomJudoka.html)
 
 ---
+
+TL;DR: Display Random Judoka gives players instant, inspiring roster ideas by drawing and revealing a random card with fast, smooth animations and full accessibility support — reducing team-building fatigue and increasing session engagement.
+
+> Mia taps “Draw” and a new judoka slides up instantly, surprising her with a powerful pick she hadn’t considered. She taps again, excitedly building a fresh team, and spends twice as long experimenting compared to when she built manually. The bright animations and satisfying feel keep her engaged.
+
 
 ## Problem Statement
 
@@ -21,6 +26,10 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - Reduce time-to-inspiration by 50% compared to manual team-building (reduce average team-building time from 30 seconds to ≤15 seconds).
 - Ensure each card draw completes in ≤300ms in 95% of cases.
 - Achieve 95% error-free card draws across 1000 consecutive draws.
+- ≥90% of random draws complete in ≤300ms on mid-tier devices.
+- ≤1% fallback error rate over 1000 draws.
+- Average time spent on Random Judoka screen ≥40% higher than average team-building time for players who only pre-select cards.
+- ≥80% of players use the Draw button at least once per session in the first week post-launch.
 
 ---
 
@@ -59,7 +68,9 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 ## Non-Goals
 
 - Complex filters or search.
-
+- Persistent card history or logs of previous draws.
+- Weighted draws (favoring certain judoka).
+- Advanced filters or rarity-based restrictions.
 ---
 
 ## Dependencies
