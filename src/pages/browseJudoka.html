@@ -123,8 +123,15 @@
             retryButton.setAttribute("type", "button");
             retryButton.setAttribute("aria-label", "Retry loading judoka data");
             retryButton.addEventListener("click", async () => {
-              await loadData();
-              await renderCarousel(allJudoka);
+              retryButton.disabled = true; // Disable the button to prevent multiple clicks
+              try {
+                await loadData();
+                await renderCarousel(allJudoka);
+              } catch (error) {
+                console.error("Error during retry:", error);
+              } finally {
+                retryButton.disabled = false; // Re-enable the button after processing
+              }
             });
             carouselContainer.appendChild(retryButton);
           }
