@@ -42,7 +42,7 @@
 /* Styles for mobile */
 @media (max-width: 768px) {
   .judoka-card {
-    flex: 0 0 calc(100% - var(--space-sm)); /* Updated token */
+    flex: 0 0 calc(80% - var(--space-sm)); /* Show 1–2 cards */
   }
 
   .card-carousel {
@@ -62,5 +62,12 @@
 @media (orientation: landscape) and (min-width: 769px) {
   .judoka-card {
     flex: 0 0 calc(50% - var(--space-lg)); /* Updated token */
+  }
+}
+
+/* Styles for large screens */
+@media (min-width: var(--breakpoint-lg)) {
+  .judoka-card {
+    flex: 0 0 calc(20% - var(--space-lg)); /* Up to 5 cards */
   }
 }
