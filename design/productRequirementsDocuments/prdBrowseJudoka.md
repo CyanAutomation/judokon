@@ -183,11 +183,6 @@ No player settings or toggles are applicable for this feature.
 - If a card image fails, show the default judoka card (judoka id=0).
 - On network issues during loading, prompt with retry.
 
-**Exit**
-
-- Player clicks/taps the back or close (X) button on the header.
-- Browse Judoka screen closes and returns to the previous screen immediately.
-
 ---
 
 ## Technical Considerations
