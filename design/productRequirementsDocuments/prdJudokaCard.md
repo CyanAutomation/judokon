@@ -110,7 +110,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 | **P1**   | Real-time Stats Update | Ensure UI reflects backend stat changes instantly.                           |
 | **P2**   | Rarity Coloring        | Apply blue/red/gold coloring based on rarity.                                |
 | **P2**   | Card Aspect Ratio      | Maintain **2:3 ratio** on all devices.                                       |
-| **P3**   | Animations             | Smooth, cancellable slide/reveal animations within **400ms** duration.        |
+| **P3**   | Animations             | Smooth, cancellable slide/reveal animations within **400ms** duration.       |
 | **P3**   | Accessibility Features | Implement alt text, WCAG contrast, keyboard/touch navigation.                |
 
 ---
@@ -180,7 +180,6 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 ---
 
 ## Tasks
-
 
 - [ ] 4.0 Handle Edge Cases
 
