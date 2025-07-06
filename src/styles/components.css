@@ -717,13 +717,14 @@ button .ripple {
 .draw-card-btn {
   display: block;
   margin: var(--space-large) auto; /* Updated token */
-  width: min(300px, 80vw);
+  width: 300px;
+  max-width: 90vw;
   min-height: 64px;
   padding: var(--space-md) var(--space-lg); /* Updated tokens */
   color: var(--button-text-color);
   background-color: var(--button-bg);
   border: 2px solid var(--color-surface); /* Updated token */
-  border-radius: var(--radius-md); /* Updated token */
+  border-radius: var(--radius-pill); /* Updated token */
   font-size: 1.25rem;
   font-weight: bold;
 }
