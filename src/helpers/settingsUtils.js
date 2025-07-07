@@ -100,6 +100,8 @@ export async function updateSetting(key, value) {
     await validateWithSchema(updated, settingsSchema);
     if (typeof localStorage !== "undefined") {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
+    } else {
+      await saveSettings(updated);
     }
     return updated;
   } catch (error) {
