@@ -27,6 +27,32 @@ export function escapeHTML(str) {
   return String(str).replace(/[&<>"']/g, (char) => escapeMap[char] || char);
 }
 
+// Decode common HTML entities back to characters
+const decodeMap = {
+  "&amp;": "&",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&quot;": '"',
+  "&#039;": "'"
+};
+
+/**
+ * Decodes basic HTML entities in a string.
+ *
+ * @pseudocode
+ * 1. If input is null or undefined, return empty string.
+ * 2. Convert input to string.
+ * 3. Replace `&amp;`, `&lt;`, `&gt;`, `&quot;`, and `&#039;` with their corresponding characters.
+ * 4. Return the decoded string.
+ *
+ * @param {string} str - The string containing HTML entities.
+ * @returns {string} The decoded string.
+ */
+export function decodeHTML(str) {
+  if (str === null || str === undefined) return "";
+  return String(str).replace(/&(amp|lt|gt|quot|#039);/g, (match) => decodeMap[match] || match);
+}
+
 /**
  * Gets a value or falls back to a default if the value is missing.
  *
