@@ -6,15 +6,17 @@ import { DATA_DIR } from "./constants.js";
  *
  * @pseudocode
  * 1. Check if the device is in landscape orientation.
- * 2. Create a map view with clickable tiles for game modes.
- * 3. Add a slide-up animation when the logo is clicked.
- * 4. Hide the map view when the logo is clicked again.
+ * 2. Select the `.bottom-navbar` element and exit early if not found.
+ * 3. Create a map view with clickable tiles for game modes.
+ * 4. Add a slide-up animation when the logo is clicked.
+ * 5. Hide the map view when the logo is clicked again.
  *
  * @param {Array} gameModes - The list of game modes to display.
  */
 export function toggleExpandedMapView(gameModes) {
   const navBar = document.querySelector(".bottom-navbar");
-  clearBottomNavbar(); // Clear existing content
+  if (!navBar) return; // Guard: do nothing if navbar is missing
+  clearBottomNavbar(navBar); // Clear existing content
 
   const validModes = validateGameModes(gameModes);
 
@@ -47,10 +49,12 @@ export function toggleExpandedMapView(gameModes) {
  *
  * @pseudocode
  * 1. Select the `.bottom-navbar` element.
- * 2. Remove all child elements to prevent duplication.
+ * 2. Exit early if the element is not found.
+ * 3. Remove all child elements to prevent duplication.
  */
 function clearBottomNavbar() {
   const navBar = document.querySelector(".bottom-navbar");
+  if (!navBar) return; // Guard: do nothing if navbar is missing
   navBar.innerHTML = ""; // Clear all existing content
 }
 
@@ -144,20 +148,22 @@ function addTouchFeedback() {
  * 2. Parse the JSON response to retrieve the game modes data.
  *    - Handle parsing errors gracefully.
  *
- * 3. Filter the game modes:
+ * 3. Select the `.bottom-navbar` element and exit if not found.
+ *
+ * 4. Filter the game modes:
  *    - Include only modes where `category` is "mainMenu" and `isHidden` is `false`.
  *
- * 4. Sort the filtered game modes by their `order` property in ascending order.
+ * 5. Sort the filtered game modes by their `order` property in ascending order.
  *
- * 5. Check if there are any active modes:
+ * 6. Check if there are any active modes:
  *    - If no modes are available, display "No game modes available" in the navigation bar.
  *
- * 6. Map the sorted game modes to HTML list items (`<li>`):
+ * 7. Map the sorted game modes to HTML list items (`<li>`):
  *    - Each list item contains a link (`<a>`) to the corresponding game mode's URL.
  *
- * 7. Update the navigation bar (`.bottom-navbar ul`) with the generated HTML.
+ * 8. Update the navigation bar (`.bottom-navbar ul`) with the generated HTML.
  *
- * 8. Handle any errors during the process:
+ * 9. Handle any errors during the process:
  *    - Log the error to the console and display fallback items in the navigation bar.
  *
  * @returns {Promise<void>} A promise that resolves once the navbar is populated.
@@ -174,6 +180,7 @@ export async function populateNavbar() {
     debugLog("Fetched game modes:", data);
 
     const navBar = document.querySelector(".bottom-navbar");
+    if (!navBar) return; // Guard: do nothing if navbar is missing
     clearBottomNavbar();
 
     const activeModes = validateGameModes(
@@ -198,6 +205,7 @@ export async function populateNavbar() {
     console.error("Error loading game modes:", error);
 
     const navBar = document.querySelector(".bottom-navbar");
+    if (!navBar) return; // Guard: do nothing if navbar is missing
     clearBottomNavbar();
 
     const fallbackItems = [
