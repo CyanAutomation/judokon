@@ -42,7 +42,7 @@ describe("settingsPage module", () => {
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
-    vi.runAllTimers();
+    await vi.runAllTimersAsync();
 
     expect(loadSettings).toHaveBeenCalled();
     expect(fetchData).toHaveBeenCalled();
