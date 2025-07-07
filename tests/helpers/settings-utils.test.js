@@ -102,7 +102,7 @@ describe("settings utils", () => {
     vi.useFakeTimers();
     const { updateSetting, loadSettings } = await import("../../src/helpers/settingsUtils.js");
     const promise = updateSetting("sound", false);
-    await vi.advanceTimersByTimeAsync(110);
+    await vi.runAllTimersAsync();
     await promise;
     await Promise.resolve();
     const stored = await loadSettings();
