@@ -30,11 +30,11 @@ async function loadConverter() {
  *    - Replace digits and unmapped letters with a random fallback character.
  * 7. Join and return the converted string.
  *
- * @param {string} text - The text to convert.
+ * @param {string} input - The text to convert.
  * @returns {Promise<string>} The pseudo-Japanese representation.
  */
 export async function convertToPseudoJapanese(input) {
-  if (input === null || input === "") return "";
+  if (input === undefined || input === null || input === "") return "";
 
   const converter = await loadConverter();
   if (!converter || !converter.letters) {
