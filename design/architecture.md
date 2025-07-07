@@ -2,6 +2,9 @@
 
 This document summarizes the main source folders and their responsibilities.
 
+Throughout the project, keep modules simple. Favor small,
+single-purpose functions over monolithic implementations.
+
 ## game.js
 
 The entry point for the browser. It waits for `DOMContentLoaded` and wires up all game interactions. Helper functions are imported here to build the card carousel, fetch data, and render random judoka cards.
