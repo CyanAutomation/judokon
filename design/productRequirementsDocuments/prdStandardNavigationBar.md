@@ -158,10 +158,5 @@ The standard navbar uses `--color-secondary` for its background and `--button-te
 - Should the bar auto-hide after a period of inactivity?
 - Which screens, if any, should suppress the nav bar entirely?
 
-## Metadata
-
-- **Author:** Design Team
-- **Last Edited:** 2024-05-12
-- **Target Version:** 1.0.0
-- **Related Features:** Navigation Map, Home Page Menu
+---
   [Back to Game Modes Overview](prdGameModes.md)
