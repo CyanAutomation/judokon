@@ -40,9 +40,7 @@ describe("settingsPage module", () => {
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
-    await new Promise((r) => setTimeout(r, 0));
-    await new Promise((r) => setTimeout(r, 0));
-    await new Promise((r) => setTimeout(r, 0));
+    vi.runAllTimers();
 
     expect(loadSettings).toHaveBeenCalled();
     expect(fetchData).toHaveBeenCalled();
