@@ -11,11 +11,7 @@
  * @param {string} fallbackSrc - Path to the fallback PNG image.
  */
 
-/**
- * Default fallback PNG used when SVGs fail to load.
- *
- * @constant {string}
- */
+/** Default PNG fallback when an SVG fails to load. */
 export const DEFAULT_FALLBACK = "./src/assets/images/judokonLogoSmall.png";
 
 export function applySvgFallback(fallbackSrc = DEFAULT_FALLBACK) {
