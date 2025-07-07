@@ -92,8 +92,6 @@ describe("togglePortraitTextMenu", () => {
   });
 
   it("creates list items for valid game modes", async () => {
-    const navBar = setupDom();
-    stubLogoQuery();
     const modes = [
       { name: "Mode1", url: "mode1.html", image: "img1.png" },
       { name: "Mode2", url: "mode2.html", image: "img2.png" },
