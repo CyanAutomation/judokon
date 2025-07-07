@@ -1,5 +1,5 @@
 import { getCountryNameFromCode } from "./countryUtils.js";
-import { getValue, escapeHTML } from "./utils.js";
+import { getValue } from "./utils.js";
 import { debugLog } from "./debug.js";
 
 const PLACEHOLDER_FLAG_URL = "../assets/countryFlags/placeholder-flag.png";
@@ -25,21 +25,19 @@ export function createNoDataContainer() {
 }
 
 /**
- * Extracts and sanitizes judoka data (firstname, surname, and countryCode).
+ * Extracts judoka data (firstname, surname, and countryCode).
  *
  * @pseudocode
- * 1. Extract and sanitize `firstname`:
+ * 1. Extract `firstname`:
  *    - Use `getValue` to default to `"Unknown"` if missing.
- *    - Use `escapeHTML` to sanitize the value.
  *
- * 2. Extract and sanitize `surname`:
+ * 2. Extract `surname`:
  *    - Use `getValue` to default to an empty string (`""`) if missing.
- *    - Use `escapeHTML` to sanitize the value.
  *
  * 3. Extract `countryCode`:
  *    - Use `getValue` to default to `"unknown"` if missing.
  *
- * 4. Return an object containing the sanitized `firstname`, `surname`, and `countryCode`.
+ * 4. Return an object containing the extracted `firstname`, `surname`, and `countryCode`.
  */
 function extractJudokaData(judoka) {
   const firstname = getValue(judoka.firstname, "Unknown");
@@ -134,7 +132,7 @@ export function createFlagImage(finalFlagUrl, countryName) {
   flagImg.src = finalFlagUrl || PLACEHOLDER_FLAG_URL;
 
   const safeCountryName = countryName ? countryName : "Unknown";
-  // Use text to rely on the browser to escape characters when serializing
+  // Set alt attribute directly; the browser will handle any necessary escaping
   flagImg.setAttribute("alt", `${safeCountryName} flag`);
 
   flagImg.setAttribute("loading", "lazy");
