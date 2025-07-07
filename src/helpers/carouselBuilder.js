@@ -97,15 +97,17 @@ export function createScrollButton(direction, container, scrollAmount) {
  * Adds scroll markers to indicate the user's position in the carousel.
  *
  * @pseudocode
- * 1. Create a `<div>` element with the class `scroll-markers`.
- * 2. Add markers for each card in the carousel.
+ * 1. Validate inputs and exit early if `container` or `wrapper` is missing.
+ * 2. Create a `<div>` element with the class `scroll-markers`.
+ * 3. Add markers for each card in the carousel.
  *    - Highlight the marker corresponding to the currently visible card.
- * 3. Update the highlighted marker on scroll events.
+ * 4. Update the highlighted marker on scroll events.
  *
- * @param {HTMLElement} container - The carousel container element.
- * @param {HTMLElement} wrapper - The carousel wrapper element.
+ * @param {HTMLElement} [container] - The carousel container element.
+ * @param {HTMLElement} [wrapper] - The carousel wrapper element.
  */
 function addScrollMarkers(container, wrapper) {
+  if (!container || !wrapper) return;
   const markers = document.createElement("div");
   markers.className = "scroll-markers";
 
