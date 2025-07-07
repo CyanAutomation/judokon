@@ -116,7 +116,7 @@ export function generateCardStats(card, cardType = "common") {
  *    - Use `signatureMoveId` to find the matching technique.
  *    - Fallback to the default technique (PLACEHOLDER_ID) if no match is found.
  *
- * 3. Escape the technique name to prevent XSS.
+ * 3. Decode any HTML entities and then escape the technique name to prevent XSS.
  *
  * 4. Construct the signature move HTML:
  *    - Create a `<div>` element with the class `signature-move-container` and the card type as an additional class.
@@ -150,7 +150,8 @@ export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "commo
   const foundName = technique?.name;
 
   if (foundName) {
-    techniqueName = escapeHTML(foundName.trim()).replace(/&amp;amp;/g, "&amp;");
+    const decodedName = decodeHTML(foundName).trim();
+    techniqueName = escapeHTML(decodedName);
   } else {
     techniqueName = escapeHTML(techniqueName);
   }
