@@ -1,5 +1,7 @@
 import { validateWithSchema } from "./dataUtils.js";
-import settingsSchema from "../schemas/settings.schema.json" assert { type: "json" };
+const settingsSchema = await import("../schemas/settings.schema.json", {
+  assert: { type: "json" }
+}).then((module) => module.default);
 
 const SETTINGS_KEY = "settings";
 const DEFAULT_SETTINGS = {
