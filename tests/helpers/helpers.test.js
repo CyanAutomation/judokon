@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, test, expect } from "vitest";
 import { formatDate, escapeHTML } from "../../src/helpers/utils.js";
 
