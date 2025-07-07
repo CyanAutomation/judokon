@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Settings",
+  "type": "object",
+  "properties": {
+    "sound": {
+      "type": "boolean",
+      "description": "Whether sound is enabled."
+    },
+    "showFullNavMap": {
+      "type": "boolean",
+      "description": "Show the full navigation map."
+    },
+    "motionEffects": {
+      "type": "boolean",
+      "description": "Enable or disable motion effects."
+    },
+    "displayMode": {
+      "type": "string",
+      "enum": ["light", "dark"],
+      "description": "Display mode: light or dark."
+    },
+    "activeGameModes": {
+      "type": "object",
+      "description": "Active game modes (object with arbitrary keys).",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "sound",
+    "showFullNavMap",
+    "motionEffects",
+    "displayMode",
+    "activeGameModes"
+  ],
+  "additionalProperties": false
+}
