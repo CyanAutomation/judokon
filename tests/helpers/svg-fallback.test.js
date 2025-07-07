@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { applySvgFallback } from "../../src/helpers/svgFallback.js";
+import { applySvgFallback, DEFAULT_FALLBACK } from "../../src/helpers/svgFallback.js";
 
 afterEach(() => {
   document.body.innerHTML = "";
@@ -42,7 +42,8 @@ describe("applySvgFallback", () => {
     img.dispatchEvent(new Event("error"));
 
     // Should replace src with the default fallback image
-    expect(img.src).toContain(DEFAULT_FALLBACK);
+    // jsdom resolves relative paths to absolute URLs
+    expect(img.src).toContain(DEFAULT_FALLBACK.replace("./", "/"));
   });
 
   it("does not add svg-fallback class to non-SVG images", () => {
