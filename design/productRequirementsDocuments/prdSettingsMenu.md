@@ -127,7 +127,7 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 
 ## Settings Menu: User Flow
 
-- Player clicks “Settings” on the Judo Training Village Map.
+- Player clicks “Settings” on the Navigation Bar or Navigation Map.
 - Settings page loads in ≤200ms.
 - Toggles/selectors pull values from settings.json and render current state.
 - Player makes changes → UI updates instantly → data writes within 50ms.
