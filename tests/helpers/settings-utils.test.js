@@ -126,14 +126,16 @@ describe("settings utils", () => {
   /**
    * Should return default value when updating a non-existent key.
    */
-  it("returns default when updating unknown key", async () => {
+  it("rejects when updating unknown key", async () => {
     vi.useFakeTimers();
     const { updateSetting, loadSettings } = await import("../../src/helpers/settingsUtils.js");
-    const promise = updateSetting("nonexistentKey", "value");
+    await expect(updateSetting("nonexistentKey", "value")).rejects.toThrow(
+      "Schema validation failed"
+    );
     await vi.advanceTimersByTimeAsync(110);
-    await promise;
     const stored = await loadSettings();
-    expect(stored.nonexistentKey).toBe("value");
+    expect(stored).toEqual(DEFAULT_SETTINGS);
+    expect(stored.nonexistentKey).toBeUndefined();
   });
 
   /**
