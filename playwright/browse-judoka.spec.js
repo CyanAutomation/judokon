@@ -79,8 +79,8 @@ test.describe("Browse Judoka screen", () => {
     await expect(slides.first().locator("img")).toHaveAttribute("alt", /all countries/i);
   });
 
-  test.skip("judoka card enlarges on hover", async ({ page }) => {
-    const card = page.locator("[data-testid=carousel-container] .judoka-card").first();
+  test("judoka card enlarges on hover", async ({ page }) => {
+    const card = page.locator("#carousel-container .judoka-card").first();
     await card.waitFor();
 
     const before = await card.boundingBox();
@@ -92,9 +92,10 @@ test.describe("Browse Judoka screen", () => {
     expect(widthRatio).toBeLessThan(1.12);
   });
 
-  test.skip("carousel responds to arrow keys", async ({ page }) => {
-    const container = page.locator("[data-testid=carousel-container]");
+  test("carousel responds to arrow keys", async ({ page }) => {
+    const container = page.locator('[data-testid="carousel"]');
     await container.waitFor();
+    await setCarouselWidth(page, "200px");
 
     await container.focus();
     const start = await container.evaluate((el) => el.scrollLeft);
@@ -103,9 +104,13 @@ test.describe("Browse Judoka screen", () => {
     await expect.poll(() => container.evaluate((el) => el.scrollLeft)).toBeGreaterThan(start);
   });
 
-  test.skip("carousel responds to swipe gestures", async ({ page }) => {
+  test("carousel responds to swipe gestures", async ({ page }) => {
     const container = page.locator(".card-carousel");
     await container.waitFor();
+    const handle = await container.elementHandle();
+    await page.evaluate((el) => {
+      el.style.width = "200px";
+    }, handle);
 
     const box = await container.boundingBox();
     const startX = box.x + box.width * 0.8;
@@ -113,28 +118,41 @@ test.describe("Browse Judoka screen", () => {
 
     const before = await container.evaluate((el) => el.scrollLeft);
 
-    await page.mouse.move(startX, y);
-    await page.mouse.down();
-    await page.mouse.move(startX - 200, y, { steps: 10 });
-    await page.mouse.up();
+    await page.evaluate(
+      ({ startX, y }) => {
+        const el = document.querySelector(".card-carousel");
+        el.dispatchEvent(
+          new TouchEvent("touchstart", {
+            bubbles: true,
+            cancelable: true,
+            touches: [new Touch({ identifier: 1, target: el, clientX: startX, clientY: y })]
+          })
+        );
+        el.dispatchEvent(
+          new TouchEvent("touchend", {
+            bubbles: true,
+            cancelable: true,
+            changedTouches: [
+              new Touch({ identifier: 1, target: el, clientX: startX - 200, clientY: y })
+            ]
+          })
+        );
+      },
+      { startX, y }
+    );
 
     await expect.poll(() => container.evaluate((el) => el.scrollLeft)).toBeGreaterThan(before);
   });
 
   test.skip("shows loading spinner on slow network", async ({ page }) => {
     const context = await page.context();
-    await context.route("**/src/data/judoka.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/judoka.json" })
-    );
-    await context.route("**/src/data/gokyo.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/gokyo.json" })
-    );
-
-    // Simulate a slow network
-    await context.setNetworkConditions({
-      download: 50 * 1024, // 50 KB/s
-      upload: 20 * 1024, // 20 KB/s
-      latency: 2000 // 2 seconds latency
+    await context.route("**/src/data/judoka.json", async (route) => {
+      await new Promise((r) => setTimeout(r, 2500));
+      await route.fulfill({ path: "tests/fixtures/judoka.json" });
+    });
+    await context.route("**/src/data/gokyo.json", async (route) => {
+      await new Promise((r) => setTimeout(r, 2500));
+      await route.fulfill({ path: "tests/fixtures/gokyo.json" });
     });
 
     await page.reload();
