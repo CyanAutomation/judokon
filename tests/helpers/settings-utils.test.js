@@ -1,7 +1,6 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 
 const originalSetItem = Storage.prototype.setItem;
-const originalGetItem = Storage.prototype.getItem;
 
 afterEach(() => {
   vi.restoreAllMocks();
