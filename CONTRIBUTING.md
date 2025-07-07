@@ -43,8 +43,7 @@ npx playwright test --update-snapshots
 ```
 
 Do **not** commit files under `playwright/*-snapshots`. Baseline screenshots are
-updated automatically by `.github/workflows/playwright-baseline.yml`. If Playwr
-ight tests fail because visuals changed, mention this in your pull request but
+updated automatically by `.github/workflows/playwright-baseline.yml`. If Playwright tests fail because visuals changed, mention this in your pull request but
 avoid committing new snapshot images.
 
 ## Git Hooks
