@@ -16,7 +16,7 @@ import { DATA_DIR } from "./constants.js";
 export function toggleExpandedMapView(gameModes) {
   const navBar = document.querySelector(".bottom-navbar");
   if (!navBar) return; // Guard: do nothing if navbar is missing
-  clearBottomNavbar(); // Clear existing content
+  clearBottomNavbar(navBar); // Clear existing content
 
   const validModes = validateGameModes(gameModes);
 
