@@ -59,6 +59,11 @@ npm run test:screenshot
 
 Check generated screenshots and diffs carefully.
 
+- **Do not commit files under `playwright/*-snapshots`.** Baseline screenshots
+  are updated automatically by `.github/workflows/playwright-baseline.yml`.
+  If Playwright tests fail because visuals changed, mention the failure in your
+  pull request description but avoid committing new snapshot images.
+
 📝 Note: Screenshot tests are optional for minor changes but strongly encouraged for any updates affecting layout, components, or styles.
 
 ## Additional Notes

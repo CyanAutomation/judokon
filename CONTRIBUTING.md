@@ -42,6 +42,11 @@ If a UI change is intended, update baseline screenshots with:
 npx playwright test --update-snapshots
 ```
 
+Do **not** commit files under `playwright/*-snapshots`. Baseline screenshots are
+updated automatically by `.github/workflows/playwright-baseline.yml`. If Playwr
+ight tests fail because visuals changed, mention this in your pull request but
+avoid committing new snapshot images.
+
 ## Git Hooks
 
 The project uses [Husky](https://typicode.github.io/husky) for local Git hooks.
