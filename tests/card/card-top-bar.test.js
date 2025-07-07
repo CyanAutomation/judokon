@@ -94,13 +94,13 @@ describe("generateCardTopBar", () => {
       flagUrl
     );
     expect(result.outerHTML).toContain("&lt;John&gt;");
-    expect(result.outerHTML).toContain("&quot;Doe&quot;");
+    expect(result.outerHTML).toContain('"Doe"');
   });
 
   it("escapes HTML in country name for alt attribute", async () => {
     vi.spyOn(countryUtils, "getCountryNameFromCode").mockResolvedValueOnce("<France>");
     const result = await generateCardTopBar(judoka, flagUrl);
-    expect(result.outerHTML).toContain('alt="&lt;France&gt; flag"');
+    expect(result.outerHTML).toContain('alt="<France> flag"');
   });
 
   it("includes alt attribute even if countryName is falsy", async () => {
@@ -143,7 +143,7 @@ describe("createNameContainer", () => {
   it("escapes HTML in firstname and surname", () => {
     const nameContainer = createNameContainer("<John>", '"Doe"');
     expect(nameContainer.outerHTML).toContain("&lt;John&gt;");
-    expect(nameContainer.outerHTML).toContain("&quot;Doe&quot;");
+    expect(nameContainer.outerHTML).toContain('"Doe"');
   });
 });
 
@@ -161,7 +161,7 @@ describe("createFlagImage", () => {
 
   it("escapes HTML in country name for alt attribute", () => {
     const flagImage = createFlagImage(flagUrl, "<France>");
-    expect(flagImage.outerHTML).toContain('alt="&lt;France&gt; flag"');
+    expect(flagImage.outerHTML).toContain('alt="<France> flag"');
   });
 
   it("uses 'Unknown flag' alt if countryName is falsy", () => {
