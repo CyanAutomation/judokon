@@ -6,25 +6,25 @@
 
 ## Goals
 
-- Offer a mixed-gender team contest with balanced rules.
+- Provide a dedicated 5v5 battle format for male judoka.
 
 ## User Stories
 
-- As a player, I want men and women to compete together so I can build varied teams.
+- As a competitor, I want matches limited to male judoka so the contest is fair.
 - As a strategist, I need each round to follow a fixed order so planning matters.
 - As a spectator, I want a clear score display so I can track which team is ahead.
 
 ## Functional Requirements
 
-- FR-1 (P1): Support teams of six judoka, any gender allowed.
-- FR-2 (P1): Run six sequential 1v1 matches, rotating through the team roster.
-- FR-3 (P1): Declare the winner once a team scores 6 points.
+- FR-1 (P1): Confirm all chosen judoka are male before starting a match.
+- FR-2 (P1): Play five sequential bouts, one for each team member.
+- FR-3 (P1): End the contest when one side reaches 5 points.
 
 ## Acceptance Criteria
 
-- Mixed teams can be formed without restriction.
-- Match flow shows current fighters and upcoming order.
-- Win screen appears when a side reaches 6 points.
+- Gender validation blocks invalid team members.
+- On-screen queue shows who fights next.
+- Win animation triggers at 5 points.
 
 ## Non-Goals
 
@@ -37,7 +37,7 @@
 
 ## Open Questions
 
-- Should Mixed mode permit custom team sizes or stick to six members?
+- Should Male mode permit custom team sizes or stick to five members?
 
 ## Metadata
 
