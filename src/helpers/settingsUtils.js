@@ -20,7 +20,7 @@ const SAVE_DELAY_MS = 100;
  * Load persisted settings from localStorage.
  *
  * @pseudocode
- * 1. If `localStorage` is unavailable, return `DEFAULT_SETTINGS`.
+ * 1. Throw an error if `localStorage` is unavailable.
  * 2. Retrieve the JSON string stored under `SETTINGS_KEY`.
  *    - When no value exists, return `DEFAULT_SETTINGS`.
  * 3. Parse the JSON and merge with `DEFAULT_SETTINGS`.
@@ -32,7 +32,7 @@ const SAVE_DELAY_MS = 100;
 export async function loadSettings() {
   try {
     if (typeof localStorage === "undefined") {
-      return { ...DEFAULT_SETTINGS };
+      throw new Error("localStorage unavailable");
     }
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (!raw) {
