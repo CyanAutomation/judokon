@@ -1,6 +1,8 @@
 // Constants
 const PLACEHOLDER_ID = 0;
 
+import { escapeHTML } from "./utils.js";
+
 /**
  * Generates the portrait HTML for a judoka card.
  *
@@ -10,12 +12,13 @@ const PLACEHOLDER_ID = 0;
  *    - Throw an error if validation fails.
  *
  * 2. Extract judoka details (`id`, `firstname`, `surname`) from the card object.
+ *    - Escape `firstname` and `surname` using `escapeHTML`.
  *
  * 3. Construct the portrait HTML:
  *    - Create a `<div>` element with the class `card-portrait`.
  *    - Add an `<img>` element:
  *      a. Set the `src` attribute to the portrait URL based on `id`.
- *      b. Set the `alt` attribute to include the judoka's name.
+ *      b. Set the `alt` attribute to include the escaped name.
  *      c. Add an `onerror` handler to fallback to the placeholder portrait (PLACEHOLDER_ID) if the image fails to load.
  *
  * 4. Return the constructed HTML string.
@@ -38,9 +41,11 @@ export function generateCardPortrait(card) {
   }
 
   const { id, firstname, surname } = card;
+  const escapedFirstname = escapeHTML(firstname);
+  const escapedSurname = escapeHTML(surname);
   return `
     <div class="card-portrait">
-      <img src="../assets/judokaPortraits/judokaPortrait-${id}.png" alt="${firstname} ${surname}'s portrait" loading="lazy" onerror="this.onerror=null; this.src='../assets/judokaPortraits/judokaPortrait-${PLACEHOLDER_ID}.png'">
+      <img src="../assets/judokaPortraits/judokaPortrait-${id}.png" alt="${escapedFirstname} ${escapedSurname}'s portrait" loading="lazy" onerror="this.onerror=null; this.src='../assets/judokaPortraits/judokaPortrait-${PLACEHOLDER_ID}.png'">
     </div>
   `;
 }
@@ -55,6 +60,7 @@ export function generateCardPortrait(card) {
  *
  * 2. Extract stats (`power`, `speed`, `technique`, `kumikata`, `newaza`) from the card object:
  *    - Default missing values to "?".
+ *    - Escape each stat value using `escapeHTML`.
  *
  * 3. Construct the stats HTML:
  *    - Create a `<div>` element with the class `card-stats` and the card type as an additional class.
@@ -79,14 +85,20 @@ export function generateCardStats(card, cardType = "common") {
 
   const { power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?" } = card.stats;
 
+  const escapedPower = escapeHTML(power);
+  const escapedSpeed = escapeHTML(speed);
+  const escapedTechnique = escapeHTML(technique);
+  const escapedKumikata = escapeHTML(kumikata);
+  const escapedNewaza = escapeHTML(newaza);
+
   return `
     <div class="card-stats ${cardType}">
       <ul>
-        <li class="stat"><strong>Power</strong> <span>${power}</span></li>
-        <li class="stat"><strong>Speed</strong> <span>${speed}</span></li>
-        <li class="stat"><strong>Technique</strong> <span>${technique}</span></li>
-        <li class="stat"><strong>Kumi-kata</strong> <span>${kumikata}</span></li>
-        <li class="stat"><strong>Ne-waza</strong> <span>${newaza}</span></li>
+        <li class="stat"><strong>Power</strong> <span>${escapedPower}</span></li>
+        <li class="stat"><strong>Speed</strong> <span>${escapedSpeed}</span></li>
+        <li class="stat"><strong>Technique</strong> <span>${escapedTechnique}</span></li>
+        <li class="stat"><strong>Kumi-kata</strong> <span>${escapedKumikata}</span></li>
+        <li class="stat"><strong>Ne-waza</strong> <span>${escapedNewaza}</span></li>
       </ul>
     </div>
   `;
@@ -117,7 +129,6 @@ export function generateCardStats(card, cardType = "common") {
  * @param {string} cardType - The type of card (e.g., "common", "rare").
  * @returns {string} The HTML string for the signature move.
  */
-import { escapeHTML } from "./utils.js";
 import { debugLog } from "./debug.js";
 
 export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
