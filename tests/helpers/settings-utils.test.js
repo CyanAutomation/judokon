@@ -134,13 +134,7 @@ describe("settings utils", () => {
     );
     await vi.advanceTimersByTimeAsync(110);
     const stored = await loadSettings();
-    expect(stored).toEqual({
-      sound: true,
-      fullNavMap: true,
-      motionEffects: true,
-      displayMode: "light",
-      gameModes: {}
-    });
+    expect(stored).toEqual(DEFAULT_SETTINGS);
     expect(stored.nonexistentKey).toBeUndefined();
   });
 
