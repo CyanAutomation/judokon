@@ -29,8 +29,8 @@
     }
   },
   {
-    "id": "judokaUpdateSelection",
-    "name": "Judoka Update Mode",
+    "id": "manageJudokaSelection",
+    "name": "Manage Judoka",
     "japaneseName": "柔道家編集モード",
     "description": "Choose to update or create a judoka.",
     "category": "subMenu",
@@ -160,6 +160,19 @@
     "category": "mainMenu",
     "order": 40,
     "url": "randomJudoka.html",
+    "isHidden": false,
+    "rules": {
+      "note": "Rules will be defined in the future."
+    }
+  },
+  {
+    "id": "settingsMenu",
+    "name": "Settings",
+    "japaneseName": "設定",
+    "description": "Change game settings.",
+    "category": "mainMenu",
+    "order": 90,
+    "url": "settings.html",
     "isHidden": false,
     "rules": {
       "note": "Rules will be defined in the future."
