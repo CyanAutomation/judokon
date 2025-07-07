@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import { DEFAULT_SETTINGS } from "../../src/helpers/settingsUtils.js";
 
 /**
