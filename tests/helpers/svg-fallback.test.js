@@ -42,7 +42,7 @@ describe("applySvgFallback", () => {
     img.dispatchEvent(new Event("error"));
 
     // Should replace src with the default fallback image
-    expect(img.src).toContain("judokonLogoSmall.png");
+    expect(img.src).toContain(DEFAULT_FALLBACK);
   });
 
   it("does not add svg-fallback class to non-SVG images", () => {
