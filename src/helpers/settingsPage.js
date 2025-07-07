@@ -57,21 +57,21 @@ function initializeControls(settings, gameModes) {
   }
 
   soundToggle?.addEventListener("change", () => {
-    const prev = soundToggle.checked ? false : true; // previous state
+    const prev = !soundToggle.checked; // previous state
     handleUpdate("sound", soundToggle.checked, () => {
       soundToggle.checked = prev;
     });
   });
 
   navToggle?.addEventListener("change", () => {
-    const prev = navToggle.checked ? false : true;
+    const prev = !navToggle.checked;
     handleUpdate("fullNavMap", navToggle.checked, () => {
       navToggle.checked = prev;
     });
   });
 
   motionToggle?.addEventListener("change", () => {
-    const prev = motionToggle.checked ? false : true;
+    const prev = !motionToggle.checked;
     handleUpdate("motionEffects", motionToggle.checked, () => {
       motionToggle.checked = prev;
     });
