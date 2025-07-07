@@ -150,7 +150,7 @@ export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "commo
   const foundName = technique?.name;
 
   if (foundName) {
-    techniqueName = escapeHTML(foundName.trim());
+    techniqueName = escapeHTML(foundName.trim()).replace(/&amp;amp;/g, "&amp;");
   } else {
     techniqueName = escapeHTML(techniqueName);
   }

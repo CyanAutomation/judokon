@@ -98,7 +98,9 @@ export async function updateSetting(key, value) {
     const current = await loadSettings();
     const updated = { ...current, [key]: value };
     await validateWithSchema(updated, settingsSchema);
-    await saveSettings(updated);
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
+    }
     return updated;
   } catch (error) {
     console.error(`Failed to update setting ${key}:`, error);
