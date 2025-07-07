@@ -21,11 +21,13 @@ describe("settingsPage module", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
     vi.resetModules();
     document.body.innerHTML = "";
   });
 
   it("loads settings and game modes on DOMContentLoaded", async () => {
+    vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const fetchData = vi.fn().mockResolvedValue([]);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
