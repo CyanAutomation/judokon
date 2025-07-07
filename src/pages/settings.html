@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="keywords" content="judo, card game, web game, settings" />
+    <meta name="author" content="Marc Scheimann" />
+    <meta
+      name="description"
+      content="JU-DO-KON! A web-based judo-themed card battle game featuring elite judoka."
+    />
+    <meta property="og:title" content="JU-DO-KON!" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cyanautomation.github.io/judokon/" />
+    <meta
+      property="og:description"
+      content="JU-DO-KON! A web-based judo-themed card battle game featuring elite judoka."
+    />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Ju-Do-Kon! Settings</title>
+    <link rel="stylesheet" href="../styles/fonts.css" />
+    <link rel="stylesheet" href="../styles/base.css" />
+    <link rel="stylesheet" href="../styles/layout.css" />
+    <link rel="stylesheet" href="../styles/components.css" />
+    <link rel="stylesheet" href="../styles/utilities.css" />
+    <link rel="icon" type="image/png" href="../assets/images/favicon.ico" />
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="character-slot left"></div>
+      <div class="logo-container">
+        <a href="/judokon/index.html">
+          <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
+        </a>
+      </div>
+      <div class="character-slot right"></div>
+    </header>
+
+    <main class="container" role="main">
+      <form id="settings-form" class="settings-form">
+        <fieldset>
+          <legend class="visually-hidden">Game Settings</legend>
+          <div class="settings-item">
+            <label for="sound-toggle">
+              <input type="checkbox" id="sound-toggle" name="sound" />
+              <span>Sound</span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <label for="navmap-toggle">
+              <input type="checkbox" id="navmap-toggle" name="navmap" />
+              <span>Full Navigation Map</span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <label for="motion-toggle">
+              <input type="checkbox" id="motion-toggle" name="motion" />
+              <span>Motion Effects</span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <label for="display-mode-select">Display Mode</label>
+            <select id="display-mode-select">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="gray">Gray</option>
+            </select>
+          </div>
+        </fieldset>
+      </form>
+      <section id="game-mode-toggle-container" class="game-mode-toggle-container" aria-label="Game Mode Selector"></section>
+    </main>
+
+    <footer>
+      <nav class="bottom-navbar" aria-label="Bottom Navigation"></nav>
+    </footer>
+    <script type="module" src="../helpers/setupBottomNavbar.js"></script>
+
+    <noscript>
+      <p class="noscript-warning">
+        JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
+      </p>
+    </noscript>
+
+    <script type="module" src="../helpers/settingsPage.js"></script>
+    <script nomodule>
+      alert(
+        "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
+      );
+    </script>
+    <script type="module" src="../helpers/setupSvgFallback.js"></script>
+  </body>
+</html>
