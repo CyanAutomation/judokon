@@ -252,7 +252,7 @@ Code Generation and Sharing Flow
 
 - [ ] 2.0 Error Handling and Edge Cases
 
-  - [ ] 2.1 Fallback to a generic card code (judoka id=0] if encoding fails.
+  - [ ] 2.1 Fallback to a generic card code (judoka id=0) if encoding fails.
   - [ ] 2.2 Handle unusually large string input safely.
 
 - [ ] 3.0 Unit Tests
