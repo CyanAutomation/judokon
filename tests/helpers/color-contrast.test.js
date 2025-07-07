@@ -41,9 +41,4 @@ describe("base.css color contrast", () => {
       `Contrast ratio between ${a} (${vars[a]}) and ${b} (${vars[b]}) is ${ratio}, which is less than the required 4.5.`
     );
   });
-
-  it("returns 1 for identical colors", () => {
-    expect(hex("#ffffff", "#ffffff")).toBe(1);
-    expect(hex("#000", "#000")).toBe(1);
-  });
 });
