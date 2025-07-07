@@ -21,7 +21,7 @@
     "japaneseName": "団体戦選択",
     "description": "Choose between Male, Female, or Mixed Team Battle modes.",
     "category": "subMenu",
-    "order": 30,
+    "order": 35,
     "url": "teamBattleSelection.html",
     "isHidden": true,
     "rules": {
