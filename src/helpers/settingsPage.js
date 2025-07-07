@@ -18,6 +18,8 @@ export function showSettingsError() {
   existing?.remove();
   const popup = document.createElement("div");
   popup.className = "settings-error-popup";
+  popup.setAttribute("role", "alert");
+  popup.setAttribute("aria-live", "assertive");
   popup.textContent = "Failed to update settings.";
   document.body.appendChild(popup);
   requestAnimationFrame(() => {
