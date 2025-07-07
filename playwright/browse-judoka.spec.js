@@ -1,21 +1,11 @@
 import { test, expect } from "@playwright/test";
+import { registerCommonRoutes } from "./fixtures/commonRoutes.js";
 
 const COUNTRY_TOGGLE_LOCATOR = /choose country/i;
 
 test.describe("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
-    await page.route("**/src/data/judoka.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/judoka.json" })
-    );
-    await page.route("**/src/data/gokyo.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/gokyo.json" })
-    );
-    await page.route("**/src/data/countryCodeMapping.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/countryCodeMapping.json" })
-    );
-    await page.route("https://flagcdn.com/**", (route) =>
-      route.fulfill({ path: "src/assets/countryFlags/placeholder-flag.png" })
-    );
+    await registerCommonRoutes(page);
     await page.goto("/src/pages/browseJudoka.html");
   });
 
