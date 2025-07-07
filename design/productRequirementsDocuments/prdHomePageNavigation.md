@@ -285,11 +285,6 @@ Each tile contains:
 
 - Should Team Battle get its own dedicated URL before launch?
 
-## Metadata
-
-- Author: Game Design Team
-- Last Edited: 2024-05-01
-
 ---
 
 ## Tasks
