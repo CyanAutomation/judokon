@@ -92,11 +92,13 @@ export function createNameContainer(firstname, surname) {
 
   const firstnameSpan = document.createElement("span");
   firstnameSpan.className = "firstname";
-  firstnameSpan.innerHTML = escapeHTML(firstname);
+  // Use textContent to safely insert text without interpreting HTML
+  firstnameSpan.textContent = firstname;
 
   const surnameSpan = document.createElement("span");
   surnameSpan.className = "surname";
-  surnameSpan.innerHTML = escapeHTML(surname);
+  // Use textContent to safely insert text without interpreting HTML
+  surnameSpan.textContent = surname;
 
   nameContainer.appendChild(firstnameSpan);
   nameContainer.appendChild(surnameSpan);
@@ -132,8 +134,8 @@ export function createFlagImage(finalFlagUrl, countryName) {
   flagImg.src = finalFlagUrl || PLACEHOLDER_FLAG_URL;
 
   const safeCountryName = countryName ? countryName : "Unknown";
-  // Fix: Use "Unknown" if countryName is falsy (including empty string)
-  flagImg.setAttribute("alt", `${escapeHTML(safeCountryName || "Unknown")} flag`);
+  // Use text to rely on the browser to escape characters when serializing
+  flagImg.setAttribute("alt", `${safeCountryName} flag`);
 
   flagImg.setAttribute("loading", "lazy");
 
