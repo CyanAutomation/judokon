@@ -115,7 +115,7 @@ describe("fetchDataWithErrorHandling", () => {
       .fn()
       .mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(data1) })
       .mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(data2) });
-    global.fetch = fetchMock;
+    vi.stubGlobal('fetch', fetchMock);
 
     const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
     const url1 = "/one.json";
