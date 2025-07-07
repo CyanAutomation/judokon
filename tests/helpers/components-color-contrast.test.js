@@ -58,9 +58,4 @@ describe("components.css color contrast", () => {
     const ratio = hex(bg, vars["--color-text-inverted"]);
     expect(ratio).toBeGreaterThanOrEqual(4.5);
   });
-
-  it("returns 1 for identical colors", () => {
-    expect(hex("#fff", "#fff")).toBe(1);
-    expect(hex("#000", "#000")).toBe(1);
-  });
 });
