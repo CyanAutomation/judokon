@@ -1,7 +1,7 @@
 // Constants
 const PLACEHOLDER_ID = 0;
 
-import { escapeHTML } from "./utils.js";
+import { escapeHTML, decodeHTML } from "./utils.js";
 
 /**
  * Generates the portrait HTML for a judoka card.
@@ -150,7 +150,7 @@ export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "commo
   const foundName = technique?.name;
 
   if (foundName) {
-    techniqueName = escapeHTML(foundName.trim());
+    techniqueName = escapeHTML(decodeHTML(foundName.trim()));
   } else {
     techniqueName = escapeHTML(techniqueName);
   }
