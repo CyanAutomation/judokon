@@ -19,7 +19,7 @@ test.describe("Pseudo-Japanese toggle", () => {
 
   test("toggle updates quote text", async ({ page }) => {
     const quote = page.locator("#quote");
-    const toggle = page.locator("#language-toggle");
+    const toggle = page.getByTestId("language-toggle");
 
     const originalHTML = await quote.innerHTML();
 

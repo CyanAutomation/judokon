@@ -16,7 +16,7 @@
     <header class="header">
       <div class="character-slot left"></div>
       <div class="logo-container">
-        <a href="/judokon/index.html">
+        <a href="/judokon/index.html" data-testid="home-link">
           <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
         </a>
       </div>
@@ -32,7 +32,7 @@
         </div>
 
         <div class="quote-block">
-          <button id="language-toggle" class="language-toggle hidden">
+          <button id="language-toggle" data-testid="language-toggle" class="language-toggle hidden">
             <span class="jp-flag flag-icon"></span> 日本語風 / English
             <span class="uk-flag flag-icon"></span>
           </button>
@@ -54,6 +54,7 @@
       <a
         href="../../index.html"
         class="cta-button"
+        data-testid="continue-link"
         aria-label="Continue Your Journey to the main menu after your victory"
       >
         Continue Your Journey
@@ -61,7 +62,7 @@
     </main>
 
     <footer>
-      <nav class="bottom-navbar"></nav>
+      <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
     </footer>
     <script type="module" src="../helpers/setupBottomNavbar.js"></script>
 
