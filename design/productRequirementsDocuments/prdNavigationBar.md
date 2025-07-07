@@ -159,4 +159,5 @@ The standard navbar uses `--color-secondary` for its background and `--button-te
 - Which screens, if any, should suppress the nav bar entirely?
 
 ---
-  [Back to Game Modes Overview](prdGameModes.md)
+
+[Back to Game Modes Overview](prdGameModes.md)
