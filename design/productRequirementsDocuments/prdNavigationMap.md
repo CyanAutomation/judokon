@@ -149,10 +149,10 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
   - [ ] 3.3 Ensure fallback loads within 1 second.
 
 - [ ] **4.0 Ensure Accessibility & Performance (P2)**
-  - [ ] 5.1 Add keyboard navigation and visible focus indicators for all tiles.
-  - [ ] 5.2 Provide alt text and screen reader support for all tiles.
-  - [ ] 5.3 Test animation performance on devices to ensure ≥60fps.
-  - [ ] 5.4 Verify all text labels meet WCAG 2.1 AA contrast standards (≥4.5:1).
+  - [ ] 4.1 Add keyboard navigation and visible focus indicators for all tiles.
+  - [ ] 4.2 Provide alt text and screen reader support for all tiles.
+  - [ ] 4.3 Test animation performance on devices to ensure ≥60fps.
+  - [ ] 4.4 Verify all text labels meet WCAG 2.1 AA contrast standards (≥4.5:1).
 - [ ] **5.0 Add "Simple Menu Mode" toggle to settings (P3)**
 
 ---
