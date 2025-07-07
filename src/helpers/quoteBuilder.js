@@ -70,17 +70,20 @@ function formatFableStory(story) {
  * 1. Reference the cached quote and loader elements:
  *    - `quoteDiv` and `loaderDiv` are module-level references to `#quote` and `#quote-loader`.
  *
- * 2. Check if a fable is provided:
+ * 2. Ensure the DOM elements exist:
+ *    - If either element is missing, exit early.
+ *
+ * 3. Check if a fable is provided:
  *    - If a fable is provided:
  *      a. Format the fable's story using `formatFableStory`.
  *      b. Update the quote div's inner HTML with the fable's title and formatted story.
  *    - If no fable is provided:
  *      a. Display a default congratulatory message in the quote div.
  *
- * 3. Update the quote div:
+ * 4. Update the quote div:
  *    - Use template literals to dynamically insert the fable's title and story into the HTML structure.
 
- * 4. Toggle visibility:
+ * 5. Toggle visibility:
  *    - Hide the loader element and remove the `hidden` class from the quote element.
  *
  * @param {Object|null} fable - The fable object containing the title and story, or `null` if no fable is available.
@@ -88,6 +91,10 @@ function formatFableStory(story) {
 function displayFable(fable) {
   const quoteDiv = document.getElementById("quote");
   const loaderDiv = document.getElementById("quote-loader");
+  if (!quoteDiv || !loaderDiv) {
+    return;
+  }
+
   if (fable) {
     const formattedStory = formatFableStory(fable.story);
     quoteDiv.innerHTML = `
