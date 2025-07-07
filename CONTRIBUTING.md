@@ -69,6 +69,12 @@ See `design/codeStandards/codeJSDocStandards.md` and
 `design/codeStandards/codePseudocodeStandards.md` for full examples and
 additional guidance.
 
+## Simplicity and Modular Design
+
+All new code should aim to be simple and modular. Favor small,
+single-purpose functions and keep modules focused on one task. Avoid
+large, monolithic implementations whenever possible.
+
 ## Commit Messages
 
 Write short, imperative commit messages. Reference related issues if
