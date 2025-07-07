@@ -1,16 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { registerCommonRoutes } from "./fixtures/commonRoutes.js";
 
 test.describe("View Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
-    await page.route("**/src/data/judoka.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/judoka.json" })
-    );
-    await page.route("**/src/data/gokyo.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/gokyo.json" })
-    );
-    await page.route("**/src/data/countryCodeMapping.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/countryCodeMapping.json" })
-    );
+    await registerCommonRoutes(page);
     await page.goto("/src/pages/randomJudoka.html");
   });
 
