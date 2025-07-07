@@ -22,11 +22,13 @@ async function loadConverter() {
  *    - If loading fails, return `STATIC_FALLBACK`.
  * 3. Clean the `text` by removing characters other than letters, numbers, and whitespace.
  * 4. Build a list of fallback characters from the mapping values.
- * 5. For each character in the cleaned text:
+ * 5. If the cleaned text contains only digits and whitespace, return an empty
+ *    string.
+ * 6. For each character in the cleaned text:
  *    - Preserve whitespace characters as-is.
- *    - Map letters (case-insensitive) using the converter table.
- *    - Skip unmapped characters (do not output fallback for digits or punctuation).
- * 6. Join and return the converted string.
+ *    - Map letters (case-insensitive) using the converter table when possible.
+ *    - Replace digits and unmapped letters with a random fallback character.
+ * 7. Join and return the converted string.
  *
  * @param {string} text - The text to convert.
  * @returns {Promise<string>} The pseudo-Japanese representation.
@@ -41,6 +43,11 @@ export async function convertToPseudoJapanese(input) {
 
   const mapping = converter.letters;
   const cleaned = String(input).replace(/[^A-Za-z0-9\s]/g, "");
+  const fallbackChars = Object.values(mapping).flat();
+
+  if (/^[0-9\s]*$/.test(cleaned)) {
+    return "";
+  }
 
   return cleaned
     .split("")
@@ -48,15 +55,14 @@ export async function convertToPseudoJapanese(input) {
       if (/\s/.test(char)) {
         return char;
       }
-      // Only map letters; skip digits and other unsupported chars
-      if (/^[A-Za-z]$/.test(char)) {
-        const letters = mapping[char.toLowerCase()];
-        if (letters) {
-          return letters[Math.floor(Math.random() * letters.length)];
-        }
+
+      const letters = mapping[char.toLowerCase()];
+      if (letters) {
+        return letters[Math.floor(Math.random() * letters.length)];
       }
-      // skip unsupported (digits, etc.)
-      return "";
+
+      // digits or unmapped letters
+      return fallbackChars[Math.floor(Math.random() * fallbackChars.length)];
     })
     .join("");
 }
