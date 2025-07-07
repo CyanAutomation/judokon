@@ -16,7 +16,7 @@
 
 ## Functional Requirements
 
-- FR-1 (P1): Confirm all chosen judoka are male before starting a match.
+- FR-1 (P1): Confirm all chosen judoka are male and ensure each team has exactly five members before starting a match.
 - FR-2 (P1): Play five sequential bouts, one for each team member.
 - FR-3 (P1): End the contest when one side reaches 5 points.
 
