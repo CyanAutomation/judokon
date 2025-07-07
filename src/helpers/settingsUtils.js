@@ -40,7 +40,6 @@ export async function loadSettings() {
     await validateWithSchema(merged, settingsSchema);
     return merged;
   } catch (error) {
-    console.error("Failed to load settings:", error);
     throw error;
   }
 }
