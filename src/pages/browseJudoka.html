@@ -72,7 +72,7 @@
         import { buildCardCarousel } from "../helpers/carouselBuilder.js";
         import { populateCountryList } from "../helpers/countryUtils.js";
         import { toggleCountryPanel, toggleCountryPanelMode } from "../helpers/countryPanel.js";
-        import { fetchDataWithErrorHandling } from "../helpers/dataUtils.js";
+        import { fetchJson } from "../helpers/dataUtils.js";
         import { DATA_DIR } from "../helpers/constants.js";
 
         document.addEventListener("DOMContentLoaded", async () => {
@@ -88,8 +88,8 @@
 
           async function loadData() {
             [allJudoka, gokyoData] = await Promise.all([
-              fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`),
-              fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`)
+              fetchJson(`${DATA_DIR}judoka.json`),
+              fetchJson(`${DATA_DIR}gokyo.json`)
             ]);
           }
 

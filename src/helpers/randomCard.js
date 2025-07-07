@@ -1,4 +1,4 @@
-import { fetchDataWithErrorHandling } from "./dataUtils.js";
+import { fetchJson } from "./dataUtils.js";
 import { createGokyoLookup } from "./utils.js";
 import { generateJudokaCardHTML } from "./cardBuilder.js";
 import { getRandomJudoka } from "./cardUtils.js";
@@ -36,7 +36,7 @@ export async function generateRandomCard(
   if (!containerEl) return;
 
   try {
-    const judokaData = activeCards || (await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`));
+    const judokaData = activeCards || (await fetchJson(`${DATA_DIR}judoka.json`));
 
     const validJudoka = Array.isArray(judokaData)
       ? judokaData.filter((j) => {
@@ -56,7 +56,7 @@ export async function generateRandomCard(
       throw new Error("No valid judoka entries found");
     }
 
-    const gokyo = gokyoData || (await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`));
+    const gokyo = gokyoData || (await fetchJson(`${DATA_DIR}gokyo.json`));
     const gokyoLookup = createGokyoLookup(gokyo);
 
     const selectedJudoka = getRandomJudoka(validJudoka);
@@ -95,7 +95,7 @@ export async function generateRandomCard(
     };
 
     try {
-      const gokyo = gokyoData || (await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`));
+      const gokyo = gokyoData || (await fetchJson(`${DATA_DIR}gokyo.json`));
       const gokyoLookup = createGokyoLookup(gokyo);
       const fallbackCard = await generateJudokaCardHTML(fallbackJudoka, gokyoLookup);
 

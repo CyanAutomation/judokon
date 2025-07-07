@@ -1,4 +1,4 @@
-import { fetchDataWithErrorHandling, validateData } from "./helpers/dataUtils.js";
+import { fetchJson, validateData } from "./helpers/dataUtils.js";
 import { buildCardCarousel } from "./helpers/carouselBuilder.js";
 import { generateRandomCard } from "./helpers/randomCard.js";
 import { DATA_DIR } from "./helpers/constants.js";
@@ -44,8 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
-        const judokaData = await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`);
-        const gokyoData = await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`);
+        const judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
+        const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
 
         validateData(judokaData, "judoka");
         validateData(gokyoData, "gokyo");

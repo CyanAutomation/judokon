@@ -16,7 +16,7 @@ vi.mock("../../src/helpers/utils.js", () => ({
 }));
 
 vi.mock("../../src/helpers/dataUtils.js", () => ({
-  fetchDataWithErrorHandling: vi.fn()
+  fetchJson: vi.fn()
 }));
 
 const judokaData = [

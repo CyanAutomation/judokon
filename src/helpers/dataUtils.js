@@ -1,27 +1,3 @@
-/**
- * Generic function to load any JSON file from a given URL.
- *
- * @pseudocode
- * 1. Send a GET request to the specified `url` using the `fetch` API.
- *    - If the response status is not OK (`response.ok` is false), throw an error with the HTTP status code.
- *
- * 2. Parse the response body as JSON:
- *    - Convert the response body into a JavaScript object using `response.json()`.
- *
- * 3. Validate the parsed data when a `schema` is provided:
- *    - Use `validateWithSchema` to ensure the data matches the schema.
- *
- * 4. Return the parsed JSON data.
- *
- * 5. Handle errors:
- *    - Log any errors encountered during the fetch or JSON parsing to the console.
- *    - Rethrow the error to allow the caller to handle it.
- *
- * @template T
- * @param {string} url - Path to the JSON file (e.g., `${DATA_DIR}judoka.json`).
- * @param {object} [schema] - Optional JSON schema to validate the data.
- * @returns {Promise<T>} A promise that resolves to the parsed JSON data.
- */
 // In-memory cache for data fetched from URLs
 const dataCache = new Map();
 
@@ -62,68 +38,43 @@ export async function getAjv() {
 // WeakMap allows garbage collection of schema keys
 const schemaCache = new WeakMap();
 
-export async function loadJSON(url, schema) {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to load ${url} (HTTP ${response.status})`);
-    }
-    const data = await response.json();
-    if (schema) {
-      await validateWithSchema(data, schema);
-    }
-    return data;
-  } catch (error) {
-    console.error(`Error loading ${url}:`, error);
-    throw error;
-  }
-}
-
 /**
- * Fetches data from a given URL with error handling.
+ * Fetch JSON data with caching and optional schema validation.
  *
  * @pseudocode
- * 1. Send a GET request to the specified `url` using the `fetch` API.
- *    - If the response status is not OK (`response.ok` is false), throw an error with the HTTP status code.
- *
- * 2. Parse the response body as JSON:
- *    - Convert the response body into a JavaScript object using `response.json()`.
- *
- * 3. Validate the parsed data when a `schema` is provided:
- *    - Use `validateWithSchema` to ensure the data matches the schema.
- *
- * 4. Return the parsed JSON data.
- *
- * 5. Handle errors:
- *    - Log any errors encountered during the fetch or JSON parsing to the console.
- *    - Rethrow the error to allow the caller to handle it.
+ * 1. Check the cache for `url` and return the value when present.
+ * 2. Request `url` using `fetch` and throw an error when the response is not OK.
+ * 3. Parse the response with `response.json()`.
+ * 4. When a `schema` is provided, validate the data with `validateWithSchema`.
+ * 5. Store the parsed data in the cache and return it.
+ * 6. On any error, log the issue, remove a stale cache entry, and rethrow.
  *
  * @template T
  * @param {string} url - The URL to fetch data from.
- * @param {object} [schema] - Optional JSON schema to validate the data.
+ * @param {object} [schema] - Optional JSON schema used for validation.
  * @returns {Promise<T>} A promise that resolves to the parsed JSON data.
- * @throws {Error} If the fetch request fails or the response is not OK.
+ * @throws {Error} If the fetch request fails, validation fails, or JSON parsing fails.
  */
-export async function fetchDataWithErrorHandling(url, schema) {
+export async function fetchJson(url, schema) {
   try {
     if (dataCache.has(url)) {
       return dataCache.get(url);
     }
 
     const response = await fetch(url);
-
     if (!response.ok) {
-      throw new Error(`Failed to fetch data from ${url} (HTTP ${response.status})`);
+      throw new Error(`Failed to fetch ${url} (HTTP ${response.status})`);
     }
 
-    const json = await response.json();
+    const data = await response.json();
     if (schema) {
-      await validateWithSchema(json, schema);
+      await validateWithSchema(data, schema);
     }
-    dataCache.set(url, json);
-    return json;
+    dataCache.set(url, data);
+    return data;
   } catch (error) {
-    console.error(`Error fetching data from ${url}:`, error);
+    dataCache.delete(url);
+    console.error(`Error fetching ${url}:`, error);
     throw error;
   }
 }

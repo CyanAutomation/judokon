@@ -48,7 +48,7 @@
       </footer>
       <script type="module" src="../helpers/setupBottomNavbar.js"></script>
       <script type="module">
-        import { fetchDataWithErrorHandling } from "../helpers/dataUtils.js";
+        import { fetchJson } from "../helpers/dataUtils.js";
         import { generateRandomCard } from "../helpers/randomCard.js";
         import { DATA_DIR } from "../helpers/constants.js";
 
@@ -59,8 +59,8 @@
 
         async function preloadData() {
           try {
-            cachedJudokaData = await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`);
-            cachedGokyoData = await fetchDataWithErrorHandling(`${DATA_DIR}gokyo.json`);
+            cachedJudokaData = await fetchJson(`${DATA_DIR}judoka.json`);
+            cachedGokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
           } catch (error) {
             console.error("Error preloading data:", error);
           }

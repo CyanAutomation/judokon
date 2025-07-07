@@ -1,14 +1,12 @@
 import { DATA_DIR } from "./constants.js";
-import { fetchDataWithErrorHandling } from "./dataUtils.js";
+import { fetchJson } from "./dataUtils.js";
 
 const STATIC_FALLBACK = "\u65e5\u672c\u8a9e\u98a8\u30c6\u30ad\u30b9\u30c8"; // 日本語風テキスト
 let converterPromise;
 
 async function loadConverter() {
   if (!converterPromise) {
-    converterPromise = fetchDataWithErrorHandling(`${DATA_DIR}japaneseConverter.json`).catch(
-      () => null
-    );
+    converterPromise = fetchJson(`${DATA_DIR}japaneseConverter.json`).catch(() => null);
   }
   return converterPromise;
 }

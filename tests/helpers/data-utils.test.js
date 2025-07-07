@@ -8,79 +8,12 @@ afterEach(() => {
   vi.resetModules();
 });
 
-describe("loadJSON", () => {
-  it("throws an error when the response is not ok", async () => {
-    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 404 });
-    const { loadJSON } = await import("../../src/helpers/dataUtils.js");
-    await expect(loadJSON("/bad.json")).rejects.toThrow("Failed to load /bad.json (HTTP 404)");
-  });
-
-  it("throws an error when JSON parsing fails", async () => {
-    global.fetch = vi
-      .fn()
-      .mockResolvedValue({ ok: true, json: vi.fn().mockRejectedValue(new SyntaxError("bad")) });
-    const { loadJSON } = await import("../../src/helpers/dataUtils.js");
-    await expect(loadJSON("/bad.json")).rejects.toBeInstanceOf(SyntaxError);
-  });
-
-  it("resolves with parsed JSON when the response is ok", async () => {
-    const data = { foo: "bar" };
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
-
-    const { loadJSON } = await import("../../src/helpers/dataUtils.js");
-    await expect(loadJSON("/good.json")).resolves.toEqual(data);
-  });
-
-  it("throws an error when fetch rejects", async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error("network"));
-    const { loadJSON } = await import("../../src/helpers/dataUtils.js");
-    await expect(loadJSON("/bad.json")).rejects.toThrow("network");
-  });
-
-  it("validates data against a schema", async () => {
-    const data = { a: "b" };
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
-    const schema = { type: "object", properties: { a: { type: "string" } }, required: ["a"] };
-    const { loadJSON } = await import("../../src/helpers/dataUtils.js");
-    await expect(loadJSON("/schema.json", schema)).resolves.toEqual(data);
-  });
-
-  it("throws when schema validation fails", async () => {
-    const data = { a: 1 };
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
-    const schema = { type: "object", properties: { a: { type: "string" } }, required: ["a"] };
-    const { loadJSON } = await import("../../src/helpers/dataUtils.js");
-    await expect(loadJSON("/schema.json", schema)).rejects.toThrow("Schema validation failed");
-  });
-
-  it("does not cache or reuse data between calls", async () => {
-    const data1 = { foo: "bar" };
-    const data2 = { foo: "baz" };
-    global.fetch = vi
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(data1) })
-      .mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(data2) });
-    const { loadJSON } = await import("../../src/helpers/dataUtils.js");
-    const first = await loadJSON("/fresh.json");
-    const second = await loadJSON("/fresh.json");
-    expect(first).toEqual(data1);
-    expect(second).toEqual(data2);
-  });
-
-  it("throws if schema argument is not an object", async () => {
-    const data = { foo: "bar" };
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
-    const { loadJSON } = await import("../../src/helpers/dataUtils.js");
-    await expect(loadJSON("/good.json", "not-an-object")).rejects.toThrow();
-  });
-});
-
-describe("fetchDataWithErrorHandling", () => {
+describe("fetchJson", () => {
   it("throws an error when the response is not ok", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
-    const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
-    await expect(fetchDataWithErrorHandling("/error.json")).rejects.toThrow(
-      "Failed to fetch data from /error.json (HTTP 500)"
+    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+    await expect(fetchJson("/error.json")).rejects.toThrow(
+      "Failed to fetch /error.json (HTTP 500)"
     );
   });
 
@@ -88,8 +21,8 @@ describe("fetchDataWithErrorHandling", () => {
     global.fetch = vi
       .fn()
       .mockResolvedValue({ ok: true, json: vi.fn().mockRejectedValue(new SyntaxError("fail")) });
-    const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
-    await expect(fetchDataWithErrorHandling("/error.json")).rejects.toBeInstanceOf(SyntaxError);
+    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+    await expect(fetchJson("/error.json")).rejects.toBeInstanceOf(SyntaxError);
   });
 
   it("resolves with parsed JSON and caches subsequent calls", async () => {
@@ -99,9 +32,9 @@ describe("fetchDataWithErrorHandling", () => {
       .mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
     global.fetch = fetchMock;
 
-    const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
-    const first = await fetchDataWithErrorHandling("/data.json");
-    const second = await fetchDataWithErrorHandling("/data.json");
+    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+    const first = await fetchJson("/data.json");
+    const second = await fetchJson("/data.json");
 
     expect(first).toEqual(data);
     expect(second).toBe(first);
@@ -117,11 +50,11 @@ describe("fetchDataWithErrorHandling", () => {
       .mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(data2) });
     vi.stubGlobal("fetch", fetchMock);
 
-    const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
+    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
     const url1 = "/one.json";
     const url2 = "/two.json";
-    const first = await fetchDataWithErrorHandling(url1);
-    const second = await fetchDataWithErrorHandling(url2);
+    const first = await fetchJson(url1);
+    const second = await fetchJson(url2);
 
     expect(first).toEqual(data1);
     expect(second).toEqual(data2);
@@ -135,10 +68,10 @@ describe("fetchDataWithErrorHandling", () => {
       .mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue({ foo: "bar" }) });
     global.fetch = fetchMock;
 
-    const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
+    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
     const url = "/fail-then-success.json";
-    await expect(fetchDataWithErrorHandling(url)).rejects.toThrow();
-    const result = await fetchDataWithErrorHandling(url);
+    await expect(fetchJson(url)).rejects.toThrow();
+    const result = await fetchJson(url);
     expect(result).toEqual({ foo: "bar" });
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
@@ -147,24 +80,22 @@ describe("fetchDataWithErrorHandling", () => {
     const data = { a: "b" };
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
     const schema = { type: "object", properties: { a: { type: "string" } }, required: ["a"] };
-    const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
-    await expect(fetchDataWithErrorHandling("/schema.json", schema)).resolves.toEqual(data);
+    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+    await expect(fetchJson("/schema.json", schema)).resolves.toEqual(data);
   });
 
   it("throws when fetched data fails schema validation", async () => {
     const data = { a: 1 };
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
     const schema = { type: "object", properties: { a: { type: "string" } }, required: ["a"] };
-    const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
-    await expect(fetchDataWithErrorHandling("/schema.json", schema)).rejects.toThrow(
-      "Schema validation failed"
-    );
+    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+    await expect(fetchJson("/schema.json", schema)).rejects.toThrow("Schema validation failed");
   });
 
   it("throws an error when fetch rejects", async () => {
     global.fetch = vi.fn().mockRejectedValue(new Error("offline"));
-    const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
-    await expect(fetchDataWithErrorHandling("/err.json")).rejects.toThrow("offline");
+    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+    await expect(fetchJson("/err.json")).rejects.toThrow("offline");
   });
 
   it("throws if .json() throws a non-SyntaxError", async () => {
@@ -172,8 +103,15 @@ describe("fetchDataWithErrorHandling", () => {
       ok: true,
       json: vi.fn().mockRejectedValue(new Error("not json"))
     });
-    const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
-    await expect(fetchDataWithErrorHandling("/notjson.json")).rejects.toThrow("not json");
+    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+    await expect(fetchJson("/notjson.json")).rejects.toThrow("not json");
+  });
+
+  it("throws if schema argument is not an object", async () => {
+    const data = { foo: "bar" };
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
+    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+    await expect(fetchJson("/good.json", "not-an-object")).rejects.toThrow();
   });
 });
 
