@@ -1,5 +1,9 @@
 ## Update Judoka
 
+## TL;DR
+
+Players can fine-tune a judoka's stats and appearance over time, keeping their roster aligned with evolving strategies.
+
 Game Mode ID: updateJudoka (URL: updateJudoka.html)
 
 [Back to Game Modes Overview](prdGameModes.md)

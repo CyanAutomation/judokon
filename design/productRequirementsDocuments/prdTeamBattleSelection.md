@@ -1,5 +1,9 @@
 # PRD: Team Battle Selection
 
+## TL;DR
+
+Simple menu that lets players quickly choose Male, Female, or Mixed modes for team battles.
+
 **Game Mode ID:** teamBattleSelection (URL: teamBattleSelection.html)
 
 ---

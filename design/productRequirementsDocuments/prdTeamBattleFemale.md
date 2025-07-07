@@ -1,5 +1,9 @@
 # PRD: Team Battle (Female)
 
+## TL;DR
+
+Compete in 5-on-5 matches using all-female teams, giving women-focused events their own dedicated mode.
+
 **Game Mode ID:** teamBattleFemale (URL: teamBattleFemale.html)
 
 ---

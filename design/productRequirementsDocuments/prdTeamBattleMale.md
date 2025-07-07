@@ -1,5 +1,9 @@
 # PRD: Team Battle (Male)
 
+## TL;DR
+
+Provides a male-only team battle format, mirroring the female mode for gender-specific tournaments.
+
 **Game Mode ID:** teamBattleMale (URL: teamBattleMale.html)
 
 ---
