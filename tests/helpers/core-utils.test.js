@@ -27,10 +27,16 @@ describe("generateCardSignatureMove", () => {
       [{ signatureMoveId: 1 }, undefined, "undefined gokyo lookup"],
       [{ signatureMoveId: 1 }, {}, "empty gokyo lookup"],
       [{ signatureMoveId: 1 }, { 1: { id: 1, name: null } }, "gokyo with invalid name"],
+      [{ signatureMoveId: 1 }, { 1: { id: 1, name: "" } }, "empty technique name"],
       [
         { signatureMoveId: 999 },
         { 1: { id: 1, name: "Uchi-mata" } },
         "non-existent signatureMoveId in gokyo"
+      ],
+      [
+        { signatureMoveId: "UCHI-MATA" },
+        { 1: { id: 1, name: "Uchi-mata" } },
+        "non-numeric signatureMoveId"
       ],
       [{}, { 1: { id: 1, name: "Uchi-mata" } }, "missing signatureMoveId in judoka object"],
       [
@@ -38,6 +44,7 @@ describe("generateCardSignatureMove", () => {
         { 2: { id: 2, name: "O-soto-gari" } },
         "gokyo missing matching entry"
       ],
+      [{ signatureMoveId: 1 }, { 1: { invalidKey: "value" } }, "invalid gokyo structure"],
       [null, { 1: { id: 1, name: "Uchi-mata" } }, "null judoka object"]
     ];
 
@@ -66,6 +73,14 @@ describe("generateCardSignatureMove", () => {
       );
       expect(html).toContain("Signature Move:");
       expect(html).toContain("Ō-soto-gari");
+    });
+
+    it("should handle emoji and non-Latin characters in technique names", () => {
+      const html = generateCardSignatureMove(
+        { signatureMoveId: 1 },
+        { 1: { id: 1, name: "投げ技🔥" } }
+      );
+      expect(html).toContain("投げ技🔥");
     });
 
     it("should fallback when gokyo entries are malformed", () => {
@@ -98,6 +113,11 @@ describe("generateCardSignatureMove", () => {
       const html = generateCardSignatureMove(judoka, gokyo);
       expect(html).toContain("Jigoku-guruma");
     });
+
+    it("does not throw for missing arguments", () => {
+      expect(() => generateCardSignatureMove()).not.toThrow();
+      expect(generateCardSignatureMove()).toContain("Signature Move:");
+    });
   });
 
   describe("HTML Safety and Formatting", () => {
@@ -107,6 +127,39 @@ describe("generateCardSignatureMove", () => {
         { 1: { id: 1, name: "<script>alert(1)</script>" } }
       );
       expect(html).not.toMatch(/<script>/i);
+    });
+
+    it("escapes HTML tags in technique names", () => {
+      const html = generateCardSignatureMove(
+        { signatureMoveId: 1 },
+        { 1: { id: 1, name: "<b>Uchi-mata</b>" } }
+      );
+      expect(html).toContain("&lt;b&gt;Uchi-mata&lt;/b&gt;");
+      expect(html).not.toContain("<b>Uchi-mata</b>");
+    });
+
+    it("escapes script content to prevent XSS", () => {
+      const html = generateCardSignatureMove(
+        { signatureMoveId: 1 },
+        { 1: { id: 1, name: "<script>alert('XSS')</script>" } }
+      );
+      expect(html).toContain("&lt;script&gt;alert(&#039;XSS&#039;)&lt;/script&gt;");
+    });
+
+    it("escapes additional malicious tags", () => {
+      const html = generateCardSignatureMove(
+        { signatureMoveId: 1 },
+        { 1: { id: 1, name: "<img src=x onerror=alert('XSS')>" } }
+      );
+      expect(html).toContain("&lt;img src=x onerror=alert(&#039;XSS&#039;)&gt;");
+    });
+
+    it("does not double-escape already escaped entities", () => {
+      const html = generateCardSignatureMove(
+        { signatureMoveId: 1 },
+        { 1: { id: 1, name: "&lt;b&gt;alert(1)&lt;/b&gt;" } }
+      );
+      expect(html).toContain("&amp;lt;b&amp;gt;alert(1)&amp;lt;/b&amp;gt;");
     });
 
     it("should trim whitespace from technique names", () => {
