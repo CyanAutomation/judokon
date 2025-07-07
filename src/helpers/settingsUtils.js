@@ -11,6 +11,7 @@ const DEFAULT_SETTINGS = {
   displayMode: "light",
   gameModes: {}
 };
+export { DEFAULT_SETTINGS };
 
 let saveTimer;
 const SAVE_DELAY_MS = 100;
