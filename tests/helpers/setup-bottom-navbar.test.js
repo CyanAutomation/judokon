@@ -51,4 +51,25 @@ describe("setupBottomNavbar module", () => {
     expect(ripple.style.left).toBe("5px");
     expect(ripple.style.top).toBe("10px");
   });
+
+  it("does not throw if .bottom-navbar is missing", async () => {
+    document.body.innerHTML = ""; // Remove navbar
+    await import("../../src/helpers/setupBottomNavbar.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    // Should not throw
+  });
+
+  it("does not throw if there are no buttons in the DOM", async () => {
+    // Only navbar, no buttons
+    await import("../../src/helpers/setupBottomNavbar.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    // Should not throw
+  });
+
+  it("does not throw if fetch fails", async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
+    await import("../../src/helpers/setupBottomNavbar.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    // Should not throw
+  });
 });

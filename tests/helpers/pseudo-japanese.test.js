@@ -76,4 +76,40 @@ describe("convertToPseudoJapanese", () => {
     const result = await convertToPseudoJapanese("anything");
     expect(result).toBe("\u65e5\u672c\u8a9e\u98a8\u30c6\u30ad\u30b9\u30c8");
   });
+
+  it("handles empty string and null/undefined input", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => mapping });
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+    expect(await convertToPseudoJapanese("")).toBe("");
+    expect(await convertToPseudoJapanese(null)).toBe("");
+    expect(await convertToPseudoJapanese(undefined)).toBe("");
+  });
+
+  it("handles input with only unsupported characters", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => mapping });
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+    expect(await convertToPseudoJapanese("123!@#")).toBe("");
+  });
+
+  it("returns fallback if mapping is missing 'letters' property", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => ({}) });
+    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+    const result = await convertToPseudoJapanese("abc");
+    expect(result).toBe("\u65e5\u672c\u8a9e\u98a8\u30c6\u30ad\u30b9\u30c8");
+  });
+
+  it("handles mapping with multiple kana options per letter", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => ({
+        letters: { a: ["ア", "ァ"], b: ["バ", "ビ"] }
+      })
+    });
+    // Use Math.random to always pick the second option
+    vi.spyOn(Math, "random").mockReturnValue(0.99);
+    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+    expect(await convertToPseudoJapanese("ab")).toBe("ァビ");
+  });
 });

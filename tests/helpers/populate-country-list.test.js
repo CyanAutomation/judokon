@@ -80,4 +80,47 @@ describe("populateCountryList", () => {
 
     expect(track.querySelectorAll(".slide").length).toBe(61);
   });
+
+  it("handles fetch failure gracefully", async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error("network error"));
+    const { populateCountryList } = await import("../../src/helpers/countryUtils.js");
+    const container = document.createElement("div");
+    await expect(populateCountryList(container)).resolves.toBeUndefined();
+    expect(container.querySelectorAll(".slide").length).toBe(0);
+  });
+
+  it("does not duplicate countries if mapping has duplicates", async () => {
+    const judoka = [
+      { id: 1, firstname: "A", surname: "B", country: "Japan" },
+      { id: 2, firstname: "C", surname: "D", country: "Japan" }
+    ];
+    const mapping = [
+      { country: "Japan", code: "jp", active: true },
+      { country: "Japan", code: "jp", active: true }
+    ];
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => judoka })
+      .mockResolvedValueOnce({ ok: true, json: async () => mapping });
+    const { populateCountryList } = await import("../../src/helpers/countryUtils.js");
+    const container = document.createElement("div");
+    await populateCountryList(container);
+    const slides = container.querySelectorAll(".slide");
+    const names = [...slides].map((s) => s.querySelector("p").textContent);
+    // Should only have "All" and "Japan"
+    expect(names).toEqual(["All", "Japan"]);
+  });
+
+  it("renders 'All' even if no countries are found", async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] });
+    const { populateCountryList } = await import("../../src/helpers/countryUtils.js");
+    const container = document.createElement("div");
+    await populateCountryList(container);
+    const slides = container.querySelectorAll(".slide");
+    expect(slides.length).toBe(1);
+    expect(slides[0].querySelector("p").textContent).toBe("All");
+  });
 });

@@ -52,6 +52,27 @@ describe("loadJSON", () => {
     const { loadJSON } = await import("../../src/helpers/dataUtils.js");
     await expect(loadJSON("/schema.json", schema)).rejects.toThrow("Schema validation failed");
   });
+
+  it("does not cache or reuse data between calls", async () => {
+    const data1 = { foo: "bar" };
+    const data2 = { foo: "baz" };
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(data1) })
+      .mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue(data2) });
+    const { loadJSON } = await import("../../src/helpers/dataUtils.js");
+    const first = await loadJSON("/fresh.json");
+    const second = await loadJSON("/fresh.json");
+    expect(first).toEqual(data1);
+    expect(second).toEqual(data2);
+  });
+
+  it("throws if schema argument is not an object", async () => {
+    const data = { foo: "bar" };
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
+    const { loadJSON } = await import("../../src/helpers/dataUtils.js");
+    await expect(loadJSON("/good.json", "not-an-object")).rejects.toThrow();
+  });
 });
 
 describe("fetchDataWithErrorHandling", () => {
@@ -110,6 +131,15 @@ describe("fetchDataWithErrorHandling", () => {
     const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
     await expect(fetchDataWithErrorHandling("/err.json")).rejects.toThrow("offline");
   });
+
+  it("throws if .json() throws a non-SyntaxError", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockRejectedValue(new Error("not json"))
+    });
+    const { fetchDataWithErrorHandling } = await import("../../src/helpers/dataUtils.js");
+    await expect(fetchDataWithErrorHandling("/notjson.json")).rejects.toThrow("not json");
+  });
 });
 
 describe("validateData", () => {
@@ -147,6 +177,11 @@ describe("validateData", () => {
   it("accepts generic object data for other types", async () => {
     const { validateData } = await import("../../src/helpers/dataUtils.js");
     expect(() => validateData({ foo: "bar" }, "other")).not.toThrow();
+  });
+
+  it("does not throw for unknown type", async () => {
+    const { validateData } = await import("../../src/helpers/dataUtils.js");
+    expect(() => validateData({ foo: "bar" }, "unknownType")).not.toThrow();
   });
 });
 

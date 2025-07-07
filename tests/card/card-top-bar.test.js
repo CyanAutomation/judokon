@@ -87,6 +87,27 @@ describe("generateCardTopBar", () => {
     await expect(generateCardTopBar(true, flagUrl)).resolves.toBeTruthy();
     await expect(generateCardTopBar({}, flagUrl)).resolves.toBeTruthy();
   });
+
+  it("escapes HTML in firstname and surname", async () => {
+    const result = await generateCardTopBar(
+      { firstname: "<John>", surname: '"Doe"', countryCode: "fr" },
+      flagUrl
+    );
+    expect(result.outerHTML).toContain("&lt;John&gt;");
+    expect(result.outerHTML).toContain("&quot;Doe&quot;");
+  });
+
+  it("escapes HTML in country name for alt attribute", async () => {
+    vi.spyOn(countryUtils, "getCountryNameFromCode").mockResolvedValueOnce("<France>");
+    const result = await generateCardTopBar(judoka, flagUrl);
+    expect(result.outerHTML).toContain('alt="&lt;France&gt; flag"');
+  });
+
+  it("includes alt attribute even if countryName is falsy", async () => {
+    vi.spyOn(countryUtils, "getCountryNameFromCode").mockResolvedValueOnce("");
+    const result = await generateCardTopBar(judoka, flagUrl);
+    expect(result.outerHTML).toContain('alt="Unknown flag"');
+  });
 });
 
 describe("createNameContainer", () => {
@@ -118,6 +139,12 @@ describe("createNameContainer", () => {
       expect(normalizedResult).toBe(normalizedExpected);
     }
   );
+
+  it("escapes HTML in firstname and surname", () => {
+    const nameContainer = createNameContainer("<John>", '"Doe"');
+    expect(nameContainer.outerHTML).toContain("&lt;John&gt;");
+    expect(nameContainer.outerHTML).toContain("&quot;Doe&quot;");
+  });
 });
 
 describe("createFlagImage", () => {
@@ -130,5 +157,15 @@ describe("createFlagImage", () => {
       `<img src="https://flagcdn.com/w320/us.png" alt="United States flag"`
     );
     expect(flagImage.outerHTML).toContain('loading="lazy"');
+  });
+
+  it("escapes HTML in country name for alt attribute", () => {
+    const flagImage = createFlagImage(flagUrl, "<France>");
+    expect(flagImage.outerHTML).toContain('alt="&lt;France&gt; flag"');
+  });
+
+  it("uses 'Unknown flag' alt if countryName is falsy", () => {
+    const flagImage = createFlagImage(flagUrl, "");
+    expect(flagImage.outerHTML).toContain('alt="Unknown flag"');
   });
 });

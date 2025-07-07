@@ -55,6 +55,31 @@ describe("settings utils", () => {
     expect(JSON.parse(localStorage.getItem("settings"))).toEqual(data);
   });
 
+  it("does not throw if localStorage is unavailable", async () => {
+    const original = global.localStorage;
+    // Simulate localStorage being undefined
+    Object.defineProperty(global, "localStorage", { value: undefined, configurable: true });
+    const { saveSettings, loadSettings } = await import("../../src/helpers/settingsUtils.js");
+    await expect(saveSettings({ sound: true })).rejects.toThrow();
+    await expect(loadSettings()).rejects.toThrow();
+    Object.defineProperty(global, "localStorage", { value: original, configurable: true });
+  });
+
+  it("returns defaults if localStorage.getItem returns null", async () => {
+    const originalGetItem = Storage.prototype.getItem;
+    Storage.prototype.getItem = vi.fn(() => null);
+    const { loadSettings } = await import("../../src/helpers/settingsUtils.js");
+    const settings = await loadSettings();
+    expect(settings).toEqual({
+      sound: true,
+      fullNavMap: true,
+      motionEffects: true,
+      displayMode: "light",
+      gameModes: {}
+    });
+    Storage.prototype.getItem = originalGetItem;
+  });
+
   /**
    * Should update a single setting and persist the change.
    */

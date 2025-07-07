@@ -92,4 +92,36 @@ describe("generateRandomCard", () => {
     );
     expect(container.firstChild).toBe(fallbackEl);
   });
+
+  it("does not throw if container is null or undefined", async () => {
+    getRandomJudokaMock = vi.fn(() => judokaData[0]);
+    generateJudokaCardHTMLMock = vi.fn(async () => document.createElement("div"));
+    const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
+    await expect(generateRandomCard(judokaData, gokyoData, null, true)).resolves.toBeUndefined();
+    await expect(
+      generateRandomCard(judokaData, gokyoData, undefined, true)
+    ).resolves.toBeUndefined();
+  });
+
+  it("handles generateJudokaCardHTML throwing an error", async () => {
+    const container = document.createElement("div");
+    getRandomJudokaMock = vi.fn(() => judokaData[0]);
+    generateJudokaCardHTMLMock = vi.fn(async () => {
+      throw new Error("fail");
+    });
+    const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
+    await expect(
+      generateRandomCard(judokaData, gokyoData, container, true)
+    ).resolves.toBeUndefined();
+    expect(container.childNodes.length).toBe(0);
+  });
+
+  it("does not update DOM if generated element is null or undefined", async () => {
+    const container = document.createElement("div");
+    getRandomJudokaMock = vi.fn(() => judokaData[0]);
+    generateJudokaCardHTMLMock = vi.fn(async () => null);
+    const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
+    await generateRandomCard(judokaData, gokyoData, container, true);
+    expect(container.childNodes.length).toBe(0);
+  });
 });

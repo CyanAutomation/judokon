@@ -53,6 +53,18 @@ describe("createScrollButton", () => {
   it("should throw an error if container is null", () => {
     expect(() => createScrollButton("left", null, 100)).toThrowError("Container is required");
   });
+
+  it("should not throw if scrollBy is not defined on container", () => {
+    const div = document.createElement("div");
+    expect(() => createScrollButton("left", div, 100)).not.toThrow();
+  });
+
+  it("should throw if scroll amount is not a number", () => {
+    const div = document.createElement("div");
+    expect(() => createScrollButton("left", div, null)).toThrow();
+    expect(() => createScrollButton("left", div, undefined)).toThrow();
+    expect(() => createScrollButton("left", div, "100")).toThrow();
+  });
 });
 
 describe("generateCardStats", () => {
@@ -105,6 +117,19 @@ describe("generateCardStats", () => {
   it("should throw an error if card is undefined", () => {
     expect(() => generateCardStats(undefined)).toThrowError("Card object is required");
   });
+
+  it("should handle stats with missing keys gracefully", () => {
+    const card = { stats: { power: 5 } };
+    const result = generateCardStats(card);
+    expect(result).toContain("Power");
+    expect(result).toContain("5");
+  });
+
+  it("should escape HTML in stat values", () => {
+    const card = { stats: { power: "<b>9</b>", speed: 6, technique: 7, kumikata: 7, newaza: 8 } };
+    const result = generateCardStats(card);
+    expect(result).toContain("&lt;b&gt;9&lt;/b&gt;");
+  });
 });
 
 describe("generateCardPortrait", () => {
@@ -120,5 +145,18 @@ describe("generateCardPortrait", () => {
     const card = { id: 1, firstname: "John", surname: "Doe" };
     const result = generateCardPortrait(card);
     expect(result).toContain('loading="lazy"');
+  });
+
+  it("should escape HTML in firstname and surname", () => {
+    const card = { id: 1, firstname: "<John>", surname: '"Doe"' };
+    const result = generateCardPortrait(card);
+    expect(result).toContain("&lt;John&gt;");
+    expect(result).toContain("&quot;Doe&quot;");
+  });
+
+  it("should include alt attribute with full name", () => {
+    const card = { id: 1, firstname: "Jane", surname: "Smith" };
+    const result = generateCardPortrait(card);
+    expect(result).toContain('alt="Jane Smith"');
   });
 });

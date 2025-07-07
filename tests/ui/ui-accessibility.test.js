@@ -20,6 +20,15 @@ describe("generateCardSignatureMove", () => {
       expect(html).toContain("&lt;img src=x onerror=alert(&#039;XSS&#039;)&gt;");
       expect(html).not.toContain("<img src=x onerror=alert('XSS')>");
     });
+
+    it("does not double-escape already escaped entities", () => {
+      const html = generateCardSignatureMove(
+        { signatureMoveId: 1 },
+        { 1: { id: 1, name: "&lt;b&gt;alert(1)&lt;/b&gt;" } }
+      );
+      // Should escape ampersands but not double-escape < or >
+      expect(html).toContain("&amp;lt;b&amp;gt;alert(1)&amp;lt;/b&amp;gt;");
+    });
   });
 
   describe("Accessibility - Unicode Handling", () => {
@@ -30,6 +39,14 @@ describe("generateCardSignatureMove", () => {
       );
       expect(html).toContain("Signature Move:");
       expect(html).toContain("Ō-soto-gari");
+    });
+
+    it("renders emoji and non-Latin characters in technique names", () => {
+      const html = generateCardSignatureMove(
+        { signatureMoveId: 1 },
+        { 1: { id: 1, name: "投げ技🔥" } }
+      );
+      expect(html).toContain("投げ技🔥");
     });
   });
 
@@ -53,6 +70,11 @@ describe("generateCardSignatureMove", () => {
       const html = generateCardSignatureMove(judoka, gokyo);
       expect(html).toContain("Jigoku-guruma");
     });
+
+    it("renders fallback for empty or null technique name", () => {
+      const html = generateCardSignatureMove({ signatureMoveId: 1 }, { 1: { id: 1, name: "" } });
+      expect(html).toContain("Jigoku-guruma");
+    });
   });
 
   describe("Invalid Type Inputs", () => {
@@ -73,6 +95,11 @@ describe("generateCardSignatureMove", () => {
     it.each(invalidInputs)("should fallback to 'Jigoku-guruma' when %s", (_, judoka, gokyo) => {
       const html = generateCardSignatureMove(judoka, gokyo);
       expect(html).toContain("Jigoku-guruma");
+    });
+
+    it("does not throw for completely missing arguments", () => {
+      expect(() => generateCardSignatureMove()).not.toThrow();
+      expect(generateCardSignatureMove()).toContain("Signature Move:");
     });
   });
 });

@@ -45,8 +45,22 @@ describe("components.css color contrast", () => {
     ["top navbar", colors.topNavbar]
   ].filter(([, c]) => c);
 
+  it("all referenced CSS variables and extracted colors exist", () => {
+    expect(vars["--color-text-inverted"]).toBeDefined();
+    for (const [, bg] of bgTests) {
+      expect(bg).toBeDefined();
+    }
+  });
+
   it.each(bgTests)("%s bg vs --color-text-inverted", (_, bg) => {
+    expect(vars["--color-text-inverted"]).toBeDefined();
+    expect(bg).toBeDefined();
     const ratio = hex(bg, vars["--color-text-inverted"]);
     expect(ratio).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("returns 1 for identical colors", () => {
+    expect(hex("#fff", "#fff")).toBe(1);
+    expect(hex("#000", "#000")).toBe(1);
   });
 });

@@ -34,4 +34,25 @@ describe("generateCardCode", () => {
     const second = generateCardCode(validJudoka);
     expect(first).toBe(second);
   });
+
+  it("throws if input is not an object", () => {
+    expect(() => generateCardCode(null)).toThrow();
+    expect(() => generateCardCode(undefined)).toThrow();
+    expect(() => generateCardCode(42)).toThrow();
+    expect(() => generateCardCode("string")).toThrow();
+  });
+
+  it("ignores extra fields in the input", () => {
+    const extended = { ...validJudoka, extra: "ignoreme" };
+    expect(() => generateCardCode(extended)).not.toThrow();
+    const code = generateCardCode(extended);
+    expect(typeof code).toBe("string");
+  });
+
+  it("produces different codes for different judoka", () => {
+    const otherJudoka = { ...validJudoka, firstname: "Other" };
+    const code1 = generateCardCode(validJudoka);
+    const code2 = generateCardCode(otherJudoka);
+    expect(code1).not.toBe(code2);
+  });
 });

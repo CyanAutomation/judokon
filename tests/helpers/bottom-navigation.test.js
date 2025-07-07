@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 
 const originalFetch = global.fetch;
 
@@ -59,9 +59,38 @@ describe("toggleExpandedMapView", () => {
     expect(tiles[0].querySelector("a")).toHaveAttribute("aria-label", "Mode1");
     expect(tiles[0].textContent).toContain("Mode1");
   });
+
+  it("does not create tiles if no valid modes", async () => {
+    const { toggleExpandedMapView } = await import("../../src/helpers/bottomNavigation.js");
+    toggleExpandedMapView([]);
+    const view = navBar.querySelector(".expanded-map-view");
+    expect(view).toBeTruthy();
+    expect(view.querySelectorAll(".map-tile")).toHaveLength(0);
+  });
+
+  it("sets correct ARIA attributes and alt text for images", async () => {
+    const modes = [{ name: "Mode1", url: "mode1.html", image: "img1.png" }];
+    const { toggleExpandedMapView } = await import("../../src/helpers/bottomNavigation.js");
+    toggleExpandedMapView(modes);
+    const tile = navBar.querySelector(".map-tile");
+    const link = tile.querySelector("a");
+    const img = tile.querySelector("img");
+    expect(link).toHaveAttribute("aria-label", "Mode1");
+    expect(img).toHaveAttribute("alt", "Mode1");
+  });
 });
 
 describe("togglePortraitTextMenu", () => {
+  let navBar;
+  beforeEach(() => {
+    navBar = setupDom();
+    stubLogoQuery();
+  });
+  afterEach(() => {
+    document.body.innerHTML = "";
+    vi.restoreAllMocks();
+  });
+
   it("creates list items for valid game modes", async () => {
     const navBar = setupDom();
     stubLogoQuery();
@@ -82,6 +111,22 @@ describe("togglePortraitTextMenu", () => {
     expect(items[1].querySelector("a")).toHaveAttribute("href", "/judokon/src/pages/mode2.html");
     expect(items[1].querySelector("a")).toHaveAttribute("aria-label", "Mode2");
     expect(items[1].textContent).toContain("Mode2");
+  });
+
+  it("does not create items if no valid modes", async () => {
+    const { togglePortraitTextMenu } = await import("../../src/helpers/bottomNavigation.js");
+    togglePortraitTextMenu([]);
+    const menu = navBar.querySelector(".portrait-text-menu");
+    expect(menu).toBeTruthy();
+    expect(menu.querySelectorAll("li")).toHaveLength(0);
+  });
+
+  it("sets correct ARIA attributes for links", async () => {
+    const modes = [{ name: "Mode1", url: "mode1.html", image: "img1.png" }];
+    const { togglePortraitTextMenu } = await import("../../src/helpers/bottomNavigation.js");
+    togglePortraitTextMenu(modes);
+    const link = navBar.querySelector(".portrait-text-menu li a");
+    expect(link).toHaveAttribute("aria-label", "Mode1");
   });
 });
 

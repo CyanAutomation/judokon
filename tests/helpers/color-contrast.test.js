@@ -25,11 +25,25 @@ describe("base.css color contrast", () => {
     ["--color-surface", "--color-text"]
   ];
 
+  it("all referenced CSS variables exist", () => {
+    const allVars = new Set(pairs.flat());
+    for (const v of allVars) {
+      expect(vars[v]).toBeDefined();
+    }
+  });
+
   it.each(pairs)("%s vs %s should be >= 4.5", (a, b) => {
+    expect(vars[a]).toBeDefined();
+    expect(vars[b]).toBeDefined();
     const ratio = hex(vars[a], vars[b]);
     expect(ratio).toBeGreaterThanOrEqual(
       4.5,
       `Contrast ratio between ${a} (${vars[a]}) and ${b} (${vars[b]}) is ${ratio}, which is less than the required 4.5.`
     );
+  });
+
+  it("returns 1 for identical colors", () => {
+    expect(hex("#ffffff", "#ffffff")).toBe(1);
+    expect(hex("#000", "#000")).toBe(1);
   });
 });

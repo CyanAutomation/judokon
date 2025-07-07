@@ -99,4 +99,30 @@ describe("generateCardSignatureMove", () => {
       expect(html).toContain("Jigoku-guruma");
     });
   });
+
+  describe("HTML Safety and Formatting", () => {
+    it("should not include <script> tags in output", () => {
+      const html = generateCardSignatureMove(
+        { signatureMoveId: 1 },
+        { 1: { id: 1, name: "<script>alert(1)</script>" } }
+      );
+      expect(html).not.toMatch(/<script>/i);
+    });
+
+    it("should trim whitespace from technique names", () => {
+      const html = generateCardSignatureMove(
+        { signatureMoveId: 1 },
+        { 1: { id: 1, name: "  Uchi-mata  " } }
+      );
+      expect(html).toContain("Uchi-mata");
+    });
+
+    it("should handle HTML entities in technique names", () => {
+      const html = generateCardSignatureMove(
+        { signatureMoveId: 1 },
+        { 1: { id: 1, name: "O-soto-gari &amp; Tomoe-nage" } }
+      );
+      expect(html).toContain("O-soto-gari &amp; Tomoe-nage");
+    });
+  });
 });

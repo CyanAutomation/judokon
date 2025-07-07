@@ -90,6 +90,27 @@ describe("formatDate", () => {
   ])("formats Date instance %p to %p", (dateObj, expected) => {
     expect(formatDate(dateObj)).toBe(expected);
   });
+
+  test("returns 'Invalid Date' for NaN and Infinity", () => {
+    expect(formatDate(NaN)).toBe("Invalid Date");
+    expect(formatDate(Infinity)).toBe("Invalid Date");
+    expect(formatDate(-Infinity)).toBe("Invalid Date");
+  });
+
+  test("returns 'Invalid Date' for objects with toString not returning a date", () => {
+    const obj = { toString: () => "not-a-date" };
+    expect(formatDate(obj)).toBe("Invalid Date");
+  });
+
+  test("returns 'Invalid Date' for objects with valueOf not returning a date", () => {
+    const obj = { valueOf: () => "not-a-date" };
+    expect(formatDate(obj)).toBe("Invalid Date");
+  });
+
+  test("does not throw for Symbol input", () => {
+    expect(() => formatDate(Symbol("date"))).not.toThrow();
+    expect(formatDate(Symbol("date"))).toBe("Invalid Date");
+  });
 });
 
 describe("escapeHTML", () => {
@@ -102,5 +123,19 @@ describe("escapeHTML", () => {
     ["<div>&'\"</div>", "&lt;div&gt;&amp;&#039;&quot;&lt;/div&gt;"]
   ])("escapes %p", (input, expected) => {
     expect(escapeHTML(input)).toBe(expected);
+  });
+
+  test("returns empty string for empty input", () => {
+    expect(escapeHTML("")).toBe("");
+    expect(escapeHTML(null)).toBe("");
+    expect(escapeHTML(undefined)).toBe("");
+  });
+
+  test("escapes mixed content with all special characters", () => {
+    expect(escapeHTML("<>&'\"")).toBe("&lt;&gt;&amp;&#039;&quot;");
+  });
+
+  test("does not double-escape already escaped entities", () => {
+    expect(escapeHTML("&lt;div&gt;")).toBe("&amp;lt;div&amp;gt;");
   });
 });

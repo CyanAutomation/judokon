@@ -51,4 +51,35 @@ describe("displayRandomQuote", () => {
 
     expect(quoteDiv.textContent).toContain("Take a breath. Even a still pond reflects the sky.");
   });
+
+  it("handles empty or invalid quote data gracefully", async () => {
+    const quoteDiv = document.createElement("div");
+    quoteDiv.id = "quote";
+    const loader = document.createElement("div");
+    loader.id = "quote-loader";
+    document.body.append(quoteDiv, loader);
+
+    // Empty array
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => [] });
+    await import("../../src/helpers/quoteBuilder.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await waitFor(() => quoteDiv.textContent.length > 0);
+    expect(quoteDiv.textContent).toContain("Take a breath");
+
+    // Invalid data
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => [{}] });
+    await import("../../src/helpers/quoteBuilder.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await waitFor(() => quoteDiv.textContent.length > 0);
+    expect(quoteDiv.textContent).toContain("Take a breath");
+  });
+
+  it("does not throw if DOM elements are missing", async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValue({ ok: true, json: async () => [{ id: 1, title: "A", story: "B" }] });
+    await import("../../src/helpers/quoteBuilder.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    // Should not throw even if #quote, #quote-loader, or #language-toggle are missing
+  });
 });

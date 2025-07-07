@@ -28,4 +28,34 @@ describe("safeGenerate", () => {
     const result = await safeGenerate(() => "ok", "error", "fallback");
     expect(result).toBe("ok");
   });
+
+  test("passes error to fallback if fallback is a function", async () => {
+    const fallback = (err) => err.message;
+    const result = await safeGenerate(
+      () => {
+        throw new Error("fail");
+      },
+      "error",
+      fallback
+    );
+    expect(result).toBe("fail");
+  });
+
+  test("handles non-Error thrown values", async () => {
+    const result = await safeGenerate(
+      () => {
+        throw "not an error object";
+      },
+      "error",
+      "fallback"
+    );
+    expect(result).toBe("fallback");
+  });
+
+  test("handles undefined fallback", async () => {
+    const result = await safeGenerate(() => {
+      throw new Error("fail");
+    }, "error");
+    expect(result).toBeUndefined();
+  });
 });

@@ -23,14 +23,32 @@ describe("data files conform to schemas", async () => {
       const data = JSON.parse(await readFile(path.join(dataDir, dataFile), "utf8"));
       const schema = JSON.parse(await readFile(path.join(schemaDir, schemaFile), "utf8"));
       const validate = ajv.compile(schema);
+
+      // Check that schema is valid before using it
+      expect(typeof validate).toBe("function");
+
+      // Test both array and object data
       const items = Array.isArray(data) && schema.type !== "array" ? data : [data];
       for (const item of items) {
         const valid = validate(item);
         if (!valid) {
-          throw new Error(ajv.errorsText(validate.errors));
+          // Print detailed error for debugging
+          // ajv.errorsText may be empty, so also log validate.errors
+          // This helps with diagnosing schema/data mismatches
+          console.error(validate.errors);
+          throw new Error(ajv.errorsText(validate.errors) || JSON.stringify(validate.errors));
         }
         expect(valid).toBe(true);
       }
     });
   }
+
+  it("fails validation for intentionally broken data", async () => {
+    // Use a known-bad object for negative test
+    const schema = JSON.parse(await readFile(path.join(schemaDir, "judoka.schema.json"), "utf8"));
+    const ajv = await getAjv();
+    const validate = ajv.compile(schema);
+    const bad = { foo: "bar" };
+    expect(validate(bad)).toBe(false);
+  });
 });

@@ -54,4 +54,25 @@ describe("generateJudokaCardHTML fallback containers", () => {
 
     expect(card.textContent).toContain("No data available");
   });
+
+  it("adds fallback when cardRender throws a non-Error value", async () => {
+    vi.spyOn(cardRender, "generateCardPortrait").mockImplementation(() => {
+      throw "fail string";
+    });
+    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+    expect(card.textContent).toContain("No data available");
+  });
+
+  it("adds fallback when cardRender throws undefined", async () => {
+    vi.spyOn(cardRender, "generateCardStats").mockImplementation(() => {
+      throw undefined;
+    });
+    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+    expect(card.textContent).toContain("No data available");
+  });
+
+  it("does not throw if judoka or gokyoLookup is null", async () => {
+    await expect(generateJudokaCardHTML(null, gokyoLookup)).resolves.toBeTruthy();
+    await expect(generateJudokaCardHTML(judoka, null)).resolves.toBeTruthy();
+  });
 });

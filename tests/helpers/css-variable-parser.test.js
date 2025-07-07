@@ -160,4 +160,41 @@ describe("parseCssVariables", () => {
       "--loose": "value"
     });
   });
+
+  it("should parse variables with fallback values", () => {
+    const css = `
+      :root {
+        --main-bg: var(--fallback, #fff);
+      }
+    `;
+    const vars = parseCssVariables(css);
+    expect(vars["--main-bg"]).toBe("var(--fallback, #fff)");
+  });
+
+  it("should use the last declaration for duplicate variables", () => {
+    const css = `
+      :root {
+        --dup: red;
+        --dup: blue;
+      }
+    `;
+    const vars = parseCssVariables(css);
+    expect(vars["--dup"]).toBe("blue");
+  });
+
+  it("should handle unusual but valid variable names", () => {
+    const css = `
+      :root {
+        --_underscored: 1;
+        --CAPS: 2;
+        --123: 3;
+        --foo-bar_baz: 4;
+      }
+    `;
+    const vars = parseCssVariables(css);
+    expect(vars["--_underscored"]).toBe("1");
+    expect(vars["--CAPS"]).toBe("2");
+    expect(vars["--123"]).toBe("3");
+    expect(vars["--foo-bar_baz"]).toBe("4");
+  });
 });

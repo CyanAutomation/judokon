@@ -18,6 +18,15 @@ describe("generateCardSignatureMove", () => {
       );
       expect(typeof html).toBe("string");
     });
+
+    it("should escape HTML in technique name", () => {
+      const html = generateCardSignatureMove(
+        { signatureMoveId: 1 },
+        { 1: { id: 1, name: "<b>Uchi-mata</b>" } }
+      );
+      expect(html).toContain("&lt;b&gt;Uchi-mata&lt;/b&gt;");
+      expect(html).not.toContain("<b>Uchi-mata</b>");
+    });
   });
 
   describe("Fallback Behavior", () => {
@@ -46,6 +55,11 @@ describe("generateCardSignatureMove", () => {
 
     it.each(fallbackCases)("should fallback to 'Jigoku-guruma' when %s", (judoka, gokyo) => {
       const html = generateCardSignatureMove(judoka, gokyo);
+      expect(html).toContain("Jigoku-guruma");
+    });
+
+    it("renders fallback for empty or falsy technique name", () => {
+      const html = generateCardSignatureMove({ signatureMoveId: 1 }, { 1: { id: 1, name: "" } });
       expect(html).toContain("Jigoku-guruma");
     });
   });
@@ -77,6 +91,14 @@ describe("generateCardSignatureMove", () => {
       expect(html).toContain("Signature Move:");
       expect(html).toContain("Jigoku-guruma");
     });
+
+    it("should handle emoji and non-Latin characters in technique names", () => {
+      const html = generateCardSignatureMove(
+        { signatureMoveId: 1 },
+        { 1: { id: 1, name: "投げ技🔥" } }
+      );
+      expect(html).toContain("投げ技🔥");
+    });
   });
 
   describe("Invalid Type Inputs", () => {
@@ -99,6 +121,11 @@ describe("generateCardSignatureMove", () => {
     it.each(invalidInputs)("should fallback to 'Jigoku-guruma' when %s", (_, judoka, gokyo) => {
       const html = generateCardSignatureMove(judoka, gokyo);
       expect(html).toContain("Jigoku-guruma");
+    });
+
+    it("does not throw for missing arguments", () => {
+      expect(() => generateCardSignatureMove()).not.toThrow();
+      expect(generateCardSignatureMove()).toContain("Signature Move:");
     });
   });
 });

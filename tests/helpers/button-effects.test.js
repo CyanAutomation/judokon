@@ -28,4 +28,35 @@ describe("setupButtonEffects", () => {
     ripple.dispatchEvent(new Event("animationend"));
     expect(button.querySelector("span.ripple")).toBeNull();
   });
+
+  it("does not create multiple ripples if one already exists", () => {
+    setupButtonEffects();
+    const event = new MouseEvent("mousedown");
+    Object.defineProperty(event, "offsetX", { value: 5 });
+    Object.defineProperty(event, "offsetY", { value: 10 });
+    button.dispatchEvent(event);
+
+    // Try to trigger another ripple before the first is removed
+    button.dispatchEvent(event);
+    expect(button.querySelectorAll("span.ripple").length).toBe(1);
+  });
+
+  it("does not throw if animationend is dispatched with no ripple", () => {
+    setupButtonEffects();
+    // Should not throw
+    expect(() => {
+      button.dispatchEvent(new Event("animationend"));
+    }).not.toThrow();
+  });
+
+  it("does not apply effect to non-button elements", () => {
+    setupButtonEffects();
+    const div = document.createElement("div");
+    document.body.appendChild(div);
+    const event = new MouseEvent("mousedown");
+    Object.defineProperty(event, "offsetX", { value: 1 });
+    Object.defineProperty(event, "offsetY", { value: 2 });
+    div.dispatchEvent(event);
+    expect(div.querySelector("span.ripple")).toBeNull();
+  });
 });
