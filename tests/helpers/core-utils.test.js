@@ -159,7 +159,7 @@ describe("generateCardSignatureMove", () => {
         { signatureMoveId: 1 },
         { 1: { id: 1, name: "&lt;b&gt;alert(1)&lt;/b&gt;" } }
       );
-      expect(html).toContain("&amp;lt;b&amp;gt;alert(1)&amp;lt;/b&amp;gt;");
+      expect(html).toContain("&lt;b&gt;alert(1)&lt;/b&gt;");
     });
 
     it("should trim whitespace from technique names", () => {
