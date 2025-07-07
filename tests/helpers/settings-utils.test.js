@@ -1,15 +1,29 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
 
-const originalSetItem = Storage.prototype.setItem;
-
-afterEach(() => {
-  vi.restoreAllMocks();
-  localStorage.clear();
-  vi.resetModules();
-  vi.useRealTimers();
-});
+/**
+ * @fileoverview
+ * Unit tests for settingsUtils helper functions.
+ * Covers loading, saving, updating, and error handling for settings in localStorage.
+ */
 
 describe("settings utils", () => {
+  /** Save original setItem to restore after tests */
+  const originalSetItem = Storage.prototype.setItem;
+
+  beforeEach(() => {
+    Storage.prototype.setItem = originalSetItem;
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    localStorage.clear();
+    vi.resetModules();
+    vi.useRealTimers();
+  });
+
+  /**
+   * Should load default settings when localStorage is empty.
+   */
   it("loads defaults when storage is empty", async () => {
     const { loadSettings } = await import("../../src/helpers/settingsUtils.js");
     const settings = await loadSettings();
@@ -22,6 +36,9 @@ describe("settings utils", () => {
     });
   });
 
+  /**
+   * Should debounce and save settings to localStorage.
+   */
   it("saves settings with debounce", async () => {
     vi.useFakeTimers();
     const { saveSettings } = await import("../../src/helpers/settingsUtils.js");
@@ -38,22 +55,32 @@ describe("settings utils", () => {
     expect(JSON.parse(localStorage.getItem("settings"))).toEqual(data);
   });
 
+  /**
+   * Should update a single setting and persist the change.
+   */
   it("updates a single setting and persists", async () => {
     vi.useFakeTimers();
     const { updateSetting, loadSettings } = await import("../../src/helpers/settingsUtils.js");
     const promise = updateSetting("sound", false);
     await vi.advanceTimersByTimeAsync(110);
     await promise;
+    await Promise.resolve();
     const stored = await loadSettings();
     expect(stored.sound).toBe(false);
   });
 
+  /**
+   * Should reject if settings JSON is invalid.
+   */
   it("rejects when parsing fails", async () => {
     localStorage.setItem("settings", "{bad json}");
     const { loadSettings } = await import("../../src/helpers/settingsUtils.js");
     await expect(loadSettings()).rejects.toBeInstanceOf(Error);
   });
 
+  /**
+   * Should reject if localStorage.setItem throws.
+   */
   it("rejects when localStorage.setItem throws", async () => {
     Storage.prototype.setItem = vi.fn(() => {
       throw new Error("fail");
@@ -69,5 +96,44 @@ describe("settings utils", () => {
       })
     ).rejects.toThrow("fail");
     Storage.prototype.setItem = originalSetItem;
+  });
+
+  /**
+   * Should return default value when updating a non-existent key.
+   */
+  it("returns default when updating unknown key", async () => {
+    vi.useFakeTimers();
+    const { updateSetting, loadSettings } = await import("../../src/helpers/settingsUtils.js");
+    const promise = updateSetting("nonexistentKey", "value");
+    await vi.advanceTimersByTimeAsync(110);
+    await promise;
+    const stored = await loadSettings();
+    expect(stored.nonexistentKey).toBe("value");
+  });
+
+  /**
+   * Should only persist the last settings when saveSettings is called rapidly.
+   */
+  it("debounces multiple saveSettings calls", async () => {
+    vi.useFakeTimers();
+    const { saveSettings } = await import("../../src/helpers/settingsUtils.js");
+    const data1 = {
+      sound: true,
+      fullNavMap: false,
+      motionEffects: true,
+      displayMode: "light",
+      gameModes: {}
+    };
+    const data2 = {
+      sound: false,
+      fullNavMap: true,
+      motionEffects: false,
+      displayMode: "dark",
+      gameModes: {}
+    };
+    saveSettings(data1);
+    saveSettings(data2);
+    await vi.advanceTimersByTimeAsync(110);
+    expect(JSON.parse(localStorage.getItem("settings"))).toEqual(data2);
   });
 });
