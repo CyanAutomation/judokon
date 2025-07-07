@@ -1,6 +1,6 @@
 import { createGokyoLookup } from "./utils.js";
 import { generateJudokaCard } from "./cardBuilder.js";
-import { fetchDataWithErrorHandling } from "./dataUtils.js";
+import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 
 let fallbackJudoka;
@@ -10,7 +10,7 @@ async function getFallbackJudoka() {
     return fallbackJudoka;
   }
   try {
-    const data = await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`);
+    const data = await fetchJson(`${DATA_DIR}judoka.json`);
     if (Array.isArray(data)) {
       fallbackJudoka = data.find((j) => j.id === 0) || null;
     }
