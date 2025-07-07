@@ -47,7 +47,7 @@ test.describe("View Judoka screen", () => {
 
   test("draw card populates container", async ({ page }) => {
     await page.getByTestId("draw-button").click();
-    const card = page.locator("[data-testid=card-container] .judoka-card");
+    const card = page.getByTestId('card-container').locator('.judoka-card');
     await expect(card).toHaveCount(1);
     await expect(card).toBeVisible();
     const flag = card.locator(".card-top-bar img");
