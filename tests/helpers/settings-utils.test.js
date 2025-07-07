@@ -31,16 +31,19 @@ describe("settings utils", () => {
       gameModes: {}
     };
     await saveSettings(data);
-    await new Promise((r) => setTimeout(r, 110));
+    vi.advanceTimersByTime(110);
     expect(JSON.parse(localStorage.getItem("settings"))).toEqual(data);
+    vi.useRealTimers();
   });
 
   it("updates a single setting and persists", async () => {
+    vi.useFakeTimers();
     const { updateSetting, loadSettings } = await import("../../src/helpers/settingsUtils.js");
     await updateSetting("sound", false);
-    await new Promise((r) => setTimeout(r, 110));
+    vi.advanceTimersByTime(110);
     const stored = await loadSettings();
     expect(stored.sound).toBe(false);
+    vi.useRealTimers();
   });
 
   it("rejects when parsing fails", async () => {
