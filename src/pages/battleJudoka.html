@@ -30,7 +30,7 @@
     <header class="header">
       <div class="character-slot left"></div>
       <div class="logo-container">
-        <a href="/judokon/index.html">
+        <a href="/judokon/index.html" data-testid="home-link">
           <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
         </a>
       </div>
@@ -40,12 +40,12 @@
     <main class="container" role="main">
       <!-- Section for the carousel -->
       <section id="carousel-section">
-        <div id="carousel-container" class="hidden"></div>
+        <div id="carousel-container" data-testid="carousel-container" class="hidden"></div>
       </section>
     </main>
 
     <footer>
-      <nav class="bottom-navbar"></nav>
+      <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
     </footer>
     <script type="module" src="../helpers/setupBottomNavbar.js"></script>
 

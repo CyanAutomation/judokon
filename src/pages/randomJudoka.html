@@ -31,7 +31,7 @@
       <header class="header">
         <div class="character-slot left"></div>
         <div class="logo-container">
-          <a href="/judokon/index.html">
+          <a href="/judokon/index.html" data-testid="home-link">
             <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
           </a>
         </div>
@@ -39,12 +39,14 @@
       </header>
 
       <div class="card-section">
-        <div id="card-container" class="card-container"></div>
-        <button id="draw-card-btn" class="draw-card-btn">Draw Card!</button>
+        <div id="card-container" data-testid="card-container" class="card-container"></div>
+        <button id="draw-card-btn" data-testid="draw-button" class="draw-card-btn">
+          Draw Card!
+        </button>
       </div>
 
       <footer>
-        <nav class="bottom-navbar"></nav>
+        <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
       </footer>
       <script type="module" src="../helpers/setupBottomNavbar.js"></script>
       <script type="module">

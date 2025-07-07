@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, test, expect } from "vitest";
 import { safeGenerate } from "../../src/helpers/errorUtils.js";
 

@@ -32,7 +32,7 @@
       <header class="header">
         <div class="character-slot left"></div>
         <div class="logo-container">
-          <a href="/judokon/index.html">
+          <a href="/judokon/index.html" data-testid="home-link">
             <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
           </a>
         </div>
@@ -41,11 +41,16 @@
 
       <main class="kodokan-grid" role="main">
         <div class="filter-bar">
-          <button id="country-toggle" aria-controls="country-panel" aria-expanded="false">
+          <button
+            id="country-toggle"
+            data-testid="country-toggle"
+            aria-controls="country-panel"
+            aria-expanded="false"
+          >
             Choose Country
           </button>
         </div>
-        <div id="carousel-container"></div>
+        <div id="carousel-container" data-testid="carousel-container"></div>
       </main>
 
       <aside id="country-panel" class="country-panel grid" role="region" hidden>
@@ -54,11 +59,13 @@
             <!-- Country names will be dynamically inserted here -->
           </div>
         </div>
-        <button id="clear-filter" class="clear-filter-button">Clear selection</button>
+        <button id="clear-filter" data-testid="clear-filter" class="clear-filter-button">
+          Clear selection
+        </button>
       </aside>
 
       <footer>
-        <nav class="bottom-navbar"></nav>
+        <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
       </footer>
       <script type="module" src="../helpers/setupBottomNavbar.js"></script>
 

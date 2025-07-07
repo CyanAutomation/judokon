@@ -1,26 +1,16 @@
 import { test, expect } from "@playwright/test";
+import { registerCommonRoutes } from "./fixtures/commonRoutes.js";
 
-const COUNTRY_TOGGLE_LOCATOR = /choose country/i;
+const COUNTRY_TOGGLE_LOCATOR = "country-toggle";
 
 test.describe("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
-    await page.route("**/src/data/judoka.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/judoka.json" })
-    );
-    await page.route("**/src/data/gokyo.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/gokyo.json" })
-    );
-    await page.route("**/src/data/countryCodeMapping.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/countryCodeMapping.json" })
-    );
-    await page.route("https://flagcdn.com/**", (route) =>
-      route.fulfill({ path: "src/assets/countryFlags/placeholder-flag.png" })
-    );
+    await registerCommonRoutes(page);
     await page.goto("/src/pages/browseJudoka.html");
   });
 
   test("essential elements visible", async ({ page }) => {
-    await expect(page.getByRole("button", { name: COUNTRY_TOGGLE_LOCATOR })).toBeVisible();
+    await expect(page.getByTestId(COUNTRY_TOGGLE_LOCATOR)).toBeVisible();
     await expect(page.getByRole("navigation")).toBeVisible();
     await expect(page.getByRole("link", { name: /classic battle/i })).toBeVisible();
   });
@@ -43,11 +33,11 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test("country filter updates carousel", async ({ page }) => {
-    const toggle = page.getByRole("button", { name: COUNTRY_TOGGLE_LOCATOR });
+    const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
 
-    await page.waitForSelector("#carousel-container .judoka-card");
+    await page.waitForSelector("[data-testid=carousel-container] .judoka-card");
 
-    const allCards = page.locator("#carousel-container .judoka-card");
+    const allCards = page.locator("[data-testid=carousel-container] .judoka-card");
     const initialCount = await allCards.count();
     expect(initialCount).toBe(3);
 
@@ -55,11 +45,13 @@ test.describe("Browse Judoka screen", () => {
     const panel = page.getByRole("region");
     await panel.waitFor();
     await page.waitForTimeout(500);
-    const countAfterFilter = await page.locator("#carousel-container .judoka-card").count();
+    const countAfterFilter = await page
+      .locator("[data-testid=carousel-container] .judoka-card")
+      .count();
     expect(countAfterFilter).toBe(initialCount);
     await page.getByRole("button", { name: "Japan" }).click({ force: true });
 
-    const filteredCards = page.locator("#carousel-container .judoka-card");
+    const filteredCards = page.locator("[data-testid=carousel-container] .judoka-card");
     const filteredCount = await filteredCards.count();
     expect(filteredCount).toBe(1);
 
@@ -73,11 +65,13 @@ test.describe("Browse Judoka screen", () => {
     await page.waitForTimeout(350);
     await page.getByRole("button", { name: "All" }).click({ force: true });
 
-    await expect(page.locator("#carousel-container .judoka-card")).toHaveCount(initialCount);
+    await expect(page.locator("[data-testid=carousel-container] .judoka-card")).toHaveCount(
+      initialCount
+    );
   });
 
   test("displays country flags", async ({ page }) => {
-    const toggle = page.getByRole("button", { name: COUNTRY_TOGGLE_LOCATOR });
+    const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
     await toggle.click();
     await page.waitForSelector("#country-list .slide");
     const slides = page.locator("#country-list .slide");
@@ -86,7 +80,7 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test.skip("judoka card enlarges on hover", async ({ page }) => {
-    const card = page.locator("#carousel-container .judoka-card").first();
+    const card = page.locator("[data-testid=carousel-container] .judoka-card").first();
     await card.waitFor();
 
     const before = await card.boundingBox();
@@ -99,7 +93,7 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test.skip("carousel responds to arrow keys", async ({ page }) => {
-    const container = page.locator("#carousel-container");
+    const container = page.locator("[data-testid=carousel-container]");
     await container.waitFor();
 
     await container.focus();
