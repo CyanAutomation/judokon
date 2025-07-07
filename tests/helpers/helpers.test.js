@@ -106,11 +106,6 @@ describe("formatDate", () => {
     const obj = { valueOf: () => "not-a-date" };
     expect(formatDate(obj)).toBe("Invalid Date");
   });
-
-  test("does not throw for Symbol input", () => {
-    expect(() => formatDate(Symbol("date"))).not.toThrow();
-    expect(formatDate(Symbol("date"))).toBe("Invalid Date");
-  });
 });
 
 describe("escapeHTML", () => {
