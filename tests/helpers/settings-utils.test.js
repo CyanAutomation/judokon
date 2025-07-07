@@ -104,7 +104,6 @@ describe("settings utils", () => {
     const promise = updateSetting("sound", false);
     await vi.runAllTimersAsync();
     await promise;
-    await Promise.resolve();
     const stored = await loadSettings();
     expect(stored.sound).toBe(false);
   });
