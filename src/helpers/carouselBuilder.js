@@ -58,6 +58,10 @@ async function getFallbackJudoka() {
  * @param {HTMLElement} container - The carousel container to scroll.
  * @param {Number} scrollAmount - The amount to scroll in pixels.
  * @returns {HTMLElement} The scroll button element.
+ *
+ * Note: The function assumes `scrollAmount` is a number and does not
+ * perform validation. Invalid values will simply be passed to
+ * `scrollBy` without throwing an error.
  */
 export function createScrollButton(direction, container, scrollAmount) {
   if (direction !== "left" && direction !== "right") {

@@ -59,11 +59,14 @@ describe("createScrollButton", () => {
     expect(() => createScrollButton("left", div, 100)).not.toThrow();
   });
 
-  it("should throw if scroll amount is not a number", () => {
+  it("should return a button even if scroll amount is invalid", () => {
     const div = document.createElement("div");
-    expect(() => createScrollButton("left", div, null)).toThrow();
-    expect(() => createScrollButton("left", div, undefined)).toThrow();
-    expect(() => createScrollButton("left", div, "100")).toThrow();
+    expect(() => createScrollButton("left", div, null)).not.toThrow();
+    expect(createScrollButton("left", div, null)).toBeInstanceOf(HTMLButtonElement);
+    expect(() => createScrollButton("left", div, undefined)).not.toThrow();
+    expect(createScrollButton("left", div, undefined)).toBeInstanceOf(HTMLButtonElement);
+    expect(() => createScrollButton("left", div, "100")).not.toThrow();
+    expect(createScrollButton("left", div, "100")).toBeInstanceOf(HTMLButtonElement);
   });
 });
 
