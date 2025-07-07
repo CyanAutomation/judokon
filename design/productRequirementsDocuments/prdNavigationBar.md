@@ -1,4 +1,4 @@
-# PRD: Standard Navigation Bar
+# PRD: Navigation Bar
 
 ---
 
