@@ -91,7 +91,9 @@ function formatFableStory(story) {
 function displayFable(fable) {
   const quoteDiv = document.getElementById("quote");
   const loaderDiv = document.getElementById("quote-loader");
-  if (!quoteDiv || !loaderDiv) return;
+  if (!quoteDiv || !loaderDiv) {
+    return;
+  }
 
   if (fable) {
     const formattedStory = formatFableStory(fable.story);
