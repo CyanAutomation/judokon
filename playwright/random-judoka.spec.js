@@ -15,8 +15,8 @@ test.describe("View Judoka screen", () => {
   });
 
   test("essential elements visible", async ({ page }) => {
-    await page.getByRole("button", { name: /draw card/i }).waitFor();
-    await expect(page.getByRole("button", { name: /draw card/i })).toBeVisible();
+    await page.getByTestId("draw-button").waitFor();
+    await expect(page.getByTestId("draw-button")).toBeVisible();
     await expect(page.getByRole("navigation")).toBeVisible();
   });
 
@@ -33,12 +33,12 @@ test.describe("View Judoka screen", () => {
   });
 
   test("draw button accessible name updates", async ({ page }) => {
-    const btn = page.getByRole("button", { name: /draw card/i });
+    const btn = page.getByTestId("draw-button");
     await btn.waitFor();
     await expect(btn).toHaveText(/draw card/i);
 
     await page.evaluate(() => {
-      const button = document.querySelector("#draw-card-btn");
+      const button = document.querySelector('[data-testid="draw-button"]');
       button.textContent = "Pick a random judoka";
     });
 
@@ -46,8 +46,8 @@ test.describe("View Judoka screen", () => {
   });
 
   test("draw card populates container", async ({ page }) => {
-    await page.click("#draw-card-btn");
-    const card = page.locator("#card-container .judoka-card");
+    await page.getByTestId("draw-button").click();
+    const card = page.locator("[data-testid=card-container] .judoka-card");
     await expect(card).toHaveCount(1);
     await expect(card).toBeVisible();
     const flag = card.locator(".card-top-bar img");

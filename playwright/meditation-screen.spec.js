@@ -9,11 +9,11 @@ test.describe("Meditation screen", () => {
     await expect(page.getByRole("heading", { name: /pause\. breathe\. reflect\./i })).toBeVisible();
     await expect(page.getByAltText(/KG is ready to meditate/i)).toBeVisible();
     await expect(page.locator("#quote")).toBeVisible();
-    await expect(page.getByRole("link", { name: /continue your journey/i })).toBeVisible();
+    await expect(page.getByTestId("continue-link")).toBeVisible();
   });
 
   test("continue button navigates home", async ({ page }) => {
-    await page.getByRole("link", { name: /continue your journey/i }).click();
+    await page.getByTestId("continue-link").click();
     await expect(page).toHaveURL(/index\.html/);
   });
 
