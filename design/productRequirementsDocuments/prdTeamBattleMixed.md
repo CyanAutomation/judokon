@@ -1,5 +1,9 @@
 # PRD: Team Battle (Mixed)
 
+## TL;DR
+
+Enables mixed-gender teams to face off, encouraging varied rosters and strategic diversity.
+
 **Game Mode ID:** teamBattleMixed (URL: teamBattleMixed.html)
 
 ---
