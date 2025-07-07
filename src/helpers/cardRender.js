@@ -131,13 +131,6 @@ export function generateCardStats(card, cardType = "common") {
  */
 import { debugLog } from "./debug.js";
 
-function decodeHtmlEntities(str) {
-  if (!str) return "";
-  const txt = document.createElement("textarea");
-  txt.innerHTML = str;
-  return txt.value;
-}
-
 export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
   // Handle null or undefined judoka
   if (!judoka) {
@@ -157,8 +150,7 @@ export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "commo
   const foundName = technique?.name;
 
   if (foundName) {
-    // Decode entities first, then escape
-    techniqueName = escapeHTML(decodeHtmlEntities(foundName.trim()));
+    techniqueName = escapeHTML(foundName.trim());
   } else {
     techniqueName = escapeHTML(techniqueName);
   }
