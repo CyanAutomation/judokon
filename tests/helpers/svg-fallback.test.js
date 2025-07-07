@@ -33,7 +33,7 @@ describe("applySvgFallback", () => {
     expect(() => applySvgFallback("fallback.png")).not.toThrow();
   });
 
-  it("does not replace SVG if fallback is not provided", () => {
+  it("uses default fallback path when none provided", () => {
     const img = document.createElement("img");
     img.src = "logo.svg";
     document.body.appendChild(img);
@@ -41,8 +41,8 @@ describe("applySvgFallback", () => {
     applySvgFallback();
     img.dispatchEvent(new Event("error"));
 
-    // Should not change src if fallback is undefined
-    expect(img.src).toContain("logo.svg");
+    // Should replace src with the default fallback image
+    expect(img.src).toContain("judokonLogoSmall.png");
   });
 
   it("does not add svg-fallback class to non-SVG images", () => {

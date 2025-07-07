@@ -10,14 +10,29 @@ import { DEFAULT_SETTINGS } from "../../src/helpers/settingsUtils.js";
 describe("settings utils", () => {
   /** Save original setItem to restore after tests */
   const originalSetItem = Storage.prototype.setItem;
+  /** Cache original localStorage to restore after each test */
+  const originalLocalStorage = global.localStorage;
 
   beforeEach(() => {
     Storage.prototype.setItem = originalSetItem;
+    // Reset localStorage to its original implementation
+    Object.defineProperty(global, "localStorage", {
+      value: originalLocalStorage,
+      configurable: true,
+      writable: true
+    });
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
-    localStorage.clear();
+    if (global.localStorage) {
+      global.localStorage.clear();
+    }
+    Object.defineProperty(global, "localStorage", {
+      value: originalLocalStorage,
+      configurable: true,
+      writable: true
+    });
     vi.resetModules();
     vi.useRealTimers();
   });
