@@ -11,6 +11,7 @@ export function setupButtonEffects() {
   const buttons = document.querySelectorAll("button");
   buttons.forEach((button) => {
     button.addEventListener("mousedown", (event) => {
+      if (button.querySelector("span.ripple")) return; // Prevent multiple ripples
       const ripple = document.createElement("span");
       ripple.className = "ripple";
       ripple.style.left = `${event.offsetX}px`;

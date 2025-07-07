@@ -1,5 +1,5 @@
 import { getCountryNameFromCode } from "./countryUtils.js";
-import { escapeHTML, getValue } from "./utils.js";
+import { getValue, escapeHTML } from "./utils.js";
 import { debugLog } from "./debug.js";
 
 const PLACEHOLDER_FLAG_URL = "../assets/countryFlags/placeholder-flag.png";
@@ -42,8 +42,8 @@ export function createNoDataContainer() {
  * 4. Return an object containing the sanitized `firstname`, `surname`, and `countryCode`.
  */
 function extractJudokaData(judoka) {
-  const firstname = escapeHTML(getValue(judoka.firstname, "Unknown"));
-  const surname = escapeHTML(getValue(judoka.surname, ""));
+  const firstname = getValue(judoka.firstname, "Unknown");
+  const surname = getValue(judoka.surname, "");
   const countryCode = getValue(judoka.countryCode, "unknown");
   return { firstname, surname, countryCode };
 }
@@ -92,11 +92,11 @@ export function createNameContainer(firstname, surname) {
 
   const firstnameSpan = document.createElement("span");
   firstnameSpan.className = "firstname";
-  firstnameSpan.textContent = firstname;
+  firstnameSpan.innerHTML = escapeHTML(firstname);
 
   const surnameSpan = document.createElement("span");
   surnameSpan.className = "surname";
-  surnameSpan.textContent = surname;
+  surnameSpan.innerHTML = escapeHTML(surname);
 
   nameContainer.appendChild(firstnameSpan);
   nameContainer.appendChild(surnameSpan);
@@ -131,7 +131,9 @@ export function createFlagImage(finalFlagUrl, countryName) {
 
   flagImg.src = finalFlagUrl || PLACEHOLDER_FLAG_URL;
 
-  flagImg.alt = `${countryName || ""} flag`;
+  const safeCountryName = countryName ? countryName : "Unknown";
+  // Fix: Use "Unknown" if countryName is falsy (including empty string)
+  flagImg.setAttribute("alt", `${escapeHTML(safeCountryName || "Unknown")} flag`);
 
   flagImg.setAttribute("loading", "lazy");
 

@@ -177,6 +177,13 @@ function createSignatureMoveSection(judoka, gokyoLookup, cardType) {
 }
 
 export async function generateJudokaCardHTML(judoka, gokyoLookup) {
+  // Add null/undefined checks for judoka and gokyoLookup
+  if (!judoka || !gokyoLookup) {
+    const fallback = document.createElement("div");
+    fallback.textContent = "No data available";
+    return fallback;
+  }
+
   validateJudoka(judoka);
 
   const countryCode = judoka.countryCode;

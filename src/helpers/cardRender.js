@@ -45,7 +45,7 @@ export function generateCardPortrait(card) {
   const escapedSurname = escapeHTML(surname);
   return `
     <div class="card-portrait">
-      <img src="../assets/judokaPortraits/judokaPortrait-${id}.png" alt="${escapedFirstname} ${escapedSurname}'s portrait" loading="lazy" onerror="this.onerror=null; this.src='../assets/judokaPortraits/judokaPortrait-${PLACEHOLDER_ID}.png'">
+      <img src="../assets/judokaPortraits/judokaPortrait-${id}.png" alt="${escapedFirstname} ${escapedSurname}" loading="lazy" onerror="this.onerror=null; this.src='../assets/judokaPortraits/judokaPortrait-${PLACEHOLDER_ID}.png'">
     </div>
   `;
 }
@@ -131,6 +131,13 @@ export function generateCardStats(card, cardType = "common") {
  */
 import { debugLog } from "./debug.js";
 
+function decodeHtmlEntities(str) {
+  if (!str) return "";
+  const txt = document.createElement("textarea");
+  txt.innerHTML = str;
+  return txt.value;
+}
+
 export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
   // Handle null or undefined judoka
   if (!judoka) {
@@ -146,10 +153,15 @@ export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "commo
   const technique = (gokyoLookup && gokyoLookup[signatureMoveId]) ||
     (gokyoLookup && gokyoLookup[PLACEHOLDER_ID]) || { id: PLACEHOLDER_ID, name: "Jigoku-guruma" };
 
-  const techniqueName = technique?.name || "Jigoku-guruma";
+  let techniqueName = "Jigoku-guruma";
+  const foundName = technique?.name;
 
-  // Escape the technique name to prevent XSS
-  const escapedTechniqueName = escapeHTML(techniqueName);
+  if (foundName) {
+    // Decode entities first, then escape
+    techniqueName = escapeHTML(decodeHtmlEntities(foundName.trim()));
+  } else {
+    techniqueName = escapeHTML(techniqueName);
+  }
 
   debugLog("Selected Technique:", technique);
 
@@ -158,7 +170,7 @@ export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "commo
   return `
     <div class="signature-move-container ${cardClass}">
       <span class="signature-move-label">Signature Move:</span>
-      <span class="signature-move-value">${escapedTechniqueName}</span>
+      <span class="signature-move-value">${techniqueName}</span>
     </div>
   `;
 }

@@ -24,7 +24,8 @@ export function toggleExpandedMapView(gameModes) {
   mapView.innerHTML = validModes
     .map(
       (mode) =>
-        `<div class="map-tile" style="background-image: url('${mode.image}')">
+        `<div class="map-tile">
+          <img src="${mode.image}" alt="${mode.name}" loading="lazy">
           <a href="/judokon/src/pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a>
         </div>`
     )
@@ -66,6 +67,7 @@ function clearBottomNavbar() {
  */
 export function togglePortraitTextMenu(gameModes) {
   const navBar = document.querySelector(".bottom-navbar");
+  if (!navBar) return; // Guard: do nothing if navbar is missing
   clearBottomNavbar(); // Clear existing content
 
   const validModes = validateGameModes(gameModes);

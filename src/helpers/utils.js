@@ -10,27 +10,20 @@ const escapeMap = {
 };
 
 /**
- * Escapes HTML special characters to prevent XSS.
+ * Escapes HTML special characters in a string.
  *
  * @pseudocode
- * 1. Ensure the input `str` is a string:
- *    - Convert `str` to a string using `String(str)` to handle non-string inputs.
- *
- * 2. Replace special HTML characters:
- *    - Use the `replace` method with a regular expression to match characters `&`, `<`, `>`, `"`, and `'`.
- *    - For each matched character:
- *      a. Look up the corresponding escaped value in the `escapeMap` object.
- *      b. Replace the character with its escaped value if found.
- *      c. Leave the character unchanged if not found in `escapeMap`.
- *
- * 3. Return the escaped string:
- *    - Ensure all special characters are replaced with their HTML-safe equivalents.
+ * 1. If input is null or undefined, return empty string.
+ * 2. Convert input to string.
+ * 3. Replace &, <, >, ', and " with their HTML entity equivalents.
+ * 4. Return the escaped string.
  *
  * @param {string} str - The string to escape.
  * @returns {string} The escaped string.
  * @typedef {string} EscapedHTML
  */
 export function escapeHTML(str) {
+  if (str === null || str === undefined) return "";
   return String(str).replace(/[&<>"']/g, (char) => escapeMap[char] || char);
 }
 

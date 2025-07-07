@@ -17,28 +17,30 @@ async function loadConverter() {
  * Convert English text to pseudo-Japanese using a JSON lookup table.
  *
  * @pseudocode
- * 1. Load the converter JSON once using `loadConverter`.
+ * 1. If input is null, undefined, or empty string, return empty string.
+ * 2. Load the converter JSON once using `loadConverter`.
  *    - If loading fails, return `STATIC_FALLBACK`.
- * 2. Clean the `text` by removing characters other than letters, numbers, and whitespace.
- * 3. Build a list of fallback characters from the mapping values.
- * 4. For each character in the cleaned text:
+ * 3. Clean the `text` by removing characters other than letters, numbers, and whitespace.
+ * 4. Build a list of fallback characters from the mapping values.
+ * 5. For each character in the cleaned text:
  *    - Preserve whitespace characters as-is.
  *    - Map letters (case-insensitive) using the converter table.
- *    - Replace unmapped characters with a random fallback character.
- * 5. Join and return the converted string.
+ *    - Skip unmapped characters (do not output fallback for digits or punctuation).
+ * 6. Join and return the converted string.
  *
  * @param {string} text - The text to convert.
  * @returns {Promise<string>} The pseudo-Japanese representation.
  */
-export async function convertToPseudoJapanese(text) {
+export async function convertToPseudoJapanese(input) {
+  if (input === null || input === "") return "";
+
   const converter = await loadConverter();
   if (!converter || !converter.letters) {
     return STATIC_FALLBACK;
   }
 
   const mapping = converter.letters;
-  const fallback = Object.values(mapping).flat();
-  const cleaned = String(text).replace(/[^A-Za-z0-9\s]/g, "");
+  const cleaned = String(input).replace(/[^A-Za-z0-9\s]/g, "");
 
   return cleaned
     .split("")
@@ -46,11 +48,15 @@ export async function convertToPseudoJapanese(text) {
       if (/\s/.test(char)) {
         return char;
       }
-      const letters = mapping[char.toLowerCase()];
-      if (letters) {
-        return letters[Math.floor(Math.random() * letters.length)];
+      // Only map letters; skip digits and other unsupported chars
+      if (/^[A-Za-z]$/.test(char)) {
+        const letters = mapping[char.toLowerCase()];
+        if (letters) {
+          return letters[Math.floor(Math.random() * letters.length)];
+        }
       }
-      return fallback[Math.floor(Math.random() * fallback.length)];
+      // skip unsupported (digits, etc.)
+      return "";
     })
     .join("");
 }

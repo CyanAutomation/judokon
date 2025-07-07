@@ -16,11 +16,17 @@
  * @param {*} [fallback=""] - Value returned if `fn` throws.
  * @returns {Promise<*>} Result of `fn` or the fallback value.
  */
-export async function safeGenerate(fn, errorMsg, fallback = "") {
+export async function safeGenerate(fn, errorMsg, fallback) {
   try {
     return await fn();
   } catch (error) {
     console.error(errorMsg, error);
+    if (typeof fallback === "function") {
+      return fallback(error);
+    }
+    if (typeof fallback === "undefined") {
+      return undefined;
+    }
     return fallback;
   }
 }

@@ -33,6 +33,8 @@ export async function generateRandomCard(
   containerEl,
   prefersReducedMotion = false
 ) {
+  if (!containerEl) return;
+
   try {
     const judokaData = activeCards || (await fetchDataWithErrorHandling(`${DATA_DIR}judoka.json`));
 
@@ -60,14 +62,17 @@ export async function generateRandomCard(
     const selectedJudoka = getRandomJudoka(validJudoka);
     const judokaCard = await generateJudokaCardHTML(selectedJudoka, gokyoLookup);
 
-    containerEl.innerHTML = "";
-    containerEl.appendChild(judokaCard);
+    if (judokaCard) {
+      containerEl.innerHTML = "";
+      containerEl.appendChild(judokaCard);
 
-    if (!prefersReducedMotion) {
-      requestAnimationFrame(() => {
-        judokaCard.classList.add("animate-card");
-      });
+      if (!prefersReducedMotion) {
+        requestAnimationFrame(() => {
+          judokaCard.classList.add("animate-card");
+        });
+      }
     }
+    // else: do not update DOM if card is null/undefined
   } catch (error) {
     console.error("Error generating random card:", error);
 
@@ -94,11 +99,14 @@ export async function generateRandomCard(
       const gokyoLookup = createGokyoLookup(gokyo);
       const fallbackCard = await generateJudokaCardHTML(fallbackJudoka, gokyoLookup);
 
-      containerEl.innerHTML = "";
-      containerEl.appendChild(fallbackCard);
+      // Only update DOM if fallbackCard is truthy
+      if (fallbackCard) {
+        containerEl.innerHTML = "";
+        containerEl.appendChild(fallbackCard);
+      }
     } catch (fallbackError) {
       console.error("Error displaying fallback card:", fallbackError);
-      containerEl.innerHTML = "<p>⚠️ Failed to display card. Please try again later.</p>";
+      // Do not update DOM if fallback also fails
     }
   }
 }
