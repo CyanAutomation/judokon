@@ -20,9 +20,9 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
 
   for (const { url, name } of pages) {
     test(`screenshot ${url}`, async ({ page }) => {
-      await page.route("**/src/data/gameModes.json", (route) =>
-        route.fulfill({ path: "tests/fixtures/gameModes.json" })
-      );
+      await page.route("**/src/data/gameModes.json", (route) => {
+        route.fulfill({ path: "tests/fixtures/gameModes.json" });
+      });
       await page.route("**/src/data/*.json", (route) => {
         const file = route.request().url().split("/").pop();
         const fixturePath = `tests/fixtures/${file}`;
