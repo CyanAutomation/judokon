@@ -1,10 +1,14 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+<<<<<<< HEAD
   "title": "Settings",
+=======
+>>>>>>> b29f57345f26b14bfc512eecd75e7c6191c0cc06
   "type": "object",
   "properties": {
     "sound": {
       "type": "boolean",
+<<<<<<< HEAD
       "description": "Whether sound is enabled."
     },
     "showFullNavMap": {
@@ -33,5 +37,29 @@
     "displayMode",
     "activeGameModes"
   ],
+=======
+      "description": "Enable or disable game sound effects."
+    },
+    "fullNavMap": {
+      "type": "boolean",
+      "description": "Show full navigation map when enabled."
+    },
+    "motionEffects": {
+      "type": "boolean",
+      "description": "Enable animated motion effects."
+    },
+    "displayMode": {
+      "type": "string",
+      "enum": ["light", "dark", "gray"],
+      "description": "Visual display mode."
+    },
+    "gameModes": {
+      "type": "object",
+      "description": "Per-mode enable/disable flags.",
+      "additionalProperties": { "type": "boolean" }
+    }
+  },
+  "required": ["sound", "fullNavMap", "motionEffects", "displayMode"],
+>>>>>>> b29f57345f26b14bfc512eecd75e7c6191c0cc06
   "additionalProperties": false
 }
