@@ -6,6 +6,7 @@ afterEach(() => {
   vi.restoreAllMocks();
   localStorage.clear();
   vi.resetModules();
+  vi.useRealTimers();
 });
 
 describe("settings utils", () => {
@@ -22,6 +23,7 @@ describe("settings utils", () => {
   });
 
   it("saves settings with debounce", async () => {
+    vi.useFakeTimers();
     const { saveSettings } = await import("../../src/helpers/settingsUtils.js");
     const data = {
       sound: false,
@@ -30,20 +32,19 @@ describe("settings utils", () => {
       displayMode: "dark",
       gameModes: {}
     };
-    await saveSettings(data);
-    vi.advanceTimersByTime(110);
+    const promise = saveSettings(data);
+    await vi.advanceTimersByTimeAsync(110);
+    await promise;
     expect(JSON.parse(localStorage.getItem("settings"))).toEqual(data);
-    vi.useRealTimers();
   });
 
   it("updates a single setting and persists", async () => {
     vi.useFakeTimers();
     const { updateSetting, loadSettings } = await import("../../src/helpers/settingsUtils.js");
-    await updateSetting("sound", false);
-    vi.advanceTimersByTime(110);
+    const promise = updateSetting("sound", false);
+    await Promise.all([promise, vi.advanceTimersByTimeAsync(110)]);
     const stored = await loadSettings();
     expect(stored.sound).toBe(false);
-    vi.useRealTimers();
   });
 
   it("rejects when parsing fails", async () => {
