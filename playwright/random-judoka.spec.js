@@ -1,22 +1,15 @@
 import { test, expect } from "@playwright/test";
+import { registerCommonRoutes } from "./fixtures/commonRoutes.js";
 
 test.describe("View Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
-    await page.route("**/src/data/judoka.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/judoka.json" })
-    );
-    await page.route("**/src/data/gokyo.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/gokyo.json" })
-    );
-    await page.route("**/src/data/countryCodeMapping.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/countryCodeMapping.json" })
-    );
+    await registerCommonRoutes(page);
     await page.goto("/src/pages/randomJudoka.html");
   });
 
   test("essential elements visible", async ({ page }) => {
-    await page.getByRole("button", { name: /draw card/i }).waitFor();
-    await expect(page.getByRole("button", { name: /draw card/i })).toBeVisible();
+    await page.getByTestId("draw-button").waitFor();
+    await expect(page.getByTestId("draw-button")).toBeVisible();
     await expect(page.getByRole("navigation")).toBeVisible();
   });
 
@@ -33,12 +26,12 @@ test.describe("View Judoka screen", () => {
   });
 
   test("draw button accessible name updates", async ({ page }) => {
-    const btn = page.getByRole("button", { name: /draw card/i });
+    const btn = page.getByTestId("draw-button");
     await btn.waitFor();
     await expect(btn).toHaveText(/draw card/i);
 
     await page.evaluate(() => {
-      const button = document.querySelector("#draw-card-btn");
+      const button = document.querySelector('[data-testid="draw-button"]');
       button.textContent = "Pick a random judoka";
     });
 
@@ -46,8 +39,8 @@ test.describe("View Judoka screen", () => {
   });
 
   test("draw card populates container", async ({ page }) => {
-    await page.click("#draw-card-btn");
-    const card = page.locator("#card-container .judoka-card");
+    await page.getByTestId("draw-button").click();
+    const card = page.getByTestId('card-container').locator('.judoka-card');
     await expect(card).toHaveCount(1);
     await expect(card).toBeVisible();
     const flag = card.locator(".card-top-bar img");
