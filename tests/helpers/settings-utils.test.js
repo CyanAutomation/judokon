@@ -33,7 +33,7 @@ describe("settings utils", () => {
       gameModes: {}
     };
     const promise = saveSettings(data);
-    vi.advanceTimersByTime(110);
+    await vi.advanceTimersByTimeAsync(110);
     await promise;
     expect(JSON.parse(localStorage.getItem("settings"))).toEqual(data);
   });
