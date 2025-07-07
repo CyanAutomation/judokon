@@ -848,3 +848,15 @@ button .ripple {
     transition: none;
   }
 }
+
+.settings-error-popup {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-primary);
+  color: var(--button-text-color);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  z-index: 1000;
+}
