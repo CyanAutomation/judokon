@@ -100,7 +100,7 @@ function initializeControls(settings, gameModes) {
       modesContainer.appendChild(label);
 
       input.addEventListener("change", () => {
-        const prev = input.checked ? false : true;
+        const prev = !input.checked;
         const updated = {
           ...currentSettings.gameModes,
           [mode.id]: input.checked
