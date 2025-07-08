@@ -362,6 +362,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   const container = document.createElement("div");
   container.className = "card-carousel";
+  container.dataset.testid = "carousel";
 
   const wrapper = document.createElement("div");
   wrapper.className = "carousel-container";
