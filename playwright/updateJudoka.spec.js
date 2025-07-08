@@ -29,7 +29,6 @@ test.describe("Update Judoka page", () => {
 
     await page.getByRole("link", { name: /update judoka/i }).click();
     await expect(page).toHaveURL(/updateJudoka\.html/);
-    await page.goBack({ waitUntil: "load" });
 
     const battleLink = page.getByRole("link", { name: /classic battle/i });
     await battleLink.waitFor();
