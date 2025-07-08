@@ -126,7 +126,7 @@
   },
   {
     "id": "teamBattle",
-    "name": "teamBattle Ruleset",
+    "name": "Team Battle Ruleset",
     "japaneseName": "団体戦ルールセット",
     "description": "Defining the common ruleset for Team Battles.",
     "category": "none",
