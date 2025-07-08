@@ -4,7 +4,9 @@ try {
   settingsSchema = await fetch(new URL("../schemas/settings.schema.json", import.meta.url)).then(
     async (response) => {
       if (!response.ok) {
-        throw new Error(`Failed to fetch settings schema: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch settings schema: ${response.status} ${response.statusText}`
+        );
       }
       return response.json();
     }
