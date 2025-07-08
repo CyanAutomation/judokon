@@ -140,3 +140,17 @@ body {
   margin: var(--space-sm); /* Updated token */
   border-radius: var(--radius-sm); /* Updated token */
 }
+
+/* Game mode toggles layout on settings page */
+.game-mode-toggle-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+}
+
+@media (max-width: 768px) {
+  .game-mode-toggle-container {
+    grid-template-columns: 1fr;
+  }
+}
