@@ -47,4 +47,34 @@ describe("settingsPage module", () => {
     expect(loadSettings).toHaveBeenCalled();
     expect(fetchJson).toHaveBeenCalled();
   });
+  it("renders checkboxes for each main menu mode", async () => {
+    vi.useFakeTimers();
+    const gameModes = [
+      { id: "classic", name: "Classic", category: "mainMenu" },
+      { id: "blitz", name: "Blitz", category: "bonus" },
+      { id: "dojo", name: "Dojo", category: "mainMenu" }
+    ];
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const fetchJson = vi.fn().mockResolvedValue(gameModes);
+    const updateSetting = vi.fn().mockResolvedValue(baseSettings);
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson
+    }));
+    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const container = document.getElementById("game-mode-toggle-container");
+    const checkboxes = container.querySelectorAll("input[type='checkbox']");
+    expect(checkboxes).toHaveLength(2);
+    expect(container.querySelector("#mode-classic")).toBeTruthy();
+    expect(container.querySelector("#mode-dojo")).toBeTruthy();
+    expect(container.querySelector("#mode-blitz")).toBeNull();
+  });
 });
