@@ -1,5 +1,6 @@
 import { generateJudokaCardHTML } from "./cardBuilder.js";
 import { debugLog } from "./debug.js";
+import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
 
 /**
  * Selects a random judoka from the provided data array.
@@ -7,7 +8,7 @@ import { debugLog } from "./debug.js";
  * @pseudocode
  * 1. Validate the input data:
  *    - Ensure `data` is an array and contains valid entries.
- *    - Filter out invalid judoka objects (missing required fields).
+ *    - Filter out invalid judoka objects using `hasRequiredJudokaFields`.
  *    - Throw an error if no valid entries are found.
  *
  * 2. Generate a random index:
@@ -31,10 +32,7 @@ export function getRandomJudoka(data) {
   }
 
   // Filter out invalid entries
-  const validJudoka = data.filter(
-    (judoka) =>
-      judoka.firstname && judoka.surname && judoka.country && judoka.stats && judoka.signatureMoveId
-  );
+  const validJudoka = data.filter((judoka) => hasRequiredJudokaFields(judoka));
 
   if (validJudoka.length === 0) {
     throw new Error("No valid judoka data available to select.");
@@ -78,16 +76,10 @@ export function getRandomJudoka(data) {
 export async function displayJudokaCard(judoka, gokyo, gameArea) {
   debugLog("Judoka passed to displayJudokaCard:", judoka);
 
-  if (
-    !judoka ||
-    !judoka.firstname ||
-    !judoka.surname ||
-    !judoka.country ||
-    !judoka.stats ||
-    !judoka.signatureMoveId
-  ) {
+  if (!hasRequiredJudokaFields(judoka)) {
     console.error("Invalid judoka object:", judoka);
-    gameArea.innerHTML = "<p>⚠️ Invalid judoka data. Unable to display card.</p>";
+    const missing = getMissingJudokaFields(judoka).join(", ");
+    gameArea.innerHTML = `<p>⚠️ Invalid judoka data. Missing fields: ${missing}</p>`;
     return;
   }
 
