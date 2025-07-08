@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 describe("displayRandomQuote", () => {
-  it("renders a fetched fable", async () => {
+  it("renders a fetched quote", async () => {
     const quoteDiv = document.createElement("div");
     quoteDiv.id = "quote";
     quoteDiv.className = "hidden";
