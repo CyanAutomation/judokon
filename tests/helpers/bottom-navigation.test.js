@@ -133,9 +133,17 @@ describe("populateNavbar", () => {
     const navBar = setupDom();
     stubLogoQuery();
     const data = [
-      { name: "A", url: "a.html", category: "mainMenu", order: 2, isHidden: false },
-      { name: "B", url: "b.html", category: "mainMenu", order: 1, isHidden: false }
+      { id: "A", name: "A", url: "a.html", category: "mainMenu", order: 2, isHidden: false },
+      { id: "B", name: "B", url: "b.html", category: "mainMenu", order: 1, isHidden: false }
     ];
+    const loadSettings = vi.fn().mockResolvedValue({
+      sound: true,
+      fullNavMap: true,
+      motionEffects: true,
+      displayMode: "light",
+      gameModes: { B: false }
+    });
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => data });
 
     const { populateNavbar } = await import("../../src/helpers/bottomNavigation.js");
@@ -143,9 +151,9 @@ describe("populateNavbar", () => {
     await populateNavbar();
 
     const items = navBar.querySelectorAll("li");
-    expect(items).toHaveLength(2);
-    expect(items[0].textContent).toBe("B");
-    expect(items[1].textContent).toBe("A");
+    expect(items).toHaveLength(1);
+    expect(items[0].textContent).toBe("A");
+    expect(loadSettings).toHaveBeenCalled();
   });
 
   it("falls back to default items when fetch fails", async () => {

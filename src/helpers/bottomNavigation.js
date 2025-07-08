@@ -1,5 +1,6 @@
 import { debugLog } from "./debug.js";
 import { DATA_DIR } from "./constants.js";
+import { loadSettings } from "./settingsUtils.js";
 
 /**
  * Toggles the expanded map view for landscape mode.
@@ -150,20 +151,23 @@ function addTouchFeedback() {
  *
  * 3. Select the `.bottom-navbar` element and exit if not found.
  *
- * 4. Filter the game modes:
- *    - Include only modes where `category` is "mainMenu" and `isHidden` is `false`.
+ * 4. Load user settings to determine disabled game modes.
  *
- * 5. Sort the filtered game modes by their `order` property in ascending order.
+ * 5. Filter the game modes:
+ *    - Include only modes where `category` is "mainMenu", `isHidden` is `false`,
+ *      and the mode is not disabled in settings.
  *
- * 6. Check if there are any active modes:
+ * 6. Sort the filtered game modes by their `order` property in ascending order.
+ *
+ * 7. Check if there are any active modes:
  *    - If no modes are available, display "No game modes available" in the navigation bar.
  *
- * 7. Map the sorted game modes to HTML list items (`<li>`):
+ * 8. Map the sorted game modes to HTML list items (`<li>`):
  *    - Each list item contains a link (`<a>`) to the corresponding game mode's URL.
  *
- * 8. Update the navigation bar (`.bottom-navbar ul`) with the generated HTML.
+ * 9. Update the navigation bar (`.bottom-navbar ul`) with the generated HTML.
  *
- * 9. Handle any errors during the process:
+ * 10. Handle any errors during the process:
  *    - Log the error to the console and display fallback items in the navigation bar.
  *
  * @returns {Promise<void>} A promise that resolves once the navbar is populated.
@@ -183,8 +187,15 @@ export async function populateNavbar() {
     if (!navBar) return; // Guard: do nothing if navbar is missing
     clearBottomNavbar();
 
+    const settings = await loadSettings();
+
     const activeModes = validateGameModes(
-      data.filter((mode) => mode.category === "mainMenu" && mode.isHidden === false)
+      data.filter(
+        (mode) =>
+          mode.category === "mainMenu" &&
+          mode.isHidden === false &&
+          settings.gameModes[mode.id] !== false
+      )
     ).sort((a, b) => a.order - b.order);
 
     debugLog("Validated game modes:", activeModes);
