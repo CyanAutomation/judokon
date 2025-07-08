@@ -81,6 +81,7 @@
         import { toggleCountryPanel, toggleCountryPanelMode } from "../helpers/countryPanel.js";
         import { fetchJson } from "../helpers/dataUtils.js";
         import { DATA_DIR } from "../helpers/constants.js";
+        import { createButton } from "../components/Button.js";
 
         document.addEventListener("DOMContentLoaded", async () => {
           const carouselContainer = document.getElementById("carousel-container");
@@ -124,10 +125,10 @@
               "Network error occurred. Please check your connection and try again.";
             carouselContainer.appendChild(errorMessage);
 
-            const retryButton = document.createElement("button");
-            retryButton.className = "retry-button";
-            retryButton.textContent = "Retry";
-            retryButton.setAttribute("type", "button");
+            const retryButton = createButton("Retry", {
+              className: "retry-button",
+              type: "button"
+            });
             retryButton.setAttribute("aria-label", "Retry loading judoka data");
             retryButton.addEventListener("click", async () => {
               retryButton.disabled = true; // Disable the button to prevent multiple clicks

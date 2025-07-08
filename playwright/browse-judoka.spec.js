@@ -1,6 +1,15 @@
 import { test, expect } from "@playwright/test";
 import { registerCommonRoutes } from "./fixtures/commonRoutes.js";
 
+async function setCarouselWidth(page, width) {
+  await page.evaluate((w) => {
+    const el = document.querySelector('[data-testid="carousel"]');
+    if (el) {
+      el.style.width = w;
+    }
+  }, width);
+}
+
 const COUNTRY_TOGGLE_LOCATOR = "country-toggle";
 
 test.describe("Browse Judoka screen", () => {

@@ -46,4 +46,29 @@ test.describe("View Judoka screen", () => {
     const flag = card.locator(".card-top-bar img");
     await expect(flag).toHaveAttribute("alt", /(Portugal|USA|Japan) flag/i);
   });
+
+  test("draw button uses design tokens", async ({ page }) => {
+    const btn = page.getByTestId("draw-button");
+    await btn.waitFor();
+    const styles = await btn.evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return { bg: cs.backgroundColor, color: cs.color };
+    });
+    const vars = await page.evaluate(() => {
+      const root = getComputedStyle(document.documentElement);
+      return {
+        bg: root.getPropertyValue("--button-bg").trim(),
+        color: root.getPropertyValue("--button-text-color").trim()
+      };
+    });
+    const hexToRgb = (hex) => {
+      const h = hex.replace("#", "");
+      const r = parseInt(h.slice(0, 2), 16);
+      const g = parseInt(h.slice(2, 4), 16);
+      const b = parseInt(h.slice(4, 6), 16);
+      return `rgb(${r}, ${g}, ${b})`;
+    };
+    expect(styles.bg).toBe(hexToRgb(vars.bg));
+    expect(styles.color).toBe(hexToRgb(vars.color));
+  });
 });

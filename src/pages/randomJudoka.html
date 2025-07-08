@@ -40,9 +40,6 @@
 
       <div class="card-section">
         <div id="card-container" data-testid="card-container" class="card-container"></div>
-        <button id="draw-card-btn" data-testid="draw-button" class="draw-card-btn">
-          Draw Card!
-        </button>
       </div>
 
       <footer>
@@ -53,6 +50,7 @@
         import { fetchJson } from "../helpers/dataUtils.js";
         import { generateRandomCard } from "../helpers/randomCard.js";
         import { DATA_DIR } from "../helpers/constants.js";
+        import { createButton } from "../components/Button.js";
 
         const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -80,7 +78,15 @@
 
         preloadData().then(displayCard);
 
-        document.getElementById("draw-card-btn").addEventListener("click", displayCard);
+        const cardSection = document.querySelector(".card-section");
+        const drawButton = createButton("Draw Card!", {
+          id: "draw-card-btn",
+          className: "draw-card-btn",
+          type: "button"
+        });
+        drawButton.dataset.testid = "draw-button";
+        cardSection.appendChild(drawButton);
+        drawButton.addEventListener("click", displayCard);
       </script>
       <script type="module" src="../helpers/setupSvgFallback.js"></script>
       <noscript>
