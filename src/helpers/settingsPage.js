@@ -75,6 +75,7 @@ function initializeControls(settings, gameModes) {
       input.type = "checkbox";
       input.id = `mode-${mode.id}`;
       input.checked = currentSettings.gameModes[mode.id] !== false;
+      input.setAttribute("aria-label", mode.name);
       const span = document.createElement("span");
       span.textContent = mode.name;
       label.appendChild(input);
