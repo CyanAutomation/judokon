@@ -200,6 +200,15 @@ function createSignatureMoveSection(judoka, gokyoLookup, cardType) {
   }
 }
 
+/**
+ * Build and return a DOM container for a judoka card.
+ *
+ * Validates the judoka data and gokyo lookup, generates DOM sections for the card, and assembles them into a single container. When either argument is missing, a fallback element labeled "No data available" is returned.
+ *
+ * @param {import("./types.js").Judoka} judoka - Judoka data with required fields such as names, country codes, stats and signatureMoveId.
+ * @param {Record<number, import("./types.js").GokyoEntry>} gokyoLookup - Map of technique ids to technique details. Missing lookups result in fallback content.
+ * @returns {HTMLElement} Container element containing the completed card.
+ */
 export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   // Add null/undefined checks for judoka and gokyoLookup
   if (!judoka || !gokyoLookup) {
