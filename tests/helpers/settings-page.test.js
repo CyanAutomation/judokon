@@ -46,6 +46,7 @@ describe("settingsPage module", () => {
 
     expect(loadSettings).toHaveBeenCalled();
     expect(fetchJson).toHaveBeenCalled();
+    vi.useRealTimers();
   });
   it("renders checkboxes for each main menu mode", async () => {
     vi.useFakeTimers();
