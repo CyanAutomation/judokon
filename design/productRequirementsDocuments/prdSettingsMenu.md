@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-This PRD defines the Settings Menu for Ju-Do-Kon!, enabling players to control sound, motion effects, navigation map, display mode, and active game modes. These options improve accessibility, personalization, and retention by empowering users to tailor the game to their needs.
+This PRD defines the Settings Menu for Ju-Do-Kon!, enabling players to control sound, motion effects, navigation map, display mode, and the visibility of certain game modes. These options improve accessibility, personalization, and retention by empowering users to tailor the game to their needs.
 
 **Problem Statement:**  
 As a user of the game _ju-do-kon!_, I want to be able to change settings such as display mode, navigation map, motion effects, and sound, to tailor my experience and reduce frustration — especially for players sensitive to motion or needing visual adjustments. Playtesting shows **35% of users quit early when unable to adjust motion effects**, indicating the need for accessible, customizable gameplay.
@@ -36,7 +36,7 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 | P1       | Full Navigation Map Toggle | Binary toggle updating `settings.json` live on change.                |
 | P1       | Motion Effects Toggle      | Binary toggle updating `settings.json` live on change.                |
 | P1       | Display Mode Selector      | Three-option selector applying mode instantly across UI.              |
-| P2       | Game Modes Toggles         | Dynamic list of game modes with binary toggles from `gameModes.json`. |
+| P2       | Game Modes Toggles         | A list of all defined game modes with binary toggles from `gameModes.json`. |
 | P3       | Settings Menu Integration  | Ensure settings appear as a game mode in `gameModes.json`.            |
 
 **Note:** For all settings items, if reading or writing to the data source fails, toggles/selectors **must revert** to their previous state, and a user-facing error should appear.
@@ -50,7 +50,7 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 - **Motion effects (binary):** ON/OFF (default: ON)
 - **Display mode (three options):** Light, Dark, Gray (default: Light)
   - _Gray mode_ provides a grayscale display to reduce visual noise for neurodivergent users.
-- **Game modes list:** Dynamically populated from `gameModes.json`, with binary toggles per mode.
+- **Game modes list:** A list populated from `gameModes.json`, showing all modes defined there, with binary toggles per mode.
 
 ---
 
@@ -59,7 +59,6 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 - All data reads/writes should use asynchronous, promise-based functions with error handling.
 - `settings.json` must persist in localStorage/sessionStorage for session retention.
 - Updates should debounce writes to avoid excessive file operations if toggles are changed rapidly.
-- Game mode toggles should dynamically bind to game modes in `gameModes.json`, avoiding hardcoding.
 
 ---
 
@@ -101,7 +100,7 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 
 ### Game Modes Toggles
 
-- AC-5.1 Toggling any game mode ON/OFF updates `settings.json` live within 50ms.
+- AC-5.1 Toggling any game mode ON/OFF updates the IsHidden field in `settings.json` within 50ms.
 - AC-5.2 Each game mode toggle accurately reflects its state on page reload.
 - AC-5.3 If `gameModes.json` is missing or invalid, the game modes list does not render, and an error message appears in the settings UI.
 
@@ -222,9 +221,9 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
   - [ ] 3.2 Display CSS popup on read/write errors.
   - [ ] 3.3 Revert toggles/selectors on failed updates.
 
-- [ ] 4.0 Dynamic Game Modes
+- [ ] 4.0 List Game Modes
 
-  - [ ] 4.1 Load game modes from `gameModes.json`.
+  - [ ] 4.1 Load all game modes from `gameModes.json`.
   - [ ] 4.2 Display error message if loading fails.
 
 - [ ] 5.0 Performance Optimization
