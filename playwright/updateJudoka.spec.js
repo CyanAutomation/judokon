@@ -2,6 +2,9 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Update Judoka page", () => {
   test.beforeEach(async ({ page }) => {
+    await page.route("**/src/data/gameModes.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/gameModes.json" })
+    );
     await page.goto("/src/pages/updateJudoka.html");
   });
 
@@ -25,6 +28,7 @@ test.describe("Update Judoka page", () => {
     await expect(page).toHaveURL(/updateJudoka\.html/);
     await page.goBack({ waitUntil: "load" });
     const battleLink = page.locator('a[href$="battleJudoka.html"]');
+    await battleLink.waitFor({ state: "attached" });
     await expect(battleLink).toHaveCount(1);
   });
 });
