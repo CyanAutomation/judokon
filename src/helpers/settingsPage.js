@@ -69,10 +69,13 @@ function initializeControls(settings, gameModes) {
   if (modesContainer && Array.isArray(gameModes)) {
     const sortedModes = [...gameModes].sort((a, b) => a.order - b.order);
     sortedModes.forEach((mode) => {
+      const isChecked = Object.prototype.hasOwnProperty.call(currentSettings.gameModes, mode.id)
+        ? currentSettings.gameModes[mode.id]
+        : !mode.isHidden;
       const wrapper = createToggleSwitch(`${mode.name} (${mode.category} - ${mode.order})`, {
         id: `mode-${mode.id}`,
         name: mode.id,
-        checked: currentSettings.gameModes[mode.id] !== false,
+        checked: isChecked,
         ariaLabel: mode.name
       });
 

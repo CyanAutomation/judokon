@@ -85,6 +85,32 @@ describe("settingsPage module", () => {
     expect(labels[2].textContent).toBe("Dojo (mainMenu - 30)");
   });
 
+  it("checkbox state reflects isHidden when no setting exists", async () => {
+    vi.useFakeTimers();
+    const gameModes = [
+      { id: "team", name: "Team", category: "mainMenu", order: 5, isHidden: true }
+    ];
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updateSetting = vi.fn().mockResolvedValue(baseSettings);
+    const loadGameModes = vi.fn().mockResolvedValue(gameModes);
+    const updateGameModeHidden = vi.fn();
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadGameModes,
+      updateGameModeHidden
+    }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const input = document.getElementById("mode-team");
+    expect(input.checked).toBe(false);
+  });
+
   it("updates isHidden when a checkbox is toggled", async () => {
     vi.useFakeTimers();
     const gameModes = [{ id: "classic", name: "Classic", category: "mainMenu", isHidden: false }];
