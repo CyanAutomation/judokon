@@ -68,8 +68,9 @@ function initializeControls(settings, gameModes) {
   if (modesContainer && Array.isArray(gameModes)) {
     const sortedModes = [...gameModes].sort((a, b) => a.order - b.order);
     sortedModes.forEach((mode) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "settings-item";
       const label = document.createElement("label");
-      label.className = "settings-item";
       const input = document.createElement("input");
       input.type = "checkbox";
       input.id = `mode-${mode.id}`;
@@ -79,7 +80,8 @@ function initializeControls(settings, gameModes) {
       span.textContent = mode.name;
       label.appendChild(input);
       label.appendChild(span);
-      modesContainer.appendChild(label);
+      wrapper.appendChild(label);
+      modesContainer.appendChild(wrapper);
 
       input.addEventListener("change", () => {
         const prev = !input.checked;
