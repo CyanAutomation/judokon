@@ -5,4 +5,3 @@ build/
 .github/ISSUE_TEMPLATE/*.md
 src/schemas/*.json
 test-results/
-design/productRequirementsDocuments/*.md
