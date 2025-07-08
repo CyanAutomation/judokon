@@ -92,6 +92,8 @@ function initializeControls(settings, gameModes) {
         });
         updateGameModeHidden(mode.id, !input.checked).catch((err) => {
           console.error("Failed to update game mode", err);
+          input.checked = prev; // Revert to previous state
+          showSettingsError(); // Notify the user of the error
         });
       });
     });
