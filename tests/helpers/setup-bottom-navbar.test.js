@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 describe("setupBottomNavbar module", () => {
   beforeEach(() => {
+    vi.resetModules();
     // Mock fetch to prevent actual network calls
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -21,6 +22,7 @@ describe("setupBottomNavbar module", () => {
     vi.restoreAllMocks();
     vi.useRealTimers();
     document.body.innerHTML = "";
+    delete document.readyState;
   });
 
   it("sets up both navbar and button effects when DOM is loaded", async () => {
@@ -50,6 +52,32 @@ describe("setupBottomNavbar module", () => {
     expect(ripple).toBeTruthy();
     expect(ripple.style.left).toBe("5px");
     expect(ripple.style.top).toBe("10px");
+  });
+
+  it("initializes immediately when DOM is already loaded", async () => {
+    const button = document.createElement("button");
+    document.body.appendChild(button);
+
+    vi.useFakeTimers();
+
+    Object.defineProperty(document, "readyState", {
+      value: "complete",
+      configurable: true
+    });
+
+    await import("../../src/helpers/setupBottomNavbar.js");
+
+    vi.advanceTimersByTime(10);
+
+    const event = new MouseEvent("mousedown");
+    Object.defineProperty(event, "offsetX", { value: 1 });
+    Object.defineProperty(event, "offsetY", { value: 2 });
+    button.dispatchEvent(event);
+
+    const ripple = button.querySelector("span.ripple");
+    expect(ripple).toBeTruthy();
+    expect(ripple.style.left).toBe("1px");
+    expect(ripple.style.top).toBe("2px");
   });
 
   it("does not throw if .bottom-navbar is missing", async () => {
