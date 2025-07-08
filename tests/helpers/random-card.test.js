@@ -93,6 +93,26 @@ describe("generateRandomCard", () => {
     expect(container.firstChild).toBe(fallbackEl);
   });
 
+  it("does not refetch gokyo data when falling back", async () => {
+    const container = document.createElement("div");
+    const fallbackEl = document.createElement("div");
+
+    getRandomJudokaMock = vi.fn(() => {
+      throw new Error("fail");
+    });
+    generateJudokaCardHTMLMock = vi.fn(async () => fallbackEl);
+
+    const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
+    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+    fetchJson.mockResolvedValue(gokyoData);
+
+    await generateRandomCard(judokaData, undefined, container, true);
+
+    expect(fetchJson).toHaveBeenCalledTimes(1);
+    expect(fetchJson).toHaveBeenCalledWith(expect.stringContaining("gokyo.json"));
+    expect(container.firstChild).toBe(fallbackEl);
+  });
+
   it("does not throw if container is null or undefined", async () => {
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
     generateJudokaCardHTMLMock = vi.fn(async () => document.createElement("div"));
