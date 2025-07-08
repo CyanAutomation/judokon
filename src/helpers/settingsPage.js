@@ -107,4 +107,8 @@ async function initializeSettingsPage() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", initializeSettingsPage);
+if (document.readyState !== "loading") {
+  initializeSettingsPage();
+} else {
+  document.addEventListener("DOMContentLoaded", initializeSettingsPage);
+}
