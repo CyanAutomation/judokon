@@ -47,7 +47,7 @@ describe("toggleExpandedMapView", () => {
       { url: "broken.html", image: "img3.png" }
     ];
 
-    const { toggleExpandedMapView } = await import("../../src/helpers/navigationBar.js");
+    const { toggleExpandedMapView, BASE_PATH } = await import("../../src/helpers/navigationBar.js");
 
     toggleExpandedMapView(modes);
 
@@ -55,7 +55,7 @@ describe("toggleExpandedMapView", () => {
     expect(view).toBeTruthy();
     const tiles = view.querySelectorAll(".map-tile");
     expect(tiles).toHaveLength(2);
-    expect(tiles[0].querySelector("a")).toHaveAttribute("href", "/judokon/src/pages/mode1.html");
+    expect(tiles[0].querySelector("a")).toHaveAttribute("href", `${BASE_PATH}mode1.html`);
     expect(tiles[0].querySelector("a")).toHaveAttribute("aria-label", "Mode1");
     expect(tiles[0].textContent).toContain("Mode1");
   });
@@ -98,7 +98,9 @@ describe("togglePortraitTextMenu", () => {
       { name: null, url: "broken.html" }
     ];
 
-    const { togglePortraitTextMenu } = await import("../../src/helpers/navigationBar.js");
+    const { togglePortraitTextMenu, BASE_PATH } = await import(
+      "../../src/helpers/navigationBar.js"
+    );
 
     togglePortraitTextMenu(modes);
 
@@ -106,7 +108,7 @@ describe("togglePortraitTextMenu", () => {
     expect(menu).toBeTruthy();
     const items = menu.querySelectorAll("li");
     expect(items).toHaveLength(2);
-    expect(items[1].querySelector("a")).toHaveAttribute("href", "/judokon/src/pages/mode2.html");
+    expect(items[1].querySelector("a")).toHaveAttribute("href", `${BASE_PATH}mode2.html`);
     expect(items[1].querySelector("a")).toHaveAttribute("aria-label", "Mode2");
     expect(items[1].textContent).toContain("Mode2");
   });
