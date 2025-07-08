@@ -103,7 +103,7 @@ test.describe("Browse Judoka screen", () => {
 
   test("carousel responds to arrow keys", async ({ page }) => {
     const container = page.locator('[data-testid="carousel"]');
-    await container.waitFor();
+    await page.waitForSelector('[data-testid="carousel"] .judoka-card');
     await setCarouselWidth(page, "200px");
 
     await container.focus();
