@@ -1,6 +1,6 @@
 import { debugLog } from "./debug.js";
-import { DATA_DIR } from "./constants.js";
 import { loadSettings } from "./settingsUtils.js";
+import { loadGameModes } from "./gameModeUtils.js";
 
 /**
  * Base path for navigation links derived from the current module location.
@@ -183,44 +183,7 @@ function addTouchFeedback() {
 
 export async function populateNavbar() {
   try {
-    let data;
-    let cached;
-
-    if (typeof localStorage !== "undefined") {
-      const stored = localStorage.getItem("gameModes");
-      if (stored) {
-        try {
-          cached = JSON.parse(stored);
-        } catch (e) {
-          console.warn("Failed to parse cached game modes", e);
-        }
-      }
-    }
-
-    if (navigator.onLine || !cached) {
-      try {
-        const response = await fetch(`${DATA_DIR}gameModes.json`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch game modes: ${response.status}`);
-        }
-        data = await response.json();
-        debugLog("Fetched game modes:", data);
-
-        if (typeof localStorage !== "undefined") {
-          localStorage.setItem("gameModes", JSON.stringify(data));
-        }
-      } catch (fetchErr) {
-        if (cached) {
-          console.warn("Using cached game modes due to fetch error", fetchErr);
-          data = cached;
-        } else {
-          throw fetchErr;
-        }
-      }
-    } else {
-      data = cached;
-      debugLog("Loaded cached game modes:", data);
-    }
+    const data = await loadGameModes();
 
     const navBar = document.querySelector(".bottom-navbar");
     if (!navBar) return; // Guard: do nothing if navbar is missing
