@@ -48,7 +48,7 @@ describe("settingsPage module", () => {
     expect(fetchJson).toHaveBeenCalled();
     vi.useRealTimers();
   });
-  it("renders checkboxes for each main menu mode", async () => {
+  it("renders checkboxes for each mode", async () => {
     vi.useFakeTimers();
     const gameModes = [
       { id: "classic", name: "Classic", category: "mainMenu" },
@@ -73,9 +73,9 @@ describe("settingsPage module", () => {
 
     const container = document.getElementById("game-mode-toggle-container");
     const checkboxes = container.querySelectorAll("input[type='checkbox']");
-    expect(checkboxes).toHaveLength(2);
+    expect(checkboxes).toHaveLength(3);
     expect(container.querySelector("#mode-classic")).toBeTruthy();
     expect(container.querySelector("#mode-dojo")).toBeTruthy();
-    expect(container.querySelector("#mode-blitz")).toBeNull();
+    expect(container.querySelector("#mode-blitz")).toBeTruthy();
   });
 });
