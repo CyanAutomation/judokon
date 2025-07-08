@@ -2,7 +2,12 @@ import { validateWithSchema } from "./dataUtils.js";
 let settingsSchema;
 try {
   settingsSchema = await fetch(new URL("../schemas/settings.schema.json", import.meta.url)).then(
-    (r) => r.json()
+    async (response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to fetch settings schema: ${response.status} ${response.statusText}`);
+      }
+      return response.json();
+    }
   );
 } catch {
   settingsSchema = (await import("../schemas/settings.schema.json", { assert: { type: "json" } }))
