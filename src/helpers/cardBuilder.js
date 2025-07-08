@@ -6,6 +6,7 @@ import {
   generateCardSignatureMove
 } from "./cardRender.js";
 import { safeGenerate } from "./errorUtils.js";
+import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
 
 /**
  * Generates the "last updated" HTML for a judoka card.
@@ -107,7 +108,7 @@ function validateJudoka(judoka) {
  *
  * @pseudocode
  * 1. Validate the `judoka` object:
- *    - Ensure all required fields are present using `validateJudoka`.
+ *    - Ensure all required fields are present using `hasRequiredJudokaFields`.
  *
  * 2. Generate the flag URL:
  *    - Call `safeGenerate` with `getFlagUrl` and the `countryCode`.
@@ -207,7 +208,10 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
     return fallback;
   }
 
-  validateJudoka(judoka);
+  const missing = getMissingJudokaFields(judoka);
+  if (!hasRequiredJudokaFields(judoka)) {
+    throw new Error(`Invalid Judoka object: Missing required fields: ${missing.join(", ")}`);
+  }
 
   const countryCode = judoka.countryCode;
   const flagUrl = await safeGenerate(

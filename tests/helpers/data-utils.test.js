@@ -125,7 +125,9 @@ describe("validateData", () => {
   it("throws when required judoka fields are missing", async () => {
     const { validateData } = await import("../../src/helpers/dataUtils.js");
     const badData = { firstname: "A", surname: "B", stats: {}, signatureMoveId: 1 };
-    expect(() => validateData(badData, "judoka")).toThrow("Missing fields: country");
+    expect(() => validateData(badData, "judoka")).toThrow(
+      "Missing fields: country, countryCode, weightClass, rarity, stats.power, stats.speed, stats.technique, stats.kumikata, stats.newaza"
+    );
   });
 
   it("accepts valid judoka data", async () => {
@@ -134,8 +136,17 @@ describe("validateData", () => {
       firstname: "A",
       surname: "B",
       country: "X",
-      stats: {},
-      signatureMoveId: 1
+      countryCode: "X",
+      stats: {
+        power: 1,
+        speed: 1,
+        technique: 1,
+        kumikata: 1,
+        newaza: 1
+      },
+      weightClass: "-60",
+      signatureMoveId: 0,
+      rarity: "common"
     };
     expect(() => validateData(goodData, "judoka")).not.toThrow();
   });
@@ -144,7 +155,7 @@ describe("validateData", () => {
     const { validateData } = await import("../../src/helpers/dataUtils.js");
     const badData = { firstname: "A" };
     expect(() => validateData(badData, "judoka")).toThrow(
-      "Missing fields: surname, country, stats, signatureMoveId"
+      "Missing fields: surname, country, countryCode, stats, weightClass, signatureMoveId, rarity, stats.power, stats.speed, stats.technique, stats.kumikata, stats.newaza"
     );
   });
 

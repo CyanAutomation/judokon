@@ -1,6 +1,7 @@
 const XOR_KEY = 37;
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // 32 readable characters
 const CARD_CODE_VERSION = "v1";
+import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
 
 /**
  * Encodes a string using XOR encryption.
@@ -105,21 +106,11 @@ function chunk(str, size = 4) {
  * @throws {Error} If required fields are missing from the judoka object.
  */
 export function generateCardCode(judoka) {
-  if (
-    !judoka ||
-    !judoka.firstname ||
-    !judoka.surname ||
-    !judoka.country ||
-    !judoka.weightClass ||
-    !judoka.signatureMoveId ||
-    !judoka.stats ||
-    typeof judoka.stats.power === "undefined" ||
-    typeof judoka.stats.speed === "undefined" ||
-    typeof judoka.stats.technique === "undefined" ||
-    typeof judoka.stats.kumikata === "undefined" ||
-    typeof judoka.stats.newaza === "undefined"
-  ) {
-    throw new Error("Missing required judoka fields for card code generation.");
+  const missing = getMissingJudokaFields(judoka);
+  if (!hasRequiredJudokaFields(judoka)) {
+    throw new Error(
+      `Missing required judoka fields for card code generation: ${missing.join(", ")}`
+    );
   }
 
   const stats = [

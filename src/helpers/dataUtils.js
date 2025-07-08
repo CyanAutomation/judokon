@@ -4,6 +4,8 @@ const dataCache = new Map();
 // Lazily instantiated Ajv singleton
 let ajvInstance;
 
+import { getMissingJudokaFields } from "./judokaValidation.js";
+
 /**
  * Determine if the code is running in a Node environment.
  *
@@ -95,9 +97,8 @@ export async function fetchJson(url, schema) {
  *    - If validation fails, throw an error with a descriptive message.
  *
  * 2. For `judoka` type data:
- *    - Define required fields: `firstname`, `surname`, `country`, `stats`, `signatureMoveId`.
- *    - Check for missing fields using `filter`.
- *    - If any required fields are missing, throw an error listing the missing fields.
+ *    - Use `getMissingJudokaFields` to determine which fields are absent.
+ *    - Throw an error listing the missing fields when any are found.
  *
  * @param {any} data - The data to validate.
  * @param {string} type - A descriptive name for the type of data being validated (e.g., "judoka", "country").
@@ -109,8 +110,7 @@ export function validateData(data, type) {
   }
 
   if (type === "judoka") {
-    const requiredFields = ["firstname", "surname", "country", "stats", "signatureMoveId"];
-    const missingFields = requiredFields.filter((field) => !data[field]);
+    const missingFields = getMissingJudokaFields(data);
     if (missingFields.length > 0) {
       throw new Error(`Invalid judoka data: Missing fields: ${missingFields.join(", ")}`);
     }
