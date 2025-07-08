@@ -1,7 +1,7 @@
 {
   "sound": false,
-  "showFullNavMap": false,
+  "fullNavMap": false,
   "motionEffects": true,
   "displayMode": "light",
-  "activeGameModes": {}
+  "gameModes": {}
 }
