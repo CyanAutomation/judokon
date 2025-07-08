@@ -3,6 +3,11 @@ import { DATA_DIR } from "./constants.js";
 import { loadSettings } from "./settingsUtils.js";
 
 /**
+ * Base path for navigation links derived from the current module location.
+ */
+export const BASE_PATH = new URL("../pages/", import.meta.url);
+
+/**
  * Toggles the expanded map view for landscape mode.
  *
  * @pseudocode
@@ -29,7 +34,7 @@ export function toggleExpandedMapView(gameModes) {
       (mode) =>
         `<div class="map-tile">
           <img src="${mode.image}" alt="${mode.name}" loading="lazy">
-          <a href="/judokon/src/pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a>
+          <a href="${BASE_PATH}${mode.url}" aria-label="${mode.name}">${mode.name}</a>
         </div>`
     )
     .join("");
@@ -83,7 +88,7 @@ export function togglePortraitTextMenu(gameModes) {
   textMenu.innerHTML = validModes
     .map(
       (mode) =>
-        `<li><a href="/judokon/src/pages/${mode.url}" aria-label="${mode.name}">${mode.name}</a></li>`
+        `<li><a href="${BASE_PATH}${mode.url}" aria-label="${mode.name}">${mode.name}</a></li>`
     )
     .join("");
 
@@ -207,7 +212,7 @@ export async function populateNavbar() {
 
     const ul = document.createElement("ul");
     ul.innerHTML = activeModes
-      .map((mode) => `<li><a href="/judokon/src/pages/${mode.url}">${mode.name}</a></li>`)
+      .map((mode) => `<li><a href="${BASE_PATH}${mode.url}">${mode.name}</a></li>`)
       .join("");
     navBar.appendChild(ul);
 
@@ -222,13 +227,17 @@ export async function populateNavbar() {
     const fallbackItems = [
       {
         name: "Random Judoka",
-        url: "/judokon/src/pages/randomJudoka.html",
+        url: `${BASE_PATH}randomJudoka.html`,
         image: "./src/assets/images/randomJudoka.png"
       },
-      { name: "Home", url: "/index.html", image: "./src/assets/images/home.png" },
+      {
+        name: "Home",
+        url: new URL("../../index.html", BASE_PATH),
+        image: "./src/assets/images/home.png"
+      },
       {
         name: "Classic Battle",
-        url: "/judokon/src/pages/battleJudoka.html",
+        url: `${BASE_PATH}battleJudoka.html`,
         image: "./src/assets/images/classicBattle.png"
       }
     ];
