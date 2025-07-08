@@ -5,3 +5,4 @@ build/
 .github/ISSUE_TEMPLATE/*.md
 src/schemas/*.json
 test-results/
+src/vendor/ajv6.min.js

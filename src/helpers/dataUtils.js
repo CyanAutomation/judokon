@@ -26,8 +26,14 @@ export async function getAjv() {
     const Ajv = (await import("ajv")).default;
     ajvInstance = new Ajv();
   } else if (typeof window !== "undefined") {
-    const module = await import("https://esm.sh/ajv@6");
-    ajvInstance = new module.default();
+    try {
+      const module = await import("../vendor/ajv6.min.js");
+      ajvInstance = new module.default();
+    } catch (error) {
+      console.error("Error importing local AJV module:", error);
+      const module = await import("https://esm.sh/ajv@6");
+      ajvInstance = new module.default();
+    }
   } else {
     const Ajv = (await import("ajv")).default;
     ajvInstance = new Ajv();
