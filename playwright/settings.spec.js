@@ -1,8 +1,13 @@
 import { test, expect } from "@playwright/test";
+import { registerCommonRoutes } from "./fixtures/commonRoutes.js";
 
 test.describe("Settings page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/src/pages/settings.html");
+    await registerCommonRoutes(page);
+    await page.route("**/src/data/gameModes.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/gameModes.json" })
+    );
+    await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
   });
 
   test("page loads", async ({ page }) => {
@@ -10,6 +15,7 @@ test.describe("Settings page", () => {
   });
 
   test("mode toggle visible", async ({ page }) => {
+    await page.getByLabel(/Classic Battle/i).waitFor();
     await expect(page.getByLabel(/Classic Battle/i)).toBeVisible();
   });
 
