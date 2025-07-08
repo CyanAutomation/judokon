@@ -22,7 +22,11 @@ describe("setupBottomNavbar module", () => {
     vi.restoreAllMocks();
     vi.useRealTimers();
     document.body.innerHTML = "";
-    delete document.readyState;
+
+    // Restore the original descriptor of document.readyState
+    if (originalReadyStateDescriptor) {
+      Object.defineProperty(document, "readyState", originalReadyStateDescriptor);
+    }
   });
 
   it("sets up both navbar and button effects when DOM is loaded", async () => {
