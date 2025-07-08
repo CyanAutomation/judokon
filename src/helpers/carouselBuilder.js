@@ -1,7 +1,12 @@
 import { createGokyoLookup } from "./utils.js";
 import { generateJudokaCard } from "./cardBuilder.js";
 import { fetchJson } from "./dataUtils.js";
-import { DATA_DIR } from "./constants.js";
+import {
+  DATA_DIR,
+  CAROUSEL_SCROLL_DISTANCE,
+  CAROUSEL_SWIPE_THRESHOLD,
+  SPINNER_DELAY_MS
+} from "./constants.js";
 
 let fallbackJudoka;
 
@@ -191,7 +196,7 @@ function createLoadingSpinner(wrapper) {
 
   const timeoutId = setTimeout(() => {
     spinner.style.display = "block";
-  }, 2000);
+  }, SPINNER_DELAY_MS);
 
   return { spinner, timeoutId };
 }
@@ -234,11 +239,11 @@ function setupKeyboardNavigation(container) {
     const index = Array.from(cards).indexOf(active);
 
     if (event.key === "ArrowLeft") {
-      container.scrollBy({ left: -300, behavior: "smooth" });
+      container.scrollBy({ left: -CAROUSEL_SCROLL_DISTANCE, behavior: "smooth" });
       const prevIndex = index > 0 ? index - 1 : 0;
       cards[prevIndex]?.focus();
     } else if (event.key === "ArrowRight") {
-      container.scrollBy({ left: 300, behavior: "smooth" });
+      container.scrollBy({ left: CAROUSEL_SCROLL_DISTANCE, behavior: "smooth" });
       const nextIndex = index >= 0 ? Math.min(cards.length - 1, index + 1) : 0;
       cards[nextIndex]?.focus();
     }
@@ -268,10 +273,10 @@ function setupSwipeNavigation(container) {
     const touchEndX = event.changedTouches[0].clientX;
     const swipeDistance = touchEndX - touchStartX;
 
-    if (swipeDistance > 50) {
-      container.scrollBy({ left: -300, behavior: "smooth" });
-    } else if (swipeDistance < -50) {
-      container.scrollBy({ left: 300, behavior: "smooth" });
+    if (swipeDistance > CAROUSEL_SWIPE_THRESHOLD) {
+      container.scrollBy({ left: -CAROUSEL_SCROLL_DISTANCE, behavior: "smooth" });
+    } else if (swipeDistance < -CAROUSEL_SWIPE_THRESHOLD) {
+      container.scrollBy({ left: CAROUSEL_SCROLL_DISTANCE, behavior: "smooth" });
     }
   });
 }
@@ -400,8 +405,8 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   clearTimeout(timeoutId);
   spinner.style.display = "none";
 
-  const leftButton = createScrollButton("left", container, 300);
-  const rightButton = createScrollButton("right", container, 300);
+  const leftButton = createScrollButton("left", container, CAROUSEL_SCROLL_DISTANCE);
+  const rightButton = createScrollButton("right", container, CAROUSEL_SCROLL_DISTANCE);
 
   wrapper.appendChild(leftButton);
   wrapper.appendChild(container);
