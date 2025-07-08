@@ -23,12 +23,16 @@ test.describe("Update Judoka page", () => {
   test("navigation links work", async ({ page }) => {
     await page.getByRole("link", { name: /view judoka/i }).click();
     await expect(page).toHaveURL(/randomJudoka\.html/);
+    // Wait for bottom navigation links to populate
+    await page.getByRole("link", { name: /update judoka/i }).waitFor();
     await page.goBack({ waitUntil: "load" });
+
     await page.getByRole("link", { name: /update judoka/i }).click();
     await expect(page).toHaveURL(/updateJudoka\.html/);
     await page.goBack({ waitUntil: "load" });
-    const battleLink = page.locator('a[href$="battleJudoka.html"]');
-    await battleLink.waitFor({ state: "attached" });
+
+    const battleLink = page.getByRole("link", { name: /classic battle/i });
+    await battleLink.waitFor();
     await expect(battleLink).toHaveCount(1);
   });
 });
