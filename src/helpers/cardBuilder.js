@@ -34,25 +34,46 @@ import { safeGenerate } from "./errorUtils.js";
 // }
 
 /**
+ * Determine if a value should be treated as missing.
+ *
+ * @pseudocode
+ * 1. Return `true` when the value is `undefined` or `null`.
+ * 2. If the value is a string, trim whitespace and check if it is empty.
+ * 3. Otherwise, return `false`.
+ *
+ * @param {*} value - The value to examine.
+ * @returns {boolean} `true` when the value is missing.
+ */
+function isValueMissing(value) {
+  if (value === undefined || value === null) return true;
+  if (typeof value === "string") return value.trim() === "";
+  return false;
+}
+
+/**
  * Validates the required fields of a Judoka object.
  *
  * @pseudocode
- * 1. Define required fields for the judoka object:
+ * 1. Skip validation if `judoka.id` equals `0`.
+ *
+ * 2. Define required fields for the judoka object:
  *    - Include fields like "firstname", "surname", "country", etc.
  *
- * 2. Check for missing fields:
- *    - Use `filter` to find fields not present in the `judoka` object.
+ * 3. Check for missing fields:
+ *    - Use `isValueMissing` to test each required field.
  *    - Throw an error if any required fields are missing.
  *
- * 3. Validate stats fields:
+ * 4. Validate stats fields:
  *    - Define required stats fields like "power", "speed", etc.
- *    - Check for missing stats fields in the `judoka.stats` object.
+ *    - Check for missing stats fields in `judoka.stats` with `isValueMissing`.
  *    - Throw an error if any required stats fields are missing.
  *
  * @param {Object} judoka - The judoka object to validate.
  * @throws {Error} If required fields are missing.
  */
 function validateJudoka(judoka) {
+  if (judoka.id === 0) return;
+
   const requiredFields = [
     "firstname",
     "surname",
@@ -63,14 +84,16 @@ function validateJudoka(judoka) {
     "signatureMoveId",
     "rarity"
   ];
-  const missingFields = requiredFields.filter((field) => !judoka[field]);
+  const missingFields = requiredFields.filter((field) => isValueMissing(judoka[field]));
 
   if (missingFields.length > 0) {
     throw new Error(`Invalid Judoka object: Missing required fields: ${missingFields.join(", ")}`);
   }
 
   const requiredStatsFields = ["power", "speed", "technique", "kumikata", "newaza"];
-  const missingStatsFields = requiredStatsFields.filter((field) => !judoka.stats?.[field]);
+  const missingStatsFields = requiredStatsFields.filter((field) =>
+    isValueMissing(judoka.stats?.[field])
+  );
 
   if (missingStatsFields.length > 0) {
     throw new Error(
