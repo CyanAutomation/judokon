@@ -29,14 +29,14 @@ describe("settingsPage module", () => {
   it("loads settings and game modes on DOMContentLoaded", async () => {
     vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const fetchData = vi.fn().mockResolvedValue([]);
+    const fetchJson = vi.fn().mockResolvedValue([]);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
     }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchDataWithErrorHandling: fetchData
+      fetchJson
     }));
     vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
 
@@ -45,6 +45,6 @@ describe("settingsPage module", () => {
     await vi.runAllTimersAsync();
 
     expect(loadSettings).toHaveBeenCalled();
-    expect(fetchData).toHaveBeenCalled();
+    expect(fetchJson).toHaveBeenCalled();
   });
 });

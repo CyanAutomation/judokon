@@ -1,5 +1,5 @@
 import { loadSettings, updateSetting } from "./settingsUtils.js";
-import { fetchDataWithErrorHandling } from "./dataUtils.js";
+import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { showSettingsError } from "./showSettingsError.js";
 
@@ -98,7 +98,7 @@ function initializeControls(settings, gameModes) {
 async function initializeSettingsPage() {
   try {
     const settings = await loadSettings();
-    const gameModes = await fetchDataWithErrorHandling(`${DATA_DIR}gameModes.json`);
+    const gameModes = await fetchJson(`${DATA_DIR}gameModes.json`);
     initializeControls(settings, gameModes);
   } catch (error) {
     console.error("Error loading settings page:", error);
