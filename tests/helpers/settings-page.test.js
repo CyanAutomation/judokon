@@ -48,7 +48,7 @@ describe("settingsPage module", () => {
     expect(fetchJson).toHaveBeenCalled();
     vi.useRealTimers();
   });
-  it("renders checkboxes for each mode", async () => {
+  it("renders checkboxes for all modes", async () => {
     vi.useFakeTimers();
     const gameModes = [
       { id: "classic", name: "Classic", category: "mainMenu" },
