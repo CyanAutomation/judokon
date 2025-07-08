@@ -148,31 +148,34 @@ function addTouchFeedback() {
  * Populates the bottom navigation bar with game modes from a JSON file.
  *
  * @pseudocode
- * 1. Fetch the JSON file containing game modes (`gameModes.json`).
- *    - If the fetch fails, log an error and display fallback items in the navigation bar.
+ * 1. Attempt to retrieve cached game modes from `localStorage`.
+ *    - Parse the JSON string if it exists.
+ * 2. When online, fetch `gameModes.json` to refresh the data.
+ *    - On success, update `localStorage` with the fetched JSON string.
+ *    - On failure or when offline, fall back to the cached data.
  *
- * 2. Parse the JSON response to retrieve the game modes data.
+ * 3. Parse the JSON to retrieve the game modes data.
  *    - Handle parsing errors gracefully.
  *
- * 3. Select the `.bottom-navbar` element and exit if not found.
+ * 4. Select the `.bottom-navbar` element and exit if not found.
  *
- * 4. Load user settings to determine disabled game modes.
+ * 5. Load user settings to determine disabled game modes.
  *
- * 5. Filter the game modes:
+ * 6. Filter the game modes:
  *    - Include only modes where `category` is "mainMenu", `isHidden` is `false`,
  *      and the mode is not disabled in settings.
  *
- * 6. Sort the filtered game modes by their `order` property in ascending order.
+ * 7. Sort the filtered game modes by their `order` property in ascending order.
  *
- * 7. Check if there are any active modes:
+ * 8. Check if there are any active modes:
  *    - If no modes are available, display "No game modes available" in the navigation bar.
  *
- * 8. Map the sorted game modes to HTML list items (`<li>`):
+ * 9. Map the sorted game modes to HTML list items (`<li>`):
  *    - Each list item contains a link (`<a>`) to the corresponding game mode's URL.
  *
- * 9. Update the navigation bar (`.bottom-navbar ul`) with the generated HTML.
+ * 10. Update the navigation bar (`.bottom-navbar ul`) with the generated HTML.
  *
- * 10. Handle any errors during the process:
+ * 11. Handle any errors during the process:
  *    - Log the error to the console and display fallback items in the navigation bar.
  *
  * @returns {Promise<void>} A promise that resolves once the navbar is populated.
@@ -180,13 +183,44 @@ function addTouchFeedback() {
 
 export async function populateNavbar() {
   try {
-    const response = await fetch(`${DATA_DIR}gameModes.json`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch game modes: ${response.status}`);
-    }
-    const data = await response.json();
+    let data;
+    let cached;
 
-    debugLog("Fetched game modes:", data);
+    if (typeof localStorage !== "undefined") {
+      const stored = localStorage.getItem("gameModes");
+      if (stored) {
+        try {
+          cached = JSON.parse(stored);
+        } catch (e) {
+          console.warn("Failed to parse cached game modes", e);
+        }
+      }
+    }
+
+    if (navigator.onLine || !cached) {
+      try {
+        const response = await fetch(`${DATA_DIR}gameModes.json`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch game modes: ${response.status}`);
+        }
+        data = await response.json();
+        debugLog("Fetched game modes:", data);
+
+        if (typeof localStorage !== "undefined") {
+          localStorage.setItem("gameModes", JSON.stringify(data));
+        }
+      } catch (fetchErr) {
+        if (cached) {
+          console.warn("Using cached game modes due to fetch error", fetchErr);
+          data = cached;
+        } else {
+          throw fetchErr;
+        }
+      }
+    } else {
+      data = cached;
+      debugLog("Loaded cached game modes:", data);
+    }
 
     const navBar = document.querySelector(".bottom-navbar");
     if (!navBar) return; // Guard: do nothing if navbar is missing
