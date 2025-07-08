@@ -1,6 +1,7 @@
 import { loadSettings, updateSetting } from "./settingsUtils.js";
 import { loadGameModes, updateGameModeHidden } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
+import { createToggleSwitch } from "../components/ToggleSwitch.js";
 
 function applyInputState(element, value) {
   if (!element) return;
@@ -68,24 +69,15 @@ function initializeControls(settings, gameModes) {
   if (modesContainer && Array.isArray(gameModes)) {
     const sortedModes = [...gameModes].sort((a, b) => a.order - b.order);
     sortedModes.forEach((mode) => {
-      const wrapper = document.createElement("div");
-      wrapper.className = "settings-item";
-      const label = document.createElement("label");
-      label.className = "switch";
-      const input = document.createElement("input");
-      input.type = "checkbox";
-      input.id = `mode-${mode.id}`;
-      input.checked = currentSettings.gameModes[mode.id] !== false;
-      input.setAttribute("aria-label", mode.name);
-      const slider = document.createElement("div");
-      slider.className = "slider round";
-      const span = document.createElement("span");
-      span.textContent = `${mode.name} (${mode.category} - ${mode.order})`;
-      label.appendChild(input);
-      label.appendChild(slider);
-      label.appendChild(span);
-      wrapper.appendChild(label);
+      const wrapper = createToggleSwitch(`${mode.name} (${mode.category} - ${mode.order})`, {
+        id: `mode-${mode.id}`,
+        name: mode.id,
+        checked: currentSettings.gameModes[mode.id] !== false,
+        ariaLabel: mode.name
+      });
+
       modesContainer.appendChild(wrapper);
+      const input = wrapper.querySelector("input");
 
       input.addEventListener("change", () => {
         const prev = !input.checked;
