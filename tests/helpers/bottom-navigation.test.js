@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 
 const originalFetch = global.fetch;
+const originalNavigator = global.navigator;
 
 function stubLogoQuery() {
   const originalQuery = document.querySelector.bind(document);
@@ -29,6 +30,10 @@ afterEach(() => {
   document.body.innerHTML = "";
   vi.restoreAllMocks();
   global.fetch = originalFetch;
+  global.navigator = originalNavigator;
+  if (global.localStorage) {
+    global.localStorage.clear();
+  }
   vi.resetModules();
 });
 
@@ -147,6 +152,7 @@ describe("populateNavbar", () => {
     });
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => data });
+    Object.defineProperty(global.navigator, "onLine", { value: true, configurable: true });
 
     const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
 
@@ -156,12 +162,15 @@ describe("populateNavbar", () => {
     expect(items).toHaveLength(1);
     expect(items[0].textContent).toBe("A");
     expect(loadSettings).toHaveBeenCalled();
+    expect(JSON.parse(localStorage.getItem("gameModes"))).toEqual(data);
   });
 
   it("falls back to default items when fetch fails", async () => {
     const navBar = setupDom();
     stubLogoQuery();
+    localStorage.removeItem("gameModes");
     global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
+    Object.defineProperty(global.navigator, "onLine", { value: true, configurable: true });
 
     const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
 
@@ -172,5 +181,33 @@ describe("populateNavbar", () => {
     expect(items[0].textContent).toBe("Random Judoka");
     expect(items[1].textContent).toBe("Home");
     expect(items[2].textContent).toBe("Classic Battle");
+  });
+
+  it("uses cached game modes when offline", async () => {
+    const navBar = setupDom();
+    stubLogoQuery();
+    const data = [
+      { id: "X", name: "X", url: "x.html", category: "mainMenu", order: 1, isHidden: false }
+    ];
+    localStorage.setItem("gameModes", JSON.stringify(data));
+    const loadSettings = vi.fn().mockResolvedValue({
+      sound: true,
+      fullNavMap: true,
+      motionEffects: true,
+      displayMode: "light",
+      gameModes: {}
+    });
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    global.fetch = vi.fn();
+    Object.defineProperty(global.navigator, "onLine", { value: false, configurable: true });
+
+    const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
+
+    await populateNavbar();
+
+    const items = navBar.querySelectorAll("li");
+    expect(items).toHaveLength(1);
+    expect(items[0].textContent).toBe("X");
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 });
