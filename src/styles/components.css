@@ -927,7 +927,7 @@ button .ripple {
 }
 
 .switch input:focus-visible + .slider {
-  box-shadow: 0 0 1px var(--button-bg);
+  box-shadow: 0 0 3px 2px var(--button-bg);
 }
 
 .slider {
