@@ -24,6 +24,11 @@
   list-style-type: none;
 }
 
+.bottom-navbar ul li {
+  min-height: 48px;
+  padding: var(--space-sm);
+}
+
 .bottom-navbar a,
 .top-navbar a {
   color: var(--button-text-color); /* Adaptive text color */
