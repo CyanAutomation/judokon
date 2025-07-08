@@ -77,7 +77,7 @@ function initializeControls(settings, gameModes) {
       input.id = `mode-${mode.id}`;
       input.checked = currentSettings.gameModes[mode.id] !== false;
       input.setAttribute("aria-label", mode.name);
-      const slider = document.createElement("span");
+      const slider = document.createElement("div");
       slider.className = "slider round";
       const span = document.createElement("span");
       span.textContent = `${mode.name} (${mode.category} - ${mode.order})`;
