@@ -16,5 +16,9 @@ export function showSettingsError() {
   popup.setAttribute("aria-live", "assertive");
   popup.textContent = "Failed to update settings.";
   document.body.appendChild(popup);
+  requestAnimationFrame(() => popup.classList.add("show"));
+  setTimeout(() => {
+    popup.classList.remove("show");
+  }, 1800);
   setTimeout(() => popup.remove(), 2000);
 }
