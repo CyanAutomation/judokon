@@ -67,7 +67,9 @@ function initializeControls(settings, gameModes) {
   });
 
   if (modesContainer && Array.isArray(gameModes)) {
-    const sortedModes = [...gameModes].sort((a, b) => a.order - b.order);
+    const sortedModes = gameModes
+      .filter((mode) => mode.category === "mainMenu")
+      .sort((a, b) => a.order - b.order);
     sortedModes.forEach((mode) => {
       const label = document.createElement("label");
       label.className = "settings-item";
