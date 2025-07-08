@@ -2,6 +2,7 @@ import { fetchJson } from "./dataUtils.js";
 import { createGokyoLookup } from "./utils.js";
 import { generateJudokaCardHTML } from "./cardBuilder.js";
 import { getRandomJudoka } from "./cardUtils.js";
+import { hasRequiredJudokaFields } from "./judokaValidation.js";
 import { DATA_DIR } from "./constants.js";
 
 /**
@@ -90,17 +91,7 @@ export async function generateRandomCard(
     const judokaData = activeCards || (await fetchJson(`${DATA_DIR}judoka.json`));
 
     const validJudoka = Array.isArray(judokaData)
-      ? judokaData.filter((j) => {
-          const hasRequired =
-            j.firstname &&
-            j.surname &&
-            j.countryCode &&
-            j.stats &&
-            j.weightClass &&
-            j.signatureMoveId !== undefined &&
-            j.rarity;
-          return !j.isHidden && hasRequired;
-        })
+      ? judokaData.filter((j) => !j.isHidden && hasRequiredJudokaFields(j))
       : [];
 
     if (validJudoka.length === 0) {

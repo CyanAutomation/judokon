@@ -6,6 +6,7 @@ import {
   generateCardSignatureMove
 } from "./cardRender.js";
 import { safeGenerate } from "./errorUtils.js";
+import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
 
 /**
  * Generates the "last updated" HTML for a judoka card.
@@ -34,57 +35,11 @@ import { safeGenerate } from "./errorUtils.js";
 // }
 
 /**
- * Validates the required fields of a Judoka object.
- *
- * @pseudocode
- * 1. Define required fields for the judoka object:
- *    - Include fields like "firstname", "surname", "country", etc.
- *
- * 2. Check for missing fields:
- *    - Use `filter` to find fields not present in the `judoka` object.
- *    - Throw an error if any required fields are missing.
- *
- * 3. Validate stats fields:
- *    - Define required stats fields like "power", "speed", etc.
- *    - Check for missing stats fields in the `judoka.stats` object.
- *    - Throw an error if any required stats fields are missing.
- *
- * @param {Object} judoka - The judoka object to validate.
- * @throws {Error} If required fields are missing.
- */
-function validateJudoka(judoka) {
-  const requiredFields = [
-    "firstname",
-    "surname",
-    "country",
-    "countryCode",
-    "stats",
-    "weightClass",
-    "signatureMoveId",
-    "rarity"
-  ];
-  const missingFields = requiredFields.filter((field) => !judoka[field]);
-
-  if (missingFields.length > 0) {
-    throw new Error(`Invalid Judoka object: Missing required fields: ${missingFields.join(", ")}`);
-  }
-
-  const requiredStatsFields = ["power", "speed", "technique", "kumikata", "newaza"];
-  const missingStatsFields = requiredStatsFields.filter((field) => !judoka.stats?.[field]);
-
-  if (missingStatsFields.length > 0) {
-    throw new Error(
-      `Invalid Judoka stats: Missing required fields: ${missingStatsFields.join(", ")}`
-    );
-  }
-}
-
-/**
  * Generates the complete DOM structure for a judoka card.
  *
  * @pseudocode
  * 1. Validate the `judoka` object:
- *    - Ensure all required fields are present using `validateJudoka`.
+ *    - Ensure all required fields are present using `hasRequiredJudokaFields`.
  *
  * 2. Generate the flag URL:
  *    - Call `safeGenerate` with `getFlagUrl` and the `countryCode`.
@@ -184,7 +139,10 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
     return fallback;
   }
 
-  validateJudoka(judoka);
+  const missing = getMissingJudokaFields(judoka);
+  if (!hasRequiredJudokaFields(judoka)) {
+    throw new Error(`Invalid Judoka object: Missing required fields: ${missing.join(", ")}`);
+  }
 
   const countryCode = judoka.countryCode;
   const flagUrl = await safeGenerate(

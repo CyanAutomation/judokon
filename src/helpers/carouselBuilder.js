@@ -2,6 +2,7 @@ import { createGokyoLookup } from "./utils.js";
 import { generateJudokaCard } from "./cardBuilder.js";
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
+import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
 
 let fallbackJudoka;
 
@@ -325,7 +326,7 @@ function applyAccessibilityImprovements(wrapper) {
  * 4. Transform `gokyoData` into a lookup object for quick access.
  *
  * 5. Loop through the `judokaList` array:
- *    - Validate each judoka object (ensure required fields are present).
+ *    - Validate each judoka object using `hasRequiredJudokaFields`.
  *    - Generate a card using `generateJudokaCard`.
  *    - If validation fails or card generation returns `null`, load the fallback
  *      judoka (id `0`) and generate its card instead.
@@ -372,14 +373,10 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   for (const judoka of judokaList) {
     let entry = judoka;
 
-    if (
-      !judoka.firstname ||
-      !judoka.surname ||
-      !judoka.country ||
-      !judoka.stats ||
-      judoka.signatureMoveId === undefined
-    ) {
+    if (!hasRequiredJudokaFields(judoka)) {
       console.error("Invalid judoka object:", judoka);
+      const missing = getMissingJudokaFields(judoka).join(", ");
+      console.error(`Missing fields: ${missing}`);
       entry = await getFallbackJudoka();
     }
 
