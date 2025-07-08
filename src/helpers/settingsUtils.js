@@ -1,19 +1,28 @@
 import { validateWithSchema } from "./dataUtils.js";
-let settingsSchema;
-try {
-  settingsSchema = await fetch(new URL("../schemas/settings.schema.json", import.meta.url)).then(
-    async (response) => {
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch settings schema: ${response.status} ${response.statusText}`
-        );
-      }
-      return response.json();
-    }
-  );
-} catch {
-  settingsSchema = (await import("../schemas/settings.schema.json", { assert: { type: "json" } }))
-    .default;
+
+/**
+ * The settings JSON schema is loaded only when required to validate data.
+ * This keeps module initialization lightweight in all environments.
+ */
+let settingsSchemaPromise;
+
+async function getSettingsSchema() {
+  if (!settingsSchemaPromise) {
+    settingsSchemaPromise = fetch(new URL("../schemas/settings.schema.json", import.meta.url))
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch settings schema: ${response.status} ${response.statusText}`
+          );
+        }
+        return response.json();
+      })
+      .catch(
+        async () =>
+          (await import("../schemas/settings.schema.json", { assert: { type: "json" } })).default
+      );
+  }
+  return settingsSchemaPromise;
 }
 
 const SETTINGS_KEY = "settings";
@@ -33,17 +42,19 @@ const SAVE_DELAY_MS = 100;
  * Load persisted settings from localStorage.
  *
  * @pseudocode
- * 1. Throw an error if `localStorage` is unavailable.
- * 2. Retrieve the JSON string stored under `SETTINGS_KEY`.
+ * 1. Call `getSettingsSchema()` to lazily load the schema.
+ * 2. Throw an error if `localStorage` is unavailable.
+ * 3. Retrieve the JSON string stored under `SETTINGS_KEY`.
  *    - When no value exists, return `DEFAULT_SETTINGS`.
- * 3. Parse the JSON and merge with `DEFAULT_SETTINGS`.
- * 4. Validate the merged object with `settingsSchema`.
- * 5. Return the validated settings or throw on failure.
+ * 4. Parse the JSON and merge with `DEFAULT_SETTINGS`.
+ * 5. Validate the merged object with `settingsSchema`.
+ * 6. Return the validated settings or throw on failure.
  *
  * @returns {Promise<Settings>} Resolved settings object.
  */
 export async function loadSettings() {
   try {
+    await getSettingsSchema();
     if (typeof localStorage === "undefined") {
       throw new Error("localStorage unavailable");
     }
@@ -53,7 +64,7 @@ export async function loadSettings() {
     }
     const parsed = JSON.parse(raw);
     const merged = { ...DEFAULT_SETTINGS, ...parsed };
-    await validateWithSchema(merged, settingsSchema);
+    await validateWithSchema(merged, await getSettingsSchema());
     return merged;
   } catch (error) {
     throw error;
@@ -96,11 +107,12 @@ export function saveSettings(settings) {
  * Update a single setting and persist the result.
  *
  * @pseudocode
- * 1. Call `loadSettings` to obtain current settings.
- * 2. Merge the provided `key`/`value` into the settings object.
- * 3. Validate the updated object with `settingsSchema`.
- * 4. Persist the object using `saveSettings`.
- * 5. Return the updated settings.
+ * 1. Call `getSettingsSchema()` to lazily load the schema.
+ * 2. Call `loadSettings` to obtain current settings.
+ * 3. Merge the provided `key`/`value` into the settings object.
+ * 4. Validate the updated object with `settingsSchema`.
+ * 5. Persist the object using `saveSettings`.
+ * 6. Return the updated settings.
  *
  * @param {string} key - Name of the setting to update.
  * @param {*} value - Value to assign to the setting.
@@ -108,9 +120,10 @@ export function saveSettings(settings) {
  */
 export async function updateSetting(key, value) {
   try {
+    await getSettingsSchema();
     const current = await loadSettings();
     const updated = { ...current, [key]: value };
-    await validateWithSchema(updated, settingsSchema);
+    await validateWithSchema(updated, await getSettingsSchema());
     if (typeof localStorage !== "undefined") {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
     } else {
