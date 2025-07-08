@@ -7,6 +7,8 @@
  * 3. Append the div to `document.body`.
  * 4. Remove the popup after 2 seconds.
  */
+import { SETTINGS_FADE_MS, SETTINGS_REMOVE_MS } from "./constants.js";
+
 export function showSettingsError() {
   const existing = document.querySelector(".settings-error-popup");
   existing?.remove();
@@ -19,6 +21,6 @@ export function showSettingsError() {
   requestAnimationFrame(() => popup.classList.add("show"));
   setTimeout(() => {
     popup.classList.remove("show");
-  }, 1800);
-  setTimeout(() => popup.remove(), 2000);
+  }, SETTINGS_FADE_MS);
+  setTimeout(() => popup.remove(), SETTINGS_REMOVE_MS);
 }
