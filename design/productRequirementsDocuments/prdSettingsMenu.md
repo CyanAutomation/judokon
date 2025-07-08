@@ -30,14 +30,14 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 
 ## Functional Requirements
 
-| Priority | Feature                    | Description                                                           |
-| -------- | -------------------------- | --------------------------------------------------------------------- |
-| P1       | Sound Toggle               | Binary toggle updating `settings.json` live on change.                |
-| P1       | Full Navigation Map Toggle | Binary toggle updating `settings.json` live on change.                |
-| P1       | Motion Effects Toggle      | Binary toggle updating `settings.json` live on change.                |
-| P1       | Display Mode Selector      | Three-option selector applying mode instantly across UI.              |
+| Priority | Feature                    | Description                                                                 |
+| -------- | -------------------------- | --------------------------------------------------------------------------- |
+| P1       | Sound Toggle               | Binary toggle updating `settings.json` live on change.                      |
+| P1       | Full Navigation Map Toggle | Binary toggle updating `settings.json` live on change.                      |
+| P1       | Motion Effects Toggle      | Binary toggle updating `settings.json` live on change.                      |
+| P1       | Display Mode Selector      | Three-option selector applying mode instantly across UI.                    |
 | P2       | Game Modes Toggles         | A list of all defined game modes with binary toggles from `gameModes.json`. |
-| P3       | Settings Menu Integration  | Ensure settings appear as a game mode in `gameModes.json`.            |
+| P3       | Settings Menu Integration  | Ensure settings appear as a game mode in `gameModes.json`.                  |
 
 **Note:** For all settings items, if reading or writing to the data source fails, toggles/selectors **must revert** to their previous state, and a user-facing error should appear.
 
