@@ -17,4 +17,7 @@ export async function registerCommonRoutes(page) {
   await page.route("https://flagcdn.com/**", (route) =>
     route.fulfill({ path: "src/assets/countryFlags/placeholder-flag.png" })
   );
+  await page.route("https://esm.sh/ajv@6", (route) =>
+    route.fulfill({ path: "src/vendor/ajv6.min.js" })
+  );
 }

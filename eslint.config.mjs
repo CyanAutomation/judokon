@@ -12,7 +12,8 @@ export default defineConfig([
       "*.log",
       "*.tmp",
       ".eslintcache",
-      ".git/**"
+      ".git/**",
+      "src/vendor/**"
     ], // 🔥 Updated ignores
     files: ["**/*.{js,mjs,cjs}"],
     plugins: {
