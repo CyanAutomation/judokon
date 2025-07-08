@@ -71,14 +71,18 @@ function initializeControls(settings, gameModes) {
       const wrapper = document.createElement("div");
       wrapper.className = "settings-item";
       const label = document.createElement("label");
+      label.className = "switch";
       const input = document.createElement("input");
       input.type = "checkbox";
       input.id = `mode-${mode.id}`;
       input.checked = currentSettings.gameModes[mode.id] !== false;
       input.setAttribute("aria-label", mode.name);
+      const slider = document.createElement("span");
+      slider.className = "slider round";
       const span = document.createElement("span");
       span.textContent = `${mode.name} (${mode.category} - ${mode.order})`;
       label.appendChild(input);
+      label.appendChild(slider);
       label.appendChild(span);
       wrapper.appendChild(label);
       modesContainer.appendChild(wrapper);

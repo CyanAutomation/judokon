@@ -909,3 +909,57 @@ button .ripple {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+
+/* Toggle switch styles */
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+  background-color: var(--color-secondary);
+  border-radius: var(--radius-pill);
+  transition: var(--transition-fast);
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  top: 2px;
+  background-color: var(--color-tertiary);
+  border-radius: 50%;
+  transition: var(--transition-fast);
+}
+
+.switch input:checked + .slider {
+  background-color: var(--button-bg);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+.slider.round {
+  border-radius: var(--radius-pill);
+}
+
+.slider.round::before {
+  border-radius: 50%;
+}
