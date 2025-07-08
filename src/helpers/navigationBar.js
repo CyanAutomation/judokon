@@ -22,7 +22,7 @@ export const BASE_PATH = new URL("../pages/", import.meta.url);
 export function toggleExpandedMapView(gameModes) {
   const navBar = document.querySelector(".bottom-navbar");
   if (!navBar) return; // Guard: do nothing if navbar is missing
-  clearBottomNavbar(navBar); // Clear existing content
+  clearBottomNavbar(); // Clear existing content
 
   const validModes = validateGameModes(gameModes);
 
