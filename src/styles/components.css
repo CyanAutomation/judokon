@@ -935,7 +935,7 @@ button .ripple {
   display: inline-block;
   width: 60px;
   height: 34px;
-  background-color: var(--color-secondary);
+  background-color: var(--color-tertiary);
   border-radius: var(--radius-pill);
   transition: var(--transition-fast);
 }
@@ -947,7 +947,7 @@ button .ripple {
   width: 26px;
   left: 4px;
   top: 4px;
-  background-color: var(--color-tertiary);
+  background-color: var(--color-surface);
   border-radius: 50%;
   transition: var(--transition-fast);
 }
