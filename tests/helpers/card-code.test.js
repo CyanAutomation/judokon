@@ -6,7 +6,9 @@ const validJudoka = {
   firstname: "Test",
   surname: "User",
   country: "Nowhere",
+  countryCode: "NW",
   weightClass: "-90",
+  rarity: "common",
   signatureMoveId: 42,
   stats: {
     power: 1,
