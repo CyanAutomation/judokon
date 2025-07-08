@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
+const originalReadyStateDescriptor = Object.getOwnPropertyDescriptor(document, "readyState");
+
 describe("setupBottomNavbar module", () => {
   beforeEach(() => {
     vi.resetModules();
