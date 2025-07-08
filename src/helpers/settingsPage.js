@@ -77,7 +77,7 @@ function initializeControls(settings, gameModes) {
       input.checked = currentSettings.gameModes[mode.id] !== false;
       input.setAttribute("aria-label", mode.name);
       const span = document.createElement("span");
-      span.textContent = mode.name;
+      span.textContent = `${mode.name} (${mode.category} - ${mode.order})`;
       label.appendChild(input);
       label.appendChild(span);
       wrapper.appendChild(label);

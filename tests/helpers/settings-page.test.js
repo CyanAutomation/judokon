@@ -52,9 +52,9 @@ describe("settingsPage module", () => {
   it("renders checkboxes for all modes", async () => {
     vi.useFakeTimers();
     const gameModes = [
-      { id: "classic", name: "Classic", category: "mainMenu" },
-      { id: "blitz", name: "Blitz", category: "bonus" },
-      { id: "dojo", name: "Dojo", category: "mainMenu" }
+      { id: "classic", name: "Classic", category: "mainMenu", order: 10 },
+      { id: "blitz", name: "Blitz", category: "bonus", order: 20 },
+      { id: "dojo", name: "Dojo", category: "mainMenu", order: 30 }
     ];
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
@@ -75,10 +75,14 @@ describe("settingsPage module", () => {
 
     const container = document.getElementById("game-mode-toggle-container");
     const checkboxes = container.querySelectorAll("input[type='checkbox']");
+    const labels = container.querySelectorAll("label span");
     expect(checkboxes).toHaveLength(3);
     expect(container.querySelector("#mode-classic")).toBeTruthy();
     expect(container.querySelector("#mode-dojo")).toBeTruthy();
     expect(container.querySelector("#mode-blitz")).toBeTruthy();
+    expect(labels[0].textContent).toBe("Classic (mainMenu - 10)");
+    expect(labels[1].textContent).toBe("Blitz (bonus - 20)");
+    expect(labels[2].textContent).toBe("Dojo (mainMenu - 30)");
   });
 
   it("updates isHidden when a checkbox is toggled", async () => {
