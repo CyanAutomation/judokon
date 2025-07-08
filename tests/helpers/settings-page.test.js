@@ -29,23 +29,24 @@ describe("settingsPage module", () => {
   it("loads settings and game modes on DOMContentLoaded", async () => {
     vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const fetchJson = vi.fn().mockResolvedValue([]);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
+    const loadGameModes = vi.fn().mockResolvedValue([]);
+    const updateGameModeHidden = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
     }));
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadGameModes,
+      updateGameModeHidden
     }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
     await vi.runAllTimersAsync();
 
     expect(loadSettings).toHaveBeenCalled();
-    expect(fetchJson).toHaveBeenCalled();
+    expect(loadGameModes).toHaveBeenCalled();
     vi.useRealTimers();
   });
   it("renders checkboxes for all modes", async () => {
@@ -56,16 +57,17 @@ describe("settingsPage module", () => {
       { id: "dojo", name: "Dojo", category: "mainMenu" }
     ];
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const fetchJson = vi.fn().mockResolvedValue(gameModes);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
+    const loadGameModes = vi.fn().mockResolvedValue(gameModes);
+    const updateGameModeHidden = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
     }));
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadGameModes,
+      updateGameModeHidden
     }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -77,5 +79,32 @@ describe("settingsPage module", () => {
     expect(container.querySelector("#mode-classic")).toBeTruthy();
     expect(container.querySelector("#mode-dojo")).toBeTruthy();
     expect(container.querySelector("#mode-blitz")).toBeTruthy();
+  });
+
+  it("updates isHidden when a checkbox is toggled", async () => {
+    vi.useFakeTimers();
+    const gameModes = [{ id: "classic", name: "Classic", category: "mainMenu", isHidden: false }];
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updateSetting = vi.fn().mockResolvedValue(baseSettings);
+    const loadGameModes = vi.fn().mockResolvedValue(gameModes);
+    const updateGameModeHidden = vi.fn().mockResolvedValue([{ ...gameModes[0], isHidden: true }]);
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadGameModes,
+      updateGameModeHidden
+    }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const input = document.getElementById("mode-classic");
+    input.checked = false;
+    input.dispatchEvent(new Event("change"));
+
+    expect(updateGameModeHidden).toHaveBeenCalledWith("classic", true);
   });
 });

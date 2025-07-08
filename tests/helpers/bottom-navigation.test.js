@@ -150,9 +150,9 @@ describe("populateNavbar", () => {
       displayMode: "light",
       gameModes: { B: false }
     });
+    const loadGameModes = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => data });
-    Object.defineProperty(global.navigator, "onLine", { value: true, configurable: true });
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({ loadGameModes }));
 
     const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
 
@@ -162,15 +162,15 @@ describe("populateNavbar", () => {
     expect(items).toHaveLength(1);
     expect(items[0].textContent).toBe("A");
     expect(loadSettings).toHaveBeenCalled();
-    expect(JSON.parse(localStorage.getItem("gameModes"))).toEqual(data);
+    expect(loadGameModes).toHaveBeenCalled();
   });
 
   it("falls back to default items when fetch fails", async () => {
     const navBar = setupDom();
     stubLogoQuery();
     localStorage.removeItem("gameModes");
-    global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
-    Object.defineProperty(global.navigator, "onLine", { value: true, configurable: true });
+    const loadGameModes = vi.fn().mockRejectedValue(new Error("fail"));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({ loadGameModes }));
 
     const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
 
@@ -197,9 +197,9 @@ describe("populateNavbar", () => {
       displayMode: "light",
       gameModes: {}
     });
+    const loadGameModes = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
-    global.fetch = vi.fn();
-    Object.defineProperty(global.navigator, "onLine", { value: false, configurable: true });
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({ loadGameModes }));
 
     const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
 
@@ -208,6 +208,6 @@ describe("populateNavbar", () => {
     const items = navBar.querySelectorAll("li");
     expect(items).toHaveLength(1);
     expect(items[0].textContent).toBe("X");
-    expect(global.fetch).not.toHaveBeenCalled();
+    expect(loadGameModes).toHaveBeenCalled();
   });
 });

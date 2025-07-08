@@ -1,6 +1,5 @@
 import { loadSettings, updateSetting } from "./settingsUtils.js";
-import { fetchJson } from "./dataUtils.js";
-import { DATA_DIR } from "./constants.js";
+import { loadGameModes, updateGameModeHidden } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
 
 function applyInputState(element, value) {
@@ -91,6 +90,9 @@ function initializeControls(settings, gameModes) {
         handleUpdate("gameModes", updated, () => {
           input.checked = prev;
         });
+        updateGameModeHidden(mode.id, !input.checked).catch((err) => {
+          console.error("Failed to update game mode", err);
+        });
       });
     });
   }
@@ -99,7 +101,7 @@ function initializeControls(settings, gameModes) {
 async function initializeSettingsPage() {
   try {
     const settings = await loadSettings();
-    const gameModes = await fetchJson(`${DATA_DIR}gameModes.json`);
+    const gameModes = await loadGameModes();
     initializeControls(settings, gameModes);
   } catch (error) {
     console.error("Error loading settings page:", error);
