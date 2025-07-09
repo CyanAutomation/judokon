@@ -81,7 +81,7 @@ A 1v1 stat-based match against a CPU opponent using a deck of 25 random judoka c
 
 #### Goals
 
-- Deliver a quick head‑to‑head mode for new players.
+- Deliver a quick head‑to‑head mode for new players **(battle loads in ≤2 s)**.
 - Encourage replay through a simple scoring system.
 
 #### Functional Requirements
@@ -346,7 +346,7 @@ Display a random judoka profile. [Read full PRD](prdRandomJudoka.md)
 
 #### Goals
 
-- Give players quick inspiration for new team ideas.
+- Give players quick inspiration for new team ideas **(random suggestion ≤1 s)**.
 
 #### Functional Requirements
 

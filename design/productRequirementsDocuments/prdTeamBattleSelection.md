@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Simple menu that lets players quickly choose Male, Female, or Mixed modes for team battles.
+Simple menu that lets players quickly choose Male, Female, or Mixed modes for team battles **(selection screen loads ≤500 ms)**.
 
 **Game Mode ID:** teamBattleSelection (URL: teamBattleSelection.html)
 
@@ -20,7 +20,7 @@ Simple menu that lets players quickly choose Male, Female, or Mixed modes for te
 
 ## User Stories
 
-- As a new player, I want simple buttons so I can pick Male, Female or Mixed quickly.
+- As a new player, I want simple buttons so I can pick Male, Female or Mixed quickly **(≤2 taps)**.
 - As a returning player, I want my previous choice highlighted so selection feels familiar.
 - As a keyboard user, I want focus order to follow the menu layout so navigation is predictable.
 

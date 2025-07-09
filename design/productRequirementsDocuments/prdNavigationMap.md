@@ -23,7 +23,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 ## Goals
 
 - Make switching modes exciting and intuitive, matching the game’s theme.
-- Allow quick, frustration-free discovery of all game modes.
+- Allow quick, frustration-free discovery of all game modes **(reach destination in ≤3 s)**.
 
 ---
 
@@ -39,7 +39,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 
 - **Trigger:** In landscape mode, tapping the bottom right corner map icon expands a "Judo Training Village" map from the footer with a smooth upward slide animation (<500ms).
 - **Map Layout:** The map presents different game modes as a grid of image tiles representing village landmarks (Dojo, Budokan, Kodokan), with minimum 48px touch target size.
-- **Navigation:** Tapping a tile smoothly transitions the player to the selected game mode.
+- **Navigation:** Tapping a tile smoothly transitions the player to the selected game mode (**transition ≤300 ms**).
 - **Cancel/Back Out:** Tapping outside the map area or pressing the map icon button again collapses the map. If device orientation changes mid-animation, the expansion is canceled and reverts to the default footer state.
 - **Fallback:** If the map fails to load, a simplified, high-contrast text menu appears instantly.
 - **Responsiveness:** If viewport height <400px or width <640px, hide the map icon entirely. Map and tiles dynamically resize based on screen size and resolution. Animations must maintain 60fps on devices.
@@ -51,7 +51,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - Player taps map icon in bottom right corner.
 - Village map expands with slide-up animation (<500ms).
 - Player browses tiles representing different modes.
-- Player taps a tile → transitions smoothly to selected mode.
+- Player taps a tile → transitions smoothly to selected mode (**≤300 ms**).
 - Player taps outside map or map icon → map collapses.
 - If assets fail → fallback text menu appears instantly.
 - If device rotates mid-animation → map closes cleanly, footer resets
@@ -90,7 +90,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - Implement event listeners for orientation change to cancel animations cleanly.
 - Preload assets on initial game load to minimize map open delay.
 - Store “Simple Menu Mode” preference in local storage or player profile for persistent settings across sessions.
-- Ensure smooth fallback to text menu with minimal JS dependencies in case of asset or script failure.
+- Ensure smooth fallback to text menu with minimal JS dependencies in case of asset or script failure (**fallback loads <1 s**).
 
 ---
 

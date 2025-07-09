@@ -2,23 +2,23 @@
 
 ## TL;DR
 
-This PRD defines a responsive, interactive carousel for browsing Judoka cards in Ju-Do-Kon! It supports smooth swiping, keyboard interactions, and accessibility features — ensuring players can quickly scan and select cards.
+This PRD defines a responsive, interactive carousel for browsing Judoka cards in Ju-Do-Kon! It supports smooth swiping (**snap ≤200 ms**), keyboard interactions, and accessibility features — ensuring players can quickly scan and select cards.
 
 ## Problem Statement
 
-As part of the game, several screens require an intuitive and interactive way to present judoka cards. With more than 100 cards in the game (ultimate goal), it would be cumbersome and frustrating for players to browse through all cards manually without an efficient navigation system.
+As part of the game, several screens require an intuitive and interactive way to present judoka cards. With more than 100 cards in the game (ultimate goal), it would be cumbersome and frustrating for players to browse through all cards manually without an efficient navigation system capable of loading **100 cards in ≤1 s**.
 
 > Emi wants to create her ultimate Japanese Judoka team. She opens the carousel and quickly swipes through beautifully animated cards, instantly comparing stats. She feels in control, excited, and invested in building the perfect team — that’s the experience this carousel delivers.
 
 Failure to provide an efficient browsing experience may impact core gameplay — players might struggle to find and build optimal teams, leading to frustration and potential churn.
 
-> A smooth and intuitive browsing experience fosters a sense of mastery and control, enhancing overall player satisfaction and engagement.
+> A smooth and intuitive browsing experience (scrolling **≥60 fps**) fosters a sense of mastery and control, enhancing overall player satisfaction and engagement.
 
 ## User Stories
 
-- As a player, I want smooth scrolling so I can quickly browse a large roster of cards.
+- As a player, I want smooth scrolling so I can quickly browse a large roster of cards **(≥60 fps)**.
 - As a player using keyboard navigation, I want to scroll through cards using arrow keys so I can browse without a mouse.
-- As a mobile player, I want to swipe to move between cards so the experience feels natural and fast.
+- As a mobile player, I want to swipe to move between cards so the experience feels natural and fast **(gesture latency <100 ms)**.
 
 ---
 
@@ -27,7 +27,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 **Technical Performance Goals**
 
 - Carousel loads within 1 second for up to 150 cards.
-- Support smooth browsing of up to 50 cards without noticeable lag.
+- Support smooth browsing of up to 50 cards without noticeable lag (**≥60 fps**).
 - Users can browse through at least 10 cards within 30 seconds smoothly without lag.
 - Swipe gesture support for mobile browsing.
 - Keyboard navigation support for accessibility.
@@ -35,7 +35,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 **User Experience Goals**
 
 - Users can easily browse and find desired cards to assemble optimized teams.
-- Browsing the carousel feels smooth, intuitive, and visually engaging on both mobile and desktop devices.
+- Browsing the carousel feels smooth, intuitive, and visually engaging on both mobile and desktop devices **(transitions ≤300 ms)**.
 
 ---
 
@@ -81,7 +81,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 ## Technical Considerations
 
 - Cards should lazy-load images as they enter the viewport to reduce initial load time.
-- Use hardware-accelerated CSS transforms (e.g., `translate3d`) for smooth scrolling and animations.
+- Use hardware-accelerated CSS transforms (e.g., `translate3d`) for smooth scrolling and animations (**≥60 fps**).
 - Carousel should debounce swipe/scroll events to prevent rapid-fire performance hits.
 - Card metadata must be dynamically fetched from `judoka.json`; errors should gracefully fallback to judoka id=0.
 
@@ -115,7 +115,7 @@ returned element to an empty container (e.g., `#carousel-container`).
 ### Visuals
 
 - Carousel will have a darker background to allow the bright, colorful judoka cards to stand out.
-- Snap scrolling for smooth, natural-feeling navigation.
+- Snap scrolling for smooth, natural-feeling navigation (**snap ≤200 ms**).
 - Centered active card slightly larger than side cards for visual emphasis.
 
 ### Responsiveness
@@ -149,7 +149,7 @@ returned element to an empty container (e.g., `#carousel-container`).
 - **Desktop**: 3 cards in view — center card slightly enlarged; arrows left/right; scroll markers at the bottom.
 - **Mobile**: 1.5 cards visible (peek of next card); swipe enabled; arrows optional.
 - **Hover Effect**: On desktop, center card enlarges subtly.
-- **Touch Interaction**: On mobile, swipe left/right; smooth snap after swipe.
+- **Touch Interaction**: On mobile, swipe left/right; smooth snap after swipe (**≤200 ms**).
 
 | **Card Carousel Mockup 1**                                       | **Card Carousel Mockup 2**                                       |
 | ---------------------------------------------------------------- | ---------------------------------------------------------------- |

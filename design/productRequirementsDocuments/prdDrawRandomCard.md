@@ -98,7 +98,7 @@ Battle** variants (Female, Male, and Mixed).
 
 ### User Goals
 
-- Provide an exciting, quick card reveal to keep players engaged.
+- Provide an exciting, quick card reveal **(<500 ms animation)** to keep players engaged.
 - Allow players sensitive to motion to control animation settings for comfort.
 
 ---

@@ -103,7 +103,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - Player selects Meditation from main menu or navigation bar.
 - Meditation screen loads in ≤1s.
 - Skeleton loader appears if quote data is still fetching.
-- KG image and random quote fade in smoothly.
+- KG image and random quote fade in smoothly (**fade ≤300 ms**).
 - Player reads quote → taps “Continue Your Journey” button.
 - Player returns to their previous location (main menu or resumes gameplay, depending on where they entered the meditation screen).
 
@@ -146,7 +146,7 @@ Sets the emotional tone. Not a reward, but a rest—balancing the intensity of g
 - - 200ms fade animation when language is toggled
 
 **Why:**  
-Ensures readability while preventing jarring fallback errors, and enhances contextual clarity and smooth interaction, keeping actions tied to relevant content.
+Ensures readability while preventing jarring fallback errors, and enhances contextual clarity and smooth interaction (**UI responses <200 ms**), keeping actions tied to relevant content.
 
 ---
 
