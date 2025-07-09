@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { setupButtonEffects } from "../../src/helpers/buttonEffects.js";
 
 let button;
@@ -7,10 +7,20 @@ describe("setupButtonEffects", () => {
   beforeEach(() => {
     button = document.createElement("button");
     document.body.appendChild(button);
+    window.matchMedia = vi.fn().mockImplementation((q) => ({
+      matches: false,
+      media: q,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }));
   });
 
   afterEach(() => {
     document.body.innerHTML = "";
+    vi.restoreAllMocks();
   });
 
   it("creates and removes a ripple on mousedown", () => {

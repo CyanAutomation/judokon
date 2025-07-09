@@ -73,3 +73,10 @@
     transition: none !important;
   }
 }
+
+.reduce-motion .card-container {
+  animation: none !important;
+}
+.reduce-motion .draw-card-btn {
+  transition: none !important;
+}

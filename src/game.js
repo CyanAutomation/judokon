@@ -2,6 +2,7 @@ import { fetchJson, validateData } from "./helpers/dataUtils.js";
 import { buildCardCarousel, addScrollMarkers } from "./helpers/carouselBuilder.js";
 import { generateRandomCard } from "./helpers/randomCard.js";
 import { DATA_DIR } from "./helpers/constants.js";
+import { shouldReduceMotionSync } from "./helpers/motionUtils.js";
 
 /**
  * Initializes game interactions after the DOM is ready.
@@ -95,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showRandom.classList.add("hidden");
     gameArea.innerHTML = "";
 
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReducedMotion = shouldReduceMotionSync();
 
     await generateRandomCard(null, null, gameArea, prefersReducedMotion);
   });

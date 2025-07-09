@@ -11,11 +11,13 @@
  */
 import { loadSettings } from "./settingsUtils.js";
 import { applyDisplayMode } from "./displayMode.js";
+import { applyMotionPreference } from "./motionUtils.js";
 
 async function init() {
   try {
     const settings = await loadSettings();
     applyDisplayMode(settings.displayMode);
+    applyMotionPreference(settings.motionEffects);
   } catch (error) {
     console.error("Failed to apply display mode:", error);
   }
