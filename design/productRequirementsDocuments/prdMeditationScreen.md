@@ -66,7 +66,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - AC-2 Random quote displayed from `aesopsFables.json`; fallback reflection quote appears if the dataset is unavailable.
 - AC-3 Screen loads within 1 second.
 - AC-4 Quote text has ARIA markup and maintains contrast ratio of at least **4.5:1**.
-- AC-5 "Continue Your Journey" button uses `--radius-md`, stays ≥48px tall with tap target ≥44px × 44px, and is keyboard focusable.
+- AC-5 "Continue Your Journey" button uses `--radius-md`, stays ≥44px tall with tap target ≥44px × 44px, and is keyboard focusable. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
 - AC-6 Layout adapts to screen orientation (portrait/landscape) and all interactive elements remain keyboard accessible.
 
 ---
@@ -154,7 +154,7 @@ Ensures readability while preventing jarring fallback errors, and enhances conte
 
 **Contents:**
 
-- Large, thumb-friendly button (min 48px height) with `--radius-md` corners
+- Large, thumb-friendly button (min 44px height) with `--radius-md` corners
 - Calming label: _“Continue Your Journey”_
 - Uses `var(--button-bg)` and `var(--button-text-color)`
 - Anchored close to the quote with clear margin spacing
@@ -203,7 +203,7 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 - [x] **3.0 Implement Action Button Module**
 
   - [x] 3.1 Add large, thumb-friendly CTA button ("Continue Your Journey").
-  - [x] 3.2 Style CTA button with `var(--button-bg)` and `var(--button-hover-bg)`; ensure minimum 48px height and proper spacing.
+  - [x] 3.2 Style CTA button with `var(--button-bg)` and `var(--button-hover-bg)`; ensure minimum 44px height and proper spacing (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 
 - [x] **4.0 Accessibility**
 

@@ -112,7 +112,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 - Detect OS-level Reduced Motion; disable animations if active.
 - Provide manual animation toggle (default ON).
-- Tap targets ≥48px × 48px (64px recommended for kid-friendly design).
+- Tap targets ≥44px × 44px (64px recommended for kid-friendly design). See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
 - Text must meet WCAG 2.1 AA 4.5:1 contrast ratio (verify with automated tools).
 - Fallback card displays high-contrast “Oops! Try again” text if errors occur.
 - All buttons and states require clear text labels.

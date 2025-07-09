@@ -47,9 +47,9 @@ Improving session variety directly supports retention and encourages more person
 ## Design and UX Considerations
 
 - All mode entry points must align with the bottom navigation bar, or map-based navigation system.
-- Entry points are represented on the map as clickable, animated hotspots (≥48px).
+- Entry points are represented on the map as clickable, animated hotspots (≥44px). See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
 - UI contrast ratio must meet WCAG 2.1 (≥4.5:1).
-- Touch targets must be ≥48px with WCAG 2.1 contrast compliance.
+- Touch targets must be ≥44px with WCAG 2.1 contrast compliance.
 - Mode entry and exit flows should be clear to prevent disorientation.
 - Mode exit returns to the map with confirmation ("Are you sure?").
 

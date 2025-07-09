@@ -160,7 +160,7 @@ Battle** variants (Female, Male, and Mixed).
 - **Fallback Visuals**:
   - If card loading fails, show a placeholder/error graphic (judoka id=0, from judoka.json).
 - **Tap Target Size**:
-  - All interactive elements (Draw button) must be ≥48px in height and width, with a recommended 64px for kid-friendly ease.
+  - All interactive elements (Draw button) must be ≥44px in height and width, with a recommended 64px for kid-friendly ease. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
 - **Button Size**: Minimum 64px high, 300px wide — central and dominant. Use `--radius-pill` for a capsule shape.
 - **Card Size**: Large enough for excitement, but responsive — 70% of viewport width on mobile, 40% on tablet/desktop.
 - **Spacing**: Tight vertical stacking (~24px between card and button).
@@ -173,7 +173,7 @@ Battle** variants (Female, Male, and Mixed).
 **Contents:**
 
 - **Player Info Module**: “You” + small avatar + status (e.g., “Your Turn” indicator).
-- **Settings Button**: Bigger tappable area (48px+), slight margin from edge, no tiny icons.
+- **Settings Button**: Bigger tappable area (44px+), slight margin from edge, no tiny icons.
 - **Optional Timer** (future feature): If there’s a time limit per draw.
 
 **Why**: Clear identification + quick settings access without hunting for small buttons.
@@ -242,5 +242,5 @@ Battle** variants (Female, Male, and Mixed).
 - [ ] 4.0 Accessibility and UX Enhancements
   - [ ] 4.1 Support Reduced Motion settings.
   - [ ] 4.2 Ensure color contrast on cards meets WCAG AA standards.
-  - [ ] 4.3 Set all tap targets to ≥48px, recommended 64px for better kid usability.
+  - [ ] 4.3 Set all tap targets to ≥44px, recommended 64px for better kid usability (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 - [ ] 4.4 Add sound and animation toggle options for user preferences.

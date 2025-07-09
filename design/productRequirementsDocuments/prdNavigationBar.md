@@ -38,7 +38,7 @@ The **JU-DO-KON!** game features multiple game modes and screens. Players need e
 
 - Reduce navigation-related exits by **20%**.
 - Increase average session duration per player by **15%**.
-- Ensure **48px minimum** touch target size (per sizing tokens in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)).
+- Ensure **44px minimum** touch target size (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 - Achieve **≥60fps** animation performance on standard mid-tier devices.
 - Guarantee fallback loading time of **<2 seconds** if `gameModes.json` fails.
 - Meet a text contrast ratio of at least **4.5:1** against the navigation bar background.
@@ -112,7 +112,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ## Acceptance Criteria
 
-- Touch targets maintain **≥48px** size across all device resolutions (see sizing tokens in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)).
+- Touch targets maintain **≥44px** size across all device resolutions (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 - Navigation is visible on **100%** of game screens.
 - Standard nav bar displays active game modes loaded from `gameModes.json`.
 - Portrait mode initially shows only the logo in the bottom left corner (no links in the navigation bar); tapping reveals a vertical list.
@@ -145,7 +145,7 @@ The standard navbar uses `--color-secondary` for its background and `--button-te
 
 ### Accessibility
 
-- **48px+** touch targets (see sizing tokens in [../codeStandards/codeUIDesignStandards.md#10-tokens](../codeStandards/codeUIDesignStandards.md#10-tokens)).
+- **44px+** touch targets (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 - High-contrast text labels (WCAG 4.5:1).
 - Screen reader support: all navigation elements properly labeled.
 - Respect OS **reduced motion** settings.
