@@ -15,7 +15,7 @@ The Card Code Generation Function transforms key attributes of a Judoka (player 
 > - _"I want to show my best fighter to my friend!"_ — Early playtest feedback from a hypothetical 10-year-old user.
 > - _"Typing long names is annoying. Codes are cooler and easier!"_ — Anonymous feedback from playtest logs.
 
-Players gain a sense of **ownership and pride** by sharing their custom Judoka quickly and easily. **Without simple sharing, engagement can drop**, especially for kids who expect fast, low-effort interactions.
+Players gain a sense of **ownership and pride** by sharing their custom Judoka quickly and easily **(share action <2 s)**. **Without simple sharing, engagement can drop**, especially for kids who expect fast, low-effort interactions (**<200 ms UI response**).
 
 ### Goals
 
@@ -200,7 +200,7 @@ F7KP-WQ9M-ZD23-HYTR
 
 ### 9.1 Encoding Strategy Rationale
 
-- **XOR Obfuscation:** Lightweight, fast, non-cryptographic.
+- **XOR Obfuscation:** Lightweight, fast (**<100 ms**), non-cryptographic.
 - **Readable Character Set:** Improves accuracy (no I, O, 1, 0).
 - **Hyphenation:** Easier error detection.
 - **Versioning:** Ensures backward compatibility.

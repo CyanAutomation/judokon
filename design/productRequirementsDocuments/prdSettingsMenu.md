@@ -158,7 +158,7 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 
 - **Mobile-first layout:** Vertical stacking of controls for narrow screens (<600px wide).
 - **Tablet & Desktop:** Side-by-side arrangement where space allows, maintaining touch target spacing.
-- **Orientation handling:** Smoothly adapt when rotating devices; controls should reflow without overlap or cropping.
+- **Orientation handling:** Smoothly adapt when rotating devices; controls should reflow without overlap or cropping (**reflow <300 ms**).
 - **Performance:** Animations or style transitions during setting changes must maintain ≥60fps on mid-tier devices.
 
 ---
@@ -213,7 +213,7 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 - [ ] 2.0 Implement Responsive Layout
 
   - [ ] 2.1 Design and code mobile-first stacking of controls.
-  - [ ] 2.2 Ensure smooth reflow for orientation changes.
+  - [ ] 2.2 Ensure smooth reflow for orientation changes (**<300 ms**).
 
 - [ ] 3.0 Data Persistence & Error Handling
 

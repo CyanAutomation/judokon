@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-This PRD defines a persistent, responsive bottom navigation bar for Ju-Do-Kon! to provide clear, consistent navigation across all screens. It improves player flow, reduces confusion, and increases session duration by offering quick access to core game modes with accessible, high-performance interactions.
+This PRD defines a persistent, responsive bottom navigation bar for Ju-Do-Kon! to provide clear, consistent navigation across all screens. It improves player flow, reduces confusion, and increases session duration by offering quick access to core game modes (**navigation visible within 100 ms**) with accessible, high-performance interactions.
 
 ---
 
@@ -18,7 +18,7 @@ Players currently experience confusion and increased cognitive load when navigat
 
 The **JU-DO-KON!** game features multiple game modes and screens. Players need easy, intuitive navigation to seamlessly transition between activities such as battles, judoka browsing, and training. When navigation is unclear, players experience increased cognitive load and frustration, breaking immersion and potentially leading to session drop-offs.
 
-> After an intense battle, Kenta sees the familiar JU-DO-KON! logo in the bottom-left corner. He taps it, revealing a smooth, scrolling list of game modes. In a couple of seconds, he’s exploring his Judoka roster without friction — he feels confident, immersed, and eager to keep playing.
+> After an intense battle, Kenta sees the familiar JU-DO-KON! logo in the bottom-left corner. He taps it, revealing a smooth, scrolling list of game modes (**scroll ≥60 fps**, expand <500 ms). In a couple of seconds, he’s exploring his Judoka roster without friction — he feels confident, immersed, and eager to keep playing.
 
 ### Example Scenario
 
@@ -81,7 +81,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 - Cache loaded mode list to avoid redundant fetches across sessions.
 - Use hardware-accelerated CSS transforms for nav animations (e.g., `translate3d`).
 - Optimize for devices as small as 320px width (typical of older low-end Android devices).
-- Listen for device orientation events to trigger smooth re-layout without stutter.
+- Listen for device orientation events to trigger smooth re-layout without stutter (**re-layout <500 ms**).
 
 ### Dependencies / Integrations
 
@@ -161,8 +161,8 @@ The standard navbar uses `--color-secondary` for its background and `--button-te
 
 ## Open Questions
 
-- Should the bar auto-hide after a period of inactivity?
-- Which screens, if any, should suppress the nav bar entirely?
+- **Pending:** Decide if the bar should auto-hide after a period of inactivity.
+- **Pending:** Identify which screens, if any, should suppress the nav bar entirely.
 
 ---
 

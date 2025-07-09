@@ -81,7 +81,7 @@ A 1v1 stat-based match against a CPU opponent using a deck of 25 random judoka c
 
 #### Goals
 
-- Deliver a quick head‑to‑head mode for new players.
+- Deliver a quick head‑to‑head mode for new players **(battle loads in ≤2 s)**.
 - Encourage replay through a simple scoring system.
 
 #### Functional Requirements
@@ -108,7 +108,7 @@ A 1v1 stat-based match against a CPU opponent using a deck of 25 random judoka c
 
 #### Open Questions
 
-- Will difficulty levels change AI stat selection?
+_Resolved in [Classic Battle](prdClassicBattle.md#7-future-considerations):_ AI difficulty will determine stat selection strategy.
 
 ---
 
@@ -145,7 +145,7 @@ Choose between Male, Female or Mixed team battles. [Read full PRD](prdTeamBattle
 
 #### Open Questions
 
-- Should last chosen mode be remembered?
+- **Pending:** Decide whether the last chosen mode should be remembered.
 
 ---
 
@@ -185,7 +185,7 @@ Team battles consist of sequential 1v1s between gender-filtered squads. The shar
 
 #### Open Questions
 
-- Should Mixed mode allow flexible team sizes?
+- **Pending:** Decide whether Mixed mode will allow flexible team sizes.
 
 ---
 
@@ -222,7 +222,7 @@ View all available judoka with stats and visuals. [Read full PRD](prdBrowseJudok
 
 #### Open Questions
 
-- Should search be included in a future update?
+_Resolved in [Browse Judoka](prdBrowseJudoka.md#open-questions):_ search will be considered in a later update.
 
 ---
 
@@ -259,7 +259,7 @@ Choose to create or edit a judoka.
 
 #### Open Questions
 
-- Should unsaved changes warn the player before exit?
+- **Pending:** Decide whether to warn players about unsaved changes before exiting.
 
 ---
 
@@ -298,7 +298,7 @@ Create a new judoka with custom stats and appearance.
 
 #### Open Questions
 
-- Should there be limits on the number of custom judoka?
+- **Pending:** Decide whether to limit the number of custom judoka.
 
 ---
 
@@ -346,7 +346,7 @@ Display a random judoka profile. [Read full PRD](prdRandomJudoka.md)
 
 #### Goals
 
-- Give players quick inspiration for new team ideas.
+- Give players quick inspiration for new team ideas **(random suggestion ≤1 s)**.
 
 #### Functional Requirements
 
@@ -367,7 +367,7 @@ Display a random judoka profile. [Read full PRD](prdRandomJudoka.md)
 
 #### Open Questions
 
-- Should favourites influence the random selection?
+- **Pending:** Decide whether favourites influence random selection.
 
 ---
 
@@ -404,4 +404,4 @@ A calm screen offering inspirational quotes and ambient visuals. [Read full PRD]
 
 #### Open Questions
 
-- Should quotes rotate daily or on every visit?
+- **Pending:** Decide whether quotes rotate daily or on each visit.

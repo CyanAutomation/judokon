@@ -86,8 +86,8 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 ## Open Questions
 
-- Should quotes rotate automatically after a delay?
-- Do players need a skip option to bypass the screen entirely?
+- **Pending:** Decide whether quotes rotate automatically after a delay.
+- **Pending:** Determine if players need a skip option to bypass the screen entirely.
 
 ---
 
@@ -103,7 +103,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - Player selects Meditation from main menu or navigation bar.
 - Meditation screen loads in ≤1s.
 - Skeleton loader appears if quote data is still fetching.
-- KG image and random quote fade in smoothly.
+- KG image and random quote fade in smoothly (**fade ≤300 ms**).
 - Player reads quote → taps “Continue Your Journey” button.
 - Player returns to their previous location (main menu or resumes gameplay, depending on where they entered the meditation screen).
 
@@ -146,7 +146,7 @@ Sets the emotional tone. Not a reward, but a rest—balancing the intensity of g
 - - 200ms fade animation when language is toggled
 
 **Why:**  
-Ensures readability while preventing jarring fallback errors, and enhances contextual clarity and smooth interaction, keeping actions tied to relevant content.
+Ensures readability while preventing jarring fallback errors, and enhances contextual clarity and smooth interaction (**UI responses <200 ms**), keeping actions tied to relevant content.
 
 ---
 
@@ -180,9 +180,9 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 
 ## Open Questions
 
-- Should players be able to disable the Meditation screen entirely?
-- Will background audio be added in a later version?
-- Are translations needed beyond English and Japanese?
+- **Pending:** Decide whether players can disable the Meditation screen entirely.
+- **Pending:** Determine if background audio will be added in a later version.
+- **Pending:** Confirm translation requirements beyond English and Japanese.
 
 ---
 

@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-This PRD defines a Country Flag Picker Filter for Ju-Do-Kon! that lets players filter Judoka cards by country using an intuitive, accessible flag selector. The goal is to improve user engagement by enabling fast, pride-driven exploration of favorite countries’ athletes, with a performant, responsive, and accessible UI.
+This PRD defines a Country Flag Picker Filter for Ju-Do-Kon! that lets players filter Judoka cards by country using an intuitive, accessible flag selector. The goal is to improve user engagement by enabling fast, pride-driven exploration of favorite countries’ athletes (**panel open ≤1 s**), with a performant, responsive, and accessible UI.
 
 > Jamal logs into Ju-Do-Kon! after seeing a clip of his country’s top Judoka. He taps the country picker, slides open the panel, and spots his flag among dozens. One tap later, the screen fills with fierce fighters from his homeland. He feels proud — and motivated to start collecting more.
 
@@ -31,7 +31,7 @@ This issue is timely as our player base is expanding internationally, and region
 
 ## User Stories
 
-- As a player who supports my national team, I want to quickly filter Judoka by my country so I can see my favorite athletes.
+- As a player who supports my national team, I want to quickly filter Judoka by my country so I can see my favorite athletes **(results ≤1 s)**.
 - As a mobile player, I want country flags large enough to tap accurately so I don’t get frustrated with mistaps.
 - As a player with limited vision, I want alt-text and good contrast on flags so I can recognize countries clearly.
 
@@ -136,8 +136,8 @@ Key Details:
 
 ## Open Questions
 
-- Should users be able to search countries by name in addition to flag selection?
-- Do we need analytics events for every country selection?
+- **Pending:** Decide whether to add text search for countries in addition to flag selection.
+- **Pending:** Determine if analytics are needed for every country selection.
 
 ---
 

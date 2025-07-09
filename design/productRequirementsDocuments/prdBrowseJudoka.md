@@ -18,7 +18,7 @@ Players currently lack a centralized way to view all available judoka, making ro
 
 > _“I want to see all judoka in one place so I don’t waste time hunting for cards.”_ — Player feedback
 
-This problem is especially pressing now as the roster grows, and players want a quick, easy way to plan their team or see which cards are available in the game.
+This problem is especially pressing now as the roster grows, and players want a quick way (within **5 s** of opening the screen) to plan their team or see which cards are available in the game.
 
 ---
 
@@ -26,7 +26,7 @@ This problem is especially pressing now as the roster grows, and players want a 
 
 - Allow players to explore the entire roster in one place.
 - Encourage discovery of new judoka to build creative teams.
-- Support smooth browsing on phones and desktops.
+- Support smooth browsing on phones and desktops (**≥30 fps** during scrolling).
 - Increase attachment to favorite fighters through easy access.
 - Keep players engaged by making team planning enjoyable.
 
@@ -40,26 +40,26 @@ This problem is especially pressing now as the roster grows, and players want a 
 
 ## User Stories
 
-- As a player interested in building my team, I want to browse all judoka cards quickly so I can plan my roster effectively.
+- As a player interested in building my team, I want to browse all judoka cards quickly so I can plan my roster effectively **(view 10 cards in ≤10 s)**.
 - As a mobile player, I want the roster to display correctly on my phone so I can explore judoka anywhere.
 - As a keyboard-only user, I want to navigate the listed cards using arrow keys so I can browse without a mouse.
 - As a visually impaired player, I want focus highlights and alt text so I can browse judoka using assistive technologies.
-- As a collector, I want smooth, satisfying animations when scrolling so I feel excited about exploring my roster.
+- As a collector, I want smooth, satisfying animations when scrolling **(≤300 ms, ≥30 fps)** so I feel excited about exploring my roster.
 - As a fan of my national team, I want to filter judoka by country so I can focus on athletes from my homeland.
 
 ---
 
 ## Functional Requirements
 
-| Priority | Feature                         | Description                                                                                                                                       |
-| -------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P1       | Scrollable Card Interface       | Allow players to scroll through the full judoka roster.                                                                                           |
-| P1       | Stats Data Binding              | Pull stats from `judoka.json` for accurate card display.                                                                                          |
-| P1       | Responsive Layout               | Adapt card layout across devices (mobile & desktop).                                                                                              |
-| P2       | Placeholder for Invalid Entries | Show default card if an entry is missing or invalid.                                                                                              |
-| P2       | Carousel Display of Cards       | Present cards in a swipe/scroll carousel for efficient browsing. (See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel requirements.) |
-| P2       | Hover/Keyboard Navigation       | Support interactions for accessibility.                                                                                                           |
-| P3       | Scroll Markers                  | Indicate the user’s current position in the carousel.                                                                                             |
+| Priority | Feature                         | Description                                                                                                                                                     |
+| -------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1       | Scrollable Card Interface       | Allow players to scroll through the full judoka roster.                                                                                                         |
+| P1       | Stats Data Binding              | Pull stats from `judoka.json` for accurate card display.                                                                                                        |
+| P1       | Responsive Layout               | Adapt card layout across devices (mobile & desktop).                                                                                                            |
+| P2       | Placeholder for Invalid Entries | Show default card if an entry is missing or invalid.                                                                                                            |
+| P2       | Carousel Display of Cards       | Present cards in a swipe/scroll carousel for efficient browsing (**≥30 fps**). (See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel requirements.) |
+| P2       | Hover/Keyboard Navigation       | Support interactions for accessibility.                                                                                                                         |
+| P3       | Scroll Markers                  | Indicate the user’s current position in the carousel.                                                                                                           |
 
 ---
 
@@ -104,8 +104,7 @@ No player settings or toggles are applicable for this feature.
 
 ## Open Questions
 
-- Should search be included in a future update?  
-  _Search is planned as a future enhancement to keep initial scope focused._
+Search will be included in a future update to keep the initial scope focused.
 
 ---
 
@@ -123,7 +122,7 @@ No player settings or toggles are applicable for this feature.
 - Cards display in a horizontal carousel.
 - On mobile: 1–2 cards visible; on desktop: 3–5 cards visible.
 - Player can scroll/swipe cards horizontally.
-- Smooth snapping behavior to center cards on scroll end.
+- Smooth snapping behavior to center cards on scroll end (**snap ≤200 ms**).
 - Center card is visually enlarged (~10%) for focus.
 - Scroll markers update to reflect current carousel position.
 

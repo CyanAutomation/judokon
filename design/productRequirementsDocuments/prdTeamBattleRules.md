@@ -28,8 +28,8 @@ Base rule set for Team Battle modes. Teams fight in a series of 1v1 bouts with p
 
 ## Shared Open Questions
 
-- Should team size be customizable for all modes, or remain fixed at 5 or 6?
-- How should ties be handled if a customizable team size creates odd totals?
+- **Pending:** Decide whether team size can be customized or will stay fixed at 5 (Male/Female) or 6 (Mixed).
+- **Pending:** If customization is allowed, determine the tie-handling logic for odd totals.
 
 ---
 
