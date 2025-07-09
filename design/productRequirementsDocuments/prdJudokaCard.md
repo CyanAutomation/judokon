@@ -169,7 +169,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 - **Stats Area:** Align stat labels and numbers in a grid with consistent spacing to reduce clutter.
 - **Contrast & Fonts:**
   - Text must achieve ≥4.5:1 contrast ratio.
-  - Use rounded sans-serif fonts (e.g., Nunito or Comic Neue) for child-friendly aesthetic.
+  - Use **Open Sans** for body text to match the UI design standards.
 - **Interactive Elements:** Carousel arrows or selectors outside the card must have ≥44px tap targets.
 
 ### Responsiveness
