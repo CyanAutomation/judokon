@@ -2,7 +2,7 @@ import { generateRandomCard } from "./randomCard.js";
 import { getRandomJudoka, displayJudokaCard } from "./cardUtils.js";
 import { fetchJson } from "./dataUtils.js";
 import { createGokyoLookup } from "./utils.js";
-import { DATA_DIR } from "./constants.js";
+import { DATA_DIR, CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
 
 const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 let judokaData = null;
@@ -12,6 +12,7 @@ let computerScore = 0;
 let timerId = null;
 let remaining = 0;
 let matchEnded = false;
+let roundsPlayed = 0;
 
 function getStatValue(container, stat) {
   const index = STATS.indexOf(stat) + 1;
@@ -31,6 +32,25 @@ function showResult(message) {
   if (el) {
     el.textContent = message;
   }
+}
+
+function endMatchIfNeeded() {
+  if (
+    playerScore >= CLASSIC_BATTLE_POINTS_TO_WIN ||
+    computerScore >= CLASSIC_BATTLE_POINTS_TO_WIN ||
+    roundsPlayed >= CLASSIC_BATTLE_MAX_ROUNDS
+  ) {
+    matchEnded = true;
+    let message = "Match ends in a tie!";
+    if (playerScore > computerScore) {
+      message = "You win the match!";
+    } else if (playerScore < computerScore) {
+      message = "Computer wins the match!";
+    }
+    showResult(message);
+    return true;
+  }
+  return false;
 }
 
 function startTimer() {
@@ -89,8 +109,12 @@ export async function startRound() {
  * 2. Read the selected stat value from both cards.
  * 3. Compare the values and update scores accordingly.
  *    - When values are equal, show "Tie – no score" and skip score changes.
- * 4. Display the result message and updated scores.
- * 5. Begin the next round after a short delay.
+ * 4. Increment the round counter and update the score display.
+ * 5. Check if the match should end:
+ *    - End when either player reaches `CLASSIC_BATTLE_POINTS_TO_WIN`.
+ *    - End after `CLASSIC_BATTLE_MAX_ROUNDS` rounds.
+ * 6. Display the result message.
+ * 7. Begin the next round after a short delay if the match continues.
  *
  * @param {string} stat - The stat name to compare.
  */
@@ -113,12 +137,15 @@ export function handleStatSelection(stat) {
   } else {
     showResult("Tie – no score");
   }
+  roundsPlayed += 1;
   updateScoreDisplay();
-  setTimeout(() => {
-    if (!matchEnded) {
-      startRound();
-    }
-  }, 1000);
+  if (!endMatchIfNeeded()) {
+    setTimeout(() => {
+      if (!matchEnded) {
+        startRound();
+      }
+    }, 1000);
+  }
 }
 
 /**
@@ -146,6 +173,7 @@ export function _resetForTest() {
   playerScore = 0;
   computerScore = 0;
   matchEnded = false;
+  roundsPlayed = 0;
   if (timerId) {
     clearInterval(timerId);
     timerId = null;
