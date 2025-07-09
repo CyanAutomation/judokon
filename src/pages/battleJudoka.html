@@ -38,9 +38,25 @@
     </header>
 
     <main class="container" role="main">
-      <!-- Section for the carousel -->
-      <section id="carousel-section">
-        <div id="carousel-container" data-testid="carousel-container" class="hidden"></div>
+      <section id="battle-area">
+        <div id="player-card" class="card-slot"></div>
+        <div id="computer-card" class="card-slot"></div>
+
+        <div id="controls">
+          <p id="timer">Time: <span id="round-timer"></span></p>
+          <p id="score-display">You: 0 Computer: 0</p>
+
+          <div id="stat-buttons">
+            <button data-stat="power" type="button">Power</button>
+            <button data-stat="speed" type="button">Speed</button>
+            <button data-stat="technique" type="button">Technique</button>
+            <button data-stat="kumikata" type="button">Kumi-kata</button>
+            <button data-stat="newaza" type="button">Ne-waza</button>
+          </div>
+
+          <p id="round-result" aria-live="polite"></p>
+          <button id="quit-btn" type="button">Quit Match</button>
+        </div>
       </section>
     </main>
 
@@ -61,5 +77,18 @@
       );
     </script>
     <script type="module" src="../helpers/setupSvgFallback.js"></script>
+    <script type="module">
+      import { startRound, handleStatSelection, quitMatch } from "../helpers/classicBattle.js";
+
+      document.addEventListener("DOMContentLoaded", () => {
+        document
+          .querySelectorAll("#stat-buttons button")
+          .forEach((btn) =>
+            btn.addEventListener("click", () => handleStatSelection(btn.dataset.stat))
+          );
+        document.getElementById("quit-btn").addEventListener("click", quitMatch);
+        startRound();
+      });
+    </script>
   </body>
 </html>

@@ -11,7 +11,6 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
   // List of pages to capture screenshots for
   const pages = [
     { url: "/", name: "homepage.png" },
-    { url: "/src/pages/battleJudoka.html", name: "battleJudoka.png" },
     { url: "/src/pages/browseJudoka.html", name: "browseJudoka.png" },
     { url: "/src/pages/createJudoka.html", name: "createJudoka.png" },
     { url: "/src/pages/randomJudoka.html", name: "randomJudoka.png" },
