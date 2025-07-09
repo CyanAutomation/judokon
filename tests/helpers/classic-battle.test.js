@@ -68,4 +68,28 @@ describe("classicBattle", () => {
     expect(confirmSpy).toHaveBeenCalled();
     expect(document.getElementById("round-result").textContent).toMatch(/quit/i);
   });
+
+  it("ends the match when player reaches 10 wins", async () => {
+    const { handleStatSelection, _resetForTest } = await import(
+      "../../src/helpers/classicBattle.js"
+    );
+    _resetForTest();
+    for (let i = 0; i < 10; i++) {
+      document.getElementById("player-card").innerHTML =
+        `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
+      document.getElementById("computer-card").innerHTML =
+        `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+      handleStatSelection("power");
+    }
+    expect(document.getElementById("score-display").textContent).toBe("You: 10 Computer: 0");
+    expect(document.getElementById("round-result").textContent).toMatch(/win the match/i);
+
+    document.getElementById("player-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
+    document.getElementById("computer-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+    handleStatSelection("power");
+
+    expect(document.getElementById("score-display").textContent).toBe("You: 10 Computer: 0");
+  });
 });

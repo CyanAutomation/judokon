@@ -48,3 +48,17 @@ export const SETTINGS_FADE_MS = 1800;
  * @constant {number}
  */
 export const SETTINGS_REMOVE_MS = 2000;
+
+/**
+ * Maximum points needed to win a Classic Battle match.
+ *
+ * @constant {number}
+ */
+export const CLASSIC_BATTLE_POINTS_TO_WIN = 10;
+
+/**
+ * Maximum number of rounds allowed in a Classic Battle match.
+ *
+ * @constant {number}
+ */
+export const CLASSIC_BATTLE_MAX_ROUNDS = 25;
