@@ -88,8 +88,8 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 ### Font Family
 
-- **Headings:** `Russo One`
-- **Body:** `Open Sans`
+- Headings use **Russo One**
+- Body text uses **Open Sans**
 - Sans-serif and legible across screen sizes
 
 ### Typographic Hierarchy
@@ -107,7 +107,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Always meet **WCAG AA** contrast.
 - Pair bold white or black text against vibrant fills for CTAs and banners.
 - Line-height: 1.4× font size
-- Letter-spacing: 0.5% (Russo One), normal for Open Sans
+- Letter-spacing: 0.5% for **Russo One**, normal for **Open Sans**
 - Avoid using all caps in body text for readability
 - Use the **Pa11y** CLI (`npm run check:contrast`) to validate contrast on the running site at http://localhost:5000
 
