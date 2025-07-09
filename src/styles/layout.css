@@ -154,3 +154,29 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Battle screen layout */
+#battle-area {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-lg);
+}
+
+#battle-area .card-slot {
+  display: flex;
+  flex: 1 1 300px;
+  justify-content: center;
+  align-items: center;
+}
+
+#battle-area #controls {
+  flex-basis: 100%;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  #battle-area {
+    flex-direction: column;
+  }
+}
