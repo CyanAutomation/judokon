@@ -24,13 +24,16 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 ## Goals
 
+**Technical Performance Goals**
 - Carousel loads within 1 second for up to 150 cards.
 - Support smooth browsing of up to 50 cards without noticeable lag.
+- Users can browse through at least 10 cards within 30 seconds smoothly without lag.
 - Swipe gesture support for mobile browsing.
 - Keyboard navigation support for accessibility.
-- Users can browse through at least 10 cards within 30 seconds smoothly without lag.
-- Easily browse a large set of cards with smooth scrolling.
-- Find desired cards quickly to assemble optimized teams.
+
+**User Experience Goals**
+- Users can easily browse and find desired cards to assemble optimized teams.
+- Browsing the carousel feels smooth, intuitive, and visually engaging on both mobile and desktop devices.
 
 ---
 
@@ -60,6 +63,8 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - If card image fails to load, display a default judoka card (judoka id=0).
 - Playwright tests simulate swipe gestures and arrow-key navigation.
 - A loading spinner appears during simulated slow network conditions.
+
+> **Note:** This PRD is the authoritative source for all carousel functionality, performance, and interaction requirements. Other features (e.g., Browse Judoka) reference this document for carousel-related behaviors, performance targets, and accessibility. Any updates to carousel requirements should be made here and referenced elsewhere to avoid redundancy.
 
 ---
 
@@ -127,6 +132,11 @@ returned element to an empty container (e.g., `#carousel-container`).
 - Maintain high contrast between card and background.
 - Ensure buttons and interactive elements meet WCAG touch target size standards.
 - Text on cards will maintain a minimum contrast ratio of 4.5:1.
+
+---
+
+> **Integration Note:**  
+> This carousel will be used in screens like [Browse Judoka](prdBrowseJudoka.md) and any future features requiring horizontal card browsing. Refer to this PRD for all carousel-related requirements to ensure consistency across the app.
 
 ---
 
