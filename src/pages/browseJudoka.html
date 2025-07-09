@@ -76,7 +76,7 @@
       </noscript>
 
       <script type="module">
-        import { buildCardCarousel } from "../helpers/carouselBuilder.js";
+        import { buildCardCarousel, addScrollMarkers } from "../helpers/carouselBuilder.js";
         import { populateCountryList } from "../helpers/countryUtils.js";
         import { toggleCountryPanel, toggleCountryPanelMode } from "../helpers/countryPanel.js";
         import { fetchJson } from "../helpers/dataUtils.js";
@@ -105,6 +105,13 @@
             carouselContainer.innerHTML = "";
             const carousel = await buildCardCarousel(list, gokyoData);
             carouselContainer.appendChild(carousel);
+
+            requestAnimationFrame(() => {
+              const containerEl = carousel.querySelector(".card-carousel");
+              if (containerEl) {
+                addScrollMarkers(containerEl, carousel);
+              }
+            });
           }
 
           try {

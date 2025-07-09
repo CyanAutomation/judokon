@@ -1,5 +1,5 @@
 import { fetchJson, validateData } from "./helpers/dataUtils.js";
-import { buildCardCarousel } from "./helpers/carouselBuilder.js";
+import { buildCardCarousel, addScrollMarkers } from "./helpers/carouselBuilder.js";
 import { generateRandomCard } from "./helpers/randomCard.js";
 import { DATA_DIR } from "./helpers/constants.js";
 
@@ -53,6 +53,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const carousel = await buildCardCarousel(judokaData, gokyoData);
         carouselContainer.appendChild(carousel);
         carouselContainer.classList.remove("hidden");
+
+        requestAnimationFrame(() => {
+          const containerEl = carousel.querySelector(".card-carousel");
+          if (containerEl) {
+            addScrollMarkers(containerEl, carousel);
+          }
+        });
 
         isCarouselBuilt = true;
         console.log("Carousel displayed on demand.");
