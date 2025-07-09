@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { applyDisplayMode } from "../../src/helpers/displayMode.js";
 
 describe("applyDisplayMode", () => {
@@ -27,5 +27,14 @@ describe("applyDisplayMode", () => {
     applyDisplayMode("light");
     expect(document.body.classList.contains("dark-mode")).toBe(false);
     expect(document.body.classList.contains("gray-mode")).toBe(false);
+  });
+
+  it("warns when an invalid mode is provided", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    document.body.classList.add("dark-mode");
+    applyDisplayMode("neon");
+    expect(warnSpy).toHaveBeenCalled();
+    expect(document.body.classList.contains("dark-mode")).toBe(true);
+    warnSpy.mockRestore();
   });
 });
