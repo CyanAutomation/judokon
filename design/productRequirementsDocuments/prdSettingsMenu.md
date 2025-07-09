@@ -120,7 +120,7 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 - AC-8.1 All toggles/selectors have keyboard focus indicators.
 - AC-8.2 Users can tab through all interactive elements in a logical order.
 - AC-8.3 Color contrast of text and controls meets WCAG 2.1 minimum (4.5:1) in all display modes.
-- AC-8.4 Touch targets meet or exceed a 48px minimum size.
+- AC-8.4 Touch targets meet or exceed a 44px minimum size (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 
 ---
 
@@ -138,7 +138,7 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 ## UX & Accessibility
 
 - **Consistency:** Settings page must match the game’s visual identity, including fonts, colors, and button styles.
-- **Touch targets:** All toggles and selectors must have touch targets ≥48px.
+- **Touch targets:** All toggles and selectors must have touch targets ≥44px (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 - **Accessibility:**
   - Keyboard navigation: All interactive elements must be reachable with tab, with clear focus indicators.
   - Screen reader support: Each toggle/selector must have appropriate ARIA labels describing function and current state.

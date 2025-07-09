@@ -169,7 +169,7 @@ Search will be included in a future update to keep the initial scope focused.
 - Cards: Each card displays judoka stats; center card is enlarged by ~10%.
 - Scroll Markers: Dots below carousel indicate the current position in the list.
 - Messages: Area below markers for dynamic feedback such as “No cards available” or error messages.
-- Touch Targets: Cards and buttons sized ≥48px for accessibility compliance.
+- Touch Targets: Cards and buttons sized ≥44px for accessibility compliance. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) for full guidelines.
 - Responsive Adaptation: On mobile, 1–2 cards visible; on desktop, 3–5 cards visible.
 
 ---
@@ -185,7 +185,7 @@ Search will be included in a future update to keep the initial scope focused.
 - [ ] 2.0 Responsive Layout and Accessibility
 
   - [ ] 2.1 Design card layouts for mobile (1-2 cards) and desktop (3-5 cards)
-  - [ ] 2.2 Ensure touch targets ≥48px and WCAG 4.5:1 contrast compliance
+  - [ ] 2.2 Ensure touch targets ≥44px and WCAG 4.5:1 contrast compliance (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness))
   - [ ] 2.3 Add card enlargement on hover and keyboard focus highlighting
 
 - [ ] 3.0 Error Handling and Edge Case Management

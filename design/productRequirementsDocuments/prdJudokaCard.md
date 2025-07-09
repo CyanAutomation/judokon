@@ -120,7 +120,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 - Text contrast must meet **WCAG 2.1 AA** (contrast ratio ≥4.5:1).
 - All judoka portraits must have descriptive alternative text.
 - Interactive elements (e.g., attribute selection, carousel arrows) must be fully operable via keyboard and screen readers.
-- Maintain **≥48px touch target** size for all clickable areas to meet WCAG guidelines.
+- Maintain **≥44px touch target** size for all clickable areas to meet WCAG guidelines. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
 
 ---
 
@@ -170,7 +170,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 - **Contrast & Fonts:**
   - Text must achieve ≥4.5:1 contrast ratio.
   - Use rounded sans-serif fonts (e.g., Nunito or Comic Neue) for child-friendly aesthetic.
-- **Interactive Elements:** Carousel arrows or selectors outside the card must have ≥48px tap targets.
+- **Interactive Elements:** Carousel arrows or selectors outside the card must have ≥44px tap targets.
 
 ### Responsiveness
 
@@ -191,4 +191,4 @@ The design must be attractive and **minimize cognitive load**—presenting stats
   - [ ] 5.1 Add alt text for portraits.
   - [ ] 5.2 Ensure text contrast ratio ≥4.5:1.
   - [ ] 5.3 Support keyboard and screen reader navigation.
-  - [ ] 5.4 Ensure ≥48px touch targets for interactive elements.
+  - [ ] 5.4 Ensure ≥44px touch targets for interactive elements (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).

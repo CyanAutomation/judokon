@@ -118,7 +118,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - Clear "Next Round" button with distinct state (enabled/disabled).
 - **Accessibility:**
   - Minimum text contrast ratio: ≥4.5:1 (per WCAG).
-  - Minimum touch target size: ≥48px.
+  - Minimum touch target size: ≥44px. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) for the full rule.
   - Support keyboard navigation for stat selection, match progression, and quit confirmation.
   - Provide alt text for cards and labels readable by screen readers.
 - Animations must run at ≥60fps on mid-tier devices (2GB RAM) to ensure smooth experience.
@@ -170,7 +170,7 @@ _Resolved in [Future Considerations](#7-future-considerations):_ AI difficulty w
 
   - [ ] 4.1 Integrate consistent color coding (blue for player, red for AI)
   - [ ] 4.2 Apply WCAG-compliant contrast ratios
-  - [ ] 4.3 Ensure touch targets ≥48px and support keyboard navigation
+  - [ ] 4.3 Ensure touch targets ≥44px and support keyboard navigation (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness))
   - [ ] 4.4 Add alt text to cards and UI elements
 
 - [ ] 5.0 Optimize Animations

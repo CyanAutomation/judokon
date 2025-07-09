@@ -36,15 +36,15 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 
 ### Features
 
-| Priority | Feature                     | Description                                                                    |
-| -------- | --------------------------- | ------------------------------------------------------------------------------ |
-| P1       | Grid Layout                 | 2x2 grid, responsive stacking on smaller screens.                              |
-| P1       | Clickable Tile Area         | Entire tile area must be clickable, not just the label or icon.                |
-| P1       | Mobile Tap Optimization     | Tap targets must be at least 48px for mobile compliance.                       |
-| P2       | Tile Hover Effects          | Cursor change and visual feedback (150ms ease-in zoom effect) on hover.        |
-| P2       | Keyboard Navigation Support | Tiles must be focusable and triggerable with keyboard navigation (Tab, Enter). |
-| P3       | SVG Optimization            | Icons must be <50KB and optimized for fast loading.                            |
-| P3       | Accessibility Compliance    | Text contrast ≥4.5:1 and screen-reader friendly (aria-labels, alt text).       |
+| Priority | Feature                     | Description                                                                                                                                                    |
+| -------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1       | Grid Layout                 | 2x2 grid, responsive stacking on smaller screens.                                                                                                              |
+| P1       | Clickable Tile Area         | Entire tile area must be clickable, not just the label or icon.                                                                                                |
+| P1       | Mobile Tap Optimization     | Tap targets must be at least 44px for mobile compliance. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness). |
+| P2       | Tile Hover Effects          | Cursor change and visual feedback (150ms ease-in zoom effect) on hover.                                                                                        |
+| P2       | Keyboard Navigation Support | Tiles must be focusable and triggerable with keyboard navigation (Tab, Enter).                                                                                 |
+| P3       | SVG Optimization            | Icons must be <50KB and optimized for fast loading.                                                                                                            |
+| P3       | Accessibility Compliance    | Text contrast ≥4.5:1 and screen-reader friendly (aria-labels, alt text).                                                                                       |
 
 ### Navigation Menu Layout
 
@@ -63,7 +63,7 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 - **Hover behavior**:
   - Cursor changes to pointer.
   - Tile scales to 1.05 over 150ms (ease-in transition).
-- **Touch targets** must meet a minimum size of **48px × 48px** for mobile usability.
+- **Touch targets** must meet a minimum size of **44px × 44px** for mobile usability.
 
 ### Tile Definitions
 
@@ -136,7 +136,7 @@ Each tile contains:
 | AC8  | All text must be readable and pass WCAG AA contrast ratios (minimum 4.5:1).              |
 | AC9  | Tiles must be navigable via keyboard (Tab to move focus; Enter/Space to activate).       |
 | AC10 | Alt text or aria-labels must be provided for icons or tiles for screen readers.          |
-| AC11 | Tap targets must be at least 48px x 48px on touch devices.                               |
+| AC11 | Tap targets must be at least 44px x 44px on touch devices.                               |
 | AC12 | Fallback to generic icon if SVG fails to load.                                           |
 | AC13 | User can return to previous page via standard browser back navigation.                   |
 
@@ -165,7 +165,7 @@ Each tile contains:
   - Activated via keyboard (`Enter` or `Space` key).
 - Labels must be screen-reader friendly (e.g., via `aria-label`).
 - SVG icons must have descriptive `title` or `aria-hidden="true"` if decorative.
-- Tap targets must meet WCAG minimum sizing standards (48px x 48px).
+- Tap targets must meet WCAG minimum sizing standards (44px x 44px).
 
 ### Performance
 
@@ -259,7 +259,7 @@ Each tile contains:
   - Activated via keyboard (`Enter` or `Space` key).
 - Labels must be screen-reader friendly (e.g., via `aria-label`).
 - SVG icons must have descriptive `title` or `aria-hidden="true"` if decorative.
-- Tap targets must meet WCAG minimum sizing standards (48px x 48px).
+- Tap targets must meet WCAG minimum sizing standards (44px x 44px).
 
 ### Performance
 

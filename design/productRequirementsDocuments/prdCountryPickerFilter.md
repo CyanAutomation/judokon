@@ -100,7 +100,7 @@ Key Details:
 - Country flags must be displayed in alphabetical order.
 - Provide clear feedback if no judoka exist for a selected country (empty state messaging).
 - Handle missing flag assets gracefully with a fallback icon.
-- Tap target size must be at least 48x48dp (see sizing tokens in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)).
+- Tap target size must be at least 44x44px (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 - Color contrast ratios must meet WCAG 2.1 AA standards.
 
 ---
@@ -152,7 +152,7 @@ Key Details:
   - Slide-in Panel (default): Narrow vertical panel with scroll.
   - Full-Screen Grid: Grid layout showing all countries.
 - Mobile Optimization:
-  - Minimum tap target size of 48x48dp for flags to ensure touch accessibility (see sizing tokens in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)).
+  - Minimum tap target size of 44x44px for flags to ensure touch accessibility (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
   - Color contrast ratios must meet WCAG 2.1 AA standards for readability.
   - Selected country should be visually highlighted (e.g., border or shading).
   - Selector should respond well to different screen sizes (responsive design).
@@ -199,7 +199,7 @@ Key Details:
 
   - [ ] 5.1 Add alt-text for all flag icons based on country names.
   - [ ] 5.2 Ensure color contrast ratios meet WCAG 2.1 AA standards.
-  - [ ] 5.3 Enforce minimum tap target size (48x48dp) for touch devices (see sizing tokens in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)).
+  - [ ] 5.3 Enforce minimum tap target size (44x44px) for touch devices (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
   - [ ] 5.4 Ensure flags are displayed alphabetically.
 
 - [ ] 6.0 Add Visual Documentation

@@ -38,8 +38,8 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 ## Player Actions
 
 - **Trigger:** In landscape mode, tapping the bottom right corner map icon expands a "Judo Training Village" map from the footer with a smooth upward slide animation (<500ms).
-- **Map Layout:** The map presents different game modes as a grid of image tiles representing village landmarks (Dojo, Budokan, Kodokan), with minimum 48px touch target size.
-- **Navigation:** Tapping a tile smoothly transitions the player to the selected game mode (**transition ≤300 ms**).
+- **Map Layout:** The map presents different game modes as a grid of image tiles representing village landmarks (Dojo, Budokan, Kodokan), with minimum 44px touch target size. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
+- **Navigation:** Tapping a tile smoothly transitions the player to the selected game mode.
 - **Cancel/Back Out:** Tapping outside the map area or pressing the map icon button again collapses the map. If device orientation changes mid-animation, the expansion is canceled and reverts to the default footer state.
 - **Fallback:** If the map fails to load, a simplified, high-contrast text menu appears instantly.
 - **Responsiveness:** If viewport height <400px or width <640px, hide the map icon entirely. Map and tiles dynamically resize based on screen size and resolution. Animations must maintain 60fps on devices.
@@ -73,7 +73,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 
 1. **Given** the player is in `landscape` mode, **when** they tap the map icon in the bottom right corner, **then** the interactive village map slides up from the footer in under 500ms.
 2. **Given** the village map is open, **when** the player taps a tile, **then** they are navigated to the corresponding game mode screen.
-3. **Given** a tile exists, **then** its touch/click target must be ≥48px and accessible via keyboard navigation with visible focus indicators.
+3. **Given** a tile exists, **then** its touch/click target must be ≥44px and accessible via keyboard navigation with visible focus indicators.
 4. **Given** the map assets fail to load, **then** fallback to a default text-based menu within 1 second.
 5. **Given** the player rotates their device during map expansion, **then** the map closes and the footer returns to its default state without freezing.
 6. **Given** accessibility needs, **then** all tiles must have descriptive alt text and support screen readers.
@@ -109,9 +109,9 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
     - **Dojo:** Leads to Training Mode.
     - **Budokan:** Leads to Battle Mode.
     - **Kodokan:** Leads to Browse Mode.
-  - Tiles must be ≥48px with generous padding (≥8px).
+  - Tiles must be ≥44px with generous padding (≥8px).
 - **Animation:** Slide-up animation easing (`ease-out`) and bounce effect on tile hover/tap.
-- **Touch Areas:** All tiles ≥48px.
+- **Touch Areas:** All tiles ≥44px.
 - **Contrast:** Text labels must meet WCAG 2.1 AA contrast ratio (≥4.5:1).
 - **Performance:** Maintain ≥60fps animations on mid-tier devices.
 - **Responsiveness:** If viewport height <400px or width <640px, hide the map icon and corresponding functionality.
@@ -134,7 +134,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 
 - [ ] **1.0 Design Village Map Navigation (P1)**
 
-  - [ ] 1.1 Design tile positions on the village map grid with 48px+ targets (Dojo, Budokan, Kodokan).
+  - [ ] 1.1 Design tile positions on the village map grid with 44px+ targets (Dojo, Budokan, Kodokan).
 
 - [ ] **2.0 Implement Footer Map Expansion (P1)**
 
