@@ -68,7 +68,7 @@ Players currently lack a tangible sense of progression and connection to elite j
 ## Technical Considerations
 
 - Portrait images should use optimized formats (e.g., WebP) to balance quality and performance.
-- Card slide/reveal animations must use hardware-accelerated CSS transforms for smooth performance.
+- Card slide/reveal animations must use hardware-accelerated CSS transforms for smooth performance (**≥60 fps**).
 - Placeholder assets for missing portraits/flags should be bundled with the client for offline scenarios.
 - Ensure card sizing calculations consistently maintain 2:3 ratio on all screen aspect ratios and resolutions.
 

@@ -6,7 +6,7 @@ This document describes the **Home Page Main Navigation Menu** for the JU-DO-KON
 
 > Imagine a new player, Ayumi, who’s just downloaded JU-DO-KON! after seeing a cool TikTok clip. She opens the game and instantly lands on a vibrant home screen where “Classic Battle” and “Team Battle” tiles stand side by side, each pulsing slightly when she hovers. The judo-inspired icons draw her in, and she feels like she’s stepping onto the tatami mat. She sees “Update Judoka” and “Browse Judoka” neatly below, feeling in control and excited. Within seconds, she launches into her first match, confident she’s chosen the right mode. She tells her friends how easy it was to start. That’s the experience we’re building: immediate clarity, thematic immersion, and frictionless engagement.
 
-The purpose of this menu is to allow players to access the core game modes quickly and intuitively. New players struggle to find and understand game modes quickly, leading to frustration, early churn, and reduced engagement. A clear, immersive, and fast-loading navigation menu is needed to orient players instantly, maintain the judo theme, and ensure accessibility across devices.
+The purpose of this menu is to allow players to access the core game modes quickly and intuitively. New players struggle to find and understand game modes quickly, leading to frustration, early churn, and reduced engagement. A clear, immersive, and fast-loading navigation menu is needed to orient players instantly (**menu load ≤2 s**), maintain the judo theme, and ensure accessibility across devices.
 
 > **Player Feedback Example**: "I want to play the Team Battle, but I can't see the right button." — hypothetical playtest participant, age 10
 
@@ -20,7 +20,7 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 - SVG icons <50KB to optimize load times.
 - SVG icons use Material Symbols and require `viewBox="0 -960 960 960"` to render correctly.
 - Fallback icon (JU-DO-KON logo) displayed if SVG fails to load.
-- Quickly and confidently access desired game modes.
+- Quickly and confidently access desired game modes **(≤2 taps from landing)**.
 - Experience a navigation interface that feels consistent with the judo theme.
 - Navigate easily regardless of device or ability.
 

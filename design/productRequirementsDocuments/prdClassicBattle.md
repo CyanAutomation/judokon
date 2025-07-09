@@ -5,7 +5,7 @@
 
 ## 1. TL;DR
 
-Classic Battle is Ju-Do-Kon!’s introductory, head-to-head mode. By offering a fast-paced, low-stakes way for new players to learn stats and game flow, it boosts retention and confidence while maintaining quick matches. This PRD defines how the mode operates, from random draws to scoring and end conditions, ensuring a smooth, accessible, and engaging experience.
+Classic Battle is Ju-Do-Kon!’s introductory, head-to-head mode. By offering a fast-paced, low-stakes way for new players to learn stats and game flow (match start ≤5 s after selection), it boosts retention and confidence while maintaining quick matches. This PRD defines how the mode operates, from random draws to scoring and end conditions, ensuring a smooth (**≥60 fps**), accessible, and engaging experience.
 
 > Sora starts a Classic Battle and draws her first card. She confidently taps “Speed,” seeing her stat triumph over the AI’s card. The score ticks up with a satisfying sound. Round after round, she learns which stats matter most. By the end, she feels ready to tackle harder battles — and wants to play again.
 
@@ -13,7 +13,7 @@ Classic Battle is Ju-Do-Kon!’s introductory, head-to-head mode. By offering a 
 
 ## 2. Problem Statement
 
-Classic Battle is the main and simplest mode of the game. Without it, new players lack a quick, low-stakes mode to learn stats and grasp the core mechanics. This leads to higher early player drop-off, increased frustration, and fewer repeat sessions because players don’t build mastery or confidence. By providing a fast, engaging way to compare stats, Classic Battle helps new players onboard smoothly and encourages early retention.
+Classic Battle is the main and simplest mode of the game. Without it, new players lack a quick, low-stakes mode to learn stats and grasp the core mechanics. This leads to higher early player drop-off, increased frustration, and fewer repeat sessions because players don’t build mastery or confidence. By providing a fast, engaging way to compare stats (**UI responses <200 ms**), Classic Battle helps new players onboard smoothly and encourages early retention.
 
 > **Player Feedback Example:**  
 > “I tried Ranked Mode first and felt lost — I didn’t know which stat to pick or what the cards meant.” – Playtester, Age 10
@@ -35,7 +35,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ## 4. User Stories
 
-- As a new player, I want a simple match format so I can learn game mechanics quickly.
+- As a new player, I want a simple match format so I can learn game mechanics quickly **(tutorial complete in ≤60 s)**.
 - As a player, I want clear feedback on round outcomes so I know how I’m doing.
 - As a player, I want the ability to exit a match early if I need to stop playing suddenly.
 - As a cautious new player, I want an easy mode to test the game without risking losses in competitive play.
@@ -47,9 +47,9 @@ This feedback highlights why Classic Battle is needed now: new players currently
 ## 5. Technical Considerations
 
 - Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
-- Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices.
+- Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices (**≥60 fps**).
 - Timeout for stat selection must pause if game tab is inactive or device goes to sleep, resuming on focus.
-- Backend must send real-time stat updates via WebSocket or polling for smooth live updates.
+- Backend must send real-time stat updates via WebSocket or polling for smooth live updates (**<200 ms latency**).
 
 ---
 
@@ -92,7 +92,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Summary screen shows match result (win/loss/tie), player stats, and option to replay.
 - Player can quit mid-match; confirmation prompt appears; if confirmed, match ends with player loss recorded.
 - If AI difficulty affects stat selection, AI uses correct logic per difficulty setting.
-- Animation flow: transitions between card reveal, stat selection, and result screens complete smoothly without stalling.
+- Animation flow: transitions between card reveal, stat selection, and result screens complete smoothly without stalling (**each ≤400 ms at ≥60 fps**).
 - If the Judoka dataset fails to load, an error message appears with option to reload.
 
 ---

@@ -6,7 +6,7 @@
 
 ## TL;DR
 
-Display Random Judoka gives players instant, inspiring roster ideas by drawing and revealing a random card with fast, smooth animations and full accessibility support — reducing team-building fatigue and increasing session engagement.
+Display Random Judoka gives players instant, inspiring roster ideas by drawing and revealing a random card with fast, smooth animations (**≥60 fps, transitions <500 ms**) and full accessibility support — reducing team-building fatigue and increasing session engagement.
 
 > Mia taps “Draw” and a new judoka slides up instantly, surprising her with a powerful pick she hadn’t considered. She taps again, excitedly building a fresh team, and spends twice as long experimenting compared to when she built manually. The bright animations and satisfying feel keep her engaged.
 
@@ -22,7 +22,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 ## Goals
 
-- Give players quick inspiration for new team ideas.
+- Give players quick inspiration for new team ideas **(random card ≤300 ms)**.
 - Play sessions average 2 minutes shorter when pre-selecting cards; aim to close this gap.
 - Reduce time-to-inspiration by 50% compared to manual team-building (reduce average team-building time from 30 seconds to ≤15 seconds).
 - Ensure each card draw completes in ≤300ms in 95% of cases.

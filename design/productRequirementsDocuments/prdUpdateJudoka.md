@@ -62,7 +62,7 @@ This feature will empower players to develop their roster continuously, enhancin
 Given a player edits a judoka’s stats or appearance  
 When the player saves the changes  
 Then the edits persist and are correctly loaded on page reload  
-And a confirmation message appears near the Save button with a smooth slide-up animation, fading out after 3 seconds  
+And a confirmation message appears near the Save button with a smooth slide-up animation (**≤300 ms**), fading out after 3 seconds
 And the save completes within 1 second
 
 **Field Validation**  
@@ -113,7 +113,7 @@ And the form fields refresh with the newest data
 - Show loading spinners or progress indicators when fetching judoka data.
 - Display retry prompt as a modal with focus trap and keyboard dismissal.
 - If edits are locked due to ranked play, display a semi-transparent overlay with dismissible message.
-- Confirmation and error messages appear near the Save button with smooth slide and fade animations for better UX.
+- Confirmation and error messages appear near the Save button with smooth slide and fade animations (**≤300 ms**) for better UX.
 
 ---
 
