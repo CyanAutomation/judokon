@@ -32,7 +32,7 @@
 
 /* Utility class for small annotations */
 .small-text {
-  font-family: "Noto Sans", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-size: var(--font-small);
   font-weight: 500;
 }
