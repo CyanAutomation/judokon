@@ -10,9 +10,8 @@ test.describe("Classic battle flow", () => {
     });
     await page.goto("/src/pages/battleJudoka.html");
     await page.waitForSelector("#round-timer");
-    await page.waitForTimeout(1500);
-    const resultText = await page.locator("#round-result").textContent();
-    expect(resultText).not.toBe("");
+    const result = page.locator("#round-result");
+    await expect(result).not.toHaveText("", { timeout: 1200 });
   });
 
   test("tie message appears on equal stats", async ({ page }) => {
