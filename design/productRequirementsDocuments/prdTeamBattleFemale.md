@@ -40,7 +40,6 @@ _Mode is identical to its [male counterpart](prdTeamBattleMale.md) except for th
 - Uses the common Team Battle ruleset for scoring.
 - Matches call `generateRandomCard` as described in [prdDrawRandomCard.md](prdDrawRandomCard.md).
 
-
 ---
 
 ## Related Features
@@ -49,4 +48,5 @@ _Mode is identical to its [male counterpart](prdTeamBattleMale.md) except for th
 - Entry point: [PRD: Team Battle Selection](prdTeamBattleSelection.md) screen.
 
 ---
+
 [Back to Game Modes Overview](prdGameModes.md)

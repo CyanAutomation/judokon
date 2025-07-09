@@ -51,15 +51,15 @@ This problem is especially pressing now as the roster grows, and players want a 
 
 ## Functional Requirements
 
-| Priority | Feature                         | Description                                                      |
-| -------- | ------------------------------- | ---------------------------------------------------------------- |
-| P1       | Scrollable Card Interface       | Allow players to scroll through the full judoka roster.          |
-| P1       | Stats Data Binding              | Pull stats from `judoka.json` for accurate card display.         |
-| P1       | Responsive Layout               | Adapt card layout across devices (mobile & desktop).             |
-| P2       | Placeholder for Invalid Entries | Show default card if an entry is missing or invalid.             |
+| Priority | Feature                         | Description                                                                                                                                       |
+| -------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1       | Scrollable Card Interface       | Allow players to scroll through the full judoka roster.                                                                                           |
+| P1       | Stats Data Binding              | Pull stats from `judoka.json` for accurate card display.                                                                                          |
+| P1       | Responsive Layout               | Adapt card layout across devices (mobile & desktop).                                                                                              |
+| P2       | Placeholder for Invalid Entries | Show default card if an entry is missing or invalid.                                                                                              |
 | P2       | Carousel Display of Cards       | Present cards in a swipe/scroll carousel for efficient browsing. (See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel requirements.) |
-| P2       | Hover/Keyboard Navigation       | Support interactions for accessibility.                          |
-| P3       | Scroll Markers                  | Indicate the user’s current position in the carousel.            |
+| P2       | Hover/Keyboard Navigation       | Support interactions for accessibility.                                                                                                           |
+| P3       | Scroll Markers                  | Indicate the user’s current position in the carousel.                                                                                             |
 
 ---
 
