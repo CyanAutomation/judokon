@@ -57,7 +57,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 | Priority | Feature                 | Description                                                                                             |
 | -------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| P1       | Random Card Draw        | Draw one random card per player each round.                                                             |
+| P1       | Random Card Draw        | Draw one random card per player each round; the computer card must differ from the player's.            |
 | P1       | Stat Selection Timer    | Player selects stat within 30 seconds; otherwise, random stat is chosen. Default timer is fixed at 30s. |
 | P1       | Scoring                 | Increase score by one for each round win.                                                               |
 | P1       | Match End Condition     | End match on 10 points or after 25 rounds.                                                              |
@@ -70,6 +70,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Behavior on tie rounds: round ends with a message explaining the tie and an option to start the next round.
 - Match start conditions: both players begin with a score of zero; player goes first by drawing their card.
 - Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card.
+- The computer's card must always differ from the player's card for each round.
 - **Default:** 30-second timer is fixed (not adjustable by the player at launch), but can be reviewed for future difficulty settings.
 
 ---

@@ -76,8 +76,10 @@ function startTimer() {
  *
  * @pseudocode
  * 1. Load judoka and gokyo data if not already cached.
- * 2. Draw a random card for the player using `generateRandomCard`.
- * 3. Select a random judoka for the computer and display it with `displayJudokaCard`.
+ * 2. Draw a random card for the player using `generateRandomCard` and capture
+ *    the selected judoka.
+ * 3. Select a different random judoka for the computer and display it with
+ *    `displayJudokaCard`.
  * 4. Initialize the round timer.
  *
  * @returns {Promise<void>} Resolves when cards are displayed.
@@ -93,8 +95,16 @@ export async function startRound() {
   }
   const playerContainer = document.getElementById("player-card");
   const computerContainer = document.getElementById("computer-card");
-  await generateRandomCard(judokaData, null, playerContainer, false);
-  const compJudoka = getRandomJudoka(judokaData);
+  let playerJudoka = null;
+  await generateRandomCard(judokaData, null, playerContainer, false, (j) => {
+    playerJudoka = j;
+  });
+  let compJudoka = getRandomJudoka(judokaData);
+  if (playerJudoka && judokaData.length > 1) {
+    while (compJudoka.id === playerJudoka.id) {
+      compJudoka = getRandomJudoka(judokaData);
+    }
+  }
   await displayJudokaCard(compJudoka, gokyoLookup, computerContainer);
   showResult("");
   updateScoreDisplay();

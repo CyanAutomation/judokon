@@ -88,7 +88,8 @@ export async function createCardForJudoka(judoka, gokyoLookup, containerEl, pref
  * 2. Ensure gokyo data is available:
  *    - Use the provided `gokyoData` or fetch `gokyo.json`.
  *    - Create a lookup object with `createGokyoLookup`.
- * 3. Select a random judoka using `getRandomJudoka`.
+ * 3. Select a random judoka using `getRandomJudoka` and invoke `onSelect`
+ *    with the chosen judoka when provided.
  * 4. Generate and display the card with `createCardForJudoka`.
  * 5. On any error, log the issue and display a fallback card (judoka id `0`).
  *
@@ -96,13 +97,15 @@ export async function createCardForJudoka(judoka, gokyoLookup, containerEl, pref
  * @param {GokyoEntry[]} [gokyoData] - Preloaded gokyo data.
  * @param {HTMLElement} containerEl - Element to contain the card.
  * @param {boolean} [prefersReducedMotion=false] - Motion preference flag.
+ * @param {function} [onSelect] - Callback invoked with the chosen judoka.
  * @returns {Promise<void>} Resolves when the card is appended.
  */
 export async function generateRandomCard(
   activeCards,
   gokyoData,
   containerEl,
-  prefersReducedMotion = false
+  prefersReducedMotion = false,
+  onSelect
 ) {
   if (!containerEl) return;
 
@@ -126,6 +129,9 @@ export async function generateRandomCard(
     }
 
     const selectedJudoka = getRandomJudoka(validJudoka);
+    if (typeof onSelect === "function") {
+      onSelect(selectedJudoka);
+    }
     await createCardForJudoka(selectedJudoka, gokyoLookup, containerEl, prefersReducedMotion);
     // else: do not update DOM if card is null/undefined
   } catch (error) {
@@ -134,6 +140,9 @@ export async function generateRandomCard(
     const fallbackJudoka = buildFallbackJudoka();
 
     try {
+      if (typeof onSelect === "function") {
+        onSelect(fallbackJudoka);
+      }
       await createCardForJudoka(fallbackJudoka, gokyoLookup, containerEl, prefersReducedMotion);
     } catch (fallbackError) {
       console.error("Error displaying fallback card:", fallbackError);

@@ -73,6 +73,17 @@ describe("generateRandomCard", () => {
     expect(container.firstChild).toBe(generatedEl);
   });
 
+  it("invokes onSelect callback with chosen judoka", async () => {
+    const container = document.createElement("div");
+    const generatedEl = document.createElement("span");
+    getRandomJudokaMock = vi.fn(() => judokaData[0]);
+    generateJudokaCardHTMLMock = vi.fn(async () => generatedEl);
+    const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
+    const cb = vi.fn();
+    await generateRandomCard(judokaData, gokyoData, container, true, cb);
+    expect(cb).toHaveBeenCalledWith(judokaData[0]);
+  });
+
   it("falls back to id 0 when selection fails", async () => {
     const container = document.createElement("div");
     const fallbackEl = document.createElement("div");
