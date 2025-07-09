@@ -32,6 +32,8 @@ describe("settingsPage module", () => {
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
     const loadGameModes = vi.fn().mockResolvedValue([]);
     const updateGameModeHidden = vi.fn();
+    const applyDisplayMode = vi.fn();
+    const applyMotionPreference = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
@@ -40,6 +42,12 @@ describe("settingsPage module", () => {
       loadGameModes,
       updateGameModeHidden
     }));
+    vi.doMock("../../src/helpers/displayMode.js", () => ({
+      applyDisplayMode
+    }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference
+    }));
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -47,6 +55,8 @@ describe("settingsPage module", () => {
 
     expect(loadSettings).toHaveBeenCalled();
     expect(loadGameModes).toHaveBeenCalled();
+    expect(applyDisplayMode).toHaveBeenCalledWith(baseSettings.displayMode);
+    expect(applyMotionPreference).toHaveBeenCalledWith(baseSettings.motionEffects);
     vi.useRealTimers();
   });
   it("renders checkboxes for all modes", async () => {

@@ -2,6 +2,7 @@ import { loadSettings, updateSetting } from "./settingsUtils.js";
 import { loadGameModes, updateGameModeHidden } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
 import { createToggleSwitch } from "../components/ToggleSwitch.js";
+import { applyDisplayMode } from "./displayMode.js";
 import { applyMotionPreference } from "./motionUtils.js";
 
 function applyInputState(element, value) {
@@ -64,8 +65,11 @@ function initializeControls(settings, gameModes) {
 
   displaySelect?.addEventListener("change", () => {
     const previous = currentSettings.displayMode;
-    handleUpdate("displayMode", displaySelect.value, () => {
+    const mode = displaySelect.value;
+    applyDisplayMode(mode);
+    handleUpdate("displayMode", mode, () => {
       displaySelect.value = previous;
+      applyDisplayMode(previous);
     });
   });
 
@@ -108,6 +112,8 @@ async function initializeSettingsPage() {
   try {
     const settings = await loadSettings();
     const gameModes = await loadGameModes();
+    applyDisplayMode(settings.displayMode);
+    applyMotionPreference(settings.motionEffects);
     initializeControls(settings, gameModes);
   } catch (error) {
     console.error("Error loading settings page:", error);
