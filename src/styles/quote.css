@@ -16,7 +16,7 @@
 }
 
 .meditation-title {
-  font-family: "League Spartan", sans-serif; /* Updated token */
+  font-family: "Russo One", sans-serif;
   font-size: clamp(32px, 5vw, 40px); /* Updated token */
   color: var(--color-text-inverted);
   text-align: center;
@@ -85,7 +85,7 @@
 
 .quote-heading {
   color: var(--color-text-inverted);
-  font-family: "League Spartan", sans-serif;
+  font-family: "Russo One", sans-serif;
   font-size: clamp(18px, 3vw, 24px);
   text-align: center;
   align-self: center;
