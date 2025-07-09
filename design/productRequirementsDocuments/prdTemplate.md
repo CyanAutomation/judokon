@@ -150,13 +150,6 @@ guide?
 • Is a 44&nbsp;px touch target sufficient or is 48&nbsp;px required for this
 context?
 
-12. Metadata
-
-• **Author** – PRD creator’s name or team.
-• **Last Edited Date** – Use ISO format (YYYY-MM-DD).
-• **Target Game Version** – Release number where this feature should land.
-• **Related Features** – Link to other PRDs or epics that this work depends on.
-
 Output Requirements
 
 • Format: Markdown (.md)
