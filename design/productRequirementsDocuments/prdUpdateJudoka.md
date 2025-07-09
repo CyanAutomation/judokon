@@ -140,9 +140,9 @@ And the form fields refresh with the newest data
 
 ## Open Questions
 
-- Should we lock edits once a judoka enters ranked play?
-  - If yes, what triggers the lock (e.g., match acceptance, ranking threshold)?
-  - How is the player notified (modal overlay, inline message, both)?
+- **Pending:** Determine if edits lock once a judoka enters ranked play.
+  - If yes, decide what triggers the lock (match acceptance or ranking threshold).
+  - Decide how players are notified (modal overlay, inline message, or both).
 
 ---
 

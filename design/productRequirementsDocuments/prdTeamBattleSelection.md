@@ -56,7 +56,7 @@ Simple menu that lets players quickly choose Male, Female, or Mixed modes for te
 
 ## Open Questions
 
-- Should the last chosen mode be saved between sessions?
+- **Pending:** Decide whether the last chosen mode should persist between sessions.
 
 ---
 
