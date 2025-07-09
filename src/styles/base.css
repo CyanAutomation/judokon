@@ -41,6 +41,22 @@
   --font-extra-large: 3rem;
 }
 
+/* Dark mode variable overrides */
+.dark-mode {
+  --color-surface: #1a1a1a;
+  --color-background: #000000;
+  --color-text: #ffffff;
+  --color-text-inverted: #000000;
+}
+
+/* Gray mode variable overrides */
+.gray-mode {
+  --color-surface: #e0e0e0;
+  --color-background: #d0d0d0;
+  --color-text: #000000;
+  --color-text-inverted: #ffffff;
+}
+
 *,
 *::before,
 *::after {

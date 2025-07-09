@@ -68,6 +68,7 @@
         <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
       </footer>
       <script type="module" src="../helpers/setupBottomNavbar.js"></script>
+      <script type="module" src="../helpers/setupDisplaySettings.js"></script>
 
       <noscript>
         <p class="noscript-warning">
@@ -120,16 +121,14 @@
             if (allJudoka.length === 0) {
               const noResultsMessage = document.createElement("div");
               noResultsMessage.className = "no-results-message";
-              noResultsMessage.textContent =
-                "No cards available.";
+              noResultsMessage.textContent = "No cards available.";
               carouselContainer.appendChild(noResultsMessage);
             }
           } catch (error) {
             console.error("Error building the carousel:", error);
             const errorMessage = document.createElement("div");
             errorMessage.className = "error-message";
-            errorMessage.textContent =
-              "Unable to load roster.";
+            errorMessage.textContent = "Unable to load roster.";
             carouselContainer.appendChild(errorMessage);
 
             const retryButton = createButton("Retry", {
