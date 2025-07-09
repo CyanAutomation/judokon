@@ -81,6 +81,7 @@ body {
 .card {
   padding: 1rem;
   background-color: var(--color-secondary);
+  color: var(--color-text-inverted);
   border-block-start: 0.5rem solid var(--color-primary);
   border-radius: var(--radius-md);
   text-align: center;
