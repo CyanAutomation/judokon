@@ -9,6 +9,11 @@
  * @param {"light"|"dark"|"gray"} mode - Desired display mode.
  */
 export function applyDisplayMode(mode) {
+  const validModes = ["light", "dark", "gray"];
+  if (!validModes.includes(mode)) {
+    console.warn(`Invalid display mode: "${mode}". Valid modes are: ${validModes.join(", ")}.`);
+    return;
+  }
   document.body.classList.remove("dark-mode", "gray-mode");
   if (mode === "dark") {
     document.body.classList.add("dark-mode");
