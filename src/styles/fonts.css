@@ -1,15 +1,25 @@
 @font-face {
-  font-family: "League Spartan";
-  src: url("../assets/fonts/LeagueSpartan.woff2") format("woff2");
+  font-family: "Russo One";
+  src: url("../assets/fonts/RussoOneRegular.woff2" format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Noto Sans";
-  src: url("../assets/fonts/NotoSans.woff2") format("woff2");
+  font-family: "Open Sans";
+  src: url("../assets/fonts/OpenSansRegular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("../assets/fonts/OpenSans600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Russo+One&family=Open+Sans:wght@400;600&display=swap");
