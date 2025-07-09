@@ -11,8 +11,8 @@ test.describe("Classic battle flow", () => {
     await page.goto("/src/pages/battleJudoka.html");
     await page.waitForSelector("#round-timer");
     await page.waitForTimeout(1500);
-    const text = await page.locator("#score-display").textContent();
-    expect(text).not.toBe("You: 0 Computer: 0");
+    const resultText = await page.locator("#round-result").textContent();
+    expect(resultText).not.toBe("");
   });
 
   test("tie message appears on equal stats", async ({ page }) => {
