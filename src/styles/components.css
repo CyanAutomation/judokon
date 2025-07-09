@@ -182,7 +182,6 @@ button {
     transform var(--transition-fast),
     box-shadow var(--transition-fast),
     background-color var(--transition-fast);
-  /* Removed will-change to optimize memory usage */
 }
 
 button:hover {
@@ -618,26 +617,6 @@ button .ripple {
   overflow: hidden;
   position: relative;
   width: 100%;
-
-  /* &::before,
-	&::after {
-		content: "";
-		height: auto;
-		position: absolute;
-		width: 200px;
-		z-index: 2;
-	}
-	
-	&::after {
-		right: 0;
-		top: 0;
-		transform: rotateZ(180deg);
-	}
-
-	&::before {
-		left: 0;
-		top: 0;
-	} */
 
   .country-flag-slide-track {
     animation: scroll var(--slide-track-speed) linear infinite;
