@@ -155,8 +155,9 @@ Choose between Male, Female or Mixed team battles. [Read full PRD](prdTeamBattle
 
 **Japanese**: 男子団体戦 / 女子団体戦 / 混合団体戦  
 **URLs**: `teamBattleMale.html`, `teamBattleFemale.html`, `teamBattleMixed.html`  
-Team battles consist of sequential 1v1s between gender-filtered squads.  
-[Read full PRDs: Male](prdTeamBattleMale.md) / [Female](prdTeamBattleFemale.md) / [Mixed](prdTeamBattleMixed.md)
+Team battles consist of sequential 1v1s between gender-filtered squads. The shared rules are described in
+[PRD: Team Battle Rules](prdTeamBattleRules.md). Mode specifics:
+[Male](prdTeamBattleMale.md) / [Female](prdTeamBattleFemale.md) / [Mixed](prdTeamBattleMixed.md)
 
 #### Goals
 
