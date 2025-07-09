@@ -935,7 +935,7 @@ button .ripple {
   display: inline-block;
   width: 60px;
   height: 34px;
-  background-color: var(--color-tertiary);
+  background-color: #878787;
   border-radius: var(--radius-pill);
   transition: var(--transition-fast);
 }
@@ -953,7 +953,7 @@ button .ripple {
 }
 
 .switch input:checked + .slider {
-  background-color: var(--button-bg);
+  background-color: #08a700;
 }
 
 .switch input:checked + .slider::before {
