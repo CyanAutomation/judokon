@@ -41,6 +41,17 @@ describe("motionUtils", () => {
     expect(shouldReduceMotionSync()).toBe(false);
   });
 
+  it("handles invalid stored settings gracefully", () => {
+    window.matchMedia = matchMediaMock(true);
+    localStorage.setItem("settings", "not json");
+    expect(shouldReduceMotionSync()).toBe(true);
+  });
+
+  it("falls back to media query when no settings present", () => {
+    window.matchMedia = matchMediaMock(false);
+    expect(shouldReduceMotionSync()).toBe(false);
+  });
+
   it("toggles reduce-motion class on body", () => {
     applyMotionPreference(false);
     expect(document.body.classList.contains("reduce-motion")).toBe(true);

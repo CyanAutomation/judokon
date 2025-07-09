@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { setupButtonEffects } from "../../src/helpers/buttonEffects.js";
+import * as motionUtils from "../../src/helpers/motionUtils.js";
 
 let button;
 
@@ -68,5 +69,13 @@ describe("setupButtonEffects", () => {
     Object.defineProperty(event, "offsetY", { value: 2 });
     div.dispatchEvent(event);
     expect(div.querySelector("span.ripple")).toBeNull();
+  });
+
+  it("skips ripple when motion reduction is preferred", () => {
+    vi.spyOn(motionUtils, "shouldReduceMotionSync").mockReturnValue(true);
+    setupButtonEffects();
+    const event = new MouseEvent("mousedown");
+    button.dispatchEvent(event);
+    expect(button.querySelector("span.ripple")).toBeNull();
   });
 });
