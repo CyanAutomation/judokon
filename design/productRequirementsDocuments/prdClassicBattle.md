@@ -141,7 +141,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ## 13. Open Questions
 
-- Will difficulty levels change AI stat selection? If yes, how should difficulty levels affect AI’s stat choice logic?
+_Resolved in [Future Considerations](#7-future-considerations):_ AI difficulty will control stat selection strategy.
 
 ---
 

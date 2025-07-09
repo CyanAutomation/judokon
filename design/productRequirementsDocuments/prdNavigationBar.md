@@ -161,8 +161,8 @@ The standard navbar uses `--color-secondary` for its background and `--button-te
 
 ## Open Questions
 
-- Should the bar auto-hide after a period of inactivity?
-- Which screens, if any, should suppress the nav bar entirely?
+- **Pending:** Decide if the bar should auto-hide after a period of inactivity.
+- **Pending:** Identify which screens, if any, should suppress the nav bar entirely.
 
 ---
 

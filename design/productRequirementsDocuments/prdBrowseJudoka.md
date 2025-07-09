@@ -104,8 +104,7 @@ No player settings or toggles are applicable for this feature.
 
 ## Open Questions
 
-- Should search be included in a future update?  
-  _Search is planned as a future enhancement to keep initial scope focused._
+Search will be included in a future update to keep the initial scope focused.
 
 ---
 

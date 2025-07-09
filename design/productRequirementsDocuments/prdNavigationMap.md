@@ -171,9 +171,9 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 
 ## Open Questions
 
-- Should future game modes appear on the map automatically?
-- Are audio cues required for map interactions?
-- Do we support landscape-only layouts?
+- **Pending:** Decide if future game modes will appear on the map automatically.
+- **Pending:** Determine whether audio cues are required for map interactions.
+- **Pending:** Confirm if the map should support landscape-only layouts.
 
 ## Metadata
 

@@ -136,8 +136,8 @@ Key Details:
 
 ## Open Questions
 
-- Should users be able to search countries by name in addition to flag selection?
-- Do we need analytics events for every country selection?
+- **Pending:** Decide whether to add text search for countries in addition to flag selection.
+- **Pending:** Determine if analytics are needed for every country selection.
 
 ---
 

@@ -283,7 +283,7 @@ Each tile contains:
 
 ## Open Questions
 
-- Should Team Battle get its own dedicated URL before launch?
+- **Pending:** Determine whether Team Battle requires its own URL before launch.
 
 ---
 

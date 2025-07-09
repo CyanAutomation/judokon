@@ -86,8 +86,8 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 ## Open Questions
 
-- Should quotes rotate automatically after a delay?
-- Do players need a skip option to bypass the screen entirely?
+- **Pending:** Decide whether quotes rotate automatically after a delay.
+- **Pending:** Determine if players need a skip option to bypass the screen entirely.
 
 ---
 
@@ -180,9 +180,9 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 
 ## Open Questions
 
-- Should players be able to disable the Meditation screen entirely?
-- Will background audio be added in a later version?
-- Are translations needed beyond English and Japanese?
+- **Pending:** Decide whether players can disable the Meditation screen entirely.
+- **Pending:** Determine if background audio will be added in a later version.
+- **Pending:** Confirm translation requirements beyond English and Japanese.
 
 ---
 

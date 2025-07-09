@@ -75,7 +75,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 ## Open Questions
 
-- Should favourites influence the random selection?
+- **Pending:** Decide whether favourites influence the random selection.
 
 ---
 
