@@ -411,7 +411,6 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   setupKeyboardNavigation(container);
   setupSwipeNavigation(container);
-  addScrollMarkers(container, wrapper);
   applyAccessibilityImprovements(wrapper);
 
   return wrapper;
