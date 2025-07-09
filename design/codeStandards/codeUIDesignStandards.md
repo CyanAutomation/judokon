@@ -30,7 +30,7 @@ Ju-Do-Kon! uses a **bold, high-contrast design system** grounded in clear hierar
 
 ### 2.2 Design Principles
 
-- **Touch-first Interaction** – Minimum 44x44px targets, swipeable areas, and tap feedback (see sizing tokens in [Tokens](#10-tokens)).
+- **Touch-first Interaction** – Minimum 48x48px targets, swipeable areas, and tap feedback (see sizing tokens in [Tokens](#10-tokens)).
 - **Responsive Feedback** – Every interaction must give feedback (scale, glow, ripple, animation).
 - **Visual Hierarchy** – Layout must surface the most important info and reinforce progression.
 - **Progressive Disclosure** – Show only essential actions up front; reveal detail as needed.
@@ -302,7 +302,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 ## 9. Accessibility & Responsiveness
 
 - Keyboard accessible
-- Tap targets ≥ 44px
+- Tap targets ≥ 48px
 - Minimum contrast ratio: 4.5:1
 - Carousel: swipe, arrow key, screen reader friendly
 - Modals must trap focus when open
