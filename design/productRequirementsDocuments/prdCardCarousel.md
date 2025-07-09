@@ -25,6 +25,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 ## Goals
 
 **Technical Performance Goals**
+
 - Carousel loads within 1 second for up to 150 cards.
 - Support smooth browsing of up to 50 cards without noticeable lag.
 - Users can browse through at least 10 cards within 30 seconds smoothly without lag.
@@ -32,6 +33,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - Keyboard navigation support for accessibility.
 
 **User Experience Goals**
+
 - Users can easily browse and find desired cards to assemble optimized teams.
 - Browsing the carousel feels smooth, intuitive, and visually engaging on both mobile and desktop devices.
 

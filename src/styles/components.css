@@ -78,45 +78,23 @@ body {
   height: 5dvh;
 }
 
-.game-tile {
-  background: var(--color-surface);
-  border: 2px solid var(--color-tertiary);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
+.card {
+  padding: 1rem;
+  background-color: var(--color-secondary);
+  border-block-start: 0.5rem solid var(--color-primary);
+  border-radius: var(--radius-md);
   text-align: center;
-  font-size: 1rem;
   box-shadow: var(--shadow-base);
   cursor: pointer;
-  transition: transform 0.15s ease-in-out;
+  transition: transform var(--transition-fast);
 }
 
-.game-tile:hover {
+.card:hover {
   transform: scale(1.05);
 }
 
-.game-tile.red {
-  background: var(--color-secondary);
-  color: white;
-}
-
-.game-tile.teal {
-  background: var(--color-secondary);
-  color: white;
-}
-
-.game-tile.blue {
-  background: var(--color-secondary);
-  color: white;
-}
-
-.game-tile.purple {
-  background: var(--color-secondary);
-  color: white;
-}
-
-.game-tile.gold {
-  background: var(--color-secondary);
-  color: white;
+.game-tile {
+  composes: card;
 }
 
 .tile-content h2 {
