@@ -2,7 +2,8 @@
 
 ## TL;DR
 
-Enables mixed-gender teams to face off, encouraging varied rosters and strategic diversity.
+Enables mixed-gender teams to face off, encouraging varied rosters and strategic diversity.  
+_Mixed mode uses six judoka per team (instead of five) to allow for equal representation of genders and to align with international mixed team judo formats._
 
 **Game Mode ID:** teamBattleMixed (URL: teamBattleMixed.html)
 
@@ -42,10 +43,16 @@ Enables mixed-gender teams to face off, encouraging varied rosters and strategic
 ## Open Questions
 
 - Should Mixed mode permit custom team sizes or stick to six members?
+- Team size customization is a shared open question across all Team Battle modes (Male, Female, Mixed).
+- Once resolved, update all relevant PRDs to reflect the decision for consistency.
 
-## Metadata
+---
 
-- **Author:** Game Design Team
-- **Last Edited:** 2025-06-29
+## Related Features
+
+- See also: [PRD: Team Battle (Male)](prdTeamBattleMale.md) and [PRD: Team Battle (Female)](prdTeamBattleFemale.md) for single-gender team modes.
+- Entry point: [PRD: Team Battle Selection](prdTeamBattleSelection.md) screen.
+
+---
 
 [Back to Game Modes Overview](prdGameModes.md)

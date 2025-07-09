@@ -2,7 +2,8 @@
 
 ## TL;DR
 
-Compete in 5-on-5 matches using all-female teams, giving women-focused events their own dedicated mode.
+Compete in 5-on-5 matches using all-female teams, giving women-focused events their own dedicated mode.  
+_Mode is identical to its [male counterpart](prdTeamBattleMale.md) except for the allowed gender (female only)._
 
 **Game Mode ID:** teamBattleFemale (URL: teamBattleFemale.html)
 
@@ -39,13 +40,13 @@ Compete in 5-on-5 matches using all-female teams, giving women-focused events th
 - Uses the common Team Battle ruleset for scoring.
 - Matches call `generateRandomCard` as described in [prdDrawRandomCard.md](prdDrawRandomCard.md).
 
-## Open Questions
 
-- Can teams substitute a fighter if one is injured?
+---
 
-## Metadata
+## Related Features
 
-- **Author:** Game Design Team
-- **Last Edited:** 2025-06-29
+- See also: [PRD: Team Battle (Male)](prdTeamBattleMale.md) for the counterpart mode.
+- Entry point: [PRD: Team Battle Selection](prdTeamBattleSelection.md) screen.
 
+---
 [Back to Game Modes Overview](prdGameModes.md)

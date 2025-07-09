@@ -1,9 +1,9 @@
-# Classic Battle
+# PRD: Classic Battle
 
 **Game Mode ID:** `classicBattle` (URL: battleJudoka.html)  
 [Back to Game Modes Overview](prdGameModes.md)
 
-## TL;DR
+## 1. TL;DR
 
 Classic Battle is Ju-Do-Kon!’s introductory, head-to-head mode. By offering a fast-paced, low-stakes way for new players to learn stats and game flow, it boosts retention and confidence while maintaining quick matches. This PRD defines how the mode operates, from random draws to scoring and end conditions, ensuring a smooth, accessible, and engaging experience.
 
@@ -11,7 +11,7 @@ Classic Battle is Ju-Do-Kon!’s introductory, head-to-head mode. By offering a 
 
 ---
 
-## Problem Statement
+## 2. Problem Statement
 
 Classic Battle is the main and simplest mode of the game. Without it, new players lack a quick, low-stakes mode to learn stats and grasp the core mechanics. This leads to higher early player drop-off, increased frustration, and fewer repeat sessions because players don’t build mastery or confidence. By providing a fast, engaging way to compare stats, Classic Battle helps new players onboard smoothly and encourages early retention.
 
@@ -22,7 +22,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## Goals
+## 3. Goals
 
 - Deliver a quick head-to-head mode for new players, with average match length ≤3 minutes.
 - Encourage replay through a simple, rewarding scoring system.
@@ -33,7 +33,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## User Stories
+## 4. User Stories
 
 - As a new player, I want a simple match format so I can learn game mechanics quickly.
 - As a player, I want clear feedback on round outcomes so I know how I’m doing.
@@ -44,7 +44,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## Technical Considerations
+## 5. Technical Considerations
 
 - Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
 - Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices.
@@ -53,7 +53,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## Prioritized Functional Requirements Table
+## 6. Prioritized Functional Requirements Table
 
 | Priority | Feature                 | Description                                                                                             |
 | -------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
@@ -74,7 +74,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## Future Considerations
+## 7. Future Considerations
 
 - Add easy/medium/hard modes changing AI stat selection strategy:
   - **Easy**: AI selects randomly.
@@ -83,7 +83,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## Acceptance Criteria
+## 8. Acceptance Criteria
 
 - Cards are revealed in the correct sequence each round.
 - Player can select a stat within 30 seconds; if not, the system auto-selects a random stat.
@@ -97,7 +97,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## Edge Cases / Failure States
+## 9. Edge Cases / Failure States
 
 - **Player disconnects mid-match:** round is abandoned; player rejoins at main menu.
 - **Judoka dataset fails to load:** error message appears; player can retry loading.
@@ -106,7 +106,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## Design and UX Considerations
+## 10. Design and UX Considerations
 
 - Use consistent color coding for player (blue) vs computer (red) as shown in attached mockups.
 - Display clear, large call-to-action text for "Choose an attribute to challenge!" to guide new players.
@@ -125,27 +125,27 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## Non-Goals
+## 11. Non-Goals
 
 - Online multiplayer battles.
 - Adjustable timer settings for stat selection (may be considered in future versions).
 
 ---
 
-## Dependencies
+## 12. Dependencies
 
 - Judoka dataset loaded from `judoka.json`.
 - Uses the shared random card draw module (`generateRandomCard`) as detailed in [prdDrawRandomCard.md](prdDrawRandomCard.md) (see `src/helpers/randomCard.js`).
 
 ---
 
-## Open Questions
+## 13. Open Questions
 
 - Will difficulty levels change AI stat selection? If yes, how should difficulty levels affect AI’s stat choice logic?
 
 ---
 
-## Tasks
+## 14. Tasks
 
 - [ ] 1.0 Implement Classic Battle Match Flow
 

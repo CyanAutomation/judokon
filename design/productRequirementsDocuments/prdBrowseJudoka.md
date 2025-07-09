@@ -2,7 +2,7 @@
 
 Game Mode ID: browseJudoka (URL: browseJudoka.html)
 
-**Browse Judoka** is accessible from the Main Page ([prdHomePageNavigation.md](prdHomePageNavigation.md)), Navigation Bar ([prdNavigationBarCollapsed.md](prdNavigationBarCollapsed.md)) or Navigation Map ([prdNavigationMap.md](prdNavigationMap.md)) and opens a full-screen roster view. Players first see a country filter panel alongside a card carousel. The carousel relies on the `buildCardCarousel` helper ([prdCardCarousel.md](prdCardCarousel.md)) and filtering uses the Country Flag Picker ([prdCountryPickerFilter.md](prdCountryPickerFilter.md)).
+**Browse Judoka** is accessible from the Main Page ([prdHomePageNavigation.md](prdHomePageNavigation.md)), Navigation Bar ([prdNavigationBarCollapsed.md](prdNavigationBarCollapsed.md)) or Navigation Map ([prdNavigationMap.md](prdNavigationMap.md)) and opens a full-screen roster view. Players first see a country filter panel alongside a card carousel. The carousel relies on the `buildCardCarousel` helper ([prdCardCarousel.md](prdCardCarousel.md)) (see [PRD: Judoka Card Carousel](prdCardCarousel.md)) and filtering uses the Country Flag Picker ([prdCountryPickerFilter.md](prdCountryPickerFilter.md)).
 
 ## TL;DR
 
@@ -30,6 +30,12 @@ This problem is especially pressing now as the roster grows, and players want a 
 - Increase attachment to favorite fighters through easy access.
 - Keep players engaged by making team planning enjoyable.
 
+## Non-Goals
+
+- No advanced sorting or search features in this version.
+- No judoka editing or management from the browse screen.
+- No card acquisition or unlock actions from this view.
+
 ---
 
 ## User Stories
@@ -51,7 +57,7 @@ This problem is especially pressing now as the roster grows, and players want a 
 | P1       | Stats Data Binding              | Pull stats from `judoka.json` for accurate card display.         |
 | P1       | Responsive Layout               | Adapt card layout across devices (mobile & desktop).             |
 | P2       | Placeholder for Invalid Entries | Show default card if an entry is missing or invalid.             |
-| P2       | Carousel Display of Cards       | Present cards in a swipe/scroll carousel for efficient browsing. |
+| P2       | Carousel Display of Cards       | Present cards in a swipe/scroll carousel for efficient browsing. (See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel requirements.) |
 | P2       | Hover/Keyboard Navigation       | Support interactions for accessibility.                          |
 | P3       | Scroll Markers                  | Indicate the user’s current position in the carousel.            |
 
@@ -59,46 +65,13 @@ This problem is especially pressing now as the roster grows, and players want a 
 
 ## Acceptance Criteria
 
-**Empty List Handling**  
-Given the judoka list is empty  
-When the player opens the Browse Judoka screen  
-Then display a message saying “No cards available”
-
-**Load Time Performance**  
-Given there are 100 judoka cards in `judoka.json`  
-When the player opens the Browse Judoka screen  
-Then the full list of cards loads and is visible within 1 second
-
-**Responsive Layout**  
-Given the player’s device screen width is ≥320px  
-When the player views the Browse Judoka screen  
-Then the cards display as:
-
-- 1–2 cards visible on mobile (320px to ~600px width)
-- 3–5 cards visible on desktop (>600px width)  
-  And card layout adapts fluidly on window resize
-
-**Invalid Entries**  
-Given `judoka.json` contains an invalid or missing card entry  
-When the player scrolls to that entry  
-Then show a default placeholder card instead
-
-**Scroll Performance**  
-Given the player scrolls rapidly through the card carousel  
-When scrolling occurs  
-Then the frame rate stays at or above 30fps
-
-**Error Handling on Data Load Failure**  
-Given the network fails to load `judoka.json`  
-When the player opens the Browse Judoka screen  
-Then display an error message: “Unable to load roster”  
-And provide a button to retry the load
-
-**Keyboard Navigation**  
-Given the player uses keyboard arrow keys  
-When they press left/right arrows  
-Then the focus moves to the previous/next card respectively  
-And the focused card is visually highlighted and enlarged
+- If the judoka list is empty, display a message saying “No cards available.”
+- The full list of up to 100 judoka cards loads and is visible within 1 second.
+- On mobile (320px–600px), 1–2 cards are visible at once; on desktop (>600px), 3–5 cards are visible, and layout adapts fluidly on window resize.
+- If `judoka.json` contains an invalid or missing card entry, show a default placeholder card instead.
+- Scrolling rapidly through the card carousel maintains a frame rate of at least 30fps.
+- If the network fails to load `judoka.json`, display an error message: “Unable to load roster” and provide a button to retry.
+- Using keyboard arrow keys (left/right) moves focus to the previous/next card, and the focused card is visually highlighted and enlarged.
 
 ---
 
@@ -112,7 +85,7 @@ And the focused card is visually highlighted and enlarged
 
 ## Design and UX Considerations
 
-- **Scrolling Behavior**: Implement smooth, snap scrolling to ensure a natural feel when navigating cards.
+- **Scrolling Behavior**: Implement smooth, snap scrolling to ensure a natural feel when navigating cards. (See [PRD: Judoka Card Carousel](prdCardCarousel.md) for detailed carousel behavior.)
 - **Visual Emphasis**: Slightly enlarge the center or active card (~10%) to give players a clear focus point.
 - **Touch Targets**: Ensure interactive elements meet or exceed a minimum 48px height/width for WCAG compliance.
 - **Contrast & Accessibility**: Maintain a text contrast ratio of at least 4.5:1 on card details for readability.
@@ -140,8 +113,8 @@ No player settings or toggles are applicable for this feature.
 
 ## Dependencies
 
-- buildCardCarousel helper for rendering cards
-- Country Flag Picker for filtering
+- buildCardCarousel helper for rendering cards (see [PRD: Judoka Card Carousel](prdCardCarousel.md))
+- Country Flag Picker for filtering (see [PRD: Country Picker Filter](prdCountryPickerFilter.md))
 
 ---
 

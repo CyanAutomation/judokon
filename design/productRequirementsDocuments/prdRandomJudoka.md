@@ -4,7 +4,9 @@
 
 ---
 
-TL;DR: Display Random Judoka gives players instant, inspiring roster ideas by drawing and revealing a random card with fast, smooth animations and full accessibility support — reducing team-building fatigue and increasing session engagement.
+## TL;DR
+
+Display Random Judoka gives players instant, inspiring roster ideas by drawing and revealing a random card with fast, smooth animations and full accessibility support — reducing team-building fatigue and increasing session engagement.
 
 > Mia taps “Draw” and a new judoka slides up instantly, surprising her with a powerful pick she hadn’t considered. She taps again, excitedly building a fresh team, and spends twice as long experimenting compared to when she built manually. The bright animations and satisfying feel keep her engaged.
 
@@ -32,25 +34,10 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 ---
 
-## User Stories
-
-- As a player, I want to see a new judoka each time I tap the Draw button so I can get fresh ideas without feeling stuck on old teams.
-- As a player sensitive to motion, I want animations to disable automatically or manually so I can avoid discomfort.
-- As a parent, I want my child’s game to have big, easy-to-tap buttons so they don’t get frustrated.
-
----
-
-## Functional Requirements
-
-- Show one random judoka when the screen loads.
-- "Draw" button calls the shared random card module to refresh the card.
-
----
-
 ## Acceptance Criteria
 
-- Random judoka displayed on each visit.
-- Display random judoka within 300ms (95% success rate).
+- A random judoka is displayed on each visit.
+- Each random judoka is displayed within 300ms in at least 95% of cases (matches performance goal wording).
 - Draw button reliably refreshes card on tap (≥99% tap success).
 - Show fallback card if judoka list is empty (displays in <1s in 99% of cases).
 - Respect OS-level Reduced Motion settings (disable animations when active).
@@ -147,17 +134,6 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - **Central Card Area**: large placeholder card with question mark icon on initial state.
 - **Draw Button Area**: prominent pill-shaped “Draw New Judoka!” button with mute and animation toggles ~24px below the card.
 - **Fallback State**: placeholder card with error icon and explanatory text below.
-
----
-
-## Prioritized Functional Requirements
-
-| Priority | Feature                  | Description                                                   |
-| -------- | ------------------------ | ------------------------------------------------------------- |
-| **P1**   | Use `generateRandomCard` | Selects and displays a random judoka via the shared module.   |
-| **P1**   | Screen Layout & Controls | Large Draw button plus animation and sound toggles.           |
-| **P2**   | Accessibility            | WCAG contrast, large tap targets, and Reduced Motion support. |
-| **P3**   | Optional Audio Feedback  | Chime on draw with mute toggle (sound off by default).        |
 
 ---
 

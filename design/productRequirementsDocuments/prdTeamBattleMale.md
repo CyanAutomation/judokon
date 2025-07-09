@@ -2,7 +2,8 @@
 
 ## TL;DR
 
-Provides a male-only team battle format, mirroring the female mode for gender-specific tournaments.
+Provides a male-only team battle format, mirroring the female mode for gender-specific tournaments.  
+_Mode is identical to its [female counterpart](prdTeamBattleFemale.md) except for the allowed gender (male only)._
 
 **Game Mode ID:** teamBattleMale (URL: teamBattleMale.html)
 
@@ -43,9 +44,10 @@ Provides a male-only team battle format, mirroring the female mode for gender-sp
 
 - Should Male mode permit custom team sizes or stick to five members?
 
-## Metadata
+## Related Features
 
-- **Author:** Game Design Team
-- **Last Edited:** 2025-06-29
+- See also: [PRD: Team Battle (Female)](prdTeamBattleFemale.md) for the counterpart mode.
+
+---
 
 [Back to Game Modes Overview](prdGameModes.md)

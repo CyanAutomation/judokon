@@ -1,6 +1,6 @@
 # Ju-Do-Kon! Game Modes – Product Requirements Document
 
-### Overview
+## Overview
 
 **Ju-Do-Kon!** offers a range of game modes tailored for different play styles—competitive battles, team-based challenges, creative customization, exploratory discovery and quiet reflection. These modes diversify the experience, increase replayability and promote deeper engagement.
 
@@ -21,12 +21,15 @@ Improving session variety directly supports retention and encourages more person
 
 ### Goals
 
+**KPI Targets**
 - Increase returning player average session length by **20%**.
 - At least **80%** of users who begin a Team Battle complete the match.
 - **70%** of new players use Judoka Creation within their first week.
 - **60%** of all players trigger Meditation mode at least once weekly.
-- Experience diverse ways to interact with their judoka.
-- Find modes matching their mood: competitive, creative or relaxing.
+
+**Player Experience Goals** _(qualitative)_
+- Players experience diverse ways to interact with their judoka.
+- Players find modes matching their mood: competitive, creative, or relaxing.
 
 ---
 
@@ -66,7 +69,7 @@ Improving session variety directly supports retention and encourages more person
 
 ## Game Modes
 
-### Classic Battle
+## Classic Battle
 
 #### Overview
 
@@ -107,7 +110,7 @@ A 1v1 stat-based match against a CPU opponent using a deck of 25 random judoka c
 
 ---
 
-### Team Battle Selection
+## Team Battle Selection
 
 #### Overview
 
@@ -144,13 +147,14 @@ Choose between Male, Female or Mixed team battles. [Read full PRD](prdTeamBattle
 
 ---
 
-### Team Battle Modes
+## Team Battle Modes
 
 #### Overview
 
-**Japanese**: 男子団体戦 / 女子団体戦 / 混合団体戦
-**URLs**: `teamBattleMale.html`, `teamBattleFemale.html`, `teamBattleMixed.html`
-Team battles consist of sequential 1v1s between gender-filtered squads. [Read full PRD](prdTeamBattleMixed.md)
+**Japanese**: 男子団体戦 / 女子団体戦 / 混合団体戦  
+**URLs**: `teamBattleMale.html`, `teamBattleFemale.html`, `teamBattleMixed.html`  
+Team battles consist of sequential 1v1s between gender-filtered squads.  
+[Read full PRDs: Male](prdTeamBattleMale.md) / [Female](prdTeamBattleFemale.md) / [Mixed](prdTeamBattleMixed.md)
 
 #### Goals
 
@@ -182,7 +186,7 @@ Team battles consist of sequential 1v1s between gender-filtered squads. [Read fu
 
 ---
 
-### Browse Judoka
+## Browse Judoka
 
 #### Overview
 
@@ -219,7 +223,7 @@ View all available judoka with stats and visuals. [Read full PRD](prdBrowseJudok
 
 ---
 
-### Team Manager Mode (Admin Mode)
+## Team Manager Mode (Admin Mode)
 
 #### Overview
 
@@ -256,7 +260,7 @@ Choose to create or edit a judoka.
 
 ---
 
-### Create A Judoka (Admin Mode)
+## Create A Judoka (Admin Mode)
 
 #### Overview
 
@@ -295,7 +299,7 @@ Create a new judoka with custom stats and appearance.
 
 ---
 
-### Update A Judoka (Admin Mode)
+## Update A Judoka (Admin Mode)
 
 #### Overview
 
@@ -329,7 +333,7 @@ Edit an existing judoka. [Read full PRD](prdUpdateJudoka.md)
 
 ---
 
-### Random Judoka
+## Random Judoka
 
 #### Overview
 
@@ -364,7 +368,7 @@ Display a random judoka profile. [Read full PRD](prdRandomJudoka.md)
 
 ---
 
-### Meditation
+## Meditation
 
 #### Overview
 

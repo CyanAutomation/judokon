@@ -6,6 +6,11 @@ Simple menu that lets players quickly choose Male, Female, or Mixed modes for te
 
 **Game Mode ID:** teamBattleSelection (URL: teamBattleSelection.html)
 
+> This selection screen is the gateway to the three Team Battle modes:
+> - [PRD: Team Battle Male](prdTeamBattleMale.md)
+> - [PRD: Team Battle Female](prdTeamBattleFemale.md)
+> - [PRD: Team Battle Mixed](prdTeamBattleMixed.md)
+
 ---
 
 ## Goals
@@ -30,6 +35,16 @@ Simple menu that lets players quickly choose Male, Female, or Mixed modes for te
 - Correct mode loads after selection.
 - Invalid routes fall back gracefully.
 
+## Design and UX Considerations
+
+- Display three large buttons horizontally (or vertically on mobile) labeled "Male", "Female", and "Mixed".
+- Highlight the last selected mode if available.
+- Ensure all buttons are accessible by keyboard (tab order matches visual order).
+- Buttons must have a minimum touch target size of 48px.
+- Use clear, high-contrast colors for button text and backgrounds.
+- Provide visible focus indicators for keyboard navigation.
+- The layout should be responsive and visually centered on the page.
+
 ## Non-Goals
 
 - Team management or roster editing beyond mode choice.
@@ -42,9 +57,6 @@ Simple menu that lets players quickly choose Male, Female, or Mixed modes for te
 
 - Should the last chosen mode be saved between sessions?
 
-## Metadata
-
-- **Author:** Game Design Team
-- **Last Edited:** 2025-06-29
+---
 
 [Back to Game Modes Overview](prdGameModes.md)
