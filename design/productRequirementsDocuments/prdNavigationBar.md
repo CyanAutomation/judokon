@@ -8,7 +8,13 @@ This PRD defines a persistent, responsive bottom navigation bar for Ju-Do-Kon! t
 
 ---
 
-## 1. Description
+## Problem Statement
+
+Players currently experience confusion and increased cognitive load when navigating between game screens due to the lack of a consistent, always-visible navigation system. This leads to flow disruption, frustration, and early session exits.
+
+---
+
+## Description
 
 The **JU-DO-KON!** game features multiple game modes and screens. Players need easy, intuitive navigation to seamlessly transition between activities such as battles, judoka browsing, and training. When navigation is unclear, players experience increased cognitive load and frustration, breaking immersion and potentially leading to session drop-offs.
 
@@ -18,9 +24,9 @@ The **JU-DO-KON!** game features multiple game modes and screens. Players need e
 
 > Player finishes battle → confusion navigating back → flow disruption → early session exit.
 
-Currently, the lack of a consistent navigation system leads to player disorientation post-activity. This PRD proposes a persistent bottom navigation bar to minimize friction, reduce cognitive load, and maintain gameplay flow.
+---
 
-### User Stories
+## User Stories
 
 - As a new player, I want an always-visible navigation bar so I don’t get lost between screens.
 - As a mobile user, I want touch-friendly buttons so I can navigate confidently with my thumb.
@@ -28,7 +34,7 @@ Currently, the lack of a consistent navigation system leads to player disorienta
 
 ---
 
-## 2. Goals
+## Goals
 
 - Reduce navigation-related exits by **20%**.
 - Increase average session duration per player by **15%**.
@@ -46,7 +52,7 @@ Currently, the lack of a consistent navigation system leads to player disorienta
 
 ---
 
-## 3. How It Works
+## How It Works
 
 The bottom navigation bar appears consistently across all game screens, dynamically loading active game modes from `gameModes.json`.
 
@@ -85,14 +91,14 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ---
 
-## 4. Wireframes / Visual Reference
+## Wireframes / Visual Reference
 
 - **Default Mode**: Horizontal navigation bar with clickable links and a bottom-left corner ju-do-kon logo. A simplified vertical text list expands on logo tap. _(Visual reference to be attached.)_
 - **Portrait Mode**: A simplified vertical text list expands on logo tap.
 
 ---
 
-## 5. Functional Requirements
+## Functional Requirements
 
 | Priority | Feature                | Description                                                                                          |
 | -------- | ---------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -104,7 +110,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ---
 
-## 6. Acceptance Criteria
+## Acceptance Criteria
 
 - Touch targets maintain **≥48px** size across all device resolutions (see sizing tokens in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)).
 - Navigation is visible on **100%** of game screens.
@@ -122,7 +128,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ---
 
-## 7. Edge Cases / Failure States
+## Edge Cases / Failure States
 
 - Data source fails → load default list in <2s.
 - Menu fails mid-session → notify user and auto-reload.
@@ -131,15 +137,15 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ---
 
-## 8. Design and UX Considerations
+## Design and UX Considerations
 
 The standard navbar uses `--color-secondary` for its background and `--button-text-color` for text.
 
-![Wireframe of Navigation Bar Collapsed](/design/mockups/mockupFooterNavigationCollapsed1.png)
+![Collapsed navigation bar mockup: shows the JU-DO-KON! logo in the bottom-left and a horizontal row of navigation links. The collapsed state displays only the logo, which expands to a vertical menu on tap.](/design/mockups/mockupFooterNavigationCollapsed1.png)
 
 ### Accessibility
 
-- **48px+** touch targets (see sizing tokens in [codeUIDesignStandards.md](../codeStandards/codeUIDesignStandards.md#10-tokens)).
+- **48px+** touch targets (see sizing tokens in [../codeStandards/codeUIDesignStandards.md#10-tokens](../codeStandards/codeUIDesignStandards.md#10-tokens)).
 - High-contrast text labels (WCAG 4.5:1).
 - Screen reader support: all navigation elements properly labeled.
 - Respect OS **reduced motion** settings.

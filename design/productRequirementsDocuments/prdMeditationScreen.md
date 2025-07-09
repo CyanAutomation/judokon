@@ -73,8 +73,10 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 ## Non-Goals
 
-- Provide detailed meditation instruction or audio guidance.
-- Translate the entire UI into Japanese.
+- No guided meditation instruction, breathing audio, or meditation music.
+- No translation of the entire UI into Japanese or other languages (quotes only).
+- Not intended to replace existing downtime screens outside the Meditation feature.
+- No scoring, competitive mechanics, or gamification within the meditation screen.
 
 ## Dependencies / Integrations
 
@@ -103,7 +105,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - Skeleton loader appears if quote data is still fetching.
 - KG image and random quote fade in smoothly.
 - Player reads quote → taps “Continue Your Journey” button.
-- Player returns to main menu or resumes gameplay.
+- Player returns to their previous location (main menu or resumes gameplay, depending on where they entered the meditation screen).
 
 ---
 
@@ -114,6 +116,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - The "Continue Your Journey" button uses `var(--button-bg)` with `var(--button-text-color)` text and `--radius-md` corners.
 - Background color comes from `var(--color-tertiary)` for a neutral tone.
 - Quote text uses the base sans-serif font at 18px minimum.
+- Includes a pseudo-Japanese quote toggle for immersive effect. See [PRD: Pseudo-Japanese Text Conversion Function](prdPseudoJapanese.md) for details.
 
 | Meditation Screen Mockup A                          | Meditation Screen Mockup B                          |
 | --------------------------------------------------- | --------------------------------------------------- |
@@ -161,26 +164,21 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 
 ---
 
-## 6. Non-Goals
-
-- Provide guided breathing audio or meditation music.
-- Introduce scoring or competitive mechanics.
-- Replace existing downtime screens outside the Meditation feature.
-
-## 7. Technical Considerations
+## Technical Considerations
 
 - Fetch quotes asynchronously with graceful error handling.
 - Reuse existing HTML template and component structure.
 - Loading spinner and CTA button use design tokens such as `var(--button-bg)` and `var(--button-hover-bg)`.
 - Keep page weight minimal to meet the 1s load target.
 
-## 8. Dependencies and Integrations
+## Dependencies and Integrations
 
 - Quote data file: `aesopsFables.json`.
 - KG character assets from the core game.
 - Navigation system for entering and exiting the screen.
+- Pseudo-Japanese Text Conversion Function for quote toggle ([prdPseudoJapanese.md](prdPseudoJapanese.md)).
 
-## 9. Open Questions
+## Open Questions
 
 - Should players be able to disable the Meditation screen entirely?
 - Will background audio be added in a later version?
@@ -204,7 +202,7 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 
 - [x] **3.0 Implement Action Button Module**
 
-  - [x] 3.1 Add large, thumb-friendly CTA button ("Continue When Ready").
+  - [x] 3.1 Add large, thumb-friendly CTA button ("Continue Your Journey").
   - [x] 3.2 Style CTA button with `var(--button-bg)` and `var(--button-hover-bg)`; ensure minimum 48px height and proper spacing.
 
 - [x] **4.0 Accessibility**

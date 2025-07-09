@@ -10,18 +10,17 @@ This PRD defines a Pseudo-Japanese Text Conversion Function for Ju-Do-Kon!’s m
 
 ---
 
-## 1. Problem Statement
+## Problem Statement
 
-As this game is about a Japanese martial art, authentic cultural immersion is key to the user experience. However, Japanese is complex, and most players are not literate in it. This language barrier prevents players from fully appreciating the cultural setting.
+As this game is about a Japanese martial art, authentic cultural immersion is key to the user experience. However, Japanese is complex, and most players are not literate in it. This language barrier prevents players from fully appreciating the cultural setting and diminishes the sense of authenticity.
 
 > Players unfamiliar with Japanese miss the authentic cultural feel. Translating to pseudo-Japanese bridges this gap by simulating the aesthetics without creating a comprehension barrier.
 
-**Goal:** Improve immersion by simulating Japanese aesthetics, enhancing players’ perception of authenticity, without requiring them to read or understand real Japanese.
-
 ---
 
-## 2. Goals
+## Goals
 
+- Improve immersion by simulating Japanese aesthetics, enhancing players’ perception of authenticity, without requiring them to read or understand real Japanese.
 - Achieve a 90% success rate in API text conversion without errors.
 - Ensure local JSON fallback conversion completes within 500ms.
 - Toggle feature allows players to switch between original English text and pseudo-Japanese output, with response times under 200ms.
@@ -29,7 +28,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 - Provide an authentic-feeling Japanese aesthetic without requiring language proficiency.
 - Enable quick, easy switching between English and pseudo-Japanese text.
 
-### User Stories
+## User Stories
 
 - As a player who loves Japanese culture, I want meditation quotes to look authentically Japanese so I feel more immersed.
 - As a player unfamiliar with Japanese, I want to toggle back to English instantly so I can understand the quotes.
@@ -37,7 +36,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 
 ---
 
-## 3. Functional Requirements
+## Functional Requirements
 
 | Priority | Feature                       | Description                                                                                  |
 | -------- | ----------------------------- | -------------------------------------------------------------------------------------------- |
@@ -50,7 +49,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 
 ---
 
-## 4. Acceptance Criteria
+## Acceptance Criteria
 
 - Input text is converted locally using a JSON mapping file.
 - Input cleaning successfully removes unsupported characters.
@@ -65,7 +64,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 
 ---
 
-## 5. Edge Cases / Failure States
+## Edge Cases / Failure States
 
 - **Empty/Null Input:** Fall back to the predefined static Japanese text.
 - **Large Input (up to 999 characters):** System must process without timeouts or UI degradation.
@@ -74,7 +73,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 
 ---
 
-## 6. Design and UX Considerations
+## Design and UX Considerations
 
 - The pseudo-Japanese text should simulate authentic Japanese aesthetics using a Mincho-style or Gothic calligraphy font (e.g., "Kozuka Mincho" or similar Japanese typefaces).
 - Font size should match the English quote text to maintain layout balance.
@@ -110,6 +109,22 @@ Enhances contextual clarity and smooth interaction, keeping actions tied to rele
 
 **Why:**  
 Prevents accidental taps and creates distinct flow—finish reading before proceeding.
+
+---
+
+## Dependencies
+
+- Local JSON mapping file for English-to-pseudo-Japanese conversion ([pseudoJapaneseMap.json](../../data/pseudoJapaneseMap.json) if present; see repo for details).
+- Validation API: [https://romaji2kana.com/api](https://romaji2kana.com/api) (testing only, not production).
+- Integrated with the Meditation screen ([PRD: Meditation Screen](prdMeditationScreen.md)).
+
+---
+
+## Non-Goals
+
+- No real Japanese translation or full localization; this feature is purely stylistic and does not provide actual Japanese language output.
+- Not intended for use beyond the Meditation screen.
+- No support for dynamic language packs or runtime localization updates.
 
 ---
 
@@ -165,4 +180,6 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
   - [ ] 5.3 Ensure <500ms conversion time and <200ms toggle response.
   - [ ] 5.4 Conduct UX testing on different screen sizes and platforms.
   - [ ] 5.5 Add Playwright test `pseudo-japanese-toggle.spec.js` verifying the language toggle on the meditation screen.
+
+---
         [Back to Game Modes Overview](prdGameModes.md)
