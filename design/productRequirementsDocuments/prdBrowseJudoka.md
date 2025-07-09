@@ -85,23 +85,7 @@ This problem is especially pressing now as the roster grows, and players want a 
 
 ## Design and UX Considerations
 
-- **Scrolling Behavior**: Implement smooth, snap scrolling to ensure a natural feel when navigating cards. (See [PRD: Judoka Card Carousel](prdCardCarousel.md) for detailed carousel behavior.)
-- **Visual Emphasis**: Slightly enlarge the center or active card (~10%) to give players a clear focus point.
-- **Touch Targets**: Ensure interactive elements meet or exceed a minimum 48px height/width for WCAG compliance.
-- **Contrast & Accessibility**: Maintain a text contrast ratio of at least 4.5:1 on card details for readability.
-- **Responsiveness**:
-  - On mobile devices (≥320px), display 1–2 cards visible at once.
-  - On desktop, display 3–5 cards visible depending on screen width.
-- **Hover & Keyboard Feedback**:
-  - Enlarge cards by ~10% on hover.
-  - Highlight focused cards during keyboard navigation.
-- **Interaction Cues**:
-  - Use subtle ripple or scaling animations when cards are tapped or clicked.
-  - Show scroll markers below the card carousel to indicate progress through the roster.
-
-| **Card Carousel Mockup 1**                                       | **Card Carousel Mockup 2**                                       |
-| ---------------------------------------------------------------- | ---------------------------------------------------------------- |
-| ![Card Carousel Mockup](/design/mockups/mockupCardCarousel2.png) | ![Card Carousel Mockup](/design/mockups/mockupCardCarousel3.png) |
+See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel-specific animations, responsiveness, and mockups.
 
 ---
 
