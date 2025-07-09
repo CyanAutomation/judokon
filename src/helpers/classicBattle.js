@@ -78,8 +78,9 @@ function startTimer() {
  * 1. Load judoka and gokyo data if not already cached.
  * 2. Draw a random card for the player using `generateRandomCard` and capture
  *    the selected judoka.
- * 3. Select a different random judoka for the computer and display it with
- *    `displayJudokaCard`.
+ * 3. Select a random judoka for the computer.
+ *    - If it matches the player's judoka, retry up to a safe limit.
+ *    - Display the chosen judoka with `displayJudokaCard`.
  * 4. Initialize the round timer.
  *
  * @returns {Promise<void>} Resolves when cards are displayed.
@@ -100,9 +101,13 @@ export async function startRound() {
     playerJudoka = j;
   });
   let compJudoka = getRandomJudoka(judokaData);
-  if (playerJudoka && judokaData.length > 1) {
-    while (compJudoka.id === playerJudoka.id) {
+  if (playerJudoka) {
+    // avoid showing the same judoka, but guard against infinite loops
+    let attempts = 0;
+    const maxAttempts = Math.max(judokaData?.length || 0, 5);
+    while (compJudoka.id === playerJudoka.id && attempts < maxAttempts) {
       compJudoka = getRandomJudoka(judokaData);
+      attempts += 1;
     }
   }
   await displayJudokaCard(compJudoka, gokyoLookup, computerContainer);
