@@ -11,6 +11,16 @@ describe("setupBottomNavbar module", () => {
       json: () => Promise.resolve([])
     });
 
+    window.matchMedia = vi.fn().mockImplementation((q) => ({
+      matches: false,
+      media: q,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }));
+
     // Clear DOM
     document.body.innerHTML = "";
 

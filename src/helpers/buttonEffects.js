@@ -7,10 +7,13 @@
  * 3. Position the ripple at the click coordinates and animate it.
  * 4. Remove the ripple once the animation finishes.
  */
+import { shouldReduceMotionSync } from "./motionUtils.js";
+
 export function setupButtonEffects() {
   const buttons = document.querySelectorAll("button");
   buttons.forEach((button) => {
     button.addEventListener("mousedown", (event) => {
+      if (shouldReduceMotionSync()) return;
       if (button.querySelector("span.ripple")) return; // Prevent multiple ripples
       const ripple = document.createElement("span");
       ripple.className = "ripple";

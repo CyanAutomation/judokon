@@ -52,8 +52,9 @@
         import { generateRandomCard } from "../helpers/randomCard.js";
         import { DATA_DIR } from "../helpers/constants.js";
         import { createButton } from "../components/Button.js";
+        import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
 
-        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const prefersReducedMotion = shouldReduceMotionSync();
 
         let cachedJudokaData = null;
         let cachedGokyoData = null;

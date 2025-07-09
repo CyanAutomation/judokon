@@ -809,6 +809,11 @@ button .ripple {
   }
 }
 
+.reduce-motion .country-panel[hidden],
+.reduce-motion .country-panel.grid {
+  transition: none;
+}
+
 .settings-error-popup {
   position: fixed;
   top: 50%;

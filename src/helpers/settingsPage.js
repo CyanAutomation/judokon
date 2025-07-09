@@ -2,6 +2,7 @@ import { loadSettings, updateSetting } from "./settingsUtils.js";
 import { loadGameModes, updateGameModeHidden } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
 import { createToggleSwitch } from "../components/ToggleSwitch.js";
+import { applyMotionPreference } from "./motionUtils.js";
 
 function applyInputState(element, value) {
   if (!element) return;
@@ -54,8 +55,10 @@ function initializeControls(settings, gameModes) {
 
   motionToggle?.addEventListener("change", () => {
     const prev = !motionToggle.checked;
+    applyMotionPreference(motionToggle.checked);
     handleUpdate("motionEffects", motionToggle.checked, () => {
       motionToggle.checked = prev;
+      applyMotionPreference(prev);
     });
   });
 
