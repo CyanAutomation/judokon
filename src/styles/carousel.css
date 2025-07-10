@@ -16,7 +16,7 @@
   scroll-behavior: smooth; /* Smooth scrolling effect */
   width: 100%; /* Ensure carousel doesn't exceed container width */
   max-width: 100%; /* Prevent overflow */
-  padding: 10px; /* Add padding for visual spacing */
+  padding: var(--space-md); /* Add padding for visual spacing */
 }
 
 .judoka-card {
