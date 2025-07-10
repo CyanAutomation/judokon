@@ -1,7 +1,6 @@
 import { fetchJson } from "./dataUtils.js";
 import { createGokyoLookup } from "./utils.js";
-import { generateJudokaCardHTML } from "./cardBuilder.js";
-import { getRandomJudoka } from "./cardUtils.js";
+import { renderJudokaCard, getRandomJudoka } from "./cardUtils.js";
 import { hasRequiredJudokaFields } from "./judokaValidation.js";
 import { DATA_DIR } from "./constants.js";
 import { getFallbackJudoka } from "./judokaUtils.js";
@@ -104,7 +103,9 @@ export async function generateRandomCard(
     if (typeof onSelect === "function") {
       onSelect(selectedJudoka);
     }
-    await createCardForJudoka(selectedJudoka, gokyoLookup, containerEl, prefersReducedMotion);
+    await renderJudokaCard(selectedJudoka, gokyoLookup, containerEl, {
+      animate: !prefersReducedMotion
+    });
     // else: do not update DOM if card is null/undefined
   } catch (error) {
     console.error("Error generating random card:", error);
@@ -115,7 +116,9 @@ export async function generateRandomCard(
       if (typeof onSelect === "function") {
         onSelect(fallbackJudoka);
       }
-      await createCardForJudoka(fallbackJudoka, gokyoLookup, containerEl, prefersReducedMotion);
+      await renderJudokaCard(fallbackJudoka, gokyoLookup, containerEl, {
+        animate: !prefersReducedMotion
+      });
     } catch (fallbackError) {
       console.error("Error displaying fallback card:", fallbackError);
       // Do not update DOM if fallback also fails

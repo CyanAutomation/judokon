@@ -5,7 +5,12 @@ let generateJudokaCardHTMLMock;
 let getFallbackJudokaMock;
 
 vi.mock("../../src/helpers/cardUtils.js", () => ({
-  getRandomJudoka: (...args) => getRandomJudokaMock(...args)
+  getRandomJudoka: (...args) => getRandomJudokaMock(...args),
+  renderJudokaCard: async (judoka, lookup, container) => {
+    const el = await generateJudokaCardHTMLMock(judoka, lookup);
+    if (el && container) container.appendChild(el);
+    return el;
+  }
 }));
 
 vi.mock("../../src/helpers/cardBuilder.js", () => ({
