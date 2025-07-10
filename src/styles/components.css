@@ -117,6 +117,28 @@ button .ripple {
     opacity: 0;
   }
 }
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-card {
+  animation: card-enter var(--scale-duration, 0.4s) ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-card {
+    animation: none;
+  }
+}
+
 /* Card styles */
 .card-container {
   display: flex;
