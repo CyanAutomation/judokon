@@ -173,6 +173,14 @@
   }
 }
 
+/* Utility fade transition for quotes */
+.fade-transition {
+  transition: opacity var(--transition-fast);
+}
+.fade-transition.fading {
+  opacity: 0;
+}
+
 /* This toggle keeps its accent colors intentionally */
 .language-toggle {
   display: inline-flex;

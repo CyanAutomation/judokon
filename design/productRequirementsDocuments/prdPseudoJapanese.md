@@ -93,7 +93,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 
 - Quote block with dynamic font and max-width.
 - Enlarged language toggle button (“日本語 / English”) above or below the quote.
-- 200ms fade animation when language is toggled.
+- 200ms fade animation when language is toggled using the `.fading` CSS class.
 
 **Why:**  
 Enhances contextual clarity and smooth interaction, keeping actions tied to relevant content.
