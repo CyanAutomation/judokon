@@ -183,7 +183,8 @@ export async function getFlagUrl(countryCode) {
  *    - When scrolling near the bottom, generate the next batch of 50 until all
  *      countries are rendered.
  *    - Each button is created as follows:
- *      a. Create a `button.flag-button.slide` element and set its value/label.
+ *      a. Create a `button.flag-button.slide` element, set its value, and apply
+ *         an `aria-label` like "Filter by {country}" for screen readers.
  *      b. Add an `img` for the flag using `getFlagUrl` with a fallback on
  *         failure.
  *      c. Append the country name in a `p` element.
@@ -216,7 +217,8 @@ export async function populateCountryList(container) {
     const allButton = document.createElement("button");
     allButton.className = "flag-button slide";
     allButton.value = "all";
-    allButton.setAttribute("aria-label", "All Countries");
+    // Include an accessible description for assistive tech
+    allButton.setAttribute("aria-label", "Show all countries");
     const allImg = document.createElement("img");
     allImg.alt = "All countries";
     allImg.className = "flag-image";
@@ -242,7 +244,8 @@ export async function populateCountryList(container) {
         const button = document.createElement("button");
         button.className = "flag-button slide";
         button.value = country.country;
-        button.setAttribute("aria-label", country.country);
+        // Use an accessible label describing the filtering action
+        button.setAttribute("aria-label", `Filter by ${country.country}`);
 
         const flagImg = document.createElement("img");
         flagImg.alt = `${country.country} Flag`;
