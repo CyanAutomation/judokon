@@ -1,10 +1,11 @@
 /**
- * Apply the chosen display mode by toggling body classes.
+ * Apply the chosen display mode by setting a theme data attribute on the body.
  *
  * @pseudocode
- * 1. Remove both `dark-mode` and `gray-mode` classes from `document.body`.
- * 2. If `mode` is "dark", add the `dark-mode` class.
- * 3. Else if `mode` is "gray", add the `gray-mode` class.
+ * 1. Verify that `mode` is one of "light", "dark", or "gray".
+ *    - If the value is invalid, log a warning and exit early.
+ *
+ * 2. Set `document.body.dataset.theme` to the provided mode value.
  *
  * @param {"light"|"dark"|"gray"} mode - Desired display mode.
  */
@@ -14,10 +15,5 @@ export function applyDisplayMode(mode) {
     console.warn(`Invalid display mode: "${mode}". Valid modes are: ${validModes.join(", ")}.`);
     return;
   }
-  document.body.classList.remove("dark-mode", "gray-mode");
-  if (mode === "dark") {
-    document.body.classList.add("dark-mode");
-  } else if (mode === "gray") {
-    document.body.classList.add("gray-mode");
-  }
+  document.body.dataset.theme = mode;
 }

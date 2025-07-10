@@ -3,38 +3,35 @@ import { applyDisplayMode } from "../../src/helpers/displayMode.js";
 
 describe("applyDisplayMode", () => {
   beforeEach(() => {
-    document.body.className = "";
+    document.body.removeAttribute("data-theme");
   });
 
   afterEach(() => {
-    document.body.className = "";
+    document.body.removeAttribute("data-theme");
   });
 
-  it("adds dark-mode class for dark mode", () => {
+  it("sets data-theme to dark for dark mode", () => {
     applyDisplayMode("dark");
-    expect(document.body.classList.contains("dark-mode")).toBe(true);
-    expect(document.body.classList.contains("gray-mode")).toBe(false);
+    expect(document.body.dataset.theme).toBe("dark");
   });
 
-  it("adds gray-mode class for gray mode", () => {
+  it("sets data-theme to gray for gray mode", () => {
     applyDisplayMode("gray");
-    expect(document.body.classList.contains("gray-mode")).toBe(true);
-    expect(document.body.classList.contains("dark-mode")).toBe(false);
+    expect(document.body.dataset.theme).toBe("gray");
   });
 
-  it("removes classes for light mode", () => {
-    document.body.classList.add("dark-mode", "gray-mode");
+  it("sets data-theme to light for light mode", () => {
+    document.body.dataset.theme = "dark";
     applyDisplayMode("light");
-    expect(document.body.classList.contains("dark-mode")).toBe(false);
-    expect(document.body.classList.contains("gray-mode")).toBe(false);
+    expect(document.body.dataset.theme).toBe("light");
   });
 
   it("warns when an invalid mode is provided", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    document.body.classList.add("dark-mode");
+    document.body.dataset.theme = "dark";
     applyDisplayMode("neon");
     expect(warnSpy).toHaveBeenCalled();
-    expect(document.body.classList.contains("dark-mode")).toBe(true);
+    expect(document.body.dataset.theme).toBe("dark");
     warnSpy.mockRestore();
   });
 });
