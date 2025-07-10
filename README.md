@@ -92,6 +92,15 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
 - `design/` – documentation and code standards.
 - [Architecture Overview](design/architecture.md) – summary of key modules.
 
+### CSS Organization
+
+- `base.css` holds global resets, variables, and shared keyframes.
+- `layout.css` defines page layout rules.
+- `components.css` contains individual component styles.
+- `utilities.css` houses helper classes only.
+
+Global rules should not be repeated across files.
+
 ## Data Schemas and Validation
 
 JSON files in `src/data` are validated against matching schemas in `src/schemas`.
