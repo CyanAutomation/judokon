@@ -16,10 +16,6 @@
   transform: scale(1.05);
 }
 
-.game-tile {
-  composes: card;
-}
-
 .tile-content h2 {
   padding-left: var(--space-large, 1rem);
   font-size: var(--font-large);
