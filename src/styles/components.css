@@ -143,9 +143,6 @@ button .ripple {
   }
 }
 
-.reduce-motion .animate-card {
-  animation: none;
-}
 /* Card styles */
 .card-container {
   display: flex;
