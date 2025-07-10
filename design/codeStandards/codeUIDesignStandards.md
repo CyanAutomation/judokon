@@ -45,15 +45,17 @@ Ju-Do-Kon! uses a **bold, high-contrast design system** grounded in clear hierar
 
 ### Core Strategy
 
-| Token Name          | Hex Code | Use                       |
-| ------------------- | -------- | ------------------------- |
-| --color-primary     | #CB2504  | Buttons, highlights       |
-| --color-secondary   | #0C3F7A  | Nav bar, stat blocks      |
-| --color-tertiary    | #E8E8E8  | Backgrounds, outlines     |
-| --button-bg         | #CB2504  | Primary button background |
-| --button-hover-bg   | #0B5BB0  | Hover state for buttons   |
-| --button-active-bg  | #0C3F7A  | Active button state       |
-| --button-text-color | #FFFFFF  | Button text               |
+| Token Name          | Hex Code | Use                         |
+| ------------------- | -------- | --------------------------- |
+| --color-primary     | #CB2504  | Buttons, highlights         |
+| --color-secondary   | #0C3F7A  | Nav bar, stat blocks        |
+| --color-tertiary    | #E8E8E8  | Backgrounds, outlines       |
+| --button-bg         | #CB2504  | Primary button background   |
+| --button-hover-bg   | #0B5BB0  | Hover state for buttons     |
+| --button-active-bg  | #0C3F7A  | Active button state         |
+| --button-text-color | #FFFFFF  | Button text                 |
+| --switch-off-bg     | #878787  | Toggle off state background |
+| --switch-on-bg      | #08A700  | Toggle on state background  |
 
 The hex values above correspond to CSS custom properties used throughout the project. See [Tokens](#10-tokens) for the complete list.
 
@@ -330,6 +332,8 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 | --button-hover-bg   | #0B5BB0                    | Hover state for buttons; adds drop shadow |
 | --button-active-bg  | #0C3F7A                    | Active button state                       |
 | --button-text-color | #ffffff                    | Button text                               |
+| --switch-off-bg     | #878787                    | Toggle off state background               |
+| --switch-on-bg      | #08A700                    | Toggle on state background                |
 | --shadow-base       | 0 4px 12px rgba(0,0,0,0.1) | Elevation; hover drop-shadow              |
 | --transition-fast   | all 150ms ease             | UI animations                             |
 

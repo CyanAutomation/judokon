@@ -16,6 +16,8 @@
   --button-hover-bg: #0b5bb0;
   --button-active-bg: #0c3f7a;
   --button-text-color: #ffffff;
+  --switch-off-bg: #878787; /* Toggle off state background */
+  --switch-on-bg: #08a700; /* Toggle on state background */
   --radius-pill: 9999px; /* capsule */
 
   /* Updated spacing tokens */
