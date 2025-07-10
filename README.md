@@ -16,7 +16,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 5. [Installation](#installation)
 6. [Dependencies](#dependencies)
 7. [Project Structure](#project-structure)
-8. [Changelog](#changelog)
+8. [Display Modes](#display-modes)
 9. [Future Plans](#future-plans)
 10. [Contributing](#contributing)
 
@@ -204,6 +204,17 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 - The game currently does not support mobile devices.
 - Animations for card flips are not yet implemented.
 - Difficulty levels for the computer opponent are under development.
+
+## Display Modes
+
+JU-DO-KON! supports **light**, **dark**, and **gray** themes. The
+`applyDisplayMode` helper sets a `data-theme` attribute on the `<body>` element
+so CSS in `src/styles/base.css` can override variables for each mode. Define a
+new theme by adding a `[data-theme="my-theme"]` block with your custom
+variables and call `applyDisplayMode("my-theme")` to activate it.
+
+If you modify theme colors, run `npm run check:contrast` while the development
+server is running to verify adequate color contrast.
 
 ## Future Plans
 
