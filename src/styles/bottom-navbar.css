@@ -1,11 +1,3 @@
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 .bottom-navbar {
   min-height: max(7vh, 12px);
   display: inline-flex;

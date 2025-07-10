@@ -1,11 +1,4 @@
 /* Layout tweaks for meditation screen */
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 
 .meditation-screen {
   display: flex;

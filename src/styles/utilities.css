@@ -1,12 +1,3 @@
-/* Reset default browser styles for all elements */
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 /* Updated to align with the design standards */
 .noscript-warning {
   color: var(--color-primary); /* Updated token */
@@ -44,24 +35,9 @@
   color: var(--color-text); /* Updated token */
 }
 
-@keyframes scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(calc(-250px * 7));
-  }
-}
-
 /* Optional: Hide spinner by default with the hidden class */
 .hidden {
   display: none;
-}
-
-/* Utility: constrain long-form text to improve readability */
-.long-form {
-  max-width: 70ch;
-  margin-inline: auto;
 }
 
 /* Add Reduced Motion support */
