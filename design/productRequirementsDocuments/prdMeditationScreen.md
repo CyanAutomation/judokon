@@ -211,7 +211,7 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 
 - [ ] **5.0 Performance & Load Time Optimization**
   - [ ] 5.1 Optimize image and text asset load times to under 1 second.
-  - [ ] 5.2 Implement responsive grid and flexbox for various screen sizes (portrait/landscape).
+  - [x] 5.2 Implement responsive grid and flexbox for various screen sizes (portrait/landscape).
 
 ---
 

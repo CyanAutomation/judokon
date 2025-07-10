@@ -26,7 +26,8 @@
   border-radius: var(--radius-lg); /* Updated token */
 }
 
-.quote-container {
+.quote-container,
+.meditation-container {
   display: flex;
   align-items: flex-start;
   gap: var(--space-md); /* Updated token */
@@ -132,7 +133,8 @@
 
 /* Responsive: KG image above quote on narrow screens */
 @media (max-width: 600px) {
-  .quote-container {
+  .quote-container,
+  .meditation-container {
     flex-direction: column;
     align-items: center;
   }
@@ -145,7 +147,8 @@
 
 /* Add responsive design for portrait and landscape orientations */
 @media (orientation: portrait) {
-  .quote-container {
+  .quote-container,
+  .meditation-container {
     flex-direction: column;
     align-items: center;
   }
@@ -161,7 +164,8 @@
 }
 
 @media (orientation: landscape) {
-  .quote-container {
+  .quote-container,
+  .meditation-container {
     flex-direction: row;
     align-items: flex-start;
   }
