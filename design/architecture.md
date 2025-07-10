@@ -12,6 +12,7 @@ The entry point for the browser. It waits for `DOMContentLoaded` and wires up al
 ## helpers/
 
 Reusable utilities organized by concern (card building, data fetching, random card generation, etc.). Each module is documented with JSDoc and `@pseudocode` blocks for clarity.
+Key helpers include `generateRandomCard()` for choosing a card and `renderJudokaCard()` for injecting it into the DOM with an optional reveal animation.
 
 ## data and schemas
 

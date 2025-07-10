@@ -98,3 +98,46 @@ export async function displayJudokaCard(judoka, gokyo, gameArea) {
     gameArea.innerHTML = "<p>⚠️ Failed to generate judoka card. Please try again later.</p>";
   }
 }
+
+/**
+ * Render a single judoka card into the provided container.
+ *
+ * @pseudocode
+ * 1. Validate `judoka` with `hasRequiredJudokaFields`.
+ *    - If invalid, log an error and exit early.
+ * 2. Ensure `container` exists before proceeding.
+ * 3. Generate the card element using `generateJudokaCardHTML`.
+ * 4. Replace the container contents with the generated card.
+ * 5. When `animate` is true, add the `animate-card` class on the next frame.
+ *
+ * @param {Judoka} judoka - Judoka data to render.
+ * @param {Object<string, GokyoEntry>} gokyoLookup - Lookup of gokyo moves.
+ * @param {HTMLElement} container - Element where the card is injected.
+ * @param {Object} [options] - Render options.
+ * @param {boolean} [options.animate=false] - Whether to apply animation.
+ * @returns {Promise<HTMLElement|null>} The rendered card element or `null`.
+ */
+export async function renderJudokaCard(judoka, gokyoLookup, container, { animate = false } = {}) {
+  if (!container) return null;
+  if (!hasRequiredJudokaFields(judoka)) {
+    console.error("Invalid judoka object:", judoka);
+    return null;
+  }
+
+  try {
+    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+    if (!card) return null;
+    container.innerHTML = "";
+    container.appendChild(card);
+    if (animate) {
+      requestAnimationFrame(() => {
+        card.classList.add("animate-card");
+      });
+    }
+    debugLog("Judoka card rendered:", judoka);
+    return card;
+  } catch (error) {
+    console.error("Error rendering judoka card:", error);
+    return null;
+  }
+}
