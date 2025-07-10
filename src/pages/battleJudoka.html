@@ -78,18 +78,6 @@
       );
     </script>
     <script type="module" src="../helpers/setupSvgFallback.js"></script>
-    <script type="module">
-      import { startRound, handleStatSelection, quitMatch } from "../helpers/classicBattle.js";
-
-      document.addEventListener("DOMContentLoaded", () => {
-        document
-          .querySelectorAll("#stat-buttons button")
-          .forEach((btn) =>
-            btn.addEventListener("click", () => handleStatSelection(btn.dataset.stat))
-          );
-        document.getElementById("quit-btn").addEventListener("click", quitMatch);
-        startRound();
-      });
-    </script>
+    <script type="module" src="../helpers/battleJudokaPage.js"></script>
   </body>
 </html>
