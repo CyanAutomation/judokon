@@ -1,11 +1,4 @@
 /* Responsive styles for the Judoka Card Carousel */
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 
 /* Default styles for desktop */
 .card-carousel {
