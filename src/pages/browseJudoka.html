@@ -121,6 +121,8 @@
             if (allJudoka.length === 0) {
               const noResultsMessage = document.createElement("div");
               noResultsMessage.className = "no-results-message";
+              noResultsMessage.setAttribute("role", "status");
+              noResultsMessage.setAttribute("aria-live", "polite");
               noResultsMessage.textContent = "No cards available.";
               carouselContainer.appendChild(noResultsMessage);
             }
@@ -128,6 +130,8 @@
             console.error("Error building the carousel:", error);
             const errorMessage = document.createElement("div");
             errorMessage.className = "error-message";
+            errorMessage.setAttribute("role", "alert");
+            errorMessage.setAttribute("aria-live", "assertive");
             errorMessage.textContent = "Unable to load roster.";
             carouselContainer.appendChild(errorMessage);
 
@@ -218,6 +222,8 @@
             if (filtered.length === 0) {
               const noResultsMessage = document.createElement("div");
               noResultsMessage.className = "no-results-message";
+              noResultsMessage.setAttribute("role", "status");
+              noResultsMessage.setAttribute("aria-live", "polite");
               noResultsMessage.textContent = "No judoka available for this country";
               carouselContainer.appendChild(noResultsMessage);
             }

@@ -39,6 +39,26 @@ describe("populateCountryList", () => {
     expect(names).toEqual(["All", "Brazil", "Japan"]);
   });
 
+  it("applies accessible aria-labels to flag buttons", async () => {
+    const judoka = [{ id: 1, firstname: "A", surname: "B", country: "Japan" }];
+
+    const mapping = [{ country: "Japan", code: "jp", active: true }];
+
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => judoka })
+      .mockResolvedValueOnce({ ok: true, json: async () => mapping });
+
+    const { populateCountryList } = await import("../../src/helpers/countryUtils.js");
+
+    const container = document.createElement("div");
+    await populateCountryList(container);
+
+    const buttons = container.querySelectorAll("button.flag-button");
+    expect(buttons[0].getAttribute("aria-label")).toBe("Show all countries");
+    expect(buttons[1].getAttribute("aria-label")).toBe("Filter by Japan");
+  });
+
   it("lazy loads additional countries on scroll", async () => {
     const judoka = Array.from({ length: 60 }, (_, i) => ({
       id: i,
