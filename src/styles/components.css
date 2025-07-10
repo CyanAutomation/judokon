@@ -808,7 +808,7 @@ button .ripple {
   display: inline-block;
   width: 60px;
   height: 34px;
-  background-color: var(--color-surface);
+  background-color: var(--switch-off-bg);
   border-radius: var(--radius-pill);
   transition: var(--transition-fast);
 }
@@ -826,7 +826,7 @@ button .ripple {
 }
 
 .switch input:checked + .slider {
-  background-color: #08a700;
+  background-color: var(--switch-on-bg);
 }
 
 .switch input:checked + .slider::before {
