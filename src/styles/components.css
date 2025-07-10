@@ -1,10 +1,5 @@
 @import "./bottom-navbar.css";
 
-.noscript-warning {
-  color: red;
-  font-weight: bold;
-}
-
 .card {
   padding: 1rem;
   background-color: var(--color-secondary);
