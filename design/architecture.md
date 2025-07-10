@@ -14,6 +14,13 @@ The entry point for the browser. It waits for `DOMContentLoaded` and wires up al
 Reusable utilities organized by concern (card building, data fetching, random card generation, etc.). Each module is documented with JSDoc and `@pseudocode` blocks for clarity.
 Key helpers include `generateRandomCard()` for choosing a card and `renderJudokaCard()` for injecting it into the DOM with an optional reveal animation.
 
+## page modules
+
+HTML pages under `src/pages` each load a dedicated module located in
+`src/helpers`. These modules (for example `randomJudokaPage.js` or
+`settingsPage.js`) expose setup functions that attach event listeners and
+initialize page-specific behavior.
+
 ## data and schemas
 
 Structured gameplay data lives in `src/data`. Matching JSON Schemas in `src/schemas` describe and validate these files. The `npm run validate:data` script uses Ajv to ensure data integrity.
