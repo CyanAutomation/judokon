@@ -3,35 +3,49 @@ import { createGokyoLookup } from "./utils.js";
 import { renderJudokaCard, getRandomJudoka } from "./cardUtils.js";
 import { hasRequiredJudokaFields } from "./judokaValidation.js";
 import { DATA_DIR } from "./constants.js";
+import { getFallbackJudoka } from "./judokaUtils.js";
 
 /**
- * Builds a simple fallback judoka object used when data fails to load.
+ * Replaces the contents of an element with the given card and animates it.
  *
  * @pseudocode
- * 1. Create an object with minimal judoka information.
- *    - Use neutral stats and placeholder text.
- * 2. Return this object for use in fallback card generation.
+ * 1. Exit early if `element` or `card` is missing.
+ * 2. Clear `element` and append `card` to it.
+ * 3. If motion is allowed, add the `animate-card` class on the next frame.
  *
- * @returns {Judoka} The fallback judoka data.
+ * @param {HTMLElement} element - DOM element to contain the card.
+ * @param {HTMLElement} card - The card element to display.
+ * @param {boolean} [skipAnimation=false] - Skip the entry animation when true.
  */
-export function buildFallbackJudoka() {
-  return {
-    id: 0,
-    firstname: "Unknown",
-    surname: "Judoka",
-    country: "Unknown",
-    countryCode: "N/A",
-    stats: {
-      power: 0,
-      speed: 0,
-      technique: 0,
-      kumikata: 0,
-      newaza: 0
-    },
-    weightClass: "N/A",
-    signatureMoveId: 0,
-    rarity: "common"
-  };
+export function displayCard(element, card, skipAnimation = false) {
+  if (!element || !card) return;
+  element.innerHTML = "";
+  element.appendChild(card);
+  if (!skipAnimation) {
+    requestAnimationFrame(() => {
+      card.classList.add("animate-card");
+    });
+  }
+}
+
+/**
+ * Creates and displays a card for the specified judoka.
+ *
+ * @pseudocode
+ * 1. Generate the HTML for `judoka` using `generateJudokaCardHTML`.
+ * 2. When a card element is returned, display it with `displayCard`.
+ *
+ * @param {Judoka} judoka - Judoka data used to build the card.
+ * @param {Object<string, GokyoEntry>} gokyoLookup - Lookup of gokyo moves.
+ * @param {HTMLElement} containerEl - Element to contain the card.
+ * @param {boolean} prefersReducedMotion - Motion preference flag.
+ * @returns {Promise<void>} Resolves when the card is displayed.
+ */
+export async function createCardForJudoka(judoka, gokyoLookup, containerEl, prefersReducedMotion) {
+  const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+  if (card) {
+    displayCard(containerEl, card, prefersReducedMotion);
+  }
 }
 
 /**
@@ -46,8 +60,9 @@ export function buildFallbackJudoka() {
  *    - Create a lookup object with `createGokyoLookup`.
  * 3. Select a random judoka using `getRandomJudoka` and invoke `onSelect`
  *    with the chosen judoka when provided.
- * 4. Generate and display the card with `renderJudokaCard`.
- * 5. On any error, log the issue and display a fallback card (judoka id `0`).
+ * 4. Generate and display the card with `createCardForJudoka`.
+ * 5. On any error, log the issue and load the fallback judoka using
+ *    `getFallbackJudoka()` before displaying its card.
  *
  * @param {Judoka[]} [activeCards] - Preloaded judoka data.
  * @param {GokyoEntry[]} [gokyoData] - Preloaded gokyo data.
@@ -95,7 +110,7 @@ export async function generateRandomCard(
   } catch (error) {
     console.error("Error generating random card:", error);
 
-    const fallbackJudoka = buildFallbackJudoka();
+    const fallbackJudoka = await getFallbackJudoka();
 
     try {
       if (typeof onSelect === "function") {
