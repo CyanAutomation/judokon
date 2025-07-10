@@ -4,7 +4,7 @@
 
 This document describes the **Home Page Main Navigation Menu** for the JU-DO-KON! web-based judo-themed card battle game.
 
-> Imagine a new player, Ayumi, who’s just downloaded JU-DO-KON! after seeing a cool TikTok clip. She opens the game and instantly lands on a vibrant home screen where “Classic Battle” and “Team Battle” tiles stand side by side, each pulsing slightly when she hovers. The judo-inspired icons draw her in, and she feels like she’s stepping onto the tatami mat. She sees “Update Judoka” and “Browse Judoka” neatly below, feeling in control and excited. Within seconds, she launches into her first match, confident she’s chosen the right mode. She tells her friends how easy it was to start. That’s the experience we’re building: immediate clarity, thematic immersion, and frictionless engagement.
+> Imagine a new player, Ayumi, who’s just downloaded JU-DO-KON! after seeing a cool TikTok clip. She opens the game and instantly lands on a vibrant home screen where “Classic Battle” and “Random Judoka” tiles stand side by side, each pulsing slightly when she hovers. The judo-inspired icons draw her in, and she feels like she’s stepping onto the tatami mat. She sees “Meditation” and “Browse Judoka” neatly below, feeling in control and excited. Within seconds, she launches into her first match, confident she’s chosen the right mode. She tells her friends how easy it was to start. That’s the experience we’re building: immediate clarity, thematic immersion, and frictionless engagement.
 
 The purpose of this menu is to allow players to access the core game modes quickly and intuitively. New players struggle to find and understand game modes quickly, leading to frustration, early churn, and reduced engagement. A clear, immersive, and fast-loading navigation menu is needed to orient players instantly (**menu load ≤2 s**), maintain the judo theme, and ensure accessibility across devices.
 
@@ -69,14 +69,14 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 
 > _Note: Label text may vary slightly (e.g., “View” vs. “Browse”) to better suit audience understanding. Functionality must remain unchanged._
 
-| Tile Label     | Destination URL                            | Function                                                             |
-| -------------- | ------------------------------------------ | -------------------------------------------------------------------- |
-| Classic Battle | `/pages/battleJudoka.html`                 | Launches a **1v1 battle mode** with classic rules.                   |
-| Team Battle    | `/pages/battleJudoka.html` _(placeholder)_ | Launches a **multi-judoka team battle** mode. Distinct page planned. |
-| Update Judoka  | `/pages/updateJudoka.html`                 | Allows user to **create or edit Judoka cards**.                      |
-| Browse Judoka  | `/pages/browseJudoka.html`                 | Allows user to **view all Judoka cards** in a scrollable carousel.   |
+| Tile Label     | Destination URL            | Function                                                           |
+| -------------- | -------------------------- | ------------------------------------------------------------------ |
+| Classic Battle | `/pages/battleJudoka.html` | Launches a **1v1 battle mode** with classic rules.                 |
+| Random Judoka  | `/pages/randomJudoka.html` | Displays a randomly selected judoka profile.                       |
+| Meditation     | `/pages/meditation.html`   | Provides a calm break with an inspirational quote.                 |
+| Browse Judoka  | `/pages/browseJudoka.html` | Allows user to **view all Judoka cards** in a scrollable carousel. |
 
-> **Note:** Currently, "Battle Mode: Classic" and "Battle Mode: Team Battle" point to the same URL. Distinct functionality is expected to be developed later.
+> **Note:** A separate Team Battle mode is planned for a future release. Early prototypes reused the Classic Battle page.
 
 ### Behavior on Click
 
