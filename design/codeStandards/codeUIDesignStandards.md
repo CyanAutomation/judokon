@@ -298,6 +298,10 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Active: `var(--button-active-bg)`
 - Capsule shape using `--radius-pill`
 
+### 8.8 Battle Layout
+
+- In Classic Battle screens, player and opponent cards align horizontally. They only stack vertically on very narrow screens (<480 px). Stat controls sit below the card row.
+
 ---
 
 ## 9. Accessibility & Responsiveness
