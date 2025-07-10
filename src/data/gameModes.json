@@ -106,7 +106,7 @@
     "category": "manageJudoka",
     "order": 90,
     "url": "createJudoka.html",
-    "isHidden": false,
+    "isHidden": true,
     "rules": {
       "note": "Rules will be defined in the future."
     }
@@ -119,7 +119,7 @@
     "category": "mainMenu",
     "order": 30,
     "url": "updateJudoka.html",
-    "isHidden": false,
+    "isHidden": true,
     "rules": {
       "note": "Rules will be defined in the future."
     }
