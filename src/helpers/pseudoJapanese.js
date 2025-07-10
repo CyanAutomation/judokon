@@ -103,22 +103,26 @@ export async function convertElementToPseudoJapanese(element) {
  *
  * @pseudocode
  * 1. Find the existing button with id `language-toggle`.
- * 2. Attach a click handler that fades out the element and then:
+ * 2. Attach a click handler that adds a `fading` class to the element
+ *    to fade it out, then:
  *    - On the first click, cache the element's HTML and convert all
  *      text nodes using `convertElementToPseudoJapanese`.
  *    - Swap between the cached original HTML and the generated
  *      pseudo-Japanese HTML while toggling a Japanese font class.
- *    - Fade the element back in after the swap completes.
+ *    - Remove the `fading` class so the element fades back in.
  * 3. Return the button so callers can further manipulate it if needed.
  *
  * @param {HTMLElement} element - The element whose text will be toggled.
  * @returns {HTMLButtonElement|null} The toggle button if found, otherwise `null`.
  */
+
 export function setupLanguageToggle(element) {
   const button = document.getElementById("language-toggle");
   if (!button) {
     return null;
   }
+
+  element.classList.add("fade-transition");
 
   let originalHTML = "";
   let pseudoHTML = "";
@@ -126,8 +130,7 @@ export function setupLanguageToggle(element) {
   let showingPseudo = false;
 
   button.addEventListener("click", () => {
-    element.style.transition = "opacity 200ms";
-    element.style.opacity = "0";
+    element.classList.add("fading");
     setTimeout(async () => {
       if (showingPseudo) {
         element.innerHTML = originalHTML;
@@ -142,7 +145,7 @@ export function setupLanguageToggle(element) {
         element.innerHTML = pseudoHTML;
       }
       element.classList.toggle("jp-font", !showingPseudo);
-      element.style.opacity = "1";
+      element.classList.remove("fading");
       showingPseudo = !showingPseudo;
     }, 200);
   });
