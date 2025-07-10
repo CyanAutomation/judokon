@@ -72,6 +72,11 @@ The random draw logic is implemented in `src/helpers/randomCard.js`. Its
 rendering. This module is used in **Classic Battle** as well as all **Team
 Battle** variants (Female, Male, and Mixed).
 
+Card reveal animations are handled by the `.animate-card` CSS class defined in
+`src/styles/components.css`. The class applies a short fade and upward slide on
+card insert. A media query removes this animation when a user has **Reduced
+Motion** enabled, ensuring the card appears instantly without movement.
+
 ---
 
 ## Edge Cases / Failure States
@@ -116,7 +121,7 @@ Battle** variants (Female, Male, and Mixed).
 ## Acceptance Criteria
 
 - When “Draw Card” is triggered, a random card from the active set is displayed within 300ms.
-- A reveal animation (fade or bounce) completes within 500ms at ≥60fps.
+- A reveal animation (fade and slide via `.animate-card`) completes within 500ms at ≥60fps.
 - If the random function fails, a fallback card is shown (judoka id=0, from judoka.json).
 - If the active card set is empty, a fallback card is shown (judoka id=0, from judoka.json).
 - Animation is disabled if the user has enabled Reduced Motion settings.
@@ -186,9 +191,9 @@ Battle** variants (Female, Male, and Mixed).
 
 - **Card Placeholder Module**:
   - Start State: “?” icon card.
-  - Draw State: Fade-in random card.
+  - Draw State: Random card fades and slides in using the `.animate-card` class.
   - Fail State: Error card with soft warning text (“Oops! Try again!”).
-  - Animation Layer: Reserve transparent zone for bounce/fade animations.
+  - Animation Layer: Reserve transparent zone for slide/fade animations.
 - **Action Button Module**:
   - Giant “Draw Card!” button (64px height min, 90px optimal for kid-friendly tapping).
   - **Loading State**: Button changes to a spinner or text (“Drawing…”).
@@ -202,7 +207,7 @@ Battle** variants (Female, Male, and Mixed).
 
 - **Animation Frames**:
   - Stage 1: Button press triggers card slide transition.
-  - Stage 2: Card slides to reveal.
+  - Stage 2: Card fades and slides in using `.animate-card`.
 - **Fallback**:
   - If fail → fallback card (judoka id=0, from judoka.json) slides in with reduced animation.
 - **Accessibility Setting Check**:
@@ -233,7 +238,7 @@ Battle** variants (Female, Male, and Mixed).
   - [x] 1.1 Create `generateRandomCard()` function to select random card from active set.
   - [x] 1.2 Integrate card draw with UI trigger ("Draw Card" button).
 - [ ] 2.0 Develop Card Reveal Animation
-  - [ ] 2.1 Implement card slide for card reveal.
+  - [ ] 2.1 Implement `.animate-card` class for fade/slide card reveal.
   - [ ] 2.2 Ensure animation plays at ≥60fps.
   - [ ] 2.3 Respect Reduced Motion settings and disable animation when active.
 - [ ] 3.0 Error and Fallback Handling

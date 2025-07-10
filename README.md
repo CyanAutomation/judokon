@@ -101,6 +101,10 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
 
 Global rules should not be repeated across files.
 
+The `.animate-card` class in `components.css` reveals new cards with a short
+fade and upward slide. A `prefers-reduced-motion` media query removes the
+animation so the card appears instantly when motion reduction is requested.
+
 ## Data Schemas and Validation
 
 JSON files in `src/data` are validated against matching schemas in `src/schemas`.
