@@ -55,6 +55,8 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 - Optimize DOM updates for minimal reflows/repaints during animation.
 - Implement debounce to prevent double taps on “Draw Card” button.
 - Ensure fallback logic uses a single, consistent error card (judoka id=0).
+  The `getFallbackJudoka()` helper loads and caches this entry from
+  `judoka.json`.
 - Log random draw failures for post-launch debugging and analytics.
 
 ---
@@ -82,7 +84,7 @@ Motion** enabled, ensuring the card appears instantly without movement.
 ## Edge Cases / Failure States
 
 - **Same Card Reselection**: Duplicates are possible and expected — randomness allows repeats.
-- **Random Pick Failure**: If random draw fails (e.g., due to a code error), show a fallback card (judoka id=0, from judoka.json)
+- **Random Pick Failure**: If random draw fails (e.g., due to a code error), show a fallback card (judoka id=0, from `judoka.json`) via `getFallbackJudoka()`
 - **Empty Card Set**: Display a predefined error card (judoka id=0, from judoka.json) if no cards are available.
 - **Low Performance Devices**: Automatically downgrade to a static reveal if animations cannot sustain 60fps.
 - **Accessibility**:
@@ -124,6 +126,7 @@ Motion** enabled, ensuring the card appears instantly without movement.
 - A reveal animation (fade and slide via `.animate-card`) completes within 500ms at ≥60fps.
 - If the random function fails, a fallback card is shown (judoka id=0, from judoka.json).
 - If the active card set is empty, a fallback card is shown (judoka id=0, from judoka.json).
+  Both cases rely on the shared `getFallbackJudoka()` helper.
 - Animation is disabled if the user has enabled Reduced Motion settings.
 
 ---

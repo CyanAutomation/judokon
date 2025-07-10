@@ -1,44 +1,12 @@
 import { createGokyoLookup } from "./utils.js";
 import { generateJudokaCard } from "./cardBuilder.js";
-import { fetchJson } from "./dataUtils.js";
+import { getFallbackJudoka } from "./judokaUtils.js";
 import {
-  DATA_DIR,
   CAROUSEL_SCROLL_DISTANCE,
   CAROUSEL_SWIPE_THRESHOLD,
   SPINNER_DELAY_MS
 } from "./constants.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
-
-let fallbackJudoka;
-
-async function getFallbackJudoka() {
-  if (fallbackJudoka) {
-    return fallbackJudoka;
-  }
-  try {
-    const data = await fetchJson(`${DATA_DIR}judoka.json`);
-    if (Array.isArray(data)) {
-      fallbackJudoka = data.find((j) => j.id === 0) || null;
-    }
-    if (!fallbackJudoka) {
-      throw new Error("Fallback judoka with id 0 not found");
-    }
-  } catch (error) {
-    console.error("Failed to load fallback judoka:", error);
-    fallbackJudoka = {
-      id: 0,
-      firstname: "Unknown",
-      surname: "Judoka",
-      country: "Unknown",
-      countryCode: "N/A",
-      weightClass: "N/A",
-      stats: { power: 0, speed: 0, technique: 0, kumikata: 0, newaza: 0 },
-      signatureMoveId: 0,
-      rarity: "common"
-    };
-  }
-  return fallbackJudoka;
-}
 
 /**
  * Creates a scroll button with the specified direction and functionality.
