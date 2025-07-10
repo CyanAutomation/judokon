@@ -52,7 +52,7 @@
 
 /* Dark mode variable overrides */
 .dark-mode {
-  --color-surface: #1a1a1a;
+  --color-surface: #121212;
   --color-background: #000000;
   --color-text: #ffffff;
   --color-text-inverted: #000000;
@@ -60,8 +60,8 @@
 
 /* Gray mode variable overrides */
 .gray-mode {
-  --color-surface: #e0e0e0;
-  --color-background: #d0d0d0;
+  --color-surface: #f0f0f0;
+  --color-background: #cdcdcd;
   --color-text: #000000;
   --color-text-inverted: #ffffff;
 }
