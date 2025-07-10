@@ -162,7 +162,7 @@ export function setupBrowseJudokaPage() {
         noResultsMessage.className = "no-results-message";
         noResultsMessage.setAttribute("role", "status");
         noResultsMessage.setAttribute("aria-live", "polite");
-        noResultsMessage.textContent = "No cards available.";
+        noResultsMessage.textContent = "No judoka available.";
         carouselContainer.appendChild(noResultsMessage);
       }
     } catch (error) {
