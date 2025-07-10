@@ -7,11 +7,11 @@ vi.mock("../../src/helpers/randomCard.js", () => ({
 }));
 
 let getRandomJudokaMock;
-let displayJudokaCardMock;
+let renderJudokaCardMock;
 
 vi.mock("../../src/helpers/cardUtils.js", () => ({
   getRandomJudoka: (...args) => getRandomJudokaMock(...args),
-  displayJudokaCard: (...args) => displayJudokaCardMock(...args)
+  renderJudokaCard: (...args) => renderJudokaCardMock(...args)
 }));
 
 vi.mock("../../src/helpers/dataUtils.js", () => ({
@@ -37,7 +37,7 @@ describe("classicBattle", () => {
       if (cb) cb({ id: 1 });
     });
     getRandomJudokaMock = vi.fn(() => ({ id: 2 }));
-    displayJudokaCardMock = vi.fn(async (j, g, container) => {
+    renderJudokaCardMock = vi.fn(async (j, g, container) => {
       container.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>3</span></li><li class="stat"><strong>Speed</strong> <span>3</span></li><li class="stat"><strong>Technique</strong> <span>3</span></li><li class="stat"><strong>Kumi-kata</strong> <span>3</span></li><li class="stat"><strong>Ne-waza</strong> <span>3</span></li></ul>`;
     });
   });
@@ -112,13 +112,14 @@ describe("classicBattle", () => {
       callCount += 1;
       return callCount === 1 ? { id: 1 } : { id: 2 };
     });
-    displayJudokaCardMock = vi.fn(async () => {});
+    renderJudokaCardMock = vi.fn(async () => {});
     const { startRound } = await import("../../src/helpers/classicBattle.js");
     await startRound();
-    expect(displayJudokaCardMock).toHaveBeenCalledWith(
+    expect(renderJudokaCardMock).toHaveBeenCalledWith(
       expect.objectContaining({ id: 2 }),
       expect.anything(),
-      expect.anything()
+      expect.anything(),
+      { animate: false }
     );
   });
 });

@@ -1,5 +1,5 @@
 import { generateRandomCard } from "./randomCard.js";
-import { getRandomJudoka, displayJudokaCard } from "./cardUtils.js";
+import { getRandomJudoka, renderJudokaCard } from "./cardUtils.js";
 import { fetchJson } from "./dataUtils.js";
 import { createGokyoLookup } from "./utils.js";
 import { DATA_DIR, CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
@@ -80,7 +80,7 @@ function startTimer() {
  *    the selected judoka.
  * 3. Select a random judoka for the computer.
  *    - If it matches the player's judoka, retry up to a safe limit.
- *    - Display the chosen judoka with `displayJudokaCard`.
+ *    - Display the chosen judoka with `renderJudokaCard`.
  * 4. Initialize the round timer.
  *
  * @returns {Promise<void>} Resolves when cards are displayed.
@@ -110,7 +110,9 @@ export async function startRound() {
       attempts += 1;
     }
   }
-  await displayJudokaCard(compJudoka, gokyoLookup, computerContainer);
+  await renderJudokaCard(compJudoka, gokyoLookup, computerContainer, {
+    animate: false
+  });
   showResult("");
   updateScoreDisplay();
   startTimer();
