@@ -78,7 +78,9 @@ SKIP_SCREENSHOTS=true npm run test:screenshot
 
 The repository follows a simple layout. GitHub Pages requires `index.html` to live at the project root.
 
-- `index.html` – landing page served by GitHub Pages.
+- `index.html` – landing page served by GitHub Pages. Internal navigation links
+  use relative paths (e.g., `../../index.html`) so the site can be served from
+  any base URL.
 - `src/` – contains the game logic and assets:
   - `game.js`
   - `helpers/`
