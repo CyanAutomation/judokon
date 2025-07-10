@@ -94,10 +94,13 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
 
 ### CSS Organization
 
-- `base.css` holds global resets, variables, and shared keyframes.
-- `layout.css` defines page layout rules.
-- `components.css` contains individual component styles.
-- `utilities.css` houses helper classes only.
+- `base.css` – tokens, resets, and global typography.
+- `layout.css` – overall page layout/grid.
+- `components.css` – reusable UI components.
+- `utilities.css` – helper classes.
+- Page-specific files such as `carousel.css` and `quote.css`.
+
+Import styles in this order: `base.css` first, then layout and component files, and finally `utilities.css`.
 
 Global rules should not be repeated across files.
 
