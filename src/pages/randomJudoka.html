@@ -47,49 +47,7 @@
       </footer>
       <script type="module" src="../helpers/setupBottomNavbar.js"></script>
       <script type="module" src="../helpers/setupDisplaySettings.js"></script>
-      <script type="module">
-        import { fetchJson } from "../helpers/dataUtils.js";
-        import { generateRandomCard } from "../helpers/randomCard.js";
-        import { DATA_DIR } from "../helpers/constants.js";
-        import { createButton } from "../components/Button.js";
-        import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
-
-        const prefersReducedMotion = shouldReduceMotionSync();
-
-        let cachedJudokaData = null;
-        let cachedGokyoData = null;
-
-        async function preloadData() {
-          try {
-            cachedJudokaData = await fetchJson(`${DATA_DIR}judoka.json`);
-            cachedGokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
-          } catch (error) {
-            console.error("Error preloading data:", error);
-          }
-        }
-
-        async function displayCard() {
-          const cardContainer = document.getElementById("card-container");
-          await generateRandomCard(
-            cachedJudokaData,
-            cachedGokyoData,
-            cardContainer,
-            prefersReducedMotion
-          );
-        }
-
-        preloadData().then(displayCard);
-
-        const cardSection = document.querySelector(".card-section");
-        const drawButton = createButton("Draw Card!", {
-          id: "draw-card-btn",
-          className: "draw-card-btn",
-          type: "button"
-        });
-        drawButton.dataset.testid = "draw-button";
-        cardSection.appendChild(drawButton);
-        drawButton.addEventListener("click", displayCard);
-      </script>
+      <script type="module" src="../helpers/randomJudokaPage.js"></script>
       <script type="module" src="../helpers/setupSvgFallback.js"></script>
       <noscript>
         <p class="noscript-warning">
