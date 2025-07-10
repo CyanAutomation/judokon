@@ -6,6 +6,8 @@
  *    - If the value is invalid, log a warning and exit early.
  *
  * 2. Set `document.body.dataset.theme` to the provided mode value.
+ * 3. Remove any existing `*-mode` classes from `document.body` and add the
+ *    class corresponding to the new mode (e.g. `dark-mode`).
  *
  * @param {"light"|"dark"|"gray"} mode - Desired display mode.
  */
@@ -16,4 +18,8 @@ export function applyDisplayMode(mode) {
     return;
   }
   document.body.dataset.theme = mode;
+  for (const m of validModes) {
+    document.body.classList.remove(`${m}-mode`);
+  }
+  document.body.classList.add(`${mode}-mode`);
 }
