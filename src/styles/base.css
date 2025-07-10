@@ -51,7 +51,7 @@
 }
 
 /* Dark mode variable overrides */
-.dark-mode {
+[data-theme="dark"] {
   --color-surface: #121212;
   --color-background: #000000;
   --color-text: #ffffff;
@@ -59,7 +59,7 @@
 }
 
 /* Gray mode variable overrides */
-.gray-mode {
+[data-theme="gray"] {
   --color-surface: #f0f0f0;
   --color-background: #cdcdcd;
   --color-text: #000000;
