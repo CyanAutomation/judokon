@@ -45,13 +45,13 @@ export function buildFallbackJudoka() {
  *
  * @param {HTMLElement} element - DOM element to contain the card.
  * @param {HTMLElement} card - The card element to display.
- * @param {boolean} [prefersMotion=false] - Whether to animate the card.
+ * @param {boolean} [skipAnimation=false] - Skip the entry animation when true.
  */
-export function displayCard(element, card, prefersMotion = false) {
+export function displayCard(element, card, skipAnimation = false) {
   if (!element || !card) return;
   element.innerHTML = "";
   element.appendChild(card);
-  if (!prefersMotion) {
+  if (!skipAnimation) {
     requestAnimationFrame(() => {
       card.classList.add("animate-card");
     });
