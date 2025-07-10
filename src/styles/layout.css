@@ -2,10 +2,6 @@
 /* General body styles */
 
 body {
-  font-family: "Open Sans", sans-serif; /* Updated token */
-  color: var(--color-text); /* Updated token */
-  background-color: var(--color-tertiary); /* Updated token */
-  line-height: 1.4; /* Updated token */
   min-height: 100dvh;
   min-width: 100vw;
   background-image: url("./assets/images/bgTileBlue.png");
