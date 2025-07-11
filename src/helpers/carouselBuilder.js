@@ -275,8 +275,7 @@ function applyAccessibilityImprovements(wrapper) {
   // Ensure contrast ratios for text and background
   const cards = wrapper.querySelectorAll(".judoka-card");
   cards.forEach((card) => {
-    card.style.color = "#000"; // Ensure text is dark for contrast
-    card.style.backgroundColor = "#fff"; // Ensure background is light for contrast
+    card.style.color = "var(--color-text-inverted)";
   });
 }
 
