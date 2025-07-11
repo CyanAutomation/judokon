@@ -1,6 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/commonSetup.js";
 import fs from "fs";
-import { registerCommonRoutes } from "./fixtures/commonRoutes.js";
 
 // Allow skipping screenshots via the SKIP_SCREENSHOTS environment variable
 const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
@@ -21,7 +20,6 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
 
   for (const { url, name } of pages) {
     test(`screenshot ${url}`, async ({ page }) => {
-      await registerCommonRoutes(page);
       await page.route("**/src/data/gameModes.json", (route) => {
         route.fulfill({ path: "tests/fixtures/gameModes.json" });
       });

@@ -1,5 +1,4 @@
-import { test, expect } from "@playwright/test";
-import { registerCommonRoutes } from "./fixtures/commonRoutes.js";
+import { test, expect } from "./fixtures/commonSetup.js";
 
 async function setCarouselWidth(page, width) {
   await page.evaluate((w) => {
@@ -14,7 +13,6 @@ const COUNTRY_TOGGLE_LOCATOR = "country-toggle";
 
 test.describe("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
-    await registerCommonRoutes(page);
     await page.goto("/src/pages/browseJudoka.html");
   });
 

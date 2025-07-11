@@ -1,9 +1,7 @@
-import { test, expect } from "@playwright/test";
-import { registerCommonRoutes } from "./fixtures/commonRoutes.js";
+import { test, expect } from "./fixtures/commonSetup.js";
 
 test.describe("View Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
-    await registerCommonRoutes(page);
     await page.goto("/src/pages/randomJudoka.html");
   });
 
