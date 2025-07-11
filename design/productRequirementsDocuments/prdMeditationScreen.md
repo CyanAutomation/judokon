@@ -189,24 +189,20 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 ## Tasks
 
 - [x] **1.0 Implement Meditation Feedback Module**
-
   - [x] 1.1 Load and display KG character image.
   - [x] 1.2 Add calm headline (“Pause. Breathe. Reflect.”).
 
 - [ ] **2.0 Implement Quote Display Module**
-
   - [x] 2.1 Randomly select a quote from `aesopsFables.json`.
   - [ ] 2.2 Display the quote with dynamic, responsive text scaling.
   - [x] 2.3 Implement skeleton loader while fetching quote using the existing loading spinner styled with `var(--button-bg)`.
   - [x] 2.4 Fallback to default calm message if quote data fails.
 
 - [x] **3.0 Implement Action Button Module**
-
   - [x] 3.1 Add large, thumb-friendly CTA button ("Continue Your Journey").
   - [x] 3.2 Style CTA button with `var(--button-bg)` and `var(--button-hover-bg)`; ensure minimum 44px height and proper spacing (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 
 - [x] **4.0 Accessibility**
-
   - [x] 4.1 Add ARIA tags for screen readers.
 
 - [ ] **5.0 Performance & Load Time Optimization**

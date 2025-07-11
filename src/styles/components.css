@@ -463,6 +463,17 @@ button .ripple {
   min-width: 0;
 }
 
+/*
+  Ensure the outer placeholder element doesn't grow wider than
+  the viewport when the carousel wrapper is inserted. Safari 18
+  may expand auto-width containers based on their children,
+  causing horizontal scroll.
+*/
+#carousel-container {
+  width: 100%;
+  overflow: hidden;
+}
+
 /* Carousel styles moved to carousel.css for better responsive design */
 
 .card-carousel::-webkit-scrollbar {
