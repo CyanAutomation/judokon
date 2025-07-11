@@ -42,12 +42,15 @@ export function createStatsPanel(stats, options = {}) {
     list.appendChild(li);
   }
 
-  addItem("Power", power);
-  addItem("Speed", speed);
-  addItem("Technique", technique);
-  addItem("Kumi-kata", kumikata);
-  addItem("Ne-waza", newaza);
+  const statsEntries = [
+    { label: "Power", key: power },
+    { label: "Speed", key: speed },
+    { label: "Technique", key: technique },
+    { label: "Kumi-kata", key: kumikata },
+    { label: "Ne-waza", key: newaza },
+  ];
 
+  statsEntries.forEach(({ label, key }) => addItem(label, key));
   panel.appendChild(list);
   return panel;
 }
