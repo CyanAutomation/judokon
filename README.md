@@ -233,7 +233,10 @@ server is running to verify adequate color contrast.
 JU-DO-KON! is tested in the latest versions of Chrome, Firefox, Safari, and Edge.
 The card carousel uses modern CSS like `clamp()` for flexible sizing. Safari 15
 and older do not support `clamp()`, so cards fall back to a fixed `300px` width.
-Mobile Safari supports smooth scrolling via `-webkit-overflow-scrolling: touch`.
+Safari may also expand flex items if `min-width` isn't explicitly set. When
+styling `.card-carousel`, set `min-width: 100%` (or `0`) so horizontal scrolling
+works correctly. Mobile Safari supports smooth scrolling via
+`-webkit-overflow-scrolling: touch`.
 
 ## Future Plans
 
