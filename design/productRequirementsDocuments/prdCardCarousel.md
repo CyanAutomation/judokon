@@ -122,6 +122,8 @@ returned element to an empty container (e.g., `#carousel-container`).
 
 - Layout will adapt to mobile (one to two cards visible) and desktop (three to five cards visible).
 - Card size will automatically adjust to screen size.
+- Each card maintains a minimum width of **200px** using CSS `clamp` to ensure
+  portraits and stats remain legible on narrow screens.
 
 ### Interaction
 
