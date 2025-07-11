@@ -179,6 +179,14 @@
   }
 }
 
+@media (min-width: var(--breakpoint-lg)) {
+  .quote-heading,
+  .quote-content {
+    width: 100%;
+    max-width: none;
+  }
+}
+
 /* Utility fade transition for quotes */
 .fade-transition {
   transition: opacity var(--transition-fast);
