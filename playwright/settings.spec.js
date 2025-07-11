@@ -27,4 +27,57 @@ test.describe("Settings page", () => {
     await expect(page.getByLabel(/motion effects/i)).toBeVisible();
     await expect(page.getByLabel(/display mode/i)).toBeVisible();
   });
+
+  test("controls expose correct labels and follow tab order", async ({ page }) => {
+    await page.getByLabel(/Classic Battle/i).waitFor();
+
+    const gameModes = await page.evaluate(async () => {
+      const res = await fetch("/tests/fixtures/gameModes.json");
+      return res.json();
+    });
+
+    const sortedNames = gameModes
+      .slice()
+      .sort((a, b) => a.order - b.order)
+      .map((m) => m.name);
+
+    const expectedLabels = [
+      "Sound",
+      "Full Navigation Map",
+      "Motion Effects",
+      "Display Mode",
+      ...sortedNames
+    ];
+
+    await expect(page.locator("#sound-toggle")).toHaveAttribute("aria-label", "Sound");
+    await expect(page.locator("#navmap-toggle")).toHaveAttribute(
+      "aria-label",
+      "Full Navigation Map"
+    );
+    await expect(page.locator("#motion-toggle")).toHaveAttribute("aria-label", "Motion Effects");
+
+    for (const name of sortedNames) {
+      await expect(page.getByLabel(name)).toHaveAttribute("aria-label", name);
+    }
+
+    await page.focus("#sound-toggle");
+
+    const activeLabels = [];
+    for (let i = 0; i < expectedLabels.length; i++) {
+      const label = await page.evaluate(() => {
+        const el = document.activeElement;
+        if (!el) return "";
+        const aria = el.getAttribute("aria-label");
+        if (aria) return aria;
+        if (el.labels && el.labels[0]) return el.labels[0].textContent.trim();
+        return "";
+      });
+      activeLabels.push(label);
+      if (i < expectedLabels.length - 1) {
+        await page.keyboard.press("Tab");
+      }
+    }
+
+    expect(activeLabels).toEqual(expectedLabels);
+  });
 });
