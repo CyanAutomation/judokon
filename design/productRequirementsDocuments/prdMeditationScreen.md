@@ -113,6 +113,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 - KG character is placed on the left side, taking approximately 1/8th of the screen.
 - Quote occupies the right-hand side in desktop/landscape view and moves below the image on mobile/portrait.
+- On large desktop screens (≥ `var(--breakpoint-lg)`), the quote heading and text expand to the full width of the container for comfortable reading.
 - The "Continue Your Journey" button uses `var(--button-bg)` with `var(--button-text-color)` text and `--radius-md` corners.
 - Background color comes from `var(--color-tertiary)` for a neutral tone.
 - Quote text uses the base sans-serif font at 18px minimum.
