@@ -133,14 +133,17 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 ## Tasks
 
 - [ ] **1.0 Design Village Map Navigation (P1)**
+
   - [ ] 1.1 Design tile positions on the village map grid with 44px+ targets (Dojo, Budokan, Kodokan).
 
 - [ ] **2.0 Implement Footer Map Expansion (P1)**
+
   - [ ] 2.1 Code smooth slide-up animation (<500ms, `ease-out` easing).
   - [ ] 2.2 Implement tap-outside-to-close and map icon toggle behavior.
   - [ ] 2.3 Handle device orientation changes mid-animation.
 
 - [ ] **3.0 Integrate Fallback Menu (P2)**
+
   - [ ] 3.1 Detect if village map assets fail to load
   - [ ] 3.2 Implement a high-contrast, text-only fallback menu.
   - [ ] 3.3 Ensure fallback loads within 1 second.

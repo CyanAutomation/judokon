@@ -177,26 +177,31 @@ Search will be included in a future update to keep the initial scope focused.
 ## Tasks
 
 - [ ] 1.0 Initialize Browse Judoka
+
   - [x] 1.1 Load `judoka.json` roster data.
   - [x] 1.2 Display the Country Flag Picker filter panel.
   - [x] 1.3 Invoke `buildCardCarousel` with loaded data.
 
 - [ ] 2.0 Responsive Layout and Accessibility
+
   - [ ] 2.1 Design card layouts for mobile (1-2 cards) and desktop (3-5 cards)
   - [ ] 2.2 Ensure touch targets ≥44px and WCAG 4.5:1 contrast compliance (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness))
   - [ ] 2.3 Add card enlargement on hover and keyboard focus highlighting
 
 - [ ] 3.0 Error Handling and Edge Case Management
+
   - [x] 3.1 Display “No cards available” if list empty
   - [ ] 3.2 Show error message with retry if `judoka.json` fails to load
   - [ ] 3.3 Use default card for invalid/missing entries or failed images
   - [ ] 3.4 Handle network interruptions with retry prompt
 
 - [ ] 4.0 Performance Optimization
+
   - [ ] 4.1 Ensure full list loads within 1 second for 100 cards
   - [ ] 4.2 Maintain ≥30fps during rapid scrolling
 
 - [ ] 5.0 Interaction Enhancements
+
   - [ ] 5.1 Add ripple or scaling animation on tap/click
   - [ ] 5.2 Implement scroll markers indicating carousel position
 
