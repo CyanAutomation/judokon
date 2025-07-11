@@ -1,0 +1,35 @@
+import { generateJudokaCardHTML, generateJudokaCard } from "../../src/helpers/cardBuilder.js";
+
+const judoka = {
+  id: 1,
+  firstname: "John",
+  surname: "Doe",
+  country: "USA",
+  countryCode: "us",
+  stats: { power: 5, speed: 5, technique: 5, kumikata: 5, newaza: 5 },
+  weightClass: "-100kg",
+  signatureMoveId: 1,
+  rarity: "common",
+  gender: "male"
+};
+
+const gokyoLookup = {
+  1: { id: 1, name: "Uchi-mata" }
+};
+
+describe("judoka card accessibility attributes", () => {
+  it("applies role and aria-label to judoka-card element", async () => {
+    const container = await generateJudokaCardHTML(judoka, gokyoLookup);
+    const card = container.querySelector(".judoka-card");
+    expect(card).toHaveAttribute("role", "button");
+    expect(card).toHaveAttribute("aria-label", `${judoka.firstname} ${judoka.surname} card`);
+  });
+
+  it("retains accessibility attributes when added to DOM", async () => {
+    const containerEl = document.createElement("div");
+    await generateJudokaCard(judoka, gokyoLookup, containerEl);
+    const card = containerEl.querySelector(".judoka-card");
+    expect(card).toHaveAttribute("role", "button");
+    expect(card).toHaveAttribute("aria-label", `${judoka.firstname} ${judoka.surname} card`);
+  });
+});
