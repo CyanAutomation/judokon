@@ -235,8 +235,8 @@ with the carousel. Apply `min-width: 0` to `.carousel-container` and position
 `.scroll-button` absolutely to keep the carousel inside the viewport.
 Another Safari quirk allows the placeholder `#carousel-container` element to
 expand based on its children, producing a page wider than the viewport. Assign
-`width: 100%` and `overflow: hidden` to `#carousel-container` to constrain the
-carousel on this browser.
+`width: 100%`, `min-width: 0`, and `overflow: hidden` to `#carousel-container`
+to constrain the carousel on this browser.
 Mobile Safari supports smooth scrolling via
 `-webkit-overflow-scrolling: touch`.
 Safari may expand grid columns when the container width is undefined.
