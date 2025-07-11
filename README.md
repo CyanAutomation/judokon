@@ -17,8 +17,9 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 6. [Dependencies](#dependencies)
 7. [Project Structure](#project-structure)
 8. [Display Modes](#display-modes)
-9. [Future Plans](#future-plans)
-10. [Contributing](#contributing)
+9. [Browser Compatibility](#browser-compatibility)
+10. [Future Plans](#future-plans)
+11. [Contributing](#contributing)
 
 ## Quick Start
 
@@ -226,6 +227,13 @@ variables and call `applyDisplayMode("my-theme")` to activate it.
 
 If you modify theme colors, run `npm run check:contrast` while the development
 server is running to verify adequate color contrast.
+
+## Browser Compatibility
+
+JU-DO-KON! is tested in the latest versions of Chrome, Firefox, Safari, and Edge.
+The card carousel uses modern CSS like `clamp()` for flexible sizing. Safari 15
+and older do not support `clamp()`, so cards fall back to a fixed `300px` width.
+Mobile Safari supports smooth scrolling via `-webkit-overflow-scrolling: touch`.
 
 ## Future Plans
 

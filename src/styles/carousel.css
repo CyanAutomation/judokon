@@ -10,18 +10,22 @@
   width: 100%; /* Ensure carousel doesn't exceed container width */
   max-width: 100%; /* Prevent overflow */
   padding: var(--space-md); /* Add padding for visual spacing */
+  flex: 1 1 auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .judoka-card {
-  /*
-   * Use clamp() to keep cards legible on small screens while
-   * allowing more cards on wide layouts.
-   */
-  flex: 0 0 clamp(200px, calc(33.33% - var(--space-lg)), 300px);
+  flex: 0 0 300px;
   scroll-snap-align: center; /* Snap each card to the center */
   transition: transform var(--transition-fast); /* Smooth animations */
   border-radius: var(--radius-lg); /* Rounded corners */
   box-shadow: var(--shadow-base); /* Elevation */
+}
+
+@supports (flex-basis: clamp(1px, 1px, 1px)) {
+  .judoka-card {
+    flex-basis: clamp(200px, calc(33.33% - var(--space-lg)), 300px);
+  }
 }
 
 /* Hover effect for desktop */
