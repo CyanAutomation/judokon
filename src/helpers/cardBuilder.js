@@ -237,6 +237,7 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
   const judokaCard = document.createElement("div");
   judokaCard.className = `judoka-card ${cardType}`;
   judokaCard.setAttribute("role", "button");
+  judokaCard.setAttribute("tabindex", "0");
   judokaCard.setAttribute("aria-label", `${judoka.firstname} ${judoka.surname} card`);
 
   const genderClass = judoka.gender === "female" ? "female-card" : "male-card";
