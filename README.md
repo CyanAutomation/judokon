@@ -235,6 +235,9 @@ The card carousel uses modern CSS like `clamp()` for flexible sizing. Safari 15
 and older do not support `clamp()`, so cards fall back to a fixed `300px` width.
 Safari may expand flex items if `min-width` isn't explicitly set. Set
 `min-width: 0` on `.card-carousel` so horizontal scrolling works correctly.
+Safari 18 has a regression where flex items grow when scroll buttons are inline
+with the carousel. Apply `min-width: 0` to `.carousel-container` and position
+`.scroll-button` absolutely to keep the carousel inside the viewport.
 Mobile Safari supports smooth scrolling via
 `-webkit-overflow-scrolling: touch`.
 Safari may expand grid columns when the container width is undefined.
