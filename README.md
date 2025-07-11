@@ -84,7 +84,12 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
 - `src/` – contains the game logic and assets:
   - `game.js`
   - `helpers/`
-  - `components/` – small DOM factories like `Button`, `ToggleSwitch`, and the new `Modal` dialog
+  - `components/` – small DOM factories like `Button`, `ToggleSwitch`, the `Modal` dialog, and `StatsPanel`
+    ```javascript
+    import { createStatsPanel } from "./src/components/StatsPanel.js";
+    const panel = createStatsPanel({ power: 9, speed: 8, technique: 7 });
+    document.body.appendChild(panel);
+    ```
   - `pages/`
     HTML pages. Each page imports a matching module from
     `src/helpers` (for example `randomJudokaPage.js`) that wires up its
