@@ -1,9 +1,7 @@
-import { test, expect } from "@playwright/test";
-import { registerCommonRoutes } from "./fixtures/commonRoutes.js";
+import { test, expect } from "./fixtures/commonSetup.js";
 
 test.describe("Settings page", () => {
   test.beforeEach(async ({ page }) => {
-    await registerCommonRoutes(page);
     await page.route("**/src/data/gameModes.json", (route) =>
       route.fulfill({ path: "tests/fixtures/gameModes.json" })
     );

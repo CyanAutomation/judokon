@@ -1,9 +1,7 @@
-import { test, expect } from "@playwright/test";
-import { registerCommonRoutes } from "./fixtures/commonRoutes.js";
+import { test, expect } from "./fixtures/commonSetup.js";
 
 test.describe("Classic battle flow", () => {
   test("timer auto-selects when expired", async ({ page }) => {
-    await registerCommonRoutes(page);
     await page.addInitScript(() => {
       const orig = window.setInterval;
       window.setInterval = (fn, ms, ...args) => orig(fn, Math.min(ms, 10), ...args);
@@ -15,7 +13,6 @@ test.describe("Classic battle flow", () => {
   });
 
   test("tie message appears on equal stats", async ({ page }) => {
-    await registerCommonRoutes(page);
     await page.addInitScript(() => {
       const orig = window.setInterval;
       window.setInterval = (fn, ms, ...args) => orig(fn, Math.max(ms, 3600000), ...args);
@@ -33,7 +30,6 @@ test.describe("Classic battle flow", () => {
   });
 
   test("quit match confirmation", async ({ page }) => {
-    await registerCommonRoutes(page);
     await page.goto("/src/pages/battleJudoka.html");
     page.on("dialog", (dialog) => dialog.accept());
     await page.locator("#quit-btn").click();
