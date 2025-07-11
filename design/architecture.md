@@ -21,6 +21,12 @@ HTML pages under `src/pages` each load a dedicated module located in
 `settingsPage.js`) expose setup functions that attach event listeners and
 initialize page-specific behavior.
 
+## components/
+
+Factory functions that create reusable UI elements. `Button.js` and
+`ToggleSwitch.js` return styled controls. `Modal.js` builds an accessible
+dialog with focus trapping and open/close helpers.
+
 ## data and schemas
 
 Structured gameplay data lives in `src/data`. Matching JSON Schemas in `src/schemas` describe and validate these files. The `npm run validate:data` script uses Ajv to ensure data integrity.
