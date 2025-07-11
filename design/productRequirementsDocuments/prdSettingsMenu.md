@@ -144,7 +144,6 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
   - Screen reader support: Each toggle/selector must have appropriate ARIA labels describing function and current state.
   - Color contrast: Minimum 4.5:1 contrast ratio in all display modes per WCAG 2.1.
 - **Interaction flow:**
-
   - Tab order should proceed top-to-bottom: sound → nav map → motion → display mode → game mode toggles.
   - Users can navigate and activate each control without needing a mouse.
 
@@ -205,24 +204,20 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 ## Tasks
 
 - [ ] 1.0 Finalize UX & Accessibility
-
   - [ ] 1.1 Implement tab order and keyboard focus indicators.
   - [ ] 1.2 Add ARIA labels for all interactive elements.
   - [ ] 1.3 Confirm WCAG 2.1 compliance for color contrast.
 
 - [ ] 2.0 Implement Responsive Layout
-
   - [ ] 2.1 Design and code mobile-first stacking of controls.
   - [ ] 2.2 Ensure smooth reflow for orientation changes (**<300 ms**).
 
 - [ ] 3.0 Data Persistence & Error Handling
-
   - [ ] 3.1 Implement immediate data updates on setting change.
   - [ ] 3.2 Display CSS popup on read/write errors.
   - [ ] 3.3 Revert toggles/selectors on failed updates.
 
 - [ ] 4.0 List Game Modes
-
   - [ ] 4.1 Load all game modes from `gameModes.json`.
   - [ ] 4.2 Display error message if loading fails.
 

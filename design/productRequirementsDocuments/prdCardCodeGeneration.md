@@ -82,24 +82,19 @@ Simplifies storage and retrieval of Judoka data without exposing sensitive infor
 ### 3.2 Process (P1)
 
 1. **Concatenate Stats**
-
    - Combine power, speed, technique, kumikata, and newaza into a single string.
 
 2. **Build Raw Code String**
-
    - Format: `v1-FIRSTNAME-SURNAME-COUNTRY-WEIGHTCLASS-SIGNATUREMOVEID-STATS`
    - Example: `v1-TADAHIRO-NOMURA-JP-60-1234-98765`
 
 3. **Apply XOR Encoding**
-
    - XOR each character’s ASCII code with `(index + 37) % 256`.
 
 4. **Map to Readable Charset**
-
    - Map to: `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (avoiding I, O, 1, 0).
 
 5. **Chunking**
-
    - Group characters into 4-character chunks, separated by hyphens (`-`).
 
 6. **Output**
@@ -241,7 +236,6 @@ Code Generation and Sharing Flow
 ## Tasks
 
 - [ ] 1.0 Card Code Generation Function
-
   - [ ] 1.1 Validate input Judoka object for all required fields.
   - [x] 1.2 Concatenate Judoka stats and key attributes into raw string.
   - [x] 1.3 Apply XOR encoding with index-based key.
@@ -251,19 +245,16 @@ Code Generation and Sharing Flow
   - [ ] 1.7 Save the generated code into `judoka.json`.
 
 - [ ] 2.0 Error Handling and Edge Cases
-
   - [ ] 2.1 Fallback to a generic card code (judoka id=0) if encoding fails.
   - [ ] 2.2 Handle unusually large string input safely.
 
 - [ ] 3.0 Unit Tests
-
   - [ ] 3.1 Test valid Judoka object produces correct code format.
   - [ ] 3.2 Test invalid input triggers correct error fallback.
   - [ ] 3.3 Test same input always results in the same output code.
   - [ ] 3.4 Simulate edge cases like large inputs and validate fallback behavior.
 
 - [ ] 4.0 UI Surface Interaction
-
   - [ ] 4.1 Ensure the generated code is visible on relevant card display screens.
   - [ ] 4.2 Support copy-to-clipboard functionality.
   - [ ] 4.3 Add input validation for code entry screens.

@@ -208,7 +208,6 @@ Each tile contains:
 ### Battle Mode Section
 
 - **Contents**:
-
   - Header: “Battle Mode” with clear divider or label.
   - Tile 1: “Classic Battle” — icon left, label centered vertically.
   - Tile 2: “Team Battle” — same size and visual weight as Classic.
@@ -221,7 +220,6 @@ Each tile contains:
 ### Responsive Tile Stack Module
 
 - **Contents**:
-
   - Implement column-stacking at <768px with equal vertical spacing.
   - Ensure each tile remains fully visible without scroll.
   - Tile container should use Flex/Grid with breakpoint control.
@@ -235,7 +233,6 @@ Each tile contains:
 ### Judoka Management Module
 
 - **Contents**:
-
   - One large tile labeled “Manage Judoka”
   - On click, expands or opens modal with:
     - Create Judoka
@@ -294,13 +291,11 @@ Each tile contains:
   - [ ] Ensure full-tile clickability via JS/CSS.
   - [ ] Implement hover and click feedback (cursor pointer, 150ms slight zoom).
 - [ ] **Implement Responsive Grid Layout**
-
   - [ ] Create 2x2 grid layout for desktop viewports.
   - [ ] Implement 1-column stacking for mobile (<768px).
   - [ ] Test layout on tablet and mobile orientations.
 
 - [ ] **Add Accessibility Features**
-
   - [ ] Add `aria-labels` to each tile.
   - [ ] Ensure text contrast ratio ≥4.5:1.
   - [ ] Make icons `aria-hidden` if decorative.
@@ -312,7 +307,6 @@ Each tile contains:
   - [ ] Add fallback icon logic for load failure.
   - [ ] Verify all icons load under poor network conditions.
 - [ ] **Implement Keyboard Navigation and Focus Management**
-
   - [ ] Add `tabindex` attributes for tiles.
   - [ ] Handle keyboard activation events.
   - [ ] Ensure visual focus indicators are clear and accessible.
