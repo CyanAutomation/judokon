@@ -171,6 +171,12 @@
   .quote {
     text-align: left;
   }
+
+  .quote-heading,
+  .quote-content {
+    width: 100%;
+    max-width: none;
+  }
 }
 
 /* Utility fade transition for quotes */

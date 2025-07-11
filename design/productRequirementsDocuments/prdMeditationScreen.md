@@ -192,9 +192,9 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
   - [x] 1.1 Load and display KG character image.
   - [x] 1.2 Add calm headline (“Pause. Breathe. Reflect.”).
 
-- [ ] **2.0 Implement Quote Display Module**
+- [x] **2.0 Implement Quote Display Module**
   - [x] 2.1 Randomly select a quote from `aesopsFables.json`.
-  - [ ] 2.2 Display the quote with dynamic, responsive text scaling.
+  - [x] 2.2 Display the quote with dynamic, responsive text scaling.
   - [x] 2.3 Implement skeleton loader while fetching quote using the existing loading spinner styled with `var(--button-bg)`.
   - [x] 2.4 Fallback to default calm message if quote data fails.
 
