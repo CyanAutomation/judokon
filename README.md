@@ -237,6 +237,9 @@ Safari may expand flex items if `min-width` isn't explicitly set. Set
 `min-width: 0` on `.card-carousel` so horizontal scrolling works correctly.
 Mobile Safari supports smooth scrolling via
 `-webkit-overflow-scrolling: touch`.
+Safari may expand grid columns when the container width is undefined.
+Setting `width: 100%` on `.kodokan-grid` keeps the carousel from stretching
+beyond the viewport.
 
 ## Future Plans
 
