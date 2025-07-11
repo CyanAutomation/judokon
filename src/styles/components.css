@@ -323,9 +323,9 @@ button .ripple {
   position: absolute;
   margin-top: var(--space-small); /* Updated token */
   right: var(--space-small); /* Updated token */
-  background-color: var(--color-surface);
+  background-color: transparent;
   border-radius: var(--radius-sm); /* Updated token */
-  color: var(--color-text-inverted);
+  color: #fff;
   font-weight: bold;
   padding: var(--space-small) var(--space-medium); /* Updated tokens */
   font-size: var(--font-small); /* Updated token */
