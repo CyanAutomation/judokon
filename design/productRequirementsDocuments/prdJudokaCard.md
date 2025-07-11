@@ -120,6 +120,8 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 - Text contrast must meet **WCAG 2.1 AA** (contrast ratio ≥4.5:1).
 - All judoka portraits must have descriptive alternative text.
 - Interactive elements (e.g., attribute selection, carousel arrows) must be fully operable via keyboard and screen readers.
+- Card elements must use `role="button"` and include descriptive `aria-label` attributes.
+- Provide a visible focus style via `.judoka-card:focus-visible` so keyboard users can easily track focus.
 - Maintain **≥44px touch target** size for all clickable areas to meet WCAG guidelines. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
 
 ---
@@ -192,3 +194,4 @@ The design must be attractive and **minimize cognitive load**—presenting stats
   - [ ] 5.2 Ensure text contrast ratio ≥4.5:1.
   - [ ] 5.3 Support keyboard and screen reader navigation.
   - [ ] 5.4 Ensure ≥44px touch targets for interactive elements (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
+  - [ ] 5.5 Add `role="button"` with `aria-label` to card elements and style focus via `.judoka-card:focus-visible`.

@@ -107,6 +107,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 ### Contrast & Readability
 
 - Always meet **WCAG AA** contrast.
+- When using coloured card backgrounds, pair text with the `--color-text-inverted` token to maintain WCAG AA contrast.
 - Pair bold white or black text against vibrant fills for CTAs and banners.
 - Line-height: 1.4× font size
 - Letter-spacing: 0.5% for **Russo One**, normal for **Open Sans**
