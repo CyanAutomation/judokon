@@ -30,4 +30,10 @@ describe("createToggleSwitch", () => {
     const input = wrapper.querySelector("input[type='checkbox']");
     expect(input?.checked).toBe(false);
   });
+
+  it("uses label text as aria-label by default", () => {
+    const wrapper = createToggleSwitch("AutoToggle");
+    const input = wrapper.querySelector("input[type='checkbox']");
+    expect(input?.getAttribute("aria-label")).toBe("AutoToggle");
+  });
 });
