@@ -21,6 +21,7 @@ body {
   display: grid;
   grid-template-rows: auto 1fr auto auto;
   min-height: 100dvh;
+  width: 100%;
   max-width: 100%;
   align-items: center;
 }
