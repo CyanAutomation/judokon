@@ -186,6 +186,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 ## Tasks
 
 - [ ] 4.0 Handle Edge Cases
+
   - [ ] 4.1 Show silhouette placeholder for missing portraits.
   - [ ] 4.2 Cap extreme stats and log errors.
   - [ ] 4.3 Display error messages for corrupted data.
