@@ -3,7 +3,8 @@
 
 body {
   min-height: 100dvh;
-  min-width: 100vw;
+  width: 100%;
+  overflow-x: hidden;
   background-image: url("./assets/images/bgTileBlue.png");
   background-repeat: repeat;
   background-size: 50vw auto;

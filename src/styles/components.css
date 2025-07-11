@@ -533,7 +533,7 @@ button .ripple {
   position: relative;
   top: 0;
   min-height: 2dvh;
-  min-width: 100vw;
+  width: 100%;
   justify-content: space-evenly;
   background-color: var(--color-secondary);
   color: var(--color-text-inverted);
