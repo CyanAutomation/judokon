@@ -91,6 +91,8 @@ Each card consists of elements stored in `judoka.json`:
 - Stats (Power, Speed, Technique, Kumi-kata, Ne-waza) with 0–10 scale
 - Signature Move
 
+The weight class badge appears in the top-right corner of the portrait with a transparent background and white text for readability.
+
 Cards maintain a **2:3 ratio with a border** and display rarity-based coloring:
 
 - **Common**: Blue
