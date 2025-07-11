@@ -47,7 +47,7 @@ export function createStatsPanel(stats, options = {}) {
     { label: "Speed", key: speed },
     { label: "Technique", key: technique },
     { label: "Kumi-kata", key: kumikata },
-    { label: "Ne-waza", key: newaza },
+    { label: "Ne-waza", key: newaza }
   ];
 
   statsEntries.forEach(({ label, key }) => addItem(label, key));
