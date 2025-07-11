@@ -297,7 +297,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 - Primary style uses `var(--button-bg)`, `var(--button-hover-bg)`, `var(--button-active-bg)`, and `var(--button-text-color)`
 - `.secondary-button` variation with lighter background and border
-- Minimum height 44‑48 px; keep `--radius-pill`
+- Minimum height 44-48 px; keep `--radius-pill`
 - Hover/active states scale slightly and use drop shadows
 - Ripple feedback via `setupButtonEffects()`
 - `:focus-visible` outline or underline for keyboard users
