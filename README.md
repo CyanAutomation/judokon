@@ -249,6 +249,7 @@ Mobile Safari supports smooth scrolling via
 Safari may expand grid columns when the container width is undefined.
 Setting `width: 100%` on both `.kodokan-grid` and `.kodokan-screen`
 keeps the carousel from stretching beyond the viewport.
+Safari counts scrollbars in the `vw` unit, which can lead to unexpected layout behavior. For example, a wrapper with `min-width: 100vw` may become wider than the page and cause horizontal scrolling. To prevent this, set `width: 100%` on the body and navbars. Optionally, use `overflow-x: hidden` to ensure the layout stays within the viewport.
 
 ## Future Plans
 
