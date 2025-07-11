@@ -170,20 +170,25 @@ This project is built with HTML, CSS, and JavaScript, and hosted on GitHub Pages
 ### 🥋 The Rules:
 
 1. **You vs. Computer**
+
    - Each match starts with both players receiving **25 random cards** from a 99-card deck.
 
 2. **Start the Battle**
+
    - In each round, you and the computer each draw your top card.
 
 3. **Choose Your Stat**
+
    - You select one of the stats on your card (e.g. Power, Speed, Technique, etc.)
 
 4. **Compare Stats**
+
    - The chosen stat is compared with the computer’s card.
    - **Highest value wins the round**.
    - If both stats are equal, it’s a **draw** — no one scores.
 
 5. **Scoring**
+
    - Each round win gives you **1 point**.
    - The cards used in that round are **discarded** (not reused).
 
@@ -230,6 +235,9 @@ The card carousel uses modern CSS like `clamp()` for flexible sizing. Safari 15
 and older do not support `clamp()`, so cards fall back to a fixed `300px` width.
 Safari may expand flex items if `min-width` isn't explicitly set. Set
 `min-width: 0` on `.card-carousel` so horizontal scrolling works correctly.
+Safari 18 has a regression where flex items grow when scroll buttons are inline
+with the carousel. Apply `min-width: 0` to `.carousel-container` and position
+`.scroll-button` absolutely to keep the carousel inside the viewport.
 Mobile Safari supports smooth scrolling via
 `-webkit-overflow-scrolling: touch`.
 Safari may expand grid columns when the container width is undefined.
