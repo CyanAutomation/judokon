@@ -1,10 +1,7 @@
 import { getFlagUrl } from "./countryUtils.js";
 import { generateCardTopBar, createNoDataContainer } from "./cardTopBar.js";
-import {
-  generateCardPortrait,
-  generateCardStats,
-  generateCardSignatureMove
-} from "./cardRender.js";
+import { generateCardPortrait, generateCardSignatureMove } from "./cardRender.js";
+import { createStatsPanel } from "../components/StatsPanel.js";
 import { safeGenerate } from "./errorUtils.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
 
@@ -135,7 +132,7 @@ function validateJudoka(judoka) {
  *    - Add weight class information to the portrait section.
  *
  * 8. Append the stats section:
- *    - Generate stats HTML using `generateCardStats` and append it.
+ *    - Build the stats panel using `createStatsPanel` and append it.
  *    - If generation fails, append an empty stats container.
  *
  * 9. Append the signature move section:
@@ -177,11 +174,7 @@ function createPortraitSection(judoka) {
 
 function createStatsSection(judoka, cardType) {
   try {
-    const statsHTML = generateCardStats(judoka, cardType);
-    const statsElement = document.createElement("div");
-    statsElement.className = "card-stats";
-    statsElement.innerHTML = statsHTML;
-    return statsElement;
+    return createStatsPanel(judoka.stats, { type: cardType });
   } catch (error) {
     console.error("Failed to generate stats:", error);
     return createNoDataContainer();
