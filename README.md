@@ -85,6 +85,9 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
   - `game.js`
   - `helpers/`
   - `pages/`
+    HTML pages. Each page imports a matching module from
+    `src/helpers` (for example `randomJudokaPage.js`) that wires up its
+    interactive behavior.
   - `data/`
   - `schemas/`  
     JSON Schema definitions used to validate the data files.
