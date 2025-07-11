@@ -116,6 +116,8 @@ Import styles in this order: `base.css` first, then layout and component files, 
 
 Global rules should not be repeated across files.
 
+All pages include a fixed header and persistent bottom navigation bar. The body has top and bottom padding to ensure content scrolls under these elements.
+
 The `.animate-card` class in `components.css` reveals new cards with a short
 fade and upward slide. A `prefers-reduced-motion` media query removes the
 animation so the card appears instantly when motion reduction is requested.

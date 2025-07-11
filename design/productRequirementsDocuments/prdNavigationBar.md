@@ -100,13 +100,13 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ## Functional Requirements
 
-| Priority | Feature                | Description                                                                                          |
-| -------- | ---------------------- | ---------------------------------------------------------------------------------------------------- |
-| P1       | Standard Nav Bar       | Fixed horizontal navigation with scalable links and bottom-left corner logo.                         |
-| P2       | Portrait Text Menu     | Text-based vertical menu expansion on logo click for portrait and landscape (collapsed) orientation. |
-| P2       | Small Screens Support  | Adjust text menu for screens as small as 320px — scale font and spacing.                             |
-| P2       | Visual Feedback        | Positive click/tap feedback animation for all links and buttons.                                     |
-| P1       | Fallback Data Handling | Hardcoded default mode list if `gameModes.json` fails to load.                                       |
+| Priority | Feature                | Description                                                                                                       |
+| -------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| P1       | Standard Nav Bar       | Fixed horizontal navigation pinned to the bottom of the viewport with scalable links and bottom-left corner logo. |
+| P2       | Portrait Text Menu     | Text-based vertical menu expansion on logo click for portrait and landscape (collapsed) orientation.              |
+| P2       | Small Screens Support  | Adjust text menu for screens as small as 320px — scale font and spacing.                                          |
+| P2       | Visual Feedback        | Positive click/tap feedback animation for all links and buttons.                                                  |
+| P1       | Fallback Data Handling | Hardcoded default mode list if `gameModes.json` fails to load.                                                    |
 
 ---
 
