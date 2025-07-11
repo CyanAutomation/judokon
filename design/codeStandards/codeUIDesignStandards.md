@@ -295,10 +295,12 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 ### 8.7 Button Style
 
-- Default: `var(--button-bg)`
-- Hover: `var(--button-hover-bg)` with drop shadow (`--shadow-base`)
-- Active: `var(--button-active-bg)`
-- Capsule shape using `--radius-pill`
+- Primary style uses `var(--button-bg)`, `var(--button-hover-bg)`, `var(--button-active-bg)`, and `var(--button-text-color)`
+- `.secondary-button` variation with lighter background and border
+- Minimum height 44‑48 px; keep `--radius-pill`
+- Hover/active states scale slightly and use drop shadows
+- Ripple feedback via `setupButtonEffects()`
+- `:focus-visible` outline or underline for keyboard users
 
 ### 8.8 Battle Layout
 
