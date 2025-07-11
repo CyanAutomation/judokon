@@ -8,7 +8,8 @@
   gap: var(--space-lg); /* Generous whitespace */
   scroll-behavior: smooth; /* Smooth scrolling effect */
   width: 100%; /* Ensure carousel doesn't exceed container width */
-  min-width: 100%; /* Override flex item's default min-width */
+  /* Safari flexbox quirk: set min-width to 0 so container doesn't expand */
+  min-width: 0;
   max-width: 100%; /* Prevent overflow */
   padding: var(--space-md); /* Add padding for visual spacing */
   flex: 1 1 auto;

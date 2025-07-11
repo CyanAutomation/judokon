@@ -170,25 +170,20 @@ This project is built with HTML, CSS, and JavaScript, and hosted on GitHub Pages
 ### 🥋 The Rules:
 
 1. **You vs. Computer**
-
    - Each match starts with both players receiving **25 random cards** from a 99-card deck.
 
 2. **Start the Battle**
-
    - In each round, you and the computer each draw your top card.
 
 3. **Choose Your Stat**
-
    - You select one of the stats on your card (e.g. Power, Speed, Technique, etc.)
 
 4. **Compare Stats**
-
    - The chosen stat is compared with the computer’s card.
    - **Highest value wins the round**.
    - If both stats are equal, it’s a **draw** — no one scores.
 
 5. **Scoring**
-
    - Each round win gives you **1 point**.
    - The cards used in that round are **discarded** (not reused).
 
@@ -233,9 +228,9 @@ server is running to verify adequate color contrast.
 JU-DO-KON! is tested in the latest versions of Chrome, Firefox, Safari, and Edge.
 The card carousel uses modern CSS like `clamp()` for flexible sizing. Safari 15
 and older do not support `clamp()`, so cards fall back to a fixed `300px` width.
-Safari may also expand flex items if `min-width` isn't explicitly set. When
-styling `.card-carousel`, set `min-width: 100%` (or `0`) so horizontal scrolling
-works correctly. Mobile Safari supports smooth scrolling via
+Safari may expand flex items if `min-width` isn't explicitly set. Set
+`min-width: 0` on `.card-carousel` so horizontal scrolling works correctly.
+Mobile Safari supports smooth scrolling via
 `-webkit-overflow-scrolling: touch`.
 
 ## Future Plans
