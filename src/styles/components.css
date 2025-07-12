@@ -356,7 +356,6 @@ button .ripple {
   flex-direction: column;
   /* Stats area ~35% of card height */
   flex: 0 0 35%;
-  height: 35%;
 }
 
 .card-stats ul {
