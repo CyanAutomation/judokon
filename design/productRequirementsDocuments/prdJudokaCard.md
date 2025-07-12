@@ -166,6 +166,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 ### Layout & Design Notes
 
 - **Aspect Ratio:** Card must strictly maintain **2:3 ratio**, adjusting internal elements responsively.
+- **Vertical Proportions:** With a card width of 300px (height 450px), allocate roughly 15% (68px) for the name and flag bar, 40% (180px) for the portrait, 35% (158px) for stats, and 10% (45px) for the signature move section.
 - **Rarity Border Colors:**
   - Common → Blue (#337AFF)
   - Rare → Red (#FF3333)
@@ -186,7 +187,6 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 ## Tasks
 
 - [ ] 4.0 Handle Edge Cases
-
   - [ ] 4.1 Show silhouette placeholder for missing portraits.
   - [ ] 4.2 Cap extreme stats and log errors.
   - [ ] 4.3 Display error messages for corrupted data.

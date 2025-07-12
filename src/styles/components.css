@@ -250,6 +250,10 @@ button .ripple {
   align-items: center;
   padding: var(--space-small) var(--space-medium); /* Updated tokens */
   flex-direction: row;
+  /* Maintain ~15% of card height */
+  flex: 0 0 15%;
+  height: 15%;
+  box-sizing: border-box;
 }
 
 .card-name {
@@ -302,7 +306,6 @@ button .ripple {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  max-height: 220px;
   width: auto;
   overflow: hidden;
   background: linear-gradient(
@@ -310,6 +313,8 @@ button .ripple {
     var(--card-portrait-gradient-start),
     var(--card-portrait-gradient-end)
   );
+  /* Portrait area ~40% of card height */
+  flex: 0 0 40%;
 }
 
 .card-portrait img {
@@ -349,6 +354,8 @@ button .ripple {
   align-items: flex-end;
   font-size: var(--font-medium);
   flex-direction: column;
+  /* Stats area ~35% of card height */
+  flex: 0 0 35%;
 }
 
 .card-stats ul {
@@ -394,9 +401,11 @@ button .ripple {
   align-items: center;
   flex-direction: row;
   width: 100%;
-  height: 100%;
-  max-height: 40px;
+  max-height: 45px;
   font-weight: bold;
+  /* Signature move ~10% of card height */
+  flex: 0 0 10%;
+  box-sizing: border-box;
 }
 
 .signature-move-label {
