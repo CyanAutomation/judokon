@@ -405,7 +405,6 @@ button .ripple {
   font-weight: bold;
   /* Signature move ~10% of card height */
   flex: 0 0 10%;
-  height: 10%;
   box-sizing: border-box;
 }
 
