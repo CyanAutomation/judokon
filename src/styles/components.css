@@ -251,8 +251,7 @@ button .ripple {
   padding: var(--space-small) var(--space-medium); /* Updated tokens */
   flex-direction: row;
   /* Maintain ~15% of card height */
-  flex: 0 0 15%;
-  height: 15%;
+  flex: 0 0 10%;
   box-sizing: border-box;
 }
 
@@ -314,7 +313,7 @@ button .ripple {
     var(--card-portrait-gradient-end)
   );
   /* Portrait area ~40% of card height */
-  flex: 0 0 40%;
+  flex: 0 0 45%;
 }
 
 .card-portrait img {
