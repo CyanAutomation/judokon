@@ -91,6 +91,12 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
     const panel = createStatsPanel({ power: 9, speed: 8, technique: 7 });
     document.body.appendChild(panel);
     ```
+    `Card.js` applies the same design tokens for colors and spacing.
+    ```javascript
+    import { createCard } from "./src/components/Card.js";
+    const card = createCard("<p>Hello</p>");
+    document.body.appendChild(card);
+    ```
   - `pages/`
     HTML pages. Each page imports a matching module from
     `src/helpers` (for example `randomJudokaPage.js`) that wires up its
