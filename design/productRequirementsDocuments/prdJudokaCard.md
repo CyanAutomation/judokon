@@ -165,6 +165,8 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 - **Vertical Proportions:** With a card width of 300px (height 450px), allocate roughly 10% (45px) for the name and flag bar, 45% (200px) for the portrait, 35% (158px) for stats, and 10% (45px) for the signature move section.
 - Portrait images should fill the portrait area using `object-fit: cover` so no whitespace appears.
 - **Portrait Container:** `.card-portrait` now uses `width: 100%` and `height: 45%` so it matches its flex-basis and keeps the aspect ratio consistent.
+- **Stats Container:** `.card-stats` uses `height: 35%` to align with the vertical proportions.
+- **Signature Move Band:** `height: max(10%, var(--touch-target-size))` keeps the 44px tap target while maintaining the card's 2:3 ratio.
 - **Rarity Border Colors:**
   - Common → Blue (#337AFF)
   - Rare → Red (#FF3333)

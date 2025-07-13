@@ -257,8 +257,8 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 - Background: #003B88
 - Text: Yellow (#FED843), left-aligned label + centered move name
-- Size: `min-height: var(--touch-target-size)` and `flex: 0 0 auto` to prevent
-  clipping on mobile
+- Size: `height: max(10%, var(--touch-target-size))` and `flex: 0 0 auto` to
+  maintain a 44px tap target without breaking the 2:3 ratio
 
 #### Rarity Markers
 
