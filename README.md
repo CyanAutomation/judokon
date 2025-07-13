@@ -109,7 +109,11 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
 
 - `base.css` – tokens, resets, and global typography.
 - `layout.css` – overall page layout/grid.
-- `components.css` – reusable UI components.
+- `components.css` – reusable UI components. All `<button>` elements
+  use design tokens such as `--button-bg` and `--button-text-color`.
+  `setupButtonEffects()` adds a Material-style ripple when buttons are
+  clicked. An optional `.secondary-button` class provides a lighter
+  variant.
 - `utilities.css` – helper classes.
 - Page-specific files such as `carousel.css` and `quote.css`.
 
