@@ -155,21 +155,21 @@ async function createTopBar(judoka, flagUrl) {
 }
 
 function createPortraitSection(judoka) {
-  const portraitElement = document.createElement("div");
-  portraitElement.className = "card-portrait";
-
   try {
-    portraitElement.innerHTML = generateCardPortrait(judoka);
+    // generateCardPortrait returns a complete `.card-portrait` wrapper
+    const fragment = document.createRange().createContextualFragment(generateCardPortrait(judoka));
+    const portraitElement = fragment.firstElementChild;
+
     const weightClassElement = document.createElement("div");
     weightClassElement.className = "card-weight-class";
     weightClassElement.textContent = judoka.weightClass;
     portraitElement.appendChild(weightClassElement);
+
+    return portraitElement;
   } catch (error) {
     console.error("Failed to generate portrait:", error);
     return createNoDataContainer();
   }
-
-  return portraitElement;
 }
 
 function createStatsSection(judoka, cardType) {
