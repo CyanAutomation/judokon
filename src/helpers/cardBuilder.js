@@ -184,9 +184,8 @@ function createStatsSection(judoka, cardType) {
 function createSignatureMoveSection(judoka, gokyoLookup, cardType) {
   try {
     const signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
-    const signatureMoveElement = document.createElement("div");
-    signatureMoveElement.innerHTML = signatureMoveHTML;
-    return signatureMoveElement;
+    const fragment = document.createRange().createContextualFragment(signatureMoveHTML);
+    return fragment.firstElementChild;
   } catch (error) {
     console.error("Failed to generate signature move:", error);
     return createNoDataContainer();
