@@ -157,7 +157,7 @@ button .ripple {
   position: relative;
   width: clamp(200px, 40vw, 300px);
   aspect-ratio: 2 / 3;
-  border: max(13px, 1vh) solid var(--card-border-color);
+  border: 13px solid var(--card-border-color);
   border-radius: var(--radius-lg); /* Updated token */
   background-color: var(--card-bg-color);
   box-shadow: var(--shadow-base); /* Updated token */
