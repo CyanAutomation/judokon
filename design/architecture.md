@@ -14,7 +14,7 @@ The entry point for the browser. It waits for `DOMContentLoaded` and wires up al
 Reusable utilities organized by concern (card building, data fetching, random card generation, etc.). Each module is documented with JSDoc and `@pseudocode` blocks for clarity.
 Key helpers include `generateRandomCard()` for choosing a card and `renderJudokaCard()` for injecting it into the DOM with an optional reveal animation.
 
-`src/components/` holds reusable UI pieces. `Button.js` exposes a `createButton` helper that applies design tokens. Typical pages import this module along with the `setupButtonEffects` helper to keep button interactions consistent.
+`src/components/` holds reusable UI pieces. `Button.js` exposes a `createButton` helper that applies design tokens and can prepend an optional icon. Typical pages import this module along with the `setupButtonEffects` helper to keep button interactions consistent.
 
 ## page modules
 

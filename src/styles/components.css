@@ -639,7 +639,10 @@ button .ripple {
 }
 
 .draw-card-btn {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
   margin: var(--space-large) auto; /* Updated token */
   width: 300px;
   max-width: 90vw;
@@ -651,6 +654,11 @@ button .ripple {
   border-radius: var(--radius-pill); /* Updated token */
   font-size: 1.25rem;
   font-weight: bold;
+}
+
+.draw-card-btn svg {
+  width: 24px;
+  height: 24px;
 }
 
 .card-section {
