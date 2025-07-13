@@ -13,73 +13,79 @@
   </head>
 
   <body>
-    <header class="header">
-      <div class="character-slot left"></div>
-      <div class="logo-container">
-        <a href="../../index.html" data-testid="home-link">
-          <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
-        </a>
-      </div>
-      <div class="character-slot right"></div>
-    </header>
-
-    <main class="container meditation-screen" role="main">
-      <h1 class="meditation-title">Pause. Breathe. Reflect.</h1>
-
-      <section id="meditation-container" class="meditation-container">
-        <div class="kg-sprite">
-          <img src="../assets/helperKG/helperKG1.png" alt="KG is ready to meditate" />
+    <div class="home-screen">
+      <header class="header">
+        <div class="character-slot left"></div>
+        <div class="logo-container">
+          <a href="../../index.html" data-testid="home-link">
+            <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
+          </a>
         </div>
+        <div class="character-slot right"></div>
+      </header>
 
-        <div class="quote-block">
-          <button id="language-toggle" data-testid="language-toggle" class="language-toggle hidden">
-            <span class="jp-flag flag-icon"></span> 日本語風 / English
-            <span class="uk-flag flag-icon"></span>
-          </button>
-          <div id="quote-loader" class="quote-loader" aria-live="polite" aria-busy="true">
-            <span class="visually-hidden">Loading quote…</span>
+      <main class="container meditation-screen" role="main">
+        <h1 class="meditation-title">Pause. Breathe. Reflect.</h1>
+
+        <section id="meditation-container" class="meditation-container">
+          <div class="kg-sprite">
+            <img src="../assets/helperKG/helperKG1.png" alt="KG is ready to meditate" />
           </div>
 
-          <div
-            id="quote"
-            class="quote hidden"
-            aria-labelledby="quote-heading"
-            aria-describedby="quote-content"
-            role="region"
-            aria-live="polite"
-          ></div>
-        </div>
-      </section>
+          <div class="quote-block">
+            <button
+              id="language-toggle"
+              data-testid="language-toggle"
+              class="language-toggle hidden"
+            >
+              <span class="jp-flag flag-icon"></span> 日本語風 / English
+              <span class="uk-flag flag-icon"></span>
+            </button>
+            <div id="quote-loader" class="quote-loader" aria-live="polite" aria-busy="true">
+              <span class="visually-hidden">Loading quote…</span>
+            </div>
 
-      <a
-        href="../../index.html"
-        class="cta-button"
-        data-testid="continue-link"
-        aria-label="Continue Your Journey to the main menu after your victory"
-      >
-        Continue Your Journey
-      </a>
-    </main>
+            <div
+              id="quote"
+              class="quote hidden"
+              aria-labelledby="quote-heading"
+              aria-describedby="quote-content"
+              role="region"
+              aria-live="polite"
+            ></div>
+          </div>
+        </section>
 
-    <footer>
-      <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
-    </footer>
-    <script type="module" src="../helpers/setupBottomNavbar.js"></script>
-    <script type="module" src="../helpers/setupDisplaySettings.js"></script>
+        <a
+          href="../../index.html"
+          class="cta-button"
+          data-testid="continue-link"
+          aria-label="Continue Your Journey to the main menu after your victory"
+        >
+          Continue Your Journey
+        </a>
+      </main>
 
-    <noscript>
-      <p class="noscript-warning">
-        JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
-      </p>
-    </noscript>
+      <footer>
+        <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
+      </footer>
+      <script type="module" src="../helpers/setupBottomNavbar.js"></script>
+      <script type="module" src="../helpers/setupDisplaySettings.js"></script>
 
-    <script nomodule>
-      alert(
-        "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
-      );
-    </script>
-    <script type="module" src="../helpers/quoteBuilder.js"></script>
-    <script type="module" src="../helpers/meditationPage.js"></script>
-    <script type="module" src="../helpers/setupSvgFallback.js"></script>
+      <noscript>
+        <p class="noscript-warning">
+          JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
+        </p>
+      </noscript>
+
+      <script nomodule>
+        alert(
+          "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
+        );
+      </script>
+      <script type="module" src="../helpers/quoteBuilder.js"></script>
+      <script type="module" src="../helpers/meditationPage.js"></script>
+      <script type="module" src="../helpers/setupSvgFallback.js"></script>
+    </div>
   </body>
 </html>
