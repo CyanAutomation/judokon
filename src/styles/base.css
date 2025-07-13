@@ -12,7 +12,7 @@
   --color-text: #000000; /* Light mode text */
   --color-text-inverted: #ffffff;
 
-  --button-bg: #0c3f7a;
+  --button-bg: var(--color-primary);
   --button-hover-bg: #0b5bb0;
   --button-active-bg: #0c3f7a;
   --button-text-color: #ffffff;
