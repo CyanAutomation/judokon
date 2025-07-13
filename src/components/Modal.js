@@ -4,17 +4,26 @@
  * @pseudocode
  * 1. Build a backdrop element with `modal-backdrop` class and `hidden` attribute.
  * 2. Inside it place a `div.modal` with `role="dialog"` and `aria-modal="true"`.
- * 3. Append provided content nodes into the modal.
- * 4. Expose `open()` and `close()` functions to toggle the backdrop,
+ * 3. When options include `labelledBy` or `describedBy`, set
+ *    `aria-labelledby` and `aria-describedby` on the modal.
+ * 4. Append provided content nodes into the modal.
+ * 5. Expose `open()` and `close()` functions to toggle the backdrop,
  *    manage focus and `aria-expanded` on the trigger.
- * 5. Clicking the backdrop or pressing Escape closes the modal.
- * 6. While open, trap focus inside the modal container.
+ * 6. Clicking the backdrop or pressing Escape closes the modal.
+ * 7. While open, trap focus inside the modal container.
  *
  * @param {HTMLElement|DocumentFragment} content - Dialog contents.
+ * @param {object} [options] - Optional configuration.
+ * @param {string|HTMLElement} [options.labelledBy] - ID string or element used
+ *   for `aria-labelledby`.
+ * @param {string|HTMLElement} [options.describedBy] - ID string or element used
+ *   for `aria-describedby`.
  * @returns {{ element: HTMLElement, open(trigger?: HTMLElement): void, close(): void }}
  *   Modal API with DOM element and controls.
  */
-export function createModal(content) {
+export function createModal(content, options = {}) {
+  const { labelledBy, describedBy } = options;
+
   const backdrop = document.createElement("div");
   backdrop.className = "modal-backdrop";
   backdrop.setAttribute("hidden", "");
@@ -23,6 +32,14 @@ export function createModal(content) {
   dialog.className = "modal";
   dialog.setAttribute("role", "dialog");
   dialog.setAttribute("aria-modal", "true");
+  if (labelledBy) {
+    const id = typeof labelledBy === "string" ? labelledBy : labelledBy.id;
+    if (id) dialog.setAttribute("aria-labelledby", id);
+  }
+  if (describedBy) {
+    const id = typeof describedBy === "string" ? describedBy : describedBy.id;
+    if (id) dialog.setAttribute("aria-describedby", id);
+  }
   dialog.tabIndex = -1;
 
   dialog.append(content);
