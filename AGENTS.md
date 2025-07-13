@@ -6,7 +6,7 @@ This repository contains the source for **JU-DO-KON!**, a browser-based card gam
 
 - `index.html` – landing page.
 - `game.js` – main browser logic.
-- `helpers/` – modular utilities used throughout the game. Functions include extensive JSDoc with `@pseudocode` blocks.
+- `src/helpers/` – modular utilities used throughout the game. Functions include extensive JSDoc with `@pseudocode` blocks.
 - `data/` – JSON files for judoka, gokyo techniques, and game configuration.
 - `tests/` – Vitest unit tests using the `jsdom` environment.
 - `playwright/` – Playwright tests for UI and end-to-end validation, including **screenshot tests**.
