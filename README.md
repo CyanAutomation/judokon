@@ -150,7 +150,7 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
 - Playable directly in the browser
 - Loading indicator for better user experience
 - Modularized JavaScript for better maintainability
-- Slide-in country picker for filtering judoka by flag with accessible
+- Slide-in country picker, opened via a filter icon, for filtering judoka by flag with accessible
   `aria-label` descriptions
 - Country picker panel appears below the fixed header for unobstructed viewing
 
