@@ -19,7 +19,7 @@ import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidat
  *
  * 2. Create a button element:
  *    - Assign a class based on the `direction` (e.g., "scroll-button left" or "scroll-button right").
- *    - Set the inner HTML to display an arrow symbol ("<" for left, ">" for right).
+ *    - Set the inner HTML to display an inline SVG chevron pointing left or right.
  *    - Add an accessible label (`aria-label`) for screen readers (e.g., "Scroll Left").
  *
  * 3. Add a click event listener to the button:
@@ -50,7 +50,10 @@ export function createScrollButton(direction, container, scrollAmount) {
 
   button.className = `scroll-button ${direction}`;
 
-  button.innerHTML = direction === "left" ? "&lt;" : "&gt;";
+  button.innerHTML =
+    direction === "left"
+      ? '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
 
   button.setAttribute(
     "aria-label",
