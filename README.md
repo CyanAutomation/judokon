@@ -106,6 +106,17 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
     contentFragment.appendChild(modalContent);
     const modal = createModal(contentFragment, { labelledBy: "modalTitle" });
     document.body.appendChild(modal.element);
+    
+    // Example: Wire up open() and close() methods to button clicks
+    const openButton = document.createElement("button");
+    openButton.textContent = "Open Modal";
+    openButton.addEventListener("click", () => modal.open());
+    document.body.appendChild(openButton);
+    
+    const closeButton = document.createElement("button");
+    closeButton.textContent = "Close Modal";
+    closeButton.addEventListener("click", () => modal.close());
+    modal.element.appendChild(closeButton);
     ```
     Call `open()` on a user action and focus stays trapped until `close()` runs.
   - `pages/`
