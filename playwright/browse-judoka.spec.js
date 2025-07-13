@@ -121,10 +121,7 @@ test.describe("Browse Judoka screen", () => {
     const container = page.locator(".card-carousel");
     await container.waitFor();
     await page.waitForSelector('[data-testid="carousel"] .judoka-card');
-    const handle = await container.elementHandle();
-    await page.evaluate((el) => {
-      el.style.width = "200px";
-    }, handle);
+    await setCarouselWidth(page, "200px");
 
     const box = await container.boundingBox();
     const startX = box.x + box.width * 0.8;
