@@ -410,4 +410,4 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   return wrapper;
 }
 
-export { addScrollMarkers, updateScrollButtonState };
+export { addScrollMarkers };

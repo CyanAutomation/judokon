@@ -41,6 +41,8 @@ test.describe("Browse Judoka screen", () => {
   test("scroll buttons have labels", async ({ page }) => {
     const left = page.locator(".scroll-button.left");
     const right = page.locator(".scroll-button.right");
+    await page.waitForSelector(".scroll-button.left");
+    await page.waitForSelector(".scroll-button.right");
     await expect(left).toHaveAttribute("aria-label", /scroll left/i);
     await expect(right).toHaveAttribute("aria-label", /scroll right/i);
   });
