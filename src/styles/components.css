@@ -577,8 +577,8 @@ button .ripple {
   background: var(--button-bg);
   color: var(--button-text-color);
   border: none;
-  min-width: var(--touch-target-size);
-  min-height: var(--touch-target-size);
+  min-width: var(--touch-target-size, 44px);
+  min-height: var(--touch-target-size, 44px);
   display: flex;
   align-items: center;
   justify-content: center;
