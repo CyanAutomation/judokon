@@ -788,6 +788,13 @@ button .ripple {
   pointer-events: auto;
 }
 
+/* Reset fieldset styles inside settings forms */
+.settings-form fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
 /* Settings form controls */
 .settings-form label {
   display: flex;
