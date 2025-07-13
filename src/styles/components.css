@@ -312,6 +312,7 @@ button .ripple {
   justify-content: center;
   align-items: flex-start;
   width: 100%;
+  height: 45%;
   flex: 0 0 45%;
   overflow: hidden;
   background: linear-gradient(
@@ -320,7 +321,6 @@ button .ripple {
     var(--card-portrait-gradient-end)
   );
   /* Portrait area ~45% of card height */
-  flex: 0 0 45%;
 }
 
 .card-portrait img {
@@ -360,6 +360,7 @@ button .ripple {
   align-items: flex-end;
   font-size: var(--font-medium);
   flex-direction: column;
+  height: 35%;
   /* Stats area ~35% of card height */
   flex: 0 0 35%;
 }
@@ -407,10 +408,10 @@ button .ripple {
   align-items: center;
   flex-direction: row;
   width: 100%;
-  min-height: var(--touch-target-size);
+  height: max(10%, var(--touch-target-size));
   font-weight: bold;
   /* Ensure visible at small screen sizes */
-  flex: 0 0 auto;
+  flex: 0 0 max(10%, var(--touch-target-size));
   box-sizing: border-box;
 }
 
