@@ -47,9 +47,8 @@ Key Details:
 - Instead of a list, the selector will use flag icons to represent each country.
 - When a user clicks on a flag:
   - The card carousel refreshes, filtering to display only judoka from the selected country (e.g., clicking Jamaica will filter to only Jamaican judoka).
-  - The selected flag will be visually highlighted with a border.
 - Users can only select one country at a time.
-- A "Clear" button is provided to clear the selection and revert to displaying all judoka.
+- A clear filter icon is provided to reset the selection and revert to displaying all judoka.
 - Default display mode when opened is **slide-in panel**.
 - The toggle is represented by a filter list icon.
 
@@ -60,7 +59,7 @@ Key Details:
 1. Player opens the Browse Judoka screen and taps the country selector toggle.
 2. The slide-in panel opens in under one second.
 3. Tapping a flag filters the carousel and highlights the selected country.
-4. The "Clear" button resets the view and the player continues browsing or closes the selector.
+4. The clear filter icon resets the view and the player continues browsing or closes the selector.
 
 ---
 
@@ -71,7 +70,7 @@ Key Details:
 | **P1**   | Country selector toggle         | Allow users to toggle the country selector panel via a filter list icon and filter judoka cards by country. |
 | **P1**   | Filtering and responsive time   | Ensure filtering is completed within 1 second for 90% of sessions.                   |
 | **P2**   | Three display modes             | Provide hidden, slide-in (default), and full-screen grid views for the selector.     |
-| **P2**   | Clear button                    | Provide a clear, easy way to remove the current country filter.                      |
+| **P2**   | Clear filter icon               | Provide an easy way to remove the current country filter.                             |
 | **P3**   | Performance optimizations       | Support large datasets (>50 countries) via virtual scrolling or paging.              |
 | **P3**   | Fallback icon for missing flags | Display a fallback generic flag if assets fail.                                      |
 | **P3**   | Accessibility compliance        | Ensure alt-text, color contrast, and touch target size are all accessible.           |
@@ -86,7 +85,7 @@ Key Details:
 - Clicking a country flag:
   - Filters the card carousel to only show cards from that country.
   - The selected country flag is visually highlighted.
-- A "Clear" button resets the card carousel to show all cards.
+- A clear filter icon resets the card carousel to show all cards.
 
 ### Performance
 
@@ -178,7 +177,7 @@ Key Details:
   - [ ] 1.2 Load country flags with alt-text and labels.
   - [ ] 1.3 Ensure responsive design for different screen sizes (mobile, tablet, desktop).
   - [ ] 1.4 Implement selected flag highlighting (e.g., border, shading).
-  - [ ] 1.5 Implement "Clear Selection" button.
+  - [ ] 1.5 Implement clear filter icon.
 
 - [ ] 2.0 Set Up Filtering Logic
   - [x] 2.1 Load `judoka.json` and extract a list of available countries.

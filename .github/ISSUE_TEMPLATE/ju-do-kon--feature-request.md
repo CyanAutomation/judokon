@@ -44,7 +44,7 @@ _Define 3–5 specific, observable outcomes._
 - [ ] **When** the player clicks _Country Filter_, **then** a grid of country flags slides in from the right within 300ms.
 - [ ] **When** a flag is selected, **then** the Browse view immediately filters to show only judoka from that country.
 - [ ] **When** no judoka match, **then** show "No Results" with an option to clear.
-- [ ] **When** the clear filter button is clicked, **then** all judoka reappear.
+- [ ] **When** the clear filter icon is clicked, **then** all judoka reappear.
 - [ ] **When** the player taps outside or presses "X", **then** the overlay closes without changing the filter.
 
 ---
