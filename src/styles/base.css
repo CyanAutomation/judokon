@@ -14,7 +14,7 @@
 
   --button-bg: var(--color-primary);
   --button-hover-bg: #0b5bb0;
-  --button-active-bg: #0c3f7a;
+  --button-active-bg: var(--color-primary);
   --button-text-color: #ffffff;
   --switch-off-bg: #707070; /* Toggle off state background */
   --switch-on-bg: #08a700; /* Toggle on state background */
