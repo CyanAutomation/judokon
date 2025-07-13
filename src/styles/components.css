@@ -595,6 +595,7 @@ button .ripple {
   justify-content: center;
 }
 
+<button id="country-toggle" class="filter-bar-button">Toggle Country</button>
 #country-toggle {
   width: var(--touch-target-size, 48px);
   height: var(--touch-target-size, 48px);
