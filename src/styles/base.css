@@ -65,7 +65,7 @@
   --color-surface: #121212;
   --color-background: #000000;
   --color-text: #ffffff;
-  --color-text-inverted: #000000;
+  --color-text-inverted: #ffffff;
 }
 
 /* Gray mode variable overrides */
