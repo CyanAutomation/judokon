@@ -521,6 +521,7 @@ button .ripple {
 .scroll-button svg {
   width: 24px;
   height: 24px;
+  fill: currentColor;
 }
 
 .scroll-button:hover {

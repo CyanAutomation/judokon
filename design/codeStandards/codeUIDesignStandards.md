@@ -275,8 +275,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Shows 3–5 cards depending on screen size
 - Central card slightly zoomed
 - Dot pagination below
-- Arrow buttons with ARIA labels
-- Left/right chevron SVG icons for scroll controls (must include ARIA labels or accessible names for consistency with arrow button accessibility patterns)
+- Left/right chevron SVG icons for scroll controls using Material Symbols chevrons (must include ARIA labels or accessible names for consistency with arrow button accessibility patterns)
 - Swipe and keyboard navigation
 - Scroll-edge blur to signal limits
 
