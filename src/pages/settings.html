@@ -27,81 +27,91 @@
   </head>
 
   <body>
-    <header class="header">
-      <div class="character-slot left"></div>
-      <div class="logo-container">
-        <a href="../../index.html" data-testid="home-link">
-          <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
-        </a>
-      </div>
-      <div class="character-slot right"></div>
-    </header>
+    <div class="home-screen">
+      <header class="header">
+        <div class="character-slot left"></div>
+        <div class="logo-container">
+          <a href="../../index.html" data-testid="home-link">
+            <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
+          </a>
+        </div>
+        <div class="character-slot right"></div>
+      </header>
 
-    <main class="container" role="main">
-      <form id="settings-form" class="settings-form">
-        <fieldset id="general-settings-container" class="game-mode-toggle-container settings-form">
-          <legend class="visually-hidden">Game Settings</legend>
-          <div class="settings-item">
-            <label for="sound-toggle" class="switch">
-              <input type="checkbox" id="sound-toggle" name="sound" aria-label="Sound" />
-              <div class="slider round"></div>
-              <span>Sound</span>
-            </label>
-          </div>
-          <div class="settings-item">
-            <label for="navmap-toggle" class="switch">
-              <input
-                type="checkbox"
-                id="navmap-toggle"
-                name="navmap"
-                aria-label="Full Navigation Map"
-              />
-              <div class="slider round"></div>
-              <span>Full Navigation Map</span>
-            </label>
-          </div>
-          <div class="settings-item">
-            <label for="motion-toggle" class="switch">
-              <input type="checkbox" id="motion-toggle" name="motion" aria-label="Motion Effects" />
-              <div class="slider round"></div>
-              <span>Motion Effects</span>
-            </label>
-          </div>
-          <div class="settings-item">
-            <label for="display-mode-select">Display Mode</label>
-            <select id="display-mode-select">
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-              <option value="gray">Gray</option>
-            </select>
-          </div>
-        </fieldset>
-        <section
-          id="game-mode-toggle-container"
-          class="game-mode-toggle-container settings-form"
-          aria-label="Game Mode Selector"
-        ></section>
-      </form>
-    </main>
+      <main class="container" role="main">
+        <form id="settings-form" class="settings-form">
+          <fieldset
+            id="general-settings-container"
+            class="game-mode-toggle-container settings-form"
+          >
+            <legend class="visually-hidden">Game Settings</legend>
+            <div class="settings-item">
+              <label for="sound-toggle" class="switch">
+                <input type="checkbox" id="sound-toggle" name="sound" aria-label="Sound" />
+                <div class="slider round"></div>
+                <span>Sound</span>
+              </label>
+            </div>
+            <div class="settings-item">
+              <label for="navmap-toggle" class="switch">
+                <input
+                  type="checkbox"
+                  id="navmap-toggle"
+                  name="navmap"
+                  aria-label="Full Navigation Map"
+                />
+                <div class="slider round"></div>
+                <span>Full Navigation Map</span>
+              </label>
+            </div>
+            <div class="settings-item">
+              <label for="motion-toggle" class="switch">
+                <input
+                  type="checkbox"
+                  id="motion-toggle"
+                  name="motion"
+                  aria-label="Motion Effects"
+                />
+                <div class="slider round"></div>
+                <span>Motion Effects</span>
+              </label>
+            </div>
+            <div class="settings-item">
+              <label for="display-mode-select">Display Mode</label>
+              <select id="display-mode-select">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="gray">Gray</option>
+              </select>
+            </div>
+          </fieldset>
+          <section
+            id="game-mode-toggle-container"
+            class="game-mode-toggle-container settings-form"
+            aria-label="Game Mode Selector"
+          ></section>
+        </form>
+      </main>
 
-    <footer>
-      <nav class="bottom-navbar" data-testid="bottom-nav" aria-label="Bottom Navigation"></nav>
-    </footer>
-    <script type="module" src="../helpers/setupBottomNavbar.js"></script>
-    <script type="module" src="../helpers/setupDisplaySettings.js"></script>
+      <footer>
+        <nav class="bottom-navbar" data-testid="bottom-nav" aria-label="Bottom Navigation"></nav>
+      </footer>
+      <script type="module" src="../helpers/setupBottomNavbar.js"></script>
+      <script type="module" src="../helpers/setupDisplaySettings.js"></script>
 
-    <noscript>
-      <p class="noscript-warning">
-        JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
-      </p>
-    </noscript>
+      <noscript>
+        <p class="noscript-warning">
+          JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
+        </p>
+      </noscript>
 
-    <script type="module" src="../helpers/settingsPage.js"></script>
-    <script nomodule>
-      alert(
-        "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
-      );
-    </script>
-    <script type="module" src="../helpers/setupSvgFallback.js"></script>
+      <script type="module" src="../helpers/settingsPage.js"></script>
+      <script nomodule>
+        alert(
+          "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
+        );
+      </script>
+      <script type="module" src="../helpers/setupSvgFallback.js"></script>
+    </div>
   </body>
 </html>

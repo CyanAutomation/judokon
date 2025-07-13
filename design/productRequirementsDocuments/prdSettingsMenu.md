@@ -59,6 +59,7 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 - All data reads/writes should use asynchronous, promise-based functions with error handling.
 - `settings.json` must persist in localStorage/sessionStorage for session retention.
 - Updates should debounce writes to avoid excessive file operations if toggles are changed rapidly.
+- Wrap the page contents in a `.home-screen` container so the fixed header does not cover the first settings control.
 
 ---
 
