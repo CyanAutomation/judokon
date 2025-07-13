@@ -88,7 +88,10 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
   - `components/` – small DOM factories like `Button`, `ToggleSwitch`, `Card`, the `Modal` dialog, and `StatsPanel`
     ```javascript
     import { createStatsPanel } from "./src/components/StatsPanel.js";
-    const panel = createStatsPanel({ power: 9, speed: 8, technique: 7 });
+    const panel = createStatsPanel(
+      { power: 9, speed: 8, technique: 7 },
+      { ariaLabel: "Shohei Ono stats" }
+    );
     document.body.appendChild(panel);
     ```
     `Card.js` applies the same design tokens for colors and spacing.
@@ -207,25 +210,20 @@ This project is built with HTML, CSS, and JavaScript, and hosted on GitHub Pages
 ### 🥋 The Rules:
 
 1. **You vs. Computer**
-
    - Each match starts with both players receiving **25 random cards** from a 99-card deck.
 
 2. **Start the Battle**
-
    - In each round, you and the computer each draw your top card.
 
 3. **Choose Your Stat**
-
    - You select one of the stats on your card (e.g. Power, Speed, Technique, etc.)
 
 4. **Compare Stats**
-
    - The chosen stat is compared with the computer’s card.
    - **Highest value wins the round**.
    - If both stats are equal, it’s a **draw** — no one scores.
 
 5. **Scoring**
-
    - Each round win gives you **1 point**.
    - The cards used in that round are **discarded** (not reused).
 

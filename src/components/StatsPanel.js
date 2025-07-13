@@ -7,12 +7,14 @@
  * 3. Build a `<div>` with class `card-stats` containing a `<ul>` list.
  *    - For each stat key (power, speed, technique, kumikata, newaza)
  *      create an `<li>` with a label and value.
- * 4. Return the completed panel element.
+ * 4. Apply an accessible `aria-label` to the panel when provided.
+ * 5. Return the completed panel element.
  *
  * @param {object} stats - Object with stat values.
  * @param {object} [options] - Optional configuration.
  * @param {string} [options.type="common"] - Card rarity or panel type.
  * @param {string} [options.className] - Additional class name to apply.
+ * @param {string} [options.ariaLabel="Judoka Stats"] - Optional ARIA label.
  * @returns {HTMLDivElement} The stats panel element.
  */
 import { escapeHTML } from "../helpers/utils.js";
@@ -22,12 +24,13 @@ export function createStatsPanel(stats, options = {}) {
     throw new Error("Stats object is required");
   }
 
-  const { type = "common", className } = options;
+  const { type = "common", className, ariaLabel = "Judoka Stats" } = options;
   const { power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?" } = stats;
 
   const panel = document.createElement("div");
   panel.className = `card-stats ${type}`.trim();
   if (className) panel.classList.add(className);
+  if (ariaLabel) panel.setAttribute("aria-label", ariaLabel);
 
   const list = document.createElement("ul");
 

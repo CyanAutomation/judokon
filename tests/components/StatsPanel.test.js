@@ -15,15 +15,17 @@ describe("createStatsPanel", () => {
     expect(items).toHaveLength(5);
     expect(items[0].textContent).toContain("5");
     expect(items[4].textContent).toContain("9");
+    expect(panel.getAttribute("aria-label")).toBe("Judoka Stats");
   });
 
   it("applies custom type and class", () => {
     const panel = createStatsPanel(
       { power: 1, speed: 2 },
-      { type: "legendary", className: "extra" }
+      { type: "legendary", className: "extra", ariaLabel: "Player Stats" }
     );
     expect(panel.classList.contains("legendary")).toBe(true);
     expect(panel.classList.contains("extra")).toBe(true);
+    expect(panel.getAttribute("aria-label")).toBe("Player Stats");
   });
 
   it("throws when stats is missing", () => {
