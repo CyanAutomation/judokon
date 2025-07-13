@@ -118,6 +118,7 @@ test.describe("Browse Judoka screen", () => {
   test("carousel responds to swipe gestures", async ({ page }) => {
     const container = page.locator(".card-carousel");
     await container.waitFor();
+    await page.waitForSelector('[data-testid="carousel"] .judoka-card');
     const handle = await container.elementHandle();
     await page.evaluate((el) => {
       el.style.width = "200px";
