@@ -219,14 +219,14 @@ button .ripple {
 
 .judoka-card:hover {
   box-shadow: var(--shadow-hover);
-  transform: scale(1.1); /* Updated token */
+  transform: scale(1.05); /* Match PRD max scale */
 }
 
 /* Keyboard focus outline */
 .judoka-card:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 4px;
-  transform: scale(1.1);
+  transform: scale(1.05);
   box-shadow: var(--shadow-hover);
 }
 
@@ -543,7 +543,10 @@ button .ripple {
   justify-content: center;
   align-items: center;
   z-index: 10;
-  transition: background-color scale box-shadow 0.9s ease-in-out;
+  transition:
+    background-color 0.9s ease-in-out,
+    transform 0.9s ease-in-out,
+    box-shadow 0.9s ease-in-out;
 }
 
 .scroll-button svg {
@@ -617,7 +620,7 @@ button .ripple {
   justify-content: center;
 }
 
-<button id="country-toggle" class="filter-bar-button" > Toggle Country</button > #country-toggle {
+#country-toggle {
   width: var(--touch-target-size, 48px);
   height: var(--touch-target-size, 48px);
   padding: 0;
