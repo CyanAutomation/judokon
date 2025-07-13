@@ -175,7 +175,7 @@ This project is built with HTML, CSS, and JavaScript, and hosted on GitHub Pages
 
 1. **You vs. Computer**
 
-   - Each match starts with both players receiving **25 random cards** from a 99-card deck.
+- Each match starts with both players receiving **25 random cards** from a 99-card deck.
 
 2. **Start the Battle**
 
