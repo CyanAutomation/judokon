@@ -97,6 +97,13 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
     const card = createCard("<p>Hello</p>");
     document.body.appendChild(card);
     ```
+    `Modal.js` exports a dialog component with keyboard focus trapping.
+    ```javascript
+    import { createModal } from "./src/components/Modal.js";
+    const modal = createModal(contentFragment, { labelledBy: "modalTitle" });
+    document.body.appendChild(modal.element);
+    ```
+    Call `open()` on a user action and focus stays trapped until `close()` runs.
   - `pages/`
     HTML pages. Each page imports a matching module from
     `src/helpers` (for example `randomJudokaPage.js`) that wires up its
