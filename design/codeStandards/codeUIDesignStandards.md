@@ -276,7 +276,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Central card slightly zoomed
 - Dot pagination below
 - Arrow buttons with ARIA labels
-- Left/right chevron SVG icons for scroll controls
+- Left/right chevron SVG icons for scroll controls (must include ARIA labels or accessible names for consistency with arrow button accessibility patterns)
 - Swipe and keyboard navigation
 - Scroll-edge blur to signal limits
 
