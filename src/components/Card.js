@@ -21,7 +21,7 @@ export function createCard(content, options = {}) {
   const element = href ? document.createElement("a") : document.createElement("article");
   if (id) element.id = id;
   if (href) element.href = href;
-  element.className = "card";
+  element.classList.add("card");
   if (className) element.classList.add(className);
   if (typeof onClick === "function") {
     element.addEventListener("click", onClick);
