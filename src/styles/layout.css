@@ -69,15 +69,17 @@ body {
 .game-mode-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
   gap: var(--space-lg); /* Updated token */
   padding: 0 var(--space-xl); /* Updated token */
   flex: 1 1 auto;
-  min-height: 85%;
+  height: calc(100dvh - var(--header-height) - var(--footer-height));
 }
 
 @media (max-width: 768px) {
   .game-mode-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, 1fr);
   }
 }
 .homeHelperContainer {
