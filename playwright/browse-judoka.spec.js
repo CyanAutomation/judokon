@@ -5,6 +5,8 @@ async function setCarouselWidth(page, width) {
     const el = document.querySelector('[data-testid="carousel"]');
     if (el) {
       el.style.width = w;
+      // Disable flex growth so the test can control overflow
+      el.style.flex = "0 0 auto";
     }
   }, width);
 }
