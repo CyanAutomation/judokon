@@ -50,7 +50,7 @@ Key Details:
 - Users can only select one country at a time.
 - A clear filter icon is provided to reset the selection and revert to displaying all judoka.
 - Default display mode when opened is **slide-in panel**.
-- The toggle is represented by a filter list icon.
+- The toggle is represented by a panel icon with an arrow.
 
 ---
 
@@ -67,7 +67,7 @@ Key Details:
 
 | Priority | Feature                         | Description                                                                          |
 | -------- | ------------------------------- | ------------------------------------------------------------------------------------ |
-| **P1**   | Country selector toggle         | Allow users to toggle the country selector panel via a filter list icon and filter judoka cards by country. |
+| **P1**   | Country selector toggle         | Allow users to toggle the country selector panel via a panel icon with an arrow and filter judoka cards by country. |
 | **P1**   | Filtering and responsive time   | Ensure filtering is completed within 1 second for 90% of sessions.                   |
 | **P2**   | Three display modes             | Provide hidden, slide-in (default), and full-screen grid views for the selector.     |
 | **P2**   | Clear filter icon               | Provide an easy way to remove the current country filter.                             |

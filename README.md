@@ -150,7 +150,7 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
 - Playable directly in the browser
 - Loading indicator for better user experience
 - Modularized JavaScript for better maintainability
-- Slide-in country picker, opened via a filter icon, for filtering judoka by flag with accessible
+- Slide-in country picker, opened via a panel icon with an arrow, for filtering judoka by flag with accessible
   `aria-label` descriptions
 - Country picker panel appears below the fixed header for unobstructed viewing
 - Scroll buttons disable when the carousel reaches either end
@@ -175,7 +175,7 @@ This project is built with HTML, CSS, and JavaScript, and hosted on GitHub Pages
 
 1. **You vs. Computer**
 
-- Each match starts with both players receiving **25 random cards** from a 99-card deck.
+   - Each match starts with both players receiving **25 random cards** from a 99-card deck.
 
 2. **Start the Battle**
 
