@@ -227,6 +227,7 @@ Each tile contains:
   - Tile container should use Flex/Grid with breakpoint control.
   - Single-column layout for mobile view (portrait resolution)
   - Tiles stretch to 100% width with top and bottom padding
+  - Tile grid height equals `100dvh` minus the top and bottom bar heights so tiles always fill the viewport
   - Tap targets clearly bounded with shadow or color background
   - Include visible focus outline for keyboard navigation
 
