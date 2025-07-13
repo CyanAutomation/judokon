@@ -96,9 +96,10 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
     `src/helpers` (for example `randomJudokaPage.js`) that wires up its
     interactive behavior.
   - `data/`
-  - `schemas/`  
+  - `schemas/`
     JSON Schema definitions used to validate the data files.
   - `assets/`
+    Card art and UI graphics, including `cardBacks/cardBack-2.png` used when a card flips.
   - `styles/`
 - `tests/` – Vitest unit tests.
 - `design/` – documentation and code standards.
@@ -213,7 +214,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 ## Known Issues
 
 - The game currently does not support mobile devices.
-- Animations for card flips are not yet implemented.
+- Animations for card flips are now implemented.
 - Difficulty levels for the computer opponent are under development.
 
 ## Display Modes
@@ -254,7 +255,7 @@ The settings screen previously had its first controls hidden behind the header; 
 
 - Get feedback on current cards and stat points
 - Take submissions/suggestions on new card designs and stats
-- Add animations for card flips and stat comparisons
+- Add stat comparison animations
 - Implement difficulty levels for the computer opponent
 - Expand the card deck with more judoka and stats
 

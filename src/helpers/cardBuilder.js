@@ -4,6 +4,7 @@ import { generateCardPortrait, generateCardSignatureMove } from "./cardRender.js
 import { createStatsPanel } from "../components/StatsPanel.js";
 import { safeGenerate } from "./errorUtils.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
+import { enableCardFlip } from "./cardFlip.js";
 
 /**
  * Generates the "last updated" HTML for a judoka card.
@@ -139,7 +140,10 @@ function validateJudoka(judoka) {
  *    - Generate signature move HTML using `generateCardSignatureMove` and append it.
  *    - If generation fails, append an empty signature move container.
  *
- * 10. Return the complete card container:
+ * 10. Enable card interactivity:
+ *    - Attach click and keyboard handlers to toggle `.show-card-back`.
+ *
+ * 11. Return the complete card container:
  *    - Append the `judoka-card` to the `card-container`.
  *
  * @param {Object} judoka - The judoka object containing data for the card.
@@ -246,6 +250,8 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
 
   const signatureMoveElement = createSignatureMoveSection(judoka, gokyoLookup, cardType);
   judokaCard.appendChild(signatureMoveElement);
+
+  enableCardFlip(judokaCard);
 
   cardContainer.appendChild(judokaCard);
 
