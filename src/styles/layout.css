@@ -8,25 +8,29 @@ body {
   background-image: url("./assets/images/bgTileBlue.png");
   background-repeat: repeat;
   background-size: 50vw auto;
-  padding-top: var(--header-height);
-  padding-bottom: var(--footer-height);
 }
 
 .home-screen {
   display: grid;
   grid-template-rows: auto 1fr auto;
   min-height: 100dvh;
+  padding-top: var(--header-height);
+  padding-bottom: var(--footer-height);
   max-width: 100%;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .kodokan-screen {
   display: grid;
   grid-template-rows: auto 1fr auto auto;
-  min-height: 100dvh;
+  height: 100dvh;
+  padding-top: var(--header-height);
+  padding-bottom: var(--footer-height);
   width: 100%;
   max-width: 100%;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .kodokan-grid {
