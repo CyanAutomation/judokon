@@ -150,6 +150,25 @@ function validateGokyoData(gokyoData) {
 }
 
 /**
+ * Update scroll button disabled states based on container position.
+ *
+ * @pseudocode
+ * 1. Calculate the maximum scroll value using `scrollWidth` and
+ *    `clientWidth` of `container`.
+ * 2. Disable `leftBtn` when `scrollLeft` is at or before the first card.
+ * 3. Disable `rightBtn` when `scrollLeft` reaches the end of the carousel.
+ *
+ * @param {HTMLElement} container - The scrolling container element.
+ * @param {HTMLButtonElement} leftBtn - Button that scrolls left.
+ * @param {HTMLButtonElement} rightBtn - Button that scrolls right.
+ */
+export function updateScrollButtonState(container, leftBtn, rightBtn) {
+  const maxLeft = container.scrollWidth - container.clientWidth;
+  leftBtn.disabled = container.scrollLeft <= 0;
+  rightBtn.disabled = container.scrollLeft >= maxLeft;
+}
+
+/**
  * Creates a loading spinner and sets a timeout to display it.
  *
  * @pseudocode
@@ -379,6 +398,11 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   wrapper.appendChild(container);
   wrapper.appendChild(rightButton);
 
+  const updateButtons = () => updateScrollButtonState(container, leftButton, rightButton);
+  updateButtons();
+  container.addEventListener("scroll", updateButtons);
+  window.addEventListener("resize", updateButtons);
+
   setupKeyboardNavigation(container);
   setupSwipeNavigation(container);
   applyAccessibilityImprovements(wrapper);
@@ -386,4 +410,4 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   return wrapper;
 }
 
-export { addScrollMarkers };
+export { addScrollMarkers, updateScrollButtonState };

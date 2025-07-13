@@ -153,6 +153,7 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
 - Slide-in country picker, opened via a filter icon, for filtering judoka by flag with accessible
   `aria-label` descriptions
 - Country picker panel appears below the fixed header for unobstructed viewing
+- Scroll buttons disable when the carousel reaches either end
 
 ## About JU-DO-KON!
 
@@ -173,25 +174,20 @@ This project is built with HTML, CSS, and JavaScript, and hosted on GitHub Pages
 ### 🥋 The Rules:
 
 1. **You vs. Computer**
-
    - Each match starts with both players receiving **25 random cards** from a 99-card deck.
 
 2. **Start the Battle**
-
    - In each round, you and the computer each draw your top card.
 
 3. **Choose Your Stat**
-
    - You select one of the stats on your card (e.g. Power, Speed, Technique, etc.)
 
 4. **Compare Stats**
-
    - The chosen stat is compared with the computer’s card.
    - **Highest value wins the round**.
    - If both stats are equal, it’s a **draw** — no one scores.
 
 5. **Scoring**
-
    - Each round win gives you **1 point**.
    - The cards used in that round are **discarded** (not reused).
 

@@ -530,6 +530,11 @@ button .ripple {
   box-shadow: var(--shadow-base);
 }
 
+.scroll-button:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .scroll-button.left {
   left: var(--space-sm);
 }
