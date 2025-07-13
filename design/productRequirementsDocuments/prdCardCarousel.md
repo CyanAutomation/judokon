@@ -93,7 +93,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 2. The returned element is mounted into the page (for example, `browseJudoka.html` inserts it into `#carousel-container`).
 3. Carousel loads cards within 1 second; a loading spinner appears if delayed.
 4. Player uses:
-   - On-screen arrows to scroll,
+   - On-screen chevron buttons to scroll left or right,
    - Swipe gestures on mobile,
    - Or keyboard arrows for navigation.
 5. Hovering enlarges cards (desktop).

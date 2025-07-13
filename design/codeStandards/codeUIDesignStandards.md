@@ -276,6 +276,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Central card slightly zoomed
 - Dot pagination below
 - Arrow buttons with ARIA labels
+- Left/right chevron SVG icons for scroll controls
 - Swipe and keyboard navigation
 - Scroll-edge blur to signal limits
 
