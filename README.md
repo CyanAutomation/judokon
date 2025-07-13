@@ -97,6 +97,28 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
     const card = createCard("<p>Hello</p>");
     document.body.appendChild(card);
     ```
+    `Modal.js` exports a dialog component with keyboard focus trapping.
+    ```javascript
+    import { createModal } from "./src/components/Modal.js";
+    const contentFragment = document.createDocumentFragment();
+    const modalContent = document.createElement("p");
+    modalContent.textContent = "This is a modal dialog.";
+    contentFragment.appendChild(modalContent);
+    const modal = createModal(contentFragment, { labelledBy: "modalTitle" });
+    document.body.appendChild(modal.element);
+    
+    // Example: Wire up open() and close() methods to button clicks
+    const openButton = document.createElement("button");
+    openButton.textContent = "Open Modal";
+    openButton.addEventListener("click", () => modal.open());
+    document.body.appendChild(openButton);
+    
+    const closeButton = document.createElement("button");
+    closeButton.textContent = "Close Modal";
+    closeButton.addEventListener("click", () => modal.close());
+    modal.element.appendChild(closeButton);
+    ```
+    Call `open()` on a user action and focus stays trapped until `close()` runs.
   - `pages/`
     HTML pages. Each page imports a matching module from
     `src/helpers` (for example `randomJudokaPage.js`) that wires up its
