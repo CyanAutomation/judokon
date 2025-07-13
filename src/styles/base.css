@@ -33,9 +33,13 @@
   --space-large: var(--space-lg);
 
   /* Navbar heights adjusted for mobile Safari */
-  --header-height: 8dvh;
-  --footer-height: 8dvh;
+  --header-height: 8vh;
+  --footer-height: 8vh;
 
+  @supports (height: 1dvh) {
+    --header-height: 8dvh;
+    --footer-height: 8dvh;
+  }
   /* Touch target and breakpoints */
   --touch-target-size: 48px;
   --breakpoint-lg: 1024px;
