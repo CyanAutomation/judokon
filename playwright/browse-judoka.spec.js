@@ -18,6 +18,10 @@ test.describe("Browse Judoka screen", () => {
 
   test("essential elements visible", async ({ page }) => {
     await expect(page.getByTestId(COUNTRY_TOGGLE_LOCATOR)).toBeVisible();
+    await expect(page.getByTestId("country-toggle")).toHaveAttribute(
+      "aria-label",
+      /country filter/i
+    );
     await expect(page.getByRole("navigation")).toBeVisible();
     await expect(page.getByRole("link", { name: /classic battle/i })).toBeVisible();
   });
