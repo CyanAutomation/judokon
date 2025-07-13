@@ -100,6 +100,10 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
     `Modal.js` exports a dialog component with keyboard focus trapping.
     ```javascript
     import { createModal } from "./src/components/Modal.js";
+    const contentFragment = document.createDocumentFragment();
+    const modalContent = document.createElement("p");
+    modalContent.textContent = "This is a modal dialog.";
+    contentFragment.appendChild(modalContent);
     const modal = createModal(contentFragment, { labelledBy: "modalTitle" });
     document.body.appendChild(modal.element);
     ```
