@@ -371,7 +371,7 @@ button .ripple {
 }
 
 .card-stats {
-  background-color: var(--card-bg-color);
+  background-color: var(--card-stats-bg, var(--color-secondary));
   color: var(--color-text-inverted);
   padding: var(--space-small) var(--space-large);
   margin: 0;
@@ -398,14 +398,14 @@ button .ripple {
 .card-stats li {
   margin: 0;
   padding: 3px min(1px, 0.6vh);
-  border-top: 1px solid var(--card-border-color);
+  border-top: 1px solid var(--card-border-color, var(--color-secondary));
   font-family: "Open Sans", sans-serif;
   font-size: var(--font-small);
   font-weight: bold;
 }
 
 .card-stats li:last-child {
-  border-bottom: 1px solid var(--card-border-color);
+  border-bottom: 1px solid var(--card-border-color, var(--color-secondary));
   margin-bottom: 0;
 }
 

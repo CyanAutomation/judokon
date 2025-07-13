@@ -28,8 +28,9 @@ initialize page-specific behavior.
 Factory functions that create reusable UI elements. `Button.js` and
 `ToggleSwitch.js` return styled controls. `Modal.js` builds an accessible
 dialog with focus trapping and open/close helpers. `StatsPanel.js` constructs
-the `.card-stats` section used within judoka cards. `Card.js` provides a
-reusable content panel styled with the `.card` class.
+the `.card-stats` list for displaying attributes and can be reused anywhere
+stats need to be shown. `Card.js` provides a reusable content panel styled with
+the `.card` class.
 
 ```javascript
 import { createCard } from "./src/components/Card.js";
