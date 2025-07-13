@@ -169,6 +169,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 - **Portrait Container:** `.card-portrait` now uses `width: 100%` and `height: 45%` so it matches its flex-basis and keeps the aspect ratio consistent.
 - **Stats Container:** `.card-stats` uses `height: 35%` to align with the vertical proportions.
 - **Signature Move Band:** `height: max(10%, var(--touch-target-size))` keeps the 44px tap target while maintaining the card's 2:3 ratio.
+- **Padding Adjustments:** Section heights use `calc()` to subtract vertical padding so the total fits within the card's 2:3 ratio.
 - **Rarity Border Colors:**
   - Common → Blue (#337AFF)
   - Rare → Red (#FF3333)

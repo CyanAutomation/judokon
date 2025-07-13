@@ -276,9 +276,9 @@ button .ripple {
   align-items: center;
   padding: var(--space-small) var(--space-medium); /* Updated tokens */
   flex-direction: row;
-  /* Maintain ~10% of card height */
-  flex: 0 0 10%;
-  height: 10%;
+  /* Maintain ~10% of card height accounting for padding */
+  flex: 0 0 calc(10% - (var(--space-small) * 2));
+  height: calc(10% - (var(--space-small) * 2));
   box-sizing: border-box;
 }
 
@@ -381,9 +381,9 @@ button .ripple {
   align-items: flex-end;
   font-size: var(--font-medium);
   flex-direction: column;
-  height: 35%;
-  /* Stats area ~35% of card height */
-  flex: 0 0 35%;
+  /* Stats area ~35% of card height accounting for padding */
+  height: calc(35% - (var(--space-small) * 2));
+  flex: 0 0 calc(35% - (var(--space-small) * 2));
 }
 
 .card-stats ul {
@@ -429,10 +429,11 @@ button .ripple {
   align-items: center;
   flex-direction: row;
   width: 100%;
-  height: max(10%, var(--touch-target-size));
+  /* Maintain ~10% height while accounting for padding on children */
+  height: calc(max(10%, var(--touch-target-size)) - (var(--space-small) * 2));
   font-weight: bold;
   /* Ensure visible at small screen sizes */
-  flex: 0 0 max(10%, var(--touch-target-size));
+  flex: 0 0 calc(max(10%, var(--touch-target-size)) - (var(--space-small) * 2));
   box-sizing: border-box;
 }
 
