@@ -156,6 +156,8 @@ Key Details:
   - Color contrast ratios must meet WCAG 2.1 AA standards for readability.
   - Selected country should be visually highlighted (e.g., border or shading).
   - Selector should respond well to different screen sizes (responsive design).
+  - The panel must appear below the persistent top bar so the first row of
+    countries is fully visible.
 - Animation Considerations:
   - Slide-in animation duration: 300ms and respects the user's `prefers-reduced-motion` setting.
   - Flag grid fade-in duration uses `var(--transition-fast)`.
@@ -171,7 +173,6 @@ Key Details:
 ## Tasks
 
 - [ ] 1.0 Implement Country Flag Picker UI
-
   - [ ] 1.1 Create hidden, slide-in panel (default), and full-screen grid layouts.
   - [ ] 1.2 Load country flags with alt-text and labels.
   - [ ] 1.3 Ensure responsive design for different screen sizes (mobile, tablet, desktop).
@@ -179,24 +180,20 @@ Key Details:
   - [ ] 1.5 Implement "Clear Selection" button.
 
 - [ ] 2.0 Set Up Filtering Logic
-
   - [x] 2.1 Load `judoka.json` and extract a list of available countries.
   - [ ] 2.2 Implement filtering of the card carousel based on the selected country.
   - [ ] 2.3 Display an empty state message if no judoka exist for the selected country.
 
 - [ ] 3.0 Optimize Performance
-
   - [ ] 3.1 Implement virtual scrolling or paging for >50 countries.
   - [ ] 3.2 Ensure the filtering action completes within 1 second for 90% of sessions.
   - [ ] 3.3 Ensure the country selector appears within 1 second when toggled.
 
 - [ ] 4.0 Handle Edge Cases
-
   - [ ] 4.1 Display a fallback icon if a flag asset fails to load.
   - [ ] 4.2 Implement progressive flag loading on slow networks.
 
 - [ ] 5.0 Ensure Accessibility and Compliance
-
   - [ ] 5.1 Add alt-text for all flag icons based on country names and apply
         `aria-label` text like "Filter by {country}" to each flag button for
         screen readers.

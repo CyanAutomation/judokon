@@ -8,8 +8,8 @@ body {
   background-image: url("./assets/images/bgTileBlue.png");
   background-repeat: repeat;
   background-size: 50vw auto;
-  padding-top: 8vh;
-  padding-bottom: 8vh;
+  padding-top: var(--header-height);
+  padding-bottom: var(--footer-height);
 }
 
 .home-screen {
@@ -50,7 +50,7 @@ body {
   background-color: var(--color-tertiary); /* Updated token */
   box-shadow: var(--shadow-base); /* Updated token */
   width: 100%;
-  min-height: 8vh;
+  min-height: var(--header-height);
 }
 
 .character-slot {
