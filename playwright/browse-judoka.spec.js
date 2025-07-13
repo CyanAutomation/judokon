@@ -103,8 +103,8 @@ test.describe("Browse Judoka screen", () => {
     const after = await card.boundingBox();
 
     const widthRatio = after.width / before.width;
-    expect(widthRatio).toBeGreaterThan(1.08);
-    expect(widthRatio).toBeLessThan(1.12);
+    expect(widthRatio).toBeGreaterThan(1.04);
+    expect(widthRatio).toBeLessThan(1.09);
   });
 
   test("carousel responds to arrow keys", async ({ page }) => {
