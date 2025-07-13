@@ -32,7 +32,7 @@
 
 /* Hover effect for desktop */
 .judoka-card:hover {
-  transform: scale(1.1); /* Interactive feedback */
+  transform: scale(1.05); /* Interactive feedback */
 }
 
 /* Styles for tablets */
