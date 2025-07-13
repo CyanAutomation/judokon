@@ -132,7 +132,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 - **Top Bar**: minimal header with “Random Judoka” title centered.
 - **Central Card Area**: large placeholder card with question mark icon on initial state.
-- **Draw Button Area**: prominent pill-shaped “Draw New Judoka!” button with mute and animation toggles ~24px below the card.
+- **Draw Button Area**: prominent pill-shaped “Draw New Judoka!” button prefixed with a draw icon, with mute and animation toggles ~24px below the card.
 - **Fallback State**: placeholder card with error icon and explanatory text below.
 
 ---
