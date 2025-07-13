@@ -9,7 +9,9 @@
   text-align: center;
   box-shadow: var(--shadow-base);
   cursor: pointer;
-  transition: transform var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -19,6 +21,11 @@
 
 .card:hover {
   transform: scale(1.05);
+  box-shadow: var(--shadow-hover);
+}
+
+.card:focus-visible {
+  box-shadow: var(--shadow-hover);
 }
 
 .tile-content h2 {
@@ -197,7 +204,7 @@ button .ripple {
 }
 
 .judoka-card:hover {
-  box-shadow: 8px 8px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-hover);
   transform: scale(1.1); /* Updated token */
 }
 
@@ -206,7 +213,7 @@ button .ripple {
   outline: 2px solid var(--color-primary);
   outline-offset: 4px;
   transform: scale(1.1);
-  box-shadow: 8px 8px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-hover);
 }
 
 /* Fallback for older browsers */
