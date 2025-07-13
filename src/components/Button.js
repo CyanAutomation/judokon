@@ -21,9 +21,19 @@ export function createButton(text, options = {}) {
   const button = document.createElement("button");
   button.type = type;
   if (icon) {
-    button.innerHTML = `${icon}<span class="button-label">${text}</span>`;
-    const svg = button.querySelector("svg");
-    if (svg) svg.setAttribute("aria-hidden", "true");
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(icon, "image/svg+xml");
+    const svgElement = svgDoc.querySelector("svg");
+    if (svgElement) {
+      svgElement.setAttribute("aria-hidden", "true");
+      button.appendChild(svgElement);
+    } else {
+      console.warn("Invalid SVG markup provided for icon.");
+    }
+    const labelSpan = document.createElement("span");
+    labelSpan.className = "button-label";
+    labelSpan.textContent = text;
+    button.appendChild(labelSpan);
   } else {
     button.textContent = text;
   }
