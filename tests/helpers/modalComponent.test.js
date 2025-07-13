@@ -31,4 +31,17 @@ describe("createModal", () => {
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(document.activeElement).toBe(trigger);
   });
+
+  it("applies aria labels from options", () => {
+    const heading = document.createElement("h2");
+    heading.id = "modal-title";
+    const { element } = createModal(buildContent(), {
+      labelledBy: heading,
+      describedBy: "modal-desc"
+    });
+    document.body.appendChild(element);
+    const dialog = element.querySelector(".modal");
+    expect(dialog.getAttribute("aria-labelledby")).toBe("modal-title");
+    expect(dialog.getAttribute("aria-describedby")).toBe("modal-desc");
+  });
 });
