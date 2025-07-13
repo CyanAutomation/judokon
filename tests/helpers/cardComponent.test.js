@@ -2,17 +2,16 @@ import { describe, it, expect, vi } from "vitest";
 import { createCard } from "../../src/components/Card.js";
 
 describe("createCard", () => {
-  it("creates an article card with text content", () => {
+  it("creates a div card with text content", () => {
     const card = createCard("Hello");
-    expect(card).toBeInstanceOf(HTMLElement);
-    expect(card.tagName).toBe("ARTICLE");
+    expect(card).toBeInstanceOf(HTMLDivElement);
     expect(card.classList.contains("card")).toBe(true);
     expect(card.innerHTML).toBe("Hello");
   });
 
   it("creates an anchor card when href provided", () => {
     const card = createCard("Link", { href: "#" });
-    expect(card.tagName).toBe("A");
+    expect(card).toBeInstanceOf(HTMLAnchorElement);
     expect(card.getAttribute("href")).toBe("#");
   });
 

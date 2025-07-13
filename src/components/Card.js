@@ -2,7 +2,7 @@
  * Create a basic card container element.
  *
  * @pseudocode
- * 1. Use an `<article>` element by default or an `<a>` element when `href` is provided.
+ * 1. Use a `<div>` element by default or an `<a>` element when `href` is provided.
  * 2. Apply `id`, `href`, `className` and `onClick` options if present.
  * 3. Always include the `card` class plus any additional `className`.
  * 4. Insert string content via `innerHTML` or append a DOM node directly.
@@ -18,7 +18,7 @@
  */
 export function createCard(content, options = {}) {
   const { id, className, href, onClick } = options;
-  const element = href ? document.createElement("a") : document.createElement("article");
+  const element = href ? document.createElement("a") : document.createElement("div");
   if (id) element.id = id;
   if (href) element.href = href;
   element.classList.add("card");
