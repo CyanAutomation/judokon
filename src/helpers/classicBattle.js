@@ -2,17 +2,19 @@ import { generateRandomCard } from "./randomCard.js";
 import { getRandomJudoka, renderJudokaCard } from "./cardUtils.js";
 import { fetchJson } from "./dataUtils.js";
 import { createGokyoLookup } from "./utils.js";
-import { DATA_DIR, CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
+import { DATA_DIR } from "./constants.js";
+import {
+  startRound as engineStartRound,
+  handleStatSelection as engineHandleStatSelection,
+  quitMatch as engineQuitMatch,
+  getScores,
+  isMatchEnded,
+  STATS,
+  _resetForTest as engineReset
+} from "./battleEngine.js";
 
-const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 let judokaData = null;
 let gokyoLookup = null;
-let playerScore = 0;
-let computerScore = 0;
-let timerId = null;
-let remaining = 0;
-let matchEnded = false;
-let roundsPlayed = 0;
 
 function getStatValue(container, stat) {
   const index = STATS.indexOf(stat) + 1;
@@ -21,6 +23,7 @@ function getStatValue(container, stat) {
 }
 
 function updateScoreDisplay() {
+  const { playerScore, computerScore } = getScores();
   const el = document.getElementById("score-display");
   if (el) {
     el.textContent = `You: ${playerScore} Computer: ${computerScore}`;
@@ -34,41 +37,17 @@ function showResult(message) {
   }
 }
 
-function endMatchIfNeeded() {
-  if (
-    playerScore >= CLASSIC_BATTLE_POINTS_TO_WIN ||
-    computerScore >= CLASSIC_BATTLE_POINTS_TO_WIN ||
-    roundsPlayed >= CLASSIC_BATTLE_MAX_ROUNDS
-  ) {
-    matchEnded = true;
-    let message = "Match ends in a tie!";
-    if (playerScore > computerScore) {
-      message = "You win the match!";
-    } else if (playerScore < computerScore) {
-      message = "Computer wins the match!";
-    }
-    showResult(message);
-    return true;
-  }
-  return false;
-}
-
 function startTimer() {
   const timerEl = document.getElementById("round-timer");
-  remaining = 30;
-  if (timerEl) timerEl.textContent = String(remaining);
-  timerId = setInterval(() => {
-    remaining -= 1;
-    if (timerEl) timerEl.textContent = String(remaining);
-    if (remaining <= 0) {
-      clearInterval(timerId);
-      timerId = null;
-      if (!matchEnded) {
-        const randomStat = STATS[Math.floor(Math.random() * STATS.length)];
-        handleStatSelection(randomStat);
-      }
+  engineStartRound(
+    (remaining) => {
+      if (timerEl) timerEl.textContent = String(remaining);
+    },
+    () => {
+      const randomStat = STATS[Math.floor(Math.random() * STATS.length)];
+      handleStatSelection(randomStat);
     }
-  }, 1000);
+  );
 }
 
 /**
@@ -86,7 +65,6 @@ function startTimer() {
  * @returns {Promise<void>} Resolves when cards are displayed.
  */
 export async function startRound() {
-  matchEnded = false;
   if (!judokaData) {
     judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
   }
@@ -136,29 +114,18 @@ export async function startRound() {
  * @param {string} stat - The stat name to compare.
  */
 export function handleStatSelection(stat) {
-  if (matchEnded) return;
-  if (timerId) {
-    clearInterval(timerId);
-    timerId = null;
-  }
   const playerContainer = document.getElementById("player-card");
   const computerContainer = document.getElementById("computer-card");
   const playerVal = getStatValue(playerContainer, stat);
   const compVal = getStatValue(computerContainer, stat);
-  if (playerVal > compVal) {
-    playerScore += 1;
-    showResult("You win the round!");
-  } else if (playerVal < compVal) {
-    computerScore += 1;
-    showResult("Computer wins the round!");
-  } else {
-    showResult("Tie – no score");
+  const result = engineHandleStatSelection(playerVal, compVal);
+  if (result.message) {
+    showResult(result.message);
   }
-  roundsPlayed += 1;
   updateScoreDisplay();
-  if (!endMatchIfNeeded()) {
+  if (!result.matchEnded) {
     setTimeout(() => {
-      if (!matchEnded) {
+      if (!isMatchEnded()) {
         startRound();
       }
     }, 1000);
@@ -175,26 +142,15 @@ export function handleStatSelection(stat) {
  */
 export function quitMatch() {
   if (confirm("Quit the match?")) {
-    matchEnded = true;
-    if (timerId) {
-      clearInterval(timerId);
-      timerId = null;
-    }
-    showResult("You quit the match. You lose!");
+    const result = engineQuitMatch();
+    showResult(result.message);
   }
 }
 
 export function _resetForTest() {
   judokaData = null;
   gokyoLookup = null;
-  playerScore = 0;
-  computerScore = 0;
-  matchEnded = false;
-  roundsPlayed = 0;
-  if (timerId) {
-    clearInterval(timerId);
-    timerId = null;
-  }
+  engineReset();
   const timerEl = document.getElementById("round-timer");
   if (timerEl) timerEl.textContent = "";
   const resultEl = document.getElementById("round-result");
