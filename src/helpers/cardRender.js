@@ -2,6 +2,7 @@
 const PLACEHOLDER_ID = 0;
 
 import { escapeHTML, decodeHTML } from "./utils.js";
+import { createStatsPanel } from "../components/StatsPanel.js";
 
 /**
  * Generates the portrait HTML for a judoka card.
@@ -83,25 +84,8 @@ export function generateCardStats(card, cardType = "common") {
     throw new Error("Stats object is required");
   }
 
-  const { power = "?", speed = "?", technique = "?", kumikata = "?", newaza = "?" } = card.stats;
-
-  const escapedPower = escapeHTML(power);
-  const escapedSpeed = escapeHTML(speed);
-  const escapedTechnique = escapeHTML(technique);
-  const escapedKumikata = escapeHTML(kumikata);
-  const escapedNewaza = escapeHTML(newaza);
-
-  return `
-    <div class="card-stats ${cardType}">
-      <ul>
-        <li class="stat"><strong>Power</strong> <span>${escapedPower}</span></li>
-        <li class="stat"><strong>Speed</strong> <span>${escapedSpeed}</span></li>
-        <li class="stat"><strong>Technique</strong> <span>${escapedTechnique}</span></li>
-        <li class="stat"><strong>Kumi-kata</strong> <span>${escapedKumikata}</span></li>
-        <li class="stat"><strong>Ne-waza</strong> <span>${escapedNewaza}</span></li>
-      </ul>
-    </div>
-  `;
+  const panel = createStatsPanel(card.stats, { type: cardType });
+  return panel.outerHTML;
 }
 
 /**
