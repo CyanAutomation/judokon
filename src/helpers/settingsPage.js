@@ -4,6 +4,7 @@ import { showSettingsError } from "./showSettingsError.js";
 import { createToggleSwitch } from "../components/ToggleSwitch.js";
 import { applyDisplayMode } from "./displayMode.js";
 import { applyMotionPreference } from "./motionUtils.js";
+import { onDomReady } from "./domReady.js";
 
 function applyInputState(element, value) {
   if (!element) return;
@@ -189,8 +190,4 @@ async function initializeSettingsPage() {
   }
 }
 
-if (document.readyState !== "loading") {
-  initializeSettingsPage();
-} else {
-  document.addEventListener("DOMContentLoaded", initializeSettingsPage);
-}
+onDomReady(initializeSettingsPage);

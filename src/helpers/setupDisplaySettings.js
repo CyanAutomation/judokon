@@ -6,12 +6,12 @@
  *    a. Call `loadSettings()` to retrieve stored settings.
  *    b. Call `applyDisplayMode` with `settings.displayMode`.
  *    c. Log any errors to the console.
- * 2. If the document is already loaded, run `init` immediately.
- * 3. Otherwise, run `init` once on the `DOMContentLoaded` event.
+ * 2. Use `onDomReady` to run `init` when the DOM is ready.
  */
 import { loadSettings } from "./settingsUtils.js";
 import { applyDisplayMode } from "./displayMode.js";
 import { applyMotionPreference } from "./motionUtils.js";
+import { onDomReady } from "./domReady.js";
 
 async function init() {
   try {
@@ -23,8 +23,4 @@ async function init() {
   }
 }
 
-if (document.readyState !== "loading") {
-  init();
-} else {
-  document.addEventListener("DOMContentLoaded", init);
-}
+onDomReady(init);

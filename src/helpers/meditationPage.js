@@ -6,17 +6,14 @@
  * 2. Define `setupMeditationPage` which:
  *    a. Retrieves the quote element from the DOM.
  *    b. Calls `setupLanguageToggle` with the quote element.
- * 3. Run `setupMeditationPage` after the DOM is loaded.
+ * 3. Use `onDomReady` to run `setupMeditationPage` once the DOM is ready.
  */
 import { setupLanguageToggle } from "./pseudoJapanese.js";
+import { onDomReady } from "./domReady.js";
 
 export function setupMeditationPage() {
   const quoteEl = document.getElementById("quote");
   setupLanguageToggle(quoteEl);
 }
 
-if (document.readyState !== "loading") {
-  setupMeditationPage();
-} else {
-  document.addEventListener("DOMContentLoaded", setupMeditationPage);
-}
+onDomReady(setupMeditationPage);
