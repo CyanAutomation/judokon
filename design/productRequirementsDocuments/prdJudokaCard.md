@@ -164,7 +164,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 ### Layout & Design Notes
 
 - **Aspect Ratio:** Card must strictly maintain **2:3 ratio**, adjusting internal elements responsively.
-- **Vertical Proportions:** With a card width of 300px (height 450px), allocate roughly 10% (45px) for the name and flag bar, 45% (200px) for the portrait, 35% (158px) for stats, and 10% (45px) for the signature move section.
+- **Vertical Proportions:** With a card width of 300px (height 450px), allocate roughly 14% (63px) for the name and flag bar, 42% (189px) for the portrait, 34% (153px) for stats, and 10% (45px) for the signature move section.
 - Portrait images should fill the portrait area using `object-fit: cover` so no whitespace appears.
 - **Portrait Container:** `.card-portrait` now uses `width: 100%` and `height: 45%` so it matches its flex-basis and keeps the aspect ratio consistent.
 - **Stats Container:** `.card-stats` uses `height: 35%` to align with the vertical proportions.
