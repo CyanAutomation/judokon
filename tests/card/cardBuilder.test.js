@@ -78,17 +78,14 @@ describe("generateCardStats", () => {
       stats: { power: 9, speed: 6, technique: 7, kumikata: 7, newaza: 8 }
     };
 
-    const expectedHtml = `
-      <div class="card-stats common">
-        <ul>
-          <li class="stat"><strong>Power</strong> <span>9</span></li>
-          <li class="stat"><strong>Speed</strong> <span>6</span></li>
-          <li class="stat"><strong>Technique</strong> <span>7</span></li>
-          <li class="stat"><strong>Kumi-kata</strong> <span>7</span></li>
-          <li class="stat"><strong>Ne-waza</strong> <span>8</span></li>
-        </ul>
-      </div>
-    `;
+    const expectedHtml =
+      '<div class="card-stats common" aria-label="Judoka Stats"><ul>' +
+      '<li class="stat"><strong>Power</strong><span>9</span></li>' +
+      '<li class="stat"><strong>Speed</strong><span>6</span></li>' +
+      '<li class="stat"><strong>Technique</strong><span>7</span></li>' +
+      '<li class="stat"><strong>Kumi-kata</strong><span>7</span></li>' +
+      '<li class="stat"><strong>Ne-waza</strong><span>8</span></li>' +
+      "</ul></div>";
 
     const result = generateCardStats(card);
     expect(normalizeHtml(result)).toBe(normalizeHtml(expectedHtml));
@@ -97,7 +94,7 @@ describe("generateCardStats", () => {
   it("should handle missing stats gracefully", () => {
     const card = { stats: {} };
     const result = generateCardStats(card);
-    expect(result).toContain('<div class="card-stats common">');
+    expect(result).toContain('<div class="card-stats common"');
   });
 
   it("should throw an error if stats object is missing", () => {
