@@ -12,6 +12,7 @@ import { showSettingsError } from "./showSettingsError.js";
 import { createToggleSwitch } from "../components/ToggleSwitch.js";
 import { applyDisplayMode } from "./displayMode.js";
 import { applyMotionPreference } from "./motionUtils.js";
+import { onDomReady } from "./domReady.js";
 
 /**
  * Apply a value to a form element.
@@ -219,8 +220,4 @@ async function initializeSettingsPage() {
   }
 }
 
-if (document.readyState !== "loading") {
-  initializeSettingsPage();
-} else {
-  document.addEventListener("DOMContentLoaded", initializeSettingsPage);
-}
+onDomReady(initializeSettingsPage);

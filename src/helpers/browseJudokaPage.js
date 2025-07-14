@@ -4,6 +4,7 @@ import { toggleCountryPanel, toggleCountryPanelMode } from "./countryPanel.js";
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { createButton } from "../components/Button.js";
+import { onDomReady } from "./domReady.js";
 
 /**
  * Initialize the Browse Judoka page.
@@ -199,8 +200,4 @@ export function setupBrowseJudokaPage() {
   init();
 }
 
-if (document.readyState !== "loading") {
-  setupBrowseJudokaPage();
-} else {
-  document.addEventListener("DOMContentLoaded", setupBrowseJudokaPage);
-}
+onDomReady(setupBrowseJudokaPage);

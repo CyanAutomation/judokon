@@ -9,9 +9,10 @@
  *       `handleStatSelection` with the button's data attribute.
  *    b. Attach a click listener to the quit button that calls `quitMatch`.
  *    c. Invoke `startRound` to begin the match.
- * 3. Run `setupBattleJudokaPage` once the DOM is loaded.
+ * 3. Use `onDomReady` to run `setupBattleJudokaPage` when the DOM is ready.
  */
 import { startRound, handleStatSelection, quitMatch } from "./classicBattle.js";
+import { onDomReady } from "./domReady.js";
 
 export function setupBattleJudokaPage() {
   document
@@ -26,8 +27,4 @@ export function setupBattleJudokaPage() {
   startRound();
 }
 
-if (document.readyState !== "loading") {
-  setupBattleJudokaPage();
-} else {
-  document.addEventListener("DOMContentLoaded", setupBattleJudokaPage);
-}
+onDomReady(setupBattleJudokaPage);
