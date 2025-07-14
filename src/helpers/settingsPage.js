@@ -14,34 +14,50 @@ function applyInputState(element, value) {
   }
 }
 
-function initializeControls(settings, gameModes) {
-  let currentSettings = { ...settings };
+/**
+ * Apply settings values to the provided controls.
+ *
+ * @pseudocode
+ * 1. Call `applyInputState` for each control using values from `settings`.
+ * 2. Ignore undefined elements to support missing controls.
+ *
+ * @param {object} controls - DOM elements for the settings page.
+ * @param {HTMLInputElement} [controls.soundToggle] - Sound toggle element.
+ * @param {HTMLInputElement} [controls.navToggle] - Navigation map toggle.
+ * @param {HTMLInputElement} [controls.motionToggle] - Motion effects toggle.
+ * @param {HTMLSelectElement} [controls.displaySelect] - Display mode selector.
+ * @param {Settings} settings - Current settings object.
+ */
+function applyInitialControlValues(controls, settings) {
+  applyInputState(controls.soundToggle, settings.sound);
+  applyInputState(controls.navToggle, settings.fullNavMap);
+  applyInputState(controls.motionToggle, settings.motionEffects);
+  applyInputState(controls.displaySelect, settings.displayMode);
+}
 
-  const soundToggle = document.getElementById("sound-toggle");
-  const navToggle = document.getElementById("navmap-toggle");
-  const motionToggle = document.getElementById("motion-toggle");
-  const displaySelect = document.getElementById("display-mode-select");
-  const modesContainer = document.getElementById("game-mode-toggle-container");
-
-  applyInputState(soundToggle, currentSettings.sound);
-  applyInputState(navToggle, currentSettings.fullNavMap);
-  applyInputState(motionToggle, currentSettings.motionEffects);
-  applyInputState(displaySelect, currentSettings.displayMode);
-
-  function handleUpdate(key, value, revert) {
-    updateSetting(key, value)
-      .then((updated) => {
-        currentSettings = updated;
-      })
-      .catch((err) => {
-        console.error("Failed to update setting", err);
-        revert();
-        showSettingsError();
-      });
-  }
+/**
+ * Attach change event listeners to toggle controls.
+ *
+ * @pseudocode
+ * 1. On each control's change event, call `handleUpdate` with the new value.
+ *    - For the motion and display controls, also apply the preference
+ *      immediately.
+ * 2. Use `getCurrentSettings` to access the latest settings for reversion.
+ *
+ * @param {object} controls - DOM elements for the settings page.
+ * @param {HTMLInputElement} [controls.soundToggle]
+ * @param {HTMLInputElement} [controls.navToggle]
+ * @param {HTMLInputElement} [controls.motionToggle]
+ * @param {HTMLSelectElement} [controls.displaySelect]
+ * @param {() => Settings} getCurrentSettings - Returns the latest settings.
+ * @param {(key: string, value: *, revert: () => void) => void} handleUpdate -
+ *        Persists a setting and handles errors.
+ */
+function attachToggleListeners(controls, getCurrentSettings, handleUpdate) {
+  const { soundToggle, navToggle, motionToggle, displaySelect } = controls;
 
   soundToggle?.addEventListener("change", () => {
-    const prev = !soundToggle.checked; // previous state
+    const prev = !soundToggle.checked;
     handleUpdate("sound", soundToggle.checked, () => {
       soundToggle.checked = prev;
     });
@@ -64,7 +80,7 @@ function initializeControls(settings, gameModes) {
   });
 
   displaySelect?.addEventListener("change", () => {
-    const previous = currentSettings.displayMode;
+    const previous = getCurrentSettings().displayMode;
     const mode = displaySelect.value;
     applyDisplayMode(mode);
     handleUpdate("displayMode", mode, () => {
@@ -72,40 +88,92 @@ function initializeControls(settings, gameModes) {
       applyDisplayMode(previous);
     });
   });
+}
 
-  if (modesContainer && Array.isArray(gameModes)) {
-    const sortedModes = [...gameModes].sort((a, b) => a.order - b.order);
-    sortedModes.forEach((mode) => {
-      const isChecked = Object.hasOwn(currentSettings.gameModes, mode.id)
-        ? currentSettings.gameModes[mode.id]
-        : !mode.isHidden;
-      const wrapper = createToggleSwitch(`${mode.name} (${mode.category} - ${mode.order})`, {
-        id: `mode-${mode.id}`,
-        name: mode.id,
-        checked: isChecked,
-        ariaLabel: mode.name
+/**
+ * Render toggle switches for game modes and attach listeners.
+ *
+ * @pseudocode
+ * 1. Sort `gameModes` by their `order` property.
+ * 2. For each mode, create a toggle using `createToggleSwitch` and append it to
+ *    `container`.
+ * 3. Determine the initial checked state from current settings or `isHidden`.
+ * 4. On change, update the stored game mode settings and persist the hidden
+ *    state via `updateGameModeHidden`.
+ * 5. Revert the toggle and show an error notification when updates fail.
+ *
+ * @param {HTMLElement|null} container - Element that will hold the switches.
+ * @param {Array} gameModes - Available game modes from storage.
+ * @param {() => Settings} getCurrentSettings - Returns the latest settings.
+ * @param {(key: string, value: *, revert: () => void) => void} handleUpdate -
+ *        Persists updated settings.
+ */
+function renderGameModeSwitches(container, gameModes, getCurrentSettings, handleUpdate) {
+  if (!container || !Array.isArray(gameModes)) return;
+
+  const sortedModes = [...gameModes].sort((a, b) => a.order - b.order);
+  sortedModes.forEach((mode) => {
+    const current = getCurrentSettings();
+    const isChecked = Object.hasOwn(current.gameModes, mode.id)
+      ? current.gameModes[mode.id]
+      : !mode.isHidden;
+
+    const wrapper = createToggleSwitch(`${mode.name} (${mode.category} - ${mode.order})`, {
+      id: `mode-${mode.id}`,
+      name: mode.id,
+      checked: isChecked,
+      ariaLabel: mode.name
+    });
+
+    container.appendChild(wrapper);
+    const input = wrapper.querySelector("input");
+
+    input.addEventListener("change", () => {
+      const prev = !input.checked;
+      const updated = {
+        ...getCurrentSettings().gameModes,
+        [mode.id]: input.checked
+      };
+      handleUpdate("gameModes", updated, () => {
+        input.checked = prev;
       });
-
-      modesContainer.appendChild(wrapper);
-      const input = wrapper.querySelector("input");
-
-      input.addEventListener("change", () => {
-        const prev = !input.checked;
-        const updated = {
-          ...currentSettings.gameModes,
-          [mode.id]: input.checked
-        };
-        handleUpdate("gameModes", updated, () => {
-          input.checked = prev;
-        });
-        updateGameModeHidden(mode.id, !input.checked).catch((err) => {
-          console.error("Failed to update game mode", err);
-          input.checked = prev; // Revert to previous state
-          showSettingsError(); // Notify the user of the error
-        });
+      updateGameModeHidden(mode.id, !input.checked).catch((err) => {
+        console.error("Failed to update game mode", err);
+        input.checked = prev;
+        showSettingsError();
       });
     });
+  });
+}
+
+function initializeControls(settings, gameModes) {
+  let currentSettings = { ...settings };
+
+  const controls = {
+    soundToggle: document.getElementById("sound-toggle"),
+    navToggle: document.getElementById("navmap-toggle"),
+    motionToggle: document.getElementById("motion-toggle"),
+    displaySelect: document.getElementById("display-mode-select")
+  };
+  const modesContainer = document.getElementById("game-mode-toggle-container");
+
+  const getCurrentSettings = () => currentSettings;
+
+  function handleUpdate(key, value, revert) {
+    updateSetting(key, value)
+      .then((updated) => {
+        currentSettings = updated;
+      })
+      .catch((err) => {
+        console.error("Failed to update setting", err);
+        revert();
+        showSettingsError();
+      });
   }
+
+  applyInitialControlValues(controls, currentSettings);
+  attachToggleListeners(controls, getCurrentSettings, handleUpdate);
+  renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
 }
 
 async function initializeSettingsPage() {
