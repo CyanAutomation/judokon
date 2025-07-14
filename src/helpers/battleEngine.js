@@ -46,7 +46,6 @@ function endMatchIfNeeded() {
  * @param {function} onExpired - Callback executed when the timer expires.
  */
 export function startRound(onTick, onExpired) {
-  matchEnded = false;
   remaining = 30;
   if (onTick) onTick(remaining);
   timerId = setInterval(() => {
