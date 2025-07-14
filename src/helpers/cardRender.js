@@ -1,7 +1,7 @@
 // Constants
 const PLACEHOLDER_ID = 0;
 
-import { escapeHTML, decodeHTML } from "./utils.js";
+import { escapeHTML } from "./utils.js";
 import { createStatsPanel } from "../components/StatsPanel.js";
 
 /**
