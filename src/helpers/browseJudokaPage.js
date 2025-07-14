@@ -1,5 +1,5 @@
 import { buildCardCarousel, addScrollMarkers } from "./carouselBuilder.js";
-import { populateCountryList } from "./countryUtils.js";
+import { createCountrySlider } from "./countrySlider.js";
 import { toggleCountryPanel, toggleCountryPanelMode } from "./countryPanel.js";
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
@@ -102,7 +102,7 @@ export function setupBrowseJudokaPage() {
       const wasOpen = countryPanel.classList.contains("open");
       toggleCountryPanel(toggleBtn, countryPanel);
       if (!wasOpen && !countriesLoaded) {
-        await populateCountryList(countryListContainer);
+        await createCountrySlider(countryListContainer);
         countriesLoaded = true;
       }
     });
