@@ -1,3 +1,13 @@
+/**
+ * Enable click and keyboard flipping on a card element.
+ *
+ * @pseudocode
+ * 1. Guard against a missing `cardElement`.
+ * 2. Define `toggle` to flip the card's `show-card-back` class.
+ * 3. Attach click and key handlers that invoke `toggle`.
+ *
+ * @param {HTMLElement} cardElement - Card container to enable flipping on.
+ */
 export function enableCardFlip(cardElement) {
   if (!cardElement) return;
   const toggle = () => {
