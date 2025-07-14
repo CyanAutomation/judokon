@@ -83,6 +83,7 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
   use relative paths (e.g., `../../index.html`) so the site can be served from
   any base URL.
 - `src/` – contains the game logic and assets:
+
   - `game.js`
   - `helpers/`
   - `components/` – small DOM factories like `Button`, `ToggleSwitch`, `Card`, the `Modal` dialog, and `StatsPanel`
@@ -139,6 +140,7 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
   - `assets/`
     Card art and UI graphics, including `cardBacks/cardBack-2.png` used when a card flips.
   - `styles/`
+
 - `tests/` – Vitest unit tests.
 - `design/` – documentation and code standards.
 - [Architecture Overview](design/architecture.md) – summary of key modules.
