@@ -1,6 +1,16 @@
 import postcss from "postcss";
 
 /**
+ * Parse CSS custom properties from a CSS string using PostCSS.
+ *
+ * @pseudocode
+ * 1. Parse the provided CSS content with PostCSS.
+ * 2. Walk the `:root` rule and gather declarations.
+ * 3. Record any declaration whose property starts with `--`.
+ * 4. Return an object of collected variables.
+ */
+
+/**
  * Parses CSS variables from a CSS string using PostCSS for robust parsing.
  * This replaces the fragile regex-based approach with a proper CSS parser.
  *
