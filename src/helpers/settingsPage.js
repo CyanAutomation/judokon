@@ -1,3 +1,11 @@
+/**
+ * Set up the Settings page once the document is ready.
+ *
+ * @pseudocode
+ * 1. Load saved settings and available game modes.
+ * 2. Apply the stored display mode and motion preference.
+ * 3. Initialize the page controls and event listeners.
+ */
 import { loadSettings, updateSetting } from "./settingsUtils.js";
 import { loadGameModes, updateGameModeHidden } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
@@ -5,6 +13,16 @@ import { createToggleSwitch } from "../components/ToggleSwitch.js";
 import { applyDisplayMode } from "./displayMode.js";
 import { applyMotionPreference } from "./motionUtils.js";
 
+/**
+ * Apply a value to a form element.
+ *
+ * @pseudocode
+ * 1. Return when `element` is undefined.
+ * 2. Set `checked` for checkboxes or assign `value` for other inputs.
+ *
+ * @param {HTMLInputElement|HTMLSelectElement|null} element - Form control to update.
+ * @param {*} value - Value to apply.
+ */
 function applyInputState(element, value) {
   if (!element) return;
   if (element.type === "checkbox") {
@@ -146,6 +164,18 @@ function renderGameModeSwitches(container, gameModes, getCurrentSettings, handle
   });
 }
 
+/**
+ * Initialize controls and event wiring for the Settings page.
+ *
+ * @pseudocode
+ * 1. Store a mutable copy of `settings` for updates.
+ * 2. Query DOM elements for each control and the mode container.
+ * 3. Provide helper functions to read and persist settings.
+ * 4. Apply initial values, attach listeners, and render mode switches.
+ *
+ * @param {Settings} settings - Current settings object.
+ * @param {Array} gameModes - Available game mode options.
+ */
 function initializeControls(settings, gameModes) {
   let currentSettings = { ...settings };
 
