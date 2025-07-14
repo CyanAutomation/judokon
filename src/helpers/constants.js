@@ -1,4 +1,18 @@
 /**
+ * Centralized constants configuring Ju-Do-Kon! gameplay settings.
+ *
+ * These values determine where JSON data is loaded from and control
+ * how carousels behave, how long UI elements remain visible, and the
+ * default limits for Classic Battle matches.
+ *
+ * @pseudocode
+ * 1. Provide the base path to JSON data files.
+ * 2. Define carousel scroll distance, swipe threshold, and spinner delay.
+ * 3. Set fade and removal durations for settings error popups.
+ * 4. Establish Classic Battle win conditions and maximum rounds.
+ */
+
+/**
  * Path to the directory containing JSON data files.
  *
  * Using `import.meta.url` ensures the correct absolute URL is
