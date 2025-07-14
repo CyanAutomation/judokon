@@ -4,6 +4,12 @@ import postcss from "postcss";
  * Parses CSS variables from a CSS string using PostCSS for robust parsing.
  * This replaces the fragile regex-based approach with a proper CSS parser.
  *
+ * @pseudocode
+ * 1. Parse the provided CSS content with PostCSS.
+ * 2. Walk the `:root` rule and gather declarations.
+ * 3. Record any declaration whose property starts with `--`.
+ * 4. Return an object of collected variables.
+ *
  * @param {string} cssContent - The CSS content to parse
  * @returns {Object} Object containing CSS variables as key-value pairs
  */
