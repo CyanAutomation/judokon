@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://judokon.dev/schemas/judoka.schema.json",
   "title": "Judoka",
   "type": "object",
   "properties": {
@@ -28,16 +29,8 @@
       "description": "Weight class of the judoka."
     },
     "stats": {
-      "type": "object",
-      "description": "Performance stats of the judoka.",
-      "properties": {
-        "power": { "type": "integer" },
-        "speed": { "type": "integer" },
-        "technique": { "type": "integer" },
-        "kumikata": { "type": "integer" },
-        "newaza": { "type": "integer" }
-      },
-      "required": ["power", "speed", "technique", "kumikata", "newaza"]
+      "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/Stats",
+      "description": "Performance stats of the judoka."
     },
     "signatureMoveId": {
       "type": "integer",

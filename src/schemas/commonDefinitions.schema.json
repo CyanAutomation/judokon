@@ -1,0 +1,17 @@
+{
+  "$id": "https://judokon.dev/schemas/commonDefinitions.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Stats": {
+      "type": "object",
+      "properties": {
+        "power": { "type": "integer" },
+        "speed": { "type": "integer" },
+        "technique": { "type": "integer" },
+        "kumikata": { "type": "integer" },
+        "newaza": { "type": "integer" }
+      },
+      "required": ["power", "speed", "technique", "kumikata", "newaza"]
+    }
+  }
+}

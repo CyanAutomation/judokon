@@ -22,6 +22,10 @@ const pairs = [
 
 describe("data files conform to schemas", async () => {
   const ajv = await getAjv();
+  const commonDefs = JSON.parse(
+    await readFile(path.join(schemaDir, "commonDefinitions.schema.json"), "utf8")
+  );
+  ajv.addSchema(commonDefs);
   for (const [dataFile, schemaFile] of pairs) {
     it(`${dataFile} matches ${schemaFile}`, async () => {
       const data = JSON.parse(await readFile(path.join(dataDir, dataFile), "utf8"));
