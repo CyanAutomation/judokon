@@ -106,7 +106,11 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 The carousel is built by `buildCardCarousel` in `src/helpers/carouselBuilder.js`.
 Pages such as `src/pages/browseJudoka.html` call this helper and append the
-returned element to an empty container (e.g., `#carousel-container`).
+returned element to an empty container (e.g., `#carousel-container`). Carousel
+wrappers (the element returned by `buildCardCarousel`) **must not** apply
+padding that would change the width of the cards. Any extra spacing should be
+handled by the carousel's gap settings so that card sizing remains
+consistent.
 
 ---
 

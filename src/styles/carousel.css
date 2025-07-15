@@ -11,9 +11,13 @@
   /* Safari flexbox quirk: set min-width to 0 so container doesn't expand */
   min-width: 0;
   max-width: 100%; /* Prevent overflow */
-  padding: var(--space-md); /* Add padding for visual spacing */
   flex: 1 1 auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Card width within the carousel */
+.card-carousel .judoka-card {
+  flex: 0 0 clamp(200px, 40vw, 300px);
 }
 
 .judoka-card {
@@ -50,7 +54,6 @@
 
   .card-carousel {
     gap: var(--space-sm); /* Compact whitespace */
-    padding: var(--space-sm); /* Reduced padding on mobile */
   }
 }
 
