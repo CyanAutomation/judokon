@@ -86,7 +86,7 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
 - `src/` – contains the game logic and assets:
 
   - `game.js`
-  - `helpers/`
+  - `helpers/` – small utilities (for example `lazyPortrait.js` replaces the placeholder card portraits once they enter view)
   - `components/` – small DOM factories like `Button`, `ToggleSwitch`, `Card`, the `Modal` dialog, and `StatsPanel`
 
     ```javascript
@@ -131,6 +131,14 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
 
     Call `open()` on a user action and focus stays trapped until `close()` runs.
 
+    `lazyPortrait.js` enables IntersectionObserver-based image loading.
+
+    ```javascript
+    import { setupLazyPortraits } from "./src/helpers/lazyPortrait.js";
+    // Run after cards are inserted into the DOM
+    setupLazyPortraits();
+    ```
+
   - `pages/`
     HTML pages. Each page imports a matching module from
     `src/helpers` (for example `randomJudokaPage.js`) that wires up its
@@ -146,8 +154,15 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
   - `styles/`
 
 - `tests/` – Vitest unit tests.
-- `design/` – documentation and code standards.
-- [Architecture Overview](design/architecture.md) – summary of key modules.
+  - `design/` – documentation and code standards.
+  - [Architecture Overview](design/architecture.md) – summary of key modules.
+
+### PRD Reader
+
+Product Requirements Documents live in `design/productRequirementsDocuments`.
+Add new Markdown files there and include the filename in the `FILES` array of
+`src/helpers/prdReaderPage.js`. Open `src/pages/prdReader.html` in your browser
+to browse the documents with next/previous navigation.
 
 ### CSS Organization
 
