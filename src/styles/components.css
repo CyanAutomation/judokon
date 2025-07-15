@@ -276,9 +276,9 @@ button .ripple {
   align-items: center;
   padding: var(--space-small) var(--space-medium); /* Updated tokens */
   flex-direction: row;
-  /* Maintain ~10% of card height accounting for padding */
-  flex: 0 0 calc(10% - (var(--space-small) * 2));
-  height: calc(10% - (var(--space-small) * 2));
+  /* Maintain ~14% of card height accounting for padding */
+  flex: 0 0 calc(14% - (var(--space-small) * 2));
+  height: calc(14% - (var(--space-small) * 2));
   box-sizing: border-box;
 }
 
@@ -333,15 +333,15 @@ button .ripple {
   justify-content: center;
   align-items: flex-start;
   width: 100%;
-  height: 45%;
-  flex: 0 0 45%;
+  height: 42%;
+  flex: 0 0 42%;
   overflow: hidden;
   background: linear-gradient(
     to bottom,
     var(--card-portrait-gradient-start),
     var(--card-portrait-gradient-end)
   );
-  /* Portrait area ~45% of card height */
+  /* Portrait area ~42% of card height */
 }
 
 .card-portrait img {
@@ -381,9 +381,9 @@ button .ripple {
   align-items: flex-end;
   font-size: var(--font-medium);
   flex-direction: column;
-  /* Stats area ~35% of card height accounting for padding */
-  height: calc(35% - (var(--space-small) * 2));
-  flex: 0 0 calc(35% - (var(--space-small) * 2));
+  /* Stats area ~34% of card height accounting for padding */
+  height: calc(34% - (var(--space-small) * 2));
+  flex: 0 0 calc(34% - (var(--space-small) * 2));
 }
 
 .card-stats ul {
@@ -429,7 +429,7 @@ button .ripple {
   align-items: center;
   flex-direction: row;
   width: 100%;
-  /* Maintain ~10% height while accounting for padding on children */
+  /* Maintain ~10% (~45px) height while accounting for padding on children */
   height: calc(max(10%, var(--touch-target-size)) - (var(--space-small) * 2));
   font-weight: bold;
   /* Ensure visible at small screen sizes */
