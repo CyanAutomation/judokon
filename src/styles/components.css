@@ -185,7 +185,7 @@ button .ripple {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   transition:
     box-shadow var(--transition-fast),
     transform 0.1s ease-in-out; /* Updated token */
@@ -388,8 +388,8 @@ button .ripple {
   font-size: var(--font-medium);
   flex-direction: column;
   /* Stats area ~34% of card height accounting for padding */
-  height: calc(34% - (var(--space-small) * 2));
-  flex: 0 0 calc(34% - (var(--space-small) * 2));
+  height: 34%;
+  flex: 0 0 34%;
 }
 
 .card-stats ul {
