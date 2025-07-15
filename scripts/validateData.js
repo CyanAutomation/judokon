@@ -17,10 +17,23 @@ for (const schemaPath of schemaFiles) {
     continue;
   }
   await new Promise((resolve) => {
-    const child = spawn("npx", ["ajv", "validate", "-s", schemaPath, "-d", dataPath], {
-      cwd: rootDir,
-      stdio: "inherit"
-    });
+    const child = spawn(
+      "npx",
+      [
+        "ajv",
+        "validate",
+        "-s",
+        schemaPath,
+        "-d",
+        dataPath,
+        "-r",
+        "src/schemas/commonDefinitions.schema.json"
+      ],
+      {
+        cwd: rootDir,
+        stdio: "inherit"
+      }
+    );
     child.on("exit", (code) => {
       if (code !== 0) {
         hasErrors = true;

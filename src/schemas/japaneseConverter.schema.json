@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://judokon.dev/schemas/japaneseConverter.schema.json",
   "type": "object",
   "properties": {
     "letters": {

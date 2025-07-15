@@ -20,8 +20,16 @@ const pairs = [
   ["locations.json", "locations.schema.json"]
 ];
 
-describe("data files conform to schemas", async () => {
-  const ajv = await getAjv();
+let ajv;
+beforeAll(async () => {
+  ajv = await getAjv();
+  const commonDefs = JSON.parse(
+    await readFile(path.join(schemaDir, "commonDefinitions.schema.json"), "utf8")
+  );
+  ajv.addSchema(commonDefs);
+});
+
+describe("data files conform to schemas", () => {
   for (const [dataFile, schemaFile] of pairs) {
     it(`${dataFile} matches ${schemaFile}`, async () => {
       const data = JSON.parse(await readFile(path.join(dataDir, dataFile), "utf8"));
