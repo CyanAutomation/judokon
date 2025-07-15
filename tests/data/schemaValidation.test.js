@@ -17,7 +17,8 @@ const pairs = [
   ["weightCategories.json", "weightCategories.schema.json"],
   ["aesopsFables.json", "aesopsFables.schema.json"],
   ["japaneseConverter.json", "japaneseConverter.schema.json"],
-  ["locations.json", "locations.schema.json"]
+  ["locations.json", "locations.schema.json"],
+  ["settings.json", "settings.schema.json"]
 ];
 
 let ajv;
