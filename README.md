@@ -134,7 +134,9 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
   - `pages/`
     HTML pages. Each page imports a matching module from
     `src/helpers` (for example `randomJudokaPage.js`) that wires up its
-    interactive behavior.
+    interactive behavior. The directory also contains
+    `mockupViewer.html`, a simple carousel for browsing the image files
+    under `design/mockups/`.
   - `data/`
   - `schemas/`
     JSON Schema definitions used to validate the data files.
@@ -200,6 +202,7 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
   `aria-label` descriptions
 - Country picker panel appears below the fixed header for unobstructed viewing
 - Scroll buttons disable when the carousel reaches either end
+- Mockup viewer page with next/back controls for design screenshots
 
 ## About JU-DO-KON!
 
