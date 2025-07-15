@@ -1,19 +1,21 @@
 /**
- * Fetches Aesop's Fables data from a JSON file.
+ * Fetches Aesop's Fables story and metadata from JSON files and merges them.
  *
  * @pseudocode
- * 1. Send a GET request to retrieve the `aesopsFables.json` file using the `fetch` API.
- *    - Specify the relative path to the JSON file.
- *    - Await the server's response.
+ * 1. Send GET requests to retrieve both `aesopsFables.json` and
+ *    `aesopsMeta.json` using the `fetch` API.
+ *    - Await both responses concurrently.
  *
- * 2. Verify the response status:
- *    - Check if `response.ok` is `true`.
- *    - If the response is not successful, throw an error with a descriptive message.
+ * 2. Verify the response status for each request:
+ *    - Check that `response.ok` is `true` for both files.
+ *    - If either response fails, throw an error with a descriptive message.
  *
- * 3. Parse the JSON response:
- *    - Convert the response body into a JavaScript object using `response.json()`.
+ * 3. Parse the JSON responses:
+ *    - Convert both response bodies into JavaScript objects using `response.json()`.
  *
- * 4. Return the parsed JSON data.
+ * 4. Merge the metadata with the corresponding story using the shared `id`.
+ *
+ * 5. Return the combined array of fables.
  *
  * @returns {Promise<Object[]>} A promise that resolves to an array of fables.
  * @throws {Error} If the fetch request fails or the response is not successful.
@@ -21,11 +23,19 @@
 import { DATA_DIR } from "./constants.js";
 
 async function fetchFables() {
-  const response = await fetch(`${DATA_DIR}aesopsFables.json`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch aesopsFables.json");
+  const [storyRes, metaRes] = await Promise.all([
+    fetch(`${DATA_DIR}aesopsFables.json`),
+    fetch(`${DATA_DIR}aesopsMeta.json`)
+  ]);
+
+  if (!storyRes.ok || !metaRes.ok) {
+    throw new Error("Failed to fetch Aesop's fables data");
   }
-  return response.json();
+
+  const [stories, metadata] = await Promise.all([storyRes.json(), metaRes.json()]);
+
+  const metaMap = new Map(metadata.map((m) => [m.id, m]));
+  return stories.map((story) => ({ ...story, ...(metaMap.get(story.id) || {}) }));
 }
 
 /**

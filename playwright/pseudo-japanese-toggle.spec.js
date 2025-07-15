@@ -3,7 +3,8 @@ import { fileURLToPath } from "url";
 import { test, expect } from "@playwright/test";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FIXTURE_PATH = path.resolve(__dirname, "../tests/fixtures/aesopsFables.json");
+const STORY_FIXTURE = path.resolve(__dirname, "../tests/fixtures/aesopsFables.json");
+const META_FIXTURE = path.resolve(__dirname, "../tests/fixtures/aesopsMeta.json");
 
 /**
  * Ensure the language toggle swaps between English and pseudo-Japanese text.
@@ -11,7 +12,10 @@ const FIXTURE_PATH = path.resolve(__dirname, "../tests/fixtures/aesopsFables.jso
 test.describe("Pseudo-Japanese toggle", () => {
   test.beforeEach(async ({ page }) => {
     await page.route("**/src/data/aesopsFables.json", (route) =>
-      route.fulfill({ path: FIXTURE_PATH })
+      route.fulfill({ path: STORY_FIXTURE })
+    );
+    await page.route("**/src/data/aesopsMeta.json", (route) =>
+      route.fulfill({ path: META_FIXTURE })
     );
     await page.goto("/src/pages/meditation.html");
     await page.waitForSelector("#quote .quote-content");
