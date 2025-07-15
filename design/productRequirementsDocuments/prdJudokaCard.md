@@ -70,7 +70,7 @@ Players currently lack a tangible sense of progression and connection to elite j
 - Portrait images should use optimized formats (e.g., WebP) to balance quality and performance.
 - Card slide/reveal animations must use hardware-accelerated CSS transforms for smooth performance (**≥60 fps**).
 - Placeholder assets for missing portraits/flags should be bundled with the client for offline scenarios.
-- Ensure card sizing calculations consistently maintain 2:3 ratio on all screen aspect ratios and resolutions.
+- All judoka portraits and card sizing calculations must consistently maintain a **2:3 aspect ratio** to ensure visual uniformity and avoid layout shifts. Portraits should be pre-cropped as needed, and `.card-portrait` uses `object-fit: cover` to handle similarly shaped images. Card sizing calculations must account for screen aspect ratios and resolutions to preserve this ratio.
 - Hover and focus scaling must stay at or below **1.05x** to prevent cards from
   being clipped inside scroll wrappers.
 
