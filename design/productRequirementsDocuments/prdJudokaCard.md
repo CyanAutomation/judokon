@@ -87,6 +87,7 @@ No player-configurable display or animation settings are included at this time. 
 Each card consists of elements stored in `judoka.json`:
 
 - Judoka Name (first + surname)
+- First and surname appear tightly spaced (line-height about 1) so there is breathing room above and below
 - Nationality (depicted via flag)
 - Weight class (one of the 14 official IJF classes: 7 male, 7 female)
 - Portrait of the judoka’s likeness

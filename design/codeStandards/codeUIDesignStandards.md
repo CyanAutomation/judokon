@@ -250,6 +250,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 - First Name: Smaller, sentence case
 - Surname: Larger, uppercase, bold
+- Spacing: Minimal line height (≈1) to keep the two lines visually connected
 - Alignment: Stat block always bottom-aligned
 - Background: Dark blue (#0C3F7A)
 
