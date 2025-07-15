@@ -384,7 +384,7 @@ button .ripple {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  align-items: flex-end;
+  align-items: stretch;
   font-size: var(--font-medium);
   flex-direction: column;
   /* Stats area ~34% of card height accounting for padding */
