@@ -20,4 +20,7 @@ export async function registerCommonRoutes(page) {
   await page.route("https://esm.sh/ajv@6*", (route) =>
     route.fulfill({ path: "src/vendor/ajv6.min.js" })
   );
+  await page.route("**/marked.esm.js", (route) =>
+    route.fulfill({ body: "export const marked={parse:(m)=>m};" })
+  );
 }
