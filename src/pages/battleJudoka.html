@@ -27,57 +27,59 @@
   </head>
 
   <body>
-    <header class="header">
-      <div class="character-slot left"></div>
-      <div class="logo-container">
-        <a href="../../index.html" data-testid="home-link">
-          <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
-        </a>
-      </div>
-      <div class="character-slot right"></div>
-    </header>
-
-    <main class="container" role="main">
-      <section id="battle-area">
-        <div id="player-card" class="card-slot"></div>
-        <div id="computer-card" class="card-slot"></div>
-
-        <div id="controls">
-          <p id="timer">Time: <span id="round-timer"></span></p>
-          <p id="score-display">You: 0 Computer: 0</p>
-
-          <div id="stat-buttons">
-            <button data-stat="power" type="button">Power</button>
-            <button data-stat="speed" type="button">Speed</button>
-            <button data-stat="technique" type="button">Technique</button>
-            <button data-stat="kumikata" type="button">Kumi-kata</button>
-            <button data-stat="newaza" type="button">Ne-waza</button>
-          </div>
-
-          <p id="round-result" aria-live="polite"></p>
-          <button id="quit-btn" type="button">Quit Match</button>
+    <div class="home-screen">
+      <header class="header">
+        <div class="character-slot left"></div>
+        <div class="logo-container">
+          <a href="../../index.html" data-testid="home-link">
+            <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
+          </a>
         </div>
-      </section>
-    </main>
+        <div class="character-slot right"></div>
+      </header>
 
-    <footer>
-      <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
-    </footer>
-    <script type="module" src="../helpers/setupBottomNavbar.js"></script>
-    <script type="module" src="../helpers/setupDisplaySettings.js"></script>
+      <main class="container" role="main">
+        <section id="battle-area">
+          <div id="player-card" class="card-slot"></div>
+          <div id="computer-card" class="card-slot"></div>
 
-    <noscript>
-      <p class="noscript-warning">
-        JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
-      </p>
-    </noscript>
+          <div id="controls">
+            <p id="timer">Time: <span id="round-timer"></span></p>
+            <p id="score-display">You: 0 Computer: 0</p>
 
-    <script nomodule>
-      alert(
-        "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
-      );
-    </script>
-    <script type="module" src="../helpers/setupSvgFallback.js"></script>
-    <script type="module" src="../helpers/battleJudokaPage.js"></script>
+            <div id="stat-buttons">
+              <button data-stat="power" type="button">Power</button>
+              <button data-stat="speed" type="button">Speed</button>
+              <button data-stat="technique" type="button">Technique</button>
+              <button data-stat="kumikata" type="button">Kumi-kata</button>
+              <button data-stat="newaza" type="button">Ne-waza</button>
+            </div>
+
+            <p id="round-result" aria-live="polite"></p>
+            <button id="quit-btn" type="button">Quit Match</button>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
+      </footer>
+      <script type="module" src="../helpers/setupBottomNavbar.js"></script>
+      <script type="module" src="../helpers/setupDisplaySettings.js"></script>
+
+      <noscript>
+        <p class="noscript-warning">
+          JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
+        </p>
+      </noscript>
+
+      <script nomodule>
+        alert(
+          "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
+        );
+      </script>
+      <script type="module" src="../helpers/setupSvgFallback.js"></script>
+      <script type="module" src="../helpers/battleJudokaPage.js"></script>
+    </div>
   </body>
 </html>
