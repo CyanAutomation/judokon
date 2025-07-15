@@ -20,6 +20,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 9. [Browser Compatibility](#browser-compatibility)
 10. [Future Plans](#future-plans)
 11. [Contributing](#contributing)
+12. [Changelog](#changelog)
 
 ## Quick Start
 
@@ -311,3 +312,9 @@ The settings screen previously had its first controls hidden behind the header; 
 ## Contributing
 
 Please format your code with **Prettier**, lint it with **ESLint**, run **Vitest** and **Playwright** before submitting a pull request. For UI-related changes, also verify color contrast with `npm run check:contrast` (Pa11y) while the development server is running. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full checklist.
+
+## Changelog
+
+### 2025-07-15
+
+- Adjust signature move band height to `max(10%, var(--touch-target-size))` for consistent sizing across screens.
