@@ -161,4 +161,11 @@ describe("generateCardPortrait", () => {
     const result = generateCardPortrait(card);
     expect(result).toContain('alt="Jane Smith"');
   });
+
+  it("uses placeholder src and stores real portrait in data attribute", () => {
+    const card = { id: 5, firstname: "Joe", surname: "Bloggs" };
+    const result = generateCardPortrait(card);
+    expect(result).toContain('src="../assets/judokaPortraits/judokaPortrait-1.png"');
+    expect(result).toContain('data-portrait-src="../assets/judokaPortraits/judokaPortrait-5.png"');
+  });
 });
