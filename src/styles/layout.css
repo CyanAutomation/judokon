@@ -130,7 +130,7 @@ body {
   backdrop-filter: blur(10px);
 }
 .country-flag-slider {
-  background-color: var(--color-surface);
+  background-color: var(--color-tertiary);
   overflow: hidden;
   position: relative;
   width: 100%;
