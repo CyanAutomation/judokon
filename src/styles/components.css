@@ -441,11 +441,11 @@ button .ripple {
   align-items: center;
   flex-direction: row;
   width: 100%;
-  /* Maintain ~10% (~45px) height while accounting for padding on children */
-  height: calc(max(12%, var(--touch-target-size)) - (var(--space-small) * 2));
+  /* Maintain ~10% (~45px) height as specified in the PRD */
+  height: max(10%, var(--touch-target-size));
   font-weight: bold;
   /* Ensure visible at small screen sizes */
-  flex: 0 0 calc(max(12%, var(--touch-target-size)) - (var(--space-small) * 2));
+  flex: 0 0 max(10%, var(--touch-target-size));
   box-sizing: border-box;
   border-top: 1px solid var(--color-text-inverted, var(--color-secondary));
 }
@@ -459,7 +459,6 @@ button .ripple {
   white-space: nowrap;
   padding: min(var(--space-sm), 2.3vw) var(--space-sm);
   font-size: min(14px, 4vw);
-  max-width: 150px;
   flex: 1 1 0;
   height: 100%;
   align-items: center;
@@ -469,7 +468,6 @@ button .ripple {
   background-color: var(--color-tertiary);
   color: var(--color-secondary);
   border: 1px solid var(--color-tertiary);
-  min-width: 90px;
 }
 
 .signature-move-value {
