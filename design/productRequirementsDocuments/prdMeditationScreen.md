@@ -63,7 +63,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 ## Acceptance Criteria
 
 - AC-1 KG character appears on the meditation screen.
-- AC-2 Random quote displayed from `aesopsFables.json`; fallback reflection quote appears if the dataset is unavailable.
+- AC-2 Random quote displayed from `aesopsFables.json` with metadata from `aesopsMeta.json`; fallback reflection quote appears if the datasets are unavailable.
 - AC-3 Screen loads within 1 second.
 - AC-4 Quote text has ARIA markup and maintains contrast ratio of at least **4.5:1**.
 - AC-5 "Continue Your Journey" button uses `--radius-md`, stays ≥44px tall with tap target ≥44px × 44px, and is keyboard focusable. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
@@ -80,7 +80,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 ## Dependencies / Integrations
 
-- Quote data from `aesopsFables.json`.
+- Quote data from `aesopsFables.json` and `aesopsMeta.json`.
 - KG character assets and image loader.
 - Linked from the main navigation menu.
 
@@ -174,7 +174,7 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 
 ## Dependencies and Integrations
 
-- Quote data file: `aesopsFables.json`.
+- Quote data files: `aesopsFables.json` and `aesopsMeta.json`.
 - KG character assets from the core game.
 - Navigation system for entering and exiting the screen.
 - Pseudo-Japanese Text Conversion Function for quote toggle ([prdPseudoJapanese.md](prdPseudoJapanese.md)).
@@ -196,7 +196,7 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 
 - [x] **2.0 Implement Quote Display Module**
 
-  - [x] 2.1 Randomly select a quote from `aesopsFables.json`.
+  - [x] 2.1 Randomly select a quote from `aesopsFables.json` and merge metadata from `aesopsMeta.json`.
   - [x] 2.2 Display the quote with dynamic, responsive text scaling.
   - [x] 2.3 Implement skeleton loader while fetching quote using the existing loading spinner styled with `var(--button-bg)`.
   - [x] 2.4 Fallback to default calm message if quote data fails.

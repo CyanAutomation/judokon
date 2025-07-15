@@ -22,8 +22,14 @@ describe("displayRandomQuote", () => {
     toggle.className = "hidden";
     document.body.append(quoteDiv, loader, toggle);
 
-    const data = [{ id: 1, title: "A", story: "B" }];
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => data });
+    const storyData = [{ id: 1, story: "B" }];
+    const metaData = [{ id: 1, title: "A" }];
+    global.fetch = vi.fn((url) => {
+      if (url.includes("aesopsFables.json")) {
+        return Promise.resolve({ ok: true, json: async () => storyData });
+      }
+      return Promise.resolve({ ok: true, json: async () => metaData });
+    });
     vi.spyOn(Math, "random").mockReturnValue(0);
 
     await import("../../src/helpers/quoteBuilder.js");
@@ -60,14 +66,14 @@ describe("displayRandomQuote", () => {
     document.body.append(quoteDiv, loader);
 
     // Empty array
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => [] });
+    global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: async () => [] }));
     await import("../../src/helpers/quoteBuilder.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
     await waitFor(() => quoteDiv.textContent.length > 0);
     expect(quoteDiv.textContent).toContain("Take a breath");
 
     // Invalid data
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => [{}] });
+    global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: async () => [{}] }));
     await import("../../src/helpers/quoteBuilder.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
     await waitFor(() => quoteDiv.textContent.length > 0);
@@ -75,9 +81,12 @@ describe("displayRandomQuote", () => {
   });
 
   it("does not throw if DOM elements are missing", async () => {
-    global.fetch = vi
-      .fn()
-      .mockResolvedValue({ ok: true, json: async () => [{ id: 1, title: "A", story: "B" }] });
+    global.fetch = vi.fn((url) => {
+      if (url.includes("aesopsFables.json")) {
+        return Promise.resolve({ ok: true, json: async () => [{ id: 1, story: "B" }] });
+      }
+      return Promise.resolve({ ok: true, json: async () => [{ id: 1, title: "A" }] });
+    });
     await import("../../src/helpers/quoteBuilder.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
     // Should not throw even if #quote, #quote-loader, or #language-toggle are missing
