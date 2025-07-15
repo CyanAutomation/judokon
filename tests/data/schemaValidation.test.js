@@ -14,7 +14,10 @@ const pairs = [
   ["gameModes.json", "gameModes.schema.json"],
   ["gokyo.json", "gokyo.schema.json"],
   ["judoka.json", "judoka.schema.json"],
-  ["weightCategories.json", "weightCategories.schema.json"]
+  ["weightCategories.json", "weightCategories.schema.json"],
+  ["aesopsFables.json", "aesopsFables.schema.json"],
+  ["japaneseConverter.json", "japaneseConverter.schema.json"],
+  ["locations.json", "locations.schema.json"]
 ];
 
 describe("data files conform to schemas", async () => {
