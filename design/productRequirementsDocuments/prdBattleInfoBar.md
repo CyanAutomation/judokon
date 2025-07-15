@@ -12,15 +12,19 @@ In battle game modes (e.g. Classic Battle), players currently receive no clear v
    - If awaiting action: show **selection prompt** until a decision is made.
    - If waiting for next round: show **countdown timer** that begins **within 1s** of round end.
 3. Ensure all messages are clearly readable, positioned responsively, and maintain usability across devices.
+4. Display fallback messages within 500ms of sync failure
 
 ## Functional Requirements
 
-| Priority | Feature                  | Description                                                                 |
-|----------|--------------------------|-----------------------------------------------------------------------------|
-| P1       | Match Score Display      | Show real-time player vs CPU score on right of top bar, updated per round. |
-| P1       | Round Status Messaging   | Display result (win/loss) message after each round.                        |
-| P2       | Countdown Timer          | Show countdown to next round when waiting.                                 |
-| P2       | User Action Prompt       | Prompt user when input or selection is required.                           |
+| Priority | Feature                | Description                                                   |
+| -------- | ---------------------- | ------------------------------------------------------------- |
+| **P1**   | Match Score Display    | Real-time, fast update of player vs CPU score per round       |
+| **P1**   | Round Status Messaging | Show clear win/loss messages post-round                       |
+| **P2**   | Countdown Timer        | Display countdown to next round with fallback for server sync |
+| **P2**   | User Action Prompt     | Prompt player for input and hide after interaction            |
+| **P3**   | Responsive Layout      | Adapt layout for small screens and collapse content as needed |
+| **P3**   | Accessibility Features | Ensure text contrast, screen reader compatibility             |
+| **P2**   | Edge Case Handling     | Fallback messages for backend sync failure and display issues |
 
 ## Acceptance Criteria
 
@@ -51,18 +55,63 @@ In battle game modes (e.g. Classic Battle), players currently receive no clear v
 - **Accessibility**
   - All text meets **WCAG 2.1 AA** standards.
   - Screen reader labels for dynamic messages.
+ 
+-----------------------------------------------------------------------------------
+| LEFT SIDE (Round Messages)            |                          RIGHT SIDE (Score) |
+|--------------------------------------|---------------------------------------------|
+|  "You won!"  (bold green, 16sp)      |           Player: 2  –  CPU: 1               |
+|  "Select your move" (neutral grey)   |                                             |
+|  "Round starts in: 3" (neutral grey) |                                             |
+-----------------------------------------------------------------------------------
+
+* Responsive Layout Notes:
+- On wide screens (>=375px): single horizontal bar with left and right content aligned.
+- On narrow screens (<375px): stacked vertically
+
+--------------------------------
+| "You won!"                   |
+|                             |
+| Player: 2  –  CPU: 1         |
+--------------------------------
+
+* Countdown timer truncates if less than 1.5s remains.
+* Text size min 16sp; win/loss messages bold and color-coded.
+
+### Additional Details:
+Animation timing:
+Win/loss message fades in immediately after round ends, stays visible for 2s, then fades out.
+Countdown timer fades in after win/loss message disappears.
+Colors:
+Win message: Green text (#28a745)
+Loss message: Red text (#dc3545)
+Neutral messages: Grey (#6c757d)
+Accessibility:
+All text uses high contrast with background
+Screen reader labels update dynamically with messages
+
 
 ## Tasks
 
-- [ ] 2.0 Implement Score Display
-  - [ ] 2.1 Fetch and render match score from backend.
-  - [ ] 2.2 Update score within 800ms post-round.
+- [ ] 1.0 Implement Score Display
+  - [ ] 1.1 Fetch match score from backend
+  - [ ] 1.2 Render score on right side of top bar
+  - [ ] 1.3 Update score within 800ms after round ends
 
-- [ ] 3.0 Implement Round Info Messages
-  - [ ] 3.1 Display win/loss messages for 2 seconds.
-  - [ ] 3.2 Start countdown timer after message.
-  - [ ] 3.3 Display selection prompt when input is needed.
+- [ ] 2.0 Implement Round Info Messages
+  - [ ] 2.1 Display win/loss messages for 2 seconds
+  - [ ] 2.2 Start countdown timer after message disappears
+  - [ ] 2.3 Display selection prompt when input is needed
 
-- [ ] 4.0 Handle Edge Cases
-  - [ ] 4.1 Show fallback “Waiting…” label when backend sync fails.
-  - [ ] 4.2 Adjust layout responsively for all screen sizes.
+- [ ] 3.0 Handle Responsive Layout
+  - [ ] 3.1 Detect screen width <375px and switch to stacked layout
+  - [ ] 3.2 Collapse countdown timer if <1.5 seconds remain
+
+- [ ] 4.0 Implement Accessibility Features
+  - [ ] 4.1 Ensure text contrast meets 4.5:1 ratio
+  - [ ] 4.2 Add screen reader labels for dynamic messages
+
+- [ ] 5.0 Edge Case Handling and Fallbacks
+  - [ ] 5.1 Show “Waiting…” if backend score sync fails
+  - [ ] 5.2 Show “Waiting…” if countdown timer mismatches server start
+  - [ ] 5.3 Truncate or stack content if resolution causes display issues
+  - [ ] 5.5 Define recovery logic for delayed player input
