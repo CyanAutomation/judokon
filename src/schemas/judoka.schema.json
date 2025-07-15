@@ -29,7 +29,9 @@
       "description": "Weight class of the judoka."
     },
     "stats": {
-      "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/Stats",
+      "allOf": [
+        { "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/Stats" }
+      ],
       "description": "Performance stats of the judoka."
     },
     "signatureMoveId": {
