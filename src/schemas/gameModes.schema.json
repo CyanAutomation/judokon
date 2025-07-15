@@ -55,6 +55,7 @@
           },
           "gender": {
             "type": "string",
+            "enum": ["male", "female", "mixed", "any"],
             "description": "The gender restriction for the game mode."
           },
           "options": {
