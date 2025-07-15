@@ -262,6 +262,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
   maintain a 44px tap target without breaking the 2:3 ratio
 - Label and value share the same padding and font size so the band height
   remains consistent. Both corners are square (no border radius).
+- Label and value should use `line-height: 1` to keep the text vertically centered.
 
 #### Rarity Markers
 
