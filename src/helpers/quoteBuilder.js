@@ -35,7 +35,7 @@ async function fetchFables() {
   const [stories, metadata] = await Promise.all([storyRes.json(), metaRes.json()]);
 
   const metaMap = new Map(metadata.map((m) => [m.id, m]));
-  return stories.map((story) => ({ ...story, ...metaMap.get(story.id) }));
+  return stories.map((story) => ({ ...story, ...(metaMap.get(story.id) || {}) }));
 }
 
 /**
