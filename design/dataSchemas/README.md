@@ -22,3 +22,25 @@ When adding new fields to a data file:
 4. Update tests or helper functions to work with the new field.
 
 Keeping schemas in sync ensures data integrity and prevents unexpected errors.
+
+## Using `$id` and Shared Definitions
+
+Every schema file should provide a unique `$id`. This allows other schemas to
+reference it by URL rather than by relative path. Shared structures live in
+[`src/schemas/commonDefinitions.schema.json`](../../src/schemas/commonDefinitions.schema.json).
+Use `$ref` to pull in definitions from this file, e.g.:
+
+```json
+{ "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/Stats" }
+```
+
+## Field Constraints
+
+If a property can take only a specific set of values, use `enum` or `pattern`
+constraints to express that in the schema. This keeps data consistent and helps
+with validation.
+
+## Consistent Key Casing
+
+JSON keys should follow the same casing throughout the project. We recommend
+using **camelCase** for all keys so data files match helper functions and tests.
