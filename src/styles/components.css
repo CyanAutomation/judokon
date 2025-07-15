@@ -457,6 +457,7 @@ button .ripple {
   justify-content: center;
   border-radius: 0;
   white-space: nowrap;
+  box-sizing: border-box;
   padding: min(var(--space-sm), 2.3vw) var(--space-sm);
   font-size: min(14px, 4vw);
   flex: 1 1 0;

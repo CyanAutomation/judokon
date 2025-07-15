@@ -318,3 +318,8 @@ Please format your code with **Prettier**, lint it with **ESLint**, run **Vitest
 ### 2025-07-15
 
 - Adjust signature move band height to `max(10%, var(--touch-target-size))` for consistent sizing across screens.
+
+### 2025-07-16
+
+- Ensure text within the signature-move band is vertically centered by adding
+  `box-sizing: border-box` to the `.signature-move-label` and `.signature-move-value` rules.

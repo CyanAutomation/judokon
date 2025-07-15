@@ -172,7 +172,9 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 - **Stats Padding & Typography:**
   - Horizontal padding should be minimal (use `var(--space-small)`).
   - Stats text uses `--font-medium` and line-height `1.2` to remain legible without increasing panel height.
-- **Signature Move Band:** `height: max(10%, var(--touch-target-size))` keeps the 44px tap target while maintaining the card's 2:3 ratio.
+- **Signature Move Band:** `height: max(10%, var(--touch-target-size))` keeps the
+  44px tap target while maintaining the card's 2:3 ratio. Text inside the band
+  must remain vertically centered.
 - **Padding Adjustments:** Section heights use `calc()` to subtract vertical padding so the total fits within the card's 2:3 ratio.
 - **Rarity Border Colors:**
   - Common → Blue (#337AFF)
