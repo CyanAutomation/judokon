@@ -9,9 +9,24 @@
 }
 
 .mockup-image {
-  display: none;
-  width: 100%;
+  display: block;
+  margin: 0 auto;
+  max-height: calc(100dvh - var(--header-height) - var(--footer-height));
+  width: auto;
+  object-fit: contain;
   height: auto;
+}
+
+.mockup-filename {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--color-text-inverted);
+  background: rgba(0, 0, 0, 0.5);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  z-index: 10;
 }
 
 .prev,
