@@ -144,7 +144,8 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
     `src/helpers` (for example `randomJudokaPage.js`) that wires up its
     interactive behavior. The directory also contains
     `mockupViewer.html`, a simple carousel for browsing the image files
-    under `design/mockups/`.
+    under `design/mockups/`, and `prdReader.html`, which loads Markdown
+    documentation from `design/productRequirementsDocuments`.
   - `data/`
   - `schemas/`
     JSON Schema definitions used to validate the data files.
@@ -153,8 +154,15 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
   - `styles/`
 
 - `tests/` – Vitest unit tests.
-- `design/` – documentation and code standards.
-- [Architecture Overview](design/architecture.md) – summary of key modules.
+  - `design/` – documentation and code standards.
+  - [Architecture Overview](design/architecture.md) – summary of key modules.
+
+### PRD Reader
+
+Product Requirements Documents live in `design/productRequirementsDocuments`.
+Add new Markdown files there and include the filename in the `FILES` array of
+`src/helpers/prdReaderPage.js`. Open `src/pages/prdReader.html` in your browser
+to browse the documents with next/previous navigation.
 
 ### CSS Organization
 

@@ -23,6 +23,16 @@ HTML pages under `src/pages` each load a dedicated module located in
 `settingsPage.js`) expose setup functions that attach event listeners and
 initialize page-specific behavior.
 
+## PRD reader
+
+`src/pages/prdReader.html` uses the helper
+`src/helpers/prdReaderPage.js` to display the Product Requirements
+Documents. The Markdown files live in
+`design/productRequirementsDocuments`. The helper fetches each file,
+parses it through the **Marked** library and injects the HTML into the
+`#prd-content` container. Next/previous buttons, arrow keys and swipe
+gestures cycle through the loaded documents.
+
 ## components/
 
 Factory functions that create reusable UI elements. `Button.js` and
