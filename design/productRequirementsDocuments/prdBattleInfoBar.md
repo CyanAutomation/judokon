@@ -89,6 +89,34 @@ Accessibility:
 All text uses high contrast with background
 Screen reader labels update dynamically with messages
 
+### Status Bar Module
+Contents:
+• Left container: Swappable message slot with fade-in/out animation for win/loss, prompts, countdown, and fallback (“Waiting…”) messages.
+• Right container: Real-time score display with fixed width and responsive alignment.
+• Timer slot: Dedicated, context-sensitive timer area beneath main message, auto-collapses if <1.5s remains.
+
+Why: This enforces strict separation and visibility of all critical states, guarantees feedback is always present, and ensures compliance with responsiveness, accessibility, and error handling needs.
+
+⸻
+
+### Action Prompt Module
+Contents:
+• Prompt label: Clearly separated with bold, neutral styling.
+• Action buttons/areas: Large, touch-friendly targets for move selection, spaced with minimum 12px padding.
+• Feedback slot: Inline status/error message container (e.g., “Waiting for opponent…”).
+
+Why: Your core user journey (selecting a move) is invisible here—this module makes the primary action obvious, accessible, and impossible to miss.
+
+⸻
+
+### Responsive Stack/Collapse Logic
+Contents:
+• Breakpoint annotations: <375px triggers vertical stacking.
+• Truncation/ellipsis: Score and message text auto-truncate with ellipsis if space is insufficient.
+• Adaptive font sizing: Minimum 16sp, adjusts for device, with enforced color contrast for all states.
+
+Why: Forces the wireframe to handle edge cases, small screens, and overflow gracefully—ensures you never lose critical information, regardless of device.
+
 
 ## Tasks
 
