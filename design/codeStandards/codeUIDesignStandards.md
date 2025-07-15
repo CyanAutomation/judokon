@@ -260,6 +260,8 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Text: Yellow (#FED843), left-aligned label + centered move name
 - Size: `height: max(10%, var(--touch-target-size))` and `flex: 0 0 auto` to
   maintain a 44px tap target without breaking the 2:3 ratio
+- Label and value share the same padding and font size so the band height
+  remains consistent. Both corners are square (no border radius).
 
 #### Rarity Markers
 
