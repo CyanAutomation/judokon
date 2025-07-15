@@ -144,8 +144,8 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
     `src/helpers` (for example `randomJudokaPage.js`) that wires up its
     interactive behavior. The directory also contains
     `mockupViewer.html`, a simple carousel for browsing the image files
-    under `design/mockups/`, and `prdReader.html`, which loads Markdown
-    documentation from `design/productRequirementsDocuments`.
+    under `design/mockups/`. It displays the filename overlay, centers
+    each image, and scales it to fit the viewport.
   - `data/`
   - `schemas/`
     JSON Schema definitions used to validate the data files.

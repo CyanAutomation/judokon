@@ -5,19 +5,20 @@ import { onDomReady } from "./domReady.js";
  * Initialize the mockup image carousel.
  *
  * @pseudocode
- * 1. Select the image and navigation buttons.
+ * 1. Select the image, filename display, and navigation buttons.
  * 2. Define an array of mockup filenames and compute their base URL.
- * 3. Implement `showImage(index)` to update the image source and alt text.
+ * 3. Implement `showImage(index)` to update the image source, alt text, and filename.
  * 4. Attach click handlers to cycle forward or backward with wraparound.
  * 5. Support arrow key navigation for accessibility.
  * 6. Show the first image and apply button ripple effects.
  */
 export function setupMockupViewerPage() {
   const imgEl = document.getElementById("mockup-image");
+  const filenameEl = document.getElementById("mockup-filename");
   const prevBtn = document.getElementById("prev-btn");
   const nextBtn = document.getElementById("next-btn");
 
-  if (!imgEl || !prevBtn || !nextBtn) {
+  if (!imgEl || !filenameEl || !prevBtn || !nextBtn) {
     return;
   }
 
@@ -67,6 +68,7 @@ export function setupMockupViewerPage() {
     const file = files[currentIndex];
     imgEl.src = `${basePath}${file}`;
     imgEl.alt = file;
+    filenameEl.textContent = file;
     imgEl.classList.add("fade");
     imgEl.style.display = "block";
   }
