@@ -377,7 +377,7 @@ button .ripple {
 .card-stats {
   background-color: var(--card-stats-bg, var(--color-secondary));
   color: var(--color-text-inverted);
-  padding: var(--space-small) var(--space-large);
+  padding: var(--space-small) var(--space-small);
   margin: 0;
   display: flex;
   justify-content: space-between;
@@ -404,7 +404,8 @@ button .ripple {
   padding: 3px min(1px, 0.6vh);
   border-top: 1px solid var(--card-border-color, var(--color-secondary));
   font-family: "Open Sans", sans-serif;
-  font-size: var(--font-small);
+  font-size: var(--font-medium);
+  line-height: 1.2;
   font-weight: bold;
 }
 
