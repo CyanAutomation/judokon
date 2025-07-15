@@ -379,7 +379,7 @@ button .ripple {
 .card-stats {
   background-color: var(--card-stats-bg, var(--color-secondary));
   color: var(--color-text-inverted);
-  padding: var(--space-small);
+  padding: 0;
   margin: 0;
   display: flex;
   justify-content: space-between;
@@ -388,8 +388,8 @@ button .ripple {
   font-size: var(--font-medium);
   flex-direction: column;
   /* Stats area ~34% of card height accounting for padding */
-  height: 34%;
-  flex: 0 0 34%;
+  height: 33%;
+  flex: 0 0 33%;
 }
 
 .card-stats ul {
