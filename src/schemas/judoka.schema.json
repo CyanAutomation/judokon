@@ -121,6 +121,23 @@
     }
   },
   "required": [
-    "id", "firstname", "surname", "country", "countryCode", "weightClass", "stats", "signatureMoveId", "lastUpdated", "profileUrl", "bio", "gender", "isHidden", "rarity", "cardCode", "matchesWon", "matchesLost", "matchesDrew"
+    "id",
+    "firstname",
+    "surname",
+    "country",
+    "countryCode",
+    "weightClass",
+    "stats",
+    "signatureMoveId",
+    "lastUpdated",
+    "profileUrl",
+    "bio",
+    "gender",
+    "isHidden",
+    "rarity",
+    "cardCode",
+    "matchesWon",
+    "matchesLost",
+    "matchesDrew"
   ]
 }
