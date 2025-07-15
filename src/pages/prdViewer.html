@@ -39,7 +39,8 @@
       .nav-buttons {
         margin-top: 1rem;
         display: flex;
-        gap: 1rem;
+        gap: 2rem;
+        align-items: center;
       }
     </style>
   </head>
@@ -49,11 +50,11 @@
     </header>
 
     <main>
-      <div id="prd-content"></div>
       <div class="nav-buttons">
         <button id="prev-doc" aria-label="Previous document">Prev</button>
         <button id="next-doc" aria-label="Next document">Next</button>
       </div>
+      <div id="prd-content"></div>
     </main>
 
     <script type="module" src="../helpers/prdReaderPage.js"></script>
