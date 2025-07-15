@@ -462,6 +462,7 @@ button .ripple {
   flex: 1 1 0;
   height: 100%;
   align-items: center;
+  line-height: 1;
 }
 
 .signature-move-label {
