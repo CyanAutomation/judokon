@@ -83,7 +83,6 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
   use relative paths (e.g., `../../index.html`) so the site can be served from
   any base URL.
 - `src/` – contains the game logic and assets:
-
   - `game.js`
   - `helpers/`
   - `components/` – small DOM factories like `Button`, `ToggleSwitch`, `Card`, the `Modal` dialog, and `StatsPanel`
@@ -219,25 +218,20 @@ This project is built with HTML, CSS, and JavaScript, and hosted on GitHub Pages
 ### 🥋 The Rules:
 
 1. **You vs. Computer**
-
    - Each match starts with both players receiving **25 random cards** from a 99-card deck.
 
 2. **Start the Battle**
-
    - In each round, you and the computer each draw your top card.
 
 3. **Choose Your Stat**
-
    - You select one of the stats on your card (e.g. Power, Speed, Technique, etc.)
 
 4. **Compare Stats**
-
    - The chosen stat is compared with the computer’s card.
    - **Highest value wins the round**.
    - If both stats are equal, it’s a **draw** — no one scores.
 
 5. **Scoring**
-
    - Each round win gives you **1 point**.
    - The cards used in that round are **discarded** (not reused).
 
@@ -298,7 +292,7 @@ Setting `width: 100%` on both `.kodokan-grid` and `.kodokan-screen`
 keeps the carousel from stretching beyond the viewport.
 Safari counts scrollbars in the `vw` unit, which can lead to unexpected layout behavior. For example, a wrapper with `min-width: 100vw` may become wider than the page and cause horizontal scrolling. To prevent this, set `width: 100%` on the body and navbars. Optionally, use `overflow-x: hidden` to ensure the layout stays within the viewport.
 Mobile Safari 18.5 may also add vertical scroll if fixed headers and footers use `vh` units. The navbar height CSS variables now use `dvh` to match the dynamic viewport height and avoid extra scrolling. Pages with fixed headers or footers should set container heights to `calc(100dvh - var(--header-height) - var(--footer-height))` (or equivalent) so content isn't hidden when the viewport shrinks. The `.home-screen` container implements this rule.
-The settings screen previously had its first controls hidden behind the header; wrapping the page in this `.home-screen` container resolves the issue.
+The settings screen previously had its first controls hidden behind the header; wrapping the page in this `.home-screen` container resolves the issue. The classic battle page now also uses this wrapper so the judoka cards appear fully below the header.
 
 ## Future Plans
 
