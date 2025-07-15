@@ -189,6 +189,13 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 - **Portrait Priority:** On narrow devices, prioritize portrait and name placement; wrap stats below if needed.
 - **Text Scaling:** Allow dynamic font sizing to avoid clipping on smaller screens.
 
+## Integration Notes
+
+Carousels displaying judoka cards **must not** add horizontal padding around each
+card. Any spacing between cards should rely on the `gap` property defined in the
+[carousel CSS](../../src/styles/carousel.css). This ensures consistent card
+widths across screens and matches the rule introduced in the stylesheet.
+
 ---
 
 ## Tasks
