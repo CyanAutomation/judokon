@@ -299,11 +299,15 @@ button .ripple {
   font-size: min(5vw, 1.1rem);
   font-weight: normal;
   display: block;
+  line-height: 1;
+  margin: 0;
 }
 
 .card-name .surname {
   font-size: min(6vw, 1.5rem);
   font-weight: bold;
+  line-height: 1;
+  margin: 0;
 }
 
 .card-flag {
