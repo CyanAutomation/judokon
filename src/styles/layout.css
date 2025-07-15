@@ -40,6 +40,17 @@ body {
   width: 100%;
 }
 
+@media (max-width: 768px) {
+  .kodokan-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kodokan-grid .filter-bar,
+  .kodokan-grid #carousel-container {
+    grid-column: 1;
+  }
+}
+
 /* .helper-container {
   grid-column: 1/1;
 } */

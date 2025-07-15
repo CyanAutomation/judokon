@@ -171,6 +171,7 @@ Search will be included in a future update to keep the initial scope focused.
 - Messages: Area below markers for dynamic feedback such as “No cards available” or error messages.
 - Touch Targets: Cards and buttons sized ≥44px for accessibility compliance. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) for full guidelines.
 - Responsive Adaptation: On mobile, 1–2 cards visible; on desktop, 3–5 cards visible.
+- On screens below 768px the filter bar stacks above the carousel to avoid card shrinkage.
 
 ---
 
