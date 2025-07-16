@@ -111,6 +111,8 @@ wrappers (the element returned by `buildCardCarousel`) **must not** apply
 padding that would change the width of the cards. Any extra spacing should be
 handled by the carousel's gap settings so that card sizing remains
 consistent.
+`buildCardCarousel` automatically invokes `setupLazyPortraits()` on the
+generated carousel so each card's real portrait loads once it becomes visible.
 
 ---
 
