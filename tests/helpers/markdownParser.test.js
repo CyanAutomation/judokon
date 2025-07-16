@@ -32,4 +32,10 @@ describe("marked.parse", () => {
     const html = marked.parse(md);
     expect(html).toBe("<h1>Title</h1><ul><li>a</li><li>b</li></ul>");
   });
+
+  it("parses horizontal rules", () => {
+    const md = "one\n\n----\n\ntwo";
+    const html = marked.parse(md);
+    expect(html).toBe("<p>one</p><hr/><p>two</p>");
+  });
 });
