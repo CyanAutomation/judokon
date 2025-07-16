@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ju-Do-Kon! PRD Reader</title>
     <link rel="stylesheet" href="../styles/fonts.css" />
+    <link rel="stylesheet" href="../styles/base.css" />
+    <link rel="stylesheet" href="../styles/layout.css" />
+    <link rel="stylesheet" href="../styles/components.css" />
+    <link rel="stylesheet" href="../styles/utilities.css" />
     <style>
       body {
         font-family: sans-serif;
@@ -34,6 +38,24 @@
         max-width: 800px;
         width: 100%;
         min-height: 200px;
+        overflow-x: auto;
+        box-sizing: border-box;
+      }
+
+      #prd-content img {
+        max-width: 100%;
+        height: auto;
+      }
+
+      #prd-content pre,
+      #prd-content code {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      #prd-content table {
+        width: 100%;
+        overflow-x: auto;
       }
 
       .nav-buttons {
