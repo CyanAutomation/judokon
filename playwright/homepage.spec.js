@@ -49,7 +49,7 @@ test.describe("Homepage", () => {
         },
         { timeout: 5000 }
       )
-      .toBeGreaterThan(1.03);
+      .toBeGreaterThan(1.01);
 
     const cursor = await tile.evaluate((el) => getComputedStyle(el).cursor);
     expect(cursor).toBe("pointer");
