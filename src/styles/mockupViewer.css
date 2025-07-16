@@ -5,9 +5,8 @@
 .slideshow-container {
   max-width: 1000px;
   position: relative;
-  margin: auto;
-  justify-content: center;
-  align-items: center;
+  /* margin: auto; */
+  margin: 0 auto;
 }
 
 .mockup-image {
