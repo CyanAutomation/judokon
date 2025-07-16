@@ -122,6 +122,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - **Mobile (<600px)**: card fills ~70% of viewport; draw button spans nearly full width.
 - **Tablet/Desktop (>600px)**: card ~40% of viewport; centered draw button with spacing.
 - **Landscape Support**: components reposition vertically or side-by-side.
+- Card container uses `min-height: 50vh` to keep the Draw button visible on small screens.
 
 #### Audio Feedback (Optional Enhancement)
 
