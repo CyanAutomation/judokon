@@ -131,9 +131,9 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
     Call `open()` on a user action and focus stays trapped until `close()` runs.
 
     `lazyPortrait.js` enables IntersectionObserver-based image loading. The
-    `renderJudokaCard` helper automatically calls `setupLazyPortraits()` so
-    portraits swap in when the card enters view. Import and call it manually only
-    if you build card markup yourself.
+    `renderJudokaCard` and `buildCardCarousel` helpers automatically call
+    `setupLazyPortraits()` so portraits swap in when cards enter view. Import and
+    call it manually only if you build card markup yourself.
 
   - `pages/`
     HTML pages. Each page imports a matching module from

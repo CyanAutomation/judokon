@@ -1,6 +1,7 @@
 import { createGokyoLookup } from "./utils.js";
 import { generateJudokaCard } from "./cardBuilder.js";
 import { getFallbackJudoka } from "./judokaUtils.js";
+import { setupLazyPortraits } from "./lazyPortrait.js";
 import {
   CAROUSEL_SCROLL_DISTANCE,
   CAROUSEL_SWIPE_THRESHOLD,
@@ -406,6 +407,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   setupKeyboardNavigation(container);
   setupSwipeNavigation(container);
   applyAccessibilityImprovements(wrapper);
+  setupLazyPortraits(container);
 
   return wrapper;
 }
