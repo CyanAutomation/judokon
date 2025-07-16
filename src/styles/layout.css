@@ -16,7 +16,7 @@ body {
   min-height: 100vh;
   min-height: calc(100dvh - var(--header-height) - var(--footer-height));
   padding-top: var(--header-height);
-  padding-bottom: var(--footer-height);
+  padding-bottom: calc(var(--footer-height) + env(safe-area-inset-bottom));
   max-width: 100%;
   align-items: center;
   box-sizing: border-box;
