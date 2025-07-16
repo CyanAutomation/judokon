@@ -17,7 +17,9 @@ export const marked = {
       let prev = 0;
 
       lines.forEach((line) => {
-        const regex = ordered ? /^(\s*)\d+\.\s*(.*)$/ : /^(\s*)[-*]\s*(?:\[[xX ]\])?\s*(.*)$/;
+        const regex = ordered
+          ? /^(\s*)\d+\.\s+(.*)$/
+          : /^(\s*)[-*]\s+(?:\[[xX ]\]\s+)?(.*)$/;
         const match = line.match(regex);
         if (!match) return;
         const [, indent, text] = match;
@@ -67,10 +69,10 @@ export const marked = {
           return `<h3>${renderInline(block.slice(4).trim())}</h3>`;
         }
         const lines = block.split("\n");
-        if (lines.every((l) => /^\s*[-*]/.test(l))) {
+        if (lines.every((l) => /^\s*[-*]\s+(?:\[[xX ]\]\s+)?/.test(l))) {
           return renderList(lines, false);
         }
-        if (lines.every((l) => /^\s*\d+\./.test(l))) {
+        if (lines.every((l) => /^\s*\d+\.\s+/.test(l))) {
           return renderList(lines, true);
         }
         return `<p>${renderInline(block.trim())}</p>`;
