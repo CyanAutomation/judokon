@@ -438,7 +438,7 @@ button .ripple {
 
 .signature-move-container {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-end;
   flex-direction: row;
   width: 100%;
   /* Maintain ~10% (~45px) height as specified in the PRD */
