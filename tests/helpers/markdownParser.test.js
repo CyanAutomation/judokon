@@ -15,6 +15,18 @@ describe("marked.parse", () => {
     expect(html).toBe("<ol><li>first</li><li>second</li></ol>");
   });
 
+  it("parses nested lists", () => {
+    const md = "- a\n  - b";
+    const html = marked.parse(md);
+    expect(html).toBe("<ul><li>a<ul><li>b</li></ul></li></ul>");
+  });
+
+  it("handles checkbox lists", () => {
+    const md = "- [ ] task one\n- [x] task two";
+    const html = marked.parse(md);
+    expect(html).toBe("<ul><li>task one</li><li>task two</li></ul>");
+  });
+
   it("handles headings followed by lists", () => {
     const md = "# Title\n\n- a\n- b";
     const html = marked.parse(md);
