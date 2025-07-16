@@ -170,8 +170,8 @@ button .ripple {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: var(--space-lg); /* Updated token */
-  min-height: 500px;
+  padding: var(--space-lg) var(--space-lg) 0; /* 24px bottom gap handled by button */
+  min-height: 50vh;
 }
 
 .judoka-card {

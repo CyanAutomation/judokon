@@ -69,4 +69,12 @@ test.describe("View Judoka screen", () => {
     expect(styles.bg).toBe(hexToRgb(vars.bg));
     expect(styles.color).toBe(hexToRgb(vars.color));
   });
+
+  test("draw button remains within viewport", async ({ page }) => {
+    const { bottom, innerHeight } = await page.evaluate(() => {
+      const rect = document.querySelector('[data-testid="draw-button"]').getBoundingClientRect();
+      return { bottom: rect.bottom, innerHeight: window.innerHeight };
+    });
+    expect(bottom).toBeLessThanOrEqual(innerHeight);
+  });
 });
