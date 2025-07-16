@@ -541,7 +541,7 @@ button .ripple {
   transform: translateY(-50%);
   background-color: var(--color-surface);
   color: var(--color-text);
-  border: 1px solid var(--color-tertiary);
+  border: 1px solid var(--color-primary);
   border-radius: 50%;
   min-width: 48px;
   min-height: 48px;
@@ -592,6 +592,7 @@ button .ripple {
   position: relative;
   top: 0;
   min-height: 2dvh;
+  min-height: 2vh;
   width: 100%;
   justify-content: space-evenly;
   background-color: var(--color-secondary);
@@ -616,7 +617,7 @@ button .ripple {
 }
 
 .filter-bar button {
-  padding: 0.3rem 0.5rem;
+  padding: 0.3rem 0.3rem;
   border-radius: 4px;
   background: var(--button-bg);
   color: var(--button-text-color);
@@ -717,7 +718,7 @@ button .ripple {
   right: 0;
   width: 75vw;
   max-width: 320px;
-  background: var(--color-secondary);
+  background: var(--color-primary);
   overflow-y: auto;
   padding: var(--space-md);
   transform: translateX(100%);
@@ -779,7 +780,7 @@ button .ripple {
 
 .clear-filter-button {
   margin: 1rem auto 0;
-  padding: 0.3rem 0.5rem;
+  padding: 0.3rem 0.3rem;
   background: var(--button-bg);
   color: var(--button-text-color);
   border: none;
