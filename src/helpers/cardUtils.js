@@ -1,6 +1,7 @@
 import { generateJudokaCardHTML } from "./cardBuilder.js";
 import { debugLog } from "./debug.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
+import { setupLazyPortraits } from "./lazyPortrait.js";
 
 /**
  * Selects a random judoka from the provided data array.
@@ -129,6 +130,7 @@ export async function renderJudokaCard(judoka, gokyoLookup, container, { animate
     if (!card) return null;
     container.innerHTML = "";
     container.appendChild(card);
+    setupLazyPortraits(card);
     if (animate) {
       requestAnimationFrame(() => {
         card.classList.add("animate-card");
