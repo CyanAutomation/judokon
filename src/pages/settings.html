@@ -46,14 +46,6 @@
           >
             <legend class="visually-hidden">Game Settings</legend>
             <div class="settings-item">
-              <label for="display-mode-select">Display Mode</label>
-              <select id="display-mode-select">
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-                <option value="gray">Gray</option>
-              </select>
-            </div>
-            <div class="settings-item">
               <label for="sound-toggle" class="switch">
                 <input type="checkbox" id="sound-toggle" name="sound" aria-label="Sound" />
                 <div class="slider round"></div>
@@ -84,6 +76,14 @@
                 <span>Motion Effects</span>
               </label>
             </div>
+            <div class="settings-item">
+              <label for="display-mode-select">Display Mode</label>
+              <select id="display-mode-select">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="gray">Gray</option>
+              </select>
+            </div>
           </fieldset>
         </form>
         <form>
@@ -92,7 +92,7 @@
             class="game-mode-toggle-container settings-form"
             aria-label="Game Mode Selector"
           >
-            <label for="display-mode-select">Game Modes</label>
+            <span>Game Modes</span>
           </section>
         </form>
       </main>
