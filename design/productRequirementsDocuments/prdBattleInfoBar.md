@@ -64,7 +64,7 @@ In battle game modes (e.g. Classic Battle), players currently receive no clear v
 |  "Round starts in: 3" (neutral grey) |                                             |
 -----------------------------------------------------------------------------------
 
-* Responsive Layout Notes:
+- Responsive Layout Notes:
 - On wide screens (>=375px): single horizontal bar with left and right content aligned.
 - On narrow screens (<375px): stacked vertically
 
@@ -74,8 +74,8 @@ In battle game modes (e.g. Classic Battle), players currently receive no clear v
 | Player: 2  –  CPU: 1         |
 --------------------------------
 
-* Countdown timer truncates if less than 1.5s remains.
-* Text size min 16sp; win/loss messages bold and color-coded.
+- Countdown timer truncates if less than 1.5s remains.
+- Text size min 16sp; win/loss messages bold and color-coded.
 
 ### Additional Details:
 Animation timing:
