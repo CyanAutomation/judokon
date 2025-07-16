@@ -78,6 +78,7 @@ In battle game modes (e.g. Classic Battle), players currently receive no clear v
 - Text size min 16sp; win/loss messages bold and color-coded.
 
 ### Additional Details:
+
 Animation timing:
 Win/loss message fades in immediately after round ends, stays visible for 2s, then fades out.
 Countdown timer fades in after win/loss message disappears.
@@ -90,6 +91,7 @@ All text uses high contrast with background
 Screen reader labels update dynamically with messages
 
 ### Status Bar Module
+
 Contents:
 • Left container: Swappable message slot with fade-in/out animation for win/loss, prompts, countdown, and fallback (“Waiting…”) messages.
 • Right container: Real-time score display with fixed width and responsive alignment.
@@ -100,6 +102,7 @@ Why: This enforces strict separation and visibility of all critical states, guar
 ⸻
 
 ### Action Prompt Module
+
 Contents:
 • Prompt label: Clearly separated with bold, neutral styling.
 • Action buttons/areas: Large, touch-friendly targets for move selection, spaced with minimum 12px padding.
@@ -110,6 +113,7 @@ Why: Your core user journey (selecting a move) is invisible here—this module m
 ⸻
 
 ### Responsive Stack/Collapse Logic
+
 Contents:
 • Breakpoint annotations: <375px triggers vertical stacking.
 • Truncation/ellipsis: Score and message text auto-truncate with ellipsis if space is insufficient.
