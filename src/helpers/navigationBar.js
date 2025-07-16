@@ -148,40 +148,42 @@ function addTouchFeedback() {
  * Populates the bottom navigation bar with game modes from a JSON file.
  *
  * @pseudocode
- * 1. Attempt to retrieve cached game modes from `localStorage`.
+ * 1. Guard: return immediately if `document` is undefined.
+ * 2. Attempt to retrieve cached game modes from `localStorage`.
  *    - Parse the JSON string if it exists.
- * 2. When online, fetch `gameModes.json` to refresh the data.
+ * 3. When online, fetch `gameModes.json` to refresh the data.
  *    - On success, update `localStorage` with the fetched JSON string.
  *    - On failure or when offline, fall back to the cached data.
  *
- * 3. Parse the JSON to retrieve the game modes data.
+ * 4. Parse the JSON to retrieve the game modes data.
  *    - Handle parsing errors gracefully.
  *
- * 4. Select the `.bottom-navbar` element and exit if not found.
+ * 5. Select the `.bottom-navbar` element and exit if not found.
  *
- * 5. Load user settings to determine disabled game modes.
+ * 6. Load user settings to determine disabled game modes.
  *
- * 6. Filter the game modes:
+ * 7. Filter the game modes:
  *    - Include only modes where `category` is "mainMenu", `isHidden` is `false`,
  *      and the mode is not disabled in settings.
  *
- * 7. Sort the filtered game modes by their `order` property in ascending order.
+ * 8. Sort the filtered game modes by their `order` property in ascending order.
  *
- * 8. Check if there are any active modes:
+ * 9. Check if there are any active modes:
  *    - If no modes are available, display "No game modes available" in the navigation bar.
  *
- * 9. Map the sorted game modes to HTML list items (`<li>`):
+ * 10. Map the sorted game modes to HTML list items (`<li>`):
  *    - Each list item contains a link (`<a>`) to the corresponding game mode's URL.
  *
- * 10. Update the navigation bar (`.bottom-navbar ul`) with the generated HTML.
+ * 11. Update the navigation bar (`.bottom-navbar ul`) with the generated HTML.
  *
- * 11. Handle any errors during the process:
+ * 12. Handle any errors during the process:
  *    - Log the error to the console and display fallback items in the navigation bar.
  *
  * @returns {Promise<void>} A promise that resolves once the navbar is populated.
  */
 
 export async function populateNavbar() {
+  if (typeof document === "undefined") return; // Guard for non-DOM environments
   try {
     const data = await loadGameModes();
 
@@ -217,6 +219,7 @@ export async function populateNavbar() {
   } catch (error) {
     console.error("Error loading game modes:", error);
 
+    if (typeof document === "undefined") return; // Guard if DOM is gone
     const navBar = document.querySelector(".bottom-navbar");
     if (!navBar) return; // Guard: do nothing if navbar is missing
     clearBottomNavbar();
