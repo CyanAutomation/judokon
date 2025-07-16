@@ -159,7 +159,8 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
 Product Requirements Documents live in `design/productRequirementsDocuments`.
 Add new Markdown files there and include the filename in the `FILES` array of
 `src/helpers/prdReaderPage.js`. Open `src/pages/prdViewer.html` in your browser
-to browse the documents with next/previous navigation.
+to browse the documents with next/previous navigation. The page now imports
+`base.css` and `layout.css` so wide elements stay wrapped inside the viewport.
 
 ### CSS Organization
 
