@@ -320,6 +320,8 @@ keeps the carousel from stretching beyond the viewport.
 Safari counts scrollbars in the `vw` unit, which can lead to unexpected layout behavior. For example, a wrapper with `min-width: 100vw` may become wider than the page and cause horizontal scrolling. To prevent this, set `width: 100%` on the body and navbars. Optionally, use `overflow-x: hidden` to ensure the layout stays within the viewport.
 Mobile Safari 18.5 may also add vertical scroll if fixed headers and footers use `vh` units. The navbar height CSS variables now use `dvh` to match the dynamic viewport height and avoid extra scrolling. Pages with fixed headers or footers should set container heights to `calc(100dvh - var(--header-height) - var(--footer-height))` (or equivalent) so content isn't hidden when the viewport shrinks. The `.home-screen` container implements this rule.
 
+The bottom navbar uses `env(safe-area-inset-bottom)` with a `constant()` fallback to add extra padding and height. This prevents it from overlapping the iOS home indicator and keeps content visible.
+
 Layout containers should include a `vh` fallback declared before the `dvh` rule so browsers without dynamic viewport support still size elements correctly.
 The settings screen previously had its first controls hidden behind the header; wrapping the page in this `.home-screen` container resolves the issue. The classic battle page now also uses this wrapper so the judoka cards appear fully below the header.
 
