@@ -89,6 +89,7 @@ body {
   gap: var(--space-lg); /* Updated token */
   padding: var(--space-large) var(--space-xl); /* Updated token */
   flex: 1 1 auto;
+  margin: var(--space-large); /* Updated token */
   height: calc(100vh - var(--header-height) - var(--footer-height));
   height: calc(100dvh - var(--header-height) - var(--footer-height));
 }
