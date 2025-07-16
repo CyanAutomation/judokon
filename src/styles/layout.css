@@ -87,7 +87,7 @@ body {
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);
   gap: var(--space-lg); /* Updated token */
-  padding: 0 var(--space-xl); /* Updated token */
+  padding: var(--space-large) var(--space-xl); /* Updated token */
   flex: 1 1 auto;
   height: calc(100vh - var(--header-height) - var(--footer-height));
   height: calc(100dvh - var(--header-height) - var(--footer-height));

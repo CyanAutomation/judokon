@@ -77,7 +77,7 @@
     "category": "teamBattle",
     "order": 70,
     "url": "teamBattleMixed.html",
-    "isHidden": false,
+    "isHidden": true,
     "rules": {
       "rounds": 6,
       "teamSize": 6,
