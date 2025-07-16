@@ -1,7 +1,7 @@
 export const marked = {
   /**
-   * Very small markdown parser supporting headings, bold text paragraphs, lists
-   * and horizontal rules.
+   * Very small markdown parser supporting headings, bold text paragraphs, lists,
+   * tables and horizontal rules.
    *
    * @param {string} md - Markdown string.
    * @returns {string} HTML string.
@@ -50,6 +50,32 @@ export const marked = {
       return html;
     }
 
+    function renderTable(lines) {
+      const clean = lines.filter((l) => !/^(\s*\|\s*)*$/.test(l));
+
+      function splitRow(row) {
+        let text = row.trim();
+        if (text.startsWith("|")) text = text.slice(1);
+        if (text.endsWith("|")) text = text.slice(0, -1);
+        return text.split("|").map((c) => c.trim());
+      }
+
+      const headers = splitRow(clean[0]);
+      const bodyRows = clean.slice(2).map(splitRow);
+
+      const thead = `<thead><tr>${headers
+        .map((h) => `<th>${renderInline(h)}</th>`)
+        .join("")}</tr></thead>`;
+
+      const tbodyContent = bodyRows
+        .map((cells) => `<tr>${cells.map((c) => `<td>${renderInline(c)}</td>`).join("")}</tr>`)
+        .join("");
+
+      const tbody = `<tbody>${tbodyContent}</tbody>`;
+
+      return `<table>${thead}${tbody}</table>`;
+    }
+
     return md
       .trim()
       .split(/\n\n+/)
@@ -67,6 +93,13 @@ export const marked = {
           return `<h3>${renderInline(block.slice(4).trim())}</h3>`;
         }
         const lines = block.split("\n");
+        if (
+          lines.length >= 2 &&
+          lines.every((l) => l.trim().startsWith("|")) &&
+          /^\s*(\|\s*-{3,}\s*)+\|?\s*$/.test(lines[1])
+        ) {
+          return renderTable(lines);
+        }
         if (lines.every((l) => /^\s*[-*]\s+(?:\[[xX ]\]\s+)?/.test(l))) {
           return renderList(lines, false);
         }

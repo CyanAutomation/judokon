@@ -44,4 +44,12 @@ describe("marked.parse", () => {
     const html = marked.parse(md);
     expect(html).toBe("<p>one</p><hr/><p>two</p>");
   });
+
+  it("parses basic tables", () => {
+    const md = "| a | b |\n| --- | --- |\n| c | d |";
+    const html = marked.parse(md);
+    expect(html).toBe(
+      "<table><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>c</td><td>d</td></tr></tbody></table>"
+    );
+  });
 });
