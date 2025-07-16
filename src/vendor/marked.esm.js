@@ -17,9 +17,7 @@ export const marked = {
       let prev = 0;
 
       lines.forEach((line) => {
-        const regex = ordered
-          ? /^(\s*)\d+\.\s+(.*)$/
-          : /^(\s*)[-*]\s+(?:\[[xX ]\]\s+)?(.*)$/;
+        const regex = ordered ? /^(\s*)\d+\.\s+(.*)$/ : /^(\s*)[-*]\s+(?:\[[xX ]\]\s+)?(.*)$/;
         const match = line.match(regex);
         if (!match) return;
         const [, indent, text] = match;
