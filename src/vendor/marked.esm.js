@@ -1,6 +1,6 @@
 export const marked = {
   /**
-   * Very small markdown parser supporting headings and paragraphs.
+   * Very small markdown parser supporting headings, paragraphs and lists.
    *
    * @param {string} md - Markdown string.
    * @returns {string} HTML string.
@@ -18,6 +18,15 @@ export const marked = {
         }
         if (block.startsWith("### ")) {
           return `<h3>${block.slice(4).trim()}</h3>`;
+        }
+        const lines = block.split("\n");
+        if (lines.every((l) => /^[-*] /.test(l))) {
+          return `<ul>${lines.map((l) => `<li>${l.slice(2).trim()}</li>`).join("")}</ul>`;
+        }
+        if (lines.every((l) => /^\d+\. /.test(l))) {
+          return `<ol>${lines
+            .map((l) => `<li>${l.replace(/^\d+\.\s*/, "").trim()}</li>`)
+            .join("")}</ol>`;
         }
         return `<p>${block.trim()}</p>`;
       })
