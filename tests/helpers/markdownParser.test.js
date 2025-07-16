@@ -52,4 +52,12 @@ describe("marked.parse", () => {
       "<table><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>c</td><td>d</td></tr></tbody></table>"
     );
   });
+
+  it("parses multi-row tables", () => {
+    const md = "| a | b |\n| --- | --- |\n| c | d |\n| e | f |";
+    const html = marked.parse(md);
+    expect(html).toBe(
+      "<table><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>c</td><td>d</td></tr><tr><td>e</td><td>f</td></tr></tbody></table>"
+    );
+  });
 });
