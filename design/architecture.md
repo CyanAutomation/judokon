@@ -25,7 +25,7 @@ initialize page-specific behavior.
 
 ## PRD reader
 
-`src/pages/prdReader.html` uses the helper
+`src/pages/prdViewer.html` uses the helper
 `src/helpers/prdReaderPage.js` to display the Product Requirements
 Documents. The Markdown files live in
 `design/productRequirementsDocuments`. The helper fetches each file,

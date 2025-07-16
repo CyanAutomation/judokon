@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("PRD Reader page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/src/pages/prdReader.html");
+    await page.goto("/src/pages/prdViewer.html");
   });
 
   test("forward and back navigation", async ({ page }) => {
