@@ -448,6 +448,7 @@ button .ripple {
   flex: 0 0 max(10%, var(--touch-target-size));
   box-sizing: border-box;
   border-top: 1px solid var(--color-text-inverted, var(--color-secondary));
+  margin-top: auto;
 }
 
 .signature-move-label,
