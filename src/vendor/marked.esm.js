@@ -6,6 +6,45 @@ export const marked = {
    * @returns {string} HTML string.
    */
   parse(md) {
+    function renderList(lines, ordered) {
+      let html = "";
+      const stack = [];
+      let prev = 0;
+
+      lines.forEach((line) => {
+        const regex = ordered ? /^(\s*)\d+\.\s*(.*)$/ : /^(\s*)[-*]\s*(?:\[[xX ]\])?\s*(.*)$/;
+        const match = line.match(regex);
+        if (!match) return;
+        const [, indent, text] = match;
+        const level = Math.floor(indent.length / 2);
+        const type = ordered ? "ol" : "ul";
+
+        if (stack.length === 0) {
+          html += `<${type}><li>${text}`;
+          stack.push(type);
+        } else if (level > prev) {
+          html += `<${type}><li>${text}`;
+          stack.push(type);
+        } else if (level === prev) {
+          html += `</li><li>${text}`;
+        } else {
+          while (prev > level) {
+            const t = stack.pop();
+            html += `</li></${t}>`;
+            prev--;
+          }
+          html += `</li><li>${text}`;
+        }
+        prev = level;
+      });
+
+      while (stack.length) {
+        const t = stack.pop();
+        html += `</li></${t}>`;
+      }
+      return html;
+    }
+
     return md
       .trim()
       .split(/\n\n+/)
@@ -20,13 +59,11 @@ export const marked = {
           return `<h3>${block.slice(4).trim()}</h3>`;
         }
         const lines = block.split("\n");
-        if (lines.every((l) => /^[-*] /.test(l))) {
-          return `<ul>${lines.map((l) => `<li>${l.slice(2).trim()}</li>`).join("")}</ul>`;
+        if (lines.every((l) => /^\s*[-*]/.test(l))) {
+          return renderList(lines, false);
         }
-        if (lines.every((l) => /^\d+\. /.test(l))) {
-          return `<ol>${lines
-            .map((l) => `<li>${l.replace(/^\d+\.\s*/, "").trim()}</li>`)
-            .join("")}</ol>`;
+        if (lines.every((l) => /^\s*\d+\./.test(l))) {
+          return renderList(lines, true);
         }
         return `<p>${block.trim()}</p>`;
       })
