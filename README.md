@@ -84,7 +84,6 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
   use relative paths (e.g., `../../index.html`) so the site can be served from
   any base URL.
 - `src/` – contains the game logic and assets:
-
   - `game.js`
   - `helpers/` – small utilities (for example `lazyPortrait.js` replaces the placeholder card portraits once they enter view)
   - `components/` – small DOM factories like `Button`, `ToggleSwitch`, `Card`, the `Modal` dialog, and `StatsPanel`
@@ -161,7 +160,7 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
 
 Product Requirements Documents live in `design/productRequirementsDocuments`.
 Add new Markdown files there and include the filename in the `FILES` array of
-`src/helpers/prdReaderPage.js`. Open `src/pages/prdReader.html` in your browser
+`src/helpers/prdReaderPage.js`. Open `src/pages/prdViewer.html` in your browser
 to browse the documents with next/previous navigation.
 
 ### CSS Organization
@@ -239,25 +238,20 @@ This project is built with HTML, CSS, and JavaScript, and hosted on GitHub Pages
 ### 🥋 The Rules:
 
 1. **You vs. Computer**
-
    - Each match starts with both players receiving **25 random cards** from a 99-card deck.
 
 2. **Start the Battle**
-
    - In each round, you and the computer each draw your top card.
 
 3. **Choose Your Stat**
-
    - You select one of the stats on your card (e.g. Power, Speed, Technique, etc.)
 
 4. **Compare Stats**
-
    - The chosen stat is compared with the computer’s card.
    - **Highest value wins the round**.
    - If both stats are equal, it’s a **draw** — no one scores.
 
 5. **Scoring**
-
    - Each round win gives you **1 point**.
    - The cards used in that round are **discarded** (not reused).
 
