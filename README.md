@@ -269,7 +269,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 - **CSS3**: For styling and layout.
 - **JavaScript (ES6)**: For game logic and interactivity.
 - **Vite**: For building and bundling the project.
-- **Marked**: Minimal parser used in the PRD reader that now supports nested lists and bold text.
+- **Marked**: Minimal parser used in the PRD reader that now supports nested lists, bold text and horizontal rules.
 - **GitHub Pages**: For hosting the live demo.
 
 ## Known Issues

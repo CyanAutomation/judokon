@@ -1,6 +1,7 @@
 export const marked = {
   /**
-   * Very small markdown parser supporting headings, bold text, paragraphs and lists.
+   * Very small markdown parser supporting headings, bold text paragraphs, lists
+   * and horizontal rules.
    *
    * @param {string} md - Markdown string.
    * @returns {string} HTML string.
@@ -53,6 +54,9 @@ export const marked = {
       .trim()
       .split(/\n\n+/)
       .map((block) => {
+        if (/^(-{3,}|\*{3,}|_{3,})$/.test(block.trim())) {
+          return "<hr/>";
+        }
         if (block.startsWith("# ")) {
           return `<h1>${renderInline(block.slice(2).trim())}</h1>`;
         }
