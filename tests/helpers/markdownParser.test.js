@@ -32,4 +32,10 @@ describe("marked.parse", () => {
     const html = marked.parse(md);
     expect(html).toBe("<h1>Title</h1><ul><li>a</li><li>b</li></ul>");
   });
+
+  it("parses bold text", () => {
+    const md = "**bold** text";
+    const html = marked.parse(md);
+    expect(html).toBe("<p><strong>bold</strong> text</p>");
+  });
 });
