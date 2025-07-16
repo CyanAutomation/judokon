@@ -16,6 +16,9 @@ export const marked = {
         if (block.startsWith("## ")) {
           return `<h2>${block.slice(3).trim()}</h2>`;
         }
+        if (block.startsWith("### ")) {
+          return `<h3>${block.slice(4).trim()}</h3>`;
+        }
         return `<p>${block.trim()}</p>`;
       })
       .join("");
