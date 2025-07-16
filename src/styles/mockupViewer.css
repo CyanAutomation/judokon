@@ -39,7 +39,7 @@
   padding: var(--space-md);
   color: var(--color-text-inverted);
   font-weight: bold;
-  font-size: 18px;
+  font-size: 24px;
   transition: 0.6s ease;
   border-radius: 0 3px 3px 0;
   user-select: none;
