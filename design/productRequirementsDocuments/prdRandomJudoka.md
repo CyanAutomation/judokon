@@ -83,7 +83,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 ### Design and UX Considerations
 
-#### Layout and Interaction
+### Layout and Interaction
 
 - **Main Screen Structure**:
   - **Card Display Area**: Centered large card placeholder with dynamic content.
@@ -97,7 +97,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
   - Minimum: 64px height × 300px width for easy tapping, especially for kids.
   - Style: Capsule shape using `--radius-pill` for consistent branding.
 
-#### Animation and Transitions
+### Animation and Transitions
 
 - **Card Reveal Animation**:
   - Slide-in from bottom or fade-in (duration: 300–500ms).
@@ -108,7 +108,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
   - Press: Slight scale-in (95% size) for ~100ms.
   - Disabled state: Lower opacity (50%), disable input if judoka list is empty or draw is in progress.
 
-#### Accessibility
+### Accessibility
 
 - Detect OS-level Reduced Motion; disable animations if active.
 - Provide manual animation toggle (default ON).
@@ -117,19 +117,19 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - Fallback card displays high-contrast “Oops! Try again” text if errors occur.
 - All buttons and states require clear text labels.
 
-#### Responsiveness
+### Responsiveness
 
 - **Mobile (<600px)**: card fills ~70% of viewport; draw button spans nearly full width.
 - **Tablet/Desktop (>600px)**: card ~40% of viewport; centered draw button with spacing.
 - **Landscape Support**: components reposition vertically or side-by-side.
 - Card container uses `min-height: 50vh` to keep the Draw button visible on small screens.
 
-#### Audio Feedback (Optional Enhancement)
+### Audio Feedback (Optional Enhancement)
 
 - Chime/swoosh sound <1 second, volume at 60% of system volume.
 - Mute option via toggle icon near the draw button (default: sound off).
 
-#### Visual Mockup Description
+### Visual Mockup Description
 
 - **Top Bar**: minimal header with “Random Judoka” title centered.
 - **Central Card Area**: large placeholder card with question mark icon on initial state.
