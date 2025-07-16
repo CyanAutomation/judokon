@@ -182,7 +182,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
   - Common → Blue (#337AFF)
   - Rare → Red (#FF3333)
   - Legendary → Gold (#FFD700)
-- **Stats Area:** Align stat labels and numbers in a grid with consistent spacing to reduce clutter.
+- **Stats Area:** The stats list uses a flex column layout to evenly distribute the stat rows while keeping labels and values aligned.
 - **Contrast & Fonts:**
   - Text must achieve ≥4.5:1 contrast ratio.
   - Use **Open Sans** for body text to match the UI design standards.
