@@ -168,6 +168,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 ### Layout & Design Notes
 
 - **Aspect Ratio:** Card must strictly maintain **2:3 ratio**, adjusting internal elements responsively.
+- **Safari ≤15 Fallback:** `.judoka-card` sets `height: calc(var(--card-width) * 1.5)` because these versions do not treat `aspect-ratio` as a definite height. `.card-top-bar` uses `calc(var(--card-width) * 0.14)` so the header stays the same height across browsers.
 - **Vertical Proportions:** With a card width of 300px (height 450px), allocate roughly 14% (63px) for the name and flag bar, 42% (189px) for the portrait, 34% (153px) for stats, and 10% (45px) for the signature move section.
 - Portrait images should fill the portrait area using `object-fit: cover` so no whitespace appears.
 - **Portrait Container:** `.card-portrait` now uses `width: 100%` and `height: 42%` so it matches its flex-basis and keeps the aspect ratio consistent.
