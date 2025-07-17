@@ -315,20 +315,22 @@ The card carousel uses modern CSS like `clamp()` for flexible sizing. Safari 15
 and older do not support `clamp()`, so cards fall back to a fixed `300px` width.
 Safari may expand flex items if `min-width` isn't explicitly set. Set
 `min-width: 0` on `.card-carousel` so horizontal scrolling works correctly.
-Safari 18 has a regression where flex items grow when scroll buttons are inline
-with the carousel. Apply `min-width: 0` to `.carousel-container` and position
-`.scroll-button` absolutely to keep the carousel inside the viewport.
-Another Safari quirk allows the placeholder `#carousel-container` element to
-expand based on its children, producing a page wider than the viewport. Assign
-`width: 100%`, `min-width: 0`, and `overflow: hidden` to `#carousel-container`
-to constrain the carousel on this browser.
-Mobile Safari supports smooth scrolling via
-`-webkit-overflow-scrolling: touch`.
-Safari may expand grid columns when the container width is undefined.
-Setting `width: 100%` on both `.kodokan-grid` and `.kodokan-screen`
-keeps the carousel from stretching beyond the viewport.
-Safari counts scrollbars in the `vw` unit, which can lead to unexpected layout behavior. For example, a wrapper with `min-width: 100vw` may become wider than the page and cause horizontal scrolling. To prevent this, set `width: 100%` on the body and navbars. Optionally, use `overflow-x: hidden` to ensure the layout stays within the viewport.
-Mobile Safari 18.5 may also add vertical scroll if fixed headers and footers use `vh` units. The navbar height CSS variables now use `dvh` to match the dynamic viewport height and avoid extra scrolling. Pages with fixed headers or footers should set container heights to `calc(100dvh - var(--header-height) - var(--footer-height))` (or equivalent) so content isn't hidden when the viewport shrinks. The `.home-screen` container implements this rule.
+
+- Safari ≤15 doesn't treat `aspect-ratio` as a definite height. `.judoka-card` now sets `height: calc(var(--card-width) * 1.5)` with `.card-top-bar` using `calc(var(--card-width) * 0.14)` so the header height remains consistent.
+  Safari 18 has a regression where flex items grow when scroll buttons are inline
+  with the carousel. Apply `min-width: 0` to `.carousel-container` and position
+  `.scroll-button` absolutely to keep the carousel inside the viewport.
+  Another Safari quirk allows the placeholder `#carousel-container` element to
+  expand based on its children, producing a page wider than the viewport. Assign
+  `width: 100%`, `min-width: 0`, and `overflow: hidden` to `#carousel-container`
+  to constrain the carousel on this browser.
+  Mobile Safari supports smooth scrolling via
+  `-webkit-overflow-scrolling: touch`.
+  Safari may expand grid columns when the container width is undefined.
+  Setting `width: 100%` on both `.kodokan-grid` and `.kodokan-screen`
+  keeps the carousel from stretching beyond the viewport.
+  Safari counts scrollbars in the `vw` unit, which can lead to unexpected layout behavior. For example, a wrapper with `min-width: 100vw` may become wider than the page and cause horizontal scrolling. To prevent this, set `width: 100%` on the body and navbars. Optionally, use `overflow-x: hidden` to ensure the layout stays within the viewport.
+  Mobile Safari 18.5 may also add vertical scroll if fixed headers and footers use `vh` units. The navbar height CSS variables now use `dvh` to match the dynamic viewport height and avoid extra scrolling. Pages with fixed headers or footers should set container heights to `calc(100dvh - var(--header-height) - var(--footer-height))` (or equivalent) so content isn't hidden when the viewport shrinks. The `.home-screen` container implements this rule.
 
 Safari 18.5 positions `.signature-move-container` text at the bottom edge unless the container uses standard flex alignment. The container now applies `line-height: max(10%, var(--touch-target-size))` along with `align-items: center` and `justify-content: center`. Setting `width: 100%` on the child spans prevents stretching so the label and value remain vertically centered.
 
