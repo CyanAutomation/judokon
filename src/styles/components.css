@@ -181,7 +181,9 @@ button .ripple {
     maintaining the fixed 300px size on larger displays.
     This prevents the card text from overflowing on mobile Safari.
   */
-  width: clamp(200px, 70vw, 300px);
+  --card-width: clamp(200px, 70vw, 300px);
+  width: var(--card-width);
+  height: calc(var(--card-width) * 1.5);
   aspect-ratio: 2 / 3;
   border: 13px solid var(--card-border-color);
   border-radius: var(--radius-lg); /* Updated token */
