@@ -279,11 +279,11 @@ button .ripple {
   justify-content: space-around;
   display: inline-flex;
   align-items: center;
-  padding: var(--space-medium) var(--space-small); /* Updated tokens */
+  padding: var(--space-medium) var(--space-small);
   flex-direction: row;
   /* Maintain ~14% of card height accounting for padding */
-  flex: 0 0 calc(14% - (var(--space-small) * 2));
-  height: calc(14% - (var(--space-small) * 2));
+  flex: 0 0 calc(14% - (var(--space-medium) * 2));
+  height: calc(14% - (var(--space-medium) * 2));
   box-sizing: border-box;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.12);
 }
@@ -450,7 +450,6 @@ button .ripple {
   width: 100%;
   /* Maintain ~10% (~45px) height as specified in the PRD */
   height: max(10%, var(--touch-target-size));
-  line-height: max(10%, var(--touch-target-size));
   font-weight: bold;
   /* Ensure visible at small screen sizes */
   flex: 0 0 max(10%, var(--touch-target-size));
@@ -463,7 +462,7 @@ button .ripple {
 .signature-move-label,
 .signature-move-value {
   display: flex;
-  width: 100%;
+  flex: 1 1 auto;
   justify-content: center;
   border-radius: 0;
   white-space: nowrap;
