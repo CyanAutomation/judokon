@@ -176,7 +176,12 @@ button .ripple {
 
 .judoka-card {
   position: relative;
-  width: clamp(200px, 40vw, 300px);
+  /*
+    Fill roughly 70% of the viewport on small screens while
+    maintaining the fixed 300px size on larger displays.
+    This prevents the card text from overflowing on mobile Safari.
+  */
+  width: clamp(200px, 70vw, 300px);
   aspect-ratio: 2 / 3;
   border: 13px solid var(--card-border-color);
   border-radius: var(--radius-lg); /* Updated token */
