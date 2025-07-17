@@ -319,6 +319,11 @@ Safari 18.5 positions `.signature-move-container` text at the bottom edge unless
 
 Safari 18.5 sometimes shrinks the random judoka card, causing text overlap. The width rule now uses `clamp(200px, 70vw, 300px)` so cards occupy about 70% of the viewport on mobile.
 
+Chrome may show a small gap below the stats panel when the combined height of
+card sections is less than 100%. Ensure `.card-top-bar`, `.card-portrait`,
+`.card-stats`, and `.signature-move-container` together fill the card height to
+avoid this issue.
+
 The bottom navbar uses `env(safe-area-inset-bottom)` with a `constant()` fallback to add extra padding and height. This prevents it from overlapping the iOS home indicator and keeps content visible.
 
 Layout containers should include a `vh` fallback declared before the `dvh` rule so browsers without dynamic viewport support still size elements correctly.
