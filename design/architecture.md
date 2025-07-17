@@ -32,7 +32,7 @@ Documents. The Markdown files live in
 parses it through the **Marked** library (supporting headings, paragraphs, bold text, nested lists, tables, and horizontal rules) and injects the HTML into the
 `#prd-content` container. Buttons marked with `data-nav="prev"` or `data-nav="next"`
 appear in both the header and footer. Arrow keys and swipe gestures cycle through
-the loaded documents.
+the loaded documents. A Home button in the header returns to `index.html`.
 
 ## components/
 
