@@ -317,7 +317,7 @@ Mobile Safari 18.5 may also add vertical scroll if fixed headers and footers use
 
 Safari 18.5 positions `.signature-move-container` text at the bottom edge unless the container uses standard flex alignment. Set `display: flex` with `align-items: center` so the label and value remain vertically centered.
 
-Safari 18.5 sometimes shrinks the random judoka card, causing text overlap. The width rule now uses `clamp(200px, 70vw, 300px)` so cards occupy about 70% of the viewport on mobile.
+Safari 18.5 sometimes shrinks judoka cards, causing text overlap. The width rule now uses `clamp(200px, 70vw, 300px)` so cards occupy about 70% of the viewport on mobile. This applies to both the random card view and the browse carousel.
 
 The bottom navbar uses `env(safe-area-inset-bottom)` with a `constant()` fallback to add extra padding and height. This prevents it from overlapping the iOS home indicator and keeps content visible.
 
