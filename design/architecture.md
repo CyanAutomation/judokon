@@ -30,8 +30,9 @@ initialize page-specific behavior.
 Documents. The Markdown files live in
 `design/productRequirementsDocuments`. The helper fetches each file,
 parses it through the **Marked** library (supporting headings, paragraphs, bold text, nested lists, tables, and horizontal rules) and injects the HTML into the
-`#prd-content` container. Next/previous buttons, arrow keys and swipe
-gestures cycle through the loaded documents.
+`#prd-content` container. Buttons marked with `data-nav="prev"` or `data-nav="next"`
+appear in both the header and footer. Arrow keys and swipe gestures cycle through
+the loaded documents.
 
 ## components/
 

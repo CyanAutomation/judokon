@@ -15,8 +15,10 @@ describe("prdReaderPage", () => {
 
     document.body.innerHTML = `
       <div id="prd-content"></div>
-      <button id="prev-doc">Prev</button>
-      <button id="next-doc">Next</button>
+      <button data-nav="prev">Prev</button>
+      <button data-nav="next">Next</button>
+      <button data-nav="prev">Prev bottom</button>
+      <button data-nav="next">Next bottom</button>
     `;
 
     globalThis.SKIP_PRD_AUTO_INIT = true;
@@ -25,15 +27,15 @@ describe("prdReaderPage", () => {
     await setupPrdReaderPage(docs, marked);
 
     const container = document.getElementById("prd-content");
-    const nextBtn = document.getElementById("next-doc");
-    const prevBtn = document.getElementById("prev-doc");
+    const nextBtns = document.querySelectorAll('[data-nav="next"]');
+    const prevBtns = document.querySelectorAll('[data-nav="prev"]');
 
     expect(container.innerHTML).toContain("First doc");
-    nextBtn.click();
+    nextBtns[0].click();
     expect(container.innerHTML).toContain("Second doc");
-    nextBtn.click();
+    nextBtns[1].click();
     expect(container.innerHTML).toContain("First doc");
-    prevBtn.click();
+    prevBtns[1].click();
     expect(container.innerHTML).toContain("Second doc");
   });
 });
