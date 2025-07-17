@@ -42,6 +42,10 @@ If a UI change is intended, update baseline screenshots with:
 npx playwright test --update-snapshots
 ```
 
+Playwright uses a **multi-project** setup, so the screenshot suite runs once per
+configured browser project (e.g., Chromium, Firefox). Each project writes its
+own snapshot files.
+
 Do **not** commit files under `playwright/*-snapshots`. Baseline screenshots are
 updated automatically by `.github/workflows/playwright-baseline.yml`. If Playwright tests fail because visuals changed, mention this in your pull request but
 avoid committing new snapshot images.
