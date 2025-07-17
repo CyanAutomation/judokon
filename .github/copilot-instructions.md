@@ -45,6 +45,9 @@ npm run test:screenshot              # run visual regression tests
 npx playwright test --update-snapshots  # update baseline screenshots when needed
 ```
 
+Playwright uses multiple browser projects. The screenshot suite runs separately
+for each project and stores snapshots under their respective folders.
+
 - **Do not commit files under `playwright/*-snapshots`.** Baseline screenshots
   are updated automatically by `.github/workflows/playwright-baseline.yml`.
   If Playwright tests fail because visuals changed, note the failure in the pull

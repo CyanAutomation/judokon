@@ -69,6 +69,14 @@ Run optional Playwright-based screenshot tests with:
 npm run test:screenshot
 ```
 
+The screenshot suite now runs once for **each browser project** configured in
+`playwright.config.js`. Snapshot images are saved under
+`playwright/<spec>.spec.js-snapshots/<project>/`.
+
+Remember **not** to commit files in `playwright/*-snapshots` when screenshots
+change. Use `npx playwright test --update-snapshots` to regenerate the baseline
+images locally.
+
 Set `SKIP_SCREENSHOTS=true` to skip the screenshot suite if you only want to run
 the other Playwright tests:
 
