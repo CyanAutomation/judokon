@@ -31,7 +31,7 @@ Documents. The Markdown files live in
 `design/productRequirementsDocuments`. The helper fetches each file,
 parses it through the **Marked** library (supporting headings, paragraphs, bold text, nested lists, tables, and horizontal rules) and injects the HTML into the
 `#prd-content` container. Next/previous buttons, arrow keys and swipe
-gestures cycle through the loaded documents.
+gestures cycle through the loaded documents. A Home button in the header returns to `index.html`.
 
 ## components/
 

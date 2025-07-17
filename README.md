@@ -163,7 +163,7 @@ Add new Markdown files there and include the filename in the `FILES` array of
 to browse the documents with next/previous navigation. The page now imports
 `base.css` and `layout.css` so wide elements stay wrapped inside the viewport.
 Navigation buttons remain left-aligned with a gap so they don't interfere with
-the centered content.
+the centered content. Users can return to the main menu via the Home button.
 
 ### CSS Organization
 
@@ -219,7 +219,7 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
   `aria-label` descriptions
 - Country picker panel appears below the fixed header for unobstructed viewing
 - Scroll buttons disable when the carousel reaches either end
-- Mockup viewer page with next/back controls for design screenshots
+- Mockup viewer page with next/back controls for design screenshots (includes a Home link)
 
 ## About JU-DO-KON!
 
