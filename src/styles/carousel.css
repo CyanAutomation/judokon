@@ -19,9 +19,9 @@
 .card-carousel .judoka-card {
   /* Use clamp to set a responsive width for judoka cards:
      - Minimum width: 200px ensures cards are not too small on very narrow screens.
-     - Preferred width: 40vw adapts to 40% of the viewport width for medium screens.
+     - Preferred width: 70vw adapts to 70% of the viewport width on mobile Safari.
      - Maximum width: 300px matches the fixed width defined on line 24 for larger screens. */
-  flex: 0 0 clamp(200px, 40vw, 300px);
+  flex: 0 0 clamp(200px, 70vw, 300px);
 }
 
 .judoka-card {
