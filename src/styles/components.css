@@ -281,9 +281,8 @@ button .ripple {
   align-items: center;
   padding: var(--space-medium) var(--space-small);
   flex-direction: row;
-  /* Maintain ~14% of card height accounting for padding */
-  flex: 0 0 calc(14% - (var(--space-medium) * 2));
-  height: calc(14% - (var(--space-medium) * 2));
+  flex: 0 0 14%;
+  height: 14%;
   box-sizing: border-box;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.12);
 }
