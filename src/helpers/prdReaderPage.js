@@ -9,6 +9,7 @@ import { marked } from "../vendor/marked.esm.js";
  * 2. Convert each file to HTML with `marked.parse`.
  * 3. Display the first document inside the content container.
  * 4. Provide next/previous navigation with wrap-around.
+ *    - Attach click handlers to all navigation buttons.
  * 5. Support arrow key and swipe gestures for navigation.
  *
  * @param {Record<string, string>} [docsMap] Optional preloaded docs for testing.
@@ -59,8 +60,8 @@ export async function setupPrdReaderPage(docsMap, markedLib) {
     }
   }
   const container = document.getElementById("prd-content");
-  const nextBtn = document.getElementById("next-doc");
-  const prevBtn = document.getElementById("prev-doc");
+  const nextButtons = document.querySelectorAll('[data-nav="next"]');
+  const prevButtons = document.querySelectorAll('[data-nav="prev"]');
 
   if (!container || documents.length === 0) return;
 
@@ -80,8 +81,8 @@ export async function setupPrdReaderPage(docsMap, markedLib) {
     render();
   }
 
-  nextBtn?.addEventListener("click", showNext);
-  prevBtn?.addEventListener("click", showPrev);
+  nextButtons.forEach((btn) => btn.addEventListener("click", showNext));
+  prevButtons.forEach((btn) => btn.addEventListener("click", showPrev));
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "ArrowRight") showNext();
