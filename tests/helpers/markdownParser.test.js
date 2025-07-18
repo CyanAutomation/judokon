@@ -21,6 +21,12 @@ describe("marked.parse", () => {
     expect(html).toBe("<ul><li>a<ul><li>b</li></ul></li></ul>");
   });
 
+  it("parses ordered lists with bullet sub-items", () => {
+    const md = "1. alpha\n  - beta\n  - gamma\n2. delta";
+    const html = marked.parse(md);
+    expect(html).toBe("<ol><li>alpha<ul><li>beta</li><li>gamma</li></ul></li><li>delta</li></ol>");
+  });
+
   it("handles checkbox lists", () => {
     const md = "- [ ] task one\n- [x] task two";
     const html = marked.parse(md);

@@ -11,41 +11,43 @@ export const marked = {
       return text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
     }
 
-    function renderList(lines, ordered) {
+    function renderList(lines) {
       let html = "";
       const stack = [];
-      let prev = 0;
+
+      const itemRegex = /^(\s*)([-*]|\d+\.)\s+(?:\[[xX ]\]\s+)?(.*)$/;
 
       lines.forEach((line) => {
-        const regex = ordered ? /^(\s*)\d+\.\s+(.*)$/ : /^(\s*)[-*]\s+(?:\[[xX ]\]\s+)?(.*)$/;
-        const match = line.match(regex);
+        const match = line.match(itemRegex);
         if (!match) return;
-        const [, indent, text] = match;
+        const [, indent, marker, text] = match;
         const level = Math.floor(indent.length / 2);
-        const type = ordered ? "ol" : "ul";
+        const type = /\d+\./.test(marker) ? "ol" : "ul";
 
-        if (stack.length === 0) {
-          html += `<${type}><li>${renderInline(text)}`;
-          stack.push(type);
-        } else if (level > prev) {
-          html += `<${type}><li>${renderInline(text)}`;
-          stack.push(type);
-        } else if (level === prev) {
-          html += `</li><li>${renderInline(text)}`;
-        } else {
-          while (prev > level) {
-            const t = stack.pop();
+        while (stack.length && level < stack[stack.length - 1].level) {
+          const { type: t } = stack.pop();
+          html += `</li></${t}>`;
+        }
+
+        if (
+          stack.length === 0 ||
+          level > stack[stack.length - 1].level ||
+          type !== stack[stack.length - 1].type
+        ) {
+          if (stack.length && level === stack[stack.length - 1].level) {
+            const { type: t } = stack.pop();
             html += `</li></${t}>`;
-            prev--;
           }
+          html += `<${type}><li>${renderInline(text)}`;
+          stack.push({ type, level });
+        } else {
           html += `</li><li>${renderInline(text)}`;
         }
-        prev = level;
       });
 
       while (stack.length) {
-        const t = stack.pop();
-        html += `</li></${t}>`;
+        const { type } = stack.pop();
+        html += `</li></${type}>`;
       }
       return html;
     }
@@ -100,11 +102,9 @@ export const marked = {
         ) {
           return renderTable(lines);
         }
-        if (lines.every((l) => /^\s*[-*]\s+(?:\[[xX ]\]\s+)?/.test(l))) {
-          return renderList(lines, false);
-        }
-        if (lines.every((l) => /^\s*\d+\.\s+/.test(l))) {
-          return renderList(lines, true);
+        const listPattern = /^\s*(?:[-*]|\d+\.)\s+(?:\[[xX ]\]\s+)?/;
+        if (lines.every((l) => listPattern.test(l))) {
+          return renderList(lines);
         }
         return `<p>${renderInline(block.trim())}</p>`;
       })
