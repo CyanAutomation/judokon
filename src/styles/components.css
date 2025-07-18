@@ -192,9 +192,12 @@ button .ripple {
   background-color: var(--card-bg-color);
   box-shadow: var(--shadow-base); /* Updated token */
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+  display: grid;
+  grid-template-rows:
+    calc(var(--card-width) * 0.14)
+    42%
+    38.67%
+    max(10%, var(--touch-target-size));
   transition:
     box-shadow var(--transition-fast),
     transform 0.1s ease-in-out; /* Updated token */
@@ -397,9 +400,9 @@ button .ripple {
   align-items: stretch;
   font-size: var(--font-medium);
   flex-direction: column;
-  /* Stats area ~34% of card height accounting for padding */
-  height: 34%;
-  flex: 0 0 34%;
+  /* Stats area ~38.67% of card height accounting for padding */
+  height: 38.67%;
+  flex: 0 0 38.67%;
 }
 
 .card-stats ul {
@@ -460,7 +463,6 @@ button .ripple {
   flex: 0 0 max(10%, var(--touch-target-size));
   box-sizing: border-box;
   border-top: 1px solid var(--color-text-inverted, var(--color-secondary));
-  margin-top: auto;
   justify-content: center;
 }
 
