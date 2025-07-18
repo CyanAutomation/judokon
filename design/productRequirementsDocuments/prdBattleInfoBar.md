@@ -2,7 +2,7 @@
 
 ## Description
 
-In battle game modes (e.g. Classic Battle), players currently receive no clear visual feedback between or after rounds. This leaves them uncertain about match state, leading to confusion, reduced immersion, and increased risk of game abandonment. Players frequently feel "lost" due to a lack of timely updates about round outcomes, next steps, or overall progress.
+In battle game modes (e.g. Classic Battle), players have a real need to  receive clear visual feedback between or after rounds. Without this info, it will leave users uncertain about match state, leading to confusion, reduced immersion, and increased risk of game abandonment. Players could feel "lost" due to a lack of timely updates about round outcomes, next steps, or overall progress.
 
 ## Goals
 
