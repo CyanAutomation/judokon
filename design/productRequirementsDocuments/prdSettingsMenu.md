@@ -148,7 +148,7 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 
   - Tab order should proceed top-to-bottom: sound → nav map → motion → display mode → game mode toggles.
   - Users can navigate and activate each control without needing a mouse.
-  - **Section layout:** Both the general settings and game mode toggle list use the `.game-mode-toggle-container` grid for consistent spacing.
+  - **Section layout:** The page begins with an `<h1>` heading followed by two `<fieldset>` sections—**General Settings** and **Game Modes**—each using the `.game-mode-toggle-container` grid. The second fieldset keeps `id="game-mode-toggle-container"` so scripts can find it.
 
   | **Settings Menu Mockup 1**                                         | **Settings Menu Mockup 2**                                         | **Settings Menu Mockup 2**                                         |
   | ------------------------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------ |
@@ -166,6 +166,8 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
 ---
 
 ## Wireframe
+
+The page begins with an `<h1>` heading labeled "Settings". Two `<fieldset>` sections follow—one for **General Settings** and one for **Game Modes**.
 
 ───────────────────────────────  
 | SETTINGS |  

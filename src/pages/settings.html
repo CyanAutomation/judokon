@@ -39,12 +39,13 @@
       </header>
 
       <main class="container" role="main">
-        <form id="settings-form" class="game-mode-toggle-container settings-form">
+        <h1>Settings</h1>
+        <form id="settings-form" class="settings-form">
           <fieldset
             id="general-settings-container"
             class="game-mode-toggle-container settings-form"
           >
-            <legend class="visually-hidden">Game Settings</legend>
+            <legend>General Settings</legend>
             <div class="settings-item">
               <label for="sound-toggle" class="switch">
                 <input type="checkbox" id="sound-toggle" name="sound" aria-label="Sound" />
@@ -85,15 +86,13 @@
               </select>
             </div>
           </fieldset>
-        </form>
-        <form>
-          <section
+          <fieldset
             id="game-mode-toggle-container"
             class="game-mode-toggle-container settings-form"
             aria-label="Game Mode Selector"
           >
-            <span>Game Modes</span>
-          </section>
+            <legend>Game Modes</legend>
+          </fieldset>
         </form>
       </main>
 
