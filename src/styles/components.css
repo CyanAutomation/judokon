@@ -853,8 +853,8 @@ button .ripple {
 /* Reset fieldset styles inside settings forms */
 .settings-form fieldset {
   border: none;
-  margin: 3rem;
-  padding: 0;
+  margin: 0;
+  padding: 10px;
 }
 
 /* Settings form controls */
