@@ -194,9 +194,7 @@ Key Details:
   - [ ] 4.2 Implement progressive flag loading on slow networks.
 
 - [ ] 5.0 Ensure Accessibility and Compliance
-  - [ ] 5.1 Add alt-text for all flag icons based on country names and apply
-        `aria-label` text like "Filter by {country}" to each flag button for
-        screen readers.
+  - [ ] 5.1 Add alt-text for all flag icons based on country names and apply `aria-label` text like "Filter by {country}" to each flag button for screen readers.
   - [ ] 5.2 Ensure color contrast ratios meet WCAG 2.1 AA standards.
   - [ ] 5.3 Enforce minimum tap target size (44x44px) for touch devices (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
   - [ ] 5.4 Ensure flags are displayed alphabetically.
