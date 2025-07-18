@@ -341,6 +341,10 @@ card sections is less than 100%. Ensure `.card-top-bar`, `.card-portrait`,
 `.card-stats`, and `.signature-move-container` together fill the card height to
 avoid this issue.
 
+The card layout now uses CSS grid rows (`calc(var(--card-width) * 0.14)`,
+`42%`, `38.67%`, `max(10%, var(--touch-target-size))`) so the stats panel and
+signature move band stack directly against each other in Safari and Chrome.
+
 The bottom navbar uses `env(safe-area-inset-bottom)` with a `constant()` fallback to add extra padding and height. This prevents it from overlapping the iOS home indicator and keeps content visible.
 
 Layout containers should include a `vh` fallback declared before the `dvh` rule so browsers without dynamic viewport support still size elements correctly.
