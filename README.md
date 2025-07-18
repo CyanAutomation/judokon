@@ -342,7 +342,7 @@ signature move band stack directly against each other in Safari and Chrome.
 The bottom navbar uses `env(safe-area-inset-bottom)` with a `constant()` fallback to add extra padding and height. This prevents it from overlapping the iOS home indicator and keeps content visible.
 
 Layout containers should include a `vh` fallback declared before the `dvh` rule so browsers without dynamic viewport support still size elements correctly.
-The settings screen previously had its first controls hidden behind the header; wrapping the page in this `.home-screen` container resolves the issue. The classic battle page now also uses this wrapper so the judoka cards appear fully below the header.
+The settings screen previously had its first controls hidden behind the header; wrapping the page in this `.home-screen` container resolves the issue. The page now starts with an `<h1>` heading and two `<fieldset>` sections labeled **General Settings** and **Game Modes**. The classic battle page also uses this wrapper so the judoka cards appear fully below the header.
 
 ## Future Plans
 
