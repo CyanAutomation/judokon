@@ -178,6 +178,8 @@ The design must be attractive and **minimize cognitive load**—presenting stats
   - Stats text uses `--font-medium` and line-height `1.2` to remain legible without increasing panel height.
 - **Signature Move Band:** `height: max(10%, var(--touch-target-size))` keeps the 44px tap target while maintaining the card's 2:3 ratio.
 - The label and value are centered vertically within that band.
+- `.judoka-card` overrides `--touch-target-size` to `44px` so the band stays
+  45px tall on a 300×450 card without leaving gaps above or below it.
 - **Padding Adjustments:** Section percentages already account for vertical padding because `.judoka-card` uses `box-sizing: border-box`. No `calc()` subtraction is necessary.
 - **Rarity Border Colors:**
   - Common → Blue (#337AFF)

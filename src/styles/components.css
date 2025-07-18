@@ -182,6 +182,8 @@ button .ripple {
     This prevents the card text from overflowing on mobile Safari.
   */
   --card-width: clamp(200px, 70vw, 300px);
+  /* Override the global touch target to maintain 10% proportions */
+  --touch-target-size: 44px;
   width: var(--card-width);
   height: calc(var(--card-width) * 1.5);
   aspect-ratio: 2 / 3;
