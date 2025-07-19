@@ -857,6 +857,17 @@ button .ripple {
   padding: 10px;
 }
 
+.settings-form {
+  padding: var(--space-lg);
+}
+
+.settings-form legend {
+  font-family: "Russo One", sans-serif;
+  font-size: 32px;
+  font-weight: bold;
+  margin-block-end: var(--space-md);
+}
+
 /* Settings form controls */
 .settings-form label {
   display: flex;
