@@ -1,0 +1,99 @@
+/**
+ * Create a battle info bar showing round messages, countdown timer and score.
+ *
+ * @pseudocode
+ * 1. Create a container `div` with class `battle-info-bar`.
+ * 2. Inside add three `<p>` elements:
+ *    - `#round-message` with `aria-live="polite"` for result text.
+ *    - `#next-round-timer` with `aria-live="polite"` for countdown updates.
+ *    - `#score-display` with `aria-live="off"` for the match score.
+ * 3. Store references to these elements for later updates.
+ * 4. Return the container element.
+ *
+ * @returns {HTMLDivElement} The info bar element.
+ */
+let messageEl;
+let timerEl;
+let scoreEl;
+let intervalId = null;
+
+export function createInfoBar() {
+  const container = document.createElement("div");
+  container.className = "battle-info-bar";
+
+  messageEl = document.createElement("p");
+  messageEl.id = "round-message";
+  messageEl.setAttribute("aria-live", "polite");
+
+  timerEl = document.createElement("p");
+  timerEl.id = "next-round-timer";
+  timerEl.setAttribute("aria-live", "polite");
+
+  scoreEl = document.createElement("p");
+  scoreEl.id = "score-display";
+  scoreEl.setAttribute("aria-live", "off");
+
+  container.append(messageEl, timerEl, scoreEl);
+  return container;
+}
+
+/**
+ * Update the round message text.
+ *
+ * @pseudocode
+ * 1. When a message element exists, set its text content to the provided value.
+ *
+ * @param {string} text - Message to display.
+ * @returns {void}
+ */
+export function showMessage(text) {
+  if (messageEl) {
+    messageEl.textContent = text;
+  }
+}
+
+/**
+ * Start a countdown timer that updates once per second.
+ *
+ * @pseudocode
+ * 1. Clear any existing countdown interval.
+ * 2. Display the starting seconds in the timer element.
+ * 3. Every second decrement the remaining value and update the element.
+ * 4. When the value reaches zero, stop the interval and invoke `onFinish`.
+ *
+ * @param {number} seconds - Seconds to count down from.
+ * @param {Function} [onFinish] - Optional callback when countdown ends.
+ * @returns {void}
+ */
+export function startCountdown(seconds, onFinish) {
+  if (!timerEl) return;
+  clearInterval(intervalId);
+  timerEl.textContent = String(seconds);
+  intervalId = setInterval(() => {
+    seconds -= 1;
+    if (seconds <= 0) {
+      clearInterval(intervalId);
+      timerEl.textContent = "0";
+      if (typeof onFinish === "function") onFinish();
+    } else {
+      timerEl.textContent = String(seconds);
+    }
+  }, 1000);
+}
+
+/**
+ * Display the current match score.
+ *
+ * @pseudocode
+ * 1. Format the score string with player and computer values.
+ * 2. Update the score element when present.
+ *
+ * @param {number} playerScore - Player's score.
+ * @param {number} computerScore - Computer's score.
+ * @returns {void}
+ */
+export function updateScore(playerScore, computerScore) {
+  if (scoreEl) {
+    scoreEl.textContent = `You: ${playerScore} Computer: ${computerScore}`;
+  }
+}
