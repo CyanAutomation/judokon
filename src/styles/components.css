@@ -467,14 +467,15 @@ button .ripple {
   width: 100%;
   /* Maintain ~10% (~45px) height as specified in the PRD */
   /* height: max(10%, var(--touch-target-size)); */
-  line-height: max(10%, var(--touch-target-size));
+  line-height: max(15%, var(--touch-target-size));
   font-weight: bold;
   /* Ensure visible at small screen sizes */
   flex: 0 0 20%;
   box-sizing: border-box;
   border-top: 1px solid var(--color-text-inverted, var(--color-secondary));
   justify-content: center;
-  border: 2px solid var(--card-stats-bg);
+  /* border: 2px solid var(--card-stats-bg); */
+  border: 2px solid var(--card-signature-move-bg);  
 }
 
 .signature-move-label,
@@ -500,7 +501,7 @@ button .ripple {
 .signature-move-value {
   background-color: var(--card-signature-move-bg);
   color: #fed843;
-  border: 1px solid var(--card-signature-move-bg);
+  border: 1px solid white;
 }
 
 .card-profile .profile-link {
