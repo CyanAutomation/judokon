@@ -86,7 +86,7 @@ export const marked = {
           return "<br/><hr/><br/>";
         }
         if (block.startsWith("# ")) {
-          return `<h2>${renderInline(block.slice(2).trim())}</h2>`;
+          return `<br/><h2>${renderInline(block.slice(2).trim())}</h2>`;
         }
         if (block.startsWith("## ")) {
           return `<h3>${renderInline(block.slice(3).trim())}</h3>`;
