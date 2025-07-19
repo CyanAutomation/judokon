@@ -83,7 +83,7 @@ export const marked = {
       .split(/\n\n+/)
       .map((block) => {
         if (/^(-{3,}|\*{3,}|_{3,})$/.test(block.trim())) {
-          return "<hr/><br/>";
+          return "<br/><hr/><br/>";
         }
         if (block.startsWith("# ")) {
           return `<h1>${renderInline(block.slice(2).trim())}</h1>`;
