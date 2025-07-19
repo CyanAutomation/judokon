@@ -187,17 +187,20 @@ button .ripple {
   width: var(--card-width);
   height: calc(var(--card-width) * 1.5);
   aspect-ratio: 2 / 3;
-  border: 13px solid var(--card-border-color);
+  border: 12px solid var(--card-border-color);
   border-radius: var(--radius-lg); /* Updated token */
   background-color: var(--card-bg-color);
   box-shadow: var(--shadow-base); /* Updated token */
   overflow: hidden;
   display: grid;
   grid-template-rows:
-    calc(var(--card-width) * 0.14)
-    42%
-    38.67%
-    max(10%, var(--touch-target-size));
+    calc(var(--card-width) * 0.2)
+    /* 41% */
+    calc(var(--card-width) * 0.6)
+    /* 37% */
+    calc(var(--card-width) * 0.5)
+    /* max(10%, var(--touch-target-size)); */
+    auto;
   transition:
     box-shadow var(--transition-fast),
     transform 0.1s ease-in-out; /* Updated token */
@@ -288,11 +291,12 @@ button .ripple {
   align-items: center;
   padding: var(--space-medium) var(--space-small);
   flex-direction: row;
-  flex: 0 0 calc(var(--card-width) * 0.14);
-  height: calc(var(--card-width) * 0.14);
+  flex: 0 0 calc(var(--card-width) * 0.2);
+  height: calc(var(--card-width) * 0.2);
   min-height: var(--touch-target-size, 44px);
   box-sizing: border-box;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.12);
+    /* border: 2px solid red; */
 }
 
 .card-name {
@@ -350,10 +354,11 @@ button .ripple {
   justify-content: center;
   align-items: flex-start;
   width: 100%;
-  height: 42%;
+  /* height: 42%; */
   flex: 0 0 42%;
   overflow: hidden;
   margin-bottom: 0;
+    /* border: 2px solid red; */
   background: linear-gradient(
     to bottom,
     var(--card-portrait-gradient-start),
@@ -401,8 +406,10 @@ button .ripple {
   font-size: var(--font-medium);
   flex-direction: column;
   /* Stats area ~38.67% of card height accounting for padding */
-  height: 38.67%;
+  /* height: 38.67%; */
   flex: 0 0 38.67%;
+  /* flex: 0 0 40%; */
+  /* border: 2px solid red; */
 }
 
 .card-stats ul {
@@ -414,11 +421,12 @@ button .ripple {
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
+    /* border: 2px solid red; */
 }
 
 .card-stats li {
   margin: 0;
-  padding: 3px min(1px, 0.6vh);
+  padding: 4px min(1px, 0.6vh);
   border-top: 1px solid var(--color-text-inverted, var(--color-secondary));
   font-family: "Open Sans", sans-serif;
   font-size: var(--font-medium);
@@ -427,18 +435,20 @@ button .ripple {
 }
 
 .card-stats li:first-child {
-  border-top: 0px;
+  border-top: 0;
 }
 
 .card-stats li:last-child {
-  /* border-bottom: 1px solid var(--card-border-color, var(--color-secondary)); */
+  /* border-bottom: 1px solid red; */
   margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 .card-stats .stat {
   display: flex;
   justify-content: space-around;
   margin-bottom: 0;
+    /* border-bottom: 1px solid red; */
 }
 
 .card-stats .stat strong {
@@ -456,14 +466,15 @@ button .ripple {
   flex-direction: row;
   width: 100%;
   /* Maintain ~10% (~45px) height as specified in the PRD */
-  height: max(10%, var(--touch-target-size));
+  /* height: max(10%, var(--touch-target-size)); */
   line-height: max(10%, var(--touch-target-size));
   font-weight: bold;
   /* Ensure visible at small screen sizes */
-  flex: 0 0 max(10%, var(--touch-target-size));
+  flex: 0 0 20%;
   box-sizing: border-box;
   border-top: 1px solid var(--color-text-inverted, var(--color-secondary));
   justify-content: center;
+  border: 2px solid var(--card-stats-bg);
 }
 
 .signature-move-label,
