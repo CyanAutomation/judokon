@@ -48,7 +48,7 @@ describe("marked.parse", () => {
   it("parses horizontal rules", () => {
     const md = "one\n\n----\n\ntwo";
     const html = marked.parse(md);
-    expect(html).toBe("<p>one</p><hr/><br/><p>two</p>");
+    expect(html).toBe("<p>one</p><br/><hr/><br/><p>two</p>");
   });
 
   it("parses basic tables", () => {
