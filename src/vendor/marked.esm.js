@@ -86,13 +86,13 @@ export const marked = {
           return "<br/><hr/><br/>";
         }
         if (block.startsWith("# ")) {
-          return `<h1>${renderInline(block.slice(2).trim())}</h1>`;
+          return `<h2>${renderInline(block.slice(2).trim())}</h2>`;
         }
         if (block.startsWith("## ")) {
-          return `<h2>${renderInline(block.slice(3).trim())}</h2>`;
+          return `<h3>${renderInline(block.slice(3).trim())}</h3>`;
         }
         if (block.startsWith("### ")) {
-          return `<h3>${renderInline(block.slice(4).trim())}</h3>`;
+          return `<h4>${renderInline(block.slice(4).trim())}</h4>`;
         }
         const lines = block.split("\n");
         if (
