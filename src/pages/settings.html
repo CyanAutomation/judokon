@@ -39,7 +39,7 @@
       </header>
 
       <main class="container" role="main">
-        <h1>Settings</h1>
+        <h1 class="settings-header">Settings</h1>
         <form id="settings-form" class="settings-form">
           <fieldset
             id="general-settings-container"
@@ -54,6 +54,13 @@
               <option value="gray">Gray</option>
             </select>
           </div>    
+          </fieldset>
+        </form>
+        <form id="settings-form" class="settings-form">
+          <fieldset
+            id="general-settings-container"
+            class="game-mode-toggle-container settings-form"
+          >
             <legend>General Settings</legend>
             <div class="settings-item">
               <label for="sound-toggle" class="switch">
@@ -87,6 +94,8 @@
               </label>
             </div>
           </fieldset>
+        </form>
+        <form id="settings-form" class="settings-form">
           <fieldset
             id="game-mode-toggle-container"
             class="game-mode-toggle-container settings-form"

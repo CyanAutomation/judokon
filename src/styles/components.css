@@ -875,9 +875,9 @@ button .ripple {
 
 .settings-form legend {
   font-family: "Russo One", sans-serif;
-  font-size: 32px;
-  font-weight: bold;
-  margin-block-end: var(--space-md);
+  font-size: 24px;
+  /* font-weight: bold; */
+  /* margin-block-end: var(--space-md); */
 }
 
 /* Settings form controls */
@@ -918,6 +918,14 @@ button .ripple {
 .settings-form input[type="radio"]:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+.settings-header {
+  font-family: "Russo One", sans-serif;
+  font-size: 2rem;
+  /* font-weight: bold; */
+  text-align: center;
+  margin-top: var(--space-lg);
 }
 
 /* Toggle switch styles */
