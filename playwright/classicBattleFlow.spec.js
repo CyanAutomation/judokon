@@ -7,7 +7,7 @@ test.describe("Classic battle flow", () => {
       window.setInterval = (fn, ms, ...args) => orig(fn, Math.min(ms, 10), ...args);
     });
     await page.goto("/src/pages/battleJudoka.html");
-    await page.waitForSelector("#round-timer");
+    await page.waitForSelector("#next-round-timer");
     const result = page.locator("#round-result");
     await expect(result).not.toHaveText("", { timeout: 1200 });
   });
@@ -18,7 +18,7 @@ test.describe("Classic battle flow", () => {
       window.setInterval = (fn, ms, ...args) => orig(fn, Math.max(ms, 3600000), ...args);
     });
     await page.goto("/src/pages/battleJudoka.html");
-    await page.waitForSelector("#round-timer");
+    await page.waitForSelector("#next-round-timer");
     await page.evaluate(() => {
       document.querySelector("#player-card").innerHTML =
         `<ul><li class='stat'><strong>Power</strong> <span>3</span></li></ul>`;
