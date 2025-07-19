@@ -38,7 +38,7 @@ function showResult(message) {
 }
 
 function startTimer() {
-  const timerEl = document.getElementById("round-timer");
+  const timerEl = document.getElementById("next-round-timer");
   engineStartRound(
     (remaining) => {
       if (timerEl) timerEl.textContent = String(remaining);
@@ -151,7 +151,7 @@ export function _resetForTest() {
   judokaData = null;
   gokyoLookup = null;
   engineReset();
-  const timerEl = document.getElementById("round-timer");
+  const timerEl = document.getElementById("next-round-timer");
   if (timerEl) timerEl.textContent = "";
   const resultEl = document.getElementById("round-result");
   if (resultEl) resultEl.textContent = "";

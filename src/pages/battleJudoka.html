@@ -37,6 +37,11 @@
         </div>
         <div class="character-slot right"></div>
       </header>
+      <div class="battle-info-bar">
+        <p id="round-message"></p>
+        <p id="next-round-timer"></p>
+        <p id="score-display">You: 0 Computer: 0</p>
+      </div>
 
       <main class="container" role="main">
         <section id="battle-area">
@@ -44,9 +49,6 @@
           <div id="computer-card" class="card-slot"></div>
 
           <div id="controls">
-            <p id="timer">Time: <span id="round-timer"></span></p>
-            <p id="score-display">You: 0 Computer: 0</p>
-
             <div id="stat-buttons">
               <button data-stat="power" type="button">Power</button>
               <button data-stat="speed" type="button">Speed</button>
@@ -79,6 +81,7 @@
         );
       </script>
       <script type="module" src="../helpers/setupSvgFallback.js"></script>
+      <script type="module" src="../helpers/setupBattleInfoBar.js"></script>
       <script type="module" src="../helpers/battleJudokaPage.js"></script>
     </div>
   </body>

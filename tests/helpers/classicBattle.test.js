@@ -30,7 +30,7 @@ describe("classicBattle", () => {
       <div id="computer-card"></div>
       <p id="score-display"></p>
       <p id="round-result"></p>
-      <span id="round-timer"></span>`;
+      <p id="next-round-timer"></p>`;
     timerSpy = vi.useFakeTimers();
     generateRandomCardMock = vi.fn(async (data, g, container, _pm, cb) => {
       container.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>5</span></li><li class="stat"><strong>Speed</strong> <span>5</span></li><li class="stat"><strong>Technique</strong> <span>5</span></li><li class="stat"><strong>Kumi-kata</strong> <span>5</span></li><li class="stat"><strong>Ne-waza</strong> <span>5</span></li></ul>`;
