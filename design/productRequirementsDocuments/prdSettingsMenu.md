@@ -146,7 +146,7 @@ As a user of the game _ju-do-kon!_, I want to be able to change settings such as
   - Color contrast: Minimum 4.5:1 contrast ratio in all display modes per WCAG 2.1.
 - **Interaction flow:**
 
-  - Tab order should proceed top-to-bottom: sound → nav map → motion → display mode → game mode toggles.
+  - Tab order should proceed top-to-bottom: **display mode → sound → nav map → motion → game mode toggles**.
   - Users can navigate and activate each control without needing a mouse.
   - **Section layout:** The page begins with an `<h1>` heading followed by two `<fieldset>` sections—**General Settings** and **Game Modes**—each using the `.game-mode-toggle-container` grid. The second fieldset keeps `id="game-mode-toggle-container"` so scripts can find it.
 
