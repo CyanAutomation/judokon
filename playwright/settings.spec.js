@@ -40,10 +40,10 @@ test.describe("Settings page", () => {
       .map((m) => m.name);
 
     const expectedLabels = [
+      "Display Mode",
       "Sound",
       "Full Navigation Map",
       "Motion Effects",
-      "Display Mode",
       ...sortedNames
     ];
 
@@ -58,7 +58,7 @@ test.describe("Settings page", () => {
       await expect(page.getByLabel(name)).toHaveAttribute("aria-label", name);
     }
 
-    await page.focus("#sound-toggle");
+    await page.focus("#display-mode-select");
 
     const activeLabels = [];
     for (let i = 0; i < expectedLabels.length; i++) {
