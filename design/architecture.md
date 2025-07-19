@@ -29,7 +29,7 @@ initialize page-specific behavior.
 `src/helpers/prdReaderPage.js` to display the Product Requirements
 Documents. The Markdown files live in
 `design/productRequirementsDocuments`. The helper fetches each file,
-parses it through the **Marked** library (supporting headings, paragraphs, bold text, mixed ordered and unordered lists, tables, and horizontal rules rendered as `<hr/><br/>` for extra spacing) and injects the HTML into the
+parses it through the **Marked** library (supporting headings, paragraphs, bold text, mixed ordered and unordered lists, tables, and horizontal rules rendered as `<br/><hr/><br/>` for extra spacing) and injects the HTML into the
 `#prd-content` container. Buttons marked with `data-nav="prev"` or `data-nav="next"`
 appear in both the header and footer. Arrow keys and swipe gestures cycle through
 the loaded documents. A Home button in the header returns to `index.html`.
