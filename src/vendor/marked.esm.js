@@ -1,7 +1,7 @@
 export const marked = {
   /**
-  * Very small markdown parser supporting headings, bold text paragraphs, lists,
-  * tables and horizontal rules (each rule followed by a line break for spacing).
+   * Very small markdown parser supporting headings, bold text paragraphs, lists,
+   * tables and horizontal rules (each rule followed by a line break for spacing).
    *
    * @param {string} md - Markdown string.
    * @returns {string} HTML string.
