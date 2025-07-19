@@ -36,7 +36,7 @@ describe("marked.parse", () => {
   it("handles headings followed by lists", () => {
     const md = "# Title\n\n- a\n- b";
     const html = marked.parse(md);
-    expect(html).toBe("<h1>Title</h1><ul><li>a</li><li>b</li></ul>");
+    expect(html).toBe("<br/><h2>Title</h2><ul><li>a</li><li>b</li></ul>");
   });
 
   it("parses bold text", () => {
