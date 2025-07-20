@@ -29,7 +29,7 @@ describe("classicBattle", () => {
       <div id="player-card"></div>
       <div id="computer-card"></div>
       <p id="score-display"></p>
-      <p id="round-result"></p>
+      <p id="round-message"></p>
       <p id="next-round-timer"></p>`;
     timerSpy = vi.useFakeTimers();
     generateRandomCardMock = vi.fn(async (data, g, container, _pm, cb) => {
@@ -66,7 +66,7 @@ describe("classicBattle", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     _resetForTest();
     handleStatSelection("power");
-    expect(document.getElementById("round-result").textContent).toMatch(/Tie/);
+    expect(document.getElementById("round-message").textContent).toMatch(/Tie/);
     expect(document.getElementById("score-display").textContent).toBe("You: 0 Computer: 0");
   });
 
@@ -75,7 +75,7 @@ describe("classicBattle", () => {
     const { quitMatch } = await import("../../src/helpers/classicBattle.js");
     quitMatch();
     expect(confirmSpy).toHaveBeenCalled();
-    expect(document.getElementById("round-result").textContent).toMatch(/quit/i);
+    expect(document.getElementById("round-message").textContent).toMatch(/quit/i);
   });
 
   it("ends the match when player reaches 10 wins", async () => {
@@ -91,7 +91,7 @@ describe("classicBattle", () => {
       handleStatSelection("power");
     }
     expect(document.getElementById("score-display").textContent).toBe("You: 10 Computer: 0");
-    expect(document.getElementById("round-result").textContent).toMatch(/win the match/i);
+    expect(document.getElementById("round-message").textContent).toMatch(/win the match/i);
 
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
