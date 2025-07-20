@@ -12,7 +12,12 @@ import {
   STATS,
   _resetForTest as engineReset
 } from "./battleEngine.js";
-import { updateScore, startCountdown } from "./setupBattleInfoBar.js";
+import { updateScore, startCountdown as defaultCountdown } from "./setupBattleInfoBar.js";
+
+const countdown =
+  typeof window !== "undefined" && window.startCountdownOverride
+    ? window.startCountdownOverride
+    : defaultCountdown;
 
 let judokaData = null;
 let gokyoLookup = null;
@@ -170,7 +175,7 @@ export function handleStatSelection(stat) {
         setTimeout(attemptStart, 1000);
       }
     };
-    startCountdown(3, () => {
+    countdown(3, () => {
       if (!isMatchEnded()) {
         attemptStart();
       }

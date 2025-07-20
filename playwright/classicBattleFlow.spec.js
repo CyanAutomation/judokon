@@ -4,7 +4,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 test.describe("Classic battle flow", () => {
   test("timer auto-selects when expired", async ({ page }) => {
     await page.addInitScript(() => {
-      window.startCountdown = () => {};
+      window.startCountdownOverride = () => {};
       const orig = window.setInterval;
       window.setInterval = (fn, ms, ...args) => orig(fn, Math.min(ms, 10), ...args);
     });
@@ -18,7 +18,7 @@ test.describe("Classic battle flow", () => {
 
   test("tie message appears on equal stats", async ({ page }) => {
     await page.addInitScript(() => {
-      window.startCountdown = () => {};
+      window.startCountdownOverride = () => {};
       const orig = window.setInterval;
       window.setInterval = (fn, ms, ...args) => orig(fn, Math.max(ms, 3600000), ...args);
     });
