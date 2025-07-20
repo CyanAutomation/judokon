@@ -228,6 +228,7 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
   `aria-label` descriptions
 - Country picker panel appears below the fixed header for unobstructed viewing
 - Scroll buttons disable when the carousel reaches either end
+- Real-time Battle Info Bar shows round results, a countdown, and the score
 - Mockup viewer page with next/back controls for design screenshots (includes a Home link)
 
 ## About JU-DO-KON!
