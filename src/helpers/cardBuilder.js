@@ -1,10 +1,13 @@
 import { getFlagUrl } from "./countryUtils.js";
 import { generateCardTopBar, createNoDataContainer } from "./cardTopBar.js";
-import { generateCardPortrait, generateCardSignatureMove } from "./cardRender.js";
-import { createStatsPanel } from "../components/StatsPanel.js";
 import { safeGenerate } from "./errorUtils.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
 import { enableCardFlip } from "./cardFlip.js";
+import {
+  createPortraitSection,
+  createStatsSection,
+  createSignatureMoveSection
+} from "./cardSections.js";
 
 /**
  * Generates the "last updated" HTML for a judoka card.
@@ -156,44 +159,6 @@ async function createTopBar(judoka, flagUrl) {
     "Failed to generate top bar:",
     createNoDataContainer()
   );
-}
-
-function createPortraitSection(judoka) {
-  try {
-    // generateCardPortrait returns a complete `.card-portrait` wrapper
-    const fragment = document.createRange().createContextualFragment(generateCardPortrait(judoka));
-    const portraitElement = fragment.firstElementChild;
-
-    const weightClassElement = document.createElement("div");
-    weightClassElement.className = "card-weight-class";
-    weightClassElement.textContent = judoka.weightClass;
-    portraitElement.appendChild(weightClassElement);
-
-    return portraitElement;
-  } catch (error) {
-    console.error("Failed to generate portrait:", error);
-    return createNoDataContainer();
-  }
-}
-
-function createStatsSection(judoka, cardType) {
-  try {
-    return createStatsPanel(judoka.stats, { type: cardType });
-  } catch (error) {
-    console.error("Failed to generate stats:", error);
-    return createNoDataContainer();
-  }
-}
-
-function createSignatureMoveSection(judoka, gokyoLookup, cardType) {
-  try {
-    const signatureMoveHTML = generateCardSignatureMove(judoka, gokyoLookup, cardType);
-    const fragment = document.createRange().createContextualFragment(signatureMoveHTML);
-    return fragment.firstElementChild;
-  } catch (error) {
-    console.error("Failed to generate signature move:", error);
-    return createNoDataContainer();
-  }
 }
 
 /**
