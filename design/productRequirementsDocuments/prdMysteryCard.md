@@ -150,7 +150,6 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 
 - [ ] 4.0 Game Logic Safeguards
   - [ ] 4.1 Block stat selection until card fully rendered
-  - [ ] 4.2 Prevent card appearance in multiplayer mode
 
 - [ ] 5.0 Code Integration
   - [ ] 5.1 Extend `renderJudokaCard()` with `useObscuredStats` flag
