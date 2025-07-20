@@ -85,7 +85,7 @@ export function handleStatSelection(playerVal, computerVal) {
     computerScore += 1;
     message = "Computer wins the round!";
   } else {
-    message = "Tie – no score";
+    message = "Tie – no score!";
   }
   roundsPlayed += 1;
   const endMsg = endMatchIfNeeded();
