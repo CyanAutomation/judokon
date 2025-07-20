@@ -54,7 +54,7 @@ function updateScoreDisplay() {
   updateScore(playerScore, computerScore);
   const el = document.getElementById("score-display");
   if (el) {
-    el.textContent = `You: ${playerScore} Computer: ${computerScore}`;
+    el.innerHTML = `You: ${playerScore}<br>\nComputer: ${computerScore}`;
   }
 }
 
