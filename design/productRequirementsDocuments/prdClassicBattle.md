@@ -138,6 +138,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 ## 12. Dependencies
 
 - Judoka dataset loaded from `judoka.json`.
+- Only judoka with `isHidden` set to `false` are eligible for battle.
 - Uses the shared random card draw module (`generateRandomCard`) as detailed in [prdDrawRandomCard.md](prdDrawRandomCard.md) (see `src/helpers/randomCard.js`).
 - Uses the Mystery Card placeholder outlined in [prdMysteryCard.md](prdMysteryCard.md), which relies on the `useObscuredStats` flag added to `renderJudokaCard()`.
 
