@@ -72,9 +72,9 @@ export function showMessage(text) {
  *
  * @pseudocode
  * 1. Clear any existing countdown interval.
- * 2. Display "Time Left: {seconds}s" in the timer element.
+ * 2. Display "Next round in: {seconds}s" in the timer element.
  * 3. Each second decrement the value and update the element using the same format.
- * 4. When the value reaches zero, set "Time Left: 0s", stop the interval and invoke `onFinish`.
+ * 4. When the value reaches zero, set "Next round in: 0s", stop the interval and invoke `onFinish`.
  *
  * @param {number} seconds - Seconds to count down from.
  * @param {Function} [onFinish] - Optional callback when countdown ends.
@@ -83,15 +83,15 @@ export function showMessage(text) {
 export function startCountdown(seconds, onFinish) {
   if (!timerEl) return;
   clearInterval(intervalId);
-  timerEl.textContent = `Time Left: ${seconds}s`;
+  timerEl.textContent = `Next round in: ${seconds}s`;
   intervalId = setInterval(() => {
     seconds -= 1;
     if (seconds <= 0) {
       clearInterval(intervalId);
-      timerEl.textContent = "Time Left: 0s";
+      timerEl.textContent = "Next round in: 0s";
       if (typeof onFinish === "function") onFinish();
     } else {
-      timerEl.textContent = `Time Left: ${seconds}s`;
+      timerEl.textContent = `Next round in: ${seconds}s`;
     }
   }, 1000);
 }
