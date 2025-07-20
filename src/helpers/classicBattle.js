@@ -207,7 +207,6 @@ export function handleStatSelection(stat) {
   const result = evaluateRound(stat);
   resetStatButtons();
   scheduleNextRound(result);
-
 }
 
 /**
