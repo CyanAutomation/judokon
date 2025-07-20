@@ -1027,3 +1027,40 @@ button .ripple {
     animation: none;
   }
 }
+/* Battle info bar styles */
+.battle-info-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--color-surface);
+  font-size: 16px;
+}
+
+.battle-info-bar #round-message,
+.battle-info-bar #next-round-timer,
+.battle-info-bar #score-display {
+  margin: 0;
+}
+
+.battle-info-bar .win {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.battle-info-bar .loss {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.battle-info-bar .neutral {
+  color: #6c757d;
+}
+
+@media (max-width: 374px) {
+  .battle-info-bar {
+    flex-direction: column;
+    text-align: center;
+  }
+}
