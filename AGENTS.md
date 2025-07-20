@@ -21,6 +21,7 @@ This repository contains the source for **JU-DO-KON!**, a browser-based card gam
 - Favor small, single-purpose functions and avoid monolithic implementations.
 - Always refactor complex logic into smaller helpers and keep modules focused on a single responsibility.
 - Keep implementations and tests simple. Break logic into small helpers whenever possible, and refactor complex code rather than layering workarounds.
+- Whenever you touch a file, look for opportunities to simplify or refactor the surrounding code.
 
 ## Programmatic Checks
 
