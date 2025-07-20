@@ -161,12 +161,15 @@ export function handleStatSelection(stat) {
  * 1. Display a confirmation dialog.
  * 2. When confirmed, stop the timer and mark the match as ended.
  * 3. Show a loss message in the result area.
+ * 4. Return `true` when the player confirms quitting, otherwise `false`.
  */
 export function quitMatch() {
   if (confirm("Quit the match?")) {
     const result = engineQuitMatch();
     showResult(result.message);
+    return true;
   }
+  return false;
 }
 
 export function _resetForTest() {
