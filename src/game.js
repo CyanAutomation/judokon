@@ -5,6 +5,119 @@ import { DATA_DIR } from "./helpers/constants.js";
 import { shouldReduceMotionSync } from "./helpers/motionUtils.js";
 
 /**
+ * Wire up the carousel toggle button.
+ *
+ * @pseudocode
+ * 1. Exit early if `button` is not provided.
+ * 2. Maintain an `isBuilt` flag inside the closure.
+ * 3. On click:
+ *    a. If the carousel is built, simply reveal `container`.
+ *    b. Otherwise fetch and validate judoka and gokyo data.
+ *    c. Build the carousel, append it to `container`, and add scroll markers.
+ *    d. Reveal `container` and mark the carousel as built.
+ *    e. Log any errors that occur.
+ *
+ * @param {HTMLElement} button - Button to show the carousel.
+ * @param {HTMLElement} container - Container for the carousel.
+ */
+export function setupCarouselToggle(button, container) {
+  let isBuilt = false;
+  if (!button) {
+    console.warn("Show carousel button not found. Skipping carousel initialization.");
+    return;
+  }
+
+  button.addEventListener("click", async () => {
+    if (isBuilt) {
+      container?.classList.remove("hidden");
+      return;
+    }
+
+    try {
+      const judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
+      const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
+
+      validateData(judokaData, "judoka");
+      validateData(gokyoData, "gokyo");
+
+      const carousel = await buildCardCarousel(judokaData, gokyoData);
+      container?.appendChild(carousel);
+      container?.classList.remove("hidden");
+
+      requestAnimationFrame(() => {
+        const containerEl = carousel.querySelector(".card-carousel");
+        if (containerEl) {
+          addScrollMarkers(containerEl, carousel);
+        }
+      });
+
+      isBuilt = true;
+      console.log("Carousel displayed on demand.");
+    } catch (error) {
+      console.error("Failed to build carousel:", error);
+    }
+  });
+}
+
+/**
+ * Toggle card backs in the carousel.
+ *
+ * @pseudocode
+ * 1. Exit early if `button` is missing.
+ * 2. On click:
+ *    a. Locate `.card-carousel` in the document.
+ *    b. Query all `.judoka-card` elements and toggle `show-card-back` on each.
+ *    c. Log errors when elements are missing.
+ *
+ * @param {HTMLElement} button - Button that hides card faces.
+ */
+export function setupHideCardButton(button) {
+  if (!button) return;
+  button.addEventListener("click", () => {
+    const container = document.querySelector(".card-carousel");
+
+    if (!container) {
+      console.error("Carousel container not found.");
+      return;
+    }
+
+    const cards = container.querySelectorAll(".judoka-card");
+    if (cards.length === 0) {
+      console.error("No judoka cards found in the carousel to toggle.");
+      return;
+    }
+
+    cards.forEach((card) => {
+      card.classList.toggle("show-card-back");
+    });
+  });
+}
+
+/**
+ * Display a random judoka card.
+ *
+ * @pseudocode
+ * 1. Exit early if `button` or `container` is missing.
+ * 2. On click:
+ *    a. Hide `button` and clear `container`.
+ *    b. Determine motion preference with `shouldReduceMotionSync`.
+ *    c. Call `generateRandomCard` using the preference.
+ *
+ * @param {HTMLElement} button - Button to trigger card generation.
+ * @param {HTMLElement} container - Element to display the card.
+ */
+export function setupRandomCardButton(button, container) {
+  if (!button || !container) return;
+  button.addEventListener("click", async () => {
+    button.classList.add("hidden");
+    container.innerHTML = "";
+
+    const prefersReducedMotion = shouldReduceMotionSync();
+    await generateRandomCard(null, null, container, prefersReducedMotion);
+  });
+}
+
+/**
  * Initializes game interactions after the DOM is ready.
  *
  * Queries required DOM elements, wires up control buttons, and loads data for
@@ -13,11 +126,9 @@ import { shouldReduceMotionSync } from "./helpers/motionUtils.js";
  * @pseudocode
  * 1. Wait for the `DOMContentLoaded` event.
  * 2. Query elements used by the game (buttons, containers).
- * 3. On carousel button click, fetch judoka and gokyo data if needed, validate
- *    it, build the carousel, and reveal it.
- * 4. On hide button click, toggle the card backs in the carousel.
- * 5. On random button click, clear the game area, honor motion preferences, and
- *    call `generateRandomCard`.
+ * 3. Call `setupCarouselToggle` with the carousel button and container.
+ * 4. Call `setupHideCardButton` with the hide-card button.
+ * 5. Call `setupRandomCardButton` with the random button and game area.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -27,77 +138,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const showCarouselButton = document.getElementById("showCarousel");
   const hideCard = document.getElementById("hideCard");
 
-  let isCarouselBuilt = false;
-
   if (!showRandom || !gameArea) {
     console.error("Required DOM elements are missing.");
     return;
   }
 
-  // Event listener for showing the carousel
-  if (!showCarouselButton) {
-    console.warn("Show carousel button not found. Skipping carousel initialization.");
-  } else {
-    showCarouselButton.addEventListener("click", async () => {
-      if (isCarouselBuilt) {
-        carouselContainer.classList.remove("hidden");
-        return;
-      }
-
-      try {
-        const judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
-        const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
-
-        validateData(judokaData, "judoka");
-        validateData(gokyoData, "gokyo");
-
-        const carousel = await buildCardCarousel(judokaData, gokyoData);
-        carouselContainer.appendChild(carousel);
-        carouselContainer.classList.remove("hidden");
-
-        requestAnimationFrame(() => {
-          const containerEl = carousel.querySelector(".card-carousel");
-          if (containerEl) {
-            addScrollMarkers(containerEl, carousel);
-          }
-        });
-
-        isCarouselBuilt = true;
-        console.log("Carousel displayed on demand.");
-      } catch (error) {
-        console.error("Failed to build carousel:", error);
-      }
-    });
-  }
-
-  // Event listener for hiding card backs
-  hideCard.addEventListener("click", () => {
-    const carouselContainer = document.querySelector(".card-carousel");
-
-    if (!carouselContainer) {
-      console.error("Carousel container not found.");
-      return;
-    }
-
-    const judokaCards = carouselContainer.querySelectorAll(".judoka-card");
-
-    if (judokaCards.length === 0) {
-      console.error("No judoka cards found in the carousel to toggle.");
-      return;
-    }
-
-    judokaCards.forEach((card) => {
-      card.classList.toggle("show-card-back");
-    });
-  });
-
-  // Event listener for showing a random judoka card
-  showRandom.addEventListener("click", async () => {
-    showRandom.classList.add("hidden");
-    gameArea.innerHTML = "";
-
-    const prefersReducedMotion = shouldReduceMotionSync();
-
-    await generateRandomCard(null, null, gameArea, prefersReducedMotion);
-  });
+  setupCarouselToggle(showCarouselButton, carouselContainer);
+  setupHideCardButton(hideCard);
+  setupRandomCardButton(showRandom, gameArea);
 });
