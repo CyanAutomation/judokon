@@ -330,6 +330,7 @@ Safari may expand flex items if `min-width` isn't explicitly set. Set
 Safari 18.5 positions `.signature-move-container` text at the bottom edge unless the container uses standard flex alignment. The container now applies `line-height: max(10%, var(--touch-target-size))` along with `align-items: center` and `justify-content: center`. Setting `width: 100%` on the child spans prevents stretching so the label and value remain vertically centered.
 
 Safari 18.5 sometimes shrinks judoka cards, causing text overlap. The width rule now uses `clamp(200px, 70vw, 300px)` so cards occupy about 70% of the viewport on mobile. This applies to both the random card view and the browse carousel.
+Safari 18.5 may keep a stat button highlighted between rounds. The reset logic now clears the inline background color so Safari repaints the buttons correctly.
 
 Chrome may show a small gap below the stats panel when the combined height of
 card sections is less than 100%. Ensure `.card-top-bar`, `.card-portrait`,
