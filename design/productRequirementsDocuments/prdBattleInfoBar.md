@@ -47,7 +47,8 @@ The round message, timer and score now sit directly inside the page header rathe
 
 - **Layout**
   - Right side: score display (`Player: X – CPU: Y`)
-  - Left side: rotating status messages (e.g., "You won!", "Round starts in: 3", "Select your move")
+  - Two-line score format appears on narrow screens (`Player: X` line break `CPU: Y`)
+  - Left side: rotating status messages (e.g., "You won!", "Next round in: 3s", "Select your move")
 - **Visuals**
   - Font size: min 16sp, bold for win/loss messages.
   - Color coding: green (win), red (loss), neutral grey (countdown).
@@ -63,7 +64,7 @@ The round message, timer and score now sit directly inside the page header rathe
 |--------------------------------------|---------------------------------------------|
 |  "You won!"  (bold green, 16sp)      |           Player: 2  –  CPU: 1               |
 |  "Select your move" (neutral grey)   |                                             |
-|  "Round starts in: 3" (neutral grey) |                                             |
+|  "Next round in: 3s" (neutral grey) |                                             |
 -----------------------------------------------------------------------------------
 
 - Responsive Layout Notes:
