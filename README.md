@@ -92,6 +92,7 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
   use relative paths (e.g., `../../index.html`) so the site can be served from
   any base URL.
 - `src/` – contains the game logic and assets:
+
   - `game.js`
   - `helpers/` – small utilities (for example `lazyPortrait.js` replaces the placeholder card portraits once they enter view)
   - `components/` – small DOM factories like `Button`, `ToggleSwitch`, `Card`, the `Modal` dialog, and `StatsPanel`
@@ -249,20 +250,25 @@ This project is built with HTML, CSS, and JavaScript, and hosted on GitHub Pages
 ### 🥋 The Rules:
 
 1. **You vs. Computer**
+
    - Each match starts with both players receiving **25 random cards** from a 99-card deck.
 
 2. **Start the Battle**
+
    - In each round, you and the computer each draw your top card.
 
 3. **Choose Your Stat**
+
    - You select one of the stats on your card (e.g. Power, Speed, Technique, etc.)
 
 4. **Compare Stats**
+
    - The chosen stat is compared with the computer’s card.
    - **Highest value wins the round**.
    - If both stats are equal, it’s a **draw** — no one scores.
 
 5. **Scoring**
+
    - Each round win gives you **1 point**.
    - The cards used in that round are **discarded** (not reused).
 
@@ -330,7 +336,7 @@ Safari may expand flex items if `min-width` isn't explicitly set. Set
 Safari 18.5 positions `.signature-move-container` text at the bottom edge unless the container uses standard flex alignment. The container now applies `line-height: max(10%, var(--touch-target-size))` along with `align-items: center` and `justify-content: center`. Setting `width: 100%` on the child spans prevents stretching so the label and value remain vertically centered.
 
 Safari 18.5 sometimes shrinks judoka cards, causing text overlap. The width rule now uses `clamp(200px, 70vw, 300px)` so cards occupy about 70% of the viewport on mobile. This applies to both the random card view and the browse carousel.
-Safari 18.5 may keep a stat button highlighted between rounds. The reset logic now clears the inline background color so Safari repaints the buttons correctly.
+Safari 18.5 may keep a stat button highlighted between rounds. The reset logic now clears the inline background color and sets `backgroundColor` to an empty string before the button loses focus so Safari repaints the buttons correctly.
 
 Chrome may show a small gap below the stats panel when the combined height of
 card sections is less than 100%. Ensure `.card-top-bar`, `.card-portrait`,

@@ -25,12 +25,14 @@ let gokyoLookup = null;
  * 2. For each button:
  *    a. Remove the `selected` class so the button style resets.
  *    b. Clear any inline background color to force a repaint in Safari.
- *    c. Call `blur()` to drop focus.
+ *    c. Set `backgroundColor` to an empty string before blurring.
+ *    d. Call `blur()` to drop focus.
  */
 function resetStatButtons() {
   document.querySelectorAll("#stat-buttons button").forEach((btn) => {
     btn.classList.remove("selected");
     btn.style.removeProperty("background-color");
+    btn.style.backgroundColor = "";
     btn.blur();
   });
 }
