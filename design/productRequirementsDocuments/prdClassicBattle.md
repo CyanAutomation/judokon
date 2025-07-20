@@ -112,7 +112,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 - Use consistent color coding for player (blue) vs computer (red) as shown in attached mockups.
 - Display clear, large call-to-action text for "Choose an attribute to challenge!" to guide new players.
-- Include visible "Quit Match" button in the match UI with clear, child-friendly language like “Quit and Go Back to Menu.”
+- Provide a quit confirmation when the player clicks the logo in the header to return to the Home screen.
 - Match screens should follow the style and layouts demonstrated in shared mockups:
   - Player and computer cards side-by-side.
   - Central score prominently displayed.
@@ -158,7 +158,7 @@ _Resolved in [Future Considerations](#7-future-considerations):_ AI difficulty w
 
 - [ ] 2.0 Add Early Quit Functionality
 
-  - [ ] 2.1 Add "Quit Match" button to match UI
+  - [ ] 2.1 Trigger quit confirmation when the header logo is clicked
   - [ ] 2.2 Create confirmation prompt flow
   - [ ] 2.3 Record match as player loss upon quit confirmation
 

@@ -76,8 +76,9 @@ describe("classicBattle", () => {
   it("quits match after confirmation", async () => {
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     const { quitMatch } = await import("../../src/helpers/classicBattle.js");
-    quitMatch();
+    const result = quitMatch();
     expect(confirmSpy).toHaveBeenCalled();
+    expect(result).toBe(true);
     expect(document.querySelector("header #round-message").textContent).toMatch(/quit/i);
   });
 
