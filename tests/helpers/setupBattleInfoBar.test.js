@@ -37,9 +37,9 @@ describe("setupBattleInfoBar", () => {
     expect(document.getElementById("score-display").textContent).toBe("You: 1 Computer: 2");
 
     mod.startCountdown(1);
-    expect(document.getElementById("next-round-timer").textContent).toBe("1");
+    expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 1s");
     vi.advanceTimersByTime(1000);
-    expect(document.getElementById("next-round-timer").textContent).toBe("0");
+    expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 0s");
   });
 
   it("initializes immediately when DOM already loaded", async () => {
@@ -60,8 +60,8 @@ describe("setupBattleInfoBar", () => {
     expect(document.getElementById("score-display").textContent).toBe("You: 3 Computer: 4");
     vi.useFakeTimers();
     mod.startCountdown(1);
-    expect(document.getElementById("next-round-timer").textContent).toBe("1");
+    expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 1s");
     vi.advanceTimersByTime(1000);
-    expect(document.getElementById("next-round-timer").textContent).toBe("0");
+    expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 0s");
   });
 });
