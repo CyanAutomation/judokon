@@ -12,6 +12,7 @@ import {
   STATS,
   _resetForTest as engineReset
 } from "./battleEngine.js";
+import { updateScore, startCountdown } from "../components/InfoBar.js";
 
 let judokaData = null;
 let gokyoLookup = null;
@@ -24,6 +25,7 @@ function getStatValue(container, stat) {
 
 function updateScoreDisplay() {
   const { playerScore, computerScore } = getScores();
+  updateScore(playerScore, computerScore);
   const el = document.getElementById("score-display");
   if (el) {
     el.textContent = `You: ${playerScore} Computer: ${computerScore}`;
@@ -31,9 +33,15 @@ function updateScoreDisplay() {
 }
 
 function showResult(message) {
-  const el = document.getElementById("round-result");
-  if (el) {
-    el.textContent = message;
+  const el = document.getElementById("round-message");
+  if (!el) return;
+  el.classList.add("fade-transition");
+  el.textContent = message;
+  el.classList.remove("fading");
+  if (message) {
+    setTimeout(() => {
+      el.classList.add("fading");
+    }, 2000);
   }
 }
 
@@ -124,11 +132,19 @@ export function handleStatSelection(stat) {
   }
   updateScoreDisplay();
   if (!result.matchEnded) {
-    setTimeout(() => {
-      if (!isMatchEnded()) {
-        startRound();
+    const attemptStart = async () => {
+      try {
+        await startRound();
+      } catch {
+        showResult("Waiting...");
+        setTimeout(attemptStart, 1000);
       }
-    }, 1000);
+    };
+    startCountdown(3, () => {
+      if (!isMatchEnded()) {
+        attemptStart();
+      }
+    });
   }
 }
 
@@ -153,7 +169,7 @@ export function _resetForTest() {
   engineReset();
   const timerEl = document.getElementById("next-round-timer");
   if (timerEl) timerEl.textContent = "";
-  const resultEl = document.getElementById("round-result");
+  const resultEl = document.getElementById("round-message");
   if (resultEl) resultEl.textContent = "";
   updateScoreDisplay();
 }

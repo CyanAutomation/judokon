@@ -8,7 +8,7 @@ test.describe("Classic battle flow", () => {
     });
     await page.goto("/src/pages/battleJudoka.html");
     await page.waitForSelector("#next-round-timer");
-    const result = page.locator("#round-result");
+    const result = page.locator("#round-message");
     await expect(result).not.toHaveText("", { timeout: 1200 });
   });
 
@@ -26,13 +26,13 @@ test.describe("Classic battle flow", () => {
         `<ul><li class='stat'><strong>Power</strong> <span>3</span></li></ul>`;
     });
     await page.locator("button[data-stat='power']").click();
-    await expect(page.locator("#round-result")).toHaveText(/Tie/);
+    await expect(page.locator("#round-message")).toHaveText(/Tie/);
   });
 
   test("quit match confirmation", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
     page.on("dialog", (dialog) => dialog.accept());
     await page.locator("#quit-btn").click();
-    await expect(page.locator("#round-result")).toHaveText(/quit/i);
+    await expect(page.locator("#round-message")).toHaveText(/quit/i);
   });
 });
