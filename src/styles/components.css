@@ -1027,40 +1027,46 @@ button .ripple {
     animation: none;
   }
 }
-/* Battle info bar styles */
-.battle-info-bar {
+/* Battle header info elements */
+.battle-header .info-left,
+.battle-header .info-right {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  background-color: var(--color-surface);
-  font-size: 16px;
+  flex-direction: column;
 }
 
-.battle-info-bar #round-message,
-.battle-info-bar #next-round-timer,
-.battle-info-bar #score-display {
+.battle-header .info-left {
+  grid-column: 1;
+  align-items: flex-start;
+}
+
+.battle-header .info-right {
+  grid-column: 3;
+  justify-self: end;
+  align-items: flex-end;
+}
+
+.battle-header #round-message,
+.battle-header #next-round-timer,
+.battle-header #score-display {
   margin: 0;
 }
 
-.battle-info-bar .win {
-  color: #28a745;
-  font-weight: bold;
-}
-
-.battle-info-bar .loss {
-  color: #dc3545;
-  font-weight: bold;
-}
-
-.battle-info-bar .neutral {
-  color: #6c757d;
-}
-
 @media (max-width: 374px) {
-  .battle-info-bar {
-    flex-direction: column;
+  .battle-header {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
     text-align: center;
+  }
+  .battle-header .info-left {
+    grid-row: 1;
+    align-items: center;
+  }
+  .battle-header .logo-container {
+    grid-row: 2;
+  }
+  .battle-header .info-right {
+    grid-row: 3;
+    justify-self: center;
+    align-items: center;
   }
 }

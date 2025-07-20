@@ -4,7 +4,12 @@ const originalReadyState = Object.getOwnPropertyDescriptor(document, "readyState
 
 beforeEach(() => {
   vi.resetModules();
-  document.body.innerHTML = "<header></header>";
+  document.body.innerHTML = `
+    <header>
+      <p id="round-message"></p>
+      <p id="next-round-timer"></p>
+      <p id="score-display"></p>
+    </header>`;
 });
 
 afterEach(() => {
@@ -17,17 +22,13 @@ afterEach(() => {
 });
 
 describe("setupBattleInfoBar", () => {
-  it("inserts bar on DOMContentLoaded and proxies methods", async () => {
+  it("initializes on DOMContentLoaded and proxies methods", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
     vi.useFakeTimers();
 
     const mod = await import("../../src/helpers/setupBattleInfoBar.js");
 
-    expect(document.querySelector(".battle-info-bar")).toBeNull();
     document.dispatchEvent(new Event("DOMContentLoaded"));
-
-    const bar = document.querySelector(".battle-info-bar");
-    expect(bar).toBeTruthy();
 
     mod.showMessage("Hi");
     expect(document.getElementById("round-message").textContent).toBe("Hi");
@@ -46,12 +47,12 @@ describe("setupBattleInfoBar", () => {
 
     await import("../../src/helpers/setupBattleInfoBar.js");
 
-    expect(document.querySelector(".battle-info-bar")).toBeTruthy();
+    expect(document.getElementById("score-display")).toBeTruthy();
   });
 
-  it("attaches to pre-existing bar", async () => {
+  it("attaches to pre-existing elements", async () => {
     Object.defineProperty(document, "readyState", { value: "complete", configurable: true });
-    document.body.innerHTML = `<header></header><div class="battle-info-bar"><p id="round-message"></p><p id="next-round-timer"></p><p id="score-display"></p></div>`;
+    document.body.innerHTML = `<header><p id="round-message"></p><p id="next-round-timer"></p><p id="score-display"></p></header>`;
     const mod = await import("../../src/helpers/setupBattleInfoBar.js");
     mod.showMessage("Hello");
     expect(document.getElementById("round-message").textContent).toBe("Hello");

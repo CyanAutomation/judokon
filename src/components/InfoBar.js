@@ -2,11 +2,11 @@
  * Create a battle info bar showing round messages, countdown timer and score.
  *
  * @pseudocode
- * 1. Create a container `div` with class `battle-info-bar`.
- * 2. Inside add three `<p>` elements:
+ * 1. Create three `<p>` elements:
  *    - `#round-message` with `aria-live="polite"` for result text.
  *    - `#next-round-timer` with `aria-live="polite"` for countdown updates.
  *    - `#score-display` with `aria-live="off"` for the match score.
+ * 2. Append them to the provided container (typically the page header).
  * 3. Store references to these elements for later updates.
  * 4. Return the container element.
  *
@@ -17,10 +17,7 @@ let timerEl;
 let scoreEl;
 let intervalId = null;
 
-export function createInfoBar() {
-  const container = document.createElement("div");
-  container.className = "battle-info-bar";
-
+export function createInfoBar(container = document.createElement("div")) {
   messageEl = document.createElement("p");
   messageEl.id = "round-message";
   messageEl.setAttribute("aria-live", "polite");
@@ -38,13 +35,14 @@ export function createInfoBar() {
 }
 
 /**
- * Initialize internal references using an existing info bar element.
+ * Initialize internal references using elements that already exist in the page
+ * header.
  *
  * @pseudocode
  * 1. Locate child elements within `container` by their IDs.
  * 2. Store these nodes in module-scoped variables for later updates.
  *
- * @param {HTMLElement} container - Existing info bar element.
+ * @param {HTMLElement} container - Header element containing the info nodes.
  * @returns {void}
  */
 export function initInfoBar(container) {

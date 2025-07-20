@@ -4,6 +4,8 @@
 
 In battle game modes (e.g. Classic Battle), players have a real need to  receive clear visual feedback between or after rounds. Without this info, it will leave users uncertain about match state, leading to confusion, reduced immersion, and increased risk of game abandonment. Players could feel "lost" due to a lack of timely updates about round outcomes, next steps, or overall progress.
 
+The round message, timer and score now sit directly inside the page header rather than in a separate bar.
+
 ## Goals
 
 1. **Display match score (player vs CPU)** on the **right side of the top bar**, updated at the **end of each round**, within **800ms** of score finalization.
