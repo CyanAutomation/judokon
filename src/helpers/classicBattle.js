@@ -207,22 +207,7 @@ export function handleStatSelection(stat) {
   const result = evaluateRound(stat);
   resetStatButtons();
   scheduleNextRound(result);
-=======
-  if (!result.matchEnded) {
-    const attemptStart = async () => {
-      try {
-        await startRound();
-      } catch {
-        showResult("Waiting...");
-        setTimeout(attemptStart, 1000);
-      }
-    };
-    countdown(3, () => {
-      if (!isMatchEnded()) {
-        attemptStart();
-      }
-    });
-  }
+
 }
 
 /**
