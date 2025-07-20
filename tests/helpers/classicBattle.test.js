@@ -50,6 +50,19 @@ describe("classicBattle", () => {
     document.body.innerHTML = "";
   });
 
+  it("clears selected class on stat buttons after each round", async () => {
+    document.body.innerHTML +=
+      '<div id="stat-buttons"><button data-stat="power"></button><button data-stat="speed"></button><button data-stat="technique"></button><button data-stat="kumikata"></button><button data-stat="newaza"></button></div>';
+    const { handleStatSelection, _resetForTest } = await import(
+      "../../src/helpers/classicBattle.js"
+    );
+    _resetForTest();
+    const btn = document.querySelector("[data-stat='power']");
+    btn.classList.add("selected");
+    handleStatSelection("power");
+    expect(btn.classList.contains("selected")).toBe(false);
+  });
+
   it("auto-selects a stat when timer expires", async () => {
     const { startRound } = await import("../../src/helpers/classicBattle.js");
     await startRound();

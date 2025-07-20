@@ -17,8 +17,20 @@ import { updateScore, startCountdown } from "./setupBattleInfoBar.js";
 let judokaData = null;
 let gokyoLookup = null;
 
+/**
+ * Remove highlight and focus from all stat buttons.
+ *
+ * @pseudocode
+ * 1. Select all stat buttons within `#stat-buttons`.
+ * 2. For each button:
+ *    a. Call `blur()` to drop focus.
+ *    b. Remove the `selected` class to clear highlight.
+ */
 function resetStatButtons() {
-  document.querySelectorAll("#stat-buttons button").forEach((btn) => btn.blur());
+  document.querySelectorAll("#stat-buttons button").forEach((btn) => {
+    btn.blur();
+    btn.classList.remove("selected");
+  });
 }
 
 function getStatValue(container, stat) {
@@ -66,13 +78,14 @@ function startTimer() {
  * Start a new battle round by drawing cards for both players.
  *
  * @pseudocode
- * 1. Load judoka and gokyo data if not already cached.
- * 2. Draw a random card for the player using `generateRandomCard` and capture
+ * 1. Clear any previously selected stat button.
+ * 2. Load judoka and gokyo data if not already cached.
+ * 3. Draw a random card for the player using `generateRandomCard` and capture
  *    the selected judoka.
- * 3. Select a random judoka for the computer.
+ * 4. Select a random judoka for the computer.
  *    - If it matches the player's judoka, retry up to a safe limit.
  *    - Display the chosen judoka with `renderJudokaCard`.
- * 4. Initialize the round timer.
+ * 5. Initialize the round timer.
  *
  * @returns {Promise<void>} Resolves when cards are displayed.
  */
@@ -122,7 +135,8 @@ export async function startRound() {
  *    - End when either player reaches `CLASSIC_BATTLE_POINTS_TO_WIN`.
  *    - End after `CLASSIC_BATTLE_MAX_ROUNDS` rounds.
  * 6. Display the result message.
- * 7. Begin the next round after a short delay if the match continues.
+ * 7. Remove the highlight from all stat buttons.
+ * 8. Begin the next round after a short delay if the match continues.
  *
  * @param {string} stat - The stat name to compare.
  */

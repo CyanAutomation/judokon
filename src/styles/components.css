@@ -103,6 +103,10 @@ button:active {
   transform: scale(0.95);
 }
 
+#stat-buttons button.selected {
+  background-color: var(--button-active-bg);
+}
+
 button:focus,
 button:focus-visible {
   outline-offset: 2px;
