@@ -19,6 +19,7 @@ This repository contains the source for **JU-DO-KON!**, a browser-based card gam
 - **JSDoc comments and pseudocode blocks must remain intact**. Keep `@pseudocode` blocks in place, but update them if the code changes so the description stays accurate.
 - Public functions should have JSDoc documentation following the examples in `design/codeStandards`.
 - Favor small, single-purpose functions and avoid monolithic implementations.
+- Always refactor complex logic into smaller helpers and keep modules focused on a single responsibility.
 
 ## Programmatic Checks
 
