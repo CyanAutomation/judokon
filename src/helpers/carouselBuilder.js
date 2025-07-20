@@ -2,11 +2,14 @@ import { createGokyoLookup } from "./utils.js";
 import { generateJudokaCard } from "./cardBuilder.js";
 import { getFallbackJudoka } from "./judokaUtils.js";
 import { setupLazyPortraits } from "./lazyPortrait.js";
-import { createScrollButton, updateScrollButtonState, setupKeyboardNavigation, setupSwipeNavigation, applyAccessibilityImprovements } from "./carousel/index.js";
 import {
-  CAROUSEL_SCROLL_DISTANCE,
-  SPINNER_DELAY_MS
-} from "./constants.js";
+  createScrollButton,
+  updateScrollButtonState,
+  setupKeyboardNavigation,
+  setupSwipeNavigation,
+  applyAccessibilityImprovements
+} from "./carousel/index.js";
+import { CAROUSEL_SCROLL_DISTANCE, SPINNER_DELAY_MS } from "./constants.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
 
 /**

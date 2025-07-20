@@ -53,12 +53,7 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
   });
 }
 
-export function renderGameModeSwitches(
-  container,
-  gameModes,
-  getCurrentSettings,
-  handleUpdate
-) {
+export function renderGameModeSwitches(container, gameModes, getCurrentSettings, handleUpdate) {
   if (!container || !Array.isArray(gameModes)) return;
   const sortedModes = [...gameModes].sort((a, b) => a.order - b.order);
   sortedModes.forEach((mode) => {

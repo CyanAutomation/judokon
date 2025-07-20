@@ -224,9 +224,7 @@ describe("classicBattle", () => {
     });
     getRandomJudokaMock = vi.fn(() => ({ id: 2 }));
     renderJudokaCardMock = vi.fn(async () => {});
-    const { startRound, _resetForTest } = await import(
-      "../../src/helpers/classicBattle.js"
-    );
+    const { startRound, _resetForTest } = await import("../../src/helpers/classicBattle.js");
     _resetForTest();
     await startRound();
     expect(generateRandomCardMock).toHaveBeenCalledWith(

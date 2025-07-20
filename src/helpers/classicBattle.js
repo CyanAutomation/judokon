@@ -59,7 +59,6 @@ function resetStatButtons() {
   });
 }
 
-
 function showResult(message) {
   const el = document.getElementById("round-message");
   if (!el) return;
@@ -126,9 +125,7 @@ export async function startRound() {
   if (!judokaData) {
     judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
   }
-  const availableJudoka = Array.isArray(judokaData)
-    ? judokaData.filter((j) => !j.isHidden)
-    : [];
+  const availableJudoka = Array.isArray(judokaData) ? judokaData.filter((j) => !j.isHidden) : [];
   if (!gokyoLookup) {
     const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
     gokyoLookup = createGokyoLookup(gokyoData);
