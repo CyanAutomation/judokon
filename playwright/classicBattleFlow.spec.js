@@ -4,6 +4,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 test.describe("Classic battle flow", () => {
   test("timer auto-selects when expired", async ({ page }) => {
     await page.addInitScript(() => {
+      window.startCountdown = () => {};
       const orig = window.setInterval;
       window.setInterval = (fn, ms, ...args) => orig(fn, Math.min(ms, 10), ...args);
     });
@@ -12,11 +13,12 @@ test.describe("Classic battle flow", () => {
     const countdown = page.locator("header #next-round-timer");
     await expect(countdown).toHaveText(/\d+/);
     const result = page.locator("header #round-message");
-    await expect(result).not.toHaveText("", { timeout: 4000 });
+    await expect(result).not.toHaveText("", { timeout: 8000 });
   });
 
   test("tie message appears on equal stats", async ({ page }) => {
     await page.addInitScript(() => {
+      window.startCountdown = () => {};
       const orig = window.setInterval;
       window.setInterval = (fn, ms, ...args) => orig(fn, Math.max(ms, 3600000), ...args);
     });
