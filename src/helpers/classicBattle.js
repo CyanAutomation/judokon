@@ -21,6 +21,13 @@ function getCountdown() {
   return infoBar.startCountdown;
 }
 
+export function getStartRound() {
+  if (typeof window !== "undefined" && window.startRoundOverride) {
+    return window.startRoundOverride;
+  }
+  return startRound;
+}
+
 let judokaData = null;
 let gokyoLookup = null;
 
@@ -181,7 +188,8 @@ export function scheduleNextRound(result) {
 
   const attemptStart = async () => {
     try {
-      await startRound();
+      const start = getStartRound();
+      await start();
     } catch {
       showResult("Waiting...");
       setTimeout(attemptStart, 1000);
@@ -234,6 +242,9 @@ export function _resetForTest() {
   judokaData = null;
   gokyoLookup = null;
   engineReset();
+  if (typeof window !== "undefined") {
+    delete window.startRoundOverride;
+  }
   const timerEl = document.getElementById("next-round-timer");
   if (timerEl) timerEl.textContent = "";
   const resultEl = document.getElementById("round-message");
