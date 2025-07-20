@@ -1036,6 +1036,7 @@ button .ripple {
 .battle-header .info-right {
   display: flex;
   flex-direction: column;
+  padding: 0 2rem;
 }
 
 .battle-header .info-left {
