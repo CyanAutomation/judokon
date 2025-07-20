@@ -94,6 +94,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Player can quit mid-match; confirmation prompt appears; if confirmed, match ends with player loss recorded.
 - If AI difficulty affects stat selection, AI uses correct logic per difficulty setting.
 - Animation flow: transitions between card reveal, stat selection, and result screens complete smoothly without stalling (**each ≤400 ms at ≥60 fps**).
+- Stat buttons reset between rounds so no previous selection remains highlighted.
 - If the Judoka dataset fails to load, an error message appears with option to reload.
 
 ---
