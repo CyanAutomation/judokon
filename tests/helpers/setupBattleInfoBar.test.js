@@ -34,7 +34,7 @@ describe("setupBattleInfoBar", () => {
     expect(document.getElementById("round-message").textContent).toBe("Hi");
 
     mod.updateScore(1, 2);
-    expect(document.getElementById("score-display").textContent).toBe("You: 1 Computer: 2");
+    expect(document.getElementById("score-display").textContent).toBe("You: 1\nComputer: 2");
 
     mod.startCountdown(1);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 1s");
@@ -57,7 +57,7 @@ describe("setupBattleInfoBar", () => {
     mod.showMessage("Hello");
     expect(document.getElementById("round-message").textContent).toBe("Hello");
     mod.updateScore(3, 4);
-    expect(document.getElementById("score-display").textContent).toBe("You: 3 Computer: 4");
+    expect(document.getElementById("score-display").textContent).toBe("You: 3\nComputer: 4");
     vi.useFakeTimers();
     mod.startCountdown(1);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 1s");

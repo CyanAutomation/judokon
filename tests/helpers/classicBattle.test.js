@@ -97,7 +97,7 @@ describe("classicBattle", () => {
     timerSpy.advanceTimersByTime(31000);
     timerSpy.advanceTimersByTime(800);
     const score = document.querySelector("header #score-display").textContent;
-    expect(score).not.toBe("You: 0 Computer: 0");
+    expect(score).not.toBe("You: 0\nComputer: 0");
   });
 
   it("shows tie message when values are equal", async () => {
@@ -111,7 +111,7 @@ describe("classicBattle", () => {
     _resetForTest();
     handleStatSelection("power");
     expect(document.querySelector("header #round-message").textContent).toMatch(/Tie/);
-    expect(document.querySelector("header #score-display").textContent).toBe("You: 0 Computer: 0");
+    expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nComputer: 0");
   });
 
   it("quits match after confirmation", async () => {
@@ -135,7 +135,9 @@ describe("classicBattle", () => {
         `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
       handleStatSelection("power");
     }
-    expect(document.querySelector("header #score-display").textContent).toBe("You: 10 Computer: 0");
+    expect(document.querySelector("header #score-display").textContent).toBe(
+      "You: 10\nComputer: 0"
+    );
     expect(document.querySelector("header #round-message").textContent).toMatch(/win the match/i);
 
     document.getElementById("player-card").innerHTML =
@@ -144,7 +146,9 @@ describe("classicBattle", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     handleStatSelection("power");
 
-    expect(document.querySelector("header #score-display").textContent).toBe("You: 10 Computer: 0");
+    expect(document.querySelector("header #score-display").textContent).toBe(
+      "You: 10\nComputer: 0"
+    );
   });
 
   it("draws a different card for the computer", async () => {
