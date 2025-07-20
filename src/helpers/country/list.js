@@ -15,9 +15,7 @@ export async function populateCountryList(container) {
     );
     const countryData = await loadCountryCodeMapping();
     const activeCountries = [...uniqueCountries]
-      .map((name) =>
-        countryData.find((entry) => entry.country === name && entry.active)
-      )
+      .map((name) => countryData.find((entry) => entry.country === name && entry.active))
       .filter(Boolean)
       .sort((a, b) => a.country.localeCompare(b.country));
     const allButton = document.createElement("button");

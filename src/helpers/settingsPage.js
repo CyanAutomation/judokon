@@ -13,7 +13,11 @@ import { applyDisplayMode } from "./displayMode.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 
-import { applyInitialControlValues, attachToggleListeners, renderGameModeSwitches } from "./settings/index.js";
+import {
+  applyInitialControlValues,
+  attachToggleListeners,
+  renderGameModeSwitches
+} from "./settings/index.js";
 
 /**
  * Initialize controls and event wiring for the Settings page.

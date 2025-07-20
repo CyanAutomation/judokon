@@ -54,10 +54,7 @@ export async function getCountryNameFromCode(code) {
   const match = countryCodeMapping.find(
     (entry) => entry.code.toLowerCase() === code.toLowerCase() && entry.active
   );
-  debugLog(
-    `Resolved country name for code "${code}":`,
-    match ? match.country : "Vanuatu"
-  );
+  debugLog(`Resolved country name for code "${code}":`, match ? match.country : "Vanuatu");
   return match ? match.country : "Vanuatu";
 }
 
