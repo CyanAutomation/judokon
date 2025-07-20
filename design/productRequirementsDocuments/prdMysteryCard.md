@@ -16,9 +16,11 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 
 ## Goals
 
-- Prevent pre-selection peeking at the opponent’s stats.
-- Introduce momentary suspense in each round.
+- Prevent pre-selection peeking at the opponent’s stats to maintain competitive fairness.
+- Introduce momentary suspense in each round to heighten emotional investment.
 - Preserve visual consistency using an existing card (`judokaId=1`) with special styling.
+- Ensure the opponent card reveal animation completes within **400ms**.
+- Guarantee **100% concealment** of all CPU stats during player stat selection.
 
 ---
 
@@ -27,27 +29,6 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 - As a player, I want to choose my stat *before* seeing the opponent’s card, so the match feels fair and unpredictable.
 - As a returning player, I want the placeholder card to feel familiar and thematic, not jarring.
 - As a developer, I want to reuse an existing hidden judoka record to simplify implementation and asset management.
-
----
-
-Priority
-Feature
-Description
-P1
-Placeholder Mystery Card
-Show judokaId=1 card with silhouette and "?" stats at start of each CPU round
-P1
-Stat Redaction on Render
-Replace all visible stat values with "?" regardless of real values
-P1
-Card Swap on Stat Selection
-Reveal opponent card via animated swap within 400ms
-P2
-Consistent Styling
-Apply proper rarity border, portrait container, and stat layout
-P3
-Accessibility Compliance
-Ensure all question marks and names are screen-reader friendly
 
 ---
 
@@ -67,13 +48,15 @@ Ensure all question marks and names are screen-reader friendly
 - **Given** the Mystery Judoka card is displayed,  
   **Then** it should retain correct rarity styling, weight class, and flag as defined in `judoka.json`.
 
+- **Given** the reveal animation starts,  
+  **Then** the full transition should complete cleanly without layout shift or UI jump.
+
 ---
 
 ## Edge Cases / Failure States
 
 - **Player selects stat before Mystery Card is rendered →** Delay selection until render complete.
 - **Mystery Judoka stats not replaced visually →** Default to `"?"` in all stat fields regardless of backend value.
-- **Mystery Judoka card shown outside CPU battle →** Prevent display in any mode where both players are human.
 - **Animation interrupted →** Ensure fallback swap (no animation) still completes the reveal.
 
 ---
@@ -115,6 +98,7 @@ Ensure all question marks and names are screen-reader friendly
 - Slide or flip animation replaces the card within **400ms**.
 - Real portrait, name, stats, flag, signature move fade in.
 - All question marks are replaced with real values.
+- No layout shift or scroll jump should occur.
 
 ---
 
@@ -124,7 +108,7 @@ Ensure all question marks and names are screen-reader friendly
 | -------- | --------------------------- | --------------------------------------------------------------------------- |
 | **P1**   | Placeholder Mystery Card     | Show `judokaId=1` card with silhouette and `"?"` stats at start of each CPU round |
 | **P1**   | Stat Redaction on Render     | Replace all visible stat values with `"?"` regardless of real values        |
-| **P1**   | Card Swap on Stat Selection  | Reveal opponent card via animated swap within **400ms**                     |
+| **P1**   | Card Swap on Stat Selection  | Reveal opponent card via animated swap within **400ms**, no layout shift   |
 | **P2**   | Consistent Styling           | Apply proper rarity border, portrait container, and stat layout             |
 | **P3**   | Accessibility Compliance     | Ensure all question marks and names are screen-reader friendly              |
 
@@ -141,7 +125,6 @@ Ensure all question marks and names are screen-reader friendly
 ## Integration Notes
 
 - The **Mystery Judoka card** is never shown in non-CPU modes.
-- The Mystery card’s rarity border should match the real CPU card *already drawn* — styling should not default to Common.
 - Use the existing `renderJudokaCard()` helper with a `useObscuredStats` flag to substitute `"?"` values at render time.
 - Maintain card aspect ratio and layout as defined in the core Judoka Cards PRD — do **not** introduce custom card layouts for the mystery variant.
 
