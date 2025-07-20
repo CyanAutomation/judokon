@@ -24,7 +24,10 @@ test.describe("Classic battle flow", () => {
     });
     await page.goto("/src/pages/battleJudoka.html");
     await page.waitForSelector("header #next-round-timer");
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
+      const mod = await import("../helpers/classicBattle.js");
+      mod._resetForTest();
+      document.querySelector("#next-round-timer").textContent = "Time Left: 3s";
       document.querySelector("#player-card").innerHTML =
         `<ul><li class='stat'><strong>Power</strong> <span>3</span></li></ul>`;
       document.querySelector("#computer-card").innerHTML =
