@@ -30,6 +30,7 @@ export function getStartRound() {
 
 let judokaData = null;
 let gokyoLookup = null;
+let computerJudoka = null;
 
 /**
  * Remove highlight and focus from all stat buttons.
@@ -99,6 +100,25 @@ function startTimer() {
 }
 
 /**
+ * Reveal the computer's hidden card.
+ *
+ * @pseudocode
+ * 1. Exit early when no stored judoka exists.
+ * 2. Render `computerJudoka` into the computer card container.
+ * 3. Clear `computerJudoka` after rendering.
+ *
+ * @returns {Promise<void>} Resolves when the card is displayed.
+ */
+export async function revealComputerCard() {
+  if (!computerJudoka) return;
+  const container = document.getElementById("computer-card");
+  await renderJudokaCard(computerJudoka, gokyoLookup, container, {
+    animate: false
+  });
+  computerJudoka = null;
+}
+
+/**
  * Start a new battle round by drawing cards for both players.
  *
  * @pseudocode
@@ -106,9 +126,9 @@ function startTimer() {
  * 2. Load judoka and gokyo data if not already cached.
  * 3. Draw a random card for the player using `generateRandomCard` and capture
  *    the selected judoka.
- * 4. Select a random judoka for the computer.
+ * 4. Select a random judoka for the computer and store it.
  *    - If it matches the player's judoka, retry up to a safe limit.
- *    - Display the chosen judoka with `renderJudokaCard`.
+ *    - Render the mystery placeholder card (`judokaId=1`) with obscured stats.
  * 5. Initialize the round timer.
  *
  * @returns {Promise<void>} Resolves when cards are displayed.
@@ -138,8 +158,11 @@ export async function startRound() {
       attempts += 1;
     }
   }
-  await renderJudokaCard(compJudoka, gokyoLookup, computerContainer, {
-    animate: false
+  computerJudoka = compJudoka;
+  const placeholder = judokaData.find((j) => j.id === 1) || compJudoka;
+  await renderJudokaCard(placeholder, gokyoLookup, computerContainer, {
+    animate: false,
+    useObscuredStats: true
   });
   showResult("");
   updateScoreDisplay();
@@ -208,13 +231,15 @@ export function scheduleNextRound(result) {
  * Compare the chosen stat and trigger the next round.
  *
  * @pseudocode
- * 1. Evaluate the round using `evaluateRound` to update scores.
- * 2. Clear the selected state from all stat buttons.
- * 3. Call `scheduleNextRound` with the evaluation result.
+ * 1. Reveal the computer's real card.
+ * 2. Evaluate the round using `evaluateRound` to update scores.
+ * 3. Clear the selected state from all stat buttons.
+ * 4. Call `scheduleNextRound` with the evaluation result.
  *
  * @param {string} stat - The stat name to compare.
  */
-export function handleStatSelection(stat) {
+export async function handleStatSelection(stat) {
+  await revealComputerCard();
   const result = evaluateRound(stat);
   resetStatButtons();
   scheduleNextRound(result);
@@ -241,6 +266,7 @@ export function quitMatch() {
 export function _resetForTest() {
   judokaData = null;
   gokyoLookup = null;
+  computerJudoka = null;
   engineReset();
   if (typeof window !== "undefined") {
     delete window.startRoundOverride;
@@ -250,4 +276,8 @@ export function _resetForTest() {
   const resultEl = document.getElementById("round-message");
   if (resultEl) resultEl.textContent = "";
   updateScoreDisplay();
+}
+
+export function getComputerJudoka() {
+  return computerJudoka;
 }
