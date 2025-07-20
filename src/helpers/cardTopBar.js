@@ -1,4 +1,4 @@
-import { getCountryNameFromCode } from "./countryUtils.js";
+import { getCountryNameFromCode } from "./country/index.js";
 import { getValue } from "./utils.js";
 import { debugLog } from "./debug.js";
 

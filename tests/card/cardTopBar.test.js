@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import * as countryUtils from "../../src/helpers/countryUtils.js";
+import * as countryUtils from "../../src/helpers/country/index.js";
 import {
   generateCardTopBar,
   createNameContainer,
