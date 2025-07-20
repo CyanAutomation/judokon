@@ -1,11 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { createRandomCardDom, resetDom } from "../utils/testUtils.js";
 
-afterEach(() => {
-  vi.restoreAllMocks();
-  vi.useRealTimers();
-  vi.resetModules();
-  document.body.innerHTML = "";
-});
+afterEach(resetDom);
 
 describe("randomJudokaPage module", () => {
   it("passes reduced motion flag when generating cards", async () => {
@@ -21,10 +17,8 @@ describe("randomJudokaPage module", () => {
     vi.doMock("../../src/components/Button.js", () => ({ createButton }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ shouldReduceMotionSync }));
 
-    document.body.innerHTML = `
-      <div class="card-section"></div>
-      <div id="card-container"></div>
-    `;
+    const { section, container } = createRandomCardDom();
+    document.body.append(section, container);
 
     const { setupRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
 

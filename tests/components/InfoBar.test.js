@@ -6,11 +6,9 @@ import {
   startCountdown,
   updateScore
 } from "../../src/components/InfoBar.js";
+import { createInfoBarHeader, resetDom } from "../utils/testUtils.js";
 
-afterEach(() => {
-  vi.useRealTimers();
-  document.body.innerHTML = "";
-});
+afterEach(resetDom);
 
 describe("InfoBar component", () => {
   it("creates DOM structure with proper aria attributes", () => {
@@ -46,13 +44,9 @@ describe("InfoBar component", () => {
 
   it("initializes from existing DOM", () => {
     vi.useFakeTimers();
-    document.body.innerHTML = `
-      <header>
-        <p id="round-message"></p>
-        <p id="next-round-timer"></p>
-        <p id="score-display"></p>
-      </header>`;
-    initInfoBar(document.querySelector("header"));
+    const header = createInfoBarHeader();
+    document.body.appendChild(header);
+    initInfoBar(header);
     showMessage("Hi");
     expect(document.getElementById("round-message").textContent).toBe("Hi");
     updateScore(2, 3);

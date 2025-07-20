@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { resetDom } from "../utils/testUtils.js";
 
-afterEach(() => {
-  vi.restoreAllMocks();
-  document.body.innerHTML = "";
-});
+afterEach(resetDom);
 
 describe("prdReaderPage", () => {
   it("navigates documents with wrap-around", async () => {
