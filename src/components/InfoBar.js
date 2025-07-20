@@ -38,6 +38,23 @@ export function createInfoBar() {
 }
 
 /**
+ * Initialize internal references using an existing info bar element.
+ *
+ * @pseudocode
+ * 1. Locate child elements within `container` by their IDs.
+ * 2. Store these nodes in module-scoped variables for later updates.
+ *
+ * @param {HTMLElement} container - Existing info bar element.
+ * @returns {void}
+ */
+export function initInfoBar(container) {
+  if (!container) return;
+  messageEl = container.querySelector("#round-message");
+  timerEl = container.querySelector("#next-round-timer");
+  scoreEl = container.querySelector("#score-display");
+}
+
+/**
  * Update the round message text.
  *
  * @pseudocode

@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import {
   createInfoBar,
+  initInfoBar,
   showMessage,
   startCountdown,
   updateScore
@@ -37,6 +38,25 @@ describe("InfoBar component", () => {
     startCountdown(2);
     expect(document.getElementById("next-round-timer").textContent).toBe("2");
     vi.advanceTimersByTime(1000);
+    expect(document.getElementById("next-round-timer").textContent).toBe("1");
+    vi.advanceTimersByTime(1000);
+    expect(document.getElementById("next-round-timer").textContent).toBe("0");
+  });
+
+  it("initializes from existing DOM", () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = `
+      <div class="battle-info-bar">
+        <p id="round-message"></p>
+        <p id="next-round-timer"></p>
+        <p id="score-display"></p>
+      </div>`;
+    initInfoBar(document.querySelector(".battle-info-bar"));
+    showMessage("Hi");
+    expect(document.getElementById("round-message").textContent).toBe("Hi");
+    updateScore(2, 3);
+    expect(document.getElementById("score-display").textContent).toBe("You: 2 Computer: 3");
+    startCountdown(1);
     expect(document.getElementById("next-round-timer").textContent).toBe("1");
     vi.advanceTimersByTime(1000);
     expect(document.getElementById("next-round-timer").textContent).toBe("0");
