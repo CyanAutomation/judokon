@@ -1,4 +1,4 @@
-import { getFlagUrl } from "./countryUtils.js";
+import { getFlagUrl } from "./country/index.js";
 import { generateCardTopBar, createNoDataContainer } from "./cardTopBar.js";
 import { safeGenerate } from "./errorUtils.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";

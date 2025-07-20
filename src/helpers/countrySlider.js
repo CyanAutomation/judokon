@@ -1,4 +1,4 @@
-import { populateCountryList } from "./countryUtils.js";
+import { populateCountryList } from "./country/index.js";
 
 /**
  * Build a horizontally scrolling slider of country flags.

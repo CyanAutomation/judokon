@@ -29,7 +29,7 @@ describe("populateCountryList", () => {
       .mockResolvedValueOnce({ ok: true, json: async () => judoka })
       .mockResolvedValueOnce({ ok: true, json: async () => mapping });
 
-    const { populateCountryList } = await import("../../src/helpers/countryUtils.js");
+    const { populateCountryList } = await import("../../src/helpers/country/index.js");
 
     const container = document.createElement("div");
     await populateCountryList(container);
@@ -49,7 +49,7 @@ describe("populateCountryList", () => {
       .mockResolvedValueOnce({ ok: true, json: async () => judoka })
       .mockResolvedValueOnce({ ok: true, json: async () => mapping });
 
-    const { populateCountryList } = await import("../../src/helpers/countryUtils.js");
+    const { populateCountryList } = await import("../../src/helpers/country/index.js");
 
     const container = document.createElement("div");
     await populateCountryList(container);
@@ -80,7 +80,7 @@ describe("populateCountryList", () => {
       return Promise.resolve({ ok: true, json: async () => mapping });
     });
 
-    const { populateCountryList } = await import("../../src/helpers/countryUtils.js");
+    const { populateCountryList } = await import("../../src/helpers/country/index.js");
 
     const track = document.createElement("div");
     const scrollContainer = document.createElement("div");
@@ -103,7 +103,7 @@ describe("populateCountryList", () => {
 
   it("handles fetch failure gracefully", async () => {
     global.fetch = vi.fn().mockRejectedValue(new Error("network error"));
-    const { populateCountryList } = await import("../../src/helpers/countryUtils.js");
+    const { populateCountryList } = await import("../../src/helpers/country/index.js");
     const container = document.createElement("div");
     await expect(populateCountryList(container)).resolves.toBeUndefined();
     expect(container.querySelectorAll(".slide").length).toBe(0);
@@ -122,7 +122,7 @@ describe("populateCountryList", () => {
       .fn()
       .mockResolvedValueOnce({ ok: true, json: async () => judoka })
       .mockResolvedValueOnce({ ok: true, json: async () => mapping });
-    const { populateCountryList } = await import("../../src/helpers/countryUtils.js");
+    const { populateCountryList } = await import("../../src/helpers/country/index.js");
     const container = document.createElement("div");
     await populateCountryList(container);
     const slides = container.querySelectorAll(".slide");
@@ -136,7 +136,7 @@ describe("populateCountryList", () => {
       .fn()
       .mockResolvedValueOnce({ ok: true, json: async () => [] })
       .mockResolvedValueOnce({ ok: true, json: async () => [] });
-    const { populateCountryList } = await import("../../src/helpers/countryUtils.js");
+    const { populateCountryList } = await import("../../src/helpers/country/index.js");
     const container = document.createElement("div");
     await populateCountryList(container);
     const slides = container.querySelectorAll(".slide");
