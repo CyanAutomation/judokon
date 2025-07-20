@@ -17,6 +17,10 @@ import { updateScore, startCountdown } from "./setupBattleInfoBar.js";
 let judokaData = null;
 let gokyoLookup = null;
 
+function resetStatButtons() {
+  document.querySelectorAll("#stat-buttons button").forEach((btn) => btn.blur());
+}
+
 function getStatValue(container, stat) {
   const index = STATS.indexOf(stat) + 1;
   const span = container.querySelector(`li.stat:nth-child(${index}) span`);
@@ -73,6 +77,7 @@ function startTimer() {
  * @returns {Promise<void>} Resolves when cards are displayed.
  */
 export async function startRound() {
+  resetStatButtons();
   if (!judokaData) {
     judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
   }
@@ -130,6 +135,7 @@ export function handleStatSelection(stat) {
   if (result.message) {
     showResult(result.message);
   }
+  resetStatButtons();
   updateScoreDisplay();
   if (!result.matchEnded) {
     const attemptStart = async () => {
