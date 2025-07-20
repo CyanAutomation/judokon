@@ -78,6 +78,7 @@ additional guidance.
 All new code should aim to be simple and modular. Favor small,
 single-purpose functions and keep modules focused on one task. Avoid
 large, monolithic implementations whenever possible.
+Pull request descriptions must briefly mention how your changes maintain or improve this modular structure.
 
 ## Commit Messages
 
