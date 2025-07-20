@@ -160,7 +160,7 @@ describe("classicBattle", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     const result = evaluateRound("power");
     expect(result.message).toMatch(/win/);
-    expect(document.querySelector("header #score-display").textContent).toBe("You: 1 Computer: 0");
+    expect(document.querySelector("header #score-display").textContent).toBe("You: 1\nComputer: 0");
   });
 
   it("scheduleNextRound triggers a countdown", async () => {
