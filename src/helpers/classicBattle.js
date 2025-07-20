@@ -138,24 +138,18 @@ export async function startRound() {
 }
 
 /**
- * Compare the chosen stat and update scores.
+ * Evaluate the selected stat values and update the match state.
  *
  * @pseudocode
- * 1. Stop the round timer to prevent duplicate selections.
- * 2. Read the selected stat value from both cards.
- * 3. Compare the values and update scores accordingly.
- *    - When values are equal, show "Tie – no score" and skip score changes.
- * 4. Increment the round counter and update the score display.
- * 5. Check if the match should end:
- *    - End when either player reaches `CLASSIC_BATTLE_POINTS_TO_WIN`.
- *    - End after `CLASSIC_BATTLE_MAX_ROUNDS` rounds.
- * 6. Display the result message.
- * 7. Remove the highlight from all stat buttons.
- * 8. Begin the next round after a short delay if the match continues.
+ * 1. Retrieve the stat values from both player and computer cards.
+ * 2. Let the battle engine compare the values to update scores.
+ * 3. Display the result message and refresh the score display.
+ * 4. Return the comparison result to the caller.
  *
  * @param {string} stat - The stat name to compare.
+ * @returns {{message: string, matchEnded: boolean}}
  */
-export function handleStatSelection(stat) {
+export function evaluateRound(stat) {
   const playerContainer = document.getElementById("player-card");
   const computerContainer = document.getElementById("computer-card");
   const playerVal = getStatValue(playerContainer, stat);
@@ -164,8 +158,56 @@ export function handleStatSelection(stat) {
   if (result.message) {
     showResult(result.message);
   }
-  resetStatButtons();
   updateScoreDisplay();
+  return result;
+}
+
+/**
+ * Begin the next round after a countdown if the match continues.
+ *
+ * @pseudocode
+ * 1. Exit immediately when the match has ended.
+ * 2. Attempt to start the next round after a short countdown.
+ *    - Retry the start if the round cannot begin immediately.
+ *    - Display "Waiting..." while retrying.
+ * 3. Stop scheduling if the match ends during the countdown.
+ *
+ * @param {{matchEnded: boolean}} result - Result from evaluateRound.
+ */
+export function scheduleNextRound(result) {
+  if (result.matchEnded) return;
+
+  const attemptStart = async () => {
+    try {
+      await startRound();
+    } catch {
+      showResult("Waiting...");
+      setTimeout(attemptStart, 1000);
+    }
+  };
+
+  startCountdown(3, () => {
+    if (!isMatchEnded()) {
+      attemptStart();
+    }
+  });
+}
+
+/**
+ * Compare the chosen stat and trigger the next round.
+ *
+ * @pseudocode
+ * 1. Evaluate the round using `evaluateRound` to update scores.
+ * 2. Clear the selected state from all stat buttons.
+ * 3. Call `scheduleNextRound` with the evaluation result.
+ *
+ * @param {string} stat - The stat name to compare.
+ */
+export function handleStatSelection(stat) {
+  const result = evaluateRound(stat);
+  resetStatButtons();
+  scheduleNextRound(result);
+=======
   if (!result.matchEnded) {
     const attemptStart = async () => {
       try {

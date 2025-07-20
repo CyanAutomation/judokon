@@ -151,6 +151,28 @@ describe("classicBattle", () => {
     );
   });
 
+  it("evaluateRound updates the score", async () => {
+    const { evaluateRound, _resetForTest } = await import("../../src/helpers/classicBattle.js");
+    _resetForTest();
+    document.getElementById("player-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
+    document.getElementById("computer-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+    const result = evaluateRound("power");
+    expect(result.message).toMatch(/win/);
+    expect(document.querySelector("header #score-display").textContent).toBe("You: 1 Computer: 0");
+  });
+
+  it("scheduleNextRound triggers a countdown", async () => {
+    const battleMod = await import("../../src/helpers/classicBattle.js");
+    const infoMod = await import("../../src/helpers/setupBattleInfoBar.js");
+    const startSpy = vi.spyOn(battleMod, "startRound").mockResolvedValue();
+    const cdSpy = vi.spyOn(infoMod, "startCountdown").mockImplementation((_s, cb) => cb());
+    battleMod.scheduleNextRound({ matchEnded: false });
+    expect(cdSpy).toHaveBeenCalledWith(3, expect.any(Function));
+    expect(startSpy).toHaveBeenCalled();
+  });
+
   it("draws a different card for the computer", async () => {
     generateRandomCardMock = vi.fn(async (d, g, c, _pm, cb) => {
       c.innerHTML = "<ul></ul>";
