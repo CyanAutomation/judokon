@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 
 test.describe("Settings page", () => {
   test.beforeEach(async ({ page }) => {
@@ -9,7 +10,7 @@ test.describe("Settings page", () => {
   });
 
   test("page loads", async ({ page }) => {
-    await expect(page).toHaveTitle(/Ju-Do-Kon!/i);
+    await verifyPageBasics(page, ["nav-classicBattle", "nav-randomJudoka"]);
   });
 
   test("mode toggle visible", async ({ page }) => {
@@ -18,8 +19,7 @@ test.describe("Settings page", () => {
   });
 
   test("essential elements visible", async ({ page }) => {
-    await expect(page.getByRole("navigation")).toBeVisible();
-    await expect(page.getByRole("img", { name: "JU-DO-KON! Logo" })).toBeVisible();
+    await verifyPageBasics(page, ["nav-classicBattle", "nav-randomJudoka"]);
     await expect(page.getByLabel(/sound/i)).toBeVisible();
     await expect(page.getByLabel(/full navigation map/i)).toBeVisible();
     await expect(page.getByLabel(/motion effects/i)).toBeVisible();

@@ -1,6 +1,7 @@
 import * as path from "path";
 import { fileURLToPath } from "url";
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/commonSetup.js";
+import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const STORY_FIXTURE = path.resolve(__dirname, "../tests/fixtures/aesopsFables.json");
@@ -19,6 +20,10 @@ test.describe("Pseudo-Japanese toggle", () => {
     );
     await page.goto("/src/pages/meditation.html");
     await page.waitForSelector("#quote .quote-content");
+  });
+
+  test("page basics", async ({ page }) => {
+    await verifyPageBasics(page, ["nav-randomJudoka", "nav-classicBattle"]);
   });
 
   test("toggle updates quote text", async ({ page }) => {

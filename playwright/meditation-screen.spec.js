@@ -1,8 +1,13 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/commonSetup.js";
+import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 
 test.describe("Meditation screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/meditation.html");
+  });
+
+  test("page basics", async ({ page }) => {
+    await verifyPageBasics(page, ["nav-randomJudoka", "nav-classicBattle"]);
   });
 
   test("elements are visible", async ({ page }) => {
