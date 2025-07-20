@@ -75,7 +75,7 @@ function startTimer() {
   const timerEl = document.getElementById("next-round-timer");
   engineStartRound(
     (remaining) => {
-      if (timerEl) timerEl.textContent = String(remaining);
+      if (timerEl) timerEl.textContent = `Time Left: ${remaining}s`;
     },
     () => {
       const randomStat = STATS[Math.floor(Math.random() * STATS.length)];

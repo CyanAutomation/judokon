@@ -37,11 +37,11 @@ describe("InfoBar component", () => {
     expect(document.getElementById("score-display").textContent).toBe("You: 1 Computer: 2");
 
     startCountdown(2);
-    expect(document.getElementById("next-round-timer").textContent).toBe("2");
+    expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 2s");
     vi.advanceTimersByTime(1000);
-    expect(document.getElementById("next-round-timer").textContent).toBe("1");
+    expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 1s");
     vi.advanceTimersByTime(1000);
-    expect(document.getElementById("next-round-timer").textContent).toBe("0");
+    expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 0s");
   });
 
   it("initializes from existing DOM", () => {
@@ -58,8 +58,8 @@ describe("InfoBar component", () => {
     updateScore(2, 3);
     expect(document.getElementById("score-display").textContent).toBe("You: 2 Computer: 3");
     startCountdown(1);
-    expect(document.getElementById("next-round-timer").textContent).toBe("1");
+    expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 1s");
     vi.advanceTimersByTime(1000);
-    expect(document.getElementById("next-round-timer").textContent).toBe("0");
+    expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 0s");
   });
 });
