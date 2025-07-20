@@ -107,18 +107,26 @@ export async function displayJudokaCard(judoka, gokyo, gameArea) {
  * 1. Validate `judoka` with `hasRequiredJudokaFields`.
  *    - If invalid, log an error and exit early.
  * 2. Ensure `container` exists before proceeding.
- * 3. Generate the card element using `generateJudokaCardHTML`.
- * 4. Replace the container contents with the generated card.
- * 5. When `animate` is true, add the `animate-card` class on the next frame.
+ * 3. When `useObscuredStats` is true, clone `judoka` and replace name and stats
+ *    with "?".
+ * 4. Generate the card element using `generateJudokaCardHTML`.
+ * 5. Replace the container contents with the generated card.
+ * 6. When `animate` is true, add the `animate-card` class on the next frame.
  *
  * @param {Judoka} judoka - Judoka data to render.
  * @param {Object<string, GokyoEntry>} gokyoLookup - Lookup of gokyo moves.
  * @param {HTMLElement} container - Element where the card is injected.
  * @param {Object} [options] - Render options.
  * @param {boolean} [options.animate=false] - Whether to apply animation.
+ * @param {boolean} [options.useObscuredStats=false] - Obscure stats when true.
  * @returns {Promise<HTMLElement|null>} The rendered card element or `null`.
  */
-export async function renderJudokaCard(judoka, gokyoLookup, container, { animate = false } = {}) {
+export async function renderJudokaCard(
+  judoka,
+  gokyoLookup,
+  container,
+  { animate = false, useObscuredStats = false } = {}
+) {
   if (!container) return null;
   if (!hasRequiredJudokaFields(judoka)) {
     console.error("Invalid judoka object:", judoka);
@@ -126,7 +134,19 @@ export async function renderJudokaCard(judoka, gokyoLookup, container, { animate
   }
 
   try {
-    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+    let cardData = judoka;
+    if (useObscuredStats) {
+      cardData = structuredClone(judoka);
+      cardData.firstname = "?";
+      cardData.surname = "?";
+      if (cardData.stats && typeof cardData.stats === "object") {
+        for (const key of Object.keys(cardData.stats)) {
+          cardData.stats[key] = "?";
+        }
+      }
+    }
+
+    const card = await generateJudokaCardHTML(cardData, gokyoLookup);
     if (!card) return null;
     container.innerHTML = "";
     container.appendChild(card);
