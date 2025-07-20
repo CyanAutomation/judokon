@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { resetDom } from "../utils/testUtils.js";
 
-afterEach(() => {
-  vi.restoreAllMocks();
-  vi.resetModules();
-  document.body.innerHTML = "";
-});
+afterEach(resetDom);
 
 describe("onDomReady", () => {
   it("runs callback immediately when document is ready", async () => {

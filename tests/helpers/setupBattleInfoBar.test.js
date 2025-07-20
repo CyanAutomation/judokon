@@ -1,21 +1,15 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { createInfoBarHeader, resetDom } from "../utils/testUtils.js";
 
 const originalReadyState = Object.getOwnPropertyDescriptor(document, "readyState");
 
 beforeEach(() => {
   vi.resetModules();
-  document.body.innerHTML = `
-    <header>
-      <p id="round-message"></p>
-      <p id="next-round-timer"></p>
-      <p id="score-display"></p>
-    </header>`;
+  document.body.appendChild(createInfoBarHeader());
 });
 
 afterEach(() => {
-  vi.restoreAllMocks();
-  vi.useRealTimers();
-  document.body.innerHTML = "";
+  resetDom();
   if (originalReadyState) {
     Object.defineProperty(document, "readyState", originalReadyState);
   }
@@ -51,8 +45,12 @@ describe("setupBattleInfoBar", () => {
   });
 
   it("attaches to pre-existing elements", async () => {
-    Object.defineProperty(document, "readyState", { value: "complete", configurable: true });
-    document.body.innerHTML = `<header><p id="round-message"></p><p id="next-round-timer"></p><p id="score-display"></p></header>`;
+    Object.defineProperty(document, "readyState", {
+      value: "complete",
+      configurable: true
+    });
+    document.body.innerHTML = "";
+    document.body.appendChild(createInfoBarHeader());
     const mod = await import("../../src/helpers/setupBattleInfoBar.js");
     mod.showMessage("Hello");
     expect(document.getElementById("round-message").textContent).toBe("Hello");

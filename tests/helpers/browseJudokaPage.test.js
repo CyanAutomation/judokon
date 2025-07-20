@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { resetDom } from "../utils/testUtils.js";
 
-afterEach(() => {
-  vi.restoreAllMocks();
-  vi.resetModules();
-  document.body.innerHTML = "";
-});
+afterEach(resetDom);
 
 describe("browseJudokaPage helpers", () => {
   it("setupCountryToggle toggles panel and loads flags once", async () => {
