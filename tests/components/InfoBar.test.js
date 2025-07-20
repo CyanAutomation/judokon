@@ -14,8 +14,8 @@ afterEach(() => {
 
 describe("InfoBar component", () => {
   it("creates DOM structure with proper aria attributes", () => {
-    const bar = createInfoBar();
-    expect(bar.classList.contains("battle-info-bar")).toBe(true);
+    const header = document.createElement("header");
+    const bar = createInfoBar(header);
     const msg = bar.querySelector("#round-message");
     const timer = bar.querySelector("#next-round-timer");
     const score = bar.querySelector("#score-display");
@@ -26,8 +26,9 @@ describe("InfoBar component", () => {
 
   it("updates message, score and countdown", () => {
     vi.useFakeTimers();
-    const bar = createInfoBar();
-    document.body.appendChild(bar);
+    const header = document.createElement("header");
+    createInfoBar(header);
+    document.body.appendChild(header);
 
     showMessage("Hello");
     expect(document.getElementById("round-message").textContent).toBe("Hello");
@@ -46,12 +47,12 @@ describe("InfoBar component", () => {
   it("initializes from existing DOM", () => {
     vi.useFakeTimers();
     document.body.innerHTML = `
-      <div class="battle-info-bar">
+      <header>
         <p id="round-message"></p>
         <p id="next-round-timer"></p>
         <p id="score-display"></p>
-      </div>`;
-    initInfoBar(document.querySelector(".battle-info-bar"));
+      </header>`;
+    initInfoBar(document.querySelector("header"));
     showMessage("Hi");
     expect(document.getElementById("round-message").textContent).toBe("Hi");
     updateScore(2, 3);

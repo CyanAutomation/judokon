@@ -28,20 +28,20 @@
 
   <body>
     <div class="home-screen">
-      <header class="header">
-        <div class="character-slot left"></div>
+      <header class="header battle-header">
+        <div class="info-left">
+          <p id="round-message"></p>
+          <p id="next-round-timer"></p>
+        </div>
         <div class="logo-container">
           <a href="../../index.html" data-testid="home-link">
             <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
           </a>
         </div>
-        <div class="character-slot right"></div>
+        <div class="info-right">
+          <p id="score-display">You: 0 Computer: 0</p>
+        </div>
       </header>
-      <div class="battle-info-bar">
-        <p id="round-message"></p>
-        <p id="next-round-timer"></p>
-        <p id="score-display">You: 0 Computer: 0</p>
-      </div>
 
       <main class="container" role="main">
         <section id="battle-area">

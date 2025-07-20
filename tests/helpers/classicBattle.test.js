@@ -28,11 +28,11 @@ describe("classicBattle", () => {
     document.body.innerHTML = `
       <div id="player-card"></div>
       <div id="computer-card"></div>
-      <div class="battle-info-bar">
+      <header>
         <p id="round-message"></p>
         <p id="next-round-timer"></p>
         <p id="score-display"></p>
-      </div>`;
+      </header>`;
     timerSpy = vi.useFakeTimers();
     generateRandomCardMock = vi.fn(async (data, g, container, _pm, cb) => {
       container.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>5</span></li><li class="stat"><strong>Speed</strong> <span>5</span></li><li class="stat"><strong>Technique</strong> <span>5</span></li><li class="stat"><strong>Kumi-kata</strong> <span>5</span></li><li class="stat"><strong>Ne-waza</strong> <span>5</span></li></ul>`;
@@ -55,7 +55,7 @@ describe("classicBattle", () => {
     await startRound();
     timerSpy.advanceTimersByTime(31000);
     timerSpy.advanceTimersByTime(800);
-    const score = document.querySelector(".battle-info-bar #score-display").textContent;
+    const score = document.querySelector("header #score-display").textContent;
     expect(score).not.toBe("You: 0 Computer: 0");
   });
 
@@ -69,10 +69,8 @@ describe("classicBattle", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     _resetForTest();
     handleStatSelection("power");
-    expect(document.querySelector(".battle-info-bar #round-message").textContent).toMatch(/Tie/);
-    expect(document.querySelector(".battle-info-bar #score-display").textContent).toBe(
-      "You: 0 Computer: 0"
-    );
+    expect(document.querySelector("header #round-message").textContent).toMatch(/Tie/);
+    expect(document.querySelector("header #score-display").textContent).toBe("You: 0 Computer: 0");
   });
 
   it("quits match after confirmation", async () => {
@@ -80,7 +78,7 @@ describe("classicBattle", () => {
     const { quitMatch } = await import("../../src/helpers/classicBattle.js");
     quitMatch();
     expect(confirmSpy).toHaveBeenCalled();
-    expect(document.querySelector(".battle-info-bar #round-message").textContent).toMatch(/quit/i);
+    expect(document.querySelector("header #round-message").textContent).toMatch(/quit/i);
   });
 
   it("ends the match when player reaches 10 wins", async () => {
@@ -95,12 +93,8 @@ describe("classicBattle", () => {
         `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
       handleStatSelection("power");
     }
-    expect(document.querySelector(".battle-info-bar #score-display").textContent).toBe(
-      "You: 10 Computer: 0"
-    );
-    expect(document.querySelector(".battle-info-bar #round-message").textContent).toMatch(
-      /win the match/i
-    );
+    expect(document.querySelector("header #score-display").textContent).toBe("You: 10 Computer: 0");
+    expect(document.querySelector("header #round-message").textContent).toMatch(/win the match/i);
 
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
@@ -108,9 +102,7 @@ describe("classicBattle", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     handleStatSelection("power");
 
-    expect(document.querySelector(".battle-info-bar #score-display").textContent).toBe(
-      "You: 10 Computer: 0"
-    );
+    expect(document.querySelector("header #score-display").textContent).toBe("You: 10 Computer: 0");
   });
 
   it("draws a different card for the computer", async () => {
