@@ -34,7 +34,7 @@ describe("InfoBar component", () => {
     expect(document.getElementById("round-message").textContent).toBe("Hello");
 
     updateScore(1, 2);
-    expect(document.getElementById("score-display").textContent).toBe("You: 1 Computer: 2");
+    expect(document.getElementById("score-display").textContent).toBe("You: 1\nComputer: 2");
 
     startCountdown(2);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 2s");
@@ -56,7 +56,7 @@ describe("InfoBar component", () => {
     showMessage("Hi");
     expect(document.getElementById("round-message").textContent).toBe("Hi");
     updateScore(2, 3);
-    expect(document.getElementById("score-display").textContent).toBe("You: 2 Computer: 3");
+    expect(document.getElementById("score-display").textContent).toBe("You: 2\nComputer: 3");
     startCountdown(1);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 1s");
     vi.advanceTimersByTime(1000);

@@ -18,6 +18,7 @@ This file guides GitHub Copilot agents contributing to the JU-DO-KON! repository
 - Format code with Prettier and lint with ESLint (`eslint.config.mjs`)
 - **Preserve all JSDoc comments and `@pseudocode` blocks**; update them when the code changes
 - Public functions require JSDoc following the design docs
+- Always refactor complex logic into smaller helpers and keep modules focused on a single responsibility.
 
 ## Required Programmatic Checks
 

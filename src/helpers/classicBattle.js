@@ -12,7 +12,12 @@ import {
   STATS,
   _resetForTest as engineReset
 } from "./battleEngine.js";
-import { updateScore, startCountdown } from "./setupBattleInfoBar.js";
+import { updateScore, startCountdown as defaultCountdown } from "./setupBattleInfoBar.js";
+
+const countdown =
+  typeof window !== "undefined" && window.startCountdownOverride
+    ? window.startCountdownOverride
+    : defaultCountdown;
 
 let judokaData = null;
 let gokyoLookup = null;
@@ -54,7 +59,7 @@ function updateScoreDisplay() {
   updateScore(playerScore, computerScore);
   const el = document.getElementById("score-display");
   if (el) {
-    el.textContent = `You: ${playerScore} Computer: ${computerScore}`;
+    el.innerHTML = `You: ${playerScore}<br>\nComputer: ${computerScore}`;
   }
 }
 
@@ -202,6 +207,22 @@ export function handleStatSelection(stat) {
   const result = evaluateRound(stat);
   resetStatButtons();
   scheduleNextRound(result);
+=======
+  if (!result.matchEnded) {
+    const attemptStart = async () => {
+      try {
+        await startRound();
+      } catch {
+        showResult("Waiting...");
+        setTimeout(attemptStart, 1000);
+      }
+    };
+    countdown(3, () => {
+      if (!isMatchEnded()) {
+        attemptStart();
+      }
+    });
+  }
 }
 
 /**

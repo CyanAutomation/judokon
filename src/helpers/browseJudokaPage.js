@@ -6,6 +6,93 @@ import { DATA_DIR } from "./constants.js";
 import { createButton } from "../components/Button.js";
 import { onDomReady } from "./domReady.js";
 
+function handleKeyboardNavigation(event, container, buttonClass) {
+  const buttons = Array.from(container.querySelectorAll(`button.${buttonClass}`));
+  const current = document.activeElement;
+  const index = buttons.indexOf(current);
+  if (index !== -1) {
+    event.preventDefault();
+    const offset = event.key === "ArrowRight" ? 1 : -1;
+    const next = (index + offset + buttons.length) % buttons.length;
+    buttons[next].focus();
+  }
+}
+
+function highlightSelection(container, button) {
+  const buttons = container.querySelectorAll("button.flag-button");
+  buttons.forEach((b) => b.classList.remove("selected"));
+  button.classList.add("selected");
+}
+
+export function setupCountryToggle(toggleButton, panel, listContainer) {
+  let countriesLoaded = false;
+
+  toggleButton.addEventListener("click", async () => {
+    const wasOpen = panel.classList.contains("open");
+    toggleCountryPanel(toggleButton, panel);
+    if (!wasOpen && !countriesLoaded) {
+      await createCountrySlider(listContainer);
+      countriesLoaded = true;
+    }
+  });
+
+  panel.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      toggleCountryPanel(toggleButton, panel, false);
+    }
+
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+      handleKeyboardNavigation(e, listContainer, "flag-button");
+    }
+  });
+}
+
+export function setupLayoutToggle(layoutBtn, panel) {
+  if (layoutBtn) {
+    layoutBtn.addEventListener("click", () => toggleCountryPanelMode(panel));
+  }
+}
+
+export function setupCountryFilter(
+  listContainer,
+  clearButton,
+  judokaList,
+  render,
+  toggleButton,
+  panel,
+  carouselEl
+) {
+  clearButton.addEventListener("click", async () => {
+    const buttons = listContainer.querySelectorAll("button.flag-button");
+    buttons.forEach((b) => b.classList.remove("selected"));
+    await render(judokaList);
+    toggleCountryPanel(toggleButton, panel, false);
+  });
+
+  listContainer.addEventListener("click", async (e) => {
+    const button = e.target.closest("button.flag-button");
+    if (!button) return;
+    const selected = button.value;
+    highlightSelection(listContainer, button);
+    const filtered =
+      selected === "all" ? judokaList : judokaList.filter((j) => j.country === selected);
+    await render(filtered);
+    const existingMessage = carouselEl.querySelector(".no-results-message");
+    if (existingMessage) {
+      existingMessage.remove();
+    }
+    if (filtered.length === 0) {
+      const noResultsMessage = document.createElement("div");
+      noResultsMessage.className = "no-results-message";
+      noResultsMessage.setAttribute("role", "status");
+      noResultsMessage.setAttribute("aria-live", "polite");
+      noResultsMessage.textContent = "No judoka available for this country";
+      carouselEl.appendChild(noResultsMessage);
+    }
+    toggleCountryPanel(toggleButton, panel, false);
+  });
+}
+
 /**
  * Initialize the Browse Judoka page.
  *
@@ -68,92 +155,6 @@ export function setupBrowseJudokaPage() {
     });
   }
 
-  function handleKeyboardNavigation(event, container, buttonClass) {
-    const buttons = Array.from(container.querySelectorAll(`button.${buttonClass}`));
-    const current = document.activeElement;
-    const index = buttons.indexOf(current);
-    if (index !== -1) {
-      event.preventDefault();
-      const offset = event.key === "ArrowRight" ? 1 : -1;
-      const next = (index + offset + buttons.length) % buttons.length;
-      buttons[next].focus();
-    }
-  }
-
-  function highlightSelection(button) {
-    const buttons = countryListContainer.querySelectorAll("button.flag-button");
-    buttons.forEach((b) => b.classList.remove("selected"));
-    button.classList.add("selected");
-  }
-
-  /**
-   * Attach event listeners for the page controls.
-   *
-   * @pseudocode
-   * 1. Toggle the country panel and populate it on first open.
-   * 2. Switch panel layout when the layout toggle is clicked.
-   * 3. Support keyboard navigation inside the panel.
-   * 4. Filter judoka when a country button is clicked.
-   * 5. Clear filters and close the panel when requested.
-   */
-  function attachEventListeners() {
-    let countriesLoaded = false;
-
-    toggleBtn.addEventListener("click", async () => {
-      const wasOpen = countryPanel.classList.contains("open");
-      toggleCountryPanel(toggleBtn, countryPanel);
-      if (!wasOpen && !countriesLoaded) {
-        await createCountrySlider(countryListContainer);
-        countriesLoaded = true;
-      }
-    });
-
-    if (layoutToggle) {
-      layoutToggle.addEventListener("click", () => toggleCountryPanelMode(countryPanel));
-    }
-
-    countryPanel.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        toggleCountryPanel(toggleBtn, countryPanel, false);
-      }
-
-      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
-        handleKeyboardNavigation(e, countryListContainer, "flag-button");
-      }
-    });
-
-    const clearBtn = document.getElementById("clear-filter");
-    clearBtn.addEventListener("click", async () => {
-      const buttons = countryListContainer.querySelectorAll("button.flag-button");
-      buttons.forEach((b) => b.classList.remove("selected"));
-      await renderCarousel(allJudoka);
-      toggleCountryPanel(toggleBtn, countryPanel, false);
-    });
-
-    countryListContainer.addEventListener("click", async (e) => {
-      const button = e.target.closest("button.flag-button");
-      if (!button) return;
-      const selected = button.value;
-      highlightSelection(button);
-      const filtered =
-        selected === "all" ? allJudoka : allJudoka.filter((j) => j.country === selected);
-      await renderCarousel(filtered);
-      const existingMessage = carouselContainer.querySelector(".no-results-message");
-      if (existingMessage) {
-        existingMessage.remove();
-      }
-      if (filtered.length === 0) {
-        const noResultsMessage = document.createElement("div");
-        noResultsMessage.className = "no-results-message";
-        noResultsMessage.setAttribute("role", "status");
-        noResultsMessage.setAttribute("aria-live", "polite");
-        noResultsMessage.textContent = "No judoka available for this country";
-        carouselContainer.appendChild(noResultsMessage);
-      }
-      toggleCountryPanel(toggleBtn, countryPanel, false);
-    });
-  }
-
   async function init() {
     try {
       await loadData();
@@ -194,7 +195,18 @@ export function setupBrowseJudokaPage() {
       carouselContainer.appendChild(retryButton);
     }
 
-    attachEventListeners();
+    const clearBtn = document.getElementById("clear-filter");
+    setupCountryToggle(toggleBtn, countryPanel, countryListContainer);
+    setupLayoutToggle(layoutToggle, countryPanel);
+    setupCountryFilter(
+      countryListContainer,
+      clearBtn,
+      allJudoka,
+      renderCarousel,
+      toggleBtn,
+      countryPanel,
+      carouselContainer
+    );
   }
 
   init();
