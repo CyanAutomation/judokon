@@ -1,4 +1,4 @@
-import { createScrollButton } from "../../src/helpers/carouselBuilder.js";
+import { createScrollButton } from "../../src/helpers/carouselScroll.js";
 import { generateCardPortrait, generateCardStats } from "../../src/helpers/cardRender.js";
 import { vi } from "vitest";
 

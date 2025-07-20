@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { updateScrollButtonState } from "../../src/helpers/carouselBuilder.js";
+import { updateScrollButtonState } from "../../src/helpers/carouselScroll.js";
 
 describe("updateScrollButtonState", () => {
   it("disables left button at start", () => {
