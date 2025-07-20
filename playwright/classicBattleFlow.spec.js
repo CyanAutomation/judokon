@@ -7,8 +7,10 @@ test.describe("Classic battle flow", () => {
       window.setInterval = (fn, ms, ...args) => orig(fn, Math.min(ms, 10), ...args);
     });
     await page.goto("/src/pages/battleJudoka.html");
-    await page.waitForSelector("#next-round-timer");
-    const result = page.locator("#round-message");
+    await page.waitForSelector(".battle-info-bar #next-round-timer");
+    const countdown = page.locator(".battle-info-bar #next-round-timer");
+    await expect(countdown).toHaveText(/\d+/);
+    const result = page.locator(".battle-info-bar #round-message");
     await expect(result).not.toHaveText("", { timeout: 1200 });
   });
 
@@ -18,7 +20,7 @@ test.describe("Classic battle flow", () => {
       window.setInterval = (fn, ms, ...args) => orig(fn, Math.max(ms, 3600000), ...args);
     });
     await page.goto("/src/pages/battleJudoka.html");
-    await page.waitForSelector("#next-round-timer");
+    await page.waitForSelector(".battle-info-bar #next-round-timer");
     await page.evaluate(() => {
       document.querySelector("#player-card").innerHTML =
         `<ul><li class='stat'><strong>Power</strong> <span>3</span></li></ul>`;
@@ -26,13 +28,16 @@ test.describe("Classic battle flow", () => {
         `<ul><li class='stat'><strong>Power</strong> <span>3</span></li></ul>`;
     });
     await page.locator("button[data-stat='power']").click();
-    await expect(page.locator("#round-message")).toHaveText(/Tie/);
+    const msg = page.locator(".battle-info-bar #round-message");
+    const timer = page.locator(".battle-info-bar #next-round-timer");
+    await expect(msg).toHaveText(/Tie/);
+    await expect(timer).toHaveText(/\d+/);
   });
 
   test("quit match confirmation", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
     page.on("dialog", (dialog) => dialog.accept());
     await page.locator("#quit-btn").click();
-    await expect(page.locator("#round-message")).toHaveText(/quit/i);
+    await expect(page.locator(".battle-info-bar #round-message")).toHaveText(/quit/i);
   });
 });
