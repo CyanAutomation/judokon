@@ -64,8 +64,7 @@ describe("classicBattle", () => {
   });
 
   it("re-enables stat button after selection", async () => {
-    document.body.innerHTML +=
-      '<div id="stat-buttons"><button data-stat="power"></button></div>';
+    document.body.innerHTML += '<div id="stat-buttons"><button data-stat="power"></button></div>';
     const { handleStatSelection, _resetForTest } = await import(
       "../../src/helpers/classicBattle.js"
     );
