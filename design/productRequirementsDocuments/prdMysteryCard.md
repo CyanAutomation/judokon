@@ -1,221 +1,142 @@
-# PRD: Judoka Cards (JU-DO-KON!)
+# PRD: Mystery Judoka Card (JU-DO-KON!)
 
 ## TL;DR
 
-Judoka cards are interactive virtual cards representing elite fighters in JU-DO-KON! They deepen player immersion through ownership, mastery, and strategic gameplay, with responsive animations, rarity systems, and accessible design — ensuring all players can engage with and feel connected to their judoka roster.
-The main element of the JU-DO-KON! game is the use of **judoka cards**. These virtual cards show elite judoka along with their stats and form the core gameplay piece, giving players a sense of ownership, mastery, and strategic choice.
+The **Mystery Judoka Card** is a placeholder card used in *every round against the computer*. It temporarily hides the opponent’s real card until the player selects a stat, ensuring fair gameplay and preventing stat-based cheating. The card uses a silhouette portrait, obscured stats (`"?"`), and the name “Mystery Judoka”, providing a consistent and thematic experience during the stat selection phase.
 
 ---
 
 ## Problem Statement
 
-Players currently lack a tangible sense of progression and connection to elite judoka; without this, engagement drops significantly after initial matches. Judoka cards aim to **provide ownership, mastery, and strategic choice**, addressing the need for deeper attachment to in-game characters.
+Currently, the computer’s card is visible before the player chooses a stat. This unintentionally encourages players to base their choice on the opponent’s values — compromising fairness and removing tension from the match. The **Mystery Judoka Card** acts as a stat-obscuring placeholder that maintains surprise and integrity in each round.
 
-> Sota clicks "Draw!" on his draw pile. The pack shows a card with a slide animation, revealing a rare Judoka in shimmering red borders. Sota’s eyes light up. He reads the stats, and plans which stat to use — feeling mastery and excitement that keeps him coming back.
+> Sota faces off against the CPU. A card appears with a dark silhouette and mysterious stats. He hovers between Power and Kumi-kata. With a deep breath, he picks Power. The card flips — revealing the opponent: a legendary -100kg champion with immense strength. Too late to change. That moment of tension? That’s the thrill we’re aiming for.
 
 ---
 
 ## Goals
 
-- Increase average match duration by **15%** through deeper strategic card use.
-- Ensure card stat balance leads to **<5% match outcome variance attributed to chance**.
-- Enable deeper strategic choices when selecting judoka for matches.
+- Prevent pre-selection peeking at the opponent’s stats.
+- Introduce momentary suspense in each round.
+- Preserve visual consistency using an existing card (`judokaId=1`) with special styling.
 
 ---
 
 ## User Stories
 
-- As a player who loves browsing cards, I want judoka cards that look unique and reflect rarity.
-- As a competitive player, I want to view stats easily so I can build select the right stat in a match.
-- As a player with visual impairments, I want high-contrast text and alt text on portraits so I can understand card details.
+- As a player, I want to choose my stat *before* seeing the opponent’s card, so the match feels fair and unpredictable.
+- As a returning player, I want the placeholder card to feel familiar and thematic, not jarring.
+- As a developer, I want to reuse an existing hidden judoka record to simplify implementation and asset management.
 
 ---
 
 ## Acceptance Criteria
 
-- **Given** a player draws a card, or browses the JU-DO-KON! collection,  
-  **When** they view a judoka card,  
-  **Then** the card displays the correct portrait, stats, nationality flag, and signature move.
+- **Given** a round starts in any battle mode against the CPU,  
+  **When** the opponent card is shown,  
+  **Then** the “Mystery Judoka” card (`judokaId=1`) is displayed with silhouette image and question marks in all stat fields.
 
-- **Given** a judoka portrait is missing,  
-  **When** the card loads,  
-  **Then** a placeholde silhouette (judoka id=0) placeholder is displayed.
+- **Given** the player selects a stat,  
+  **When** the opponent’s real card is revealed,  
+  **Then** it *replaces* the Mystery Judoka card via slide or flip animation within **400ms**.
 
-- **Given** a player taps the draw button,  
-  **When** the card reveal (slide) animation starts,  
-  **Then** it completes within **400ms** using ease-out cubic-bezier timing.
+- **Given** the Mystery Judoka card appears,  
+  **Then** its name should be displayed as “Mystery Judoka” and stats as `"?"`, regardless of real underlying values.
 
-- **Given** the card displays text,  
-  **When** viewed on any device,  
-  **Then** text contrast ratio must meet **WCAG 2.1 AA (≥4.5:1)**.
-
-- **Given** the card’s interactive elements (e.g., carousel arrows),  
-  **When** a player uses keyboard or touch input,  
-  **Then** all elements are fully operable with proper focus states.
+- **Given** the Mystery Judoka card is displayed,  
+  **Then** it should retain correct rarity styling, weight class, and flag as defined in `judoka.json`.
 
 ---
 
 ## Edge Cases / Failure States
 
-- **Missing Portrait →** Show silhouette fallback image (judoka id=0).
-- **Corrupted Stats Data →** Hide stats and display error message “Stats unavailable”.
-- **Unsupported Weight Class →** Default to “Unknown” label.
-- **Stats Exceed Expected Range →** Cap displayed stats at 10.
-- **Failed Asset Load →** Use fallback fonts, generic flag, and placeholder visuals.
+- **Player selects stat before Mystery Card is rendered →** Delay selection until render complete.
+- **Mystery Judoka stats not replaced visually →** Default to `"?"` in all stat fields regardless of backend value.
+- **Mystery Judoka card shown outside CPU battle →** Prevent display in any mode where both players are human.
+- **Animation interrupted →** Ensure fallback swap (no animation) still completes the reveal.
 
 ---
 
 ## Technical Considerations
 
-- Portrait images should use optimized formats (e.g., WebP) to balance quality and performance.
-- Card slide/reveal animations must use hardware-accelerated CSS transforms for smooth performance (**≥60 fps**).
-- Placeholder assets for missing portraits/flags should be bundled with the client for offline scenarios.
-- Cards initially display `judokaPortrait-1.png` and lazy-load the real portrait when the card enters the viewport.
-- The `renderJudokaCard` and `buildCardCarousel` helpers run `setupLazyPortraits()` automatically so the
-  real portrait loads as soon as the card is visible.
-- All judoka portraits and card sizing calculations must consistently maintain a **2:3 aspect ratio** to ensure visual uniformity and avoid layout shifts. Portraits should be pre-cropped as needed, and `.card-portrait` uses `object-fit: cover` to handle similarly shaped images. Card sizing calculations must account for screen aspect ratios and resolutions to preserve this ratio.
-- Hover and focus scaling must stay at or below **1.05x** to prevent cards from
-  being clipped inside scroll wrappers.
+- **Card Source:** Use `judokaId=1` from `judoka.json` with `"IsHidden": true`.
+- **Portrait Path:** `src/assets/judokaPortraits/judokaPortrait-1.png` (already present).
+- **Stat Display:** Override real stat values with `"?"` at render time via `renderJudokaCard()`.
+- **Name Display:** Use value from `judoka.json` (`"Mystery Judoka"`) for visual consistency.
+- **Reveal Timing:** Animate swap to real CPU card after player stat choice within **400ms** using `ease-out` transition.
+- **Game Logic:** Opponent card is drawn from remaining deck *before* stat selection but only displayed *after* player choice.
 
 ---
 
-## Player Settings
+## UI Behaviour
 
-No player-configurable display or animation settings are included at this time. Future updates may add a **“Reduce Motion”** option for players sensitive to animations.
+### Before Player Chooses Stat
 
----
++————————————————+
+| [ BORDER COLOR BASED ON RARITY OF REAL CARD ]  |
+|                                                |
+| +––––––––––––––+                 |
+| |    [ MYSTERY SILHOUETTE ] |   ← judokaPortrait-1.png  |
+| +––––––––––––––+                 |
+|                                                |
+| [ FLAG: ??? ]            [ WEIGHT CLASS: ??? ] |
+|                                                |
+|   Mystery Judoka                              |
+|                                                |
+| Signature Move: ???                            |
+|                                                |
+| Power: ?     Speed: ?                          |
+| Technique: ? Kumi-kata: ? Ne-waza: ?           |
++————————————————+
 
-## The Cards
+### After Player Chooses Stat → Reveal Opponent Card
 
-Each card consists of elements stored in `judoka.json`:
-
-- Judoka Name (first + surname)
-- First and surname appear tightly spaced (line-height about 1) so there is breathing room above and below
-- Nationality (depicted via flag)
-- Weight class (one of the 14 official IJF classes: 7 male, 7 female)
-- Portrait of the judoka’s likeness
-- Stats (Power, Speed, Technique, Kumi-kata, Ne-waza) with 0–10 scale
-- Signature Move
-
-The weight class badge appears in the top-right corner of the portrait with a transparent background and white text for readability.
-
-Cards maintain a **2:3 ratio with a border** and display rarity-based coloring:
-
-- **Common**: Blue
-- **Rare**: Red
-- **Legendary**: Gold
-
-The design must be attractive and **minimize cognitive load**—presenting stats clearly without clutter.
+- Slide or flip animation replaces the card within **400ms**.
+- Real portrait, name, stats, flag, signature move fade in.
+- All question marks are replaced with real values.
 
 ---
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                | Description                                                                  |
-| -------- | ---------------------- | ---------------------------------------------------------------------------- |
-| **P1**   | Core Card Elements     | Judoka name, portrait, stats, nationality flag, signature move.              |
-| **P1**   | Edge Case Handling     | Display silhouette, error messages, or fallbacks for missing/corrupted data. |
-| **P1**   | Real-time Stats Update | Ensure UI reflects backend stat changes instantly.                           |
-| **P2**   | Rarity Coloring        | Apply blue/red/gold coloring based on rarity.                                |
-| **P2**   | Card Aspect Ratio      | Maintain **2:3 ratio** on all devices.                                       |
-| **P3**   | Animations             | Smooth, cancellable slide/reveal animations within **400ms** duration.       |
-| **P3**   | Accessibility Features | Implement alt text, WCAG contrast, keyboard/touch navigation.                |
+| Priority | Feature                     | Description                                                                 |
+| -------- | --------------------------- | --------------------------------------------------------------------------- |
+| **P1**   | Placeholder Mystery Card     | Show `judokaId=1` card with silhouette and `"?"` stats at start of each CPU round |
+| **P1**   | Stat Redaction on Render     | Replace all visible stat values with `"?"` regardless of real values        |
+| **P1**   | Card Swap on Stat Selection  | Reveal opponent card via animated swap within **400ms**                     |
+| **P2**   | Consistent Styling           | Apply proper rarity border, portrait container, and stat layout             |
+| **P3**   | Accessibility Compliance     | Ensure all question marks and names are screen-reader friendly              |
 
 ---
 
 ## Accessibility Considerations
 
-- Text contrast must meet **WCAG 2.1 AA** (contrast ratio ≥4.5:1).
-- All judoka portraits must have descriptive alternative text.
-- Interactive elements (e.g., attribute selection, carousel arrows) must be fully operable via keyboard and screen readers.
-- Card elements must use `role="button"` and include descriptive `aria-label` attributes.
-- Provide a visible focus style via `.judoka-card:focus-visible` so keyboard users can easily track focus.
-- Maintain **≥44px touch target** size for all clickable areas to meet WCAG guidelines. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
+- `aria-label="Mystery Judoka: hidden card"` should be applied to the opponent card while hidden.
+- Ensure `"?"` values in stats are programmatically labeled (e.g., `aria-label="Power unknown"`).
+- Focus should not jump or shift when the card is revealed — avoid triggering scroll or layout shift.
 
 ---
 
-## UI Design
-
-+------------------------------------------------+
-| [ RARITY BORDER COLOR: Blue/Red/Gold ] |
-| |
-| +----------------------------+ |
-| | JUDOKA PORTRAIT | |
-| | (high-res img) | |
-| +----------------------------+ |
-| |
-| [ NATIONALITY FLAG ] [ WEIGHT CLASS LABEL ] |
-| |
-| JUDOKA NAME (First Last) |
-| |
-| Signature Move: [Text of move name] |
-| |
-| Stats: |
-| Power: [0-10] Speed: [0-10] |
-| Technique: [0-10] Kumi-kata: [0-10] |
-| Ne-waza: [0-10] |
-| |
-| [ FLIP BUTTON ] [ INFO ICON ] |
-|------------------------------------------------|
-
-### Interactive Elements
-
-- **Draw Button:** Player taps/clicks → triggers 400ms card slide/reveal animation revealing the card.
-- **Info Icon:** Opens modal with expanded description of judoka’s achievements or lore.
-- **Card Area:** Entire card reacts to hover/tap with a subtle scaling effect (max 1.05x) to show it’s interactive.
-- **Error States:** If portrait fails, replace image with a centered silhouette icon + “Portrait unavailable” text.
-
-### Layout & Design Notes
-
-- **Aspect Ratio:** Card must strictly maintain **2:3 ratio**, adjusting internal elements responsively.
-- **Safari ≤15 Fallback:** `.judoka-card` sets `height: calc(var(--card-width) * 1.5)` because these versions do not treat `aspect-ratio` as a definite height. `.card-top-bar` uses `calc(var(--card-width) * 0.14)` so the header stays the same height across browsers.
-- **Vertical Proportions:** With a card width of 300px (height 450px), allocate roughly 14% (63px) for the name and flag bar, 42% (189px) for the portrait, 34% (153px) for stats, and 10% (45px) for the signature move section.
-- Portrait images should fill the portrait area using `object-fit: cover` so no whitespace appears.
-- **Portrait Container:** `.card-portrait` now uses `width: 100%` and `height: 42%` so it matches its flex-basis and keeps the aspect ratio consistent.
-- **Stats Container:** `.card-stats` uses `height: 34%` to align with the vertical proportions.
-- **Stats Padding & Typography:**
-  - Horizontal padding should be minimal (use `var(--space-small)`).
-  - Stats text uses `--font-medium` and line-height `1.2` to remain legible without increasing panel height.
-- **Signature Move Band:** `height: max(10%, var(--touch-target-size))` keeps the 44px tap target while maintaining the card's 2:3 ratio.
-- The label and value are centered vertically within that band.
-- `.judoka-card` overrides `--touch-target-size` to `44px` so the band stays
-  45px tall on a 300×450 card without leaving gaps above or below it.
-- **Padding Adjustments:** Section percentages already account for vertical padding because `.judoka-card` uses `box-sizing: border-box`. No `calc()` subtraction is necessary.
-- **Rarity Border Colors:**
-  - Common → Blue (#337AFF)
-  - Rare → Red (#FF3333)
-  - Legendary → Gold (#FFD700)
-- **Stats Area:** The stats list uses a flex column layout to evenly distribute the stat rows while keeping labels and values aligned.
-- **Contrast & Fonts:**
-  - Text must achieve ≥4.5:1 contrast ratio.
-  - Use **Open Sans** for body text to match the UI design standards.
-- **Interactive Elements:** Carousel arrows or selectors outside the card must have ≥44px tap targets.
-
-### Responsiveness
-
-- **Portrait Priority:** On narrow devices, prioritize portrait and name placement; wrap stats below if needed.
-- **Text Scaling:** Allow dynamic font sizing to avoid clipping on smaller screens.
-
 ## Integration Notes
 
-Carousels displaying judoka cards **must not** add horizontal padding around each
-card. Any spacing between cards should rely on the `gap` property defined in the
-[carousel CSS](../../src/styles/carousel.css). This ensures consistent card
-widths across screens and matches the rule introduced in the stylesheet.
+- The **Mystery Judoka card** is never shown in non-CPU modes.
+- The Mystery card’s rarity border should match the real CPU card *already drawn* — styling should not default to Common.
+- Use the existing `renderJudokaCard()` helper with a `useObscuredStats` flag to substitute `"?"` values at render time.
+- Maintain card aspect ratio and layout as defined in the core Judoka Cards PRD — do **not** introduce custom card layouts for the mystery variant.
 
 ---
 
 ## Tasks
 
-- [ ] 4.0 Handle Edge Cases
+- [ ] 1.0 Mystery Card Rendering
+  - [ ] 1.1 Show `judokaId=1` as placeholder at start of CPU round
+  - [ ] 1.2 Hide real stats and show `"?"` for all attributes and move
 
-  - [ ] 4.1 Show silhouette placeholder for missing portraits.
-  - [ ] 4.2 Cap extreme stats and log errors.
-  - [ ] 4.3 Display error messages for corrupted data.
+- [ ] 2.0 Reveal Logic
+  - [ ] 2.1 Trigger swap animation upon stat selection
+  - [ ] 2.2 Load correct opponent card into same slot
+  - [ ] 2.3 Preserve rarity border and weight class throughout
 
-- [ ] 5.0 Implement Accessibility Features
-  - [ ] 5.1 Add alt text for portraits.
-  - [ ] 5.2 Ensure text contrast ratio ≥4.5:1.
-  - [ ] 5.3 Support keyboard and screen reader navigation.
-  - [ ] 5.4 Ensure ≥44px touch targets for interactive elements (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
-  - [ ] 5.5 Add `role="button"` with `aria-label` to card elements and style focus via `.judoka-card:focus-visible`.
+- [ ] 3.0 Accessibility
+  - [ ] 3.1 Add `aria-label` attributes to `"?"` stats and card
+  - [ ] 3.2 Ensure keyboard/touch interaction does not glitch during swap
