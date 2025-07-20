@@ -1,4 +1,4 @@
-import { createInfoBar } from "../components/InfoBar.js";
+import { createInfoBar, showMessage, updateScore, startCountdown } from "../components/InfoBar.js";
 import { onDomReady } from "./domReady.js";
 
 /**
@@ -10,12 +10,15 @@ import { onDomReady } from "./domReady.js";
  *    a. Create one with `createInfoBar()`.
  *    b. Insert it immediately after the header.
  */
-export function setupBattleInfoBar() {
+function setupBattleInfoBar() {
   const header = document.querySelector("header");
   if (!header) return;
-  if (document.querySelector(".battle-info-bar")) return;
-  const bar = createInfoBar();
-  header.insertAdjacentElement("afterend", bar);
+  if (!document.querySelector(".battle-info-bar")) {
+    const bar = createInfoBar();
+    header.insertAdjacentElement("afterend", bar);
+  }
 }
 
 onDomReady(setupBattleInfoBar);
+
+export { showMessage, updateScore, startCountdown };

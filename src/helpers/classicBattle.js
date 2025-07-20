@@ -12,7 +12,7 @@ import {
   STATS,
   _resetForTest as engineReset
 } from "./battleEngine.js";
-import { updateScore, startCountdown } from "../components/InfoBar.js";
+import { updateScore, startCountdown } from "./setupBattleInfoBar.js";
 
 let judokaData = null;
 let gokyoLookup = null;
