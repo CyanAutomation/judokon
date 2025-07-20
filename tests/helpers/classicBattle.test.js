@@ -63,6 +63,21 @@ describe("classicBattle", () => {
     expect(btn.classList.contains("selected")).toBe(false);
   });
 
+  it("clears inline background color with selected class", async () => {
+    document.body.innerHTML +=
+      '<div id="stat-buttons"><button data-stat="power"></button><button data-stat="speed"></button><button data-stat="technique"></button><button data-stat="kumikata"></button><button data-stat="newaza"></button></div>';
+    const { handleStatSelection, _resetForTest } = await import(
+      "../../src/helpers/classicBattle.js"
+    );
+    _resetForTest();
+    const btn = document.querySelector("[data-stat='power']");
+    btn.classList.add("selected");
+    btn.style.backgroundColor = "red";
+    handleStatSelection("power");
+    expect(btn.classList.contains("selected")).toBe(false);
+    expect(btn.style.backgroundColor).toBe("");
+  });
+
   it("auto-selects a stat when timer expires", async () => {
     const { startRound } = await import("../../src/helpers/classicBattle.js");
     await startRound();
