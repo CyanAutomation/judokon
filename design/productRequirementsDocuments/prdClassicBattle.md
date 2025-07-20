@@ -87,6 +87,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 ## 8. Acceptance Criteria
 
 - Cards are revealed in the correct sequence each round.
+- The CPU card displays a placeholder ("Mystery Judoka") until the player selects a stat ([prdMysteryCard.md](prdMysteryCard.md)).
 - Player can select a stat within 30 seconds; if not, the system auto-selects a random stat.
 - After selection, the correct comparison is made, and the score updates based on round outcome.
 - If the selected stats are equal, a tie message displays and the round ends.
