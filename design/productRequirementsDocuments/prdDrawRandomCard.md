@@ -58,6 +58,7 @@ Without this feature, players would be forced to pre-select cards, leading to pr
   The `getFallbackJudoka()` helper loads and caches this entry from
   `judoka.json`.
 - Log random draw failures for post-launch debugging and analytics.
+- Skip judoka entries where `isHidden` is `true`.
 
 ---
 

@@ -124,12 +124,13 @@ export async function revealComputerCard() {
  * @pseudocode
  * 1. Clear any previously selected stat button.
  * 2. Load judoka and gokyo data if not already cached.
- * 3. Draw a random card for the player using `generateRandomCard` and capture
+ * 3. Filter out judoka marked with `isHidden`.
+ * 4. Draw a random card for the player using `generateRandomCard` and capture
  *    the selected judoka.
- * 4. Select a random judoka for the computer and store it.
+ * 5. Select a random judoka for the computer from the filtered list.
  *    - If it matches the player's judoka, retry up to a safe limit.
  *    - Render the mystery placeholder card (`judokaId=1`) with obscured stats.
- * 5. Initialize the round timer.
+ * 6. Initialize the round timer.
  *
  * @returns {Promise<void>} Resolves when cards are displayed.
  */
@@ -138,6 +139,9 @@ export async function startRound() {
   if (!judokaData) {
     judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
   }
+  const availableJudoka = Array.isArray(judokaData)
+    ? judokaData.filter((j) => !j.isHidden)
+    : [];
   if (!gokyoLookup) {
     const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
     gokyoLookup = createGokyoLookup(gokyoData);
@@ -145,16 +149,16 @@ export async function startRound() {
   const playerContainer = document.getElementById("player-card");
   const computerContainer = document.getElementById("computer-card");
   let playerJudoka = null;
-  await generateRandomCard(judokaData, null, playerContainer, false, (j) => {
+  await generateRandomCard(availableJudoka, null, playerContainer, false, (j) => {
     playerJudoka = j;
   });
-  let compJudoka = getRandomJudoka(judokaData);
+  let compJudoka = getRandomJudoka(availableJudoka);
   if (playerJudoka) {
     // avoid showing the same judoka, but guard against infinite loops
     let attempts = 0;
-    const maxAttempts = Math.max(judokaData?.length || 0, 5);
+    const maxAttempts = Math.max(availableJudoka.length || 0, 5);
     while (compJudoka.id === playerJudoka.id && attempts < maxAttempts) {
-      compJudoka = getRandomJudoka(judokaData);
+      compJudoka = getRandomJudoka(availableJudoka);
       attempts += 1;
     }
   }
