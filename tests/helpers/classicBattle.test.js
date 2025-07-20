@@ -14,8 +14,9 @@ vi.mock("../../src/helpers/cardUtils.js", () => ({
   renderJudokaCard: (...args) => renderJudokaCardMock(...args)
 }));
 
+let fetchJsonMock;
 vi.mock("../../src/helpers/dataUtils.js", () => ({
-  fetchJson: vi.fn(async () => [])
+  fetchJson: (...args) => fetchJsonMock(...args)
 }));
 
 vi.mock("../../src/helpers/utils.js", () => ({
@@ -34,6 +35,7 @@ describe("classicBattle", () => {
         <p id="score-display"></p>
       </header>`;
     timerSpy = vi.useFakeTimers();
+    fetchJsonMock = vi.fn(async () => []);
     generateRandomCardMock = vi.fn(async (data, g, container, _pm, cb) => {
       container.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>5</span></li><li class="stat"><strong>Speed</strong> <span>5</span></li><li class="stat"><strong>Technique</strong> <span>5</span></li><li class="stat"><strong>Kumi-kata</strong> <span>5</span></li><li class="stat"><strong>Ne-waza</strong> <span>5</span></li></ul>`;
       if (cb) cb({ id: 1 });
@@ -59,7 +61,7 @@ describe("classicBattle", () => {
     _resetForTest();
     const btn = document.querySelector("[data-stat='power']");
     btn.classList.add("selected");
-    handleStatSelection("power");
+    await handleStatSelection("power");
     expect(btn.classList.contains("selected")).toBe(false);
   });
 
@@ -71,7 +73,7 @@ describe("classicBattle", () => {
     _resetForTest();
     const btn = document.querySelector("[data-stat='power']");
     btn.classList.add("selected");
-    handleStatSelection("power");
+    await handleStatSelection("power");
     await vi.runAllTimersAsync();
     expect(btn.classList.contains("selected")).toBe(false);
     expect(btn.disabled).toBe(false);
@@ -87,7 +89,7 @@ describe("classicBattle", () => {
     const btn = document.querySelector("[data-stat='power']");
     btn.classList.add("selected");
     btn.style.backgroundColor = "red";
-    handleStatSelection("power");
+    await handleStatSelection("power");
     await vi.runAllTimersAsync();
     expect(btn.classList.contains("selected")).toBe(false);
     expect(btn.style.backgroundColor).toBe("");
@@ -111,7 +113,7 @@ describe("classicBattle", () => {
     document.getElementById("computer-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     _resetForTest();
-    handleStatSelection("power");
+    await handleStatSelection("power");
     expect(document.querySelector("header #round-message").textContent).toMatch(/Tie/);
     expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nComputer: 0");
   });
@@ -135,7 +137,7 @@ describe("classicBattle", () => {
         `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
       document.getElementById("computer-card").innerHTML =
         `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-      handleStatSelection("power");
+      await handleStatSelection("power");
     }
     expect(document.querySelector("header #score-display").textContent).toBe(
       "You: 10\nComputer: 0"
@@ -146,7 +148,7 @@ describe("classicBattle", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
     document.getElementById("computer-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    handleStatSelection("power");
+    await handleStatSelection("power");
 
     expect(document.querySelector("header #score-display").textContent).toBe(
       "You: 10\nComputer: 0"
@@ -175,6 +177,12 @@ describe("classicBattle", () => {
   });
 
   it("draws a different card for the computer", async () => {
+    fetchJsonMock.mockImplementation(async (p) => {
+      if (p.includes("judoka")) {
+        return [{ id: 1 }];
+      }
+      return [];
+    });
     generateRandomCardMock = vi.fn(async (d, g, c, _pm, cb) => {
       c.innerHTML = "<ul></ul>";
       cb({ id: 1 });
@@ -185,13 +193,17 @@ describe("classicBattle", () => {
       return callCount === 1 ? { id: 1 } : { id: 2 };
     });
     renderJudokaCardMock = vi.fn(async () => {});
-    const { startRound } = await import("../../src/helpers/classicBattle.js");
+    const { startRound, getComputerJudoka, _resetForTest } = await import(
+      "../../src/helpers/classicBattle.js"
+    );
+    _resetForTest();
     await startRound();
     expect(renderJudokaCardMock).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 2 }),
+      expect.objectContaining({ id: 1 }),
       expect.anything(),
       expect.anything(),
-      { animate: false }
+      { animate: false, useObscuredStats: true }
     );
+    expect(getComputerJudoka()).toEqual(expect.objectContaining({ id: 2 }));
   });
 });
