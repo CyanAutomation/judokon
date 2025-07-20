@@ -211,7 +211,10 @@ export async function populateNavbar() {
 
     const ul = document.createElement("ul");
     ul.innerHTML = activeModes
-      .map((mode) => `<li><a href="${BASE_PATH}${mode.url}">${mode.name}</a></li>`)
+      .map(
+        (mode) =>
+          `<li><a href="${BASE_PATH}${mode.url}" data-testid="nav-${mode.id}">${mode.name}</a></li>`
+      )
       .join("");
     navBar.appendChild(ul);
 
@@ -244,7 +247,10 @@ export async function populateNavbar() {
 
     const ul = document.createElement("ul");
     ul.innerHTML = fallbackItems
-      .map((item) => `<li><a href="${item.url}">${item.name}</a></li>`)
+      .map(
+        (item) =>
+          `<li><a href="${item.url}" data-testid="nav-${item.name.replace(/\s+/g, "")}">${item.name}</a></li>`
+      )
       .join("");
     navBar.appendChild(ul);
 

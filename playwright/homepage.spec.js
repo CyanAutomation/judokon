@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/commonSetup.js";
+import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 
 test.describe("Homepage", () => {
   test.beforeEach(async ({ page }) => {
@@ -6,7 +7,7 @@ test.describe("Homepage", () => {
   });
 
   test("page loads", async ({ page }) => {
-    await expect(page).toHaveTitle(/Ju-Do-Kon!/i);
+    await verifyPageBasics(page, ["nav-randomJudoka", "nav-classicBattle"]);
   });
 
   test("logo has alt text", async ({ page }) => {
@@ -16,11 +17,7 @@ test.describe("Homepage", () => {
 
   test("navigation links visible", async ({ page }) => {
     await page.waitForSelector("footer .bottom-navbar a");
-    await expect(page.getByRole("navigation")).toBeVisible();
-    await expect(page.locator("footer").getByRole("link", { name: /view judoka/i })).toBeVisible();
-    await expect(
-      page.locator("footer").getByRole("link", { name: /classic battle/i })
-    ).toBeVisible();
+    await verifyPageBasics(page, ["nav-randomJudoka", "nav-classicBattle"]);
   });
 
   test("footer navigation links present", async ({ page }) => {
@@ -29,10 +26,7 @@ test.describe("Homepage", () => {
   });
 
   test("view judoka link navigates", async ({ page }) => {
-    await page
-      .locator("footer")
-      .getByRole("link", { name: /view judoka/i })
-      .click();
+    await page.getByTestId("nav-randomJudoka").click();
     await expect(page).toHaveURL(/randomJudoka\.html/);
   });
 

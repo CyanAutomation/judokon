@@ -1,8 +1,13 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/commonSetup.js";
+import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 
 test.describe("PRD Reader page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/prdViewer.html");
+  });
+
+  test("page basics", async ({ page }) => {
+    await verifyPageBasics(page, ["nav-randomJudoka", "nav-classicBattle"]);
   });
 
   test("forward and back navigation", async ({ page }) => {
