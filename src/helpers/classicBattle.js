@@ -39,21 +39,21 @@ let gokyoLookup = null;
  * 2. For each button:
  *    a. Remove the `selected` class so the button style resets.
  *    b. Clear any inline background color to force a repaint in Safari.
- *    c. Temporarily disable the button so Safari drops the `:active` highlight.
- *    d. Read `offsetWidth` to trigger a reflow.
- *    e. Re-enable the button, set `backgroundColor` to an empty string, and
- *       call `blur()` to drop focus.
+ *    c. Disable the button to break the `:active` highlight.
+ *    d. On the next animation frame, re-enable the button,
+ *       clear `backgroundColor`, and call `blur()` so Safari
+ *       drops the highlight.
  */
 function resetStatButtons() {
   document.querySelectorAll("#stat-buttons button").forEach((btn) => {
     btn.classList.remove("selected");
     btn.style.removeProperty("background-color");
     btn.disabled = true;
-    // trigger reflow so Safari repaints correctly
-    void btn.offsetWidth;
-    btn.disabled = false;
-    btn.style.backgroundColor = "";
-    btn.blur();
+    requestAnimationFrame(() => {
+      btn.disabled = false;
+      btn.style.backgroundColor = "";
+      btn.blur();
+    });
   });
 }
 
