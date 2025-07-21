@@ -27,11 +27,6 @@
         margin-bottom: 2rem;
       }
 
-      .logo {
-        font-size: 2.5rem;
-        font-weight: bold;
-      }
-
       #prd-content {
         background: #fff;
         border: 1px solid #ccc;
@@ -72,7 +67,11 @@
   </head>
   <body>
     <header>
-      <div class="logo">JU-DO-KON!</div>
+      <div class="logo-container">
+        <a href="../../index.html" data-testid="home-link">
+          <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
+        </a>
+      </div>
       <br />
       <div class="nav-buttons">
         <button id="prev-doc" data-nav="prev" aria-label="Previous document">Prev</button>
