@@ -14,7 +14,7 @@ import {
 } from "./battleEngine.js";
 import * as infoBar from "./setupBattleInfoBar.js";
 
-import { getStatValue, updateScoreDisplay } from "./battle/index.js";
+import { getStatValue } from "./battle/index.js";
 function getCountdown() {
   if (typeof window !== "undefined" && window.startCountdownOverride) {
     return window.startCountdownOverride;
@@ -169,7 +169,8 @@ export async function startRound() {
     useObscuredStats: true
   });
   showSelectionPrompt();
-  updateScoreDisplay();
+  const { playerScore, computerScore } = getScores();
+  infoBar.updateScore(playerScore, computerScore);
   startTimer();
 }
 
@@ -194,7 +195,10 @@ export function evaluateRound(stat) {
   if (result.message) {
     showResult(result.message);
   }
-  updateScoreDisplay();
+  {
+    const { playerScore, computerScore } = getScores();
+    infoBar.updateScore(playerScore, computerScore);
+  }
   return result;
 }
 
@@ -282,7 +286,10 @@ export function _resetForTest() {
   if (timerEl) timerEl.textContent = "";
   const resultEl = document.getElementById("round-message");
   if (resultEl) resultEl.textContent = "";
-  updateScoreDisplay();
+  {
+    const { playerScore, computerScore } = getScores();
+    infoBar.updateScore(playerScore, computerScore);
+  }
 }
 
 export function getComputerJudoka() {

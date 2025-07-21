@@ -47,8 +47,12 @@ pass it to `createModal()`, and call `open()` when needed. `StatsPanel.js`
 constructs the `.card-stats` section used within judoka cards. `Card.js`
 provides a reusable content panel styled with the `.card` class.
 `InfoBar.js` builds a real-time bar for classic battles. `classicBattle.js` updates it
-each round via `updateScore` and `startCountdown` so players see messages,
-the countdown timer, and the current score.
+each round via `startCountdown` and by passing the latest scores to `updateScore`
+so players see messages, the countdown timer, and the current score.
+
+After each round, `classicBattle.js` calls `battleEngine.getScores()` and forwards
+the returned values to `InfoBar.updateScore`. The helper module `setupBattleInfoBar.js`
+exposes this method for pages, keeping UI updates decoupled from engine logic.
 
 ```javascript
 import { createCard } from "./src/components/Card.js";
