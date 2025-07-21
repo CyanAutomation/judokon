@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 let getRandomJudokaMock;
 let generateJudokaCardHTMLMock;
@@ -59,11 +59,6 @@ const gokyoData = [
   { id: 1, name: "Throw1" },
   { id: 2, name: "Throw2" }
 ];
-
-afterEach(() => {
-  vi.restoreAllMocks();
-  vi.resetModules();
-});
 
 describe("generateRandomCard", () => {
   it("selects a random judoka and updates the DOM", async () => {

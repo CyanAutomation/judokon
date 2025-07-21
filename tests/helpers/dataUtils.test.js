@@ -4,9 +4,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 const originalFetch = global.fetch;
 
 afterEach(() => {
-  vi.restoreAllMocks();
   global.fetch = originalFetch;
-  vi.resetModules();
 });
 
 describe("fetchJson", () => {

@@ -1,4 +1,5 @@
-import { expect } from "vitest";
+import { expect, afterEach } from "vitest";
+import { resetDom } from "./utils/testUtils.js";
 
 expect.extend({
   toHaveAttribute(element, attribute, expected) {
@@ -22,4 +23,8 @@ expect.extend({
             : `expected element attribute ${attribute} to be ${expected}, but got ${actual}`
     };
   }
+});
+
+afterEach(() => {
+  resetDom();
 });

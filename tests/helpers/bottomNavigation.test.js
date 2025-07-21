@@ -27,14 +27,11 @@ function setupDom() {
 }
 
 afterEach(() => {
-  document.body.innerHTML = "";
-  vi.restoreAllMocks();
   global.fetch = originalFetch;
   global.navigator = originalNavigator;
   if (global.localStorage) {
     global.localStorage.clear();
   }
-  vi.resetModules();
 });
 
 describe("toggleExpandedMapView", () => {
@@ -90,10 +87,6 @@ describe("togglePortraitTextMenu", () => {
   beforeEach(() => {
     navBar = setupDom();
     stubLogoQuery();
-  });
-  afterEach(() => {
-    document.body.innerHTML = "";
-    vi.restoreAllMocks();
   });
 
   it("creates list items for valid game modes", async () => {

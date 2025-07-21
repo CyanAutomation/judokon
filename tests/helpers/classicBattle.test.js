@@ -47,9 +47,7 @@ describe("classicBattle", () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
     timerSpy.clearAllTimers();
-    document.body.innerHTML = "";
   });
 
   it("clears selected class on stat buttons after each round", async () => {

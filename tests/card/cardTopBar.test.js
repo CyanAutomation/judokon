@@ -22,10 +22,6 @@ beforeEach(() => {
   vi.spyOn(countryUtils, "getCountryNameFromCode").mockResolvedValue("France");
 });
 
-afterEach(() => {
-  vi.restoreAllMocks();
-});
-
 describe("generateCardTopBar", () => {
   it("should render top bar with placeholder flag when no flagUrl is provided", async () => {
     const expectedHtml = `

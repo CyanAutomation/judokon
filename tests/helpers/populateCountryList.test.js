@@ -3,11 +3,8 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 const originalFetch = global.fetch;
 
 afterEach(() => {
-  vi.restoreAllMocks();
   global.fetch = originalFetch;
   localStorage.clear();
-  document.body.innerHTML = "";
-  vi.resetModules();
 });
 
 describe("populateCountryList", () => {

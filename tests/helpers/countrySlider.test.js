@@ -1,10 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
-
-afterEach(() => {
-  vi.restoreAllMocks();
-  vi.resetModules();
-  document.body.innerHTML = "";
-});
+import { describe, it, expect, vi } from "vitest";
 
 describe("createCountrySlider", () => {
   it("renders flag buttons using populateCountryList", async () => {

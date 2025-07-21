@@ -1,7 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { resetDom } from "../utils/testUtils.js";
-
-afterEach(resetDom);
+import { describe, it, expect, vi } from "vitest";
 
 describe("onDomReady", () => {
   it("runs callback immediately when document is ready", async () => {

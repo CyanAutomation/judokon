@@ -17,8 +17,6 @@ describe("applyDisplayMode", () => {
   });
 
   afterEach(() => {
-    document.body.removeAttribute("data-theme");
-    document.body.className = "";
     style.remove();
   });
 

@@ -1,13 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { showSettingsError } from "../../src/helpers/showSettingsError.js";
 import { SETTINGS_FADE_MS, SETTINGS_REMOVE_MS } from "../../src/helpers/constants.js";
-import { resetDom } from "../utils/testUtils.js";
 
 beforeEach(() => {
   document.body.innerHTML = "";
 });
-
-afterEach(resetDom);
 
 describe("showSettingsError", () => {
   it("shows and then removes the error popup", () => {

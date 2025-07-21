@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const baseSettings = {
   sound: true,
@@ -17,13 +17,6 @@ describe("settingsPage module", () => {
       <select id="display-mode-select"></select>
       <section id="game-mode-toggle-container"></section>
     `;
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.useRealTimers();
-    vi.resetModules();
-    document.body.innerHTML = "";
   });
 
   it("loads settings and game modes on DOMContentLoaded", async () => {

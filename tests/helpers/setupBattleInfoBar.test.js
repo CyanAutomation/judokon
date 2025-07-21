@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { createInfoBarHeader, resetDom } from "../utils/testUtils.js";
+import { createInfoBarHeader } from "../utils/testUtils.js";
 
 const originalReadyState = Object.getOwnPropertyDescriptor(document, "readyState");
 
@@ -9,7 +9,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  resetDom();
   if (originalReadyState) {
     Object.defineProperty(document, "readyState", originalReadyState);
   }

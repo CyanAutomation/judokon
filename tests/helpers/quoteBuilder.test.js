@@ -1,12 +1,10 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { waitFor } from "../waitFor.js";
-import { resetDom } from "../utils/testUtils.js";
 
 const originalFetch = global.fetch;
 
 afterEach(() => {
   global.fetch = originalFetch;
-  resetDom();
 });
 
 describe("displayRandomQuote", () => {

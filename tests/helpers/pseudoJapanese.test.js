@@ -10,10 +10,7 @@ const originalFetch = global.fetch;
 
 describe("convertToPseudoJapanese", () => {
   afterEach(() => {
-    vi.restoreAllMocks();
-    vi.useRealTimers();
     global.fetch = originalFetch;
-    vi.resetModules();
   });
 
   it("converts letters using the JSON mapping", async () => {
