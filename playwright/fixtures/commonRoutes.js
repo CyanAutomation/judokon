@@ -21,6 +21,9 @@ export async function registerCommonRoutes(page) {
     route.fulfill({ path: "src/vendor/ajv6.min.js" })
   );
   await page.route("**/marked.esm.js", (route) =>
-    route.fulfill({ body: "export const marked={parse:(m)=>m};" })
+    route.fulfill({
+      contentType: "application/javascript",
+      body: "export const marked={parse:(m)=>m};"
+    })
   );
 }
