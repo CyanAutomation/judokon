@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   createInfoBar,
   initInfoBar,
@@ -6,9 +6,7 @@ import {
   startCountdown,
   updateScore
 } from "../../src/components/InfoBar.js";
-import { createInfoBarHeader, resetDom } from "../utils/testUtils.js";
-
-afterEach(resetDom);
+import { createInfoBarHeader } from "../utils/testUtils.js";
 
 describe("InfoBar component", () => {
   it("creates DOM structure with proper aria attributes", () => {

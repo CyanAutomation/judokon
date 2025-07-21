@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 let showRandom;
 let gameArea;
@@ -21,12 +21,6 @@ function setupDom() {
 }
 
 describe("game.js", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.resetModules();
-    document.body.innerHTML = "";
-  });
-
   it("passes motion preference to generateRandomCard", async () => {
     setupDom();
     const generateRandomCard = vi.fn();

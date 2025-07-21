@@ -23,7 +23,6 @@ describe("settings utils", () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
     if (global.localStorage) {
       global.localStorage.clear();
     }
@@ -32,8 +31,6 @@ describe("settings utils", () => {
       configurable: true,
       writable: true
     });
-    vi.resetModules();
-    vi.useRealTimers();
   });
 
   /**

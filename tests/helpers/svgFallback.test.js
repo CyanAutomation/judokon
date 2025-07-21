@@ -1,9 +1,5 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { applySvgFallback, DEFAULT_FALLBACK } from "../../src/helpers/svgFallback.js";
-
-afterEach(() => {
-  document.body.innerHTML = "";
-});
 
 describe("applySvgFallback", () => {
   it("replaces broken SVG source with fallback", () => {

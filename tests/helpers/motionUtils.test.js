@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { shouldReduceMotionSync, applyMotionPreference } from "../../src/helpers/motionUtils.js";
 
 const matchMediaMock = (matches) =>
@@ -14,12 +14,6 @@ const matchMediaMock = (matches) =>
 
 describe("motionUtils", () => {
   beforeEach(() => {
-    localStorage.clear();
-    document.body.className = "";
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
     localStorage.clear();
     document.body.className = "";
   });

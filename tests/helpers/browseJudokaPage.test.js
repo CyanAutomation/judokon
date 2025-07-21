@@ -1,7 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { resetDom } from "../utils/testUtils.js";
-
-afterEach(resetDom);
+import { describe, it, expect, vi } from "vitest";
 
 describe("browseJudokaPage helpers", () => {
   it("setupCountryToggle toggles panel and loads flags once", async () => {

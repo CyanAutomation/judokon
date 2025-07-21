@@ -20,10 +20,6 @@ const gokyoLookup = {
   1: { id: 1, name: "Uchi-mata" }
 };
 
-afterEach(() => {
-  vi.restoreAllMocks();
-});
-
 describe("generateJudokaCardHTML fallback containers", () => {
   it("adds fallback when portrait generation throws", async () => {
     vi.spyOn(cardRender, "generateCardPortrait").mockImplementation(() => {

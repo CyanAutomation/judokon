@@ -31,11 +31,6 @@ describe("setupBottomNavbar module", () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
-    vi.useRealTimers();
-    document.body.innerHTML = "";
-
-    // Restore the original descriptor of document.readyState
     if (originalReadyStateDescriptor) {
       Object.defineProperty(document, "readyState", originalReadyStateDescriptor);
     }

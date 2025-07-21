@@ -1,7 +1,5 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { createRandomCardDom, resetDom } from "../utils/testUtils.js";
-
-afterEach(resetDom);
+import { describe, it, expect, vi } from "vitest";
+import { createRandomCardDom } from "../utils/testUtils.js";
 
 describe("randomJudokaPage module", () => {
   it("passes reduced motion flag when generating cards", async () => {

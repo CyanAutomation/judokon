@@ -1,8 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setupButtonEffects } from "../../src/helpers/buttonEffects.js";
 import * as motionUtils from "../../src/helpers/motionUtils.js";
-import { resetDom } from "../utils/testUtils.js";
-
 let button;
 
 describe("setupButtonEffects", () => {
@@ -19,8 +17,6 @@ describe("setupButtonEffects", () => {
       dispatchEvent: vi.fn()
     }));
   });
-
-  afterEach(resetDom);
 
   it("creates and removes a ripple on mousedown", () => {
     setupButtonEffects();
