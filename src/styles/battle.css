@@ -1,0 +1,44 @@
+/* Battle header info elements */
+.battle-header .info-left,
+.battle-header .info-right {
+  display: flex;
+  flex-direction: column;
+  padding: 0 2rem;
+}
+
+.battle-header .info-left {
+  grid-column: 1;
+  align-items: flex-start;
+}
+
+.battle-header .info-right {
+  grid-column: 3;
+  justify-self: end;
+  align-items: flex-end;
+}
+
+.battle-header #round-message,
+.battle-header #next-round-timer,
+.battle-header #score-display {
+  margin: 0;
+}
+
+@media (max-width: 374px) {
+  .battle-header {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    text-align: center;
+  }
+  .battle-header .info-left {
+    grid-row: 1;
+    align-items: center;
+  }
+  .battle-header .logo-container {
+    grid-row: 2;
+  }
+  .battle-header .info-right {
+    grid-row: 3;
+    justify-self: center;
+    align-items: center;
+  }
+}

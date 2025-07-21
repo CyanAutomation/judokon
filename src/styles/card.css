@@ -1,0 +1,519 @@
+.card {
+  padding: 1rem;
+  background-color: var(--color-secondary);
+  color: var(--color-text-inverted);
+  border-block-start: 0.5rem solid var(--color-primary);
+  border-radius: var(--radius-md);
+  text-align: center;
+  box-shadow: var(--shadow-base);
+  cursor: pointer;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.card:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-hover);
+}
+
+.card:focus-visible {
+  box-shadow: var(--shadow-hover);
+}
+
+.tile-content h2 {
+  padding-left: var(--space-large, 1rem);
+  font-size: var(--font-large);
+}
+.locationTile {
+  max-width: 100%;
+  max-height: 36vh;
+  width: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-lg);
+  flex: 1 1 auto;
+  object-fit: contain;
+  align-items: center;
+}
+
+.locationTileSmall {
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex: 1 1 auto;
+  max-width: 10vh;
+}
+
+.locationTileSmall img {
+  max-width: 10vh;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-lg);
+  flex: 1 1 auto;
+}
+.svgTile {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+svg {
+  width: 10vh;
+  aspect-ratio: 1 / 1;
+  fill: var(--color-text-inverted);
+}
+.svg-fallback {
+  width: 10vh;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+}
+/* Card styles */
+.card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-lg) var(--space-lg) 0; /* 24px bottom gap handled by button */
+  min-height: 50vh;
+}
+
+.judoka-card {
+  position: relative;
+  /*
+    Fill roughly 70% of the viewport on small screens while
+    maintaining the fixed 300px size on larger displays.
+    This prevents the card text from overflowing on mobile Safari.
+  */
+  --card-width: clamp(200px, 70vw, 300px);
+  /* Override the global touch target to maintain 10% proportions */
+  --touch-target-size: 44px;
+  width: var(--card-width);
+  height: calc(var(--card-width) * 1.5);
+  aspect-ratio: 2 / 3;
+  border: 12px solid var(--card-border-color);
+  border-radius: var(--radius-lg);
+  background-color: var(--card-bg-color);
+  box-shadow: var(--shadow-base);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows:
+    calc(var(--card-width) * 0.2)
+    /* 41% */
+    calc(var(--card-width) * 0.6)
+    /* 37% */
+    calc(var(--card-width) * 0.5)
+    /* max(10%, var(--touch-target-size)); */
+    auto;
+  transition:
+    box-shadow var(--transition-fast),
+    transform 0.1s ease-in-out;
+}
+
+.judoka-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("./assets/cardBacks/cardBack-2.png");
+  background-size: cover;
+  background-position: center;
+  z-index: 3;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.judoka-card.show-card-back::before {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.judoka-card:hover::before {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.judoka-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: scale(1.05); /* Match PRD max scale */
+}
+
+/* Keyboard focus outline */
+.judoka-card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+  transform: scale(1.05);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Fallback for older browsers */
+.judoka-card:focus:not(:focus-visible) {
+  outline: none;
+}
+/* Common card variables */
+.judoka-card.common {
+  --card-bg-color: #001749;
+  --card-border-color: #003fab;
+  --card-signature-move-bg: #0c3f7a;
+  --card-stats-bg: #0c3f7a;
+  --card-portrait-bg: #0c3f7a;
+  --card-portrait-gradient-start: #00328d;
+  --card-portrait-gradient-end: #002061;
+}
+
+/* Epic card variables */
+.judoka-card.epic {
+  --card-bg-color: #6a1b9a;
+  --card-border-color: #9c27b0;
+  --card-signature-move-bg: #003b88;
+  --card-stats-bg: #0c3f7a;
+  --card-portrait-bg: #0c3f7a;
+  --card-portrait-gradient-start: #00328d;
+  --card-portrait-gradient-end: #002061;
+}
+
+/* Legendary card variables */
+.judoka-card.legendary {
+  --card-bg-color: #0c3f7a;
+  --card-border-color: #ffb74d;
+  --card-signature-move-bg: #000;
+  --card-stats-bg: #0c3f7a;
+  --card-portrait-bg: #000;
+  --card-portrait-gradient-start: #00328d;
+  --card-portrait-gradient-end: #002061;
+}
+
+/* Top bar of the card (name and flag) */
+.card-top-bar {
+  background-color: var(--card-bg-color);
+  color: var(--color-text-inverted);
+  justify-content: space-around;
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-medium) var(--space-small);
+  flex-direction: row;
+  flex: 0 0 calc(var(--card-width) * 0.2);
+  height: calc(var(--card-width) * 0.2);
+  min-height: var(--touch-target-size, 44px);
+  box-sizing: border-box;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.12);
+  /* border: 2px solid red; */
+}
+
+.card-name {
+  text-align: left;
+  flex-direction: column;
+  padding: 0;
+  white-space: nowrap;
+  display: flex;
+  justify-content: left;
+  max-width: 250px;
+  min-width: 100px;
+  flex: 1 1 0;
+  margin-left: min(var(--space-sm), 5dvw);
+}
+
+.card-name .firstname {
+  font-size: min(5vw, 1.1rem);
+  font-weight: normal;
+  display: block;
+  line-height: 1;
+  margin: 0;
+}
+
+.card-name .surname {
+  font-size: min(6vw, 1.5rem);
+  font-weight: bold;
+  line-height: 1;
+  margin: 0;
+}
+
+.card-flag {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  padding-left: var(--space-sm);
+  justify-content: right;
+  max-width: 60px;
+  min-width: 35px;
+  flex: 1 1 0;
+  margin-right: min(var(--space-xs), 1.4vw);
+}
+
+.card-flag img {
+  width: min(50px, 60dvw);
+  height: auto;
+  aspect-ratio: 3/2;
+  max-width: 60px;
+  border-radius: min(4px, 1vw);
+  border: 1px solid var(--color-tertiary);
+}
+.card-portrait {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  /* height: 42%; */
+  flex: 0 0 42%;
+  overflow: hidden;
+  margin-bottom: 0;
+  /* border: 2px solid red; */
+  background: linear-gradient(
+    to bottom,
+    var(--card-portrait-gradient-start),
+    var(--card-portrait-gradient-end)
+  );
+  /* Portrait area ~42% of card height */
+}
+
+.card-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  overflow: hidden;
+  object-position: center top;
+}
+
+.card-weight-class {
+  position: absolute;
+  margin-top: var(--space-small);
+  right: var(--space-small);
+  background-color: transparent;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-weight: bold;
+  padding: var(--space-small) var(--space-medium);
+  font-size: var(--font-medium);
+  z-index: 2;
+}
+
+.card-weight-class::after {
+  content: "kg";
+  font-weight: normal;
+  color: inherit;
+}
+
+.card-stats {
+  background-color: var(--card-stats-bg, var(--color-secondary));
+  color: var(--color-text-inverted);
+  padding: 0 var(--space-small);
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: stretch;
+  font-size: var(--font-medium);
+  flex-direction: column;
+  /* Stats area ~38.67% of card height accounting for padding */
+  /* height: 38.67%; */
+  flex: 0 0 38.67%;
+  /* flex: 0 0 40%; */
+  /* border: 2px solid red; */
+}
+
+.card-stats ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  /* border: 2px solid red; */
+}
+
+.card-stats li {
+  margin: 0;
+  padding: 4px min(1px, 0.6vh);
+  border-top: 1px solid var(--color-text-inverted, var(--color-secondary));
+  font-family: "Open Sans", sans-serif;
+  font-size: min(5vw, var(--font-medium));
+  line-height: 1.2;
+  font-weight: bold;
+}
+
+.card-stats li:first-child {
+  border-top: 0;
+}
+
+.card-stats li:last-child {
+  /* border-bottom: 1px solid red; */
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.card-stats .stat {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 0;
+  /* border-bottom: 1px solid red; */
+}
+
+.card-stats .stat strong {
+  text-align: left;
+  width: 100%;
+}
+
+.card-stats .stat span {
+  text-align: right;
+}
+
+.signature-move-container {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  width: 100%;
+  /* Maintain ~10% (~45px) height as specified in the PRD */
+  /* height: max(10%, var(--touch-target-size)); */
+  line-height: max(15%, var(--touch-target-size));
+  font-weight: bold;
+  /* Ensure visible at small screen sizes */
+  flex: 0 0 20%;
+  box-sizing: border-box;
+  border-top: 1px solid var(--color-text-inverted, var(--color-secondary));
+  justify-content: center;
+  /* border: 2px solid var(--card-stats-bg); */
+  border: 2px solid var(--card-signature-move-bg);
+}
+
+.signature-move-label,
+.signature-move-value {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  border-radius: 0;
+  white-space: nowrap;
+  box-sizing: border-box;
+  padding: min(var(--space-sm), 2.3vw) var(--space-sm);
+  font-size: min(14px, 4vw);
+  align-items: center;
+  line-height: 1;
+}
+
+.signature-move-label {
+  background-color: var(--color-tertiary);
+  color: var(--color-secondary);
+  border: 1px solid var(--color-tertiary);
+}
+
+.signature-move-value {
+  background-color: var(--card-signature-move-bg);
+  color: #fed843;
+  border: 1px solid white;
+}
+
+.card-profile .profile-link {
+  display: inline-block;
+  margin-top: var(--space-large);
+  padding: var(--space-medium) var(--space-large);
+  background-color: var(--button-bg);
+  color: var(--button-text-color);
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.3s ease;
+}
+
+.card-profile .profile-link:hover {
+  background-color: var(--button-hover-bg);
+}
+.carousel-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 75vh;
+  background-color: var(--color-surface);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+}
+
+/*
+  Ensure the outer placeholder element doesn't grow wider than
+  the viewport when the carousel wrapper is inserted. Safari 18
+  may expand auto-width containers based on their children,
+  causing horizontal scroll.
+*/
+#carousel-container {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Carousel styles moved to carousel.css for better responsive design */
+
+.card-carousel::-webkit-scrollbar {
+  height: 8px;
+}
+
+.card-carousel::-webkit-scrollbar-thumb {
+  background-color: var(--color-surface);
+  border-radius: 4px;
+}
+
+.card-carousel::-webkit-scrollbar-track {
+  background-color: var(--color-background);
+}
+
+.scroll-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-primary);
+  border-radius: 50%;
+  min-width: 48px;
+  min-height: 48px;
+  aspect-ratio: 1/1;
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  transition:
+    background-color 0.9s ease-in-out,
+    transform 0.9s ease-in-out,
+    box-shadow 0.9s ease-in-out;
+}
+
+.scroll-button svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.scroll-button:hover {
+  background-color: var(--color-surface);
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: var(--shadow-base);
+}
+
+.scroll-button:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.scroll-button.left {
+  left: var(--space-sm);
+}
+
+.scroll-button.right {
+  right: var(--space-sm);
+}
+
+.judoka-card:target {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+}

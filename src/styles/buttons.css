@@ -1,0 +1,95 @@
+/* Button styles */
+button {
+  font-size: 1rem;
+  font-family: "Open Sans", sans-serif;
+  border: none;
+  background-color: var(--button-bg);
+  color: var(--button-text-color);
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+  padding: var(--space-sm) var(--space-md);
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+button:hover {
+  background-color: var(--button-hover-bg);
+  box-shadow: var(--shadow-base);
+}
+
+button:active {
+  background-color: var(--button-active-bg);
+  transform: scale(0.95);
+}
+
+#stat-buttons button.selected {
+  background-color: var(--button-active-bg);
+}
+
+button:focus,
+button:focus-visible {
+  outline-offset: 2px;
+  text-decoration: underline;
+}
+
+.secondary-button {
+  background-color: var(--color-tertiary);
+  color: var(--color-secondary);
+  border: 1px solid var(--color-secondary);
+}
+
+.secondary-button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+.secondary-button:active {
+  background-color: var(--button-active-bg);
+}
+
+a:focus,
+a:focus-visible {
+  outline-offset: 2px;
+}
+
+button .ripple {
+  position: absolute;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  transform: scale(0);
+  animation: ripple var(--transition-fast);
+  pointer-events: none;
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-card {
+  animation: card-enter var(--scale-duration, 0.4s) ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-card {
+    animation: none;
+  }
+}

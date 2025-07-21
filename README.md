@@ -180,9 +180,11 @@ don't interfere with the centered content. Users can return to the main menu via
 
 - `base.css` – tokens, resets, and global typography.
 - `layout.css` – overall page layout/grid.
-- `components.css` – reusable UI components. All `<button>` elements
-  use design tokens such as `--button-bg`, `--button-text-color`,
-  `--color-slider-dot`, and `--color-slider-active`.
+- `components.css` – collection of `@import` rules that pull in
+  reusable UI sub-files like `buttons.css`, `card.css`, `navbar.css`,
+  `modal.css`, and `settings.css`. All `<button>` elements use design
+  tokens such as `--button-bg`, `--button-text-color`,
+  `--color-slider-dot`, and `--color-slider-active`. The helper
   `setupButtonEffects()` adds a Material-style ripple when buttons are
   clicked. An optional `.secondary-button` class provides a lighter
   variant.
@@ -193,11 +195,13 @@ Import styles in this order: `base.css` first, then layout and component files, 
 
 Global rules should not be repeated across files.
 
-All pages include a fixed header and persistent bottom navigation bar. The body has top and bottom padding to ensure content scrolls under these elements.
+All pages include a fixed header and persistent bottom navigation bar. The body
+has top and bottom padding to ensure content scrolls under these elements.
 
-The `.animate-card` class in `components.css` reveals new cards with a short
-fade and upward slide. A `prefers-reduced-motion` media query removes the
-animation so the card appears instantly when motion reduction is requested.
+The `.animate-card` class in `buttons.css` (imported via `components.css`)
+reveals new cards with a short fade and upward slide. A
+`prefers-reduced-motion` media query removes the animation so the card appears
+instantly when motion reduction is requested.
 
 ## Data Schemas and Validation
 
