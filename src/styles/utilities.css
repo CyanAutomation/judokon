@@ -35,11 +35,6 @@
   color: var(--color-text); /* Updated token */
 }
 
-/* Optional: Hide spinner by default with the hidden class */
-.hidden {
-  display: none;
-}
-
 /* Add Reduced Motion support */
 @media (prefers-reduced-motion: reduce) {
   .card-container {
