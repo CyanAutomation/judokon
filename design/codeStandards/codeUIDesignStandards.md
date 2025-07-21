@@ -331,20 +331,22 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 ## 10. Tokens
 
-| Token Name          | Value                      | Purpose                                   |
-| ------------------- | -------------------------- | ----------------------------------------- |
-| --radius-sm         | 4px                        | Inputs, badges                            |
-| --radius-md         | 8px                        | Buttons                                   |
-| --radius-lg         | 12px                       | Cards, modals                             |
-| --radius-pill       | 9999px                     | Capsule buttons                           |
-| --button-bg         | #CB2504                    | Primary button background                 |
-| --button-hover-bg   | #0B5BB0                    | Hover state for buttons; adds drop shadow |
-| --button-active-bg  | #0C3F7A                    | Active button state                       |
-| --button-text-color | #ffffff                    | Button text                               |
-| --switch-off-bg     | #878787                    | Toggle off state background               |
-| --switch-on-bg      | #08A700                    | Toggle on state background                |
-| --shadow-base       | 0 4px 12px rgba(0,0,0,0.1) | Elevation; hover drop-shadow              |
-| --transition-fast   | all 150ms ease             | UI animations                             |
+| Token Name            | Value                      | Purpose                                   |
+| --------------------- | -------------------------- | ----------------------------------------- |
+| --radius-sm           | 4px                        | Inputs, badges                            |
+| --radius-md           | 8px                        | Buttons                                   |
+| --radius-lg           | 12px                       | Cards, modals                             |
+| --radius-pill         | 9999px                     | Capsule buttons                           |
+| --button-bg           | #CB2504                    | Primary button background                 |
+| --button-hover-bg     | #0B5BB0                    | Hover state for buttons; adds drop shadow |
+| --button-active-bg    | #0C3F7A                    | Active button state                       |
+| --button-text-color   | #ffffff                    | Button text                               |
+| --switch-off-bg       | #878787                    | Toggle off state background               |
+| --switch-on-bg        | #08A700                    | Toggle on state background                |
+| --shadow-base         | 0 4px 12px rgba(0,0,0,0.1) | Elevation; hover drop-shadow              |
+| --transition-fast     | all 150ms ease             | UI animations                             |
+| --color-slider-dot    | #BBB                       | Carousel indicator default                |
+| --color-slider-active | #717171                    | Active/hover indicator                    |
 
 ---
 

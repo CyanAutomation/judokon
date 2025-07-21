@@ -18,6 +18,8 @@
   --button-text-color: #ffffff;
   --switch-off-bg: #707070; /* Toggle off state background */
   --switch-on-bg: #08a700; /* Toggle on state background */
+  --color-slider-dot: #bbb; /* Carousel indicator default */
+  --color-slider-active: #717171; /* Active indicator */
   --radius-pill: 9999px; /* capsule */
 
   /* Updated spacing tokens */
