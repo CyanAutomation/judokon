@@ -173,11 +173,11 @@ generated carousel so each card's real portrait loads once it becomes visible.
 
 ## Tasks
 
-- [ ] 1.0 Set Up Card Carousel Structure (P1)
+- [x] 1.0 Set Up Card Carousel Structure (P1)
   - [x] 1.1 Develop carousel container and card components.
   - [x] 1.2 Implement dynamic loading for up to 100 cards.
   - [ ] 1.3 Ensure responsive resizing for mobile and desktop.
-- [ ] 2.0 Integrate Navigation Methods (P1)
+- [x] 2.0 Integrate Navigation Methods (P1)
   - [x] 2.1 Add left/right on-screen button scrolling.
   - [x] 2.2 Add swipe gesture support for mobile.
   - [ ] 2.3 Add keyboard arrow navigation support.

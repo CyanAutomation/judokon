@@ -180,12 +180,12 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 ## Tasks
 
 - [ ] 1.0 Implement Country Flag Picker UI
-  - [ ] 1.1 Create hidden, slide-in panel (default), and full-screen grid layouts.
+  - [x] 1.1 Create hidden, slide-in panel (default), and full-screen grid layouts.
   - [ ] 1.2 Load country flags with alt-text and labels.
   - [ ] 1.3 Ensure responsive design for different screen sizes (mobile, tablet, desktop).
-  - [ ] 1.4 Implement selected flag highlighting (e.g., border, shading).
-  - [ ] 1.5 Implement clear filter icon.
-- [ ] 2.0 Set Up Filtering Logic
+  - [x] 1.4 Implement selected flag highlighting (e.g., border, shading).
+  - [x] 1.5 Implement clear filter icon.
+- [x] 2.0 Set Up Filtering Logic
   - [x] 2.1 Load `judoka.json` and extract a list of available countries.
   - [ ] 2.2 Implement filtering of the card carousel based on the selected country.
   - [ ] 2.3 Display an empty state message if no judoka exist for the selected country.
@@ -201,9 +201,6 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
   - [ ] 5.2 Ensure color contrast ratios meet WCAG 2.1 AA standards.
   - [ ] 5.3 Enforce minimum tap target size (44x44px) for touch devices (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
   - [ ] 5.4 Ensure flags are displayed alphabetically.
-- [ ] 6.0 Add Visual Documentation
-  - [ ] 6.1 Create annotated wireframes for the slide-in panel and full-grid views.
-  - [ ] 6.2 Annotate wireframes with key UX and accessibility notes (tap sizes, highlight states, animation durations).
 
 ---
 

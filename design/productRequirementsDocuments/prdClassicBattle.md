@@ -157,19 +157,19 @@ _Resolved in [Future Considerations](#future-considerations):_ AI difficulty wil
 
 ## Tasks
 
-- [ ] 1.0 Implement Classic Battle Match Flow
-  - [ ] 1.1 Create round loop: random card draw, stat selection, comparison
+- [x] 1.0 Implement Classic Battle Match Flow
+  - [x] 1.1 Create round loop: random card draw, stat selection, comparison
   - [ ] 1.2 Implement 30-second stat selection timer with auto-selection fallback
-  - [ ] 1.3 Handle scoring updates on win, loss, and tie
+  - [x] 1.3 Handle scoring updates on win, loss, and tie
   - [ ] 1.4 End match after 10 points or 25 rounds
 - [ ] 2.0 Add Early Quit Functionality
   - [ ] 2.1 Trigger quit confirmation when the header logo is clicked
-  - [ ] 2.2 Create confirmation prompt flow
-  - [ ] 2.3 Record match as player loss upon quit confirmation
+  - [x] 2.2 Create confirmation prompt flow
+  - [x] 2.3 Record match as player loss upon quit confirmation
 - [ ] 3.0 Handle Edge Cases
   - [ ] 3.1 Implement player disconnect logic: abandon match and redirect to main menu
   - [ ] 3.2 Handle Judoka dataset load failure with error prompt and reload option
-  - [ ] 3.3 Add fallback stat selection for AI if difficulty logic fails
+  - [x] 3.3 Add fallback stat selection for AI if difficulty logic fails
 - [ ] 4.0 Polish UX and Accessibility
   - [ ] 4.1 Integrate consistent color coding (blue for player, red for AI)
   - [ ] 4.2 Apply WCAG-compliant contrast ratios

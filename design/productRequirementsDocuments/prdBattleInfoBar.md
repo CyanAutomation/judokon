@@ -150,14 +150,14 @@ The round message, timer, and score now sit directly inside the page header rath
 
 ## Tasks
 
-- [ ] 1.0 Implement Score Display
-  - [ ] 1.1 Fetch match score from backend
-  - [ ] 1.2 Render score on right side of top bar
-  - [ ] 1.3 Update score within 800ms after round ends
+- [x] 1.0 Implement Score Display
+  - [x] 1.1 Fetch match score from backend
+  - [x] 1.2 Render score on right side of top bar
+  - [x] 1.3 Update score within 800ms after round ends
 
-- [ ] 2.0 Implement Round Info Messages
-  - [ ] 2.1 Display win/loss messages for 2 seconds
-  - [ ] 2.2 Start countdown timer after message disappears
+- [x] 2.0 Implement Round Info Messages
+  - [x] 2.1 Display win/loss messages for 2 seconds
+  - [x] 2.2 Start countdown timer after message disappears
   - [ ] 2.3 Display selection prompt when input is needed
 
 - [ ] 3.0 Handle Responsive Layout
@@ -168,9 +168,9 @@ The round message, timer, and score now sit directly inside the page header rath
   - [ ] 4.1 Ensure text contrast meets 4.5:1 ratio
   - [ ] 4.2 Add screen reader labels for dynamic messages
 
-- [ ] 5.0 Edge Case Handling and Fallbacks
-  - [ ] 5.1 Show “Waiting…” if backend score sync fails
-  - [ ] 5.2 Show “Waiting…” if countdown timer mismatches server start
+- [x] 5.0 Edge Case Handling and Fallbacks
+  - [x] 5.1 Show “Waiting…” if backend score sync fails
+  - [x] 5.2 Show “Waiting…” if countdown timer mismatches server start
   - [ ] 5.3 Truncate or stack content if resolution causes display issues
   - [ ] 5.4 Define recovery logic for delayed player input
 
