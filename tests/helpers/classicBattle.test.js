@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { createBattleHeader, createBattleCardContainers } from "../utils/testUtils.js";
 
 let generateRandomCardMock;
 
@@ -26,14 +27,10 @@ vi.mock("../../src/helpers/utils.js", () => ({
 describe("classicBattle", () => {
   let timerSpy;
   beforeEach(() => {
-    document.body.innerHTML = `
-      <div id="player-card"></div>
-      <div id="computer-card"></div>
-      <header>
-        <p id="round-message"></p>
-        <p id="next-round-timer"></p>
-        <p id="score-display"></p>
-      </header>`;
+    document.body.innerHTML = "";
+    const { playerCard, computerCard } = createBattleCardContainers();
+    const header = createBattleHeader();
+    document.body.append(playerCard, computerCard, header);
     timerSpy = vi.useFakeTimers();
     fetchJsonMock = vi.fn(async () => []);
     generateRandomCardMock = vi.fn(async (data, g, container, _pm, cb) => {
@@ -98,6 +95,7 @@ describe("classicBattle", () => {
     await startRound();
     timerSpy.advanceTimersByTime(31000);
     timerSpy.advanceTimersByTime(800);
+    await vi.runAllTimersAsync();
     const score = document.querySelector("header #score-display").textContent;
     expect(score).not.toBe("You: 0\nComputer: 0");
   });
