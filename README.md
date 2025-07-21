@@ -181,7 +181,8 @@ don't interfere with the centered content. Users can return to the main menu via
 - `base.css` – tokens, resets, and global typography.
 - `layout.css` – overall page layout/grid.
 - `components.css` – reusable UI components. All `<button>` elements
-  use design tokens such as `--button-bg` and `--button-text-color`.
+  use design tokens such as `--button-bg`, `--button-text-color`,
+  `--color-slider-dot`, and `--color-slider-active`.
   `setupButtonEffects()` adds a Material-style ripple when buttons are
   clicked. An optional `.secondary-button` class provides a lighter
   variant.
