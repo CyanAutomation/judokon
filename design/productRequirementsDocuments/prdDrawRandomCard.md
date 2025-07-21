@@ -6,7 +6,7 @@
 
 This PRD defines the Draw Random Card function for Ju-Do-Kon!, providing a fast, engaging, and accessible way to select random cards during matches. The feature increases excitement, replayability, and average session time, with performance targets of ≤300ms draw speed and ≥60fps animations.
 
-> Hiroshi faces his rival in Ju-Do-Kon!’s Classic Battle. He taps “Draw Card” — a new Judoka card slides onto the screen, its stats flashing dramatically. Hiroshi’s heart races, knowing the outcome could change the match. This suspense keeps players coming back for more, fueling longer, more thrilling sessions.
+> Hiroshi faces his rival in Ju-Do-Kon!’s Classic Battle. He taps “Draw Card!” — a new Judoka card slides onto the screen, its stats flashing dramatically. Hiroshi’s heart races, knowing the outcome could change the match. This suspense keeps players coming back for more, fueling longer, more thrilling sessions.
 
 ---
 
@@ -38,7 +38,7 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 ## How It Works
 
-- The player taps the “Draw Card” button which triggers the `generateRandomCard()` function, or
+- The player taps the “Draw Card!” button which triggers the `generateRandomCard()` function, or
 - The player navigates to a designated card draw screen, and this action auto-triggers the `generateRandomCard()` function.
 - The system:
   - Selects a random Judoka card from the active card set (isActive = True).
@@ -53,7 +53,7 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 
 - Use `crypto.getRandomValues()` or equivalent for secure randomness, avoiding predictable PRNG.
 - Optimize DOM updates for minimal reflows/repaints during animation.
-- Implement debounce to prevent double taps on “Draw Card” button.
+- Implement debounce to prevent double taps on “Draw Card!” button.
 - Ensure fallback logic uses a single, consistent error card (judoka id=0).
   The `getFallbackJudoka()` helper loads and caches this entry from
   `judoka.json`.
@@ -113,7 +113,7 @@ Motion** enabled, ensuring the card appears instantly without movement.
 
 ## Draw Card Flow
 
-- Player taps “Draw Card” button.
+- Player taps “Draw Card!” button.
 - System triggers generateRandomCard() function.
 - If active card set is not empty: Random card selected, then Card reveal animation plays.
 - If active card set is empty or error occurs: Fallback card (judoka id=0) displayed, then Error message shown if applicable.
@@ -196,12 +196,11 @@ Motion** enabled, ensuring the card appears instantly without movement.
 - **Card Placeholder Module**:
   - Start State: “?” icon card.
   - Draw State: Random card fades and slides in using the `.animate-card` class.
-  - Fail State: Error card with soft warning text (“Oops! Try again!”).
   - Animation Layer: Reserve transparent zone for slide/fade animations.
 - **Action Button Module**:
   - Giant “Draw Card!” button (64px height min, 90px optimal for kid-friendly tapping).
   - **Loading State**: Button changes to a spinner or text (“Drawing…”).
-  - **Error State**: Subtle inline text under the button (“Connection Issue, Showing Backup Card”).
+  - **Error State**: Subtle inline text under the button (“Connection Issue”).
 
 **Why**: Separate content vs. action modules makes touch flow logical and easily adjustable.
 

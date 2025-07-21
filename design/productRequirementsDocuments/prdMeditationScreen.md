@@ -109,7 +109,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 3. Skeleton loader appears if quote data is still fetching.
 4. KG image and random quote fade in smoothly (**fade ≤300 ms**).
 5. Player reads quote → taps “Continue Your Journey” button.
-6. Player returns to their previous location (main menu or resumes gameplay, depending on where they entered the meditation screen).
+6. Player returns to the main menu.
 
 ---
 
