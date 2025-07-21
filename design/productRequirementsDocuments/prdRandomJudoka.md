@@ -103,10 +103,10 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - **Main Screen Structure:**
   - **Card Display Area:** Centered large card placeholder with dynamic content
   - **Action Buttons:**
-    - Prominent “Draw” button below the card, centered, clear label
+    - Prominent “Draw Card!” button below the card, centered, clear label
 - **Draw Flow:**
   1. Player loads the screen → random judoka card appears automatically
-  2. Player taps “Draw” button → new random card slides or fades in
+  2. Player taps “Draw Card!” button → new random card slides or fades in
   3. If Reduced Motion or manual animation toggle is active, card changes instantly without animation
 - **Button Size:**
   - Minimum: 64px height × 300px width for easy tapping, especially for kids
@@ -129,7 +129,6 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - Provide manual animation toggle (default ON)
 - Tap targets ≥44px × 44px (64px recommended for kid-friendly design). See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)
 - Text must meet WCAG 2.1 AA 4.5:1 contrast ratio (verify with automated tools)
-- Fallback card displays high-contrast “Oops! Try again” text if errors occur
 - All buttons and states require clear text labels
 
 #### Responsiveness
@@ -146,10 +145,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 #### Visual Mockup Description
 
-- **Top Bar:** minimal header with “Random Judoka” title centered
-- **Central Card Area:** large placeholder card with question mark icon on initial state
-- **Draw Button Area:** prominent pill-shaped “Draw New Judoka!” button prefixed with a draw icon, with mute and animation toggles ~24px below the card
-- **Fallback State:** placeholder card with error icon and explanatory text below
+- **Draw Button Area:** prominent pill-shaped “Draw Card!” button prefixed with a draw icon, with mute and animation toggles ~24px below the card
 
 ---
 
