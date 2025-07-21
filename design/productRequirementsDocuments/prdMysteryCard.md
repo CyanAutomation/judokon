@@ -1,5 +1,7 @@
 # PRD: Mystery Judoka Card (JU-DO-KON!)
 
+---
+
 ## TL;DR
 
 The **Mystery Judoka Card** is a placeholder card used in *every round against the computer*. It temporarily hides the opponent’s real card until the player selects a stat, ensuring fair gameplay and preventing stat-based cheating. The card uses a silhouette portrait, obscured stats (`"?"`), and the name “Mystery Judoka”, providing a consistent and thematic experience during the stat selection phase.
@@ -37,17 +39,13 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 - **Given** a round starts in any battle mode against the CPU,  
   **When** the opponent card is shown,  
   **Then** the “Mystery Judoka” card (`judokaId=1`) is displayed with silhouette image and question marks in all stat fields.
-
 - **Given** the player selects a stat,  
   **When** the opponent’s real card is revealed,  
   **Then** it *replaces* the Mystery Judoka card via slide or flip animation within **400ms**.
-
 - **Given** the Mystery Judoka card appears,  
   **Then** its name should be displayed as “Mystery Judoka” and stats as `"?"`, regardless of real underlying values.
-
 - **Given** the Mystery Judoka card is displayed,  
   **Then** it should retain correct rarity styling, weight class, and flag as defined in `judoka.json`.
-
 - **Given** the reveal animation starts,  
   **Then** the full transition should complete cleanly without layout shift or UI jump.
 
@@ -55,9 +53,9 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 
 ## Edge Cases / Failure States
 
-- **Player selects stat before Mystery Card is rendered →** Delay selection until render complete.
-- **Mystery Judoka stats not replaced visually →** Default to `"?"` in all stat fields regardless of backend value.
-- **Animation interrupted →** Ensure fallback swap (no animation) still completes the reveal.
+- **Player selects stat before Mystery Card is rendered:** Delay selection until render complete.
+- **Mystery Judoka stats not replaced visually:** Default to `"?"` in all stat fields regardless of backend value.
+- **Animation interrupted:** Ensure fallback swap (no animation) still completes the reveal.
 
 ---
 
@@ -76,6 +74,7 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 
 ### Before Player Chooses Stat
 
+```
 +————————————————+
 | [ BORDER COLOR BASED ON RARITY OF REAL CARD ]  |
 |                                                |
@@ -92,6 +91,7 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 | Power: ?     Speed: ?                          |
 | Technique: ? Kumi-kata: ? Ne-waza: ?           |
 +————————————————+
+```
 
 ### After Player Chooses Stat → Reveal Opponent Card
 
@@ -104,8 +104,8 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                     | Description                                                                 |
-| -------- | --------------------------- | --------------------------------------------------------------------------- |
+| Priority | Feature                      | Description                                                                 |
+|:--------:|:----------------------------|:---------------------------------------------------------------------------|
 | **P1**   | Placeholder Mystery Card     | Show `judokaId=1` card with silhouette and `"?"` stats at start of each CPU round |
 | **P1**   | Stat Redaction on Render     | Replace all visible stat values with `"?"` regardless of real values        |
 | **P1**   | Card Swap on Stat Selection  | Reveal opponent card via animated swap within **400ms**, no layout shift   |
@@ -132,26 +132,22 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 
 ## Tasks
 
-- [ ] 1.0 Mystery Card Rendering
+- [ ] **1.0 Mystery Card Rendering**
   - [ ] 1.1 Show `judokaId=1` as placeholder at start of CPU round
   - [ ] 1.2 Hide real stats and show `"?"` for all attributes and move
   - [ ] 1.3 Apply correct rarity, flag, and weight class styles
-
-- [ ] 2.0 Reveal Logic
+- [ ] **2.0 Reveal Logic**
   - [ ] 2.1 Trigger swap animation upon stat selection
   - [ ] 2.2 Load correct opponent card into same slot
   - [ ] 2.3 Ensure animation completes in ≤400ms
   - [ ] 2.4 Fallback to instant swap if animation fails
-
-- [ ] 3.0 Accessibility
+- [ ] **3.0 Accessibility**
   - [ ] 3.1 Add `aria-label` attributes to `"?"` stats and card
   - [ ] 3.2 Ensure name “Mystery Judoka” is readable by screen readers
   - [ ] 3.3 Prevent layout jump or scroll on reveal
-
-- [ ] 4.0 Game Logic Safeguards
+- [ ] **4.0 Game Logic Safeguards**
   - [ ] 4.1 Block stat selection until card fully rendered
-
-- [ ] 5.0 Code Integration
+- [ ] **5.0 Code Integration**
   - [ ] 5.1 Extend `renderJudokaCard()` with `useObscuredStats` flag
   - [ ] 5.2 Use animation helper for swap timing (ease-out, 400ms)
 

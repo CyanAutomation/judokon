@@ -1,10 +1,13 @@
-## Update Judoka
+# PRD: Update Judoka
+
+---
 
 ## TL;DR
 
 Players can fine-tune a judoka's stats and appearance over time, keeping their roster aligned with evolving strategies.
 
-Game Mode ID: updateJudoka (URL: updateJudoka.html)
+**Game Mode ID:** updateJudoka  
+**URL:** `updateJudoka.html`
 
 [Back to Game Modes Overview](prdGameModes.md)
 
@@ -22,12 +25,12 @@ This feature will empower players to develop their roster continuously, enhancin
 
 ## Goals (SMART)
 
-- **G1**: Allow players to edit designated judoka stats (Strength, Speed, Technique, Endurance) and appearance fields (Gi color, Belt, Hairstyle) with real-time feedback.
-- **G2**: Enforce stat validation rules to prevent illegal values, achieving **100% prevention of invalid saves** during tests.
-- **G3**: Persist edits reliably with **≥95% successful save rate within 1 second** of save action.
-- **G4**: Provide clear confirmation or error feedback for **100% of save attempts**, with animation feedback.
-- **G5**: Handle missing or corrupted judoka data gracefully with a retry prompt appearing **100% of the time** in such cases.
-- **G6**: Decide and implement whether to lock edits once a judoka enters ranked play (pending).
+- **G1:** Allow players to edit designated judoka stats (Strength, Speed, Technique, Endurance) and appearance fields (Gi color, Belt, Hairstyle) with real-time feedback.
+- **G2:** Enforce stat validation rules to prevent illegal values, achieving **100% prevention of invalid saves** during tests.
+- **G3:** Persist edits reliably with **≥95% successful save rate within 1 second** of save action.
+- **G4:** Provide clear confirmation or error feedback for **100% of save attempts**, with animation feedback.
+- **G5:** Handle missing or corrupted judoka data gracefully with a retry prompt appearing **100% of the time** in such cases.
+- **G6:** Decide and implement whether to lock edits once a judoka enters ranked play (pending).
 
 ---
 
@@ -185,36 +188,39 @@ And the form fields refresh with the newest data
 
 ## UI Design
 
-Feedback & Modal Layer
-Contents:
-• Modular status/confirmation bar above Save button, with slide-up and fade animation for both success and conflict messages
-• Inline validation error area directly under each editable stat/appearance field (auto-expanding, 200ms fade)
-• Reusable modal overlay component for error/retry, loading spinner, and edit-locked state, with focus trap and dismiss/OK button
+**Feedback & Modal Layer**  
+_Contents:_
 
-Why:
+- Modular status/confirmation bar above Save button, with slide-up and fade animation for both success and conflict messages
+- Inline validation error area directly under each editable stat/appearance field (auto-expanding, 200ms fade)
+- Reusable modal overlay component for error/retry, loading spinner, and edit-locked state, with focus trap and dismiss/OK button
+
+_Why:_  
 Your current design provides zero feedback for success, error, or locked states, in direct violation of nearly every requirement and game state. Modularizing feedback and overlays ensures every edge case is handled and future features can be slotted in without redesigning the whole screen.
 
-⸻
+---
 
-Responsive & Touch-Optimized Form Module
-Contents:
-• All editable fields refactored into clearly labeled, interactive controls (sliders or steppers for stats, dropdowns for Gi/Belt, tappable avatar tiles for Hairstyle)
-• Minimum 44px vertical height per input for touch targets
-• Logical, single-column flow with clear focus order, tab/keyboard support, and section dividers for Stats/Appearance
-• Flexible width—auto-scaling to screen size, using grid or flexbox
+**Responsive & Touch-Optimized Form Module**  
+_Contents:_
 
-Why:
+- All editable fields refactored into clearly labeled, interactive controls (sliders or steppers for stats, dropdowns for Gi/Belt, tappable avatar tiles for Hairstyle)
+- Minimum 44px vertical height per input for touch targets
+- Logical, single-column flow with clear focus order, tab/keyboard support, and section dividers for Stats/Appearance
+- Flexible width—auto-scaling to screen size, using grid or flexbox
+
+_Why:_  
 Current controls are static and too small for any touch or keyboard user. Responsive, interactive controls are non-negotiable for a modern web game UI.
 
-⸻
+---
 
-Header & Action Bar Module
-Contents:
-• Consistent header with dominant title, smaller back button, and safe padding
-• Save/Cancel action bar pinned at the bottom, grouped together, with Save as primary (high contrast color) and clear disabled state if form invalid
-• Optional: floating help/info button for future accessibility hints
+**Header & Action Bar Module**  
+_Contents:_
 
-Why:
+- Consistent header with dominant title, smaller back button, and safe padding
+- Save/Cancel action bar pinned at the bottom, grouped together, with Save as primary (high contrast color) and clear disabled state if form invalid
+- Optional: floating help/info button for future accessibility hints
+
+_Why:_  
 Header and action layout are inconsistent, cluttered, and violate basic navigation standards. Centralizing actions at the bottom with proper grouping reduces confusion and supports touch ergonomics.
 
 ---

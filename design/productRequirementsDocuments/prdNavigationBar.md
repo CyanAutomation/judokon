@@ -45,6 +45,8 @@ The **JU-DO-KON!** game features multiple game modes and screens. Players need e
 - Allow players to confidently navigate between modes without frustration.
 - Ensure a consistent, easy-to-use navigation experience across devices.
 
+---
+
 ## Non-Goals
 
 - Custom color themes or advanced 3D animations.
@@ -101,12 +103,12 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 ## Functional Requirements
 
 | Priority | Feature                | Description                                                                                                       |
-| -------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| P1       | Standard Nav Bar       | Fixed horizontal navigation pinned to the bottom of the viewport with scalable links and bottom-left corner logo. |
-| P2       | Portrait Text Menu     | Text-based vertical menu expansion on logo click for portrait and landscape (collapsed) orientation.              |
-| P2       | Small Screens Support  | Adjust text menu for screens as small as 320px — scale font and spacing.                                          |
-| P2       | Visual Feedback        | Positive click/tap feedback animation for all links and buttons.                                                  |
-| P1       | Fallback Data Handling | Hardcoded default mode list if `gameModes.json` fails to load.                                                    |
+|:--------:|:----------------------|:-----------------------------------------------------------------------------------------------------------------|
+| **P1**   | Standard Nav Bar       | Fixed horizontal navigation pinned to the bottom of the viewport with scalable links and bottom-left corner logo. |
+| **P2**   | Portrait Text Menu     | Text-based vertical menu expansion on logo click for portrait and landscape (collapsed) orientation.              |
+| **P2**   | Small Screens Support  | Adjust text menu for screens as small as 320px — scale font and spacing.                                          |
+| **P2**   | Visual Feedback        | Positive click/tap feedback animation for all links and buttons.                                                  |
+| **P1**   | Fallback Data Handling | Hardcoded default mode list if `gameModes.json` fails to load.                                                    |
 
 ---
 
@@ -158,6 +160,8 @@ The standard navbar uses `--color-secondary` for its background and `--button-te
 
 - Tap animation on navigation interactions.
 - Smooth slide-in/slide-out transitions (**<500ms**).
+
+---
 
 ## Open Questions
 

@@ -26,7 +26,9 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 - Toggle feature allows players to switch between original English text and pseudo-Japanese output, with response times under 200ms.
 - Support input text up to 999 characters without degradation of performance.
 - Provide an authentic-feeling Japanese aesthetic without requiring language proficiency.
-- Enable quick, easy switching between English and pseudo-Japanese text **(toggle ≤200 ms)**.
+- Enable quick, easy switching between English and pseudo-Japanese text (**toggle ≤200 ms**).
+
+---
 
 ## User Stories
 
@@ -39,7 +41,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 ## Functional Requirements
 
 | Priority | Feature                       | Description                                                                                  |
-| -------- | ----------------------------- | -------------------------------------------------------------------------------------------- |
+|:--------:|:-----------------------------|:--------------------------------------------------------------------------------------------|
 | **P1**   | Local conversion via mapping  | Perform text conversion locally using a JSON mapping file.                                   |
 | **P1**   | API validation call           | Validate local conversion by comparing results with API response during testing.             |
 | **P1**   | Toggle button                 | Instantly switch between English and pseudo-Japanese text with minimal delay.                |
@@ -84,7 +86,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 - No plan for real Japanese localization — this feature is purely for stylistic effect.
 
 | **Meditation Screen Mockup 3**                                             |                                             **Meditation Screen Mockup 4** |
-| -------------------------------------------------------------------------- | -------------------------------------------------------------------------: |
+|:--------------------------------------------------------------------------:|:-------------------------------------------------------------------------:|
 | ![Meditation Screen Mockup 3](/design/mockups/mockupMeditationScreen3.png) | ![Meditation Screen Mockup 4](/design/mockups/mockupMeditationScreen4.png) |
 
 ### 1. Quote Display + Language Toggle Module
@@ -95,7 +97,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 - Enlarged language toggle button (“日本語 / English”) above or below the quote.
 - 200ms fade animation when language is toggled using the `.fading` CSS class.
 
-**Why:**  
+**Why:**
 Enhances contextual clarity and smooth interaction, keeping actions tied to relevant content.
 
 ---
@@ -107,7 +109,7 @@ Enhances contextual clarity and smooth interaction, keeping actions tied to rele
 - Large, thumb-friendly “Continue Your Journey” button.
 - Clear visual separation from quote/toggle above.
 
-**Why:**  
+**Why:**
 Prevents accidental taps and creates distinct flow—finish reading before proceeding.
 
 ---
@@ -130,11 +132,11 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
 
 ## Player Flow
 
-- Player opens meditation screen → quote displays in English by default.
-- Player taps toggle button → text fades to pseudo-Japanese in ≤200ms.
-- Player can tap toggle again to return to English.
-- If local mapping fails → fallback static pseudo-Japanese text shown.
-- Player continues journey by tapping “Continue Your Journey.”
+1. Player opens meditation screen → quote displays in English by default.
+2. Player taps toggle button → text fades to pseudo-Japanese in ≤200ms.
+3. Player can tap toggle again to return to English.
+4. If local mapping fails → fallback static pseudo-Japanese text shown.
+5. Player continues journey by tapping “Continue Your Journey.”
 
 ---
 
@@ -150,31 +152,23 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
 
 ## Tasks
 
-- [ ] 1.0 Implement Local Conversion System
-
+- [ ] **1.0 Implement Local Conversion System**
   - [ ] 1.1 Create JSON mapping file for English-to-pseudo-Japanese conversion.
   - [ ] 1.2 Develop conversion logic to map input text via JSON.
   - [ ] 1.3 Implement input cleaning: strip unsupported characters.
   - [ ] 1.4 Substitute random pseudo-Japanese characters for unmapped input.
-
-- [ ] 2.0 Implement Toggle Button
-
+- [ ] **2.0 Implement Toggle Button**
   - [ ] 2.1 Design "日本語風 / English" toggle button with split flags.
   - [ ] 2.2 Implement text toggle with 200ms fade animation.
   - [ ] 2.3 Ensure toggle integrates cleanly with the meditation screen UI.
-
-- [ ] 3.0 Implement Static Fallback Mechanism
-
+- [ ] **3.0 Implement Static Fallback Mechanism**
   - [ ] 3.1 Set predefined static pseudo-Japanese text as a final fallback.
   - [ ] 3.2 Trigger fallback if local mapping fails unexpectedly.
-
-- [ ] 4.0 Validation Testing (Non-Production)
-
+- [ ] **4.0 Validation Testing (Non-Production)**
   - [ ] 4.1 Set up API validation call to https://romaji2kana.com/api.
   - [ ] 4.2 Compare local conversion output with API results.
   - [ ] 4.3 Log discrepancies for manual review.
-
-- [ ] 5.0 Testing and QA
+- [ ] **5.0 Testing and QA**
   - [ ] 5.1 Prepare five diverse test strings (short, max-length, special chars, mixed input).
   - [ ] 5.2 Validate local conversion, static fallback activation, and toggle performance.
   - [ ] 5.3 Ensure <500ms conversion time and <200ms toggle response.
@@ -183,4 +177,4 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
 
 ---
 
-        [Back to Game Modes Overview](prdGameModes.md)
+[Back to Game Modes Overview](prdGameModes.md)

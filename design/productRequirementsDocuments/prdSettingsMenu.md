@@ -1,15 +1,22 @@
 # PRD: Settings Menu
 
+---
+
 ## TL;DR
 
 This PRD defines the Settings Menu for Ju-Do-Kon!, enabling players to control sound, motion effects, navigation map, display mode, and the visibility of certain game modes. These options improve accessibility, personalization, and retention by empowering users to tailor the game to their needs.
 
-**Problem Statement:**  
-As a user of the game _ju-do-kon!_, I want to be able to change settings such as display mode, navigation map, motion effects, and sound, to tailor my experience and reduce frustration — especially for players sensitive to motion or needing visual adjustments. Playtesting shows **35% of users quit early when unable to adjust motion effects**, indicating the need for accessible, customizable gameplay.
+---
+
+## Problem Statement
+
+As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as display mode, navigation map, motion effects, and sound, to tailor my experience and reduce frustration — especially for players sensitive to motion or needing visual adjustments. Playtesting shows **35% of users quit early when unable to adjust motion effects**, indicating the need for accessible, customizable gameplay.
 
 > Kazuki, a player who’s prone to motion sickness, launches Ju-Do-Kon! for the first time. The opening animations make him dizzy, but he quickly finds the Settings Menu on the Judo Training Village Map. Within seconds, he toggles Motion Effects off — the UI instantly calms, and Kazuki can now enjoy battles without discomfort. By empowering players like Kazuki to control their experience, Ju-Do-Kon! becomes welcoming and inclusive.
 
-### User Stories
+---
+
+## User Stories
 
 - As a player sensitive to motion, I want to disable motion effects so I can play comfortably without nausea.
 - As a player who prefers dark mode, I want to switch the display instantly so I’m not blinded in low light.

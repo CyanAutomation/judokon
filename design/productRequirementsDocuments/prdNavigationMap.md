@@ -12,9 +12,9 @@ This PRD defines an immersive, thematic expanded map view for Ju-Do-Kon!’s nav
 
 ## Problem Statement
 
-Players have reported that the current navigation menus feel disconnected from the Ju-Do-Kon! theme, which weakens immersion and reduces excitement when switching game modes. A theoretical 10-year-old playtester noted,
+Players have reported that the current navigation menus feel disconnected from the Ju-Do-Kon! theme, which weakens immersion and reduces excitement when switching game modes. A theoretical 10-year-old playtester noted:
 
-> _"The menu feels boring compared to the rest of the game — can it look more exciting? Maybe like a judo dojo or village?"_
+> "The menu feels boring compared to the rest of the game — can it look more exciting? Maybe like a judo dojo or village?"
 
 Currently, the menu is purely functional but lacks the thematic cohesion that draws players deeper into the Ju-Do-Kon! world. Additionally, important new modes are hard to find because the plain menu structure buries them below a list format, making discovery harder for players. Improving the navigation’s thematic fit is important now because new game modes have been added, and players are not easily discovering them through the existing menu.
 
@@ -23,7 +23,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 ## Goals
 
 - Make switching modes exciting and intuitive, matching the game’s theme.
-- Allow quick, frustration-free discovery of all game modes **(reach destination in ≤3 s)**.
+- Allow quick, frustration-free discovery of all game modes (**reach destination in ≤3 s**).
 
 ---
 
@@ -48,20 +48,20 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 
 ## Player Flow
 
-- Player taps map icon in bottom right corner.
-- Village map expands with slide-up animation (<500ms).
-- Player browses tiles representing different modes.
-- Player taps a tile → transitions smoothly to selected mode (**≤300 ms**).
-- Player taps outside map or map icon → map collapses.
-- If assets fail → fallback text menu appears instantly.
-- If device rotates mid-animation → map closes cleanly, footer resets
+1. Player taps map icon in bottom right corner.
+2. Village map expands with slide-up animation (<500ms).
+3. Player browses tiles representing different modes.
+4. Player taps a tile → transitions smoothly to selected mode (**≤300 ms**).
+5. Player taps outside map or map icon → map collapses.
+6. If assets fail → fallback text menu appears instantly.
+7. If device rotates mid-animation → map closes cleanly, footer resets.
 
 ---
 
 ## Prioritized Functional Requirements
 
 | Priority | Feature                                   | Description                                                                     |
-| -------- | ----------------------------------------- | ------------------------------------------------------------------------------- |
+|:--------:|:------------------------------------------|:-------------------------------------------------------------------------------|
 | **P1**   | Implement Map Expansion                   | Smooth slide-up animation, toggle behavior, and orientation handling.           |
 | **P2**   | Integrate Fallback Menu                   | High-contrast text fallback menu that loads within 1 second if assets fail.     |
 | **P2**   | Ensure Accessibility & Performance        | Keyboard navigation, screen reader support, 60fps performance, WCAG compliance. |
@@ -77,6 +77,8 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 4. **Given** the map assets fail to load, **then** fallback to a default text-based menu within 1 second.
 5. **Given** the player rotates their device during map expansion, **then** the map closes and the footer returns to its default state without freezing.
 6. **Given** accessibility needs, **then** all tiles must have descriptive alt text and support screen readers.
+
+---
 
 ### Edge Cases
 
@@ -116,8 +118,8 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - **Performance:** Maintain ≥60fps animations on mid-tier devices.
 - **Responsiveness:** If viewport height <400px or width <640px, hide the map icon and corresponding functionality.
 
-| **Navigation Map Mockup 1**                                          |                                          **Navigation Map Mockup 2** |
-| -------------------------------------------------------------------- | -------------------------------------------------------------------: |
+| Navigation Map Mockup 1                                          | Navigation Map Mockup 2                                          |
+|:----------------------------------------------------------------:|:----------------------------------------------------------------:|
 | ![Navigation Map Mockup 1](/design/mockups/mockupNavigationMap2.png) | ![Navigation Map Mockup 2](/design/mockups/mockupNavigationMap3.png) |
 
 ---
@@ -133,21 +135,15 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 ## Tasks
 
 - [ ] **1.0 Design Village Map Navigation (P1)**
-
   - [ ] 1.1 Design tile positions on the village map grid with 44px+ targets (Dojo, Budokan, Kodokan).
-
 - [ ] **2.0 Implement Footer Map Expansion (P1)**
-
   - [ ] 2.1 Code smooth slide-up animation (<500ms, `ease-out` easing).
   - [ ] 2.2 Implement tap-outside-to-close and map icon toggle behavior.
   - [ ] 2.3 Handle device orientation changes mid-animation.
-
 - [ ] **3.0 Integrate Fallback Menu (P2)**
-
   - [ ] 3.1 Detect if village map assets fail to load
   - [ ] 3.2 Implement a high-contrast, text-only fallback menu.
   - [ ] 3.3 Ensure fallback loads within 1 second.
-
 - [ ] **4.0 Ensure Accessibility & Performance (P2)**
   - [ ] 4.1 Add keyboard navigation and visible focus indicators for all tiles.
   - [ ] 4.2 Provide alt text and screen reader support for all tiles.
@@ -163,11 +159,15 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - Does not introduce multiplayer map interactions.
 - Excludes voice-over or cutscene content.
 
+---
+
 ## Dependencies & Integrations
 
 - Relies on existing footer navigation and settings modules.
 - Uses current asset loader for map imagery.
 - Stores preferences in local storage.
+
+---
 
 ## Open Questions
 
@@ -175,10 +175,13 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - **Pending:** Determine whether audio cues are required for map interactions.
 - **Pending:** Confirm if the map should support landscape-only layouts.
 
+---
+
 ## Metadata
 
 - **Author:** Ju-Do-Kon! Team
 - **Last Edited:** 2024-05-01
 - **Target Version:** v1.2
 - **Related Features:** Navigation Bar, Settings Menu
-  [Back to Game Modes Overview](prdGameModes.md)
+
+[Back to Game Modes Overview](prdGameModes.md)
