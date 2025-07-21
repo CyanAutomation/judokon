@@ -1,3 +1,10 @@
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import path from "path";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const judokaFixture = JSON.parse(readFileSync(path.join(__dirname, "../fixtures/judoka.json")));
+const gokyoFixture = JSON.parse(readFileSync(path.join(__dirname, "../fixtures/gokyo.json")));
+
 export function createInfoBarHeader() {
   const header = document.createElement("header");
   header.innerHTML = `
@@ -31,4 +38,12 @@ export function resetDom() {
   vi.restoreAllMocks();
   vi.useRealTimers();
   vi.resetModules();
+}
+
+export function getJudokaFixture() {
+  return structuredClone(judokaFixture);
+}
+
+export function getGokyoFixture() {
+  return structuredClone(gokyoFixture);
 }

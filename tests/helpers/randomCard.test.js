@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { getJudokaFixture, getGokyoFixture } from "../utils/testUtils.js";
 
 let getRandomJudokaMock;
 let generateJudokaCardHTMLMock;
@@ -29,42 +30,13 @@ vi.mock("../../src/helpers/dataUtils.js", () => ({
   fetchJson: vi.fn()
 }));
 
-const judokaData = [
-  {
-    id: 1,
-    firstname: "A",
-    surname: "B",
-    country: "X",
-    countryCode: "x",
-    stats: { power: 1, speed: 1, technique: 1, kumikata: 1, newaza: 1 },
-    weightClass: "-60",
-    signatureMoveId: 1,
-    rarity: "common"
-  },
-  {
-    id: 2,
-    firstname: "C",
-    surname: "D",
-    country: "Y",
-    countryCode: "y",
-    stats: { power: 2, speed: 2, technique: 2, kumikata: 2, newaza: 2 },
-    weightClass: "+60",
-    signatureMoveId: 2,
-    rarity: "rare"
-  }
-];
-
-const gokyoData = [
-  { id: 0, name: "Jigoku-guruma" },
-  { id: 1, name: "Throw1" },
-  { id: 2, name: "Throw2" }
-];
-
 describe("generateRandomCard", () => {
   it("selects a random judoka and updates the DOM", async () => {
     const container = document.createElement("div");
     const generatedEl = document.createElement("span");
     generatedEl.textContent = "card";
+    const judokaData = getJudokaFixture().slice(0, 2);
+    const gokyoData = getGokyoFixture();
 
     getRandomJudokaMock = vi.fn(() => judokaData[1]);
     generateJudokaCardHTMLMock = vi.fn(async () => generatedEl);
@@ -82,6 +54,8 @@ describe("generateRandomCard", () => {
   it("invokes onSelect callback with chosen judoka", async () => {
     const container = document.createElement("div");
     const generatedEl = document.createElement("span");
+    const judokaData = getJudokaFixture().slice(0, 2);
+    const gokyoData = getGokyoFixture();
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
     generateJudokaCardHTMLMock = vi.fn(async () => generatedEl);
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
@@ -94,6 +68,8 @@ describe("generateRandomCard", () => {
   it("falls back to id 0 when selection fails", async () => {
     const container = document.createElement("div");
     const fallbackEl = document.createElement("div");
+    const judokaData = getJudokaFixture().slice(0, 2);
+    const gokyoData = getGokyoFixture();
 
     getRandomJudokaMock = vi.fn(() => {
       throw new Error("fail");
@@ -122,6 +98,8 @@ describe("generateRandomCard", () => {
     generateJudokaCardHTMLMock = vi.fn(async () => fallbackEl);
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
 
+    const judokaData = getJudokaFixture().slice(0, 2);
+    const gokyoData = getGokyoFixture();
     const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
     const { fetchJson } = await import("../../src/helpers/dataUtils.js");
     fetchJson.mockResolvedValue(gokyoData);
@@ -134,6 +112,8 @@ describe("generateRandomCard", () => {
   });
 
   it("does not throw if container is null or undefined", async () => {
+    const judokaData = getJudokaFixture().slice(0, 2);
+    const gokyoData = getGokyoFixture();
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
     generateJudokaCardHTMLMock = vi.fn(async () => document.createElement("div"));
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
@@ -146,6 +126,8 @@ describe("generateRandomCard", () => {
 
   it("handles generateJudokaCardHTML throwing an error", async () => {
     const container = document.createElement("div");
+    const judokaData = getJudokaFixture().slice(0, 2);
+    const gokyoData = getGokyoFixture();
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
     generateJudokaCardHTMLMock = vi.fn(async () => {
       throw new Error("fail");
@@ -160,6 +142,8 @@ describe("generateRandomCard", () => {
 
   it("does not update DOM if generated element is null or undefined", async () => {
     const container = document.createElement("div");
+    const judokaData = getJudokaFixture().slice(0, 2);
+    const gokyoData = getGokyoFixture();
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
     generateJudokaCardHTMLMock = vi.fn(async () => null);
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));

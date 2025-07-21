@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { getJudokaFixture } from "../utils/testUtils.js";
 
 let generateRandomCardMock;
 
@@ -175,20 +176,21 @@ describe("classicBattle", () => {
   });
 
   it("draws a different card for the computer", async () => {
+    const judokaData = getJudokaFixture().slice(0, 2);
     fetchJsonMock.mockImplementation(async (p) => {
       if (p.includes("judoka")) {
-        return [{ id: 1 }];
+        return [judokaData[0]];
       }
       return [];
     });
     generateRandomCardMock = vi.fn(async (d, g, c, _pm, cb) => {
       c.innerHTML = "<ul></ul>";
-      cb({ id: 1 });
+      cb(judokaData[0]);
     });
     let callCount = 0;
     getRandomJudokaMock = vi.fn(() => {
       callCount += 1;
-      return callCount === 1 ? { id: 1 } : { id: 2 };
+      return callCount === 1 ? judokaData[0] : judokaData[1];
     });
     renderJudokaCardMock = vi.fn(async () => {});
     const { startRound, getComputerJudoka, _resetForTest } = await import(
@@ -197,22 +199,23 @@ describe("classicBattle", () => {
     _resetForTest();
     await startRound();
     expect(renderJudokaCardMock).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 1 }),
+      expect.objectContaining({ id: judokaData[0].id }),
       expect.anything(),
       expect.anything(),
       { animate: false, useObscuredStats: true }
     );
-    expect(getComputerJudoka()).toEqual(expect.objectContaining({ id: 2 }));
+    expect(getComputerJudoka()).toEqual(expect.objectContaining({ id: judokaData[1].id }));
   });
 
   it("excludes hidden judoka from selection", async () => {
+    const judokaData = getJudokaFixture().slice(0, 3);
+    const data = structuredClone(judokaData.slice(0, 3));
+    data[0].isHidden = true;
+    data[1].isHidden = false;
+    data[2].isHidden = true;
     fetchJsonMock.mockImplementation(async (p) => {
       if (p.includes("judoka")) {
-        return [
-          { id: 1, isHidden: true },
-          { id: 2, isHidden: false },
-          { id: 3, isHidden: true }
-        ];
+        return data;
       }
       return [];
     });
@@ -220,20 +223,20 @@ describe("classicBattle", () => {
       c.innerHTML = "<ul></ul>";
       if (cb) cb(d[0]);
     });
-    getRandomJudokaMock = vi.fn(() => ({ id: 2 }));
+    getRandomJudokaMock = vi.fn(() => ({ id: data[1].id }));
     renderJudokaCardMock = vi.fn(async () => {});
     const { startRound, _resetForTest } = await import("../../src/helpers/classicBattle.js");
     _resetForTest();
     await startRound();
     expect(generateRandomCardMock).toHaveBeenCalledWith(
-      [expect.objectContaining({ id: 2, isHidden: false })],
+      [expect.objectContaining({ id: data[1].id, isHidden: false })],
       null,
       expect.anything(),
       false,
       expect.any(Function)
     );
     expect(getRandomJudokaMock).toHaveBeenCalledWith([
-      expect.objectContaining({ id: 2, isHidden: false })
+      expect.objectContaining({ id: data[1].id, isHidden: false })
     ]);
   });
 });
