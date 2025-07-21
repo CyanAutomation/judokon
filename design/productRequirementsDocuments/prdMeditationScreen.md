@@ -56,7 +56,9 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 |:--------:|:----------------------------------------|:-----------------------------------------------------------------------|
 | **P1**   | KG Image & Random Quote Display         | Show KG character and random quote as a moment of calm reflection.      |
 | **P2**   | Quote Fallback & Load Time Optimization | Display default reflection message if data fails, ensure <1s load time. |
-| **P3**   | Accessibility Support                   | Enable screen reader compatibility for quote text display.              |
+| **P2**   | Fade-In Animation                       | Quote and image fade in once loaded (≤300ms).                           |
+| **P3**   | Dynamic Font Scaling                    | Quote text scales smoothly across breakpoints.                          |
+| **P3**   | Accessibility Support                   | Enable screen reader compatibility for quote text and toggle button.    |
 
 ---
 
@@ -65,9 +67,10 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - **AC-1:** KG character appears on the meditation screen.
 - **AC-2:** Random quote displayed from `aesopsFables.json` with metadata from `aesopsMeta.json`; fallback reflection quote appears if the datasets are unavailable.
 - **AC-3:** Screen loads within 1 second.
-- **AC-4:** Quote text has ARIA markup and maintains contrast ratio of at least **4.5:1**.
-- **AC-5:** "Continue Your Journey" button uses `--radius-md`, stays ≥44px tall with tap target ≥44px × 44px, and is keyboard focusable. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
-- **AC-6:** Layout adapts to screen orientation (portrait/landscape) and all interactive elements remain keyboard accessible.
+- **AC-4:** Quote and KG image fade in within 300ms after assets load.
+- **AC-5:** Quote text has ARIA markup, scales responsively across breakpoints, and maintains contrast ratio of at least **4.5:1**.
+- **AC-6:** "Continue Your Journey" button uses `--radius-md`, stays ≥44px tall with tap target ≥44px × 44px, and is keyboard focusable. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
+- **AC-7:** Layout adapts to screen orientation (portrait/landscape) and all interactive elements remain keyboard accessible, including the language toggle which is announced when it becomes visible.
 
 ---
 
@@ -105,9 +108,9 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 ## Player Flow
 
 1. Player selects Meditation from main menu or navigation bar.
-2. Meditation screen loads in ≤1s.
+2. Meditation screen loads in ≤1s (load time logged to console).
 3. Skeleton loader appears if quote data is still fetching.
-4. KG image and random quote fade in smoothly (**fade ≤300 ms**).
+4. KG image and random quote fade in smoothly (**fade ≤300 ms**) once assets are ready.
 5. Player reads quote → taps “Continue Your Journey” button.
 6. Player returns to their previous location (main menu or resumes gameplay, depending on where they entered the meditation screen).
 
@@ -121,6 +124,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - The "Continue Your Journey" button uses `var(--button-bg)` with `var(--button-text-color)` text and `--radius-md` corners.
 - Background color comes from `var(--color-tertiary)` for a neutral tone.
 - Quote text uses the base sans-serif font at 18px minimum.
+- Quote text uses the base sans-serif font with `clamp()` for dynamic scaling across screen sizes (18px minimum).
 - Includes a pseudo-Japanese quote toggle for immersive effect. See [PRD: Pseudo-Japanese Text Conversion Function](prdPseudoJapanese.md) for details.
 
 | Meditation Screen Mockup A                          | Meditation Screen Mockup B                          |
@@ -147,7 +151,7 @@ Sets the emotional tone. Not a reward, but a rest—balancing the intensity of g
 **Contents:**
 
 - Responsive quote text block with max-width control
-- Dynamic font scaling for different screen sizes
+- Dynamic font scaling for different screen sizes using CSS `clamp()`
 - Skeleton loader animation while quote loads
 - 200ms fade animation when language is toggled
 
@@ -214,8 +218,13 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 - [x] **4.0 Accessibility**
   - [x] 4.1 Add ARIA tags for screen readers.
 - [ ] **5.0 Performance & Load Time Optimization**
-  - [ ] 5.1 Optimize image and text asset load times to under 1 second.
-  - [x] 5.2 Implement responsive grid and flexbox for various screen sizes (portrait/landscape).
+  - [ ] 5.1 Optimize image and text asset load times to under 1 second (preload KG sprite, cache quote JSON).
+  - [ ] 5.2 Capture asset load times and log results to console for performance tracking.
+  - [x] 5.3 Implement responsive grid and flexbox for various screen sizes (portrait/landscape).
+- [ ] **6.0 Visual & Accessibility Polish**
+  - [ ] 6.1 Fade KG image and quote in within 300ms on initial load.
+  - [ ] 6.2 Ensure quote text scales smoothly across breakpoints.
+  - [ ] 6.3 Announce language toggle with aria-live and shift focus when it becomes visible.
 
 ---
 
