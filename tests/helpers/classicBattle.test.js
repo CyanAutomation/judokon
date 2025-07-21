@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { getJudokaFixture, createBattleHeader, createBattleCardContainers } from "../utils/testUtils.js";
+import {
+  getJudokaFixture,
+  createBattleHeader,
+  createBattleCardContainers
+} from "../utils/testUtils.js";
 
 let generateRandomCardMock;
 
