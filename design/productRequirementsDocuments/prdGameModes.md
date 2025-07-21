@@ -405,3 +405,4 @@ A calm screen offering inspirational quotes and ambient visuals. [Read full PRD]
 ### Open Questions
 
 - **Pending:** Decide whether quotes rotate daily or on each visit.
+\n[Back to Game Modes Overview](prdGameModes.md)

@@ -179,3 +179,4 @@ generated carousel so each card's real portrait loads once it becomes visible.
   - [ ] 3.3 Implement loading spinner for slow networks.
 - [ ] 4.0 Handle Edge Cases (P2)
   - [ ] 4.1 Fallback judoka card (judoka id=0) for broken card images.
+\n[Back to Game Modes Overview](prdGameModes.md)

@@ -253,3 +253,4 @@ Motion** enabled, ensuring the card appears instantly without movement.
   - [ ] 4.2 Ensure color contrast on cards meets WCAG AA standards.
   - [ ] 4.3 Set all tap targets to ≥44px, recommended 64px for better kid usability (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 - [ ] 4.4 Add sound and animation toggle options for user preferences.
+\n[Back to Game Modes Overview](prdGameModes.md)

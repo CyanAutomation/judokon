@@ -1,5 +1,8 @@
 # PRD: Home Page Main Navigation Menu
 
+## TL;DR
+Provides a fast, 2x2 tile menu so players can reach Classic Battle, Random Judoka, Meditation, and Browse Judoka within two taps. Layout loads in under 2s, remains accessible and responsive across devices.
+
 ## Introduction
 
 This document describes the **Home Page Main Navigation Menu** for the JU-DO-KON! web-based judo-themed card battle game.
@@ -243,44 +246,6 @@ Each tile contains:
     - Edit Judoka
 
 - **Why**: Reduces visual clutter, eliminates duplicate tiles, and provides a single intuitive access point to all Judoka-related actions—grouped by function, not guesswork.
-
-## Technical Considerations
-
-### Responsiveness
-
-- The layout must adapt to different screen sizes:
-  - **Desktop (>=1024px):** 2 columns, 2 rows.
-  - **Tablet (>=768px and <1024px):** 2 columns, 2 rows.
-  - **Mobile (<768px):** Single column layout; tiles stack vertically.
-
-### Accessibility
-
-- Tiles must be:
-  - Focusable via keyboard (`tabindex=0` if needed).
-  - Activated via keyboard (`Enter` or `Space` key).
-- Labels must be screen-reader friendly (e.g., via `aria-label`).
-- SVG icons must have descriptive `title` or `aria-hidden="true"` if decorative.
-- Tap targets must meet WCAG minimum sizing standards (44px x 44px).
-
-### Performance
-
-- SVG icons must be **optimized** to minimize page load times (<50KB).
-- Navigation interactions must be **instantaneous**, with interaction latency <100ms.
-- Ensure fallback behavior if network fails to load SVGs.
-
----
-
-## Dependencies/Integrations
-
-- Uses Material Symbols icon set for tile icons.
-- Relies on routes defined in `judoka.json` for navigation targets.
-
-## Edge Cases
-
-- **Icon Load Failure**: Fall back to displaying a generic JU-DO-KON logo.
-- **Slow Network**: Navigation tiles and fallback icons should still be accessible.
-- **Broken Destination URL**: Log an error and redirect player to a default error page.
-- **Device Rotation During Navigation**: Maintain consistent layout after orientation change.
 
 ## Open Questions
 

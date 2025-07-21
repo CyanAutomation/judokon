@@ -1,5 +1,8 @@
 # Battle Info Bar PRD
 
+## TL;DR
+Displays round messages, a countdown timer, and live match score in the page header so players always know the current battle status.
+
 ## Description
 
 In battle game modes (e.g. Classic Battle), players have a real need to  receive clear visual feedback between or after rounds. Without this info, it will leave users uncertain about match state, leading to confusion, reduced immersion, and increased risk of game abandonment. Players could feel "lost" due to a lack of timely updates about round outcomes, next steps, or overall progress.
@@ -149,4 +152,5 @@ Why: Forces the wireframe to handle edge cases, small screens, and overflow grac
   - [ ] 5.1 Show “Waiting…” if backend score sync fails
   - [ ] 5.2 Show “Waiting…” if countdown timer mismatches server start
   - [ ] 5.3 Truncate or stack content if resolution causes display issues
-  - [ ] 5.5 Define recovery logic for delayed player input
+  - [ ] 5.4 Define recovery logic for delayed player input
+\n[Back to Game Modes Overview](prdGameModes.md)
