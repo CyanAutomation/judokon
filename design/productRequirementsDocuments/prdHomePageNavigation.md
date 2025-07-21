@@ -1,7 +1,11 @@
 # PRD: Home Page Main Navigation Menu
 
+---
+
 ## TL;DR
 Provides a fast, 2x2 tile menu so players can reach Classic Battle, Random Judoka, Meditation, and Browse Judoka within two taps. Layout loads in under 2s, remains accessible and responsive across devices.
+
+---
 
 ## Introduction
 
@@ -15,6 +19,8 @@ The purpose of this menu is to allow players to access the core game modes quick
 
 A fast, accessible, and thematic navigation experience is crucial to ensure new players feel confident and engaged from their first visit.
 
+---
+
 ## Goals
 
 - Navigation menu loads within 2 seconds.
@@ -26,6 +32,8 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 - Quickly and confidently access desired game modes **(≤2 taps from landing)**.
 - Experience a navigation interface that feels consistent with the judo theme.
 - Navigate easily regardless of device or ability.
+
+---
 
 ## User Stories
 
@@ -49,6 +57,8 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 | P3       | SVG Optimization            | Icons must be <50KB and optimized for fast loading.                                                                                                            |
 | P3       | Accessibility Compliance    | Text contrast ≥4.5:1 and screen-reader friendly (aria-labels, alt text).                                                                                       |
 
+---
+
 ### Navigation Menu Layout
 
 - The main navigation is visually divided into **two thematic sections**, but **functionally structured as a 2×2 grid** for layout and responsiveness purposes.
@@ -68,6 +78,8 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
   - Tile scales to 1.05 over 150ms (ease-in transition).
 - **Touch targets** must meet a minimum size of **44px × 44px** for mobile usability.
 
+---
+
 ### Tile Definitions
 
 > _Note: Label text may vary slightly (e.g., “View” vs. “Browse”) to better suit audience understanding. Functionality must remain unchanged._
@@ -81,14 +93,14 @@ A fast, accessible, and thematic navigation experience is crucial to ensure new 
 
 > **Note:** A separate Team Battle mode is planned for a future release. Early prototypes reused the Classic Battle page.
 
+---
+
 ### Behavior on Click
 
 - Clicking a tile navigates to the corresponding page immediately.
 - No page transition animation is required (standard browser navigation).
 - JavaScript ensures the tile is clickable across the whole tile area.
 - If the icon fails to load, a generic fallback icon (JU-DO-KON logo) must be displayed.
-
-> **Note on Back-out Flow**: Once a tile is clicked and navigation begins, browser back button behavior will be standard, allowing users to return to the previous page if needed.
 
 ---
 
@@ -246,6 +258,8 @@ Each tile contains:
     - Edit Judoka
 
 - **Why**: Reduces visual clutter, eliminates duplicate tiles, and provides a single intuitive access point to all Judoka-related actions—grouped by function, not guesswork.
+
+---
 
 ## Open Questions
 

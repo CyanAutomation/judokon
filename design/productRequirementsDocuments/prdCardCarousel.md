@@ -1,8 +1,12 @@
 # PRD: Judoka Card Carousel
 
+---
+
 ## TL;DR
 
 This PRD defines a responsive, interactive carousel for browsing Judoka cards in Ju-Do-Kon! It supports smooth swiping (**snap ≤200 ms**), keyboard interactions, and accessibility features — ensuring players can quickly scan and select cards.
+
+---
 
 ## Problem Statement
 
@@ -13,6 +17,8 @@ As part of the game, several screens require an intuitive and interactive way to
 Failure to provide an efficient browsing experience may impact core gameplay — players might struggle to find and build optimal teams, leading to frustration and potential churn.
 
 > A smooth and intuitive browsing experience (scrolling **≥60 fps**) fosters a sense of mastery and control, enhancing overall player satisfaction and engagement.
+
+---
 
 ## User Stories
 
@@ -43,12 +49,12 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 | Priority | Requirement                                          |
 | -------- | ---------------------------------------------------- |
-| P1       | Display judoka in a carousel.                        |
-| P1       | Scroll left/right using on-screen buttons.           |
-| P2       | Swipe gesture support on mobile devices.             |
-| P2       | Cards slightly enlarge (10%) on hover.               |
-| P3       | Scroll markers show user’s position in the carousel. |
-| P3       | Keyboard arrow key navigation for accessibility.     |
+| **P1**   | Display judoka in a carousel.                        |
+| **P1**   | Scroll left/right using on-screen buttons.           |
+| **P2**   | Swipe gesture support on mobile devices.             |
+| **P2**   | Cards slightly enlarge (10%) on hover.               |
+| **P3**   | Scroll markers show user’s position in the carousel. |
+| **P3**   | Keyboard arrow key navigation for accessibility.     |
 
 ---
 
@@ -163,6 +169,8 @@ generated carousel so each card's real portrait loads once it becomes visible.
 | ---------------------------------------------------------------- | ---------------------------------------------------------------- |
 | ![Card Carousel Mockup](/design/mockups/mockupCardCarousel2.png) | ![Card Carousel Mockup](/design/mockups/mockupCardCarousel3.png) |
 
+---
+
 ## Tasks
 
 - [ ] 1.0 Set Up Card Carousel Structure (P1)
@@ -179,4 +187,7 @@ generated carousel so each card's real portrait loads once it becomes visible.
   - [ ] 3.3 Implement loading spinner for slow networks.
 - [ ] 4.0 Handle Edge Cases (P2)
   - [ ] 4.1 Fallback judoka card (judoka id=0) for broken card images.
-\n[Back to Game Modes Overview](prdGameModes.md)
+
+---
+
+[Back to Game Modes Overview](prdGameModes.md)

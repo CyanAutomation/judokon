@@ -1,8 +1,11 @@
 # PRD: Judoka Cards (JU-DO-KON!)
 
+---
+
 ## TL;DR
 
 Judoka cards are interactive virtual cards representing elite fighters in JU-DO-KON! They deepen player immersion through ownership, mastery, and strategic gameplay, with responsive animations, rarity systems, and accessible design — ensuring all players can engage with and feel connected to their judoka roster.
+
 The main element of the JU-DO-KON! game is the use of **judoka cards**. These virtual cards show elite judoka along with their stats and form the core gameplay piece, giving players a sense of ownership, mastery, and strategic choice.
 
 ---
@@ -26,7 +29,7 @@ Players currently lack a tangible sense of progression and connection to elite j
 ## User Stories
 
 - As a player who loves browsing cards, I want judoka cards that look unique and reflect rarity.
-- As a competitive player, I want to view stats easily so I can build select the right stat in a match.
+- As a competitive player, I want to view stats easily so I can select the right stat in a match.
 - As a player with visual impairments, I want high-contrast text and alt text on portraits so I can understand card details.
 
 ---
@@ -36,19 +39,15 @@ Players currently lack a tangible sense of progression and connection to elite j
 - **Given** a player draws a card, or browses the JU-DO-KON! collection,  
   **When** they view a judoka card,  
   **Then** the card displays the correct portrait, stats, nationality flag, and signature move.
-
 - **Given** a judoka portrait is missing,  
   **When** the card loads,  
-  **Then** a placeholde silhouette (judoka id=0) placeholder is displayed.
-
+  **Then** a placeholder silhouette (judoka id=0) is displayed.
 - **Given** a player taps the draw button,  
   **When** the card reveal (slide) animation starts,  
   **Then** it completes within **400ms** using ease-out cubic-bezier timing.
-
 - **Given** the card displays text,  
   **When** viewed on any device,  
   **Then** text contrast ratio must meet **WCAG 2.1 AA (≥4.5:1)**.
-
 - **Given** the card’s interactive elements (e.g., carousel arrows),  
   **When** a player uses keyboard or touch input,  
   **Then** all elements are fully operable with proper focus states.
@@ -71,11 +70,9 @@ Players currently lack a tangible sense of progression and connection to elite j
 - Card slide/reveal animations must use hardware-accelerated CSS transforms for smooth performance (**≥60 fps**).
 - Placeholder assets for missing portraits/flags should be bundled with the client for offline scenarios.
 - Cards initially display `judokaPortrait-1.png` and lazy-load the real portrait when the card enters the viewport.
-- The `renderJudokaCard` and `buildCardCarousel` helpers run `setupLazyPortraits()` automatically so the
-  real portrait loads as soon as the card is visible.
+- The `renderJudokaCard` and `buildCardCarousel` helpers run `setupLazyPortraits()` automatically so the real portrait loads as soon as the card is visible.
 - All judoka portraits and card sizing calculations must consistently maintain a **2:3 aspect ratio** to ensure visual uniformity and avoid layout shifts. Portraits should be pre-cropped as needed, and `.card-portrait` uses `object-fit: cover` to handle similarly shaped images. Card sizing calculations must account for screen aspect ratios and resolutions to preserve this ratio.
-- Hover and focus scaling must stay at or below **1.05x** to prevent cards from
-  being clipped inside scroll wrappers.
+- Hover and focus scaling must stay at or below **1.05x** to prevent cards from being clipped inside scroll wrappers.
 
 ---
 
@@ -136,27 +133,29 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 
 ## UI Design
 
+```
 +------------------------------------------------+
-| [ RARITY BORDER COLOR: Blue/Red/Gold ] |
-| |
-| +----------------------------+ |
-| | JUDOKA PORTRAIT | |
-| | (high-res img) | |
-| +----------------------------+ |
-| |
-| [ NATIONALITY FLAG ] [ WEIGHT CLASS LABEL ] |
-| |
-| JUDOKA NAME (First Last) |
-| |
-| Signature Move: [Text of move name] |
-| |
-| Stats: |
-| Power: [0-10] Speed: [0-10] |
-| Technique: [0-10] Kumi-kata: [0-10] |
-| Ne-waza: [0-10] |
-| |
-| [ FLIP BUTTON ] [ INFO ICON ] |
-|------------------------------------------------|
+| [ RARITY BORDER COLOR: Blue/Red/Gold ]         |
+|                                                |
+| +----------------------------+                 |
+| |      JUDOKA PORTRAIT       |                 |
+| |      (high-res img)        |                 |
+| +----------------------------+                 |
+|                                                |
+| [ NATIONALITY FLAG ] [ WEIGHT CLASS LABEL ]     |
+|                                                |
+| JUDOKA NAME (First Last)                        |
+|                                                |
+| Signature Move: [Text of move name]            |
+|                                                |
+| Stats:                                         |
+| Power: [0-10]   Speed: [0-10]                  |
+| Technique: [0-10]   Kumi-kata: [0-10]          |
+| Ne-waza: [0-10]                                |
+|                                                |
+| [ FLIP BUTTON ] [ INFO ICON ]                  |
++------------------------------------------------+
+```
 
 ### Interactive Elements
 
@@ -178,8 +177,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
   - Stats text uses `--font-medium` and line-height `1.2` to remain legible without increasing panel height.
 - **Signature Move Band:** `height: max(10%, var(--touch-target-size))` keeps the 44px tap target while maintaining the card's 2:3 ratio.
 - The label and value are centered vertically within that band.
-- `.judoka-card` overrides `--touch-target-size` to `44px` so the band stays
-  45px tall on a 300×450 card without leaving gaps above or below it.
+- `.judoka-card` overrides `--touch-target-size` to `44px` so the band stays 45px tall on a 300×450 card without leaving gaps above or below it.
 - **Padding Adjustments:** Section percentages already account for vertical padding because `.judoka-card` uses `box-sizing: border-box`. No `calc()` subtraction is necessary.
 - **Rarity Border Colors:**
   - Common → Blue (#337AFF)
@@ -196,27 +194,25 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 - **Portrait Priority:** On narrow devices, prioritize portrait and name placement; wrap stats below if needed.
 - **Text Scaling:** Allow dynamic font sizing to avoid clipping on smaller screens.
 
+---
+
 ## Integration Notes
 
-Carousels displaying judoka cards **must not** add horizontal padding around each
-card. Any spacing between cards should rely on the `gap` property defined in the
-[carousel CSS](../../src/styles/carousel.css). This ensures consistent card
-widths across screens and matches the rule introduced in the stylesheet.
+Carousels displaying judoka cards **must not** add horizontal padding around each card. Any spacing between cards should rely on the `gap` property defined in the [carousel CSS](../../src/styles/carousel.css). This ensures consistent card widths across screens and matches the rule introduced in the stylesheet.
 
 ---
 
 ## Tasks
 
 - [ ] 4.0 Handle Edge Cases
-
   - [ ] 4.1 Show silhouette placeholder for missing portraits.
   - [ ] 4.2 Cap extreme stats and log errors.
   - [ ] 4.3 Display error messages for corrupted data.
-
 - [ ] 5.0 Implement Accessibility Features
   - [ ] 5.1 Add alt text for portraits.
   - [ ] 5.2 Ensure text contrast ratio ≥4.5:1.
   - [ ] 5.3 Support keyboard and screen reader navigation.
   - [ ] 5.4 Ensure ≥44px touch targets for interactive elements (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
   - [ ] 5.5 Add `role="button"` with `aria-label` to card elements and style focus via `.judoka-card:focus-visible`.
-\n[Back to Game Modes Overview](prdGameModes.md)
+
+[Back to Game Modes Overview](prdGameModes.md)

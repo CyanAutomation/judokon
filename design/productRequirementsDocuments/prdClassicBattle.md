@@ -1,9 +1,14 @@
 # PRD: Classic Battle
 
-**Game Mode ID:** `classicBattle` (URL: battleJudoka.html)  
+---
+
+**Game Mode ID:** `classicBattle` (URL: battleJudoka.html)
+
 [Back to Game Modes Overview](prdGameModes.md)
 
-## 1. TL;DR
+---
+
+## TL;DR
 
 Classic Battle is Ju-Do-Kon!’s introductory, head-to-head mode. By offering a fast-paced, low-stakes way for new players to learn stats and game flow (match start ≤5 s after selection), it boosts retention and confidence while maintaining quick matches. This PRD defines how the mode operates, from random draws to scoring and end conditions, ensuring a smooth (**≥60 fps**), accessible, and engaging experience.
 
@@ -11,7 +16,7 @@ Classic Battle is Ju-Do-Kon!’s introductory, head-to-head mode. By offering a 
 
 ---
 
-## 2. Problem Statement
+## Problem Statement
 
 Classic Battle is the main and simplest mode of the game. Without it, new players lack a quick, low-stakes mode to learn stats and grasp the core mechanics. This leads to higher early player drop-off, increased frustration, and fewer repeat sessions because players don’t build mastery or confidence. By providing a fast, engaging way to compare stats (**UI responses <200 ms**), Classic Battle helps new players onboard smoothly and encourages early retention.
 
@@ -22,7 +27,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## 3. Goals
+## Goals
 
 - Deliver a quick head-to-head mode for new players, with average match length ≤3 minutes.
 - Encourage replay through a simple, rewarding scoring system.
@@ -33,9 +38,9 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## 4. User Stories
+## User Stories
 
-- As a new player, I want a simple match format so I can learn game mechanics quickly **(tutorial complete in ≤60 s)**.
+- As a new player, I want a simple match format so I can learn game mechanics quickly (**tutorial complete in ≤60 s**).
 - As a player, I want clear feedback on round outcomes so I know how I’m doing.
 - As a player, I want the ability to exit a match early if I need to stop playing suddenly.
 - As a cautious new player, I want an easy mode to test the game without risking losses in competitive play.
@@ -44,7 +49,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## 5. Technical Considerations
+## Technical Considerations
 
 - Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
 - Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices (**≥60 fps**).
@@ -53,17 +58,17 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## 6. Prioritized Functional Requirements Table
+## Prioritized Functional Requirements Table
 
 | Priority | Feature                 | Description                                                                                             |
 | -------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| P1       | Random Card Draw        | Draw one random card per player each round; the computer card must differ from the player's.            |
-| P1       | Stat Selection Timer    | Player selects stat within 30 seconds; otherwise, random stat is chosen. Default timer is fixed at 30s. |
-| P1       | Scoring                 | Increase score by one for each round win.                                                               |
-| P1       | Match End Condition     | End match on 10 points or after 25 rounds.                                                              |
-| P2       | Tie Handling            | Show tie message; round ends without score change; continue to next round.                              |
-| P2       | Player Quit Flow        | Allow player to exit match early with confirmation; counts as a loss.                                   |
-| P3       | AI Stat Selection Logic | Optional: vary AI stat selection by difficulty level; fallback to random if not specified.              |
+| **P1**   | Random Card Draw        | Draw one random card per player each round; the computer card must differ from the player's.            |
+| **P1**   | Stat Selection Timer    | Player selects stat within 30 seconds; otherwise, random stat is chosen. Default timer is fixed at 30s. |
+| **P1**   | Scoring                 | Increase score by one for each round win.                                                               |
+| **P1**   | Match End Condition     | End match on 10 points or after 25 rounds.                                                              |
+| **P2**   | Tie Handling            | Show tie message; round ends without score change; continue to next round.                              |
+| **P2**   | Player Quit Flow        | Allow player to exit match early with confirmation; counts as a loss.                                   |
+| **P3**   | AI Stat Selection Logic | Optional: vary AI stat selection by difficulty level; fallback to random if not specified.              |
 
 **Additional Behavioral Requirements:**
 
@@ -75,7 +80,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## 7. Future Considerations
+## Future Considerations
 
 - Add easy/medium/hard modes changing AI stat selection strategy:
   - **Easy**: AI selects randomly.
@@ -84,7 +89,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## 8. Acceptance Criteria
+## Acceptance Criteria
 
 - Cards are revealed in the correct sequence each round.
 - The CPU card displays a placeholder ("Mystery Judoka") until the player selects a stat ([prdMysteryCard.md](prdMysteryCard.md)).
@@ -100,7 +105,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## 9. Edge Cases / Failure States
+## Edge Cases / Failure States
 
 - **Player disconnects mid-match:** round is abandoned; player rejoins at main menu.
 - **Judoka dataset fails to load:** error message appears; player can retry loading.
@@ -109,7 +114,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## 10. Design and UX Considerations
+## Design and UX Considerations
 
 - Use consistent color coding for player (blue) vs computer (red) as shown in attached mockups.
 - Display clear, large call-to-action text for "Choose an attribute to challenge!" to guide new players.
@@ -128,14 +133,14 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## 11. Non-Goals
+## Non-Goals
 
 - Online multiplayer battles.
 - Adjustable timer settings for stat selection (may be considered in future versions).
 
 ---
 
-## 12. Dependencies
+## Dependencies
 
 - Judoka dataset loaded from `judoka.json`.
 - Only judoka with `isHidden` set to `false` are eligible for battle.
@@ -144,40 +149,32 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## 13. Open Questions
+## Open Questions
 
-_Resolved in [Future Considerations](#7-future-considerations):_ AI difficulty will control stat selection strategy.
+_Resolved in [Future Considerations](#future-considerations):_ AI difficulty will control stat selection strategy.
 
 ---
 
-## 14. Tasks
+## Tasks
 
 - [ ] 1.0 Implement Classic Battle Match Flow
-
   - [ ] 1.1 Create round loop: random card draw, stat selection, comparison
   - [ ] 1.2 Implement 30-second stat selection timer with auto-selection fallback
   - [ ] 1.3 Handle scoring updates on win, loss, and tie
   - [ ] 1.4 End match after 10 points or 25 rounds
-
 - [ ] 2.0 Add Early Quit Functionality
-
   - [ ] 2.1 Trigger quit confirmation when the header logo is clicked
   - [ ] 2.2 Create confirmation prompt flow
   - [ ] 2.3 Record match as player loss upon quit confirmation
-
 - [ ] 3.0 Handle Edge Cases
-
   - [ ] 3.1 Implement player disconnect logic: abandon match and redirect to main menu
   - [ ] 3.2 Handle Judoka dataset load failure with error prompt and reload option
   - [ ] 3.3 Add fallback stat selection for AI if difficulty logic fails
-
 - [ ] 4.0 Polish UX and Accessibility
-
   - [ ] 4.1 Integrate consistent color coding (blue for player, red for AI)
   - [ ] 4.2 Apply WCAG-compliant contrast ratios
   - [ ] 4.3 Ensure touch targets ≥44px and support keyboard navigation (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness))
   - [ ] 4.4 Add alt text to cards and UI elements
-
 - [ ] 5.0 Optimize Animations
   - [ ] 5.1 Implement card reveal, stat selection, and result transitions
   - [ ] 5.2 Ensure animations maintain ≥60fps on 2GB RAM devices

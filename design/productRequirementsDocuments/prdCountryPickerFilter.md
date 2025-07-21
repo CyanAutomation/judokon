@@ -8,6 +8,8 @@ This PRD defines a Country Flag Picker Filter for Ju-Do-Kon! that lets players f
 
 > Jamal logs into Ju-Do-Kon! after seeing a clip of his country’s top Judoka. He taps the country picker, slides open the panel, and spots his flag among dozens. One tap later, the screen fills with fierce fighters from his homeland. He feels proud — and motivated to start collecting more.
 
+---
+
 ## Problem Statement
 
 Each judoka and judoka card is affiliated with a country (e.g., a judoka might be part of the Spanish team). Currently, there is no way for players to browse judoka by country, which frustrates players when searching for their favorite country’s athletes. The lack of an intuitive country filter diminishes user experience, leading to inefficient browsing and potential drop-off.
@@ -41,7 +43,7 @@ This issue is timely as our player base is expanding internationally, and region
 
 On in-scope screens (e.g., the Browse Judoka screen), there should be an option to toggle an overlay or slide-in panel that presents all available countries.
 
-Key Details:
+**Key Details:**
 
 - Only countries present in the `judoka.json` file will be displayed.
 - Instead of a list, the selector will use flag icons to represent each country.
@@ -129,10 +131,14 @@ Key Details:
 - Does not cover creation of new flag assets outside the existing judoka roster.
 - Omits multi-country selection to keep interactions simple.
 
+---
+
 ## Dependencies and Integrations
 
 - `judoka.json` data file for country information.
 - Card carousel component which displays filtered judoka cards.
+
+---
 
 ## Open Questions
 
@@ -156,11 +162,12 @@ Key Details:
   - Color contrast ratios must meet WCAG 2.1 AA standards for readability.
   - Selected country should be visually highlighted (e.g., border or shading).
   - Selector should respond well to different screen sizes (responsive design).
-  - The panel must appear below the persistent top bar so the first row of
-    countries is fully visible.
+  - The panel must appear below the persistent top bar so the first row of countries is fully visible.
 - Animation Considerations:
   - Slide-in animation duration: 300ms and respects the user's `prefers-reduced-motion` setting.
   - Flag grid fade-in duration uses `var(--transition-fast)`.
+
+---
 
 ### Wireframes
 
@@ -178,28 +185,26 @@ Key Details:
   - [ ] 1.3 Ensure responsive design for different screen sizes (mobile, tablet, desktop).
   - [ ] 1.4 Implement selected flag highlighting (e.g., border, shading).
   - [ ] 1.5 Implement clear filter icon.
-
 - [ ] 2.0 Set Up Filtering Logic
   - [x] 2.1 Load `judoka.json` and extract a list of available countries.
   - [ ] 2.2 Implement filtering of the card carousel based on the selected country.
   - [ ] 2.3 Display an empty state message if no judoka exist for the selected country.
-
 - [ ] 3.0 Optimize Performance
   - [ ] 3.1 Implement virtual scrolling or paging for >50 countries.
   - [ ] 3.2 Ensure the filtering action completes within 1 second for 90% of sessions.
   - [ ] 3.3 Ensure the country selector appears within 1 second when toggled.
-
 - [ ] 4.0 Handle Edge Cases
   - [ ] 4.1 Display a fallback icon if a flag asset fails to load.
   - [ ] 4.2 Implement progressive flag loading on slow networks.
-
 - [ ] 5.0 Ensure Accessibility and Compliance
   - [ ] 5.1 Add alt-text for all flag icons based on country names and apply `aria-label` text like "Filter by {country}" to each flag button for screen readers.
   - [ ] 5.2 Ensure color contrast ratios meet WCAG 2.1 AA standards.
   - [ ] 5.3 Enforce minimum tap target size (44x44px) for touch devices (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
   - [ ] 5.4 Ensure flags are displayed alphabetically.
-
 - [ ] 6.0 Add Visual Documentation
   - [ ] 6.1 Create annotated wireframes for the slide-in panel and full-grid views.
   - [ ] 6.2 Annotate wireframes with key UX and accessibility notes (tap sizes, highlight states, animation durations).
-\n[Back to Game Modes Overview](prdGameModes.md)
+
+---
+
+[Back to Game Modes Overview](prdGameModes.md)

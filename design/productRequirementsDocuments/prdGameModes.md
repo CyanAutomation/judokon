@@ -1,34 +1,44 @@
 # Ju-Do-Kon! Game Modes – Product Requirements Document
 
+---
+
 ## Overview
 
-**Ju-Do-Kon!** offers a range of game modes tailored for different play styles—competitive battles, team-based challenges, creative customization, exploratory discovery and quiet reflection. These modes diversify the experience, increase replayability and promote deeper engagement.
+**Ju-Do-Kon!** offers a range of game modes tailored for different play styles—competitive battles, team-based challenges, creative customization, exploratory discovery, and quiet reflection. These modes diversify the experience, increase replayability, and promote deeper engagement.
 
 > After a tough **Classic Battle**, Hiroshi takes a break by entering **Meditation** Mode. Soft music and inspiring quotes help him reconnect with why he loves judo. Later, he updates his Judoka’s signature move, making his fighter truly his own. By offering more than just battles, Ju-Do-Kon! becomes a game players want to return to every day—whether they crave intense combat or quiet reflection.
+
+---
 
 ### Problem Statement
 
 Returning players often exit after short sessions due to repetitive gameplay loops and limited creative expression.
+
+---
 
 ### User Stories
 
 - As a player who’s tired of pure competition, I want a Meditation mode so I can relax and still feel connected to the game.
 - As a player with a favorite judoka, I want to update their stats and appearance so they grow with me.
 
+---
+
 ### Why It Matters Now
 
 Improving session variety directly supports retention and encourages more personalized play, especially as competition from other collectible games increases.
 
-### Goals
+---
 
-**KPI Targets**
+## Goals
+
+### KPI Targets
 
 - Increase returning player average session length by **20%**.
 - At least **80%** of users who begin a Team Battle complete the match.
 - **70%** of new players use Judoka Creation within their first week.
 - **60%** of all players trigger Meditation mode at least once weekly.
 
-**Player Experience Goals** _(qualitative)_
+### Player Experience Goals _(qualitative)_
 
 - Players experience diverse ways to interact with their judoka.
 - Players find modes matching their mood: competitive, creative, or relaxing.
@@ -71,250 +81,234 @@ Improving session variety directly supports retention and encourages more person
 
 ## Game Modes
 
-## Classic Battle
+### Classic Battle
 
-### Overview
-
-**Japanese**: 試合 (バトルモード)
-**URL**: `battleJudoka.html`
+**Japanese**: 試合 (バトルモード)  
+**URL**: `battleJudoka.html`  
 A 1v1 stat-based match against a CPU opponent using a deck of 25 random judoka cards. First to 10 points wins. [Read full PRD](prdClassicBattle.md)
 
-### Goals
+#### Goals
 
 - Deliver a quick head‑to‑head mode for new players **(battle loads in ≤2 s)**.
 - Encourage replay through a simple scoring system.
 
-### Functional Requirements
+#### Functional Requirements
 
 - Draw one random card from each deck per round.
 - Player selects a stat to compare.
 - Higher stat wins; score increases by one.
 - End match on 10 points or after 25 rounds.
 
-### Acceptance Criteria
+#### Acceptance Criteria
 
 - Cards are revealed in correct sequence.
 - Player can select stat.
 - Score updates per round outcome.
 - Summary screen shown at end.
 
-### Non‑Goals
+#### Non‑Goals
 
 - Online multiplayer battles.
 
-### Dependencies
+#### Dependencies
 
 - Judoka dataset loaded from `judoka.json`.
 
-### Open Questions
+#### Open Questions
 
 _Resolved in [Classic Battle](prdClassicBattle.md#7-future-considerations):_ AI difficulty will determine stat selection strategy.
 
 ---
 
-## Team Battle Selection
+### Team Battle Selection
 
-### Overview
-
-**Japanese**: 団体戦選択
-**URL**: `teamBattleSelection.html`
+**Japanese**: 団体戦選択  
+**URL**: `teamBattleSelection.html`  
 Choose between Male, Female or Mixed team battles. [Read full PRD](prdTeamBattleSelection.md)
 
-### Goals
+#### Goals
 
 - Guide players to the appropriate team format.
 
-### Functional Requirements
+#### Functional Requirements
 
 - Three options visible.
 - Routes correctly to selected battle variant.
 
-### Acceptance Criteria
+#### Acceptance Criteria
 
 - Option buttons are interactive.
 - Click leads to the correct mode.
 - Invalid route fallback returns to selection screen.
 
-### Non‑Goals
+#### Non‑Goals
 
 - Team management beyond choosing a mode.
 
-### Dependencies
+#### Dependencies
 
 - Navigation map must provide a link to this screen.
 
-### Open Questions
+#### Open Questions
 
 - **Pending:** Decide whether the last chosen mode should be remembered.
 
 ---
 
-## Team Battle Modes
-
-### Overview
+### Team Battle Modes
 
 **Japanese**: 男子団体戦 / 女子団体戦 / 混合団体戦  
 **URLs**: `teamBattleMale.html`, `teamBattleFemale.html`, `teamBattleMixed.html`  
-Team battles consist of sequential 1v1s between gender-filtered squads. The shared rules are described in
-[PRD: Team Battle Rules](prdTeamBattleRules.md). Mode specifics:
-[Male](prdTeamBattleMale.md) / [Female](prdTeamBattleFemale.md) / [Mixed](prdTeamBattleMixed.md)
+Team battles consist of sequential 1v1s between gender-filtered squads. The shared rules are described in [PRD: Team Battle Rules](prdTeamBattleRules.md). Mode specifics: [Male](prdTeamBattleMale.md) / [Female](prdTeamBattleFemale.md) / [Mixed](prdTeamBattleMixed.md)
 
-### Goals
+#### Goals
 
 - Provide structured team competition with gender rules.
 
-### Functional Requirements
+#### Functional Requirements
 
 - Validate team composition by gender.
 - Follow team match sequence.
 - End state triggers win screen at score cap.
 
-### Acceptance Criteria
+#### Acceptance Criteria
 
 - Team validated on gender before match.
 - Sub-match order shown as visual cue.
 - At score cap, show win animation and return to Village.
 
-### Non‑Goals
+#### Non‑Goals
 
 - Online matchmaking.
 
-### Dependencies
+#### Dependencies
 
 - Judoka data must include gender field.
 
-### Open Questions
+#### Open Questions
 
 - **Pending:** Decide whether Mixed mode will allow flexible team sizes.
 
 ---
 
-## Browse Judoka
+### Browse Judoka
 
-### Overview
-
-**Japanese**: 柔道家を閲覧
-**URL**: `browseJudoka.html`
+**Japanese**: 柔道家を閲覧  
+**URL**: `browseJudoka.html`  
 View all available judoka with stats and visuals. [Read full PRD](prdBrowseJudoka.md)
 
-### Goals
+#### Goals
 
 - Allow players to explore the full roster.
 
-### Functional Requirements
+#### Functional Requirements
 
 - Scrollable card interface.
 - Stats sourced from `judoka.json`.
 - Responsive across screen sizes.
 - Invalid entries replaced with placeholder.
 
-### Acceptance Criteria
+#### Acceptance Criteria
 
 - If list is empty, show “No cards available” message.
 
-### Non‑Goals
+#### Non‑Goals
 
 - Advanced filtering and sorting options.
 
-### Dependencies
+#### Dependencies
 
 - Carousel and card components.
 
-### Open Questions
+#### Open Questions
 
 _Resolved in [Browse Judoka](prdBrowseJudoka.md#open-questions):_ search will be considered in a later update.
 
 ---
 
-## Team Manager Mode (Admin Mode)
+### Team Manager Mode (Admin Mode)
 
-### Overview
-
-**Japanese**: 柔道家編集モード
-**URL**: `manageJudoka.html`
+**Japanese**: 柔道家編集モード  
+**URL**: `manageJudoka.html`  
 Choose to create or edit a judoka.
 
-### Goals
+#### Goals
 
 - Provide an admin hub for judoka creation and updates.
 
-### Functional Requirements
+#### Functional Requirements
 
 - Two path options visible.
 - Routing to creation or update works.
 - Fallback if no judoka are available to edit.
 - Will be only available to access via an Admin entry point
 
-### Acceptance Criteria
+#### Acceptance Criteria
 
 - Selecting a path leads to the correct screen.
 
-### Non‑Goals
+#### Non‑Goals
 
 - Deep stat editing beyond current fields.
 
-### Dependencies
+#### Dependencies
 
 - Backend for saving judoka data.
 
-### Open Questions
+#### Open Questions
 
 - **Pending:** Decide whether to warn players about unsaved changes before exiting.
 
 ---
 
-## Create A Judoka (Admin Mode)
+### Create A Judoka (Admin Mode)
 
-### Overview
-
-**Japanese**: 柔道家を作成
-**URL**: `createJudoka.html`
+**Japanese**: 柔道家を作成  
+**URL**: `createJudoka.html`  
 Create a new judoka with custom stats and appearance.
 
-### Goals
+#### Goals
 
 - Let Admins add new characters to the game roster.
 
-### Functional Requirements
+#### Functional Requirements
 
-- Inputs for name, nationality, stats, weight class and signature move.
+- Inputs for name, nationality, stats, weight class, and signature move.
 - Live preview updates on change.
 - Save adds to data store and confirms.
 - Invalid form fields trigger error indicators.
 - Will be only available to access via an Admin entry point
 
-### Acceptance Criteria
+#### Acceptance Criteria
 
 - All inputs required before save.
 - Given completed form, when saved, judoka appears in `judoka.json`.
 
-### Non‑Goals
+#### Non‑Goals
 
 - Sharing created judoka online.
 
-### Dependencies
+#### Dependencies
 
 - Form validation utilities.
 
-### Open Questions
+#### Open Questions
 
 - **Pending:** Decide whether to limit the number of custom judoka.
 
 ---
 
-## Update A Judoka (Admin Mode)
+### Update A Judoka (Admin Mode)
 
-### Overview
-
-**Japanese**: 柔道家を更新
-**URL**: `updateJudoka.html`
+**Japanese**: 柔道家を更新  
+**URL**: `updateJudoka.html`  
 Edit an existing judoka. [Read full PRD](prdUpdateJudoka.md)
 
-### Goals
+#### Goals
 
 - Allow Admins to refine stats and appearance over time.
 
-### Functional Requirements
+#### Functional Requirements
 
 - Judoka list loads from dataset.
 - Edits persist after save.
@@ -322,87 +316,86 @@ Edit an existing judoka. [Read full PRD](prdUpdateJudoka.md)
 - If selected judoka is missing, display retry prompt.
 - Will be only available to access via an Admin entry point
 
-### Acceptance Criteria
+#### Acceptance Criteria
 
 - Edits save correctly and persist on reload.
 
-### Non‑Goals
+#### Non‑Goals
 
 - Full version history of edits.
 
-### Dependencies
+#### Dependencies
 
 - Same storage used by the creation screen.
 
 ---
 
-## Random Judoka
+### Random Judoka
 
-### Overview
-
-**Japanese**: ランダム柔道家
-**URL**: `randomJudoka.html`
+**Japanese**: ランダム柔道家  
+**URL**: `randomJudoka.html`  
 Display a random judoka profile. [Read full PRD](prdRandomJudoka.md)
 
-### Goals
+#### Goals
 
 - Give players quick inspiration for new team ideas **(random suggestion ≤1 s)**.
 
-### Functional Requirements
+#### Functional Requirements
 
 - Show one random judoka on load or refresh.
 - “Draw” button refreshes content.
 
-### Acceptance Criteria
+#### Acceptance Criteria
 
 - Random judoka displayed each visit.
 
-### Non‑Goals
+#### Non‑Goals
 
 - Complex filters or search.
 
-### Dependencies
+#### Dependencies
 
 - Access to the full judoka list.
 
-### Open Questions
+#### Open Questions
 
 - **Pending:** Decide whether favourites influence random selection.
 
 ---
 
-## Meditation
+### Meditation
 
-### Overview
-
-**Japanese**: メディテーション
-**URL**: `meditation.html`
+**Japanese**: メディテーション  
+**URL**: `meditation.html`  
 A calm screen offering inspirational quotes and ambient visuals. [Read full PRD](prdMeditationScreen.md)
 
-### Goals
+#### Goals
 
 - Provide a restful break between battles.
 
-### Functional Requirements
+#### Functional Requirements
 
 - Load random quote per visit.
 - English/Japanese toggle.
 - Ambient visuals reinforce restful tone.
 
-### Acceptance Criteria
+#### Acceptance Criteria
 
 - Text is legible and character art scales correctly.
 - Player exits via “Return” button confirming transition back to the map.
 
-### Non‑Goals
+#### Non‑Goals
 
 - Rewarding players with items or XP.
 
-### Dependencies
+#### Dependencies
 
 - Quote data set and language toggle component.
 
-### Open Questions
+#### Open Questions
 
 - **Pending:** Decide whether quotes rotate daily or on each visit.
-\n[Back to Game Modes Overview](prdGameModes.md)
+
+---
+
+[Back to Game Modes Overview](prdGameModes.md)

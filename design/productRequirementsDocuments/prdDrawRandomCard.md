@@ -1,4 +1,4 @@
-# PRD – Function to Draw Random Card
+# PRD: Draw Random Card Function
 
 ---
 
