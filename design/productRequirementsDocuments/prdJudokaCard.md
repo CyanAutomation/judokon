@@ -219,3 +219,4 @@ widths across screens and matches the rule introduced in the stylesheet.
   - [ ] 5.3 Support keyboard and screen reader navigation.
   - [ ] 5.4 Ensure ≥44px touch targets for interactive elements (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
   - [ ] 5.5 Add `role="button"` with `aria-label` to card elements and style focus via `.judoka-card:focus-visible`.
+\n[Back to Game Modes Overview](prdGameModes.md)

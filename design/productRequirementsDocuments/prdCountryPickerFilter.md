@@ -202,3 +202,4 @@ Key Details:
 - [ ] 6.0 Add Visual Documentation
   - [ ] 6.1 Create annotated wireframes for the slide-in panel and full-grid views.
   - [ ] 6.2 Annotate wireframes with key UX and accessibility notes (tap sizes, highlight states, animation durations).
+\n[Back to Game Modes Overview](prdGameModes.md)

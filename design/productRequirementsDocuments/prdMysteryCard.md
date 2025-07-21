@@ -154,3 +154,5 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 - [ ] 5.0 Code Integration
   - [ ] 5.1 Extend `renderJudokaCard()` with `useObscuredStats` flag
   - [ ] 5.2 Use animation helper for swap timing (ease-out, 400ms)
+
+[Back to Game Modes Overview](prdGameModes.md)
