@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createSettingsDom } from "../utils/testUtils.js";
 
 const baseSettings = {
   sound: true,
@@ -10,13 +11,7 @@ const baseSettings = {
 
 describe("settingsPage module", () => {
   beforeEach(() => {
-    document.body.innerHTML = `
-      <input id="sound-toggle" type="checkbox">
-      <input id="navmap-toggle" type="checkbox">
-      <input id="motion-toggle" type="checkbox">
-      <select id="display-mode-select"></select>
-      <section id="game-mode-toggle-container"></section>
-    `;
+    document.body.appendChild(createSettingsDom());
   });
 
   it("loads settings and game modes on DOMContentLoaded", async () => {
