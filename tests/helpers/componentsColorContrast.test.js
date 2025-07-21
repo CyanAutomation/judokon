@@ -18,8 +18,20 @@ function resolveColor(value, vars) {
   return value;
 }
 
+function readComponentsCss() {
+  const base = readFileSync(resolve("src/styles/components.css"), "utf8");
+  let css = base;
+  const importRegex = /@import\s+["'](.+?)["'];/g;
+  let match;
+  while ((match = importRegex.exec(base))) {
+    const filePath = resolve("src/styles", match[1]);
+    css += readFileSync(filePath, "utf8");
+  }
+  return css;
+}
+
 function getComponentColors(vars) {
-  const css = readFileSync(resolve("src/styles/components.css"), "utf8");
+  const css = readComponentsCss();
   const colors = {};
   const patterns = {
     common: /\.judoka-card\.common\s*{[^}]*--card-bg-color:\s*([^;]+);/,

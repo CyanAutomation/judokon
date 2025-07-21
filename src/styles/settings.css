@@ -1,0 +1,144 @@
+.settings-error-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-primary);
+  color: var(--color-text-inverted);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-base);
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+.settings-error-popup.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Reset fieldset styles inside settings forms */
+.settings-form fieldset {
+  border: none;
+  margin: 0;
+  padding: 10px;
+}
+
+.settings-form {
+  padding: var(--space-lg);
+}
+
+.settings-form legend {
+  font-family: "Russo One", sans-serif;
+  font-size: 24px;
+  /* font-weight: bold; */
+  /* margin-block-end: var(--space-md); */
+}
+
+/* Settings form controls */
+.settings-form label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: 48px;
+}
+
+.settings-form input[type="checkbox"],
+.settings-form input[type="radio"] {
+  accent-color: var(--button-bg);
+  cursor: pointer;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: var(--radius-sm);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.settings-form select {
+  min-height: 48px;
+  padding: 0.5rem;
+  background-color: var(--button-bg);
+  color: var(--button-text-color);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.settings-form select:focus,
+.settings-form input[type="checkbox"]:focus-visible,
+.settings-form input[type="radio"]:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.settings-header {
+  font-family: "Russo One", sans-serif;
+  font-size: 2rem;
+  /* font-weight: bold; */
+  text-align: center;
+  margin-top: var(--space-lg);
+}
+
+/* Toggle switch styles */
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch input:focus-visible + .slider {
+  box-shadow: 0 0 3px 2px var(--button-bg);
+}
+
+.slider {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  background-color: var(--switch-off-bg);
+  border-radius: var(--radius-pill);
+  transition: var(--transition-fast);
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  top: 4px;
+  background-color: var(--color-surface);
+  border-radius: 50%;
+  transition: var(--transition-fast);
+}
+
+.switch input:checked + .slider {
+  background-color: var(--switch-on-bg);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: var(--radius-pill);
+}
+
+.slider.round::before {
+  border-radius: 50%;
+}
