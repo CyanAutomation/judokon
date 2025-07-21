@@ -27,7 +27,7 @@ async function getSettingsSchema() {
 
 const SETTINGS_KEY = "settings";
 const DEFAULT_SETTINGS = {
-  sound: true,
+  sound: false,
   fullNavMap: true,
   motionEffects: true,
   displayMode: "light",

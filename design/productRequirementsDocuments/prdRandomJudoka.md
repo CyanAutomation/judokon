@@ -156,6 +156,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
   - [ ] 1.2 Call it again when the Draw button is tapped
 - [ ] **2.0 Build layout and controls**
   - [ ] 2.1 Create card display area and prominent Draw button
+  - [ ] 2.2 Add Animation and Sound toggle switches below the Draw button
 - [ ] **3.0 Accessibility & fallback**
   - [ ] 3.1 Verify WCAG contrast and tap target sizes
   - [x] 3.2 Display fallback card on error using the module

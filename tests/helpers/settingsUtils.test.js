@@ -40,7 +40,7 @@ describe("settings utils", () => {
     const { loadSettings } = await import("../../src/helpers/settingsUtils.js");
     const settings = await loadSettings();
     expect(settings).toEqual({
-      sound: true,
+      sound: false,
       fullNavMap: true,
       motionEffects: true,
       displayMode: "light",
@@ -83,7 +83,7 @@ describe("settings utils", () => {
     const { loadSettings } = await import("../../src/helpers/settingsUtils.js");
     const settings = await loadSettings();
     expect(settings).toEqual({
-      sound: true,
+      sound: false,
       fullNavMap: true,
       motionEffects: true,
       displayMode: "light",
