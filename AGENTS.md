@@ -23,6 +23,8 @@ This repository contains the source for **JU-DO-KON!**, a browser-based card gam
 - Keep implementations and tests simple. Break logic into small helpers whenever possible, and refactor complex code rather than layering workarounds.
 - Whenever you touch a file, look for opportunities to simplify or refactor the surrounding code.
 
+📝 Note: Code must remain simple and modular at all times.
+
 ## Programmatic Checks
 
 Run the following commands from the repository root before committing. If any command fails, resolve the issues and rerun:
