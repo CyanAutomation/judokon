@@ -132,13 +132,13 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 
 ## Tasks
 
-- [ ] **1.0 Mystery Card Rendering**
-  - [ ] 1.1 Show `judokaId=1` as placeholder at start of CPU round
-  - [ ] 1.2 Hide real stats and show `"?"` for all attributes and move
+- [x] **1.0 Mystery Card Rendering**
+  - [x] 1.1 Show `judokaId=1` as placeholder at start of CPU round
+  - [x] 1.2 Hide real stats and show `"?"` for all attributes and move
   - [ ] 1.3 Apply correct rarity, flag, and weight class styles
 - [ ] **2.0 Reveal Logic**
   - [ ] 2.1 Trigger swap animation upon stat selection
-  - [ ] 2.2 Load correct opponent card into same slot
+  - [x] 2.2 Load correct opponent card into same slot
   - [ ] 2.3 Ensure animation completes in ≤400ms
   - [ ] 2.4 Fallback to instant swap if animation fails
 - [ ] **3.0 Accessibility**
@@ -147,8 +147,8 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
   - [ ] 3.3 Prevent layout jump or scroll on reveal
 - [ ] **4.0 Game Logic Safeguards**
   - [ ] 4.1 Block stat selection until card fully rendered
-- [ ] **5.0 Code Integration**
-  - [ ] 5.1 Extend `renderJudokaCard()` with `useObscuredStats` flag
+- [x] **5.0 Code Integration**
+  - [x] 5.1 Extend `renderJudokaCard()` with `useObscuredStats` flag
   - [ ] 5.2 Use animation helper for swap timing (ease-out, 400ms)
 
 [Back to Game Modes Overview](prdGameModes.md)

@@ -241,13 +241,13 @@ Motion** enabled, ensuring the card appears instantly without movement.
 - [x] 1.0 Implement Random Card Draw Function
   - [x] 1.1 Create `generateRandomCard()` function to select random card from active set.
   - [x] 1.2 Integrate card draw with UI trigger ("Draw Card" button).
-- [ ] 2.0 Develop Card Reveal Animation
-  - [ ] 2.1 Implement `.animate-card` class for fade/slide card reveal.
+- [x] 2.0 Develop Card Reveal Animation
+  - [x] 2.1 Implement `.animate-card` class for fade/slide card reveal.
   - [ ] 2.2 Ensure animation plays at ≥60fps.
-  - [ ] 2.3 Respect Reduced Motion settings and disable animation when active.
-- [ ] 3.0 Error and Fallback Handling
-  - [ ] 3.1 Display fallback card (judoka id=0, from judoka.json) if random draw fails.
-  - [ ] 3.2 Show predefined error card (judoka id=0, from judoka.json) if active card set is empty.
+  - [x] 2.3 Respect Reduced Motion settings and disable animation when active.
+- [x] 3.0 Error and Fallback Handling
+  - [x] 3.1 Display fallback card (judoka id=0, from judoka.json) if random draw fails.
+  - [x] 3.2 Show predefined error card (judoka id=0, from judoka.json) if active card set is empty.
 - [ ] 4.0 Accessibility and UX Enhancements
   - [ ] 4.1 Support Reduced Motion settings.
   - [ ] 4.2 Ensure color contrast on cards meets WCAG AA standards.

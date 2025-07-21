@@ -204,15 +204,13 @@ Carousels displaying judoka cards **must not** add horizontal padding around eac
 
 ## Tasks
 
-- [ ] 4.0 Handle Edge Cases
-  - [ ] 4.1 Show silhouette placeholder for missing portraits.
-  - [ ] 4.2 Cap extreme stats and log errors.
-  - [ ] 4.3 Display error messages for corrupted data.
-- [ ] 5.0 Implement Accessibility Features
-  - [ ] 5.1 Add alt text for portraits.
-  - [ ] 5.2 Ensure text contrast ratio ≥4.5:1.
-  - [ ] 5.3 Support keyboard and screen reader navigation.
-  - [ ] 5.4 Ensure ≥44px touch targets for interactive elements (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
-  - [ ] 5.5 Add `role="button"` with `aria-label` to card elements and style focus via `.judoka-card:focus-visible`.
+- [x] 1.1 Show silhouette placeholder for missing portraits.
+- [ ] 1.2 Cap extreme stats and log errors.
+- [ ] 1.3 Display error messages for corrupted data.
+- [ ] 2.1 Add alt text for portraits.
+- [ ] 2.2 Ensure text contrast ratio ≥4.5:1.
+- [ ] 2.3 Support keyboard and screen reader navigation.
+- [ ] 2.4 Ensure ≥44px touch targets for interactive elements (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
+- [ ] 2.5 Add `role="button"` with `aria-label` to card elements and style focus via `.judoka-card:focus-visible`.
 
 [Back to Game Modes Overview](prdGameModes.md)
