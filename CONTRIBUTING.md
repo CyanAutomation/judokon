@@ -80,6 +80,10 @@ single-purpose functions and keep modules focused on one task. Avoid
 large, monolithic implementations whenever possible.
 Pull request descriptions must briefly mention how your changes maintain or improve this modular structure.
 
+- Refactor or break apart large functions when touched.
+- Prefer test helpers over repeated setup code.
+- Document any simplification in pull request descriptions.
+
 ## Commit Messages
 
 Write short, imperative commit messages. Reference related issues if
