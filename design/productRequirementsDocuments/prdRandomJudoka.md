@@ -34,6 +34,18 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 ---
 
+## Prioritized Functional Requirements
+
+| Priority | Feature                     | Description |
+| -------- | --------------------------- | ----------- |
+| **P1**   | Draw Random Judoka          | Automatically display a random judoka on page load and when the Draw button is tapped. |
+| **P1**   | Animation Timing            | Card reveal animation completes within 500ms and respects Reduced Motion settings. |
+| **P2**   | Fallback Card               | If the judoka list is empty or fails to load, show a default placeholder card. |
+| **P2**   | Disable Interaction During Draw | Prevent repeated taps while a new card is loading. |
+| **P3**   | Optional Sound Toggle       | Play a short draw sound when enabled; default off. |
+
+---
+
 ## Acceptance Criteria
 
 - A random judoka is displayed on each visit.
