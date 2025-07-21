@@ -72,6 +72,22 @@ function showResult(message) {
   }
 }
 
+/**
+ * Display a persistent prompt instructing the player to choose a stat.
+ *
+ * @pseudocode
+ * 1. Locate the `#round-message` element.
+ * 2. Set the text to "Select your move".
+ * 3. Add the fade transition class and ensure the element is fully visible.
+ */
+export function showSelectionPrompt() {
+  const el = document.getElementById("round-message");
+  if (!el) return;
+  el.classList.add("fade-transition");
+  el.textContent = "Select your move";
+  el.classList.remove("fading");
+}
+
 function startTimer() {
   const timerEl = document.getElementById("next-round-timer");
   engineStartRound(
@@ -116,7 +132,7 @@ export async function revealComputerCard() {
  * 5. Select a random judoka for the computer from the filtered list.
  *    - If it matches the player's judoka, retry up to a safe limit.
  *    - Render the mystery placeholder card (`judokaId=1`) with obscured stats.
- * 6. Initialize the round timer.
+ * 6. Display the selection prompt and initialize the round timer.
  *
  * @returns {Promise<void>} Resolves when cards are displayed.
  */
@@ -152,7 +168,7 @@ export async function startRound() {
     animate: false,
     useObscuredStats: true
   });
-  showResult("");
+  showSelectionPrompt();
   updateScoreDisplay();
   startTimer();
 }
@@ -187,10 +203,11 @@ export function evaluateRound(stat) {
  *
  * @pseudocode
  * 1. Exit immediately when the match has ended.
- * 2. Attempt to start the next round after a short countdown.
+ * 2. Wait 2 seconds for the result message to fade out.
+ * 3. Start a 3-second countdown before attempting the next round.
  *    - Retry the start if the round cannot begin immediately.
  *    - Display "Waiting..." while retrying.
- * 3. Stop scheduling if the match ends during the countdown.
+ * 4. Stop scheduling if the match ends during the countdown.
  *
  * @param {{matchEnded: boolean}} result - Result from evaluateRound.
  */
@@ -208,11 +225,13 @@ export function scheduleNextRound(result) {
   };
 
   const countdown = getCountdown();
-  countdown(3, () => {
-    if (!isMatchEnded()) {
-      attemptStart();
-    }
-  });
+  setTimeout(() => {
+    countdown(3, () => {
+      if (!isMatchEnded()) {
+        attemptStart();
+      }
+    });
+  }, 2000);
 }
 
 /**

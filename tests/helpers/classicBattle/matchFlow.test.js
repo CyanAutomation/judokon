@@ -100,6 +100,29 @@ describe("classicBattle match flow", () => {
     vi.spyOn(battleMod, "startRound").mockResolvedValue();
     const cdSpy = vi.spyOn(infoMod, "startCountdown").mockImplementation((_s, cb) => cb());
     battleMod.scheduleNextRound({ matchEnded: false });
+    expect(cdSpy).not.toHaveBeenCalled();
+    timerSpy.advanceTimersByTime(1999);
+    expect(cdSpy).not.toHaveBeenCalled();
+    timerSpy.advanceTimersByTime(1);
     expect(cdSpy).toHaveBeenCalledWith(3, expect.any(Function));
+  });
+
+  it("shows selection prompt until a stat is chosen", async () => {
+    const { startRound, handleStatSelection, _resetForTest } = await import(
+      "../../../src/helpers/classicBattle.js"
+    );
+    _resetForTest();
+    await startRound();
+    expect(document.querySelector("header #round-message").textContent).toBe("Select your move");
+    timerSpy.advanceTimersByTime(5000);
+    expect(document.querySelector("header #round-message").textContent).toBe("Select your move");
+    document.getElementById("player-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
+    document.getElementById("computer-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+    await handleStatSelection("power");
+    expect(document.querySelector("header #round-message").textContent).not.toBe(
+      "Select your move"
+    );
   });
 });

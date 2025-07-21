@@ -44,7 +44,7 @@ The round message, timer, and score now sit directly inside the page header rath
 
 - [ ] Match score is updated within **800ms** after round ends.
 - [ ] Win/loss message is shown within **1s** of round end and remains visible for **2s**.
-- [ ] Countdown timer starts after result message, aligned with server round start delay.
+- [ ] Countdown timer begins once the 2s result message fade-out completes, aligned with server round start delay.
 - [ ] Action prompt appears during user input phases and disappears after interaction.
 - [ ] Top bar content adapts responsively to different screen sizes and orientations.
 - [ ] All messages meet minimum contrast ratio of **4.5:1** and are screen reader compatible.
