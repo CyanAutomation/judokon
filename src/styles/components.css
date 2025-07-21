@@ -192,9 +192,9 @@ button .ripple {
   height: calc(var(--card-width) * 1.5);
   aspect-ratio: 2 / 3;
   border: 12px solid var(--card-border-color);
-  border-radius: var(--radius-lg); /* Updated token */
+  border-radius: var(--radius-lg);
   background-color: var(--card-bg-color);
-  box-shadow: var(--shadow-base); /* Updated token */
+  box-shadow: var(--shadow-base);
   overflow: hidden;
   display: grid;
   grid-template-rows:
@@ -207,7 +207,7 @@ button .ripple {
     auto;
   transition:
     box-shadow var(--transition-fast),
-    transform 0.1s ease-in-out; /* Updated token */
+    transform 0.1s ease-in-out;
 }
 
 .judoka-card::before {
@@ -381,14 +381,14 @@ button .ripple {
 
 .card-weight-class {
   position: absolute;
-  margin-top: var(--space-small); /* Updated token */
-  right: var(--space-small); /* Updated token */
+  margin-top: var(--space-small);
+  right: var(--space-small);
   background-color: transparent;
-  border-radius: var(--radius-sm); /* Updated token */
+  border-radius: var(--radius-sm);
   color: #fff;
   font-weight: bold;
-  padding: var(--space-small) var(--space-medium); /* Updated tokens */
-  font-size: var(--font-medium); /* Updated token */
+  padding: var(--space-small) var(--space-medium);
+  font-size: var(--font-medium);
   z-index: 2;
 }
 
@@ -712,15 +712,15 @@ button .ripple {
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
-  margin: var(--space-large) auto; /* Updated token */
+  margin: var(--space-large) auto;
   width: 300px;
   max-width: 90vw;
   min-height: 64px;
-  padding: var(--space-md) var(--space-lg); /* Updated tokens */
+  padding: var(--space-md) var(--space-lg);
   color: var(--button-text-color);
   background-color: var(--button-bg);
-  border: 2px solid var(--color-surface); /* Updated token */
-  border-radius: var(--radius-pill); /* Updated token */
+  border: 2px solid var(--color-surface);
+  border-radius: var(--radius-pill);
   font-size: 1.25rem;
   font-weight: bold;
 }
