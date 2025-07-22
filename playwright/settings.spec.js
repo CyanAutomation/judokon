@@ -7,6 +7,10 @@ test.describe("Settings page", () => {
       route.fulfill({ path: "tests/fixtures/gameModes.json" })
     );
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
+    await page.waitForSelector("#mode-classicBattle", { state: "attached" });
+    await page.locator("#display-settings-toggle").click();
+    await page.locator("#general-settings-toggle").click();
+    await page.locator("#game-modes-toggle").click();
   });
 
   test("page loads", async ({ page }) => {

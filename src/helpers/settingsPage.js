@@ -16,7 +16,8 @@ import { onDomReady } from "./domReady.js";
 import {
   applyInitialControlValues,
   attachToggleListeners,
-  renderGameModeSwitches
+  renderGameModeSwitches,
+  setupSectionToggles
 } from "./settings/index.js";
 
 /**
@@ -80,6 +81,7 @@ async function initializeSettingsPage() {
     applyDisplayMode(settings.displayMode);
     applyMotionPreference(settings.motionEffects);
     initializeControls(settings, gameModes);
+    setupSectionToggles();
   } catch (error) {
     console.error("Error loading settings page:", error);
     const errorPopup = document.getElementById("settings-error-popup");
