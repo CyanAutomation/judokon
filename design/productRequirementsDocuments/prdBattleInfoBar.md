@@ -74,6 +74,9 @@ The round message, timer, and score now sit directly inside the page header rath
 - **Accessibility**
   - All text meets **WCAG 2.1 AA** standards.
   - Screen reader labels for dynamic messages.
+  - `#round-message` and `#next-round-timer` use `aria-live="polite"` so
+    announcements occur automatically. `#score-display` sets `aria-live="off"`
+    to avoid repeated score announcements.
  
 ---
 
