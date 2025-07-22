@@ -1,6 +1,6 @@
 {
-  "sound": false,
-  "fullNavMap": false,
+  "sound": true,
+  "fullNavMap": true,
   "motionEffects": true,
   "displayMode": "light",
   "gameModes": {}

@@ -41,8 +41,21 @@ function initializeControls(settings, gameModes) {
     displaySelect: document.getElementById("display-mode-select")
   };
   const modesContainer = document.getElementById("game-mode-toggle-container");
+  const errorPopup = document.getElementById("settings-error-popup");
 
   const getCurrentSettings = () => currentSettings;
+
+  function showErrorAndRevert(revert) {
+    if (typeof revert === "function") revert();
+    if (errorPopup) {
+      errorPopup.textContent = "Failed to update settings. Please try again.";
+      errorPopup.style.display = "block";
+      setTimeout(() => {
+        errorPopup.style.display = "none";
+        errorPopup.textContent = "";
+      }, 3000);
+    }
+  }
 
   function handleUpdate(key, value, revert) {
     updateSetting(key, value)
@@ -51,8 +64,7 @@ function initializeControls(settings, gameModes) {
       })
       .catch((err) => {
         console.error("Failed to update setting", err);
-        revert();
-        showSettingsError();
+        showErrorAndRevert(revert);
       });
   }
 
@@ -70,6 +82,11 @@ async function initializeSettingsPage() {
     initializeControls(settings, gameModes);
   } catch (error) {
     console.error("Error loading settings page:", error);
+    const errorPopup = document.getElementById("settings-error-popup");
+    if (errorPopup) {
+      errorPopup.textContent = "Failed to load settings. Please refresh the page.";
+      errorPopup.style.display = "block";
+    }
     showSettingsError();
   }
 }

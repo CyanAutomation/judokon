@@ -48,7 +48,7 @@
             <legend>Display Settings</legend>
             <div class="settings-item">
               <label for="display-mode-select">Display Mode</label>
-              <select id="display-mode-select">
+              <select id="display-mode-select" aria-label="Display Mode" tabindex="1">
                 <option value="light">Light</option>
                 <option value="dark">Dark</option>
                 <option value="gray">Gray</option>
@@ -62,7 +62,7 @@
             <legend>General Settings</legend>
             <div class="settings-item">
               <label for="sound-toggle" class="switch">
-                <input type="checkbox" id="sound-toggle" name="sound" aria-label="Sound" />
+                <input type="checkbox" id="sound-toggle" name="sound" aria-label="Sound" tabindex="2" />
                 <div class="slider round"></div>
                 <span>Sound</span>
               </label>
@@ -74,6 +74,7 @@
                   id="navmap-toggle"
                   name="navmap"
                   aria-label="Full Navigation Map"
+                  tabindex="3"
                 />
                 <div class="slider round"></div>
                 <span>Full Navigation Map</span>
@@ -86,6 +87,7 @@
                   id="motion-toggle"
                   name="motion"
                   aria-label="Motion Effects"
+                  tabindex="4"
                 />
                 <div class="slider round"></div>
                 <span>Motion Effects</span>
@@ -99,7 +101,11 @@
           >
             <legend>Game Modes</legend>
           </fieldset>
+          <div class="settings-item">
+            <a href="../pages/changeLog.html" id="changelog-link" tabindex="99">View Change Log</a>
+          </div>
         </form>
+        <div id="settings-error-popup" class="settings-error-popup" role="alert" aria-live="assertive" style="display:none;"></div>
       </main>
 
       <footer>

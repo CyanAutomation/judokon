@@ -27,7 +27,7 @@ async function getSettingsSchema() {
 
 const SETTINGS_KEY = "settings";
 const DEFAULT_SETTINGS = {
-  sound: false,
+  sound: true,
   fullNavMap: true,
   motionEffects: true,
   displayMode: "light",
@@ -67,6 +67,7 @@ export async function loadSettings() {
     await validateWithSchema(merged, await getSettingsSchema());
     return merged;
   } catch (error) {
+    // For PRD: show error popup in UI, not here
     throw error;
   }
 }
@@ -96,7 +97,7 @@ export function saveSettings(settings) {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
         resolve();
       } catch (err) {
-        console.error("Failed to save settings:", err);
+        // For PRD: error popup handled in UI
         reject(err);
       }
     }, SAVE_DELAY_MS);
@@ -131,7 +132,7 @@ export async function updateSetting(key, value) {
     }
     return updated;
   } catch (error) {
-    console.error(`Failed to update setting ${key}:`, error);
+    // For PRD: error popup handled in UI
     throw error;
   }
 }

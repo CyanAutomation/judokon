@@ -104,6 +104,16 @@ To ensure the **Settings** page remains consistent, visually appealing, and acce
   - Reflect current saved values on page load
   - Integrate with existing error feedback mechanisms
 
+- **Change Log Link**
+  - Add a clearly labeled link (e.g., "View Change Log") to the settings page, styled as a `.settings-item`.
+  - Place after all settings controls, before the error popup container.
+  - The link should point to `changeLog.html` and be accessible via keyboard (tabindex set appropriately).
+
+- **Error Message Container & ARIA**
+  - Include a dedicated error popup container (e.g., `<div id="settings-error-popup" role="alert" aria-live="assertive">`).
+  - All error messages must be routed through this container for accessibility.
+  - Ensure error popups are visually distinct and disappear after a short timeout (e.g., 3 seconds).
+
 ---
 
 ## Testing Checklist
