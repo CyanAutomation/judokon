@@ -46,17 +46,64 @@
       <main class="container" role="main">
         <section id="battle-area">
           <div id="player-card" class="card-slot"></div>
-          <div id="computer-card" class="card-slot" aria-label="Mystery Judoka: hidden card"><!--
+          <div id="computer-card" class="card-slot" aria-label="Mystery Judoka: hidden card">
+            <!--
   Mystery Judoka card is rendered here. ARIA attributes and stat labels should be set dynamically for accessibility compliance (see PRD: Mystery Card).
---></div>
+-->
+          </div>
 
           <div id="controls">
-            <div id="stat-buttons" role="group" aria-label="Select a stat to battle" class="responsive-stat-buttons">
-              <button data-stat="power" type="button" tabindex="0" aria-label="Select Power" style="min-width:44px;min-height:44px;">Power</button>
-              <button data-stat="speed" type="button" tabindex="0" aria-label="Select Speed" style="min-width:44px;min-height:44px;">Speed</button>
-              <button data-stat="technique" type="button" tabindex="0" aria-label="Select Technique" style="min-width:44px;min-height:44px;">Technique</button>
-              <button data-stat="kumikata" type="button" tabindex="0" aria-label="Select Kumi-kata" style="min-width:44px;min-height:44px;">Kumi-kata</button>
-              <button data-stat="newaza" type="button" tabindex="0" aria-label="Select Ne-waza" style="min-width:44px;min-height:44px;">Ne-waza</button>
+            <div
+              id="stat-buttons"
+              role="group"
+              aria-label="Select a stat to battle"
+              class="responsive-stat-buttons"
+            >
+              <button
+                data-stat="power"
+                type="button"
+                tabindex="0"
+                aria-label="Select Power"
+                style="min-width: 44px; min-height: 44px"
+              >
+                Power
+              </button>
+              <button
+                data-stat="speed"
+                type="button"
+                tabindex="0"
+                aria-label="Select Speed"
+                style="min-width: 44px; min-height: 44px"
+              >
+                Speed
+              </button>
+              <button
+                data-stat="technique"
+                type="button"
+                tabindex="0"
+                aria-label="Select Technique"
+                style="min-width: 44px; min-height: 44px"
+              >
+                Technique
+              </button>
+              <button
+                data-stat="kumikata"
+                type="button"
+                tabindex="0"
+                aria-label="Select Kumi-kata"
+                style="min-width: 44px; min-height: 44px"
+              >
+                Kumi-kata
+              </button>
+              <button
+                data-stat="newaza"
+                type="button"
+                tabindex="0"
+                aria-label="Select Ne-waza"
+                style="min-width: 44px; min-height: 44px"
+              >
+                Ne-waza
+              </button>
             </div>
 
             <p id="round-result" aria-live="polite" aria-atomic="true"></p>
@@ -83,7 +130,7 @@
       </script>
       <script type="module" src="../helpers/setupSvgFallback.js"></script>
       <script type="module" src="../helpers/setupBattleInfoBar.js"></script>
-      <script type="module" src="../helpers/battleJudokaPage.js"></script>
+      <script type="module" src="../helpers/classicBattlePage.js"></script>
     </div>
   </body>
 </html>
