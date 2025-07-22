@@ -195,6 +195,12 @@
   opacity: 0;
 }
 
+/* Elements start invisible until assets load */
+.fade-in {
+  opacity: 0;
+  transition: opacity 300ms;
+}
+
 /* This toggle keeps its accent colors intentionally */
 .language-toggle {
   display: inline-flex;

@@ -222,7 +222,8 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
   - [ ] 5.2 Capture asset load times and log results to console for performance tracking.
   - [x] 5.3 Implement responsive grid and flexbox for various screen sizes (portrait/landscape).
 - [ ] **6.0 Visual & Accessibility Polish**
-  - [ ] 6.1 Fade KG image and quote in within 300ms on initial load.
+  - [ ] 6.1 Use a `.fade-in` class so the KG image and quote block fade in within
+        300ms once both assets load (class removed via JS).
   - [ ] 6.2 Ensure quote text scales smoothly across breakpoints.
   - [ ] 6.3 Announce language toggle with aria-live and shift focus when it becomes visible.
 

@@ -22,6 +22,16 @@
  */
 import { DATA_DIR } from "./constants.js";
 
+let kgImageLoaded = false;
+let quoteLoaded = false;
+
+function checkAssetsReady() {
+  if (kgImageLoaded && quoteLoaded) {
+    document.querySelector(".kg-sprite img")?.classList.remove("fade-in");
+    document.querySelector(".quote-block")?.classList.remove("fade-in");
+  }
+}
+
 async function fetchFables() {
   const [storyRes, metaRes] = await Promise.all([
     fetch(`${DATA_DIR}aesopsFables.json`),
@@ -141,6 +151,8 @@ function displayFable(fable) {
  *
  * 4. Automatically call the function when the DOM is fully loaded:
  *    - Use the `DOMContentLoaded` event to ensure the function runs after the DOM is ready.
+ * 5. When both the KG image and quote have loaded:
+ *    - Remove the `fade-in` class from the image and quote container so they fade into view.
  *
  * @throws {Error} If fetching the fables data fails.
  */
@@ -154,10 +166,25 @@ async function displayRandomQuote() {
   } catch (error) {
     console.error("Error fetching or displaying the fable:", error);
     displayFable(null);
+  } finally {
+    quoteLoaded = true;
+    checkAssetsReady();
   }
 }
 
 // Automatically call displayRandomQuote when the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
+  const kgImg = document.querySelector(".kg-sprite img");
+  if (kgImg) {
+    if (kgImg.complete) {
+      kgImageLoaded = true;
+      checkAssetsReady();
+    } else {
+      kgImg.addEventListener("load", () => {
+        kgImageLoaded = true;
+        checkAssetsReady();
+      });
+    }
+  }
   displayRandomQuote();
 });
