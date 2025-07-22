@@ -44,7 +44,7 @@ A **“Change Log”** button will be added as a link from the Settings menu (se
 - [ ] Page loads fully in <2s on mid-tier mobile device with 3G connection.
 - [ ] Global header and footer are present and match the main game theme.
 - [ ] If `judoka.json` is missing or empty, display: “No Judoka data found.”
-- [ ] If a portrait image is missing, show the default placeholder portrait.
+- [ ] If a portrait image is missing, show the default placeholder portrait. See prdMysteryJudoka.md. 
 - [ ] Alt text is present for all portraits (e.g., “Portrait of Judoka <Name>”).
 - [ ] The page is navigable by keyboard and screen-reader compatible.
 
