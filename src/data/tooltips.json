@@ -1,0 +1,17 @@
+{
+  "stat.power": "**Power** represents a judoka's raw physical strength.\nStronger judoka can overpower opponents in throws and grip breaks.",
+  "stat.kumikata": "_Kumi-kata_ means **grip fighting**.\nThis stat reflects how well a judoka can control grips and deny their opponent’s attacks.",
+  "stat.speed": "**Speed** affects how quickly a judoka can attack or react.\nUseful for counterattacks and surprise techniques.",
+  "stat.technique": "**Technique** measures mastery of judo throws and transitions.\nHigh values indicate sharp, precise execution.",
+  "stat.balance": "**Balance** affects a judoka's stability when attacking or defending.\nHigher values reduce the chance of being thrown.",
+  
+  "ui.selectStat": "Choose a stat below.\nThe higher value wins the round!",
+  "ui.cardOfTheDay": "**Card of the Day** shows a featured judoka.\nCheck back tomorrow for a new pick!",
+  "ui.winMessage": "**Victory!**\nYou chose the stronger stat.",
+  "ui.lossMessage": "**Defeat!**\nYour opponent had the upper hand.",
+  "ui.drawMessage": "_It’s a draw._\nBoth stats were equal!",
+
+  "mode.classicBattle": "**Classic Battle Mode** pits you against the CPU.\nFirst to 10 round wins is the champion.",
+  "mode.teamBattle": "**Team Battle Mode** uses your entire deck.\nWin more rounds than the opponent team to triumph!",
+  "mode.meditation": "**Meditation Mode** lets you reflect and compare cards.\nNo battles, just peaceful analysis."
+}
