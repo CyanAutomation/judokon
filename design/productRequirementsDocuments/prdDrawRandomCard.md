@@ -251,5 +251,9 @@ Motion** enabled, ensuring the card appears instantly without movement.
   - [ ] 4.1 Support Reduced Motion settings.
   - [ ] 4.2 Ensure color contrast on cards meets WCAG AA standards.
   - [ ] 4.3 Set all tap targets to ≥44px, recommended 64px for better kid usability (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
-- [ ] 4.4 Add sound and animation toggle options for user preferences.
+  - [ ] 4.4 Implement animation and sound toggle controls with settings persistence.
+  - [ ] 4.5 Play card-draw audio when sound is enabled and provide a mute option.
+  - [ ] 4.6 Disable the “Draw Card” button while loading or animating a card.
+  - [ ] 4.7 Add orientation-based layout rules for portrait vs. landscape.
+  - [ ] 4.8 Write automated tests verifying color contrast and tap target sizes.
 \n[Back to Game Modes Overview](prdGameModes.md)
