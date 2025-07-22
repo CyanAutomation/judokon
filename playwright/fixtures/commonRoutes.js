@@ -14,6 +14,9 @@ export async function registerCommonRoutes(page) {
   await page.route("**/src/data/countryCodeMapping.json", (route) =>
     route.fulfill({ path: "tests/fixtures/countryCodeMapping.json" })
   );
+  await page.route("**/src/data/tooltips.json", (route) =>
+    route.fulfill({ path: "tests/fixtures/tooltips.json" })
+  );
   await page.route("https://flagcdn.com/**", (route) =>
     route.fulfill({ path: "src/assets/countryFlags/placeholder-flag.png" })
   );
