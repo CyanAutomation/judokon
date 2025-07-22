@@ -80,6 +80,13 @@ This problem is especially pressing now as the roster grows, and players want a 
 - Scrolling rapidly through the card carousel maintains a frame rate of at least 30fps.
 - If the network fails to load `judoka.json`, display an error message: “Unable to load roster” and provide a button to retry.
 - Using keyboard arrow keys (left/right) moves focus to the previous/next card, and the focused card is visually highlighted and enlarged.
+- The Country Flag Picker panel appears below the top bar, is accessible via keyboard and screen reader, and supports closing with Escape.
+- Country flags are displayed alphabetically, with alt-text and aria-labels for accessibility.
+- If no judoka exist for a selected country, display “No judoka available for this country.”
+- If a flag asset fails to load, display a fallback flag icon.
+- The clear filter icon resets the filter to show all judoka.
+- The country picker supports minimum tap target size (44x44px) and color contrast per WCAG 2.1 AA.
+- Keyboard navigation and focus outlines are visible for all picker elements.
 
 ---
 
@@ -94,6 +101,14 @@ This problem is especially pressing now as the roster grows, and players want a 
 ## Design and UX Considerations
 
 See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel-specific animations, responsiveness, and mockups.
+
+- The Country Flag Picker panel appears below the persistent top bar and stacks above the carousel on screens below 768px.
+- Picker supports keyboard navigation (Tab/Shift+Tab, Enter/Space, Escape) and screen reader accessibility.
+- Picker displays only countries present in `judoka.json`, in alphabetical order, with alt-text and aria-labels.
+- Picker provides a clear filter icon to reset selection.
+- If no judoka exist for a selected country, an empty state message is shown.
+- If a flag asset fails to load, a fallback flag icon is displayed.
+- Picker is responsive and touch targets are ≥44px.
 
 ---
 
@@ -201,7 +216,7 @@ Search will be included in a future update to keep the initial scope focused.
   - [x] 3.3 Use default card for invalid/missing entries or failed images
   - [ ] 3.4 Handle network interruptions with retry prompt
 - [ ] 4.0 Performance Optimization
-  - [ ] 4.1 Ensure full list loads within 1 second for 100 cards
+  - [ ] 4.1 Ensure full list within 1 second for 100 cards
   - [ ] 4.2 Maintain ≥30fps during rapid scrolling
 - [ ] 5.0 Interaction Enhancements
   - [ ] 5.1 Add ripple or scaling animation on tap/click

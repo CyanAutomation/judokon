@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-This PRD defines a Country Flag Picker Filter for Ju-Do-Kon! that lets players filter Judoka cards by country using an intuitive, accessible flag selector. The goal is to improve user engagement by enabling fast, pride-driven exploration of favorite countries’ athletes (**panel open ≤1 s**), with a performant, responsive, and accessible UI.
+This PRD defines a Country Flag Picker Filter for Ju-Do-Kon! that lets players filter Judoka cards by country using an intuitive, accessible flag selector. The goal is to improve user engagement by enabling fast, pride-driven exploration of favorite countries’ athletes (**panel open ≤1 s**), with a performant, responsive, and accessible UI. The picker integrates directly with the Browse Judoka screen and card carousel, supporting both mouse/touch and keyboard navigation.
 
 > Jamal logs into Ju-Do-Kon! after seeing a clip of his country’s top Judoka. He taps the country picker, slides open the panel, and spots his flag among dozens. One tap later, the screen fills with fierce fighters from his homeland. He feels proud — and motivated to start collecting more.
 
@@ -28,6 +28,7 @@ This issue is timely as our player base is expanding internationally, and region
 - **UX Goal**: Achieve a >95% success rate where users select the intended country without mis-taps.
 - Let players easily find Judoka from their favorite countries.
 - Provide a visually engaging, pride-driven exploration of the card roster.
+- Ensure full accessibility compliance (see Accessibility section).
 
 ---
 
@@ -36,6 +37,7 @@ This issue is timely as our player base is expanding internationally, and region
 - As a player who supports my national team, I want to quickly filter Judoka by my country so I can see my favorite athletes **(results ≤1 s)**.
 - As a mobile player, I want country flags large enough to tap accurately so I don’t get frustrated with mistaps.
 - As a player with limited vision, I want alt-text and good contrast on flags so I can recognize countries clearly.
+- As a keyboard-only user, I want to navigate the country picker and select flags using the keyboard.
 
 ---
 
@@ -47,12 +49,20 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 - Only countries present in the `judoka.json` file will be displayed.
 - Instead of a list, the selector will use flag icons to represent each country.
-- When a user clicks on a flag:
+- When a user clicks or presses Enter/Space on a flag:
   - The card carousel refreshes, filtering to display only judoka from the selected country (e.g., clicking Jamaica will filter to only Jamaican judoka).
 - Users can only select one country at a time.
 - A clear filter icon is provided to reset the selection and revert to displaying all judoka.
 - Default display mode when opened is **slide-in panel**.
 - The toggle is represented by a panel icon with an arrow.
+- Countries are displayed in alphabetical order.
+- Each flag button includes alt-text and an `aria-label` (e.g., "Filter by {country}") for accessibility.
+- The picker supports keyboard navigation: Tab/Shift+Tab to move between flags, Enter/Space to select, and Escape to close the panel.
+- The panel appears below the persistent top bar so the first row of countries is fully visible.
+- If no judoka exist for a selected country, an empty state message is shown ("No judoka available for this country").
+- If a flag asset fails to load, a generic fallback flag icon is displayed.
+- For collections larger than 50 countries, virtual scrolling or paging is implemented to prevent UI overload.
+- Progressive flag loading is used on slow networks to prioritize interactivity.
 
 ---
 
@@ -60,8 +70,9 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 1. Player opens the Browse Judoka screen and taps the country selector toggle.
 2. The slide-in panel opens in under one second.
-3. Tapping a flag filters the carousel and highlights the selected country.
+3. Tapping or pressing Enter/Space on a flag filters the carousel and highlights the selected country.
 4. The clear filter icon resets the view and the player continues browsing or closes the selector.
+5. Keyboard users can navigate flags and close the panel with Escape.
 
 ---
 
@@ -73,9 +84,10 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 | **P1**   | Filtering and responsive time   | Ensure filtering is completed within 1 second for 90% of sessions.                   |
 | **P2**   | Three display modes             | Provide hidden, slide-in (default), and full-screen grid views for the selector.     |
 | **P2**   | Clear filter icon               | Provide an easy way to remove the current country filter.                             |
+| **P2**   | Accessibility compliance        | Ensure alt-text, aria-labels, color contrast, keyboard navigation, and touch target size are all accessible. |
+| **P2**   | Alphabetical order              | Display country flags in alphabetical order.                                         |
 | **P3**   | Performance optimizations       | Support large datasets (>50 countries) via virtual scrolling or paging.              |
 | **P3**   | Fallback icon for missing flags | Display a fallback generic flag if assets fail.                                      |
-| **P3**   | Accessibility compliance        | Ensure alt-text, color contrast, and touch target size are all accessible.           |
 
 ---
 
@@ -84,10 +96,12 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 ### Interaction
 
 - On screens where multiple cards are shown, users are presented with the country selector toggle.
-- Clicking a country flag:
+- Clicking or pressing Enter/Space on a country flag:
   - Filters the card carousel to only show cards from that country.
   - The selected country flag is visually highlighted.
 - A clear filter icon resets the card carousel to show all cards.
+- Keyboard navigation is supported for all flag buttons and the clear filter icon.
+- The panel can be closed with Escape.
 
 ### Performance
 
@@ -99,11 +113,13 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 ### Accessibility
 
 - Provide alt-text for all country flags.
+- Each flag button has an `aria-label` (e.g., "Filter by {country}").
 - Country flags must be displayed in alphabetical order.
 - Provide clear feedback if no judoka exist for a selected country (empty state messaging).
 - Handle missing flag assets gracefully with a fallback icon.
 - Tap target size must be at least 44x44px (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 - Color contrast ratios must meet WCAG 2.1 AA standards.
+- Keyboard navigation and focus outlines are visible and accessible.
 
 ---
 
@@ -113,6 +129,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 - If a flag asset fails to load, display a generic fallback flag icon.
 - For collections larger than 50 countries, implement virtual scrolling or paging to prevent UI overload.
 - On slow networks, implement graceful degradation with progressive flag loading to prioritize interactivity.
+- If the country list is empty, display a message: "No countries available."
 
 ---
 
@@ -123,6 +140,9 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 - Prioritize lazy-loading flag images if >50 countries are available.
 - Fallback flag asset should be a small, lightweight SVG or PNG.
 - Ensure caching headers on flags to minimize repeat loads.
+- Integrate with the card carousel to trigger filtering and update the visible cards.
+- Ensure the panel appears below the persistent top bar and is responsive to different screen sizes.
+- Keyboard navigation and focus management must be implemented for all interactive elements.
 
 ---
 
@@ -137,6 +157,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 - `judoka.json` data file for country information.
 - Card carousel component which displays filtered judoka cards.
+- Integrated with the Browse Judoka screen (see [PRD: Browse Judoka](prdBrowseJudoka.md)).
 
 ---
 
@@ -166,6 +187,11 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 - Animation Considerations:
   - Slide-in animation duration: 300ms and respects the user's `prefers-reduced-motion` setting.
   - Flag grid fade-in duration uses `var(--transition-fast)`.
+- Keyboard navigation:
+  - Tab/Shift+Tab to move between flags and clear filter icon.
+  - Enter/Space to select a flag or clear filter.
+  - Escape to close the panel.
+  - Focus outlines are visible and accessible.
 
 ---
 
@@ -181,10 +207,11 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 - [ ] 1.0 Implement Country Flag Picker UI
   - [x] 1.1 Create hidden, slide-in panel (default), and full-screen grid layouts.
-  - [ ] 1.2 Load country flags with alt-text and labels.
+  - [ ] 1.2 Load country flags with alt-text and labels, and ensure `aria-label` for each flag button.
   - [ ] 1.3 Ensure responsive design for different screen sizes (mobile, tablet, desktop).
   - [x] 1.4 Implement selected flag highlighting (e.g., border, shading).
   - [x] 1.5 Implement clear filter icon.
+  - [ ] 1.6 Implement keyboard navigation and focus management for all interactive elements.
 - [x] 2.0 Set Up Filtering Logic
   - [x] 2.1 Load `judoka.json` and extract a list of available countries.
   - [ ] 2.2 Implement filtering of the card carousel based on the selected country.
@@ -193,14 +220,17 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
   - [ ] 3.1 Implement virtual scrolling or paging for >50 countries.
   - [ ] 3.2 Ensure the filtering action completes within 1 second for 90% of sessions.
   - [ ] 3.3 Ensure the country selector appears within 1 second when toggled.
+  - [ ] 3.4 Implement progressive flag loading for slow networks.
 - [ ] 4.0 Handle Edge Cases
   - [ ] 4.1 Display a fallback icon if a flag asset fails to load.
   - [ ] 4.2 Implement progressive flag loading on slow networks.
+  - [ ] 4.3 Show a message if the country list is empty.
 - [ ] 5.0 Ensure Accessibility and Compliance
   - [ ] 5.1 Add alt-text for all flag icons based on country names and apply `aria-label` text like "Filter by {country}" to each flag button for screen readers.
   - [ ] 5.2 Ensure color contrast ratios meet WCAG 2.1 AA standards.
   - [ ] 5.3 Enforce minimum tap target size (44x44px) for touch devices (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
   - [ ] 5.4 Ensure flags are displayed alphabetically.
+  - [ ] 5.5 Ensure keyboard navigation and focus outlines are visible and accessible.
 
 ---
 
