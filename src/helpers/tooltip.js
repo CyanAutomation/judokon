@@ -1,5 +1,6 @@
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
+import { escapeHTML } from "./utils.js";
 
 let tooltipDataPromise;
 let cachedData;
@@ -28,8 +29,22 @@ async function loadTooltips() {
   return cachedData;
 }
 
-function parseMarkdown(text) {
-  return text
+/**
+ * Converts tooltip markdown to sanitized HTML.
+ *
+ * @pseudocode
+ * 1. Escape HTML in `text` using `escapeHTML`.
+ * 2. Replace newline characters with `<br>`.
+ * 3. Replace `**bold**` with `<strong>` elements.
+ * 4. Replace `_italic_` with `<em>` elements.
+ * 5. Return the transformed string.
+ *
+ * @param {string} text - Raw tooltip text to parse.
+ * @returns {string} HTML markup for the tooltip.
+ */
+export function parseTooltipText(text) {
+  const safe = escapeHTML(text || "");
+  return safe
     .replace(/\n/g, "<br>")
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/_(.*?)_/g, "<em>$1</em>");
@@ -76,7 +91,7 @@ export async function initTooltips(root = document) {
       }
       return;
     }
-    tip.innerHTML = parseMarkdown(text);
+    tip.innerHTML = parseTooltipText(text);
     tip.style.display = "block";
     const rect = e.currentTarget.getBoundingClientRect();
     let top = rect.bottom + window.scrollY;
