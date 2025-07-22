@@ -225,7 +225,7 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
   - [ ] 6.1 Use a `.fade-in` class so the KG image and quote block fade in within
         300ms once both assets load (class removed via JS).
   - [ ] 6.2 Ensure quote text scales smoothly across breakpoints.
-  - [ ] 6.3 Announce language toggle with aria-live and shift focus when it becomes visible.
+  - [x] 6.3 Announce language toggle with aria-live and shift focus when it becomes visible.
 
 ---
 

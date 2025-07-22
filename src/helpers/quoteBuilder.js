@@ -129,6 +129,12 @@ function displayFable(fable) {
   const toggleBtn = document.getElementById("language-toggle");
   if (toggleBtn) {
     toggleBtn.classList.remove("hidden");
+    toggleBtn.setAttribute("aria-live", "polite");
+    toggleBtn.focus();
+    const liveRegion = document.getElementById("language-announcement");
+    if (liveRegion) {
+      liveRegion.textContent = "language toggle available";
+    }
   }
 }
 
