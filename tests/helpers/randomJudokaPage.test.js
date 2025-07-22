@@ -119,4 +119,49 @@ describe("randomJudokaPage module", () => {
     const ratio = hex(bg, text);
     expect(ratio).toBeGreaterThanOrEqual(4.5);
   });
+
+  it("draw button meets minimum size requirements", async () => {
+    vi.useFakeTimers();
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    vi.doMock("../../src/components/Button.js", async () => {
+      return await vi.importActual("../../src/components/Button.js");
+    });
+    vi.doMock("../../src/components/ToggleSwitch.js", async () => {
+      return await vi.importActual("../../src/components/ToggleSwitch.js");
+    });
+
+    const generateRandomCard = vi.fn();
+    const fetchJson = vi.fn().mockResolvedValue([]);
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updateSetting = vi.fn();
+    const applyMotionPreference = vi.fn();
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+
+    const { section, container } = createRandomCardDom();
+    document.body.append(section, container);
+
+    const navbarCss = readFileSync(resolve("src/styles/navbar.css"), "utf8");
+    const style = document.createElement("style");
+    style.textContent = navbarCss;
+    document.head.appendChild(style);
+
+    await import("../../src/helpers/randomJudokaPage.js");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const button = document.getElementById("draw-card-btn");
+    const computed = getComputedStyle(button);
+    expect(parseInt(computed.minHeight)).toBeGreaterThanOrEqual(64);
+    expect(parseInt(computed.width)).toBeGreaterThanOrEqual(300);
+  });
 });
