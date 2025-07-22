@@ -35,6 +35,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - ≥70% of new players complete a Classic Battle within their first session.
 - Give new players an approachable mode to learn how judoka stats impact outcomes.
 - Reduce frustration by providing immediate, clear feedback on round results.
+- **Ensure all round messages, timers, and score are surfaced via the Info Bar (see prdBattleInfoBar.md) for clarity and accessibility.**
 
 ---
 
@@ -53,7 +54,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 - Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
 - Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices (**≥60 fps**).
-- Timeout for stat selection must pause if game tab is inactive or device goes to sleep, resuming on focus.
+- **Stat selection timer (30s) must be displayed in the Info Bar; if timer expires, a random stat is auto-selected. Timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleInfoBar.md).**
 - Backend must send real-time stat updates via WebSocket or polling for smooth live updates (**<200 ms latency**).
 
 ---
@@ -63,7 +64,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 | Priority | Feature                 | Description                                                                                             |
 | -------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
 | **P1**   | Random Card Draw        | Draw one random card per player each round; the computer card must differ from the player's.            |
-| **P1**   | Stat Selection Timer    | Player selects stat within 30 seconds; otherwise, random stat is chosen. Default timer is fixed at 30s. |
+| **P1**   | Stat Selection Timer    | Player selects stat within 30 seconds; otherwise, random stat is chosen. Default timer is fixed at 30s. Timer is displayed in the Info Bar and pauses/resumes on tab inactivity. |
 | **P1**   | Scoring                 | Increase score by one for each round win.                                                               |
 | **P1**   | Match End Condition     | End match on 10 points or after 25 rounds.                                                              |
 | **P2**   | Tie Handling            | Show tie message; round ends without score change; continue to next round.                              |
@@ -74,7 +75,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 - Behavior on tie rounds: round ends with a message explaining the tie and an option to start the next round.
 - Match start conditions: both players begin with a score of zero; player goes first by drawing their card.
-- Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card.
+- Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card. **The timer and prompt are displayed in the Info Bar.**
 - The computer's card must always differ from the player's card for each round.
 - **Default:** 30-second timer is fixed (not adjustable by the player at launch), but can be reviewed for future difficulty settings.
 
@@ -93,7 +94,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 - Cards are revealed in the correct sequence each round.
 - The CPU card displays a placeholder ("Mystery Judoka") until the player selects a stat ([prdMysteryCard.md](prdMysteryCard.md)).
-- Player can select a stat within 30 seconds; if not, the system auto-selects a random stat.
+- Player can select a stat within 30 seconds; if not, the system auto-selects a random stat automatically. **Timer and prompt are surfaced in the Info Bar.**
 - After selection, the correct comparison is made, and the score updates based on round outcome.
 - If the selected stats are equal, a tie message displays and the round ends.
 - Summary screen shows match result (win/loss/tie), player stats, and option to replay.
@@ -102,6 +103,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Animation flow: transitions between card reveal, stat selection, and result screens complete smoothly without stalling (**each ≤400 ms at ≥60 fps**).
 - Stat buttons reset between rounds so no previous selection remains highlighted. The CSS rule `#stat-buttons button { -webkit-tap-highlight-color: transparent; }` combined with a reflow ensures Safari clears the red touch overlay.
 - If the Judoka dataset fails to load, an error message appears with option to reload.
+- **All Info Bar content (messages, timer, score) must meet accessibility and responsiveness requirements as described in prdBattleInfoBar.md.**
 
 ---
 
@@ -109,7 +111,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 - **Player disconnects mid-match:** round is abandoned; player rejoins at main menu.
 - **Judoka dataset fails to load:** error message appears; player can retry loading.
-- **Player does not make a stat selection within 30 seconds:** system randomly selects a stat automatically.
+- **Player does not make a stat selection within 30 seconds:** system randomly selects a stat automatically. **Info Bar must update accordingly.**
 - **AI fails to select a stat (if difficulty logic implemented):** fallback to random stat selection.
 
 ---
@@ -129,6 +131,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - Minimum touch target size: ≥44px. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) for the full rule.
   - Support keyboard navigation for stat selection, match progression, and quit confirmation.
   - Provide alt text for cards and labels readable by screen readers.
+  - **All Info Bar content must be accessible and responsive as described in prdBattleInfoBar.md.**
 - Animations must run at ≥60fps on mid-tier devices (2GB RAM) to ensure smooth experience.
 
 ---
@@ -146,6 +149,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Only judoka with `isHidden` set to `false` are eligible for battle.
 - Uses the shared random card draw module (`generateRandomCard`) as detailed in [prdDrawRandomCard.md](prdDrawRandomCard.md) (see `src/helpers/randomCard.js`).
 - Uses the Mystery Card placeholder outlined in [prdMysteryCard.md](prdMysteryCard.md), which relies on the `useObscuredStats` flag added to `renderJudokaCard()`.
+- **Relies on Info Bar (see prdBattleInfoBar.md) for all round messages, timer, and score display.**
 
 ---
 
@@ -159,7 +163,7 @@ _Resolved in [Future Considerations](#future-considerations):_ AI difficulty wil
 
 - [x] 1.0 Implement Classic Battle Match Flow
   - [x] 1.1 Create round loop: random card draw, stat selection, comparison
-  - [ ] 1.2 Implement 30-second stat selection timer with auto-selection fallback
+  - [ ] 1.2 Implement 30-second stat selection timer with auto-selection fallback (displayed in Info Bar)
   - [x] 1.3 Handle scoring updates on win, loss, and tie
   - [ ] 1.4 End match after 10 points or 25 rounds
 - [ ] 2.0 Add Early Quit Functionality
@@ -173,8 +177,13 @@ _Resolved in [Future Considerations](#future-considerations):_ AI difficulty wil
 - [ ] 4.0 Polish UX and Accessibility
   - [ ] 4.1 Integrate consistent color coding (blue for player, red for AI)
   - [ ] 4.2 Apply WCAG-compliant contrast ratios
-  - [ ] 4.3 Ensure touch targets ≥44px and support keyboard navigation (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness))
+  - [ ] 4.3 Ensure touch targets ≥44px and support keyboard navigation (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) and prdBattleInfoBar.md)
   - [ ] 4.4 Add alt text to cards and UI elements
 - [ ] 5.0 Optimize Animations
   - [ ] 5.1 Implement card reveal, stat selection, and result transitions
   - [ ] 5.2 Ensure animations maintain ≥60fps on 2GB RAM devices
+
+---
+
+**See also:**
+- [Battle Info Bar PRD](prdBattleInfoBar.md) for Info Bar UI, timer, and accessibility requirements.
