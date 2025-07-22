@@ -9,8 +9,8 @@ test.describe("Classic battle flow", () => {
       window.setInterval = (fn, ms, ...args) => orig(fn, Math.min(ms, 10), ...args);
     });
     await page.goto("/src/pages/battleJudoka.html");
-    await page.waitForSelector("header #next-round-timer");
     const countdown = page.locator("header #next-round-timer");
+    await countdown.waitFor();
     await expect(countdown).toHaveText(/\d+/);
     const result = page.locator("header #round-message");
     await expect(result).not.toHaveText("", { timeout: 8000 });
@@ -23,7 +23,8 @@ test.describe("Classic battle flow", () => {
       window.setInterval = (fn, ms, ...args) => orig(fn, Math.max(ms, 3600000), ...args);
     });
     await page.goto("/src/pages/battleJudoka.html");
-    await page.waitForSelector("header #next-round-timer");
+    const timer = page.locator("header #next-round-timer");
+    await timer.waitFor();
     await page.evaluate(async () => {
       const mod = await import("../helpers/classicBattle.js");
       mod._resetForTest();
@@ -35,7 +36,6 @@ test.describe("Classic battle flow", () => {
     });
     await page.locator("button[data-stat='power']").click();
     const msg = page.locator("header #round-message");
-    const timer = page.locator("header #next-round-timer");
     await expect(msg).toHaveText(/Tie/);
     await expect(timer).toHaveText(/\d+/);
   });
