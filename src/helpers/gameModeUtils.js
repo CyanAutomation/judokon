@@ -104,3 +104,47 @@ export async function updateGameModeHidden(id, isHidden) {
   await saveGameModes(modes);
   return modes;
 }
+
+/**
+ * Retrieve a game mode object by its ID.
+ *
+ * @pseudocode
+ * 1. Load all game modes using `loadGameModes()`.
+ * 2. Find and return the mode with the matching `id`.
+ *    - If not found, return `undefined`.
+ *
+ * @param {string} id - The ID of the game mode to retrieve.
+ * @returns {Promise<Object|undefined>} The game mode object or undefined if not found.
+ */
+export async function getGameModeById(id) {
+  const modes = await loadGameModes();
+  return modes.find((m) => m.id === id);
+}
+
+/**
+ * Validate a destination URL for a game mode. Logs an error and optionally redirects if invalid.
+ *
+ * @pseudocode
+ * 1. Check if the provided URL is a non-empty string and matches a known game mode URL.
+ * 2. If valid, return true.
+ * 3. If invalid, log an error and optionally redirect to a default error page.
+ *
+ * @param {string} url - The destination URL to validate.
+ * @param {boolean} [redirect=false] - Whether to redirect to error page if invalid.
+ * @returns {Promise<boolean>} True if valid, false otherwise.
+ */
+export async function validateGameModeUrl(url, redirect = false) {
+  if (typeof url !== "string" || !url) {
+    console.error("Invalid or empty game mode URL");
+    if (redirect) window.location.href = "/src/pages/error.html";
+    return false;
+  }
+  const modes = await loadGameModes();
+  const valid = modes.some((m) => m.url === url);
+  if (!valid) {
+    console.error(`Broken destination URL: ${url}`);
+    if (redirect) window.location.href = "/src/pages/error.html";
+    return false;
+  }
+  return true;
+}
