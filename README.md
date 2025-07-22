@@ -78,6 +78,12 @@ Remember **not** to commit files in `playwright/*-snapshots` when screenshots
 change. Use `npx playwright test --update-snapshots` to regenerate the baseline
 images locally.
 
+Screenshot tests rely on fixture data and explicitly override `Math.random`
+(see `playwright/fixtures/commonSetup.js` and
+`playwright/signatureMove.spec.js`). This keeps baseline images stable so they
+change only when the UI truly changes&mdash;not simply because a different
+judoka was randomly selected.
+
 Set `SKIP_SCREENSHOTS=true` to skip the screenshot suite if you only want to run
 the other Playwright tests:
 
