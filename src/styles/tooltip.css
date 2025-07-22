@@ -1,0 +1,14 @@
+/* Tooltip container styles */
+.tooltip {
+  position: absolute;
+  display: none;
+  background-color: var(--color-secondary);
+  color: var(--color-text-inverted);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  max-width: clamp(160px, 50vw, 260px);
+  font-size: clamp(0.75rem, 1.5vw, var(--font-small));
+  line-height: 1.3;
+  pointer-events: none;
+  z-index: 1000;
+}
