@@ -147,7 +147,7 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
   - [ ] 3.2 Ensure name “Mystery Judoka” is readable by screen readers
   - [ ] 3.3 Prevent layout jump or scroll on reveal
 - [ ] **4.0 Game Logic Safeguards**
-  - [ ] 4.1 Block stat selection until card fully rendered [NOT YET IMPLEMENTED]
+  - [x] 4.1 Block stat selection until card fully rendered
 - [x] **5.0 Code Integration**
   - [x] 5.1 Extend `renderJudokaCard()` with `useObscuredStats` flag
   - [ ] 5.2 Use animation helper for swap timing (ease-out, 400ms)
