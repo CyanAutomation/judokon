@@ -64,7 +64,7 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 
 - **Card Source:** Use `judokaId=1` from `judoka.json` with `"IsHidden": true`.
 - **Portrait Path:** `src/assets/judokaPortraits/judokaPortrait-1.png` (already present).
-- **Stat Display:** Override real stat values with `"?"` at render time via `renderJudokaCard()`.
+- **Stat Display:** Override real stat values with `"?"` at render time via `renderJudokaCard()`. (Note: Stat concealment and animation are handled in the UI layer, not in the battle engine.)
 - **Name Display:** Use value from `judoka.json` (`"Mystery Judoka"`) for visual consistency.
 - **Reveal Timing:** Animate swap to real CPU card after player stat choice within **400ms** using `ease-out` transition.
 - **Game Logic:** Opponent card is drawn from remaining deck *before* stat selection but only displayed *after* player choice.
@@ -147,7 +147,7 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
   - [ ] 3.2 Ensure name “Mystery Judoka” is readable by screen readers
   - [ ] 3.3 Prevent layout jump or scroll on reveal
 - [ ] **4.0 Game Logic Safeguards**
-  - [ ] 4.1 Block stat selection until card fully rendered
+  - [ ] 4.1 Block stat selection until card fully rendered [NOT YET IMPLEMENTED]
 - [x] **5.0 Code Integration**
   - [x] 5.1 Extend `renderJudokaCard()` with `useObscuredStats` flag
   - [ ] 5.2 Use animation helper for swap timing (ease-out, 400ms)

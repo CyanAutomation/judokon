@@ -11,6 +11,7 @@
  *       navigates to the home screen on confirmation.
  *    c. Invoke `startRound` to begin the match.
  * 3. Use `onDomReady` to run `setupBattleJudokaPage` when the DOM is ready.
+ * 4. Block stat selection until the Mystery Judoka card is fully rendered (see PRD: Mystery Card). [TODO]
  */
 import { startRound, handleStatSelection, quitMatch } from "./classicBattle.js";
 import { onDomReady } from "./domReady.js";

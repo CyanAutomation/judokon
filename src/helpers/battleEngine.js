@@ -1,3 +1,10 @@
+/**
+ * JU-DO-KON! Battle Engine
+ *
+ * @fileoverview Implements core game logic for scoring, round timing, and match state.
+ * @note This module does NOT handle card rendering, stat concealment, or animation. Stat obscuring and card transitions are managed in the UI layer (see renderJudokaCard and battleJudokaPage.js).
+ */
+
 import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
