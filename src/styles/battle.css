@@ -42,3 +42,12 @@
     align-items: center;
   }
 }
+
+@media (max-width: 300px) {
+  .battle-header #round-message,
+  .battle-header #score-display {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}

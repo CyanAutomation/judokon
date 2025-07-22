@@ -209,21 +209,28 @@ export function evaluateRound(stat) {
  * 1. Exit immediately when the match has ended.
  * 2. Wait 2 seconds for the result message to fade out.
  * 3. Start a 3-second countdown before attempting the next round.
- *    - Retry the start if the round cannot begin immediately.
- *    - Display "Waiting..." while retrying.
- * 4. Stop scheduling if the match ends during the countdown.
+ *    a. Invoke `startRound` after the countdown.
+ *    b. If it throws or the round cannot begin, display "Waiting..." and
+ *       retry every second until successful or the match ends.
+ * 4. Stop scheduling if the match ends during the countdown or retries.
  *
  * @param {{matchEnded: boolean}} result - Result from evaluateRound.
  */
 export function scheduleNextRound(result) {
   if (result.matchEnded) return;
 
+  let waitingShown = false;
   const attemptStart = async () => {
+    if (isMatchEnded()) return;
     try {
       const start = getStartRound();
       await start();
+      waitingShown = false;
     } catch {
-      showResult("Waiting...");
+      if (!waitingShown) {
+        showResult("Waiting...");
+        waitingShown = true;
+      }
       setTimeout(attemptStart, 1000);
     }
   };

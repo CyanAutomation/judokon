@@ -169,10 +169,10 @@ The round message, timer, and score now sit directly inside the page header rath
   - [ ] 4.2 Add screen reader labels for dynamic messages
 
 - [x] 5.0 Edge Case Handling and Fallbacks
-  - [x] 5.1 Show “Waiting…” if backend score sync fails
-  - [x] 5.2 Show “Waiting…” if countdown timer mismatches server start
-  - [ ] 5.3 Truncate or stack content if resolution causes display issues
-  - [ ] 5.4 Define recovery logic for delayed player input
+- [x] 5.1 Show “Waiting…” if backend score sync fails
+- [x] 5.2 Show “Waiting…” if countdown timer mismatches server start
+  - [ ] 5.3 Truncate or stack content if resolution causes display issues (pending)
+  - [ ] 5.4 Define recovery logic for delayed player input (pending)
 
 ---
 
