@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ju-Do-Kon!</title>
+    <link rel="preload" as="image" href="../assets/helperKG/helperKG1.png" />
+    <link rel="preload" as="fetch" href="../data/aesopsFables.json" type="application/json" />
+    <link rel="preload" as="fetch" href="../data/aesopsMeta.json" type="application/json" />
     <link rel="stylesheet" href="../styles/fonts.css" />
     <link rel="stylesheet" href="../styles/base.css" />
     <link rel="stylesheet" href="../styles/layout.css" />
@@ -82,6 +85,10 @@
         alert(
           "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
         );
+      </script>
+      <script type="module">
+        import { preloadMeditationAssets } from "../helpers/preload.js";
+        preloadMeditationAssets();
       </script>
       <script type="module" src="../helpers/quoteBuilder.js"></script>
       <script type="module" src="../helpers/meditationPage.js"></script>
