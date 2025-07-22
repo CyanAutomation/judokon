@@ -70,7 +70,7 @@ The round message, timer, and score now sit directly inside the page header rath
   - Color coding: green (win), red (loss), neutral grey (countdown).
 - **Responsiveness**
   - Stacked layout on narrow screens (<375px width).
-  - Collapse countdown if less than 1.5s remains.
+  - Collapse countdown if less than 2s remains.
 - **Accessibility**
   - All text meets **WCAG 2.1 AA** standards.
   - Screen reader labels for dynamic messages.
@@ -97,7 +97,7 @@ The round message, timer, and score now sit directly inside the page header rath
 
 ---
 
-- Countdown timer truncates if less than 1.5s remains.
+- Countdown timer truncates if less than 2s remains.
 - Text size min 16sp; win/loss messages bold and color-coded.
 
 ### Additional Details:
@@ -120,7 +120,7 @@ The round message, timer, and score now sit directly inside the page header rath
 **Contents:**
 • Left container: Swappable message slot with fade-in/out animation for win/loss, prompts, countdown, and fallback (“Waiting…”) messages.
 • Right container: Real-time score display with fixed width and responsive alignment.
-• Timer slot: Dedicated, context-sensitive timer area beneath main message, auto-collapses if <1.5s remains.
+• Timer slot: Dedicated, context-sensitive timer area beneath main message, auto-collapses if <2s remains.
 
 **Why:** This enforces strict separation and visibility of all critical states, guarantees feedback is always present, and ensures compliance with responsiveness, accessibility, and error handling needs.
 
@@ -162,7 +162,7 @@ The round message, timer, and score now sit directly inside the page header rath
 
 - [ ] 3.0 Handle Responsive Layout
   - [ ] 3.1 Detect screen width <375px and switch to stacked layout
-  - [ ] 3.2 Collapse countdown timer if <1.5 seconds remain
+  - [ ] 3.2 Collapse countdown timer if <2 seconds remain
 
 - [ ] 4.0 Implement Accessibility Features
   - [ ] 4.1 Ensure text contrast meets 4.5:1 ratio
