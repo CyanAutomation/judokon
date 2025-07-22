@@ -40,6 +40,21 @@ describe("InfoBar component", () => {
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 0s");
   });
 
+  it("collapses timer when less than 2s remain", () => {
+    vi.useFakeTimers();
+    const header = document.createElement("header");
+    createInfoBar(header);
+    document.body.appendChild(header);
+
+    startCountdown(2);
+    const timer = document.getElementById("next-round-timer");
+    expect(timer.classList.contains("timer-collapsed")).toBe(false);
+    vi.advanceTimersByTime(1000);
+    expect(timer.classList.contains("timer-collapsed")).toBe(true);
+    vi.advanceTimersByTime(1000);
+    expect(timer.classList.contains("timer-collapsed")).toBe(true);
+  });
+
   it("initializes from existing DOM", () => {
     vi.useFakeTimers();
     const header = createInfoBarHeader();

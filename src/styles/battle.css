@@ -23,6 +23,19 @@
   margin: 0;
 }
 
+.battle-header #next-round-timer {
+  max-height: 2em;
+  overflow: hidden;
+  transition:
+    opacity var(--transition-fast),
+    max-height var(--transition-fast);
+}
+
+.battle-header #next-round-timer.timer-collapsed {
+  opacity: 0;
+  max-height: 0;
+}
+
 @media (max-width: 374px) {
   .battle-header {
     grid-template-columns: 1fr;
