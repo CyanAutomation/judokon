@@ -44,7 +44,8 @@ export async function setupPrdReaderPage(docsMap, markedLib) {
         "prdTeamBattleMixed.md",
         "prdTeamBattleRules.md",
         "prdTeamBattleSelection.md",
-        "prdUpdateJudoka.md"
+        "prdUpdateJudoka.md",
+        "prdChangeLog.md"
       ];
 
   const documents = [];
