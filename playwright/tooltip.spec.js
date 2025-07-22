@@ -14,12 +14,19 @@ const pageContent = `<!DOCTYPE html>
 
 test.describe("Tooltip behavior", () => {
   test.beforeEach(async ({ page }) => {
+    await page.route("**/src/helpers/tooltip.js", (route) =>
+      route.fulfill({
+        contentType: "application/javascript",
+        path: "src/helpers/tooltip.js"
+      })
+    );
     await page.route("**/src/data/tooltips.json", (route) =>
       route.fulfill({
         contentType: "application/json",
         path: "tests/fixtures/tooltips.json"
       })
     );
+    await page.goto("/");
     await page.setContent(pageContent, { baseURL: "http://localhost:5000" });
     await page.waitForFunction(() => window.initDone === true);
   });
