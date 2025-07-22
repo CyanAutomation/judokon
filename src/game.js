@@ -3,6 +3,7 @@ import { buildCardCarousel, addScrollMarkers } from "./helpers/carouselBuilder.j
 import { generateRandomCard } from "./helpers/randomCard.js";
 import { DATA_DIR } from "./helpers/constants.js";
 import { shouldReduceMotionSync } from "./helpers/motionUtils.js";
+import { initTooltips } from "./helpers/tooltip.js";
 
 /**
  * Wire up the carousel toggle button.
@@ -146,4 +147,5 @@ document.addEventListener("DOMContentLoaded", () => {
   setupCarouselToggle(showCarouselButton, carouselContainer);
   setupHideCardButton(hideCard);
   setupRandomCardButton(showRandom, gameArea);
+  initTooltips();
 });
