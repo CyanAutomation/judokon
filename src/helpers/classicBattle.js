@@ -42,17 +42,23 @@ let computerJudoka = null;
  *    a. Remove the `selected` class so the button style resets.
  *    b. Clear any inline background color to force a repaint in Safari.
  *    c. Disable the button to break the `:active` highlight.
- *    d. On the next animation frame, re-enable the button,
- *       clear `backgroundColor`, and call `blur()` so Safari
- *       drops the highlight.
+ *    d. Force a reflow and set `-webkit-tap-highlight-color` to
+ *       `transparent` so Safari clears its touch overlay.
+ *    e. On the next animation frame, re-enable the button,
+ *       remove the temporary style, clear `backgroundColor`,
+ *       and call `blur()` so Safari drops the highlight.
  */
 function resetStatButtons() {
   document.querySelectorAll("#stat-buttons button").forEach((btn) => {
     btn.classList.remove("selected");
     btn.style.removeProperty("background-color");
     btn.disabled = true;
+    // Force reflow so Safari drops the touch highlight
+    void btn.offsetWidth;
+    btn.style.setProperty("-webkit-tap-highlight-color", "transparent");
     requestAnimationFrame(() => {
       btn.disabled = false;
+      btn.style.removeProperty("-webkit-tap-highlight-color");
       btn.style.backgroundColor = "";
       btn.blur();
     });
