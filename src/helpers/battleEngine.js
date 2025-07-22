@@ -1,7 +1,7 @@
 /**
  * JU-DO-KON! Battle Engine
  *
- * @fileoverview Implements core game logic for scoring, round timing, and match state.
+ * @fileoverview Implements core game logic for scoring, round timing, match state, and stat selection timer with pause/resume and auto-selection.
  * @note This module does NOT handle card rendering, stat concealment, or animation. Stat obscuring and card transitions are managed in the UI layer (see renderJudokaCard and battleJudokaPage.js).
  */
 
@@ -15,6 +15,9 @@ let timerId = null;
 let remaining = 0;
 let matchEnded = false;
 let roundsPlayed = 0;
+let paused = false;
+let onTickCb = null;
+let onExpiredCb = null;
 
 function stopTimer() {
   if (timerId) {
@@ -42,27 +45,66 @@ function endMatchIfNeeded() {
 }
 
 /**
- * Start the round timer.
+ * Start the round/stat selection timer with pause/resume and auto-selection support.
  *
  * @pseudocode
- * 1. Initialize the remaining seconds and invoke `onTick`.
- * 2. Create a 1-second interval that updates `remaining` and calls `onTick`.
- * 3. When the timer reaches zero, stop the interval and invoke `onExpired`.
+ * 1. Set remaining seconds and store callbacks.
+ * 2. Call onTick immediately.
+ * 3. Start a 1s interval: decrement remaining, call onTick.
+ * 4. If timer reaches 0, stop and call onExpired.
+ * 5. Listen for page visibility changes: pause timer if hidden, resume if visible.
  *
- * @param {function} onTick - Callback executed each second with the remaining time.
- * @param {function} onExpired - Callback executed when the timer expires.
+ * @param {function} onTick - Callback each second with remaining time.
+ * @param {function} onExpired - Callback when timer expires (auto-select logic).
+ * @param {number} [duration=30] - Timer duration in seconds.
  */
-export function startRound(onTick, onExpired) {
-  remaining = 30;
+export function startRound(onTick, onExpired, duration = 30) {
+  stopTimer();
+  remaining = duration;
+  paused = false;
+  onTickCb = onTick;
+  onExpiredCb = onExpired;
   if (onTick) onTick(remaining);
   timerId = setInterval(() => {
-    remaining -= 1;
-    if (onTick) onTick(remaining);
-    if (remaining <= 0) {
-      stopTimer();
-      if (!matchEnded && onExpired) onExpired();
+    if (!paused) {
+      remaining -= 1;
+      if (onTickCb) onTickCb(remaining);
+      if (remaining <= 0) {
+        stopTimer();
+        if (!matchEnded && onExpiredCb) onExpiredCb();
+      }
     }
   }, 1000);
+  if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
+    document.removeEventListener("visibilitychange", handleVisibility, false);
+    document.addEventListener("visibilitychange", handleVisibility, false);
+  }
+}
+
+function handleVisibility() {
+  if (document.hidden) {
+    pauseTimer();
+  } else {
+    resumeTimer();
+  }
+}
+
+/**
+ * Pause the round/stat selection timer.
+ * @pseudocode
+ * 1. Set paused flag to true.
+ */
+export function pauseTimer() {
+  paused = true;
+}
+
+/**
+ * Resume the round/stat selection timer.
+ * @pseudocode
+ * 1. Set paused flag to false.
+ */
+export function resumeTimer() {
+  paused = false;
 }
 
 /**
@@ -125,11 +167,16 @@ export function isMatchEnded() {
   return matchEnded;
 }
 
+export function getTimerState() {
+  return { remaining, paused };
+}
+
 export function _resetForTest() {
   playerScore = 0;
   computerScore = 0;
   matchEnded = false;
   roundsPlayed = 0;
   remaining = 0;
+  paused = false;
   stopTimer();
 }

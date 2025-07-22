@@ -28,18 +28,18 @@
 
   <body>
     <div class="home-screen">
-      <header class="header battle-header">
-        <div class="info-left">
-          <p id="round-message" aria-live="polite"></p>
-          <p id="next-round-timer" aria-live="polite"></p>
+      <header class="header battle-header" role="banner">
+        <div class="info-left" id="info-bar-left">
+          <p id="round-message" aria-live="polite" aria-atomic="true"></p>
+          <p id="next-round-timer" aria-live="polite" aria-atomic="true"></p>
         </div>
         <div class="logo-container">
-          <a href="../../index.html" data-testid="home-link">
+          <a href="../../index.html" data-testid="home-link" aria-label="Return to home">
             <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
           </a>
         </div>
-        <div class="info-right">
-          <p id="score-display" aria-live="off">You: 0 Computer: 0</p>
+        <div class="info-right" id="info-bar-right">
+          <p id="score-display" aria-live="off" aria-atomic="true">You: 0 Computer: 0</p>
         </div>
       </header>
 
@@ -51,15 +51,15 @@
 --></div>
 
           <div id="controls">
-            <div id="stat-buttons">
-              <button data-stat="power" type="button">Power</button>
-              <button data-stat="speed" type="button">Speed</button>
-              <button data-stat="technique" type="button">Technique</button>
-              <button data-stat="kumikata" type="button">Kumi-kata</button>
-              <button data-stat="newaza" type="button">Ne-waza</button>
+            <div id="stat-buttons" role="group" aria-label="Select a stat to battle" class="responsive-stat-buttons">
+              <button data-stat="power" type="button" tabindex="0" aria-label="Select Power" style="min-width:44px;min-height:44px;">Power</button>
+              <button data-stat="speed" type="button" tabindex="0" aria-label="Select Speed" style="min-width:44px;min-height:44px;">Speed</button>
+              <button data-stat="technique" type="button" tabindex="0" aria-label="Select Technique" style="min-width:44px;min-height:44px;">Technique</button>
+              <button data-stat="kumikata" type="button" tabindex="0" aria-label="Select Kumi-kata" style="min-width:44px;min-height:44px;">Kumi-kata</button>
+              <button data-stat="newaza" type="button" tabindex="0" aria-label="Select Ne-waza" style="min-width:44px;min-height:44px;">Ne-waza</button>
             </div>
 
-            <p id="round-result" aria-live="polite"></p>
+            <p id="round-result" aria-live="polite" aria-atomic="true"></p>
           </div>
         </section>
       </main>
