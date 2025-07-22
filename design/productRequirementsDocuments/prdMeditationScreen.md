@@ -68,7 +68,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - **AC-2:** Random quote displayed from `aesopsFables.json` with metadata from `aesopsMeta.json`; fallback reflection quote appears if the datasets are unavailable.
 - **AC-3:** Screen loads within 1 second.
 - **AC-4:** Quote and KG image fade in within 300ms after assets load.
-- **AC-5:** Quote text has ARIA markup, scales responsively across breakpoints, and maintains contrast ratio of at least **4.5:1**.
+- **AC-5:** Quote text has ARIA markup, scales responsively across breakpoints, and maintains contrast ratio of at least **4.5:1** (tested in `meditationContrast.test.js`).
 - **AC-6:** "Continue Your Journey" button uses `--radius-md`, stays ≥44px tall with tap target ≥44px × 44px, and is keyboard focusable. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
 - **AC-7:** Layout adapts to screen orientation (portrait/landscape) and all interactive elements remain keyboard accessible, including the language toggle which is announced when it becomes visible.
 
@@ -224,8 +224,9 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 - [ ] **6.0 Visual & Accessibility Polish**
   - [ ] 6.1 Use a `.fade-in` class so the KG image and quote block fade in within
         300ms once both assets load (class removed via JS).
-  - [ ] 6.2 Ensure quote text scales smoothly across breakpoints.
-  - [x] 6.3 Announce language toggle with aria-live and shift focus when it becomes visible.
+  - [ ] 6.2 Ensure quote text scales smoothly across breakpoints and add unit
+        test `meditationContrast.test.js` verifying quote text contrast ≥4.5.
+  - [ ] 6.3 Announce language toggle with aria-live and shift focus when it becomes visible.
 
 ---
 
