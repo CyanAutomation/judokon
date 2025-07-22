@@ -51,4 +51,27 @@ describe("initTooltips", () => {
     expect(warn).toHaveBeenCalledTimes(1);
     warn.mockRestore();
   });
+
+  it("positions tooltip within viewport for zero-size targets", async () => {
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ fix: "text" })
+    }));
+
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+
+    const el = document.createElement("div");
+    el.dataset.tooltipId = "fix";
+    document.body.appendChild(el);
+
+    await initTooltips();
+
+    const tip = document.querySelector(".tooltip");
+    Object.defineProperty(tip, "offsetHeight", { value: 10 });
+    el.getBoundingClientRect = () => ({ bottom: 0, left: 0, width: 0, height: 0 });
+
+    el.dispatchEvent(new Event("mouseenter"));
+
+    expect(tip.style.top).toBe(`${window.innerHeight - 10}px`);
+    expect(tip.style.left).toBe("0px");
+  });
 });
