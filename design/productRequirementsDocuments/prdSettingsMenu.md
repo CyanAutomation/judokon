@@ -45,6 +45,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 | P1       | Display Mode Selector      | Three-option selector applying mode instantly across UI.                    |
 | P2       | Game Modes Toggles         | A list of all defined game modes with binary toggles from `gameModes.json`. |
 | P3       | Settings Menu Integration  | Ensure settings appear as a game mode in `gameModes.json`.                  |
+| P3       | Change Log Link           | Link to `changeLog.html` for viewing recent judoka updates.                 |
 
 **Note:** For all settings items, if reading or writing to the data source fails, toggles/selectors **must revert** to their previous state, and a user-facing error should appear.
 
@@ -58,6 +59,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - **Display mode (three options):** Light, Dark, Gray (default: Light)
   - _Gray mode_ provides a grayscale display to reduce visual noise for neurodivergent users.
 - **Game modes list:** A list populated from `gameModes.json`, showing all modes defined there, with binary toggles per mode.
+- **Change Log:** Link opens `changeLog.html` with the latest 20 judoka updates.
 
 ---
 
@@ -140,6 +142,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - Player makes changes → UI updates instantly → data writes within 50ms.
 - On error during update: Toggle reverts, then CSS popup error displayed
 - Player exits → settings persist for the rest of the session.
+- Player can open **Change Log** to view recent judoka updates.
 
 ---
 
@@ -240,6 +243,8 @@ The page begins with an `<h1>` heading labeled "Settings". Two `<fieldset>` sect
 - [ ] 5.0 Performance Optimization
   - [ ] 5.1 Profile settings page load times on mid-tier devices.
   - [ ] 5.2 Optimize for ≤200ms initial render.
+- [ ] 6.0 Add Change Log Link
+  - [ ] 6.1 Link to `changeLog.html` from the Settings menu.
 
 ---
 

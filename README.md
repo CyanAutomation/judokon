@@ -236,6 +236,7 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
 - Scroll buttons disable when the carousel reaches either end
 - Header bar displays real-time round results, countdown timer and score
 - Mockup viewer page with next/back controls for design screenshots (includes a Home link)
+- Change Log page accessible from Settings, showing recent judoka updates
 
 ## About JU-DO-KON!
 
