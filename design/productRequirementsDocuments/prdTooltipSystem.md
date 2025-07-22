@@ -6,7 +6,7 @@ The Tooltip System introduces dynamic, in-context guidance across JU-DO-KON! usi
 
 ---
 
-## Problem Statement
+## Problem Statement / Why It Matters
 
 New or less experienced players may not understand what certain game elements represent — such as unfamiliar stats (e.g. Kumi-kata), game modes, or buttons — leading to confusion or disengagement. User feedback and playtest sessions have highlighted the need for clear in-context guidance:
 
@@ -37,55 +37,46 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 
 ---
 
-## Priority
+## Prioritized Functional Requirements
 
 | Priority | Feature                     | Description                                                                 |
 |----------|-----------------------------|-----------------------------------------------------------------------------|
-| **P1**   | tooltips.json store         | Central source for all tooltip content, enabling scalability and updates.  |
-| **P1**   | data-tooltip-id hook        | Lightweight implementation hook for developers to add tooltips easily.     |
-| **P1**   | Positioning logic           | Ensures tooltips appear correctly and accessibly near elements.            |
-| **P1**   | Markdown-like formatting    | Allows rich text without HTML bloat.                                       |
-| **P2**   | Tooltip styling             | Visual consistency with the JU-DO-KON! theme.                              |
-| **P2**   | Auto-hide on mouseout       | Ensures intuitive interaction flow.                                        |
-| **P2**   | JSON load error fallback    | Prevents UI issues if file loading fails.                                  |
-| **P3**   | Keyboard focus support      | Improves accessibility for non-mouse users.                                |
-| **P3**   | Settings (delay, animation) | Optional dev configurability for UX tuning.                                |
+| **P1**   | tooltips.json store         | Central source for all tooltip content, enabling scalability and updates.    |
+| **P1**   | data-tooltip-id hook        | Lightweight implementation hook for developers to add tooltips easily.       |
+| **P1**   | Positioning logic           | Ensures tooltips appear correctly and accessibly near elements.              |
+| **P1**   | Markdown-like formatting    | Allows rich text without HTML bloat.                                         |
+| **P2**   | Tooltip styling             | Visual consistency with the JU-DO-KON! theme.                               |
+| **P2**   | Auto-hide on mouseout       | Ensures intuitive interaction flow.                                         |
+| **P2**   | JSON load error fallback    | Prevents UI issues if file loading fails.                                   |
+| **P3**   | Keyboard focus support      | Improves accessibility for non-mouse users.                                 |
+| **P3**   | Settings (delay, animation) | Optional dev configurability for UX tuning.                                 |
 
 ---
 
 ## Acceptance Criteria
 
-- `tooltips.json` file is loaded once at app start and contains at least 10 tooltip entries using key-value format.
-- When hovering an element with `data-tooltip-id="stat.kumikata"`, a tooltip appears with the parsed value from `tooltips.json`.
-- Tooltip supports rendering of:
-  - `**bold**` as `<strong>`
-  - `_italic_` as `<em>`
-  - `\n` as line breaks
-- Tooltip appears within 150ms of hover and positions relative to element (bottom-left preferred).
-- Tooltip disappears when the mouse leaves the element or when focus is lost.
-- If an invalid `data-tooltip-id` is provided (e.g. no matching key), no tooltip appears and no console error is thrown.
-- Styling matches visual guidelines: white background, dark text, soft shadow, rounded corners.
-- If `tooltips.json` fails to load at runtime, tooltips are suppressed, and an error is logged once.
-- Focusing on an element using the Tab key shows the tooltip using the same content.
-- On mobile or tablet devices, tooltips appear on long-press or tap-hold and dismiss on tap away.
+- [ ] The system loads `tooltips.json` once at app start and contains at least 10 tooltip entries in key-value format. (**P1: tooltips.json store**)
+- [ ] Hovering an element with `data-tooltip-id="stat.kumikata"` displays a tooltip with the parsed value from `tooltips.json`. (**P1: data-tooltip-id hook**)
+- [ ] Tooltip supports: `**bold**` as `<strong>`, `_italic_` as `<em>`, and `\n` as line breaks. (**P1: Markdown-like formatting**)
+- [ ] Tooltip appears within **150ms** of hover and is positioned relative to the element (bottom-left preferred). (**P1: Positioning logic**)
+- [ ] Tooltip disappears when the mouse leaves the element or when focus is lost. (**P2: Auto-hide on mouseout**)
+- [ ] If an invalid `data-tooltip-id` is provided (no matching key), no tooltip appears and no console error is thrown. (**P1: data-tooltip-id hook**)
+- [ ] Styling matches visual guidelines: white background, dark text, soft shadow, rounded corners. (**P2: Tooltip styling**)
+- [ ] If `tooltips.json` fails to load at runtime, tooltips are suppressed and an error is logged once. (**P2: JSON load error fallback**)
+- [ ] Focusing on an element using the **Tab** key shows the tooltip with the same content. (**P3: Keyboard focus support**)
+- [ ] On mobile/tablet, tooltips appear on long-press or tap-hold and dismiss on tap away. (**P3: Keyboard focus support**)
 
 ---
 
 ## Non-Functional Requirements / Design Considerations
 
-- Tooltip rendering must not block game performance; loading/parsing must be asynchronous.
-- Tooltip text should remain readable on all supported screen sizes and not overlap other content.
-- Markdown parsing must be lightweight and not require bundling a full markdown library unless needed.
-- Tooltips must not trigger browser-native tooltips (i.e. avoid `title=` attribute).
-- Tooltip logic must be compatible with statically hosted environments (e.g. GitHub Pages).
-- Tooltips should support screen readers and meet basic accessibility standards (ARIA labels, semantic roles).
-- Optional: Developers can configure tooltip appearance delay and animation speed using a settings object.
-
----
-
-## Visual Reference (Suggestion)
-
-To be added: Diagram showing tooltip positioning relative to UI element with fallback overflow logic. Include examples of bottom-left and top-right placements, and visual overflow avoidance on mobile.
+- Tooltip rendering **must not block game performance**; loading/parsing must be asynchronous.
+- Tooltip text should remain **readable on all supported screen sizes** and not overlap other content.
+- Markdown parsing must be **lightweight** and not require bundling a full markdown library unless needed.
+- Tooltips must **not trigger browser-native tooltips** (avoid `title=` attribute).
+- Tooltip logic must be **compatible with statically hosted environments** (e.g. GitHub Pages).
+- Tooltips should support **screen readers** and meet basic accessibility standards (ARIA labels, semantic roles).
+- *Optional*: Developers can configure tooltip appearance delay and animation speed using a settings object.
 
 ---
 
