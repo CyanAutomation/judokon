@@ -123,6 +123,8 @@ The round message, timer, and score now sit directly inside the page header rath
 • Right container: Real-time score display with fixed width and responsive alignment.
 • Timer slot: Dedicated, context-sensitive timer area beneath main message, auto-collapses if <2s remains.
 
+Implementation for score, message, and countdown updates is handled in **InfoBar.js**.
+
 **Why:** This enforces strict separation and visibility of all critical states, guarantees feedback is always present, and ensures compliance with responsiveness, accessibility, and error handling needs.
 
 ---
