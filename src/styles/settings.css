@@ -142,3 +142,23 @@
 .slider.round::before {
   border-radius: 50%;
 }
+
+.settings-section {
+  margin-block-end: var(--space-lg);
+}
+
+.settings-section-toggle {
+  width: 100%;
+  text-align: left;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--button-bg);
+  color: var(--button-text-color);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.settings-section-content {
+  padding-block-start: var(--space-sm);
+  transition: height var(--transition-fast);
+}

@@ -41,72 +41,128 @@
       <main class="container" role="main">
         <h1 class="settings-header">Settings</h1>
         <form id="settings-form" class="settings-form">
-          <fieldset
-            id="display-settings-container"
-            class="game-mode-toggle-container settings-form"
-          >
-            <legend>Display Settings</legend>
-            <div class="settings-item">
-              <label for="display-mode-select">Display Mode</label>
-              <select id="display-mode-select" aria-label="Display Mode" tabindex="1">
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-                <option value="gray">Gray</option>
-              </select>
+          <div class="settings-section">
+            <button
+              class="settings-section-toggle"
+              id="display-settings-toggle"
+              aria-expanded="false"
+              aria-controls="display-settings-content"
+            >
+              Display Settings
+            </button>
+            <div
+              class="settings-section-content"
+              id="display-settings-content"
+              role="region"
+              aria-labelledby="display-settings-toggle"
+              hidden
+            >
+              <fieldset
+                id="display-settings-container"
+                class="game-mode-toggle-container settings-form"
+              >
+                <legend>Display Settings</legend>
+                <div class="settings-item">
+                  <label for="display-mode-select">Display Mode</label>
+                  <select id="display-mode-select" aria-label="Display Mode" tabindex="1">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="gray">Gray</option>
+                  </select>
+                </div>
+              </fieldset>
             </div>
-          </fieldset>
-          <fieldset
-            id="general-settings-container"
-            class="game-mode-toggle-container settings-form"
-          >
-            <legend>General Settings</legend>
-            <div class="settings-item">
-              <label for="sound-toggle" class="switch">
-                <input
-                  type="checkbox"
-                  id="sound-toggle"
-                  name="sound"
-                  aria-label="Sound"
-                  tabindex="2"
-                />
-                <div class="slider round"></div>
-                <span>Sound</span>
-              </label>
+          </div>
+
+          <div class="settings-section">
+            <button
+              class="settings-section-toggle"
+              id="general-settings-toggle"
+              aria-expanded="false"
+              aria-controls="general-settings-content"
+            >
+              General Settings
+            </button>
+            <div
+              class="settings-section-content"
+              id="general-settings-content"
+              role="region"
+              aria-labelledby="general-settings-toggle"
+              hidden
+            >
+              <fieldset
+                id="general-settings-container"
+                class="game-mode-toggle-container settings-form"
+              >
+                <legend>General Settings</legend>
+                <div class="settings-item">
+                  <label for="sound-toggle" class="switch">
+                    <input
+                      type="checkbox"
+                      id="sound-toggle"
+                      name="sound"
+                      aria-label="Sound"
+                      tabindex="2"
+                    />
+                    <div class="slider round"></div>
+                    <span>Sound</span>
+                  </label>
+                </div>
+                <div class="settings-item">
+                  <label for="navmap-toggle" class="switch">
+                    <input
+                      type="checkbox"
+                      id="navmap-toggle"
+                      name="navmap"
+                      aria-label="Full Navigation Map"
+                      tabindex="3"
+                    />
+                    <div class="slider round"></div>
+                    <span>Full Navigation Map</span>
+                  </label>
+                </div>
+                <div class="settings-item">
+                  <label for="motion-toggle" class="switch">
+                    <input
+                      type="checkbox"
+                      id="motion-toggle"
+                      name="motion"
+                      aria-label="Motion Effects"
+                      tabindex="4"
+                    />
+                    <div class="slider round"></div>
+                    <span>Motion Effects</span>
+                  </label>
+                </div>
+              </fieldset>
             </div>
-            <div class="settings-item">
-              <label for="navmap-toggle" class="switch">
-                <input
-                  type="checkbox"
-                  id="navmap-toggle"
-                  name="navmap"
-                  aria-label="Full Navigation Map"
-                  tabindex="3"
-                />
-                <div class="slider round"></div>
-                <span>Full Navigation Map</span>
-              </label>
+          </div>
+
+          <div class="settings-section">
+            <button
+              class="settings-section-toggle"
+              id="game-modes-toggle"
+              aria-expanded="false"
+              aria-controls="game-modes-content"
+            >
+              Game Modes
+            </button>
+            <div
+              class="settings-section-content"
+              id="game-modes-content"
+              role="region"
+              aria-labelledby="game-modes-toggle"
+              hidden
+            >
+              <fieldset
+                id="game-mode-toggle-container"
+                class="game-mode-toggle-container settings-form"
+                aria-label="Game Mode Selector"
+              >
+                <legend>Game Modes</legend>
+              </fieldset>
             </div>
-            <div class="settings-item">
-              <label for="motion-toggle" class="switch">
-                <input
-                  type="checkbox"
-                  id="motion-toggle"
-                  name="motion"
-                  aria-label="Motion Effects"
-                  tabindex="4"
-                />
-                <div class="slider round"></div>
-                <span>Motion Effects</span>
-              </label>
-            </div>
-          </fieldset>
-          <fieldset
-            id="game-mode-toggle-container"
-            class="game-mode-toggle-container settings-form"
-            aria-label="Game Mode Selector"
-          >
-            <legend>Game Modes</legend>
-          </fieldset>
+          </div>
           <div class="settings-item">
             <a href="../pages/changeLog.html" id="changelog-link" tabindex="99">View Change Log</a>
           </div>
