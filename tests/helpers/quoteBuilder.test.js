@@ -17,7 +17,9 @@ describe("displayRandomQuote", () => {
     const toggle = document.createElement("button");
     toggle.id = "language-toggle";
     toggle.className = "hidden";
-    document.body.append(quoteDiv, loader, toggle);
+    const liveRegion = document.createElement("div");
+    liveRegion.id = "language-announcement";
+    document.body.append(quoteDiv, loader, toggle, liveRegion);
 
     const storyData = [{ id: 1, story: "B" }];
     const metaData = [{ id: 1, title: "A" }];
@@ -37,6 +39,9 @@ describe("displayRandomQuote", () => {
     expect(loader.classList.contains("hidden")).toBe(true);
     expect(quoteDiv.innerHTML).toContain("A");
     expect(toggle.classList.contains("hidden")).toBe(false);
+    expect(toggle.getAttribute("aria-live")).toBe("polite");
+    expect(document.activeElement).toBe(toggle);
+    expect(liveRegion.textContent).toBe("language toggle available");
   });
 
   it("shows fallback text when fetching fails", async () => {
