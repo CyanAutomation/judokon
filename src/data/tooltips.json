@@ -4,7 +4,7 @@
   "stat.speed": "**Speed** affects how quickly a judoka can attack or react.\nUseful for counterattacks and surprise techniques.",
   "stat.technique": "**Technique** measures mastery of judo throws and transitions.\nHigh values indicate sharp, precise execution.",
   "stat.balance": "**Balance** affects a judoka's stability when attacking or defending.\nHigher values reduce the chance of being thrown.",
-  
+
   "ui.selectStat": "Choose a stat below.\nThe higher value wins the round!",
   "ui.cardOfTheDay": "**Card of the Day** shows a featured judoka.\nCheck back tomorrow for a new pick!",
   "ui.winMessage": "**Victory!**\nYou chose the stronger stat.",
