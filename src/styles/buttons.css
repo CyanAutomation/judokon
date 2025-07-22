@@ -28,6 +28,10 @@ button:active {
   transform: scale(0.95);
 }
 
+#stat-buttons button {
+  -webkit-tap-highlight-color: transparent;
+}
+
 #stat-buttons button.selected {
   background-color: var(--button-active-bg);
 }
