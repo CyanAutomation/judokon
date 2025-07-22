@@ -54,6 +54,10 @@ test.describe("Settings page", () => {
     );
     await expect(page.locator("#motion-toggle")).toHaveAttribute("aria-label", "Motion Effects");
 
+    await expect(page.locator("#game-mode-toggle-container input[type=checkbox]")).toHaveCount(
+      sortedNames.length
+    );
+
     for (const name of sortedNames) {
       await expect(page.getByLabel(name)).toHaveAttribute("aria-label", name);
     }
