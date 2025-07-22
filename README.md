@@ -220,6 +220,12 @@ npx ajv validate -s src/schemas/judoka.schema.json -d src/data/judoka.json
 See [design/dataSchemas/README.md](design/dataSchemas/README.md) for full details
 and instructions on updating schemas when data changes.
 
+## Tooltip Helper
+
+Add lightweight help text anywhere by tagging elements with
+`data-tooltip-id`. The `initTooltips()` helper reads messages from
+`src/data/tooltips.json` and displays them on hover or focus.
+
 The repository specifies commenting standards in design/codeStandards. JSDoc comments and @pseudocode blocks must remain intact, as shown in documentation excerpts.
 
 ## Features
@@ -237,6 +243,7 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
 - Header bar displays real-time round results, countdown timer and score
 - Mockup viewer page with next/back controls for design screenshots (includes a Home link)
 - Change Log page accessible from Settings, showing recent judoka updates
+- Contextual tooltips explain stats and buttons on hover or focus
 
 ## About JU-DO-KON!
 
