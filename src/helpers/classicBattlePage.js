@@ -36,6 +36,10 @@ async function startRoundWrapper() {
   enableStatButtons(true);
 }
 
+function onStatSelect(stat) {
+  handleStatSelection(stat);
+}
+
 export function setupClassicBattlePage() {
   const statButtons = document.querySelectorAll("#stat-buttons button");
   statButtons.forEach((btn) => {
@@ -45,7 +49,7 @@ export function setupClassicBattlePage() {
       if (!btn.disabled) {
         enableStatButtons(false);
         btn.classList.add("selected");
-        handleStatSelection(btn.dataset.stat);
+        onStatSelect(btn.dataset.stat);
       }
     });
     btn.addEventListener("keydown", (e) => {
@@ -53,7 +57,7 @@ export function setupClassicBattlePage() {
         e.preventDefault();
         enableStatButtons(false);
         btn.classList.add("selected");
-        handleStatSelection(btn.dataset.stat);
+        onStatSelect(btn.dataset.stat);
       }
     });
   });
