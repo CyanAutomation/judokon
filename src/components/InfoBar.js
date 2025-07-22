@@ -71,12 +71,10 @@ export function showMessage(text) {
  * Start a countdown timer that updates once per second.
  *
  * @pseudocode
- * 1. Clear any existing countdown interval and remove collapse styling.
+ * 1. Clear any existing countdown interval.
  * 2. Display "Next round in: {seconds}s" in the timer element.
- * 3. If the starting value is below 2s, add the collapse class immediately.
- * 4. Each second decrement the value and update the element using the same format.
- * 5. When remaining time drops below 2s, add the collapse class to hide the element.
- * 6. When the value reaches zero, set "Next round in: 0s", stop the interval and invoke `onFinish`.
+ * 3. Each second decrement the value and update the element using the same format.
+ * 4. When the value reaches zero, set "Next round in: 0s", stop the interval and invoke `onFinish`.
  *
  * @param {number} seconds - Seconds to count down from.
  * @param {Function} [onFinish] - Optional callback when countdown ends.
@@ -85,16 +83,9 @@ export function showMessage(text) {
 export function startCountdown(seconds, onFinish) {
   if (!timerEl) return;
   clearInterval(intervalId);
-  timerEl.classList.remove("timer-collapsed");
   timerEl.textContent = `Next round in: ${seconds}s`;
-  if (seconds < 2) {
-    timerEl.classList.add("timer-collapsed");
-  }
   intervalId = setInterval(() => {
     seconds -= 1;
-    if (seconds < 2) {
-      timerEl.classList.add("timer-collapsed");
-    }
     if (seconds <= 0) {
       clearInterval(intervalId);
       timerEl.textContent = "Next round in: 0s";
