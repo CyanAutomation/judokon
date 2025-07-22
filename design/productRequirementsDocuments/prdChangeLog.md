@@ -4,7 +4,7 @@
 
 Players and game developers need a clear, accessible way to view which Judoka cards have been recently updated. This transparency supports testing, game balance awareness, and reduces the need for developers to access system code. For players, this offers visibility into potential balance changes or adjustments to their favorite characters.
 
-A **“Judoka Updates”** button will be added to the main menu. Tapping this takes the player to a standalone web page that displays a summary table of the **20 most recently modified Judoka cards**. This view is dynamically generated from `judoka.json` on each page load. The table uses a simplified format (not full card visuals) for fast loading and easy scanning.
+A **“Change Log”** button will be added as a link from the Settings menu (settings.html). Tapping this takes the player to a standalone web page that displays a summary table of the **20 most recently modified Judoka cards**. This view is dynamically generated from `judoka.json` on each page load. The table uses a simplified format (not full card visuals) for fast loading and easy scanning.
 
 ## Goals
 
@@ -15,7 +15,7 @@ A **“Judoka Updates”** button will be added to the main menu. Tapping this t
 
 ## Player Flow
 
-1. Player taps **“Judoka Updates”** from the main menu.
+1. Player taps **“Change Log”** from the Settings menu.
 2. The page loads the update table showing:
    - Judoka ID
    - Card Code
