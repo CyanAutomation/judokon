@@ -21,7 +21,7 @@ test.describe("Tooltip behavior", () => {
       })
     );
     await page.setContent(pageContent, { baseURL: "http://localhost:5000" });
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
   });
 
   test("tooltip appears on hover and hides on mouse leave", async ({ page }) => {
