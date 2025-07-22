@@ -67,6 +67,12 @@ document.body.appendChild(card);
 
 Structured gameplay data lives in `src/data`. Matching JSON Schemas in `src/schemas` describe and validate these files. The `npm run validate:data` script uses Ajv to ensure data integrity.
 
+## tooltip helper
+
+`src/helpers/tooltip.js` displays contextual help when elements with
+`data-tooltip-id` gain hover or focus. The helper loads text from
+`src/data/tooltips.json` and positions a small popup near the target.
+
 ## tests
 
 Unit tests under `tests/` run in the Vitest `jsdom` environment. The `playwright/` directory contains end‑to‑end tests and screenshot comparisons to prevent UI regressions.
