@@ -9,9 +9,10 @@
  *    c. If timer expires, auto-select a random enabled stat and trigger selection.
  *    d. Disable stat buttons after selection or auto-selection.
  *    e. Attach a click listener to the home logo that calls `quitMatch` and navigates to the home screen on confirmation.
- *    f. Invoke `startRound` to begin the match.
+ *    f. Before each round, disable stat buttons and wait for the computer card to render.
+ *    g. Invoke `startRound` to begin the match.
  * 3. Use `onDomReady` to run `setupBattleJudokaPage` when the DOM is ready.
- * 4. Block stat selection until the Mystery Judoka card is fully rendered (see PRD: Mystery Card). [TODO]
+ * 4. Block stat selection until the Mystery Judoka card is fully rendered using `waitForComputerCard` (see PRD: Mystery Card).
  */
 import {
   startRound,
@@ -33,6 +34,23 @@ function getRandomEnabledStat() {
   if (enabled.length === 0) return null;
   const idx = Math.floor(Math.random() * enabled.length);
   return enabled[idx];
+}
+
+export function waitForComputerCard() {
+  const container = document.getElementById("computer-card");
+  if (!container) return Promise.resolve();
+  if (container.querySelector(".judoka-card")) {
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    const observer = new MutationObserver(() => {
+      if (container.querySelector(".judoka-card")) {
+        observer.disconnect();
+        resolve();
+      }
+    });
+    observer.observe(container, { childList: true, subtree: true });
+  });
 }
 
 export function setupBattleJudokaPage() {
@@ -64,8 +82,10 @@ export function setupBattleJudokaPage() {
     });
   });
 
-  function startStatSelectionPhase() {
+  async function startStatSelectionPhase() {
     statSelected = false;
+    enableStatButtons(false);
+    await waitForComputerCard();
     enableStatButtons(true);
     timerDisplay.textContent = "Time left: 30s";
     startRound(
