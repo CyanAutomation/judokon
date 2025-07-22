@@ -8,3 +8,4 @@ test-results/
 src/vendor/ajv6.min.js
 design/productRequirementsDocuments/*.md
 design/codeStandards/*.md
+README.md
