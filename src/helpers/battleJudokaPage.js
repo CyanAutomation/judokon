@@ -16,8 +16,7 @@
 import {
   startRound,
   handleStatSelection as engineHandleStatSelection,
-  quitMatch,
-  STATS
+  quitMatch
 } from "./battleEngine.js";
 import { onDomReady } from "./domReady.js";
 

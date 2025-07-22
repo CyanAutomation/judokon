@@ -5,7 +5,6 @@ import { setupLazyPortraits } from "./lazyPortrait.js";
 import {
   createScrollButton,
   updateScrollButtonState,
-  setupKeyboardNavigation,
   setupSwipeNavigation,
   applyAccessibilityImprovements
 } from "./carousel/index.js";
@@ -135,7 +134,7 @@ function handleBrokenImages(card) {
 }
 
 /**
- * Builds a carousel of judoka cards with scroll buttons.
+ * Builds a carousel of judoka cards with scroll buttons and scroll markers.
  *
  * @pseudocode
  * 1. Validate the input parameters:
@@ -143,16 +142,18 @@ function handleBrokenImages(card) {
  *    - Ensure `gokyoData` is an array (default to an empty lookup if missing).
  *    - Log warnings or errors for invalid inputs.
  *
- * 2. Create the carousel container:
+ * 2. If the judoka list is empty, display a message saying "No cards available." and return the wrapper.
+ *
+ * 3. Create the carousel container:
  *    - Create a `<div>` element with the class `card-carousel`.
  *
- * 3. Create a wrapper element for the carousel:
+ * 4. Create a wrapper element for the carousel:
  *    - Create a `<div>` element with the class `carousel-container`.
  *    - Add a loading spinner to indicate progress.
  *
- * 4. Transform `gokyoData` into a lookup object for quick access.
+ * 5. Transform `gokyoData` into a lookup object for quick access.
  *
- * 5. Loop through the `judokaList` array:
+ * 6. Loop through the `judokaList` array:
  *    - Validate each judoka object using `hasRequiredJudokaFields`.
  *    - Generate a card using `generateJudokaCard`.
  *    - If validation fails or card generation returns `null`, load the fallback
@@ -161,21 +162,24 @@ function handleBrokenImages(card) {
  *    - Append the generated card to the carousel container.
  *    - Make the card focusable by setting `tabIndex`.
  *
- * 6. Remove the loading spinner once all cards are processed.
+ * 7. Remove the loading spinner once all cards are processed.
  *
- * 7. Create and append scroll buttons:
+ * 8. Create and append scroll buttons:
  *    - Create a left scroll button to scroll the carousel left.
  *    - Create a right scroll button to scroll the carousel right.
  *    - Append both buttons to the wrapper.
  *
- * 8. Add keyboard navigation:
+ * 9. Add scroll markers below the carousel to indicate position.
+ *
+ * 10. Add keyboard navigation:
  *    - Enable scrolling with the left and right arrow keys.
  *    - Move focus to the next or previous card after scrolling.
+ *    - Visually enlarge and highlight the focused card.
  *
- * 9. Add swipe functionality for touch devices:
+ * 11. Add swipe functionality for touch devices:
  *    - Detect swipe gestures to scroll the carousel left or right.
  *
- * 10. Return the completed wrapper element.
+ * 12. Return the completed wrapper element.
  *
  * @param {Judoka[]} judokaList - An array of judoka objects.
  * @param {GokyoEntry[]} gokyoData - An array of gokyo objects.
@@ -183,7 +187,14 @@ function handleBrokenImages(card) {
  */
 export async function buildCardCarousel(judokaList, gokyoData) {
   if (!validateJudokaList(judokaList)) {
-    return document.createElement("div");
+    // Show message if list is empty
+    const wrapper = document.createElement("div");
+    wrapper.className = "carousel-container";
+    const msg = document.createElement("div");
+    msg.className = "carousel-message";
+    msg.textContent = "No cards available.";
+    wrapper.appendChild(msg);
+    return wrapper;
   }
 
   const gokyoLookup = validateGokyoData(gokyoData);
@@ -197,6 +208,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   const { spinner, timeoutId } = createLoadingSpinner(wrapper);
 
+  // Card creation and appending
   for (const judoka of judokaList) {
     let entry = judoka;
 
@@ -218,6 +230,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
     if (card) {
       handleBrokenImages(card);
       card.tabIndex = 0;
+      container.appendChild(card); // Ensure card is appended
     }
   }
 
@@ -231,12 +244,66 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   wrapper.appendChild(container);
   wrapper.appendChild(rightButton);
 
+  // Add scroll markers below the carousel
+  addScrollMarkers(container, wrapper);
+
   const updateButtons = () => updateScrollButtonState(container, leftButton, rightButton);
   updateButtons();
   container.addEventListener("scroll", updateButtons);
   window.addEventListener("resize", updateButtons);
 
-  setupKeyboardNavigation(container);
+  // --- Card enlargement on focus/hover ---
+  function updateCardFocusStyles() {
+    const cards = container.querySelectorAll(".judoka-card");
+    cards.forEach((card) => {
+      card.classList.remove("focused-card");
+      card.style.transform = "";
+    });
+    const active = document.activeElement;
+    if (active && active.classList.contains("judoka-card")) {
+      active.classList.add("focused-card");
+      active.style.transform = "scale(1.1)";
+    }
+  }
+
+  // Keyboard navigation with focus and enlargement
+  function setupEnhancedKeyboardNavigation(carousel) {
+    carousel.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        const cards = Array.from(carousel.querySelectorAll(".judoka-card"));
+        const current = document.activeElement;
+        let idx = cards.indexOf(current);
+        if (idx === -1) {
+          idx = 0;
+        }
+        if (e.key === "ArrowRight" && idx < cards.length - 1) {
+          cards[idx + 1].focus();
+        } else if (e.key === "ArrowLeft" && idx > 0) {
+          cards[idx - 1].focus();
+        }
+        setTimeout(updateCardFocusStyles, 0);
+      }
+    });
+    // Initial focus style
+    carousel.addEventListener("focusin", updateCardFocusStyles);
+    carousel.addEventListener("focusout", updateCardFocusStyles);
+  }
+
+  // Hover enlargement (desktop)
+  container.addEventListener("mouseover", (e) => {
+    if (e.target.classList.contains("judoka-card")) {
+      e.target.classList.add("focused-card");
+      e.target.style.transform = "scale(1.1)";
+    }
+  });
+  container.addEventListener("mouseout", (e) => {
+    if (e.target.classList.contains("judoka-card")) {
+      e.target.classList.remove("focused-card");
+      e.target.style.transform = "";
+    }
+  });
+
+  setupEnhancedKeyboardNavigation(container);
   setupSwipeNavigation(container);
   applyAccessibilityImprovements(wrapper);
   setupLazyPortraits(container);
