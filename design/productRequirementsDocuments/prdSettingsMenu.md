@@ -134,6 +134,29 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 
 ---
 
+## Collapsible Settings Sections
+
+To improve organization and reduce visual clutter, the Settings Menu should present each major area (e.g., General Settings, Game Modes) as a collapsible section. By default, all sections are collapsed; users can expand a section by clicking or using the keyboard. This approach supports accessibility, scalability, and a cleaner user experience as more settings are added.
+
+### Functional Requirement
+- Each settings area is collapsed by default and can be expanded/collapsed by the user.
+- Section headers are keyboard-focusable and operable (Enter/Space).
+- ARIA attributes (`aria-expanded`, `aria-controls`, `aria-labelledby`) are used for accessibility.
+- Only expanded sections are included in the tab order.
+- The implementation must meet all accessibility and performance requirements outlined elsewhere in this PRD.
+
+### Acceptance Criteria
+- AC-9.1 All settings areas are collapsed by default on page load.
+- AC-9.2 Clicking or pressing Enter/Space on a section header toggles its expanded/collapsed state and updates `aria-expanded`.
+- AC-9.3 When collapsed, section content is hidden from both view and tab order.
+- AC-9.4 When expanded, section content is visible and all controls are accessible via keyboard and screen reader.
+- AC-9.5 Section toggles and content meet touch target and color contrast requirements.
+
+### Rationale
+This pattern keeps the settings page organized and accessible, especially as more options are added. It also aligns with modern accessibility and responsive design standards.
+
+---
+
 ## Settings Menu: User Flow
 
 - Player clicks “Settings” on the Navigation Bar or Navigation Map.

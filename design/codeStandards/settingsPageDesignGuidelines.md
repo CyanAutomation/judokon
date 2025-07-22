@@ -116,6 +116,45 @@ To ensure the **Settings** page remains consistent, visually appealing, and acce
 
 ---
 
+## Collapsible Settings Sections (Recommended Pattern)
+
+To improve organization and reduce visual clutter, each major settings area (e.g., General Settings, Game Modes) should be collapsed by default and expandable via click or keyboard toggle. This pattern enhances accessibility and scalability as more settings are added.
+
+### Markup Example
+
+```html
+<div class="settings-section">
+  <button class="settings-section-toggle" aria-expanded="false" aria-controls="general-settings-content" id="general-settings-toggle">
+    General Settings
+  </button>
+  <div class="settings-section-content" id="general-settings-content" role="region" aria-labelledby="general-settings-toggle" hidden>
+    <fieldset> ...settings controls... </fieldset>
+  </div>
+</div>
+```
+
+- Repeat for each section (e.g., Game Modes).
+- The toggle button must be keyboard-focusable and operable (Enter/Space).
+- Use `aria-expanded`, `aria-controls`, and `aria-labelledby` for accessibility.
+- The content div should be hidden by default (`hidden` attribute or `display: none;`).
+
+### Interaction & Accessibility
+- Clicking or pressing Enter/Space on the toggle expands/collapses the section and updates `aria-expanded`.
+- Only one or multiple sections may be open at a time (choose per UX needs).
+- All controls inside the section remain tabbable and accessible when expanded.
+- Use CSS transitions for smooth expand/collapse if desired.
+
+### Styling
+- Use `.settings-section`, `.settings-section-toggle`, and `.settings-section-content` classes for structure and styling.
+- Ensure toggle buttons and content meet touch target and contrast requirements.
+
+### Testing Checklist (add to existing)
+- [ ] Section toggles are keyboard and screen reader accessible
+- [ ] Collapsed sections hide content from screen readers and tab order
+- [ ] Expanding a section reveals its controls in tab order
+
+---
+
 ## Testing Checklist
 
 After adding a setting:
