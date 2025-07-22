@@ -22,7 +22,8 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 - Introduce momentary suspense in each round to heighten emotional investment.
 - Preserve visual consistency using an existing card (`judokaId=1`) with special styling.
 - Ensure the opponent card reveal animation completes within **400ms**.
-- Guarantee **100% concealment** of all CPU stats during player stat selection.
+- Guarantee **100% concealment** of all CPU stats during player stat selection.  
+  - **Note:** The signature move does not need to be obscured and should be displayed as "?" on the Mystery Judoka card.
 
 ---
 
@@ -43,7 +44,7 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
   **When** the opponent’s real card is revealed,  
   **Then** it *replaces* the Mystery Judoka card via slide or flip animation within **400ms**.
 - **Given** the Mystery Judoka card appears,  
-  **Then** its name should be displayed as “Mystery Judoka” and stats as `"?"`, regardless of real underlying values.
+  **Then** its name should be displayed as “Mystery Judoka” and stats as "?", regardless of real underlying values.
 - **Given** the Mystery Judoka card is displayed,  
   **Then** it should retain correct rarity styling, weight class, and flag as defined in `judoka.json`.
 - **Given** the reveal animation starts,  
@@ -86,7 +87,7 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 |                                                |
 |   Mystery Judoka                              |
 |                                                |
-| Signature Move: ???                            |
+| Signature Move: ?    ← (Signature move is always shown as "?")           |
 |                                                |
 | Power: ?     Speed: ?                          |
 | Technique: ? Kumi-kata: ? Ne-waza: ?           |
@@ -106,8 +107,8 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 
 | Priority | Feature                      | Description                                                                 |
 |:--------:|:----------------------------|:---------------------------------------------------------------------------|
-| **P1**   | Placeholder Mystery Card     | Show `judokaId=1` card with silhouette and `"?"` stats at start of each CPU round |
-| **P1**   | Stat Redaction on Render     | Replace all visible stat values with `"?"` regardless of real values        |
+| **P1**   | Placeholder Mystery Card     | Show `judokaId=1` card with silhouette and "?" stats at start of each CPU round. Signature move is also shown as "?" |
+| **P1**   | Stat Redaction on Render     | Replace all visible stat values with "?" regardless of real values. Signature move is always shown as "?" |
 | **P1**   | Card Swap on Stat Selection  | Reveal opponent card via animated swap within **400ms**, no layout shift   |
 | **P2**   | Consistent Styling           | Apply proper rarity border, portrait container, and stat layout             |
 | **P3**   | Accessibility Compliance     | Ensure all question marks and names are screen-reader friendly              |
@@ -125,7 +126,7 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 ## Integration Notes
 
 - The **Mystery Judoka card** is never shown in non-CPU modes.
-- Use the existing `renderJudokaCard()` helper with a `useObscuredStats` flag to substitute `"?"` values at render time.
+- Use the existing `renderJudokaCard()` helper with a `useObscuredStats` flag to substitute "?" values at render time.
 - Maintain card aspect ratio and layout as defined in the core Judoka Cards PRD — do **not** introduce custom card layouts for the mystery variant.
 
 ---
