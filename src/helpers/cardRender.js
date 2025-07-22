@@ -16,14 +16,19 @@ import { createStatsPanel } from "../components/StatsPanel.js";
  *    - Escape `firstname` and `surname` using `escapeHTML`.
  *
  * 3. Construct the portrait HTML:
- *    - Create a `<div>` element with the class `card-portrait`.
+ *    - Create a `<div>` element with the class `card-portrait` (maintains 2:3 aspect ratio).
  *    - Add an `<img>` element:
- *      a. Set the `src` attribute to a generic placeholder portrait (id=1).
- *      b. Store the real portrait URL in a `data-portrait-src` attribute.
- *      c. Set the `alt` attribute to include the escaped name.
- *      d. Add an `onerror` handler to fallback to the placeholder portrait (PLACEHOLDER_ID) if the image fails to load.
+ *      a. Set the `src` attribute to a generic placeholder portrait (id=1) for initial load.
+ *      b. Store the real portrait URL in a `data-portrait-src` attribute for lazy loading.
+ *      c. Set the `alt` attribute to include the escaped name for accessibility (see PRD: alt text required).
+ *      d. Add an `onerror` handler to fallback to the silhouette placeholder (PLACEHOLDER_ID) if the image fails to load (see PRD: missing portrait fallback).
  *
  * 4. Return the constructed HTML string.
+ *
+ * @accessibility
+ * - Portraits must have descriptive alt text.
+ * - Placeholder silhouette is used for missing portraits.
+ * - Portrait container maintains 2:3 aspect ratio for visual consistency.
  *
  * @param {JudokaCard} card - The card data containing the judoka and signature move.
  * @returns {string} The HTML string for the portrait.
@@ -63,15 +68,22 @@ export function generateCardPortrait(card) {
  *
  * 2. Extract stats (`power`, `speed`, `technique`, `kumikata`, `newaza`) from the card object:
  *    - Default missing values to "?".
+ *    - Cap each stat at 10 (see PRD: cap extreme stats).
  *    - Escape each stat value using `escapeHTML`.
+ *    - If stats are corrupted (not a number or missing), display error message "Stats unavailable" (see PRD: error state).
  *
  * 3. Construct the stats HTML:
- *    - Create a `<div>` element with the class `card-stats` and the card type as an additional class.
+ *    - If stats are valid, create a `<div>` element with the class `card-stats` and the card type as an additional class.
  *    - Add a `<ul>` element containing `<li>` items for each stat:
  *      a. Include the stat name in bold.
  *      b. Include the stat value inside a `<span>` element.
+ *    - If stats are unavailable, show error message instead of stats list.
  *
  * 4. Return the constructed HTML string.
+ *
+ * @accessibility
+ * - Stats text must meet WCAG 2.1 AA contrast ratio (≥4.5:1).
+ * - Stats area uses clear labels and values for screen readers.
  *
  * @param {JudokaCard} card - The card data containing the judoka and signature move.
  * @param {string} cardType - The type of card (e.g., "common", "rare").
@@ -107,8 +119,13 @@ export function generateCardStats(card, cardType = "common") {
  * 4. Construct the signature move HTML:
  *    - Create a `<div>` element with the class `signature-move-container` and the card type as an additional class.
  *    - Add `<span>` elements for the label ("Signature Move:") and the escaped technique name.
+ *    - Ensure the band is at least 44px tall for touch accessibility (see PRD: touch target size).
  *
  * 5. Return the constructed HTML string.
+ *
+ * @accessibility
+ * - Signature move band must be at least 44px tall for touch targets.
+ * - Text must meet contrast requirements.
  *
  * @param {Object} judoka - The judoka object containing the signatureMoveId.
  * @param {Object} gokyoLookup - The lookup object for techniques.
