@@ -9,12 +9,25 @@
  *       and calls `handleStatSelection` with the button's data attribute.
  *    b. Attach a click listener to the home logo that calls `quitMatch` and
  *       navigates to the home screen on confirmation.
- *    c. Invoke `startRound` to begin the match.
+ *    c. Disable all stat buttons and invoke `startRound`.
+ *    d. Re-enable the buttons once the Mystery card is rendered.
+ *    e. Override `startRound` for subsequent rounds to apply the same blocking.
  * 3. Use `onDomReady` to run `setupBattleJudokaPage` when the DOM is ready.
- * 4. Block stat selection until the Mystery Judoka card is fully rendered (see PRD: Mystery Card). [TODO]
  */
 import { startRound, handleStatSelection, quitMatch } from "./classicBattle.js";
 import { onDomReady } from "./domReady.js";
+
+function toggleStatButtons(disabled) {
+  document.querySelectorAll("#stat-buttons button").forEach((btn) => {
+    btn.disabled = disabled;
+  });
+}
+
+async function startRoundWithBlocking() {
+  toggleStatButtons(true);
+  await startRound();
+  toggleStatButtons(false);
+}
 
 export function setupBattleJudokaPage() {
   document.querySelectorAll("#stat-buttons button").forEach((btn) =>
@@ -33,7 +46,8 @@ export function setupBattleJudokaPage() {
     });
   }
 
-  startRound();
+  window.startRoundOverride = startRoundWithBlocking;
+  startRoundWithBlocking();
 }
 
 onDomReady(setupBattleJudokaPage);
