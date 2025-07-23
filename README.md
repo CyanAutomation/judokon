@@ -381,6 +381,8 @@ Safari 18.5 positions `.signature-move-container` text at the bottom edge unless
 Safari 18.5 sometimes shrinks judoka cards, causing text overlap. The width rule now uses `clamp(200px, 60vw, 260px)` so cards occupy about 60% of the viewport on mobile. This applies to both the random card view and the browse carousel.
 Safari 18.5 may keep a stat button highlighted between rounds. The rule `#stat-buttons button { -webkit-tap-highlight-color: transparent; }` works with the reset logic to force a reflow and blur the element so the red overlay disappears.
 
+- The carousel sets the `--card-width` CSS variable via JavaScript so each card maintains consistent sizing across browsers and devices.
+
 Chrome may show a small gap below the stats panel when the combined height of
 card sections is less than 100%. Ensure `.card-top-bar`, `.card-portrait`,
 `.card-stats`, and `.signature-move-container` together fill the card height to
