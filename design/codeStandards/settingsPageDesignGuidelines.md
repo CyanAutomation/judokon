@@ -109,6 +109,12 @@ To ensure the **Settings** page remains consistent, visually appealing, and acce
   - Place after all settings controls, before the error popup container.
   - The link should point to `changeLog.html` and be accessible via keyboard (tabindex set appropriately).
 
+- **Links Section**
+  - Group supplemental pages under a `Links` heading using a simple `<fieldset>`.
+  - Include links to `changeLog.html`, `prdViewer.html`, and `mockupViewer.html`.
+  - Style each as a `.settings-item` and assign sequential `tabindex` values (e.g., 99, 100, 101).
+  - Position this fieldset after all setting controls and before the error popup container.
+
 - **Error Message Container & ARIA**
   - Include a dedicated error popup container (e.g., `<div id="settings-error-popup" role="alert" aria-live="assertive">`).
   - All error messages must be routed through this container for accessibility.

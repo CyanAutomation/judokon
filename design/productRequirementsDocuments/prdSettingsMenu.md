@@ -46,6 +46,8 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 | P2       | Game Modes Toggles         | A list of all defined game modes with binary toggles from `gameModes.json`. |
 | P3       | Settings Menu Integration  | Ensure settings appear as a game mode in `gameModes.json`.                  |
 | P3       | Change Log Link           | Link to `changeLog.html` for viewing recent judoka updates.                 |
+| P3       | PRD Viewer Link           | Link to `prdViewer.html` for browsing product requirement documents.        |
+| P3       | Mockup Viewer Link        | Link to `mockupViewer.html` to browse design mockups.                       |
 
 **Note:** For all settings items, if reading or writing to the data source fails, toggles/selectors **must revert** to their previous state, and a user-facing error should appear.
 
@@ -60,6 +62,8 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
   - _Gray mode_ provides a grayscale display to reduce visual noise for neurodivergent users.
 - **Game modes list:** A list populated from `gameModes.json`, showing all modes defined there, with binary toggles per mode.
 - **Change Log:** Link opens `changeLog.html` with the latest 20 judoka updates.
+- **PRD Viewer:** Link opens `prdViewer.html` for browsing product documents.
+- **Mockup Viewer:** Link opens `mockupViewer.html` for viewing design mockups.
 
 ---
 
@@ -166,6 +170,8 @@ This pattern keeps the settings page organized and accessible, especially as mor
 - On error during update: Toggle reverts, then CSS popup error displayed
 - Player exits → settings persist for the rest of the session.
 - Player can open **Change Log** to view recent judoka updates.
+- Player can open **PRD Viewer** to read product requirement documents.
+- Player can open **Mockup Viewer** to browse design mockups.
 
 ---
 
@@ -268,6 +274,10 @@ The page begins with an `<h1>` heading labeled "Settings". Two `<fieldset>` sect
   - [ ] 5.2 Optimize for ≤200ms initial render.
 - [ ] 6.0 Add Change Log Link
   - [ ] 6.1 Link to `changeLog.html` from the Settings menu.
+- [ ] 7.0 Add PRD Viewer Link
+  - [ ] 7.1 Link to `prdViewer.html` from the Settings menu.
+- [ ] 8.0 Add Mockup Viewer Link
+  - [ ] 8.1 Link to `mockupViewer.html` from the Settings menu.
 
 ---
 
