@@ -32,10 +32,6 @@ function createRow(judoka) {
   idCell.textContent = String(judoka.id);
   row.appendChild(idCell);
 
-  const codeCell = document.createElement("td");
-  codeCell.textContent = judoka.cardCode || "";
-  row.appendChild(codeCell);
-
   const portraitCell = document.createElement("td");
   const img = document.createElement("img");
   img.width = 48;
@@ -48,13 +44,17 @@ function createRow(judoka) {
   portraitCell.appendChild(img);
   row.appendChild(portraitCell);
 
-  const dateCell = document.createElement("td");
-  dateCell.textContent = formatDate(judoka.lastUpdated);
-  row.appendChild(dateCell);
-
   const nameCell = document.createElement("td");
   nameCell.textContent = `${judoka.firstname} ${judoka.surname}`;
   row.appendChild(nameCell);
+
+  const codeCell = document.createElement("td");
+  codeCell.textContent = judoka.cardCode || "";
+  row.appendChild(codeCell);
+
+  const dateCell = document.createElement("td");
+  dateCell.textContent = formatDate(judoka.lastUpdated);
+  row.appendChild(dateCell);
 
   return row;
 }
