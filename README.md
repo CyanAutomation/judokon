@@ -375,6 +375,7 @@ Safari may expand flex items if `min-width` isn't explicitly set. Set
   keeps the carousel from stretching beyond the viewport.
   Safari counts scrollbars in the `vw` unit, which can lead to unexpected layout behavior. For example, a wrapper with `min-width: 100vw` may become wider than the page and cause horizontal scrolling. To prevent this, set `width: 100%` on the body and navbars. Optionally, use `overflow-x: hidden` to ensure the layout stays within the viewport.
   Mobile Safari 18.5 may also add vertical scroll if fixed headers and footers use `vh` units. The navbar height CSS variables now use `dvh` to match the dynamic viewport height and avoid extra scrolling. Pages with fixed headers or footers should set container heights to `calc(100dvh - var(--header-height) - var(--footer-height))` (or equivalent) so content isn't hidden when the viewport shrinks. The `.home-screen` container implements this rule.
+  Pages now declare a `100svh` fallback before the `dvh` rule. This keeps the Random Judoka draw controls fully visible above the bottom navigation bar on iPad Safari.
 
 Safari 18.5 positions `.signature-move-container` text at the bottom edge unless the container uses standard flex alignment. The container now applies `line-height: max(10%, var(--touch-target-size))` along with `align-items: center` and `justify-content: center`. Setting `width: 100%` on the child spans prevents stretching so the label and value remain vertically centered.
 
