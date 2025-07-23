@@ -177,7 +177,9 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
     `mockupViewer.html`, a simple carousel for browsing the image files
     under `design/mockups/`. It displays the filename overlay, centers
     each image, and scales it to fit the viewport. The page now
-    centers all of its content for a consistent layout.
+    centers all of its content for a consistent layout. The Prev and
+    Next buttons are anchored to the left and right edges so they never
+    cover the content.
   - `data/`
   - `schemas/`
     JSON Schema definitions used to validate the data files.
