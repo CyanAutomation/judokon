@@ -96,6 +96,15 @@ exist (e.g., `await page.getByTestId("draw-button").waitFor()`). Otherwise
 the evaluation may run before the DOM is ready and throw a `Cannot read
 properties of null` error.
 
+### Troubleshooting Playwright Tests
+
+A `Test timeout ... waiting for locator('#general-settings-toggle')` error usually means the Settings page failed to load or the server was unreachable. Verify that:
+
+- **Node 18+** is installed.
+- Port **5000** is free; the tests start `scripts/playwrightServer.js` automatically.
+- Visiting `http://localhost:5000/src/pages/settings.html` shows the toggles (`#display-settings-toggle`, `#general-settings-toggle`, `#game-modes-toggle`).
+- Running tests with `PWDEBUG=1` helps inspect the page when a timeout occurs.
+
 ## Project Structure
 
 The repository follows a simple layout. GitHub Pages requires `index.html` to live at the project root.
