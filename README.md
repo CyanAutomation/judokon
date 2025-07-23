@@ -201,7 +201,9 @@ to browse the documents with next/previous navigation. Buttons tagged with
 `data-nav="prev"` and `data-nav="next"` appear in both the header and footer.
 The page now imports `base.css` and `layout.css` so wide elements stay wrapped
 inside the viewport. Navigation buttons remain left-aligned with a gap so they
-don't interfere with the centered content. Users can return to the main menu via the Home button.
+don't interfere with the centered content, and the body adds bottom padding so
+the footer buttons clear the persistent navigation bar. Users can return to the
+ main menu via the Home button.
 
 ### CSS Organization
 
