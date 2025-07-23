@@ -266,7 +266,9 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
   `aria-label` descriptions
 - Draw button on the Random Judoka screen provides its accessible name via
   `aria-label="Draw a random judoka card"` so screen readers announce the same
-  label even if the visible text changes
+  label even if the visible text changes. The Playwright suite verifies that
+  this aria-label stays "Draw a random judoka card" regardless of the button's
+  visible text.
 - Layout keeps the Random Judoka draw button within the viewport even with the fixed footer navigation
 - Country picker panel appears below the fixed header for unobstructed viewing
 - Scroll buttons disable when the carousel reaches either end
