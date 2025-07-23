@@ -140,6 +140,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - **Landscape Support:** components reposition vertically or side-by-side
 - Card container uses `min-height: 50dvh` to keep the Draw button visible on small screens
 - The Draw button and its toggles must remain fully visible within the viewport even with the fixed footer navigation present
+- `.card-section` uses `padding-bottom: calc(var(--footer-height) + env(safe-area-inset-bottom))` so buttons stay visible above the footer
 
 #### Audio Feedback (Optional Enhancement)
 
