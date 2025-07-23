@@ -243,6 +243,7 @@ Each tile contains:
   - Single-column layout for mobile view (portrait resolution)
   - Tiles stretch to 100% width with top and bottom padding
   - Tile grid height equals `100dvh` minus the top and bottom bar heights (with a `100vh` fallback) so tiles always fill the viewport
+  - Add a small bottom margin so the tile grid does not touch the navigation bar on tablets
   - Tap targets clearly bounded with shadow or color background
   - Include visible focus outline for keyboard navigation
 

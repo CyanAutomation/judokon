@@ -88,6 +88,7 @@ body {
   gap: var(--space-lg);
   padding: var(--space-large) var(--space-xl);
   flex: 1 1 auto;
+  margin-bottom: var(--space-large);
   height: calc(100vh - var(--header-height) - var(--footer-height));
   height: calc(100dvh - var(--header-height) - var(--footer-height));
 }
