@@ -63,7 +63,7 @@ test.describe("Settings page", () => {
     );
 
     for (const name of sortedNames) {
-      await expect(page.getByLabel(name)).toHaveAttribute("aria-label", name);
+      await expect(page.getByLabel(name, { exact: true })).toHaveAttribute("aria-label", name);
     }
 
     await page.focus("#display-mode-select");
