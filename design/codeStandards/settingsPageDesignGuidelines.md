@@ -124,7 +124,7 @@ To improve organization and reduce visual clutter, each major settings area (e.g
 
 ```html
 <div class="settings-section">
-  <button class="settings-section-toggle" aria-expanded="false" aria-controls="general-settings-content" id="general-settings-toggle">
+  <button type="button" class="settings-section-toggle" aria-expanded="false" aria-controls="general-settings-content" id="general-settings-toggle">
     General Settings
   </button>
   <div class="settings-section-content" id="general-settings-content" role="region" aria-labelledby="general-settings-toggle" hidden>
@@ -135,6 +135,7 @@ To improve organization and reduce visual clutter, each major settings area (e.g
 
 - Repeat for each section (e.g., Game Modes).
 - The toggle button must be keyboard-focusable and operable (Enter/Space).
+- Toggle buttons must use `type="button"` to avoid submitting the form.
 - Use `aria-expanded`, `aria-controls`, and `aria-labelledby` for accessibility.
 - The content div should be hidden by default (`hidden` attribute or `display: none;`).
 
