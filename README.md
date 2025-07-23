@@ -274,7 +274,7 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
 - Scroll buttons disable when the carousel reaches either end
 - Header bar displays real-time round results, countdown timer and score
 - Mockup viewer page with next/back controls for design screenshots (includes a Home link)
-- Change Log page accessible from Settings, showing recent judoka updates
+- Settings page includes a **Links** section with shortcuts to the Change Log, PRD reader, and Mockup viewer
 - Contextual tooltips explain stats and buttons on hover or focus
 
 ## About JU-DO-KON!
@@ -396,7 +396,7 @@ Layout containers should include a `vh` fallback declared before the `dvh` rule 
 
 ## Changelog
 
-The game includes an in-app change log that lists the 20 most recently updated judoka. The page loads data from `judoka.json` and is populated by `changeLogPage.js`. The log table now uses a responsive CSS grid with padded cells. Columns appear in the following order: **ID**, **Portrait**, **Name**, **Code**, and **Date**. Open the **Settings** screen and choose **View Change Log** to visit `src/pages/changeLog.html`.
+The game includes an in-app change log that lists the 20 most recently updated judoka. The page loads data from `judoka.json` and is populated by `changeLogPage.js`. Open the **Settings** screen and use the **Links** section to visit `src/pages/changeLog.html`, the PRD reader, or the design mockup viewer. The log table now uses a responsive CSS grid with padded cells. Columns appear in the following order: **ID**, **Portrait**, **Name**, **Code**, and **Date**. Open the **Settings** screen and choose **View Change Log** to visit `src/pages/changeLog.html`.
 
 ## Future Plans
 
