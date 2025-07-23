@@ -78,10 +78,13 @@ test.describe("Settings page", () => {
         if (el.labels && el.labels[0]) return el.labels[0].textContent.trim();
         return "";
       });
-      activeLabels.push(label);
-      if (i < expectedLabels.length - 1) {
-        await page.keyboard.press("Tab");
+      if (label) {
+        activeLabels.push(label);
+      } else {
+        // ignore non-labeled focus targets
+        i--;
       }
+      await page.keyboard.press("Tab");
     }
 
     expect(activeLabels).toEqual(expectedLabels);
