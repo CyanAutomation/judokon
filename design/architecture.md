@@ -14,6 +14,8 @@ The entry point for the browser. It waits for `DOMContentLoaded` and wires up al
 Reusable utilities organized by concern (card building, data fetching, random card generation, etc.). Each module is documented with JSDoc and `@pseudocode` blocks for clarity.
 Key helpers include `generateRandomCard()` for choosing a card and `renderJudokaCard()` for injecting it into the DOM with an optional reveal animation.
 
+`navigationBar.js` loads active game modes and injects them into the persistent bottom navigation bar defined in [prdNavigationBar.md](productRequirementsDocuments/prdNavigationBar.md). `setupBottomNavbar.js` calls this helper on DOM ready and wires up button effects so the bar is populated on every page.
+
 `src/components/` holds reusable UI pieces. `Button.js` exposes a `createButton` helper that applies design tokens and can prepend an optional icon. Typical pages import this module along with the `setupButtonEffects` helper to keep button interactions consistent.
 
 ## page modules
