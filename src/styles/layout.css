@@ -87,10 +87,9 @@ body {
   grid-template-rows: repeat(2, 1fr);
   gap: var(--space-lg);
   padding: var(--space-large) var(--space-xl);
-  padding-bottom: var(--space-large);
+  padding-bottom: calc(var(--space-large) + var(--footer-height) + env(safe-area-inset-bottom));
   flex: 1 1 auto;
-  min-height: calc(100vh - var(--header-height) - var(--footer-height));
-  min-height: calc(100dvh - var(--header-height) - var(--footer-height));
+  min-height: 100%;
   box-sizing: border-box;
 }
 

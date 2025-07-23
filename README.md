@@ -392,7 +392,7 @@ signature move band stack directly against each other in Safari and Chrome.
 
 The bottom navbar uses `env(safe-area-inset-bottom)` with a `constant()` fallback to add extra padding and height. This prevents it from overlapping the iOS home indicator and keeps content visible.
 
-The index page adds bottom padding inside `.game-mode-grid` so the last row of tiles stays clear of the navigation bar on tablets. The `.home-screen` fallback now subtracts the header and footer heights when using standard `vh` units.
+The index page sets `padding-bottom: calc(var(--space-large) + var(--footer-height) + env(safe-area-inset-bottom))` on `.game-mode-grid` so the last row of tiles stays clear of the navigation bar on tablets. The `.home-screen` fallback now subtracts the header and footer heights when using standard `vh` units.
 
 Layout containers should include a `vh` fallback declared before the `dvh` rule so browsers without dynamic viewport support still size elements correctly. The settings screen previously had its first controls hidden behind the header; wrapping the page in this `.home-screen` container resolves the issue. The page now starts with an `<h1>` heading and two `<fieldset>` sections labeled **General Settings** and **Game Modes**. Legends within `.settings-form` are styled as `<h2>`, and the form now includes padding. The classic battle page also uses this wrapper so the judoka cards appear fully below the header.
 
