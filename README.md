@@ -394,7 +394,7 @@ Layout containers should include a `vh` fallback declared before the `dvh` rule 
 
 ## Changelog
 
-The game includes an in-app change log that lists the 20 most recently updated judoka. Open the **Settings** screen and choose **View Change Log** to visit `src/pages/changeLog.html`.
+The game includes an in-app change log that lists the 20 most recently updated judoka. The page loads data from `judoka.json` and is populated by `changeLogPage.js`. Open the **Settings** screen and choose **View Change Log** to visit `src/pages/changeLog.html`.
 
 ## Future Plans
 
