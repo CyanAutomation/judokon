@@ -12,7 +12,7 @@ body {
 .home-screen {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  min-height: 100vh;
+  min-height: calc(100vh - var(--header-height) - var(--footer-height));
   min-height: calc(100dvh - var(--header-height) - var(--footer-height));
   padding-top: var(--header-height);
   padding-bottom: calc(var(--footer-height) + env(safe-area-inset-bottom));
@@ -87,10 +87,11 @@ body {
   grid-template-rows: repeat(2, 1fr);
   gap: var(--space-lg);
   padding: var(--space-large) var(--space-xl);
+  padding-bottom: var(--space-large);
   flex: 1 1 auto;
-  margin-bottom: var(--space-large);
-  height: calc(100vh - var(--header-height) - var(--footer-height));
-  height: calc(100dvh - var(--header-height) - var(--footer-height));
+  min-height: calc(100vh - var(--header-height) - var(--footer-height));
+  min-height: calc(100dvh - var(--header-height) - var(--footer-height));
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
