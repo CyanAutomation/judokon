@@ -21,7 +21,9 @@ Key helpers include `generateRandomCard()` for choosing a card and `renderJudoka
 HTML pages under `src/pages` each load a dedicated module located in
 `src/helpers`. These modules (for example `randomJudokaPage.js` or
 `settingsPage.js`) expose setup functions that attach event listeners and
-initialize page-specific behavior.
+initialize page-specific behavior. The change log view uses
+`changeLogPage.js` to fetch `judoka.json`, sort by `lastUpdated`, and render the
+20 most recent updates.
 
 ## PRD reader
 

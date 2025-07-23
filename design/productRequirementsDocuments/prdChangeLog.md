@@ -138,3 +138,17 @@ Players and developers currently lack a simple, in-game method to see which Judo
 - [ ] **5.2** Test loading time on different devices
 - [ ] **5.3** Test responsive behavior on various screen sizes
 - [ ] **5.4** Confirm consistent UI integration with game header/footer
+
+## Implementation Notes
+
+- Create `src/helpers/changeLogPage.js` to load `judoka.json` via `fetchJson` and
+  populate the table on DOM ready.
+- Sort entries by the `lastUpdated` field (desc) and fallback to name when dates
+  match. Slice the results to the most recent 20.
+- Build rows using DOM methods to avoid innerHTML injection. Each row includes
+  Judoka ID, card code, portrait (48×48 px), formatted date, and full name.
+- Portrait images use a fallback source (`judokaPortrait-0.png`) when loading
+  fails, with alt text like "Portrait of Judoka Kano".
+- The page follows existing layout conventions: header, `.home-screen` wrapper,
+  and bottom navigation bar. Include a spinner during loading and a friendly
+  message if no data is available.
