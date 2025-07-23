@@ -42,7 +42,8 @@ button:active {
 .responsive-stat-buttons {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: var(--space-sm);
+  gap: var(--space-lg);
+  padding: 0 10vw;
 }
 
 button:focus,
