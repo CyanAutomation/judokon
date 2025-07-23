@@ -267,6 +267,7 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
 - Draw button on the Random Judoka screen provides its accessible name via
   `aria-label="Draw a random judoka card"` so screen readers announce the same
   label even if the visible text changes
+- Layout keeps the Random Judoka draw button within the viewport even with the fixed footer navigation
 - Country picker panel appears below the fixed header for unobstructed viewing
 - Scroll buttons disable when the carousel reaches either end
 - Header bar displays real-time round results, countdown timer and score
