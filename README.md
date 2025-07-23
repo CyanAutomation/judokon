@@ -354,7 +354,7 @@ server is running to verify adequate color contrast.
 
 JU-DO-KON! is tested in the latest versions of Chrome, Firefox, Safari, and Edge.
 The card carousel uses modern CSS like `clamp()` for flexible sizing. Safari 15
-and older do not support `clamp()`, so cards fall back to a fixed `300px` width.
+and older do not support `clamp()`, so cards fall back to a fixed `260px` width.
 Safari may expand flex items if `min-width` isn't explicitly set. Set
 `min-width: 0` on `.card-carousel` so horizontal scrolling works correctly.
 
@@ -376,7 +376,7 @@ Safari may expand flex items if `min-width` isn't explicitly set. Set
 
 Safari 18.5 positions `.signature-move-container` text at the bottom edge unless the container uses standard flex alignment. The container now applies `line-height: max(10%, var(--touch-target-size))` along with `align-items: center` and `justify-content: center`. Setting `width: 100%` on the child spans prevents stretching so the label and value remain vertically centered.
 
-Safari 18.5 sometimes shrinks judoka cards, causing text overlap. The width rule now uses `clamp(200px, 70vw, 300px)` so cards occupy about 70% of the viewport on mobile. This applies to both the random card view and the browse carousel.
+Safari 18.5 sometimes shrinks judoka cards, causing text overlap. The width rule now uses `clamp(200px, 60vw, 260px)` so cards occupy about 60% of the viewport on mobile. This applies to both the random card view and the browse carousel.
 Safari 18.5 may keep a stat button highlighted between rounds. The rule `#stat-buttons button { -webkit-tap-highlight-color: transparent; }` works with the reset logic to force a reflow and blur the element so the red overlay disappears.
 
 Chrome may show a small gap below the stats panel when the combined height of

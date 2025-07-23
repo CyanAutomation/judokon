@@ -198,10 +198,10 @@ export async function buildCardCarousel(judokaList, gokyoData) {
     else if (width < 900) cardsInView = 2.5;
     else if (width < 1200) cardsInView = 3.5;
     else cardsInView = 5;
-    const cardWidth = `clamp(200px, ${Math.floor(100 / cardsInView)}vw, 340px)`;
+    const cardWidth = `clamp(200px, ${Math.floor(100 / cardsInView)}vw, 260px)`;
     container.querySelectorAll(".judoka-card").forEach((card) => {
       card.style.minWidth = cardWidth;
-      card.style.maxWidth = "340px";
+      card.style.maxWidth = "260px";
       card.style.scrollSnapAlign = "center";
     });
   }
