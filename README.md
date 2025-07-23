@@ -105,6 +105,9 @@ A `Test timeout ... waiting for locator('#general-settings-toggle')` error usual
 - Visiting `http://localhost:5000/src/pages/settings.html` shows the toggles (`#display-settings-toggle`, `#general-settings-toggle`, `#game-modes-toggle`).
 - Running tests with `PWDEBUG=1` helps inspect the page when a timeout occurs.
 
+Playwright tests clear `localStorage` at startup. If a manual run fails unexpectedly, clear `localStorage` in your browser before retrying. A static server must be reachable at http://localhost:5000 (typically via `npm start`).
+
+
 ## Project Structure
 
 The repository follows a simple layout. GitHub Pages requires `index.html` to live at the project root.
