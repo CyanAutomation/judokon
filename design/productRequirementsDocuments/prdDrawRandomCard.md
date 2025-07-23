@@ -91,6 +91,8 @@ Motion** enabled, ensuring the card appears instantly without movement.
 - **Accessibility**:
   - Respect system Reduced Motion settings — disable animations if active.
   - Default: Animations ON, but respect system/user preferences.
+  - Provide an `aria-label` on the Draw button so the accessible name stays
+    "Draw a random judoka card" even when the visible text is updated.
 
 ---
 

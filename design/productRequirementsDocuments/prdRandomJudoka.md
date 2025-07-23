@@ -130,6 +130,8 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - Tap targets ≥44px × 44px (64px recommended for kid-friendly design). See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)
 - Text must meet WCAG 2.1 AA 4.5:1 contrast ratio (verify with automated tools)
 - All buttons and states require clear text labels
+- The Draw button uses `aria-label="Draw a random judoka card"` so screen readers
+  announce a consistent name even if the visible text changes
 
 #### Responsiveness
 

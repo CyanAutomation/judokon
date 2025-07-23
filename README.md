@@ -244,6 +244,9 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
 - Modularized JavaScript for better maintainability
 - Slide-in country picker, opened via a panel icon with an arrow, for filtering judoka by flag with accessible
   `aria-label` descriptions
+- Draw button on the Random Judoka screen provides its accessible name via
+  `aria-label="Draw a random judoka card"` so screen readers announce the same
+  label even if the visible text changes
 - Country picker panel appears below the fixed header for unobstructed viewing
 - Scroll buttons disable when the carousel reaches either end
 - Header bar displays real-time round results, countdown timer and score
