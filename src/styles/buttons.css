@@ -30,10 +30,19 @@ button:active {
 
 #stat-buttons button {
   -webkit-tap-highlight-color: transparent;
+  width: 100%;
+  min-width: var(--touch-target-size, 44px);
+  min-height: var(--touch-target-size, 44px);
 }
 
 #stat-buttons button.selected {
   background-color: var(--button-active-bg);
+}
+
+.responsive-stat-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: var(--space-sm);
 }
 
 button:focus,

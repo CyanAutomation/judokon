@@ -43,8 +43,6 @@ function onStatSelect(stat) {
 export function setupClassicBattlePage() {
   const statButtons = document.querySelectorAll("#stat-buttons button");
   statButtons.forEach((btn) => {
-    btn.style.minWidth = "44px";
-    btn.style.minHeight = "44px";
     btn.addEventListener("click", () => {
       if (!btn.disabled) {
         enableStatButtons(false);
