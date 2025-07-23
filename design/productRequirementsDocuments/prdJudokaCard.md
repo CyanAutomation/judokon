@@ -168,7 +168,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 
 - **Aspect Ratio:** Card must strictly maintain **2:3 ratio**, adjusting internal elements responsively.
 - **Safari ≤15 Fallback:** `.judoka-card` sets `height: calc(var(--card-width) * 1.5)` because these versions do not treat `aspect-ratio` as a definite height. `.card-top-bar` uses `calc(var(--card-width) * 0.14)` so the header stays the same height across browsers.
-- **Vertical Proportions:** With a card width of 300px (height 450px), allocate roughly 14% (63px) for the name and flag bar, 42% (189px) for the portrait, 34% (153px) for stats, and 10% (45px) for the signature move section.
+  - **Vertical Proportions:** With a card width of 260px (height 390px), allocate roughly 14% (55px) for the name and flag bar, 42% (164px) for the portrait, 34% (133px) for stats, and 10% (39px) for the signature move section.
 - Portrait images should fill the portrait area using `object-fit: cover` so no whitespace appears.
 - **Portrait Container:** `.card-portrait` now uses `width: 100%` and `height: 42%` so it matches its flex-basis and keeps the aspect ratio consistent.
 - **Stats Container:** `.card-stats` uses `height: 34%` to align with the vertical proportions.
@@ -177,7 +177,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
   - Stats text uses `--font-medium` and line-height `1.2` to remain legible without increasing panel height.
 - **Signature Move Band:** `height: max(10%, var(--touch-target-size))` keeps the 44px tap target while maintaining the card's 2:3 ratio.
 - The label and value are centered vertically within that band.
-- `.judoka-card` overrides `--touch-target-size` to `44px` so the band stays 45px tall on a 300×450 card without leaving gaps above or below it.
+  - `.judoka-card` overrides `--touch-target-size` to `44px` so the band stays 39px tall on a 260×390 card without leaving gaps above or below it.
 - **Padding Adjustments:** Section percentages already account for vertical padding because `.judoka-card` uses `box-sizing: border-box`. No `calc()` subtraction is necessary.
 - **Rarity Border Colors:**
   - Common → Blue (#337AFF)

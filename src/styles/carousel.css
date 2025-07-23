@@ -19,13 +19,13 @@
 .card-carousel .judoka-card {
   /* Use clamp to set a responsive width for judoka cards:
      - Minimum width: 200px ensures cards are not too small on very narrow screens.
-     - Preferred width: 70vw adapts to 70% of the viewport width on mobile Safari.
-     - Maximum width: 300px matches the fixed width defined on line 24 for larger screens. */
-  flex: 0 0 clamp(200px, 70vw, 300px);
+     - Preferred width: 60vw adapts to 60% of the viewport width on mobile Safari.
+     - Maximum width: 260px matches the fixed width defined on line 24 for larger screens. */
+  flex: 0 0 clamp(200px, 60vw, 260px);
 }
 
 .judoka-card {
-  flex: 0 0 300px;
+  flex: 0 0 260px;
   scroll-snap-align: center; /* Snap each card to the center */
   transition: transform var(--transition-fast); /* Smooth animations */
   border-radius: var(--radius-lg); /* Rounded corners */
@@ -34,7 +34,7 @@
 
 @supports (flex-basis: clamp(1px, 1px, 1px)) {
   .judoka-card {
-    flex-basis: clamp(200px, calc(33.33% - var(--space-lg)), 300px);
+    flex-basis: clamp(200px, calc(33.33% - var(--space-lg)), 260px);
   }
 }
 
@@ -46,14 +46,14 @@
 /* Styles for tablets */
 @media (max-width: 1024px) {
   .judoka-card {
-    flex: 0 0 clamp(200px, calc(50% - var(--space-lg)), 300px);
+    flex: 0 0 clamp(200px, calc(50% - var(--space-lg)), 260px);
   }
 }
 
 /* Styles for mobile */
 @media (max-width: 768px) {
   .judoka-card {
-    flex: 0 0 clamp(200px, calc(80% - var(--space-sm)), 300px);
+    flex: 0 0 clamp(200px, calc(80% - var(--space-sm)), 260px);
   }
 
   .card-carousel {
@@ -64,20 +64,20 @@
 /* Portrait orientation adjustments for larger screens */
 @media (orientation: portrait) and (min-width: 769px) {
   .judoka-card {
-    flex: 0 0 clamp(200px, calc(80% - var(--space-lg)), 300px);
+    flex: 0 0 clamp(200px, calc(80% - var(--space-lg)), 260px);
   }
 }
 
 /* Landscape orientation adjustments for larger screens */
 @media (orientation: landscape) and (min-width: 769px) {
   .judoka-card {
-    flex: 0 0 clamp(200px, calc(50% - var(--space-lg)), 300px);
+    flex: 0 0 clamp(200px, calc(50% - var(--space-lg)), 260px);
   }
 }
 
 /* Styles for large screens */
 @media (min-width: var(--breakpoint-lg)) {
   .judoka-card {
-    flex: 0 0 clamp(200px, calc(20% - var(--space-lg)), 300px);
+    flex: 0 0 clamp(200px, calc(20% - var(--space-lg)), 260px);
   }
 }
