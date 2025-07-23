@@ -91,6 +91,11 @@ the other Playwright tests:
 SKIP_SCREENSHOTS=true npm run test:screenshot
 ```
 
+When using `page.evaluate` to query elements, always wait for the element to
+exist (e.g., `await page.getByTestId("draw-button").waitFor()`). Otherwise
+the evaluation may run before the DOM is ready and throw a `Cannot read
+properties of null` error.
+
 ## Project Structure
 
 The repository follows a simple layout. GitHub Pages requires `index.html` to live at the project root.

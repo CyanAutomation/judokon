@@ -72,8 +72,10 @@ test.describe("View Judoka screen", () => {
   });
 
   test("draw button remains within viewport", async ({ page }) => {
-    const { bottom, innerHeight } = await page.evaluate(() => {
-      const rect = document.querySelector('[data-testid="draw-button"]').getBoundingClientRect();
+    const btn = page.getByTestId("draw-button");
+    await btn.waitFor();
+    const { bottom, innerHeight } = await btn.evaluate((el) => {
+      const rect = el.getBoundingClientRect();
       return { bottom: rect.bottom, innerHeight: window.innerHeight };
     });
     expect(bottom).toBeLessThanOrEqual(innerHeight);
