@@ -312,6 +312,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 ### 8.8 Battle Layout
 
 - In Classic Battle screens, player and opponent cards align horizontally. They only stack vertically on very narrow screens (<480 px). Stat controls sit below the card row.
+- Stat selection buttons should use a grid layout with equal widths and small gaps so players choose solely based on card stats.
 
 ---
 
