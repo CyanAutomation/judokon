@@ -23,14 +23,17 @@ vi.mock("../../../src/helpers/utils.js", () => ({
   createGokyoLookup: () => ({})
 }));
 
-describe("scheduleNextRound waiting state", () => {
-  let timerSpy;
+describe("classicBattle button handlers", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     const { playerCard, computerCard } = createBattleCardContainers();
     const header = createBattleHeader();
-    document.body.append(playerCard, computerCard, header);
-    timerSpy = vi.useFakeTimers();
+    const nextBtn = document.createElement("button");
+    nextBtn.id = "next-round-button";
+    nextBtn.disabled = true;
+    const quitBtn = document.createElement("button");
+    quitBtn.id = "quit-match-button";
+    document.body.append(playerCard, computerCard, header, nextBtn, quitBtn);
     fetchJsonMock = vi.fn(async () => []);
     generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {
       container.innerHTML = `<ul><li class=\"stat\"><strong>Power</strong> <span>5</span></li></ul>`;
@@ -43,23 +46,23 @@ describe("scheduleNextRound waiting state", () => {
   });
 
   afterEach(() => {
-    timerSpy.clearAllTimers();
+    vi.restoreAllMocks();
   });
 
-  it("shows Waiting... and retries when startRound fails", async () => {
+  it("enable/disable helpers toggle button state", async () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
-    const infoMod = await import("../../../src/helpers/setupBattleInfoBar.js");
-    const startSpy = vi.fn().mockRejectedValueOnce(new Error("fail")).mockResolvedValueOnce();
-    vi.spyOn(infoMod, "startCountdown").mockImplementation((_s, cb) => cb());
-    window.startRoundOverride = startSpy;
+    battleMod.disableNextRoundButton();
+    const btn = document.getElementById("next-round-button");
+    expect(btn.disabled).toBe(true);
+    battleMod.enableNextRoundButton();
+    expect(btn.disabled).toBe(false);
+  });
 
-    battleMod.scheduleNextRound({ matchEnded: false });
-
-    timerSpy.advanceTimersByTime(5000); // 2s delay + 3s countdown
-    await vi.runOnlyPendingTimersAsync();
-
-    expect(document.querySelector("#round-message").textContent).toBe("Waiting...");
-    expect(startSpy).toHaveBeenCalledTimes(2);
-    delete window.startRoundOverride;
+  it("quit button invokes quitMatch", async () => {
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const battleMod = await import("../../../src/helpers/classicBattle.js");
+    document.getElementById("quit-match-button").click();
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(document.querySelector("#round-message").textContent).toMatch(/quit/i);
   });
 });

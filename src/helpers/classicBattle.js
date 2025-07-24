@@ -8,19 +8,12 @@ import {
   handleStatSelection as engineHandleStatSelection,
   quitMatch as engineQuitMatch,
   getScores,
-  isMatchEnded,
   STATS,
   _resetForTest as engineReset
 } from "./battleEngine.js";
 import * as infoBar from "./setupBattleInfoBar.js";
 
 import { getStatValue } from "./battle/index.js";
-function getCountdown() {
-  if (typeof window !== "undefined" && window.startCountdownOverride) {
-    return window.startCountdownOverride;
-  }
-  return infoBar.startCountdown;
-}
 
 export function getStartRound() {
   if (typeof window !== "undefined" && window.startRoundOverride) {
@@ -108,6 +101,15 @@ function startTimer() {
   );
 }
 
+export function enableNextRoundButton(enable = true) {
+  const btn = document.getElementById("next-round-button");
+  if (btn) btn.disabled = !enable;
+}
+
+export function disableNextRoundButton() {
+  enableNextRoundButton(false);
+}
+
 /**
  * Reveal the computer's hidden card.
  *
@@ -145,6 +147,7 @@ export async function revealComputerCard() {
  */
 export async function startRound() {
   resetStatButtons();
+  disableNextRoundButton();
   if (!judokaData) {
     judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
   }
@@ -210,46 +213,31 @@ export function evaluateRound(stat) {
 }
 
 /**
- * Begin the next round after a countdown if the match continues.
+ * Enable the Next Round button so the player can continue.
  *
  * @pseudocode
- * 1. Exit immediately when the match has ended.
- * 2. Wait 2 seconds for the result message to fade out.
- * 3. Start a 3-second countdown before attempting the next round.
- *    a. Invoke `startRound` after the countdown.
- *    b. If it throws or the round cannot begin, display "Waiting..." and
- *       retry every second until successful or the match ends.
- * 4. Stop scheduling if the match ends during the countdown or retries.
+ * 1. Exit if the match has ended.
+ * 2. Locate `#next-round-button` and enable it.
+ * 3. Attach a one-time click handler that:
+ *    a. Disables the button.
+ *    b. Calls `startRound()` to begin the next round.
  *
  * @param {{matchEnded: boolean}} result - Result from evaluateRound.
  */
 export function scheduleNextRound(result) {
   if (result.matchEnded) return;
 
-  let waitingShown = false;
-  const attemptStart = async () => {
-    if (isMatchEnded()) return;
-    try {
-      const start = getStartRound();
-      await start();
-      waitingShown = false;
-    } catch {
-      if (!waitingShown) {
-        showResult("Waiting...");
-        waitingShown = true;
-      }
-      setTimeout(attemptStart, 1000);
-    }
+  const btn = document.getElementById("next-round-button");
+  if (!btn) return;
+
+  const onClick = async () => {
+    disableNextRoundButton();
+    const start = getStartRound();
+    await start();
   };
 
-  const countdown = getCountdown();
-  setTimeout(() => {
-    countdown(3, () => {
-      if (!isMatchEnded()) {
-        attemptStart();
-      }
-    });
-  }, 2000);
+  btn.addEventListener("click", onClick, { once: true });
+  enableNextRoundButton();
 }
 
 /**
@@ -300,6 +288,16 @@ export function _resetForTest() {
   if (timerEl) timerEl.textContent = "";
   const resultEl = document.getElementById("round-message");
   if (resultEl) resultEl.textContent = "";
+  const nextBtn = document.getElementById("next-round-button");
+  if (nextBtn) {
+    const clone = nextBtn.cloneNode(true);
+    nextBtn.replaceWith(clone);
+    clone.disabled = true;
+  }
+  const quitBtn = document.getElementById("quit-match-button");
+  if (quitBtn) {
+    quitBtn.replaceWith(quitBtn.cloneNode(true));
+  }
   {
     const { playerScore, computerScore } = getScores();
     infoBar.updateScore(playerScore, computerScore);
@@ -308,4 +306,11 @@ export function _resetForTest() {
 
 export function getComputerJudoka() {
   return computerJudoka;
+}
+
+const quitButton = document.getElementById("quit-match-button");
+if (quitButton) {
+  quitButton.addEventListener("click", () => {
+    quitMatch();
+  });
 }
