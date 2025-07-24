@@ -166,7 +166,7 @@ To improve organization and reduce visual clutter, each major settings area (e.g
 
 ## Feature Flags & Agent Observability
 
-To support AI-assisted testing, variant gameplay modes, and scalable development, JU-DO-KON! uses a **feature flag system** exposed via the `settings.html` page. Feature flags allow agents and users to toggle experimental or optional features without altering code. Components should also expose their internal state in the DOM for real-time observability.
+To support AI-assisted testing, variant gameplay modes, and scalable development, JU-DO-KON! uses a **feature flag system** exposed via the `settings.html` page. Feature flags allow agents and users to toggle experimental or optional features without altering code. Components should also expose their internal state in the DOM for real-time observability. For player-facing instructions see the [README section on Settings & Feature Flags](../../README.md#settings--feature-flags).
 
 ### 🧩 Feature Flags – Implementation Guidelines
 
