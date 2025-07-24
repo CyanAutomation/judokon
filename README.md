@@ -17,10 +17,11 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 6. [Dependencies](#dependencies)
 7. [Project Structure](#project-structure)
 8. [Display Modes](#display-modes)
-9. [Browser Compatibility](#browser-compatibility)
-10. [Future Plans](#future-plans)
-11. [Contributing](#contributing)
-12. [Changelog](#changelog)
+9. [Settings & Feature Flags](#settings--feature-flags)
+10. [Browser Compatibility](#browser-compatibility)
+11. [Future Plans](#future-plans)
+12. [Contributing](#contributing)
+13. [Changelog](#changelog)
 
 ## Quick Start
 
@@ -309,6 +310,12 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 ## Display Modes
 
 Light, dark and gray themes are supported. See [prdSettingsMenu.md](design/productRequirementsDocuments/prdSettingsMenu.md) for how the Display Mode selector applies these themes and related accessibility checks. If you modify colors, run `npm run check:contrast` while the development server is running.
+
+## Settings & Feature Flags
+
+The Settings page (`src/pages/settings.html`) groups all player preferences, including experimental **feature flags**. Toggle a flag to enable an optional feature without modifying code. Flag values persist across pages and apply immediately. Implementation guidelines live in [settingsPageDesignGuidelines.md](design/codeStandards/settingsPageDesignGuidelines.md#feature-flags--agent-observability).
+
+Battle pages include a collapsible debug panel. Activate the "Toggle Debug" button to reveal real-time match state in a `<pre>` element. The button is keyboard accessible and the panel is hidden by default so normal gameplay remains unaffected.
 
 ## Browser Compatibility
 
