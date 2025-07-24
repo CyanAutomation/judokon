@@ -76,10 +76,12 @@ Designers and developers previously relied on scattered folder structures to fin
 
 ## Wireframe Sketch (Suggested Additions)  
 
-**Layout Elements (Desktop View):**  
-- Image centered with filename below.  
-- Next and Previous buttons on either side of the image.  
-- Close button top-right corner.  
+**Layout Elements (Desktop View):**
+- Image centered with filename below.
+- Images must scale to fit the viewport so wide mockups remain fully
+  visible without horizontal scrolling.
+- Next and Previous buttons on either side of the image.
+- Close button top-right corner.
 
 **Layout Behavior:**  
 - On mobile: buttons stack vertically below image, filename wraps if needed.  
