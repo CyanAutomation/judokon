@@ -162,6 +162,69 @@ To improve organization and reduce visual clutter, each major settings area (e.g
 
 ---
 
+---
+
+## Feature Flags & Agent Observability
+
+To support AI-assisted testing, variant gameplay modes, and scalable development, JU-DO-KON! uses a **feature flag system** exposed via the `settings.html` page. Feature flags allow agents and users to toggle experimental or optional features without altering code. Components should also expose their internal state in the DOM for real-time observability.
+
+### 🧩 Feature Flags – Implementation Guidelines
+
+- **Use Toggle Switch Pattern**  
+  Every feature flag should be implemented as a standard toggle using the existing `.switch` structure (see Styling Guidelines).
+
+- **ID and Naming Convention**  
+  Use predictable `id` and `name` values:  
+  - ID format: `feature-<kebab-case-feature-name>`  
+  - Name format: camelCase  
+  - Example: `id="feature-random-stat-mode" name="randomStatMode"`
+
+- **ARIA and Accessibility**  
+  - Provide `aria-label` for each feature flag  
+  - Label must describe the feature clearly, even if experimental
+
+- **Persistence & Feedback**  
+  - Use the `updateSetting()` pattern to store and reflect current flag states  
+  - UI must reflect the saved state on load and provide immediate visual feedback on toggle
+
+- **Grouping**  
+  - Place all feature flags in a dedicated `<fieldset>` titled `Feature Flags`  
+  - For advanced/experimental features, nest under `Advanced Settings` with appropriate section toggling
+
+---
+
+### 🧠 Component State Observability
+
+To enable AI agents to test, monitor, and debug the impact of feature flags:
+
+- **Expose State via `data-*` Attributes**  
+  - Dynamic components (e.g. game mode managers, card displays) should include `data-*` attributes on their root elements to indicate current internal state  
+  - Example:  
+    ```html
+    <div id="battle-container" data-mode="classic" data-random-stat="true">
+    ```
+
+- **Optional Debug Panels (For Agent Use Only)**  
+  - Add a visually hidden or collapsible debug panel using the `.debug-panel` class for verbose state outputs  
+  - Panel should be toggleable with a keyboard-accessible button  
+  - Output should be readable by screen readers (e.g. wrapped in `<pre role="status" aria-live="polite">`)
+
+---
+
+### ✅ Feature Flag Testing Checklist
+
+When adding a new feature flag:
+
+- [ ] Is it implemented using the toggle switch pattern?
+- [ ] Is it grouped under an appropriate `<fieldset>`?
+- [ ] Does it persist its value using `updateSetting()`?
+- [ ] Does the corresponding component expose state via `data-*`?
+- [ ] Is the flag labelled clearly for screen readers?
+- [ ] Is the flag visible and functional in all display themes?
+- [ ] (Optional) Is there a debug panel or test output for agents?
+
+---
+
 ## Testing Checklist
 
 After adding a setting:
