@@ -25,16 +25,17 @@ Designers and developers previously relied on scattered folder structures to fin
 
 ## Functional Requirements (Prioritized)
 
-| Priority | Feature                        | Description                                                                                 |
-|----------|--------------------------------|---------------------------------------------------------------------------------------------|
-| P1       | Image Carousel                 | Display one mockup image at a time, with navigation to next/previous images.                |
-| P1       | Filename Display               | Show the filename of the currently displayed mockup image.                                  |
-| P1       | Mouse Navigation               | Provide "Next" and "Previous" buttons with accessible `aria-labels`.                        |
-| P1       | Keyboard Navigation            | Support left/right arrow keys and tab-to-button navigation.                                 |
-| P1       | Image Preloading               | Load adjacent images in advance to reduce load time.                                        |
-| P2       | Accessibility                  | All controls are keyboard-accessible with ARIA attributes; use semantic HTML.               |
-| P2       | Responsive Layout              | Layout adapts to different screen sizes (mobile, tablet, desktop).                          |
-| P3       | Visual Effects                 | Apply simple transition effects (e.g., fade-in) on image change to improve UX.              |
+| Priority | Feature             | Description                                                   |
+| -------- | ------------------- | ------------------------------------------------------------- |
+| P1       | Image Carousel      | Displays one mockup at a time with controls for next/previous |
+| P1       | Filename Display    | Shows filename of the currently displayed image               |
+| P1       | Mouse Navigation    | Next/Previous buttons for image cycling                       |
+| P1       | Keyboard Navigation | Supports left/right arrow navigation                          |
+| P1       | Image Preloading    | Loads adjacent images to reduce wait time                     |
+| P2       | Accessibility       | Keyboard interaction and ARIA labels                          |
+| P2       | Responsive Layout   | Adapts layout to different screen sizes                       |
+| P3       | Visual Effects      | Adds fade-in effect on image transition                       |
+
 
 ## Acceptance Criteria
 
@@ -72,3 +73,30 @@ Designers and developers previously relied on scattered folder structures to fin
 **Layout Behavior:**
 - On mobile: buttons stack below image, filename wraps if necessary.
 - All spacing/padding respects 12px grid.
+
+## Tasks
+
+- [ ] 1.0 Build Carousel Viewer Component
+    - [ ] 1.1 Load and display mockup images from `design/mockups/`
+    - [ ] 1.2 Display the filename below the image
+    - [ ] 1.3 Show first image on page load
+
+- [ ] 2.0 Implement Image Navigation
+    - [ ] 2.1 Add "Next" and "Previous" mouse buttons
+    - [ ] 2.2 Add left/right keyboard arrow navigation
+    - [ ] 2.3 Loop navigation from end to start
+
+- [ ] 3.0 Add Performance and Fallback Logic
+    - [ ] 3.1 Preload adjacent images for snappy transitions
+    - [ ] 3.2 Handle image load failures with fallback icon or alt text
+    - [ ] 3.3 Display message if no images are available
+
+- [ ] 4.0 Accessibility Compliance
+    - [ ] 4.1 Add `aria-labels` to all interactive elements
+    - [ ] 4.2 Support full keyboard interaction (tabbing and activation)
+    - [ ] 4.3 Use semantic HTML with proper roles
+
+- [ ] 5.0 Final Touches and UX Polish
+    - [ ] 5.1 Apply fade-in transition when switching images
+    - [ ] 5.2 Ensure responsive layout on desktop/tablet/mobile
+    - [ ] 5.3 Align visual style with JU-DO-KON! branding
