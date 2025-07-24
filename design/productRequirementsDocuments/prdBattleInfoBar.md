@@ -169,9 +169,9 @@ Implementation for score, message, and countdown/stat selection timer updates is
 
 - [x] 2.0 Implement Round Info Messages
   - [x] 2.1 Display win/loss messages for 2 seconds
-  - [x] 2.2 Start countdown timer after message disappears
-  - [ ] 2.3 Display selection prompt when input is needed
-  - [ ] 2.4 Display stat selection timer and auto-select if expired (see Classic Battle PRD)
+- [x] 2.2 Start countdown timer after message disappears
+  - [x] 2.3 Display selection prompt when input is needed
+  - [x] 2.4 Display stat selection timer and auto-select if expired (see Classic Battle PRD)
 
 - [ ] 3.0 Handle Responsive Layout
   - [ ] 3.1 Detect screen width <375px and switch to stacked layout

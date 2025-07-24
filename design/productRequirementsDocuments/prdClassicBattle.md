@@ -162,8 +162,8 @@ _Resolved in [Future Considerations](#future-considerations):_ AI difficulty wil
 ## Tasks
 
 - [x] 1.0 Implement Classic Battle Match Flow
-  - [x] 1.1 Create round loop: random card draw, stat selection, comparison
-  - [ ] 1.2 Implement 30-second stat selection timer with auto-selection fallback (displayed in Info Bar)
+- [x] 1.1 Create round loop: random card draw, stat selection, comparison
+  - [x] 1.2 Implement 30-second stat selection timer with auto-selection fallback (displayed in Info Bar)
   - [x] 1.3 Handle scoring updates on win, loss, and tie
   - [ ] 1.4 End match after 10 points or 25 rounds
 - [ ] 2.0 Add Early Quit Functionality

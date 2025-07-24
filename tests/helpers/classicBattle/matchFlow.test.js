@@ -54,7 +54,9 @@ describe("classicBattle match flow", () => {
     timerSpy.advanceTimersByTime(800);
     await vi.runAllTimersAsync();
     const score = document.querySelector("header #score-display").textContent;
+    const msg = document.querySelector("header #round-message").textContent;
     expect(score).not.toBe("You: 0\nComputer: 0");
+    expect(msg).toMatch(/Auto-selecting/i);
   });
 
   it("quits match after confirmation", async () => {
