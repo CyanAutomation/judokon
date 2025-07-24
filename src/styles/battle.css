@@ -21,6 +21,9 @@
 .battle-header #next-round-timer,
 .battle-header #score-display {
   margin: 0;
+  font-size: clamp(20px, 4vw, 32px);
+  font-weight: bold;
+  color: var(--color-secondary);
 }
 
 @media (max-width: 374px) {
