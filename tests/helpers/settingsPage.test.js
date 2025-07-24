@@ -156,8 +156,44 @@ describe("settingsPage module", () => {
     await vi.runAllTimersAsync();
 
     const container = document.getElementById("feature-flags-container");
-    const input = container.querySelector("#feature-random-stat-mode");
-    expect(input).toBeTruthy();
-    expect(input.checked).toBe(true);
+    const randomInput = container.querySelector("#feature-random-stat-mode");
+    const debugInput = container.querySelector("#feature-battle-debug-panel");
+    expect(randomInput).toBeTruthy();
+    expect(debugInput).toBeTruthy();
+    expect(randomInput.checked).toBe(true);
+    expect(debugInput.checked).toBe(false);
+  });
+
+  it("updates feature flag when toggled", async () => {
+    vi.useFakeTimers();
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updatedSettings = {
+      ...baseSettings,
+      featureFlags: { ...baseSettings.featureFlags, battleDebugPanel: true }
+    };
+    const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
+    const loadGameModes = vi.fn().mockResolvedValue([]);
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadGameModes,
+      updateGameModeHidden: vi.fn()
+    }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const container = document.getElementById("feature-flags-container");
+    const debugInput = container.querySelector("#feature-battle-debug-panel");
+    debugInput.checked = true;
+    debugInput.dispatchEvent(new Event("change"));
+
+    expect(updateSetting).toHaveBeenCalledWith("featureFlags", {
+      randomStatMode: true,
+      battleDebugPanel: true
+    });
   });
 });
