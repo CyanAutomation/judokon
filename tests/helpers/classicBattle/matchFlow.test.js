@@ -48,6 +48,7 @@ describe("classicBattle match flow", () => {
   });
 
   it("auto-selects a stat when timer expires", async () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
     const { startRound, _resetForTest } = await import("../../../src/helpers/classicBattle.js");
     _resetForTest();
     await startRound();
