@@ -50,6 +50,17 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
+## Gameplay Basics
+
+- The standard deck contains **99 unique cards**.
+- Each match begins with both sides receiving **25 random cards**.
+- At the start of each round, both players draw their top card.
+- The player selects one stat (Power, Speed, Technique, etc.).
+- The higher value wins the round and scores **1 point**; used cards are discarded.
+- The match ends when a player reaches **10 points** or after **25 rounds** (draw).
+
+---
+
 ## Technical Considerations
 
 - Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).

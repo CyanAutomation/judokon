@@ -62,6 +62,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 - Carousel loads within 1 second for up to 150 cards.
 - User can scroll left/right via on-screen buttons.
+- Scroll buttons disable when the carousel reaches either end so players cannot scroll past the available cards.
 - User can see an indicator (scroll markers) showing current position.
 - Hovering over a card enlarges it by 10%, verified via bounding box.
 - Carousel is responsive, adapting to both portrait and landscape orientations.
