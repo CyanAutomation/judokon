@@ -45,7 +45,7 @@ describe("settings utils", () => {
       motionEffects: true,
       displayMode: "light",
       gameModes: {},
-      featureFlags: {}
+      featureFlags: { battleDebugPanel: false }
     });
   });
 
@@ -61,7 +61,7 @@ describe("settings utils", () => {
       motionEffects: true,
       displayMode: "dark",
       gameModes: {},
-      featureFlags: {}
+      featureFlags: { battleDebugPanel: false }
     };
     const promise = saveSettings(data);
     await vi.advanceTimersByTimeAsync(110);
@@ -90,7 +90,7 @@ describe("settings utils", () => {
       motionEffects: true,
       displayMode: "light",
       gameModes: {},
-      featureFlags: {}
+      featureFlags: { battleDebugPanel: false }
     });
     Storage.prototype.getItem = originalGetItem;
   });
@@ -132,7 +132,7 @@ describe("settings utils", () => {
         motionEffects: true,
         displayMode: "light",
         gameModes: {},
-        featureFlags: {}
+        featureFlags: { battleDebugPanel: false }
       })
     ).rejects.toThrow("fail");
     Storage.prototype.setItem = originalSetItem;
@@ -165,7 +165,7 @@ describe("settings utils", () => {
       motionEffects: true,
       displayMode: "light",
       gameModes: {},
-      featureFlags: {}
+      featureFlags: { battleDebugPanel: false }
     };
     const data2 = {
       sound: false,
@@ -173,7 +173,7 @@ describe("settings utils", () => {
       motionEffects: false,
       displayMode: "dark",
       gameModes: {},
-      featureFlags: {}
+      featureFlags: { battleDebugPanel: false }
     };
     saveSettings(data1);
     saveSettings(data2);

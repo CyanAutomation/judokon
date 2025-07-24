@@ -11,7 +11,7 @@ const baseSettings = {
   motionEffects: true,
   displayMode: "light",
   gameModes: {},
-  featureFlags: { randomStatMode: false }
+  featureFlags: { randomStatMode: false, battleDebugPanel: false }
 };
 
 describe("randomJudokaPage module", () => {

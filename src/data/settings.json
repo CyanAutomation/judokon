@@ -3,5 +3,8 @@
   "fullNavMap": true,
   "motionEffects": true,
   "displayMode": "light",
-  "gameModes": {}
+  "gameModes": {},
+  "featureFlags": {
+    "battleDebugPanel": false
+  }
 }

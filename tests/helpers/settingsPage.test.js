@@ -7,7 +7,7 @@ const baseSettings = {
   motionEffects: true,
   displayMode: "light",
   gameModes: {},
-  featureFlags: { randomStatMode: true }
+  featureFlags: { randomStatMode: true, battleDebugPanel: false }
 };
 
 describe("settingsPage module", () => {
