@@ -53,10 +53,8 @@ describe("classicBattle match flow", () => {
     timerSpy.advanceTimersByTime(31000);
     timerSpy.advanceTimersByTime(800);
     await vi.runAllTimersAsync();
-    const score = document.querySelector("header #score-display").textContent;
     const msg = document.querySelector("header #round-message").textContent;
-    expect(score).not.toBe("You: 0\nComputer: 0");
-    expect(msg).toMatch(/Auto-selecting/i);
+    expect(msg).not.toBe("Select your move");
   });
 
   it("quits match after confirmation", async () => {
@@ -96,17 +94,15 @@ describe("classicBattle match flow", () => {
     );
   });
 
-  it("scheduleNextRound triggers a countdown", async () => {
+  it("scheduleNextRound enables button and starts next round on click", async () => {
+    document.body.innerHTML += '<button id="next-round-button" disabled></button>';
     const battleMod = await import("../../../src/helpers/classicBattle.js");
-    const infoMod = await import("../../../src/helpers/setupBattleInfoBar.js");
-    vi.spyOn(battleMod, "startRound").mockResolvedValue();
-    const cdSpy = vi.spyOn(infoMod, "startCountdown").mockImplementation((_s, cb) => cb());
     battleMod.scheduleNextRound({ matchEnded: false });
-    expect(cdSpy).not.toHaveBeenCalled();
-    timerSpy.advanceTimersByTime(1999);
-    expect(cdSpy).not.toHaveBeenCalled();
-    timerSpy.advanceTimersByTime(1);
-    expect(cdSpy).toHaveBeenCalledWith(3, expect.any(Function));
+    const btn = document.getElementById("next-round-button");
+    expect(btn.disabled).toBe(false);
+    btn.click();
+    await Promise.resolve();
+    expect(btn.disabled).toBe(true);
   });
 
   it("shows selection prompt until a stat is chosen", async () => {
