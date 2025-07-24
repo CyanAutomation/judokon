@@ -122,4 +122,5 @@ body {
 
 .center-content {
   justify-items: center;
+  grid-template-columns: 1fr;
 }
