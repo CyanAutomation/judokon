@@ -254,7 +254,7 @@ svg {
   height: auto;
   aspect-ratio: 3/2;
   max-width: 60px;
-  border-radius: min(4px, 1vw);
+  border-radius: min(var(--radius-sm), 1vw);
   border: 1px solid var(--color-tertiary);
 }
 .card-portrait {
@@ -466,7 +466,7 @@ svg {
 
 .card-carousel::-webkit-scrollbar-thumb {
   background-color: var(--color-surface);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .card-carousel::-webkit-scrollbar-track {

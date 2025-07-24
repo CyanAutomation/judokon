@@ -33,6 +33,7 @@ button:active {
   width: 100%;
   min-width: var(--touch-target-size, 44px);
   min-height: var(--touch-target-size, 44px);
+  border-radius: var(--radius-pill);
 }
 
 #stat-buttons button.selected {
