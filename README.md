@@ -96,6 +96,12 @@ exist (e.g., `await page.getByTestId("draw-button").waitFor()`). Otherwise
 the evaluation may run before the DOM is ready and throw a `Cannot read
 properties of null` error.
 
+### Unit Test Helpers
+
+Some helpers such as `classicBattle.js` keep match state between rounds. The
+`_resetForTest()` function resets this internal state. Invoke it at the start of
+any unit test that depends on the initial score or timer conditions.
+
 ### Troubleshooting Playwright Tests
 
 A `Test timeout ... waiting for locator('#general-settings-toggle')` error usually means the Settings page failed to load or the server was unreachable. Verify that:
