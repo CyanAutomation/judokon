@@ -5,7 +5,10 @@ import { loadGameModes } from "./gameModeUtils.js";
 /**
  * Base path for navigation links derived from the current module location.
  */
-export const BASE_PATH = new URL("../pages/", import.meta.url);
+export const BASE_PATH = (() => {
+  const url = new URL("../pages/", import.meta.url);
+  return url.href.endsWith("/") ? url : new URL(url.href + "/");
+})();
 
 /**
  * Toggles the expanded map view for landscape mode.
@@ -173,10 +176,12 @@ function addTouchFeedback() {
  *
  * 10. Map the sorted game modes to HTML list items (`<li>`):
  *    - Each list item contains a link (`<a>`) to the corresponding game mode's URL.
+ * 11. Compare each link's URL with `window.location.pathname` and mark the
+ *     matching link with `aria-current="page"` and an `active` class.
  *
- * 11. Update the navigation bar (`.bottom-navbar ul`) with the generated HTML.
+ * 12. Update the navigation bar (`.bottom-navbar ul`) with the generated HTML.
  *
- * 12. Handle any errors during the process:
+ * 13. Handle any errors during the process:
  *    - Log the error to the console and display fallback items in the navigation bar.
  *
  * @returns {Promise<void>} A promise that resolves once the navbar is populated.
@@ -209,12 +214,16 @@ export async function populateNavbar() {
       return;
     }
 
+    const currentPath = window.location.pathname.replace(/^\//, "");
     const ul = document.createElement("ul");
     ul.innerHTML = activeModes
-      .map(
-        (mode) =>
-          `<li><a href="${BASE_PATH}${mode.url}" data-testid="nav-${mode.id}">${mode.name}</a></li>`
-      )
+      .map((mode) => {
+        const href = new URL(mode.url, BASE_PATH).href;
+        const linkPath = new URL(href, window.location.href).pathname.replace(/^\//, "");
+        const isCurrent = linkPath === currentPath || linkPath.endsWith(currentPath);
+        const attrs = isCurrent ? ` class="active" aria-current="page"` : "";
+        return `<li><a href="${href}" data-testid="nav-${mode.id}"${attrs}>${mode.name}</a></li>`;
+      })
       .join("");
     navBar.appendChild(ul);
 
@@ -245,12 +254,16 @@ export async function populateNavbar() {
       }
     ];
 
+    const currentPath = window.location.pathname.replace(/^\//, "");
     const ul = document.createElement("ul");
     ul.innerHTML = fallbackItems
-      .map(
-        (item) =>
-          `<li><a href="${item.url}" data-testid="nav-${item.name.replace(/\s+/g, "")}">${item.name}</a></li>`
-      )
+      .map((item) => {
+        const href = new URL(item.url, BASE_PATH).href;
+        const linkPath = new URL(href, window.location.href).pathname.replace(/^\//, "");
+        const isCurrent = linkPath === currentPath || linkPath.endsWith(currentPath);
+        const attrs = isCurrent ? ` class="active" aria-current="page"` : "";
+        return `<li><a href="${href}" data-testid="nav-${item.name.replace(/\s+/g, "")}"${attrs}>${item.name}</a></li>`;
+      })
       .join("");
     navBar.appendChild(ul);
 

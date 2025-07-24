@@ -203,4 +203,48 @@ describe("populateNavbar", () => {
     expect(items[0].textContent).toBe("X");
     expect(loadGameModes).toHaveBeenCalled();
   });
+
+  it("marks current page link as active", async () => {
+    const navBar = setupDom();
+    stubLogoQuery();
+    const data = [
+      {
+        id: "home",
+        name: "Home",
+        url: "home.html",
+        category: "mainMenu",
+        order: 1,
+        isHidden: false
+      },
+      {
+        id: "about",
+        name: "About",
+        url: "about.html",
+        category: "mainMenu",
+        order: 2,
+        isHidden: false
+      }
+    ];
+    const loadSettings = vi.fn().mockResolvedValue({
+      sound: true,
+      fullNavMap: true,
+      motionEffects: true,
+      displayMode: "light",
+      gameModes: {}
+    });
+    const loadGameModes = vi.fn().mockResolvedValue(data);
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({ loadGameModes }));
+
+    window.history.pushState({}, "", "/src/pages/home.html");
+
+    const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
+
+    await populateNavbar();
+
+    const activeLink = navBar.querySelector("a.active");
+    expect(activeLink).toBeTruthy();
+    expect(activeLink).toHaveAttribute("aria-current", "page");
+    expect(activeLink.textContent).toBe("Home");
+  });
 });
