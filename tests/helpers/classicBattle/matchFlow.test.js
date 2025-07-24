@@ -48,13 +48,14 @@ describe("classicBattle match flow", () => {
   });
 
   it("auto-selects a stat when timer expires", async () => {
-    const { startRound } = await import("../../../src/helpers/classicBattle.js");
+    const { startRound, _resetForTest } = await import("../../../src/helpers/classicBattle.js");
+    _resetForTest();
     await startRound();
     timerSpy.advanceTimersByTime(31000);
-    timerSpy.advanceTimersByTime(800);
     await vi.runAllTimersAsync();
     const msg = document.querySelector("header #round-message").textContent;
-    expect(msg).not.toBe("Select your move");
+    expect(score).toBe("You: 1\nComputer: 0");
+    expect(msg).toMatch(/win the round/i);
   });
 
   it("quits match after confirmation", async () => {
