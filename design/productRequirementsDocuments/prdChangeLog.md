@@ -62,6 +62,7 @@ Players and developers currently lack a simple, in-game method to see which Judo
 
 - Table rows appear instantly (no animation) to prioritize performance.
 - Portrait thumbnails are 48×48 px with rounded corners.
+- ID column width matches the 48 px portrait column because IDs never exceed three digits.
 - All cells have a minimum 44px touch target.
 - Responsive layout: two-column stacking below 600px width; portraits align left, text stacks right.
 - Row height: min 56px; all touchable areas ≥44px.

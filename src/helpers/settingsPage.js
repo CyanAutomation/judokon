@@ -17,6 +17,7 @@ import {
   applyInitialControlValues,
   attachToggleListeners,
   renderGameModeSwitches,
+  renderFeatureFlagSwitches,
   setupSectionToggles
 } from "./settings/index.js";
 
@@ -42,6 +43,7 @@ function initializeControls(settings, gameModes) {
     displaySelect: document.getElementById("display-mode-select")
   };
   const modesContainer = document.getElementById("game-mode-toggle-container");
+  const flagsContainer = document.getElementById("feature-flags-container");
   const errorPopup = document.getElementById("settings-error-popup");
 
   const getCurrentSettings = () => currentSettings;
@@ -72,6 +74,12 @@ function initializeControls(settings, gameModes) {
   applyInitialControlValues(controls, currentSettings);
   attachToggleListeners(controls, getCurrentSettings, handleUpdate);
   renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
+  renderFeatureFlagSwitches(
+    flagsContainer,
+    currentSettings.featureFlags,
+    getCurrentSettings,
+    handleUpdate
+  );
 }
 
 async function initializeSettingsPage() {
