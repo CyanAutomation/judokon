@@ -218,6 +218,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Icon + label pairs
 - Inline icons use Material Symbols SVGs with `viewBox="0 -960 960 960"`.
 - Clear active/focus state
+- The current page link uses a secondary blue background and `aria-current="page"`
 - Do not truncate labels
 
 ### 8.3 Judoka Cards
@@ -305,6 +306,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Primary style uses `var(--button-bg)`, `var(--button-hover-bg)`, `var(--button-active-bg)`, and `var(--button-text-color)`
 - `.secondary-button` variation with lighter background and border
 - Minimum height 44-48 px; keep `--radius-pill`
+- All buttons must use either `--radius-md` or `--radius-pill`; avoid hardcoded values like `4px`
 - Hover/active states scale slightly and use drop shadows
 - Ripple feedback via `setupButtonEffects()`
 - `:focus-visible` outline or underline for keyboard users

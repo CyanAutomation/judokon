@@ -404,6 +404,9 @@ Layout containers should include a `vh` fallback declared before the `dvh` rule 
 ## Changelog
 
 The game includes an in-app change log that lists the 20 most recently updated judoka. The page loads data from `judoka.json` and is populated by `changeLogPage.js`. Open the **Settings** screen and use the **Links** section to visit `src/pages/changeLog.html`, the PRD reader, or the design mockup viewer. The log table now uses a responsive CSS grid with padded cells. Columns appear in the following order: **ID**, **Portrait**, **Name**, **Code**, and **Date**. Open the **Settings** screen and choose **View Change Log** to visit `src/pages/changeLog.html`.
+- Documented navigation highlight for the current page using secondary blue and `aria-current="page"`.
+- Clarified button radius: use `--radius-md` or `--radius-pill`; avoid hardcoded values.
+
 
 ## Future Plans
 
