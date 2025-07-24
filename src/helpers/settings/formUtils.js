@@ -83,3 +83,29 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
     });
   });
 }
+
+export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, handleUpdate) {
+  if (!container || !flags) return;
+  Object.keys(flags).forEach((flag) => {
+    const kebab = flag.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+    const label = flag.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
+    const wrapper = createToggleSwitch(label, {
+      id: `feature-${kebab}`,
+      name: flag,
+      checked: Boolean(getCurrentSettings().featureFlags[flag]),
+      ariaLabel: label
+    });
+    container.appendChild(wrapper);
+    const input = wrapper.querySelector("input");
+    input.addEventListener("change", () => {
+      const prev = !input.checked;
+      const updated = {
+        ...getCurrentSettings().featureFlags,
+        [flag]: input.checked
+      };
+      handleUpdate("featureFlags", updated, () => {
+        input.checked = prev;
+      });
+    });
+  });
+}

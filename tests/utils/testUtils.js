@@ -56,12 +56,15 @@ export function createSettingsDom() {
   displayModeSelect.id = "display-mode-select";
   const gameModeToggleContainer = document.createElement("section");
   gameModeToggleContainer.id = "game-mode-toggle-container";
+  const featureFlagsContainer = document.createElement("section");
+  featureFlagsContainer.id = "feature-flags-container";
   fragment.append(
     soundToggle,
     navmapToggle,
     motionToggle,
     displayModeSelect,
-    gameModeToggleContainer
+    gameModeToggleContainer,
+    featureFlagsContainer
   );
   return fragment;
 }

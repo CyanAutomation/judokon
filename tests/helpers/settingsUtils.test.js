@@ -44,7 +44,8 @@ describe("settings utils", () => {
       fullNavMap: true,
       motionEffects: true,
       displayMode: "light",
-      gameModes: {}
+      gameModes: {},
+      featureFlags: {}
     });
   });
 
@@ -59,7 +60,8 @@ describe("settings utils", () => {
       fullNavMap: true,
       motionEffects: true,
       displayMode: "dark",
-      gameModes: {}
+      gameModes: {},
+      featureFlags: {}
     };
     const promise = saveSettings(data);
     await vi.advanceTimersByTimeAsync(110);
@@ -87,7 +89,8 @@ describe("settings utils", () => {
       fullNavMap: true,
       motionEffects: true,
       displayMode: "light",
-      gameModes: {}
+      gameModes: {},
+      featureFlags: {}
     });
     Storage.prototype.getItem = originalGetItem;
   });
@@ -128,7 +131,8 @@ describe("settings utils", () => {
         fullNavMap: true,
         motionEffects: true,
         displayMode: "light",
-        gameModes: {}
+        gameModes: {},
+        featureFlags: {}
       })
     ).rejects.toThrow("fail");
     Storage.prototype.setItem = originalSetItem;
@@ -160,14 +164,16 @@ describe("settings utils", () => {
       fullNavMap: false,
       motionEffects: true,
       displayMode: "light",
-      gameModes: {}
+      gameModes: {},
+      featureFlags: {}
     };
     const data2 = {
       sound: false,
       fullNavMap: true,
       motionEffects: false,
       displayMode: "dark",
-      gameModes: {}
+      gameModes: {},
+      featureFlags: {}
     };
     saveSettings(data1);
     saveSettings(data2);

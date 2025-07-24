@@ -31,7 +31,8 @@ const DEFAULT_SETTINGS = {
   fullNavMap: true,
   motionEffects: true,
   displayMode: "light",
-  gameModes: {}
+  gameModes: {},
+  featureFlags: {}
 };
 export { DEFAULT_SETTINGS };
 
@@ -144,4 +145,5 @@ export async function updateSetting(key, value) {
  * @property {boolean} motionEffects
  * @property {"light"|"dark"|"gray"} displayMode
  * @property {Record<string, boolean>} [gameModes]
+ * @property {Record<string, boolean>} [featureFlags]
  */

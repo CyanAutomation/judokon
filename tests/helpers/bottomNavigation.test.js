@@ -141,7 +141,8 @@ describe("populateNavbar", () => {
       fullNavMap: true,
       motionEffects: true,
       displayMode: "light",
-      gameModes: { B: false }
+      gameModes: { B: false },
+      featureFlags: {}
     });
     const loadGameModes = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
@@ -188,7 +189,8 @@ describe("populateNavbar", () => {
       fullNavMap: true,
       motionEffects: true,
       displayMode: "light",
-      gameModes: {}
+      gameModes: {},
+      featureFlags: {}
     });
     const loadGameModes = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
@@ -230,7 +232,8 @@ describe("populateNavbar", () => {
       fullNavMap: true,
       motionEffects: true,
       displayMode: "light",
-      gameModes: {}
+      gameModes: {},
+      featureFlags: {}
     });
     const loadGameModes = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
