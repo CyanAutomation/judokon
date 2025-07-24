@@ -276,7 +276,7 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
 - Layout keeps the Random Judoka draw button within the viewport even with the fixed footer navigation
 - Country picker panel appears below the fixed header for unobstructed viewing
 - Scroll buttons disable when the carousel reaches either end
-- Header bar displays real-time round results, countdown timer and score
+- The battle **Info Bar** in the header shows round results, a countdown to the next round, and your current score
 - Mockup viewer page with next/back controls for design screenshots (includes a Home link)
 - Settings page includes a **Links** section with shortcuts to the Change Log, PRD reader, and Mockup viewer
 - Contextual tooltips explain stats and buttons on hover or focus
