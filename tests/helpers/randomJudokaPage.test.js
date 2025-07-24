@@ -10,7 +10,8 @@ const baseSettings = {
   fullNavMap: true,
   motionEffects: true,
   displayMode: "light",
-  gameModes: {}
+  gameModes: {},
+  featureFlags: { randomStatMode: false }
 };
 
 describe("randomJudokaPage module", () => {

@@ -24,6 +24,11 @@
       "type": "object",
       "description": "Per-mode enable/disable flags.",
       "additionalProperties": { "type": "boolean" }
+    },
+    "featureFlags": {
+      "type": "object",
+      "description": "Experimental feature toggles.",
+      "additionalProperties": { "type": "boolean" }
     }
   },
   "required": ["sound", "fullNavMap", "motionEffects", "displayMode"],

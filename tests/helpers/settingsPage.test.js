@@ -6,7 +6,8 @@ const baseSettings = {
   fullNavMap: true,
   motionEffects: true,
   displayMode: "light",
-  gameModes: {}
+  gameModes: {},
+  featureFlags: { randomStatMode: true }
 };
 
 describe("settingsPage module", () => {
@@ -134,5 +135,29 @@ describe("settingsPage module", () => {
     input.dispatchEvent(new Event("change"));
 
     expect(updateGameModeHidden).toHaveBeenCalledWith("classic", true);
+  });
+
+  it("renders feature flag switches", async () => {
+    vi.useFakeTimers();
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updateSetting = vi.fn().mockResolvedValue(baseSettings);
+    const loadGameModes = vi.fn().mockResolvedValue([]);
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadGameModes,
+      updateGameModeHidden: vi.fn()
+    }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const container = document.getElementById("feature-flags-container");
+    const input = container.querySelector("#feature-random-stat-mode");
+    expect(input).toBeTruthy();
+    expect(input.checked).toBe(true);
   });
 });
