@@ -53,6 +53,7 @@ describe("classicBattle match flow", () => {
     await startRound();
     timerSpy.advanceTimersByTime(31000);
     await vi.runAllTimersAsync();
+    const score = document.querySelector("header #score-display").textContent;
     const msg = document.querySelector("header #round-message").textContent;
     expect(score).toBe("You: 1\nComputer: 0");
     expect(msg).toMatch(/win the round/i);
