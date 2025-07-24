@@ -32,7 +32,7 @@ const DEFAULT_SETTINGS = {
   motionEffects: true,
   displayMode: "light",
   gameModes: {},
-  featureFlags: {}
+  featureFlags: { battleDebugPanel: false }
 };
 export { DEFAULT_SETTINGS };
 

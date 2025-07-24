@@ -14,7 +14,8 @@
  *       `handleStatSelection`.
  *    b. Set `window.startRoundOverride` to `startRoundWrapper` so the battle
  *       module uses it for subsequent rounds.
- *    c. Load feature flags and set `data-*` attributes on `#battle-area`.
+ *    c. Load feature flags, set `data-*` attributes on `#battle-area`, and
+ *       toggle the debug panel based on the `battleDebugPanel` flag.
  *    d. Invoke `startRoundWrapper` to begin the match.
  * 5. Execute `setupClassicBattlePage` with `onDomReady`.
  */
@@ -75,14 +76,13 @@ export async function setupClassicBattlePage() {
     battleArea.dataset.randomStat = String(Boolean(settings.featureFlags.randomStatMode));
   }
 
-  const debugToggle = document.getElementById("debug-toggle");
   const debugPanel = document.getElementById("debug-panel");
-  if (debugToggle && debugPanel) {
-    debugToggle.addEventListener("click", () => {
-      const expanded = debugToggle.getAttribute("aria-expanded") === "true";
-      debugToggle.setAttribute("aria-expanded", String(!expanded));
-      debugPanel.classList.toggle("hidden", expanded);
-    });
+  if (debugPanel) {
+    if (settings.featureFlags.battleDebugPanel) {
+      debugPanel.classList.remove("hidden");
+    } else {
+      debugPanel.remove();
+    }
   }
 
   window.startRoundOverride = startRoundWrapper;
