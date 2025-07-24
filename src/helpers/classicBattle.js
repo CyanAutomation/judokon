@@ -8,6 +8,8 @@ import {
   handleStatSelection as engineHandleStatSelection,
   quitMatch as engineQuitMatch,
   getScores,
+  getTimerState,
+  isMatchEnded,
   STATS,
   _resetForTest as engineReset
 } from "./battleEngine.js";
@@ -25,6 +27,17 @@ export function getStartRound() {
 let judokaData = null;
 let gokyoLookup = null;
 let computerJudoka = null;
+
+function updateDebugPanel() {
+  const pre = document.getElementById("debug-output");
+  if (!pre) return;
+  const state = {
+    ...getScores(),
+    timer: getTimerState(),
+    matchEnded: isMatchEnded()
+  };
+  pre.textContent = JSON.stringify(state, null, 2);
+}
 
 /**
  * Remove highlight and focus from all stat buttons.
@@ -182,6 +195,7 @@ export async function startRound() {
   const { playerScore, computerScore } = getScores();
   infoBar.updateScore(playerScore, computerScore);
   startTimer();
+  updateDebugPanel();
 }
 
 /**
@@ -209,6 +223,7 @@ export function evaluateRound(stat) {
     const { playerScore, computerScore } = getScores();
     infoBar.updateScore(playerScore, computerScore);
   }
+  updateDebugPanel();
   return result;
 }
 
@@ -238,6 +253,7 @@ export function scheduleNextRound(result) {
 
   btn.addEventListener("click", onClick, { once: true });
   enableNextRoundButton();
+  updateDebugPanel();
 }
 
 /**
@@ -256,6 +272,7 @@ export async function handleStatSelection(stat) {
   const result = evaluateRound(stat);
   resetStatButtons();
   scheduleNextRound(result);
+  updateDebugPanel();
 }
 
 /**
@@ -302,6 +319,7 @@ export function _resetForTest() {
     const { playerScore, computerScore } = getScores();
     infoBar.updateScore(playerScore, computerScore);
   }
+  updateDebugPanel();
 }
 
 export function getComputerJudoka() {

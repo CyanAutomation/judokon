@@ -84,6 +84,17 @@
             <p id="round-result" aria-live="polite" aria-atomic="true"></p>
             <button id="next-round-button" disabled>Next Round</button>
             <button id="quit-match-button">Quit Match</button>
+            <button
+              id="debug-toggle"
+              class="debug-toggle"
+              aria-controls="debug-panel"
+              aria-expanded="false"
+            >
+              Toggle Debug
+            </button>
+            <div id="debug-panel" class="debug-panel hidden">
+              <pre id="debug-output" role="status" aria-live="polite"></pre>
+            </div>
           </div>
         </section>
       </main>
