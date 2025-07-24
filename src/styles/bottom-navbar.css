@@ -39,8 +39,16 @@
 .bottom-navbar a {
   position: relative;
   overflow: hidden;
+  border-radius: var(--radius-md);
 }
 
 .bottom-navbar a:hover {
+  background-color: var(--button-hover-bg);
+  box-shadow: var(--shadow-base);
   text-decoration: underline;
+}
+
+.bottom-navbar a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
