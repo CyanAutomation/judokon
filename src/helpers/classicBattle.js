@@ -102,6 +102,7 @@ function startTimer() {
     },
     () => {
       const randomStat = STATS[Math.floor(Math.random() * STATS.length)];
+      infoBar.showMessage(`Time's up! Auto-selecting ${randomStat}`);
       handleStatSelection(randomStat);
     }
   );
