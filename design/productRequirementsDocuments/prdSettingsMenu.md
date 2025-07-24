@@ -111,6 +111,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - AC-4.2 Selected mode persists through a page refresh within the same session.
 - AC-4.3 Current display mode is correctly pulled from `settings.json` on page load.
 - AC-4.4 Transition to new display mode completes without visible flickering or rendering artifacts.
+- Implementation uses the `applyDisplayMode` helper which sets a `data-theme` attribute on `<body>` so `base.css` variables can switch values per theme.
 
 ### Game Modes Toggles
 
@@ -175,6 +176,7 @@ This pattern keeps the settings page organized and accessible, especially as mor
 - Player can open **Change Log** to view recent judoka updates.
 - Player can open **PRD Viewer** to read product requirement documents.
 - Player can open **Mockup Viewer** to browse design mockups.
+- The mockup viewer provides Next/Back controls for cycling through images and includes a Home link back to the main menu.
 
 ---
 

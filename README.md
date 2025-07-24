@@ -260,26 +260,7 @@ The repository specifies commenting standards in design/codeStandards. JSDoc com
 
 ## Features
 
-- 99-card deck featuring elite judoka (slowly building up to this)
-- One-on-one stat battles
-- Designed for kids and judo fans alike
-- Playable directly in the browser
-- Loading indicator for better user experience
-- Modularized JavaScript for better maintainability
-- Slide-in country picker, opened via a panel icon with an arrow, for filtering judoka by flag with accessible
-  `aria-label` descriptions
-- Draw button on the Random Judoka screen provides its accessible name via
-  `aria-label="Draw a random judoka card"` so screen readers announce the same
-  label even if the visible text changes. The Playwright suite verifies that
-  this aria-label stays "Draw a random judoka card" regardless of the button's
-  visible text.
-- Layout keeps the Random Judoka draw button within the viewport even with the fixed footer navigation
-- Country picker panel appears below the fixed header for unobstructed viewing
-- Scroll buttons disable when the carousel reaches either end
-- Header bar displays real-time round results, countdown timer and score
-- Mockup viewer page with next/back controls for design screenshots (includes a Home link)
-- Settings page includes a **Links** section with shortcuts to the Change Log, PRD reader, and Mockup viewer
-- Contextual tooltips explain stats and buttons on hover or focus
+JU-DO-KON! offers a 99-card deck and one-on-one stat battles in a fully browser-based format. The UI supports accessible components, modular JavaScript helpers, and a country picker for filtering cards. See the Product Requirements Documents in `design/productRequirementsDocuments` for details.
 
 ## About JU-DO-KON!
 
@@ -295,31 +276,7 @@ This project is built with HTML, CSS, and JavaScript, and hosted on GitHub Pages
 
 ## 🎮 How to Play JUDOKON!
 
-**JUDOKON!** is a fast-paced, Top Trumps-style card game featuring real-life elite judoka. You play against the computer in a battle of stats — first to 10 wins takes the match!
-
-### 🥋 The Rules:
-
-1. **You vs. Computer**
-   - Each match starts with both players receiving **25 random cards** from a 99-card deck.
-
-2. **Start the Battle**
-   - In each round, you and the computer each draw your top card.
-
-3. **Choose Your Stat**
-   - You select one of the stats on your card (e.g. Power, Speed, Technique, etc.)
-
-4. **Compare Stats**
-   - The chosen stat is compared with the computer’s card.
-   - **Highest value wins the round**.
-   - If both stats are equal, it’s a **draw** — no one scores.
-
-5. **Scoring**
-   - Each round win gives you **1 point**.
-   - The cards used in that round are **discarded** (not reused).
-
-6. **Winning the Match**
-   - First player to reach **10 points** wins!
-   - If **neither player reaches 10 points after 25 rounds**, the match ends in a **draw**.
+See [prdClassicBattle.md](design/productRequirementsDocuments/prdClassicBattle.md) for a step‑by‑step overview of match flow and scoring.
 
 ## Live Demo
 
@@ -345,14 +302,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 
 ## Display Modes
 
-JU-DO-KON! supports **light**, **dark**, and **gray** themes. The
-`applyDisplayMode` helper sets a `data-theme` attribute on the `<body>` element
-so CSS in `src/styles/base.css` can override variables for each mode. Define a
-new theme by adding a `[data-theme="my-theme"]` block with your custom
-variables and call `applyDisplayMode("my-theme")` to activate it.
-
-If you modify theme colors, run `npm run check:contrast` while the development
-server is running to verify adequate color contrast.
+Light, dark and gray themes are supported. See [prdSettingsMenu.md](design/productRequirementsDocuments/prdSettingsMenu.md) for how the Display Mode selector applies these themes and related accessibility checks. If you modify colors, run `npm run check:contrast` while the development server is running.
 
 ## Browser Compatibility
 
@@ -403,9 +353,7 @@ Layout containers should include a `vh` fallback declared before the `dvh` rule 
 
 ## Changelog
 
-The game includes an in-app change log that lists the 20 most recently updated judoka. The page loads data from `judoka.json` and is populated by `changeLogPage.js`. Open the **Settings** screen and use the **Links** section to visit `src/pages/changeLog.html`, the PRD reader, or the design mockup viewer. The log table now uses a responsive CSS grid with padded cells. Columns appear in the following order: **ID**, **Portrait**, **Name**, **Code**, and **Date**. Open the **Settings** screen and choose **View Change Log** to visit `src/pages/changeLog.html`.
-- Documented navigation highlight for the current page using secondary blue and `aria-current="page"`.
-- Clarified button radius: use `--radius-md` or `--radius-pill`; avoid hardcoded values.
+See [prdChangeLog.md](design/productRequirementsDocuments/prdChangeLog.md) for requirements around the in-app change log that lists the twenty most recently updated judoka.
 
 
 ## Future Plans
