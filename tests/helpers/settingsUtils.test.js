@@ -106,12 +106,14 @@ describe("settings utils", () => {
   });
 
   /**
-   * Should reject if settings JSON is invalid.
+   * Should reset to defaults if settings JSON is invalid.
    */
-  it("rejects when parsing fails", async () => {
+  it("recovers from invalid stored JSON", async () => {
     localStorage.setItem("settings", "{bad json}");
     const { loadSettings } = await import("../../src/helpers/settingsUtils.js");
-    await expect(loadSettings()).rejects.toBeInstanceOf(Error);
+    const settings = await loadSettings();
+    expect(settings).toEqual(DEFAULT_SETTINGS);
+    expect(localStorage.getItem("settings")).toBeNull();
   });
 
   /**
