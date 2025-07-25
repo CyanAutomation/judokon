@@ -286,6 +286,11 @@ The project ships with a retrieval-augmented search demo. Run `npm run generate:
 
 After modifying any PRDs, tooltip text, or game rule files, run `npm run generate:embeddings` again to rebuild `client_embeddings.json`. Commit the updated file alongside your documentation changes so other agents have the latest vectors.
 
+- Display up to five results below the form showing match score and source.
+- If embeddings fail to load, show “Embeddings could not be loaded – please check console.”
+- Show “No close matches found” when the search returns nothing.
+- Allow form submission by pressing **Enter** in the search box.
+
 ## About JU-DO-KON!
 
 **JU-DO-KON!** is a fast-paced, web-based card game, featuring real-life elite judoka. Designed for ages 8–12, the game uses simplified stats, vibrant collectible cards, and a player-vs-computer battle format. First to win 10 rounds takes the match!
