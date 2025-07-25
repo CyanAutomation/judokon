@@ -40,7 +40,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 | Priority | Feature                    | Description                                                                 |
 | -------- | -------------------------- | --------------------------------------------------------------------------- |
 | P1       | Sound Toggle               | Binary toggle updating `settings.json` live on change.                      |
-| P1       | Full Navigation Map Toggle | Binary toggle updating `settings.json` live on change.                      |
+| P1       | Full Navigation Map Feature Flag | Enable or disable the full navigation map via feature flag; updates `settings.json` live on change. |
 | P1       | Motion Effects Toggle      | Binary toggle updating `settings.json` live on change.                      |
 | P1       | Display Mode Selector      | Three-option selector applying mode instantly across UI.                    |
 | P2       | Game Modes Toggles         | A list of all defined game modes with binary toggles from `gameModes.json`. |
@@ -56,7 +56,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 ## Settings Features
 
 - **Sound (binary):** ON/OFF (default: ON)
-- **Full navigation map (binary):** ON/OFF (default: ON)
+- **Full navigation map feature flag (binary):** ON/OFF (default: ON)
 - **Motion effects (binary):** ON/OFF (default: ON)
 - **Display mode (three options):** Light, Dark, Gray (default: Light)
   - _Gray mode_ provides a grayscale display to reduce visual noise for neurodivergent users.
@@ -93,11 +93,11 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - AC-1.2 Toggling sound updates the UI indicator (toggle visually reflects ON/OFF state).
 - AC-1.3 Toggling sound causes no console errors or JS exceptions.
 
-### Full Navigation Map Toggle
+### Full Navigation Map Feature Flag
 
-- AC-2.1 When toggled ON/OFF, updates `settings.json` within 50ms.
-- AC-2.2 Toggle correctly updates the UI indicator.
-- AC-2.3 Navigation behavior updates immediately if functionality is active.
+- AC-2.1 Enabling or disabling the flag updates `settings.json` within 50ms.
+- AC-2.2 The toggle correctly reflects the current flag state in the UI.
+- AC-2.3 The navigation map is available only when the flag is enabled.
 
 ### Motion Effects Toggle
 
@@ -190,7 +190,7 @@ This pattern keeps the settings page organized and accessible, especially as mor
   - Color contrast: Minimum 4.5:1 contrast ratio in all display modes per WCAG 2.1.
 - **Interaction flow:**
 
-  - Tab order should proceed top-to-bottom: **display mode → sound → nav map → motion → game mode toggles**.
+  - Tab order should proceed top-to-bottom: **display mode → sound → motion → game mode toggles**.
   - Users can navigate and activate each control without needing a mouse.
   - **Section layout:** The page begins with an `<h1>` heading followed by two `<fieldset>` sections—**General Settings** and **Game Modes**—each using the `.game-mode-toggle-container` grid. The second fieldset keeps `id="game-mode-toggle-container"` so scripts can find it.
 
