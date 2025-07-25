@@ -2,7 +2,9 @@
 
 ## Overview (TL;DR)
 
-This PRD defines the implementation of a lightweight vector database for semantic search across JU-DO-KON! assets such as PRDs, tooltips, and game rules. This system supports AI agent workflows (e.g. QA, code generation, test case generation) by enabling agents to search project data semantically. The database will be built offline and queried statically within the browser or via lightweight functions, supporting both in-browser and local development agents.
+This PRD defines the implementation of a lightweight vector database for semantic search across JU-DO-KON! assets such as PRDs, tooltips, and game rules. This system supports AI agent workflows (e.g. QA, card generation, bug reproduction, test case creation) by enabling agents to search project data semantically.
+
+By enabling faster and more accurate AI tooling, this feature indirectly enhances game quality and speed of delivery — leading to more balanced cards, faster bug fixes, and smoother releases for JU-DO-KON! players.
 
 ---
 
@@ -11,6 +13,8 @@ This PRD defines the implementation of a lightweight vector database for semanti
 As the JU-DO-KON! project scales, AI agents increasingly need to reason across scattered data sources (PRDs, JSON configs, tooltips). Current keyword-based methods are brittle, especially when terminology is inconsistent (e.g. “grip fighting” vs. “kumi-kata”). This results in agents producing invalid queries or misclassifying design intents — e.g., test cases missing kumi-kata interactions due to synonyms not being recognized.
 
 Without a semantic memory layer, agents must either parse entire documents from scratch or rely on hardcoded rules — both of which are inefficient and error-prone.
+
+Ultimately, these issues increase the risk of bugs reaching players, slow down the delivery of new cards, and make it harder to maintain design consistency — all of which degrade the play experience for our core audience (kids ages 8–12).
 
 ---
 
@@ -37,7 +41,7 @@ Without a semantic memory layer, agents must either parse entire documents from 
 - **As an AI QA agent**, I want to search PRDs semantically so I can generate test plans based on actual feature requirements.
 - **As a developer**, I want to retrieve styling or logic guidance from related documents so I don’t duplicate existing work.
 - **As a prompt-generation agent**, I want to find consistent naming or stat patterns in `judoka.json` so I can create new cards that fit the house style.
-- **As a player support agent**, I want to surface explanations of unfamiliar terms like “Kumi-kata” by searching tooltips and stat descriptions.
+- **As a player support agent**, I want to surface explanations of unfamiliar terms like “Kumi-kata” by searching tooltips and stat descriptions — enabling faster responses to young players.
 
 ---
 
@@ -85,9 +89,12 @@ Without a semantic memory layer, agents must either parse entire documents from 
 - Vector format must be JSON-serializable and readable by JavaScript.
 - Embedding dimensionality must be ≤384 for performance.
 - UI must support keyboard navigation and screen readers.
+- Tap/click targets should be at least 44px height for accessibility.
+- Lookup responses must render within 200ms; show loading spinner if delayed.
 
 ### UI Mockup
 
+```
 +–––––––––––––––––––––––––––––+
 JU-DO-KON! Vector Search
 [ Search bar (e.g. “Kumi-kata”) ]  [Search Button]
@@ -98,7 +105,13 @@ Source: Tooltip.json
 2. “Grip fighting principles are defined in PRD…”
 Source: PRD_techniques.md
 –––––––––––––––––––––––––––––
+```
 
+---
+
+## Player Settings
+
+No user settings or toggles are included. This is appropriate since the feature is meant for development and agent use only. The in-browser demo is fixed-function and does not require configurable options.
 
 ---
 
@@ -111,7 +124,7 @@ Source: PRD_techniques.md
 
 ### Open Questions:
 - Should this feature support live embedding via API (e.g. OpenAI) or remain static?
-- Do we want a UI search tool for users, or agent-only access?
+- Do we want a UI search tool for developers and designers, or agent-only access?
 - Should embedding versioning be tracked per file (`v1_embeddings.json`)?
 
 ## Tasks
