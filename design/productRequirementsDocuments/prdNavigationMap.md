@@ -99,6 +99,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 ## Player Settings (Optional)
 
 - **Simple Menu Mode:** In settings, players can toggle "Simple Menu Mode" ON, which hides the map icon and corresponding functionality. Default is OFF.
+- **Full Navigation Map Flag:** Access to the expanded map is controlled via the `fullNavigationMap` feature flag on the Settings page. Disabling this flag hides the map entirely and behaves like "Simple Menu Mode" is forced.
 - **Toggle Behavior:** If "Simple Menu Mode" is toggled ON or OFF mid-session, the footer immediately updates to reflect the selected mode without requiring a page reload.
 
 ---
