@@ -3,7 +3,7 @@
 .battle-header .info-right {
   display: flex;
   flex-direction: column;
-  padding: 0 2rem;
+  padding: 1vh 1.5rem;
 }
 
 .battle-header .info-left {
@@ -17,13 +17,26 @@
   align-items: flex-end;
 }
 
-.battle-header #round-message,
-.battle-header #next-round-timer,
-.battle-header #score-display {
+.battle-header #round-message {
   margin: 0;
-  font-size: clamp(20px, 4vw, 32px);
+  font-size: clamp(18px, 4vw, 30px);
   font-weight: bold;
   color: var(--color-secondary);
+}
+
+.battle-header #next-round-timer {
+  margin: 0;
+  font-size: clamp(15px, 3vw, 18px);
+  font-weight: bold;
+  color: var(--color-secondary);
+}
+
+.battle-header #score-display {
+  margin: 0;
+  font-size: clamp(18px, 3.5vw, 26px);
+  font-weight: bold;
+  color: var(--color-secondary);
+  text-align: right;
 }
 
 @media (max-width: 374px) {
@@ -69,10 +82,15 @@
 
 /* Collapsible debug panel */
 .debug-panel {
-  border: 1px dashed #999;
-  padding: 0.5rem;
+  background-color: #f9f9f9;
+  border-radius: 10%;
+  padding: 0.8rem;
   margin-top: 1rem;
   font-family: monospace;
-  font-size: 0.875rem;
+  font-size: 1rem;
   overflow-x: auto;
+  text-align: left;
+  max-width: 300px;
+  margin: 5vh auto;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 }
