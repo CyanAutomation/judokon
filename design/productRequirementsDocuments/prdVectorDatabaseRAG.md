@@ -32,7 +32,7 @@ Ultimately, these issues increase the risk of bugs reaching players, slow down t
 | Response accuracy | ≥90% agent-retrieved responses align with top 3 relevant matches |
 | Search latency | ≤200ms average similarity lookup on mid-tier desktop browsers (e.g., 2022 MacBook Air M1 or Windows laptop with 8GB RAM) |
 | Coverage | ≥90% of PRDs/tooltips indexed within the system |
-| File size | <1MB total JSON size for client-side compatibility |
+| File size | <3MB total JSON size for client-side compatibility |
 
 ---
 
@@ -72,7 +72,7 @@ After editing PRDs, tooltips, or game rules, run `npm run generate:embeddings` f
 - [x] Each returned result includes both the match score and a reference to the original source
 - [x] Agent prompt templates are provided with guidance on embedding format and retrieval usage
 - [x] The system handles malformed or missing embeddings gracefully (e.g. logs a warning or returns empty result)
-- [x] The `client_embeddings.json` file remains <1MB to ensure quick page load and GitHub Pages compatibility
+- [x] The `client_embeddings.json` file remains <3MB to ensure quick page load and GitHub Pages compatibility
 
 ---
 
@@ -143,7 +143,7 @@ No user settings or toggles are included. This is appropriate since the feature 
 
 - [ ] 2.0 Implement Client-Side Embedding Store
   - [ ] 2.1 Structure JSON with `id`, `text`, `embedding`, `source`, `tags`
-  - [ ] 2.2 Ensure total file size <1MB
+  - [ ] 2.2 Ensure total file size <3MB
   - [ ] 2.3 Validate JSON loading in-browser
 
 - [ ] 3.0 Develop Similarity Search Function

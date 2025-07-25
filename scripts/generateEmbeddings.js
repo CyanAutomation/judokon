@@ -8,7 +8,7 @@
  * 3. Load a transformer model for feature extraction.
  * 4. Encode each text block into an embedding vector.
  * 5. Build output objects with id, text, embedding, source, tags, and version.
- * 6. Ensure the final JSON output is under 1MB and write to disk.
+ * 6. Ensure the final JSON output is under 3MB and write to disk.
  */
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
