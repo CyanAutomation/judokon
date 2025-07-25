@@ -88,11 +88,19 @@ body {
 .logo-container {
   display: flex;
   justify-content: center;
+  align-items: center;
+  flex: 1 0 auto;
+  height: 100%;
 }
 
 .logo {
-  height: 5dvh;
+  height: 100%;
+  max-height: min(8dvh, 44px);
+  width: auto;
+  border-radius: 10%;
+  margin-top: 0;
 }
+
 .game-mode-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
