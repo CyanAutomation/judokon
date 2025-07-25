@@ -57,6 +57,10 @@ Ultimately, these issues increase the risk of bugs reaching players, slow down t
 | P2 | Agent Integration Example | Provide a sample script or markdown prompt to demonstrate how AI agents can use the vector store |
 | P3 | Embedding Refresh Pipeline | Optionally support rebuilding the embedding index when PRDs or tooltip files are updated (manual or script-based trigger) |
 
+### Embedding Refresh Pipeline
+
+After editing PRDs, tooltips, or game rules, run `npm run generate:embeddings` from the repository root. Commit the updated `client_embeddings.json` so other agents work with the latest vectors. A GitHub Actions workflow could automate this regeneration whenever those folders change.
+
 ---
 
 ## Acceptance Criteria
