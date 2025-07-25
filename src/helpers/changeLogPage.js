@@ -2,6 +2,7 @@ import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { escapeHTML, formatDate } from "./utils.js";
 import { onDomReady } from "./domReady.js";
+import { initTooltips } from "./tooltip.js";
 
 /**
  * Sort judoka entries by lastUpdated descending, then by full name ascending.
@@ -79,6 +80,8 @@ export async function setupChangeLogPage() {
   } finally {
     if (loading) loading.remove();
   }
+
+  initTooltips();
 }
 
 onDomReady(setupChangeLogPage);

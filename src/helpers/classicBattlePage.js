@@ -23,6 +23,7 @@ import { startRound as classicStartRound, handleStatSelection } from "./classicB
 import { onDomReady } from "./domReady.js";
 import { waitForComputerCard } from "./battleJudokaPage.js";
 import { loadSettings } from "./settingsUtils.js";
+import { initTooltips } from "./tooltip.js";
 
 function enableStatButtons(enable = true) {
   document.querySelectorAll("#stat-buttons button").forEach((btn) => {
@@ -87,6 +88,7 @@ export async function setupClassicBattlePage() {
 
   window.startRoundOverride = startRoundWrapper;
   startRoundWrapper();
+  initTooltips();
 }
 
 onDomReady(setupClassicBattlePage);
