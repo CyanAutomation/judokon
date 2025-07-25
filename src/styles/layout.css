@@ -80,7 +80,7 @@ body {
   min-height: var(--header-height);
 }
 
-.character-slot {
+.header-spacer {
   height: 20px;
   opacity: 0.5;
 }
