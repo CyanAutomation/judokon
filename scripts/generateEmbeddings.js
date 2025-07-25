@@ -6,7 +6,7 @@
  * 1. Discover markdown and JSON files using glob.
  * 2. Read file contents and truncate long text.
  * 3. Load a transformer model for feature extraction.
- * 4. Encode each text block into an embedding vector.
+ * 4. Encode each text block into a mean-pooled embedding vector.
  * 5. Build output objects with id, text, embedding, source, tags, and version.
  * 6. Ensure the final JSON output is under 1MB and write to disk.
  */
@@ -45,7 +45,7 @@ async function generate() {
       text = JSON.stringify(JSON.parse(text));
     }
     text = text.slice(0, MAX_TEXT_LENGTH);
-    const embedding = (await extractor(text))[0];
+    const embedding = Array.from(await extractor(text, { pooling: "mean" }));
     output.push({
       id: path.basename(relativePath),
       text,
