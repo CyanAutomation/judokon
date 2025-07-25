@@ -25,7 +25,6 @@ test.describe("Settings page", () => {
   test("essential elements visible", async ({ page }) => {
     await verifyPageBasics(page, ["nav-classicBattle", "nav-randomJudoka"]);
     await expect(page.getByLabel(/sound/i)).toBeVisible();
-    await expect(page.getByLabel(/full navigation map/i)).toBeVisible();
     await expect(page.getByLabel(/motion effects/i)).toBeVisible();
     await expect(page.getByLabel(/display mode/i)).toBeVisible();
   });
@@ -43,19 +42,9 @@ test.describe("Settings page", () => {
       .sort((a, b) => a.order - b.order)
       .map((m) => m.name);
 
-    const expectedLabels = [
-      "Display Mode",
-      "Sound",
-      "Full Navigation Map",
-      "Motion Effects",
-      ...sortedNames
-    ];
+    const expectedLabels = ["Display Mode", "Sound", "Motion Effects", ...sortedNames];
 
     await expect(page.locator("#sound-toggle")).toHaveAttribute("aria-label", "Sound");
-    await expect(page.locator("#navmap-toggle")).toHaveAttribute(
-      "aria-label",
-      "Full Navigation Map"
-    );
     await expect(page.locator("#motion-toggle")).toHaveAttribute("aria-label", "Motion Effects");
 
     await expect(page.locator("#game-mode-toggle-container input[type=checkbox]")).toHaveCount(

@@ -3,11 +3,14 @@ import { createSettingsDom } from "../utils/testUtils.js";
 
 const baseSettings = {
   sound: true,
-  fullNavMap: true,
   motionEffects: true,
   displayMode: "light",
   gameModes: {},
-  featureFlags: { randomStatMode: true, battleDebugPanel: false }
+  featureFlags: {
+    randomStatMode: true,
+    battleDebugPanel: false,
+    fullNavigationMap: true
+  }
 };
 
 describe("settingsPage module", () => {
@@ -193,7 +196,8 @@ describe("settingsPage module", () => {
 
     expect(updateSetting).toHaveBeenCalledWith("featureFlags", {
       randomStatMode: true,
-      battleDebugPanel: true
+      battleDebugPanel: true,
+      fullNavigationMap: true
     });
   });
 });

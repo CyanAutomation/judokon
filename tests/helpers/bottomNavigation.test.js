@@ -138,11 +138,10 @@ describe("populateNavbar", () => {
     ];
     const loadSettings = vi.fn().mockResolvedValue({
       sound: true,
-      fullNavMap: true,
       motionEffects: true,
       displayMode: "light",
       gameModes: { B: false },
-      featureFlags: { battleDebugPanel: false }
+      featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
     });
     const loadGameModes = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
@@ -186,11 +185,10 @@ describe("populateNavbar", () => {
     localStorage.setItem("gameModes", JSON.stringify(data));
     const loadSettings = vi.fn().mockResolvedValue({
       sound: true,
-      fullNavMap: true,
       motionEffects: true,
       displayMode: "light",
       gameModes: {},
-      featureFlags: { battleDebugPanel: false }
+      featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
     });
     const loadGameModes = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
@@ -229,11 +227,10 @@ describe("populateNavbar", () => {
     ];
     const loadSettings = vi.fn().mockResolvedValue({
       sound: true,
-      fullNavMap: true,
       motionEffects: true,
       displayMode: "light",
       gameModes: {},
-      featureFlags: { battleDebugPanel: false }
+      featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
     });
     const loadGameModes = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));

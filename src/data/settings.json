@@ -1,10 +1,10 @@
 {
   "sound": true,
-  "fullNavMap": true,
   "motionEffects": true,
   "displayMode": "light",
   "gameModes": {},
   "featureFlags": {
-    "battleDebugPanel": false
+    "battleDebugPanel": false,
+    "fullNavigationMap": true
   }
 }

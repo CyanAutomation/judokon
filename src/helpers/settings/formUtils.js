@@ -15,23 +15,16 @@ function applyInputState(element, value) {
 
 export function applyInitialControlValues(controls, settings) {
   applyInputState(controls.soundToggle, settings.sound);
-  applyInputState(controls.navToggle, settings.fullNavMap);
   applyInputState(controls.motionToggle, settings.motionEffects);
   applyInputState(controls.displaySelect, settings.displayMode);
 }
 
 export function attachToggleListeners(controls, getCurrentSettings, handleUpdate) {
-  const { soundToggle, navToggle, motionToggle, displaySelect } = controls;
+  const { soundToggle, motionToggle, displaySelect } = controls;
   soundToggle?.addEventListener("change", () => {
     const prev = !soundToggle.checked;
     handleUpdate("sound", soundToggle.checked, () => {
       soundToggle.checked = prev;
-    });
-  });
-  navToggle?.addEventListener("change", () => {
-    const prev = !navToggle.checked;
-    handleUpdate("fullNavMap", navToggle.checked, () => {
-      navToggle.checked = prev;
     });
   });
   motionToggle?.addEventListener("change", () => {
