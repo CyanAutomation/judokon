@@ -261,8 +261,18 @@ and instructions on updating schemas when data changes.
 ## Tooltip Helper
 
 Add lightweight help text anywhere by tagging elements with
-`data-tooltip-id`. The `initTooltips()` helper reads messages from
-`src/data/tooltips.json` and displays them on hover or focus.
+`data-tooltip-id`. Tooltip text lives in `src/data/tooltips.json`.
+Each page's initialization script must call `initTooltips()` once the DOM
+is ready so hover and focus listeners are attached.
+
+```html
+<button data-tooltip-id="draw-button">Draw</button>
+<script type="module">
+  import { onDomReady } from "../helpers/domReady.js";
+  import { initTooltips } from "../helpers/tooltip.js";
+  onDomReady(() => initTooltips());
+</script>
+```
 
 The repository specifies commenting standards in design/codeStandards. JSDoc comments and @pseudocode blocks must remain intact, as shown in documentation excerpts.
 
