@@ -69,7 +69,7 @@ Improving session variety directly supports retention and encourages more person
 
 | Priority | Feature           | Description                                    |
 | -------- | ----------------- | ---------------------------------------------- |
-| P1       | Classic Battle    | 1v1 battle vs CPU, stat-based combat to 10 pts |
+| P1       | Classic Battle    | 1v1 battle vs opponent, stat-based combat to 10 pts |
 | P1       | Team Battle Modes | Gender-specific team-based battles             |
 | P1       | Judoka Creation   | Interface for new character creation           |
 | P2       | Judoka Update     | Edit existing characters and save changes      |
@@ -85,7 +85,7 @@ Improving session variety directly supports retention and encourages more person
 
 **Japanese**: 試合 (バトルモード)  
 **URL**: `battleJudoka.html`  
-A 1v1 stat-based match against a CPU opponent using a deck of 25 random judoka cards. First to 10 points wins. [Read full PRD](prdClassicBattle.md)
+A 1v1 stat-based match against an AI opponent using a deck of 25 random judoka cards. First to 10 points wins. [Read full PRD](prdClassicBattle.md)
 
 #### Goals
 

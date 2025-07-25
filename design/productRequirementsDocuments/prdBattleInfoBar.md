@@ -16,7 +16,7 @@ The round message, timer, and score now sit directly inside the page header rath
 
 ## Goals
 
-1. **Display match score (player vs CPU)** on the **right side of the top bar**, updated at the **end of each round**, within **800ms** of score finalization.
+1. **Display match score (player vs opponent)** on the **right side of the top bar**, updated at the **end of each round**, within **800ms** of score finalization.
 2. **Display round-specific messaging** on the **left side of the top bar**, depending on match state:
    - If a round ends: show **win/loss/result** message for **2 seconds**.
    - If awaiting action: show **selection prompt** until a decision is made.
@@ -31,7 +31,7 @@ The round message, timer, and score now sit directly inside the page header rath
 
 | Priority | Feature                | Description                                                   |
 |----------|------------------------|---------------------------------------------------------------|
-| **P1**   | Match Score Display    | Real-time, fast update of player vs CPU score per round       |
+| **P1**   | Match Score Display    | Real-time, fast update of player vs opponent score per round       |
 | **P1**   | Round Status Messaging | Show clear win/loss messages post-round                       |
 | **P1**   | Stat Selection Timer   | Display 30s countdown for stat selection; auto-select if expired; timer pauses/resumes on tab inactivity (see Classic Battle PRD) |
 | **P2**   | Countdown Timer        | Display countdown to next round with fallback for server sync |
@@ -67,8 +67,8 @@ The round message, timer, and score now sit directly inside the page header rath
 ## Design and UX Considerations
 
 - **Layout**
-  - Right side: score display (`Player: X – CPU: Y`)
-  - Two-line score format appears on narrow screens (`Player: X` line break `CPU: Y`)
+  - Right side: score display (`Player: X – Opponent: Y`)
+  - Two-line score format appears on narrow screens (`Player: X` line break `Opponent: Y`)
   - Left side: rotating status messages (e.g., "You won!", "Next round in: 3s", "Select your move", **"Time left: 29s"**)
 - **Visuals**
   - Font size: min 16sp, bold for win/loss messages.
@@ -87,7 +87,7 @@ The round message, timer, and score now sit directly inside the page header rath
 
 | LEFT SIDE (Round Messages)            |                          RIGHT SIDE (Score) |
 |--------------------------------------|---------------------------------------------|
-|  "You won!"  (bold green, 16sp)      |           Player: 2  –  CPU: 1               |
+|  "You won!"  (bold green, 16sp)      |           Player: 2  –  Opponent: 1               |
 |  "Select your move" (neutral grey)   |                                             |
 |  "Next round in: 3s" (neutral grey) |                                             |
 |  **"Time left: 29s" (neutral grey)** |                                             |
@@ -102,7 +102,7 @@ The round message, timer, and score now sit directly inside the page header rath
 
 | "You won!"                   |
 |                             |
-| Player: 2  –  CPU: 1         |
+| Player: 2  –  Opponent: 1         |
 
 ---
 

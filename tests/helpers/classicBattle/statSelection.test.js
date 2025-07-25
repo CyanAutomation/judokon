@@ -99,7 +99,7 @@ describe("classicBattle stat selection", () => {
     _resetForTest();
     await handleStatSelection("power");
     expect(document.querySelector("header #round-message").textContent).toMatch(/Tie/);
-    expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nComputer: 0");
+    expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nOpponent: 0");
   });
 
   it("evaluateRound updates the score", async () => {
@@ -111,6 +111,6 @@ describe("classicBattle stat selection", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     const result = evaluateRound("power");
     expect(result.message).toMatch(/win/);
-    expect(document.querySelector("header #score-display").textContent).toBe("You: 1\nComputer: 0");
+    expect(document.querySelector("header #score-display").textContent).toBe("You: 1\nOpponent: 0");
   });
 });
