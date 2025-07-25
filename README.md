@@ -232,6 +232,8 @@ Global rules should not be repeated across files.
 
 All pages include a fixed header and persistent bottom navigation bar. The body
 has top and bottom padding to ensure content scrolls under these elements.
+Each header uses two `.header-spacer` elements flanking the logo so it stays
+centered in the layout grid.
 
 The `.animate-card` class in `buttons.css` (imported via `components.css`)
 reveals new cards with a short fade and upward slide. A
