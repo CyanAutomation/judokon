@@ -26,3 +26,11 @@
   height: 48px;
   object-fit: cover;
 }
+
+#changelog-table tbody tr:nth-child(odd) {
+  background-color: var(--color-surface);
+}
+
+#changelog-table tbody tr:nth-child(even) {
+  background-color: var(--color-tertiary);
+}
