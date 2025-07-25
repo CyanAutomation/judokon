@@ -95,7 +95,7 @@ body {
 
 .logo {
   height: 100%;
-  max-height: min(8dvh, 44px);
+  max-height: var(--logo-max-height);
   width: auto;
   border-radius: 10%;
   margin-top: 0;

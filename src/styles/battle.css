@@ -6,6 +6,10 @@
   padding: 1vh 1.5rem;
 }
 
+.battle-header {
+  --logo-max-height: min(12dvh, 64px);
+}
+
 .battle-header .info-left {
   grid-column: 1;
   align-items: flex-start;
