@@ -4,15 +4,15 @@
 
 ## TL;DR
 
-The **Mystery Judoka Card** is a placeholder card used in *every round against the computer*. It temporarily hides the opponent’s real card until the player selects a stat, ensuring fair gameplay and preventing stat-based cheating. The card uses a silhouette portrait, obscured stats (`"?"`), and the name “Mystery Judoka”, providing a consistent and thematic experience during the stat selection phase.
+The **Mystery Judoka Card** is a placeholder card used in *every round against the opponent*. It temporarily hides the opponent’s real card until the player selects a stat, ensuring fair gameplay and preventing stat-based cheating. The card uses a silhouette portrait, obscured stats (`"?"`), and the name “Mystery Judoka”, providing a consistent and thematic experience during the stat selection phase.
 
 ---
 
 ## Problem Statement
 
-Currently, the computer’s card is visible before the player chooses a stat. This unintentionally encourages players to base their choice on the opponent’s values — compromising fairness and removing tension from the match. The **Mystery Judoka Card** acts as a stat-obscuring placeholder that maintains surprise and integrity in each round.
+Currently, the opponent’s card is visible before the player chooses a stat. This unintentionally encourages players to base their choice on the opponent’s values — compromising fairness and removing tension from the match. The **Mystery Judoka Card** acts as a stat-obscuring placeholder that maintains surprise and integrity in each round.
 
-> Sota faces off against the CPU. A card appears with a dark silhouette and mysterious stats. He hovers between Power and Kumi-kata. With a deep breath, he picks Power. The card flips — revealing the opponent: a legendary -100kg champion with immense strength. Too late to change. That moment of tension? That’s the thrill we’re aiming for.
+> Sota faces off against an opponent. A card appears with a dark silhouette and mysterious stats. He hovers between Power and Kumi-kata. With a deep breath, he picks Power. The card flips — revealing the opponent: a legendary -100kg champion with immense strength. Too late to change. That moment of tension? That’s the thrill we’re aiming for.
 
 ---
 
@@ -22,7 +22,7 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 - Introduce momentary suspense in each round to heighten emotional investment.
 - Preserve visual consistency using an existing card (`judokaId=1`) with special styling.
 - Ensure the opponent card reveal animation completes within **400ms**.
-- Guarantee **100% concealment** of all CPU stats during player stat selection.  
+- Guarantee **100% concealment** of all opponent stats during player stat selection.
   - **Note:** The signature move does not need to be obscured and should be displayed as "?" on the Mystery Judoka card.
 
 ---
@@ -37,7 +37,7 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 
 ## Acceptance Criteria
 
-- **Given** a round starts in any battle mode against the CPU,  
+- **Given** a round starts in any battle mode against an opponent,
   **When** the opponent card is shown,  
   **Then** the “Mystery Judoka” card (`judokaId=1`) is displayed with silhouette image and question marks in all stat fields.
 - **Given** the player selects a stat,  
@@ -66,7 +66,7 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 - **Portrait Path:** `src/assets/judokaPortraits/judokaPortrait-1.png` (already present).
 - **Stat Display:** Override real stat values with `"?"` at render time via `renderJudokaCard()`. (Note: Stat concealment and animation are handled in the UI layer, not in the battle engine.)
 - **Name Display:** Use value from `judoka.json` (`"Mystery Judoka"`) for visual consistency.
-- **Reveal Timing:** Animate swap to real CPU card after player stat choice within **400ms** using `ease-out` transition.
+- **Reveal Timing:** Animate swap to real opponent card after player stat choice within **400ms** using `ease-out` transition.
 - **Game Logic:** Opponent card is drawn from remaining deck *before* stat selection but only displayed *after* player choice.
 
 ---
@@ -107,7 +107,7 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 
 | Priority | Feature                      | Description                                                                 |
 |:--------:|:----------------------------|:---------------------------------------------------------------------------|
-| **P1**   | Placeholder Mystery Card     | Show `judokaId=1` card with silhouette and "?" stats at start of each CPU round. Signature move is also shown as "?" |
+| **P1**   | Placeholder Mystery Card     | Show `judokaId=1` card with silhouette and "?" stats at start of each opponent round. Signature move is also shown as "?" |
 | **P1**   | Stat Redaction on Render     | Replace all visible stat values with "?" regardless of real values. Signature move is always shown as "?" |
 | **P1**   | Card Swap on Stat Selection  | Reveal opponent card via animated swap within **400ms**, no layout shift   |
 | **P2**   | Consistent Styling           | Apply proper rarity border, portrait container, and stat layout             |
@@ -126,7 +126,7 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 
 ## Integration Notes
 
-- The **Mystery Judoka card** is never shown in non-CPU modes.
+- The **Mystery Judoka card** is never shown in non-opponent modes.
 - Use the existing `renderJudokaCard()` helper with a `useObscuredStats` flag to substitute "?" values at render time.
 - Maintain card aspect ratio and layout as defined in the core Judoka Cards PRD — do **not** introduce custom card layouts for the mystery variant.
 
@@ -135,7 +135,7 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 ## Tasks
 
 - [x] **1.0 Mystery Card Rendering**
-  - [x] 1.1 Show `judokaId=1` as placeholder at start of CPU round
+  - [x] 1.1 Show `judokaId=1` as placeholder at start of opponent round
   - [x] 1.2 Hide real stats and show `"?"` for all attributes and move
   - [ ] 1.3 Apply correct rarity, flag, and weight class styles
 - [ ] **2.0 Reveal Logic**

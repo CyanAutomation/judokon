@@ -100,16 +100,16 @@ export function startCountdown(seconds, onFinish) {
  * Display the current match score.
  *
  * @pseudocode
- * 1. Format the score string with player and computer values separated by a
+ * 1. Format the score string with player and opponent values separated by a
  *    line break.
  * 2. Insert the HTML into the score element when present.
  *
  * @param {number} playerScore - Player's score.
- * @param {number} computerScore - Computer's score.
+ * @param {number} computerScore - Opponent's score.
  * @returns {void}
  */
 export function updateScore(playerScore, computerScore) {
   if (scoreEl) {
-    scoreEl.innerHTML = `You: ${playerScore}<br>\nComputer: ${computerScore}`;
+    scoreEl.innerHTML = `You: ${playerScore}<br>\nOpponent: ${computerScore}`;
   }
 }

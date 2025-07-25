@@ -75,7 +75,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 | Priority | Feature                 | Description                                                                                             |
 | -------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| **P1**   | Random Card Draw        | Draw one random card per player each round; the computer card must differ from the player's.            |
+| **P1**   | Random Card Draw        | Draw one random card per player each round; the opponent card must differ from the player's.            |
 | **P1**   | Stat Selection Timer    | Player selects stat within 30 seconds; otherwise, random stat is chosen. Default timer is fixed at 30s. Timer is displayed in the Info Bar and pauses/resumes on tab inactivity. |
 | **P1**   | Scoring                 | Increase score by one for each round win.                                                               |
 | **P1**   | Match End Condition     | End match on 10 points or after 25 rounds.                                                              |
@@ -88,7 +88,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Behavior on tie rounds: round ends with a message explaining the tie and an option to start the next round.
 - Match start conditions: both players begin with a score of zero; player goes first by drawing their card.
 - Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card. **The timer and prompt are displayed in the Info Bar.**
-- The computer's card must always differ from the player's card for each round.
+- The opponent's card must always differ from the player's card for each round.
 - **Default:** 30-second timer is fixed (not adjustable by the player at launch), but can be reviewed for future difficulty settings.
 
 ---
@@ -105,7 +105,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 ## Acceptance Criteria
 
 - Cards are revealed in the correct sequence each round.
-- The CPU card displays a placeholder ("Mystery Judoka") until the player selects a stat ([prdMysteryCard.md](prdMysteryCard.md)).
+- The opponent card displays a placeholder ("Mystery Judoka") until the player selects a stat ([prdMysteryCard.md](prdMysteryCard.md)).
 - Player can select a stat within 30 seconds; if not, the system auto-selects a random stat automatically. **Timer and prompt are surfaced in the Info Bar.**
 - After selection, the correct comparison is made, and the score updates based on round outcome.
 - If the selected stats are equal, a tie message displays and the round ends.
@@ -130,11 +130,11 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ## Design and UX Considerations
 
-- Use consistent color coding for player (blue) vs computer (red) as shown in attached mockups.
+- Use consistent color coding for player (blue) vs opponent (red) as shown in attached mockups.
 - Display clear, large call-to-action text for "Choose an attribute to challenge!" to guide new players.
 - Provide a quit confirmation when the player clicks the logo in the header to return to the Home screen.
 - Match screens should follow the style and layouts demonstrated in shared mockups:
-  - Player and computer cards side-by-side.
+  - Player and opponent cards side-by-side.
   - Central score prominently displayed.
   - Tie or win/loss messages placed centrally.
   - Clear "Next Round" button with distinct state (enabled/disabled).

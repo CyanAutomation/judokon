@@ -56,7 +56,7 @@ describe("classicBattle match flow", () => {
     await vi.runAllTimersAsync();
     const score = document.querySelector("header #score-display").textContent;
     const msg = document.querySelector("header #round-message").textContent;
-    expect(score).toBe("You: 1\nComputer: 0");
+    expect(score).toBe("You: 1\nOpponent: 0");
     expect(msg).toMatch(/win the round/i);
   });
 
@@ -82,7 +82,7 @@ describe("classicBattle match flow", () => {
       await handleStatSelection("power");
     }
     expect(document.querySelector("header #score-display").textContent).toBe(
-      "You: 10\nComputer: 0"
+      "You: 10\nOpponent: 0"
     );
     expect(document.querySelector("header #round-message").textContent).toMatch(/win the match/i);
 
@@ -93,7 +93,7 @@ describe("classicBattle match flow", () => {
     await handleStatSelection("power");
 
     expect(document.querySelector("header #score-display").textContent).toBe(
-      "You: 10\nComputer: 0"
+      "You: 10\nOpponent: 0"
     );
   });
 

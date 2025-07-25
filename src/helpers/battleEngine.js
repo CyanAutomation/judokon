@@ -37,7 +37,7 @@ function endMatchIfNeeded() {
       return "You win the match!";
     }
     if (playerScore < computerScore) {
-      return "Computer wins the match!";
+      return "Opponent wins the match!";
     }
     return "Match ends in a tie!";
   }
@@ -132,7 +132,7 @@ export function handleStatSelection(playerVal, computerVal) {
     message = "You win the round!";
   } else if (playerVal < computerVal) {
     computerScore += 1;
-    message = "Computer wins the round!";
+    message = "Opponent wins the round!";
   } else {
     message = "Tie – no score!";
   }
