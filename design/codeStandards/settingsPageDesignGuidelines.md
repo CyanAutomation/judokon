@@ -175,9 +175,10 @@ To support AI-assisted testing, variant gameplay modes, and scalable development
 
 - **ID and Naming Convention**  
   Use predictable `id` and `name` values:  
-  - ID format: `feature-<kebab-case-feature-name>`  
-  - Name format: camelCase  
+  - ID format: `feature-<kebab-case-feature-name>`
+  - Name format: camelCase
   - Example: `id="feature-random-stat-mode" name="randomStatMode"`
+  - Common example flags include `Battle Debug Panel` and `Full Navigation Map`
 
 - **ARIA and Accessibility**  
   - Provide `aria-label` for each feature flag  
