@@ -3,10 +3,17 @@ import { findMatches } from "./vectorSearch.js";
 import { pipeline } from "@xenova/transformers";
 
 let extractor;
+let spinner;
 
 async function getExtractor() {
   if (!extractor) {
-    extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+    try {
+      extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+    } catch (error) {
+      console.error("Model failed to load", error);
+      extractor = null;
+      throw error;
+    }
   }
   return extractor;
 }
@@ -18,12 +25,18 @@ async function handleSearch(event) {
   const query = input.value.trim();
   resultsEl.textContent = "";
   if (!query) return;
+  spinner.style.display = "block";
   resultsEl.textContent = "Searching...";
   try {
     const model = await getExtractor();
     const vector = (await model(query))[0];
-    const matches = await findMatches(Array.from(vector), 3);
+    const matches = await findMatches(Array.from(vector), 5);
     resultsEl.textContent = "";
+    spinner.style.display = "none";
+    if (matches === null) {
+      resultsEl.textContent = "Embeddings could not be loaded – please check console.";
+      return;
+    }
     if (matches.length === 0) {
       resultsEl.textContent = "No close matches found — refine your query.";
       return;
@@ -37,13 +50,22 @@ async function handleSearch(event) {
     resultsEl.appendChild(list);
   } catch (err) {
     console.error("Search failed", err);
+    spinner.style.display = "none";
     resultsEl.textContent = "An error occurred while searching.";
   }
 }
 
 function init() {
+  spinner = document.getElementById("search-spinner");
+  if (spinner) spinner.style.display = "none";
   const form = document.getElementById("vector-search-form");
   form?.addEventListener("submit", handleSearch);
+  form?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
 }
 
 onDomReady(init);

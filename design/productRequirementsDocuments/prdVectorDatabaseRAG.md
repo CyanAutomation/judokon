@@ -66,7 +66,7 @@ After editing PRDs, tooltips, or game rules, run `npm run generate:embeddings` f
 ## Acceptance Criteria
 
 - [x] `client_embeddings.json` contains ≥5 fields per entry: `id`, `text`, `embedding`, `source`, and optional `tags`
-- [x] Vector similarity function returns top 3 matches in ≤200ms on a mid-tier device (e.g. 2022 MacBook Air M1)
+- [x] Vector similarity function returns top 5 matches in ≤200ms on a mid-tier device (e.g. 2022 MacBook Air M1)
 - [x] Search works offline in a local browser with no server backend
 - [x] At least 30 unique content entries from across the PRDs/tooltips are indexed in the demo build
 - [x] Each returned result includes both the match score and a reference to the original source
@@ -95,6 +95,8 @@ After editing PRDs, tooltips, or game rules, run `npm run generate:embeddings` f
 - UI must support keyboard navigation and screen readers.
 - Tap/click targets should be at least 44px height for accessibility.
 - Lookup responses must render within 200ms; show loading spinner if delayed.
+- Display an error message when embeddings or the model fail to load.
+- Show up to five matches with score and source information.
 
 ### UI Mockup
 
@@ -146,7 +148,7 @@ No user settings or toggles are included. This is appropriate since the feature 
 
 - [ ] 3.0 Develop Similarity Search Function
   - [ ] 3.1 Implement cosine similarity in JS
-  - [ ] 3.2 Return top 3 matches within 200ms
+  - [ ] 3.2 Return top 5 matches within 200ms
   - [ ] 3.3 Include score and source reference in response
 
 - [ ] 4.0 Create Static Query Interface

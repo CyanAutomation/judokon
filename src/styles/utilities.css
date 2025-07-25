@@ -51,3 +51,12 @@
 .reduce-motion .draw-card-btn {
   transition: none !important;
 }
+
+#search-results {
+  margin-top: var(--space-lg);
+}
+
+#search-results ol {
+  padding-left: var(--space-md);
+  margin-inline-start: var(--space-md);
+}

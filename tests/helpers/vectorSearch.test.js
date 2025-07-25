@@ -23,6 +23,14 @@ describe("vectorSearch", () => {
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
+  it("returns null when loading fails", async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
+    vi.resetModules();
+    const { loadEmbeddings } = await import("../../src/helpers/vectorSearch.js");
+    const result = await loadEmbeddings();
+    expect(result).toBeNull();
+  });
+
   it("computes cosine similarity", async () => {
     const { cosineSimilarity } = await import("../../src/helpers/vectorSearch.js");
     expect(cosineSimilarity([1, 0], [1, 0])).toBeCloseTo(1);
@@ -31,6 +39,7 @@ describe("vectorSearch", () => {
 
   it("finds top matches", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sample });
+    vi.resetModules();
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 0], 1);
     expect(res.length).toBe(1);
@@ -40,8 +49,17 @@ describe("vectorSearch", () => {
 
   it("returns empty array for dimension mismatch", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sample });
+    vi.resetModules();
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 0, 0], 1);
     expect(res).toEqual([]);
+  });
+
+  it("returns null when embeddings fail to load", async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
+    vi.resetModules();
+    const { findMatches } = await import("../../src/helpers/vectorSearch.js");
+    const res = await findMatches([1, 0], 1);
+    expect(res).toBeNull();
   });
 });
