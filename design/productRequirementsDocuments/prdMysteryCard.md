@@ -118,7 +118,8 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
 ## Accessibility Considerations
 
 - `aria-label="Mystery Judoka: hidden card"` should be applied to the opponent card while hidden.
-- Ensure `"?"` values in stats are programmatically labeled (e.g., `aria-label="Power unknown"`).
+- Ensure `"?"` values in stats are programmatically labeled. For example, use `aria-label="Power unknown"`, `aria-label="Speed unknown"`, etc.
+- Expose the card name "Mystery Judoka" to screen readers using an `aria-label` or visible text.
 - Focus should not jump or shift when the card is revealed — avoid triggering scroll or layout shift.
 
 ---
@@ -143,8 +144,8 @@ Currently, the computer’s card is visible before the player chooses a stat. Th
   - [ ] 2.3 Ensure animation completes in ≤400ms
   - [ ] 2.4 Fallback to instant swap if animation fails
 - [ ] **3.0 Accessibility**
-  - [ ] 3.1 Add `aria-label` attributes to `"?"` stats and card
-  - [ ] 3.2 Ensure name “Mystery Judoka” is readable by screen readers
+  - [ ] 3.1 Add `aria-label` attributes to each `"?"` stat (e.g., `aria-label="Power unknown"`) and the card container
+  - [ ] 3.2 Ensure the name “Mystery Judoka” is readable by screen readers
   - [ ] 3.3 Prevent layout jump or scroll on reveal
 - [ ] **4.0 Game Logic Safeguards**
   - [x] 4.1 Block stat selection until card fully rendered
