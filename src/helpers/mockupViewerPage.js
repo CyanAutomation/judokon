@@ -1,5 +1,6 @@
 import { setupButtonEffects } from "./buttonEffects.js";
 import { onDomReady } from "./domReady.js";
+import { initTooltips } from "./tooltip.js";
 
 /**
  * Initialize the mockup image carousel.
@@ -83,6 +84,7 @@ export function setupMockupViewerPage() {
 
   showImage(0);
   setupButtonEffects();
+  initTooltips();
 }
 
 onDomReady(setupMockupViewerPage);

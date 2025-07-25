@@ -5,6 +5,7 @@ import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { createButton } from "../components/Button.js";
 import { onDomReady } from "./domReady.js";
+import { initTooltips } from "./tooltip.js";
 
 function handleKeyboardNavigation(event, container, buttonClass) {
   const buttons = Array.from(container.querySelectorAll(`button.${buttonClass}`));
@@ -103,7 +104,7 @@ export function setupCountryFilter(
  * 4. Attach event listeners for filtering and panel controls.
  * 5. Handle errors by showing a retry button when loading fails.
  */
-export function setupBrowseJudokaPage() {
+export async function setupBrowseJudokaPage() {
   const carouselContainer = document.getElementById("carousel-container");
   const countryListContainer = document.getElementById("country-list");
   const toggleBtn = document.getElementById("country-toggle");
@@ -209,7 +210,8 @@ export function setupBrowseJudokaPage() {
     );
   }
 
-  init();
+  await init();
+  initTooltips();
 }
 
 onDomReady(setupBrowseJudokaPage);

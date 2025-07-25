@@ -12,6 +12,7 @@ import { showSettingsError } from "./showSettingsError.js";
 import { applyDisplayMode } from "./displayMode.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
+import { initTooltips } from "./tooltip.js";
 
 import {
   applyInitialControlValues,
@@ -90,6 +91,7 @@ async function initializeSettingsPage() {
     applyMotionPreference(settings.motionEffects);
     initializeControls(settings, gameModes);
     setupSectionToggles();
+    initTooltips();
   } catch (error) {
     console.error("Error loading settings page:", error);
     const errorPopup = document.getElementById("settings-error-popup");

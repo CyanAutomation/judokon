@@ -10,10 +10,12 @@
  */
 import { setupLanguageToggle } from "./pseudoJapanese.js";
 import { onDomReady } from "./domReady.js";
+import { initTooltips } from "./tooltip.js";
 
 export function setupMeditationPage() {
   const quoteEl = document.getElementById("quote");
   setupLanguageToggle(quoteEl);
+  initTooltips();
 }
 
 onDomReady(setupMeditationPage);

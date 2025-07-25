@@ -1,5 +1,6 @@
 import { onDomReady } from "./domReady.js";
 import { marked } from "../vendor/marked.esm.js";
+import { initTooltips } from "./tooltip.js";
 
 /**
  * Initialize the Product Requirements Document reader page.
@@ -102,6 +103,7 @@ export async function setupPrdReaderPage(docsMap, markedLib) {
   });
 
   render();
+  initTooltips();
 }
 
 if (!window.SKIP_PRD_AUTO_INIT) {
