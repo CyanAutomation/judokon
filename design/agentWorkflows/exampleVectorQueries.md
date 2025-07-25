@@ -46,3 +46,7 @@ Query: "judoka bio tone guidelines"
 You debug UI issues. Find references about the navigation bar animation timing.
 Query: "navbar button transition duration"
 ```
+
+## Updating Embeddings
+
+Run `npm run generate:embeddings` whenever you update documentation or data files. This rebuilds `client_embeddings.json` so agents search the latest content. Commit the regenerated JSON file along with your changes.
