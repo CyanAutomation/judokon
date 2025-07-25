@@ -282,7 +282,7 @@ JU-DO-KON! offers a 99-card deck and one-on-one stat battles in a fully browser-
 
 ### Vector Search (RAG)
 
-The project ships with a retrieval-augmented search demo. Run `npm run generate:embeddings` to create the index, then open `vectorSearch.html` to try it out. These embeddings let AI agents query the product requirement docs, tooltip descriptions, and game data.
+The project ships with a retrieval-augmented search demo. Run `npm run generate:embeddings` to create the index, then open `vectorSearch.html` to try it out. The page shows a spinner while the MiniLM model loads and lists up to five matches with their score and source. If the embeddings fail to load, an error message appears in the results area. These embeddings let AI agents query the product requirement docs, tooltip descriptions, and game data.
 
 After modifying any PRDs, tooltip text, or game rule files, run `npm run generate:embeddings` again to rebuild `client_embeddings.json`. Commit the updated file alongside your documentation changes so other agents have the latest vectors.
 

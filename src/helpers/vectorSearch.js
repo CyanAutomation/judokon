@@ -10,17 +10,17 @@ let cachedEmbeddings;
  * @pseudocode
  * 1. Return cached embeddings when available.
  * 2. Otherwise fetch `client_embeddings.json` via `fetchJson` and cache the promise.
- *    - On failure, log the error and resolve to an empty array.
+ *    - On failure, log the error and resolve to `null`.
  * 3. Await the promise, store the result, and return it.
  *
  * @returns {Promise<Array<{id:string,text:string,embedding:number[],source:string,tags?:string[]}>>} Parsed embeddings array.
  */
 export async function loadEmbeddings() {
-  if (cachedEmbeddings) return cachedEmbeddings;
+  if (cachedEmbeddings !== undefined) return cachedEmbeddings;
   if (!embeddingsPromise) {
     embeddingsPromise = fetchJson(`${DATA_DIR}client_embeddings.json`).catch((err) => {
       console.error("Failed to load embeddings:", err);
-      return [];
+      return null;
     });
   }
   cachedEmbeddings = await embeddingsPromise;
@@ -66,15 +66,19 @@ export function cosineSimilarity(a, b) {
  * 1. Load embeddings using `loadEmbeddings()`.
  * 2. Validate that `queryVector` length matches the embedding dimension.
  *    - If mismatched or embeddings are empty, return an empty array.
+ *    - Return `null` when embeddings fail to load.
  * 3. Compute cosine similarity between `queryVector` and each entry's embedding.
  * 4. Sort the entries by similarity score and return the top `topN` results.
  *
  * @param {number[]} queryVector - Vector to compare.
- * @param {number} [topN=3] - Number of matches to return.
+ * @param {number} [topN=5] - Number of matches to return.
  * @returns {Promise<Array<{score:number} & Record<string, any>>>} Match results sorted by score.
  */
-export async function findMatches(queryVector, topN = 3) {
+export async function findMatches(queryVector, topN = 5) {
   const entries = await loadEmbeddings();
+  if (entries === null) {
+    return null;
+  }
   if (!Array.isArray(entries) || entries.length === 0) {
     return [];
   }
