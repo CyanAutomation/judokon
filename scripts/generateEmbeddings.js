@@ -8,7 +8,7 @@
  * 3. Load a transformer model for feature extraction.
  * 4. Encode each text block into a mean-pooled embedding vector.
  * 5. Build output objects with id, text, embedding, source, tags, and version.
- * 6. Ensure the final JSON output is under 3MB and write to disk.
+ * 6. Ensure the final JSON output is under MAX_OUTPUT_SIZE (3MB) and write to disk.
  */
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -20,6 +20,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 
 const MAX_TEXT_LENGTH = 1000;
+const MAX_OUTPUT_SIZE = 3 * 1024 * 1024;
 
 async function getFiles() {
   const mdFiles = await glob("design/productRequirementsDocuments/*.md", { cwd: rootDir });
@@ -57,8 +58,8 @@ async function generate() {
   }
 
   const jsonString = JSON.stringify(output);
-  if (Buffer.byteLength(jsonString, "utf8") > 1024 * 1024) {
-    throw new Error("Output exceeds 1MB");
+  if (Buffer.byteLength(jsonString, "utf8") > MAX_OUTPUT_SIZE) {
+    throw new Error("Output exceeds 3MB");
   }
   await writeFile(path.join(rootDir, "src/data/client_embeddings.json"), jsonString);
 }
