@@ -44,6 +44,7 @@
   }
   /* Touch target and breakpoints */
   --touch-target-size: 48px;
+  --logo-max-height: min(8dvh, 44px);
   --breakpoint-lg: 1024px;
 
   /* Updated border radius */

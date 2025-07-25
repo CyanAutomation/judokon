@@ -203,6 +203,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 - Fixed, screen reader accessible
 - Logo left, menu right
+- Logo scales with header height so larger screens display a bigger emblem
 
 #### Map Navigation (Game Mode Locations)
 
@@ -350,6 +351,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 | --transition-fast     | all 150ms ease             | UI animations                             |
 | --color-slider-dot    | #BBB                       | Carousel indicator default                |
 | --color-slider-active | #717171                    | Active/hover indicator                    |
+| --logo-max-height     | min(8dvh, 44px)            | Max height for logo images                |
 
 ---
 
