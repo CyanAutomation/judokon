@@ -327,6 +327,7 @@ Light, dark and gray themes are supported. See [prdSettingsMenu.md](design/produ
 The Settings page (`src/pages/settings.html`) groups all player preferences, including experimental **feature flags**. Toggle a flag to enable an optional feature without modifying code. Flag values persist across pages and apply immediately. Implementation guidelines live in [settingsPageDesignGuidelines.md](design/codeStandards/settingsPageDesignGuidelines.md#feature-flags--agent-observability).
 
 Battle pages include a collapsible debug panel. Enable the **Battle Debug Panel** feature flag in **Settings** to reveal real-time match state in a `<pre>` element. The panel is keyboard accessible and hidden by default so normal gameplay remains unaffected.
+Toggle the **Full Navigation Map** flag to display a map overlay with links to all pages for easier orientation during testing.
 
 ## Browser Compatibility
 
