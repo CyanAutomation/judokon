@@ -14,7 +14,8 @@
     "lint": "npx prettier . --check && npx eslint .",
     "check:contrast": "node scripts/runPa11y.js",
     "prepare": "husky install",
-    "validate:data": "node scripts/validateData.js"
+    "validate:data": "node scripts/validateData.js",
+    "generate:embeddings": "node scripts/generateEmbeddings.js"
   },
   "keywords": [],
   "author": "",
@@ -99,6 +100,7 @@
     "why-is-node-running": "^2.3.0",
     "ws": "^8.18.1",
     "xml-name-validator": "^5.0.0",
-    "xmlchars": "^2.2.0"
+    "xmlchars": "^2.2.0",
+    "@xenova/transformers": "^2.6.0"
   }
 }
