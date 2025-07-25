@@ -78,9 +78,9 @@ After editing PRDs, tooltips, or game rules, run `npm run generate:embeddings` f
 
 ## Edge Cases / Failure States
 
-- **Malformed Embeddings**: If an entry is missing an embedding, log a warning and skip it during similarity comparison.
+- **Malformed Embeddings**: If an entry is missing an embedding, log a warning and skip it during similarity comparison. Surface the message “Embeddings could not be loaded – please check console.”
 - **Corrupted JSON File**: Show a fallback message and prevent crashes; disable the query interface if JSON fails to parse.
-- **Out-of-Vocabulary Query**: Return an empty match list with message: “No close matches found — refine your query.”
+- **Out-of-Vocabulary Query**: If no results meet the similarity threshold, the UI remains usable and displays “No close matches found — refine your query.”
 - **Version Mismatch**: Add a version field to the JSON file (e.g., `"version": "v1.0"`) and warn if outdated.
 - **Invalid Query Vector**: Validate that the query vector matches expected dimensions; handle mismatches with clear error messaging.
 
