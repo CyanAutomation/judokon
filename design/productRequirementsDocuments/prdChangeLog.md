@@ -153,3 +153,5 @@ Players and developers currently lack a simple, in-game method to see which Judo
 - The page follows existing layout conventions: header, `.home-screen` wrapper,
   and bottom navigation bar. Include a spinner during loading and a friendly
   message if no data is available.
+- Table rows alternate between `--color-surface` and `--color-tertiary` to
+  create zebra striping.
