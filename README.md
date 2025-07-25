@@ -284,6 +284,8 @@ JU-DO-KON! offers a 99-card deck and one-on-one stat battles in a fully browser-
 
 The project ships with a retrieval-augmented search demo. Run `npm run generate:embeddings` to create the index, then open `vectorSearch.html` to try it out. These embeddings let AI agents query the product requirement docs, tooltip descriptions, and game data.
 
+After modifying any PRDs, tooltip text, or game rule files, run `npm run generate:embeddings` again to rebuild `client_embeddings.json`. Commit the updated file alongside your documentation changes so other agents have the latest vectors.
+
 ## About JU-DO-KON!
 
 **JU-DO-KON!** is a fast-paced, web-based card game, featuring real-life elite judoka. Designed for ages 8–12, the game uses simplified stats, vibrant collectible cards, and a player-vs-computer battle format. First to win 10 rounds takes the match!
