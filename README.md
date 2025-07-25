@@ -330,6 +330,7 @@ Battle pages include a collapsible debug panel. Enable the **Battle Debug Panel*
 Toggle the **Full Navigation Map** flag to display a map overlay with links to all pages for easier orientation during testing.
 
 Game mode data now falls back to a bundled JSON import if the network request fails, so navigation works offline.
+Corrupted settings are detected and automatically reset to defaults, ensuring the Settings page always remains usable.
 
 ## Browser Compatibility
 

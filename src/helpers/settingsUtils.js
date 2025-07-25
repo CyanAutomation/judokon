@@ -53,22 +53,23 @@ const SAVE_DELAY_MS = 100;
  * @returns {Promise<Settings>} Resolved settings object.
  */
 export async function loadSettings() {
+  await getSettingsSchema();
+  if (typeof localStorage === "undefined") {
+    throw new Error("localStorage unavailable");
+  }
+  const raw = localStorage.getItem(SETTINGS_KEY);
+  if (!raw) {
+    return { ...DEFAULT_SETTINGS };
+  }
   try {
-    await getSettingsSchema();
-    if (typeof localStorage === "undefined") {
-      throw new Error("localStorage unavailable");
-    }
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (!raw) {
-      return { ...DEFAULT_SETTINGS };
-    }
     const parsed = JSON.parse(raw);
     const merged = { ...DEFAULT_SETTINGS, ...parsed };
     await validateWithSchema(merged, await getSettingsSchema());
     return merged;
   } catch (error) {
-    // For PRD: show error popup in UI, not here
-    throw error;
+    console.warn("Invalid stored settings, resetting to defaults", error);
+    localStorage.removeItem(SETTINGS_KEY);
+    return { ...DEFAULT_SETTINGS };
   }
 }
 
