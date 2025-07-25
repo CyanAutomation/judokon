@@ -87,3 +87,57 @@ Without a semantic memory layer, agents must either parse entire documents from 
 - UI must support keyboard navigation and screen readers.
 
 ### UI Mockup
+
++–––––––––––––––––––––––––––––+
+JU-DO-KON! Vector Search
+[ Search bar (e.g. “Kumi-kata”) ]  [Search Button]
+–––––––––––––––––––––––––––––
+Top Matches:
+1. “Kumi-kata is a grip fighting technique…” [score]
+Source: Tooltip.json
+2. “Grip fighting principles are defined in PRD…”
+Source: PRD_techniques.md
+–––––––––––––––––––––––––––––
+
+
+---
+
+## Dependencies and Open Questions
+
+### Dependencies:
+- Sentence embedding model (e.g. `all-MiniLM-L6-v2`, or simulated offline)
+- JSON corpus (e.g. `tooltips.json`, PRDs, `judoka.json`)
+- Cosine similarity JS implementation
+
+### Open Questions:
+- Should this feature support live embedding via API (e.g. OpenAI) or remain static?
+- Do we want a UI search tool for users, or agent-only access?
+- Should embedding versioning be tracked per file (`v1_embeddings.json`)?
+
+## Tasks
+
+- [ ] 1.0 Build Embedding Generation System
+  - [ ] 1.1 Choose embedding model (e.g. MiniLM or OpenAI Ada)
+  - [ ] 1.2 Parse `tooltips.json`, PRDs, and `judoka.json`
+  - [ ] 1.3 Generate vector embeddings for each entry
+  - [ ] 1.4 Save embeddings and metadata into `client_embeddings.json`
+
+- [ ] 2.0 Implement Client-Side Embedding Store
+  - [ ] 2.1 Structure JSON with `id`, `text`, `embedding`, `source`, `tags`
+  - [ ] 2.2 Ensure total file size <1MB
+  - [ ] 2.3 Validate JSON loading in-browser
+
+- [ ] 3.0 Develop Similarity Search Function
+  - [ ] 3.1 Implement cosine similarity in JS
+  - [ ] 3.2 Return top 3 matches within 200ms
+  - [ ] 3.3 Include score and source reference in response
+
+- [ ] 4.0 Create Static Query Interface
+  - [ ] 4.1 Design and implement offline query UI
+  - [ ] 4.2 Add keyboard accessibility and result display
+  - [ ] 4.3 Provide example queries with results
+
+- [ ] 5.0 Agent Integration and Demos
+  - [ ] 5.1 Create markdown prompt templates
+  - [ ] 5.2 Provide usage examples with test agents
+  - [ ] 5.3 Log agent response coverage and latency
