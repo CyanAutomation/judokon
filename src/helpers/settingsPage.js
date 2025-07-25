@@ -39,7 +39,6 @@ function initializeControls(settings, gameModes) {
 
   const controls = {
     soundToggle: document.getElementById("sound-toggle"),
-    navToggle: document.getElementById("navmap-toggle"),
     motionToggle: document.getElementById("motion-toggle"),
     displaySelect: document.getElementById("display-mode-select")
   };

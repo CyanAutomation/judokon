@@ -41,11 +41,10 @@ describe("settings utils", () => {
     const settings = await loadSettings();
     expect(settings).toEqual({
       sound: false,
-      fullNavMap: true,
       motionEffects: true,
       displayMode: "light",
       gameModes: {},
-      featureFlags: { battleDebugPanel: false }
+      featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
     });
   });
 
@@ -57,11 +56,10 @@ describe("settings utils", () => {
     const { saveSettings } = await import("../../src/helpers/settingsUtils.js");
     const data = {
       sound: false,
-      fullNavMap: true,
       motionEffects: true,
       displayMode: "dark",
       gameModes: {},
-      featureFlags: { battleDebugPanel: false }
+      featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
     };
     const promise = saveSettings(data);
     await vi.advanceTimersByTimeAsync(110);
@@ -86,11 +84,10 @@ describe("settings utils", () => {
     const settings = await loadSettings();
     expect(settings).toEqual({
       sound: false,
-      fullNavMap: true,
       motionEffects: true,
       displayMode: "light",
       gameModes: {},
-      featureFlags: { battleDebugPanel: false }
+      featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
     });
     Storage.prototype.getItem = originalGetItem;
   });
@@ -128,11 +125,10 @@ describe("settings utils", () => {
     await expect(
       saveSettings({
         sound: true,
-        fullNavMap: true,
         motionEffects: true,
         displayMode: "light",
         gameModes: {},
-        featureFlags: { battleDebugPanel: false }
+        featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
       })
     ).rejects.toThrow("fail");
     Storage.prototype.setItem = originalSetItem;
@@ -161,19 +157,17 @@ describe("settings utils", () => {
     const { saveSettings } = await import("../../src/helpers/settingsUtils.js");
     const data1 = {
       sound: true,
-      fullNavMap: false,
       motionEffects: true,
       displayMode: "light",
       gameModes: {},
-      featureFlags: { battleDebugPanel: false }
+      featureFlags: { battleDebugPanel: false, fullNavigationMap: false }
     };
     const data2 = {
       sound: false,
-      fullNavMap: true,
       motionEffects: false,
       displayMode: "dark",
       gameModes: {},
-      featureFlags: { battleDebugPanel: false }
+      featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
     };
     saveSettings(data1);
     saveSettings(data2);

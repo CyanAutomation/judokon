@@ -7,11 +7,14 @@ import { hex } from "wcag-contrast";
 
 const baseSettings = {
   sound: false,
-  fullNavMap: true,
   motionEffects: true,
   displayMode: "light",
   gameModes: {},
-  featureFlags: { randomStatMode: false, battleDebugPanel: false }
+  featureFlags: {
+    randomStatMode: false,
+    battleDebugPanel: false,
+    fullNavigationMap: true
+  }
 };
 
 describe("randomJudokaPage module", () => {

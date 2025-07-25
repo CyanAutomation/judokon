@@ -7,10 +7,6 @@
       "type": "boolean",
       "description": "Enable or disable game sound effects."
     },
-    "fullNavMap": {
-      "type": "boolean",
-      "description": "Show full navigation map when enabled."
-    },
     "motionEffects": {
       "type": "boolean",
       "description": "Enable animated motion effects."
@@ -31,6 +27,6 @@
       "additionalProperties": { "type": "boolean" }
     }
   },
-  "required": ["sound", "fullNavMap", "motionEffects", "displayMode"],
+  "required": ["sound", "motionEffects", "displayMode"],
   "additionalProperties": false
 }

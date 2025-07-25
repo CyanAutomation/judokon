@@ -46,9 +46,6 @@ export function createSettingsDom() {
   const soundToggle = document.createElement("input");
   soundToggle.id = "sound-toggle";
   soundToggle.type = "checkbox";
-  const navmapToggle = document.createElement("input");
-  navmapToggle.id = "navmap-toggle";
-  navmapToggle.type = "checkbox";
   const motionToggle = document.createElement("input");
   motionToggle.id = "motion-toggle";
   motionToggle.type = "checkbox";
@@ -60,7 +57,6 @@ export function createSettingsDom() {
   featureFlagsContainer.id = "feature-flags-container";
   fragment.append(
     soundToggle,
-    navmapToggle,
     motionToggle,
     displayModeSelect,
     gameModeToggleContainer,

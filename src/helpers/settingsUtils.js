@@ -28,11 +28,10 @@ async function getSettingsSchema() {
 const SETTINGS_KEY = "settings";
 const DEFAULT_SETTINGS = {
   sound: false,
-  fullNavMap: true,
   motionEffects: true,
   displayMode: "light",
   gameModes: {},
-  featureFlags: { battleDebugPanel: false }
+  featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
 };
 export { DEFAULT_SETTINGS };
 
@@ -141,7 +140,6 @@ export async function updateSetting(key, value) {
 /**
  * @typedef {Object} Settings
  * @property {boolean} sound
- * @property {boolean} fullNavMap
  * @property {boolean} motionEffects
  * @property {"light"|"dark"|"gray"} displayMode
  * @property {Record<string, boolean>} [gameModes]
