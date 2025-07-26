@@ -1,7 +1,11 @@
 import * as path from "path";
 import { fileURLToPath } from "url";
 import { test, expect } from "./fixtures/commonSetup.js";
-import { verifyPageBasics } from "./fixtures/navigationChecks.js";
+import {
+  verifyPageBasics,
+  NAV_RANDOM_JUDOKA,
+  NAV_CLASSIC_BATTLE
+} from "./fixtures/navigationChecks.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const STORY_FIXTURE = path.resolve(__dirname, "../tests/fixtures/aesopsFables.json");
@@ -23,7 +27,7 @@ test.describe("Pseudo-Japanese toggle", () => {
   });
 
   test("page basics", async ({ page }) => {
-    await verifyPageBasics(page, ["nav-randomJudoka", "nav-classicBattle"]);
+    await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);
   });
 
   test("toggle updates quote text", async ({ page }) => {
