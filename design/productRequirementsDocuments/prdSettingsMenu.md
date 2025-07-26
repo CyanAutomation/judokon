@@ -61,7 +61,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - **Motion effects (binary):** ON/OFF (default: ON)
 - **Display mode (three options):** Light, Dark, Gray (default: Light)
   - _Gray mode_ provides a grayscale display to reduce visual noise for neurodivergent users.
-- **Game modes list:** A list populated from `navigationItems.json`, showing all modes defined there, with binary toggles per mode.
+- **Game modes list:** Pulled from `gameModes.json` and cross-referenced with `navigationItems.json` to determine order and visibility; each mode has a binary toggle.
 - **Change Log:** Link opens `changeLog.html` with the latest 20 judoka updates.
 - **PRD Viewer:** Link opens `prdViewer.html` for browsing product documents.
 - **Mockup Viewer:** Link opens `mockupViewer.html` for viewing design mockups.
@@ -79,7 +79,8 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 
 ## Data & Persistence
 
-- The Settings page **must pull current states** from data sources (`settings.json` and `navigationItems.json`) on load.
+- The Settings page **must pull current states** from data sources (`settings.json`, `gameModes.json`, and `navigationItems.json`) on load.
+- `gameModes.json` defines all available modes, while `navigationItems.json` references each by `id` to control order and hidden status.
 - Changes should trigger **immediate data writes** without requiring a “Save Changes” button.
 - All live updates must persist across page refreshes within the same session.
 - If `navigationItems.json` fails to load, the game modes section should **disable gracefully** and show an error message.
