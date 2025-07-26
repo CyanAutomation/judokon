@@ -172,11 +172,8 @@ function createInspectorPanel(container, judoka, sections) {
   jsonPre.textContent = JSON.stringify(judoka, null, 2);
   panel.appendChild(jsonPre);
 
-  for (const el of Object.values(sections)) {
-    const pre = document.createElement("pre");
-    pre.textContent = el.outerHTML;
-    panel.appendChild(pre);
-  }
+  // Only show the card's JSON data. The markup preview was removed to
+  // keep the inspector output concise.
 
   panel.addEventListener("toggle", () => {
     if (panel.open) {
