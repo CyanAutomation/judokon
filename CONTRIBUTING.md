@@ -83,6 +83,7 @@ large, monolithic implementations whenever possible.
 Pull request descriptions must briefly mention how your changes maintain or improve this modular structure.
 
 - Refactor or break apart large functions when touched.
+- Review files approaching 200 lines for opportunities to refactor.
 - Prefer test helpers over repeated setup code.
 - Document any simplification in pull request descriptions.
 
