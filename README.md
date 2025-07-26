@@ -282,9 +282,9 @@ JU-DO-KON! offers a 99-card deck and one-on-one stat battles in a fully browser-
 
 ### Vector Search (RAG)
 
-The project ships with a retrieval-augmented search demo. Run `npm run generate:embeddings` to create the index, then open `src/pages/vectorSearch.html` to try it out. The generation script at `scripts/generateEmbeddings.js` downloads the `Xenova/all-MiniLM-L6-v2` model the first time it runs—so it fails offline unless the weights have been cached. These embeddings let AI agents query the product requirement docs, tooltip descriptions, and game data. The generated `src/data/client_embeddings.json` is pretty-printed for readability and must be committed for the page to work.
+The project ships with a retrieval-augmented search demo. Run `npm run generate:embeddings` to create the index, then open `src/pages/vectorSearch.html` to try it out. The generation script at `scripts/generateEmbeddings.js` downloads the `Xenova/all-MiniLM-L6-v2` model the first time it runs—so it fails offline unless the weights have been cached. These embeddings let AI agents query the product requirement docs, tooltip descriptions, and game data. The generated `src/data/client_embeddings.json` is pretty-printed for readability and must be committed for the page to work. **Embeddings must be flat numeric arrays like `[0.12, -0.04, ...]`—objects with `dims` or `data` keys will break the search page.**
 
-After modifying any PRDs, tooltip text, or game rule files, run `npm run generate:embeddings` again to rebuild `client_embeddings.json`. Commit the updated file alongside your documentation changes so other agents have the latest vectors.
+After modifying any PRDs **or any file in `src/data/`**, run `npm run generate:embeddings` again to rebuild `client_embeddings.json`. Commit the updated file alongside your documentation changes so other agents have the latest vectors.
 
 - Results appear below the form with up to five entries that show match score and source.
 - The page displays “Embeddings could not be loaded – please check console.” if loading fails, or “No close matches found” when nothing is returned.

@@ -4,7 +4,7 @@ This document shows how AI agents can search the JU-DO-KON! vector database and 
 
 ## Embedding JSON Format
 
-Embeddings are stored in `client_embeddings.json` as an array of objects. Each entry includes the original text along with metadata for retrieval:
+Embeddings are stored in `client_embeddings.json` as an array of objects. Each entry includes the original text along with metadata for retrieval. **The `embedding` field must be a flat numeric array (e.g. `[0.12, -0.04, ...]`) rather than an object with `dims` or `data`.**
 
 ```json
 {
@@ -49,4 +49,4 @@ Query: "navbar button transition duration"
 
 ## Updating Embeddings
 
-Run `npm run generate:embeddings` whenever you update documentation or data files. The script (`scripts/generateEmbeddings.js`) fetches the `Xenova/all-MiniLM-L6-v2` model on first run, so it requires internet access unless the model is cached. This rebuilds `client_embeddings.json`, now pretty-printed for easier diffing, so agents search the latest content. Commit the regenerated JSON file along with your changes.
+Run `npm run generate:embeddings` whenever you update any PRD **or any file under `src/data/`**. The script (`scripts/generateEmbeddings.js`) fetches the `Xenova/all-MiniLM-L6-v2` model on first run, so it requires internet access unless the model is cached. This rebuilds `client_embeddings.json`, now pretty-printed for easier diffing, so agents search the latest content. Commit the regenerated JSON file along with your changes.
