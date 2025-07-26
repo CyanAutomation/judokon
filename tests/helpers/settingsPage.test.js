@@ -23,7 +23,7 @@ describe("settingsPage module", () => {
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
     const loadNavigationItems = vi.fn().mockResolvedValue([]);
-    const updateGameModeHidden = vi.fn();
+    const updateNavigationItemHidden = vi.fn();
     const applyDisplayMode = vi.fn();
     const applyMotionPreference = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
@@ -33,7 +33,7 @@ describe("settingsPage module", () => {
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
       loadNavigationItems,
       loadGameModes: loadNavigationItems,
-      updateGameModeHidden
+      updateNavigationItemHidden
     }));
     vi.doMock("../../src/helpers/displayMode.js", () => ({
       applyDisplayMode
@@ -62,7 +62,7 @@ describe("settingsPage module", () => {
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
     const loadNavigationItems = vi.fn().mockResolvedValue(gameModes);
-    const updateGameModeHidden = vi.fn();
+    const updateNavigationItemHidden = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
@@ -70,7 +70,7 @@ describe("settingsPage module", () => {
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
       loadNavigationItems,
       loadGameModes: loadNavigationItems,
-      updateGameModeHidden
+      updateNavigationItemHidden
     }));
 
     await import("../../src/helpers/settingsPage.js");
@@ -97,7 +97,7 @@ describe("settingsPage module", () => {
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
     const loadNavigationItems = vi.fn().mockResolvedValue(gameModes);
-    const updateGameModeHidden = vi.fn();
+    const updateNavigationItemHidden = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
@@ -105,7 +105,7 @@ describe("settingsPage module", () => {
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
       loadNavigationItems,
       loadGameModes: loadNavigationItems,
-      updateGameModeHidden
+      updateNavigationItemHidden
     }));
 
     await import("../../src/helpers/settingsPage.js");
@@ -122,7 +122,9 @@ describe("settingsPage module", () => {
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
     const loadNavigationItems = vi.fn().mockResolvedValue(gameModes);
-    const updateGameModeHidden = vi.fn().mockResolvedValue([{ ...gameModes[0], isHidden: true }]);
+    const updateNavigationItemHidden = vi
+      .fn()
+      .mockResolvedValue([{ ...gameModes[0], isHidden: true }]);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
@@ -130,7 +132,7 @@ describe("settingsPage module", () => {
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
       loadNavigationItems,
       loadGameModes: loadNavigationItems,
-      updateGameModeHidden
+      updateNavigationItemHidden
     }));
 
     await import("../../src/helpers/settingsPage.js");
@@ -141,7 +143,7 @@ describe("settingsPage module", () => {
     input.checked = false;
     input.dispatchEvent(new Event("change"));
 
-    expect(updateGameModeHidden).toHaveBeenCalledWith("classic", true);
+    expect(updateNavigationItemHidden).toHaveBeenCalledWith("classic", true);
   });
 
   it("renders feature flag switches", async () => {
@@ -156,7 +158,7 @@ describe("settingsPage module", () => {
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
       loadNavigationItems,
       loadGameModes: loadNavigationItems,
-      updateGameModeHidden: vi.fn()
+      updateNavigationItemHidden: vi.fn()
     }));
 
     await import("../../src/helpers/settingsPage.js");
@@ -188,7 +190,7 @@ describe("settingsPage module", () => {
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
       loadNavigationItems,
       loadGameModes: loadNavigationItems,
-      updateGameModeHidden: vi.fn()
+      updateNavigationItemHidden: vi.fn()
     }));
 
     await import("../../src/helpers/settingsPage.js");

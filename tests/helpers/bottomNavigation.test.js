@@ -166,7 +166,7 @@ describe("populateNavbar", () => {
   it("falls back to default items when fetch fails", async () => {
     const navBar = setupDom();
     stubLogoQuery();
-    localStorage.removeItem("gameModes");
+    localStorage.removeItem("navigationItems");
     const loadNavigationItems = vi.fn().mockRejectedValue(new Error("fail"));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
       loadNavigationItems,
@@ -190,7 +190,7 @@ describe("populateNavbar", () => {
     const data = [
       { id: "X", name: "X", url: "x.html", category: "mainMenu", order: 1, isHidden: false }
     ];
-    localStorage.setItem("gameModes", JSON.stringify(data));
+    localStorage.setItem("navigationItems", JSON.stringify(data));
     const loadSettings = vi.fn().mockResolvedValue({
       sound: true,
       motionEffects: true,

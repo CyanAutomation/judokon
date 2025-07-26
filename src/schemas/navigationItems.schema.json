@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://judokon.dev/schemas/navigationItems.schema.json",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Identifier referencing a game mode"
+      },
+      "url": {
+        "type": "string",
+        "description": "Relative page URL for navigation"
+      },
+      "category": {
+        "type": "string",
+        "description": "Grouping used for menus"
+      },
+      "order": {
+        "type": "integer",
+        "description": "Display order within its category"
+      },
+      "isHidden": {
+        "type": "boolean",
+        "description": "Controls visibility in navigation"
+      }
+    },
+    "required": ["id", "url", "category", "order", "isHidden"],
+    "additionalProperties": false
+  }
+}

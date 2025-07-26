@@ -1,7 +1,7 @@
 import { createToggleSwitch } from "../../components/ToggleSwitch.js";
 import { applyDisplayMode } from "../displayMode.js";
 import { applyMotionPreference } from "../motionUtils.js";
-import { updateGameModeHidden } from "../gameModeUtils.js";
+import { updateNavigationItemHidden } from "../gameModeUtils.js";
 import { showSettingsError } from "../showSettingsError.js";
 
 function applyInputState(element, value) {
@@ -68,7 +68,7 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
       handleUpdate("gameModes", updated, () => {
         input.checked = prev;
       });
-      updateGameModeHidden(mode.id, !input.checked).catch((err) => {
+      updateNavigationItemHidden(mode.id, !input.checked).catch((err) => {
         console.error("Failed to update navigation item", err);
         input.checked = prev;
         showSettingsError();
