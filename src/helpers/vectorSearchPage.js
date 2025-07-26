@@ -42,7 +42,7 @@ async function getExtractor() {
  * 2. Read and trim the query from the input element; clear previous results.
  *    - Exit early if the query is empty.
  * 3. Show the spinner and a searching message.
- * 4. Obtain the extractor and generate the query vector.
+ * 4. Obtain the extractor and generate the query vector using mean pooling.
  * 5. Use `findMatches` to fetch the top results for the vector.
  * 6. Hide the spinner and handle empty or missing embeddings cases.
  * 7. Build an ordered list of matches and append it to the results element.
@@ -61,7 +61,7 @@ async function handleSearch(event) {
   resultsEl.textContent = "Searching...";
   try {
     const model = await getExtractor();
-    const vector = (await model(query))[0];
+    const vector = await model(query, { pooling: "mean" });
     const matches = await findMatches(Array.from(vector), 5);
     resultsEl.textContent = "";
     spinner.style.display = "none";
