@@ -147,7 +147,10 @@ describe("populateNavbar", () => {
     });
     const loadGameModes = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({ loadGameModes }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems: loadGameModes,
+      loadGameModes
+    }));
 
     const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
 
@@ -165,7 +168,10 @@ describe("populateNavbar", () => {
     stubLogoQuery();
     localStorage.removeItem("gameModes");
     const loadGameModes = vi.fn().mockRejectedValue(new Error("fail"));
-    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({ loadGameModes }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems: loadGameModes,
+      loadGameModes
+    }));
 
     const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
 
@@ -194,7 +200,10 @@ describe("populateNavbar", () => {
     });
     const loadGameModes = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({ loadGameModes }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems: loadGameModes,
+      loadGameModes
+    }));
 
     const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
 
@@ -236,7 +245,10 @@ describe("populateNavbar", () => {
     });
     const loadGameModes = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({ loadGameModes }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems: loadGameModes,
+      loadGameModes
+    }));
 
     window.history.pushState({}, "", "/src/pages/home.html");
 
