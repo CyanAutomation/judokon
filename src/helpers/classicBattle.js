@@ -15,7 +15,7 @@ import {
 } from "./battleEngine.js";
 import * as infoBar from "./setupBattleInfoBar.js";
 
-import { getStatValue } from "./battle/index.js";
+import { getStatValue, resetStatButtons, showResult } from "./battle/index.js";
 
 export function getStartRound() {
   if (typeof window !== "undefined" && window.startRoundOverride) {
@@ -37,51 +37,6 @@ function updateDebugPanel() {
     matchEnded: isMatchEnded()
   };
   pre.textContent = JSON.stringify(state, null, 2);
-}
-
-/**
- * Remove highlight and focus from all stat buttons.
- *
- * @pseudocode
- * 1. Select all stat buttons within `#stat-buttons`.
- * 2. For each button:
- *    a. Remove the `selected` class so the button style resets.
- *    b. Clear any inline background color to force a repaint in Safari.
- *    c. Disable the button to break the `:active` highlight.
- *    d. Force a reflow and set `-webkit-tap-highlight-color` to
- *       `transparent` so Safari clears its touch overlay.
- *    e. On the next animation frame, re-enable the button,
- *       remove the temporary style, clear `backgroundColor`,
- *       and call `blur()` so Safari drops the highlight.
- */
-function resetStatButtons() {
-  document.querySelectorAll("#stat-buttons button").forEach((btn) => {
-    btn.classList.remove("selected");
-    btn.style.removeProperty("background-color");
-    btn.disabled = true;
-    // Force reflow so Safari drops the touch highlight
-    void btn.offsetWidth;
-    btn.style.setProperty("-webkit-tap-highlight-color", "transparent");
-    requestAnimationFrame(() => {
-      btn.disabled = false;
-      btn.style.removeProperty("-webkit-tap-highlight-color");
-      btn.style.backgroundColor = "";
-      btn.blur();
-    });
-  });
-}
-
-function showResult(message) {
-  const el = document.getElementById("round-message");
-  if (!el) return;
-  el.classList.add("fade-transition");
-  el.textContent = message;
-  el.classList.remove("fading");
-  if (message) {
-    setTimeout(() => {
-      el.classList.add("fading");
-    }, 2000);
-  }
 }
 
 /**
