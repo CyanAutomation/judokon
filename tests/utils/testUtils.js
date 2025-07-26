@@ -55,6 +55,7 @@ export function createSettingsDom() {
   gameModeToggleContainer.id = "game-mode-toggle-container";
   const featureFlagsContainer = document.createElement("section");
   featureFlagsContainer.id = "feature-flags-container";
+  featureFlagsContainer.className = "game-mode-toggle-container settings-form";
   fragment.append(
     soundToggle,
     motionToggle,

@@ -16,10 +16,11 @@ To ensure the **Settings** page remains consistent, visually appealing, and acce
 - **Settings Item Container**  
   Wrap each setting control in a `<div class="settings-item">` for modularity and consistent spacing.
 
-- **Grid Layout for Controls**  
+- **Grid Layout for Controls**
   Use the `.game-mode-toggle-container` class on fieldsets to enable responsive grid layouts:
   - 3-column layout on desktop
   - 1-column stacked layout on mobile
+  - The `Feature Flags` fieldset should include this class so flags display in a responsive grid.
 
 - **Responsive Design Preservation**  
   New settings should stack vertically on mobile and arrange into columns on larger screens without breaking layout.
