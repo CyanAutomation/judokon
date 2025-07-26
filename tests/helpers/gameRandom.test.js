@@ -32,6 +32,8 @@ describe("game.js", () => {
     document.dispatchEvent(new Event("DOMContentLoaded"));
     showRandom.dispatchEvent(new Event("click"));
 
-    expect(generateRandomCard).toHaveBeenCalledWith(null, null, gameArea, true);
+    expect(generateRandomCard).toHaveBeenCalledWith(null, null, gameArea, true, undefined, {
+      enableInspector: false
+    });
   });
 });
