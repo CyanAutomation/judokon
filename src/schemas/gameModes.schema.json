@@ -65,7 +65,7 @@
         "additionalProperties": false
       }
     },
-    "required": ["id", "name", "description", "isHidden", "rules"],
+    "required": ["id", "name", "description", "rules"],
     "additionalProperties": false
   }
 }

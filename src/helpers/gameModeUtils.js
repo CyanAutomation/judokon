@@ -6,6 +6,7 @@ import { DATA_DIR } from "./constants.js";
  * schema during module initialization.
  */
 let schemaPromise;
+let navSchemaPromise;
 
 async function getSchema() {
   if (!schemaPromise) {
@@ -24,16 +25,35 @@ async function getSchema() {
   return schemaPromise;
 }
 
+async function getNavigationSchema() {
+  if (!navSchemaPromise) {
+    navSchemaPromise = fetch(new URL("../schemas/navigationItems.schema.json", import.meta.url))
+      .then(async (r) => {
+        if (!r.ok) {
+          throw new Error(`Failed to fetch navigation schema: ${r.status}`);
+        }
+        return r.json();
+      })
+      .catch(
+        async () =>
+          (await import("../schemas/navigationItems.schema.json", { assert: { type: "json" } }))
+            .default
+      );
+  }
+  return navSchemaPromise;
+}
+
 const GAMEMODES_KEY = "gameModes";
+const NAV_ITEMS_KEY = "navigationItems";
 
 /**
- * Load game modes from localStorage or fallback to the default navigation JSON file.
+ * Load game modes from localStorage or fallback to the default game modes JSON file.
  *
  * @pseudocode
  * 1. Call `getSchema()` to lazily load the validation schema.
  * 2. Attempt to read `GAMEMODES_KEY` from `localStorage`.
  *    - Parse and validate the JSON when present.
- * 3. If no stored data exists, attempt to fetch `navigationItems.json` from `DATA_DIR`.
+ * 3. If no stored data exists, attempt to fetch `gameModes.json` from `DATA_DIR`.
  *    - On failure, dynamically import the JSON file instead.
  *    - Persist the resolved array to `localStorage`.
  * 4. Return the validated array of game mode objects.
@@ -58,10 +78,10 @@ export async function loadGameModes() {
   }
   let data;
   try {
-    data = await fetchJson(`${DATA_DIR}navigationItems.json`, await getSchema());
+    data = await fetchJson(`${DATA_DIR}gameModes.json`, await getSchema());
   } catch (error) {
     console.warn("Failed to fetch game modes, falling back to import", error);
-    data = (await import("../data/navigationItems.json", { assert: { type: "json" } })).default;
+    data = (await import("../data/gameModes.json", { assert: { type: "json" } })).default;
     await validateWithSchema(data, await getSchema());
   }
   localStorage.setItem(GAMEMODES_KEY, JSON.stringify(data));
@@ -69,12 +89,42 @@ export async function loadGameModes() {
 }
 
 /**
- * Load navigation items from storage. Alias for {@link loadGameModes}.
+ * Load raw navigation items from storage or the bundled JSON file.
  *
  * @returns {Promise<Array>} Resolved array of navigation items.
  */
-export function loadNavigationItems() {
-  return loadGameModes();
+async function loadRawNavigationItems() {
+  await getNavigationSchema();
+  if (typeof localStorage === "undefined") {
+    throw new Error("localStorage unavailable");
+  }
+  const raw = localStorage.getItem(NAV_ITEMS_KEY);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      await validateWithSchema(parsed, await getNavigationSchema());
+      return parsed;
+    } catch (err) {
+      console.warn("Failed to parse stored navigation items", err);
+      localStorage.removeItem(NAV_ITEMS_KEY);
+    }
+  }
+  let data;
+  try {
+    data = await fetchJson(`${DATA_DIR}navigationItems.json`, await getNavigationSchema());
+  } catch (error) {
+    console.warn("Failed to fetch navigation items, falling back to import", error);
+    data = (await import("../data/navigationItems.json", { assert: { type: "json" } })).default;
+    await validateWithSchema(data, await getNavigationSchema());
+  }
+  localStorage.setItem(NAV_ITEMS_KEY, JSON.stringify(data));
+  return data;
+}
+
+export async function loadNavigationItems() {
+  const navItems = await loadRawNavigationItems();
+  const modes = await loadGameModes();
+  return navItems.map((item) => ({ ...(modes.find((m) => m.id === item.id) || {}), ...item }));
 }
 
 /**
@@ -96,45 +146,54 @@ export async function saveGameModes(modes) {
   localStorage.setItem(GAMEMODES_KEY, JSON.stringify(modes));
 }
 
+async function saveNavigationItems(items) {
+  await validateWithSchema(items, await getNavigationSchema());
+  if (typeof localStorage === "undefined") {
+    throw new Error("localStorage unavailable");
+  }
+  localStorage.setItem(NAV_ITEMS_KEY, JSON.stringify(items));
+}
+
 /**
- * Update the `isHidden` value for a specific game mode.
+ * Update the `isHidden` value for a specific navigation item.
  *
  * @pseudocode
- * 1. Load the current game modes using `loadGameModes()` (lazy loads schema).
- * 2. Find the mode matching `id` and update its `isHidden` property.
- *    - Throw an error if the mode is not found.
- * 3. Validate and persist the updated array with `saveGameModes()`.
- * 4. Return the updated array.
+ * 1. Load the current navigation items using `loadRawNavigationItems()`.
+ * 2. Find the item matching `id` and update its `isHidden` property.
+ *    - Throw an error if the item is not found.
+ * 3. Validate and persist the updated array with `saveNavigationItems()`.
+ * 4. Return the merged navigation items.
  *
- * @param {string} id - Identifier of the game mode to update.
- * @param {boolean} isHidden - New hidden state for the mode.
- * @returns {Promise<Array>} Updated array of game modes.
+ * @param {string} id - Identifier of the navigation item to update.
+ * @param {boolean} isHidden - New hidden state for the item.
+ * @returns {Promise<Array>} Updated array of merged items.
  */
-export async function updateGameModeHidden(id, isHidden) {
-  await getSchema();
-  const modes = await loadGameModes();
-  const index = modes.findIndex((m) => m.id === id);
+export async function updateNavigationItemHidden(id, isHidden) {
+  await getNavigationSchema();
+  const items = await loadRawNavigationItems();
+  const index = items.findIndex((m) => m.id === id);
   if (index === -1) {
-    throw new Error(`Game mode not found: ${id}`);
+    throw new Error(`Navigation item not found: ${id}`);
   }
-  modes[index] = { ...modes[index], isHidden };
-  await saveGameModes(modes);
-  return modes;
+  items[index] = { ...items[index], isHidden };
+  await saveNavigationItems(items);
+  const modes = await loadGameModes();
+  return items.map((item) => ({ ...(modes.find((m) => m.id === item.id) || {}), ...item }));
 }
 
 /**
  * Retrieve a game mode object by its ID.
  *
  * @pseudocode
- * 1. Load all game modes using `loadGameModes()`.
- * 2. Find and return the mode with the matching `id`.
+ * 1. Load all navigation items using `loadNavigationItems()`.
+ * 2. Find and return the item with the matching `id`.
  *    - If not found, return `undefined`.
  *
- * @param {string} id - The ID of the game mode to retrieve.
- * @returns {Promise<Object|undefined>} The game mode object or undefined if not found.
+ * @param {string} id - The ID of the navigation item to retrieve.
+ * @returns {Promise<Object|undefined>} The merged item or undefined if not found.
  */
 export async function getGameModeById(id) {
-  const modes = await loadGameModes();
+  const modes = await loadNavigationItems();
   return modes.find((m) => m.id === id);
 }
 
@@ -142,7 +201,7 @@ export async function getGameModeById(id) {
  * Validate a destination URL for a game mode. Logs an error and optionally redirects if invalid.
  *
  * @pseudocode
- * 1. Check if the provided URL is a non-empty string and matches a known game mode URL.
+ * 1. Check if the provided URL is a non-empty string and matches a known navigation URL.
  * 2. If valid, return true.
  * 3. If invalid, log an error and optionally redirect to a default error page.
  *
@@ -152,11 +211,11 @@ export async function getGameModeById(id) {
  */
 export async function validateGameModeUrl(url, redirect = false) {
   if (typeof url !== "string" || !url) {
-    console.error("Invalid or empty game mode URL");
+    console.error("Invalid or empty navigation URL");
     if (redirect) window.location.href = "/src/pages/error.html";
     return false;
   }
-  const modes = await loadGameModes();
+  const modes = await loadNavigationItems();
   const valid = modes.some((m) => m.url === url);
   if (!valid) {
     console.error(`Broken destination URL: ${url}`);

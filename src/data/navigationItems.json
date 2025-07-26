@@ -1,123 +1,86 @@
 [
-    {
-      "id": "classicBattle",
-      "name": "Classic Battle",
-      "japaneseName": "試合 (バトルモード)",
-      "description": "A standard one-on-one battle mode where players compete to win.",
-      "category": "mainMenu",
-      "order": 20,
-      "url": "battleJudoka.html",
-      "isHidden": false
-    },
-    {
-      "id": "teamBattleSelection",
-      "name": "Team Battle Selection",
-      "japaneseName": "団体戦選択",
-      "description": "Choose between Male, Female, or Mixed Team Battle modes.",
-      "category": "subMenu",
-      "order": 30,
-      "url": "teamBattleSelection.html",
-      "isHidden": true
-    },
-    {
-      "id": "manageJudokaSelection",
-      "name": "Manage Judoka",
-      "japaneseName": "柔道家編集モード",
-      "description": "Choose to update or create a judoka.",
-      "category": "subMenu",
-      "order": 40,
-      "url": "judokaUpdateSelection.html",
-      "isHidden": true
-    },
-    {
-      "id": "teamBattleMale",
-      "name": "Team Battle (Male)",
-      "japaneseName": "男子団体戦",
-      "description": "A team-based mode where male players compete in groups.",
-      "category": "teamBattle",
-      "order": 50,
-      "url": "teamBattleMale.html",
-      "isHidden": true
-    },
-    {
-      "id": "teamBattleFemale",
-      "name": "Team Battle (Female)",
-      "japaneseName": "女子団体戦",
-      "description": "A team-based mode where female players compete in groups.",
-      "category": "teamBattle",
-      "order": 60,
-      "url": "teamBattleFemale.html",
-      "isHidden": true
-    },
-    {
-      "id": "teamBattleMixed",
-      "name": "Team Battle (Mixed)",
-      "japaneseName": "混合団体戦",
-      "description": "A team-based mode where male and female players compete together in groups.",
-      "category": "teamBattle",
-      "order": 70,
-      "url": "teamBattleMixed.html",
-      "isHidden": true
-    },
-    {
-      "id": "browseJudoka",
-      "name": "Browse Judoka",
-      "japaneseName": "柔道家を閲覧",
-      "description": "Explore the available judoka and their stats.",
-      "category": "mainMenu",
-      "order": 80,
-      "url": "browseJudoka.html",
-      "isHidden": false
-    },
-    {
-      "id": "createJudoka",
-      "name": "Create A Judoka",
-      "japaneseName": "柔道家を作成",
-      "description": "Create a new judoka by entering their details and stats.",
-      "category": "manageJudoka",
-      "order": 90,
-      "url": "createJudoka.html",
-      "isHidden": true
-    },
-    {
-      "id": "updateJudoka",
-      "name": "Update Judoka",
-      "japaneseName": "柔道家を更新",
-      "description": "Edit the details of an existing judoka.",
-      "category": "mainMenu",
-      "order": 30,
-      "url": "updateJudoka.html",
-      "isHidden": true
-    },
-    {
-      "id": "meditation",
-      "name": "Meditation",
-      "japaneseName": "メディテーション",
-      "description": "Take a moment to pause, breathe, and reflect.",
-      "category": "mainMenu",
-      "order": 85,
-      "url": "meditation.html",
-      "isHidden": false
-    },
-    {
-      "id": "randomJudoka",
-      "name": "View Judoka",
-      "japaneseName": "ランダム柔道家",
-      "description": "Displays a random judoka from the available list.",
-      "category": "mainMenu",
-      "order": 40,
-      "url": "randomJudoka.html",
-      "isHidden": false
-    },
-    {
-      "id": "settingsMenu",
-      "name": "Settings",
-      "japaneseName": "設定",
-      "description": "Change game settings.",
-      "category": "mainMenu",
-      "order": 90,
-      "url": "settings.html",
-      "isHidden": false
-    }
-  ]
-  
+  {
+    "id": "classicBattle",
+    "url": "battleJudoka.html",
+    "category": "mainMenu",
+    "order": 20,
+    "isHidden": false
+  },
+  {
+    "id": "teamBattleSelection",
+    "url": "teamBattleSelection.html",
+    "category": "subMenu",
+    "order": 30,
+    "isHidden": true
+  },
+  {
+    "id": "manageJudokaSelection",
+    "url": "judokaUpdateSelection.html",
+    "category": "subMenu",
+    "order": 40,
+    "isHidden": true
+  },
+  {
+    "id": "teamBattleMale",
+    "url": "teamBattleMale.html",
+    "category": "teamBattle",
+    "order": 50,
+    "isHidden": true
+  },
+  {
+    "id": "teamBattleFemale",
+    "url": "teamBattleFemale.html",
+    "category": "teamBattle",
+    "order": 60,
+    "isHidden": true
+  },
+  {
+    "id": "teamBattleMixed",
+    "url": "teamBattleMixed.html",
+    "category": "teamBattle",
+    "order": 70,
+    "isHidden": true
+  },
+  {
+    "id": "browseJudoka",
+    "url": "browseJudoka.html",
+    "category": "mainMenu",
+    "order": 80,
+    "isHidden": false
+  },
+  {
+    "id": "createJudoka",
+    "url": "createJudoka.html",
+    "category": "manageJudoka",
+    "order": 90,
+    "isHidden": true
+  },
+  {
+    "id": "updateJudoka",
+    "url": "updateJudoka.html",
+    "category": "mainMenu",
+    "order": 30,
+    "isHidden": true
+  },
+  {
+    "id": "meditation",
+    "url": "meditation.html",
+    "category": "mainMenu",
+    "order": 85,
+    "isHidden": false
+  },
+  {
+    "id": "randomJudoka",
+    "url": "randomJudoka.html",
+    "category": "mainMenu",
+    "order": 40,
+    "isHidden": false
+  },
+  {
+    "id": "settingsMenu",
+    "url": "settings.html",
+    "category": "mainMenu",
+    "order": 90,
+    "isHidden": false
+  }
+]

@@ -4,7 +4,6 @@
     "name": "Classic Battle",
     "japaneseName": "試合 (バトルモード)",
     "description": "A standard one-on-one battle mode where players compete to win.",
-    "isHidden": false,
     "rules": {
       "rounds": 25,
       "teamSize": 25,
@@ -17,7 +16,6 @@
     "name": "Team Battle Selection",
     "japaneseName": "団体戦選択",
     "description": "Choose between Male, Female, or Mixed Team Battle modes.",
-    "isHidden": true,
     "rules": {
       "options": ["teamBattleMale", "teamBattleFemale", "teamBattleMixed"]
     }
@@ -27,7 +25,6 @@
     "name": "Manage Judoka",
     "japaneseName": "柔道家編集モード",
     "description": "Choose to update or create a judoka.",
-    "isHidden": true,
     "rules": {
       "options": ["createJudoka", "updateJudoka"]
     }
@@ -37,7 +34,6 @@
     "name": "Team Battle (Male)",
     "japaneseName": "男子団体戦",
     "description": "A team-based mode where male players compete in groups.",
-    "isHidden": true,
     "rules": {
       "base": "teamBattle",
       "gender": "male"
@@ -48,7 +44,6 @@
     "name": "Team Battle (Female)",
     "japaneseName": "女子団体戦",
     "description": "A team-based mode where female players compete in groups.",
-    "isHidden": true,
     "rules": {
       "base": "teamBattle",
       "gender": "female"
@@ -59,7 +54,6 @@
     "name": "Team Battle (Mixed)",
     "japaneseName": "混合団体戦",
     "description": "A team-based mode where male and female players compete together in groups.",
-    "isHidden": true,
     "rules": {
       "rounds": 6,
       "teamSize": 6,
@@ -72,7 +66,6 @@
     "name": "Browse Judoka",
     "japaneseName": "柔道家を閲覧",
     "description": "Explore the available judoka and their stats.",
-    "isHidden": false,
     "rules": {
       "note": "Rules will be defined in the future."
     }
@@ -82,7 +75,6 @@
     "name": "Create A Judoka",
     "japaneseName": "柔道家を作成",
     "description": "Create a new judoka by entering their details and stats.",
-    "isHidden": true,
     "rules": {
       "note": "Rules will be defined in the future."
     }
@@ -92,7 +84,6 @@
     "name": "Update Judoka",
     "japaneseName": "柔道家を更新",
     "description": "Edit the details of an existing judoka.",
-    "isHidden": true,
     "rules": {
       "note": "Rules will be defined in the future."
     }
@@ -102,7 +93,6 @@
     "name": "Team Battle Ruleset",
     "japaneseName": "団体戦ルールセット",
     "description": "Defining the common ruleset for Team Battles.",
-    "isHidden": true,
     "rules": {
       "rounds": 5,
       "teamSize": 5,
@@ -114,7 +104,6 @@
     "name": "Meditation",
     "japaneseName": "メディテーション",
     "description": "Take a moment to pause, breathe, and reflect.",
-    "isHidden": false,
     "rules": {
       "note": "Rules will be defined in the future."
     }
@@ -124,7 +113,6 @@
     "name": "View Judoka",
     "japaneseName": "ランダム柔道家",
     "description": "Displays a random judoka from the available list.",
-    "isHidden": false,
     "rules": {
       "note": "Rules will be defined in the future."
     }
@@ -134,7 +122,6 @@
     "name": "Settings",
     "japaneseName": "設定",
     "description": "Change game settings.",
-    "isHidden": false,
     "rules": {
       "note": "Rules will be defined in the future."
     }
