@@ -1,0 +1,5 @@
+[
+  { "id": "a", "text": "Apple", "embedding": [1, 0], "source": "doc1" },
+  { "id": "b", "text": "Banana", "embedding": [0.9, 0.1], "source": "doc2" },
+  { "id": "c", "text": "Carrot", "embedding": [0, 1], "source": "doc3" }
+]

@@ -15,7 +15,8 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
     { url: "/src/pages/randomJudoka.html", name: "randomJudoka.png" },
     { url: "/src/pages/meditation.html", name: "meditation.png" },
     { url: "/src/pages/updateJudoka.html", name: "updateJudoka.png" },
-    { url: "/src/pages/settings.html", name: "settings.png" }
+    { url: "/src/pages/settings.html", name: "settings.png" },
+    { url: "/src/pages/vectorSearch.html", name: "vectorSearch.png" }
   ];
 
   for (const { url, name } of pages) {
