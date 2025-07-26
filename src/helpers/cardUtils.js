@@ -13,8 +13,8 @@ import { setupLazyPortraits } from "./lazyPortrait.js";
  *    - Filter out invalid judoka objects using `hasRequiredJudokaFields`.
  *    - Throw an error if no valid entries are found.
  *
- * 2. Generate a random index:
- *    - Use `Math.random()` to generate a random number between 0 and 1.
+ * 2. Generate a deterministic random index:
+ *    - Use `seededRandom()` to generate a reproducible random number between 0 and 1.
  *    - Multiply the random number by the length of the filtered `data` array.
  *    - Use `Math.floor()` to round down to the nearest whole number.
  *
