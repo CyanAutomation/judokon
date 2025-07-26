@@ -13,7 +13,18 @@ vi.mock("../../src/helpers/cardBuilder.js", () => ({
     }
     return el;
   },
-  createInspectorPanel: () => document.createElement("details")
+  createInspectorPanel: (container) => {
+    const panel = document.createElement("details");
+    panel.className = "debug-panel";
+    panel.addEventListener("toggle", () => {
+      if (panel.open) {
+        container.dataset.inspector = "true";
+      } else {
+        container.removeAttribute("data-inspector");
+      }
+    });
+    return panel;
+  }
 }));
 vi.mock("../../src/helpers/lazyPortrait.js", () => ({
   setupLazyPortraits: (...args) => setupLazyPortraitsMock(...args)
