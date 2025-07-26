@@ -8,7 +8,7 @@
  * 3. Load a transformer model for feature extraction.
  * 4. Encode each text block into a mean-pooled embedding vector.
  * 5. Build output objects with id, text, embedding, source, tags, and version.
- * 6. Ensure the final JSON output is under MAX_OUTPUT_SIZE (3MB) and write to disk.
+ * 6. Ensure the final JSON output is under MAX_OUTPUT_SIZE (3MB), pretty-print it, and write to disk.
  */
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -57,7 +57,7 @@ async function generate() {
     });
   }
 
-  const jsonString = JSON.stringify(output);
+  const jsonString = JSON.stringify(output, null, 2);
   if (Buffer.byteLength(jsonString, "utf8") > MAX_OUTPUT_SIZE) {
     throw new Error("Output exceeds 3MB");
   }
