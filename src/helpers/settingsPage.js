@@ -2,12 +2,12 @@
  * Set up the Settings page once the document is ready.
  *
  * @pseudocode
- * 1. Load saved settings and available game modes.
+ * 1. Load saved settings and available navigation items.
  * 2. Apply the stored display mode and motion preference.
  * 3. Initialize the page controls and event listeners.
  */
 import { loadSettings, updateSetting } from "./settingsUtils.js";
-import { loadGameModes } from "./gameModeUtils.js";
+import { loadNavigationItems } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
 import { applyDisplayMode } from "./displayMode.js";
 import { applyMotionPreference } from "./motionUtils.js";
@@ -85,7 +85,7 @@ function initializeControls(settings, gameModes) {
 async function initializeSettingsPage() {
   try {
     const settings = await loadSettings();
-    const gameModes = await loadGameModes();
+    const gameModes = await loadNavigationItems();
     applyDisplayMode(settings.displayMode);
     applyMotionPreference(settings.motionEffects);
     initializeControls(settings, gameModes);

@@ -69,7 +69,7 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
         input.checked = prev;
       });
       updateGameModeHidden(mode.id, !input.checked).catch((err) => {
-        console.error("Failed to update game mode", err);
+        console.error("Failed to update navigation item", err);
         input.checked = prev;
         showSettingsError();
       });
