@@ -2,7 +2,7 @@
 
 ---
 
-**Game Mode ID:** `classicBattle` (URL: battleJudoka.html)
+**Game Mode ID:** `1` (URL: battleJudoka.html)
 
 [Back to Game Modes Overview](prdGameModes.md)
 

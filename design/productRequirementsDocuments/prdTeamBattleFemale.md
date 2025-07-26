@@ -6,7 +6,7 @@
 
 This mode inherits the base rules from [PRD: Team Battle Rules](prdTeamBattleRules.md). It offers all-female teams in a 5‑vs‑5 format.
 
-**Game Mode ID:** teamBattleFemale  
+**Game Mode ID:** `5`
 **URL:** `teamBattleFemale.html`
 
 ---

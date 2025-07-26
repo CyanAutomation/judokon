@@ -6,7 +6,7 @@
 
 This mode inherits the base rules from [PRD: Team Battle Rules](prdTeamBattleRules.md). Mixed teams of men and women compete in a 6‑vs‑6 format.
 
-**Game Mode ID:** teamBattleMixed  
+**Game Mode ID:** `6`
 **URL:** `teamBattleMixed.html`
 
 ---
