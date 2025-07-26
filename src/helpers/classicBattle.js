@@ -1,5 +1,6 @@
 import { generateRandomCard } from "./randomCard.js";
 import { getRandomJudoka, renderJudokaCard } from "./cardUtils.js";
+import { seededRandom, isTestModeEnabled, getCurrentSeed } from "./testModeUtils.js";
 import { fetchJson } from "./dataUtils.js";
 import { createGokyoLookup } from "./utils.js";
 import { DATA_DIR } from "./constants.js";
@@ -36,6 +37,9 @@ function updateDebugPanel() {
     timer: getTimerState(),
     matchEnded: isMatchEnded()
   };
+  if (isTestModeEnabled()) {
+    state.seed = getCurrentSeed();
+  }
   pre.textContent = JSON.stringify(state, null, 2);
 }
 
@@ -62,7 +66,7 @@ function startTimer() {
       if (timerEl) timerEl.textContent = `Time Left: ${remaining}s`;
     },
     () => {
-      const randomStat = STATS[Math.floor(Math.random() * STATS.length)];
+      const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
       infoBar.showMessage(`Time's up! Auto-selecting ${randomStat}`);
       handleStatSelection(randomStat);
     }

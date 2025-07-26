@@ -44,7 +44,7 @@ describe("settings utils", () => {
       motionEffects: true,
       displayMode: "light",
       gameModes: {},
-      featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
+      featureFlags: { battleDebugPanel: false, fullNavigationMap: true, enableTestMode: false }
     });
   });
 
@@ -59,7 +59,7 @@ describe("settings utils", () => {
       motionEffects: true,
       displayMode: "dark",
       gameModes: {},
-      featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
+      featureFlags: { battleDebugPanel: false, fullNavigationMap: true, enableTestMode: false }
     };
     const promise = saveSettings(data);
     await vi.advanceTimersByTimeAsync(110);
@@ -87,7 +87,7 @@ describe("settings utils", () => {
       motionEffects: true,
       displayMode: "light",
       gameModes: {},
-      featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
+      featureFlags: { battleDebugPanel: false, fullNavigationMap: true, enableTestMode: false }
     });
     Storage.prototype.getItem = originalGetItem;
   });
@@ -130,7 +130,7 @@ describe("settings utils", () => {
         motionEffects: true,
         displayMode: "light",
         gameModes: {},
-        featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
+        featureFlags: { battleDebugPanel: false, fullNavigationMap: true, enableTestMode: false }
       })
     ).rejects.toThrow("fail");
     Storage.prototype.setItem = originalSetItem;
@@ -162,14 +162,14 @@ describe("settings utils", () => {
       motionEffects: true,
       displayMode: "light",
       gameModes: {},
-      featureFlags: { battleDebugPanel: false, fullNavigationMap: false }
+      featureFlags: { battleDebugPanel: false, fullNavigationMap: false, enableTestMode: false }
     };
     const data2 = {
       sound: false,
       motionEffects: false,
       displayMode: "dark",
       gameModes: {},
-      featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
+      featureFlags: { battleDebugPanel: false, fullNavigationMap: true, enableTestMode: false }
     };
     saveSettings(data1);
     saveSettings(data2);

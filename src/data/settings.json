@@ -5,6 +5,7 @@
   "gameModes": {},
   "featureFlags": {
     "battleDebugPanel": false,
-    "fullNavigationMap": true
+    "fullNavigationMap": true,
+    "enableTestMode": false
   }
 }

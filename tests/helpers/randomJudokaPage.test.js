@@ -13,7 +13,8 @@ const baseSettings = {
   featureFlags: {
     randomStatMode: false,
     battleDebugPanel: false,
-    fullNavigationMap: true
+    fullNavigationMap: true,
+    enableTestMode: false
   }
 };
 
