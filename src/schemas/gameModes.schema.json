@@ -21,18 +21,6 @@
         "type": "string",
         "description": "A brief description of the game mode."
       },
-      "category": {
-        "type": "string",
-        "description": "The category to which the game mode belongs."
-      },
-      "order": {
-        "type": "integer",
-        "description": "The display order of the game mode."
-      },
-      "url": {
-        "type": ["string", "null"],
-        "description": "The URL associated with the game mode."
-      },
       "isHidden": {
         "type": "boolean",
         "description": "Indicates whether the game mode is hidden."
