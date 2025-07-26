@@ -69,6 +69,15 @@ export async function loadGameModes() {
 }
 
 /**
+ * Load navigation items from storage. Alias for {@link loadGameModes}.
+ *
+ * @returns {Promise<Array>} Resolved array of navigation items.
+ */
+export function loadNavigationItems() {
+  return loadGameModes();
+}
+
+/**
  * Persist an array of game modes to localStorage.
  *
  * @pseudocode

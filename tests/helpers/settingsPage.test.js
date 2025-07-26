@@ -31,6 +31,7 @@ describe("settingsPage module", () => {
       updateSetting
     }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems: loadGameModes,
       loadGameModes,
       updateGameModeHidden
     }));
@@ -67,6 +68,7 @@ describe("settingsPage module", () => {
       updateSetting
     }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems: loadGameModes,
       loadGameModes,
       updateGameModeHidden
     }));
@@ -101,6 +103,7 @@ describe("settingsPage module", () => {
       updateSetting
     }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems: loadGameModes,
       loadGameModes,
       updateGameModeHidden
     }));
@@ -125,6 +128,7 @@ describe("settingsPage module", () => {
       updateSetting
     }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems: loadGameModes,
       loadGameModes,
       updateGameModeHidden
     }));
@@ -150,6 +154,7 @@ describe("settingsPage module", () => {
       updateSetting
     }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems: loadGameModes,
       loadGameModes,
       updateGameModeHidden: vi.fn()
     }));
@@ -181,6 +186,7 @@ describe("settingsPage module", () => {
       updateSetting
     }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems: loadGameModes,
       loadGameModes,
       updateGameModeHidden: vi.fn()
     }));

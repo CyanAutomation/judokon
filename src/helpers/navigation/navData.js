@@ -1,6 +1,6 @@
 import { debugLog } from "../debug.js";
 import { loadSettings } from "../settingsUtils.js";
-import { loadGameModes } from "../gameModeUtils.js";
+import { loadNavigationItems } from "../gameModeUtils.js";
 
 /**
  * Validates game modes data to ensure all required properties are present.
@@ -19,10 +19,10 @@ export function validateGameModes(gameModes) {
 }
 
 /**
- * Load and validate active main menu game modes.
+ * Load and validate active main menu navigation items.
  *
  * @pseudocode
- * 1. Fetch all game modes using `loadGameModes()`.
+ * 1. Fetch all navigation items using `loadNavigationItems()`.
  * 2. Retrieve user settings via `loadSettings()`.
  * 3. Filter the modes to include only visible main menu items not disabled in settings.
  * 4. Sort the filtered modes by their `order` property.
@@ -32,7 +32,7 @@ export function validateGameModes(gameModes) {
  * @returns {Promise<Array>} Resolved array of active game modes.
  */
 export async function loadMenuModes() {
-  const data = await loadGameModes();
+  const data = await loadNavigationItems();
   const settings = await loadSettings();
   return validateGameModes(
     data
