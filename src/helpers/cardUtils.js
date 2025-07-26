@@ -1,5 +1,6 @@
 import { generateJudokaCardHTML } from "./cardBuilder.js";
 import { debugLog } from "./debug.js";
+import { seededRandom } from "./testModeUtils.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
 import { setupLazyPortraits } from "./lazyPortrait.js";
 
@@ -39,7 +40,7 @@ export function getRandomJudoka(data) {
     throw new Error("No valid judoka data available to select.");
   }
 
-  const index = Math.floor(Math.random() * validJudoka.length);
+  const index = Math.floor(seededRandom() * validJudoka.length);
   const selectedJudoka = validJudoka[index];
 
   debugLog("Selected judoka:", selectedJudoka);

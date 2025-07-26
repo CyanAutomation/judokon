@@ -339,6 +339,7 @@ The Settings page (`src/pages/settings.html`) groups all player preferences, inc
 
 Battle pages include a collapsible debug panel. Enable the **Battle Debug Panel** feature flag in **Settings** to reveal real-time match state in a `<pre>` element. The panel is keyboard accessible and hidden by default so normal gameplay remains unaffected.
 Toggle the **Full Navigation Map** flag to display a map overlay with links to all pages for easier orientation during testing.
+Enable the **Test Mode** flag for deterministic card draws and stat results. A "Test Mode Active" banner appears on battle pages.
 
 Game mode data now falls back to a bundled JSON import if the network request fails, so navigation works offline.
 Corrupted settings are detected and automatically reset to defaults, ensuring the Settings page always remains usable.

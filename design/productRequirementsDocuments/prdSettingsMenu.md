@@ -41,6 +41,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 | -------- | -------------------------- | --------------------------------------------------------------------------- |
 | P1       | Sound Toggle               | Binary toggle updating `settings.json` live on change.                      |
 | P1       | Full Navigation Map Feature Flag | Enable or disable the full navigation map via feature flag; updates `settings.json` live on change. |
+| P3       | Test Mode Feature Flag | Enables deterministic battles for automated testing. |
 | P1       | Motion Effects Toggle      | Binary toggle updating `settings.json` live on change.                      |
 | P1       | Display Mode Selector      | Three-option selector applying mode instantly across UI.                    |
 | P2       | Game Modes Toggles         | A list of all defined game modes with binary toggles from `navigationItems.json`. |
@@ -98,6 +99,12 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - AC-2.1 Enabling or disabling the flag updates `settings.json` within 50ms.
 - AC-2.2 The toggle correctly reflects the current flag state in the UI.
 - AC-2.3 The navigation map is available only when the flag is enabled.
+
+### Test Mode Feature Flag
+
+- AC-2.4 Enabling the flag displays a "Test Mode Active" banner on battle pages.
+- AC-2.5 Card draws and stat choices become deterministic for repeat tests.
+- AC-2.6 `data-test-mode="true"` appears on the battle area while active.
 
 ### Motion Effects Toggle
 

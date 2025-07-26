@@ -31,7 +31,11 @@ const DEFAULT_SETTINGS = {
   motionEffects: true,
   displayMode: "light",
   gameModes: {},
-  featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
+  featureFlags: {
+    battleDebugPanel: false,
+    fullNavigationMap: true,
+    enableTestMode: false
+  }
 };
 export { DEFAULT_SETTINGS };
 

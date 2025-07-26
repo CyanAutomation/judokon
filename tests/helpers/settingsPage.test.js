@@ -9,7 +9,8 @@ const baseSettings = {
   featureFlags: {
     randomStatMode: true,
     battleDebugPanel: false,
-    fullNavigationMap: true
+    fullNavigationMap: true,
+    enableTestMode: false
   }
 };
 
@@ -203,7 +204,8 @@ describe("settingsPage module", () => {
     expect(updateSetting).toHaveBeenCalledWith("featureFlags", {
       randomStatMode: true,
       battleDebugPanel: true,
-      fullNavigationMap: true
+      fullNavigationMap: true,
+      enableTestMode: false
     });
   });
 });

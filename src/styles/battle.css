@@ -98,3 +98,12 @@
   margin: 5vh auto;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 }
+
+.test-mode-banner {
+  background-color: var(--color-tertiary);
+  color: var(--color-text);
+  text-align: center;
+  padding: var(--space-sm) var(--space-md);
+  font-weight: bold;
+  margin-top: var(--space-sm);
+}
