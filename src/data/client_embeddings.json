@@ -14000,7 +14000,7 @@
     "version": 1
   },
   {
-    "id": "gameModes.json",
+    "id": "navigationItems.json",
     "text": "[{\"id\":\"classicBattle\",\"name\":\"Classic Battle\",\"japaneseName\":\"試合 (バトルモード)\",\"description\":\"A standard one-on-one battle mode where players compete to win.\",\"category\":\"mainMenu\",\"order\":20,\"url\":\"battleJudoka.html\",\"isHidden\":false,\"rules\":{\"rounds\":25,\"teamSize\":25,\"maxScore\":10,\"gender\":\"any\"}},{\"id\":\"teamBattleSelection\",\"name\":\"Team Battle Selection\",\"japaneseName\":\"団体戦選択\",\"description\":\"Choose between Male, Female, or Mixed Team Battle modes.\",\"category\":\"subMenu\",\"order\":30,\"url\":\"teamBattleSelection.html\",\"isHidden\":true,\"rules\":{\"options\":[\"teamBattleMale\",\"teamBattleFemale\",\"teamBattleMixed\"]}},{\"id\":\"manageJudokaSelection\",\"name\":\"Manage Judoka\",\"japaneseName\":\"柔道家編集モード\",\"description\":\"Choose to update or create a judoka.\",\"category\":\"subMenu\",\"order\":40,\"url\":\"judokaUpdateSelection.html\",\"isHidden\":true,\"rules\":{\"options\":[\"createJudoka\",\"updateJudoka\"]}},{\"id\":\"teamBattleMale\",\"name\":\"Team Battle (Male)\",\"japaneseName\":\"男子団体戦\",\"description\":\"A team-based mode where male pla",
     "embedding": [
       {
@@ -14395,7 +14395,7 @@
         "size": 384
       }
     ],
-    "source": "src/data/gameModes.json",
+    "source": "src/data/navigationItems.json",
     "tags": ["data"],
     "version": 1
   },
