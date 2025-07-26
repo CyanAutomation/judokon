@@ -289,6 +289,7 @@ After modifying any PRDs **or any file in `src/data/`**, run `npm run generate:e
 - Results appear below the form with up to five entries that show match score and source.
 - The page displays “Embeddings could not be loaded – please check console.” if loading fails, or “No close matches found” when nothing is returned.
 - Users can submit the form by pressing **Enter** in the search box.
+- The transformer library is loaded from jsDelivr on first use, so network connectivity is required for that initial download.
 
 ## About JU-DO-KON!
 
