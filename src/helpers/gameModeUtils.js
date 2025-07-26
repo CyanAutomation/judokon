@@ -124,7 +124,10 @@ async function loadRawNavigationItems() {
 export async function loadNavigationItems() {
   const navItems = await loadRawNavigationItems();
   const modes = await loadGameModes();
-  return navItems.map((item) => ({ ...(modes.find((m) => m.id === item.id) || {}), ...item }));
+  return navItems.map((item) => ({
+    ...(modes.find((m) => m.id === Number(item.gameModeId)) || {}),
+    ...item
+  }));
 }
 
 /**
@@ -164,21 +167,25 @@ async function saveNavigationItems(items) {
  * 3. Validate and persist the updated array with `saveNavigationItems()`.
  * 4. Return the merged navigation items.
  *
- * @param {string} id - Identifier of the navigation item to update.
+ * @param {number} id - Identifier of the navigation item to update.
  * @param {boolean} isHidden - New hidden state for the item.
  * @returns {Promise<Array>} Updated array of merged items.
  */
 export async function updateNavigationItemHidden(id, isHidden) {
   await getNavigationSchema();
   const items = await loadRawNavigationItems();
-  const index = items.findIndex((m) => m.id === id);
+  const numericId = Number(id);
+  const index = items.findIndex((m) => Number(m.id) === numericId);
   if (index === -1) {
     throw new Error(`Navigation item not found: ${id}`);
   }
   items[index] = { ...items[index], isHidden };
   await saveNavigationItems(items);
   const modes = await loadGameModes();
-  return items.map((item) => ({ ...(modes.find((m) => m.id === item.id) || {}), ...item }));
+  return items.map((item) => ({
+    ...(modes.find((m) => m.id === Number(item.gameModeId)) || {}),
+    ...item
+  }));
 }
 
 /**
@@ -189,12 +196,13 @@ export async function updateNavigationItemHidden(id, isHidden) {
  * 2. Find and return the item with the matching `id`.
  *    - If not found, return `undefined`.
  *
- * @param {string} id - The ID of the navigation item to retrieve.
+ * @param {number} id - The ID of the navigation item to retrieve.
  * @returns {Promise<Object|undefined>} The merged item or undefined if not found.
  */
 export async function getGameModeById(id) {
+  const numericId = Number(id);
   const modes = await loadNavigationItems();
-  return modes.find((m) => m.id === id);
+  return modes.find((m) => Number(m.id) === numericId);
 }
 
 /**
