@@ -24,7 +24,7 @@ export function shouldEnableTypewriter() {
   return true;
 }
 
-export function runTypewriterEffect(element, finalHtml, speed = 80) {
+export function runTypewriterEffect(element, finalHtml, speed = 200) {
   if (!element) return;
   const text = element.textContent;
   element.textContent = "";
