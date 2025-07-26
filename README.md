@@ -286,10 +286,9 @@ The project ships with a retrieval-augmented search demo. Run `npm run generate:
 
 After modifying any PRDs, tooltip text, or game rule files, run `npm run generate:embeddings` again to rebuild `client_embeddings.json`. Commit the updated file alongside your documentation changes so other agents have the latest vectors.
 
-- Display up to five results below the form showing match score and source.
-- If embeddings fail to load, show “Embeddings could not be loaded – please check console.”
-- Show “No close matches found” when the search returns nothing.
-- Allow form submission by pressing **Enter** in the search box.
+- Results appear below the form with up to five entries that show match score and source.
+- The page displays “Embeddings could not be loaded – please check console.” if loading fails, or “No close matches found” when nothing is returned.
+- Users can submit the form by pressing **Enter** in the search box.
 
 ## About JU-DO-KON!
 
