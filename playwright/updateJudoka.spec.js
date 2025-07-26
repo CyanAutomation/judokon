@@ -3,8 +3,8 @@ import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 
 test.describe("Update Judoka page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.route("**/src/data/gameModes.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/gameModes.json" })
+    await page.route("**/src/data/navigationItems.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/navigationItems.json" })
     );
     await page.goto("/src/pages/updateJudoka.html");
   });
