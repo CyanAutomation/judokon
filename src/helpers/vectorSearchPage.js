@@ -6,6 +6,18 @@ import { findMatches } from "./vectorSearch.js";
 let extractor;
 let spinner;
 
+/**
+ * Load the MiniLM feature extractor on first use.
+ *
+ * @pseudocode
+ * 1. Return the cached `extractor` when available.
+ * 2. Dynamically import the Transformers.js `pipeline` helper.
+ * 3. Instantiate a feature-extraction pipeline with the MiniLM model and store it.
+ *    - On failure, log the error, reset `extractor` to `null`, and rethrow.
+ * 4. Return the initialized `extractor`.
+ *
+ * @returns {Promise<any>} The feature extraction pipeline instance.
+ */
 async function getExtractor() {
   if (!extractor) {
     try {
@@ -22,6 +34,22 @@ async function getExtractor() {
   return extractor;
 }
 
+/**
+ * Handle the vector search form submission.
+ *
+ * @pseudocode
+ * 1. Prevent the default form submission behavior.
+ * 2. Read and trim the query from the input element; clear previous results.
+ *    - Exit early if the query is empty.
+ * 3. Show the spinner and a searching message.
+ * 4. Obtain the extractor and generate the query vector.
+ * 5. Use `findMatches` to fetch the top results for the vector.
+ * 6. Hide the spinner and handle empty or missing embeddings cases.
+ * 7. Build an ordered list of matches and append it to the results element.
+ * 8. On error, log the issue, hide the spinner, and display a fallback message.
+ *
+ * @param {Event} event - The submit event from the form.
+ */
 async function handleSearch(event) {
   event.preventDefault();
   const input = document.getElementById("vector-search-input");
@@ -59,6 +87,15 @@ async function handleSearch(event) {
   }
 }
 
+/**
+ * Initialize event handlers for the Vector Search page.
+ *
+ * @pseudocode
+ * 1. Cache the spinner element and hide it if present.
+ * 2. Locate the search form element.
+ * 3. Attach `handleSearch` to the form's submit event.
+ * 4. Intercept the Enter key to trigger form submission programmatically.
+ */
 function init() {
   spinner = document.getElementById("search-spinner");
   if (spinner) spinner.style.display = "none";
