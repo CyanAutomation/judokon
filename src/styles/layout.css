@@ -128,7 +128,7 @@ body {
   border: 2px solid var(--color-tertiary);
   border-radius: var(--radius-md);
   text-align: center;
-    /* border: 2px solid red; */
+  /* border: 2px solid red; */
 }
 
 .homeHelperContainer img {
@@ -147,7 +147,7 @@ body {
   gap: var(--space-lg);
   flex: 1 1 auto;
   list-style-type: none;
-    /* border: 2px solid red; */
+  /* border: 2px solid red; */
 }
 #gameArea {
   display: flex;
@@ -155,7 +155,7 @@ body {
   align-items: center;
   padding: var(--space-large);
   backdrop-filter: blur(10px);
-    /* border: 2px solid red; */
+  /* border: 2px solid red; */
 }
 .country-flag-slider {
   background-color: var(--color-tertiary);

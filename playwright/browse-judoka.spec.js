@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { verifyPageBasics } from "./fixtures/navigationChecks.js";
+import { verifyPageBasics, NAV_CLASSIC_BATTLE } from "./fixtures/navigationChecks.js";
 
 async function setCarouselWidth(page, width) {
   await page.evaluate((w) => {
@@ -25,11 +25,11 @@ test.describe("Browse Judoka screen", () => {
       "aria-label",
       /country filter/i
     );
-    await verifyPageBasics(page, ["nav-classicBattle"]);
+    await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
   });
 
   test("battle link navigates", async ({ page }) => {
-    await page.getByTestId("nav-classicBattle").click();
+    await page.getByTestId(NAV_CLASSIC_BATTLE).click();
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
 

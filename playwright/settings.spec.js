@@ -1,5 +1,9 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { verifyPageBasics } from "./fixtures/navigationChecks.js";
+import {
+  verifyPageBasics,
+  NAV_CLASSIC_BATTLE,
+  NAV_RANDOM_JUDOKA
+} from "./fixtures/navigationChecks.js";
 
 test.describe("Settings page", () => {
   test.beforeEach(async ({ page }) => {
@@ -14,7 +18,7 @@ test.describe("Settings page", () => {
   });
 
   test("page loads", async ({ page }) => {
-    await verifyPageBasics(page, ["nav-classicBattle", "nav-randomJudoka"]);
+    await verifyPageBasics(page, [NAV_CLASSIC_BATTLE, NAV_RANDOM_JUDOKA]);
   });
 
   test("mode toggle visible", async ({ page }) => {
@@ -23,7 +27,7 @@ test.describe("Settings page", () => {
   });
 
   test("essential elements visible", async ({ page }) => {
-    await verifyPageBasics(page, ["nav-classicBattle", "nav-randomJudoka"]);
+    await verifyPageBasics(page, [NAV_CLASSIC_BATTLE, NAV_RANDOM_JUDOKA]);
     await expect(page.getByLabel(/sound/i)).toBeVisible();
     await expect(page.getByLabel(/motion effects/i)).toBeVisible();
     await expect(page.getByLabel(/display mode/i)).toBeVisible();

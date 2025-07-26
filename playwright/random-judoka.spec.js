@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { verifyPageBasics } from "./fixtures/navigationChecks.js";
+import { verifyPageBasics, NAV_CLASSIC_BATTLE } from "./fixtures/navigationChecks.js";
 
 test.describe("View Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
@@ -9,11 +9,11 @@ test.describe("View Judoka screen", () => {
   test("essential elements visible", async ({ page }) => {
     await page.getByTestId("draw-button").waitFor();
     await expect(page.getByTestId("draw-button")).toBeVisible();
-    await verifyPageBasics(page, ["nav-classicBattle"]);
+    await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
   });
 
   test("battle link navigates", async ({ page }) => {
-    const battleLink = page.getByTestId("nav-classicBattle");
+    const battleLink = page.getByTestId(NAV_CLASSIC_BATTLE);
     await battleLink.waitFor();
     await battleLink.click();
     await expect(page).toHaveURL(/battleJudoka\.html/);

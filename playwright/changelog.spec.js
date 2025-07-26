@@ -1,5 +1,9 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { verifyPageBasics } from "./fixtures/navigationChecks.js";
+import {
+  verifyPageBasics,
+  NAV_RANDOM_JUDOKA,
+  NAV_CLASSIC_BATTLE
+} from "./fixtures/navigationChecks.js";
 
 test.describe("Change log page", () => {
   test.beforeEach(async ({ page }) => {
@@ -7,7 +11,7 @@ test.describe("Change log page", () => {
   });
 
   test("header and footer visible", async ({ page }) => {
-    await verifyPageBasics(page, ["nav-randomJudoka", "nav-classicBattle"]);
+    await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);
   });
 
   test("captures screenshot", async ({ page }) => {
