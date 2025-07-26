@@ -145,11 +145,11 @@ describe("populateNavbar", () => {
       gameModes: { B: false },
       featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
     });
-    const loadGameModes = vi.fn().mockResolvedValue(data);
+    const loadNavigationItems = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems: loadGameModes,
-      loadGameModes
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems
     }));
 
     const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
@@ -160,17 +160,17 @@ describe("populateNavbar", () => {
     expect(items).toHaveLength(1);
     expect(items[0].textContent).toBe("A");
     expect(loadSettings).toHaveBeenCalled();
-    expect(loadGameModes).toHaveBeenCalled();
+    expect(loadNavigationItems).toHaveBeenCalled();
   });
 
   it("falls back to default items when fetch fails", async () => {
     const navBar = setupDom();
     stubLogoQuery();
     localStorage.removeItem("gameModes");
-    const loadGameModes = vi.fn().mockRejectedValue(new Error("fail"));
+    const loadNavigationItems = vi.fn().mockRejectedValue(new Error("fail"));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems: loadGameModes,
-      loadGameModes
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems
     }));
 
     const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
@@ -198,11 +198,11 @@ describe("populateNavbar", () => {
       gameModes: {},
       featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
     });
-    const loadGameModes = vi.fn().mockResolvedValue(data);
+    const loadNavigationItems = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems: loadGameModes,
-      loadGameModes
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems
     }));
 
     const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
@@ -212,7 +212,7 @@ describe("populateNavbar", () => {
     const items = navBar.querySelectorAll("li");
     expect(items).toHaveLength(1);
     expect(items[0].textContent).toBe("X");
-    expect(loadGameModes).toHaveBeenCalled();
+    expect(loadNavigationItems).toHaveBeenCalled();
   });
 
   it("marks current page link as active", async () => {
@@ -243,11 +243,11 @@ describe("populateNavbar", () => {
       gameModes: {},
       featureFlags: { battleDebugPanel: false, fullNavigationMap: true }
     });
-    const loadGameModes = vi.fn().mockResolvedValue(data);
+    const loadNavigationItems = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems: loadGameModes,
-      loadGameModes
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems
     }));
 
     window.history.pushState({}, "", "/src/pages/home.html");

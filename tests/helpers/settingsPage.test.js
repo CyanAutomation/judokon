@@ -22,7 +22,7 @@ describe("settingsPage module", () => {
     vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
-    const loadGameModes = vi.fn().mockResolvedValue([]);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
     const updateGameModeHidden = vi.fn();
     const applyDisplayMode = vi.fn();
     const applyMotionPreference = vi.fn();
@@ -31,8 +31,8 @@ describe("settingsPage module", () => {
       updateSetting
     }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems: loadGameModes,
-      loadGameModes,
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
       updateGameModeHidden
     }));
     vi.doMock("../../src/helpers/displayMode.js", () => ({
@@ -47,7 +47,7 @@ describe("settingsPage module", () => {
     await vi.runAllTimersAsync();
 
     expect(loadSettings).toHaveBeenCalled();
-    expect(loadGameModes).toHaveBeenCalled();
+    expect(loadNavigationItems).toHaveBeenCalled();
     expect(applyDisplayMode).toHaveBeenCalledWith(baseSettings.displayMode);
     expect(applyMotionPreference).toHaveBeenCalledWith(baseSettings.motionEffects);
     vi.useRealTimers();
@@ -61,15 +61,15 @@ describe("settingsPage module", () => {
     ];
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
-    const loadGameModes = vi.fn().mockResolvedValue(gameModes);
+    const loadNavigationItems = vi.fn().mockResolvedValue(gameModes);
     const updateGameModeHidden = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
     }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems: loadGameModes,
-      loadGameModes,
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
       updateGameModeHidden
     }));
 
@@ -96,15 +96,15 @@ describe("settingsPage module", () => {
     ];
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
-    const loadGameModes = vi.fn().mockResolvedValue(gameModes);
+    const loadNavigationItems = vi.fn().mockResolvedValue(gameModes);
     const updateGameModeHidden = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
     }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems: loadGameModes,
-      loadGameModes,
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
       updateGameModeHidden
     }));
 
@@ -121,15 +121,15 @@ describe("settingsPage module", () => {
     const gameModes = [{ id: "classic", name: "Classic", category: "mainMenu", isHidden: false }];
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
-    const loadGameModes = vi.fn().mockResolvedValue(gameModes);
+    const loadNavigationItems = vi.fn().mockResolvedValue(gameModes);
     const updateGameModeHidden = vi.fn().mockResolvedValue([{ ...gameModes[0], isHidden: true }]);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
     }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems: loadGameModes,
-      loadGameModes,
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
       updateGameModeHidden
     }));
 
@@ -148,14 +148,14 @@ describe("settingsPage module", () => {
     vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
-    const loadGameModes = vi.fn().mockResolvedValue([]);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
     }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems: loadGameModes,
-      loadGameModes,
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
       updateGameModeHidden: vi.fn()
     }));
 
@@ -180,14 +180,14 @@ describe("settingsPage module", () => {
       featureFlags: { ...baseSettings.featureFlags, battleDebugPanel: true }
     };
     const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
-    const loadGameModes = vi.fn().mockResolvedValue([]);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
     }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems: loadGameModes,
-      loadGameModes,
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
       updateGameModeHidden: vi.fn()
     }));
 

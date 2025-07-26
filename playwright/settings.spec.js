@@ -3,8 +3,8 @@ import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 
 test.describe("Settings page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.route("**/src/data/gameModes.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/gameModes.json" })
+    await page.route("**/src/data/navigationItems.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/navigationItems.json" })
     );
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
     await page.waitForSelector("#mode-classicBattle", { state: "attached" });
@@ -32,12 +32,12 @@ test.describe("Settings page", () => {
   test("controls expose correct labels and follow tab order", async ({ page }) => {
     await page.getByLabel(/Classic Battle/i).waitFor();
 
-    const gameModes = await page.evaluate(async () => {
-      const res = await fetch("/tests/fixtures/gameModes.json");
+    const navigationItems = await page.evaluate(async () => {
+      const res = await fetch("/tests/fixtures/navigationItems.json");
       return res.json();
     });
 
-    const sortedNames = gameModes
+    const sortedNames = navigationItems
       .slice()
       .sort((a, b) => a.order - b.order)
       .map((m) => m.name);
