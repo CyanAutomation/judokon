@@ -43,8 +43,8 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 | P1       | Full Navigation Map Feature Flag | Enable or disable the full navigation map via feature flag; updates `settings.json` live on change. |
 | P1       | Motion Effects Toggle      | Binary toggle updating `settings.json` live on change.                      |
 | P1       | Display Mode Selector      | Three-option selector applying mode instantly across UI.                    |
-| P2       | Game Modes Toggles         | A list of all defined game modes with binary toggles from `gameModes.json`. |
-| P3       | Settings Menu Integration  | Ensure settings appear as a game mode in `gameModes.json`.                  |
+| P2       | Game Modes Toggles         | A list of all defined game modes with binary toggles from `navigationItems.json`. |
+| P3       | Settings Menu Integration  | Ensure settings appear as a game mode in `navigationItems.json`.                  |
 | P3       | Change Log Link           | Link to `changeLog.html` for viewing recent judoka updates.                 |
 | P3       | PRD Viewer Link           | Link to `prdViewer.html` for browsing product requirement documents.        |
 | P3       | Mockup Viewer Link        | Link to `mockupViewer.html` to browse design mockups.                       |
@@ -60,7 +60,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - **Motion effects (binary):** ON/OFF (default: ON)
 - **Display mode (three options):** Light, Dark, Gray (default: Light)
   - _Gray mode_ provides a grayscale display to reduce visual noise for neurodivergent users.
-- **Game modes list:** A list populated from `gameModes.json`, showing all modes defined there, with binary toggles per mode.
+- **Game modes list:** A list populated from `navigationItems.json`, showing all modes defined there, with binary toggles per mode.
 - **Change Log:** Link opens `changeLog.html` with the latest 20 judoka updates.
 - **PRD Viewer:** Link opens `prdViewer.html` for browsing product documents.
 - **Mockup Viewer:** Link opens `mockupViewer.html` for viewing design mockups.
@@ -78,10 +78,10 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 
 ## Data & Persistence
 
-- The Settings page **must pull current states** from data sources (`settings.json` and `gameModes.json`) on load.
+- The Settings page **must pull current states** from data sources (`settings.json` and `navigationItems.json`) on load.
 - Changes should trigger **immediate data writes** without requiring a “Save Changes” button.
 - All live updates must persist across page refreshes within the same session.
-- If `gameModes.json` fails to load, the game modes section should **disable gracefully** and show an error message.
+- If `navigationItems.json` fails to load, the game modes section should **disable gracefully** and show an error message.
 
 ---
 
@@ -117,7 +117,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 
 - AC-5.1 Toggling any game mode ON/OFF updates the IsHidden field in `settings.json` within 50ms.
 - AC-5.2 Each game mode toggle accurately reflects its state on page reload.
-- AC-5.3 If `gameModes.json` is missing or invalid, the game modes list does not render, and an error message appears in the settings UI.
+- AC-5.3 If `navigationItems.json` is missing or invalid, the game modes list does not render, and an error message appears in the settings UI.
 
 ### Data Persistence & Refresh
 
@@ -271,7 +271,7 @@ The page begins with an `<h1>` heading labeled "Settings". Two `<fieldset>` sect
 
 - [ ] 4.0 List Game Modes
 
-  - [ ] 4.1 Load all game modes from `gameModes.json`.
+  - [ ] 4.1 Load all game modes from `navigationItems.json`.
   - [ ] 4.2 Display error message if loading fails.
 
 - [ ] 5.0 Performance Optimization

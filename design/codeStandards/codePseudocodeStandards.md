@@ -35,7 +35,7 @@ Clear pseudocode descriptions are essential for explaining the underlying logic 
  * Populates the bottom navigation bar with game modes from a JSON file.
  *
  * @pseudocode
- * 1. Fetch the JSON file containing game modes ("gameModes.json").
+ * 1. Fetch the JSON file containing game modes ("navigationItems.json").
  *    - If the fetch fails, log an error and display an error message.
  *
  * 2. Parse the JSON response to retrieve game modes.
