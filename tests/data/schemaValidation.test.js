@@ -11,7 +11,7 @@ const schemaDir = path.resolve(__dirname, "../../src/schemas");
 
 const pairs = [
   ["countryCodeMapping.json", "countryCodeMapping.schema.json"],
-  ["navigationItems.json", "gameModes.schema.json"],
+  ["gameModes.json", "gameModes.schema.json"],
   ["gokyo.json", "gokyo.schema.json"],
   ["judoka.json", "judoka.schema.json"],
   ["weightCategories.json", "weightCategories.schema.json"],
