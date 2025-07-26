@@ -4,6 +4,7 @@ import { createSettingsDom } from "../utils/testUtils.js";
 const baseSettings = {
   sound: true,
   motionEffects: true,
+  typewriterEffect: true,
   displayMode: "light",
   gameModes: {},
   featureFlags: {

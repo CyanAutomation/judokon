@@ -29,6 +29,7 @@ const SETTINGS_KEY = "settings";
 const DEFAULT_SETTINGS = {
   sound: false,
   motionEffects: true,
+  typewriterEffect: true,
   displayMode: "light",
   gameModes: {},
   featureFlags: {
@@ -147,6 +148,7 @@ export async function updateSetting(key, value) {
  * @typedef {Object} Settings
  * @property {boolean} sound
  * @property {boolean} motionEffects
+ * @property {boolean} typewriterEffect
  * @property {"light"|"dark"|"gray"} displayMode
  * @property {Record<string, boolean>} [gameModes]
  * @property {Record<string, boolean>} [featureFlags]

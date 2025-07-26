@@ -49,6 +49,9 @@ export function createSettingsDom() {
   const motionToggle = document.createElement("input");
   motionToggle.id = "motion-toggle";
   motionToggle.type = "checkbox";
+  const typewriterToggle = document.createElement("input");
+  typewriterToggle.id = "typewriter-toggle";
+  typewriterToggle.type = "checkbox";
   const displayModeSelect = document.createElement("select");
   displayModeSelect.id = "display-mode-select";
   const gameModeToggleContainer = document.createElement("section");
@@ -59,6 +62,7 @@ export function createSettingsDom() {
   fragment.append(
     soundToggle,
     motionToggle,
+    typewriterToggle,
     displayModeSelect,
     gameModeToggleContainer,
     featureFlagsContainer

@@ -91,6 +91,7 @@
   color: var(--color-text-inverted);
   font-size: clamp(18px, 2vw, 24px);
   text-align: justify;
+  white-space: pre-wrap;
   /* align-self: center; */
   /* justify-self: center; */
   padding: 5dvh 5dvw;

@@ -8,6 +8,7 @@ import { hex } from "wcag-contrast";
 const baseSettings = {
   sound: false,
   motionEffects: true,
+  typewriterEffect: true,
   displayMode: "light",
   gameModes: {},
   featureFlags: {
