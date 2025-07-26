@@ -2,7 +2,7 @@
 
 ---
 
-**Game Mode ID:** browseJudoka (URL: browseJudoka.html)
+**Game Mode ID:** `7` (URL: browseJudoka.html)
 
 Browse Judoka is accessible from the Main Page ([prdHomePageNavigation.md](prdHomePageNavigation.md)), Navigation Bar ([prdNavigationBar.md](prdNavigationBar.md)), or Navigation Map ([prdNavigationMap.md](prdNavigationMap.md)) and opens a full-screen roster view. Players first see a country filter panel alongside a card carousel.
 

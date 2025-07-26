@@ -1,6 +1,6 @@
 # PRD: Display Random Judoka
 
-**Game Mode ID:** randomJudoka  
+**Game Mode ID:** `12`
 **URL:** `randomJudoka.html`
 
 ---

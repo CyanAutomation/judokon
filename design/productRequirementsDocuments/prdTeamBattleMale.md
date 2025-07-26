@@ -6,7 +6,7 @@
 
 This mode inherits the base rules from [PRD: Team Battle Rules](prdTeamBattleRules.md). It provides a male-only version of Team Battle.
 
-**Game Mode ID:** teamBattleMale  
+**Game Mode ID:** `4`
 **URL:** `teamBattleMale.html`
 
 ---
