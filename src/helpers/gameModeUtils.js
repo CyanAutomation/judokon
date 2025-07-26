@@ -27,13 +27,13 @@ async function getSchema() {
 const GAMEMODES_KEY = "gameModes";
 
 /**
- * Load game modes from localStorage or fallback to the default JSON file.
+ * Load game modes from localStorage or fallback to the default navigation JSON file.
  *
  * @pseudocode
  * 1. Call `getSchema()` to lazily load the validation schema.
  * 2. Attempt to read `GAMEMODES_KEY` from `localStorage`.
  *    - Parse and validate the JSON when present.
- * 3. If no stored data exists, attempt to fetch `gameModes.json` from `DATA_DIR`.
+ * 3. If no stored data exists, attempt to fetch `navigationItems.json` from `DATA_DIR`.
  *    - On failure, dynamically import the JSON file instead.
  *    - Persist the resolved array to `localStorage`.
  * 4. Return the validated array of game mode objects.
@@ -58,10 +58,10 @@ export async function loadGameModes() {
   }
   let data;
   try {
-    data = await fetchJson(`${DATA_DIR}gameModes.json`, await getSchema());
+    data = await fetchJson(`${DATA_DIR}navigationItems.json`, await getSchema());
   } catch (error) {
     console.warn("Failed to fetch game modes, falling back to import", error);
-    data = (await import("../data/gameModes.json", { assert: { type: "json" } })).default;
+    data = (await import("../data/navigationItems.json", { assert: { type: "json" } })).default;
     await validateWithSchema(data, await getSchema());
   }
   localStorage.setItem(GAMEMODES_KEY, JSON.stringify(data));
