@@ -76,7 +76,8 @@ export async function generateRandomCard(
   gokyoData,
   containerEl,
   prefersReducedMotion = false,
-  onSelect
+  onSelect,
+  options = {}
 ) {
   if (!containerEl) return;
 
@@ -104,7 +105,8 @@ export async function generateRandomCard(
       onSelect(selectedJudoka);
     }
     await renderJudokaCard(selectedJudoka, gokyoLookup, containerEl, {
-      animate: !prefersReducedMotion
+      animate: !prefersReducedMotion,
+      enableInspector: options.enableInspector
     });
     // else: do not update DOM if card is null/undefined
   } catch (error) {
@@ -117,7 +119,8 @@ export async function generateRandomCard(
         onSelect(fallbackJudoka);
       }
       await renderJudokaCard(fallbackJudoka, gokyoLookup, containerEl, {
-        animate: !prefersReducedMotion
+        animate: !prefersReducedMotion,
+        enableInspector: options.enableInspector
       });
     } catch (fallbackError) {
       console.error("Error displaying fallback card:", fallbackError);

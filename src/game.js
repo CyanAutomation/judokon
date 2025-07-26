@@ -114,7 +114,9 @@ export function setupRandomCardButton(button, container) {
     container.innerHTML = "";
 
     const prefersReducedMotion = shouldReduceMotionSync();
-    await generateRandomCard(null, null, container, prefersReducedMotion);
+    await generateRandomCard(null, null, container, prefersReducedMotion, undefined, {
+      enableInspector: false
+    });
   });
 }
 

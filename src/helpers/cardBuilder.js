@@ -161,6 +161,36 @@ async function createTopBar(judoka, flagUrl) {
   );
 }
 
+function createInspectorPanel(container, judoka, sections) {
+  const panel = document.createElement("details");
+  panel.className = "debug-panel";
+  const summary = document.createElement("summary");
+  summary.textContent = "Card Inspector";
+  panel.appendChild(summary);
+
+  const jsonPre = document.createElement("pre");
+  jsonPre.textContent = JSON.stringify(judoka, null, 2);
+  panel.appendChild(jsonPre);
+
+  for (const el of Object.values(sections)) {
+    const pre = document.createElement("pre");
+    pre.textContent = el.outerHTML;
+    panel.appendChild(pre);
+  }
+
+  panel.addEventListener("toggle", () => {
+    if (panel.open) {
+      container.dataset.inspector = "true";
+    } else {
+      container.removeAttribute("data-inspector");
+    }
+  });
+
+  return panel;
+}
+
+export { createInspectorPanel };
+
 /**
  * Build and return a DOM container for a judoka card.
  *
@@ -170,7 +200,8 @@ async function createTopBar(judoka, flagUrl) {
  * @param {Record<number, import("./types.js").GokyoEntry>} gokyoLookup - Map of technique ids to technique details. Missing lookups result in fallback content.
  * @returns {HTMLElement} Container element containing the completed card.
  */
-export async function generateJudokaCardHTML(judoka, gokyoLookup) {
+export async function generateJudokaCardHTML(judoka, gokyoLookup, options = {}) {
+  const { enableInspector = false } = options;
   // Add null/undefined checks for judoka and gokyoLookup
   if (!judoka || !gokyoLookup) {
     const fallback = document.createElement("div");
@@ -194,6 +225,7 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
 
   const cardContainer = document.createElement("div");
   cardContainer.className = "card-container";
+  cardContainer.dataset.cardJson = JSON.stringify(judoka);
 
   const judokaCard = document.createElement("div");
   judokaCard.className = `judoka-card ${cardType}`;
@@ -220,6 +252,16 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
 
   cardContainer.appendChild(judokaCard);
 
+  if (enableInspector) {
+    const panel = createInspectorPanel(cardContainer, judoka, {
+      topBar: topBarElement,
+      portrait: portraitElement,
+      stats: statsElement,
+      signature: signatureMoveElement
+    });
+    cardContainer.appendChild(panel);
+  }
+
   return cardContainer;
 }
 
@@ -240,9 +282,9 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup) {
  * @param {Object} gokyoLookup - A lookup object for gokyo data.
  * @param {HTMLElement} container - The container to append the card to.
  */
-export async function generateJudokaCard(judoka, gokyoLookup, container) {
+export async function generateJudokaCard(judoka, gokyoLookup, container, options = {}) {
   const card = await safeGenerate(
-    () => generateJudokaCardHTML(judoka, gokyoLookup),
+    () => generateJudokaCardHTML(judoka, gokyoLookup, options),
     `Error generating card for judoka: ${judoka.firstname} ${judoka.surname}`,
     null
   );

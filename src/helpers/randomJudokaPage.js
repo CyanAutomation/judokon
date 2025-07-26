@@ -16,6 +16,7 @@
  */
 import { fetchJson } from "./dataUtils.js";
 import { generateRandomCard } from "./randomCard.js";
+import { toggleInspectorPanels } from "./cardUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { createButton } from "../components/Button.js";
 import { createToggleSwitch } from "../components/ToggleSwitch.js";
@@ -40,6 +41,7 @@ export async function setupRandomJudokaPage() {
   }
 
   applyMotionPreference(settings.motionEffects);
+  toggleInspectorPanels(Boolean(settings.featureFlags?.enableCardInspector));
   const prefersReducedMotion =
     !settings.motionEffects || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -93,7 +95,9 @@ export async function setupRandomJudokaPage() {
       cachedJudokaData,
       cachedGokyoData,
       cardContainer,
-      prefersReducedMotion
+      prefersReducedMotion,
+      undefined,
+      { enableInspector: settings.featureFlags.enableCardInspector }
     );
     // Wait for animation to finish (max 500ms), then re-enable button
     setTimeout(
@@ -140,6 +144,15 @@ export async function setupRandomJudokaPage() {
   animationToggle.style.marginTop = "24px";
   soundToggle.style.marginLeft = "16px";
   cardSection.append(animationToggle, soundToggle);
+
+  window.addEventListener("storage", (e) => {
+    if (e.key === "settings" && e.newValue) {
+      try {
+        const s = JSON.parse(e.newValue);
+        toggleInspectorPanels(Boolean(s.featureFlags?.enableCardInspector));
+      } catch {}
+    }
+  });
 
   animationToggle.querySelector("input")?.addEventListener("change", (e) => {
     const value = e.currentTarget.checked;

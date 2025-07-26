@@ -34,7 +34,8 @@ const DEFAULT_SETTINGS = {
   featureFlags: {
     battleDebugPanel: false,
     fullNavigationMap: true,
-    enableTestMode: false
+    enableTestMode: false,
+    enableCardInspector: false
   }
 };
 export { DEFAULT_SETTINGS };
