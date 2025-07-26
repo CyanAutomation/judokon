@@ -7,13 +7,7 @@
       "category": "mainMenu",
       "order": 20,
       "url": "battleJudoka.html",
-      "isHidden": false,
-      "rules": {
-        "rounds": 25,
-        "teamSize": 25,
-        "maxScore": 10,
-        "gender": "any"
-      }
+      "isHidden": false
     },
     {
       "id": "teamBattleSelection",
@@ -23,10 +17,7 @@
       "category": "subMenu",
       "order": 30,
       "url": "teamBattleSelection.html",
-      "isHidden": true,
-      "rules": {
-        "options": ["teamBattleMale", "teamBattleFemale", "teamBattleMixed"]
-      }
+      "isHidden": true
     },
     {
       "id": "manageJudokaSelection",
@@ -36,10 +27,7 @@
       "category": "subMenu",
       "order": 40,
       "url": "judokaUpdateSelection.html",
-      "isHidden": true,
-      "rules": {
-        "options": ["createJudoka", "updateJudoka"]
-      }
+      "isHidden": true
     },
     {
       "id": "teamBattleMale",
@@ -49,11 +37,7 @@
       "category": "teamBattle",
       "order": 50,
       "url": "teamBattleMale.html",
-      "isHidden": true,
-      "rules": {
-        "base": "teamBattle",
-        "gender": "male"
-      }
+      "isHidden": true
     },
     {
       "id": "teamBattleFemale",
@@ -63,11 +47,7 @@
       "category": "teamBattle",
       "order": 60,
       "url": "teamBattleFemale.html",
-      "isHidden": true,
-      "rules": {
-        "base": "teamBattle",
-        "gender": "female"
-      }
+      "isHidden": true
     },
     {
       "id": "teamBattleMixed",
@@ -77,13 +57,7 @@
       "category": "teamBattle",
       "order": 70,
       "url": "teamBattleMixed.html",
-      "isHidden": true,
-      "rules": {
-        "rounds": 6,
-        "teamSize": 6,
-        "maxScore": 6,
-        "gender": "mixed"
-      }
+      "isHidden": true
     },
     {
       "id": "browseJudoka",
@@ -93,10 +67,7 @@
       "category": "mainMenu",
       "order": 80,
       "url": "browseJudoka.html",
-      "isHidden": false,
-      "rules": {
-        "note": "Rules will be defined in the future."
-      }
+      "isHidden": false
     },
     {
       "id": "createJudoka",
@@ -106,10 +77,7 @@
       "category": "manageJudoka",
       "order": 90,
       "url": "createJudoka.html",
-      "isHidden": true,
-      "rules": {
-        "note": "Rules will be defined in the future."
-      }
+      "isHidden": true
     },
     {
       "id": "updateJudoka",
@@ -119,25 +87,7 @@
       "category": "mainMenu",
       "order": 30,
       "url": "updateJudoka.html",
-      "isHidden": true,
-      "rules": {
-        "note": "Rules will be defined in the future."
-      }
-    },
-    {
-      "id": "teamBattle",
-      "name": "Team Battle Ruleset",
-      "japaneseName": "団体戦ルールセット",
-      "description": "Defining the common ruleset for Team Battles.",
-      "category": "ruleset",
-      "order": 65,
-      "url": "teamBattleRuleset.html",
-      "isHidden": true,
-      "rules": {
-        "rounds": 5,
-        "teamSize": 5,
-        "maxScore": 5
-      }
+      "isHidden": true
     },
     {
       "id": "meditation",
@@ -147,10 +97,7 @@
       "category": "mainMenu",
       "order": 85,
       "url": "meditation.html",
-      "isHidden": false,
-      "rules": {
-        "note": "Rules will be defined in the future."
-      }
+      "isHidden": false
     },
     {
       "id": "randomJudoka",
@@ -160,10 +107,7 @@
       "category": "mainMenu",
       "order": 40,
       "url": "randomJudoka.html",
-      "isHidden": false,
-      "rules": {
-        "note": "Rules will be defined in the future."
-      }
+      "isHidden": false
     },
     {
       "id": "settingsMenu",
@@ -173,10 +117,7 @@
       "category": "mainMenu",
       "order": 90,
       "url": "settings.html",
-      "isHidden": false,
-      "rules": {
-        "note": "Rules will be defined in the future."
-      }
+      "isHidden": false
     }
   ]
   
