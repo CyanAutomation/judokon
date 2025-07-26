@@ -1,6 +1,7 @@
 import { onDomReady } from "./domReady.js";
 import { findMatches } from "./vectorSearch.js";
-import { pipeline } from "@xenova/transformers";
+// Load Transformers.js dynamically from jsDelivr when first used
+// This avoids bundling the large library with the rest of the code.
 
 let extractor;
 let spinner;
@@ -8,6 +9,9 @@ let spinner;
 async function getExtractor() {
   if (!extractor) {
     try {
+      const { pipeline } = await import(
+        "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0/dist/transformers.min.js"
+      );
       extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
     } catch (error) {
       console.error("Model failed to load", error);

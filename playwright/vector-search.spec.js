@@ -4,7 +4,7 @@ import fs from "fs";
 const patchedScript = fs
   .readFileSync("src/helpers/vectorSearchPage.js", "utf8")
   .replace(
-    'import { pipeline } from "@xenova/transformers";',
+    'const { pipeline } = await import("https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0/dist/transformers.min.js");',
     "const pipeline = async () => async () => [[1,0]];"
   );
 
