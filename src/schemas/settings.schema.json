@@ -11,6 +11,10 @@
       "type": "boolean",
       "description": "Enable animated motion effects."
     },
+    "typewriterEffect": {
+      "type": "boolean",
+      "description": "Animate meditation quotes with a typewriter effect."
+    },
     "displayMode": {
       "type": "string",
       "enum": ["light", "dark", "gray"],
@@ -27,6 +31,6 @@
       "additionalProperties": { "type": "boolean" }
     }
   },
-  "required": ["sound", "motionEffects", "displayMode"],
+  "required": ["sound", "motionEffects", "typewriterEffect", "displayMode"],
   "additionalProperties": false
 }

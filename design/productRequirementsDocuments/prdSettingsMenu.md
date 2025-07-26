@@ -43,6 +43,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 | P1       | Full Navigation Map Feature Flag | Enable or disable the full navigation map via feature flag; updates `settings.json` live on change. |
 | P3       | Test Mode Feature Flag | Enables deterministic battles for automated testing. |
 | P1       | Motion Effects Toggle      | Binary toggle updating `settings.json` live on change.                      |
+| P1       | Typewriter Effect Toggle   | Enable or disable quote animation on the meditation screen. |
 | P1       | Display Mode Selector      | Three-option selector applying mode instantly across UI.                    |
 | P2       | Game Modes Toggles         | A list of all defined game modes with binary toggles from `navigationItems.json`. |
 | P3       | Settings Menu Integration  | Ensure settings appear as a game mode in `navigationItems.json`.                  |
@@ -59,6 +60,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - **Sound (binary):** ON/OFF (default: ON)
 - **Full navigation map feature flag (binary):** ON/OFF (default: ON)
 - **Motion effects (binary):** ON/OFF (default: ON)
+- **Typewriter effect (binary):** ON/OFF (default: ON)
 - **Display mode (three options):** Light, Dark, Gray (default: Light)
   - _Gray mode_ provides a grayscale display to reduce visual noise for neurodivergent users.
 - **Game modes list:** Pulled from `gameModes.json` and cross-referenced with `navigationItems.json` to determine order and visibility; each mode has a binary toggle.
@@ -113,9 +115,13 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - AC-3.2 Motion effects on UI start or stop instantly (e.g., animations stop when OFF).
 - AC-3.3 UI toggle reflects the current motion setting accurately on page load.
 
+### Typewriter Effect Toggle
+
+- AC-4.1 Disabling the toggle prevents the quote typewriter animation on the meditation screen.
+- AC-4.2 Setting is stored in `settings.json` within 50ms of change.
 ### Display Mode Selector
 
-- AC-4.1 Selecting a new display mode (light/dark/gray) applies changes instantly across all relevant UI components.
+- AC-5.1 Selecting a new display mode (light/dark/gray) applies changes instantly across all relevant UI components.
 - AC-4.2 Selected mode persists through a page refresh within the same session.
 - AC-4.3 Current display mode is correctly pulled from `settings.json` on page load.
 - AC-4.4 Transition to new display mode completes without visible flickering or rendering artifacts.

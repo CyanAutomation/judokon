@@ -42,6 +42,7 @@ describe("settings utils", () => {
     expect(settings).toEqual({
       sound: false,
       motionEffects: true,
+      typewriterEffect: true,
       displayMode: "light",
       gameModes: {},
       featureFlags: { battleDebugPanel: false, fullNavigationMap: true, enableTestMode: false }
@@ -57,6 +58,7 @@ describe("settings utils", () => {
     const data = {
       sound: false,
       motionEffects: true,
+      typewriterEffect: true,
       displayMode: "dark",
       gameModes: {},
       featureFlags: { battleDebugPanel: false, fullNavigationMap: true, enableTestMode: false }
@@ -85,6 +87,7 @@ describe("settings utils", () => {
     expect(settings).toEqual({
       sound: false,
       motionEffects: true,
+      typewriterEffect: true,
       displayMode: "light",
       gameModes: {},
       featureFlags: { battleDebugPanel: false, fullNavigationMap: true, enableTestMode: false }
@@ -128,6 +131,7 @@ describe("settings utils", () => {
       saveSettings({
         sound: true,
         motionEffects: true,
+        typewriterEffect: true,
         displayMode: "light",
         gameModes: {},
         featureFlags: { battleDebugPanel: false, fullNavigationMap: true, enableTestMode: false }
@@ -160,6 +164,7 @@ describe("settings utils", () => {
     const data1 = {
       sound: true,
       motionEffects: true,
+      typewriterEffect: true,
       displayMode: "light",
       gameModes: {},
       featureFlags: { battleDebugPanel: false, fullNavigationMap: false, enableTestMode: false }
@@ -167,6 +172,7 @@ describe("settings utils", () => {
     const data2 = {
       sound: false,
       motionEffects: false,
+      typewriterEffect: true,
       displayMode: "dark",
       gameModes: {},
       featureFlags: { battleDebugPanel: false, fullNavigationMap: true, enableTestMode: false }

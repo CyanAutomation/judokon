@@ -20,6 +20,7 @@ describe("displayRandomQuote", () => {
     const liveRegion = document.createElement("div");
     liveRegion.id = "language-announcement";
     document.body.append(quoteDiv, loader, toggle, liveRegion);
+    localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
 
     const storyData = [{ id: 1, story: "B" }];
     const metaData = [{ id: 1, title: "A" }];
@@ -50,6 +51,7 @@ describe("displayRandomQuote", () => {
     const loader = document.createElement("div");
     loader.id = "quote-loader";
     document.body.append(quoteDiv, loader);
+    localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
 
     global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
 
@@ -66,6 +68,7 @@ describe("displayRandomQuote", () => {
     const loader = document.createElement("div");
     loader.id = "quote-loader";
     document.body.append(quoteDiv, loader);
+    localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
 
     // Empty array
     global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: async () => [] }));
@@ -83,6 +86,7 @@ describe("displayRandomQuote", () => {
   });
 
   it("does not throw if DOM elements are missing", async () => {
+    localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
     global.fetch = vi.fn((url) => {
       if (url.includes("aesopsFables.json")) {
         return Promise.resolve({ ok: true, json: async () => [{ id: 1, story: "B" }] });

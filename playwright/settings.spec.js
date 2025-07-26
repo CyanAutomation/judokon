@@ -26,6 +26,7 @@ test.describe("Settings page", () => {
     await verifyPageBasics(page, ["nav-classicBattle", "nav-randomJudoka"]);
     await expect(page.getByLabel(/sound/i)).toBeVisible();
     await expect(page.getByLabel(/motion effects/i)).toBeVisible();
+    await expect(page.getByLabel(/typewriter effect/i)).toBeVisible();
     await expect(page.getByLabel(/display mode/i)).toBeVisible();
   });
 
@@ -42,10 +43,20 @@ test.describe("Settings page", () => {
       .sort((a, b) => a.order - b.order)
       .map((m) => m.name);
 
-    const expectedLabels = ["Display Mode", "Sound", "Motion Effects", ...sortedNames];
+    const expectedLabels = [
+      "Display Mode",
+      "Sound",
+      "Motion Effects",
+      "Typewriter Effect",
+      ...sortedNames
+    ];
 
     await expect(page.locator("#sound-toggle")).toHaveAttribute("aria-label", "Sound");
     await expect(page.locator("#motion-toggle")).toHaveAttribute("aria-label", "Motion Effects");
+    await expect(page.locator("#typewriter-toggle")).toHaveAttribute(
+      "aria-label",
+      "Typewriter Effect"
+    );
 
     await expect(page.locator("#game-mode-toggle-container input[type=checkbox]")).toHaveCount(
       sortedNames.length

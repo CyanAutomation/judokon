@@ -21,6 +21,7 @@
  * @throws {Error} If the fetch request fails or the response is not successful.
  */
 import { DATA_DIR } from "./constants.js";
+import { shouldEnableTypewriter, runTypewriterEffect } from "./typewriter.js";
 
 let kgImageLoaded = false;
 let quoteLoaded = false;
@@ -106,6 +107,9 @@ function formatFableStory(story) {
  * 5. Toggle visibility:
  *    - Hide the loader element and remove the `hidden` class from the quote element.
  *
+ * 6. If the typewriter effect setting is enabled:
+ *    - Run the typewriter animation on `#quote-content` and restore the HTML when complete.
+ *
  * @param {Object|null} fable - The fable object containing the title and story, or `null` if no fable is available.
  */
 function displayFable(fable) {
@@ -126,6 +130,10 @@ function displayFable(fable) {
   }
   loaderDiv.classList.add("hidden");
   quoteDiv.classList.remove("hidden");
+  if (shouldEnableTypewriter()) {
+    const contentEl = document.getElementById("quote-content");
+    runTypewriterEffect(contentEl, quoteDiv.querySelector("#quote-content")?.innerHTML || "");
+  }
   const toggleBtn = document.getElementById("language-toggle");
   if (toggleBtn) {
     toggleBtn.classList.remove("hidden");

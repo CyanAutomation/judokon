@@ -17,10 +17,11 @@ export function applyInitialControlValues(controls, settings) {
   applyInputState(controls.soundToggle, settings.sound);
   applyInputState(controls.motionToggle, settings.motionEffects);
   applyInputState(controls.displaySelect, settings.displayMode);
+  applyInputState(controls.typewriterToggle, settings.typewriterEffect);
 }
 
 export function attachToggleListeners(controls, getCurrentSettings, handleUpdate) {
-  const { soundToggle, motionToggle, displaySelect } = controls;
+  const { soundToggle, motionToggle, displaySelect, typewriterToggle } = controls;
   soundToggle?.addEventListener("change", () => {
     const prev = !soundToggle.checked;
     handleUpdate("sound", soundToggle.checked, () => {
@@ -42,6 +43,12 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
     handleUpdate("displayMode", mode, () => {
       displaySelect.value = previous;
       applyDisplayMode(previous);
+    });
+  });
+  typewriterToggle?.addEventListener("change", () => {
+    const prev = !typewriterToggle.checked;
+    handleUpdate("typewriterEffect", typewriterToggle.checked, () => {
+      typewriterToggle.checked = prev;
     });
   });
 }
