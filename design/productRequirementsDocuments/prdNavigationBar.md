@@ -56,7 +56,7 @@ The **JU-DO-KON!** game features multiple game modes and screens. Players need e
 
 ## How It Works
 
-The bottom navigation bar appears consistently across all game screens, dynamically loading active game modes from `navigationItems.json`.
+The bottom navigation bar appears consistently across all game screens, dynamically loading active game modes from `navigationItems.json`. Each item references an entry in `gameModes.json` via its `id` so mode names and descriptions remain consistent.
 
 ### Standard Mode (Default View)
 
@@ -87,7 +87,8 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 ### Dependencies / Integrations
 
-- `navigationItems.json` data file for mode list.
+- `gameModes.json` defines the available modes.
+- `navigationItems.json` references those modes by `id` and controls navigation order and visibility.
 - CSS variables `--color-secondary` and `--button-text-color` for styling.
 - Existing footer layout modules.
 

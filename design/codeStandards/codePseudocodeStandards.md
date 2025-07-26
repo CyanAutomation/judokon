@@ -32,24 +32,18 @@ Clear pseudocode descriptions are essential for explaining the underlying logic 
 
 ```javascript
 /**
- * Populates the bottom navigation bar with game modes from a JSON file.
+ * Populates the bottom navigation bar with game modes from JSON files.
  *
  * @pseudocode
- * 1. Fetch the JSON file containing game modes ("navigationItems.json").
- *    - If the fetch fails, log an error and display an error message.
- *
- * 2. Parse the JSON response to retrieve game modes.
- *    - Handle parsing errors gracefully.
- *
- * 3. Filter game modes to include only visible, main menu items.
- *
- * 4. Sort game modes by the specified order.
- *
- * 5. Generate HTML list items for each mode.
- *
- * 6. Update the navigation bar with the generated HTML.
- *
- * 7. Handle any errors during the process gracefully.
+ * 1. Load mode definitions using `loadGameModes()` (reads `gameModes.json`).
+ * 2. Fetch `navigationItems.json` for display order and visibility flags.
+ *    - If either fetch fails, log an error and show a fallback message.
+ * 3. Merge navigation items with mode data by matching the `id` field.
+ * 4. Filter out items where `isHidden` is true and keep only main menu entries.
+ * 5. Sort the remaining items by their `order` value.
+ * 6. Generate HTML list items for each merged object.
+ * 7. Update the navigation bar with the generated HTML.
+ * 8. Handle any errors during the process gracefully.
  */
 function populateNavigationBar() { ... }
 ```
