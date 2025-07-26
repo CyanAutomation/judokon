@@ -3,23 +3,33 @@ import { describe, it, expect, vi } from "vitest";
 let generateMock;
 let setupLazyPortraitsMock;
 
-vi.mock("../../src/helpers/cardBuilder.js", () => ({
-  generateJudokaCardHTML: async (j, g, opts) => {
-    const el = await generateMock(j, g, opts);
-    if (opts?.enableInspector) {
-      const panel = document.createElement("details");
-      panel.className = "debug-panel";
-      el.appendChild(panel);
-    }
-    return el;
-  },
-  createInspectorPanel: () => document.createElement("details")
-}));
+vi.mock("../../src/helpers/cardBuilder.js", () => {
+  const createInspectorPanel = (container) => {
+    const panel = document.createElement("details");
+    panel.className = "debug-panel";
+    panel.addEventListener("toggle", () => {
+      if (panel.open) {
+        container.dataset.inspector = "true";
+      } else {
+        container.removeAttribute("data-inspector");
+      }
+    });
+    return panel;
+  };
+  return {
+    generateJudokaCardHTML: async (j, g, opts) => {
+      const el = await generateMock(j, g, opts);
+      if (opts?.enableInspector) {
+        el.appendChild(createInspectorPanel(el));
+      }
+      return el;
+    },
+    createInspectorPanel
+  };
+});
 vi.mock("../../src/helpers/lazyPortrait.js", () => ({
   setupLazyPortraits: (...args) => setupLazyPortraitsMock(...args)
 }));
-
-import { renderJudokaCard } from "../../src/helpers/cardUtils.js";
 
 const judoka = {
   id: 2,
@@ -38,6 +48,7 @@ describe("renderJudokaCard", () => {
   it("obscures stats and name when useObscuredStats is true", async () => {
     generateMock = vi.fn(async () => document.createElement("div"));
     setupLazyPortraitsMock = vi.fn();
+    const { renderJudokaCard } = await import("../../src/helpers/cardUtils.js");
     const container = document.createElement("div");
     await renderJudokaCard(judoka, {}, container, { useObscuredStats: true });
     const calledJudoka = generateMock.mock.calls[0][0];
@@ -56,6 +67,7 @@ describe("renderJudokaCard", () => {
     wrapper.appendChild(cardEl);
     generateMock = vi.fn(async () => wrapper);
     setupLazyPortraitsMock = vi.fn();
+    const { renderJudokaCard } = await import("../../src/helpers/cardUtils.js");
     const container = document.createElement("div");
     const card = await renderJudokaCard(judoka, {}, container, {
       enableInspector: true
