@@ -6,8 +6,12 @@
     "type": "object",
     "properties": {
       "id": {
-        "type": "string",
-        "description": "Identifier referencing a game mode"
+        "type": "integer",
+        "description": "Unique identifier for the navigation item"
+      },
+      "gameModeId": {
+        "type": "integer",
+        "description": "Reference to an entry in gameModes.json"
       },
       "url": {
         "type": "string",
@@ -26,7 +30,7 @@
         "description": "Controls visibility in navigation"
       }
     },
-    "required": ["id", "url", "category", "order", "isHidden"],
+    "required": ["id", "gameModeId", "url", "category", "order", "isHidden"],
     "additionalProperties": false
   }
 }

@@ -56,9 +56,9 @@ describe("settingsPage module", () => {
   it("renders checkboxes for all modes", async () => {
     vi.useFakeTimers();
     const gameModes = [
-      { id: "classic", name: "Classic", category: "mainMenu", order: 10 },
-      { id: "blitz", name: "Blitz", category: "bonus", order: 20 },
-      { id: "dojo", name: "Dojo", category: "mainMenu", order: 30 }
+      { id: 1, name: "Classic", category: "mainMenu", order: 10 },
+      { id: 2, name: "Blitz", category: "bonus", order: 20 },
+      { id: 3, name: "Dojo", category: "mainMenu", order: 30 }
     ];
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
@@ -82,9 +82,9 @@ describe("settingsPage module", () => {
     const checkboxes = container.querySelectorAll("input[type='checkbox']");
     const labels = container.querySelectorAll("label span");
     expect(checkboxes).toHaveLength(3);
-    expect(container.querySelector("#mode-classic")).toBeTruthy();
-    expect(container.querySelector("#mode-dojo")).toBeTruthy();
-    expect(container.querySelector("#mode-blitz")).toBeTruthy();
+    expect(container.querySelector("#mode-1")).toBeTruthy();
+    expect(container.querySelector("#mode-3")).toBeTruthy();
+    expect(container.querySelector("#mode-2")).toBeTruthy();
     expect(labels[0].textContent).toBe("Classic (mainMenu - 10)");
     expect(labels[1].textContent).toBe("Blitz (bonus - 20)");
     expect(labels[2].textContent).toBe("Dojo (mainMenu - 30)");
@@ -92,9 +92,7 @@ describe("settingsPage module", () => {
 
   it("checkbox state reflects isHidden when no setting exists", async () => {
     vi.useFakeTimers();
-    const gameModes = [
-      { id: "team", name: "Team", category: "mainMenu", order: 5, isHidden: true }
-    ];
+    const gameModes = [{ id: 4, name: "Team", category: "mainMenu", order: 5, isHidden: true }];
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
     const loadNavigationItems = vi.fn().mockResolvedValue(gameModes);
@@ -113,13 +111,13 @@ describe("settingsPage module", () => {
     document.dispatchEvent(new Event("DOMContentLoaded"));
     await vi.runAllTimersAsync();
 
-    const input = document.getElementById("mode-team");
+    const input = document.getElementById("mode-4");
     expect(input.checked).toBe(false);
   });
 
   it("updates isHidden when a checkbox is toggled", async () => {
     vi.useFakeTimers();
-    const gameModes = [{ id: "classic", name: "Classic", category: "mainMenu", isHidden: false }];
+    const gameModes = [{ id: 1, name: "Classic", category: "mainMenu", isHidden: false }];
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
     const loadNavigationItems = vi.fn().mockResolvedValue(gameModes);
@@ -140,11 +138,11 @@ describe("settingsPage module", () => {
     document.dispatchEvent(new Event("DOMContentLoaded"));
     await vi.runAllTimersAsync();
 
-    const input = document.getElementById("mode-classic");
+    const input = document.getElementById("mode-1");
     input.checked = false;
     input.dispatchEvent(new Event("change"));
 
-    expect(updateNavigationItemHidden).toHaveBeenCalledWith("classic", true);
+    expect(updateNavigationItemHidden).toHaveBeenCalledWith(1, true);
   });
 
   it("renders feature flag switches", async () => {

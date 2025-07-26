@@ -135,14 +135,14 @@ describe("populateNavbar", () => {
     const navBar = setupDom();
     stubLogoQuery();
     const data = [
-      { id: "A", name: "A", url: "a.html", category: "mainMenu", order: 2, isHidden: false },
-      { id: "B", name: "B", url: "b.html", category: "mainMenu", order: 1, isHidden: false }
+      { id: 1, name: "A", url: "a.html", category: "mainMenu", order: 2, isHidden: false },
+      { id: 2, name: "B", url: "b.html", category: "mainMenu", order: 1, isHidden: false }
     ];
     const loadSettings = vi.fn().mockResolvedValue({
       sound: true,
       motionEffects: true,
       displayMode: "light",
-      gameModes: { B: false },
+      gameModes: { 2: false },
       featureFlags: { battleDebugPanel: false, fullNavigationMap: true, enableTestMode: false }
     });
     const loadNavigationItems = vi.fn().mockResolvedValue(data);
@@ -188,7 +188,7 @@ describe("populateNavbar", () => {
     const navBar = setupDom();
     stubLogoQuery();
     const data = [
-      { id: "X", name: "X", url: "x.html", category: "mainMenu", order: 1, isHidden: false }
+      { id: 3, name: "X", url: "x.html", category: "mainMenu", order: 1, isHidden: false }
     ];
     localStorage.setItem("navigationItems", JSON.stringify(data));
     const loadSettings = vi.fn().mockResolvedValue({
@@ -220,7 +220,7 @@ describe("populateNavbar", () => {
     stubLogoQuery();
     const data = [
       {
-        id: "home",
+        id: 1,
         name: "Home",
         url: "home.html",
         category: "mainMenu",
@@ -228,7 +228,7 @@ describe("populateNavbar", () => {
         isHidden: false
       },
       {
-        id: "about",
+        id: 2,
         name: "About",
         url: "about.html",
         category: "mainMenu",
