@@ -4,7 +4,16 @@ let generateMock;
 let setupLazyPortraitsMock;
 
 vi.mock("../../src/helpers/cardBuilder.js", () => ({
-  generateJudokaCardHTML: (...args) => generateMock(...args)
+  generateJudokaCardHTML: (j, g, opts) => {
+    const el = generateMock(j, g, opts);
+    if (opts?.enableInspector) {
+      const panel = document.createElement("details");
+      panel.className = "debug-panel";
+      el.appendChild(panel);
+    }
+    return el;
+  },
+  createInspectorPanel: () => document.createElement("details")
 }));
 vi.mock("../../src/helpers/lazyPortrait.js", () => ({
   setupLazyPortraits: (...args) => setupLazyPortraitsMock(...args)
@@ -35,5 +44,44 @@ describe("renderJudokaCard", () => {
     expect(calledJudoka.firstname).toBe("?");
     expect(calledJudoka.surname).toBe("?");
     Object.values(calledJudoka.stats).forEach((v) => expect(v).toBe("?"));
+  });
+
+  it("injects inspector panel when enabled", async () => {
+    const wrapper = document.createElement("div");
+    const cardEl = document.createElement("div");
+    cardEl.className = "judoka-card";
+    cardEl.innerHTML =
+      '<div class="card-top-bar"></div><div class="card-portrait"></div><div class="card-stats"></div><div class="signature-move-container"></div>';
+    wrapper.className = "card-container";
+    wrapper.appendChild(cardEl);
+    generateMock = vi.fn(async () => wrapper);
+    setupLazyPortraitsMock = vi.fn();
+    const container = document.createElement("div");
+    const card = await renderJudokaCard(judoka, {}, container, {
+      enableInspector: true
+    });
+    const panel = card.querySelector(".debug-panel");
+    expect(panel).toBeTruthy();
+    panel.open = true;
+    panel.dispatchEvent(new Event("toggle"));
+    expect(card.dataset.inspector).toBe("true");
+  });
+
+  it("toggleInspectorPanels updates existing cards", async () => {
+    const container = document.createElement("div");
+    container.className = "card-container";
+    container.dataset.cardJson = JSON.stringify(judoka);
+    const card = document.createElement("div");
+    card.className = "judoka-card";
+    card.innerHTML =
+      '<div class="card-top-bar"></div><div class="card-portrait"></div><div class="card-stats"></div><div class="signature-move-container"></div>';
+    container.appendChild(card);
+    document.body.appendChild(container);
+    const { toggleInspectorPanels } = await import("../../src/helpers/cardUtils.js");
+    toggleInspectorPanels(true);
+    const panel = container.querySelector(".debug-panel");
+    expect(panel).toBeTruthy();
+    toggleInspectorPanels(false);
+    expect(container.querySelector(".debug-panel")).toBeNull();
   });
 });

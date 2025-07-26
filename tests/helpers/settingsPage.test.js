@@ -10,7 +10,8 @@ const baseSettings = {
     randomStatMode: true,
     battleDebugPanel: false,
     fullNavigationMap: true,
-    enableTestMode: false
+    enableTestMode: false,
+    enableCardInspector: false
   }
 };
 
@@ -205,7 +206,8 @@ describe("settingsPage module", () => {
       randomStatMode: true,
       battleDebugPanel: true,
       fullNavigationMap: true,
-      enableTestMode: false
+      enableTestMode: false,
+      enableCardInspector: false
     });
   });
 });

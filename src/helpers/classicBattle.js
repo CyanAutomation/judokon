@@ -131,9 +131,16 @@ export async function startRound() {
   const playerContainer = document.getElementById("player-card");
   const computerContainer = document.getElementById("computer-card");
   let playerJudoka = null;
-  await generateRandomCard(availableJudoka, null, playerContainer, false, (j) => {
-    playerJudoka = j;
-  });
+  await generateRandomCard(
+    availableJudoka,
+    null,
+    playerContainer,
+    false,
+    (j) => {
+      playerJudoka = j;
+    },
+    { enableInspector: false }
+  );
   let compJudoka = getRandomJudoka(availableJudoka);
   if (playerJudoka) {
     // avoid showing the same judoka, but guard against infinite loops
@@ -148,7 +155,8 @@ export async function startRound() {
   const placeholder = judokaData.find((j) => j.id === 1) || compJudoka;
   await renderJudokaCard(placeholder, gokyoLookup, computerContainer, {
     animate: false,
-    useObscuredStats: true
+    useObscuredStats: true,
+    enableInspector: false
   });
   showSelectionPrompt();
   const { playerScore, computerScore } = getScores();

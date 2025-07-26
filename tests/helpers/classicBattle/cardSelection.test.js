@@ -33,7 +33,7 @@ describe("classicBattle card selection", () => {
     document.body.append(playerCard, computerCard, header);
     timerSpy = vi.useFakeTimers();
     fetchJsonMock = vi.fn(async () => []);
-    generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {
+    generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb, _opts) => {
       container.innerHTML = "<ul></ul>";
       if (cb) cb({ id: 1 });
     });
@@ -52,7 +52,7 @@ describe("classicBattle card selection", () => {
       }
       return [];
     });
-    generateRandomCardMock = vi.fn(async (d, g, c, _pm, cb) => {
+    generateRandomCardMock = vi.fn(async (d, g, c, _pm, cb, _opts) => {
       c.innerHTML = "<ul></ul>";
       cb({ id: 1 });
     });
@@ -70,7 +70,7 @@ describe("classicBattle card selection", () => {
       expect.objectContaining({ id: 1 }),
       expect.anything(),
       expect.anything(),
-      { animate: false, useObscuredStats: true }
+      { animate: false, useObscuredStats: true, enableInspector: false }
     );
     expect(getComputerJudoka()).toEqual(expect.objectContaining({ id: 2 }));
   });
@@ -86,7 +86,7 @@ describe("classicBattle card selection", () => {
       }
       return [];
     });
-    generateRandomCardMock = vi.fn(async (d, g, c, _pm, cb) => {
+    generateRandomCardMock = vi.fn(async (d, g, c, _pm, cb, _opts) => {
       c.innerHTML = "<ul></ul>";
       if (cb) cb(d[0]);
     });
@@ -99,7 +99,8 @@ describe("classicBattle card selection", () => {
       null,
       expect.anything(),
       false,
-      expect.any(Function)
+      expect.any(Function),
+      { enableInspector: false }
     );
     expect(getRandomJudokaMock).toHaveBeenCalledWith([
       expect.objectContaining({ id: 2, isHidden: false })

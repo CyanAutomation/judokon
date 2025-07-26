@@ -1,4 +1,4 @@
-import { generateJudokaCardHTML } from "./cardBuilder.js";
+import { generateJudokaCardHTML, createInspectorPanel } from "./cardBuilder.js";
 import { debugLog } from "./debug.js";
 import { seededRandom } from "./testModeUtils.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
@@ -126,7 +126,7 @@ export async function renderJudokaCard(
   judoka,
   gokyoLookup,
   container,
-  { animate = false, useObscuredStats = false } = {}
+  { animate = false, useObscuredStats = false, enableInspector = false } = {}
 ) {
   if (!container) return null;
   if (!hasRequiredJudokaFields(judoka)) {
@@ -147,7 +147,9 @@ export async function renderJudokaCard(
       }
     }
 
-    const card = await generateJudokaCardHTML(cardData, gokyoLookup);
+    const card = await generateJudokaCardHTML(cardData, gokyoLookup, {
+      enableInspector
+    });
     if (!card) return null;
     container.innerHTML = "";
     container.appendChild(card);
@@ -163,4 +165,27 @@ export async function renderJudokaCard(
     console.error("Error rendering judoka card:", error);
     return null;
   }
+}
+
+export function toggleInspectorPanels(enable) {
+  document.querySelectorAll(".card-container").forEach((container) => {
+    const existing = container.querySelector(".debug-panel");
+    if (enable) {
+      if (!existing) {
+        const json = container.dataset.cardJson;
+        const card = container.querySelector(".judoka-card");
+        if (!json || !card) return;
+        const panel = createInspectorPanel(container, JSON.parse(json), {
+          topBar: card.querySelector(".card-top-bar"),
+          portrait: card.querySelector(".card-portrait"),
+          stats: card.querySelector(".card-stats"),
+          signature: card.querySelector(".signature-move-container")
+        });
+        container.appendChild(panel);
+      }
+    } else if (existing) {
+      existing.remove();
+      container.removeAttribute("data-inspector");
+    }
+  });
 }

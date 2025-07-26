@@ -14,7 +14,8 @@ const baseSettings = {
     randomStatMode: false,
     battleDebugPanel: false,
     fullNavigationMap: true,
-    enableTestMode: false
+    enableTestMode: false,
+    enableCardInspector: false
   }
 };
 
@@ -168,5 +169,56 @@ describe("randomJudokaPage module", () => {
     const computed = getComputedStyle(button);
     expect(parseInt(computed.minHeight)).toBeGreaterThanOrEqual(64);
     expect(parseInt(computed.width)).toBeGreaterThanOrEqual(300);
+  });
+
+  it("storage event toggles card inspector", async () => {
+    vi.useFakeTimers();
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    const generateRandomCard = vi.fn(async (_c, _g, container) => {
+      const card = document.createElement("div");
+      card.className = "card-container";
+      card.dataset.cardJson = JSON.stringify({ id: 1 });
+      const inner = document.createElement("div");
+      inner.className = "judoka-card";
+      inner.innerHTML =
+        '<div class="card-top-bar"></div><div class="card-portrait"></div><div class="card-stats"></div><div class="signature-move-container"></div>';
+      card.appendChild(inner);
+      container.appendChild(card);
+    });
+    const fetchJson = vi.fn().mockResolvedValue([]);
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updateSetting = vi.fn();
+    const applyMotionPreference = vi.fn();
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+
+    const { section, container } = createRandomCardDom();
+    document.body.append(section, container);
+
+    await import("../../src/helpers/randomJudokaPage.js");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    expect(container.querySelector(".debug-panel")).toBeNull();
+
+    window.dispatchEvent(
+      new StorageEvent("storage", {
+        key: "settings",
+        newValue: JSON.stringify({
+          ...baseSettings,
+          featureFlags: { ...baseSettings.featureFlags, enableCardInspector: true }
+        })
+      })
+    );
+    expect(container.querySelector(".debug-panel")).toBeTruthy();
   });
 });

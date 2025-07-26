@@ -143,7 +143,12 @@ describe("populateNavbar", () => {
       motionEffects: true,
       displayMode: "light",
       gameModes: { 2: false },
-      featureFlags: { battleDebugPanel: false, fullNavigationMap: true, enableTestMode: false }
+      featureFlags: {
+        battleDebugPanel: false,
+        fullNavigationMap: true,
+        enableTestMode: false,
+        enableCardInspector: false
+      }
     });
     const loadNavigationItems = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
@@ -196,7 +201,12 @@ describe("populateNavbar", () => {
       motionEffects: true,
       displayMode: "light",
       gameModes: {},
-      featureFlags: { battleDebugPanel: false, fullNavigationMap: true, enableTestMode: false }
+      featureFlags: {
+        battleDebugPanel: false,
+        fullNavigationMap: true,
+        enableTestMode: false,
+        enableCardInspector: false
+      }
     });
     const loadNavigationItems = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
@@ -241,7 +251,12 @@ describe("populateNavbar", () => {
       motionEffects: true,
       displayMode: "light",
       gameModes: {},
-      featureFlags: { battleDebugPanel: false, fullNavigationMap: true, enableTestMode: false }
+      featureFlags: {
+        battleDebugPanel: false,
+        fullNavigationMap: true,
+        enableTestMode: false,
+        enableCardInspector: false
+      }
     });
     const loadNavigationItems = vi.fn().mockResolvedValue(data);
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));

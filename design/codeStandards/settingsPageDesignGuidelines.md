@@ -178,7 +178,7 @@ To support AI-assisted testing, variant gameplay modes, and scalable development
   - ID format: `feature-<kebab-case-feature-name>`
   - Name format: camelCase
   - Example: `id="feature-random-stat-mode" name="randomStatMode"`
-  - Common example flags include `Battle Debug Panel` and `Full Navigation Map`
+  - Common example flags include `Battle Debug Panel`, `Full Navigation Map`, and `Card Inspector`
 
 - **ARIA and Accessibility**  
   - Provide `aria-label` for each feature flag  

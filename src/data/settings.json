@@ -6,6 +6,7 @@
   "featureFlags": {
     "battleDebugPanel": false,
     "fullNavigationMap": true,
-    "enableTestMode": false
+    "enableTestMode": false,
+    "enableCardInspector": false
   }
 }
