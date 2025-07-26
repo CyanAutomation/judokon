@@ -23,11 +23,15 @@ const MAX_TEXT_LENGTH = 1000;
 const MAX_OUTPUT_SIZE = 3 * 1024 * 1024;
 
 async function getFiles() {
-  const mdFiles = await glob("design/productRequirementsDocuments/*.md", { cwd: rootDir });
+  const prdFiles = await glob("design/productRequirementsDocuments/*.md", {
+    cwd: rootDir
+  });
+  const guidelineFiles = await glob("design/codeStandards/*.md", { cwd: rootDir });
+  const workflowFiles = await glob("design/agentWorkflows/*.md", { cwd: rootDir });
   const jsonFiles = (await glob("src/data/*.json", { cwd: rootDir })).filter(
     (f) => path.extname(f) === ".json"
   );
-  return [...mdFiles, ...jsonFiles];
+  return [...prdFiles, ...guidelineFiles, ...workflowFiles, ...jsonFiles];
 }
 
 async function loadModel() {
