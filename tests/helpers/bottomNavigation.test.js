@@ -49,7 +49,9 @@ describe("toggleExpandedMapView", () => {
       { url: "broken.html", image: "img3.png" }
     ];
 
-    const { toggleExpandedMapView, BASE_PATH } = await import("../../src/helpers/navigationBar.js");
+    const { toggleExpandedMapView, BASE_PATH } = await import(
+      "../../src/helpers/navigation/navMenu.js"
+    );
 
     toggleExpandedMapView(modes);
 
@@ -63,7 +65,7 @@ describe("toggleExpandedMapView", () => {
   });
 
   it("does not create tiles if no valid modes", async () => {
-    const { toggleExpandedMapView } = await import("../../src/helpers/navigationBar.js");
+    const { toggleExpandedMapView } = await import("../../src/helpers/navigation/navMenu.js");
     toggleExpandedMapView([]);
     const view = navBar.querySelector(".expanded-map-view");
     expect(view).toBeTruthy();
@@ -72,7 +74,7 @@ describe("toggleExpandedMapView", () => {
 
   it("sets correct ARIA attributes and alt text for images", async () => {
     const modes = [{ name: "Mode1", url: "mode1.html", image: "img1.png" }];
-    const { toggleExpandedMapView } = await import("../../src/helpers/navigationBar.js");
+    const { toggleExpandedMapView } = await import("../../src/helpers/navigation/navMenu.js");
     toggleExpandedMapView(modes);
     const tile = navBar.querySelector(".map-tile");
     const link = tile.querySelector("a");
@@ -97,7 +99,7 @@ describe("togglePortraitTextMenu", () => {
     ];
 
     const { togglePortraitTextMenu, BASE_PATH } = await import(
-      "../../src/helpers/navigationBar.js"
+      "../../src/helpers/navigation/navMenu.js"
     );
 
     togglePortraitTextMenu(modes);
@@ -112,7 +114,7 @@ describe("togglePortraitTextMenu", () => {
   });
 
   it("does not create items if no valid modes", async () => {
-    const { togglePortraitTextMenu } = await import("../../src/helpers/navigationBar.js");
+    const { togglePortraitTextMenu } = await import("../../src/helpers/navigation/navMenu.js");
     togglePortraitTextMenu([]);
     const menu = navBar.querySelector(".portrait-text-menu");
     expect(menu).toBeTruthy();
@@ -121,7 +123,7 @@ describe("togglePortraitTextMenu", () => {
 
   it("sets correct ARIA attributes for links", async () => {
     const modes = [{ name: "Mode1", url: "mode1.html", image: "img1.png" }];
-    const { togglePortraitTextMenu } = await import("../../src/helpers/navigationBar.js");
+    const { togglePortraitTextMenu } = await import("../../src/helpers/navigation/navMenu.js");
     togglePortraitTextMenu(modes);
     const link = navBar.querySelector(".portrait-text-menu li a");
     expect(link).toHaveAttribute("aria-label", "Mode1");
