@@ -1,15 +1,16 @@
 import { createGokyoLookup } from "./utils.js";
-import { generateJudokaCard } from "./cardBuilder.js";
-import { getFallbackJudoka } from "./judokaUtils.js";
+
 import { setupLazyPortraits } from "./lazyPortrait.js";
 import {
   createScrollButton,
   updateScrollButtonState,
   setupSwipeNavigation,
-  applyAccessibilityImprovements
+  applyAccessibilityImprovements,
+  setupResponsiveSizing,
+  appendCards,
+  setupFocusHandlers
 } from "./carousel/index.js";
 import { CAROUSEL_SCROLL_DISTANCE, SPINNER_DELAY_MS } from "./constants.js";
-import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
 
 /**
  * Adds scroll markers to indicate the user's position in the carousel.
@@ -124,14 +125,6 @@ function createLoadingSpinner(wrapper) {
  *
  * @param {HTMLElement} card - The card element containing the image.
  */
-function handleBrokenImages(card) {
-  const img = card.querySelector("img");
-  if (img) {
-    img.onerror = () => {
-      img.src = "./assets/cardBacks/cardBack-2.png";
-    };
-  }
-}
 
 /**
  * Builds a responsive, accessible carousel of judoka cards with scroll buttons, scroll markers, and robust error handling.
@@ -190,53 +183,14 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   const { spinner, timeoutId } = createLoadingSpinner(wrapper);
 
-  // --- Responsive card sizing ---
-  function setCardWidths() {
-    const width = window.innerWidth;
-    let cardsInView = 3;
-    if (width < 600) cardsInView = 1.5;
-    else if (width < 900) cardsInView = 2.5;
-    else if (width < 1200) cardsInView = 3.5;
-    else cardsInView = 5;
-    const cardWidth = `clamp(200px, ${Math.floor(100 / cardsInView)}vw, 260px)`;
-    container.querySelectorAll(".judoka-card").forEach((card) => {
-      card.style.setProperty("--card-width", cardWidth);
-      card.style.scrollSnapAlign = "center";
-    });
-  }
-
-  // Card creation and appending
-  for (const judoka of judokaList) {
-    let entry = judoka;
-    if (!hasRequiredJudokaFields(judoka)) {
-      console.error("Invalid judoka object:", judoka);
-      const missing = getMissingJudokaFields(judoka).join(", ");
-      console.error(`Missing fields: ${missing}`);
-      entry = await getFallbackJudoka();
-    }
-    let card = await generateJudokaCard(entry, gokyoLookup, container);
-    if (!card) {
-      console.warn("Failed to generate card for judoka:", entry);
-      const fallback = await getFallbackJudoka();
-      card = await generateJudokaCard(fallback, gokyoLookup, container);
-    }
-    if (card) {
-      handleBrokenImages(card);
-      card.tabIndex = 0;
-      card.setAttribute("role", "listitem");
-      card.setAttribute("aria-label", card.getAttribute("data-judoka-name") || "Judoka card");
-      container.appendChild(card);
-    }
-  }
+  // Create cards and responsive sizing
+  await appendCards(container, judokaList, gokyoLookup);
+  setupResponsiveSizing(container);
 
   clearTimeout(timeoutId);
   spinner.style.display = "none";
 
-  setCardWidths();
-  // Responsive: update card widths on resize
-  const resizeObs = new ResizeObserver(setCardWidths);
-  resizeObs.observe(container);
-  window.addEventListener("resize", setCardWidths);
+  // Responsive sizing handled by helper
 
   const leftButton = createScrollButton("left", container, CAROUSEL_SCROLL_DISTANCE);
   const rightButton = createScrollButton("right", container, CAROUSEL_SCROLL_DISTANCE);
@@ -255,66 +209,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   container.addEventListener("scroll", updateButtons);
   window.addEventListener("resize", updateButtons);
 
-  // --- Card enlargement on focus/hover: only center card ---
-  function updateCardFocusStyles() {
-    const cards = Array.from(container.querySelectorAll(".judoka-card"));
-    cards.forEach((card) => {
-      card.classList.remove("focused-card");
-      card.style.transform = "";
-    });
-    // Find the card closest to the center of the container
-    const containerRect = container.getBoundingClientRect();
-    let minDist = Infinity;
-    let centerCard = null;
-    cards.forEach((card) => {
-      const rect = card.getBoundingClientRect();
-      const cardCenter = rect.left + rect.width / 2;
-      const dist = Math.abs(cardCenter - (containerRect.left + containerRect.width / 2));
-      if (dist < minDist) {
-        minDist = dist;
-        centerCard = card;
-      }
-    });
-    if (centerCard) {
-      centerCard.classList.add("focused-card");
-      centerCard.style.transform = "scale(1.1)";
-      centerCard.focus({ preventScroll: true });
-    }
-  }
-
-  // Keyboard navigation with focus and enlargement
-  function setupEnhancedKeyboardNavigation(carousel) {
-    carousel.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
-        const cards = Array.from(carousel.querySelectorAll(".judoka-card"));
-        const current = document.activeElement;
-        let idx = cards.indexOf(current);
-        if (idx === -1) idx = 0;
-        if (e.key === "ArrowRight" && idx < cards.length - 1) {
-          cards[idx + 1].focus();
-        } else if (e.key === "ArrowLeft" && idx > 0) {
-          cards[idx - 1].focus();
-        }
-        setTimeout(updateCardFocusStyles, 0);
-      }
-    });
-    carousel.addEventListener("focusin", updateCardFocusStyles);
-    carousel.addEventListener("focusout", updateCardFocusStyles);
-  }
-
-  // Hover enlargement (desktop): only center card
-  container.addEventListener("mouseover", (e) => {
-    if (e.target.classList.contains("judoka-card")) {
-      updateCardFocusStyles();
-    }
-  });
-  container.addEventListener("mouseout", (e) => {
-    if (e.target.classList.contains("judoka-card")) {
-      updateCardFocusStyles();
-    }
-  });
-
-  setupEnhancedKeyboardNavigation(container);
+  setupFocusHandlers(container);
   setupSwipeNavigation(container);
   applyAccessibilityImprovements(wrapper);
   setupLazyPortraits(container);
