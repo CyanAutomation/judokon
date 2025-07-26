@@ -178,13 +178,16 @@ function createInspectorPanel(container, judoka, sections) {
     panel.appendChild(pre);
   }
 
-  panel.addEventListener("toggle", () => {
+  function updateDataset() {
     if (panel.open) {
       container.dataset.inspector = "true";
     } else {
       container.removeAttribute("data-inspector");
     }
-  });
+  }
+
+  panel.addEventListener("toggle", updateDataset);
+  updateDataset();
 
   return panel;
 }
