@@ -4,8 +4,8 @@ let generateMock;
 let setupLazyPortraitsMock;
 
 vi.mock("../../src/helpers/cardBuilder.js", () => ({
-  generateJudokaCardHTML: (j, g, opts) => {
-    const el = generateMock(j, g, opts);
+  generateJudokaCardHTML: async (j, g, opts) => {
+    const el = await generateMock(j, g, opts);
     if (opts?.enableInspector) {
       const panel = document.createElement("details");
       panel.className = "debug-panel";
