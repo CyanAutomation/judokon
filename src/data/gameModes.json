@@ -1,6 +1,6 @@
 [
   {
-    "id": "classicBattle",
+    "id": 1,
     "name": "Classic Battle",
     "japaneseName": "試合 (バトルモード)",
     "description": "A standard one-on-one battle mode where players compete to win.",
@@ -12,7 +12,7 @@
     }
   },
   {
-    "id": "teamBattleSelection",
+    "id": 2,
     "name": "Team Battle Selection",
     "japaneseName": "団体戦選択",
     "description": "Choose between Male, Female, or Mixed Team Battle modes.",
@@ -21,7 +21,7 @@
     }
   },
   {
-    "id": "manageJudokaSelection",
+    "id": 3,
     "name": "Manage Judoka",
     "japaneseName": "柔道家編集モード",
     "description": "Choose to update or create a judoka.",
@@ -30,7 +30,7 @@
     }
   },
   {
-    "id": "teamBattleMale",
+    "id": 4,
     "name": "Team Battle (Male)",
     "japaneseName": "男子団体戦",
     "description": "A team-based mode where male players compete in groups.",
@@ -40,7 +40,7 @@
     }
   },
   {
-    "id": "teamBattleFemale",
+    "id": 5,
     "name": "Team Battle (Female)",
     "japaneseName": "女子団体戦",
     "description": "A team-based mode where female players compete in groups.",
@@ -50,7 +50,7 @@
     }
   },
   {
-    "id": "teamBattleMixed",
+    "id": 6,
     "name": "Team Battle (Mixed)",
     "japaneseName": "混合団体戦",
     "description": "A team-based mode where male and female players compete together in groups.",
@@ -62,7 +62,7 @@
     }
   },
   {
-    "id": "browseJudoka",
+    "id": 7,
     "name": "Browse Judoka",
     "japaneseName": "柔道家を閲覧",
     "description": "Explore the available judoka and their stats.",
@@ -71,7 +71,7 @@
     }
   },
   {
-    "id": "createJudoka",
+    "id": 8,
     "name": "Create A Judoka",
     "japaneseName": "柔道家を作成",
     "description": "Create a new judoka by entering their details and stats.",
@@ -80,7 +80,7 @@
     }
   },
   {
-    "id": "updateJudoka",
+    "id": 9,
     "name": "Update Judoka",
     "japaneseName": "柔道家を更新",
     "description": "Edit the details of an existing judoka.",
@@ -89,7 +89,7 @@
     }
   },
   {
-    "id": "teamBattle",
+    "id": 10,
     "name": "Team Battle Ruleset",
     "japaneseName": "団体戦ルールセット",
     "description": "Defining the common ruleset for Team Battles.",
@@ -100,7 +100,7 @@
     }
   },
   {
-    "id": "meditation",
+    "id": 11,
     "name": "Meditation",
     "japaneseName": "メディテーション",
     "description": "Take a moment to pause, breathe, and reflect.",
@@ -109,7 +109,7 @@
     }
   },
   {
-    "id": "randomJudoka",
+    "id": 12,
     "name": "View Judoka",
     "japaneseName": "ランダム柔道家",
     "description": "Displays a random judoka from the available list.",
@@ -118,7 +118,7 @@
     }
   },
   {
-    "id": "settingsMenu",
+    "id": 13,
     "name": "Settings",
     "japaneseName": "設定",
     "description": "Change game settings.",
