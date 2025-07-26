@@ -166,6 +166,7 @@ describe("settingsPage module", () => {
     await vi.runAllTimersAsync();
 
     const container = document.getElementById("feature-flags-container");
+    expect(container.classList.contains("game-mode-toggle-container")).toBe(true);
     const randomInput = container.querySelector("#feature-random-stat-mode");
     const debugInput = container.querySelector("#feature-battle-debug-panel");
     expect(randomInput).toBeTruthy();
