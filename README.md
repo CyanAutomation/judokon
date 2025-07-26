@@ -286,6 +286,8 @@ The project ships with a retrieval-augmented search demo. Run `npm run generate:
 
 After modifying any PRDs **or any file in `src/data/`**, run `npm run generate:embeddings` again to rebuild `client_embeddings.json`. Commit the updated file alongside your documentation changes so other agents have the latest vectors.
 
+- Both the generation script and the search page use **mean pooled** embeddings so the query vector matches the stored vectors.
+
 - Results appear below the form with up to five entries that show match score and source.
 - The page displays “Embeddings could not be loaded – please check console.” if loading fails, or “No close matches found” when nothing is returned.
 - Users can submit the form by pressing **Enter** in the search box.
