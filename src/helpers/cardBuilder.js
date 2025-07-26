@@ -175,13 +175,16 @@ function createInspectorPanel(container, judoka, sections) {
   // Only show the card's JSON data. The markup preview was removed to
   // keep the inspector output concise.
 
-  panel.addEventListener("toggle", () => {
+  function updateDataset() {
     if (panel.open) {
       container.dataset.inspector = "true";
     } else {
       container.removeAttribute("data-inspector");
     }
-  });
+  }
+
+  panel.addEventListener("toggle", updateDataset);
+  updateDataset();
 
   return panel;
 }
