@@ -4,6 +4,17 @@ import { applyMotionPreference } from "../motionUtils.js";
 import { updateNavigationItemHidden } from "../gameModeUtils.js";
 import { showSettingsError } from "../showSettingsError.js";
 
+/**
+ * Apply a value to an input or checkbox element.
+ *
+ * @pseudocode
+ * 1. Exit early when `element` is null or undefined.
+ * 2. For checkboxes, set the `checked` property based on `value`.
+ * 3. For other inputs, assign the `value` directly.
+ *
+ * @param {HTMLInputElement|HTMLSelectElement|null} element - Control to update.
+ * @param {*} value - Value to apply.
+ */
 function applyInputState(element, value) {
   if (!element) return;
   if (element.type === "checkbox") {
@@ -13,6 +24,15 @@ function applyInputState(element, value) {
   }
 }
 
+/**
+ * Initialize control states based on a settings object.
+ *
+ * @pseudocode
+ * 1. Call `applyInputState` for each setting-related control.
+ *
+ * @param {Object} controls - Collection of form elements.
+ * @param {import("../settingsUtils.js").Settings} settings - Current settings.
+ */
 export function applyInitialControlValues(controls, settings) {
   applyInputState(controls.soundToggle, settings.sound);
   applyInputState(controls.motionToggle, settings.motionEffects);
@@ -20,6 +40,18 @@ export function applyInitialControlValues(controls, settings) {
   applyInputState(controls.typewriterToggle, settings.typewriterEffect);
 }
 
+/**
+ * Attach change listeners that persist settings updates.
+ *
+ * @pseudocode
+ * 1. Listen for changes on each toggle or select element.
+ * 2. Use `handleUpdate` to persist the new value, reverting if it fails.
+ * 3. Apply side effects like `applyMotionPreference` and `applyDisplayMode`.
+ *
+ * @param {Object} controls - Form controls with DOM references.
+ * @param {Function} getCurrentSettings - Returns the latest settings object.
+ * @param {Function} handleUpdate - Persist function `(key,value,revert)=>void`.
+ */
 export function attachToggleListeners(controls, getCurrentSettings, handleUpdate) {
   const { soundToggle, motionToggle, displaySelect, typewriterToggle } = controls;
   soundToggle?.addEventListener("change", () => {
@@ -53,6 +85,19 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
   });
 }
 
+/**
+ * Render game mode toggle switches within the settings page.
+ *
+ * @pseudocode
+ * 1. Sort `gameModes` by `order` and create a toggle for each.
+ * 2. When toggled, update navigation visibility via `updateNavigationItemHidden`.
+ * 3. Persist the updated `gameModes` setting using `handleUpdate`.
+ *
+ * @param {HTMLElement} container - Target container for switches.
+ * @param {Array} gameModes - List of mode definitions.
+ * @param {Function} getCurrentSettings - Returns the current settings.
+ * @param {Function} handleUpdate - Persist function.
+ */
 export function renderGameModeSwitches(container, gameModes, getCurrentSettings, handleUpdate) {
   if (!container || !Array.isArray(gameModes)) return;
   const sortedModes = [...gameModes].sort((a, b) => a.order - b.order);
@@ -84,6 +129,18 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
   });
 }
 
+/**
+ * Render feature flag toggle switches.
+ *
+ * @pseudocode
+ * 1. For each flag, generate a labelled toggle switch element.
+ * 2. Persist updates via `handleUpdate` when toggled.
+ *
+ * @param {HTMLElement} container - Container for the switches.
+ * @param {Record<string, boolean>} flags - Feature flag defaults.
+ * @param {Function} getCurrentSettings - Returns current settings.
+ * @param {Function} handleUpdate - Persist function.
+ */
 export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, handleUpdate) {
   if (!container || !flags) return;
   Object.keys(flags).forEach((flag) => {
@@ -109,3 +166,5 @@ export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, 
     });
   });
 }
+
+export { applyInputState };
