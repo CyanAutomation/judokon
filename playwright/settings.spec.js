@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import fs from "fs";
 import {
   verifyPageBasics,
   NAV_CLASSIC_BATTLE,
@@ -21,8 +22,9 @@ test.describe("Settings page", () => {
   });
 
   test("mode toggle visible", async ({ page }) => {
-    await page.getByLabel(/Classic Battle/i).waitFor({ state: "attached" });
-    await expect(page.getByText(/Classic Battle/i)).toBeVisible();
+    const toggle = page.getByLabel(/Classic Battle/i);
+    await toggle.waitFor({ state: "attached" });
+    await expect(toggle).toBeVisible();
   });
 
   test("essential elements visible", async ({ page }) => {
@@ -36,15 +38,14 @@ test.describe("Settings page", () => {
   test("controls expose correct labels and follow tab order", async ({ page }) => {
     await page.getByLabel(/Classic Battle/i).waitFor({ state: "attached" });
 
-    const navigationItems = await page.evaluate(async () => {
-      const res = await fetch("/tests/fixtures/navigationItems.json");
-      return res.json();
-    });
+    const navItems = JSON.parse(fs.readFileSync("tests/fixtures/navigationItems.json", "utf8"));
+    const gameModes = JSON.parse(fs.readFileSync("tests/fixtures/gameModes.json", "utf8"));
 
-    const sortedNames = navigationItems
+    const sortedNames = navItems
       .slice()
       .sort((a, b) => a.order - b.order)
-      .map((m) => m.name);
+      .map((item) => gameModes.find((m) => m.id === item.gameModeId)?.name)
+      .filter(Boolean);
 
     const expectedLabels = [
       "Display Mode",
