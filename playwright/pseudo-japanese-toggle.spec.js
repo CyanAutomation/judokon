@@ -22,6 +22,9 @@ test.describe("Pseudo-Japanese toggle", () => {
     await page.route("**/src/data/aesopsMeta.json", (route) =>
       route.fulfill({ path: META_FIXTURE })
     );
+    await page.addInitScript(() =>
+      localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }))
+    );
     await page.goto("/src/pages/meditation.html");
     await page.waitForSelector("#quote .quote-content");
   });
