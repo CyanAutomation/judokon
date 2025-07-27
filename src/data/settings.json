@@ -1,7 +1,7 @@
 {
   "sound": true,
   "motionEffects": true,
-  "typewriterEffect": true,
+  "typewriterEffect": false,
   "displayMode": "light",
   "gameModes": {},
   "featureFlags": {
