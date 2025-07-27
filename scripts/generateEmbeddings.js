@@ -4,7 +4,8 @@
  *
  * @pseudocode
  * 1. Discover markdown and JSON files using glob, excluding any existing
- *    `client_embeddings.json` file.
+ *    `client_embeddings.json` file and the large `aesopsFables.json`
+ *    dataset to keep the output size manageable.
  * 2. Read file contents and slice into overlapping chunks using CHUNK_SIZE and
  *    OVERLAP.
  * 3. Load a transformer model for feature extraction.
@@ -33,7 +34,9 @@ async function getFiles() {
   const guidelineFiles = await glob("design/codeStandards/*.md", { cwd: rootDir });
   const workflowFiles = await glob("design/agentWorkflows/*.md", { cwd: rootDir });
   const jsonFiles = (await glob("src/data/*.json", { cwd: rootDir })).filter(
-    (f) => path.extname(f) === ".json" && path.basename(f) !== "client_embeddings.json"
+    (f) =>
+      path.extname(f) === ".json" &&
+      !["client_embeddings.json", "aesopsFables.json", "aesopsMeta.json"].includes(path.basename(f))
   );
   return [...prdFiles, ...guidelineFiles, ...workflowFiles, ...jsonFiles];
 }
