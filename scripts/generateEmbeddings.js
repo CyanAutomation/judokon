@@ -23,7 +23,9 @@ import { pipeline } from "@xenova/transformers";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 
-const CHUNK_SIZE = 1000;
+// Larger chunks reduce the total embedding count and help keep the
+// final JSON under the 3MB limit.
+const CHUNK_SIZE = 1500;
 const OVERLAP = 200;
 const MAX_OUTPUT_SIZE = 3 * 1024 * 1024;
 
