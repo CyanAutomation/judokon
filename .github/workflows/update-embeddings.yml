@@ -1,0 +1,99 @@
+name: Update Embeddings
+
+on:
+  schedule:
+    - cron: "15 3 * * *"  # Runs daily at 03:15 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate_embeddings:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run embedding generator
+        run: npm run generate:embeddings
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git add src/data/client_embeddings.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected."
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get current date
+        if: steps.git-check.outputs.changed == 'true'
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Fetch Today in History
+        if: steps.git-check.outputs.changed == 'true'
+        id: today
+        run: |
+          RESPONSE=$(curl -fsL https://history.muffinlabs.com/date)
+          if [ $? -ne 0 ]; then
+            echo "fact=Could not fetch today’s fact. 📭" >> $GITHUB_OUTPUT
+          else
+            COUNT=$(echo "$RESPONSE" | jq '.data.Events | length')
+            if [ "$COUNT" -gt 0 ]; then
+              INDEX=$(( RANDOM % COUNT ))
+              FACT=$(echo "$RESPONSE" | jq -r ".data.Events[$INDEX] | \"\(.year): \(.text)\"")
+              echo "fact=$FACT" >> $GITHUB_OUTPUT
+            else
+              echo "fact=No historical fact available today. 🧐" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Fetch Weather
+        if: steps.git-check.outputs.changed == 'true'
+        id: weather
+        run: |
+          CITY="Wokingham"
+          WEATHER=$(curl -s "wttr.in/$CITY?format=%t+%c&m" || echo "")
+          if [ -n "$WEATHER" ]; then
+            echo "weather=$WEATHER in $CITY" >> $GITHUB_OUTPUT
+          else
+            echo "weather=Weather not available, but the vectors are strong! 💪" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.git-check.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "PR: Update vector embeddings"
+          title: "PR: Updated client_embeddings.json - ${{ env.date }}"
+          body: |
+            ✅ **Embeddings Updated**
+            This PR contains an updated version of `client_embeddings.json` using the nightly embedding pipeline.
+
+            📚 **Today in History**
+            ${{ steps.today.outputs.fact }}
+
+            🌤️ **Weather Report**
+            ${{ steps.weather.outputs.weather }}
+
+            🤖 Triggered by: nightly schedule or manual dispatch
+          branch: "auto/update-embeddings"
+          labels: |
+            automated
+            embeddings
+          assignees: ${{ github.actor }}
