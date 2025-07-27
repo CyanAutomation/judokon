@@ -3,12 +3,15 @@
  * Generate embeddings for PRD markdown and JSON data files.
  *
  * @pseudocode
- * 1. Discover markdown and JSON files using glob.
- * 2. Read file contents and slice into overlapping chunks using CHUNK_SIZE and OVERLAP.
+ * 1. Discover markdown and JSON files using glob, excluding any existing
+ *    `client_embeddings.json` file.
+ * 2. Read file contents and slice into overlapping chunks using CHUNK_SIZE and
+ *    OVERLAP.
  * 3. Load a transformer model for feature extraction.
  * 4. Encode each chunk into a mean-pooled embedding vector.
  * 5. Build output objects with id, text, embedding, source, tags, and version.
- * 6. Ensure the final JSON output is under MAX_OUTPUT_SIZE (3MB), pretty-print it, and write to disk.
+ * 6. Ensure the final JSON output is under MAX_OUTPUT_SIZE (3MB), pretty-print
+ *    it, and write to disk.
  */
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -30,7 +33,7 @@ async function getFiles() {
   const guidelineFiles = await glob("design/codeStandards/*.md", { cwd: rootDir });
   const workflowFiles = await glob("design/agentWorkflows/*.md", { cwd: rootDir });
   const jsonFiles = (await glob("src/data/*.json", { cwd: rootDir })).filter(
-    (f) => path.extname(f) === ".json"
+    (f) => path.extname(f) === ".json" && path.basename(f) !== "client_embeddings.json"
   );
   return [...prdFiles, ...guidelineFiles, ...workflowFiles, ...jsonFiles];
 }
