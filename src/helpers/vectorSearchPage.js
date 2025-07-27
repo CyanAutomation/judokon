@@ -6,6 +6,8 @@ import { findMatches } from "./vectorSearch.js";
 let extractor;
 let spinner;
 
+const SIMILARITY_THRESHOLD = 0.6;
+
 /**
  * Load the MiniLM feature extractor on first use.
  *
@@ -44,9 +46,11 @@ async function getExtractor() {
  * 3. Show the spinner and a searching message.
  * 4. Obtain the extractor and generate the query vector using mean pooling.
  * 5. Use `findMatches` to fetch the top results for the vector.
- * 6. Hide the spinner and handle empty or missing embeddings cases.
- * 7. Build an ordered list of matches and append it to the results element.
- * 8. On error, log the issue, hide the spinner, and display a fallback message.
+ * 6. Split matches by `SIMILARITY_THRESHOLD` into strong and weak groups.
+ * 7. Hide the spinner and handle empty or missing embeddings cases.
+ * 8. Build an ordered list. When no strong matches exist, show a warning and
+ *    display up to three weak matches.
+ * 9. On error, log the issue, hide the spinner, and display a fallback message.
  *
  * @param {Event} event - The submit event from the form.
  */
@@ -73,8 +77,21 @@ async function handleSearch(event) {
       resultsEl.textContent = "No close matches found — refine your query.";
       return;
     }
+
+    const strongMatches = matches.filter((m) => m.score >= SIMILARITY_THRESHOLD);
+    const weakMatches = matches.filter((m) => m.score < SIMILARITY_THRESHOLD);
+
     const list = document.createElement("ol");
-    for (const match of matches) {
+    const toRender = strongMatches.length > 0 ? strongMatches : weakMatches.slice(0, 3);
+
+    if (strongMatches.length === 0) {
+      const warning = document.createElement("p");
+      warning.textContent =
+        "\u26A0\uFE0F No strong matches found, but here are the closest matches based on similarity.";
+      resultsEl.appendChild(warning);
+    }
+
+    for (const match of toRender) {
       const li = document.createElement("li");
       li.innerHTML = `<p>${match.text}</p><p class="small-text">Source: ${match.source} (score: ${match.score.toFixed(2)})</p>`;
       list.appendChild(li);

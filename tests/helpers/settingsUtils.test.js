@@ -49,7 +49,8 @@ describe("settings utils", () => {
         battleDebugPanel: false,
         fullNavigationMap: true,
         enableTestMode: false,
-        enableCardInspector: false
+        enableCardInspector: false,
+        enableLowConfidenceResults: false
       }
     });
   });
@@ -70,7 +71,8 @@ describe("settings utils", () => {
         battleDebugPanel: false,
         fullNavigationMap: true,
         enableTestMode: false,
-        enableCardInspector: false
+        enableCardInspector: false,
+        enableLowConfidenceResults: false
       }
     };
     const promise = saveSettings(data);
@@ -104,7 +106,8 @@ describe("settings utils", () => {
         battleDebugPanel: false,
         fullNavigationMap: true,
         enableTestMode: false,
-        enableCardInspector: false
+        enableCardInspector: false,
+        enableLowConfidenceResults: false
       }
     });
     Storage.prototype.getItem = originalGetItem;
@@ -153,7 +156,8 @@ describe("settings utils", () => {
           battleDebugPanel: false,
           fullNavigationMap: true,
           enableTestMode: false,
-          enableCardInspector: false
+          enableCardInspector: false,
+          enableLowConfidenceResults: false
         }
       })
     ).rejects.toThrow("fail");
@@ -191,7 +195,8 @@ describe("settings utils", () => {
         battleDebugPanel: false,
         fullNavigationMap: false,
         enableTestMode: false,
-        enableCardInspector: false
+        enableCardInspector: false,
+        enableLowConfidenceResults: false
       }
     };
     const data2 = {
@@ -204,7 +209,8 @@ describe("settings utils", () => {
         battleDebugPanel: false,
         fullNavigationMap: true,
         enableTestMode: false,
-        enableCardInspector: false
+        enableCardInspector: false,
+        enableLowConfidenceResults: false
       }
     };
     saveSettings(data1);

@@ -36,7 +36,8 @@ const DEFAULT_SETTINGS = {
     battleDebugPanel: false,
     fullNavigationMap: true,
     enableTestMode: false,
-    enableCardInspector: false
+    enableCardInspector: false,
+    enableLowConfidenceResults: false
   }
 };
 export { DEFAULT_SETTINGS };
