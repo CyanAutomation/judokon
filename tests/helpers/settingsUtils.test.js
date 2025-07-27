@@ -64,12 +64,12 @@ describe("settings utils", () => {
     const data = {
       sound: false,
       motionEffects: true,
-      typewriterEffect: true,
+      typewriterEffect: false,
       displayMode: "dark",
       gameModes: {},
       featureFlags: {
         battleDebugPanel: false,
-        fullNavigationMap: true,
+        fullNavigationMap: false,
         enableTestMode: false,
         enableCardInspector: false,
         enableLowConfidenceResults: false
@@ -99,12 +99,12 @@ describe("settings utils", () => {
     expect(settings).toEqual({
       sound: false,
       motionEffects: true,
-      typewriterEffect: true,
+      typewriterEffect: false,
       displayMode: "light",
       gameModes: {},
       featureFlags: {
         battleDebugPanel: false,
-        fullNavigationMap: true,
+        fullNavigationMap: false,
         enableTestMode: false,
         enableCardInspector: false,
         enableLowConfidenceResults: false
@@ -149,12 +149,12 @@ describe("settings utils", () => {
       saveSettings({
         sound: true,
         motionEffects: true,
-        typewriterEffect: true,
+        typewriterEffect: false,
         displayMode: "light",
         gameModes: {},
         featureFlags: {
           battleDebugPanel: false,
-          fullNavigationMap: true,
+          fullNavigationMap: false,
           enableTestMode: false,
           enableCardInspector: false,
           enableLowConfidenceResults: false
@@ -188,7 +188,7 @@ describe("settings utils", () => {
     const data1 = {
       sound: true,
       motionEffects: true,
-      typewriterEffect: true,
+      typewriterEffect: false,
       displayMode: "light",
       gameModes: {},
       featureFlags: {
@@ -202,12 +202,12 @@ describe("settings utils", () => {
     const data2 = {
       sound: false,
       motionEffects: false,
-      typewriterEffect: true,
+      typewriterEffect: false,
       displayMode: "dark",
       gameModes: {},
       featureFlags: {
         battleDebugPanel: false,
-        fullNavigationMap: true,
+        fullNavigationMap: false,
         enableTestMode: false,
         enableCardInspector: false,
         enableLowConfidenceResults: false
