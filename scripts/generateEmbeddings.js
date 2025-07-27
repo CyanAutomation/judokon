@@ -4,9 +4,9 @@
  *
  * @pseudocode
  * 1. Discover markdown and JSON files using glob.
- * 2. Read file contents and truncate long text.
+ * 2. Read file contents and slice into overlapping chunks using CHUNK_SIZE and OVERLAP.
  * 3. Load a transformer model for feature extraction.
- * 4. Encode each text block into a mean-pooled embedding vector.
+ * 4. Encode each chunk into a mean-pooled embedding vector.
  * 5. Build output objects with id, text, embedding, source, tags, and version.
  * 6. Ensure the final JSON output is under MAX_OUTPUT_SIZE (3MB), pretty-print it, and write to disk.
  */
@@ -19,7 +19,8 @@ import { pipeline } from "@xenova/transformers";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 
-const MAX_TEXT_LENGTH = 1000;
+const CHUNK_SIZE = 1000;
+const OVERLAP = 200;
 const MAX_OUTPUT_SIZE = 3 * 1024 * 1024;
 
 async function getFiles() {
@@ -49,16 +50,19 @@ async function generate() {
     if (relativePath.endsWith(".json")) {
       text = JSON.stringify(JSON.parse(text));
     }
-    text = text.slice(0, MAX_TEXT_LENGTH);
-    const embedding = Array.from(await extractor(text, { pooling: "mean" }));
-    output.push({
-      id: path.basename(relativePath),
-      text,
-      embedding,
-      source: relativePath,
-      tags: [relativePath.endsWith(".json") ? "data" : "prd"],
-      version: 1
-    });
+    const base = path.basename(relativePath);
+    const tags = [relativePath.endsWith(".json") ? "data" : "prd"];
+    for (let start = 0, index = 0; start < text.length; start += CHUNK_SIZE - OVERLAP, index++) {
+      const chunkText = text.slice(start, start + CHUNK_SIZE);
+      output.push({
+        id: `${base}-chunk-${index + 1}`,
+        text: chunkText,
+        embedding: Array.from(await extractor(chunkText, { pooling: "mean" })),
+        source: `${relativePath} [chunk ${index + 1}]`,
+        tags,
+        version: 1
+      });
+    }
   }
 
   const jsonString = JSON.stringify(output, null, 2);

@@ -10,3 +10,4 @@ design/productRequirementsDocuments/*.md
 design/codeStandards/*.md
 README.md
 src/data/navigationItems.json
+src/data/client_embeddings.json
