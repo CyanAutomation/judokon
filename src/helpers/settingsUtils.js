@@ -29,12 +29,12 @@ const SETTINGS_KEY = "settings";
 const DEFAULT_SETTINGS = {
   sound: false,
   motionEffects: true,
-  typewriterEffect: true,
+  typewriterEffect: false,
   displayMode: "light",
   gameModes: {},
   featureFlags: {
     battleDebugPanel: false,
-    fullNavigationMap: true,
+    fullNavigationMap: false,
     enableTestMode: false,
     enableCardInspector: false,
     enableLowConfidenceResults: false
