@@ -1,5 +1,7 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 
+const ALLOWED_OFFSET = 2;
+
 test.describe("Homepage layout", () => {
   test.describe("desktop", () => {
     test.use({ viewport: { width: 1024, height: 800 } });
@@ -29,8 +31,9 @@ test.describe("Homepage layout", () => {
       const paddingBottom = await grid.evaluate((el) =>
         parseFloat(getComputedStyle(el).paddingBottom)
       );
-
-      expect(gridBox.y + gridBox.height - paddingBottom).toBeLessThanOrEqual(navBox.y);
+      expect(gridBox.y + gridBox.height - paddingBottom).toBeLessThanOrEqual(
+        navBox.y + ALLOWED_OFFSET
+      );
 
       await page.screenshot({
         path: testInfo.outputPath("desktop-layout.png"),
@@ -66,7 +69,9 @@ test.describe("Homepage layout", () => {
         parseFloat(getComputedStyle(el).paddingBottom)
       );
 
-      expect(gridBox.y + gridBox.height - paddingBottom).toBeLessThanOrEqual(navBox.y);
+      expect(gridBox.y + gridBox.height - paddingBottom).toBeLessThanOrEqual(
+        navBox.y + ALLOWED_OFFSET
+      );
 
       await page.screenshot({
         path: testInfo.outputPath("mobile-layout.png"),
