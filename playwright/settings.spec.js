@@ -1,5 +1,6 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import fs from "fs";
+import { DEFAULT_SETTINGS } from "../src/helpers/settingsUtils.js";
 import {
   verifyPageBasics,
   NAV_CLASSIC_BATTLE,
@@ -47,6 +48,10 @@ test.describe("Settings page", () => {
       .map((item) => gameModes.find((m) => m.id === item.gameModeId)?.name)
       .filter(Boolean);
 
+    const flagLabels = Object.keys(DEFAULT_SETTINGS.featureFlags).map((f) =>
+      f.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase())
+    );
+
     const expectedLabels = [
       "Light",
       "Dark",
@@ -54,7 +59,8 @@ test.describe("Settings page", () => {
       "Sound",
       "Motion Effects",
       "Typewriter Effect",
-      ...sortedNames
+      ...sortedNames,
+      ...flagLabels
     ];
 
     await expect(page.locator("#sound-toggle")).toHaveAttribute("aria-label", "Sound");
@@ -70,6 +76,10 @@ test.describe("Settings page", () => {
 
     for (const name of sortedNames) {
       await expect(page.getByLabel(name, { exact: true })).toHaveAttribute("aria-label", name);
+    }
+
+    for (const label of flagLabels) {
+      await expect(page.getByLabel(label, { exact: true })).toHaveAttribute("aria-label", label);
     }
 
     await page.focus("#display-mode-light");
