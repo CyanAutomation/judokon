@@ -12,7 +12,6 @@ test.describe("Settings page", () => {
     );
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
     await page.getByLabel(/Classic Battle/i).waitFor({ state: "attached" });
-    await page.locator("#display-settings-toggle").click();
     await page.locator("#general-settings-toggle").click();
     await page.locator("#game-modes-toggle").click();
   });

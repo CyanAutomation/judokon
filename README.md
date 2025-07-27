@@ -109,7 +109,7 @@ A `Test timeout ... waiting for locator('#general-settings-toggle')` error usual
 
 - **Node 18+** is installed.
 - Port **5000** is free; the tests start `scripts/playwrightServer.js` automatically.
-- Visiting `http://localhost:5000/src/pages/settings.html` shows the toggles (`#display-settings-toggle`, `#general-settings-toggle`, `#game-modes-toggle`).
+- Visiting `http://localhost:5000/src/pages/settings.html` shows the Display Settings section followed by the toggles (`#general-settings-toggle`, `#game-modes-toggle`).
 - Running tests with `PWDEBUG=1` helps inspect the page when a timeout occurs.
 - `strict mode violation: getByLabel('text') resolved to multiple elements`
   indicates the locator is too generic. Use `getByLabel(text, { exact: true })`
