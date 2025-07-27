@@ -12,7 +12,8 @@ const baseSettings = {
     battleDebugPanel: false,
     fullNavigationMap: true,
     enableTestMode: false,
-    enableCardInspector: false
+    enableCardInspector: false,
+    enableLowConfidenceResults: false
   }
 };
 
@@ -209,7 +210,8 @@ describe("settingsPage module", () => {
       battleDebugPanel: true,
       fullNavigationMap: true,
       enableTestMode: false,
-      enableCardInspector: false
+      enableCardInspector: false,
+      enableLowConfidenceResults: false
     });
   });
 });
