@@ -66,7 +66,7 @@ async function generate() {
       output.push({
         id: `${base}-chunk-${index + 1}`,
         text: chunkText,
-        embedding: Array.from(result.data),
+        embedding: Array.from(result.data ?? result),
         source: `${relativePath} [chunk ${index + 1}]`,
         tags,
         version: 1
