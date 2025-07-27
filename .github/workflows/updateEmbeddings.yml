@@ -76,7 +76,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "PR: Update vector embeddings"
+          commit-message: "PR: Update vector database embeddings"
           title: "PR: Updated Vector Database - ${{ env.date }}"
           body: |
             ✅ **Embeddings Updated**
@@ -89,10 +89,10 @@ jobs:
             _${{ steps.quote.outputs.quote }}_
 
             🤖 Triggered by: nightly schedule or manual dispatch
-          branch: "auto/update-embeddings"
+          branch: "auto/update-vector-db"
           labels: |
             automated
             backend
-            embeddings
+            vector
           assignees: ${{ github.actor }}
           
