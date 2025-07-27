@@ -44,7 +44,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 | P3       | Test Mode Feature Flag | Enables deterministic battles for automated testing. |
 | P1       | Motion Effects Toggle      | Binary toggle updating `settings.json` live on change.                      |
 | P1       | Typewriter Effect Toggle   | Enable or disable quote animation on the meditation screen. |
-| P1       | Display Mode Selector      | Three-option selector applying mode instantly across UI.                    |
+| P1       | Display Mode Switch        | Three-option switch applying mode instantly across UI.                    |
 | P2       | Game Modes Toggles         | A list of all defined game modes with binary toggles from `navigationItems.json`. |
 | P3       | Settings Menu Integration  | Ensure settings appear as a game mode in `navigationItems.json`.                  |
 | P3       | Change Log Link           | Link to `changeLog.html` for viewing recent judoka updates.                 |
@@ -119,7 +119,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 
 - AC-4.1 Disabling the toggle prevents the quote typewriter animation on the meditation screen.
 - AC-4.2 Setting is stored in `settings.json` within 50ms of change.
-### Display Mode Selector
+### Display Mode Switch
 
 - AC-5.1 Selecting a new display mode (light/dark/gray) applies changes instantly across all relevant UI components.
 - AC-4.2 Selected mode persists through a page refresh within the same session.

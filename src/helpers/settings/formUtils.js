@@ -16,12 +16,16 @@ function applyInputState(element, value) {
 export function applyInitialControlValues(controls, settings) {
   applyInputState(controls.soundToggle, settings.sound);
   applyInputState(controls.motionToggle, settings.motionEffects);
-  applyInputState(controls.displaySelect, settings.displayMode);
+  if (controls.displayRadios) {
+    controls.displayRadios.forEach((radio) => {
+      radio.checked = radio.value === settings.displayMode;
+    });
+  }
   applyInputState(controls.typewriterToggle, settings.typewriterEffect);
 }
 
 export function attachToggleListeners(controls, getCurrentSettings, handleUpdate) {
-  const { soundToggle, motionToggle, displaySelect, typewriterToggle } = controls;
+  const { soundToggle, motionToggle, displayRadios, typewriterToggle } = controls;
   soundToggle?.addEventListener("change", () => {
     const prev = !soundToggle.checked;
     handleUpdate("sound", soundToggle.checked, () => {
@@ -36,15 +40,21 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
       applyMotionPreference(prev);
     });
   });
-  displaySelect?.addEventListener("change", () => {
-    const previous = getCurrentSettings().displayMode;
-    const mode = displaySelect.value;
-    applyDisplayMode(mode);
-    handleUpdate("displayMode", mode, () => {
-      displaySelect.value = previous;
-      applyDisplayMode(previous);
+  if (displayRadios) {
+    displayRadios.forEach((radio) => {
+      radio.addEventListener("change", () => {
+        if (!radio.checked) return;
+        const previous = getCurrentSettings().displayMode;
+        const mode = radio.value;
+        applyDisplayMode(mode);
+        handleUpdate("displayMode", mode, () => {
+          const prevRadio = Array.from(displayRadios).find((r) => r.value === previous);
+          if (prevRadio) prevRadio.checked = true;
+          applyDisplayMode(previous);
+        });
+      });
     });
-  });
+  }
   typewriterToggle?.addEventListener("change", () => {
     const prev = !typewriterToggle.checked;
     handleUpdate("typewriterEffect", typewriterToggle.checked, () => {
