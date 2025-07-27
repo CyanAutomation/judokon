@@ -290,6 +290,9 @@ After modifying any PRDs, **any file in `src/data/`**, or docs under
 the updated file alongside your documentation changes so other agents have the
 latest vectors.
 
+The generator skips the large `aesopsFables.json` quote dataset to keep the
+output file under the 3MB limit defined in the PRD.
+
 - Both the generation script and the search page use **mean pooled** embeddings so the query vector matches the stored vectors.
 
 - Results appear below the form with up to five entries that show match score and source.
