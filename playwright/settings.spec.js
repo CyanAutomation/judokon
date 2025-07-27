@@ -36,12 +36,23 @@ test.describe("Settings page", () => {
   test("controls expose correct labels and follow tab order", async ({ page }) => {
     await page.getByLabel(/Classic Battle/i).waitFor({ state: "attached" });
 
-    const navigationItems = await page.evaluate(async () => {
-      const res = await fetch("/tests/fixtures/navigationItems.json");
-      return res.json();
+    const { navigationItems, gameModes } = await page.evaluate(async () => {
+      const [navRes, modeRes] = await Promise.all([
+        fetch("/tests/fixtures/navigationItems.json"),
+        fetch("/tests/fixtures/gameModes.json")
+      ]);
+      return {
+        navigationItems: await navRes.json(),
+        gameModes: await modeRes.json()
+      };
     });
 
-    const sortedNames = navigationItems
+    const merged = navigationItems.map((nav) => ({
+      ...nav,
+      name: gameModes.find((m) => m.id === nav.gameModeId)?.name || ""
+    }));
+
+    const sortedNames = merged
       .slice()
       .sort((a, b) => a.order - b.order)
       .map((m) => m.name);
