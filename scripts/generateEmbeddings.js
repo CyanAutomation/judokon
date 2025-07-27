@@ -54,10 +54,11 @@ async function generate() {
     const tags = [relativePath.endsWith(".json") ? "data" : "prd"];
     for (let start = 0, index = 0; start < text.length; start += CHUNK_SIZE - OVERLAP, index++) {
       const chunkText = text.slice(start, start + CHUNK_SIZE);
+      const result = await extractor(chunkText, { pooling: "mean" });
       output.push({
         id: `${base}-chunk-${index + 1}`,
         text: chunkText,
-        embedding: Array.from(await extractor(chunkText, { pooling: "mean" })),
+        embedding: Array.from(result.data),
         source: `${relativePath} [chunk ${index + 1}]`,
         tags,
         version: 1
