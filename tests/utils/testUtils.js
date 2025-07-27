@@ -59,13 +59,16 @@ export function createSettingsDom() {
   const featureFlagsContainer = document.createElement("section");
   featureFlagsContainer.id = "feature-flags-container";
   featureFlagsContainer.className = "game-mode-toggle-container settings-form";
+  const resetButton = document.createElement("button");
+  resetButton.id = "reset-settings-button";
   fragment.append(
     soundToggle,
     motionToggle,
     typewriterToggle,
     displayModeSelect,
     gameModeToggleContainer,
-    featureFlagsContainer
+    featureFlagsContainer,
+    resetButton
   );
   return fragment;
 }

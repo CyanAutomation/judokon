@@ -214,4 +214,54 @@ describe("settingsPage module", () => {
       enableLowConfidenceResults: false
     });
   });
+
+  it("clicking restore defaults resets controls", async () => {
+    vi.useFakeTimers();
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updateSetting = vi.fn().mockResolvedValue(baseSettings);
+    const resetSettings = vi.fn().mockReturnValue(baseSettings);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
+    const applyDisplayMode = vi.fn();
+    const applyMotionPreference = vi.fn();
+    const applyInitialControlValues = vi.fn();
+    const attachToggleListeners = vi.fn();
+    const renderGameModeSwitches = vi.fn();
+    const renderFeatureFlagSwitches = vi.fn();
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting,
+      resetSettings,
+      DEFAULT_SETTINGS: baseSettings
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
+      updateNavigationItemHidden: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/displayMode.js", () => ({ applyDisplayMode }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+    vi.doMock("../../src/helpers/settings/index.js", () => ({
+      applyInitialControlValues,
+      attachToggleListeners,
+      renderGameModeSwitches,
+      renderFeatureFlagSwitches,
+      setupSectionToggles: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips: vi.fn() }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const btn = document.getElementById("reset-settings-button");
+    btn.dispatchEvent(new Event("click"));
+
+    expect(resetSettings).toHaveBeenCalled();
+    expect(applyInitialControlValues).toHaveBeenCalledTimes(2);
+    expect(renderGameModeSwitches).toHaveBeenCalledTimes(2);
+    expect(renderFeatureFlagSwitches).toHaveBeenCalledTimes(2);
+    expect(applyDisplayMode).toHaveBeenLastCalledWith(baseSettings.displayMode);
+    expect(applyMotionPreference).toHaveBeenLastCalledWith(baseSettings.motionEffects);
+    vi.useRealTimers();
+  });
 });

@@ -67,6 +67,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - **Change Log:** Link opens `changeLog.html` with the latest 20 judoka updates.
 - **PRD Viewer:** Link opens `prdViewer.html` for browsing product documents.
 - **Mockup Viewer:** Link opens `mockupViewer.html` for viewing design mockups.
+- **Restore Defaults:** Button clears stored settings and reapplies defaults.
 
 ---
 
