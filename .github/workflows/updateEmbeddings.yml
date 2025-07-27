@@ -95,5 +95,5 @@ jobs:
           branch: "auto/update-embeddings"
           labels: |
             automated
-            embeddings
+            backend
           assignees: ${{ github.actor }}
