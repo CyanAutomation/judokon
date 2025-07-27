@@ -218,4 +218,12 @@ describe("settings utils", () => {
     await vi.advanceTimersByTimeAsync(110);
     expect(JSON.parse(localStorage.getItem("settings"))).toEqual(data2);
   });
+
+  it("resets settings to defaults", async () => {
+    localStorage.setItem("settings", JSON.stringify({ sound: true }));
+    const { resetSettings } = await import("../../src/helpers/settingsUtils.js");
+    const result = resetSettings();
+    expect(result).toEqual(DEFAULT_SETTINGS);
+    expect(JSON.parse(localStorage.getItem("settings"))).toEqual(DEFAULT_SETTINGS);
+  });
 });

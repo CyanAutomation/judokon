@@ -146,6 +146,28 @@ export async function updateSetting(key, value) {
 }
 
 /**
+ * Reset all settings to their default values.
+ *
+ * @pseudocode
+ * 1. Overwrite the `SETTINGS_KEY` entry in `localStorage` with `DEFAULT_SETTINGS`.
+ * 2. Ignore errors if `localStorage` is unavailable or write fails.
+ * 3. Return a new copy of `DEFAULT_SETTINGS`.
+ *
+ * @returns {Settings} The default settings object.
+ */
+export function resetSettings() {
+  try {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(DEFAULT_SETTINGS));
+    }
+  } catch (err) {
+    // For PRD: error popup handled in UI
+    console.error("Failed to reset settings", err);
+  }
+  return { ...DEFAULT_SETTINGS };
+}
+
+/**
  * @typedef {Object} Settings
  * @property {boolean} sound
  * @property {boolean} motionEffects

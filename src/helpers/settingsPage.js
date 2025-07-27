@@ -6,7 +6,7 @@
  * 2. Apply the stored display mode and motion preference.
  * 3. Initialize the page controls and event listeners.
  */
-import { loadSettings, updateSetting } from "./settingsUtils.js";
+import { loadSettings, updateSetting, resetSettings } from "./settingsUtils.js";
 import { loadNavigationItems } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
 import { applyDisplayMode } from "./displayMode.js";
@@ -46,6 +46,7 @@ function initializeControls(settings, gameModes) {
   const modesContainer = document.getElementById("game-mode-toggle-container");
   const flagsContainer = document.getElementById("feature-flags-container");
   const errorPopup = document.getElementById("settings-error-popup");
+  const resetButton = document.getElementById("reset-settings-button");
 
   const getCurrentSettings = () => currentSettings;
 
@@ -72,6 +73,10 @@ function initializeControls(settings, gameModes) {
       });
   }
 
+  function clearToggles(container) {
+    container.querySelectorAll(".settings-item").forEach((el) => el.remove());
+  }
+
   applyInitialControlValues(controls, currentSettings);
   attachToggleListeners(controls, getCurrentSettings, handleUpdate);
   renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
@@ -81,6 +86,22 @@ function initializeControls(settings, gameModes) {
     getCurrentSettings,
     handleUpdate
   );
+
+  resetButton?.addEventListener("click", () => {
+    currentSettings = resetSettings();
+    applyInitialControlValues(controls, currentSettings);
+    applyDisplayMode(currentSettings.displayMode);
+    applyMotionPreference(currentSettings.motionEffects);
+    clearToggles(modesContainer);
+    renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
+    clearToggles(flagsContainer);
+    renderFeatureFlagSwitches(
+      flagsContainer,
+      currentSettings.featureFlags,
+      getCurrentSettings,
+      handleUpdate
+    );
+  });
 }
 
 async function initializeSettingsPage() {
