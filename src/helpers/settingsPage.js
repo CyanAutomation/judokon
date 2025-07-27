@@ -40,7 +40,7 @@ function initializeControls(settings, gameModes) {
   const controls = {
     soundToggle: document.getElementById("sound-toggle"),
     motionToggle: document.getElementById("motion-toggle"),
-    displaySelect: document.getElementById("display-mode-select"),
+    displayRadios: document.querySelectorAll('input[name="display-mode"]'),
     typewriterToggle: document.getElementById("typewriter-toggle")
   };
   const modesContainer = document.getElementById("game-mode-toggle-container");

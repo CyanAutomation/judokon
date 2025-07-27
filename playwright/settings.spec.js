@@ -32,7 +32,7 @@ test.describe("Settings page", () => {
     await expect(page.getByText(/sound/i)).toBeVisible();
     await expect(page.getByText(/motion effects/i)).toBeVisible();
     await expect(page.getByText(/typewriter effect/i)).toBeVisible();
-    await expect(page.getByLabel(/display mode/i)).toBeVisible();
+    await expect(page.getByRole("radiogroup", { name: /display mode/i })).toBeVisible();
   });
 
   test("controls expose correct labels and follow tab order", async ({ page }) => {
@@ -48,7 +48,9 @@ test.describe("Settings page", () => {
       .filter(Boolean);
 
     const expectedLabels = [
-      "Display Mode",
+      "Light",
+      "Dark",
+      "Gray",
       "Sound",
       "Motion Effects",
       "Typewriter Effect",
@@ -70,7 +72,7 @@ test.describe("Settings page", () => {
       await expect(page.getByLabel(name, { exact: true })).toHaveAttribute("aria-label", name);
     }
 
-    await page.focus("#display-mode-select");
+    await page.focus("#display-mode-light");
 
     const activeLabels = [];
     for (let i = 0; i < expectedLabels.length; i++) {

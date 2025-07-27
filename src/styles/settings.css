@@ -171,3 +171,10 @@
   padding-block-start: var(--space-sm);
   transition: height var(--transition-fast);
 }
+
+/* Display mode radio group */
+.display-mode-group {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}

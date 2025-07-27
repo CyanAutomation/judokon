@@ -63,13 +63,35 @@
             class="game-mode-toggle-container settings-form"
           >
             <legend>Display Settings</legend>
-            <div class="settings-item">
-              <!-- <label for="display-mode-select">Display Mode</label> -->
-              <select id="display-mode-select" aria-label="Display Mode" tabindex="1">
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-                <option value="gray">Gray</option>
-              </select>
+            <div
+              class="settings-item display-mode-group"
+              role="radiogroup"
+              aria-label="Display Mode"
+            >
+              <input
+                type="radio"
+                id="display-mode-light"
+                name="display-mode"
+                value="light"
+                tabindex="1"
+              />
+              <label for="display-mode-light">Light</label>
+              <input
+                type="radio"
+                id="display-mode-dark"
+                name="display-mode"
+                value="dark"
+                tabindex="1"
+              />
+              <label for="display-mode-dark">Dark</label>
+              <input
+                type="radio"
+                id="display-mode-gray"
+                name="display-mode"
+                value="gray"
+                tabindex="1"
+              />
+              <label for="display-mode-gray">Gray</label>
             </div>
           </fieldset>
           <!-- </div>

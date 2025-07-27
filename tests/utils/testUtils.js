@@ -52,8 +52,21 @@ export function createSettingsDom() {
   const typewriterToggle = document.createElement("input");
   typewriterToggle.id = "typewriter-toggle";
   typewriterToggle.type = "checkbox";
-  const displayModeSelect = document.createElement("select");
-  displayModeSelect.id = "display-mode-select";
+  const displayLight = document.createElement("input");
+  displayLight.id = "display-mode-light";
+  displayLight.type = "radio";
+  displayLight.name = "display-mode";
+  displayLight.value = "light";
+  const displayDark = document.createElement("input");
+  displayDark.id = "display-mode-dark";
+  displayDark.type = "radio";
+  displayDark.name = "display-mode";
+  displayDark.value = "dark";
+  const displayGray = document.createElement("input");
+  displayGray.id = "display-mode-gray";
+  displayGray.type = "radio";
+  displayGray.name = "display-mode";
+  displayGray.value = "gray";
   const gameModeToggleContainer = document.createElement("section");
   gameModeToggleContainer.id = "game-mode-toggle-container";
   const featureFlagsContainer = document.createElement("section");
@@ -65,7 +78,9 @@ export function createSettingsDom() {
     soundToggle,
     motionToggle,
     typewriterToggle,
-    displayModeSelect,
+    displayLight,
+    displayDark,
+    displayGray,
     gameModeToggleContainer,
     featureFlagsContainer,
     resetButton
