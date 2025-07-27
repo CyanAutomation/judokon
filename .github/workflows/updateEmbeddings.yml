@@ -1,4 +1,4 @@
-name: Update Embeddings
+name: Update Vector Database
 
 on:
   schedule:
