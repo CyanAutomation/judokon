@@ -274,7 +274,7 @@ is ready so hover and focus listeners are attached.
 </script>
 ```
 
-The repository specifies commenting standards in design/codeStandards. JSDoc comments and @pseudocode blocks must remain intact, as shown in documentation excerpts.
+The repository specifies commenting standards in design/codeStandards. JSDoc comments and @pseudocode blocks must remain intact. When adding or modifying functions, include a matching @pseudocode section describing the logic.
 
 ## Features
 
