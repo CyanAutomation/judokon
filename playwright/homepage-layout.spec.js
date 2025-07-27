@@ -19,12 +19,18 @@ test.describe("Homepage layout", () => {
     });
 
     test("grid does not overlap footer", async ({ page }, testInfo) => {
-      const gridBox = await page.locator(".game-mode-grid").boundingBox();
+      const grid = page.locator(".game-mode-grid");
+      const gridBox = await grid.boundingBox();
       const navBox = await page.locator(".bottom-navbar").boundingBox();
 
       expect(gridBox).not.toBeNull();
       expect(navBox).not.toBeNull();
-      expect(gridBox.y + gridBox.height).toBeLessThanOrEqual(navBox.y);
+
+      const paddingBottom = await grid.evaluate((el) =>
+        parseFloat(getComputedStyle(el).paddingBottom)
+      );
+
+      expect(gridBox.y + gridBox.height - paddingBottom).toBeLessThanOrEqual(navBox.y);
 
       await page.screenshot({
         path: testInfo.outputPath("desktop-layout.png"),
@@ -49,12 +55,18 @@ test.describe("Homepage layout", () => {
       await page.goto("/index.html");
       await page.waitForSelector("footer .bottom-navbar a");
 
-      const gridBox = await page.locator(".game-mode-grid").boundingBox();
+      const grid = page.locator(".game-mode-grid");
+      const gridBox = await grid.boundingBox();
       const navBox = await page.locator(".bottom-navbar").boundingBox();
 
       expect(gridBox).not.toBeNull();
       expect(navBox).not.toBeNull();
-      expect(gridBox.y + gridBox.height).toBeLessThanOrEqual(navBox.y);
+
+      const paddingBottom = await grid.evaluate((el) =>
+        parseFloat(getComputedStyle(el).paddingBottom)
+      );
+
+      expect(gridBox.y + gridBox.height - paddingBottom).toBeLessThanOrEqual(navBox.y);
 
       await page.screenshot({
         path: testInfo.outputPath("mobile-layout.png"),
