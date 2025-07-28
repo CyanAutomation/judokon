@@ -13,6 +13,7 @@
   "ui.winMessage": "**Victory!**\nYou chose the stronger stat.",
   "ui.lossMessage": "**Defeat!**\nYour opponent had the upper hand.",
   "ui.drawMessage": "_It’s a draw._\nBoth stats were equal!",
+  "ui.signatureBar": "Signature Move Bar (also called the stat band or signature bar) shows the fighter’s special technique.",
 
   "mode.classicBattle": "**Classic Battle Mode** pits you against an opponent.\nFirst to 10 round wins is the champion.",
   "mode.teamBattle": "**Team Battle Mode** uses your entire deck.\nWin more rounds than the opponent team to triumph!",
