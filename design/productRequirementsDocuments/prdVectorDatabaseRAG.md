@@ -55,6 +55,7 @@ Ultimately, these issues increase the risk of bugs reaching players, slow down t
 | P1 | Static Query Interface | Provide an in-browser demo or utility for querying the embedding file (e.g. using a sample prompt vector) |
 | P2 | Vector Metadata Fields | Store source metadata with each embedding (e.g. “source: PRD Tooltip System”, “type: stat-description”). Include granular tags like `judoka-data`, `tooltip`, `design-doc`, or `agent-workflow` for filtering. |
 | P2 | Agent Integration Example | Provide a sample script or markdown prompt to demonstrate how AI agents can use the vector store |
+| P2 | Source Context Retrieval | Provide helpers so agents can fetch adjacent chunks or the full document using an entry id |
 | P3 | Embedding Refresh Pipeline | Optionally support rebuilding the embedding index when PRDs or tooltip files are updated (manual or script-based trigger) |
 
 ### Embedding Refresh Pipeline
@@ -81,6 +82,7 @@ rather than an entire file.
 - [x] At least 30 unique content entries from across the PRDs/tooltips are indexed in the demo build
 - [x] Each returned result includes both the match score and a reference to the original source
 - [x] Agent prompt templates are provided with guidance on embedding format and retrieval usage
+- [x] Agents can request adjacent chunks or the full document by passing the result `id` to `fetchContextById`
 - [x] Search function accepts optional tag filters so agents can restrict matches to specific categories
 - [x] The system handles malformed or missing embeddings gracefully (e.g. logs a warning or returns empty result)
 - [x] The `client_embeddings.json` file stays under the 3MB threshold to ensure quick page load and GitHub Pages compatibility
