@@ -1,5 +1,5 @@
 import { onDomReady } from "./domReady.js";
-import { findMatches } from "./vectorSearch.js";
+import { findMatches, fetchContextById } from "./vectorSearch.js";
 // Load Transformers.js dynamically from jsDelivr when first used
 // This avoids bundling the large library with the rest of the code.
 
@@ -7,6 +7,31 @@ let extractor;
 let spinner;
 
 const SIMILARITY_THRESHOLD = 0.6;
+
+/**
+ * Load surrounding context for a search result element.
+ *
+ * @pseudocode
+ * 1. Ignore the request when context has already loaded.
+ * 2. Retrieve the result id from the element's dataset.
+ * 3. Find the child live region and announce loading.
+ * 4. Fetch neighboring context using `fetchContextById`.
+ * 5. Insert the joined chunks into the live region or a fallback message.
+ * 6. Mark the element as expanded when complete.
+ *
+ * @param {HTMLElement} el - The result list item.
+ */
+async function loadResultContext(el) {
+  if (el.dataset.loaded === "true") return;
+  const id = el.dataset.id;
+  const live = el.querySelector(".result-context");
+  if (!live) return;
+  live.textContent = "Loading context...";
+  const chunks = await fetchContextById(id, 1);
+  live.textContent = chunks.join("\n\n") || "No additional context found.";
+  el.dataset.loaded = "true";
+  el.setAttribute("aria-expanded", "true");
+}
 
 /**
  * Load the MiniLM feature extractor on first use.
@@ -54,7 +79,8 @@ async function getExtractor() {
  * 7. Hide the spinner and handle empty or missing embeddings cases.
  * 8. Build an ordered list. When no strong matches exist, show a warning and
  *    display up to three weak matches.
- * 9. On error, log the issue, hide the spinner, and display a fallback message.
+ * 9. Attach handlers to load surrounding context on result activation.
+ * 10. On error, log the issue, hide the spinner, and display a fallback message.
  *
  * @param {Event} event - The submit event from the form.
  */
@@ -100,7 +126,22 @@ async function handleSearch(event) {
     for (const match of toRender) {
       const li = document.createElement("li");
       li.classList.add("search-result-item");
+      li.dataset.id = match.id;
+      li.setAttribute("role", "button");
+      li.tabIndex = 0;
+      li.setAttribute("aria-expanded", "false");
       li.innerHTML = `<p>${match.text}</p><p class="small-text">Source: ${match.source} (score: ${match.score.toFixed(2)})</p>`;
+      const context = document.createElement("div");
+      context.classList.add("result-context", "small-text");
+      context.setAttribute("aria-live", "polite");
+      li.appendChild(context);
+      li.addEventListener("click", () => loadResultContext(li));
+      li.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          loadResultContext(li);
+        }
+      });
       list.appendChild(li);
     }
     resultsEl.appendChild(list);
@@ -119,6 +160,7 @@ async function handleSearch(event) {
  * 2. Locate the search form element.
  * 3. Attach `handleSearch` to the form's submit event.
  * 4. Intercept the Enter key to trigger form submission programmatically.
+ * 5. Results items load additional context when activated.
  */
 function init() {
   spinner = document.getElementById("search-spinner");
