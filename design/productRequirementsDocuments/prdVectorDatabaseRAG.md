@@ -53,7 +53,7 @@ Ultimately, these issues increase the risk of bugs reaching players, slow down t
 | P1 | Client-Side Embedding Store | Save all text entries and their embeddings in a `client_embeddings.json` file for browser use |
 | P1 | Cosine Similarity Function | Implement JavaScript logic to compare a query vector to all indexed entries and return top N matches |
 | P1 | Static Query Interface | Provide an in-browser demo or utility for querying the embedding file (e.g. using a sample prompt vector) |
-| P2 | Vector Metadata Fields | Store source metadata with each embedding (e.g. “source: PRD Tooltip System”, “type: stat-description”). Include granular tags like `judoka-data`, `tooltip`, `design-doc`, or `agent-workflow` for filtering. |
+| P2 | Vector Metadata Fields | Store source metadata with each embedding (e.g. “source: PRD Tooltip System”, “type: stat-description”). Include granular tags like `judoka-data`, `tooltip`, `design-doc`, or `agent-workflow` for filtering. Tag each entry by its source ("prd","tooltip","data") and by topic such as "judoka","rules","ui" to enable fine-grained queries. |
 | P2 | Agent Integration Example | Provide a sample script or markdown prompt to demonstrate how AI agents can use the vector store |
 | P2 | Source Context Retrieval | Provide helpers so agents can fetch adjacent chunks or the full document using an entry id |
 | P3 | Embedding Refresh Pipeline | Optionally support rebuilding the embedding index when PRDs or tooltip files are updated (manual or script-based trigger) |
@@ -170,8 +170,11 @@ No user settings or toggles are included. This is appropriate since the feature 
   - [ ] 4.1 Design and implement offline query UI
   - [ ] 4.2 Add keyboard accessibility and result display
   - [ ] 4.3 Provide example queries with results
+    - [ ] 4.4 Add tag filter controls so users or agents can restrict results by source or topic
 
 - [ ] 5.0 Agent Integration and Demos
   - [ ] 5.1 Create markdown prompt templates
   - [ ] 5.2 Provide usage examples with test agents
   - [ ] 5.3 Log agent response coverage and latency
+
+  - [ ] 5.4 Expose a simple API or utility function for programmatic search access

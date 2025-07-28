@@ -306,6 +306,8 @@ higher value, for example
 - Each result includes an `id` so agents can fetch more text via `fetchContextById`.
 - The page displays “Embeddings could not be loaded – please check console.” if loading fails, or “No close matches found” when nothing is returned.
 - Users can submit the form by pressing **Enter** in the search box.
+- The search page provides a tag filter dropdown so you can limit results to PRDs, tooltips, or character data.
+- Agent scripts can import `findMatches` from `src/helpers/vectorSearch.js` to query embeddings programmatically.
 - The transformer library is loaded from jsDelivr on first use, so network connectivity is required for that initial download.
 
 ## About JU-DO-KON!
