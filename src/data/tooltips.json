@@ -13,14 +13,14 @@
   "ui.winMessage": "**Victory!**\nYou chose the stronger stat.",
   "ui.lossMessage": "**Defeat!**\nYour opponent had the upper hand.",
   "ui.drawMessage": "_It’s a draw._\nBoth stats were equal!",
-  "ui.signatureBar": "The Signature Bar displays this judoka’s special move.",
+  "ui.signatureBar": "This bar shows the judoka’s signature move – their special technique.",
   "ui.languageToggle": "Switch quote language between English and pseudo-Japanese.",
   "ui.nextRound": "Begin the next round when you’re ready.",
   "ui.quitMatch": "End the match and return to the menu.",
   "ui.drawCard": "Draw a new random judoka card.",
 
-  "mode.classicBattle": "**Classic Battle Mode** pits you against an opponent.\nFirst to 10 round wins is the champion.",
-  "mode.teamBattle": "**Team Battle Mode** uses your entire deck.\nWin more rounds than the opponent team to triumph!",
+  "mode.classicBattle": "**Classic Battle Mode** pits you against an opponent.\nFirst to 10 round\u2011wins becomes the champion.",
+  "mode.teamBattle": "**Team Battle Mode** lets you fight with your whole deck of cards.\nForm a team and win more rounds than the opposing team to triumph!",
   "mode.meditation": "**Meditation Mode** lets you reflect and compare cards.\nNo battles, just peaceful analysis.",
   "mode.randomJudoka": "**Random Judoka** picks a random card for quick inspiration.",
   "mode.browseJudoka": "**Browse Judoka** opens the full roster in a carousel."
