@@ -113,6 +113,7 @@ than an entire file.
 - Lookup responses must render within 200ms; show loading spinner if delayed.
 - Display an error message when embeddings or the model fail to load.
 - Show up to five matches with score and source information.
+- Search results appear in a responsive table with alternating row colors for readability.
 - Matches scoring at least `0.6` are considered strong. When the top match is
   more than `0.4` higher than the next best score, only that top result is
   displayed.
