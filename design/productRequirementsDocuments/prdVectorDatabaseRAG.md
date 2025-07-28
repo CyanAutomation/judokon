@@ -111,6 +111,9 @@ rather than an entire file.
 - Lookup responses must render within 200ms; show loading spinner if delayed.
 - Display an error message when embeddings or the model fail to load.
 - Show up to five matches with score and source information.
+- Matches scoring at least `0.6` are considered strong. When the top match is
+  more than `0.4` higher than the next best score, only that top result is
+  displayed.
 - Result messages such as "No strong matches found…" should use the `.search-result-empty` CSS class. Each result entry uses `.search-result-item` and is fully justified with spacing between items.
 
 ### UI Mockup

@@ -9,6 +9,34 @@ let spinner;
 const SIMILARITY_THRESHOLD = 0.6;
 
 /**
+ * Score difference threshold for strong matches.
+ * When the top score exceeds the second best by more than this value,
+ * only the highest scoring result is shown.
+ * @type {number}
+ */
+const DROP_OFF_THRESHOLD = 0.4;
+
+/**
+ * Select matches to render based on similarity scores.
+ *
+ * @param {Array<{score:number}>} strongMatches - Results meeting the similarity threshold.
+ * @param {Array<{score:number}>} weakMatches - Results below the threshold.
+ * @returns {Array} Matches chosen for display.
+ */
+export function selectMatches(strongMatches, weakMatches) {
+  if (strongMatches.length > 0) {
+    if (
+      strongMatches.length > 1 &&
+      strongMatches[0].score - strongMatches[1].score > DROP_OFF_THRESHOLD
+    ) {
+      return [strongMatches[0]];
+    }
+    return strongMatches;
+  }
+  return weakMatches.slice(0, 3);
+}
+
+/**
  * Load surrounding context for a search result element.
  *
  * @pseudocode
@@ -76,6 +104,8 @@ async function getExtractor() {
  *    converting the result to a plain array.
  * 5. Use `findMatches` to fetch the top results for the vector.
  * 6. Split matches by `SIMILARITY_THRESHOLD` into strong and weak groups.
+ *    - When multiple strong matches exist, compare the top two scores and keep
+ *      only the first when the difference exceeds `DROP_OFF_THRESHOLD`.
  * 7. Hide the spinner and handle empty or missing embeddings cases.
  * 8. Build an ordered list. When no strong matches exist, show a warning and
  *    display up to three weak matches.
@@ -113,7 +143,7 @@ async function handleSearch(event) {
     const weakMatches = matches.filter((m) => m.score < SIMILARITY_THRESHOLD);
 
     const list = document.createElement("ol");
-    const toRender = strongMatches.length > 0 ? strongMatches : weakMatches.slice(0, 3);
+    const toRender = selectMatches(strongMatches, weakMatches);
 
     if (strongMatches.length === 0) {
       const warning = document.createElement("p");
