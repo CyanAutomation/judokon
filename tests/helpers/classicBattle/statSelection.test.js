@@ -24,8 +24,15 @@ vi.mock("../../../src/helpers/utils.js", () => ({
   createGokyoLookup: () => ({})
 }));
 
+function expectDeselected(button) {
+  expect(button.classList.contains("selected")).toBe(false);
+}
+
 describe("classicBattle stat selection", () => {
   let timerSpy;
+  let handleStatSelection;
+  let _resetForTest;
+
   beforeEach(() => {
     document.body.innerHTML = "";
     const { playerCard, computerCard } = createBattleCardContainers();
@@ -43,60 +50,49 @@ describe("classicBattle stat selection", () => {
     });
   });
 
+  beforeEach(async () => {
+    document.body.innerHTML += '<div id="stat-buttons"><button data-stat="power"></button></div>';
+    ({ handleStatSelection, _resetForTest } = await import(
+      "../../../src/helpers/classicBattle.js"
+    ));
+    _resetForTest();
+  });
+
   afterEach(() => {
     timerSpy.clearAllTimers();
   });
 
   it("clears selected class on stat buttons after each round", async () => {
-    document.body.innerHTML += '<div id="stat-buttons"><button data-stat="power"></button></div>';
-    const { handleStatSelection, _resetForTest } = await import(
-      "../../../src/helpers/classicBattle.js"
-    );
-    _resetForTest();
     const btn = document.querySelector("[data-stat='power']");
     btn.classList.add("selected");
     await handleStatSelection("power");
-    expect(btn.classList.contains("selected")).toBe(false);
+    expectDeselected(btn);
   });
 
   it("re-enables stat button after selection", async () => {
-    document.body.innerHTML += '<div id="stat-buttons"><button data-stat="power"></button></div>';
-    const { handleStatSelection, _resetForTest } = await import(
-      "../../../src/helpers/classicBattle.js"
-    );
-    _resetForTest();
     const btn = document.querySelector("[data-stat='power']");
     btn.classList.add("selected");
     await handleStatSelection("power");
     await vi.runAllTimersAsync();
-    expect(btn.classList.contains("selected")).toBe(false);
+    expectDeselected(btn);
     expect(btn.disabled).toBe(false);
   });
 
   it("clears inline background color with selected class", async () => {
-    document.body.innerHTML += '<div id="stat-buttons"><button data-stat="power"></button></div>';
-    const { handleStatSelection, _resetForTest } = await import(
-      "../../../src/helpers/classicBattle.js"
-    );
-    _resetForTest();
     const btn = document.querySelector("[data-stat='power']");
     btn.classList.add("selected");
     btn.style.backgroundColor = "red";
     await handleStatSelection("power");
     await vi.runAllTimersAsync();
-    expect(btn.classList.contains("selected")).toBe(false);
+    expectDeselected(btn);
     expect(btn.style.backgroundColor).toBe("");
   });
 
   it("shows tie message when values are equal", async () => {
-    const { handleStatSelection, _resetForTest } = await import(
-      "../../../src/helpers/classicBattle.js"
-    );
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     document.getElementById("computer-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    _resetForTest();
     await handleStatSelection("power");
     expect(document.querySelector("header #round-message").textContent).toMatch(/Tie/);
     expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nOpponent: 0");
