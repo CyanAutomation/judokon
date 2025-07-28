@@ -296,6 +296,7 @@ output file under the 3MB limit defined in the PRD.
 - Both the generation script and the search page use **mean pooled** embeddings so the query vector matches the stored vectors.
 
 - Results appear below the form with up to five entries that show match score and source.
+- Tag filters can be passed to limit results (e.g. only `judoka-data` entries).
 - The page displays “Embeddings could not be loaded – please check console.” if loading fails, or “No close matches found” when nothing is returned.
 - Users can submit the form by pressing **Enter** in the search box.
 - The transformer library is loaded from jsDelivr on first use, so network connectivity is required for that initial download.

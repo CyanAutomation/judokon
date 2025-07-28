@@ -15,6 +15,8 @@
  *      * When the root is an object, embed each key/value pair.
  * 4. Encode each chunk or entry using mean pooling and round the values.
  * 5. Build output objects with id, text, embedding, source, tags, and version.
+ *    - Tags include both a broad category ("prd" or "data") and more specific
+ *      labels such as "judoka-data" or "tooltip".
  * 6. Verify the output size is under MAX_OUTPUT_SIZE and write it to disk.
  */
 import { readFile, writeFile } from "node:fs/promises";
@@ -91,6 +93,23 @@ async function loadModel() {
   return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
 }
 
+function determineTags(relativePath, isJson) {
+  const tags = [isJson ? "data" : "prd"];
+  if (isJson) {
+    const file = path.basename(relativePath);
+    if (file === "judoka.json") tags.push("judoka-data");
+    else if (file === "tooltips.json") tags.push("tooltip");
+    else tags.push("game-data");
+  } else if (relativePath.startsWith("design/productRequirementsDocuments")) {
+    tags.push("design-doc");
+  } else if (relativePath.startsWith("design/codeStandards")) {
+    tags.push("design-guideline");
+  } else if (relativePath.startsWith("design/agentWorkflows")) {
+    tags.push("agent-workflow");
+  }
+  return tags;
+}
+
 async function generate() {
   const files = await getFiles();
   const extractor = await loadModel();
@@ -101,7 +120,7 @@ async function generate() {
     const text = await readFile(fullPath, "utf8");
     const base = path.basename(relativePath);
     const isJson = relativePath.endsWith(".json");
-    const tags = [isJson ? "data" : "prd"];
+    const tags = determineTags(relativePath, isJson);
 
     if (isJson) {
       const json = JSON.parse(text);
