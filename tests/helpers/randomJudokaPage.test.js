@@ -27,7 +27,11 @@ describe("randomJudokaPage module", () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
     const generateRandomCard = vi.fn();
     const fetchJson = vi.fn().mockResolvedValue([]);
-    const createButton = vi.fn(() => document.createElement("button"));
+    const createButton = vi.fn((_, opts = {}) => {
+      const btn = document.createElement("button");
+      if (opts.id) btn.id = opts.id;
+      return btn;
+    });
     const createToggleSwitch = vi.fn((_, opts) => {
       const wrapper = document.createElement("div");
       const input = document.createElement("input");
@@ -62,6 +66,7 @@ describe("randomJudokaPage module", () => {
     expect(applyMotionPreference).toHaveBeenCalledWith(baseSettings.motionEffects);
     expect(generateRandomCard.mock.calls[0][3]).toBe(false);
     expect(typeof setupRandomJudokaPage).toBe("function");
+    expect(document.getElementById("draw-card-btn").dataset.tooltipId).toBe("ui.drawCard");
   });
 
   it("renders card text with sufficient color contrast", async () => {
