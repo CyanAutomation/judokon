@@ -28,6 +28,6 @@ describe("createButton", () => {
     expect(btn.innerHTML).toContain(icon);
     expect(btn.textContent).toBe("Label");
     const svg = btn.querySelector("svg");
-    expect(svg.getAttribute("aria-hidden")).toBe("true");
+    expect(svg).toHaveAttribute("aria-hidden", "true");
   });
 });

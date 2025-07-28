@@ -16,12 +16,12 @@ describe("setupSectionToggles", () => {
     const content = document.getElementById("sec");
 
     button.click();
-    expect(button.getAttribute("aria-expanded")).toBe("true");
+    expect(button).toHaveAttribute("aria-expanded", "true");
     expect(content.hasAttribute("hidden")).toBe(false);
 
     const event = new KeyboardEvent("keydown", { key: "Enter" });
     button.dispatchEvent(event);
-    expect(button.getAttribute("aria-expanded")).toBe("false");
+    expect(button).toHaveAttribute("aria-expanded", "false");
     expect(content.hasAttribute("hidden")).toBe(true);
   });
 });

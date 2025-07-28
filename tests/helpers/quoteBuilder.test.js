@@ -40,7 +40,7 @@ describe("displayRandomQuote", () => {
     expect(loader.classList.contains("hidden")).toBe(true);
     expect(quoteDiv.innerHTML).toContain("A");
     expect(toggle.classList.contains("hidden")).toBe(false);
-    expect(toggle.getAttribute("aria-live")).toBe("polite");
+    expect(toggle).toHaveAttribute("aria-live", "polite");
     expect(document.activeElement).toBe(toggle);
     expect(liveRegion.textContent).toBe("language toggle available");
   });

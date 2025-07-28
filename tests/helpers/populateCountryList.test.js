@@ -52,8 +52,8 @@ describe("populateCountryList", () => {
     await populateCountryList(container);
 
     const buttons = container.querySelectorAll("button.flag-button");
-    expect(buttons[0].getAttribute("aria-label")).toBe("Show all countries");
-    expect(buttons[1].getAttribute("aria-label")).toBe("Filter by Japan");
+    expect(buttons[0]).toHaveAttribute("aria-label", "Show all countries");
+    expect(buttons[1]).toHaveAttribute("aria-label", "Filter by Japan");
   });
 
   it("lazy loads additional countries on scroll", async () => {

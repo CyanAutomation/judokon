@@ -20,7 +20,7 @@ describe("createToggleSwitch", () => {
     expect(input?.id).toBe("sound-toggle");
     expect(input?.name).toBe("sound");
     expect(input?.checked).toBe(true);
-    expect(input?.getAttribute("aria-label")).toBe("Sound toggle");
+    expect(input).toHaveAttribute("aria-label", "Sound toggle");
     expect(slider?.classList.contains("round")).toBe(true);
     expect(span?.textContent).toBe("Sound");
   });
@@ -34,6 +34,6 @@ describe("createToggleSwitch", () => {
   it("uses label text as aria-label by default", () => {
     const wrapper = createToggleSwitch("AutoToggle");
     const input = wrapper.querySelector("input[type='checkbox']");
-    expect(input?.getAttribute("aria-label")).toBe("AutoToggle");
+    expect(input).toHaveAttribute("aria-label", "AutoToggle");
   });
 });

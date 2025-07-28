@@ -12,7 +12,7 @@ describe("createCard", () => {
   it("creates an anchor card when href provided", () => {
     const card = createCard("Link", { href: "#" });
     expect(card).toBeInstanceOf(HTMLAnchorElement);
-    expect(card.getAttribute("href")).toBe("#");
+    expect(card).toHaveAttribute("href", "#");
   });
 
   it("applies id, class and click handler", () => {
