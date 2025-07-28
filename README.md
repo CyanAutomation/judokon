@@ -103,6 +103,8 @@ Some helpers such as `classicBattle.js` keep match state between rounds. The
 `_resetForTest()` function resets this internal state. Invoke it at the start of
 any unit test that depends on the initial score or timer conditions.
 
+* Tests cover both player-win and opponent-win match endings, and confirm that `quitMatch()` does nothing when the confirmation dialog is cancelled.
+
 All Vitest suites load `tests/setup.js`, which resets the DOM and restores
 global mocks after each test. This cleanup now clears `localStorage` and
 reinstates `window.matchMedia` so stubs never leak between tests.
