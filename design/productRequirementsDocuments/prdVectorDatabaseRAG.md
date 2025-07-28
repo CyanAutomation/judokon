@@ -102,6 +102,7 @@ regeneration whenever those folders change.
 - Lookup responses must render within 200ms; show loading spinner if delayed.
 - Display an error message when embeddings or the model fail to load.
 - Show up to five matches with score and source information.
+- Result messages such as "No strong matches found…" should use the `.search-result-empty` CSS class. Each result entry uses `.search-result-item` and is fully justified with spacing between items.
 
 ### UI Mockup
 
