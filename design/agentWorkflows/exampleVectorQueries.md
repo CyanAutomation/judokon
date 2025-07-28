@@ -4,7 +4,7 @@ This document shows how AI agents can search the JU-DO-KON! vector database and 
 
 ## Embedding JSON Format
 
-Embeddings are stored in `client_embeddings.json` as an array of objects. Each entry includes the original text along with metadata for retrieval. **The `embedding` field must be a flat numeric array (e.g. `[0.12, -0.04, ...]`) rather than an object with `dims` or `data`.**
+Embeddings are stored in `client_embeddings.json` as an array of objects. Each entry includes the original text along with metadata for retrieval. JSON arrays or objects (for example, tooltip sets or judoka data) are broken apart so every record gets its own vector. **The `embedding` field must be a flat numeric array (e.g. `[0.12, -0.04, ...]`) rather than an object with `dims` or `data`.**
 
 ```json
 {
