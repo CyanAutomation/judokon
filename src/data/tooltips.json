@@ -14,6 +14,10 @@
   "ui.lossMessage": "**Defeat!**\nYour opponent had the upper hand.",
   "ui.drawMessage": "_It’s a draw._\nBoth stats were equal!",
   "ui.signatureBar": "The Signature Bar displays this judoka’s special move.",
+  "ui.languageToggle": "Switch quote language between English and pseudo-Japanese.",
+  "ui.nextRound": "Begin the next round when you’re ready.",
+  "ui.quitMatch": "End the match and return to the menu.",
+  "ui.drawCard": "Draw a new random judoka card.",
 
   "mode.classicBattle": "**Classic Battle Mode** pits you against an opponent.\nFirst to 10 round wins is the champion.",
   "mode.teamBattle": "**Team Battle Mode** uses your entire deck.\nWin more rounds than the opponent team to triumph!",

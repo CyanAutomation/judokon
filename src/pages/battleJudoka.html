@@ -121,8 +121,10 @@
             </div>
 
             <p id="round-result" aria-live="polite" aria-atomic="true"></p>
-            <button id="next-round-button" disabled>Next Round</button>
-            <button id="quit-match-button">Quit Match</button>
+            <button id="next-round-button" disabled data-tooltip-id="ui.nextRound">
+              Next Round
+            </button>
+            <button id="quit-match-button" data-tooltip-id="ui.quitMatch">Quit Match</button>
             <div id="debug-panel" class="debug-panel hidden">
               <pre id="debug-output" role="status" aria-live="polite"></pre>
             </div>

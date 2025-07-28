@@ -74,4 +74,35 @@ describe("initTooltips", () => {
     expect(tip.style.top).toBe(`${window.innerHeight - 10}px`);
     expect(tip.style.left).toBe("0px");
   });
+
+  it("loads tooltip text for new UI elements", async () => {
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({
+        "ui.languageToggle": "toggle",
+        "ui.nextRound": "next",
+        "ui.quitMatch": "quit",
+        "ui.drawCard": "draw"
+      })
+    }));
+
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+
+    const ids = ["ui.languageToggle", "ui.nextRound", "ui.quitMatch", "ui.drawCard"];
+    const text = ["toggle", "next", "quit", "draw"];
+    const els = ids.map((id) => {
+      const el = document.createElement("button");
+      el.dataset.tooltipId = id;
+      document.body.appendChild(el);
+      return el;
+    });
+
+    await initTooltips();
+
+    const tip = document.querySelector(".tooltip");
+    els.forEach((el, i) => {
+      el.dispatchEvent(new Event("mouseenter"));
+      expect(tip.textContent).toBe(text[i]);
+      el.dispatchEvent(new Event("mouseleave"));
+    });
+  });
 });

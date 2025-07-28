@@ -121,6 +121,7 @@ export async function setupRandomJudokaPage() {
     icon: DRAW_ICON
   });
   drawButton.dataset.testid = "draw-button";
+  drawButton.dataset.tooltipId = "ui.drawCard";
   drawButton.style.minHeight = "64px";
   drawButton.style.minWidth = "300px";
   drawButton.style.borderRadius = "999px";
