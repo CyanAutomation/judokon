@@ -69,6 +69,18 @@ describe("classicBattle match flow", () => {
     expect(document.querySelector("header #round-message").textContent).toMatch(/quit/i);
   });
 
+  it("does not quit match when cancel is chosen", async () => {
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
+    const { quitMatch, _resetForTest } = await import("../../../src/helpers/classicBattle.js");
+    _resetForTest();
+    document.querySelector("#round-message").textContent = "Select your move";
+    const result = quitMatch();
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(result).toBe(false);
+    expect(document.querySelector("header #round-message").textContent).toBe("Select your move");
+    expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nOpponent: 0");
+  });
+
   it("ends the match when player reaches 10 wins", async () => {
     const { handleStatSelection, _resetForTest } = await import(
       "../../../src/helpers/classicBattle.js"
