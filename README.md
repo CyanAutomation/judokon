@@ -109,6 +109,12 @@ All Vitest suites load `tests/setup.js`, which resets the DOM and restores
 global mocks after each test. This cleanup now clears `localStorage` and
 reinstates `window.matchMedia` so stubs never leak between tests.
 
+### Testing Conventions
+
+Unit tests should focus on a single behavior. Split complex scenarios into
+multiple tests when it clarifies intent. Use `beforeEach` blocks or helper
+functions for repeated setup code.
+
 ### Troubleshooting Playwright Tests
 
 A `Test timeout ... waiting for locator('#general-settings-toggle')` error usually means the Settings page failed to load or the server was unreachable. Verify that:
