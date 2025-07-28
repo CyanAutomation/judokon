@@ -41,6 +41,11 @@ To narrow results, pass tag filters to your search call:
 findMatches(queryVector, 5, ["judoka-data"]);
 ```
 
+```
+const results = await findMatches(queryVector, 5);
+const context = await fetchContextById(results[0].id);
+```
+
 ### Card Generation Agent
 
 ```
