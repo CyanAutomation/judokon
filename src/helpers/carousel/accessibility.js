@@ -17,7 +17,7 @@ function ensureTouchTargetSize(element) {
   if (width < MIN_TOUCH_TARGET_SIZE || height < MIN_TOUCH_TARGET_SIZE) {
     element.style.minWidth = `${MIN_TOUCH_TARGET_SIZE}px`;
     element.style.minHeight = `${MIN_TOUCH_TARGET_SIZE}px`;
-    element.style.padding = "10px";
+    element.style.padding = "var(--space-sm)";
   }
 }
 
