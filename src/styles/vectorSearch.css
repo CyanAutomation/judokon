@@ -1,6 +1,6 @@
 #vector-results-table {
   display: grid;
-  grid-template-columns: 2fr 0.75fr 0.25fr;
+  grid-template-columns: 2fr 0.75fr 0.15fr;
   width: 100%;
   padding: var(--space-lg);
   gap: var(--space-med);
@@ -15,7 +15,7 @@
 
 #vector-results-table th,
 #vector-results-table td {
-  padding: var(--space-xs) var(--space-sm);
+  padding: var(--space-sm) var(--space-sm);
   text-align: left;
   border-bottom: 1px solid var(--color-secondary);
 }
