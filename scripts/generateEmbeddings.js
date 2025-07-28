@@ -5,7 +5,8 @@
  * @pseudocode
  * 1. Use glob to gather markdown and JSON sources, skipping existing
  *    `client_embeddings.json` and large datasets.
- * 2. Load the transformer model for feature extraction.
+ * 2. Load the quantized transformer model for feature extraction to reduce
+ *    memory usage.
  * 3. For each file:
  *    - If markdown, split the text on blank lines or heading markers.
  *      * Combine segments into chunks under CHUNK_SIZE with OVERLAP between
@@ -92,8 +93,14 @@ async function getFiles() {
   return [...prdFiles, ...guidelineFiles, ...workflowFiles, ...jsonFiles];
 }
 
+/**
+ * Load the MiniLM feature extractor in quantized form.
+ *
+ * @returns {Promise<any>} Initialized pipeline instance.
+ */
 async function loadModel() {
-  return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+  // Reduce memory footprint by loading the quantized model
+  return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { quantized: true });
 }
 
 function determineTags(relativePath, isJson) {

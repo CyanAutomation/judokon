@@ -60,7 +60,9 @@ Query: "navbar button transition duration"
 Run `npm run generate:embeddings` whenever you update any PRD, files in
 `src/data/`, or markdown under `design/codeStandards` or
 `design/agentWorkflows`. The script (`scripts/generateEmbeddings.js`) fetches the
-`Xenova/all-MiniLM-L6-v2` model on first run, so it requires internet access
-unless the model is cached. This rebuilds `client_embeddings.json`, now
+**quantized** `Xenova/all-MiniLM-L6-v2` model on first run, so it requires
+internet access unless the model is cached. If the process runs out of memory,
+increase Node's heap limit (for example `node --max-old-space-size=8192
+scripts/generateEmbeddings.js`). This rebuilds `client_embeddings.json`, now
 pretty-printed for easier diffing, so agents search the latest content. Commit
 the regenerated JSON file along with your changes.
