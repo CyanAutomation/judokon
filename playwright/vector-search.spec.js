@@ -21,7 +21,7 @@ test.describe("Vector search page", () => {
   });
 
   test("selecting a result loads context", async ({ page }) => {
-    await page.getByRole("textbox").fill("query");
+    await page.getByRole("searchbox").fill("query");
     await page.getByRole("button", { name: /search/i }).click();
     const item = page.locator(".search-result-item").first();
     await item.waitFor();
