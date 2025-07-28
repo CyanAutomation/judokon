@@ -282,7 +282,7 @@ JU-DO-KON! offers a 99-card deck and one-on-one stat battles in a fully browser-
 
 ### Vector Search (RAG)
 
-The project ships with a retrieval-augmented search demo. Run `npm run generate:embeddings` to create the index, then open `src/pages/vectorSearch.html` to try it out. The generation script at `scripts/generateEmbeddings.js` downloads the quantized `Xenova/all-MiniLM-L6-v2` model the first time it runs—so it fails offline unless the weights have been cached. These embeddings let AI agents query the product requirement docs, tooltip descriptions, and game data. The generated `src/data/client_embeddings.json` is pretty-printed for readability and must be committed for the page to work. **Embeddings must be flat numeric arrays like `[0.12, -0.04, ...]`—objects with `dims` or `data` keys will break the search page.**
+The project ships with a retrieval-augmented search demo. Run `npm run generate:embeddings` to create the index, then open `src/pages/vectorSearch.html` to try it out. The generation script at `scripts/generateEmbeddings.js` downloads the quantized `Xenova/all-MiniLM-L6-v2` model the first time it runs—so make sure you have internet access or the download will fail. It allocates an 8 GB heap by default (`--max-old-space-size=8192`); adjust this value if Node still runs out of memory. These embeddings let AI agents query the product requirement docs, tooltip descriptions, and game data. The generated `src/data/client_embeddings.json` is pretty-printed for readability and must be committed for the page to work. **Embeddings must be flat numeric arrays like `[0.12, -0.04, ...]`—objects with `dims` or `data` keys will break the search page.**
 
 Embeddings are generated for each PRD section or JSON record, which allows the search interface to return precise matches instead of entire files.
 
@@ -295,8 +295,9 @@ latest vectors.
 The generator skips the large `aesopsFables.json` quote dataset to keep the
 output file under the 3MB limit defined in the PRD.
 
-If Node runs out of memory while generating embeddings, increase the heap limit
-by running `node --max-old-space-size=8192 scripts/generateEmbeddings.js`.
+If generation still fails because of memory limits, rerun the script with a
+higher value, for example
+`node --max-old-space-size=16384 scripts/generateEmbeddings.js`.
 
 - Both the generation script and the search page use **mean pooled** embeddings so the query vector matches the stored vectors.
 
