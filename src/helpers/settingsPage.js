@@ -13,6 +13,8 @@ import { applyDisplayMode } from "./displayMode.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
+import { createModal } from "../components/Modal.js";
+import { createButton } from "../components/Button.js";
 
 import {
   applyInitialControlValues,
@@ -21,6 +23,53 @@ import {
   renderFeatureFlagSwitches,
   setupSectionToggles
 } from "./settings/index.js";
+
+/**
+ * Build a confirmation modal for restoring default settings.
+ *
+ * @pseudocode
+ * 1. Create heading and description nodes.
+ * 2. Create Cancel and Yes buttons via `createButton`.
+ * 3. Assemble modal with `createModal` and wire button handlers.
+ *    - Cancel closes the modal.
+ *    - Yes calls `onConfirm` then closes.
+ * 4. Append the modal element to `document.body`.
+ * 5. Return the modal API.
+ *
+ * @param {Function} onConfirm - Called when user confirms reset.
+ * @returns {{ open(trigger?: HTMLElement): void }} Modal controls.
+ */
+function createResetConfirmation(onConfirm) {
+  const title = document.createElement("h2");
+  title.id = "reset-modal-title";
+  title.textContent = "Restore default settings?";
+
+  const desc = document.createElement("p");
+  desc.id = "reset-modal-desc";
+  desc.textContent = "This will clear all saved preferences.";
+
+  const actions = document.createElement("div");
+  actions.className = "modal-actions";
+
+  const cancel = createButton("Cancel", {
+    id: "cancel-reset-button",
+    className: "secondary-button"
+  });
+  const yes = createButton("Yes", { id: "confirm-reset-button" });
+  actions.append(cancel, yes);
+
+  const frag = document.createDocumentFragment();
+  frag.append(title, desc, actions);
+
+  const modal = createModal(frag, { labelledBy: title, describedBy: desc });
+  cancel.addEventListener("click", modal.close);
+  yes.addEventListener("click", () => {
+    onConfirm();
+    modal.close();
+  });
+  document.body.appendChild(modal.element);
+  return modal;
+}
 
 /**
  * Initialize controls and event wiring for the Settings page.
@@ -87,7 +136,7 @@ function initializeControls(settings, gameModes) {
     handleUpdate
   );
 
-  resetButton?.addEventListener("click", () => {
+  const resetModal = createResetConfirmation(() => {
     currentSettings = resetSettings();
     applyInitialControlValues(controls, currentSettings);
     applyDisplayMode(currentSettings.displayMode);
@@ -101,6 +150,10 @@ function initializeControls(settings, gameModes) {
       getCurrentSettings,
       handleUpdate
     );
+  });
+
+  resetButton?.addEventListener("click", () => {
+    resetModal.open(resetButton);
   });
 }
 

@@ -215,7 +215,7 @@ describe("settingsPage module", () => {
     });
   });
 
-  it("clicking restore defaults resets controls", async () => {
+  it("clicking restore defaults requires confirmation", async () => {
     vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
@@ -255,6 +255,10 @@ describe("settingsPage module", () => {
 
     const btn = document.getElementById("reset-settings-button");
     btn.dispatchEvent(new Event("click"));
+    expect(resetSettings).not.toHaveBeenCalled();
+
+    const confirm = document.getElementById("confirm-reset-button");
+    confirm.dispatchEvent(new Event("click"));
 
     expect(resetSettings).toHaveBeenCalled();
     expect(applyInitialControlValues).toHaveBeenCalledTimes(2);
