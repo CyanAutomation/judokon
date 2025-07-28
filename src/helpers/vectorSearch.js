@@ -98,7 +98,7 @@ export async function findMatches(queryVector, topN = 5, tags = []) {
     .slice(0, topN);
 }
 
-const CHUNK_SIZE = 1500;
+const CHUNK_SIZE = 2000;
 const OVERLAP = 100;
 
 function chunkMarkdown(text) {

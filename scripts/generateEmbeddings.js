@@ -35,8 +35,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 
 // Larger chunks reduce the total embedding count and help keep the
-// final JSON under the 3MB limit.
-const CHUNK_SIZE = 1500;
+// final JSON under the 3MB limit. Bump slightly to shrink output.
+const CHUNK_SIZE = 2000;
 const OVERLAP = 100;
 const MAX_OUTPUT_SIZE = 3 * 1024 * 1024;
 
