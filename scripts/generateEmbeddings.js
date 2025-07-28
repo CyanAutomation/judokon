@@ -3,17 +3,18 @@
  * Generate embeddings for PRD markdown and JSON data files.
  *
  * @pseudocode
- * 1. Discover markdown and JSON files using glob, excluding any existing
- *    `client_embeddings.json` file and the large `aesopsFables.json`
- *    dataset to keep the output size manageable.
- * 2. Read file contents and slice into overlapping chunks using CHUNK_SIZE and
- *    OVERLAP.
- * 3. Load a transformer model for feature extraction.
- * 4. Encode each chunk into a mean-pooled embedding vector, rounding values to
- *    four decimals to control output size.
+ * 1. Use glob to gather markdown and JSON sources, skipping existing
+ *    `client_embeddings.json` and large datasets.
+ * 2. Load the transformer model for feature extraction.
+ * 3. For each file:
+ *    - If markdown, slice text into overlapping chunks using CHUNK_SIZE and
+ *      OVERLAP.
+ *    - If JSON, parse the contents.
+ *      * When the root is an array, embed each item individually.
+ *      * When the root is an object, embed each key/value pair.
+ * 4. Encode each chunk or entry using mean pooling and round the values.
  * 5. Build output objects with id, text, embedding, source, tags, and version.
- * 6. Ensure the final JSON output is under MAX_OUTPUT_SIZE (3MB), pretty-print
- *    it, and write to disk.
+ * 6. Verify the output size is under MAX_OUTPUT_SIZE and write it to disk.
  */
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -55,23 +56,53 @@ async function generate() {
 
   for (const relativePath of files) {
     const fullPath = path.join(rootDir, relativePath);
-    let text = await readFile(fullPath, "utf8");
-    if (relativePath.endsWith(".json")) {
-      text = JSON.stringify(JSON.parse(text));
-    }
+    const text = await readFile(fullPath, "utf8");
     const base = path.basename(relativePath);
-    const tags = [relativePath.endsWith(".json") ? "data" : "prd"];
-    for (let start = 0, index = 0; start < text.length; start += CHUNK_SIZE - OVERLAP, index++) {
-      const chunkText = text.slice(start, start + CHUNK_SIZE);
-      const result = await extractor(chunkText, { pooling: "mean" });
-      output.push({
-        id: `${base}-chunk-${index + 1}`,
-        text: chunkText,
-        embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
-        source: `${relativePath} [chunk ${index + 1}]`,
-        tags,
-        version: 1
-      });
+    const isJson = relativePath.endsWith(".json");
+    const tags = [isJson ? "data" : "prd"];
+
+    if (isJson) {
+      const json = JSON.parse(text);
+      if (Array.isArray(json)) {
+        for (const [index, item] of json.entries()) {
+          const chunkText = JSON.stringify(item);
+          const result = await extractor(chunkText, { pooling: "mean" });
+          output.push({
+            id: `${base}-${index + 1}`,
+            text: chunkText,
+            embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
+            source: `${relativePath} [${index}]`,
+            tags,
+            version: 1
+          });
+        }
+      } else if (json && typeof json === "object") {
+        for (const [key, value] of Object.entries(json)) {
+          const chunkText = typeof value === "string" ? value : JSON.stringify(value);
+          const result = await extractor(chunkText, { pooling: "mean" });
+          output.push({
+            id: `${base}-${key}`,
+            text: chunkText,
+            embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
+            source: `${relativePath} [${key}]`,
+            tags,
+            version: 1
+          });
+        }
+      }
+    } else {
+      for (let start = 0, index = 0; start < text.length; start += CHUNK_SIZE - OVERLAP, index++) {
+        const chunkText = text.slice(start, start + CHUNK_SIZE);
+        const result = await extractor(chunkText, { pooling: "mean" });
+        output.push({
+          id: `${base}-chunk-${index + 1}`,
+          text: chunkText,
+          embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
+          source: `${relativePath} [chunk ${index + 1}]`,
+          tags,
+          version: 1
+        });
+      }
     }
   }
 
