@@ -4,7 +4,7 @@
   grid-template-columns: var(--touch-target-size) var(--touch-target-size) 1fr 1fr 1fr;
   width: 100%;
   padding: var(--space-lg);
-  gap: var(--space-med);
+  gap: var(--space-md);
   box-sizing: border-box;
 }
 
