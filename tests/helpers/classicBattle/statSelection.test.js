@@ -51,7 +51,8 @@ describe("classicBattle stat selection", () => {
   });
 
   beforeEach(async () => {
-    document.body.innerHTML += '<div id="stat-buttons"><button data-stat="power"></button></div>';
+    document.body.innerHTML +=
+      '<div id="stat-buttons" data-tooltip-id="ui.selectStat"><button data-stat="power"></button></div>';
     ({ handleStatSelection, _resetForTest } = await import(
       "../../../src/helpers/classicBattle.js"
     ));
