@@ -80,3 +80,7 @@ increase Node's heap limit (for example `node --max-old-space-size=8192
 scripts/generateEmbeddings.js`). This rebuilds `client_embeddings.json`, now
 pretty-printed for easier diffing, so agents search the latest content. Commit
 the regenerated JSON file along with your changes.
+
+If the result would be larger than 3MB, the generator exits with
+`"Output exceeds 3MB"`. Increase the `CHUNK_SIZE` constant or omit large files to
+reduce the output size before running the script again.
