@@ -280,7 +280,7 @@ is ready so hover and focus listeners are attached.
 </script>
 ```
 
-The repository specifies commenting standards in design/codeStandards. JSDoc comments and @pseudocode blocks must remain intact. When adding or modifying functions, include a matching @pseudocode section describing the logic.
+The repository specifies commenting standards in `design/codeStandards`. JSDoc comments and `@pseudocode` blocks must remain intact. When adding or modifying functions, include a matching `@pseudocode` section describing the logic. The same folder includes [testNamingStandards.md](design/codeStandards/testNamingStandards.md) with guidelines for naming test files and `describe` blocks.
 
 ## Features
 
