@@ -20,6 +20,8 @@
  *      one can be derived from the text.
  *    - Tags include both a broad category ("prd" or "data") and more specific
  *      labels such as "judoka-data" or "tooltip".
+ *    - Append a simple intent tag ("why", "how", or "what") based on text
+ *      analysis.
  * 6. Stream each output object directly to `client_embeddings.json` using
  *    `fs.createWriteStream`.
  *    - Track bytes written and abort if the total exceeds MAX_OUTPUT_SIZE (3.6 MB).
@@ -139,6 +141,19 @@ function determineTags(relativePath, isJson) {
   return tags;
 }
 
+/**
+ * Classify the intent of a text snippet.
+ *
+ * @param {string} text - Text to analyze.
+ * @returns {string} Intent category: "why", "how", or "what".
+ */
+function determineIntent(text) {
+  const lower = text.toLowerCase();
+  if (/(why|reason|because|goal|problem)/.test(lower)) return "why";
+  if (/(how|step|workflow|process|flow)/.test(lower)) return "how";
+  return "what";
+}
+
 async function generate() {
   const files = await getFiles();
   const extractor = await loadModel();
@@ -172,13 +187,15 @@ async function generate() {
     const text = await readFile(fullPath, "utf8");
     const base = path.basename(relativePath);
     const isJson = relativePath.endsWith(".json");
-    const tags = determineTags(relativePath, isJson);
+    const baseTags = determineTags(relativePath, isJson);
 
     if (isJson) {
       const json = JSON.parse(text);
       if (Array.isArray(json)) {
         for (const [index, item] of json.entries()) {
           const chunkText = JSON.stringify(item);
+          const intent = determineIntent(chunkText);
+          const tags = baseTags.includes(intent) ? [...baseTags] : [...baseTags, intent];
           const result = await extractor(chunkText, { pooling: "mean" });
           const qa = createQaContext(chunkText);
           writeEntry({
@@ -194,6 +211,8 @@ async function generate() {
       } else if (json && typeof json === "object") {
         for (const [key, value] of Object.entries(json)) {
           const chunkText = typeof value === "string" ? value : JSON.stringify(value);
+          const intent = determineIntent(chunkText);
+          const tags = baseTags.includes(intent) ? [...baseTags] : [...baseTags, intent];
           const result = await extractor(chunkText, { pooling: "mean" });
           const qa = createQaContext(chunkText);
           writeEntry({
@@ -210,6 +229,8 @@ async function generate() {
     } else {
       const chunks = chunkMarkdown(text);
       for (const [index, chunkText] of chunks.entries()) {
+        const intent = determineIntent(chunkText);
+        const tags = baseTags.includes(intent) ? [...baseTags] : [...baseTags, intent];
         const result = await extractor(chunkText, { pooling: "mean" });
         const qa = createQaContext(chunkText);
         writeEntry({
