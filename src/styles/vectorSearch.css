@@ -46,3 +46,13 @@
 .qa-context {
   color: var(--color-text-secondary);
 }
+
+.show-more-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-primary);
+  cursor: pointer;
+  text-decoration: underline;
+  font: inherit;
+}
