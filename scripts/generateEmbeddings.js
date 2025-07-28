@@ -21,8 +21,10 @@
  * 6. Stream each output object directly to `client_embeddings.json` using
  *    `fs.createWriteStream`.
  *    - Track bytes written and abort if the total exceeds MAX_OUTPUT_SIZE.
+ * 7. After writing the file, record the total count, average vector length,
+ *    and output size in `client_embeddings.meta.json`.
  */
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile, stat } from "node:fs/promises";
 import { createWriteStream } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -131,6 +133,8 @@ async function generate() {
   const writer = createWriteStream(outputPath, { encoding: "utf8" });
   let bytesWritten = 0;
   let first = true;
+  let entryCount = 0;
+  let vectorLengthTotal = 0;
 
   writer.write("[");
   bytesWritten += Buffer.byteLength("[", "utf8");
@@ -149,6 +153,8 @@ async function generate() {
     writer.write(chunk);
     bytesWritten += Buffer.byteLength(chunk, "utf8");
     first = false;
+    entryCount += 1;
+    vectorLengthTotal += obj.embedding.length;
   };
 
   for (const relativePath of files) {
@@ -209,6 +215,18 @@ async function generate() {
     throw new Error("Output exceeds 3MB");
   }
   writer.end(endStr);
+  await new Promise((resolve) => writer.on("finish", resolve));
+  const stats = await stat(outputPath);
+  const avgLength = entryCount ? Number((vectorLengthTotal / entryCount).toFixed(2)) : 0;
+  const meta = {
+    count: entryCount,
+    avgVectorLength: avgLength,
+    fileSizeKB: Number((stats.size / 1024).toFixed(2))
+  };
+  await writeFile(
+    path.join(rootDir, "src/data/client_embeddings.meta.json"),
+    JSON.stringify(meta, null, 2)
+  );
 }
 
 await generate();
