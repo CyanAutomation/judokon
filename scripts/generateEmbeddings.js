@@ -17,9 +17,12 @@
  * 5. Build output objects with id, text, embedding, source, tags, and version.
  *    - Tags include both a broad category ("prd" or "data") and more specific
  *      labels such as "judoka-data" or "tooltip".
- * 6. Verify the output size is under MAX_OUTPUT_SIZE and write it to disk.
+ * 6. Stream each output object directly to `client_embeddings.json` using
+ *    `fs.createWriteStream`.
+ *    - Track bytes written and abort if the total exceeds MAX_OUTPUT_SIZE.
  */
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
+import { createWriteStream } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { glob } from "glob";
@@ -113,7 +116,29 @@ function determineTags(relativePath, isJson) {
 async function generate() {
   const files = await getFiles();
   const extractor = await loadModel();
-  const output = [];
+  const outputPath = path.join(rootDir, "src/data/client_embeddings.json");
+  const writer = createWriteStream(outputPath, { encoding: "utf8" });
+  let bytesWritten = 0;
+  let first = true;
+
+  writer.write("[");
+  bytesWritten += Buffer.byteLength("[", "utf8");
+
+  const writeEntry = (obj) => {
+    const serialized = JSON.stringify(obj, null, 2)
+      .split("\n")
+      .map((line) => `  ${line}`)
+      .join("\n");
+    const chunk = (first ? "\n" : ",\n") + serialized;
+    const size = Buffer.byteLength(chunk + "\n]", "utf8");
+    if (bytesWritten + size > MAX_OUTPUT_SIZE) {
+      writer.end();
+      throw new Error("Output exceeds 3MB");
+    }
+    writer.write(chunk);
+    bytesWritten += Buffer.byteLength(chunk, "utf8");
+    first = false;
+  };
 
   for (const relativePath of files) {
     const fullPath = path.join(rootDir, relativePath);
@@ -128,7 +153,7 @@ async function generate() {
         for (const [index, item] of json.entries()) {
           const chunkText = JSON.stringify(item);
           const result = await extractor(chunkText, { pooling: "mean" });
-          output.push({
+          writeEntry({
             id: `${base}-${index + 1}`,
             text: chunkText,
             embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
@@ -141,7 +166,7 @@ async function generate() {
         for (const [key, value] of Object.entries(json)) {
           const chunkText = typeof value === "string" ? value : JSON.stringify(value);
           const result = await extractor(chunkText, { pooling: "mean" });
-          output.push({
+          writeEntry({
             id: `${base}-${key}`,
             text: chunkText,
             embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
@@ -155,7 +180,7 @@ async function generate() {
       const chunks = chunkMarkdown(text);
       for (const [index, chunkText] of chunks.entries()) {
         const result = await extractor(chunkText, { pooling: "mean" });
-        output.push({
+        writeEntry({
           id: `${base}-chunk-${index + 1}`,
           text: chunkText,
           embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
@@ -167,11 +192,12 @@ async function generate() {
     }
   }
 
-  const jsonString = JSON.stringify(output, null, 2);
-  if (Buffer.byteLength(jsonString, "utf8") > MAX_OUTPUT_SIZE) {
+  const endStr = "\n]\n";
+  if (bytesWritten + Buffer.byteLength(endStr, "utf8") > MAX_OUTPUT_SIZE) {
+    writer.end();
     throw new Error("Output exceeds 3MB");
   }
-  await writeFile(path.join(rootDir, "src/data/client_embeddings.json"), jsonString);
+  writer.end(endStr);
 }
 
 await generate();
