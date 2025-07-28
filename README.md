@@ -107,7 +107,12 @@ any unit test that depends on the initial score or timer conditions.
 
 All Vitest suites load `tests/setup.js`, which resets the DOM and restores
 global mocks after each test. This cleanup now clears `localStorage` and
-reinstates `window.matchMedia` so stubs never leak between tests.
+reinstates `window.matchMedia` so stubs never leak between tests. The same setup file defines a `toHaveAttribute` matcher for DOM elements:
+```javascript
+expect(button).toHaveAttribute('aria-label', 'Save');
+```
+
+Prefer this matcher over manual `getAttribute()` checks when verifying element attributes.
 
 ### Testing Conventions
 
