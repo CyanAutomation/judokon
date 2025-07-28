@@ -118,6 +118,7 @@ export function generateCardStats(card, cardType = "common") {
  *
  * 4. Construct the signature move HTML:
  *    - Create a `<div>` element with the class `signature-move-container` and the card type as an additional class.
+ *    - Add a `data-tooltip-id="ui.signatureBar"` attribute for tooltip support.
  *    - Add `<span>` elements for the label ("Signature Move:") and the escaped technique name.
  *    - Ensure the band is at least 44px tall for touch accessibility (see PRD: touch target size).
  *
@@ -164,7 +165,7 @@ export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "commo
   const cardClass = cardType.toLowerCase();
 
   return `
-    <div class="signature-move-container ${cardClass}">
+    <div class="signature-move-container ${cardClass}" data-tooltip-id="ui.signatureBar">
       <span class="signature-move-label">Signature Move:</span>
       <span class="signature-move-value">${techniqueName}</span>
     </div>

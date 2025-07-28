@@ -62,7 +62,7 @@ describe("renderJudokaCard", () => {
     const cardEl = document.createElement("div");
     cardEl.className = "judoka-card";
     cardEl.innerHTML =
-      '<div class="card-top-bar"></div><div class="card-portrait"></div><div class="card-stats"></div><div class="signature-move-container"></div>';
+      '<div class="card-top-bar"></div><div class="card-portrait"></div><div class="card-stats"></div><div class="signature-move-container" data-tooltip-id="ui.signatureBar"></div>';
     wrapper.className = "card-container";
     wrapper.appendChild(cardEl);
     generateMock = vi.fn(async () => wrapper);
@@ -86,7 +86,7 @@ describe("renderJudokaCard", () => {
     const card = document.createElement("div");
     card.className = "judoka-card";
     card.innerHTML =
-      '<div class="card-top-bar"></div><div class="card-portrait"></div><div class="card-stats"></div><div class="signature-move-container"></div>';
+      '<div class="card-top-bar"></div><div class="card-portrait"></div><div class="card-stats"></div><div class="signature-move-container" data-tooltip-id="ui.signatureBar"></div>';
     container.appendChild(card);
     document.body.appendChild(container);
     const { toggleInspectorPanels } = await import("../../src/helpers/cardUtils.js");

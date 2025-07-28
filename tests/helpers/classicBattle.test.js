@@ -13,7 +13,7 @@ describe("battleUI helpers", () => {
 
   it("resetStatButtons clears selection and re-enables buttons", () => {
     document.body.innerHTML =
-      '<div id="stat-buttons"><button class="selected" style="background-color:red"></button><button class="selected"></button></div>';
+      '<div id="stat-buttons" data-tooltip-id="ui.selectStat"><button class="selected" style="background-color:red"></button><button class="selected"></button></div>';
     vi.useFakeTimers();
     vi.stubGlobal("requestAnimationFrame", (cb) => setTimeout(cb, 0));
     const buttons = getStatButtons();
@@ -43,7 +43,7 @@ describe("battleUI helpers", () => {
 
   it("DOM helper functions return elements", () => {
     document.body.innerHTML =
-      '<div id="stat-buttons"><button></button></div><p id="round-message"></p>';
+      '<div id="stat-buttons" data-tooltip-id="ui.selectStat"><button></button></div><p id="round-message"></p>';
     expect(getStatButtons().length).toBe(1);
     expect(getRoundMessageEl()).toBeInstanceOf(HTMLElement);
   });
