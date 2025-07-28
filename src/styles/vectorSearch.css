@@ -1,6 +1,6 @@
 #vector-results-table {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 2fr 0.75fr 0.5fr;
   width: 100%;
   padding: var(--space-lg);
   gap: var(--space-med);

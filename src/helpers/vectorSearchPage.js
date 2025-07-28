@@ -1,5 +1,5 @@
 import { onDomReady } from "./domReady.js";
-import { findMatches, fetchContextById } from "./vectorSearch.js";
+import { findMatches, fetchContextById, loadEmbeddings } from "./vectorSearch.js";
 // Load Transformers.js dynamically from jsDelivr when first used
 // This avoids bundling the large library with the rest of the code.
 
@@ -204,6 +204,8 @@ async function handleSearch(event) {
 function init() {
   spinner = document.getElementById("search-spinner");
   if (spinner) spinner.style.display = "none";
+  // Preload embeddings on page load so search runs instantly
+  loadEmbeddings();
   const form = document.getElementById("vector-search-form");
   form?.addEventListener("submit", handleSearch);
   form?.addEventListener("keydown", (e) => {
