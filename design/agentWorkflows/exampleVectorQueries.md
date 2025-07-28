@@ -12,7 +12,7 @@ Embeddings are stored in `client_embeddings.json` as an array of objects. Each e
   "text": "Classic Battle is Ju-Do-Kon!'s introductory mode...",
   "embedding": [0.12, -0.04, 0.33, ...],
   "source": "PRD",
-  "tags": ["battle", "overview"],
+  "tags": ["design-doc", "battle", "overview"],
   "version": 1
 }
 ```
@@ -21,7 +21,9 @@ Embeddings are stored in `client_embeddings.json` as an array of objects. Each e
 - **text** – snippet used to generate the embedding
 - **embedding** – numeric vector (typically ≤384 dimensions)
 - **source** – origin of the text (PRD, tooltip, etc.)
-- **tags** – optional categories for filtering results
+- **tags** – optional categories for filtering results. Entries include a broad
+  label such as `prd` or `data` along with specific tags like `judoka-data` or
+  `design-doc`.
 - **version** – embedding file version
 
 ## Prompt Examples
@@ -31,6 +33,12 @@ Embeddings are stored in `client_embeddings.json` as an array of objects. Each e
 ```
 You are a QA assistant. Search the vector store for requirements on the Settings page. Use the top result titles in your test plan.
 Query: "settings feature flags order"
+```
+
+To narrow results, pass tag filters to your search call:
+
+```
+findMatches(queryVector, 5, ["judoka-data"]);
 ```
 
 ### Card Generation Agent

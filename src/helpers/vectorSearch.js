@@ -67,14 +67,15 @@ export function cosineSimilarity(a, b) {
  * 2. Validate that `queryVector` length matches the embedding dimension.
  *    - If mismatched or embeddings are empty, return an empty array.
  *    - Return `null` when embeddings fail to load.
- * 3. Compute cosine similarity between `queryVector` and each entry's embedding.
- * 4. Sort the entries by similarity score and return the top `topN` results.
+ * 3. When `tags` are provided, filter the embeddings to those containing all tags.
+ * 4. Compute cosine similarity between `queryVector` and each entry's embedding.
+ * 5. Sort the entries by similarity score and return the top `topN` results.
  *
  * @param {number[]} queryVector - Vector to compare.
  * @param {number} [topN=5] - Number of matches to return.
  * @returns {Promise<Array<{score:number} & Record<string, any>>>} Match results sorted by score.
  */
-export async function findMatches(queryVector, topN = 5) {
+export async function findMatches(queryVector, topN = 5, tags = []) {
   const entries = await loadEmbeddings();
   if (entries === null) {
     return null;
@@ -86,8 +87,12 @@ export async function findMatches(queryVector, topN = 5) {
     console.warn("Query vector length mismatch.");
     return [];
   }
+  const filtered =
+    Array.isArray(tags) && tags.length > 0
+      ? entries.filter((e) => Array.isArray(e.tags) && tags.every((t) => e.tags.includes(t)))
+      : entries;
 
-  return entries
+  return filtered
     .map((entry) => ({ score: cosineSimilarity(queryVector, entry.embedding), ...entry }))
     .sort((a, b) => b.score - a.score)
     .slice(0, topN);

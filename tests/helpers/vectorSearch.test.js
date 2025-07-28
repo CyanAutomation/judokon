@@ -8,8 +8,8 @@ afterEach(() => {
 });
 
 const sample = [
-  { id: "a", text: "A", embedding: [1, 0], source: "doc1" },
-  { id: "b", text: "B", embedding: [0, 1], source: "doc2" }
+  { id: "a", text: "A", embedding: [1, 0], source: "doc1", tags: ["foo"] },
+  { id: "b", text: "B", embedding: [0, 1], source: "doc2", tags: ["bar"] }
 ];
 
 describe("vectorSearch", () => {
@@ -45,6 +45,16 @@ describe("vectorSearch", () => {
     expect(res.length).toBe(1);
     expect(res[0].id).toBe("a");
     expect(res[0].score).toBeCloseTo(1);
+  });
+
+  it("filters by tags", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sample });
+    vi.resetModules();
+    const { findMatches } = await import("../../src/helpers/vectorSearch.js");
+    const res = await findMatches([1, 0], 1, ["foo"]);
+    expect(res[0].id).toBe("a");
+    const other = await findMatches([1, 0], 1, ["bar"]);
+    expect(other[0].id).toBe("b");
   });
 
   it("returns empty array for dimension mismatch", async () => {

@@ -53,7 +53,7 @@ Ultimately, these issues increase the risk of bugs reaching players, slow down t
 | P1 | Client-Side Embedding Store | Save all text entries and their embeddings in a `client_embeddings.json` file for browser use |
 | P1 | Cosine Similarity Function | Implement JavaScript logic to compare a query vector to all indexed entries and return top N matches |
 | P1 | Static Query Interface | Provide an in-browser demo or utility for querying the embedding file (e.g. using a sample prompt vector) |
-| P2 | Vector Metadata Fields | Store source metadata with each embedding (e.g. “source: PRD Tooltip System”, “type: stat-description”) |
+| P2 | Vector Metadata Fields | Store source metadata with each embedding (e.g. “source: PRD Tooltip System”, “type: stat-description”). Include granular tags like `judoka-data`, `tooltip`, `design-doc`, or `agent-workflow` for filtering. |
 | P2 | Agent Integration Example | Provide a sample script or markdown prompt to demonstrate how AI agents can use the vector store |
 | P3 | Embedding Refresh Pipeline | Optionally support rebuilding the embedding index when PRDs or tooltip files are updated (manual or script-based trigger) |
 
@@ -75,6 +75,7 @@ regeneration whenever those folders change.
 - [x] At least 30 unique content entries from across the PRDs/tooltips are indexed in the demo build
 - [x] Each returned result includes both the match score and a reference to the original source
 - [x] Agent prompt templates are provided with guidance on embedding format and retrieval usage
+- [x] Search function accepts optional tag filters so agents can restrict matches to specific categories
 - [x] The system handles malformed or missing embeddings gracefully (e.g. logs a warning or returns empty result)
 - [x] The `client_embeddings.json` file stays under the 3MB threshold to ensure quick page load and GitHub Pages compatibility
 
