@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   createInfoBar,
   initInfoBar,
@@ -9,49 +9,56 @@ import {
 import { createInfoBarHeader } from "../utils/testUtils.js";
 
 describe("InfoBar component", () => {
+  let header;
+
+  beforeEach(() => {
+    header = document.createElement("header");
+    createInfoBar(header);
+    document.body.appendChild(header);
+  });
+
   it("creates DOM structure with proper aria attributes", () => {
-    const header = document.createElement("header");
-    const bar = createInfoBar(header);
-    const msg = bar.querySelector("#round-message");
-    const timer = bar.querySelector("#next-round-timer");
-    const score = bar.querySelector("#score-display");
+    const msg = header.querySelector("#round-message");
+    const timer = header.querySelector("#next-round-timer");
+    const score = header.querySelector("#score-display");
     expect(msg.getAttribute("aria-live")).toBe("polite");
     expect(timer.getAttribute("aria-live")).toBe("polite");
     expect(score.getAttribute("aria-live")).toBe("off");
   });
 
-  it("updates message, score and countdown", () => {
-    vi.useFakeTimers();
-    const header = document.createElement("header");
-    createInfoBar(header);
-    document.body.appendChild(header);
-
+  it("updates message and score", () => {
     showMessage("Hello");
     expect(document.getElementById("round-message").textContent).toBe("Hello");
 
     updateScore(1, 2);
     expect(document.getElementById("score-display").textContent).toBe("You: 1\nOpponent: 2");
+  });
 
+  it("startCountdown updates timer each second", () => {
+    const timer = vi.useFakeTimers();
     startCountdown(2);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 2s");
-    vi.advanceTimersByTime(1000);
+    timer.advanceTimersByTime(1000);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 1s");
-    vi.advanceTimersByTime(1000);
+    timer.advanceTimersByTime(1000);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 0s");
+    timer.clearAllTimers();
   });
 
   it("initializes from existing DOM", () => {
-    vi.useFakeTimers();
-    const header = createInfoBarHeader();
-    document.body.appendChild(header);
-    initInfoBar(header);
+    const timer = vi.useFakeTimers();
+    document.body.innerHTML = "";
+    const existing = createInfoBarHeader();
+    document.body.appendChild(existing);
+    initInfoBar(existing);
     showMessage("Hi");
     expect(document.getElementById("round-message").textContent).toBe("Hi");
     updateScore(2, 3);
     expect(document.getElementById("score-display").textContent).toBe("You: 2\nOpponent: 3");
     startCountdown(1);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 1s");
-    vi.advanceTimersByTime(1000);
+    timer.advanceTimersByTime(1000);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 0s");
+    timer.clearAllTimers();
   });
 });
