@@ -220,6 +220,13 @@ body {
   text-align: center;
 }
 
+#battle-area #controls .stat-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+}
+
 @media (max-width: 480px) {
   #battle-area {
     flex-direction: column;
