@@ -306,6 +306,7 @@ higher value, for example
 - Both the generation script and the search page use **mean pooled** embeddings so the query vector matches the stored vectors.
 
 - Results appear below the form with up to five entries that show match score and source.
+- Search results are displayed in a responsive table with alternating row colors for readability.
 - Scores of **0.6** or higher are treated as strong matches in the UI; weaker results are hidden unless no strong match is found.
 - Tag filters can be passed to limit results (e.g. only `judoka-data` entries).
 - Each result includes an `id` so agents can fetch more text via `fetchContextById`.
