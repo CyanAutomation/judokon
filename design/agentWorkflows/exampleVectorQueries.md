@@ -27,6 +27,7 @@ Embeddings are stored in `client_embeddings.json` as an array of objects. Each e
 - **version** – embedding file version
 
 ## Prompt Examples
+
 Agent scripts can import `findMatches` from `src/helpers/vectorSearch.js` to query the embeddings programmatically.
 
 ```javascript
