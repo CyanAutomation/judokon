@@ -167,7 +167,8 @@ export async function fetchContextById(id, radius = 1) {
   const [, filename, num] = match;
   const index = Number(num) - 1;
   try {
-    const url = new URL(`../../design/productRequirementsDocuments/${filename}`, import.meta.url).href;
+    const url = new URL(`../../design/productRequirementsDocuments/${filename}`, import.meta.url)
+      .href;
     const res = await fetch(url);
     if (!res.ok) return [];
     const text = await res.text();
