@@ -101,6 +101,7 @@ rather than an entire file.
 
 - A simple web UI mockup is shown below.
 - Must work offline within GitHub Pages without requiring server-side infrastructure.
+- When testing locally, serve the repository with `npm start` so the search page can fetch Markdown context files.
 - Vector format must be JSON-serializable and readable by JavaScript.
 - Embedding dimensionality must be ≤384 for performance.
 - UI must support keyboard navigation and screen readers.

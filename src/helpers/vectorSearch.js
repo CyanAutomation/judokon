@@ -167,8 +167,7 @@ export async function fetchContextById(id, radius = 1) {
   const [, filename, num] = match;
   const index = Number(num) - 1;
   try {
-    const url = new URL(`../../design/productRequirementsDocuments/${filename}`, import.meta.url)
-      .href;
+    const url = new URL(`../../design/productRequirementsDocuments/${filename}`, import.meta.url).href;
     const res = await fetch(url);
     if (!res.ok) return [];
     const text = await res.text();
@@ -176,7 +175,8 @@ export async function fetchContextById(id, radius = 1) {
     const start = Math.max(0, index - radius);
     const end = Math.min(chunks.length, index + radius + 1);
     return chunks.slice(start, end);
-  } catch {
+  } catch (err) {
+    console.error(`Failed to load context from ${filename}`, err);
     return [];
   }
 }
