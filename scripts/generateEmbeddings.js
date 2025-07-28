@@ -20,7 +20,7 @@
  *      labels such as "judoka-data" or "tooltip".
  * 6. Stream each output object directly to `client_embeddings.json` using
  *    `fs.createWriteStream`.
- *    - Track bytes written and abort if the total exceeds MAX_OUTPUT_SIZE.
+ *    - Track bytes written and abort if the total exceeds MAX_OUTPUT_SIZE (3 MB).
  * 7. After writing the file, record the total count, average vector length,
  *    and output size in `client_embeddings.meta.json`.
  */
