@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="../styles/layout.css" />
     <link rel="stylesheet" href="../styles/components.css" />
     <link rel="stylesheet" href="../styles/utilities.css" />
+    <link rel="stylesheet" href="../styles/vectorSearch.css" />
     <link rel="icon" type="image/png" href="../assets/images/favicon.ico" />
   </head>
   <body>
@@ -42,12 +43,17 @@
           Click a result to load more context when available.
         </p>
         <div id="search-spinner" class="loading-spinner" aria-hidden="true"></div>
-        <section
-          id="search-results"
-          role="region"
-          aria-live="polite"
-          aria-label="Search results"
-        ></section>
+        <table id="vector-results-table" aria-label="Search results">
+          <thead>
+            <tr>
+              <th>Match</th>
+              <th>Source</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <p id="search-results-message" class="search-results-message" aria-live="polite"></p>
       </main>
 
       <footer>

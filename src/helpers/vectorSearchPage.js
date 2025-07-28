@@ -107,7 +107,7 @@ async function getExtractor() {
  *    - When multiple strong matches exist, compare the top two scores and keep
  *      only the first when the difference exceeds `DROP_OFF_THRESHOLD`.
  * 7. Hide the spinner and handle empty or missing embeddings cases.
- * 8. Build an ordered list. When no strong matches exist, show a warning and
+ * 8. Build a results table. When no strong matches exist, show a warning and
  *    display up to three weak matches.
  * 9. Attach handlers to load surrounding context on result activation.
  * 10. On error, log the issue, hide the spinner, and display a fallback message.
@@ -117,68 +117,77 @@ async function getExtractor() {
 async function handleSearch(event) {
   event.preventDefault();
   const input = document.getElementById("vector-search-input");
-  const resultsEl = document.getElementById("search-results");
+  const table = document.getElementById("vector-results-table");
+  const tbody = table?.querySelector("tbody");
   const query = input.value.trim();
-  resultsEl.textContent = "";
+  if (tbody) tbody.textContent = "";
   if (!query) return;
+  const messageEl = document.getElementById("search-results-message");
   spinner.style.display = "block";
-  resultsEl.textContent = "Searching...";
+  if (messageEl) messageEl.textContent = "Searching...";
   try {
     const model = await getExtractor();
     const result = await model(query, { pooling: "mean" });
     const vector = Array.from(result.data ?? result);
     const matches = await findMatches(vector, 5);
-    resultsEl.textContent = "";
+    if (messageEl) messageEl.textContent = "";
     spinner.style.display = "none";
     if (matches === null) {
-      resultsEl.textContent = "Embeddings could not be loaded – please check console.";
+      if (messageEl)
+        messageEl.textContent = "Embeddings could not be loaded – please check console.";
       return;
     }
     if (matches.length === 0) {
-      resultsEl.textContent = "No close matches found — refine your query.";
+      if (messageEl) messageEl.textContent = "No close matches found — refine your query.";
       return;
     }
 
     const strongMatches = matches.filter((m) => m.score >= SIMILARITY_THRESHOLD);
     const weakMatches = matches.filter((m) => m.score < SIMILARITY_THRESHOLD);
 
-    const list = document.createElement("ol");
     const toRender = selectMatches(strongMatches, weakMatches);
 
-    if (strongMatches.length === 0) {
-      const warning = document.createElement("p");
-      warning.classList.add("search-results-message");
-      warning.textContent =
+    if (strongMatches.length === 0 && messageEl) {
+      messageEl.textContent =
         "\u26A0\uFE0F No strong matches found, but here are the closest matches based on similarity.";
-      resultsEl.appendChild(warning);
     }
 
     for (const match of toRender) {
-      const li = document.createElement("li");
-      li.classList.add("search-result-item");
-      li.dataset.id = match.id;
-      li.setAttribute("role", "button");
-      li.tabIndex = 0;
-      li.setAttribute("aria-expanded", "false");
-      li.innerHTML = `<p>${match.text}</p><p class="small-text">Source: ${match.source} (score: ${match.score.toFixed(2)})</p>`;
+      const row = document.createElement("tr");
+      row.classList.add("search-result-item");
+      row.dataset.id = match.id;
+      row.setAttribute("role", "button");
+      row.tabIndex = 0;
+      row.setAttribute("aria-expanded", "false");
+
+      const textCell = document.createElement("td");
+      textCell.classList.add("match-text");
+      textCell.textContent = match.text;
       const context = document.createElement("div");
       context.classList.add("result-context", "small-text");
       context.setAttribute("aria-live", "polite");
-      li.appendChild(context);
-      li.addEventListener("click", () => loadResultContext(li));
-      li.addEventListener("keydown", (e) => {
+      textCell.appendChild(context);
+
+      const sourceCell = document.createElement("td");
+      sourceCell.textContent = match.source;
+
+      const scoreCell = document.createElement("td");
+      scoreCell.textContent = match.score.toFixed(2);
+
+      row.append(textCell, sourceCell, scoreCell);
+      row.addEventListener("click", () => loadResultContext(row));
+      row.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          loadResultContext(li);
+          loadResultContext(row);
         }
       });
-      list.appendChild(li);
+      tbody?.appendChild(row);
     }
-    resultsEl.appendChild(list);
   } catch (err) {
     console.error("Search failed", err);
     spinner.style.display = "none";
-    resultsEl.textContent = "An error occurred while searching.";
+    if (messageEl) messageEl.textContent = "An error occurred while searching.";
   }
 }
 
