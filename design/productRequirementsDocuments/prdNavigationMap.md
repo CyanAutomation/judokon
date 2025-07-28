@@ -6,7 +6,7 @@
 
 This PRD defines an immersive, thematic expanded map view for Ju-Do-Kon!’s navigation, transforming mode selection into a “Judo Training Village” experience. It improves discovery of new modes, reduces confusion, and deepens immersion, with fallback and accessibility options to ensure seamless, inclusive navigation across devices.
 
-> Mei finishes a match and taps the glowing map icon. The Judo Training Village slides up, revealing the Dojo, Budokan, and Kodokan — each beautifully rendered and inviting. She feels transported into a living judo world, exploring new modes with excitement and confidence.
+> Mei finishes a match and taps the glowing map icon. The Judo Training Village slides up, revealing the Dojo (training hall), Budokan (martial arts arena), and Kodokan (judo headquarters) — each beautifully rendered and inviting. She feels transported into a living judo world, exploring new modes with excitement and confidence.
 
 ---
 
@@ -38,7 +38,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 ## Player Actions
 
 - **Trigger:** In landscape mode, tapping the bottom right corner map icon expands a "Judo Training Village" map from the footer with a smooth upward slide animation (<500ms).
-- **Map Layout:** The map presents different game modes as a grid of image tiles representing village landmarks (Dojo, Budokan, Kodokan), with minimum 44px touch target size. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
+- **Map Layout:** The map presents different game modes as a grid of image tiles representing village landmarks (Dojo (training hall), Budokan (martial arts arena), Kodokan (judo headquarters)), with minimum 44px touch target size. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
 - **Navigation:** Tapping a tile smoothly transitions the player to the selected game mode.
 - **Cancel/Back Out:** Tapping outside the map area or pressing the map icon button again collapses the map. If device orientation changes mid-animation, the expansion is canceled and reverts to the default footer state.
 - **Fallback:** If the map fails to load, a simplified, high-contrast text menu appears instantly.
@@ -109,9 +109,9 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - **Wireframe Description:**
   - **Collapsed Footer:** Shows map icon in bottom right hand corner.
   - **Expanded Map View:** Grid of image tiles representing:
-    - **Dojo:** Leads to Training Mode.
-    - **Budokan:** Leads to Battle Mode.
-    - **Kodokan:** Leads to Browse Mode.
+    - **Dojo (training hall):** Leads to Training Mode.
+    - **Budokan (martial arts arena):** Leads to Battle Mode.
+    - **Kodokan (judo headquarters):** Leads to Browse Mode.
   - Tiles must be ≥44px with generous padding (≥8px).
 - **Animation:** Slide-up animation easing (`ease-out`) and bounce effect on tile hover/tap.
 - **Touch Areas:** All tiles ≥44px.
@@ -136,7 +136,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 ## Tasks
 
 - [ ] **1.0 Design Village Map Navigation (P1)**
-  - [ ] 1.1 Design tile positions on the village map grid with 44px+ targets (Dojo, Budokan, Kodokan).
+  - [ ] 1.1 Design tile positions on the village map grid with 44px+ targets (Dojo, Budokan, Kodokan (judo headquarters)).
 - [ ] **2.0 Implement Footer Map Expansion (P1)**
   - [ ] 2.1 Code smooth slide-up animation (<500ms, `ease-out` easing).
   - [ ] 2.2 Implement tap-outside-to-close and map icon toggle behavior.
