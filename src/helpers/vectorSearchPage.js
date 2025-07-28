@@ -88,6 +88,7 @@ async function handleSearch(event) {
 
     if (strongMatches.length === 0) {
       const warning = document.createElement("p");
+      warning.classList.add("search-results-message");
       warning.textContent =
         "\u26A0\uFE0F No strong matches found, but here are the closest matches based on similarity.";
       resultsEl.appendChild(warning);
@@ -95,6 +96,7 @@ async function handleSearch(event) {
 
     for (const match of toRender) {
       const li = document.createElement("li");
+      li.classList.add("search-result-item");
       li.innerHTML = `<p>${match.text}</p><p class="small-text">Source: ${match.source} (score: ${match.score.toFixed(2)})</p>`;
       list.appendChild(li);
     }
