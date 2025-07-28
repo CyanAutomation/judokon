@@ -7,6 +7,9 @@ import {
 
 test.describe("Meditation screen", () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() =>
+      localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }))
+    );
     await page.goto("/src/pages/meditation.html");
   });
 

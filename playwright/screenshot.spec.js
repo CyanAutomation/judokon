@@ -35,6 +35,7 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
       });
       await page.addInitScript(() => {
         Math.random = () => 0.42;
+        localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
       });
       await page.goto(url, { waitUntil: "domcontentloaded" });
       await expect(page).toHaveScreenshot(name, { fullPage: true });
