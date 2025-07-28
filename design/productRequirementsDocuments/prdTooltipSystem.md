@@ -8,9 +8,9 @@ The Tooltip System introduces dynamic, in-context guidance across JU-DO-KON! usi
 
 ## Problem Statement / Why It Matters
 
-New or less experienced players may not understand what certain game elements represent — such as unfamiliar stats (e.g. Kumi-kata), game modes, or buttons — leading to confusion or disengagement. User feedback and playtest sessions have highlighted the need for clear in-context guidance:
+New or less experienced players may not understand what certain game elements represent — such as unfamiliar stats (e.g. Kumi-kata (grip fighting)), game modes, or buttons — leading to confusion or disengagement. User feedback and playtest sessions have highlighted the need for clear in-context guidance:
 
-> “I didn’t know what Kumi-kata meant. I just picked the highest number.” — playtester, age 11
+> “I didn’t know what Kumi-kata (grip fighting) meant. I just picked the highest number.” — playtester, age 11
 
 Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without hardcoding strings or duplicating content. This limits future extensibility, localization, and scalability of user help content.
 
@@ -30,7 +30,7 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 
 ## User Stories
 
-- As a new player, I want to understand what a stat like Power or Kumi-kata means so that I can make better decisions during a battle.
+- As a new player, I want to understand what a stat like Power or Kumi-kata (grip fighting) means so that I can make better decisions during a battle.
 - As a designer, I want to update tooltip text for a stat or UI element in one place so that the change appears everywhere it’s used.
 - As a developer, I want a reusable and lightweight tooltip system so that I don’t need to manually write popup logic for each feature.
 - As a non-technical content editor, I want to be able to suggest or preview tooltip text without editing core JavaScript code.

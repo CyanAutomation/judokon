@@ -91,7 +91,7 @@ Each card consists of elements stored in `judoka.json`:
 - Nationality (depicted via flag)
 - Weight class (one of the 14 official IJF classes: 7 male, 7 female)
 - Portrait of the judoka’s likeness
-- Stats (Power, Speed, Technique, Kumi-kata, Ne-waza) with 0–10 scale
+- Stats (Power, Speed, Technique, Kumi-kata *grip fighting*, Ne-waza *ground grappling*) with 0–10 scale
 - Signature Move
 
 The weight class badge appears in the top-right corner of the portrait with a transparent background and white text for readability.
@@ -150,8 +150,8 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 |                                                |
 | Stats:                                         |
 | Power: [0-10]   Speed: [0-10]                  |
-| Technique: [0-10]   Kumi-kata: [0-10]          |
-| Ne-waza: [0-10]                                |
+| Technique: [0-10]   Kumi-kata (grip fighting): [0-10]          |
+| Ne-waza (ground grappling): [0-10]                                |
 |                                                |
 | [ FLIP BUTTON ] [ INFO ICON ]                  |
 +------------------------------------------------+
@@ -175,7 +175,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 - **Stats Padding & Typography:**
   - Horizontal padding should be minimal (use `var(--space-small)`).
   - Stats text uses `--font-medium` and line-height `1.2` to remain legible without increasing panel height.
-- **Signature Move Band:** `height: max(10%, var(--touch-target-size))` keeps the 44px tap target while maintaining the card's 2:3 ratio.
+- **Signature Move Band (special stat bar):** `height: max(10%, var(--touch-target-size))` keeps the 44px tap target while maintaining the card's 2:3 ratio.
 - The label and value are centered vertically within that band.
   - `.judoka-card` overrides `--touch-target-size` to `44px` so the band stays 39px tall on a 260×390 card without leaving gaps above or below it.
 - **Padding Adjustments:** Section percentages already account for vertical padding because `.judoka-card` uses `box-sizing: border-box`. No `calc()` subtraction is necessary.

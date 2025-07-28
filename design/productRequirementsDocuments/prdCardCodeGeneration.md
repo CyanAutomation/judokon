@@ -86,7 +86,7 @@ Simplifies storage and retrieval of Judoka data without exposing sensitive infor
 ### 3.2 Process (P1)
 
 1. **Concatenate Stats**
-   - Combine power, speed, technique, kumikata, and newaza into a single string.
+   - Combine power, speed, technique, kumikata (grip fighting), and newaza (ground grappling) into a single string.
 2. **Build Raw Code String**
    - Format: `v1-FIRSTNAME-SURNAME-COUNTRY-WEIGHTCLASS-SIGNATUREMOVEID-STATS`
    - Example: `v1-TADAHIRO-NOMURA-JP-60-1234-98765`
@@ -132,8 +132,8 @@ Simplifies storage and retrieval of Judoka data without exposing sensitive infor
     "power": 9,
     "speed": 8,
     "technique": 7,
-    "kumikata": 6,
-    "newaza": 5
+    "kumikata (grip fighting)": 6,
+    "newaza (ground grappling)": 5
   }
 }
 ```

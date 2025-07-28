@@ -1,10 +1,10 @@
-# PRD: Meditation Screen
+# PRD: Meditation Screen (Zen mode)
 
 ---
 
 ## TL;DR
 
-This PRD defines a Meditation Screen for Ju-Do-Kon! to provide a moment of calm between intense battles. By combining a wise quote with the soothing presence of helper character KG, players are encouraged to pause, reflect, and regain balance, improving pacing, focus, and long-term engagement.
+This PRD defines a Meditation Screen (Zen mode) for Ju-Do-Kon! to provide a moment of calm between intense battles. By combining a wise quote with the soothing presence of helper character KG, players are encouraged to pause, reflect, and regain balance, improving pacing, focus, and long-term engagement.
 
 ---
 

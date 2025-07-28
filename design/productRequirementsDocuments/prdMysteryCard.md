@@ -90,7 +90,7 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 | Signature Move: ?    ← (Signature move is always shown as "?")           |
 |                                                |
 | Power: ?     Speed: ?                          |
-| Technique: ? Kumi-kata: ? Ne-waza: ?           |
+| Technique: ? Kumi-kata (grip fighting): ? Ne-waza (ground grappling): ?           |
 +————————————————+
 ```
 
