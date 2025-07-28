@@ -57,6 +57,9 @@
   --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.2);
   --transition-fast: all 150ms ease; /* UI animations */
 
+  /* Carousel */
+  --scroll-marker-size: 10px;
+
   /* Font sizes */
   --font-small: 0.9rem;
   --font-medium: 1rem;

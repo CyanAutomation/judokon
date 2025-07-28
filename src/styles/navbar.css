@@ -57,8 +57,8 @@
 }
 
 .scroll-marker {
-  width: 10px;
-  height: 10px;
+  width: var(--scroll-marker-size);
+  height: var(--scroll-marker-size);
   border-radius: 50%;
   background: var(--color-tertiary);
   opacity: 0.7;
