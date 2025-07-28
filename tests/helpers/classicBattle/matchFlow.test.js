@@ -97,6 +97,36 @@ describe("classicBattle match flow", () => {
     );
   });
 
+  it("ends the match when opponent reaches 10 wins", async () => {
+    const { handleStatSelection, _resetForTest } = await import(
+      "../../../src/helpers/classicBattle.js"
+    );
+    _resetForTest();
+    for (let i = 0; i < 10; i++) {
+      document.getElementById("player-card").innerHTML =
+        `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+      document.getElementById("computer-card").innerHTML =
+        `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
+      await handleStatSelection("power");
+    }
+    expect(document.querySelector("header #score-display").textContent).toBe(
+      "You: 0\nOpponent: 10"
+    );
+    expect(document.querySelector("header #round-message").textContent).toMatch(
+      /opponent wins the match/i
+    );
+
+    document.getElementById("player-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+    document.getElementById("computer-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
+    await handleStatSelection("power");
+
+    expect(document.querySelector("header #score-display").textContent).toBe(
+      "You: 0\nOpponent: 10"
+    );
+  });
+
   it("scheduleNextRound enables button and starts next round on click", async () => {
     document.body.innerHTML += '<button id="next-round-button" disabled></button>';
     const battleMod = await import("../../../src/helpers/classicBattle.js");
