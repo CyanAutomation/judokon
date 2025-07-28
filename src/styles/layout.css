@@ -123,7 +123,7 @@ body {
     /* border: 2px solid red; */
   }
 }
-.homeHelperContainer {
+.home-helper-container {
   background: var(--color-tertiary);
   border: 2px solid var(--color-tertiary);
   border-radius: var(--radius-md);
@@ -131,7 +131,7 @@ body {
   /* border: 2px solid red; */
 }
 
-.homeHelperContainer img {
+.home-helper-container img {
   max-width: 50vw;
   height: auto;
   border-radius: var(--radius-md);
@@ -141,7 +141,7 @@ body {
   background: var(--color-tertiary);
   border: 1px solid var(--color-secondary);
 }
-.locationTileContainer {
+.location-tile-container {
   padding: var(--space-md);
   display: inline-flex;
   gap: var(--space-lg);
