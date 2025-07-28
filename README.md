@@ -103,6 +103,10 @@ Some helpers such as `classicBattle.js` keep match state between rounds. The
 `_resetForTest()` function resets this internal state. Invoke it at the start of
 any unit test that depends on the initial score or timer conditions.
 
+All Vitest suites load `tests/setup.js`, which resets the DOM and restores
+global mocks after each test. This cleanup now clears `localStorage` and
+reinstates `window.matchMedia` so stubs never leak between tests.
+
 ### Troubleshooting Playwright Tests
 
 A `Test timeout ... waiting for locator('#general-settings-toggle')` error usually means the Settings page failed to load or the server was unreachable. Verify that:
