@@ -243,6 +243,8 @@ the footer buttons clear the persistent navigation bar. Users can return to the
 - `utilities.css` – helper classes.
 - Page-specific files such as `carousel.css` and `quote.css`.
 
+Class names follow **kebab-case** (lowercase with dashes) throughout all style sheets. Avoid camelCase names to keep selectors consistent.
+
 Import styles in this order: `base.css` first, then layout and component files, and finally `utilities.css`.
 
 Global rules should not be repeated across files.

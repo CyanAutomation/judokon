@@ -35,7 +35,7 @@
   /* border: 2px solid red; */
 }
 
-.locationTile {
+.location-tile {
   max-width: 100%;
   max-height: 36vh;
   width: auto;
@@ -46,7 +46,7 @@
   align-items: center;
 }
 
-.locationTileSmall {
+.location-tile-small {
   border-radius: var(--radius-lg);
   display: flex;
   flex: 1 1 auto;
@@ -54,14 +54,14 @@
   /* border: 2px solid red; */
 }
 
-.locationTileSmall img {
+.location-tile-small img {
   max-width: 10vh;
   height: auto;
   aspect-ratio: 1 / 1;
   border-radius: var(--radius-lg);
   flex: 1 1 auto;
 }
-.svgTile {
+.svg-tile {
   aspect-ratio: 1 / 1;
   display: flex;
   justify-content: center;
