@@ -14,7 +14,8 @@ const SIMILARITY_THRESHOLD = 0.6;
  * @pseudocode
  * 1. Return the cached `extractor` when available.
  * 2. Dynamically import the Transformers.js `pipeline` helper.
- * 3. Instantiate a feature-extraction pipeline with the MiniLM model and store it.
+ * 3. Instantiate a quantized feature-extraction pipeline with the MiniLM model
+ *    and store it.
  *    - On failure, log the error, reset `extractor` to `null`, and rethrow.
  * 4. Return the initialized `extractor`.
  *
@@ -26,7 +27,9 @@ async function getExtractor() {
       const { pipeline } = await import(
         "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0/dist/transformers.min.js"
       );
-      extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+      extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
+        quantized: true
+      });
     } catch (error) {
       console.error("Model failed to load", error);
       extractor = null;
