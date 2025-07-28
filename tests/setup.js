@@ -1,6 +1,8 @@
 import { expect, afterEach } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 
+const originalMatchMedia = global.matchMedia;
+
 expect.extend({
   toHaveAttribute(element, attribute, expected) {
     const isElem = element && typeof element.getAttribute === "function";
@@ -26,5 +28,6 @@ expect.extend({
 });
 
 afterEach(() => {
+  global.matchMedia = originalMatchMedia;
   resetDom();
 });

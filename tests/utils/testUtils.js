@@ -92,6 +92,9 @@ export function resetDom() {
   if (typeof document !== "undefined" && document.body) {
     document.body.innerHTML = "";
   }
+  if (typeof localStorage !== "undefined") {
+    localStorage.clear();
+  }
   vi.restoreAllMocks();
   vi.useRealTimers();
   vi.resetModules();
