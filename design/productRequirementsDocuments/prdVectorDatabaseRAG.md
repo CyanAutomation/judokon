@@ -67,10 +67,12 @@ After editing PRDs, tooltips, game rules, or any markdown under
 regeneration whenever those folders change.
 
 The generator parses JSON arrays and objects into individual snippets so each
-record receives its own embedding. Tooltips, judoka entries, and PRD sections
-are broken down into discrete blocks with unique IDs. This granularity improves
-lookup accuracy because search results map back to a single section or data row
-rather than an entire file.
+record receives its own embedding. For markdown sources, text is chunked from
+one heading to the next heading of the same or higher level so each section is
+semantically coherent. Tooltips, judoka entries, and PRD sections are broken
+down into discrete blocks with unique IDs. This granularity improves lookup
+accuracy because search results map back to a single section or data row rather
+than an entire file.
 
 ---
 
@@ -114,6 +116,7 @@ rather than an entire file.
 - Matches scoring at least `0.6` are considered strong. When the top match is
   more than `0.4` higher than the next best score, only that top result is
   displayed.
+- Lower scoring results appear only when there are no strong matches.
 - Result messages such as "No strong matches found…" should use the `.search-result-empty` CSS class. Each result entry uses `.search-result-item` and is fully justified with spacing between items.
 
 ### UI Mockup

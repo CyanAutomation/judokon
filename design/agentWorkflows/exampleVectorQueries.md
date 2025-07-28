@@ -35,6 +35,8 @@ import { findMatches } from "../../src/helpers/vectorSearch.js";
 const matches = await findMatches(vector, 5, ["prd"]);
 ```
 
+Because embeddings capture semantics, synonyms like "grip fighting" and "kumi-kata" map closely. The demo interface marks scores of 0.6 and above as strong matches and only shows weaker results when no strong hits are returned.
+
 ### QA Agent
 
 ```
