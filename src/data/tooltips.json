@@ -3,6 +3,7 @@
   "stat.kumikata": "_Kumi-kata_ means **grip fighting**.\nThis stat reflects how well a judoka can control grips and deny their opponent’s attacks.",
   "stat.speed": "**Speed** affects how quickly a judoka can attack or react.\nUseful for counterattacks and surprise techniques.",
   "stat.technique": "**Technique** measures mastery of judo throws and transitions.\nHigh values indicate sharp, precise execution.",
+  "stat.newaza": "_Ne-waza_ means **ground grappling**.\nThis stat reflects skill in pins, holds, and other mat techniques.",
 
   "ui.countryFilter": "Toggle the country filter panel to pick flags and narrow the roster.",
   "ui.clearFilter": "Clear the current country filter and show all judoka.",
