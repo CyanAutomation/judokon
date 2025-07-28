@@ -106,23 +106,7 @@
   min-height: 48px;
   padding: var(--space-md) var(--space-lg);
   font-size: var(--font-medium);
-  color: var(--button-text-color);
-  background-color: var(--button-bg);
-  text-decoration: none;
-  border-radius: var(--radius-md);
   margin-top: var(--space-md);
-}
-
-.cta-button:link,
-.cta-button:visited {
-  color: var(--button-text-color);
-  background-color: var(--button-bg);
-}
-
-.cta-button:hover,
-.cta-button:focus,
-.cta-button:focus-visible {
-  background-color: var(--button-hover-bg);
 }
 
 /* Responsive: KG image above quote on narrow screens */
