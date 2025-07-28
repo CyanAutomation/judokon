@@ -282,7 +282,7 @@ JU-DO-KON! offers a 99-card deck and one-on-one stat battles in a fully browser-
 
 ### Vector Search (RAG)
 
-The project ships with a retrieval-augmented search demo. Run `npm run generate:embeddings` to create the index, then open `src/pages/vectorSearch.html` to try it out. Serve the repository with `npm start` or another local server so the page can fetch markdown files; opening it directly via file protocol will prevent additional context from loading. The generation script at `scripts/generateEmbeddings.js` downloads the quantized `Xenova/all-MiniLM-L6-v2` model the first time it runs—so make sure you have internet access or the download will fail. It allocates an 8 GB heap by default (`--max-old-space-size=8192`); adjust this value if Node still runs out of memory. These embeddings let AI agents query the product requirement docs, tooltip descriptions, and game data. The generated `src/data/client_embeddings.json` is pretty-printed for readability and must be committed for the page to work. Each entry may include a `qaContext` field—a short summary for tooltips or quick answers. **Embeddings must be flat numeric arrays like `[0.12, -0.04, ...]`—objects with `dims` or `data` keys will break the search page.**
+The project ships with a retrieval-augmented search demo. Run `npm run generate:embeddings` to create the index, then open `src/pages/vectorSearch.html` to try it out. Serve the repository with `npm start` or another local server so the page can fetch markdown files; opening it directly via file protocol will prevent additional context from loading. The generation script at `scripts/generateEmbeddings.js` downloads the quantized `Xenova/all-MiniLM-L6-v2` model the first time it runs—so make sure you have internet access or the download will fail. It allocates an 8 GB heap by default (`--max-old-space-size=8192`); adjust this value if Node still runs out of memory. These embeddings let AI agents query the product requirement docs, tooltip descriptions, and game data. The generated `src/data/client_embeddings.json` is pretty-printed for readability and must be committed for the page to work. Each entry may include a `qaContext` field—a short summary for tooltips or quick answers. Each embedding also includes an intent tag (`what`, `how`, or `why`) in its `tags` array, and agents and the search UI can filter results using these tags. **Embeddings must be flat numeric arrays like `[0.12, -0.04, ...]`—objects with `dims` or `data` keys will break the search page.**
 
 Embeddings are generated for each PRD section or JSON record, which allows the search interface to return precise matches instead of entire files. Markdown files are chunked from one heading to the next so each section maintains its context.
 
@@ -311,11 +311,11 @@ higher value, for example
 - The Source column wraps file paths at `/` characters so long locations stack vertically.
 - Embeddings load when the page initializes so the first search doesn't wait for network fetches.
 - Scores of **0.6** or higher are treated as strong matches in the UI; weaker results are hidden unless no strong match is found.
-- Tag filters can be passed to limit results (e.g. only `judoka-data` entries).
+- Tag filters can be passed to limit results (e.g. only `judoka-data` entries or a specific intent like `how`).
 - Each result includes an `id` so agents can fetch more text via `fetchContextById`.
 - The page displays “Embeddings could not be loaded – please check console.” if loading fails, or “No close matches found” when nothing is returned.
 - Users can submit the form by pressing **Enter** in the search box.
-- The search page provides a tag filter dropdown so you can limit results to PRDs, tooltips, or character data.
+- The search page provides a tag filter dropdown so you can limit results to PRDs, tooltips, character data, or a particular intent tag.
 - Agent scripts can import `findMatches` from `src/helpers/vectorSearch.js` to query embeddings programmatically.
 - The transformer library is loaded from jsDelivr on first use, so network connectivity is required for that initial download.
 
