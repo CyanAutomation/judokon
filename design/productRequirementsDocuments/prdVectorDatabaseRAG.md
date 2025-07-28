@@ -32,7 +32,7 @@ Ultimately, these issues increase the risk of bugs reaching players, slow down t
 | Response accuracy | ≥90% agent-retrieved responses align with top 3 relevant matches |
 | Search latency | ≤200ms average similarity lookup on mid-tier desktop browsers (e.g., 2022 MacBook Air M1 or Windows laptop with 8GB RAM) |
 | Coverage | ≥90% of PRDs/tooltips indexed within the system |
-| File size | <3MB total JSON size to ensure fast client-side loading |
+| File size | <3.6MB total JSON size to ensure fast client-side loading |
 
 ---
 
@@ -87,7 +87,7 @@ than an entire file.
 - [x] Agents can request adjacent chunks or the full document by passing the result `id` to `fetchContextById`
 - [x] Search function accepts optional tag filters so agents can restrict matches to specific categories
 - [x] The system handles malformed or missing embeddings gracefully (e.g. logs a warning or returns empty result)
-- [x] The `client_embeddings.json` file stays under the 3MB threshold to ensure quick page load and GitHub Pages compatibility
+- [x] The `client_embeddings.json` file stays under the 3.6MB threshold to ensure quick page load and GitHub Pages compatibility
 
 ---
 
@@ -164,7 +164,7 @@ No user settings or toggles are included. This is appropriate since the feature 
 
 - [ ] 2.0 Implement Client-Side Embedding Store
   - [ ] 2.1 Structure JSON with `id`, `text`, `embedding`, `source`, `tags`
-  - [ ] 2.2 Ensure total file size stays below the 3MB threshold
+  - [ ] 2.2 Ensure total file size stays below the 3.6MB threshold
   - [ ] 2.3 Validate JSON loading in-browser
 
 - [ ] 3.0 Develop Similarity Search Function

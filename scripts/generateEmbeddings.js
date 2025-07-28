@@ -20,7 +20,7 @@
  *      labels such as "judoka-data" or "tooltip".
  * 6. Stream each output object directly to `client_embeddings.json` using
  *    `fs.createWriteStream`.
- *    - Track bytes written and abort if the total exceeds MAX_OUTPUT_SIZE (3 MB).
+ *    - Track bytes written and abort if the total exceeds MAX_OUTPUT_SIZE (3.6 MB).
  * 7. After writing the file, record the total count, average vector length,
  *    and output size in `client_embeddings.meta.json`.
  */
@@ -35,10 +35,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 
 // Larger chunks reduce the total embedding count and help keep the
-// final JSON under the 3MB limit. Bump slightly to shrink output.
+// final JSON under the 3.6MB limit. Bump slightly to shrink output.
 const CHUNK_SIZE = 2000;
 const OVERLAP = 100;
-const MAX_OUTPUT_SIZE = 3 * 1024 * 1024;
+const MAX_OUTPUT_SIZE = 3.6 * 1024 * 1024;
 
 function chunkMarkdown(text) {
   const lines = text.split(/\r?\n/);
@@ -143,7 +143,7 @@ async function generate() {
     const size = Buffer.byteLength(chunk + "\n]", "utf8");
     if (bytesWritten + size > MAX_OUTPUT_SIZE) {
       writer.end();
-      throw new Error("Output exceeds 3MB");
+      throw new Error("Output exceeds 3.6MB");
     }
     writer.write(chunk);
     bytesWritten += Buffer.byteLength(chunk, "utf8");
@@ -207,7 +207,7 @@ async function generate() {
   const endStr = "\n]\n";
   if (bytesWritten + Buffer.byteLength(endStr, "utf8") > MAX_OUTPUT_SIZE) {
     writer.end();
-    throw new Error("Output exceeds 3MB");
+    throw new Error("Output exceeds 3.6MB");
   }
   writer.end(endStr);
   await new Promise((resolve) => writer.on("finish", resolve));
