@@ -77,6 +77,14 @@ See `design/codeStandards/codeJSDocStandards.md` and
 `design/codeStandards/codePseudocodeStandards.md` for full examples and
 additional guidance.
 
+### Test Naming
+
+Use descriptive file names and describe blocks so tests are easy to locate. The
+guidelines in
+[`design/codeStandards/testNamingStandards.md`](design/codeStandards/testNamingStandards.md)
+outline the preferred pattern. Align the file name with the primary
+`describe` label and keep `it` messages short.
+
 ## Simplicity and Modular Design
 
 All new code should aim to be simple and modular. Favor small,
