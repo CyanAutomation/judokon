@@ -23,7 +23,7 @@
 .settings-form fieldset {
   border: none;
   margin: 0;
-  padding: 10px;
+  padding: var(--space-sm);
 }
 
 .settings-form {
