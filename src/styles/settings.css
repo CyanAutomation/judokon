@@ -42,15 +42,15 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  min-height: 48px;
+  min-height: var(--touch-target-size);
 }
 
 .settings-form input[type="checkbox"],
 .settings-form input[type="radio"] {
   accent-color: var(--button-bg);
   cursor: pointer;
-  min-width: 48px;
-  min-height: 48px;
+  min-width: var(--touch-target-size);
+  min-height: var(--touch-target-size);
   border-radius: var(--radius-sm);
   transition:
     transform var(--transition-fast),
@@ -58,7 +58,7 @@
 }
 
 .settings-form select {
-  min-height: 48px;
+  min-height: var(--touch-target-size);
   padding: 0.5rem;
   background-color: var(--button-bg);
   color: var(--button-text-color);

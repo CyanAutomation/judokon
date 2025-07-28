@@ -487,8 +487,8 @@ svg {
   color: var(--color-text);
   border: 1px solid var(--color-primary);
   border-radius: 50%;
-  min-width: 48px;
-  min-height: 48px;
+  min-width: var(--touch-target-size);
+  min-height: var(--touch-target-size);
   aspect-ratio: 1/1;
   display: flex;
   flex: 0 0 auto;

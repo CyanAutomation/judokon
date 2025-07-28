@@ -103,7 +103,7 @@
 /* cta button styles */
 .cta-button {
   display: inline-block;
-  min-height: 48px;
+  min-height: var(--touch-target-size);
   padding: var(--space-md) var(--space-lg);
   font-size: var(--font-medium);
   margin-top: var(--space-md);
