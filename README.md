@@ -308,6 +308,7 @@ higher value, for example
 - Results appear below the form with up to five entries that show match score and source.
 - Search results are displayed in a responsive table with alternating row colors for readability.
 - The Match column takes up more space than Source and Score so the text is easier to read.
+- The Source column wraps file paths at `/` characters so long locations stack vertically.
 - Embeddings load when the page initializes so the first search doesn't wait for network fetches.
 - Scores of **0.6** or higher are treated as strong matches in the UI; weaker results are hidden unless no strong match is found.
 - Tag filters can be passed to limit results (e.g. only `judoka-data` entries).

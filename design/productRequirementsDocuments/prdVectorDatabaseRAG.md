@@ -115,6 +115,7 @@ than an entire file.
 - Show up to five matches with score and source information.
 - Search results appear in a responsive table with alternating row colors for readability.
 - The Match column is wider than Source and Score, which are sized smaller to save space.
+- Paths in the Source column break onto new lines at each `/` so long file names remain legible.
 - Embeddings load automatically when the page initializes so the first search runs immediately.
 - Matches scoring at least `0.6` are considered strong. When the top match is
   more than `0.4` higher than the next best score, only that top result is
