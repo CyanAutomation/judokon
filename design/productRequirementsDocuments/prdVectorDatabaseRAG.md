@@ -65,6 +65,12 @@ After editing PRDs, tooltips, game rules, or any markdown under
 `scripts/generateEmbeddings.js` downloads the `Xenova/all-MiniLM-L6-v2` model the first time it runs, so the command will fail without internet access. Cache the model locally or run it in an environment with a connection. Commit the updated `client_embeddings.json`—now pretty-printed for readability—so other agents work with the latest vectors. A GitHub Actions workflow could automate this
 regeneration whenever those folders change.
 
+The generator parses JSON arrays and objects into individual snippets so each
+record receives its own embedding. Tooltips, judoka entries, and PRD sections
+are broken down into discrete blocks with unique IDs. This granularity improves
+lookup accuracy because search results map back to a single section or data row
+rather than an entire file.
+
 ---
 
 ## Acceptance Criteria
