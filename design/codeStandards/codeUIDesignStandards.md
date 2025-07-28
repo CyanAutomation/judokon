@@ -336,6 +336,8 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 
 ## 10. Tokens
 
+Use these CSS custom properties instead of raw pixel values. Referencing tokens keeps spacing and sizing consistent across the UI.
+
 | Token Name            | Value                      | Purpose                                   |
 | --------------------- | -------------------------- | ----------------------------------------- |
 | --radius-sm           | 4px                        | Inputs, badges                            |
@@ -349,9 +351,11 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 | --switch-off-bg       | #878787                    | Toggle off state background               |
 | --switch-on-bg        | #08A700                    | Toggle on state background                |
 | --shadow-base         | 0 4px 12px rgba(0,0,0,0.1) | Elevation; hover drop-shadow              |
+| --shadow-hover        | 0 8px 24px rgba(0,0,0,0.2) | Hover shadow effect                      |
 | --transition-fast     | all 150ms ease             | UI animations                             |
 | --color-slider-dot    | #BBB                       | Carousel indicator default                |
 | --color-slider-active | #717171                    | Active/hover indicator                    |
+| --scroll-marker-size  | 10px                       | Carousel scroll marker size               |
 | --logo-max-height     | min(8dvh, 44px)            | Max height for logo images                |
 
 ---
