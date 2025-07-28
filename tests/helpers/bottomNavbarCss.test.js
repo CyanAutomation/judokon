@@ -22,7 +22,7 @@ describe("bottom-navbar touch target", () => {
     const minHeight = rule.nodes.find((d) => d.prop === "min-height")?.value;
     const padding = rule.nodes.find((d) => d.prop === "padding")?.value;
     expect(minHeight).toBeDefined();
-    expect(parseInt(minHeight)).toBeGreaterThanOrEqual(48);
+    expect(minHeight).toBe("var(--touch-target-size)");
     expect(padding).toBeDefined();
   });
 });

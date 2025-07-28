@@ -177,8 +177,8 @@
   border: none;
   color: var(--color-text-inverted);
   cursor: pointer;
-  min-width: 48px;
-  min-height: 48px;
+  min-width: var(--touch-target-size);
+  min-height: var(--touch-target-size);
 }
 
 .flag-button:focus {
