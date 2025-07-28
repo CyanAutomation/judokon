@@ -18,7 +18,7 @@
   grid-template-columns: 2fr 0.75fr 0.75fr 0.15fr;
   width: 100%;
   padding: var(--space-lg);
-  gap: var(--space-med);
+  gap: var(--space-md);
   box-sizing: border-box;
 }
 
