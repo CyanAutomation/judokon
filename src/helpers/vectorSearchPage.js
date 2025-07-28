@@ -6,6 +6,12 @@ import { findMatches, fetchContextById, loadEmbeddings } from "./vectorSearch.js
 let extractor;
 let spinner;
 
+/**
+ * Maximum number of characters to show before truncating match text.
+ * @type {number}
+ */
+const SNIPPET_LIMIT = 200;
+
 const SIMILARITY_THRESHOLD = 0.6;
 
 /**
@@ -123,6 +129,46 @@ export function formatTags(tags) {
 }
 
 /**
+ * Build a snippet element with optional truncation.
+ *
+ * @pseudocode
+ * 1. Create a container and span for the snippet text.
+ * 2. When `text` exceeds `SNIPPET_LIMIT`, append an ellipsis and a
+ *    "Show more" button that toggles the full content.
+ *    - Update the button label to "Show less" when expanded.
+ *    - Prevent the toggle from triggering row click events.
+ * 3. Return the container element.
+ *
+ * @param {string} text - The full match text.
+ * @returns {HTMLElement} Snippet DOM element.
+ */
+function createSnippetElement(text) {
+  const container = document.createElement("div");
+  const span = document.createElement("span");
+  const needsTruncate = text.length > SNIPPET_LIMIT;
+  const shortText = needsTruncate ? text.slice(0, SNIPPET_LIMIT).trimEnd() + "\u2026" : text;
+  span.textContent = shortText;
+  container.appendChild(span);
+  if (needsTruncate) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.classList.add("show-more-btn");
+    btn.textContent = "Show more";
+    btn.setAttribute("aria-expanded", "false");
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const expanded = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", expanded ? "false" : "true");
+      span.textContent = expanded ? shortText : text;
+      btn.textContent = expanded ? "Show more" : "Show less";
+    });
+    container.appendChild(document.createTextNode(" "));
+    container.appendChild(btn);
+  }
+  return container;
+}
+
+/**
  * Handle the vector search form submission.
  *
  * @pseudocode
@@ -192,8 +238,7 @@ async function handleSearch(event) {
 
       const textCell = document.createElement("td");
       textCell.classList.add("match-text");
-      const snippet = document.createElement("div");
-      snippet.textContent = match.text;
+      const snippet = createSnippetElement(match.text);
       textCell.appendChild(snippet);
       if (match.qaContext) {
         const qa = document.createElement("div");
