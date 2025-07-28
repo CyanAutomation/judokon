@@ -1,0 +1,4 @@
+[
+  { "id": "docA.md-chunk-1", "text": "Alpha text", "embedding": [1, 0], "source": "docA.md" },
+  { "id": "docB.md-chunk-1", "text": "Beta text", "embedding": [0, 1], "source": "docB.md" }
+]
