@@ -13,7 +13,7 @@ let cachedEmbeddings;
  *    - On failure, log the error and resolve to `null`.
  * 3. Await the promise, store the result, and return it.
  *
- * @returns {Promise<Array<{id:string,text:string,embedding:number[],source:string,tags?:string[]}>>} Parsed embeddings array.
+ * @returns {Promise<Array<{id:string,text:string,embedding:number[],source:string,tags?:string[],qaContext?:string}>>} Parsed embeddings array.
  */
 export async function loadEmbeddings() {
   if (cachedEmbeddings !== undefined) return cachedEmbeddings;
