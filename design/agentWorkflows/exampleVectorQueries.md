@@ -40,6 +40,8 @@ const matches = await findMatches(vector, 5, ["prd"]);
 ```
 
 Because embeddings capture semantics, synonyms like "grip fighting" and "kumi-kata" map closely. The demo interface marks scores of 0.6 and above as strong matches and only shows weaker results when no strong hits are returned.
+Exact keyword matches earn a small 0.1 score bonus before ranking, so quoting a
+term can bump the most literal result to the top.
 
 ### QA Agent
 

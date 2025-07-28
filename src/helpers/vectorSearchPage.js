@@ -205,7 +205,7 @@ async function handleSearch(event) {
     const model = await getExtractor();
     const result = await model(query, { pooling: "mean" });
     const vector = Array.from(result.data ?? result);
-    const matches = await findMatches(vector, 5);
+    const matches = await findMatches(vector, 5, [], query);
     if (messageEl) messageEl.textContent = "";
     spinner.style.display = "none";
     if (matches === null) {
