@@ -73,7 +73,11 @@ function chunkMarkdown(text) {
       overlapLen += segments[k].length + 2;
       k -= 1;
     }
-    i = Math.max(k + 1, j - 1);
+    let nextIndex = Math.max(k + 1, j - 1);
+    if (nextIndex <= i) {
+      nextIndex = j;
+    }
+    i = nextIndex;
   }
 
   return chunks;
