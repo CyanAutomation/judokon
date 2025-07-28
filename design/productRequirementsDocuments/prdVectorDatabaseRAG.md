@@ -114,9 +114,9 @@ than an entire file.
 - Tap/click targets should be at least 44px height for accessibility.
 - Lookup responses must render within 200ms; show loading spinner if delayed.
 - Display an error message when embeddings or the model fail to load.
-- Show up to five matches with score and source information.
+- Show up to five matches with score, source, and tags information. Each entry displays its optional `qaContext` snippet beneath the match text.
 - Search results appear in a responsive table with alternating row colors for readability.
-- The Match column is wider than Source and Score, which are sized smaller to save space.
+- The Match column is wider than Source, Tags, and Score, which are sized smaller to save space.
 - Paths in the Source column break onto new lines at each `/` so long file names remain legible.
 - Embeddings load automatically when the page initializes so the first search runs immediately.
 - Matches scoring at least `0.6` are considered strong. When the top match is

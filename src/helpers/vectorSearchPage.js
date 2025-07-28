@@ -113,6 +113,16 @@ export function formatSourcePath(source) {
 }
 
 /**
+ * Format tag arrays for display.
+ *
+ * @param {string[]} tags - Tag names.
+ * @returns {string} Comma separated tag string.
+ */
+export function formatTags(tags) {
+  return Array.isArray(tags) ? tags.join(", ") : "";
+}
+
+/**
  * Handle the vector search form submission.
  *
  * @pseudocode
@@ -182,7 +192,15 @@ async function handleSearch(event) {
 
       const textCell = document.createElement("td");
       textCell.classList.add("match-text");
-      textCell.textContent = match.text;
+      const snippet = document.createElement("div");
+      snippet.textContent = match.text;
+      textCell.appendChild(snippet);
+      if (match.qaContext) {
+        const qa = document.createElement("div");
+        qa.classList.add("qa-context", "small-text");
+        qa.textContent = match.qaContext;
+        textCell.appendChild(qa);
+      }
       const context = document.createElement("div");
       context.classList.add("result-context", "small-text");
       context.setAttribute("aria-live", "polite");
@@ -191,10 +209,13 @@ async function handleSearch(event) {
       const sourceCell = document.createElement("td");
       sourceCell.appendChild(formatSourcePath(match.source));
 
+      const tagsCell = document.createElement("td");
+      tagsCell.textContent = formatTags(match.tags);
+
       const scoreCell = document.createElement("td");
       scoreCell.textContent = match.score.toFixed(2);
 
-      row.append(textCell, sourceCell, scoreCell);
+      row.append(textCell, sourceCell, tagsCell, scoreCell);
       row.addEventListener("click", () => loadResultContext(row));
       row.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {

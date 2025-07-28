@@ -1,6 +1,6 @@
 #vector-results-table {
   display: grid;
-  grid-template-columns: 2fr 0.75fr 0.15fr;
+  grid-template-columns: 2fr 0.75fr 0.75fr 0.15fr;
   width: 100%;
   padding: var(--space-lg);
   gap: var(--space-med);
@@ -26,4 +26,8 @@
 
 #vector-results-table tbody tr:nth-child(even) {
   background-color: #f2f2f2;
+}
+
+.qa-context {
+  color: var(--color-text-secondary);
 }
