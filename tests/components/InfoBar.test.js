@@ -21,9 +21,9 @@ describe("InfoBar component", () => {
     const msg = header.querySelector("#round-message");
     const timer = header.querySelector("#next-round-timer");
     const score = header.querySelector("#score-display");
-    expect(msg.getAttribute("aria-live")).toBe("polite");
-    expect(timer.getAttribute("aria-live")).toBe("polite");
-    expect(score.getAttribute("aria-live")).toBe("off");
+    expect(msg).toHaveAttribute("aria-live", "polite");
+    expect(timer).toHaveAttribute("aria-live", "polite");
+    expect(score).toHaveAttribute("aria-live", "off");
   });
 
   it("updates message and score", () => {

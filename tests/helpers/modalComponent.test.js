@@ -23,12 +23,12 @@ describe("createModal", () => {
 
     open(trigger);
     expect(element.hasAttribute("hidden")).toBe(false);
-    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
     expect(document.activeElement.id).toBe("cancel-btn");
 
     close();
     expect(element.hasAttribute("hidden")).toBe(true);
-    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
     expect(document.activeElement).toBe(trigger);
   });
 
@@ -41,7 +41,7 @@ describe("createModal", () => {
     });
     document.body.appendChild(element);
     const dialog = element.querySelector(".modal");
-    expect(dialog.getAttribute("aria-labelledby")).toBe("modal-title");
-    expect(dialog.getAttribute("aria-describedby")).toBe("modal-desc");
+    expect(dialog).toHaveAttribute("aria-labelledby", "modal-title");
+    expect(dialog).toHaveAttribute("aria-describedby", "modal-desc");
   });
 });

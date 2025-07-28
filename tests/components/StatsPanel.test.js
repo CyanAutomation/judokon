@@ -15,7 +15,7 @@ describe("createStatsPanel", () => {
     expect(items).toHaveLength(5);
     expect(items[0].textContent).toContain("5");
     expect(items[4].textContent).toContain("9");
-    expect(panel.getAttribute("aria-label")).toBe("Judoka Stats");
+    expect(panel).toHaveAttribute("aria-label", "Judoka Stats");
   });
 
   it("applies custom type and class", () => {
@@ -25,7 +25,7 @@ describe("createStatsPanel", () => {
     );
     expect(panel.classList.contains("legendary")).toBe(true);
     expect(panel.classList.contains("extra")).toBe(true);
-    expect(panel.getAttribute("aria-label")).toBe("Player Stats");
+    expect(panel).toHaveAttribute("aria-label", "Player Stats");
   });
 
   it("throws when stats is missing", () => {
