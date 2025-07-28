@@ -295,6 +295,10 @@ latest vectors.
 The generator skips the large `aesopsFables.json` quote dataset to keep the
 output file under the 3MB limit defined in the PRD.
 
+If the output would exceed that limit, `scripts/generateEmbeddings.js` aborts
+with `"Output exceeds 3MB"`. Increase the `CHUNK_SIZE` constant or exclude
+large files to reduce the result size before rerunning the script.
+
 If generation still fails because of memory limits, rerun the script with a
 higher value, for example
 `node --max-old-space-size=16384 scripts/generateEmbeddings.js`.
