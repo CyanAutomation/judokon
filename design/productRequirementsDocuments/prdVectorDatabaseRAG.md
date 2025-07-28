@@ -78,7 +78,7 @@ than an entire file.
 
 ## Acceptance Criteria
 
-- [x] `client_embeddings.json` contains ≥5 fields per entry: `id`, `text`, `embedding`, `source`, and optional `tags`
+- [x] `client_embeddings.json` contains ≥6 fields per entry: `id`, `text`, optional `qaContext`, `embedding`, `source`, and optional `tags`
 - [x] Vector similarity function returns top 5 matches in ≤200ms on a mid-tier device (e.g. 2022 MacBook Air M1)
 - [x] Search works offline in a local browser with no server backend
 - [x] At least 30 unique content entries from across the PRDs/tooltips are indexed in the demo build

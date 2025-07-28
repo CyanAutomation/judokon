@@ -16,6 +16,8 @@
  *      * When the root is an object, embed each key/value pair.
  * 4. Encode each chunk or entry using mean pooling and round the values.
  * 5. Build output objects with id, text, embedding, source, tags, and version.
+ *    - Include an optional `qaContext` field containing a short summary when
+ *      one can be derived from the text.
  *    - Tags include both a broad category ("prd" or "data") and more specific
  *      labels such as "judoka-data" or "tooltip".
  * 6. Stream each output object directly to `client_embeddings.json` using
@@ -78,6 +80,22 @@ function chunkMarkdown(text) {
   }
 
   return chunks;
+}
+
+function createQaContext(text) {
+  if (typeof text !== "string") return undefined;
+  const cleaned = text
+    .replace(/\r?\n+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/^#+\s*/, "")
+    .trim();
+  const match = cleaned.match(/[^.!?]+[.!?]/);
+  if (!match) return undefined;
+  let sentence = match[0].trim();
+  if (sentence.length > 160) {
+    sentence = sentence.slice(0, 157) + "...";
+  }
+  return sentence;
 }
 
 async function getFiles() {
@@ -162,9 +180,11 @@ async function generate() {
         for (const [index, item] of json.entries()) {
           const chunkText = JSON.stringify(item);
           const result = await extractor(chunkText, { pooling: "mean" });
+          const qa = createQaContext(chunkText);
           writeEntry({
             id: `${base}-${index + 1}`,
             text: chunkText,
+            ...(qa ? { qaContext: qa } : {}),
             embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
             source: `${relativePath} [${index}]`,
             tags,
@@ -175,9 +195,11 @@ async function generate() {
         for (const [key, value] of Object.entries(json)) {
           const chunkText = typeof value === "string" ? value : JSON.stringify(value);
           const result = await extractor(chunkText, { pooling: "mean" });
+          const qa = createQaContext(chunkText);
           writeEntry({
             id: `${base}-${key}`,
             text: chunkText,
+            ...(qa ? { qaContext: qa } : {}),
             embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
             source: `${relativePath} [${key}]`,
             tags,
@@ -189,9 +211,11 @@ async function generate() {
       const chunks = chunkMarkdown(text);
       for (const [index, chunkText] of chunks.entries()) {
         const result = await extractor(chunkText, { pooling: "mean" });
+        const qa = createQaContext(chunkText);
         writeEntry({
           id: `${base}-chunk-${index + 1}`,
           text: chunkText,
+          ...(qa ? { qaContext: qa } : {}),
           embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
           source: `${relativePath} [chunk ${index + 1}]`,
           tags,

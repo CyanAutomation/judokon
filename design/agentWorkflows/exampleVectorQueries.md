@@ -10,6 +10,7 @@ Embeddings are stored in `client_embeddings.json` as an array of objects. Each e
 {
   "id": "prdClassicBattle.md#overview",
   "text": "Classic Battle is Ju-Do-Kon!'s introductory mode...",
+  "qaContext": "Classic Battle introduces the game's basic one-on-one mode.",
   "embedding": [0.12, -0.04, 0.33, ...],
   "source": "PRD",
   "tags": ["design-doc", "battle", "overview"],
@@ -19,6 +20,7 @@ Embeddings are stored in `client_embeddings.json` as an array of objects. Each e
 
 - **id** – unique identifier or file reference
 - **text** – snippet used to generate the embedding
+- **qaContext** – short one-sentence summary used in tooltips or quick answers
 - **embedding** – numeric vector (typically ≤384 dimensions)
 - **source** – origin of the text (PRD, tooltip, etc.)
 - **tags** – optional categories for filtering results. Entries include a broad
