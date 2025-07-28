@@ -184,7 +184,7 @@ describe("randomJudokaPage module", () => {
       const inner = document.createElement("div");
       inner.className = "judoka-card";
       inner.innerHTML =
-        '<div class="card-top-bar"></div><div class="card-portrait"></div><div class="card-stats"></div><div class="signature-move-container"></div>';
+        '<div class="card-top-bar"></div><div class="card-portrait"></div><div class="card-stats"></div><div class="signature-move-container" data-tooltip-id="ui.signatureBar"></div>';
       card.appendChild(inner);
       container.appendChild(card);
     });

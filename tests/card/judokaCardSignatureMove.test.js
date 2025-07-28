@@ -23,5 +23,6 @@ describe("signature move placement", () => {
     const card = container.querySelector(".judoka-card");
     const direct = card.querySelector(":scope > .signature-move-container");
     expect(direct).toBeInstanceOf(HTMLElement);
+    expect(direct.dataset.tooltipId).toBe("ui.signatureBar");
   });
 });
