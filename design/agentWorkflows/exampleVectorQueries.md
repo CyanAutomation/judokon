@@ -13,7 +13,7 @@ Embeddings are stored in `client_embeddings.json` as an array of objects. Each e
   "qaContext": "Classic Battle introduces the game's basic one-on-one mode.",
   "embedding": [0.12, -0.04, 0.33, ...],
   "source": "PRD",
-  "tags": ["design-doc", "battle", "overview"],
+  "tags": ["design-doc", "battle", "overview", "what"],
   "version": 1
 }
 ```
@@ -25,8 +25,10 @@ Embeddings are stored in `client_embeddings.json` as an array of objects. Each e
 - **source** – origin of the text (PRD, tooltip, etc.)
 - **tags** – optional categories for filtering results. Entries include a broad
   label such as `prd` or `data` along with specific tags like `judoka-data` or
-  `design-doc`.
+  `design-doc`. The array may also contain an intent tag like `what`.
 - **version** – embedding file version
+
+Agents can filter by these tag values when calling `findMatches`.
 
 ## Prompt Examples
 
