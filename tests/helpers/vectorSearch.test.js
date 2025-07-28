@@ -72,4 +72,26 @@ describe("vectorSearch", () => {
     const res = await findMatches([1, 0], 1);
     expect(res).toBeNull();
   });
+
+  it("fetches context around an id", async () => {
+    const seg1 = "x".repeat(1600);
+    const seg2 = "y".repeat(1600);
+    const seg3 = "z".repeat(1600);
+    const md = `${seg1}\n\n${seg2}\n\n${seg3}`;
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => md });
+    vi.resetModules();
+    const { fetchContextById } = await import("../../src/helpers/vectorSearch.js");
+    const result = await fetchContextById("doc.md-chunk-3", 1);
+    expect(global.fetch).toHaveBeenCalled();
+    expect(result).toHaveLength(3);
+    expect(result[0].length).toBe(300);
+    expect(result[1].length).toBe(1500);
+    expect(result[2].length).toBe(300);
+  });
+
+  it("returns empty array for invalid id", async () => {
+    const { fetchContextById } = await import("../../src/helpers/vectorSearch.js");
+    const res = await fetchContextById("badid");
+    expect(res).toEqual([]);
+  });
 });

@@ -97,3 +97,86 @@ export async function findMatches(queryVector, topN = 5, tags = []) {
     .sort((a, b) => b.score - a.score)
     .slice(0, topN);
 }
+
+const CHUNK_SIZE = 1500;
+const OVERLAP = 200;
+
+function chunkMarkdown(text) {
+  const segments = text
+    .split(/(?:\r?\n){2,}|(?=^#+\s)/gm)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const chunks = [];
+  let i = 0;
+
+  while (i < segments.length) {
+    if (segments[i].length > CHUNK_SIZE) {
+      const seg = segments[i];
+      for (let start = 0; start < seg.length; start += CHUNK_SIZE - OVERLAP) {
+        chunks.push(seg.slice(start, start + CHUNK_SIZE));
+      }
+      i += 1;
+      continue;
+    }
+
+    let chunkText = segments[i];
+    let length = chunkText.length;
+    let j = i + 1;
+    while (j < segments.length && length + 2 + segments[j].length <= CHUNK_SIZE) {
+      chunkText += `\n\n${segments[j]}`;
+      length += 2 + segments[j].length;
+      j += 1;
+    }
+    chunks.push(chunkText);
+
+    let overlapLen = 0;
+    let k = j - 1;
+    while (k >= i && overlapLen < OVERLAP) {
+      overlapLen += segments[k].length + 2;
+      k -= 1;
+    }
+    let nextIndex = Math.max(k + 1, j - 1);
+    if (nextIndex <= i) {
+      nextIndex = j;
+    }
+    i = nextIndex;
+  }
+
+  return chunks;
+}
+
+/**
+ * Fetch neighboring context chunks for a given embedding id.
+ *
+ * @pseudocode
+ * 1. Validate that `id` matches the `filename-chunk-N` pattern.
+ *    - Return an empty array for invalid ids.
+ * 2. Build a URL to the markdown file using the filename.
+ * 3. Fetch the markdown text with `fetch` and split it using `chunkMarkdown`.
+ * 4. Determine the slice of chunks around the requested index based on `radius`.
+ * 5. Return the selected chunk texts.
+ *
+ * @param {string} id - Entry identifier like `foo.md-chunk-3`.
+ * @param {number} [radius=1] - Number of neighboring chunks to include.
+ * @returns {Promise<string[]>} Array of surrounding chunk strings.
+ */
+export async function fetchContextById(id, radius = 1) {
+  const match = /^([^\s]+\.md)-chunk-(\d+)$/.exec(id);
+  if (!match) return [];
+  const [, filename, num] = match;
+  const index = Number(num) - 1;
+  try {
+    const url = new URL(`../../design/productRequirementsDocuments/${filename}`, import.meta.url)
+      .href;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const text = await res.text();
+    const chunks = chunkMarkdown(text);
+    const start = Math.max(0, index - radius);
+    const end = Math.min(chunks.length, index + radius + 1);
+    return chunks.slice(start, end);
+  } catch {
+    return [];
+  }
+}
