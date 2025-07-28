@@ -304,6 +304,10 @@ new players. These elements set `data-tooltip-id="ui.signatureBar"` and
 </div>
 ```
 
+Other controls—such as the Meditation language toggle and Classic Battle
+buttons—use tooltips by setting `data-tooltip-id="ui.languageToggle"`,
+`ui.nextRound`, etc.
+
 The repository specifies commenting standards in `design/codeStandards`. JSDoc comments and `@pseudocode` blocks must remain intact. When adding or modifying functions, include a matching `@pseudocode` section describing the logic. The same folder includes [testNamingStandards.md](design/codeStandards/testNamingStandards.md) with guidelines for naming test files and `describe` blocks.
 
 ## Features
