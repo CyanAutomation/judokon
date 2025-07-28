@@ -361,7 +361,7 @@ Enable the **Card Inspector** flag to add a collapsible panel on each card conta
 
 Game mode data now falls back to a bundled JSON import if the network request fails, so navigation works offline.
 Corrupted settings are detected and automatically reset to defaults, ensuring the Settings page always remains usable.
-Use the **Restore Defaults** button in the Links section to quickly reset all settings to their original values.
+Use the **Restore Defaults** button in the Links section to reset all settings. A confirmation dialog now appears before applying the defaults.
 
 ## Browser Compatibility
 
