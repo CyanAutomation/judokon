@@ -56,6 +56,7 @@ Ultimately, these issues increase the risk of bugs reaching players, slow down t
 | P2 | Vector Metadata Fields | Store source metadata with each embedding (e.g. “source: PRD Tooltip System”, “type: stat-description”). Include granular tags like `judoka-data`, `tooltip`, `design-doc`, or `agent-workflow` for filtering. Tag each entry by its source ("prd","tooltip","data") and by topic such as "judoka","rules","ui" to enable fine-grained queries. |
 | P2 | Agent Integration Example | Provide a sample script or markdown prompt to demonstrate how AI agents can use the vector store |
 | P2 | Source Context Retrieval | Provide helpers so agents can fetch adjacent chunks or the full document using an entry id |
+| P2 | Intent Tagging | Classify each chunk as *what*, *how*, or *why* for question filtering |
 | P3 | Embedding Refresh Pipeline | Optionally support rebuilding the embedding index when PRDs or tooltip files are updated (manual or script-based trigger) |
 
 ### Embedding Refresh Pipeline
@@ -79,6 +80,7 @@ than an entire file.
 ## Acceptance Criteria
 
 - [x] `client_embeddings.json` contains ≥6 fields per entry: `id`, `text`, optional `qaContext`, `embedding`, `source`, and optional `tags`
+- [x] `client_embeddings.json` stores the intent tag (`what`, `how`, or `why`) for each chunk
 - [x] Vector similarity function returns top 5 matches in ≤200ms on a mid-tier device (e.g. 2022 MacBook Air M1)
 - [x] Search works offline in a local browser with no server backend
 - [x] At least 30 unique content entries from across the PRDs/tooltips are indexed in the demo build
