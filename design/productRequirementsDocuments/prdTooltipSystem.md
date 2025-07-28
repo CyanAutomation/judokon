@@ -105,7 +105,7 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 
 - [ ] 1.0 Setup Tooltip Content Source
   - [ ] 1.1 Create `tooltips.json` in `/data/` with at least 10 entries
-  - [ ] 1.2 Define unique keys like `stat.power`, `stat.kumikata`
+  - [ ] 1.2 Define unique keys like `stat.power`, `stat.kumikata`, `stat.newaza`
   - [ ] 1.3 Plan for optional localization structure (future-proof keys)
 
 - [ ] 2.0 Implement Tooltip Trigger Logic
