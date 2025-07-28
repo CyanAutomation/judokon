@@ -135,10 +135,7 @@ async function generate() {
   bytesWritten += Buffer.byteLength("[", "utf8");
 
   const writeEntry = (obj) => {
-    const serialized = JSON.stringify(obj, null, 2)
-      .split("\n")
-      .map((line) => `  ${line}`)
-      .join("\n");
+    const serialized = JSON.stringify(obj);
     const chunk = (first ? "\n" : ",\n") + serialized;
     const size = Buffer.byteLength(chunk + "\n]", "utf8");
     if (bytesWritten + size > MAX_OUTPUT_SIZE) {
