@@ -87,6 +87,12 @@ Initialize it after the DOM is ready so tooltip listeners are attached.
 </script>
 ```
 
+A help icon on the Classic Battle page uses the same system:
+
+```html
+<button id="stat-help" class="info-button" data-tooltip-id="ui.selectStat">?</button>
+```
+
 ## tests
 
 Unit tests under `tests/` run in the Vitest `jsdom` environment. The `playwright/` directory contains end‑to‑end tests and screenshot comparisons to prevent UI regressions.

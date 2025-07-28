@@ -139,7 +139,10 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - Tie or win/loss messages placed centrally.
   - Clear "Next Round" button with distinct state (enabled/disabled).
   - Provide a dedicated "Quit Match" button below the controls.
-- **Accessibility:**
+  - A small help icon (`#stat-help`) next to the stat buttons displays a tooltip
+    explaining how to pick an attribute. The tooltip auto-opens once on first
+    visit using `localStorage` to remember the dismissal.
+  - **Accessibility:**
   - Minimum text contrast ratio: ≥4.5:1 (per WCAG).
   - Minimum touch target size: ≥44px. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) for the full rule.
   - Support keyboard navigation for stat selection, match progression, and quit confirmation.
