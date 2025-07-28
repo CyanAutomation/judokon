@@ -1,29 +1,29 @@
 #vector-results-table {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    width: 100%;
-    padding: var(--space-lg);
-    gap: var(--space-med);
-    box-sizing: border-box;
-  }
-  
-  #vector-results-table thead,
-  #vector-results-table tbody,
-  #vector-results-table tr {
-    display: contents;
-  }
-  
-  #vector-results-table th,
-  #vector-results-table td {
-    padding: var(--space-xs) var(--space-sm);
-    text-align: left;
-    border-bottom: 1px solid var(--color-secondary);
-  }
-  
-  #vector-results-table tbody tr:nth-child(odd) {
-    background-color: #ffffff;
-  }
-  
-  #vector-results-table tbody tr:nth-child(even) {
-    background-color: #f2f2f2;
-  }
+  display: grid;
+  grid-template-columns: 2fr 0.75fr 0.5fr;
+  width: 100%;
+  padding: var(--space-lg);
+  gap: var(--space-med);
+  box-sizing: border-box;
+}
+
+#vector-results-table thead,
+#vector-results-table tbody,
+#vector-results-table tr {
+  display: contents;
+}
+
+#vector-results-table th,
+#vector-results-table td {
+  padding: var(--space-xs) var(--space-sm);
+  text-align: left;
+  border-bottom: 1px solid var(--color-secondary);
+}
+
+#vector-results-table tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+#vector-results-table tbody tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
