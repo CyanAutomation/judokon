@@ -305,6 +305,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 ### 8.7 Button Style
 
 - Primary style uses `var(--button-bg)`, `var(--button-hover-bg)`, `var(--button-active-bg)`, and `var(--button-text-color)`
+- `.primary-button` applies the same styling to links or custom elements
 - `.secondary-button` variation with lighter background and border
 - Minimum height 44-48 px; keep `--radius-pill`
 - All buttons must use either `--radius-md` or `--radius-pill`; avoid hardcoded values like `4px`

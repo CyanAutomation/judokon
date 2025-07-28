@@ -237,9 +237,10 @@ the footer buttons clear the persistent navigation bar. Users can return to the
   `modal.css`, and `settings.css`. All `<button>` elements use design
   tokens such as `--button-bg`, `--button-text-color`,
   `--color-slider-dot`, and `--color-slider-active`. The helper
-  `setupButtonEffects()` adds a Material-style ripple when buttons are
-  clicked. An optional `.secondary-button` class provides a lighter
-  variant.
+  `setupButtonEffects()` adds a Material-style ripple when elements with
+  the `.primary-button` class or native `<button>` tags are clicked.
+  Use `.primary-button` for main actions and `.secondary-button` for
+  lighter emphasis.
 - `utilities.css` – helper classes.
 - Page-specific files such as `carousel.css` and `quote.css`.
 
