@@ -57,6 +57,14 @@ describe("vectorSearch", () => {
     expect(other[0].id).toBe("b");
   });
 
+  it("boosts results containing exact query terms", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sample });
+    vi.resetModules();
+    const { findMatches } = await import("../../src/helpers/vectorSearch.js");
+    const res = await findMatches([1, 1], 2, [], "B");
+    expect(res[0].id).toBe("b");
+  });
+
   it("returns empty array for dimension mismatch", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sample });
     vi.resetModules();

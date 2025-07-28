@@ -122,6 +122,8 @@ than an entire file.
 - Matches scoring at least `0.6` are considered strong. When the top match is
   more than `0.4` higher than the next best score, only that top result is
   displayed.
+- Scores are normalized to the 0–1 range. Exact term matches (case-insensitive)
+  receive a small `+0.1` bonus before sorting to promote literal keyword hits.
 - Lower scoring results appear only when there are no strong matches.
 - Result messages such as "No strong matches found…" should use the `.search-result-empty` CSS class. Each result entry uses `.search-result-item` and is fully justified with spacing between items.
 

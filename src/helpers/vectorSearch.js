@@ -69,13 +69,20 @@ export function cosineSimilarity(a, b) {
  *    - Return `null` when embeddings fail to load.
  * 3. When `tags` are provided, filter the embeddings to those containing all tags.
  * 4. Compute cosine similarity between `queryVector` and each entry's embedding.
- * 5. Sort the entries by similarity score and return the top `topN` results.
+ * 5. Normalize scores to the 0–1 range and apply a small bonus when the query
+ *    text appears verbatim in the entry.
+ * 6. Sort the entries by similarity score and return the top `topN` results.
  *
  * @param {number[]} queryVector - Vector to compare.
  * @param {number} [topN=5] - Number of matches to return.
+ * @param {string[]} [tags=[]] - Tags that must be present on matching entries.
+ * @param {string} [queryText=""] - Full query text for exact term matching.
  * @returns {Promise<Array<{score:number} & Record<string, any>>>} Match results sorted by score.
  */
-export async function findMatches(queryVector, topN = 5, tags = []) {
+/** Bonus applied when the query text contains exact terms from the entry. */
+const EXACT_MATCH_BONUS = 0.1;
+
+export async function findMatches(queryVector, topN = 5, tags = [], queryText = "") {
   const entries = await loadEmbeddings();
   if (entries === null) {
     return null;
@@ -92,8 +99,17 @@ export async function findMatches(queryVector, topN = 5, tags = []) {
       ? entries.filter((e) => Array.isArray(e.tags) && tags.every((t) => e.tags.includes(t)))
       : entries;
 
+  const terms = String(queryText).toLowerCase().split(/\s+/).filter(Boolean);
+
   return filtered
-    .map((entry) => ({ score: cosineSimilarity(queryVector, entry.embedding), ...entry }))
+    .map((entry) => {
+      const sim = cosineSimilarity(queryVector, entry.embedding);
+      const normalized = (sim + 1) / 2;
+      const text = entry.text?.toLowerCase() ?? "";
+      const hasTerm = terms.some((t) => text.includes(t));
+      const bonus = hasTerm ? EXACT_MATCH_BONUS : 0;
+      return { score: Math.min(1, normalized + bonus), ...entry };
+    })
     .sort((a, b) => b.score - a.score)
     .slice(0, topN);
 }
