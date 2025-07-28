@@ -8,9 +8,9 @@
  * 2. Load the quantized transformer model for feature extraction to reduce
  *    memory usage.
  * 3. For each file:
- *    - If markdown, split the text on blank lines or heading markers.
- *      * Combine segments into chunks under CHUNK_SIZE with OVERLAP between
- *        neighboring chunks.
+ *    - If markdown, group the text into sections from one heading to the next
+ *      heading of the same or higher level.
+ *      * Split any section longer than CHUNK_SIZE using OVERLAP for context.
  *    - If JSON, parse the contents.
  *      * When the root is an array, embed each item individually.
  *      * When the root is an object, embed each key/value pair.
@@ -37,49 +37,44 @@ const rootDir = path.resolve(__dirname, "..");
 // Larger chunks reduce the total embedding count and help keep the
 // final JSON under the 3MB limit.
 const CHUNK_SIZE = 1500;
-const OVERLAP = 200;
+const OVERLAP = 100;
 const MAX_OUTPUT_SIZE = 3 * 1024 * 1024;
 
 function chunkMarkdown(text) {
-  const segments = text
-    .split(/(?:\r?\n){2,}|(?=^#+\s)/gm)
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  const chunks = [];
+  const lines = text.split(/\r?\n/);
+  const heading = /^(#{1,6})\s+/;
+  const sections = [];
   let i = 0;
 
-  while (i < segments.length) {
-    if (segments[i].length > CHUNK_SIZE) {
-      const seg = segments[i];
-      for (let start = 0; start < seg.length; start += CHUNK_SIZE - OVERLAP) {
-        chunks.push(seg.slice(start, start + CHUNK_SIZE));
+  while (i < lines.length && !heading.test(lines[i])) i++;
+  if (i > 0) {
+    const pre = lines.slice(0, i).join("\n").trim();
+    if (pre) sections.push(pre);
+  }
+
+  for (let idx = i; idx < lines.length; idx++) {
+    const match = heading.exec(lines[idx]);
+    if (!match) continue;
+    const level = match[1].length;
+    let j = idx + 1;
+    while (j < lines.length) {
+      const next = heading.exec(lines[j]);
+      if (next && next[1].length <= level) break;
+      j++;
+    }
+    const section = lines.slice(idx, j).join("\n").trim();
+    if (section) sections.push(section);
+  }
+
+  const chunks = [];
+  for (const section of sections) {
+    if (section.length > CHUNK_SIZE) {
+      for (let start = 0; start < section.length; start += CHUNK_SIZE - OVERLAP) {
+        chunks.push(section.slice(start, start + CHUNK_SIZE));
       }
-      i += 1;
-      continue;
+    } else {
+      chunks.push(section);
     }
-
-    let chunkText = segments[i];
-    let length = chunkText.length;
-    let j = i + 1;
-    while (j < segments.length && length + 2 + segments[j].length <= CHUNK_SIZE) {
-      chunkText += `\n\n${segments[j]}`;
-      length += 2 + segments[j].length;
-      j += 1;
-    }
-    chunks.push(chunkText);
-
-    let overlapLen = 0;
-    let k = j - 1;
-    while (k >= i && overlapLen < OVERLAP) {
-      overlapLen += segments[k].length + 2;
-      k -= 1;
-    }
-    let nextIndex = Math.max(k + 1, j - 1);
-    if (nextIndex <= i) {
-      nextIndex = j;
-    }
-    i = nextIndex;
   }
 
   return chunks;

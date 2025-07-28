@@ -99,52 +99,49 @@ export async function findMatches(queryVector, topN = 5, tags = []) {
 }
 
 const CHUNK_SIZE = 1500;
-const OVERLAP = 200;
+const OVERLAP = 100;
 
 function chunkMarkdown(text) {
-  const segments = text
-    .split(/(?:\r?\n){2,}|(?=^#+\s)/gm)
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  const chunks = [];
+  const lines = text.split(/\r?\n/);
+  const heading = /^(#{1,6})\s+/;
+  const sections = [];
   let i = 0;
 
-  while (i < segments.length) {
-    if (segments[i].length > CHUNK_SIZE) {
-      const seg = segments[i];
-      for (let start = 0; start < seg.length; start += CHUNK_SIZE - OVERLAP) {
-        chunks.push(seg.slice(start, start + CHUNK_SIZE));
+  while (i < lines.length && !heading.test(lines[i])) i++;
+  if (i > 0) {
+    const pre = lines.slice(0, i).join("\n").trim();
+    if (pre) sections.push(pre);
+  }
+
+  for (let idx = i; idx < lines.length; idx++) {
+    const match = heading.exec(lines[idx]);
+    if (!match) continue;
+    const level = match[1].length;
+    let j = idx + 1;
+    while (j < lines.length) {
+      const next = heading.exec(lines[j]);
+      if (next && next[1].length <= level) break;
+      j++;
+    }
+    const section = lines.slice(idx, j).join("\n").trim();
+    if (section) sections.push(section);
+  }
+
+  const chunks = [];
+  for (const section of sections) {
+    if (section.length > CHUNK_SIZE) {
+      for (let start = 0; start < section.length; start += CHUNK_SIZE - OVERLAP) {
+        chunks.push(section.slice(start, start + CHUNK_SIZE));
       }
-      i += 1;
-      continue;
+    } else {
+      chunks.push(section);
     }
-
-    let chunkText = segments[i];
-    let length = chunkText.length;
-    let j = i + 1;
-    while (j < segments.length && length + 2 + segments[j].length <= CHUNK_SIZE) {
-      chunkText += `\n\n${segments[j]}`;
-      length += 2 + segments[j].length;
-      j += 1;
-    }
-    chunks.push(chunkText);
-
-    let overlapLen = 0;
-    let k = j - 1;
-    while (k >= i && overlapLen < OVERLAP) {
-      overlapLen += segments[k].length + 2;
-      k -= 1;
-    }
-    let nextIndex = Math.max(k + 1, j - 1);
-    if (nextIndex <= i) {
-      nextIndex = j;
-    }
-    i = nextIndex;
   }
 
   return chunks;
 }
+
+export { chunkMarkdown };
 
 /**
  * Fetch neighboring context chunks for a given embedding id.
@@ -167,7 +164,8 @@ export async function fetchContextById(id, radius = 1) {
   const [, filename, num] = match;
   const index = Number(num) - 1;
   try {
-    const url = new URL(`../../design/productRequirementsDocuments/${filename}`, import.meta.url).href;
+    const url = new URL(`../../design/productRequirementsDocuments/${filename}`, import.meta.url)
+      .href;
     const res = await fetch(url);
     if (!res.ok) return [];
     const text = await res.text();

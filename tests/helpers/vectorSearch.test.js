@@ -84,9 +84,16 @@ describe("vectorSearch", () => {
     const result = await fetchContextById("doc.md-chunk-3", 1);
     expect(global.fetch).toHaveBeenCalled();
     expect(result).toHaveLength(3);
-    expect(result[0].length).toBe(300);
+    expect(result[0].length).toBe(1500);
     expect(result[1].length).toBe(1500);
-    expect(result[2].length).toBe(300);
+    expect(result[2].length).toBe(604);
+  });
+
+  it("chunks markdown by heading", async () => {
+    const md = "## A\nText A\n### B\nText B\n## C\nText C";
+    const { chunkMarkdown } = await import("../../src/helpers/vectorSearch.js");
+    const chunks = chunkMarkdown(md);
+    expect(chunks).toEqual(["## A\nText A\n### B\nText B", "### B\nText B", "## C\nText C"]);
   });
 
   it("returns empty array for invalid id", async () => {
