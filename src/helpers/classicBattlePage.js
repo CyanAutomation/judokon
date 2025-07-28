@@ -17,6 +17,7 @@
  *    c. Load feature flags, set `data-*` attributes on `#battle-area`, and
  *       toggle the debug panel based on the `battleDebugPanel` flag.
  *    d. Invoke `startRoundWrapper` to begin the match.
+ *    e. Initialize tooltips and show the stat help tooltip once for new users.
  * 5. Execute `setupClassicBattlePage` with `onDomReady`.
  */
 import { startRound as classicStartRound, handleStatSelection } from "./classicBattle.js";
@@ -97,7 +98,23 @@ export async function setupClassicBattlePage() {
 
   window.startRoundOverride = startRoundWrapper;
   startRoundWrapper();
-  initTooltips();
+  await initTooltips();
+
+  try {
+    if (typeof localStorage !== "undefined") {
+      const hintShown = localStorage.getItem("statHintShown");
+      if (!hintShown) {
+        const help = document.getElementById("stat-help");
+        help?.dispatchEvent(new Event("mouseenter"));
+        setTimeout(() => {
+          help?.dispatchEvent(new Event("mouseleave"));
+        }, 3000);
+        localStorage.setItem("statHintShown", "true");
+      }
+    }
+  } catch {
+    // ignore localStorage errors
+  }
 }
 
 onDomReady(setupClassicBattlePage);
