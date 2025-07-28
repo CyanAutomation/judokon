@@ -7,8 +7,9 @@
  *    `client_embeddings.json` and large datasets.
  * 2. Load the transformer model for feature extraction.
  * 3. For each file:
- *    - If markdown, slice text into overlapping chunks using CHUNK_SIZE and
- *      OVERLAP.
+ *    - If markdown, split the text on blank lines or heading markers.
+ *      * Combine segments into chunks under CHUNK_SIZE with OVERLAP between
+ *        neighboring chunks.
  *    - If JSON, parse the contents.
  *      * When the root is an array, embed each item individually.
  *      * When the root is an object, embed each key/value pair.
@@ -30,6 +31,47 @@ const rootDir = path.resolve(__dirname, "..");
 const CHUNK_SIZE = 1500;
 const OVERLAP = 200;
 const MAX_OUTPUT_SIZE = 3 * 1024 * 1024;
+
+function chunkMarkdown(text) {
+  const segments = text
+    .split(/(?:\r?\n){2,}|(?=^#+\s)/gm)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const chunks = [];
+  let i = 0;
+
+  while (i < segments.length) {
+    if (segments[i].length > CHUNK_SIZE) {
+      const seg = segments[i];
+      for (let start = 0; start < seg.length; start += CHUNK_SIZE - OVERLAP) {
+        chunks.push(seg.slice(start, start + CHUNK_SIZE));
+      }
+      i += 1;
+      continue;
+    }
+
+    let chunkText = segments[i];
+    let length = chunkText.length;
+    let j = i + 1;
+    while (j < segments.length && length + 2 + segments[j].length <= CHUNK_SIZE) {
+      chunkText += `\n\n${segments[j]}`;
+      length += 2 + segments[j].length;
+      j += 1;
+    }
+    chunks.push(chunkText);
+
+    let overlapLen = 0;
+    let k = j - 1;
+    while (k >= i && overlapLen < OVERLAP) {
+      overlapLen += segments[k].length + 2;
+      k -= 1;
+    }
+    i = Math.max(k + 1, j - 1);
+  }
+
+  return chunks;
+}
 
 async function getFiles() {
   const prdFiles = await glob("design/productRequirementsDocuments/*.md", {
@@ -91,8 +133,8 @@ async function generate() {
         }
       }
     } else {
-      for (let start = 0, index = 0; start < text.length; start += CHUNK_SIZE - OVERLAP, index++) {
-        const chunkText = text.slice(start, start + CHUNK_SIZE);
+      const chunks = chunkMarkdown(text);
+      for (const [index, chunkText] of chunks.entries()) {
         const result = await extractor(chunkText, { pooling: "mean" });
         output.push({
           id: `${base}-chunk-${index + 1}`,
