@@ -9,7 +9,8 @@
  * 2. Read file contents and slice into overlapping chunks using CHUNK_SIZE and
  *    OVERLAP.
  * 3. Load a transformer model for feature extraction.
- * 4. Encode each chunk into a mean-pooled embedding vector.
+ * 4. Encode each chunk into a mean-pooled embedding vector, rounding values to
+ *    four decimals to control output size.
  * 5. Build output objects with id, text, embedding, source, tags, and version.
  * 6. Ensure the final JSON output is under MAX_OUTPUT_SIZE (3MB), pretty-print
  *    it, and write to disk.
@@ -66,7 +67,7 @@ async function generate() {
       output.push({
         id: `${base}-chunk-${index + 1}`,
         text: chunkText,
-        embedding: Array.from(result.data ?? result),
+        embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
         source: `${relativePath} [chunk ${index + 1}]`,
         tags,
         version: 1
