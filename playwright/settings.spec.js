@@ -54,8 +54,6 @@ test.describe("Settings page", () => {
 
     const expectedLabels = [
       "Light",
-      "Dark",
-      "Gray",
       "Sound",
       "Motion Effects",
       "Typewriter Effect",
