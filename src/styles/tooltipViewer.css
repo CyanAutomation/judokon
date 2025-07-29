@@ -1,0 +1,75 @@
+.tooltip-viewer {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.tooltip-viewer .sidebar {
+  flex: 0 0 35%;
+  max-width: 320px;
+  border-right: 1px solid var(--color-secondary);
+  padding: var(--space-md);
+  overflow-y: auto;
+}
+
+.tooltip-viewer .sidebar input {
+  width: 100%;
+  margin-bottom: var(--space-md);
+}
+
+.tooltip-viewer .sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tooltip-viewer .sidebar li {
+  padding: var(--space-xs) var(--space-sm);
+  cursor: pointer;
+}
+
+.tooltip-viewer .sidebar li.selected {
+  background: var(--color-secondary);
+  color: var(--color-text-inverted);
+}
+
+.tooltip-viewer .sidebar li.invalid {
+  color: #c62828;
+}
+
+.tooltip-viewer .preview {
+  flex: 1;
+  padding: var(--space-md);
+  overflow-y: auto;
+}
+
+.copy-buttons {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.fade-in {
+  animation: fadeIn 0.1s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .tooltip-viewer {
+    flex-direction: column;
+  }
+
+  .tooltip-viewer .sidebar {
+    max-width: none;
+    border-right: none;
+    border-bottom: 1px solid var(--color-secondary);
+  }
+}
