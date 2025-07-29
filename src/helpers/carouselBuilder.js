@@ -194,8 +194,6 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   const leftButton = createScrollButton("left", container, CAROUSEL_SCROLL_DISTANCE);
   const rightButton = createScrollButton("right", container, CAROUSEL_SCROLL_DISTANCE);
-  leftButton.setAttribute("aria-label", "Scroll left");
-  rightButton.setAttribute("aria-label", "Scroll right");
 
   wrapper.appendChild(leftButton);
   wrapper.appendChild(container);

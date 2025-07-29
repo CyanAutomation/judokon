@@ -480,6 +480,7 @@ svg {
 }
 
 .scroll-button {
+  --touch-target-size: 56px;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -502,9 +503,14 @@ svg {
 }
 
 .scroll-button svg {
-  width: 24px;
-  height: 24px;
+  width: 36px;
+  height: 36px;
   fill: currentColor;
+}
+
+.scroll-button .label {
+  margin-left: 4px;
+  font-size: var(--font-small);
 }
 
 .scroll-button:hover {
