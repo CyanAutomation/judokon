@@ -8,6 +8,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 
 const schemaFiles = await glob("src/schemas/*.schema.json", { cwd: rootDir });
+if (!schemaFiles.includes("src/schemas/tooltips.schema.json")) {
+  schemaFiles.push("src/schemas/tooltips.schema.json");
+}
 
 let hasErrors = false;
 for (const schemaPath of schemaFiles) {
