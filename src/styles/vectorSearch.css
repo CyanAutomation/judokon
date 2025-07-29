@@ -56,3 +56,20 @@
   text-decoration: underline;
   font: inherit;
 }
+
+.top-match {
+  font-weight: bold;
+  background-color: #fffbe6;
+}
+
+.score-high {
+  color: #0a7a00;
+}
+
+.score-mid {
+  color: #b88600;
+}
+
+.score-low {
+  color: #666666;
+}

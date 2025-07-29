@@ -215,8 +215,9 @@ function createSnippetElement(text, terms = []) {
  *    - When multiple strong matches exist, compare the top two scores and keep
  *      only the first when the difference exceeds `DROP_OFF_THRESHOLD`.
  * 7. Hide the spinner and handle empty or missing embeddings cases.
- * 8. Build a results table, highlighting query terms in each snippet. When no
- *    strong matches exist, show a warning and display up to three weak matches.
+ * 8. Build a results table, highlighting query terms in each snippet.
+ *    - Add a `top-match` class to the first row and color-code the Score cell.
+ *    - When no strong matches exist, show a warning and display up to three weak matches.
  * 9. Attach handlers to load surrounding context on result activation.
  * 10. On error, log the issue, hide the spinner, and display a fallback message.
  *
@@ -269,9 +270,10 @@ export async function handleSearch(event) {
         "\u26A0\uFE0F No strong matches found, but here are the closest matches based on similarity.";
     }
 
-    for (const match of toRender) {
+    for (const [idx, match] of toRender.entries()) {
       const row = document.createElement("tr");
       row.classList.add("search-result-item");
+      if (idx === 0) row.classList.add("top-match");
       row.dataset.id = match.id;
       row.setAttribute("role", "button");
       row.tabIndex = 0;
@@ -300,6 +302,9 @@ export async function handleSearch(event) {
 
       const scoreCell = document.createElement("td");
       scoreCell.textContent = match.score.toFixed(2);
+      if (match.score >= 0.8) scoreCell.classList.add("score-high");
+      else if (match.score >= 0.6) scoreCell.classList.add("score-mid");
+      else scoreCell.classList.add("score-low");
 
       row.append(textCell, sourceCell, tagsCell, scoreCell);
       row.addEventListener("click", () => loadResultContext(row));
