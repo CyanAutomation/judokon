@@ -38,7 +38,9 @@ export function applyInitialControlValues(controls, settings) {
   applyInputState(controls.motionToggle, settings.motionEffects);
   if (controls.displayRadios) {
     controls.displayRadios.forEach((radio) => {
-      radio.checked = radio.value === settings.displayMode;
+      const isSelected = radio.value === settings.displayMode;
+      radio.checked = isSelected;
+      radio.tabIndex = isSelected ? 0 : -1;
     });
   }
   applyInputState(controls.typewriterToggle, settings.typewriterEffect);
@@ -78,10 +80,16 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
         if (!radio.checked) return;
         const previous = getCurrentSettings().displayMode;
         const mode = radio.value;
+        displayRadios.forEach((r) => {
+          r.tabIndex = r === radio ? 0 : -1;
+        });
         applyDisplayMode(mode);
         handleUpdate("displayMode", mode, () => {
           const prevRadio = Array.from(displayRadios).find((r) => r.value === previous);
           if (prevRadio) prevRadio.checked = true;
+          displayRadios.forEach((r) => {
+            r.tabIndex = r.value === previous ? 0 : -1;
+          });
           applyDisplayMode(previous);
         });
       });
