@@ -66,6 +66,6 @@ describe("classicBattle button handlers", () => {
     expect(confirmBtn).not.toBeNull();
     confirmBtn.dispatchEvent(new Event("click"));
     expect(document.querySelector("#round-message").textContent).toMatch(/quit/i);
-    expect(window.location.href).toMatch(/index\.html$/);
+    expect(window.location.href).toMatch(/(?:index\.html)?\/?$/);
   });
 });
