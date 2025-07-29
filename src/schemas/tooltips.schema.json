@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://judokon.dev/schemas/tooltips.schema.json",
+  "type": "object",
+  "properties": {
+    "stat": {
+      "type": "object",
+      "description": "Tooltip text for statistic labels.",
+      "additionalProperties": { "type": "string" }
+    },
+    "ui": {
+      "type": "object",
+      "description": "Tooltip text for user interface elements.",
+      "additionalProperties": { "type": "string" }
+    },
+    "mode": {
+      "type": "object",
+      "description": "Tooltip text for game modes.",
+      "additionalProperties": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}
