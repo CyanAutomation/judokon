@@ -282,8 +282,10 @@ and instructions on updating schemas when data changes.
 
 Add lightweight help text anywhere by tagging elements with
 `data-tooltip-id`. Tooltip text lives in `src/data/tooltips.json`.
-Each page's initialization script must call `initTooltips()` once the DOM
-is ready so hover and focus listeners are attached.
+Entries in this file are grouped by category (such as `stat` or `ui`), so
+IDs use dot notation like `ui.selectStat`. Each page's initialization script
+must call `initTooltips()` once the DOM is ready so hover and focus
+listeners are attached.
 
 ```html
 <button data-tooltip-id="draw-button">Draw</button>
