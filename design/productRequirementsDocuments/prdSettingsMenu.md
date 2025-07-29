@@ -50,6 +50,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 | P3       | Change Log Link                  | Link to `changeLog.html` for viewing recent judoka updates.                                         |
 | P3       | PRD Viewer Link                  | Link to `prdViewer.html` for browsing product requirement documents.                                |
 | P3       | Mockup Viewer Link               | Link to `mockupViewer.html` to browse design mockups.                                               |
+| P3       | Tooltip Viewer Link              | Link to `tooltipViewer.html` for exploring tooltip text.                                            |
 
 **Note:** For all settings items, if reading or writing to the data source fails, toggles/selectors **must revert** to their previous state, and a user-facing error should appear.
 
@@ -307,6 +308,8 @@ The page begins with an `<h1>` heading labeled "Settings". Two `<fieldset>` sect
   - [x] 7.1 Link to `prdViewer.html` from the Settings menu.
 - [ ] 8.0 Add Mockup Viewer Link
   - [x] 8.1 Link to `mockupViewer.html` from the Settings menu.
+- [ ] 9.0 Add Tooltip Viewer Link
+  - [ ] 9.1 Link to `tooltipViewer.html` from the Settings menu.
 
 ---
 
