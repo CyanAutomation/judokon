@@ -39,6 +39,19 @@ Use `$ref` to pull in definitions from this file, e.g.:
 If a property can take only a specific set of values, use `enum` or `pattern`
 constraints to express that in the schema. This keeps data consistent and helps
 with validation.
+### Gokyo Technique Categories
+
+The `category` field accepts `Nage-waza` or `Katame-waza`. The `subCategory` field must match one of the following:
+
+- `Te-waza`
+- `Koshi-waza`
+- `Ashi-waza`
+- `Ma-sutemi-waza`
+- `Yoko-sutemi-waza`
+- `Osae-komi-waza`
+- `Shime-waza`
+- `Kansetsu-waza`
+
 
 ## Consistent Key Casing
 
