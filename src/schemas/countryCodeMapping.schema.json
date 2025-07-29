@@ -19,16 +19,12 @@
         "format": "date-time",
         "description": "The timestamp of the last update."
       },
-      "updatedBy": {
-        "type": "string",
-        "description": "The user who last updated the record."
-      },
       "active": {
         "type": "boolean",
         "description": "Indicates whether the country is active."
       }
     },
-    "required": ["country", "code", "lastUpdated", "updatedBy", "active"],
+    "required": ["country", "code", "lastUpdated", "active"],
     "additionalProperties": false
   }
 }
