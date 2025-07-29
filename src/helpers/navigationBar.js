@@ -1,5 +1,5 @@
 import { loadMenuModes } from "./navigation/navData.js";
-import { BASE_PATH, clearBottomNavbar } from "./navigation/navMenu.js";
+import { BASE_PATH, clearBottomNavbar, navTooltipKey } from "./navigation/navMenu.js";
 
 /**
  * Adds touch feedback animations to navigation links.
@@ -64,7 +64,7 @@ export async function populateNavbar() {
         const linkPath = new URL(href, window.location.href).pathname.replace(/^\//, "");
         const isCurrent = linkPath === currentPath || linkPath.endsWith(currentPath);
         const attrs = isCurrent ? ` class="active" aria-current="page"` : "";
-        return `<li><a href="${href}" data-testid="nav-${mode.id}"${attrs}>${mode.name}</a></li>`;
+        return `<li><a href="${href}" data-testid="nav-${mode.id}" data-tooltip-id="nav.${navTooltipKey(mode.name)}"${attrs}>${mode.name}</a></li>`;
       })
       .join("");
     navBar.appendChild(ul);
@@ -104,7 +104,7 @@ export async function populateNavbar() {
         const linkPath = new URL(href, window.location.href).pathname.replace(/^\//, "");
         const isCurrent = linkPath === currentPath || linkPath.endsWith(currentPath);
         const attrs = isCurrent ? ` class="active" aria-current="page"` : "";
-        return `<li><a href="${href}" data-testid="nav-${item.name.replace(/\s+/g, "")}"${attrs}>${item.name}</a></li>`;
+        return `<li><a href="${href}" data-testid="nav-${item.name.replace(/\s+/g, "")}" data-tooltip-id="nav.${navTooltipKey(item.name)}"${attrs}>${item.name}</a></li>`;
       })
       .join("");
     navBar.appendChild(ul);
