@@ -106,3 +106,11 @@ describe("initTooltips", () => {
     });
   });
 });
+
+describe("flattenTooltips", () => {
+  it("flattens nested objects", async () => {
+    const { flattenTooltips } = await import("../../src/helpers/tooltip.js");
+    const result = flattenTooltips({ a: { b: "c" }, d: "e" });
+    expect(result).toEqual({ "a.b": "c", d: "e" });
+  });
+});
