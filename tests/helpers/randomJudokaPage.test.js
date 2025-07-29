@@ -16,8 +16,7 @@ const baseSettings = {
     battleDebugPanel: false,
     fullNavigationMap: true,
     enableTestMode: false,
-    enableCardInspector: false,
-    enableLowConfidenceResults: false
+    enableCardInspector: false
   }
 };
 

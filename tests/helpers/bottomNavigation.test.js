@@ -147,8 +147,7 @@ describe("populateNavbar", () => {
         battleDebugPanel: false,
         fullNavigationMap: true,
         enableTestMode: false,
-        enableCardInspector: false,
-        enableLowConfidenceResults: false
+        enableCardInspector: false
       }
     });
     const loadNavigationItems = vi.fn().mockResolvedValue(data);
@@ -206,8 +205,7 @@ describe("populateNavbar", () => {
         battleDebugPanel: false,
         fullNavigationMap: true,
         enableTestMode: false,
-        enableCardInspector: false,
-        enableLowConfidenceResults: false
+        enableCardInspector: false
       }
     });
     const loadNavigationItems = vi.fn().mockResolvedValue(data);
@@ -257,8 +255,7 @@ describe("populateNavbar", () => {
         battleDebugPanel: false,
         fullNavigationMap: true,
         enableTestMode: false,
-        enableCardInspector: false,
-        enableLowConfidenceResults: false
+        enableCardInspector: false
       }
     });
     const loadNavigationItems = vi.fn().mockResolvedValue(data);
