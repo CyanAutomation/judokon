@@ -223,20 +223,20 @@ F7KP-WQ9M-ZD23-HYTR
 ## Tasks
 
 - [ ] 1.0 Card Code Generation Function
-  - [ ] 1.1 Validate input Judoka object for all required fields.
+  - [x] 1.1 Validate input Judoka object for all required fields.
   - [x] 1.2 Concatenate Judoka stats and key attributes into raw string.
   - [x] 1.3 Apply XOR encoding with index-based key.
   - [x] 1.4 Map encoded string to 32-character readable alphabet.
-  - [ ] 1.5 Format string into chunks of 4 characters with hyphens.
-  - [ ] 1.6 Return the final formatted code.
+  - [x] 1.5 Format string into chunks of 4 characters with hyphens.
+  - [x] 1.6 Return the final formatted code.
   - [ ] 1.7 Save the generated code into `judoka.json`.
 - [ ] 2.0 Error Handling and Edge Cases
   - [ ] 2.1 Fallback to a generic card code (judoka id=0) if encoding fails.
   - [ ] 2.2 Handle unusually large string input safely.
 - [ ] 3.0 Unit Tests
-  - [ ] 3.1 Test valid Judoka object produces correct code format.
-  - [ ] 3.2 Test invalid input triggers correct error fallback.
-  - [ ] 3.3 Test same input always results in the same output code.
+  - [x] 3.1 Test valid Judoka object produces correct code format.
+  - [x] 3.2 Test invalid input triggers correct error fallback.
+  - [x] 3.3 Test same input always results in the same output code.
   - [ ] 3.4 Simulate edge cases like large inputs and validate fallback behavior.
 - [ ] 4.0 UI Surface Interaction
   - [ ] 4.1 Ensure the generated code is visible on relevant card display screens.

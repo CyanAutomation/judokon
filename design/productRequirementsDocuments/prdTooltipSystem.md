@@ -125,40 +125,40 @@ To ensure tooltips are consistently helpful and aligned with JU-DO-KON!’s tone
 
 ## Tasks
 
-- [ ] 1.0 Setup Tooltip Content Source
+- [x] 1.0 Setup Tooltip Content Source
 
-  - [ ] 1.1 Create `tooltips.json` in `/data/` with at least 10 entries
-  - [ ] 1.2 Define unique keys like `stat.power`, `stat.kumikata`, `stat.newaza`
-  - [ ] 1.3 Plan for optional localization structure (future-proof keys)
-  - [ ] 1.4 Review initial tooltips against the quality rubric before rollout.
+  - [x] 1.1 Create `tooltips.json` in `/data/` with at least 10 entries
+  - [x] 1.2 Define unique keys like `stat.power`, `stat.kumikata`, `stat.newaza`
+  - [x] 1.3 Plan for optional localization structure (future-proof keys)
+  - [x] 1.4 Review initial tooltips against the quality rubric before rollout.
 
-- [ ] 2.0 Implement Tooltip Trigger Logic
+- [x] 2.0 Implement Tooltip Trigger Logic
 
-  - [ ] 2.1 Detect elements with `data-tooltip-id`
-  - [ ] 2.2 Fetch corresponding tooltip text from `tooltips.json`
-  - [ ] 2.3 Handle missing or invalid keys gracefully (no error spam)
-  - [ ] 2.4 Support keyboard focus (Tab key) as a trigger
+  - [x] 2.1 Detect elements with `data-tooltip-id`
+  - [x] 2.2 Fetch corresponding tooltip text from `tooltips.json`
+  - [x] 2.3 Handle missing or invalid keys gracefully (no error spam)
+  - [x] 2.4 Support keyboard focus (Tab key) as a trigger
 
-- [ ] 3.0 Tooltip Rendering Engine
+- [x] 3.0 Tooltip Rendering Engine
 
-  - [ ] 3.1 Parse markdown-like syntax into lightweight HTML
-  - [ ] 3.2 Render tooltip within 150ms of hover/focus
-  - [ ] 3.3 Adjust tooltip position to avoid viewport overflow
-  - [ ] 3.4 Add tooltip animation (fade in/out)
+  - [x] 3.1 Parse markdown-like syntax into lightweight HTML
+  - [x] 3.2 Render tooltip within 150ms of hover/focus
+  - [x] 3.3 Adjust tooltip position to avoid viewport overflow
+  - [x] 3.4 Add tooltip animation (fade in/out)
 
-- [ ] 4.0 Tooltip Styling and UX
+- [x] 4.0 Tooltip Styling and UX
 
-  - [ ] 4.1 Style tooltip: white bg, dark text, soft shadow, rounded corners
-  - [ ] 4.2 Ensure readability on all screen sizes
-  - [ ] 4.3 Define click/touch target behavior on mobile/tablets
-  - [ ] 4.4 Auto-hide on mouseout or focusout
+  - [x] 4.1 Style tooltip: white bg, dark text, soft shadow, rounded corners
+  - [x] 4.2 Ensure readability on all screen sizes
+  - [x] 4.3 Define click/touch target behavior on mobile/tablets
+  - [x] 4.4 Auto-hide on mouseout or focusout
 
-- [ ] 5.0 Error Handling and Accessibility
+- [x] 5.0 Error Handling and Accessibility
 
-  - [ ] 5.1 Suppress tooltips if `tooltips.json` fails to load
-  - [ ] 5.2 Log error only once
-  - [ ] 5.3 Avoid using `title=` attribute
-  - [ ] 5.4 Ensure tooltip is screen-reader compatible
+  - [x] 5.1 Suppress tooltips if `tooltips.json` fails to load
+  - [x] 5.2 Log error only once
+  - [x] 5.3 Avoid using `title=` attribute
+  - [x] 5.4 Ensure tooltip is screen-reader compatible
 
 - [ ] 6.0 (Optional) Settings and Configuration
 

@@ -152,18 +152,18 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
 
 ## Tasks
 
-- [ ] **1.0 Implement Local Conversion System**
-  - [ ] 1.1 Create JSON mapping file for English-to-pseudo-Japanese conversion.
-  - [ ] 1.2 Develop conversion logic to map input text via JSON.
-  - [ ] 1.3 Implement input cleaning: strip unsupported characters.
-  - [ ] 1.4 Substitute random pseudo-Japanese characters for unmapped input.
-- [ ] **2.0 Implement Toggle Button**
-  - [ ] 2.1 Design "日本語風 / English" toggle button with split flags.
-  - [ ] 2.2 Implement text toggle with 200ms fade animation.
-  - [ ] 2.3 Ensure toggle integrates cleanly with the meditation screen UI.
-- [ ] **3.0 Implement Static Fallback Mechanism**
-  - [ ] 3.1 Set predefined static pseudo-Japanese text as a final fallback.
-  - [ ] 3.2 Trigger fallback if local mapping fails unexpectedly.
+- [x] **1.0 Implement Local Conversion System**
+  - [x] 1.1 Create JSON mapping file for English-to-pseudo-Japanese conversion.
+  - [x] 1.2 Develop conversion logic to map input text via JSON.
+  - [x] 1.3 Implement input cleaning: strip unsupported characters.
+  - [x] 1.4 Substitute random pseudo-Japanese characters for unmapped input.
+- [x] **2.0 Implement Toggle Button**
+  - [x] 2.1 Design "日本語風 / English" toggle button with split flags.
+  - [x] 2.2 Implement text toggle with 200ms fade animation.
+  - [x] 2.3 Ensure toggle integrates cleanly with the meditation screen UI.
+- [x] **3.0 Implement Static Fallback Mechanism**
+  - [x] 3.1 Set predefined static pseudo-Japanese text as a final fallback.
+  - [x] 3.2 Trigger fallback if local mapping fails unexpectedly.
 - [ ] **4.0 Validation Testing (Non-Production)**
   - [ ] 4.1 Set up API validation call to https://romaji2kana.com/api.
   - [ ] 4.2 Compare local conversion output with API results.

@@ -155,12 +155,12 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 ## Tasks
 
-- [ ] **1.0 Integrate `generateRandomCard`**
-  - [ ] 1.1 Trigger the function on screen load
-  - [ ] 1.2 Call it again when the Draw button is tapped
-- [ ] **2.0 Build layout and controls**
-  - [ ] 2.1 Create card display area and prominent Draw button
-  - [ ] 2.2 Add Animation and Sound toggle switches below the Draw button
+- [x] **1.0 Integrate `generateRandomCard`**
+  - [x] 1.1 Trigger the function on screen load
+  - [x] 1.2 Call it again when the Draw button is tapped
+- [x] **2.0 Build layout and controls**
+  - [x] 2.1 Create card display area and prominent Draw button
+  - [x] 2.2 Add Animation and Sound toggle switches below the Draw button
 - [ ] **3.0 Accessibility & fallback**
   - [ ] 3.1 Verify WCAG contrast and tap target sizes
   - [x] 3.2 Display fallback card on error using the module
