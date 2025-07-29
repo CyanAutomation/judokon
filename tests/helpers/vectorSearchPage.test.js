@@ -1,5 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
 
+// Prevent vectorSearchPage.js from auto-initializing during tests
+vi.doMock("../../src/helpers/domReady.js", () => ({
+  onDomReady: vi.fn()
+}));
+
 /**
  * Unit tests for selectMatches helper in vectorSearchPage.
  */
