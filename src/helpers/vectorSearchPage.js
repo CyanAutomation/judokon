@@ -1,6 +1,8 @@
 import { onDomReady } from "./domReady.js";
 import { findMatches, fetchContextById, loadEmbeddings } from "./vectorSearch.js";
 import { markdownToHtml } from "./markdownToHtml.js";
+import { fetchJson } from "./dataUtils.js";
+import { DATA_DIR } from "./constants.js";
 // Load Transformers.js dynamically from jsDelivr when first used
 // This avoids bundling the large library with the rest of the code.
 
@@ -181,7 +183,8 @@ function createSnippetElement(text) {
  * 3. Show the spinner and a searching message.
  * 4. Obtain the extractor and generate the query vector using mean pooling,
  *    converting the result to a plain array.
- * 5. Use `findMatches` to fetch the top results for the vector.
+ * 5. Read selected tags from the filter dropdown and
+ *    pass them to `findMatches` when fetching results.
  * 6. Split matches by `SIMILARITY_THRESHOLD` into strong and weak groups.
  *    - When multiple strong matches exist, compare the top two scores and keep
  *      only the first when the difference exceeds `DROP_OFF_THRESHOLD`.
@@ -193,7 +196,12 @@ function createSnippetElement(text) {
  *
  * @param {Event} event - The submit event from the form.
  */
-async function handleSearch(event) {
+/**
+ * Handle the vector search form submission.
+ *
+ * @param {Event} event - The submit event from the form.
+ */
+export async function handleSearch(event) {
   event.preventDefault();
   const input = document.getElementById("vector-search-input");
   const table = document.getElementById("vector-results-table");
@@ -202,13 +210,16 @@ async function handleSearch(event) {
   if (tbody) tbody.textContent = "";
   if (!query) return;
   const messageEl = document.getElementById("search-results-message");
+  const tagSelect = document.getElementById("tag-filter");
+  const selected =
+    tagSelect && tagSelect.value && tagSelect.value !== "all" ? [tagSelect.value] : [];
   spinner.style.display = "block";
   if (messageEl) messageEl.textContent = "Searching...";
   try {
     const model = await getExtractor();
     const result = await model(query, { pooling: "mean" });
     const vector = Array.from(result.data ?? result);
-    const matches = await findMatches(vector, 5, [], query);
+    const matches = await findMatches(vector, 5, selected, query);
     if (messageEl) messageEl.textContent = "";
     spinner.style.display = "none";
     if (matches === null) {
@@ -286,16 +297,41 @@ async function handleSearch(event) {
  * @pseudocode
  * 1. Cache the spinner element and hide it if present.
  * 2. Locate the search form element.
- * 3. Attach `handleSearch` to the form's submit event.
- * 4. Intercept the Enter key to trigger form submission programmatically.
- * 5. Results items load additional context when activated.
+ * 3. Load embeddings and populate the tag filter dropdown with unique tags.
+ * 4. Fetch meta stats and display the embedding count in the header.
+ * 5. Attach `handleSearch` to the form and intercept Enter key submissions.
  */
-function init() {
+export async function init() {
   spinner = document.getElementById("search-spinner");
   if (spinner) spinner.style.display = "none";
-  // Preload embeddings on page load so search runs instantly
-  loadEmbeddings();
   const form = document.getElementById("vector-search-form");
+
+  const [embeddings, meta] = await Promise.all([
+    loadEmbeddings(),
+    fetchJson(`${DATA_DIR}client_embeddings.meta.json`).catch(() => null)
+  ]);
+
+  const tagSelect = document.getElementById("tag-filter");
+  if (tagSelect && Array.isArray(embeddings)) {
+    const tags = new Set();
+    embeddings.forEach((e) => {
+      if (Array.isArray(e.tags)) {
+        e.tags.forEach((t) => tags.add(t));
+      }
+    });
+    tagSelect.innerHTML =
+      '<option value="all">All</option>' +
+      [...tags]
+        .sort()
+        .map((t) => `<option value="${t}">${t}</option>`)
+        .join("");
+  }
+
+  const statsEl = document.getElementById("embedding-stats");
+  if (statsEl && meta && typeof meta.count === "number") {
+    statsEl.textContent = `${meta.count} embeddings loaded`;
+  }
+
   form?.addEventListener("submit", handleSearch);
   form?.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
@@ -303,6 +339,14 @@ function init() {
       form.requestSubmit();
     }
   });
+}
+
+/**
+ * Inject a custom extractor for testing.
+ * @param {any} model - Mock extractor to use.
+ */
+export function __setExtractor(model) {
+  extractor = model;
 }
 
 onDomReady(init);

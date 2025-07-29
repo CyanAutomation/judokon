@@ -88,6 +88,7 @@ than an entire file.
 - [x] Agent prompt templates are provided with guidance on embedding format and retrieval usage
 - [x] Agents can request adjacent chunks or the full document by passing the result `id` to `fetchContextById`
 - [x] Search function accepts optional tag filters so agents can restrict matches to specific categories
+- [x] Vector search UI displays how many embeddings are loaded using the meta file
 - [x] The system handles malformed or missing embeddings gracefully (e.g. logs a warning or returns empty result)
 - [x] The `client_embeddings.json` file stays under the 3.6MB threshold to ensure quick page load and GitHub Pages compatibility
 - [ ] Match text longer than 200 characters is truncated in the UI with a "Show
@@ -195,8 +196,9 @@ No user settings or toggles are included. This is appropriate since the feature 
   - [ ] 4.1 Design and implement offline query UI
   - [ ] 4.2 Add keyboard accessibility and result display
   - [ ] 4.3 Provide example queries with results
-    - [ ] 4.4 Add tag filter controls so users or agents can restrict results by source or topic
+    - [x] 4.4 Add tag filter controls so users or agents can restrict results by source or topic
     - [ ] 4.5 Truncate long matches in the results table and provide a "Show more" toggle
+    - [x] 4.6 Show embedding count from the meta file in the UI header
 
 - [ ] 5.0 Agent Integration and Demos
 
