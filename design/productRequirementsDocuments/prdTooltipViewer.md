@@ -1,4 +1,4 @@
-# PRD: Tooltip Viewer Page (`tooltipViewer.html`)
+# PRD: Tooltip Viewer
 
 ## TL;DR
 
@@ -98,3 +98,31 @@ For example, during v0.7, a typo in `stat.focus` persisted through 3 releases du
 - **Responsiveness**: Sidebar stacks above preview on mobile (<600px).
 - **Interactivity**: Visual hover and selection states; real-time filtering feedback.
 - **Testability**: Expose `data-key`, `data-body`, and `data-valid` attributes per item.
+
+## Tasks
+
+- [ ] 1.0 Load and Parse Tooltip Data
+  - [ ] 1.1 Load `tooltips.json` from `src/data/tooltips.json`
+  - [ ] 1.2 Handle loading failures with user-friendly error display
+  - [ ] 1.3 Parse JSON and extract key-value pairs
+
+- [ ] 2.0 Implement Sidebar Key List
+  - [ ] 2.1 Render scrollable list of tooltip keys
+  - [ ] 2.2 Enable click interaction to select a tooltip
+  - [ ] 2.3 Add real-time search/filter functionality
+
+- [ ] 3.0 Build Preview Panel
+  - [ ] 3.1 Render raw tooltip text
+  - [ ] 3.2 Parse and render markdown-styled preview
+  - [ ] 3.3 Display visual indicators for blank or malformed tooltips
+  - [ ] 3.4 Include copy-to-clipboard buttons for key and body
+
+- [ ] 4.0 URL Fragment Support
+  - [ ] 4.1 Read and parse URL hash on page load
+  - [ ] 4.2 Scroll to and pre-select corresponding tooltip key
+
+- [ ] 5.0 UI/UX and Accessibility Enhancements
+  - [ ] 5.1 Apply JU-DO-KON! styling (colors, spacing, typography)
+  - [ ] 5.2 Ensure mobile responsiveness (stacked layout <600px)
+  - [ ] 5.3 Include accessible font sizes and high contrast text
+  - [ ] 5.4 Expose `data-*` attributes for automated QA
