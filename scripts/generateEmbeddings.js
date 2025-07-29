@@ -13,7 +13,8 @@
  *      * Split any section longer than CHUNK_SIZE using OVERLAP for context.
  *    - If JSON, parse the contents.
  *      * When the root is an array, embed each item individually.
- *      * When the root is an object, embed each key/value pair.
+ *      * When the root is an object, flatten nested fields and embed each
+ *        key/value pair.
  * 4. Encode each chunk or entry using mean pooling and round the values.
  * 5. Build output objects with id, text, embedding, source, tags, and version.
  *    - Include an optional `qaContext` field containing a short summary when
@@ -43,6 +44,25 @@ const rootDir = path.resolve(__dirname, "..");
 const CHUNK_SIZE = 2000;
 const OVERLAP = 100;
 const MAX_OUTPUT_SIZE = 3.6 * 1024 * 1024;
+
+/**
+ * Recursively flatten a nested object using dot notation keys.
+ *
+ * @param {Record<string, any>} obj - Object to flatten.
+ * @param {string} [prefix=""] - Current key prefix.
+ * @returns {Record<string, any>} Flattened mapping.
+ */
+function flattenObject(obj, prefix = "") {
+  return Object.entries(obj).reduce((acc, [key, value]) => {
+    const id = prefix ? `${prefix}.${key}` : key;
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      Object.assign(acc, flattenObject(value, id));
+    } else {
+      acc[id] = value;
+    }
+    return acc;
+  }, {});
+}
 
 function chunkMarkdown(text) {
   const lines = text.split(/\r?\n/);
@@ -214,7 +234,8 @@ async function generate() {
           });
         }
       } else if (json && typeof json === "object") {
-        for (const [key, value] of Object.entries(json)) {
+        const flat = flattenObject(json);
+        for (const [key, value] of Object.entries(flat)) {
           const chunkText = typeof value === "string" ? value : JSON.stringify(value);
           const intent = determineIntent(chunkText);
           const tags = baseTags.includes(intent) ? [...baseTags] : [...baseTags, intent];
