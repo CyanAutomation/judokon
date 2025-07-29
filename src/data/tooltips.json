@@ -31,6 +31,7 @@
     "browseJudoka": "**Browse Judoka** opens the full roster in a carousel."
   },
   "card": {
-    "flag": "**Country flag**\nRepresents the judoka’s nation."
+    "flag": "**Country flag**\nRepresents the judoka’s nation.",
+    "weightClass": "**Weight class**\nCompetition weight category."
   }
 }
