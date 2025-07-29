@@ -80,11 +80,11 @@ describe("generateCardStats", () => {
 
     const expectedHtml =
       '<div class="card-stats common" aria-label="Judoka Stats"><ul>' +
-      '<li class="stat"><strong>Power</strong><span>9</span></li>' +
-      '<li class="stat"><strong>Speed</strong><span>6</span></li>' +
-      '<li class="stat"><strong>Technique</strong><span>7</span></li>' +
-      '<li class="stat"><strong>Kumi-kata</strong><span>7</span></li>' +
-      '<li class="stat"><strong>Ne-waza</strong><span>8</span></li>' +
+      '<li class="stat"><strong data-tooltip-id="stat.power">Power</strong><span>9</span></li>' +
+      '<li class="stat"><strong data-tooltip-id="stat.speed">Speed</strong><span>6</span></li>' +
+      '<li class="stat"><strong data-tooltip-id="stat.technique">Technique</strong><span>7</span></li>' +
+      '<li class="stat"><strong data-tooltip-id="stat.kumikata">Kumi-kata</strong><span>7</span></li>' +
+      '<li class="stat"><strong data-tooltip-id="stat.newaza">Ne-waza</strong><span>8</span></li>' +
       "</ul></div>";
 
     const result = generateCardStats(card);

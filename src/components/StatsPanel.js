@@ -6,7 +6,7 @@
  * 2. Resolve panel classes from the provided `type` and `className` options.
  * 3. Build a `<div>` with class `card-stats` containing a `<ul>` list.
  *    - For each stat key (power, speed, technique, kumikata, newaza)
- *      create an `<li>` with a label and value.
+ *      create an `<li>` with a label, value, and tooltip ID.
  * 4. Apply an accessible `aria-label` to the panel when provided.
  * 5. Return the completed panel element.
  *
@@ -34,11 +34,12 @@ export function createStatsPanel(stats, options = {}) {
 
   const list = document.createElement("ul");
 
-  function addItem(label, value) {
+  function addItem(label, value, id) {
     const li = document.createElement("li");
     li.className = "stat";
     const strong = document.createElement("strong");
     strong.textContent = label;
+    if (id) strong.dataset.tooltipId = `stat.${id}`;
     const span = document.createElement("span");
     span.innerHTML = escapeHTML(value);
     li.append(strong, span);
@@ -46,14 +47,14 @@ export function createStatsPanel(stats, options = {}) {
   }
 
   const statsEntries = [
-    { label: "Power", key: power },
-    { label: "Speed", key: speed },
-    { label: "Technique", key: technique },
-    { label: "Kumi-kata", key: kumikata },
-    { label: "Ne-waza", key: newaza }
+    { label: "Power", key: power, id: "power" },
+    { label: "Speed", key: speed, id: "speed" },
+    { label: "Technique", key: technique, id: "technique" },
+    { label: "Kumi-kata", key: kumikata, id: "kumikata" },
+    { label: "Ne-waza", key: newaza, id: "newaza" }
   ];
 
-  statsEntries.forEach(({ label, key }) => addItem(label, key));
+  statsEntries.forEach(({ label, key, id }) => addItem(label, key, id));
   panel.appendChild(list);
   return panel;
 }
