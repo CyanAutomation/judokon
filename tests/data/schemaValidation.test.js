@@ -17,6 +17,7 @@ const pairs = [
   ["judoka.json", "judoka.schema.json"],
   ["weightCategories.json", "weightCategories.schema.json"],
   ["aesopsFables.json", "aesopsFables.schema.json"],
+  ["aesopsMeta.json", "aesopsMeta.schema.json"],
   ["japaneseConverter.json", "japaneseConverter.schema.json"],
   ["locations.json", "locations.schema.json"],
   ["settings.json", "settings.schema.json"]
