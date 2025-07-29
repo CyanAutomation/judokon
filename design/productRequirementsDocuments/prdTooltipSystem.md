@@ -84,6 +84,11 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 To ensure tooltips are consistently helpful and aligned with JU-DO-KON!’s tone, the following content standards must be followed when writing or reviewing tooltips:
 
 - **Coverage**: Every interactive UI element that could confuse a new or young player should have a tooltip. Omit tooltips for elements where the function is fully self-explanatory.
+  - Stats on cards must provide tooltip descriptions using accessible markdown.
+  - Country flag icons require tooltips explaining nationality abbreviations.
+  - Weight indicators must include tooltip text clarifying weight classes.
+  - Navigation links in the battle screen should expose tooltip guidance.
+  - Help icons anywhere in the UI must render tooltip content from `tooltips.json`.
 - **Clarity**: Text should be immediately understandable, avoiding jargon. Game-specific terms must be explained using plain language. Aim for a reading level accessible to 10–12-year-olds.
 - **Concisiveness**: Tooltips should be succinct – ideally one sentence, or two short ones. Avoid paragraphs or rambling explanations.
 - **Tone & Voice**: Tooltips must reflect JU-DO-KON!’s style: casual, instructional, and game-themed. Prefer friendly second-person phrasing ("Tap to...") or descriptive third-person as appropriate.
