@@ -1,5 +1,6 @@
 import { onDomReady } from "./domReady.js";
 import { findMatches, fetchContextById, loadEmbeddings } from "./vectorSearch.js";
+import { markdownToHtml } from "./markdownToHtml.js";
 // Load Transformers.js dynamically from jsDelivr when first used
 // This avoids bundling the large library with the rest of the code.
 
@@ -50,7 +51,8 @@ export function selectMatches(strongMatches, weakMatches) {
  * 2. Retrieve the result id from the element's dataset.
  * 3. Find the child live region and announce loading.
  * 4. Fetch neighboring context using `fetchContextById`.
- * 5. Insert the joined chunks into the live region or a fallback message.
+ * 5. Convert `chunks.join("\n\n")` from Markdown to HTML and insert it
+ *    into the live region, or show a fallback message when empty.
  * 6. Mark the element as expanded when complete.
  *
  * @param {HTMLElement} el - The result list item.
@@ -62,7 +64,8 @@ async function loadResultContext(el) {
   if (!live) return;
   live.textContent = "Loading context...";
   const chunks = await fetchContextById(id, 1);
-  live.textContent = chunks.join("\n\n") || "No additional context found.";
+  const markdown = chunks.join("\n\n");
+  live.innerHTML = markdown.length > 0 ? markdownToHtml(markdown) : "No additional context found.";
   el.dataset.loaded = "true";
   el.setAttribute("aria-expanded", "true");
 }
