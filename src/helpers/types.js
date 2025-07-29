@@ -69,7 +69,6 @@
  * @property {string} country - Full country name (e.g., "Japan")
  * @property {string} code - 2-letter country code (e.g., "JP")
  * @property {string} [lastUpdated] - ISO date string indicating the last update (optional)
- * @property {string} [updatedBy] - User name or ID of the person who last updated the entry (optional)
  * @property {boolean} active - Whether the country code is active (default: true)
  */
 
