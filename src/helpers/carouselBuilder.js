@@ -18,38 +18,51 @@ import { CAROUSEL_SCROLL_DISTANCE, SPINNER_DELAY_MS } from "./constants.js";
  * @pseudocode
  * 1. Validate inputs and exit early if `container` or `wrapper` is missing.
  * 2. Create a `<div>` element with the class `scroll-markers`.
- * 3. Add markers for each card in the carousel.
- *    - Highlight the marker corresponding to the currently visible card.
- * 4. Update the highlighted marker on scroll events.
+ * 3. Determine how many cards fit within one page of the carousel.
+ * 4. Add a marker for each page and an accompanying page counter.
+ *    - Highlight the marker for the current page.
+ * 5. Update the active marker and counter text on scroll events.
  *
  * @param {HTMLElement} [container] - The carousel container element.
  * @param {HTMLElement} [wrapper] - The carousel wrapper element.
  */
 function addScrollMarkers(container, wrapper) {
   if (!container || !wrapper) return;
+  const existing = wrapper.querySelector(".scroll-markers");
+  if (existing) existing.remove();
   const markers = document.createElement("div");
   markers.className = "scroll-markers";
 
   const cards = container.querySelectorAll(".judoka-card");
-  cards.forEach((_, index) => {
+  const firstCard = cards[0];
+  const cardWidth = firstCard ? firstCard.offsetWidth : 0;
+  const cardsPerPage = cardWidth ? Math.max(1, Math.round(container.clientWidth / cardWidth)) : 1;
+  const pageCount = Math.ceil(cards.length / cardsPerPage);
+
+  for (let i = 0; i < pageCount; i++) {
     const marker = document.createElement("span");
     marker.className = "scroll-marker";
-    if (index === 0) marker.classList.add("active");
+    if (i === 0) marker.classList.add("active");
     markers.appendChild(marker);
-  });
+  }
+
+  const counter = document.createElement("span");
+  counter.className = "page-counter";
+  counter.setAttribute("aria-live", "polite");
+  counter.textContent = `Page 1 of ${pageCount}`;
+  markers.appendChild(counter);
 
   wrapper.appendChild(markers);
 
-  const firstCard = container.querySelector(".judoka-card");
-  const cardWidth = firstCard ? firstCard.offsetWidth : 0;
-
   container.addEventListener("scroll", () => {
     const scrollLeft = container.scrollLeft;
-    const activeIndex = cardWidth ? Math.round(scrollLeft / cardWidth) : 0;
+    const activeCardIndex = cardWidth ? Math.round(scrollLeft / cardWidth) : 0;
+    const currentPage = Math.min(pageCount - 1, Math.floor(activeCardIndex / cardsPerPage));
 
     markers.querySelectorAll(".scroll-marker").forEach((marker, index) => {
-      marker.classList.toggle("active", index === activeIndex);
+      marker.classList.toggle("active", index === currentPage);
     });
+    counter.textContent = `Page ${currentPage + 1} of ${pageCount}`;
   });
 }
 
