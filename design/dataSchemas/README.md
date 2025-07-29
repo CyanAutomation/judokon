@@ -57,3 +57,21 @@ The `category` field accepts `Nage-waza` or `Katame-waza`. The `subCategory` fie
 
 JSON keys should follow the same casing throughout the project. We recommend
 using **camelCase** for all keys so data files match helper functions and tests.
+
+## CountryCode and WeightClass Enums
+
+Shared enums for ISO country codes and IJF weight classes live in
+[`src/schemas/commonDefinitions.schema.json`](../../src/schemas/commonDefinitions.schema.json).
+Other schema files reference these lists via `$ref` so they do not need to
+repeat each value.
+
+```json
+{ "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/CountryCode" }
+```
+
+### Updating the enum lists
+
+Edit the arrays under `CountryCode` and `WeightClass` in the shared schema to
+add or remove values. You can update them manually or run a local script that
+rebuilds the lists from the JSON data files. After changing the enums, run
+`npm run validate:data` to ensure all data still passes validation.
