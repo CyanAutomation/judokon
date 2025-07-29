@@ -110,6 +110,7 @@ export function createNameContainer(firstname, surname) {
  * @pseudocode
  * 1. Create a `<div>` container:
  *    - Set its `className` to `"card-flag"`.
+ *    - Add a `data-tooltip-id="card.flag"` attribute for tooltips.
  *
  * 2. Create an `<img>` element:
  *    - Set its `src` attribute to `finalFlagUrl` or fallback to `PLACEHOLDER_FLAG_URL`.
@@ -126,6 +127,7 @@ export function createFlagImage(finalFlagUrl, countryName) {
 
   const flagContainer = document.createElement("div");
   flagContainer.className = "card-flag";
+  flagContainer.dataset.tooltipId = "card.flag";
 
   const flagImg = document.createElement("img");
 
