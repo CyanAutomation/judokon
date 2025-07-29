@@ -295,11 +295,11 @@ The page begins with an `<h1>` heading labeled "Settings". Two `<fieldset>` sect
   - [ ] 5.1 Profile settings page load times on mid-tier devices.
   - [ ] 5.2 Optimize for ≤200ms initial render.
 - [ ] 6.0 Add Change Log Link
-  - [ ] 6.1 Link to `changeLog.html` from the Settings menu.
+  - [x] 6.1 Link to `changeLog.html` from the Settings menu.
 - [ ] 7.0 Add PRD Viewer Link
-  - [ ] 7.1 Link to `prdViewer.html` from the Settings menu.
+  - [x] 7.1 Link to `prdViewer.html` from the Settings menu.
 - [ ] 8.0 Add Mockup Viewer Link
-  - [ ] 8.1 Link to `mockupViewer.html` from the Settings menu.
+  - [x] 8.1 Link to `mockupViewer.html` from the Settings menu.
 
 ---
 

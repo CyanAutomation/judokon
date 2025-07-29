@@ -207,15 +207,15 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 - [ ] 1.0 Implement Country Flag Picker UI
   - [x] 1.1 Create hidden, slide-in panel (default), and full-screen grid layouts.
-  - [ ] 1.2 Load country flags with alt-text and labels, and ensure `aria-label` for each flag button.
-  - [ ] 1.3 Ensure responsive design for different screen sizes (mobile, tablet, desktop).
+  - [x] 1.2 Load country flags with alt-text and labels, and ensure `aria-label` for each flag button.
+  - [x] 1.3 Ensure responsive design for different screen sizes (mobile, tablet, desktop).
   - [x] 1.4 Implement selected flag highlighting (e.g., border, shading).
   - [x] 1.5 Implement clear filter icon.
-  - [ ] 1.6 Implement keyboard navigation and focus management for all interactive elements.
+  - [x] 1.6 Implement keyboard navigation and focus management for all interactive elements.
 - [x] 2.0 Set Up Filtering Logic
   - [x] 2.1 Load `judoka.json` and extract a list of available countries.
-  - [ ] 2.2 Implement filtering of the card carousel based on the selected country.
-  - [ ] 2.3 Display an empty state message if no judoka exist for the selected country.
+  - [x] 2.2 Implement filtering of the card carousel based on the selected country.
+  - [x] 2.3 Display an empty state message if no judoka exist for the selected country.
 - [ ] 3.0 Optimize Performance
   - [ ] 3.1 Implement virtual scrolling or paging for >50 countries.
   - [ ] 3.2 Ensure the filtering action completes within 1 second for 90% of sessions.

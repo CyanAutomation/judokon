@@ -177,17 +177,17 @@ generated carousel so each card's real portrait loads once it becomes visible.
 - [x] 1.0 Set Up Card Carousel Structure (P1)
   - [x] 1.1 Develop carousel container and card components.
   - [x] 1.2 Implement dynamic loading for up to 100 cards.
-  - [ ] 1.3 Ensure responsive resizing for mobile and desktop.
+  - [x] 1.3 Ensure responsive resizing for mobile and desktop.
 - [x] 2.0 Integrate Navigation Methods (P1)
   - [x] 2.1 Add left/right on-screen button scrolling.
   - [x] 2.2 Add swipe gesture support for mobile.
-  - [ ] 2.3 Add keyboard arrow navigation support.
+  - [x] 2.3 Add keyboard arrow navigation support.
 - [ ] 3.0 Add UI Enhancements (P2)
   - [x] 3.1 Implement hover enlargement effect.
-  - [ ] 3.2 Display scroll markers for carousel position.
-  - [ ] 3.3 Implement loading spinner for slow networks.
+  - [x] 3.2 Display scroll markers for carousel position.
+  - [x] 3.3 Implement loading spinner for slow networks.
 - [ ] 4.0 Handle Edge Cases (P2)
-  - [ ] 4.1 Fallback judoka card (judoka id=0) for broken card images.
+  - [x] 4.1 Fallback judoka card (judoka id=0) for broken card images.
 
 ---
 

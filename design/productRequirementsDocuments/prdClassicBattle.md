@@ -184,8 +184,8 @@ _Resolved in [Future Considerations](#future-considerations):_ AI difficulty wil
 - [x] 1.1 Create round loop: random card draw, stat selection, comparison
   - [x] 1.2 Implement 30-second stat selection timer with auto-selection fallback (displayed in Info Bar)
   - [x] 1.3 Handle scoring updates on win, loss, and tie
-  - [ ] 1.4 Add "Next Round" and "Quit Match" buttons to controls
-  - [ ] 1.5 End match after 10 points or 25 rounds
+  - [x] 1.4 Add "Next Round" and "Quit Match" buttons to controls
+  - [x] 1.5 End match after 10 points or 25 rounds
 - [ ] 2.0 Add Early Quit Functionality
   - [ ] 2.1 Trigger quit confirmation when the header logo is clicked
   - [x] 2.2 Create confirmation prompt flow

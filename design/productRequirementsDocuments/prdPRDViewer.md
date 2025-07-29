@@ -102,35 +102,35 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 ## Tasks
 
-- [ ] 1.0 Set Up Markdown File Loader
+- [x] 1.0 Set Up Markdown File Loader
 
-  - [ ] 1.1 Create function to scan `design/productRequirementsDocuments` directory
-  - [ ] 1.2 Load markdown content of each file asynchronously
-  - [ ] 1.3 Implement error handling and fallback display for file load failures
+  - [x] 1.1 Create function to scan `design/productRequirementsDocuments` directory
+  - [x] 1.2 Load markdown content of each file asynchronously
+  - [x] 1.3 Implement error handling and fallback display for file load failures
 
-- [ ] 2.0 Implement Markdown-to-HTML Renderer
+- [x] 2.0 Implement Markdown-to-HTML Renderer
 
-  - [ ] 2.1 Integrate `marked` library for parsing markdown
-  - [ ] 2.2 Apply consistent styles to headings, tables, lists, code blocks
-  - [ ] 2.3 Benchmark and optimize rendering to complete within 200ms on desktop
+  - [x] 2.1 Integrate `marked` library for parsing markdown
+  - [x] 2.2 Apply consistent styles to headings, tables, lists, code blocks
+  - [x] 2.3 Benchmark and optimize rendering to complete within 200ms on desktop
 
-- [ ] 3.0 Build Navigation System
+- [x] 3.0 Build Navigation System
 
-  - [ ] 3.1 Add Prev and Next buttons with wrap-around navigation
-  - [ ] 3.2 Implement keyboard arrow key navigation and focus management
-  - [ ] 3.3 Add swipe gesture detection with minimum threshold to avoid accidental triggers
+  - [x] 3.1 Add Prev and Next buttons with wrap-around navigation
+  - [x] 3.2 Implement keyboard arrow key navigation and focus management
+  - [x] 3.3 Add swipe gesture detection with minimum threshold to avoid accidental triggers
 
-- [ ] 4.0 Ensure Accessibility and Responsiveness
+- [x] 4.0 Ensure Accessibility and Responsiveness
 
-  - [ ] 4.1 Add ARIA labels and roles to interactive elements
-  - [ ] 4.2 Implement responsive CSS for desktop, tablet, and mobile layouts
+  - [x] 4.1 Add ARIA labels and roles to interactive elements
+  - [x] 4.2 Implement responsive CSS for desktop, tablet, and mobile layouts
   - [ ] 4.3 Conduct accessibility testing with keyboard-only and screen reader tools
 
-- [ ] 5.0 Add Home Link and Error Handling
+- [x] 5.0 Add Home Link and Error Handling
 
-  - [ ] 5.1 Insert clickable JU-DO-KON! logo and/or dedicated Home link to main page
-  - [ ] 5.2 Log markdown loading errors to console and display fallback UI
-  - [ ] 5.3 Hide internal file paths or URLs from the user interface
+  - [x] 5.1 Insert clickable JU-DO-KON! logo and/or dedicated Home link to main page
+  - [x] 5.2 Log markdown loading errors to console and display fallback UI
+  - [x] 5.3 Hide internal file paths or URLs from the user interface
 
 - [ ] 6.0 Finalize Visuals and UX Guidelines
   - [ ] 6.1 Create detailed wireframes/mockups with annotations

@@ -94,14 +94,14 @@ Designers and developers previously relied on scattered folder structures to fin
 
 ## Tasks
 
-- [ ] 1.0 Build Carousel Viewer Component
-  - [ ] 1.1 Load and display mockup images from `design/mockups/`
-  - [ ] 1.2 Display filename below the image
-  - [ ] 1.3 Show first image on page load
-- [ ] 2.0 Implement Image Navigation
-  - [ ] 2.1 Add "Next" and "Previous" mouse buttons
-  - [ ] 2.2 Add left/right keyboard arrow navigation
-  - [ ] 2.3 Loop navigation from last to first and vice versa
+- [x] 1.0 Build Carousel Viewer Component
+  - [x] 1.1 Load and display mockup images from `design/mockups/`
+  - [x] 1.2 Display filename below the image
+  - [x] 1.3 Show first image on page load
+- [x] 2.0 Implement Image Navigation
+  - [x] 2.1 Add "Next" and "Previous" mouse buttons
+  - [x] 2.2 Add left/right keyboard arrow navigation
+  - [x] 2.3 Loop navigation from last to first and vice versa
 - [ ] 3.0 Add Performance and Fallback Logic
   - [ ] 3.1 Preload adjacent images for snappy transitions
   - [ ] 3.2 Handle image load failures with fallback icon or alt text
