@@ -39,19 +39,7 @@ describe("settings utils", () => {
   it("loads defaults when storage is empty", async () => {
     const { loadSettings } = await import("../../src/helpers/settingsUtils.js");
     const settings = await loadSettings();
-    expect(settings).toEqual({
-      sound: false,
-      motionEffects: true,
-      typewriterEffect: false,
-      displayMode: "light",
-      gameModes: {},
-      featureFlags: {
-        battleDebugPanel: false,
-        fullNavigationMap: false,
-        enableTestMode: false,
-        enableCardInspector: false
-      }
-    });
+    expect(settings).toEqual(DEFAULT_SETTINGS);
   });
 
   /**
@@ -94,19 +82,7 @@ describe("settings utils", () => {
     Storage.prototype.getItem = vi.fn(() => null);
     const { loadSettings } = await import("../../src/helpers/settingsUtils.js");
     const settings = await loadSettings();
-    expect(settings).toEqual({
-      sound: false,
-      motionEffects: true,
-      typewriterEffect: false,
-      displayMode: "light",
-      gameModes: {},
-      featureFlags: {
-        battleDebugPanel: false,
-        fullNavigationMap: false,
-        enableTestMode: false,
-        enableCardInspector: false
-      }
-    });
+    expect(settings).toEqual(DEFAULT_SETTINGS);
     Storage.prototype.getItem = originalGetItem;
   });
 
