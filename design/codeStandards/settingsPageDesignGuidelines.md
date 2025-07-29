@@ -225,6 +225,16 @@ To support AI-assisted testing, variant gameplay modes, and scalable development
 - **Grouping**
   - Place all feature flags in a dedicated `<fieldset>` titled `Feature Flags`
   - For advanced/experimental features, nest under `Advanced Settings` with appropriate section toggling
+  - Markup example:
+    ```html
+    <div class="settings-section">
+      <button type="button" class="settings-section-toggle" id="advanced-settings-toggle" aria-expanded="false" aria-controls="advanced-settings-content">Advanced Settings</button>
+      <div class="settings-section-content" id="advanced-settings-content" role="region" aria-labelledby="advanced-settings-toggle" hidden>
+        <fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">...</fieldset>
+      </div>
+    </div>
+    ```
+  - When a flag changes, call `showSettingsInfo(label, description)` to open a modal explaining the feature. The modal uses `createModal` with a single **OK** button.
 
 ---
 

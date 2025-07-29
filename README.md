@@ -420,6 +420,8 @@ Toggle the **Full Navigation Map** flag to display a map overlay with links to a
 Enable the **Test Mode** flag for deterministic card draws and stat results. A "Test Mode Active" banner appears on battle pages, and the battle area receives `data-test-mode="true"` for automated checks. See `src/helpers/classicBattlePage.js` and `testModeUtils.js` for how deterministic behavior is applied.
 Enable the **Card Inspector** flag to add a collapsible panel on each card containing its raw JSON. Opening the panel sets `data-inspector="true"` on the card for automated checks.
 
+Advanced or debug-oriented flags live under a collapsible **Advanced Settings** section. This keeps experimental options out of sight for younger players while remaining accessible to testers.
+
 Game mode data now falls back to a bundled JSON import if the network request fails, so navigation works offline.
 Corrupted settings are detected and automatically reset to defaults, ensuring the Settings page always remains usable.
 Use the **Restore Defaults** button in the Links section to reset all settings. A confirmation dialog now appears before applying the defaults.

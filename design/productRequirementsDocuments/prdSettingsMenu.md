@@ -136,6 +136,13 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - AC-5.2 Each game mode toggle accurately reflects its state on page reload.
 - AC-5.3 If `navigationItems.json` is missing or invalid, the game modes list does not render, and an error message appears in the settings UI.
 
+### Advanced Settings & Feature Flag Info
+
+- Experimental and debug flags are grouped under a collapsible **Advanced Settings** section.
+- When a flag is toggled, a modal explains the feature using the description text from `featureFlags[flag].description`.
+- The modal is created via `createModal` with an OK button to dismiss it.
+- Debug-focused flags remain tucked away so younger players do not accidentally enable them.
+
 ### Data Persistence & Refresh
 
 - AC-6.1 All settings changes persist through page refresh within the same session.

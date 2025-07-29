@@ -189,10 +189,32 @@
               </fieldset>
             </div>
           </div>
-          <fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">
-            <legend>Feature Flags</legend>
-            <!-- Flag toggles are inserted here dynamically -->
-          </fieldset>
+          <div class="settings-section">
+            <button
+              type="button"
+              class="settings-section-toggle"
+              id="advanced-settings-toggle"
+              aria-expanded="false"
+              aria-controls="advanced-settings-content"
+            >
+              Advanced Settings
+            </button>
+            <div
+              class="settings-section-content"
+              id="advanced-settings-content"
+              role="region"
+              aria-labelledby="advanced-settings-toggle"
+              hidden
+            >
+              <fieldset
+                id="feature-flags-container"
+                class="game-mode-toggle-container settings-form"
+              >
+                <legend>Feature Flags</legend>
+                <!-- Flag toggles are inserted here dynamically -->
+              </fieldset>
+            </div>
+          </div>
           <fieldset id="links-container" class="settings-form">
             <legend>Links</legend>
             <div class="settings-item">
