@@ -109,6 +109,7 @@ See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel-specific animat
 - If no judoka exist for a selected country, an empty state message is shown.
 - If a flag asset fails to load, a fallback flag icon is displayed.
 - Picker is responsive and touch targets are ≥44px.
+- Judoka cards must display all stats without scrolling on common desktop resolutions (e.g., 1440px width).
 
 ---
 
