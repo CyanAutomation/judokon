@@ -21,10 +21,12 @@
       "category": {
         "type": "string",
         "description": "The main category of the technique."
+        "enum": ["Nage-waza", "Katame-waza"],
       },
       "subCategory": {
         "type": "string",
         "description": "The subcategory of the technique."
+        "enum": ["Te-waza", "Koshi-waza", "Ashi-waza", "Ma-sutemi-waza", "Yoko-sutemi-waza", "Osae-komi-waza", "Shime-waza", "Kansetsu-waza"],
       },
       "description": {
         "type": "string",
