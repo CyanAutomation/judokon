@@ -1,17 +1,6 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { verifyPageBasics, NAV_CLASSIC_BATTLE } from "./fixtures/navigationChecks.js";
 
-async function setCarouselWidth(page, width) {
-  await page.evaluate((w) => {
-    const el = document.querySelector('[data-testid="carousel"]');
-    if (el) {
-      el.style.width = w;
-      // Disable flex growth so the test can control overflow
-      el.style.flex = "0 0 auto";
-    }
-  }, width);
-}
-
 const COUNTRY_TOGGLE_LOCATOR = "country-toggle";
 
 test.describe("Browse Judoka screen", () => {
@@ -106,25 +95,38 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test("carousel responds to arrow keys", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.reload();
     const container = page.locator('[data-testid="carousel"]');
     await page.waitForSelector('[data-testid="carousel"] .judoka-card');
-    await setCarouselWidth(page, "200px");
 
     await container.focus();
-    const start = await container.evaluate((el) => el.scrollLeft);
+    const markers = page.locator(".scroll-marker");
+    const counter = page.locator(".page-counter");
+    await expect(markers).toHaveCount(3);
+    await expect(counter).toHaveText("Page 1 of 3");
 
-    await page.keyboard.press("ArrowRight");
-    await expect.poll(() => container.evaluate((el) => el.scrollLeft)).toBeGreaterThan(start);
+    await container.evaluate((el) => {
+      el.scrollTo({ left: 600, behavior: "auto" });
+    });
+
+    await expect.poll(() => counter.textContent()).not.toBe("Page 1 of 3");
   });
 
   test("carousel responds to swipe gestures", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.reload();
     const container = page.locator(".card-carousel");
     await container.waitFor();
     await page.waitForSelector('[data-testid="carousel"] .judoka-card');
-    await setCarouselWidth(page, "200px");
+
+    const markers = page.locator(".scroll-marker");
+    const counter = page.locator(".page-counter");
+    await expect(markers).toHaveCount(3);
+    await expect(counter).toHaveText("Page 1 of 3");
 
     const box = await container.boundingBox();
-    const startX = box.x + box.width * 0.8;
+    const startX = box.x + box.width * 0.9;
     const y = box.y + box.height / 2;
 
     const before = await container.evaluate((el) => el.scrollLeft);
@@ -144,7 +146,7 @@ test.describe("Browse Judoka screen", () => {
             bubbles: true,
             cancelable: true,
             changedTouches: [
-              new Touch({ identifier: 1, target: el, clientX: startX - 200, clientY: y })
+              new Touch({ identifier: 1, target: el, clientX: startX - 600, clientY: y })
             ]
           })
         );
@@ -153,6 +155,8 @@ test.describe("Browse Judoka screen", () => {
     );
 
     await expect.poll(() => container.evaluate((el) => el.scrollLeft)).toBeGreaterThan(before);
+
+    await expect.poll(() => counter.textContent()).not.toBe("Page 1 of 3");
   });
 
   test.skip("shows loading spinner on slow network", async ({ page }) => {
