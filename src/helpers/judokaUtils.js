@@ -48,7 +48,7 @@ export async function getFallbackJudoka() {
       cardCode: "WKZ3-H4NF-MXT2-LQ93-JT8C",
       matchesWon: 0,
       matchesLost: 0,
-      matchesDrew: 0
+      matchesDrawn: 0
     };
     return cachedFallback;
   }

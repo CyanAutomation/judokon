@@ -23,7 +23,7 @@
     "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT8C",
     "matchesWon": 0,
     "matchesLost": 0,
-    "matchesDrew": 0
+    "matchesDrawn": 0
   },
   {
     "id": 114,
@@ -49,7 +49,7 @@
     "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT8D",
     "matchesWon": 0,
     "matchesLost": 0,
-    "matchesDrew": 0
+    "matchesDrawn": 0
   },
   {
     "id": 776,
@@ -75,6 +75,6 @@
     "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT9D",
     "matchesWon": 0,
     "matchesLost": 0,
-    "matchesDrew": 0
+    "matchesDrawn": 0
   }
 ]

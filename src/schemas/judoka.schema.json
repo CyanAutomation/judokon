@@ -116,7 +116,7 @@
       "type": "integer",
       "description": "Number of matches lost by the judoka."
     },
-    "matchesDrew": {
+    "matchesDrawn": {
       "type": "integer",
       "description": "Number of matches drawn by the judoka."
     }
@@ -139,6 +139,6 @@
     "cardCode",
     "matchesWon",
     "matchesLost",
-    "matchesDrew"
+    "matchesDrawn"
   ]
 }

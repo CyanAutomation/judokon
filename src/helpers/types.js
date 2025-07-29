@@ -22,7 +22,7 @@
  * @property {string} cardCode - Unique card code for the judoka
  * @property {number} matchesWon - Number of matches won by the judoka
  * @property {number} matchesLost - Number of matches lost by the judoka
- * @property {number} matchesDrew - Number of matches drawn by the judoka
+ * @property {number} matchesDrawn - Number of matches drawn by the judoka
  * @example
  * {
  *   id: 1,
@@ -48,7 +48,7 @@
  *   cardCode: "TR-Legendary",
  *   matchesWon: 100,
  *   matchesLost: 5,
- *   matchesDrew: 2
+ *   matchesDrawn: 2
  * }
  */
 
