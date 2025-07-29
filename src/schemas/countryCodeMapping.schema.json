@@ -10,8 +10,7 @@
         "description": "The name of the country."
       },
       "code": {
-        "type": "string",
-        "pattern": "^[a-z]{2}$",
+        "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/CountryCode",
         "description": "The country code in ISO 3166-1 alpha-2 format."
       },
       "lastUpdated": {
