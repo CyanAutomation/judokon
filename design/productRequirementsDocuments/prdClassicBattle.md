@@ -139,6 +139,8 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - Tie or win/loss messages placed centrally.
   - Clear "Next Round" button with distinct state (enabled/disabled).
   - Provide a dedicated "Quit Match" button below the controls.
+    Clicking it opens a confirmation modal styled like the
+    **Restore Defaults** dialog from the Settings page.
   - A small help icon (`#stat-help`) next to the stat buttons displays a tooltip
     explaining how to pick an attribute. The tooltip auto-opens once on first
     visit using `localStorage` to remember the dismissal.

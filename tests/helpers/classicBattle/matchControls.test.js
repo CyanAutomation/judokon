@@ -59,10 +59,11 @@ describe("classicBattle button handlers", () => {
   });
 
   it("quit button invokes quitMatch", async () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     document.getElementById("quit-match-button").click();
-    expect(confirmSpy).toHaveBeenCalled();
+    const confirmBtn = document.getElementById("confirm-quit-button");
+    expect(confirmBtn).not.toBeNull();
+    confirmBtn.dispatchEvent(new Event("click"));
     expect(document.querySelector("#round-message").textContent).toMatch(/quit/i);
   });
 });

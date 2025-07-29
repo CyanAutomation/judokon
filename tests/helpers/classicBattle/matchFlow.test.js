@@ -61,22 +61,22 @@ describe("classicBattle match flow", () => {
   });
 
   it("quits match after confirmation", async () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     const { quitMatch } = await import("../../../src/helpers/classicBattle.js");
-    const result = quitMatch();
-    expect(confirmSpy).toHaveBeenCalled();
-    expect(result).toBe(true);
+    quitMatch();
+    const confirmBtn = document.getElementById("confirm-quit-button");
+    expect(confirmBtn).not.toBeNull();
+    confirmBtn.dispatchEvent(new Event("click"));
     expect(document.querySelector("header #round-message").textContent).toMatch(/quit/i);
   });
 
   it("does not quit match when cancel is chosen", async () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
     const { quitMatch, _resetForTest } = await import("../../../src/helpers/classicBattle.js");
     _resetForTest();
     document.querySelector("#round-message").textContent = "Select your move";
-    const result = quitMatch();
-    expect(confirmSpy).toHaveBeenCalled();
-    expect(result).toBe(false);
+    quitMatch();
+    const cancelBtn = document.getElementById("cancel-quit-button");
+    expect(cancelBtn).not.toBeNull();
+    cancelBtn.dispatchEvent(new Event("click"));
     expect(document.querySelector("header #round-message").textContent).toBe("Select your move");
     expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nOpponent: 0");
   });
