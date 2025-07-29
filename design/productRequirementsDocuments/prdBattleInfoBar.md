@@ -44,14 +44,14 @@ The round message, timer, and score now sit directly inside the page header rath
 
 ## Acceptance Criteria
 
-- [ ] Match score is updated within **800ms** after round ends.
-- [ ] Win/loss message is shown within **1s** of round end and remains visible for **2s**.
-- [ ] Countdown timer begins once the 2s result message fade-out completes, aligned with server round start delay.
-- [ ] Action prompt appears during user input phases and disappears after interaction.
-- [ ] **Stat selection timer (30s) is displayed during stat selection phase; if timer expires, a random stat is auto-selected. Timer pauses/resumes on tab inactivity.**
-- [ ] Top bar content adapts responsively to different screen sizes and orientations.
-- [ ] All messages meet minimum contrast ratio of **4.5:1** and are screen reader compatible.
-- [ ] **All interactive elements meet minimum touch target size (≥44px) and support keyboard navigation.**
+- Match score is updated within **800ms** after round ends.
+- Win/loss message is shown within **1s** of round end and remains visible for **2s**.
+- Countdown timer begins once the 2s result message fade-out completes, aligned with server round start delay.
+- Action prompt appears during user input phases and disappears after interaction.
+- **Stat selection timer (30s) is displayed during stat selection phase; if timer expires, a random stat is auto-selected. Timer pauses/resumes on tab inactivity.**
+- Top bar content adapts responsively to different screen sizes and orientations.
+- All messages meet minimum contrast ratio of **4.5:1** and are screen reader compatible.
+- **All interactive elements meet minimum touch target size (≥44px) and support keyboard navigation.**
 
 ---
 

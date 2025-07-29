@@ -148,15 +148,13 @@ F7KP-WQ9M-ZD23-HYTR
 
 ## 6. Acceptance Criteria
 
-| ID  | Criterion                                                                                  |
-| --- | ------------------------------------------------------------------------------------------ |
-| AC1 | Given a valid Judoka, When code generation runs, Then a valid code is produced.            |
-| AC2 | Given a Judoka with missing fields, When code generation runs, fallback to a generic code. |
-| AC3 | Given a generated code, Then it must use only A–Z, 2–9, and hyphens.                       |
-| AC4 | Given a code, Then it must group characters into 4-character hyphenated chunks.            |
-| AC5 | Given the same Judoka object, Then the output code must be identical.                      |
-| AC6 | When code generation runs, Then it must complete in under 100ms.                           |
-| AC7 | Given manual code input, Then error rate must be under 2% on average.                      |
+- Given a valid Judoka, when code generation runs, a valid code is produced.
+- Given a Judoka with missing fields, fallback to a generic code.
+- Generated codes use only A–Z, 2–9, and hyphens.
+- Codes group characters into 4-character hyphenated chunks.
+- The same Judoka always yields the same output code.
+- Code generation completes in under 100ms.
+- Manual code entry must have an error rate under 2% on average.
 
 ---
 
