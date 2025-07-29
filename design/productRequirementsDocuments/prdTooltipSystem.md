@@ -55,9 +55,10 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 
 ## Acceptance Criteria
 
- - [ ] The system loads `tooltips.json` once at app start. Entries are grouped by category (for example `stat.power` or `ui.selectStat`). (**P1: tooltips.json store**)
+- [ ] The system loads `tooltips.json` once at app start. Entries are grouped by category (for example `stat.power` or `ui.selectStat`). (**P1: tooltips.json store**)
 - [ ] Hovering an element with `data-tooltip-id="stat.kumikata"` displays a tooltip with the parsed value from `tooltips.json`. (**P1: data-tooltip-id hook**)
 - [ ] Tooltip supports: `**bold**` as `<strong>`, `_italic_` as `<em>`, and `\n` as line breaks. (**P1: Markdown-like formatting**)
+- [ ] Tooltip content adheres to the style and quality standards defined in the "Tooltip Content Guidelines" section, including clarity, tone, and usefulness.
 - [ ] Tooltip appears within **150ms** of hover and is positioned relative to the element (bottom-left preferred). (**P1: Positioning logic**)
 - [ ] Tooltip disappears when the mouse leaves the element or when focus is lost. (**P2: Auto-hide on mouseout**)
 - [ ] If an invalid `data-tooltip-id` is provided (no matching key), no tooltip appears and no console error is thrown. (**P1: data-tooltip-id hook**)
@@ -77,6 +78,25 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 - Tooltip logic must be **compatible with statically hosted environments** (e.g. GitHub Pages).
 - Tooltips should support **screen readers** and meet basic accessibility standards (ARIA labels, semantic roles).
 - _Optional_: Developers can configure tooltip appearance delay and animation speed using a settings object.
+
+### Tooltip Content Guidelines
+
+To ensure tooltips are consistently helpful and aligned with JU-DO-KON!’s tone, the following content standards must be followed when writing or reviewing tooltips:
+
+- **Coverage**: Every interactive UI element that could confuse a new or young player should have a tooltip. Omit tooltips for elements where the function is fully self-explanatory.
+- **Clarity**: Text should be immediately understandable, avoiding jargon. Game-specific terms must be explained using plain language. Aim for a reading level accessible to 10–12-year-olds.
+- **Concisiveness**: Tooltips should be succinct – ideally one sentence, or two short ones. Avoid paragraphs or rambling explanations.
+- **Tone & Voice**: Tooltips must reflect JU-DO-KON!’s style: casual, instructional, and game-themed. Prefer friendly second-person phrasing ("Tap to...") or descriptive third-person as appropriate.
+- **Formatting & Consistency**: Use consistent style:
+  - Bold (`**bold**`) key terms or stat names.
+  - Italicize (`_italic_`) non-English terms or soft emphasis.
+  - Use in-game terminology (e.g. "judoka", not "character").
+  - Maintain uniform punctuation and capitalization.
+- **Usefulness**: Each tooltip should add context or new information. Do not merely restate the label.
+- **Accuracy**: Text must reflect the latest game rules and UI behavior. Outdated or misleading tooltips must be removed or revised.
+- **Accessibility**: Tooltips should make sense when read aloud by a screen reader. Avoid directional phrases (“above”, “to the left”) unless paired with structural cues.
+- **Uniqueness**: Tooltip content must not duplicate others. Ensure each tooltip serves a distinct explanatory purpose.
+- **Review Process**: All new tooltips must pass a readability and tone check, including spelling, grammar, and natural phrasing when read aloud.
 
 ---
 
@@ -110,6 +130,7 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
   - [ ] 1.1 Create `tooltips.json` in `/data/` with at least 10 entries
   - [ ] 1.2 Define unique keys like `stat.power`, `stat.kumikata`, `stat.newaza`
   - [ ] 1.3 Plan for optional localization structure (future-proof keys)
+  - [ ] 1.4 Review initial tooltips against the quality rubric before rollout.
 
 - [ ] 2.0 Implement Tooltip Trigger Logic
 
@@ -140,6 +161,7 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
   - [ ] 5.4 Ensure tooltip is screen-reader compatible
 
 - [ ] 6.0 (Optional) Settings and Configuration
+
   - [ ] 6.1 Add developer setting to configure tooltip delay
   - [ ] 6.2 Add toggle to enable/disable tooltip animation
   - [ ] 6.3 Document configuration options in README or UI guide
