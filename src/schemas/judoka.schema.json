@@ -21,49 +21,11 @@
       "description": "Country of the judoka."
     },
     "countryCode": {
-      "type": "string",
-      "pattern": "^[a-z]{2}$",
-      "enum": [
-        "vu",
-        "pt",
-        "fr",
-        "jp",
-        "br",
-        "us",
-        "de",
-        "ru",
-        "kr",
-        "gb",
-        "ca",
-        "it",
-        "es",
-        "nl",
-        "cn",
-        "mn",
-        "ge",
-        "bt",
-        "jm"
-      ],
+      "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/CountryCode",
       "description": "ISO 3166-1 alpha-2 country code."
     },
     "weightClass": {
-      "type": "string",
-      "enum": [
-        "-60",
-        "-66",
-        "-73",
-        "-81",
-        "-90",
-        "-100",
-        "+100",
-        "-48",
-        "-52",
-        "-57",
-        "-63",
-        "-70",
-        "-78",
-        "+78"
-      ],
+      "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/WeightClass",
       "description": "Weight class of the judoka."
     },
     "stats": {

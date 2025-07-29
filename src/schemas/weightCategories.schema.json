@@ -18,8 +18,7 @@
           "type": "object",
           "properties": {
             "weight": {
-              "type": "string",
-              "pattern": "^[-+]?\\d+$"
+              "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/WeightClass"
             },
             "descriptor": {
               "type": "string"
