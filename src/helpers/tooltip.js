@@ -8,12 +8,32 @@ const loggedMissing = new Set();
 let tooltipEl;
 
 /**
+ * Recursively flatten a tooltip object using dot notation.
+ *
+ * @param {Record<string, any>} obj - Nested tooltip definitions.
+ * @param {string} [prefix=""] - Current key prefix.
+ * @returns {Record<string, string>} Flattened tooltip map.
+ */
+export function flattenTooltips(obj, prefix = "") {
+  return Object.entries(obj).reduce((acc, [key, value]) => {
+    const id = prefix ? `${prefix}.${key}` : key;
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      Object.assign(acc, flattenTooltips(value, id));
+    } else {
+      acc[id] = value;
+    }
+    return acc;
+  }, {});
+}
+
+/**
  * Fetch tooltip text mapping once.
  *
  * @pseudocode
  * 1. When `cachedData` exists, return it.
- * 2. Otherwise fetch `tooltips.json` using `fetchJson` and cache the result.
- * 3. On failure, log the error once and return an empty object.
+ * 2. Otherwise fetch `tooltips.json` using `fetchJson`.
+ * 3. Flatten nested categories with `flattenTooltips()` and cache the result.
+ * 4. On failure, log the error once and return an empty object.
  *
  * @returns {Promise<Record<string, string>>} Tooltip lookup object.
  */
@@ -25,7 +45,8 @@ async function loadTooltips() {
       return {};
     });
   }
-  cachedData = await tooltipDataPromise;
+  const data = await tooltipDataPromise;
+  cachedData = flattenTooltips(data);
   return cachedData;
 }
 
