@@ -6,7 +6,7 @@ describe("prdReaderPage", () => {
       "file1.md": "# First doc",
       "file2.md": "# Second doc"
     };
-    const marked = { parse: (md) => `<h1>${md}</h1>` };
+    const parser = (md) => `<h1>${md}</h1>`;
 
     document.body.innerHTML = `
       <div id="prd-content"></div>
@@ -19,7 +19,7 @@ describe("prdReaderPage", () => {
     globalThis.SKIP_PRD_AUTO_INIT = true;
     const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
 
-    await setupPrdReaderPage(docs, marked);
+    await setupPrdReaderPage(docs, parser);
 
     const container = document.getElementById("prd-content");
     const nextBtns = document.querySelectorAll('[data-nav="next"]');

@@ -1,5 +1,5 @@
 import { onDomReady } from "./domReady.js";
-import { marked } from "../vendor/marked.esm.js";
+import { markdownToHtml } from "./markdownToHtml.js";
 import { initTooltips } from "./tooltip.js";
 
 /**
@@ -7,18 +7,16 @@ import { initTooltips } from "./tooltip.js";
  *
  * @pseudocode
  * 1. Load all markdown files from the PRD directory using `import.meta.glob`.
- * 2. Convert each file to HTML with `marked.parse`.
+ * 2. Convert each file to HTML with `parserFn` (defaults to `markdownToHtml`).
  * 3. Display the first document inside the content container.
  * 4. Provide next/previous navigation with wrap-around.
  *    - Attach click handlers to all navigation buttons.
  * 5. Support arrow key and swipe gestures for navigation.
  *
  * @param {Record<string, string>} [docsMap] Optional preloaded docs for testing.
- * @param {{parse: Function}} [markedLib] Optional marked instance for testing.
+ * @param {Function} [parserFn=markdownToHtml] Parser used to convert Markdown to HTML.
  */
-export async function setupPrdReaderPage(docsMap, markedLib) {
-  const parser = markedLib || marked;
-
+export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   const PRD_DIR = new URL("../../design/productRequirementsDocuments/", import.meta.url).href;
 
   const FILES = docsMap
@@ -52,13 +50,13 @@ export async function setupPrdReaderPage(docsMap, markedLib) {
   const documents = [];
   if (docsMap) {
     for (const name of FILES) {
-      if (docsMap[name]) documents.push(parser.parse(docsMap[name]));
+      if (docsMap[name]) documents.push(parserFn(docsMap[name]));
     }
   } else {
     for (const name of FILES) {
       const res = await fetch(`${PRD_DIR}${name}`);
       const text = await res.text();
-      documents.push(parser.parse(text));
+      documents.push(parserFn(text));
     }
   }
   const container = document.getElementById("prd-content");
