@@ -83,6 +83,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 ## Data & Persistence
 
 - The Settings page **must pull current states** from data sources (`settings.json`, `gameModes.json`, and `navigationItems.json`) on load.
+- Feature flag descriptions and default values live in `settings.json` with the other settings.
 - `gameModes.json` defines all available modes, while `navigationItems.json` references each by `id` to control order and hidden status.
 - Changes should trigger **immediate data writes** without requiring a “Save Changes” button.
 - All live updates must persist across page refreshes within the same session.
