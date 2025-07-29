@@ -87,6 +87,6 @@ scripts/generateEmbeddings.js`). This rebuilds `client_embeddings.json`, now
 pretty-printed for easier diffing, so agents search the latest content. Commit
 the regenerated JSON file along with your changes.
 
-If the result would be larger than 3.6MB, the generator exits with
-`"Output exceeds 3.6MB"`. Increase the `CHUNK_SIZE` constant or omit large files to
+If the result would be larger than 6.8MB, the generator exits with
+`"Output exceeds 6.8MB"`. Increase the `CHUNK_SIZE` constant or omit large files to
 reduce the output size before running the script again.
