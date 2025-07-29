@@ -151,6 +151,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - A small help icon (`#stat-help`) next to the stat buttons displays a tooltip
     explaining how to pick an attribute. The tooltip auto-opens once on first
     visit using `localStorage` to remember the dismissal.
+  - Tooltips on stat names, country flags, weight indicators, and navigation icons provide accessible explanations.
   - **Accessibility:**
   - Minimum text contrast ratio: ≥4.5:1 (per WCAG).
   - Minimum touch target size: ≥44px. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) for the full rule.
