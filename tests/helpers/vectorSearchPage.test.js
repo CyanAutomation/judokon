@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 /**
  * Unit tests for selectMatches helper in vectorSearchPage.
@@ -37,5 +37,75 @@ describe("selectMatches", () => {
     ];
     const result = selectMatches([], weak);
     expect(result).toEqual(weak.slice(0, 3));
+  });
+});
+
+describe("vector search page integration", () => {
+  it("passes selected tag to findMatches", async () => {
+    const findMatches = vi.fn().mockResolvedValue([]);
+    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
+      findMatches,
+      fetchContextById: vi.fn(),
+      loadEmbeddings: vi.fn().mockResolvedValue([{ tags: ["foo"] }])
+    }));
+
+    const { handleSearch, init, __setExtractor } = await import(
+      "../../src/helpers/vectorSearchPage.js"
+    );
+
+    __setExtractor(async () => ({ data: [0, 0, 0] }));
+
+    document.body.innerHTML = `
+      <div id="search-spinner"></div>
+      <form id="vector-search-form">
+        <input id="vector-search-input" />
+        <select id="tag-filter"><option value="foo">foo</option></select>
+      </form>
+      <table id="vector-results-table"><tbody></tbody></table>
+      <p id="search-results-message"></p>
+    `;
+
+    document.getElementById("vector-search-input").value = "test";
+
+    await init();
+
+    document.getElementById("tag-filter").value = "foo";
+    await handleSearch(new Event("submit"));
+
+    expect(findMatches).toHaveBeenCalled();
+    expect(findMatches.mock.calls[0][2]).toEqual(["foo"]);
+  });
+
+  it("displays embedding count and tag options on init", async () => {
+    const embeddings = [{ tags: ["alpha"] }, { tags: ["beta"] }];
+    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
+      findMatches: vi.fn(),
+      fetchContextById: vi.fn(),
+      loadEmbeddings: vi.fn().mockResolvedValue(embeddings)
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ count: 2 })
+    }));
+    vi.doMock("../../src/helpers/constants.js", () => ({
+      DATA_DIR: "./"
+    }));
+
+    const { init } = await import("../../src/helpers/vectorSearchPage.js");
+
+    document.body.innerHTML = `
+      <select id="tag-filter"></select>
+      <div id="search-spinner"></div>
+      <form id="vector-search-form"></form>
+      <p id="embedding-stats"></p>
+    `;
+
+    await init();
+
+    const statsEl = document.getElementById("embedding-stats");
+    expect(statsEl.textContent).toContain("2");
+    const options = Array.from(
+      document.getElementById("tag-filter").querySelectorAll("option")
+    ).map((o) => o.value);
+    expect(options).toEqual(["all", "alpha", "beta"]);
   });
 });
