@@ -46,16 +46,9 @@ export async function loadDefaultSettings() {
         }
         return response.json();
       })
-      .catch(async () => {
-        const { readFile } = await import("fs/promises");
-        const { fileURLToPath } = await import("node:url");
-        let filePath = new URL("../data/settings.json", import.meta.url);
-        if (filePath.protocol !== "file:") {
-          filePath = new URL("./src/data/settings.json", `file://${process.cwd()}/`);
-        }
-        const file = await readFile(fileURLToPath(filePath), "utf8");
-        return JSON.parse(file);
-      });
+      .catch(
+        async () => (await import("../data/settings.json", { assert: { type: "json" } })).default
+      );
   }
   const data = await defaultSettingsPromise;
   if (Object.keys(DEFAULT_SETTINGS).length === 0) {

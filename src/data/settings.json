@@ -5,7 +5,6 @@
   "displayMode": "light",
   "gameModes": {},
   "featureFlags": {
-<<<<<<< HEAD
     "battleDebugPanel": {
       "enabled": false,
       "label": "Battle Debug Panel",
@@ -31,12 +30,5 @@
       "label": "Card Of The Day",
       "description": "Displays a rotating featured judoka card on the landing screen"
     }
-=======
-    "battleDebugPanel": false,
-    "randomStatMode": false,
-    "fullNavigationMap": false,
-    "enableTestMode": false,
-    "enableCardInspector": false
->>>>>>> main
   }
 }
