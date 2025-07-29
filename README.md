@@ -202,7 +202,9 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
     under `design/mockups/`. It displays the filename overlay and now
     scales wide images to fit within the viewport while keeping every
     mockup centered on screen. The Prev and Next buttons are anchored
-    to the left and right edges so they never cover the content.
+    to the left and right edges so they never cover the content. It
+    also includes `tooltipViewer.html`, a searchable viewer for
+    exploring tooltip text used across the UI.
   - `data/`
   - `schemas/`
     JSON Schema definitions used to validate the data files.
