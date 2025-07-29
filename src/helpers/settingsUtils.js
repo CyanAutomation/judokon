@@ -26,20 +26,42 @@ async function getSettingsSchema() {
 }
 
 const SETTINGS_KEY = "settings";
-const DEFAULT_SETTINGS = {
-  sound: false,
-  motionEffects: true,
-  typewriterEffect: false,
-  displayMode: "light",
-  gameModes: {},
-  featureFlags: {
-    battleDebugPanel: false,
-    fullNavigationMap: false,
-    enableTestMode: false,
-    enableCardInspector: false
+export let DEFAULT_SETTINGS = {};
+
+let defaultSettingsPromise;
+
+/**
+ * Load the default settings from disk.
+ *
+ * @returns {Promise<Settings>} Resolved default settings object.
+ */
+export async function loadDefaultSettings() {
+  if (!defaultSettingsPromise) {
+    defaultSettingsPromise = fetch(new URL("../data/settings.json", import.meta.url))
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch default settings: ${response.status} ${response.statusText}`
+          );
+        }
+        return response.json();
+      })
+      .catch(async () => {
+        const { readFile } = await import("fs/promises");
+        let filePath = new URL("../data/settings.json", import.meta.url);
+        if (filePath.protocol !== "file:") {
+          filePath = new URL("./src/data/settings.json", `file://${process.cwd()}/`);
+        }
+        const file = await readFile(filePath, "utf8");
+        return JSON.parse(file);
+      });
   }
-};
-export { DEFAULT_SETTINGS };
+  const data = await defaultSettingsPromise;
+  if (Object.keys(DEFAULT_SETTINGS).length === 0) {
+    DEFAULT_SETTINGS = data;
+  }
+  return { ...data };
+}
 
 let saveTimer;
 const SAVE_DELAY_MS = 100;
@@ -175,3 +197,5 @@ export function resetSettings() {
  * @property {Record<string, boolean>} [gameModes]
  * @property {Record<string, boolean>} [featureFlags]
  */
+
+await loadDefaultSettings();
