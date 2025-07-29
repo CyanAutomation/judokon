@@ -142,21 +142,19 @@ Each tile contains:
 
 ## Acceptance Criteria
 
-| ID   | Acceptance Criterion                                                                     |
-| ---- | ---------------------------------------------------------------------------------------- |
-| AC1  | Clicking on a tile navigates to the correct destination URL, interaction latency <100ms. |
-| AC2  | The entire tile area is clickable, not just text or icon.                                |
-| AC3  | Tiles have a hover state (cursor pointer, 150ms zoom-in effect).                         |
-| AC4  | The grid should display 2x2 layout on desktop (>768px viewport width).                   |
-| AC5  | On smaller screens (<768px), tiles stack responsively in a 1-column layout.              |
-| AC6  | Icons and labels are properly aligned vertically within each tile.                       |
-| AC7  | Tiles load quickly; icons must be optimized SVGs <50KB.                                  |
-| AC8  | All text must be readable and pass WCAG AA contrast ratios (minimum 4.5:1).              |
-| AC9  | Tiles must be navigable via keyboard (Tab to move focus; Enter/Space to activate).       |
-| AC10 | Alt text or aria-labels must be provided for icons or tiles for screen readers.          |
-| AC11 | Tap targets must be at least 44px x 44px on touch devices.                               |
-| AC12 | Fallback to generic icon if SVG fails to load.                                           |
-| AC13 | User can return to previous page via standard browser back navigation.                   |
+- Clicking on a tile navigates to the correct destination URL, interaction latency <100ms.
+- The entire tile area is clickable, not just text or icon.
+- Tiles have a hover state (cursor pointer, 150ms zoom-in effect).
+- The grid should display a 2x2 layout on desktop (>768px viewport width).
+- On smaller screens (<768px), tiles stack responsively in a 1-column layout.
+- Icons and labels are properly aligned vertically within each tile.
+- Tiles load quickly; icons must be optimized SVGs <50KB.
+- All text must be readable and pass WCAG AA contrast ratios (minimum 4.5:1).
+- Tiles must be navigable via keyboard (Tab to move focus; Enter/Space to activate).
+- Alt text or aria-labels must be provided for icons or tiles for screen readers.
+- Tap targets must be at least 44px x 44px on touch devices.
+- Fallback to generic icon if SVG fails to load.
+- User can return to previous page via standard browser back navigation.
 
 ---
 
