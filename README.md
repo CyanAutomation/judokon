@@ -357,6 +357,7 @@ higher value, for example
 - The search page provides a tag filter dropdown so you can limit results to PRDs, tooltips, character data, or a particular intent tag.
 - A statistics line in the header displays how many embeddings are loaded based on `client_embeddings.meta.json`.
 - Agent scripts can import `findMatches` from `src/helpers/vectorSearch.js` to query embeddings programmatically.
+- Queries are expanded using `src/data/synonyms.json` so common terms and misspellings like "shoulder throw" map to canonical names such as `seoi-nage`.
 - The transformer library is loaded from jsDelivr on first use, so network connectivity is required for that initial download.
 
 ## About JU-DO-KON!
