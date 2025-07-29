@@ -1,1 +1,69 @@
-<body></body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="keywords" content="judo, card game, web game, tooltips" />
+    <meta name="author" content="Marc Scheimann" />
+    <meta name="description" content="JU-DO-KON! tooltip viewer" />
+    <meta property="og:title" content="JU-DO-KON!" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cyanautomation.github.io/judokon/" />
+    <meta property="og:description" content="JU-DO-KON! tooltip viewer" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Ju-Do-Kon! Tooltips</title>
+    <link rel="stylesheet" href="../styles/fonts.css" />
+    <link rel="stylesheet" href="../styles/base.css" />
+    <link rel="stylesheet" href="../styles/layout.css" />
+    <link rel="stylesheet" href="../styles/components.css" />
+    <link rel="stylesheet" href="../styles/tooltipViewer.css" />
+    <link rel="stylesheet" href="../styles/utilities.css" />
+    <link rel="icon" type="image/png" href="../assets/images/favicon.ico" />
+  </head>
+  <body>
+    <div class="home-screen">
+      <header class="header">
+        <div class="header-spacer left"></div>
+        <div class="logo-container">
+          <a href="../../index.html" data-testid="home-link">
+            <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
+          </a>
+        </div>
+        <div class="header-spacer right"></div>
+      </header>
+      <main class="tooltip-viewer" role="main">
+        <aside class="sidebar">
+          <input
+            id="tooltip-search"
+            type="text"
+            placeholder="Search"
+            aria-label="Search tooltips"
+          />
+          <ul id="tooltip-list"></ul>
+        </aside>
+        <section class="preview">
+          <div class="copy-buttons">
+            <button id="copy-key-btn" class="secondary-button" aria-label="Copy key">
+              Copy Key
+            </button>
+            <button id="copy-body-btn" class="secondary-button" aria-label="Copy body">
+              Copy Body
+            </button>
+          </div>
+          <div id="tooltip-preview" class="preview-body"></div>
+          <pre id="tooltip-raw" class="raw-body"></pre>
+        </section>
+      </main>
+      <footer>
+        <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
+      </footer>
+      <script type="module" src="../helpers/setupBottomNavbar.js"></script>
+      <script type="module" src="../helpers/setupDisplaySettings.js"></script>
+      <script type="module" src="../helpers/tooltipViewerPage.js"></script>
+      <script type="module" src="../helpers/setupSvgFallback.js"></script>
+      <noscript>
+        <p class="noscript-warning">JU-DO-KON! requires JavaScript to run.</p>
+      </noscript>
+    </div>
+  </body>
+</html>
