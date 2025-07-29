@@ -55,7 +55,7 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 
 ## Acceptance Criteria
 
-- [ ] The system loads `tooltips.json` once at app start and contains at least 10 tooltip entries in key-value format. (**P1: tooltips.json store**)
+ - [ ] The system loads `tooltips.json` once at app start. Entries are grouped by category (for example `stat.power` or `ui.selectStat`). (**P1: tooltips.json store**)
 - [ ] Hovering an element with `data-tooltip-id="stat.kumikata"` displays a tooltip with the parsed value from `tooltips.json`. (**P1: data-tooltip-id hook**)
 - [ ] Tooltip supports: `**bold**` as `<strong>`, `_italic_` as `<em>`, and `\n` as line breaks. (**P1: Markdown-like formatting**)
 - [ ] Tooltip appears within **150ms** of hover and is positioned relative to the element (bottom-left preferred). (**P1: Positioning logic**)

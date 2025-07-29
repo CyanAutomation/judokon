@@ -76,7 +76,9 @@ Structured gameplay data lives in `src/data`. Matching JSON Schemas in `src/sche
 `src/helpers/tooltip.js` displays contextual help when elements with
 `data-tooltip-id` gain hover or focus. The helper loads text from
 `src/data/tooltips.json` and positions a small popup near the target.
-Initialize it after the DOM is ready so tooltip listeners are attached.
+Entries in `tooltips.json` are grouped by category (for example `stat`
+or `ui`), so IDs use dot notation. Initialize it after the DOM is ready
+so tooltip listeners are attached.
 
 ```html
 <span data-tooltip-id="draw-help">Draw a card</span>
