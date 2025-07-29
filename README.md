@@ -342,6 +342,7 @@ higher value, for example
 - Both the generation script and the search page use **mean pooled** embeddings so the query vector matches the stored vectors.
 
 - Results appear below the form with up to five entries that show match score, source, and tags. Each entry also displays a short `qaContext` snippet when available.
+- Query terms are highlighted within each snippet so matches stand out.
 - Search results are displayed in a responsive table with alternating row colors for readability.
 - The Match column takes up more space than Source, Tags, and Score so the text is easier to read.
 - The Tags column lists the categories provided in `client_embeddings.json`.
