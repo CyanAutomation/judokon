@@ -65,6 +65,37 @@
  */
 
 /**
+ * @typedef {Object} GameMode
+ * @property {number} id - Unique identifier for the game mode
+ * @property {string} name - The name of the game mode
+ * @property {string} [japaneseName] - The Japanese name of the game mode
+ * @property {string} description - A brief description of the game mode
+ * @property {boolean} [isHidden] - Indicates whether the game mode is hidden
+ * @property {Object} rules - The rules associated with the game mode
+ * @property {number} [rules.rounds] - The number of rounds in the game mode
+ * @property {number} [rules.teamSize] - The size of the team in the game mode
+ * @property {number} [rules.maxScore] - The maximum score achievable
+ * @property {"male"|"female"|"mixed"|"any"} [rules.gender] - The gender restriction
+ * @property {Array<string>} [rules.options] - Options available for the game mode
+ * @property {string} [rules.base] - The base ruleset for the game mode
+ * @property {string} [rules.note] - Additional notes about the rules
+ * @example
+ * {
+ *   id: 1,
+ *   name: "Classic Battle",
+ *   japaneseName: "試合 (バトルモード)",
+ *   description: "A standard one-on-one battle mode where players compete to win.",
+ *   isHidden: false,
+ *   rules: {
+ *     rounds: 25,
+ *     teamSize: 25,
+ *     maxScore: 10,
+ *     gender: "any"
+ *   }
+ * }
+ */
+
+/**
  * @typedef {Object} CountryCodeEntry
  * @property {string} country - Full country name (e.g., "Japan")
  * @property {string} code - 2-letter country code (e.g., "JP")

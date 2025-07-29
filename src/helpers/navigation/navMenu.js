@@ -32,7 +32,7 @@ export function clearBottomNavbar() {
  * 4. Add a slide-up animation when the logo is clicked.
  * 5. Hide the map view when the logo is clicked again.
  *
- * @param {Array} gameModes - The list of game modes to display.
+ * @param {import("../types.js").GameMode[]} gameModes - The list of game modes to display.
  */
 export function toggleExpandedMapView(gameModes) {
   const navBar = document.querySelector(".bottom-navbar");
@@ -74,7 +74,7 @@ export function toggleExpandedMapView(gameModes) {
  * 3. Add a slide-down animation when the logo is clicked.
  * 4. Hide the menu when the logo is clicked again.
  *
- * @param {Array} gameModes - The list of game modes to display.
+ * @param {import("../types.js").GameMode[]} gameModes - The list of game modes to display.
  */
 export function togglePortraitTextMenu(gameModes) {
   const navBar = document.querySelector(".bottom-navbar");
