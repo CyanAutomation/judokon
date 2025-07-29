@@ -61,6 +61,7 @@ describe("toggleExpandedMapView", () => {
     expect(tiles).toHaveLength(2);
     expect(tiles[0].querySelector("a")).toHaveAttribute("href", `${BASE_PATH}mode1.html`);
     expect(tiles[0].querySelector("a")).toHaveAttribute("aria-label", "Mode1");
+    expect(tiles[0].querySelector("a")).toHaveAttribute("data-tooltip-id", "nav.mode1");
     expect(tiles[0].textContent).toContain("Mode1");
   });
 
@@ -80,6 +81,7 @@ describe("toggleExpandedMapView", () => {
     const link = tile.querySelector("a");
     const img = tile.querySelector("img");
     expect(link).toHaveAttribute("aria-label", "Mode1");
+    expect(link).toHaveAttribute("data-tooltip-id", "nav.mode1");
     expect(img).toHaveAttribute("alt", "Mode1");
   });
 });
@@ -110,6 +112,7 @@ describe("togglePortraitTextMenu", () => {
     expect(items).toHaveLength(2);
     expect(items[1].querySelector("a")).toHaveAttribute("href", `${BASE_PATH}mode2.html`);
     expect(items[1].querySelector("a")).toHaveAttribute("aria-label", "Mode2");
+    expect(items[1].querySelector("a")).toHaveAttribute("data-tooltip-id", "nav.mode2");
     expect(items[1].textContent).toContain("Mode2");
   });
 
@@ -127,6 +130,7 @@ describe("togglePortraitTextMenu", () => {
     togglePortraitTextMenu(modes);
     const link = navBar.querySelector(".portrait-text-menu li a");
     expect(link).toHaveAttribute("aria-label", "Mode1");
+    expect(link).toHaveAttribute("data-tooltip-id", "nav.mode1");
   });
 });
 
@@ -180,6 +184,8 @@ describe("populateNavbar", () => {
     const items = navBar.querySelectorAll("li");
     expect(items).toHaveLength(1);
     expect(items[0].textContent).toBe("A");
+    const link = items[0].querySelector("a");
+    expect(link).toHaveAttribute("data-tooltip-id", "nav.a");
     expect(loadSettings).toHaveBeenCalled();
     expect(loadNavigationItems).toHaveBeenCalled();
   });
@@ -201,8 +207,11 @@ describe("populateNavbar", () => {
     const items = navBar.querySelectorAll("li");
     expect(items).toHaveLength(3);
     expect(items[0].textContent).toBe("Random Judoka");
+    expect(items[0].querySelector("a")).toHaveAttribute("data-tooltip-id", "nav.randomJudoka");
     expect(items[1].textContent).toBe("Home");
+    expect(items[1].querySelector("a")).toHaveAttribute("data-tooltip-id", "nav.home");
     expect(items[2].textContent).toBe("Classic Battle");
+    expect(items[2].querySelector("a")).toHaveAttribute("data-tooltip-id", "nav.classicBattle");
   });
 
   it("uses cached game modes when offline", async () => {
@@ -254,6 +263,7 @@ describe("populateNavbar", () => {
     const items = navBar.querySelectorAll("li");
     expect(items).toHaveLength(1);
     expect(items[0].textContent).toBe("X");
+    expect(items[0].querySelector("a")).toHaveAttribute("data-tooltip-id", "nav.x");
     expect(loadNavigationItems).toHaveBeenCalled();
   });
 
@@ -322,6 +332,7 @@ describe("populateNavbar", () => {
     const activeLink = navBar.querySelector("a.active");
     expect(activeLink).toBeTruthy();
     expect(activeLink).toHaveAttribute("aria-current", "page");
+    expect(activeLink).toHaveAttribute("data-tooltip-id", "nav.home");
     expect(activeLink.textContent).toBe("Home");
   });
 });

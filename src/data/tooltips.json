@@ -30,6 +30,15 @@
     "randomJudoka": "**Random Judoka** picks a random card for quick inspiration.",
     "browseJudoka": "**Browse Judoka** opens the full roster in a carousel."
   },
+
+  "nav": {
+    "classicBattle": "Begin a head-to-head match.",
+    "randomJudoka": "Show a random judoka card.",
+    "browseJudoka": "Browse every judoka card.",
+    "meditation": "Compare cards at your own pace.",
+    "settings": "Adjust game options.",
+    "home": "Return to the main screen."
+  },
   "card": {
     "flag": "**Country flag**\nRepresents the judoka’s nation.",
     "weightClass": "**Weight class**\nCompetition weight category."
