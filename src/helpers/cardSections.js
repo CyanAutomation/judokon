@@ -8,7 +8,8 @@ import { createNoDataContainer } from "./cardTopBar.js";
  * @pseudocode
  * 1. Generate portrait HTML with `generateCardPortrait(judoka)`.
  * 2. Convert the HTML to a fragment and grab the first element.
- * 3. Create a `<div>` showing the judoka's weight class and append it.
+ * 3. Create a `<div>` showing the judoka's weight class, add the tooltip id,
+ *    and append it.
  * 4. Return the resulting element.
  * 5. On failure, log the error and return `createNoDataContainer()`.
  *
@@ -22,6 +23,7 @@ export function createPortraitSection(judoka) {
 
     const weightClassElement = document.createElement("div");
     weightClassElement.className = "card-weight-class";
+    weightClassElement.dataset.tooltipId = "card.weightClass";
     weightClassElement.textContent = judoka.weightClass;
     portraitElement.appendChild(weightClassElement);
 
