@@ -16,6 +16,7 @@ test.describe("Settings page", () => {
     await page.getByLabel(/Classic Battle/i).waitFor({ state: "attached" });
     await page.locator("#general-settings-toggle").click();
     await page.locator("#game-modes-toggle").click();
+    await page.locator("#advanced-settings-toggle").click();
   });
 
   test("page loads", async ({ page }) => {
