@@ -39,17 +39,17 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                     | Description                                                                 |
-|----------|-----------------------------|-----------------------------------------------------------------------------|
-| **P1**   | tooltips.json store         | Central source for all tooltip content, enabling scalability and updates.    |
-| **P1**   | data-tooltip-id hook        | Lightweight implementation hook for developers to add tooltips easily.       |
-| **P1**   | Positioning logic           | Ensures tooltips appear correctly and accessibly near elements.              |
-| **P1**   | Markdown-like formatting    | Allows rich text without HTML bloat.                                         |
-| **P2**   | Tooltip styling             | Visual consistency with the JU-DO-KON! theme.                               |
-| **P2**   | Auto-hide on mouseout       | Ensures intuitive interaction flow.                                         |
-| **P2**   | JSON load error fallback    | Prevents UI issues if file loading fails.                                   |
-| **P3**   | Keyboard focus support      | Improves accessibility for non-mouse users.                                 |
-| **P3**   | Settings (delay, animation) | Optional dev configurability for UX tuning.                                 |
+| Priority | Feature                     | Description                                                               |
+| -------- | --------------------------- | ------------------------------------------------------------------------- |
+| **P1**   | tooltips.json store         | Central source for all tooltip content, enabling scalability and updates. |
+| **P1**   | data-tooltip-id hook        | Lightweight implementation hook for developers to add tooltips easily.    |
+| **P1**   | Positioning logic           | Ensures tooltips appear correctly and accessibly near elements.           |
+| **P1**   | Markdown-like formatting    | Allows rich text without HTML bloat.                                      |
+| **P2**   | Tooltip styling             | Visual consistency with the JU-DO-KON! theme.                             |
+| **P2**   | Auto-hide on mouseout       | Ensures intuitive interaction flow.                                       |
+| **P2**   | JSON load error fallback    | Prevents UI issues if file loading fails.                                 |
+| **P3**   | Keyboard focus support      | Improves accessibility for non-mouse users.                               |
+| **P3**   | Settings (delay, animation) | Optional dev configurability for UX tuning.                               |
 
 ---
 
@@ -76,17 +76,19 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 - Tooltips must **not trigger browser-native tooltips** (avoid `title=` attribute).
 - Tooltip logic must be **compatible with statically hosted environments** (e.g. GitHub Pages).
 - Tooltips should support **screen readers** and meet basic accessibility standards (ARIA labels, semantic roles).
-- *Optional*: Developers can configure tooltip appearance delay and animation speed using a settings object.
+- _Optional_: Developers can configure tooltip appearance delay and animation speed using a settings object.
 
 ---
 
 ## Dependencies and Open Questions
 
 ### Dependencies:
+
 - Access to `tooltips.json` file within `/data/` or similar directory.
 - Basic utility functions for positioning and parsing markdown-like syntax.
 
 ### Open Questions:
+
 - Should we support richer content in tooltips (e.g. icons, links)?
 - Do we want to internationalize `tooltips.json` immediately or defer localization support?
 - Should tooltip delays or animations be configurable in settings?
@@ -104,29 +106,34 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 ## Tasks
 
 - [ ] 1.0 Setup Tooltip Content Source
+
   - [ ] 1.1 Create `tooltips.json` in `/data/` with at least 10 entries
   - [ ] 1.2 Define unique keys like `stat.power`, `stat.kumikata`, `stat.newaza`
   - [ ] 1.3 Plan for optional localization structure (future-proof keys)
 
 - [ ] 2.0 Implement Tooltip Trigger Logic
+
   - [ ] 2.1 Detect elements with `data-tooltip-id`
   - [ ] 2.2 Fetch corresponding tooltip text from `tooltips.json`
   - [ ] 2.3 Handle missing or invalid keys gracefully (no error spam)
   - [ ] 2.4 Support keyboard focus (Tab key) as a trigger
 
 - [ ] 3.0 Tooltip Rendering Engine
+
   - [ ] 3.1 Parse markdown-like syntax into lightweight HTML
   - [ ] 3.2 Render tooltip within 150ms of hover/focus
   - [ ] 3.3 Adjust tooltip position to avoid viewport overflow
   - [ ] 3.4 Add tooltip animation (fade in/out)
 
 - [ ] 4.0 Tooltip Styling and UX
+
   - [ ] 4.1 Style tooltip: white bg, dark text, soft shadow, rounded corners
   - [ ] 4.2 Ensure readability on all screen sizes
   - [ ] 4.3 Define click/touch target behavior on mobile/tablets
   - [ ] 4.4 Auto-hide on mouseout or focusout
 
 - [ ] 5.0 Error Handling and Accessibility
+
   - [ ] 5.1 Suppress tooltips if `tooltips.json` fails to load
   - [ ] 5.2 Log error only once
   - [ ] 5.3 Avoid using `title=` attribute

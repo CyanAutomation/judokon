@@ -41,13 +41,13 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 ## Functional Requirements
 
 | Priority | Feature                       | Description                                                                                  |
-|:--------:|:-----------------------------|:--------------------------------------------------------------------------------------------|
-| **P1**   | Local conversion via mapping  | Perform text conversion locally using a JSON mapping file.                                   |
-| **P1**   | API validation call           | Validate local conversion by comparing results with API response during testing.             |
-| **P1**   | Toggle button                 | Instantly switch between English and pseudo-Japanese text with minimal delay.                |
-| **P2**   | Input cleaning                | Remove unsupported characters before conversion.                                             |
-| **P2**   | Random fallback replacement   | Insert random pseudo-Japanese characters where input is unsupported.                         |
-| **P3**   | Pre-converted static fallback | Display pre-rendered Japanese text if both local mapping and validation API are unavailable. |
+| :------: | :---------------------------- | :------------------------------------------------------------------------------------------- |
+|  **P1**  | Local conversion via mapping  | Perform text conversion locally using a JSON mapping file.                                   |
+|  **P1**  | API validation call           | Validate local conversion by comparing results with API response during testing.             |
+|  **P1**  | Toggle button                 | Instantly switch between English and pseudo-Japanese text with minimal delay.                |
+|  **P2**  | Input cleaning                | Remove unsupported characters before conversion.                                             |
+|  **P2**  | Random fallback replacement   | Insert random pseudo-Japanese characters where input is unsupported.                         |
+|  **P3**  | Pre-converted static fallback | Display pre-rendered Japanese text if both local mapping and validation API are unavailable. |
 
 ---
 
@@ -85,8 +85,8 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
   - Visually consistent with game UI (rounded rectangle, matching color scheme).
 - No plan for real Japanese localization — this feature is purely for stylistic effect.
 
-| **Meditation Screen Mockup 3**                                             |                                             **Meditation Screen Mockup 4** |
-|:--------------------------------------------------------------------------:|:-------------------------------------------------------------------------:|
+|                       **Meditation Screen Mockup 3**                       |                       **Meditation Screen Mockup 4**                       |
+| :------------------------------------------------------------------------: | :------------------------------------------------------------------------: |
 | ![Meditation Screen Mockup 3](/design/mockups/mockupMeditationScreen3.png) | ![Meditation Screen Mockup 4](/design/mockups/mockupMeditationScreen4.png) |
 
 ### 1. Quote Display + Language Toggle Module

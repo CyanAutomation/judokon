@@ -33,12 +33,12 @@ Players often request a competition focused exclusively on male judoka. Without 
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature               | Description                                                    |
-|:--------:|:---------------------|:---------------------------------------------------------------|
-| **P1**   | Male Roster Only     | Restrict team selection to judoka marked as male.              |
-| **P1**   | Fixed Team Size      | Each team contains exactly 5 judoka.                           |
-| **P1**   | Base Rule Inheritance| Follow all rules in [PRD: Team Battle Rules](prdTeamBattleRules.md). |
-| **P2**   | Early Quit Allowed   | Player may forfeit the match early.                            |
+| Priority | Feature               | Description                                                          |
+| :------: | :-------------------- | :------------------------------------------------------------------- |
+|  **P1**  | Male Roster Only      | Restrict team selection to judoka marked as male.                    |
+|  **P1**  | Fixed Team Size       | Each team contains exactly 5 judoka.                                 |
+|  **P1**  | Base Rule Inheritance | Follow all rules in [PRD: Team Battle Rules](prdTeamBattleRules.md). |
+|  **P2**  | Early Quit Allowed    | Player may forfeit the match early.                                  |
 
 ---
 

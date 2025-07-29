@@ -69,17 +69,17 @@ Simplifies storage and retrieval of Judoka data without exposing sensitive infor
 
 ## 3. Functional Requirements
 
-| Priority | Feature                  | Description                                                      |
-| -------- | ------------------------ | ---------------------------------------------------------------- |
-| **P1**   | Input Validation         | Ensure all required Judoka fields are present and valid.         |
-| **P1**   | String Concatenation     | Build the raw code string from Judoka attributes and stats.      |
-| **P1**   | XOR Obfuscation          | Apply XOR encoding to obfuscate the raw string.                  |
-| **P1**   | Readable Charset Mapping | Convert to a friendly 32-character readable code.                |
-| **P1**   | Chunk Formatting         | Format the code into 4-character chunks separated by hyphens.    |
-| **P1**   | Save to File             | Save the generated code into `judoka.json`.                      |
-| **P2**   | Error Handling           | Provide clear error messages or fallback to a generic code.      |
+| Priority | Feature                  | Description                                                          |
+| -------- | ------------------------ | -------------------------------------------------------------------- |
+| **P1**   | Input Validation         | Ensure all required Judoka fields are present and valid.             |
+| **P1**   | String Concatenation     | Build the raw code string from Judoka attributes and stats.          |
+| **P1**   | XOR Obfuscation          | Apply XOR encoding to obfuscate the raw string.                      |
+| **P1**   | Readable Charset Mapping | Convert to a friendly 32-character readable code.                    |
+| **P1**   | Chunk Formatting         | Format the code into 4-character chunks separated by hyphens.        |
+| **P1**   | Save to File             | Save the generated code into `judoka.json`.                          |
+| **P2**   | Error Handling           | Provide clear error messages or fallback to a generic code.          |
 | **P2**   | UI Surfacing             | Display generated code with copy/paste support and input validation. |
-| **P2**   | Performance Compliance   | Ensure code generation completes within 100ms.                   |
+| **P2**   | Performance Compliance   | Ensure code generation completes within 100ms.                       |
 
 ---
 
@@ -148,15 +148,15 @@ F7KP-WQ9M-ZD23-HYTR
 
 ## 6. Acceptance Criteria
 
-| ID    | Criterion                                                                              |
-| ----- | -------------------------------------------------------------------------------------- |
-| AC1   | Given a valid Judoka, When code generation runs, Then a valid code is produced.        |
-| AC2   | Given a Judoka with missing fields, When code generation runs, fallback to a generic code. |
-| AC3   | Given a generated code, Then it must use only A–Z, 2–9, and hyphens.                   |
-| AC4   | Given a code, Then it must group characters into 4-character hyphenated chunks.        |
-| AC5   | Given the same Judoka object, Then the output code must be identical.                  |
-| AC6   | When code generation runs, Then it must complete in under 100ms.                       |
-| AC7   | Given manual code input, Then error rate must be under 2% on average.                  |
+| ID  | Criterion                                                                                  |
+| --- | ------------------------------------------------------------------------------------------ |
+| AC1 | Given a valid Judoka, When code generation runs, Then a valid code is produced.            |
+| AC2 | Given a Judoka with missing fields, When code generation runs, fallback to a generic code. |
+| AC3 | Given a generated code, Then it must use only A–Z, 2–9, and hyphens.                       |
+| AC4 | Given a code, Then it must group characters into 4-character hyphenated chunks.            |
+| AC5 | Given the same Judoka object, Then the output code must be identical.                      |
+| AC6 | When code generation runs, Then it must complete in under 100ms.                           |
+| AC7 | Given manual code input, Then error rate must be under 2% on average.                      |
 
 ---
 

@@ -73,15 +73,15 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ## Prioritized Functional Requirements Table
 
-| Priority | Feature                 | Description                                                                                             |
-| -------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| **P1**   | Random Card Draw        | Draw one random card per player each round; the opponent card must differ from the player's.            |
+| Priority | Feature                 | Description                                                                                                                                                                      |
+| -------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P1**   | Random Card Draw        | Draw one random card per player each round; the opponent card must differ from the player's.                                                                                     |
 | **P1**   | Stat Selection Timer    | Player selects stat within 30 seconds; otherwise, random stat is chosen. Default timer is fixed at 30s. Timer is displayed in the Info Bar and pauses/resumes on tab inactivity. |
-| **P1**   | Scoring                 | Increase score by one for each round win.                                                               |
-| **P1**   | Match End Condition     | End match on 10 points or after 25 rounds.                                                              |
-| **P2**   | Tie Handling            | Show tie message; round ends without score change; continue to next round.                              |
-| **P2**   | Player Quit Flow        | Allow player to exit match early with confirmation; counts as a loss.                                   |
-| **P3**   | AI Stat Selection Logic | Optional: vary AI stat selection by difficulty level; fallback to random if not specified.              |
+| **P1**   | Scoring                 | Increase score by one for each round win.                                                                                                                                        |
+| **P1**   | Match End Condition     | End match on 10 points or after 25 rounds.                                                                                                                                       |
+| **P2**   | Tie Handling            | Show tie message; round ends without score change; continue to next round.                                                                                                       |
+| **P2**   | Player Quit Flow        | Allow player to exit match early with confirmation; counts as a loss.                                                                                                            |
+| **P3**   | AI Stat Selection Logic | Optional: vary AI stat selection by difficulty level; fallback to random if not specified.                                                                                       |
 
 **Additional Behavioral Requirements:**
 
@@ -203,4 +203,5 @@ _Resolved in [Future Considerations](#future-considerations):_ AI difficulty wil
 ---
 
 **See also:**
+
 - [Battle Info Bar PRD](prdBattleInfoBar.md) for Info Bar UI, timer, and accessibility requirements.

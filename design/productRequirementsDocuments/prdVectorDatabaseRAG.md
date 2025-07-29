@@ -27,12 +27,12 @@ Ultimately, these issues increase the risk of bugs reaching players, slow down t
 
 **Success Metrics:**
 
-| Goal | Metric |
-|------|--------|
-| Response accuracy | ≥90% agent-retrieved responses align with top 3 relevant matches |
-| Search latency | ≤200ms average similarity lookup on mid-tier desktop browsers (e.g., 2022 MacBook Air M1 or Windows laptop with 8GB RAM) |
-| Coverage | ≥90% of PRDs/tooltips indexed within the system |
-| File size | <3.6MB total JSON size to ensure fast client-side loading |
+| Goal              | Metric                                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Response accuracy | ≥90% agent-retrieved responses align with top 3 relevant matches                                                         |
+| Search latency    | ≤200ms average similarity lookup on mid-tier desktop browsers (e.g., 2022 MacBook Air M1 or Windows laptop with 8GB RAM) |
+| Coverage          | ≥90% of PRDs/tooltips indexed within the system                                                                          |
+| File size         | <3.6MB total JSON size to ensure fast client-side loading                                                                |
 
 ---
 
@@ -47,17 +47,17 @@ Ultimately, these issues increase the risk of bugs reaching players, slow down t
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature | Description |
-|----------|---------|-------------|
-| P1 | Embedding Generator | Create vector embeddings for a corpus of text snippets (tooltips, PRDs, design rules, etc.) using a consistent model (e.g. `MiniLM`, `OpenAI Ada`, or simulated offline encoder) |
-| P1 | Client-Side Embedding Store | Save all text entries and their embeddings in a `client_embeddings.json` file for browser use |
-| P1 | Cosine Similarity Function | Implement JavaScript logic to compare a query vector to all indexed entries and return top N matches |
-| P1 | Static Query Interface | Provide an in-browser demo or utility for querying the embedding file (e.g. using a sample prompt vector) |
-| P2 | Vector Metadata Fields | Store source metadata with each embedding (e.g. “source: PRD Tooltip System”, “type: stat-description”). Include granular tags like `judoka-data`, `tooltip`, `design-doc`, or `agent-workflow` for filtering. Tag each entry by its source ("prd","tooltip","data") and by topic such as "judoka","rules","ui" to enable fine-grained queries. |
-| P2 | Agent Integration Example | Provide a sample script or markdown prompt to demonstrate how AI agents can use the vector store |
-| P2 | Source Context Retrieval | Provide helpers so agents can fetch adjacent chunks or the full document using an entry id |
-| P2 | Intent Tagging | Classify each chunk as *what*, *how*, or *why* for question filtering |
-| P3 | Embedding Refresh Pipeline | Optionally support rebuilding the embedding index when PRDs or tooltip files are updated (manual or script-based trigger) |
+| Priority | Feature                     | Description                                                                                                                                                                                                                                                                                                                                     |
+| -------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1       | Embedding Generator         | Create vector embeddings for a corpus of text snippets (tooltips, PRDs, design rules, etc.) using a consistent model (e.g. `MiniLM`, `OpenAI Ada`, or simulated offline encoder)                                                                                                                                                                |
+| P1       | Client-Side Embedding Store | Save all text entries and their embeddings in a `client_embeddings.json` file for browser use                                                                                                                                                                                                                                                   |
+| P1       | Cosine Similarity Function  | Implement JavaScript logic to compare a query vector to all indexed entries and return top N matches                                                                                                                                                                                                                                            |
+| P1       | Static Query Interface      | Provide an in-browser demo or utility for querying the embedding file (e.g. using a sample prompt vector)                                                                                                                                                                                                                                       |
+| P2       | Vector Metadata Fields      | Store source metadata with each embedding (e.g. “source: PRD Tooltip System”, “type: stat-description”). Include granular tags like `judoka-data`, `tooltip`, `design-doc`, or `agent-workflow` for filtering. Tag each entry by its source ("prd","tooltip","data") and by topic such as "judoka","rules","ui" to enable fine-grained queries. |
+| P2       | Agent Integration Example   | Provide a sample script or markdown prompt to demonstrate how AI agents can use the vector store                                                                                                                                                                                                                                                |
+| P2       | Source Context Retrieval    | Provide helpers so agents can fetch adjacent chunks or the full document using an entry id                                                                                                                                                                                                                                                      |
+| P2       | Intent Tagging              | Classify each chunk as _what_, _how_, or _why_ for question filtering                                                                                                                                                                                                                                                                           |
+| P3       | Embedding Refresh Pipeline  | Optionally support rebuilding the embedding index when PRDs or tooltip files are updated (manual or script-based trigger)                                                                                                                                                                                                                       |
 
 ### Embedding Refresh Pipeline
 
@@ -91,7 +91,7 @@ than an entire file.
 - [x] The system handles malformed or missing embeddings gracefully (e.g. logs a warning or returns empty result)
 - [x] The `client_embeddings.json` file stays under the 3.6MB threshold to ensure quick page load and GitHub Pages compatibility
 - [ ] Match text longer than 200 characters is truncated in the UI with a "Show
-  more" toggle to reveal the full snippet
+      more" toggle to reveal the full snippet
 
 ---
 
@@ -157,11 +157,13 @@ No user settings or toggles are included. This is appropriate since the feature 
 ## Dependencies and Open Questions
 
 ### Dependencies:
+
 - Sentence embedding model (e.g. `all-MiniLM-L6-v2`, or simulated offline)
 - JSON corpus (e.g. `tooltips.json`, PRDs, `judoka.json`)
 - Cosine similarity JS implementation
 
 ### Open Questions:
+
 - Should this feature support live embedding via API (e.g. OpenAI) or remain static?
 - Do we want a UI search tool for developers and designers, or agent-only access?
 - Should embedding versioning be tracked per file (`v1_embeddings.json`)?
@@ -169,22 +171,26 @@ No user settings or toggles are included. This is appropriate since the feature 
 ## Tasks
 
 - [ ] 1.0 Build Embedding Generation System
+
   - [ ] 1.1 Choose embedding model (e.g. MiniLM or OpenAI Ada)
   - [ ] 1.2 Parse `tooltips.json`, PRDs, and `judoka.json`
   - [ ] 1.3 Generate vector embeddings for each entry
   - [ ] 1.4 Save embeddings and metadata into `client_embeddings.json`
 
 - [ ] 2.0 Implement Client-Side Embedding Store
+
   - [ ] 2.1 Structure JSON with `id`, `text`, `embedding`, `source`, `tags`
   - [ ] 2.2 Ensure total file size stays below the 3.6MB threshold
   - [ ] 2.3 Validate JSON loading in-browser
 
 - [ ] 3.0 Develop Similarity Search Function
+
   - [ ] 3.1 Implement cosine similarity in JS
   - [ ] 3.2 Return top 5 matches within 200ms
   - [ ] 3.3 Include score and source reference in response
 
 - [ ] 4.0 Create Static Query Interface
+
   - [ ] 4.1 Design and implement offline query UI
   - [ ] 4.2 Add keyboard accessibility and result display
   - [ ] 4.3 Provide example queries with results
@@ -192,6 +198,7 @@ No user settings or toggles are included. This is appropriate since the feature 
     - [ ] 4.5 Truncate long matches in the results table and provide a "Show more" toggle
 
 - [ ] 5.0 Agent Integration and Demos
+
   - [ ] 5.1 Create markdown prompt templates
   - [ ] 5.2 Provide usage examples with test agents
   - [ ] 5.3 Log agent response coverage and latency

@@ -61,11 +61,11 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 ## Prioritized Functional Requirements
 
 | Priority | Feature                                   | Description                                                                     |
-|:--------:|:------------------------------------------|:-------------------------------------------------------------------------------|
-| **P1**   | Implement Map Expansion                   | Smooth slide-up animation, toggle behavior, and orientation handling.           |
-| **P2**   | Integrate Fallback Menu                   | High-contrast text fallback menu that loads within 1 second if assets fail.     |
-| **P2**   | Ensure Accessibility & Performance        | Keyboard navigation, screen reader support, 60fps performance, WCAG compliance. |
-| **P3**   | Add "Simple Menu Mode" Toggle to Settings | Optional toggle to disable map and simplify navigation.                         |
+| :------: | :---------------------------------------- | :------------------------------------------------------------------------------ |
+|  **P1**  | Implement Map Expansion                   | Smooth slide-up animation, toggle behavior, and orientation handling.           |
+|  **P2**  | Integrate Fallback Menu                   | High-contrast text fallback menu that loads within 1 second if assets fail.     |
+|  **P2**  | Ensure Accessibility & Performance        | Keyboard navigation, screen reader support, 60fps performance, WCAG compliance. |
+|  **P3**  | Add "Simple Menu Mode" Toggle to Settings | Optional toggle to disable map and simplify navigation.                         |
 
 ---
 
@@ -119,8 +119,8 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - **Performance:** Maintain ≥60fps animations on mid-tier devices.
 - **Responsiveness:** If viewport height <400px or width <640px, hide the map icon and corresponding functionality.
 
-| Navigation Map Mockup 1                                          | Navigation Map Mockup 2                                          |
-|:----------------------------------------------------------------:|:----------------------------------------------------------------:|
+|                       Navigation Map Mockup 1                        |                       Navigation Map Mockup 2                        |
+| :------------------------------------------------------------------: | :------------------------------------------------------------------: |
 | ![Navigation Map Mockup 1](/design/mockups/mockupNavigationMap2.png) | ![Navigation Map Mockup 2](/design/mockups/mockupNavigationMap3.png) |
 
 ---
