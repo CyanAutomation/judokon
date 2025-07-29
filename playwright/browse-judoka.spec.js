@@ -103,8 +103,8 @@ test.describe("Browse Judoka screen", () => {
     await container.focus();
     const markers = page.locator(".scroll-marker");
     const counter = page.locator(".page-counter");
-    await expect(markers).toHaveCount(3);
-    await expect(counter).toHaveText("Page 1 of 3");
+    await expect(markers).toHaveCount(2);
+    await expect(counter).toHaveText("Page 1 of 2");
 
     await container.evaluate((el) => {
       el.scrollTo({ left: 600, behavior: "auto" });
@@ -122,8 +122,8 @@ test.describe("Browse Judoka screen", () => {
 
     const markers = page.locator(".scroll-marker");
     const counter = page.locator(".page-counter");
-    await expect(markers).toHaveCount(3);
-    await expect(counter).toHaveText("Page 1 of 3");
+    await expect(markers).toHaveCount(2);
+    await expect(counter).toHaveText("Page 1 of 2");
 
     const box = await container.boundingBox();
     const startX = box.x + box.width * 0.9;
