@@ -129,6 +129,8 @@ than an entire file.
   displayed.
 - Scores are normalized to the 0–1 range. Exact term matches (case-insensitive)
   receive a small `+0.1` bonus before sorting to promote literal keyword hits.
+- Query text is expanded using `src/data/synonyms.json` so common phrases and near
+  spellings map to canonical technique names.
 - Lower scoring results appear only when there are no strong matches.
 - Result messages such as "No strong matches found…" should use the `.search-result-empty` CSS class. Each result entry uses `.search-result-item` and is fully justified with spacing between items.
 

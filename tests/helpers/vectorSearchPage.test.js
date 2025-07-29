@@ -174,3 +174,70 @@ describe("snippet highlighting", () => {
     expect(cell.innerHTML).toContain("<mark>ipsum</mark>");
   });
 });
+
+describe("synonym expansion", () => {
+  it("expands query terms using the synonym list", async () => {
+    const synonyms = { "shoulder throw": ["seoi-nage"] };
+    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
+      findMatches: vi.fn().mockResolvedValue([]),
+      fetchContextById: vi.fn(),
+      loadEmbeddings: vi.fn().mockResolvedValue([])
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue(synonyms)
+    }));
+    vi.doMock("../../src/helpers/constants.js", () => ({
+      DATA_DIR: "./"
+    }));
+
+    const { expandQueryWithSynonyms } = await import("../../src/helpers/vectorSearchPage.js");
+
+    const result = await expandQueryWithSynonyms("shoulder throw");
+    expect(result).toContain("seoi-nage");
+  });
+
+  it("handles misspellings via Levenshtein check", async () => {
+    const synonyms = { "seoi nage": ["seoi-nage"] };
+    const findMatches = vi.fn().mockResolvedValue([]);
+    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
+      findMatches,
+      fetchContextById: vi.fn(),
+      loadEmbeddings: vi.fn().mockResolvedValue([])
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue(synonyms)
+    }));
+    vi.doMock("../../src/helpers/constants.js", () => ({
+      DATA_DIR: "./"
+    }));
+
+    const { handleSearch, init, __setExtractor } = await import(
+      "../../src/helpers/vectorSearchPage.js"
+    );
+
+    let captured = "";
+    __setExtractor(async (text) => {
+      captured = text;
+      return { data: [0, 0, 0] };
+    });
+
+    document.body.innerHTML = `
+      <div id="search-spinner"></div>
+      <form id="vector-search-form">
+        <input id="vector-search-input" />
+        <select id="tag-filter"><option value="all">all</option></select>
+      </form>
+      <table id="vector-results-table"><tbody></tbody></table>
+      <p id="search-results-message"></p>
+    `;
+
+    await init();
+
+    document.getElementById("vector-search-input").value = "seoi nagee";
+    await handleSearch(new Event("submit"));
+
+    expect(captured).toContain("seoi-nage");
+    expect(findMatches).toHaveBeenCalled();
+    expect(findMatches.mock.calls[0][3]).toContain("seoi-nage");
+  });
+});
