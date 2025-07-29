@@ -58,7 +58,7 @@ const NAV_ITEMS_KEY = "navigationItems";
  *    - Persist the resolved array to `localStorage`.
  * 4. Return the validated array of game mode objects.
  *
- * @returns {Promise<Array>} Resolved array of game mode objects.
+ * @returns {Promise<import("./types.js").GameMode[]>} Resolved array of game mode objects.
  */
 export async function loadGameModes() {
   await getSchema();
@@ -138,7 +138,7 @@ export async function loadNavigationItems() {
  * 2. Validate the provided `modes` with the schema.
  * 3. Serialize the array and store it under `GAMEMODES_KEY`.
  *
- * @param {Array} modes - Array of game mode objects.
+ * @param {import("./types.js").GameMode[]} modes - Array of game mode objects.
  * @returns {Promise<void>} Promise that resolves when saving completes.
  */
 export async function saveGameModes(modes) {
@@ -197,7 +197,7 @@ export async function updateNavigationItemHidden(id, isHidden) {
  *    - If not found, return `undefined`.
  *
  * @param {number} id - The ID of the navigation item to retrieve.
- * @returns {Promise<Object|undefined>} The merged item or undefined if not found.
+ * @returns {Promise<import("./types.js").GameMode|undefined>} The merged item or undefined if not found.
  */
 export async function getGameModeById(id) {
   const numericId = Number(id);
