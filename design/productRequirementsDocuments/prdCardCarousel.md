@@ -50,10 +50,10 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 | Priority | Requirement                                          |
 | -------- | ---------------------------------------------------- |
 | **P1**   | Display judoka in a carousel.                        |
-| **P1**   | Scroll left/right using on-screen buttons.           |
-| **P2**   | Swipe gesture support on mobile devices.             |
+| **P1**   | Scroll left/right using large arrow buttons labeled "Prev" and "Next".           |
+| **P2**   | Swipe or scroll navigation on mobile devices.             |
 | **P2**   | Cards slightly enlarge (10%) on hover.               |
-| **P3**   | Scroll markers show user’s position in the carousel. |
+| **P3**   | Page markers show "current page of total" with active highlight. |
 | **P3**   | Keyboard arrow key navigation for accessibility.     |
 
 ---
@@ -61,12 +61,12 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 ## Acceptance Criteria
 
 - Carousel loads within 1 second for up to 150 cards.
-- User can scroll left/right via on-screen buttons.
-- Scroll buttons disable when the carousel reaches either end so players cannot scroll past the available cards.
-- User can see an indicator (scroll markers) showing current position.
+- User can scroll left/right via large "Prev" and "Next" arrow buttons.
+- Arrow buttons disable when the carousel reaches either end so players cannot scroll past the available cards.
+- User can see page markers showing "current page of total" with the active page highlighted and announced via `aria-live`.
 - Hovering over a card enlarges it by 10%, verified via bounding box.
 - Carousel is responsive, adapting to both portrait and landscape orientations.
-- Swipe gestures work on mobile (left/right swipe to move cards).
+- Swipe or scroll navigation works on mobile (left/right swipe to move cards).
 - Keyboard arrow keys allow navigation through cards.
 - Displays a loading spinner if load time exceeds 2 seconds.
 - If card image fails to load, display a default judoka card (judoka id=0).
@@ -100,11 +100,11 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 2. The returned element is mounted into the page (for example, `browseJudoka.html` inserts it into `#carousel-container`).
 3. Carousel loads cards within 1 second; a loading spinner appears if delayed.
 4. Player uses:
-   - On-screen chevron buttons to scroll left or right,
-   - Swipe gestures on mobile,
+   - Large "Prev" and "Next" arrow buttons to move left or right,
+   - Swipe or scroll gestures on mobile,
    - Or keyboard arrows for navigation.
 5. Hovering enlarges cards (desktop).
-6. Scroll markers show current position.
+6. Page markers show "current page of total" with active highlight.
 7. If an image fails to load → default judoka card is displayed.
 
 ---
@@ -147,7 +147,8 @@ generated carousel so each card's real portrait loads once it becomes visible.
 ### Accessibility
 
 - Maintain high contrast between card and background.
-- Ensure buttons and interactive elements meet WCAG touch target size standards.
+- Ensure buttons and interactive elements have touch targets of at least 44px.
+- Page marker changes should announce the new page via `aria-live` to aid screen reader users.
 - Text on cards will maintain a minimum contrast ratio of 4.5:1.
 
 ---
@@ -161,8 +162,8 @@ generated carousel so each card's real portrait loads once it becomes visible.
 
 ### Conceptual Layout
 
-- **Desktop**: 3 cards in view — center card slightly enlarged; arrows left/right; scroll markers at the bottom.
-- **Mobile**: 1.5 cards visible (peek of next card); swipe enabled; arrows optional.
+- **Desktop**: 3 cards in view — center card slightly enlarged; large "Prev" and "Next" arrows at the sides; page markers at the bottom.
+- **Mobile**: 1.5 cards visible (peek of next card); swipe or scroll enabled; arrows optional.
 - **Hover Effect**: On desktop, center card enlarges subtly.
 - **Touch Interaction**: On mobile, swipe left/right; smooth snap after swipe (**≤200 ms**).
 
@@ -179,12 +180,12 @@ generated carousel so each card's real portrait loads once it becomes visible.
   - [x] 1.2 Implement dynamic loading for up to 100 cards.
   - [x] 1.3 Ensure responsive resizing for mobile and desktop.
 - [x] 2.0 Integrate Navigation Methods (P1)
-  - [x] 2.1 Add left/right on-screen button scrolling.
-  - [x] 2.2 Add swipe gesture support for mobile.
+  - [x] 2.1 Add large "Prev" and "Next" arrow buttons for scrolling.
+  - [x] 2.2 Add swipe or scroll support for mobile.
   - [x] 2.3 Add keyboard arrow navigation support.
 - [ ] 3.0 Add UI Enhancements (P2)
   - [x] 3.1 Implement hover enlargement effect.
-  - [x] 3.2 Display scroll markers for carousel position.
+  - [x] 3.2 Display page markers for carousel position with aria-live updates.
   - [x] 3.3 Implement loading spinner for slow networks.
 - [ ] 4.0 Handle Edge Cases (P2)
   - [x] 4.1 Fallback judoka card (judoka id=0) for broken card images.
