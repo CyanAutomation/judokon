@@ -26,6 +26,13 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - Allow quick, frustration-free discovery of all game modes (**reach destination in ≤3 s**).
 
 ---
+## Non-Goals
+
+- No dynamic pathfinding or open-world navigation beyond the village map.
+- Does not introduce multiplayer map interactions.
+- Excludes voice-over or cutscene content.
+
+---
 
 ## User Stories
 
@@ -154,13 +161,6 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 
 ---
 
-## Non-Goals
-
-- No dynamic pathfinding or open-world navigation beyond the village map.
-- Does not introduce multiplayer map interactions.
-- Excludes voice-over or cutscene content.
-
----
 
 ## Dependencies & Integrations
 

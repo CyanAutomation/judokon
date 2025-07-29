@@ -29,6 +29,13 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 - Enable quick, easy switching between English and pseudo-Japanese text (**toggle ≤200 ms**).
 
 ---
+## Non-Goals
+
+- No real Japanese translation or full localization; this feature is purely stylistic and does not provide actual Japanese language output.
+- Not intended for use beyond the Meditation screen.
+- No support for dynamic language packs or runtime localization updates.
+
+---
 
 ## User Stories
 
@@ -122,13 +129,6 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
 
 ---
 
-## Non-Goals
-
-- No real Japanese translation or full localization; this feature is purely stylistic and does not provide actual Japanese language output.
-- Not intended for use beyond the Meditation screen.
-- No support for dynamic language packs or runtime localization updates.
-
----
 
 ## Player Flow
 

@@ -38,6 +38,12 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - **Ensure all round messages, timers, and score are surfaced via the Info Bar (see prdBattleInfoBar.md) for clarity and accessibility.**
 
 ---
+## Non-Goals
+
+- Online multiplayer battles.
+- Adjustable timer settings for stat selection (may be considered in future versions).
+
+---
 
 ## User Stories
 
@@ -154,12 +160,6 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-## Non-Goals
-
-- Online multiplayer battles.
-- Adjustable timer settings for stat selection (may be considered in future versions).
-
----
 
 ## Dependencies
 

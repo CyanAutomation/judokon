@@ -36,6 +36,14 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - ≥80% of players use the Draw button at least once per session in the first week post-launch
 
 ---
+## Non-Goals
+
+- Complex filters or search
+- Persistent card history or logs of previous draws
+- Weighted draws (favoring certain judoka)
+- Advanced filters or rarity-based restrictions
+
+---
 
 ## Prioritized Functional Requirements
 
@@ -60,14 +68,6 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 ---
 
-## Non-Goals
-
-- Complex filters or search
-- Persistent card history or logs of previous draws
-- Weighted draws (favoring certain judoka)
-- Advanced filters or rarity-based restrictions
-
----
 
 ## Dependencies
 

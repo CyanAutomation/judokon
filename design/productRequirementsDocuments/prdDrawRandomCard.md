@@ -112,6 +112,14 @@ Motion** enabled, ensuring the card appears instantly without movement.
 - Allow players sensitive to motion to control animation settings for comfort.
 
 ---
+## Non-Goals
+
+- Balancing or adjusting card rarity odds.
+- Complex particle effects or 3D animations.
+- Deck customization, trading, or collection management.
+- Expansive sound design beyond a simple chime.
+
+---
 
 ## Draw Card Flow
 
@@ -134,14 +142,6 @@ Motion** enabled, ensuring the card appears instantly without movement.
 
 ---
 
-## Non-Goals
-
-- Balancing or adjusting card rarity odds.
-- Complex particle effects or 3D animations.
-- Deck customization, trading, or collection management.
-- Expansive sound design beyond a simple chime.
-
----
 
 ## Prioritized Functional Requirements
 

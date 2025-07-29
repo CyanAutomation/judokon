@@ -31,6 +31,12 @@ This issue is timely as our player base is expanding internationally, and region
 - Ensure full accessibility compliance (see Accessibility section).
 
 ---
+## Non-Goals
+
+- Does not cover creation of new flag assets outside the existing judoka roster.
+- Omits multi-country selection to keep interactions simple.
+
+---
 
 ## User Stories
 
@@ -146,12 +152,6 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 ---
 
-## Non-Goals
-
-- Does not cover creation of new flag assets outside the existing judoka roster.
-- Omits multi-country selection to keep interactions simple.
-
----
 
 ## Dependencies and Integrations
 

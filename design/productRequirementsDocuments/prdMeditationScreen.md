@@ -41,6 +41,14 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - Offer an experience that aligns with judo’s real-world ethos of reflection.
 
 ---
+## Non-Goals
+
+- No guided meditation instruction, breathing audio, or meditation music.
+- No translation of the entire UI into Japanese or other languages (quotes only).
+- Not intended to replace existing downtime screens outside the Meditation feature.
+- No scoring, competitive mechanics, or gamification within the meditation screen.
+
+---
 
 ## User Stories
 
@@ -74,14 +82,6 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 ---
 
-## Non-Goals
-
-- No guided meditation instruction, breathing audio, or meditation music.
-- No translation of the entire UI into Japanese or other languages (quotes only).
-- Not intended to replace existing downtime screens outside the Meditation feature.
-- No scoring, competitive mechanics, or gamification within the meditation screen.
-
----
 
 ## Dependencies / Integrations
 
