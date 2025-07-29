@@ -276,7 +276,7 @@ npx ajv validate -s src/schemas/judoka.schema.json -d src/data/judoka.json
 ```
 
 See [design/dataSchemas/README.md](design/dataSchemas/README.md) for full details
-and instructions on updating schemas when data changes.
+and instructions on updating schemas when data changes. Additional tests ensure that every entry in `aesopsMeta.json` corresponds to an ID in `aesopsFables.json`.
 
 ## Tooltip Helper
 

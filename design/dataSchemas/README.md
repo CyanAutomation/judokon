@@ -10,7 +10,7 @@ Run `npm run validate:data` to check all schema and data pairs at once. The comm
 npx ajv validate -s src/schemas/judoka.schema.json -d src/data/judoka.json
 ```
 
-Run the command for every pair of schema and data file (e.g. `gameModes`, `weightCategories`). The CLI reports any mismatches so they can be fixed before runtime. A new schema, `navigationItems.schema.json`, validates the structure of `navigationItems.json` which drives navigation order and visibility.
+Run the command for every pair of schema and data file (e.g. `gameModes`, `weightCategories`). The CLI reports any mismatches so they can be fixed before runtime. A new schema, `navigationItems.schema.json`, validates the structure of `navigationItems.json` which drives navigation order and visibility. Another schema, `aesopsMeta.schema.json`, describes the quote metadata file used on the meditation screen. Tests also verify that each ID in `aesopsMeta.json` exists in `aesopsFables.json`.
 
 ## Updating Schemas
 
