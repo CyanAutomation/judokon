@@ -65,9 +65,9 @@ This problem is especially pressing now as the roster grows, and players want a 
 | **P1**   | Stats Data Binding              | Pull stats from `judoka.json` for accurate card display.                                                                                                        |
 | **P1**   | Responsive Layout               | Adapt card layout across devices (mobile & desktop).                                                                                                            |
 | **P2**   | Placeholder for Invalid Entries | Show default card if an entry is missing or invalid.                                                                                                            |
-| **P2**   | Carousel Display of Cards       | Present cards in a swipe/scroll carousel for efficient browsing (**≥30 fps**). (See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel requirements.) |
-| **P2**   | Hover/Keyboard Navigation       | Support interactions for accessibility.                                                                                                                         |
-| **P3**   | Scroll Markers                  | Indicate the user’s current position in the carousel.                                                                                                           |
+| **P2**   | Carousel Display of Cards       | Present cards in a swipe/scroll carousel with large "Previous" and "Next" arrow buttons for efficient browsing (**≥30 fps**). (See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel requirements.) |
+| **P2**   | Hover/Keyboard Navigation       | Support interactions for accessibility. |
+| **P3**   | Page Markers                    | Show "current page of total" below the carousel with the active page highlighted. |
 
 ---
 
@@ -182,7 +182,7 @@ Search will be included in a future update to keep the initial scope focused.
 |                                                     |
 | < [Card] [Card] [Card] [Card] [Card] > | <-- Carousel with scroll arrows
 |                                                     |
-| [Scroll Markers] | <-- Dots or progress bar below cards
+| [Page Markers] | <-- "current page of total" below cards
 |                                                     |
 | [Message or Error area] | <-- Dynamic messages (loading, errors)
 +---------------------------------------------------------+
@@ -191,9 +191,9 @@ Search will be included in a future update to keep the initial scope focused.
 **Wireframe Annotations:**
 
 - Header: “Browse Judoka” title with a close (X) button top-right that exits browsing immediately.
-- Carousel: Horizontally scrollable row of cards with left/right arrow buttons on desktop; swipe gestures on mobile.
+- Carousel: Horizontally scrollable row of cards with large "Previous" and "Next" arrow buttons on desktop; players can also swipe or scroll on mobile.
 - Cards: Each card displays judoka stats; center card is enlarged by ~10%.
-- Scroll Markers: Dots below carousel indicate the current position in the list.
+- Page Markers: Display "current page of total" below the carousel with the active page highlighted; updates are announced via `aria-live` for screen readers.
 - Messages: Area below markers for dynamic feedback such as “No cards available” or error messages.
 - Touch Targets: Cards and buttons sized ≥44px for accessibility compliance. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) for full guidelines.
 - Responsive Adaptation: On mobile, 1–2 cards visible; on desktop, 3–5 cards visible.
@@ -221,7 +221,7 @@ Search will be included in a future update to keep the initial scope focused.
   - [ ] 4.2 Maintain ≥30fps during rapid scrolling
 - [ ] 5.0 Interaction Enhancements
   - [ ] 5.1 Add ripple or scaling animation on tap/click
-  - [x] 5.2 Implement scroll markers indicating carousel position
+  - [x] 5.2 Implement page markers showing "current page of total" with active highlight and aria-live updates
 - [ ] 6.0 Keyboard and Accessibility Support
   - [x] 6.1 Enable arrow key navigation left/right through cards
   - [x] 6.2 Manage focus state and ensure visible outlines
