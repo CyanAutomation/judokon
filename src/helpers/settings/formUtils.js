@@ -151,7 +151,13 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
  * @param {Function} getCurrentSettings - Returns current settings.
  * @param {Function} handleUpdate - Persist function.
  */
-export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, handleUpdate) {
+export function renderFeatureFlagSwitches(
+  container,
+  flags,
+  getCurrentSettings,
+  handleUpdate,
+  onToggleInfo
+) {
   if (!container || !flags) return;
   Object.keys(flags).forEach((flag) => {
     const kebab = flag.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
@@ -176,6 +182,8 @@ export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, 
       };
       handleUpdate("featureFlags", updated, () => {
         input.checked = prev;
+      }).then(() => {
+        if (onToggleInfo) onToggleInfo(info.label, info.description);
       });
     });
   });

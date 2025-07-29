@@ -196,6 +196,72 @@ describe("settingsPage module", () => {
     expect(debugInput.checked).toBe(false);
   });
 
+  it("places feature flags inside the advanced settings section", async () => {
+    vi.useFakeTimers();
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updateSetting = vi.fn().mockResolvedValue(baseSettings);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
+      updateNavigationItemHidden: vi.fn()
+    }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const section = document.getElementById("advanced-settings-content");
+    const container = document.getElementById("feature-flags-container");
+    expect(section.contains(container)).toBe(true);
+  });
+
+  it("shows info popup when feature flag changes", async () => {
+    vi.useFakeTimers();
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updatedSettings = {
+      ...baseSettings,
+      featureFlags: {
+        ...baseSettings.featureFlags,
+        randomStatMode: {
+          ...baseSettings.featureFlags.randomStatMode,
+          enabled: false
+        }
+      }
+    };
+    const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
+    const showSettingsInfo = vi.fn();
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
+      updateNavigationItemHidden: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/showSettingsInfo.js", () => ({ showSettingsInfo }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const input = document.querySelector("#feature-random-stat-mode");
+    input.checked = false;
+    input.dispatchEvent(new Event("change"));
+    await vi.runAllTimersAsync();
+
+    expect(showSettingsInfo).toHaveBeenCalledWith(
+      baseSettings.featureFlags.randomStatMode.label,
+      baseSettings.featureFlags.randomStatMode.description
+    );
+  });
+
   it("updates feature flag when toggled", async () => {
     vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
