@@ -1,5 +1,12 @@
 {
+<<<<<<< HEAD
+  "count": 894,
+  "avgVectorLength": 384,
+  "fileSizeKB": 3453.62
+}
+=======
   "count": 959,
   "avgVectorLength": 384,
   "fileSizeKB": 3646.26
 }
+>>>>>>> main
