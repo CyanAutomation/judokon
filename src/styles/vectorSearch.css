@@ -15,7 +15,7 @@
 
 #vector-results-table {
   display: grid;
-  grid-template-columns: 2fr 0.75fr 0.75fr 0.15fr;
+  grid-template-columns: 2fr 0.75fr 0.25fr 0.15fr;
   width: 100%;
   padding: var(--space-lg);
   gap: var(--space-md);
