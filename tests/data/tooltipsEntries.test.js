@@ -5,11 +5,15 @@ import { resolve } from "path";
 
 const tooltips = JSON.parse(readFileSync(resolve("src/data/tooltips.json"), "utf8"));
 
+function get(obj, path) {
+  return path.split(".").reduce((o, k) => (o ? o[k] : undefined), obj);
+}
+
 describe("tooltips.json", () => {
   it("contains new ui tooltip entries", () => {
     const keys = ["ui.languageToggle", "ui.nextRound", "ui.quitMatch", "ui.drawCard"];
     for (const key of keys) {
-      expect(tooltips).toHaveProperty(key);
+      expect(get(tooltips, key)).toBeDefined();
     }
   });
 });
