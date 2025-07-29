@@ -51,14 +51,14 @@ Players enjoy forming teams of favorite judoka, but rules vary between modes and
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                 | Description |
-| -------- | ----------------------- | ----------- |
-| **P1**   | Team Setup              | Players arrange judoka order before the match begins. |
-| **P1**   | Sequential 1v1 Bouts    | Fighters battle in order, one bout at a time. |
-| **P1**   | Point Scoring           | Winning a bout grants the team one point. |
-| **P1**   | Match End Condition     | First team to reach the team-size score wins. |
-| **P2**   | Tie Handling            | Tie rounds award no points and the next fighters compete. |
-| **P2**   | Early Quit Option       | Player may forfeit the match before completion. |
+| Priority | Feature              | Description                                               |
+| -------- | -------------------- | --------------------------------------------------------- |
+| **P1**   | Team Setup           | Players arrange judoka order before the match begins.     |
+| **P1**   | Sequential 1v1 Bouts | Fighters battle in order, one bout at a time.             |
+| **P1**   | Point Scoring        | Winning a bout grants the team one point.                 |
+| **P1**   | Match End Condition  | First team to reach the team-size score wins.             |
+| **P2**   | Tie Handling         | Tie rounds award no points and the next fighters compete. |
+| **P2**   | Early Quit Option    | Player may forfeit the match before completion.           |
 
 ---
 

@@ -78,16 +78,16 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 ## Prioritized Functional Requirements Table
 
-| Priority | Feature                         | Description                                                                          |
-| -------- | ------------------------------- | ------------------------------------------------------------------------------------ |
+| Priority | Feature                         | Description                                                                                                         |
+| -------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | **P1**   | Country selector toggle         | Allow users to toggle the country selector panel via a panel icon with an arrow and filter judoka cards by country. |
-| **P1**   | Filtering and responsive time   | Ensure filtering is completed within 1 second for 90% of sessions.                   |
-| **P2**   | Three display modes             | Provide hidden, slide-in (default), and full-screen grid views for the selector.     |
-| **P2**   | Clear filter icon               | Provide an easy way to remove the current country filter.                             |
-| **P2**   | Accessibility compliance        | Ensure alt-text, aria-labels, color contrast, keyboard navigation, and touch target size are all accessible. |
-| **P2**   | Alphabetical order              | Display country flags in alphabetical order.                                         |
-| **P3**   | Performance optimizations       | Support large datasets (>50 countries) via virtual scrolling or paging.              |
-| **P3**   | Fallback icon for missing flags | Display a fallback generic flag if assets fail.                                      |
+| **P1**   | Filtering and responsive time   | Ensure filtering is completed within 1 second for 90% of sessions.                                                  |
+| **P2**   | Three display modes             | Provide hidden, slide-in (default), and full-screen grid views for the selector.                                    |
+| **P2**   | Clear filter icon               | Provide an easy way to remove the current country filter.                                                           |
+| **P2**   | Accessibility compliance        | Ensure alt-text, aria-labels, color contrast, keyboard navigation, and touch target size are all accessible.        |
+| **P2**   | Alphabetical order              | Display country flags in alphabetical order.                                                                        |
+| **P3**   | Performance optimizations       | Support large datasets (>50 countries) via virtual scrolling or paging.                                             |
+| **P3**   | Fallback icon for missing flags | Display a fallback generic flag if assets fail.                                                                     |
 
 ---
 

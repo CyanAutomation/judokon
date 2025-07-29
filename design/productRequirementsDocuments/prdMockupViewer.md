@@ -1,20 +1,22 @@
 # Mockup Viewer PRD
 
-## Overview (TL;DR)  
+## Overview (TL;DR)
+
 The Mockup Viewer provides a simple, accessible interface for browsing JU-DO-KON! design mockup images. It allows team members and stakeholders to preview all UI mockups in a carousel format, supporting mouse and keyboard navigation. The tool ensures visual consistency and improves design review workflows by centralizing access to UI mockups.
 
-## Problem Statement / Why It Matters  
+## Problem Statement / Why It Matters
+
 Designers and developers previously relied on scattered folder structures to find and compare UI mockups. This fragmentation led to wasted time, difficulty in referencing filenames during discussions, and inconsistent visual evaluations. By aggregating mockups into a single interactive viewer, we reduce this friction and improve team velocity, accuracy, and accessibility in design reviews.
 
-## Goals / Success Metrics  
+## Goals / Success Metrics
 
-| Goal              | Metric                                                                                  |
-|-------------------|-----------------------------------------------------------------------------------------|
-| Load Performance  | 100% of images load within ≤1 second on broadband                                       |
-| Filename Clarity  | 100% of displayed images show visible filenames                                         |
-| Accessibility     | Full keyboard/mouse navigation with ARIA support on 100% of controls                    |
-| UX Responsiveness | Layout remains visually usable across desktop, tablet, and mobile                       |
-| Engagement        | 100% of mockups accessible on first visit without scrolling or filtering                |
+| Goal              | Metric                                                                   |
+| ----------------- | ------------------------------------------------------------------------ |
+| Load Performance  | 100% of images load within ≤1 second on broadband                        |
+| Filename Clarity  | 100% of displayed images show visible filenames                          |
+| Accessibility     | Full keyboard/mouse navigation with ARIA support on 100% of controls     |
+| UX Responsiveness | Layout remains visually usable across desktop, tablet, and mobile        |
+| Engagement        | 100% of mockups accessible on first visit without scrolling or filtering |
 
 ## User Stories
 
@@ -26,17 +28,17 @@ Designers and developers previously relied on scattered folder structures to fin
 
 ## Functional Requirements (Prioritized)
 
-| Priority | Feature               | Description                                                   |
-|----------|-----------------------|---------------------------------------------------------------|
-| P1       | Image Carousel        | Displays one mockup at a time with next/previous controls     |
-| P1       | Filename Display      | Shows filename of the currently displayed image               |
-| P1       | Mouse Navigation      | Next/Previous buttons for cycling images                      |
-| P1       | Keyboard Navigation   | Supports left/right arrow keys for navigation                 |
-| P1       | Image Preloading      | Loads adjacent images to reduce wait time                     |
-| P2       | Accessibility         | Keyboard interaction, ARIA labels, and screen reader support  |
-| P2       | Responsive Layout     | Adapts layout for desktop, tablet, and mobile                 |
-| P3       | Visual Effects        | Fade-in effect on image transitions                           |
-| P3       | Exit Functionality    | “Close” button with keyboard focus management                 |
+| Priority | Feature             | Description                                                  |
+| -------- | ------------------- | ------------------------------------------------------------ |
+| P1       | Image Carousel      | Displays one mockup at a time with next/previous controls    |
+| P1       | Filename Display    | Shows filename of the currently displayed image              |
+| P1       | Mouse Navigation    | Next/Previous buttons for cycling images                     |
+| P1       | Keyboard Navigation | Supports left/right arrow keys for navigation                |
+| P1       | Image Preloading    | Loads adjacent images to reduce wait time                    |
+| P2       | Accessibility       | Keyboard interaction, ARIA labels, and screen reader support |
+| P2       | Responsive Layout   | Adapts layout for desktop, tablet, and mobile                |
+| P3       | Visual Effects      | Fade-in effect on image transitions                          |
+| P3       | Exit Functionality  | “Close” button with keyboard focus management                |
 
 ## Acceptance Criteria
 
@@ -57,60 +59,62 @@ Designers and developers previously relied on scattered folder structures to fin
 - Given the viewer is open, then a visible “Close” button is available and keyboard focus can be moved to it for exiting.
 - Given keyboard navigation, then tab order moves logically through controls and focus is trapped inside the viewer until it is closed.
 
-## Non-Functional Requirements / Design Considerations  
+## Non-Functional Requirements / Design Considerations
 
-- Use JU-DO-KON! color palette, fonts, and component spacing per brand style guide.  
-- Apply consistent 12px/16px spacing between controls, image, and filename.  
-- Use semantic HTML elements (`<figure>`, `<figcaption>`, `<button>`, etc.).  
-- Use no external libraries or frameworks; rely on internal styles and helper modules (`setupButtonEffects.js`, `domReady.js`, etc.).  
-- Does not require login or permissions to access.  
-- Fade-in transitions on image switch should last ~300ms with ease-in-out easing.  
-- Buttons and tap targets must be minimum 44x44 pixels for accessibility.  
+- Use JU-DO-KON! color palette, fonts, and component spacing per brand style guide.
+- Apply consistent 12px/16px spacing between controls, image, and filename.
+- Use semantic HTML elements (`<figure>`, `<figcaption>`, `<button>`, etc.).
+- Use no external libraries or frameworks; rely on internal styles and helper modules (`setupButtonEffects.js`, `domReady.js`, etc.).
+- Does not require login or permissions to access.
+- Fade-in transitions on image switch should last ~300ms with ease-in-out easing.
+- Buttons and tap targets must be minimum 44x44 pixels for accessibility.
 - Keyboard focus must cycle inside the viewer and not leak outside until the viewer is closed.
 
-## Dependencies and Open Questions  
+## Dependencies and Open Questions
 
-- Image files must be placed in `design/mockups/` with readable names.  
-- Uses standard helper modules: `setupButtonEffects.js`, `domReady.js`, navbar and SVG fallbacks.  
+- Image files must be placed in `design/mockups/` with readable names.
+- Uses standard helper modules: `setupButtonEffects.js`, `domReady.js`, navbar and SVG fallbacks.
 - Open: Should the viewer support zoom, full-screen, or download options in future versions?
 
-## Wireframe Sketch (Suggested Additions)  
+## Wireframe Sketch (Suggested Additions)
 
 **Layout Elements (Desktop View):**
+
 - Image centered with filename below.
 - Images must scale to fit the viewport so wide mockups remain fully
   visible without horizontal scrolling.
 - Next and Previous buttons on either side of the image.
 - Close button top-right corner.
 
-**Layout Behavior:**  
-- On mobile: buttons stack vertically below image, filename wraps if needed.  
-- All spacing/padding respects 12px grid system.  
+**Layout Behavior:**
+
+- On mobile: buttons stack vertically below image, filename wraps if needed.
+- All spacing/padding respects 12px grid system.
 - Buttons have minimum 44x44 px clickable/tap area.
 
-## Tasks  
+## Tasks
 
-- [ ] 1.0 Build Carousel Viewer Component  
-  - [ ] 1.1 Load and display mockup images from `design/mockups/`  
-  - [ ] 1.2 Display filename below the image  
-  - [ ] 1.3 Show first image on page load  
-- [ ] 2.0 Implement Image Navigation  
-  - [ ] 2.1 Add "Next" and "Previous" mouse buttons  
-  - [ ] 2.2 Add left/right keyboard arrow navigation  
-  - [ ] 2.3 Loop navigation from last to first and vice versa  
-- [ ] 3.0 Add Performance and Fallback Logic  
-  - [ ] 3.1 Preload adjacent images for snappy transitions  
-  - [ ] 3.2 Handle image load failures with fallback icon or alt text  
-  - [ ] 3.3 Display message if no images are available  
-- [ ] 4.0 Accessibility Compliance  
-  - [ ] 4.1 Add `aria-labels` to all interactive elements  
-  - [ ] 4.2 Support full keyboard interaction including tab, enter, and space  
-  - [ ] 4.3 Use semantic HTML with proper roles  
-  - [ ] 4.4 Implement keyboard focus trapping inside the viewer  
-- [ ] 5.0 User Flow Enhancements  
-  - [ ] 5.1 Add visible "Close" button to exit viewer  
-  - [ ] 5.2 Ensure tab order includes Close button logically  
-- [ ] 6.0 Final Touches and UX Polish  
-  - [ ] 6.1 Apply fade-in transition on image switches (~300ms)  
-  - [ ] 6.2 Ensure responsive layout on desktop/tablet/mobile  
+- [ ] 1.0 Build Carousel Viewer Component
+  - [ ] 1.1 Load and display mockup images from `design/mockups/`
+  - [ ] 1.2 Display filename below the image
+  - [ ] 1.3 Show first image on page load
+- [ ] 2.0 Implement Image Navigation
+  - [ ] 2.1 Add "Next" and "Previous" mouse buttons
+  - [ ] 2.2 Add left/right keyboard arrow navigation
+  - [ ] 2.3 Loop navigation from last to first and vice versa
+- [ ] 3.0 Add Performance and Fallback Logic
+  - [ ] 3.1 Preload adjacent images for snappy transitions
+  - [ ] 3.2 Handle image load failures with fallback icon or alt text
+  - [ ] 3.3 Display message if no images are available
+- [ ] 4.0 Accessibility Compliance
+  - [ ] 4.1 Add `aria-labels` to all interactive elements
+  - [ ] 4.2 Support full keyboard interaction including tab, enter, and space
+  - [ ] 4.3 Use semantic HTML with proper roles
+  - [ ] 4.4 Implement keyboard focus trapping inside the viewer
+- [ ] 5.0 User Flow Enhancements
+  - [ ] 5.1 Add visible "Close" button to exit viewer
+  - [ ] 5.2 Ensure tab order includes Close button logically
+- [ ] 6.0 Final Touches and UX Polish
+  - [ ] 6.1 Apply fade-in transition on image switches (~300ms)
+  - [ ] 6.2 Ensure responsive layout on desktop/tablet/mobile
   - [ ] 6.3 Align visual style with JU-DO-KON! branding

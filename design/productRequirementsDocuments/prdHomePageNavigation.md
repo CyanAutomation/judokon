@@ -3,6 +3,7 @@
 ---
 
 ## TL;DR
+
 Provides a fast, 2x2 tile menu so players can reach Classic Battle, Random Judoka, Meditation, and Browse Judoka within two taps. Layout loads in under 2s, remains accessible and responsive across devices.
 
 ---

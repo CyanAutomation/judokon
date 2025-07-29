@@ -8,8 +8,7 @@
 
 > After a tough **Classic Battle**, Hiroshi takes a break by entering **Meditation** Mode. Soft music and inspiring quotes help him reconnect with why he loves judo. Later, he updates his Judoka’s signature move, making his fighter truly his own. By offering more than just battles, Ju-Do-Kon! becomes a game players want to return to every day—whether they crave intense combat or quiet reflection.
 
-Game mode IDs are numeric. Each navigation item references a mode by its ID in `navigationItems.json`.
----
+## Game mode IDs are numeric. Each navigation item references a mode by its ID in `navigationItems.json`.
 
 ### Problem Statement
 
@@ -68,15 +67,15 @@ Improving session variety directly supports retention and encourages more person
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature           | Description                                    |
-| -------- | ----------------- | ---------------------------------------------- |
+| Priority | Feature           | Description                                         |
+| -------- | ----------------- | --------------------------------------------------- |
 | P1       | Classic Battle    | 1v1 battle vs opponent, stat-based combat to 10 pts |
-| P1       | Team Battle Modes | Gender-specific team-based battles             |
-| P1       | Judoka Creation   | Interface for new character creation           |
-| P2       | Judoka Update     | Edit existing characters and save changes      |
-| P2       | Browse Judoka     | Explore all characters with filtering          |
-| P2       | Random Judoka     | View a new random profile per visit            |
-| P3       | Meditation Mode   | Non-interactive rest screen with quotes        |
+| P1       | Team Battle Modes | Gender-specific team-based battles                  |
+| P1       | Judoka Creation   | Interface for new character creation                |
+| P2       | Judoka Update     | Edit existing characters and save changes           |
+| P2       | Browse Judoka     | Explore all characters with filtering               |
+| P2       | Random Judoka     | View a new random profile per visit                 |
+| P3       | Meditation Mode   | Non-interactive rest screen with quotes             |
 
 ---
 

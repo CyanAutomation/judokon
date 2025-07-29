@@ -37,19 +37,19 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 
 ## Functional Requirements
 
-| Priority | Feature                    | Description                                                                 |
-| -------- | -------------------------- | --------------------------------------------------------------------------- |
-| P1       | Sound Toggle               | Binary toggle updating `settings.json` live on change.                      |
+| Priority | Feature                          | Description                                                                                         |
+| -------- | -------------------------------- | --------------------------------------------------------------------------------------------------- |
+| P1       | Sound Toggle                     | Binary toggle updating `settings.json` live on change.                                              |
 | P1       | Full Navigation Map Feature Flag | Enable or disable the full navigation map via feature flag; updates `settings.json` live on change. |
-| P3       | Test Mode Feature Flag | Enables deterministic battles for automated testing. |
-| P1       | Motion Effects Toggle      | Binary toggle updating `settings.json` live on change.                      |
-| P1       | Typewriter Effect Toggle   | Enable or disable quote animation on the meditation screen. |
-| P1       | Display Mode Switch        | Three-option switch applying mode instantly across UI.                    |
-| P2       | Game Modes Toggles         | A list of all defined game modes with binary toggles from `navigationItems.json`. |
-| P3       | Settings Menu Integration  | Ensure settings appear as a game mode in `navigationItems.json`.                  |
-| P3       | Change Log Link           | Link to `changeLog.html` for viewing recent judoka updates.                 |
-| P3       | PRD Viewer Link           | Link to `prdViewer.html` for browsing product requirement documents.        |
-| P3       | Mockup Viewer Link        | Link to `mockupViewer.html` to browse design mockups.                       |
+| P3       | Test Mode Feature Flag           | Enables deterministic battles for automated testing.                                                |
+| P1       | Motion Effects Toggle            | Binary toggle updating `settings.json` live on change.                                              |
+| P1       | Typewriter Effect Toggle         | Enable or disable quote animation on the meditation screen.                                         |
+| P1       | Display Mode Switch              | Three-option switch applying mode instantly across UI.                                              |
+| P2       | Game Modes Toggles               | A list of all defined game modes with binary toggles from `navigationItems.json`.                   |
+| P3       | Settings Menu Integration        | Ensure settings appear as a game mode in `navigationItems.json`.                                    |
+| P3       | Change Log Link                  | Link to `changeLog.html` for viewing recent judoka updates.                                         |
+| P3       | PRD Viewer Link                  | Link to `prdViewer.html` for browsing product requirement documents.                                |
+| P3       | Mockup Viewer Link               | Link to `mockupViewer.html` to browse design mockups.                                               |
 
 **Note:** For all settings items, if reading or writing to the data source fails, toggles/selectors **must revert** to their previous state, and a user-facing error should appear.
 
@@ -120,6 +120,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 
 - AC-4.1 Disabling the toggle prevents the quote typewriter animation on the meditation screen.
 - AC-4.2 Setting is stored in `settings.json` within 50ms of change.
+
 ### Display Mode Switch
 
 - AC-5.1 Selecting a new display mode (light/dark/gray) applies changes instantly across all relevant UI components.

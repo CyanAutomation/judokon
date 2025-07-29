@@ -10,6 +10,7 @@ Simple menu that lets players quickly choose Male, Female, or Mixed modes for te
 **URL:** `teamBattleSelection.html`
 
 This selection screen is the gateway to the three Team Battle modes:
+
 - [PRD: Team Battle (Male)](prdTeamBattleMale.md)
 - [PRD: Team Battle (Female)](prdTeamBattleFemale.md)
 - [PRD: Team Battle (Mixed)](prdTeamBattleMixed.md)

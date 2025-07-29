@@ -53,12 +53,12 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 ## Functional Requirements
 
 | Priority | Feature                                 | Description                                                             |
-|:--------:|:----------------------------------------|:-----------------------------------------------------------------------|
-| **P1**   | KG Image & Random Quote Display         | Show KG character and random quote as a moment of calm reflection.      |
-| **P2**   | Quote Fallback & Load Time Optimization | Display default reflection message if data fails, ensure <1s load time. |
-| **P2**   | Fade-In Animation                       | Quote and image fade in once loaded (≤300ms).                           |
-| **P3**   | Dynamic Font Scaling                    | Quote text scales smoothly across breakpoints.                          |
-| **P3**   | Accessibility Support                   | Enable screen reader compatibility for quote text and toggle button.    |
+| :------: | :-------------------------------------- | :---------------------------------------------------------------------- |
+|  **P1**  | KG Image & Random Quote Display         | Show KG character and random quote as a moment of calm reflection.      |
+|  **P2**  | Quote Fallback & Load Time Optimization | Display default reflection message if data fails, ensure <1s load time. |
+|  **P2**  | Fade-In Animation                       | Quote and image fade in once loaded (≤300ms).                           |
+|  **P3**  | Dynamic Font Scaling                    | Quote text scales smoothly across breakpoints.                          |
+|  **P3**  | Accessibility Support                   | Enable screen reader compatibility for quote text and toggle button.    |
 
 ---
 
@@ -128,7 +128,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - Includes a pseudo-Japanese quote toggle for immersive effect. See [PRD: Pseudo-Japanese Text Conversion Function](prdPseudoJapanese.md) for details.
 
 | Meditation Screen Mockup A                          | Meditation Screen Mockup B                          |
-|-----------------------------------------------------|-----------------------------------------------------|
+| --------------------------------------------------- | --------------------------------------------------- |
 | ![Mockup A](/design/mockups/mockupQuoteScreen3.png) | ![Mockup B](/design/mockups/mockupQuoteScreen4.png) |
 
 ---

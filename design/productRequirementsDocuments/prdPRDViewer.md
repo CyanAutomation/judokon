@@ -6,7 +6,8 @@ The PRD Viewer is a browser-based tool that enables JU-DO-KON! contributors and 
 
 ## Problem Statement
 
-Contributors currently face difficulty reviewing PRDs because they must clone the repository or navigate raw markdown files manually. As one contributor shared:  
+Contributors currently face difficulty reviewing PRDs because they must clone the repository or navigate raw markdown files manually. As one contributor shared:
+
 > "Sometimes I spend more time hunting down the right markdown file than actually understanding the requirements."
 
 Non-technical stakeholders struggle even more with raw markdown formatting, leading to misunderstandings and delayed implementations. A dedicated PRD Viewer tool ensures everyone can easily access up-to-date requirements and acceptance criteria in a readable format, improving collaboration and reducing errors.
@@ -43,16 +44,16 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                    | Description                                                      |
-|----------|----------------------------|------------------------------------------------------------------|
-| P1       | Markdown PRD Loading       | Load all markdown files from the PRD directory and display them.  |
-| P1       | Markdown-to-HTML Rendering | Convert markdown to styled HTML with accurate formatting.         |
-| P1       | Next/Previous Navigation   | Buttons for navigating PRDs with wrap-around at ends.             |
-| P1       | Keyboard Navigation        | Allow navigation via arrow keys with focus management.            |
-| P1       | Touch/Swipe Navigation     | Support swipe gestures with gesture threshold to avoid misfires.  |
-| P2       | Responsive Layout          | Viewer adapts seamlessly to different device screen sizes.        |
+| Priority | Feature                    | Description                                                          |
+| -------- | -------------------------- | -------------------------------------------------------------------- |
+| P1       | Markdown PRD Loading       | Load all markdown files from the PRD directory and display them.     |
+| P1       | Markdown-to-HTML Rendering | Convert markdown to styled HTML with accurate formatting.            |
+| P1       | Next/Previous Navigation   | Buttons for navigating PRDs with wrap-around at ends.                |
+| P1       | Keyboard Navigation        | Allow navigation via arrow keys with focus management.               |
+| P1       | Touch/Swipe Navigation     | Support swipe gestures with gesture threshold to avoid misfires.     |
+| P2       | Responsive Layout          | Viewer adapts seamlessly to different device screen sizes.           |
 | P2       | Accessibility              | Fully accessible UI including ARIA labels and screen reader support. |
-| P3       | Home Link                  | Provide a prominent link to return to the homepage.               |
+| P3       | Home Link                  | Provide a prominent link to return to the homepage.                  |
 
 ## Acceptance Criteria
 
@@ -102,26 +103,31 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 ## Tasks
 
 - [ ] 1.0 Set Up Markdown File Loader
+
   - [ ] 1.1 Create function to scan `design/productRequirementsDocuments` directory
   - [ ] 1.2 Load markdown content of each file asynchronously
   - [ ] 1.3 Implement error handling and fallback display for file load failures
 
 - [ ] 2.0 Implement Markdown-to-HTML Renderer
+
   - [ ] 2.1 Integrate `marked` library for parsing markdown
   - [ ] 2.2 Apply consistent styles to headings, tables, lists, code blocks
   - [ ] 2.3 Benchmark and optimize rendering to complete within 200ms on desktop
 
 - [ ] 3.0 Build Navigation System
+
   - [ ] 3.1 Add Prev and Next buttons with wrap-around navigation
   - [ ] 3.2 Implement keyboard arrow key navigation and focus management
   - [ ] 3.3 Add swipe gesture detection with minimum threshold to avoid accidental triggers
 
 - [ ] 4.0 Ensure Accessibility and Responsiveness
+
   - [ ] 4.1 Add ARIA labels and roles to interactive elements
   - [ ] 4.2 Implement responsive CSS for desktop, tablet, and mobile layouts
   - [ ] 4.3 Conduct accessibility testing with keyboard-only and screen reader tools
 
 - [ ] 5.0 Add Home Link and Error Handling
+
   - [ ] 5.1 Insert clickable JU-DO-KON! logo and/or dedicated Home link to main page
   - [ ] 5.2 Log markdown loading errors to console and display fallback UI
   - [ ] 5.3 Hide internal file paths or URLs from the user interface

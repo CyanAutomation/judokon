@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-The **Mystery Judoka Card** is a placeholder card used in *every round against the opponent*. It temporarily hides the opponent’s real card until the player selects a stat, ensuring fair gameplay and preventing stat-based cheating. The card uses a silhouette portrait, obscured stats (`"?"`), and the name “Mystery Judoka”, providing a consistent and thematic experience during the stat selection phase.
+The **Mystery Judoka Card** is a placeholder card used in _every round against the opponent_. It temporarily hides the opponent’s real card until the player selects a stat, ensuring fair gameplay and preventing stat-based cheating. The card uses a silhouette portrait, obscured stats (`"?"`), and the name “Mystery Judoka”, providing a consistent and thematic experience during the stat selection phase.
 
 ---
 
@@ -29,7 +29,7 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 
 ## User Stories
 
-- As a player, I want to choose my stat *before* seeing the opponent’s card, so the match feels fair and unpredictable.
+- As a player, I want to choose my stat _before_ seeing the opponent’s card, so the match feels fair and unpredictable.
 - As a returning player, I want the placeholder card to feel familiar and thematic, not jarring.
 - As a developer, I want to reuse an existing hidden judoka record to simplify implementation and asset management.
 
@@ -42,7 +42,7 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
   **Then** the “Mystery Judoka” card (`judokaId=1`) is displayed with silhouette image and question marks in all stat fields.
 - **Given** the player selects a stat,  
   **When** the opponent’s real card is revealed,  
-  **Then** it *replaces* the Mystery Judoka card via slide or flip animation within **400ms**.
+  **Then** it _replaces_ the Mystery Judoka card via slide or flip animation within **400ms**.
 - **Given** the Mystery Judoka card appears,  
   **Then** its name should be displayed as “Mystery Judoka” and stats as "?", regardless of real underlying values.
 - **Given** the Mystery Judoka card is displayed,  
@@ -67,7 +67,7 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 - **Stat Display:** Override real stat values with `"?"` at render time via `renderJudokaCard()`. (Note: Stat concealment and animation are handled in the UI layer, not in the battle engine.)
 - **Name Display:** Use value from `judoka.json` (`"Mystery Judoka"`) for visual consistency.
 - **Reveal Timing:** Animate swap to real opponent card after player stat choice within **400ms** using `ease-out` transition.
-- **Game Logic:** Opponent card is drawn from remaining deck *before* stat selection but only displayed *after* player choice.
+- **Game Logic:** Opponent card is drawn from remaining deck _before_ stat selection but only displayed _after_ player choice.
 
 ---
 
@@ -105,13 +105,13 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                      | Description                                                                 |
-|:--------:|:----------------------------|:---------------------------------------------------------------------------|
-| **P1**   | Placeholder Mystery Card     | Show `judokaId=1` card with silhouette and "?" stats at start of each opponent round. Signature move is also shown as "?" |
-| **P1**   | Stat Redaction on Render     | Replace all visible stat values with "?" regardless of real values. Signature move is always shown as "?" |
-| **P1**   | Card Swap on Stat Selection  | Reveal opponent card via animated swap within **400ms**, no layout shift   |
-| **P2**   | Consistent Styling           | Apply proper rarity border, portrait container, and stat layout             |
-| **P3**   | Accessibility Compliance     | Ensure all question marks and names are screen-reader friendly              |
+| Priority | Feature                     | Description                                                                                                               |
+| :------: | :-------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+|  **P1**  | Placeholder Mystery Card    | Show `judokaId=1` card with silhouette and "?" stats at start of each opponent round. Signature move is also shown as "?" |
+|  **P1**  | Stat Redaction on Render    | Replace all visible stat values with "?" regardless of real values. Signature move is always shown as "?"                 |
+|  **P1**  | Card Swap on Stat Selection | Reveal opponent card via animated swap within **400ms**, no layout shift                                                  |
+|  **P2**  | Consistent Styling          | Apply proper rarity border, portrait container, and stat layout                                                           |
+|  **P3**  | Accessibility Compliance    | Ensure all question marks and names are screen-reader friendly                                                            |
 
 ---
 

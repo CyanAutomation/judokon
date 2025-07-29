@@ -18,6 +18,7 @@ To ensure the **Settings** page remains consistent, visually appealing, and acce
 
 - **Grid Layout for Controls**
   Use the `.game-mode-toggle-container` class on fieldsets to enable responsive grid layouts:
+
   - 3-column layout on desktop
   - 1-column stacked layout on mobile
   - The `Feature Flags` fieldset should include this class so flags display in a responsive grid.
@@ -36,10 +37,12 @@ To ensure the **Settings** page remains consistent, visually appealing, and acce
 ## Styling Guidelines
 
 - **Use Existing Classes**
+
   - `.settings-form` on form/fieldset wrappers
   - `.settings-item` on individual setting containers
 
 - **Fieldset Styling**
+
   - Reuse section `<legend>` headings with consistent styles (font: Russo One, 24px).
 
 - **Toggle Switch Pattern**
@@ -54,13 +57,16 @@ To ensure the **Settings** page remains consistent, visually appealing, and acce
   ```
 
 - **Select Boxes / Radio Buttons**
+
   - Use standard `<select>` or `<input type="radio">`, styled within the form using built-in styles (dark background, padding, rounded borders).
 
 - **Typography**
+
   - Headings: Russo One
   - Body text: use base font set in `base.css`
 
 - **Colors**
+
   - Use CSS variables: `--color-primary`, `--button-bg`, etc.
   - Do not hard-code color values.
   - Ensure all new elements work across Light, Dark, and Gray themes.
@@ -74,43 +80,52 @@ To ensure the **Settings** page remains consistent, visually appealing, and acce
 ## Accessibility & UX Guidelines
 
 - **Keyboard Navigation**
+
   - All controls must be focusable with Tab
   - Use visible focus indicators (do not remove outlines)
 
 - **ARIA Labels and Roles**
+
   - Use `<label>` where possible
   - For custom toggles, add `aria-label` to `<input>`
   - Fieldsets should include meaningful `<legend>`
 
 - **Screen Reader Considerations**
+
   - State changes must be announced via native semantics
   - Use `role="alert"` for error messages if needed
   - Avoid hiding important content visually or semantically
 
 - **Color Contrast**
+
   - Minimum contrast ratio of 4.5:1 for text
   - Test readability in all themes
 
 - **Visible Indicators and Feedback**
+
   - Settings must provide immediate visual feedback
   - Toggle positions, colors, and states must be unambiguous
 
 - **Touch and Click Target Size**
+
   - Minimum target size: 44px × 44px
   - Ensure padding/margins make elements easy to interact with
 
 - **Consistent UX Behavior**
+
   - No "Save" button – all changes are instant
   - Use existing `updateSetting()` pattern for persistence
   - Reflect current saved values on page load
   - Integrate with existing error feedback mechanisms
 
 - **Change Log Link**
+
   - Add a clearly labeled link (e.g., "View Change Log") to the settings page, styled as a `.settings-item`.
   - Place after all settings controls, before the error popup container.
   - The link should point to `changeLog.html` and be accessible via keyboard (tabindex set appropriately).
 
 - **Links Section**
+
   - Group supplemental pages under a `Links` heading using a simple `<fieldset>`.
   - Include links to `changeLog.html`, `prdViewer.html`, and `mockupViewer.html`.
   - Style each as a `.settings-item` and assign sequential `tabindex` values (e.g., 99, 100, 101).
@@ -131,11 +146,23 @@ To improve organization and reduce visual clutter, each major settings area (e.g
 
 ```html
 <div class="settings-section">
-  <button type="button" class="settings-section-toggle" aria-expanded="false" aria-controls="general-settings-content" id="general-settings-toggle">
+  <button
+    type="button"
+    class="settings-section-toggle"
+    aria-expanded="false"
+    aria-controls="general-settings-content"
+    id="general-settings-toggle"
+  >
     General Settings
   </button>
-  <div class="settings-section-content" id="general-settings-content" role="region" aria-labelledby="general-settings-toggle" hidden>
-    <fieldset> ...settings controls... </fieldset>
+  <div
+    class="settings-section-content"
+    id="general-settings-content"
+    role="region"
+    aria-labelledby="general-settings-toggle"
+    hidden
+  >
+    <fieldset>...settings controls...</fieldset>
   </div>
 </div>
 ```
@@ -147,16 +174,19 @@ To improve organization and reduce visual clutter, each major settings area (e.g
 - The content div should be hidden by default (`hidden` attribute or `display: none;`).
 
 ### Interaction & Accessibility
+
 - Clicking or pressing Enter/Space on the toggle expands/collapses the section and updates `aria-expanded`.
 - Only one or multiple sections may be open at a time (choose per UX needs).
 - All controls inside the section remain tabbable and accessible when expanded.
 - Use CSS transitions for smooth expand/collapse if desired.
 
 ### Styling
+
 - Use `.settings-section`, `.settings-section-toggle`, and `.settings-section-content` classes for structure and styling.
 - Ensure toggle buttons and content meet touch target and contrast requirements.
 
 ### Testing Checklist (add to existing)
+
 - [ ] Section toggles are keyboard and screen reader accessible
 - [ ] Collapsed sections hide content from screen readers and tab order
 - [ ] Expanding a section reveals its controls in tab order
@@ -175,22 +205,25 @@ To support AI-assisted testing, variant gameplay modes, and scalable development
   Every feature flag should be implemented as a standard toggle using the existing `.switch` structure (see Styling Guidelines).
 
 - **ID and Naming Convention**  
-  Use predictable `id` and `name` values:  
+  Use predictable `id` and `name` values:
+
   - ID format: `feature-<kebab-case-feature-name>`
   - Name format: camelCase
   - Example: `id="feature-random-stat-mode" name="randomStatMode"`
   - Common example flags include `Battle Debug Panel`, `Full Navigation Map`, and `Card Inspector`
 
-- **ARIA and Accessibility**  
-  - Provide `aria-label` for each feature flag  
+- **ARIA and Accessibility**
+
+  - Provide `aria-label` for each feature flag
   - Label must describe the feature clearly, even if experimental
 
-- **Persistence & Feedback**  
-  - Use the `updateSetting()` pattern to store and reflect current flag states  
+- **Persistence & Feedback**
+
+  - Use the `updateSetting()` pattern to store and reflect current flag states
   - UI must reflect the saved state on load and provide immediate visual feedback on toggle
 
-- **Grouping**  
-  - Place all feature flags in a dedicated `<fieldset>` titled `Feature Flags`  
+- **Grouping**
+  - Place all feature flags in a dedicated `<fieldset>` titled `Feature Flags`
   - For advanced/experimental features, nest under `Advanced Settings` with appropriate section toggling
 
 ---
@@ -199,16 +232,17 @@ To support AI-assisted testing, variant gameplay modes, and scalable development
 
 To enable AI agents to test, monitor, and debug the impact of feature flags:
 
-- **Expose State via `data-*` Attributes**  
-  - Dynamic components (e.g. game mode managers, card displays) should include `data-*` attributes on their root elements to indicate current internal state  
-  - Example:  
+- **Expose State via `data-*` Attributes**
+
+  - Dynamic components (e.g. game mode managers, card displays) should include `data-*` attributes on their root elements to indicate current internal state
+  - Example:
     ```html
-    <div id="battle-container" data-mode="classic" data-random-stat="true">
+    <div id="battle-container" data-mode="classic" data-random-stat="true"></div>
     ```
 
-- **Optional Debug Panels (For Agent Use Only)**  
-  - Add a visually hidden or collapsible debug panel using the `.debug-panel` class for verbose state outputs  
-  - Panel should be toggleable with a keyboard-accessible button  
+- **Optional Debug Panels (For Agent Use Only)**
+  - Add a visually hidden or collapsible debug panel using the `.debug-panel` class for verbose state outputs
+  - Panel should be toggleable with a keyboard-accessible button
   - Output should be readable by screen readers (e.g. wrapped in `<pre role="status" aria-live="polite">`)
 
 ---

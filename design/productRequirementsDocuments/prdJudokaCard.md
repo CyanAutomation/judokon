@@ -91,7 +91,7 @@ Each card consists of elements stored in `judoka.json`:
 - Nationality (depicted via flag)
 - Weight class (one of the 14 official IJF classes: 7 male, 7 female)
 - Portrait of the judoka’s likeness
-- Stats (Power, Speed, Technique, Kumi-kata *grip fighting*, Ne-waza *ground grappling*) with 0–10 scale
+- Stats (Power, Speed, Technique, Kumi-kata _grip fighting_, Ne-waza _ground grappling_) with 0–10 scale
 - Signature Move
 
 The weight class badge appears in the top-right corner of the portrait with a transparent background and white text for readability.

@@ -33,12 +33,12 @@ Players want a mode that lets them mix male and female judoka on the same team. 
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature              | Description                                                    |
-|:--------:|:--------------------|:---------------------------------------------------------------|
-| **P1**   | Mixed Roster Allowed| Teams may include any combination of male and female judoka.   |
-| **P1**   | Fixed Team Size     | Each team contains exactly 6 judoka.                           |
-| **P1**   | Base Rule Inheritance| Follow all rules in [PRD: Team Battle Rules](prdTeamBattleRules.md). |
-| **P2**   | Early Quit Allowed  | Player may forfeit the match early.                            |
+| Priority | Feature               | Description                                                          |
+| :------: | :-------------------- | :------------------------------------------------------------------- |
+|  **P1**  | Mixed Roster Allowed  | Teams may include any combination of male and female judoka.         |
+|  **P1**  | Fixed Team Size       | Each team contains exactly 6 judoka.                                 |
+|  **P1**  | Base Rule Inheritance | Follow all rules in [PRD: Team Battle Rules](prdTeamBattleRules.md). |
+|  **P2**  | Early Quit Allowed    | Player may forfeit the match early.                                  |
 
 ---
 

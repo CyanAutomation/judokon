@@ -31,15 +31,15 @@ Players and developers currently lack a simple, in-game method to see which Judo
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                  | Description                                                                |
-|:--------:|--------------------------|----------------------------------------------------------------------------|
-| **P1**   | Load and Parse Data      | Extract Judoka entries from `judoka.json`, including required fields.       |
-| **P1**   | Sort and Display Entries | Sort by `lastModified`, fallback to name; limit to 20 results.              |
-| **P2**   | Navigation Integration   | Add “Judoka Updates” access in the main menu with proper back behavior.     |
-| **P2**   | Portrait Display         | Show portrait or fallback image with alt text and size constraints.         |
-| **P2**   | UI Consistency           | Maintain global game layout: header, footer, fonts, and spacing.            |
-| **P3**   | Error/Fallback Handling  | Show user-friendly messages for missing/invalid data or images.             |
-| **P4**   | Accessibility Support    | Support screen-readers and keyboard-only navigation.                        |
+| Priority | Feature                  | Description                                                             |
+| :------: | ------------------------ | ----------------------------------------------------------------------- |
+|  **P1**  | Load and Parse Data      | Extract Judoka entries from `judoka.json`, including required fields.   |
+|  **P1**  | Sort and Display Entries | Sort by `lastModified`, fallback to name; limit to 20 results.          |
+|  **P2**  | Navigation Integration   | Add “Judoka Updates” access in the main menu with proper back behavior. |
+|  **P2**  | Portrait Display         | Show portrait or fallback image with alt text and size constraints.     |
+|  **P2**  | UI Consistency           | Maintain global game layout: header, footer, fonts, and spacing.        |
+|  **P3**  | Error/Fallback Handling  | Show user-friendly messages for missing/invalid data or images.         |
+|  **P4**  | Accessibility Support    | Support screen-readers and keyboard-only navigation.                    |
 
 ---
 
@@ -74,11 +74,13 @@ Players and developers currently lack a simple, in-game method to see which Judo
 ## Dependencies and Open Questions
 
 ### Dependencies:
+
 - Access to `judoka.json` with up-to-date `lastModified` fields.
 - Default placeholder portrait asset.
 - Game header/footer components.
 
 ### Open Questions:
+
 - Should the log include a link to full card details?
 - Should the log show more than 20 entries if requested?
 - Should we allow filtering or searching within the log?
