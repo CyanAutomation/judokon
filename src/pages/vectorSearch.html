@@ -34,9 +34,11 @@
 
       <main class="container vector-search-container" role="main">
         <h1>Vector Search</h1>
+        <p id="embedding-stats" class="small-text"></p>
         <form id="vector-search-form" role="search" class="search-form">
           <label for="vector-search-input" class="visually-hidden">Search</label>
           <input id="vector-search-input" type="search" placeholder="Enter query" required />
+          <select id="tag-filter" aria-label="Tag filter"></select>
           <button id="vector-search-btn" type="submit">Search</button>
         </form>
         <p class="small-text" id="context-note">
