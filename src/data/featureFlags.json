@@ -26,5 +26,12 @@
     "label": "Card Inspector",
     "description": "tbc",
     "defaultState": false
+  },
+  {
+    "id": 5,
+    "name": "showCardOfTheDay",
+    "label": "Card Of The Day",
+    "description": "A valid judoka card appears on the landing screen and the featured card changes once every 24 hours",
+    "defaultState": false
   }
 ]
