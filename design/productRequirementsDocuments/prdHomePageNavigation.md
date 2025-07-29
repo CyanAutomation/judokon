@@ -37,6 +37,12 @@ The list of available modes is defined in `gameModes.json`. `navigationItems.jso
 - Navigate easily regardless of device or ability.
 
 ---
+## Non-Goals
+
+- The home page will not expose account or profile management.
+- Advanced battle or team composition settings are out of scope.
+
+---
 
 ## User Stories
 
@@ -158,12 +164,6 @@ Each tile contains:
 
 ---
 
-## Non-Goals
-
-- The home page will not expose account or profile management.
-- Advanced battle or team composition settings are out of scope.
-
----
 
 ## Non-Functional Requirements
 
