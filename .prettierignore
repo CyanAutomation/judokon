@@ -9,4 +9,5 @@ src/vendor/ajv6.min.js
 README.md
 src/data/client_embeddings.json
 src/data/client_embeddings.meta.json
+src/data/statNames.json
 design/

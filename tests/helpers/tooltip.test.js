@@ -9,14 +9,14 @@ describe("initTooltips", () => {
   it("shows tooltip on hover and parses markdown", async () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue({
-        test: "**Bold**\n_italic_"
+        stat: { test: "**Bold**\n_italic_" }
       })
     }));
 
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
 
     const el = document.createElement("button");
-    el.dataset.tooltipId = "test";
+    el.dataset.tooltipId = "stat.test";
     document.body.appendChild(el);
 
     await initTooltips();
@@ -54,13 +54,13 @@ describe("initTooltips", () => {
 
   it("positions tooltip within viewport for zero-size targets", async () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ fix: "text" })
+      fetchJson: vi.fn().mockResolvedValue({ stat: { fix: "text" } })
     }));
 
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
 
     const el = document.createElement("div");
-    el.dataset.tooltipId = "fix";
+    el.dataset.tooltipId = "stat.fix";
     document.body.appendChild(el);
 
     await initTooltips();
@@ -78,10 +78,12 @@ describe("initTooltips", () => {
   it("loads tooltip text for new UI elements", async () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue({
-        "ui.languageToggle": "toggle",
-        "ui.nextRound": "next",
-        "ui.quitMatch": "quit",
-        "ui.drawCard": "draw"
+        ui: {
+          languageToggle: "toggle",
+          nextRound: "next",
+          quitMatch: "quit",
+          drawCard: "draw"
+        }
       })
     }));
 
