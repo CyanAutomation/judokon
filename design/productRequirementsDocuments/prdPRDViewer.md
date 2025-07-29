@@ -1,6 +1,6 @@
 # PRD: PRD Viewer
 
-## Overview
+## TL;DR
 
 The PRD Viewer is a browser-based tool that enables JU-DO-KON! contributors and stakeholders to read, browse, and validate Product Requirements Documents (PRDs) directly within the web application. It provides a user-friendly interface for sequentially viewing all PRDs, supporting keyboard and touch navigation, and rendering markdown content as styled HTML.
 

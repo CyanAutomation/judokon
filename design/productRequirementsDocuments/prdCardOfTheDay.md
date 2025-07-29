@@ -1,6 +1,6 @@
 # PRD: Card of the Day Display
 
-## Overview (TL;DR)
+## TL;DR
 
 The **Card of the Day** feature adds a rotating featured judoka card to the JU-DO-KON! landing screen. It enhances player engagement by spotlighting a different judoka each day, seasonally, or via manual override. This content block supports dynamic storytelling, gameplay tips, and promotional tie-ins with new or popular cards.
 

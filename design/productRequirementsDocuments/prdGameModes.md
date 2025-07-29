@@ -2,7 +2,7 @@
 
 ---
 
-## Overview
+## TL;DR
 
 **Ju-Do-Kon!** offers a range of game modes tailored for different play styles—competitive battles, team-based challenges, creative customization, exploratory discovery, and quiet reflection. These modes diversify the experience, increase replayability, and promote deeper engagement.
 

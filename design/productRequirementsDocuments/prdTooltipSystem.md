@@ -1,6 +1,6 @@
 # PRD: Tooltip System (JU-DO-KON!)
 
-## Overview (TL;DR)
+## TL;DR
 
 The Tooltip System introduces dynamic, in-context guidance across JU-DO-KON! using a flexible JSON-driven approach. By attaching a `data-tooltip-id` attribute to UI elements and rendering markdown-formatted text from a central `tooltips.json` file, the system allows players to receive concise, context-aware explanations during gameplay. This improves accessibility, player comprehension, and overall user experience, especially for younger or first-time users.
 

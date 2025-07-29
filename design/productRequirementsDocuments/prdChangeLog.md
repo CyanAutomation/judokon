@@ -1,6 +1,6 @@
 # PRD: Recent Judoka Updates Log
 
-## Overview (TL;DR)
+## TL;DR
 
 The Recent Judoka Updates Log provides players and developers with a fast, accessible way to view the 20 most recently updated Judoka cards. This feature increases transparency around balance changes and supports both QA and player engagement by surfacing recent modifications directly in the UI. The log is accessible from the Settings menu and displays a responsive, simplified table sourced from `judoka.json`.
 

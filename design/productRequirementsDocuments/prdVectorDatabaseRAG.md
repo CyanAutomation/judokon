@@ -1,6 +1,6 @@
 # PRD: Vector Database for Retrieval-Augmented Generation (RAG)
 
-## Overview (TL;DR)
+## TL;DR
 
 This PRD defines the implementation of a lightweight vector database for semantic search across JU-DO-KON! assets such as PRDs, tooltips, and game rules. This system supports AI agent workflows (e.g. QA, card generation, bug reproduction, test case creation) by enabling agents to search project data semantically.
 
