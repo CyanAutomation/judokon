@@ -33,5 +33,12 @@
     "label": "Card Of The Day",
     "description": "A valid judoka card appears on the landing screen and the featured card changes once every 24 hours",
     "defaultState": false
+  },
+  {
+    "id": 6,
+    "name": "randomStatMode",
+    "label": "Random Stat Mode",
+    "description": "Automatically selects a random stat each round instead of prompting the player",
+    "defaultState": false
   }
 ]
