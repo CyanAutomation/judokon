@@ -1,4 +1,4 @@
-import { fetchJson, validateWithSchema } from "./dataUtils.js";
+import { fetchJson, validateWithSchema, importJsonModule } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 
 /**
@@ -17,10 +17,7 @@ async function getSchema() {
         }
         return r.json();
       })
-      .catch(
-        async () =>
-          (await import("../schemas/gameModes.schema.json", { assert: { type: "json" } })).default
-      );
+      .catch(async () => importJsonModule("../schemas/gameModes.schema.json"));
   }
   return schemaPromise;
 }
@@ -34,11 +31,7 @@ async function getNavigationSchema() {
         }
         return r.json();
       })
-      .catch(
-        async () =>
-          (await import("../schemas/navigationItems.schema.json", { assert: { type: "json" } }))
-            .default
-      );
+      .catch(async () => importJsonModule("../schemas/navigationItems.schema.json"));
   }
   return navSchemaPromise;
 }
@@ -81,7 +74,7 @@ export async function loadGameModes() {
     data = await fetchJson(`${DATA_DIR}gameModes.json`, await getSchema());
   } catch (error) {
     console.warn("Failed to fetch game modes, falling back to import", error);
-    data = (await import("../data/gameModes.json", { assert: { type: "json" } })).default;
+    data = await importJsonModule("../data/gameModes.json");
     await validateWithSchema(data, await getSchema());
   }
   localStorage.setItem(GAMEMODES_KEY, JSON.stringify(data));
@@ -114,7 +107,7 @@ async function loadRawNavigationItems() {
     data = await fetchJson(`${DATA_DIR}navigationItems.json`, await getNavigationSchema());
   } catch (error) {
     console.warn("Failed to fetch navigation items, falling back to import", error);
-    data = (await import("../data/navigationItems.json", { assert: { type: "json" } })).default;
+    data = await importJsonModule("../data/navigationItems.json");
     await validateWithSchema(data, await getNavigationSchema());
   }
   localStorage.setItem(NAV_ITEMS_KEY, JSON.stringify(data));

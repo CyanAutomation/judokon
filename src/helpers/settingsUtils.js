@@ -1,4 +1,4 @@
-import { validateWithSchema } from "./dataUtils.js";
+import { validateWithSchema, importJsonModule } from "./dataUtils.js";
 
 /**
  * The settings JSON schema is loaded only when required to validate data.
@@ -17,10 +17,7 @@ async function getSettingsSchema() {
         }
         return response.json();
       })
-      .catch(
-        async () =>
-          (await import("../schemas/settings.schema.json", { assert: { type: "json" } })).default
-      );
+      .catch(async () => importJsonModule("../schemas/settings.schema.json"));
   }
   return settingsSchemaPromise;
 }
@@ -46,9 +43,7 @@ export async function loadDefaultSettings() {
         }
         return response.json();
       })
-      .catch(
-        async () => (await import("../data/settings.json", { assert: { type: "json" } })).default
-      );
+      .catch(async () => importJsonModule("../data/settings.json"));
   }
   const data = await defaultSettingsPromise;
   if (Object.keys(DEFAULT_SETTINGS).length === 0) {
