@@ -5,10 +5,38 @@
   "displayMode": "light",
   "gameModes": {},
   "featureFlags": {
+<<<<<<< HEAD
+    "battleDebugPanel": {
+      "enabled": false,
+      "label": "Battle Debug Panel",
+      "description": "Adds a collapsible debug panel using the `.debug-panel` class for verbose state outputs"
+    },
+    "fullNavigationMap": {
+      "enabled": false,
+      "label": "Full Navigation Map",
+      "description": "An immersive, thematic expanded map view for Ju-Do-Kon!’s navigation, transforming mode selection into a Judo Training Village experience"
+    },
+    "enableTestMode": {
+      "enabled": false,
+      "label": "Test Mode",
+      "description": "Card draws and stat choices become deterministic for repeat tests and debugging"
+    },
+    "enableCardInspector": {
+      "enabled": false,
+      "label": "Card Inspector",
+      "description": "Adds a collapsible panel displaying raw card JSON on each card"
+    },
+    "showCardOfTheDay": {
+      "enabled": false,
+      "label": "Card Of The Day",
+      "description": "Displays a rotating featured judoka card on the landing screen"
+    }
+=======
     "battleDebugPanel": false,
     "randomStatMode": false,
     "fullNavigationMap": false,
     "enableTestMode": false,
     "enableCardInspector": false
+>>>>>>> main
   }
 }

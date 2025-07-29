@@ -48,7 +48,15 @@ describe("classicBattlePage test mode flag", () => {
   it("applies data attribute and banner visibility when enabled", async () => {
     const startRound = vi.fn();
     const waitForComputerCard = vi.fn();
-    const loadSettings = vi.fn().mockResolvedValue({ featureFlags: { enableTestMode: true } });
+    const loadSettings = vi.fn().mockResolvedValue({
+      featureFlags: {
+        enableTestMode: {
+          enabled: true,
+          label: "Test Mode",
+          description: "Deterministic card draws for testing"
+        }
+      }
+    });
     const initTooltips = vi.fn().mockResolvedValue();
     const setTestMode = vi.fn();
 

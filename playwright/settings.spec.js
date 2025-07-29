@@ -48,8 +48,8 @@ test.describe("Settings page", () => {
       .map((item) => gameModes.find((m) => m.id === item.gameModeId)?.name)
       .filter(Boolean);
 
-    const flagLabels = Object.keys(DEFAULT_SETTINGS.featureFlags).map((f) =>
-      f.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase())
+    const flagLabels = Object.keys(DEFAULT_SETTINGS.featureFlags).map(
+      (f) => DEFAULT_SETTINGS.featureFlags[f].label
     );
 
     const expectedLabels = [

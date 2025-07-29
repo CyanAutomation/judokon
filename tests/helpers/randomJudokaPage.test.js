@@ -12,11 +12,31 @@ const baseSettings = {
   displayMode: "light",
   gameModes: {},
   featureFlags: {
-    randomStatMode: false,
-    battleDebugPanel: false,
-    fullNavigationMap: true,
-    enableTestMode: false,
-    enableCardInspector: false
+    randomStatMode: {
+      enabled: false,
+      label: "Random Stat Mode",
+      description: "Auto-selects a random stat when timer expires"
+    },
+    battleDebugPanel: {
+      enabled: false,
+      label: "Battle Debug Panel",
+      description: "Adds a collapsible debug panel"
+    },
+    fullNavigationMap: {
+      enabled: true,
+      label: "Full Navigation Map",
+      description: "Expanded map navigation"
+    },
+    enableTestMode: {
+      enabled: false,
+      label: "Test Mode",
+      description: "Deterministic card draws for testing"
+    },
+    enableCardInspector: {
+      enabled: false,
+      label: "Card Inspector",
+      description: "Shows raw card JSON in a panel"
+    }
   }
 };
 
@@ -221,7 +241,13 @@ describe("randomJudokaPage module", () => {
         key: "settings",
         newValue: JSON.stringify({
           ...baseSettings,
-          featureFlags: { ...baseSettings.featureFlags, enableCardInspector: true }
+          featureFlags: {
+            ...baseSettings.featureFlags,
+            enableCardInspector: {
+              ...baseSettings.featureFlags.enableCardInspector,
+              enabled: true
+            }
+          }
         })
       })
     );

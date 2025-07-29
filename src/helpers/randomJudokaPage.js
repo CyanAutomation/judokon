@@ -41,7 +41,7 @@ export async function setupRandomJudokaPage() {
   }
 
   applyMotionPreference(settings.motionEffects);
-  toggleInspectorPanels(Boolean(settings.featureFlags?.enableCardInspector));
+  toggleInspectorPanels(Boolean(settings.featureFlags?.enableCardInspector?.enabled));
   const prefersReducedMotion =
     !settings.motionEffects || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -97,7 +97,9 @@ export async function setupRandomJudokaPage() {
       cardContainer,
       prefersReducedMotion,
       undefined,
-      { enableInspector: settings.featureFlags.enableCardInspector }
+      {
+        enableInspector: settings.featureFlags.enableCardInspector.enabled
+      }
     );
     // Wait for animation to finish (max 500ms), then re-enable button
     setTimeout(
@@ -150,7 +152,7 @@ export async function setupRandomJudokaPage() {
     if (e.key === "settings" && e.newValue) {
       try {
         const s = JSON.parse(e.newValue);
-        toggleInspectorPanels(Boolean(s.featureFlags?.enableCardInspector));
+        toggleInspectorPanels(Boolean(s.featureFlags?.enableCardInspector?.enabled));
       } catch {}
     }
   });
