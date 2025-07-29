@@ -109,3 +109,63 @@ describe("vector search page integration", () => {
     expect(options).toEqual(["all", "alpha", "beta"]);
   });
 });
+
+describe("highlightTerms", () => {
+  it("wraps query words in <mark>", async () => {
+    const { highlightTerms } = await import("../../src/helpers/vectorSearchPage.js");
+    const result = highlightTerms("The Quick Brown Fox", ["quick", "fox"]);
+    expect(result).toBe("The <mark>Quick</mark> Brown <mark>Fox</mark>");
+  });
+
+  it("returns escaped text when no terms provided", async () => {
+    const { highlightTerms } = await import("../../src/helpers/vectorSearchPage.js");
+    expect(highlightTerms("<script>", [])).toBe("&lt;script&gt;");
+  });
+});
+
+describe("snippet highlighting", () => {
+  it("highlights query terms in rendered snippets", async () => {
+    const match = {
+      id: "1",
+      text: "lorem ipsum dolor",
+      score: 1,
+      source: "doc",
+      tags: []
+    };
+    const findMatches = vi.fn().mockResolvedValue([match]);
+    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
+      findMatches,
+      fetchContextById: vi.fn(),
+      loadEmbeddings: vi.fn().mockResolvedValue([match])
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ count: 1 })
+    }));
+    vi.doMock("../../src/helpers/constants.js", () => ({
+      DATA_DIR: "./"
+    }));
+
+    const { handleSearch, init, __setExtractor } = await import(
+      "../../src/helpers/vectorSearchPage.js"
+    );
+
+    __setExtractor(async () => ({ data: [0, 0, 0] }));
+
+    document.body.innerHTML = `
+      <div id="search-spinner"></div>
+      <form id="vector-search-form">
+        <input id="vector-search-input" />
+        <select id="tag-filter"><option value="all">all</option></select>
+      </form>
+      <table id="vector-results-table"><tbody></tbody></table>
+      <p id="search-results-message"></p>
+    `;
+
+    await init();
+
+    document.getElementById("vector-search-input").value = "ipsum";
+    await handleSearch(new Event("submit"));
+    const cell = document.querySelector(".match-text span");
+    expect(cell.innerHTML).toContain("<mark>ipsum</mark>");
+  });
+});
