@@ -145,3 +145,22 @@ export async function validateWithSchema(data, schema) {
     throw new Error(`Schema validation failed: ${message}`);
   }
 }
+
+/**
+ * Dynamically import a JSON module with cross-version support.
+ *
+ * @pseudocode
+ * 1. Try `import()` using the modern `with` attribute.
+ * 2. If that fails, retry using the older `assert` syntax.
+ * 3. Return the imported module's default export.
+ *
+ * @param {string} spec - Module path to import.
+ * @returns {Promise<any>} Parsed JSON data.
+ */
+export async function importJsonModule(spec) {
+  try {
+    return (await import(spec, { with: { type: "json" } })).default;
+  } catch (err) {
+    return (await import(spec, { assert: { type: "json" } })).default;
+  }
+}
