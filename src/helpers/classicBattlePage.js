@@ -77,19 +77,19 @@ export async function setupClassicBattlePage() {
   if (battleArea) {
     battleArea.dataset.mode = "classic";
     battleArea.dataset.randomStat = String(Boolean(settings.featureFlags.randomStatMode));
-    battleArea.dataset.testMode = String(Boolean(settings.featureFlags.enableTestMode));
+    battleArea.dataset.testMode = String(Boolean(settings.featureFlags.enableTestMode?.enabled));
   }
 
-  setTestMode(Boolean(settings.featureFlags.enableTestMode));
+  setTestMode(Boolean(settings.featureFlags.enableTestMode?.enabled));
 
   const banner = document.getElementById("test-mode-banner");
   if (banner) {
-    banner.classList.toggle("hidden", !settings.featureFlags.enableTestMode);
+    banner.classList.toggle("hidden", !settings.featureFlags.enableTestMode?.enabled);
   }
 
   const debugPanel = document.getElementById("debug-panel");
   if (debugPanel) {
-    if (settings.featureFlags.battleDebugPanel) {
+    if (settings.featureFlags.battleDebugPanel?.enabled) {
       debugPanel.classList.remove("hidden");
     } else {
       debugPanel.remove();

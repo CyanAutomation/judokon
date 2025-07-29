@@ -28,7 +28,25 @@
     "featureFlags": {
       "type": "object",
       "description": "Experimental feature toggles.",
-      "additionalProperties": { "type": "boolean" }
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the flag is active."
+          },
+          "label": {
+            "type": "string",
+            "description": "Human readable label for the flag."
+          },
+          "description": {
+            "type": "string",
+            "description": "Brief explanation of the feature."
+          }
+        },
+        "required": ["enabled", "label", "description"],
+        "additionalProperties": false
+      }
     }
   },
   "required": ["sound", "motionEffects", "typewriterEffect", "displayMode"],

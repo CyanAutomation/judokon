@@ -195,7 +195,11 @@ export function resetSettings() {
  * @property {boolean} typewriterEffect
  * @property {"light"|"dark"|"gray"} displayMode
  * @property {Record<string, boolean>} [gameModes]
- * @property {Record<string, boolean>} [featureFlags]
+ * @property {Record<string, {
+ *   enabled: boolean,
+ *   label: string,
+ *   description: string
+ * }>} [featureFlags]
  */
 
 await loadDefaultSettings();

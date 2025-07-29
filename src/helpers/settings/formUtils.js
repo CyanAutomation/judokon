@@ -143,11 +143,11 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
  * Render feature flag toggle switches.
  *
  * @pseudocode
- * 1. For each flag, generate a labelled toggle switch element.
+ * 1. For each flag, generate a labelled toggle switch element and description.
  * 2. Persist updates via `handleUpdate` when toggled.
  *
  * @param {HTMLElement} container - Container for the switches.
- * @param {Record<string, boolean>} flags - Feature flag defaults.
+ * @param {Record<string, { enabled: boolean, label: string, description: string }>} flags - Feature flag metadata.
  * @param {Function} getCurrentSettings - Returns current settings.
  * @param {Function} handleUpdate - Persist function.
  */
@@ -155,20 +155,24 @@ export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, 
   if (!container || !flags) return;
   Object.keys(flags).forEach((flag) => {
     const kebab = flag.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
-    const label = flag.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
-    const wrapper = createToggleSwitch(label, {
+    const info = flags[flag];
+    const wrapper = createToggleSwitch(info.label, {
       id: `feature-${kebab}`,
       name: flag,
-      checked: Boolean(getCurrentSettings().featureFlags[flag]),
-      ariaLabel: label
+      checked: Boolean(getCurrentSettings().featureFlags[flag]?.enabled),
+      ariaLabel: info.label
     });
+    const desc = document.createElement("p");
+    desc.className = "flag-description";
+    desc.textContent = info.description;
+    wrapper.appendChild(desc);
     container.appendChild(wrapper);
     const input = wrapper.querySelector("input");
     input.addEventListener("change", () => {
       const prev = !input.checked;
       const updated = {
         ...getCurrentSettings().featureFlags,
-        [flag]: input.checked
+        [flag]: { ...info, enabled: input.checked }
       };
       handleUpdate("featureFlags", updated, () => {
         input.checked = prev;

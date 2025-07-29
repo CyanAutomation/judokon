@@ -55,10 +55,26 @@ describe("settings utils", () => {
       displayMode: "dark",
       gameModes: {},
       featureFlags: {
-        battleDebugPanel: false,
-        fullNavigationMap: false,
-        enableTestMode: false,
-        enableCardInspector: false
+        battleDebugPanel: {
+          enabled: false,
+          label: "Battle Debug Panel",
+          description: "Adds a collapsible debug panel"
+        },
+        fullNavigationMap: {
+          enabled: false,
+          label: "Full Navigation Map",
+          description: "Expanded map navigation"
+        },
+        enableTestMode: {
+          enabled: false,
+          label: "Test Mode",
+          description: "Deterministic card draws for testing"
+        },
+        enableCardInspector: {
+          enabled: false,
+          label: "Card Inspector",
+          description: "Shows raw card JSON in a panel"
+        }
       }
     };
     const promise = saveSettings(data);
@@ -126,10 +142,26 @@ describe("settings utils", () => {
         displayMode: "light",
         gameModes: {},
         featureFlags: {
-          battleDebugPanel: false,
-          fullNavigationMap: false,
-          enableTestMode: false,
-          enableCardInspector: false
+          battleDebugPanel: {
+            enabled: false,
+            label: "Battle Debug Panel",
+            description: "Adds a collapsible debug panel"
+          },
+          fullNavigationMap: {
+            enabled: false,
+            label: "Full Navigation Map",
+            description: "Expanded map navigation"
+          },
+          enableTestMode: {
+            enabled: false,
+            label: "Test Mode",
+            description: "Deterministic card draws for testing"
+          },
+          enableCardInspector: {
+            enabled: false,
+            label: "Card Inspector",
+            description: "Shows raw card JSON in a panel"
+          }
         }
       })
     ).rejects.toThrow("fail");
@@ -164,10 +196,26 @@ describe("settings utils", () => {
       displayMode: "light",
       gameModes: {},
       featureFlags: {
-        battleDebugPanel: false,
-        fullNavigationMap: false,
-        enableTestMode: false,
-        enableCardInspector: false
+        battleDebugPanel: {
+          enabled: false,
+          label: "Battle Debug Panel",
+          description: "Adds a collapsible debug panel"
+        },
+        fullNavigationMap: {
+          enabled: false,
+          label: "Full Navigation Map",
+          description: "Expanded map navigation"
+        },
+        enableTestMode: {
+          enabled: false,
+          label: "Test Mode",
+          description: "Deterministic card draws for testing"
+        },
+        enableCardInspector: {
+          enabled: false,
+          label: "Card Inspector",
+          description: "Shows raw card JSON in a panel"
+        }
       }
     };
     const data2 = {
@@ -177,10 +225,26 @@ describe("settings utils", () => {
       displayMode: "dark",
       gameModes: {},
       featureFlags: {
-        battleDebugPanel: false,
-        fullNavigationMap: false,
-        enableTestMode: false,
-        enableCardInspector: false
+        battleDebugPanel: {
+          enabled: false,
+          label: "Battle Debug Panel",
+          description: "Adds a collapsible debug panel"
+        },
+        fullNavigationMap: {
+          enabled: false,
+          label: "Full Navigation Map",
+          description: "Expanded map navigation"
+        },
+        enableTestMode: {
+          enabled: false,
+          label: "Test Mode",
+          description: "Deterministic card draws for testing"
+        },
+        enableCardInspector: {
+          enabled: false,
+          label: "Card Inspector",
+          description: "Shows raw card JSON in a panel"
+        }
       }
     };
     saveSettings(data1);

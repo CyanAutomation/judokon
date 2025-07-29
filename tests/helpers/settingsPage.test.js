@@ -8,11 +8,31 @@ const baseSettings = {
   displayMode: "light",
   gameModes: {},
   featureFlags: {
-    randomStatMode: true,
-    battleDebugPanel: false,
-    fullNavigationMap: true,
-    enableTestMode: false,
-    enableCardInspector: false
+    randomStatMode: {
+      enabled: true,
+      label: "Random Stat Mode",
+      description: "Auto-selects a random stat when timer expires"
+    },
+    battleDebugPanel: {
+      enabled: false,
+      label: "Battle Debug Panel",
+      description: "Adds a collapsible debug panel"
+    },
+    fullNavigationMap: {
+      enabled: true,
+      label: "Full Navigation Map",
+      description: "Expanded map navigation"
+    },
+    enableTestMode: {
+      enabled: false,
+      label: "Test Mode",
+      description: "Deterministic card draws for testing"
+    },
+    enableCardInspector: {
+      enabled: false,
+      label: "Card Inspector",
+      description: "Shows raw card JSON in a panel"
+    }
   }
 };
 
@@ -181,7 +201,13 @@ describe("settingsPage module", () => {
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updatedSettings = {
       ...baseSettings,
-      featureFlags: { ...baseSettings.featureFlags, battleDebugPanel: true }
+      featureFlags: {
+        ...baseSettings.featureFlags,
+        battleDebugPanel: {
+          ...baseSettings.featureFlags.battleDebugPanel,
+          enabled: true
+        }
+      }
     };
     const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
     const loadNavigationItems = vi.fn().mockResolvedValue([]);
@@ -205,11 +231,14 @@ describe("settingsPage module", () => {
     debugInput.dispatchEvent(new Event("change"));
 
     expect(updateSetting).toHaveBeenCalledWith("featureFlags", {
-      randomStatMode: true,
-      battleDebugPanel: true,
-      fullNavigationMap: true,
-      enableTestMode: false,
-      enableCardInspector: false
+      randomStatMode: baseSettings.featureFlags.randomStatMode,
+      battleDebugPanel: {
+        ...baseSettings.featureFlags.battleDebugPanel,
+        enabled: true
+      },
+      fullNavigationMap: baseSettings.featureFlags.fullNavigationMap,
+      enableTestMode: baseSettings.featureFlags.enableTestMode,
+      enableCardInspector: baseSettings.featureFlags.enableCardInspector
     });
   });
 
