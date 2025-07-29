@@ -6,6 +6,7 @@
   "gameModes": {},
   "featureFlags": {
     "battleDebugPanel": false,
+    "randomStatMode": false,
     "fullNavigationMap": false,
     "enableTestMode": false,
     "enableCardInspector": false
