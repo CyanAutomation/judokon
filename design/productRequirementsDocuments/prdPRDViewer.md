@@ -88,7 +88,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 ## Dependencies and Open Questions
 
-- Depends on the `marked` library for markdown parsing.
+- Depends on the `markdownToHtml` helper for markdown parsing (uses the `marked` library).
 - Requires an up-to-date file list from the `design/productRequirementsDocuments` directory.
 - **Open:** Should the viewer support deep-linking to specific PRDs via URL hash or query parameters? This affects navigation and state restoration.
 
