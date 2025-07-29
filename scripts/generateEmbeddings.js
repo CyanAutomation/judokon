@@ -109,7 +109,12 @@ async function getFiles() {
   const jsonFiles = (await glob("src/data/*.json", { cwd: rootDir })).filter(
     (f) =>
       path.extname(f) === ".json" &&
-      !["client_embeddings.json", "aesopsFables.json", "aesopsMeta.json"].includes(path.basename(f))
+      ![
+        "client_embeddings.json",
+        "client_embeddings.meta.json",
+        "aesopsFables.json",
+        "aesopsMeta.json"
+      ].includes(path.basename(f))
   );
   return [...prdFiles, ...guidelineFiles, ...workflowFiles, ...jsonFiles];
 }
