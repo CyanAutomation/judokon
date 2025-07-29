@@ -133,7 +133,9 @@ async function getFiles() {
         "client_embeddings.json",
         "client_embeddings.meta.json",
         "aesopsFables.json",
-        "aesopsMeta.json"
+        "aesopsMeta.json",
+        "countryCodeMapping.json",
+        "japaneseConverter.json"
       ].includes(path.basename(f))
   );
   return [...prdFiles, ...guidelineFiles, ...workflowFiles, ...jsonFiles];
