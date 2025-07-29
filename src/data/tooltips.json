@@ -8,19 +8,19 @@
   },
 
   "ui": {
-    "countryFilter": "Toggle the country filter panel to pick flags and narrow the roster.",
-    "clearFilter": "Clear the current country filter and show all judoka.",
+    "countryFilter": "**Country filter**\nToggle the panel to pick flags and narrow the roster.",
+    "clearFilter": "**Clear filter**\nShow all judoka.",
 
-    "selectStat": "Choose a stat below.\nThe higher value wins the round!",
+    "selectStat": "**Select a stat**\nThe higher value wins the round!",
     "cardOfTheDay": "**Card of the Day** shows a featured judoka.\nCheck back tomorrow for a new pick!",
     "winMessage": "**Victory!**\nYou chose the stronger stat.",
     "lossMessage": "**Defeat!**\nYour opponent had the upper hand.",
     "drawMessage": "_It’s a draw._\nBoth stats were equal!",
-    "signatureBar": "This bar shows the judoka’s signature move – their special technique.",
-    "languageToggle": "Switch quote language between English and pseudo-Japanese.",
-    "nextRound": "Begin the next round when you’re ready.",
-    "quitMatch": "End the match and return to the menu.",
-    "drawCard": "Draw a new random judoka card."
+    "signatureBar": "**Signature move**\nThis bar shows the judoka’s special technique.",
+    "languageToggle": "**Language toggle**\nSwitch quote language between English and pseudo-Japanese.",
+    "nextRound": "**Next round**\nBegin when you’re ready.",
+    "quitMatch": "**Quit match**\nReturn to the menu.",
+    "drawCard": "**Draw card**\nGet a new random judoka card."
   },
 
   "mode": {
@@ -32,12 +32,12 @@
   },
 
   "nav": {
-    "classicBattle": "Begin a head-to-head match.",
-    "randomJudoka": "Show a random judoka card.",
-    "browseJudoka": "Browse every judoka card.",
-    "meditation": "Compare cards at your own pace.",
-    "settings": "Adjust game options.",
-    "home": "Return to the main screen."
+    "classicBattle": "**Classic Battle**\nBegin a head-to-head match.",
+    "randomJudoka": "**Random Judoka**\nShow a random judoka card.",
+    "browseJudoka": "**Browse Judoka**\nBrowse every judoka card.",
+    "meditation": "**Meditation**\nCompare cards at your own pace.",
+    "settings": "**Settings**\nAdjust game options.",
+    "home": "**Home**\nReturn to the main screen."
   },
   "card": {
     "flag": "**Country flag**\nRepresents the judoka’s nation.",
