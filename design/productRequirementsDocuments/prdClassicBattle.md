@@ -117,6 +117,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - If the selected stats are equal, a tie message displays and the round ends.
 - Summary screen shows match result (win/loss/tie), player stats, and option to replay.
 - Player can quit mid-match; confirmation prompt appears; if confirmed, match ends with player loss recorded.
+- After confirming the quit action, the player is returned to the main menu (index.html).
 - If AI difficulty affects stat selection, AI uses correct logic per difficulty setting.
 - Animation flow: transitions between card reveal, stat selection, and result screens complete smoothly without stalling (**each ≤400 ms at ≥60 fps**).
 - Stat buttons reset between rounds so no previous selection remains highlighted. The CSS rule `#stat-buttons button { -webkit-tap-highlight-color: transparent; }` combined with a reflow ensures Safari clears the red touch overlay.

@@ -73,6 +73,7 @@ function createQuitConfirmation(onConfirm) {
   quit.addEventListener("click", () => {
     onConfirm();
     modal.close();
+    window.location.href = "../../index.html";
   });
   document.body.appendChild(modal.element);
   return modal;
@@ -284,7 +285,7 @@ export async function handleStatSelection(stat) {
  * 1. Display a confirmation dialog.
  * 2. When confirmed, stop the timer and mark the match as ended.
  * 3. Show a loss message in the result area.
- * 4. Return `true` when the player confirms quitting, otherwise `false`.
+ * 4. Redirect the player to the main menu.
  */
 export function quitMatch() {
   if (!quitModal) {
