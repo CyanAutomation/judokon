@@ -161,6 +161,7 @@ No user settings or toggles are included. This is appropriate since the feature 
 - Sentence embedding model (e.g. `all-MiniLM-L6-v2`, or simulated offline)
 - JSON corpus (e.g. `tooltips.json`, PRDs, `judoka.json`)
 - Cosine similarity JS implementation
+- `markdownToHtml` helper to display markdown chunks in the browser demo
 
 ### Open Questions:
 
