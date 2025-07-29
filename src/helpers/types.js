@@ -4,7 +4,7 @@
  * @property {string} firstname - First name of the judoka
  * @property {string} surname - Last name of the judoka
  * @property {string} country - Full country name (e.g., "Portugal")
- * @property {string} countryCode - 2-letter country code (e.g., "PT")
+ * @property {string} countryCode - 2-letter lowercase country code (e.g., "pt")
  * @property {string} weightClass - Weight class (e.g., "-52kg")
  * @property {Object} stats - Judoka's stats (all ratings are between 1 and 10)
  * @property {number} stats.power - Power rating (1-10)
@@ -12,7 +12,7 @@
  * @property {number} stats.technique - Technique rating (1-10)
  * @property {number} stats.kumikata - Grip fighting rating (1-10)
  * @property {number} stats.newaza - Groundwork rating (1-10)
- * @property {string} signatureMoveId - ID of the judoka's signature move
+ * @property {number} signatureMoveId - ID of the judoka's signature move
  * @property {string|Date} [lastUpdated] - Can be a string (from JSON) or a Date object
  * @property {string} profileUrl - URL to the judoka's profile (e.g., Wikipedia link)
  * @property {string} bio - Biography or description of the judoka
@@ -29,8 +29,8 @@
  *   firstname: "Teddy",
  *   surname: "Riner",
  *   country: "France",
- *   countryCode: "FR",
- *   weightClass: "+100kg",
+ *   countryCode: "fr",
+ *   weightClass: "+100",
  *   stats: {
  *     power: 10,
  *     speed: 8,
@@ -38,7 +38,7 @@
  *     kumikata: 9,
  *     newaza: 8
  *   },
- *   signatureMoveId: "uchi-mata",
+ *   signatureMoveId: 42,
  *   lastUpdated: "2023-05-01",
  *   profileUrl: "https://en.wikipedia.org/wiki/Teddy_Riner",
  *   bio: "Teddy Riner is a French judoka and one of the most decorated athletes in the sport.",
