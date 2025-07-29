@@ -29,5 +29,8 @@
     "meditation": "**Meditation Mode** lets you reflect and compare cards.\nNo battles, just peaceful analysis.",
     "randomJudoka": "**Random Judoka** picks a random card for quick inspiration.",
     "browseJudoka": "**Browse Judoka** opens the full roster in a carousel."
+  },
+  "card": {
+    "flag": "**Country flag**\nRepresents the judoka’s nation."
   }
 }

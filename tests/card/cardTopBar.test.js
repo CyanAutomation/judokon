@@ -30,7 +30,7 @@ describe("generateCardTopBar", () => {
           <span class="firstname">John</span>
           <span class="surname">Doe</span>
         </div>
-        <div class="card-flag">
+        <div class="card-flag" data-tooltip-id="card.flag">
           <img src="../assets/countryFlags/placeholder-flag.png" alt="Unknown flag" loading="lazy" onerror="this.src='../assets/countryFlags/placeholder-flag.png'">
         </div>
       </div>
@@ -153,6 +153,7 @@ describe("createFlagImage", () => {
       `<img src="https://flagcdn.com/w320/us.png" alt="United States flag"`
     );
     expect(flagImage.outerHTML).toContain('loading="lazy"');
+    expect(flagImage.dataset.tooltipId).toBe("card.flag");
   });
 
   it("escapes HTML in country name for alt attribute", () => {

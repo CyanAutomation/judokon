@@ -11,7 +11,7 @@ function get(obj, path) {
 
 describe("tooltips.json", () => {
   it("contains new ui tooltip entries", () => {
-    const keys = ["ui.languageToggle", "ui.nextRound", "ui.quitMatch", "ui.drawCard"];
+    const keys = ["ui.languageToggle", "ui.nextRound", "ui.quitMatch", "ui.drawCard", "card.flag"];
     for (const key of keys) {
       expect(get(tooltips, key)).toBeDefined();
     }
