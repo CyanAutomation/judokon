@@ -1,4 +1,4 @@
-# PRD: Tooltip Viewer (v1.1)
+# PRD: Tooltip Viewer
 
 ## TL;DR
 
