@@ -15,6 +15,8 @@ import {
   _resetForTest as engineReset
 } from "./battleEngine.js";
 import * as infoBar from "./setupBattleInfoBar.js";
+import { createModal } from "../components/Modal.js";
+import { createButton } from "../components/Button.js";
 
 import { getStatValue, resetStatButtons, showResult } from "./battle/index.js";
 
@@ -28,6 +30,7 @@ export function getStartRound() {
 let judokaData = null;
 let gokyoLookup = null;
 let computerJudoka = null;
+let quitModal = null;
 
 function updateDebugPanel() {
   const pre = document.getElementById("debug-output");
@@ -41,6 +44,38 @@ function updateDebugPanel() {
     state.seed = getCurrentSeed();
   }
   pre.textContent = JSON.stringify(state, null, 2);
+}
+
+function createQuitConfirmation(onConfirm) {
+  const title = document.createElement("h2");
+  title.id = "quit-modal-title";
+  title.textContent = "Quit the match?";
+
+  const desc = document.createElement("p");
+  desc.id = "quit-modal-desc";
+  desc.textContent = "Your progress will be lost.";
+
+  const actions = document.createElement("div");
+  actions.className = "modal-actions";
+
+  const cancel = createButton("Cancel", {
+    id: "cancel-quit-button",
+    className: "secondary-button"
+  });
+  const quit = createButton("Quit", { id: "confirm-quit-button" });
+  actions.append(cancel, quit);
+
+  const frag = document.createDocumentFragment();
+  frag.append(title, desc, actions);
+
+  const modal = createModal(frag, { labelledBy: title, describedBy: desc });
+  cancel.addEventListener("click", modal.close);
+  quit.addEventListener("click", () => {
+    onConfirm();
+    modal.close();
+  });
+  document.body.appendChild(modal.element);
+  return modal;
 }
 
 /**
@@ -252,12 +287,14 @@ export async function handleStatSelection(stat) {
  * 4. Return `true` when the player confirms quitting, otherwise `false`.
  */
 export function quitMatch() {
-  if (confirm("Quit the match?")) {
-    const result = engineQuitMatch();
-    showResult(result.message);
-    return true;
+  if (!quitModal) {
+    quitModal = createQuitConfirmation(() => {
+      const result = engineQuitMatch();
+      showResult(result.message);
+    });
   }
-  return false;
+  const trigger = document.getElementById("quit-match-button");
+  quitModal.open(trigger ?? undefined);
 }
 
 export function _resetForTest() {
@@ -281,6 +318,10 @@ export function _resetForTest() {
   const quitBtn = document.getElementById("quit-match-button");
   if (quitBtn) {
     quitBtn.replaceWith(quitBtn.cloneNode(true));
+  }
+  if (quitModal) {
+    quitModal.element.remove();
+    quitModal = null;
   }
   {
     const { playerScore, computerScore } = getScores();
