@@ -16,6 +16,12 @@ describe("createStatsPanel", () => {
     expect(items[0].textContent).toContain("5");
     expect(items[4].textContent).toContain("9");
     expect(panel).toHaveAttribute("aria-label", "Judoka Stats");
+    const labels = panel.querySelectorAll("li.stat > strong");
+    expect(labels[0]).toHaveAttribute("data-tooltip-id", "stat.power");
+    expect(labels[1]).toHaveAttribute("data-tooltip-id", "stat.speed");
+    expect(labels[2]).toHaveAttribute("data-tooltip-id", "stat.technique");
+    expect(labels[3]).toHaveAttribute("data-tooltip-id", "stat.kumikata");
+    expect(labels[4]).toHaveAttribute("data-tooltip-id", "stat.newaza");
   });
 
   it("applies custom type and class", () => {
