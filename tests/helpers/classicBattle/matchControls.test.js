@@ -26,6 +26,7 @@ vi.mock("../../../src/helpers/utils.js", () => ({
 describe("classicBattle button handlers", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
+    window.location.href = "http://localhost/src/pages/battleJudoka.html";
     const { playerCard, computerCard } = createBattleCardContainers();
     const header = createBattleHeader();
     const nextBtn = document.createElement("button");
@@ -65,5 +66,6 @@ describe("classicBattle button handlers", () => {
     expect(confirmBtn).not.toBeNull();
     confirmBtn.dispatchEvent(new Event("click"));
     expect(document.querySelector("#round-message").textContent).toMatch(/quit/i);
+    expect(window.location.href).toMatch(/index\.html$/);
   });
 });
