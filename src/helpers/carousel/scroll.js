@@ -10,7 +10,8 @@
  * 2. Create a button element:
  *    - Assign a class based on the `direction` (e.g., "scroll-button left" or "scroll-button right").
  *    - Set the inner HTML to display an inline SVG chevron pointing left or right.
- *    - Add an accessible label (`aria-label`) for screen readers (e.g., "Scroll Left").
+ *    - Include a visible `<span class="label">` with "Previous" or "Next" text.
+ *    - Add an accessible label (`aria-label`) matching the visible text.
  *
  * 3. Add a click event listener to the button:
  *    - Scroll the `container` by the specified `scrollAmount`.
@@ -40,15 +41,15 @@ export function createScrollButton(direction, container, scrollAmount) {
 
   button.className = `scroll-button ${direction}`;
 
-  button.innerHTML =
-    direction === "left"
-      ? '<svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true"><path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"/></svg>'
-      : '<svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true"><path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"/></svg>';
+  const labelText = direction === "left" ? "Previous" : "Next";
 
-  button.setAttribute(
-    "aria-label",
-    `Scroll ${direction.charAt(0).toUpperCase() + direction.slice(1)}`
-  );
+  button.innerHTML =
+    (direction === "left"
+      ? '<svg xmlns="http://www.w3.org/2000/svg" height="36px" width="36px" viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true"><path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"/></svg>'
+      : '<svg xmlns="http://www.w3.org/2000/svg" height="36px" width="36px" viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true"><path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"/></svg>') +
+    `<span class="label">${labelText}</span>`;
+
+  button.setAttribute("aria-label", labelText);
 
   button.addEventListener("click", () => {
     container.scrollBy({

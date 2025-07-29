@@ -24,16 +24,16 @@ describe("createScrollButton", () => {
     const button = createScrollButton("left", container, 100);
     expect(button.className).toBe("scroll-button left");
     expect(button.innerHTML).toContain("<svg");
-    expect(button.innerHTML).toContain("</svg>");
-    expect(button).toHaveAttribute("aria-label", "Scroll Left");
+    expect(button.innerHTML).toContain("Previous</span>");
+    expect(button).toHaveAttribute("aria-label", "Previous");
   });
 
   it("should create a scroll button with the correct class and inner HTML when direction is right", () => {
     const button = createScrollButton("right", container, 100);
     expect(button.className).toBe("scroll-button right");
     expect(button.innerHTML).toContain("<svg");
-    expect(button.innerHTML).toContain("</svg>");
-    expect(button).toHaveAttribute("aria-label", "Scroll Right");
+    expect(button.innerHTML).toContain("Next</span>");
+    expect(button).toHaveAttribute("aria-label", "Next");
   });
 
   it("should throw an error when the direction is invalid", () => {
