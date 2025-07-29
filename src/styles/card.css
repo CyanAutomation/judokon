@@ -83,8 +83,8 @@ svg {
   justify-content: center;
   align-items: center;
   padding: var(--space-lg) var(--space-lg) 0; /* 24px bottom gap handled by button */
-  min-height: 50vh; /* fallback */
-  min-height: 50dvh;
+  min-height: 60vh; /* fallback */
+  min-height: 60dvh;
 }
 
 .judoka-card {
