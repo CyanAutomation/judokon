@@ -1,27 +1,33 @@
 {
-  "stat.power": "**Power** represents a judoka's raw physical strength.\nStronger judoka can overpower opponents in throws and grip breaks.",
-  "stat.kumikata": "_Kumi-kata_ means **grip fighting**.\nThis stat reflects how well a judoka can control grips and deny their opponent’s attacks.",
-  "stat.speed": "**Speed** affects how quickly a judoka can attack or react.\nUseful for counterattacks and surprise techniques.",
-  "stat.technique": "**Technique** measures mastery of judo throws and transitions.\nHigh values indicate sharp, precise execution.",
-  "stat.newaza": "_Ne-waza_ means **ground grappling**.\nThis stat reflects skill in pins, holds, and other mat techniques.",
+  "stat": {
+    "power": "**Power** represents a judoka's raw physical strength.\nStronger judoka can overpower opponents in throws and grip breaks.",
+    "kumikata": "_Kumi-kata_ means **grip fighting**.\nThis stat reflects how well a judoka can control grips and deny their opponent’s attacks.",
+    "speed": "**Speed** affects how quickly a judoka can attack or react.\nUseful for counterattacks and surprise techniques.",
+    "technique": "**Technique** measures mastery of judo throws and transitions.\nHigh values indicate sharp, precise execution.",
+    "newaza": "_Ne-waza_ means **ground grappling**.\nThis stat reflects skill in pins, holds, and other mat techniques."
+  },
 
-  "ui.countryFilter": "Toggle the country filter panel to pick flags and narrow the roster.",
-  "ui.clearFilter": "Clear the current country filter and show all judoka.",
+  "ui": {
+    "countryFilter": "Toggle the country filter panel to pick flags and narrow the roster.",
+    "clearFilter": "Clear the current country filter and show all judoka.",
 
-  "ui.selectStat": "Choose a stat below.\nThe higher value wins the round!",
-  "ui.cardOfTheDay": "**Card of the Day** shows a featured judoka.\nCheck back tomorrow for a new pick!",
-  "ui.winMessage": "**Victory!**\nYou chose the stronger stat.",
-  "ui.lossMessage": "**Defeat!**\nYour opponent had the upper hand.",
-  "ui.drawMessage": "_It’s a draw._\nBoth stats were equal!",
-  "ui.signatureBar": "This bar shows the judoka’s signature move – their special technique.",
-  "ui.languageToggle": "Switch quote language between English and pseudo-Japanese.",
-  "ui.nextRound": "Begin the next round when you’re ready.",
-  "ui.quitMatch": "End the match and return to the menu.",
-  "ui.drawCard": "Draw a new random judoka card.",
+    "selectStat": "Choose a stat below.\nThe higher value wins the round!",
+    "cardOfTheDay": "**Card of the Day** shows a featured judoka.\nCheck back tomorrow for a new pick!",
+    "winMessage": "**Victory!**\nYou chose the stronger stat.",
+    "lossMessage": "**Defeat!**\nYour opponent had the upper hand.",
+    "drawMessage": "_It’s a draw._\nBoth stats were equal!",
+    "signatureBar": "This bar shows the judoka’s signature move – their special technique.",
+    "languageToggle": "Switch quote language between English and pseudo-Japanese.",
+    "nextRound": "Begin the next round when you’re ready.",
+    "quitMatch": "End the match and return to the menu.",
+    "drawCard": "Draw a new random judoka card."
+  },
 
-  "mode.classicBattle": "**Classic Battle Mode** pits you against an opponent.\nFirst to 10 round\u2011wins becomes the champion.",
-  "mode.teamBattle": "**Team Battle Mode** lets you fight with your whole deck of cards.\nForm a team and win more rounds than the opposing team to triumph!",
-  "mode.meditation": "**Meditation Mode** lets you reflect and compare cards.\nNo battles, just peaceful analysis.",
-  "mode.randomJudoka": "**Random Judoka** picks a random card for quick inspiration.",
-  "mode.browseJudoka": "**Browse Judoka** opens the full roster in a carousel."
+  "mode": {
+    "classicBattle": "**Classic Battle Mode** pits you against an opponent.\nFirst to 10 round\u2011wins becomes the champion.",
+    "teamBattle": "**Team Battle Mode** lets you fight with your whole deck of cards.\nForm a team and win more rounds than the opposing team to triumph!",
+    "meditation": "**Meditation Mode** lets you reflect and compare cards.\nNo battles, just peaceful analysis.",
+    "randomJudoka": "**Random Judoka** picks a random card for quick inspiration.",
+    "browseJudoka": "**Browse Judoka** opens the full roster in a carousel."
+  }
 }
