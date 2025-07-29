@@ -287,6 +287,10 @@ IDs use dot notation like `ui.selectStat`. Each page's initialization script
 must call `initTooltips()` once the DOM is ready so hover and focus
 listeners are attached.
 
+Tooltip descriptions support a subset of Markdown&mdash;`**bold**`,
+`_italic_`, and `\n` for new lines. Use these styles to craft short,
+child-friendly explanations that highlight key terms.
+
 ```html
 <button data-tooltip-id="draw-button">Draw</button>
 <script type="module">
@@ -309,6 +313,10 @@ new players. These elements set `data-tooltip-id="ui.signatureBar"` and
 Other controls—such as the Meditation language toggle and Classic Battle
 buttons—use tooltips by setting `data-tooltip-id="ui.languageToggle"`,
 `ui.nextRound`, etc.
+
+Per the PRDs, key elements across the UI—stat buttons, feature flags,
+weight indicators, flag icons, and navigation icons—should expose a
+tooltip so players always understand their purpose.
 
 The repository specifies commenting standards in `design/codeStandards`. JSDoc comments and `@pseudocode` blocks must remain intact. When adding or modifying functions, include a matching `@pseudocode` section describing the logic. The same folder includes [testNamingStandards.md](design/codeStandards/testNamingStandards.md) with guidelines for naming test files and `describe` blocks.
 
