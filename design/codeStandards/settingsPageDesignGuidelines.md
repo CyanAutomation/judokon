@@ -29,8 +29,20 @@ To ensure the **Settings** page remains consistent, visually appealing, and acce
 - **Page Hierarchy**  
   Maintain a logical top-down structure: main title `<h1>`, followed by fieldsets in an intuitive order (e.g. general → game-specific → advanced).
 
-- **Navigation and Tab Order**  
+- **Navigation and Tab Order**
   Place controls in top-down, left-to-right order in the HTML to preserve logical keyboard navigation.
+
+### Settings Item Structure
+
+Each toggle or control should display a label followed by a short description.
+Reuse the following markup for general settings, game modes, and feature flags:
+
+```html
+<div class="settings-item">
+  <label for="example-toggle">Example Toggle</label>
+  <p class="settings-description">Explains what the option does.</p>
+</div>
+```
 
 ---
 
@@ -74,6 +86,9 @@ To ensure the **Settings** page remains consistent, visually appealing, and acce
 - **Spacing and Sizing**
   - Use `--space-sm`, `--space-md`, etc. for margins/padding
   - Minimum input height: 48px for tap targets
+
+- **Description Text**
+  - Apply the `.settings-description` class on paragraphs beneath labels to ensure consistent font size and spacing.
 
 ---
 
