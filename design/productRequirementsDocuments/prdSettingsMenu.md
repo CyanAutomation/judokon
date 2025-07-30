@@ -44,6 +44,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 | P3       | Test Mode Feature Flag           | Enables deterministic battles for automated testing.                                                |
 | P1       | Motion Effects Toggle            | Binary toggle updating `settings.json` live on change.                                              |
 | P1       | Typewriter Effect Toggle         | Enable or disable quote animation where supported (not used on the meditation screen). |
+| P1       | Tooltips Toggle                  | Globally enable or disable UI tooltips.                                                             |
 | P1       | Display Mode Switch              | Three-option switch applying mode instantly across UI.                                              |
 | P2       | Game Modes Toggles               | A list of all defined game modes with binary toggles from `navigationItems.json`.                   |
 | P3       | Settings Menu Integration        | Ensure settings appear as a game mode in `navigationItems.json`.                                    |
@@ -62,6 +63,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - **Full navigation map feature flag (binary):** ON/OFF (default: ON)
 - **Motion effects (binary):** ON/OFF (default: ON)
 - **Typewriter effect (binary):** ON/OFF (default: ON, not currently used on the meditation screen)
+- **Tooltips (binary):** ON/OFF (default: ON)
 - **Display mode (three options):** Light, Dark, Gray (default: Light)
   - _Gray mode_ provides a grayscale display to reduce visual noise for neurodivergent users.
 - **Game modes list:** Pulled from `gameModes.json` and cross-referenced with `navigationItems.json` to determine order and visibility; each mode has a binary toggle.

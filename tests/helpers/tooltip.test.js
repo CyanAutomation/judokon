@@ -3,6 +3,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 beforeEach(() => {
   document.body.innerHTML = "";
   vi.resetModules();
+  vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+    loadSettings: vi.fn().mockResolvedValue({ tooltips: true })
+  }));
 });
 
 describe("initTooltips", () => {

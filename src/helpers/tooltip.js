@@ -1,6 +1,7 @@
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { escapeHTML } from "./utils.js";
+import { loadSettings } from "./settingsUtils.js";
 
 let tooltipDataPromise;
 let cachedData;
@@ -86,17 +87,24 @@ function ensureTooltipElement() {
  * Initialize tooltips for elements with `[data-tooltip-id]`.
  *
  * @pseudocode
- * 1. Load tooltip data with `loadTooltips()`.
- * 2. Select all elements matching `[data-tooltip-id]` within `root`.
- * 3. For each element, attach hover and focus listeners.
+ * 1. Read the current settings and exit early if tooltips are disabled.
+ * 2. Load tooltip data with `loadTooltips()`.
+ * 3. Select all elements matching `[data-tooltip-id]` within `root`.
+ * 4. For each element, attach hover and focus listeners.
  *    - `show` looks up the tooltip text and positions the element.
  *    - `hide` hides the tooltip element.
- * 4. When an ID is missing, log a warning only once and skip display.
+ * 5. When an ID is missing, log a warning only once and skip display.
  *
  * @param {ParentNode} [root=document] - Scope to search for tooltip targets.
  * @returns {Promise<void>} Resolves when listeners are attached.
  */
 export async function initTooltips(root = document) {
+  try {
+    const { tooltips = true } = await loadSettings();
+    if (!tooltips) return;
+  } catch {
+    // ignore settings errors and assume enabled
+  }
   const data = await loadTooltips();
   const elements = root.querySelectorAll?.("[data-tooltip-id]") || [];
   if (elements.length === 0) return;

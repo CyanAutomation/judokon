@@ -5,6 +5,7 @@ const baseSettings = {
   sound: true,
   motionEffects: true,
   typewriterEffect: true,
+  tooltips: true,
   displayMode: "light",
   gameModes: {},
   featureFlags: {
@@ -165,6 +166,33 @@ describe("settingsPage module", () => {
     input.dispatchEvent(new Event("change"));
 
     expect(updateNavigationItemHidden).toHaveBeenCalledWith(1, true);
+  });
+
+  it("renders tooltip toggle and updates setting", async () => {
+    vi.useFakeTimers();
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updated = { ...baseSettings, tooltips: false };
+    const updateSetting = vi.fn().mockResolvedValue(updated);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
+      updateNavigationItemHidden: vi.fn()
+    }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const input = document.getElementById("tooltips-toggle");
+    expect(input).toBeTruthy();
+    input.checked = false;
+    input.dispatchEvent(new Event("change"));
+    expect(updateSetting).toHaveBeenCalledWith("tooltips", false);
   });
 
   it("renders feature flag switches", async () => {

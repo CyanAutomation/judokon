@@ -145,6 +145,7 @@ describe("populateNavbar", () => {
     const loadSettings = vi.fn().mockResolvedValue({
       sound: true,
       motionEffects: true,
+      tooltips: true,
       displayMode: "light",
       gameModes: { 2: false },
       featureFlags: {
@@ -224,6 +225,7 @@ describe("populateNavbar", () => {
     const loadSettings = vi.fn().mockResolvedValue({
       sound: true,
       motionEffects: true,
+      tooltips: true,
       displayMode: "light",
       gameModes: {},
       featureFlags: {
@@ -291,6 +293,7 @@ describe("populateNavbar", () => {
     const loadSettings = vi.fn().mockResolvedValue({
       sound: true,
       motionEffects: true,
+      tooltips: true,
       displayMode: "light",
       gameModes: {},
       featureFlags: {

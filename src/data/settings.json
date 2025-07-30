@@ -2,6 +2,7 @@
   "sound": true,
   "motionEffects": true,
   "typewriterEffect": false,
+  "tooltips": true,
   "displayMode": "light",
   "gameModes": {},
   "featureFlags": {
