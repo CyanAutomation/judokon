@@ -66,19 +66,23 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
   const { soundToggle, motionToggle, displayRadios, typewriterToggle, tooltipsToggle } = controls;
   soundToggle?.addEventListener("change", () => {
     const prev = !soundToggle.checked;
-    handleUpdate("sound", soundToggle.checked, () => {
-      soundToggle.checked = prev;
-    }).then(() => {
+    Promise.resolve(
+      handleUpdate("sound", soundToggle.checked, () => {
+        soundToggle.checked = prev;
+      })
+    ).then(() => {
       showSnackbar(`Sound ${soundToggle.checked ? "enabled" : "disabled"}`);
     });
   });
   motionToggle?.addEventListener("change", () => {
     const prev = !motionToggle.checked;
     applyMotionPreference(motionToggle.checked);
-    handleUpdate("motionEffects", motionToggle.checked, () => {
-      motionToggle.checked = prev;
-      applyMotionPreference(prev);
-    }).then(() => {
+    Promise.resolve(
+      handleUpdate("motionEffects", motionToggle.checked, () => {
+        motionToggle.checked = prev;
+        applyMotionPreference(prev);
+      })
+    ).then(() => {
       showSnackbar(`Motion effects ${motionToggle.checked ? "enabled" : "disabled"}`);
     });
   });
@@ -94,16 +98,18 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
         withViewTransition(() => {
           applyDisplayMode(mode);
         });
-        handleUpdate("displayMode", mode, () => {
-          const prevRadio = Array.from(displayRadios).find((r) => r.value === previous);
-          if (prevRadio) prevRadio.checked = true;
-          displayRadios.forEach((r) => {
-            r.tabIndex = r.value === previous ? 0 : -1;
-          });
-          withViewTransition(() => {
-            applyDisplayMode(previous);
-          });
-        }).then(() => {
+        Promise.resolve(
+          handleUpdate("displayMode", mode, () => {
+            const prevRadio = Array.from(displayRadios).find((r) => r.value === previous);
+            if (prevRadio) prevRadio.checked = true;
+            displayRadios.forEach((r) => {
+              r.tabIndex = r.value === previous ? 0 : -1;
+            });
+            withViewTransition(() => {
+              applyDisplayMode(previous);
+            });
+          })
+        ).then(() => {
           const label = mode.charAt(0).toUpperCase() + mode.slice(1);
           showSnackbar(`${label} mode enabled`);
         });
@@ -112,17 +118,21 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
   }
   typewriterToggle?.addEventListener("change", () => {
     const prev = !typewriterToggle.checked;
-    handleUpdate("typewriterEffect", typewriterToggle.checked, () => {
-      typewriterToggle.checked = prev;
-    }).then(() => {
+    Promise.resolve(
+      handleUpdate("typewriterEffect", typewriterToggle.checked, () => {
+        typewriterToggle.checked = prev;
+      })
+    ).then(() => {
       showSnackbar(`Typewriter effect ${typewriterToggle.checked ? "enabled" : "disabled"}`);
     });
   });
   tooltipsToggle?.addEventListener("change", () => {
     const prev = !tooltipsToggle.checked;
-    handleUpdate("tooltips", tooltipsToggle.checked, () => {
-      tooltipsToggle.checked = prev;
-    }).then(() => {
+    Promise.resolve(
+      handleUpdate("tooltips", tooltipsToggle.checked, () => {
+        tooltipsToggle.checked = prev;
+      })
+    ).then(() => {
       showSnackbar(`Tooltips ${tooltipsToggle.checked ? "enabled" : "disabled"}`);
     });
   });
@@ -219,9 +229,11 @@ export function renderFeatureFlagSwitches(
         ...getCurrentSettings().featureFlags,
         [flag]: { ...info, enabled: input.checked }
       };
-      handleUpdate("featureFlags", updated, () => {
-        input.checked = prev;
-      }).then(() => {
+      Promise.resolve(
+        handleUpdate("featureFlags", updated, () => {
+          input.checked = prev;
+        })
+      ).then(() => {
         if (onToggleInfo) onToggleInfo(info.label, info.description);
       });
     });
