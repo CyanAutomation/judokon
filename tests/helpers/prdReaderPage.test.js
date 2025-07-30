@@ -9,6 +9,7 @@ describe("prdReaderPage", () => {
     const parser = (md) => `<h1>${md}</h1>`;
 
     document.body.innerHTML = `
+      <ul id="prd-list"></ul>
       <div id="prd-content"></div>
       <button data-nav="prev">Prev</button>
       <button data-nav="next">Next</button>
@@ -24,13 +25,49 @@ describe("prdReaderPage", () => {
     const container = document.getElementById("prd-content");
     const nextBtns = document.querySelectorAll('[data-nav="next"]');
     const prevBtns = document.querySelectorAll('[data-nav="prev"]');
+    const list = document.getElementById("prd-list");
 
     expect(container.innerHTML).toContain("First doc");
+    expect(list.children[0].classList.contains("selected")).toBe(true);
     nextBtns[0].click();
     expect(container.innerHTML).toContain("Second doc");
+    expect(list.children[1].classList.contains("selected")).toBe(true);
     nextBtns[1].click();
     expect(container.innerHTML).toContain("First doc");
+    expect(list.children[0].classList.contains("selected")).toBe(true);
     prevBtns[1].click();
     expect(container.innerHTML).toContain("Second doc");
+    expect(list.children[1].classList.contains("selected")).toBe(true);
+  });
+
+  it("selects documents via sidebar", async () => {
+    const docs = {
+      "doc1.md": "# One",
+      "doc2.md": "# Two"
+    };
+    const parser = (md) => `<h1>${md}</h1>`;
+
+    document.body.innerHTML = `
+      <ul id="prd-list"></ul>
+      <div id="prd-content"></div>
+      <button data-nav="prev">Prev</button>
+      <button data-nav="next">Next</button>
+    `;
+
+    globalThis.SKIP_PRD_AUTO_INIT = true;
+    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+
+    await setupPrdReaderPage(docs, parser);
+
+    const list = document.getElementById("prd-list");
+    const items = list.querySelectorAll("li");
+    const container = document.getElementById("prd-content");
+
+    expect(items.length).toBe(2);
+    items[1].click();
+    expect(container.innerHTML).toContain("Two");
+    items[0].dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    expect(container.innerHTML).toContain("One");
+    expect(items[0].classList.contains("selected")).toBe(true);
   });
 });

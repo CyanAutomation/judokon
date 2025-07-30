@@ -8,10 +8,11 @@ import { initTooltips } from "./tooltip.js";
  * @pseudocode
  * 1. Load all markdown files from the PRD directory using `import.meta.glob`.
  * 2. Convert each file to HTML with `parserFn` (defaults to `markdownToHtml`).
- * 3. Display the first document inside the content container.
- * 4. Provide next/previous navigation with wrap-around.
+ * 3. Build sidebar list items for each document and select the first one.
+ * 4. Implement `select(index)` to render the HTML and highlight the item.
+ * 5. Provide next/previous navigation with wrap-around.
  *    - Attach click handlers to all navigation buttons.
- * 5. Support arrow key and swipe gestures for navigation.
+ * 6. Support arrow key and swipe gestures for navigation.
  *
  * @param {Record<string, string>} [docsMap] Optional preloaded docs for testing.
  * @param {Function} [parserFn=markdownToHtml] Parser used to convert Markdown to HTML.
@@ -60,25 +61,50 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     }
   }
   const container = document.getElementById("prd-content");
+  const listContainer = document.getElementById("prd-list");
   const nextButtons = document.querySelectorAll('[data-nav="next"]');
   const prevButtons = document.querySelectorAll('[data-nav="prev"]');
 
-  if (!container || documents.length === 0) return;
+  if (!container || !listContainer || documents.length === 0) return;
+
+  FILES.forEach((file, i) => {
+    const li = document.createElement("li");
+    li.tabIndex = 0;
+    li.textContent = file
+      .replace(/^prd/, "")
+      .replace(/\.md$/, "")
+      .replace(/([A-Z])/g, " $1")
+      .trim();
+    li.addEventListener("click", () => select(i));
+    li.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        select(i);
+      }
+    });
+    listContainer.appendChild(li);
+  });
 
   let index = 0;
 
-  function render() {
+  function select(i) {
+    index = (i + documents.length) % documents.length;
     container.innerHTML = documents[index];
+    Array.from(listContainer.children).forEach((li, idx) => {
+      li.classList.toggle("selected", idx === index);
+    });
+    container.classList.remove("fade-in");
+    void container.offsetWidth;
+    container.classList.add("fade-in");
+    initTooltips();
   }
 
   function showNext() {
-    index = (index + 1) % documents.length;
-    render();
+    select(index + 1);
   }
 
   function showPrev() {
-    index = (index - 1 + documents.length) % documents.length;
-    render();
+    select(index - 1);
   }
 
   nextButtons.forEach((btn) => btn.addEventListener("click", showNext));
@@ -100,8 +126,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     }
   });
 
-  render();
-  initTooltips();
+  select(0);
 }
 
 if (!window.SKIP_PRD_AUTO_INIT) {
