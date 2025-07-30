@@ -43,7 +43,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 | P1       | Full Navigation Map Feature Flag | Enable or disable the full navigation map via feature flag; updates `settings.json` live on change. |
 | P3       | Test Mode Feature Flag           | Enables deterministic battles for automated testing.                                                |
 | P1       | Motion Effects Toggle            | Binary toggle updating `settings.json` live on change.                                              |
-| P1       | Typewriter Effect Toggle         | Enable or disable quote animation on the meditation screen.                                         |
+| P1       | Typewriter Effect Toggle         | Enable or disable quote animation where supported (not used on the meditation screen). |
 | P1       | Display Mode Switch              | Three-option switch applying mode instantly across UI.                                              |
 | P2       | Game Modes Toggles               | A list of all defined game modes with binary toggles from `navigationItems.json`.                   |
 | P3       | Settings Menu Integration        | Ensure settings appear as a game mode in `navigationItems.json`.                                    |
@@ -61,7 +61,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - **Sound (binary):** ON/OFF (default: ON)
 - **Full navigation map feature flag (binary):** ON/OFF (default: ON)
 - **Motion effects (binary):** ON/OFF (default: ON)
-- **Typewriter effect (binary):** ON/OFF (default: ON)
+- **Typewriter effect (binary):** ON/OFF (default: ON, not currently used on the meditation screen)
 - **Display mode (three options):** Light, Dark, Gray (default: Light)
   - _Gray mode_ provides a grayscale display to reduce visual noise for neurodivergent users.
 - **Game modes list:** Pulled from `gameModes.json` and cross-referenced with `navigationItems.json` to determine order and visibility; each mode has a binary toggle.
@@ -120,7 +120,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 
 ### Typewriter Effect Toggle
 
-- AC-4.1 Disabling the toggle prevents the quote typewriter animation on the meditation screen.
+- AC-4.1 Toggle enables or disables the quote typewriter animation where implemented.
 - AC-4.2 Setting is stored in `settings.json` within 50ms of change.
 
 ### Display Mode Switch
