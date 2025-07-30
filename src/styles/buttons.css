@@ -31,6 +31,14 @@ button:active,
   transform: scale(0.95);
 }
 
+button:disabled,
+.primary-button:disabled {
+  background: var(--button-disabled-bg);
+  background-image: var(--button-disabled-pattern);
+  color: var(--button-text-color);
+  cursor: not-allowed;
+}
+
 #stat-buttons button {
   -webkit-tap-highlight-color: transparent;
   width: 100%;

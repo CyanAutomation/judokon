@@ -80,10 +80,6 @@
   margin-top: var(--space-md);
 }
 
-#next-round-button:disabled {
-  opacity: 0.5;
-}
-
 /* Collapsible debug panel */
 
 .test-mode-banner {
