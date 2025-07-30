@@ -32,6 +32,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - The settings screen loads fully within 200ms on mid-tier devices (e.g., 2GB RAM smartphones), avoiding delays that could frustrate players.
 - Allow players to personalize visual and audio experience to match their comfort.
 - Provide immediate and persistent feedback when changing settings.
+- Successful changes display a brief snackbar confirming the new state.
 
 ---
 
@@ -156,6 +157,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - AC-7.1 If reading `settings.json` fails, a CSS popup error message appears within 200ms.
 - AC-7.2 If writing to `settings.json` fails, a CSS popup error message appears within 200ms, and the toggle/selector reverts to its previous state.
 - AC-7.3 The settings screen remains stable and usable if an error occurs (no frozen or unresponsive UI).
+- AC-7.4 Successful changes display a snackbar confirmation within 3 seconds.
 
 ### Accessibility & UX
 

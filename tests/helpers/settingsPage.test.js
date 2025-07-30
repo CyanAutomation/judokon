@@ -174,6 +174,7 @@ describe("settingsPage module", () => {
     const updated = { ...baseSettings, tooltips: false };
     const updateSetting = vi.fn().mockResolvedValue(updated);
     const loadNavigationItems = vi.fn().mockResolvedValue([]);
+    const showSnackbar = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
@@ -183,6 +184,7 @@ describe("settingsPage module", () => {
       loadGameModes: loadNavigationItems,
       updateNavigationItemHidden: vi.fn()
     }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -193,6 +195,8 @@ describe("settingsPage module", () => {
     input.checked = false;
     input.dispatchEvent(new Event("change"));
     expect(updateSetting).toHaveBeenCalledWith("tooltips", false);
+    await vi.runAllTimersAsync();
+    expect(showSnackbar).toHaveBeenCalledWith("Tooltips disabled");
   });
 
   it("renders feature flag switches", async () => {

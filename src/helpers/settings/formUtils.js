@@ -4,6 +4,7 @@ import { withViewTransition } from "../viewTransition.js";
 import { applyMotionPreference } from "../motionUtils.js";
 import { updateNavigationItemHidden } from "../gameModeUtils.js";
 import { showSettingsError } from "../showSettingsError.js";
+import { showSnackbar } from "../showSnackbar.js";
 
 /**
  * Apply a value to an input or checkbox element.
@@ -55,6 +56,7 @@ export function applyInitialControlValues(controls, settings) {
  * 1. Listen for changes on each toggle or select element.
  * 2. Use `handleUpdate` to persist the new value, reverting if it fails.
  * 3. Apply side effects like `applyMotionPreference` and `applyDisplayMode`.
+ * 4. After a successful update, show a snackbar confirming the change.
  *
  * @param {Object} controls - Form controls with DOM references.
  * @param {Function} getCurrentSettings - Returns the latest settings object.
@@ -66,6 +68,8 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
     const prev = !soundToggle.checked;
     handleUpdate("sound", soundToggle.checked, () => {
       soundToggle.checked = prev;
+    }).then(() => {
+      showSnackbar(`Sound ${soundToggle.checked ? "enabled" : "disabled"}`);
     });
   });
   motionToggle?.addEventListener("change", () => {
@@ -74,6 +78,8 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
     handleUpdate("motionEffects", motionToggle.checked, () => {
       motionToggle.checked = prev;
       applyMotionPreference(prev);
+    }).then(() => {
+      showSnackbar(`Motion effects ${motionToggle.checked ? "enabled" : "disabled"}`);
     });
   });
   if (displayRadios) {
@@ -97,6 +103,9 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
           withViewTransition(() => {
             applyDisplayMode(previous);
           });
+        }).then(() => {
+          const label = mode.charAt(0).toUpperCase() + mode.slice(1);
+          showSnackbar(`${label} mode enabled`);
         });
       });
     });
@@ -105,12 +114,16 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
     const prev = !typewriterToggle.checked;
     handleUpdate("typewriterEffect", typewriterToggle.checked, () => {
       typewriterToggle.checked = prev;
+    }).then(() => {
+      showSnackbar(`Typewriter effect ${typewriterToggle.checked ? "enabled" : "disabled"}`);
     });
   });
   tooltipsToggle?.addEventListener("change", () => {
     const prev = !tooltipsToggle.checked;
     handleUpdate("tooltips", tooltipsToggle.checked, () => {
       tooltipsToggle.checked = prev;
+    }).then(() => {
+      showSnackbar(`Tooltips ${tooltipsToggle.checked ? "enabled" : "disabled"}`);
     });
   });
 }
