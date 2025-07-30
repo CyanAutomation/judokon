@@ -179,8 +179,11 @@
   align-items: center;
 }
 
-.settings-description {
+.settings-description,
+.flag-description {
   font-size: var(--font-small);
   margin-block-start: var(--space-xs);
+  margin-block-end: var(--space-sm);
+  line-height: 1.4;
   color: var(--color-text);
 }
