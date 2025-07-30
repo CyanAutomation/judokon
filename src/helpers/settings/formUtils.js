@@ -1,5 +1,6 @@
 import { createToggleSwitch } from "../../components/ToggleSwitch.js";
 import { applyDisplayMode } from "../displayMode.js";
+import { withViewTransition } from "../viewTransition.js";
 import { applyMotionPreference } from "../motionUtils.js";
 import { updateNavigationItemHidden } from "../gameModeUtils.js";
 import { showSettingsError } from "../showSettingsError.js";
@@ -83,14 +84,18 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
         displayRadios.forEach((r) => {
           r.tabIndex = r === radio ? 0 : -1;
         });
-        applyDisplayMode(mode);
+        withViewTransition(() => {
+          applyDisplayMode(mode);
+        });
         handleUpdate("displayMode", mode, () => {
           const prevRadio = Array.from(displayRadios).find((r) => r.value === previous);
           if (prevRadio) prevRadio.checked = true;
           displayRadios.forEach((r) => {
             r.tabIndex = r.value === previous ? 0 : -1;
           });
-          applyDisplayMode(previous);
+          withViewTransition(() => {
+            applyDisplayMode(previous);
+          });
         });
       });
     });
