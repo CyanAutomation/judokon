@@ -60,7 +60,8 @@ export function applyInitialControlValues(controls, settings) {
  *
  * @param {Object} controls - Form controls with DOM references.
  * @param {Function} getCurrentSettings - Returns the latest settings object.
- * @param {Function} handleUpdate - Persist function `(key,value,revert)=>void`.
+ * @param {(key: string, value: any, revert: Function) => Promise<any>} handleUpdate -
+ *   Persist function that returns a Promise.
  */
 export function attachToggleListeners(controls, getCurrentSettings, handleUpdate) {
   const { soundToggle, motionToggle, displayRadios, typewriterToggle, tooltipsToggle } = controls;
