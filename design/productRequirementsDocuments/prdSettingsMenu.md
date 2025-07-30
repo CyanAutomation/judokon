@@ -163,6 +163,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - AC-8.2 Users can tab through all interactive elements in a logical order.
 - AC-8.3 Color contrast of text and controls meets WCAG 2.1 minimum (4.5:1) in all display modes.
 - AC-8.4 Touch targets meet or exceed a 44px minimum size (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
+- AC-8.5 All settings, including feature flags, show a label and brief description using the same markup as the Advanced Settings section (see [Settings Item Structure](../codeStandards/settingsPageDesignGuidelines.md#settings-item-structure)).
 
 ---
 
