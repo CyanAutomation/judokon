@@ -9,6 +9,7 @@ const baseSettings = {
   sound: false,
   motionEffects: true,
   typewriterEffect: true,
+  tooltips: true,
   displayMode: "light",
   gameModes: {},
   featureFlags: {

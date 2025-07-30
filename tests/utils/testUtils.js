@@ -52,6 +52,9 @@ export function createSettingsDom() {
   const typewriterToggle = document.createElement("input");
   typewriterToggle.id = "typewriter-toggle";
   typewriterToggle.type = "checkbox";
+  const tooltipsToggle = document.createElement("input");
+  tooltipsToggle.id = "tooltips-toggle";
+  tooltipsToggle.type = "checkbox";
   const displayLight = document.createElement("input");
   displayLight.id = "display-mode-light";
   displayLight.type = "radio";
@@ -97,6 +100,7 @@ export function createSettingsDom() {
     soundToggle,
     motionToggle,
     typewriterToggle,
+    tooltipsToggle,
     displayLight,
     displayDark,
     displayGray,

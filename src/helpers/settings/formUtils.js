@@ -45,6 +45,7 @@ export function applyInitialControlValues(controls, settings) {
     });
   }
   applyInputState(controls.typewriterToggle, settings.typewriterEffect);
+  applyInputState(controls.tooltipsToggle, settings.tooltips);
 }
 
 /**
@@ -60,7 +61,7 @@ export function applyInitialControlValues(controls, settings) {
  * @param {Function} handleUpdate - Persist function `(key,value,revert)=>void`.
  */
 export function attachToggleListeners(controls, getCurrentSettings, handleUpdate) {
-  const { soundToggle, motionToggle, displayRadios, typewriterToggle } = controls;
+  const { soundToggle, motionToggle, displayRadios, typewriterToggle, tooltipsToggle } = controls;
   soundToggle?.addEventListener("change", () => {
     const prev = !soundToggle.checked;
     handleUpdate("sound", soundToggle.checked, () => {
@@ -104,6 +105,12 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
     const prev = !typewriterToggle.checked;
     handleUpdate("typewriterEffect", typewriterToggle.checked, () => {
       typewriterToggle.checked = prev;
+    });
+  });
+  tooltipsToggle?.addEventListener("change", () => {
+    const prev = !tooltipsToggle.checked;
+    handleUpdate("tooltips", tooltipsToggle.checked, () => {
+      tooltipsToggle.checked = prev;
     });
   });
 }

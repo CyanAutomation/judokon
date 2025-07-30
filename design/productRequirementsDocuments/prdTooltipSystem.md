@@ -170,3 +170,4 @@ To ensure tooltips are consistently helpful and aligned with JU-DO-KON!’s tone
   - [ ] 6.1 Add developer setting to configure tooltip delay
   - [ ] 6.2 Add toggle to enable/disable tooltip animation
   - [ ] 6.3 Document configuration options in README or UI guide
+  - [ ] 6.4 Provide a user-facing toggle in the Settings menu to globally enable or disable tooltips

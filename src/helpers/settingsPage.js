@@ -92,7 +92,8 @@ function initializeControls(settings, gameModes) {
     soundToggle: document.getElementById("sound-toggle"),
     motionToggle: document.getElementById("motion-toggle"),
     displayRadios: document.querySelectorAll('input[name="display-mode"]'),
-    typewriterToggle: document.getElementById("typewriter-toggle")
+    typewriterToggle: document.getElementById("typewriter-toggle"),
+    tooltipsToggle: document.getElementById("tooltips-toggle")
   };
   const modesContainer = document.getElementById("game-mode-toggle-container");
   const flagsContainer = document.getElementById("feature-flags-container");
@@ -146,6 +147,7 @@ function initializeControls(settings, gameModes) {
       applyDisplayMode(currentSettings.displayMode);
     });
     applyMotionPreference(currentSettings.motionEffects);
+    initTooltips();
     clearToggles(modesContainer);
     renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
     clearToggles(flagsContainer);

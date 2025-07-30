@@ -15,6 +15,11 @@
       "type": "boolean",
       "description": "Animate meditation quotes with a typewriter effect."
     },
+    "tooltips": {
+      "type": "boolean",
+      "default": true,
+      "description": "Globally enable or disable UI tooltips."
+    },
     "displayMode": {
       "type": "string",
       "enum": ["light", "dark", "gray"],
@@ -49,6 +54,12 @@
       }
     }
   },
-  "required": ["sound", "motionEffects", "typewriterEffect", "displayMode"],
+  "required": [
+    "sound",
+    "motionEffects",
+    "typewriterEffect",
+    "tooltips",
+    "displayMode"
+  ],
   "additionalProperties": false
 }

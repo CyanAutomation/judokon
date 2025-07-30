@@ -287,7 +287,7 @@ Add lightweight help text anywhere by tagging elements with
 Entries in this file are grouped by category (such as `stat` or `ui`), so
 IDs use dot notation like `ui.selectStat`. Each page's initialization script
 must call `initTooltips()` once the DOM is ready so hover and focus
-listeners are attached.
+listeners are attached. Tooltips can be globally disabled from the Settings page.
 
 Tooltip descriptions support a subset of Markdown&mdash;`**bold**`,
 `_italic_`, and `\n` for new lines. Use these styles to craft short,
@@ -415,7 +415,7 @@ Light, dark and gray themes are supported. Theme changes animate via the View Tr
 ## Settings & Feature Flags
 
 The Settings page (`src/pages/settings.html`) groups all player preferences, including experimental **feature flags**. Toggle a flag to enable an optional feature without modifying code. Flag values persist across pages and apply immediately. Implementation guidelines live in [settingsPageDesignGuidelines.md](design/codeStandards/settingsPageDesignGuidelines.md#feature-flags--agent-observability).
-Default flag states and descriptions now live in `src/data/settings.json`.
+Default flag states and descriptions now live in `src/data/settings.json`. The **Tooltips** toggle on this page lets you turn help tooltips on or off globally.
 
 Battle pages include a collapsible debug panel. Enable the **Battle Debug Panel** feature flag in **Settings** to reveal real-time match state in a `<pre>` element. The panel is keyboard accessible and hidden by default so normal gameplay remains unaffected.
 Toggle the **Full Navigation Map** flag to display a map overlay with links to all pages for easier orientation during testing.
