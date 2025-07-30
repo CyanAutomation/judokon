@@ -129,7 +129,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - AC-4.2 Selected mode persists through a page refresh within the same session.
 - AC-4.3 Current display mode is correctly pulled from `settings.json` on page load.
 - AC-4.4 Transition to new display mode completes without visible flickering or rendering artifacts.
-- Implementation uses the `applyDisplayMode` helper which sets a `data-theme` attribute on `<body>` so `base.css` variables can switch values per theme. Theme changes animate using the View Transitions API when supported.
+- Implementation uses the `applyDisplayMode` helper which sets a `data-theme` attribute on `<body>` so `base.css` variables can switch values per theme. Transitions use the View Transitions API, falling back to immediate changes if unsupported.
 
 ### Game Modes Toggles
 
