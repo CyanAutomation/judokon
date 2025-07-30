@@ -178,3 +178,9 @@
   gap: var(--space-sm);
   align-items: center;
 }
+
+.settings-description {
+  font-size: var(--font-small);
+  margin-block-start: var(--space-xs);
+  color: var(--color-text);
+}
