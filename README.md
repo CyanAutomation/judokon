@@ -222,7 +222,8 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
 Product Requirements Documents live in `design/productRequirementsDocuments`.
 Add new Markdown files there and include the filename in the `FILES` array of
 `src/helpers/prdReaderPage.js`. Open `src/pages/prdViewer.html` in your browser
-to browse the documents with next/previous navigation. Buttons tagged with
+to browse the documents with next/previous navigation. A sidebar lists all
+available PRDs and clicking an entry loads it immediately. Buttons tagged with
 `data-nav="prev"` and `data-nav="next"` appear in both the header and footer.
 The page now imports `base.css` and `layout.css` so wide elements stay wrapped
 inside the viewport. Navigation buttons remain left-aligned with a gap so they
