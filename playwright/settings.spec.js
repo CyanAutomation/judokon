@@ -58,6 +58,7 @@ test.describe("Settings page", () => {
       "Sound",
       "Motion Effects",
       "Typewriter Effect",
+      "Tooltips",
       ...sortedNames,
       ...flagLabels
     ];
