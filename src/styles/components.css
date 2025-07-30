@@ -6,6 +6,7 @@
 @import "./modal.css";
 @import "./battle.css";
 @import "./tooltip.css";
+@import "./snackbar.css";
 
 .debug-panel {
   background-color: #f9f9f9;

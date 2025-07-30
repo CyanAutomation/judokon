@@ -64,6 +64,20 @@ export const SETTINGS_FADE_MS = 1800;
 export const SETTINGS_REMOVE_MS = 2000;
 
 /**
+ * Duration in milliseconds before the snackbar begins fading out.
+ *
+ * @constant {number}
+ */
+export const SNACKBAR_FADE_MS = 2500;
+
+/**
+ * Duration in milliseconds before removing the snackbar element from the DOM.
+ *
+ * @constant {number}
+ */
+export const SNACKBAR_REMOVE_MS = 3000;
+
+/**
  * Maximum points needed to win a Classic Battle match.
  *
  * @constant {number}
