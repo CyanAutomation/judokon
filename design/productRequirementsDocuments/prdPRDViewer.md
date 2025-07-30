@@ -51,6 +51,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 | P1       | Next/Previous Navigation   | Buttons for navigating PRDs with wrap-around at ends.                |
 | P1       | Keyboard Navigation        | Allow navigation via arrow keys with focus management.               |
 | P1       | Touch/Swipe Navigation     | Support swipe gestures with gesture threshold to avoid misfires.     |
+| P1       | Sidebar Document List      | Sidebar lists all PRDs and selecting one loads that document.       |
 | P2       | Responsive Layout          | Viewer adapts seamlessly to different device screen sizes.           |
 | P2       | Accessibility              | Fully accessible UI including ARIA labels and screen reader support. |
 | P3       | Home Link                  | Provide a prominent link to return to the homepage.                  |
@@ -61,6 +62,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - Given a markdown file is rendered, then headings, tables, lists, and code blocks appear styled as readable HTML.
 - Given the player clicks “Next” or “Prev” buttons, then navigation moves to the next/previous PRD, looping from last to first or vice versa.
 - Given the player presses the right or left arrow keys, then navigation moves accordingly between PRDs.
+- Given the player selects a document from the sidebar list, then that PRD is displayed in the viewer.
 - Given the player swipes left or right on a touch device, then the viewer navigates to the next or previous PRD respecting a minimum gesture threshold.
 - Given the player is on any screen size, then the layout adapts to desktop, tablet, or mobile formats responsively.
 - Given the navigation buttons are rendered, then they are keyboard focusable with ARIA labels and visible focus outlines.
