@@ -8,63 +8,8 @@
     <link rel="stylesheet" href="../styles/base.css" />
     <link rel="stylesheet" href="../styles/layout.css" />
     <link rel="stylesheet" href="../styles/components.css" />
+    <link rel="stylesheet" href="../styles/prdViewer.css" />
     <link rel="stylesheet" href="../styles/utilities.css" />
-    <style>
-      body {
-        font-family: sans-serif;
-        background: #f5f5f5;
-        /* margin: 2rem; */
-        padding: 2rem;
-        padding-bottom: calc(2rem + var(--footer-height) + env(safe-area-inset-bottom));
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        line-height: 1.5;
-        width: auto;
-      }
-
-      header {
-        text-align: center;
-        margin-bottom: 2rem;
-      }
-
-      #prd-content {
-        background: #fff;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        padding: 2rem 3rem;
-        max-width: 800px;
-        width: 100%;
-        min-height: 200px;
-        overflow-x: auto;
-        box-sizing: border-box;
-        line-height: 1.5;
-      }
-
-      #prd-content img {
-        max-width: 100%;
-        height: auto;
-      }
-
-      #prd-content pre,
-      #prd-content code {
-        white-space: pre-wrap;
-        word-break: break-word;
-      }
-
-      #prd-content table {
-        width: 100%;
-        overflow-x: auto;
-      }
-
-      .nav-buttons {
-        margin-top: 1rem;
-        display: flex;
-        gap: 2rem;
-        align-items: center;
-        justify-content: flex-start;
-      }
-    </style>
   </head>
   <body>
     <header>
@@ -83,8 +28,11 @@
       </div>
     </header>
 
-    <main>
-      <div id="prd-content"></div>
+    <main class="prd-viewer">
+      <aside class="sidebar"><ul id="prd-list"></ul></aside>
+      <section class="preview">
+        <div id="prd-content"></div>
+      </section>
     </main>
 
     <footer>
