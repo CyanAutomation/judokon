@@ -310,6 +310,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - `.secondary-button` variation with lighter background and border
 - Minimum height 44-48 px; keep `--radius-pill`
 - All buttons must use either `--radius-md` or `--radius-pill`; avoid hardcoded values like `4px`
+- Disabled buttons must remain visible using `--button-disabled-bg` (and optional `--button-disabled-pattern`); do not rely solely on opacity.
 - Hover/active states scale slightly and use drop shadows
 - Ripple feedback via `setupButtonEffects()`
 - `:focus-visible` outline or underline for keyboard users
@@ -349,6 +350,8 @@ Use these CSS custom properties instead of raw pixel values. Referencing tokens 
 | --button-hover-bg     | #0B5BB0                    | Hover state for buttons; adds drop shadow |
 | --button-active-bg    | #0C3F7A                    | Active button state                       |
 | --button-text-color   | #ffffff                    | Button text                               |
+| --button-disabled-bg  | #a0a0a0                    | Disabled button background |
+| --button-disabled-pattern | none                     | Optional disabled texture |
 | --switch-off-bg       | #878787                    | Toggle off state background               |
 | --switch-on-bg        | #08A700                    | Toggle on state background                |
 | --shadow-base         | 0 4px 12px rgba(0,0,0,0.1) | Elevation; hover drop-shadow              |

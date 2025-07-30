@@ -144,7 +144,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - Player and opponent cards side-by-side.
   - Central score prominently displayed.
   - Tie or win/loss messages placed centrally.
-  - Clear "Next Round" button with distinct state (enabled/disabled).
+  - Clear "Next Round" button with distinct state (enabled/disabled). When disabled, the button should remain visible using the `--button-disabled-bg` token.
   - Ensure player and opponent cards show all stats without scrolling on common desktop resolutions (e.g., 1440px width).
   - Provide a dedicated "Quit Match" button below the controls.
     Clicking it opens a confirmation modal styled like the
