@@ -25,21 +25,21 @@
   margin: 0;
   font-size: clamp(18px, 4vw, 30px);
   font-weight: bold;
-  color: var(--color-secondary);
+  color: var(--link-color);
 }
 
 .battle-header #next-round-timer {
   margin: 0;
   font-size: clamp(15px, 3vw, 18px);
   font-weight: bold;
-  color: var(--color-secondary);
+  color: var(--link-color);
 }
 
 .battle-header #score-display {
   margin: 0;
   font-size: clamp(18px, 3.5vw, 26px);
   font-weight: bold;
-  color: var(--color-secondary);
+  color: var(--link-color);
   text-align: right;
 }
 

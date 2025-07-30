@@ -11,6 +11,7 @@
   --color-background: #ffffff; /* Light mode background */
   --color-text: #000000; /* Light mode text */
   --color-text-inverted: #ffffff;
+  --link-color: var(--color-secondary);
 
   --button-bg: var(--color-primary);
   --button-hover-bg: #0b5bb0;
@@ -74,6 +75,8 @@
   --color-text: #ffffff;
   --color-tertiary: #333333;
   --color-text-inverted: #ffffff;
+  --color-primary: #ff4530;
+  --link-color: #3399ff;
 }
 
 /* Gray mode variable overrides */
@@ -98,6 +101,10 @@ body {
   line-height: 1.4; /* Line height */
   color: var(--color-text);
   background-color: var(--color-tertiary);
+}
+
+a {
+  color: var(--link-color);
 }
 
 h1,
