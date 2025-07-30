@@ -70,4 +70,29 @@ describe("prdReaderPage", () => {
     expect(container.innerHTML).toContain("One");
     expect(items[0].classList.contains("selected")).toBe(true);
   });
+
+  it("updates #prd-content when a list item is clicked", async () => {
+    const docs = {
+      "alpha.md": "# Alpha",
+      "beta.md": "# Beta"
+    };
+    const parser = (md) => `<h1>${md}</h1>`;
+
+    document.body.innerHTML = `
+      <ul id="prd-list"></ul>
+      <div id="prd-content"></div>
+    `;
+
+    globalThis.SKIP_PRD_AUTO_INIT = true;
+    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+
+    await setupPrdReaderPage(docs, parser);
+
+    const items = document.querySelectorAll("#prd-list li");
+    const container = document.getElementById("prd-content");
+
+    expect(container.innerHTML).toContain("Alpha");
+    items[1].click();
+    expect(container.innerHTML).toContain("Beta");
+  });
 });
