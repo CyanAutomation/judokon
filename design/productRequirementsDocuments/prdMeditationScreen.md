@@ -154,7 +154,7 @@ Sets the emotional tone. Not a reward, but a rest—balancing the intensity of g
 - Dynamic font scaling for different screen sizes using CSS `clamp()`
 - Skeleton loader animation while quote loads
 - 200ms fade animation when language is toggled
-- Optional typewriter animation for the quote text (default ON, user can disable in Settings)
+- Typewriter animation code exists but is no longer used on this screen
 
 **Why:**
 
@@ -192,7 +192,7 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 - KG character assets from the core game.
 - Navigation system for entering and exiting the screen.
 - Pseudo-Japanese Text Conversion Function for quote toggle ([prdPseudoJapanese.md](prdPseudoJapanese.md)).
-- Typewriter effect toggle stored in `settings.json` and managed on the Settings screen.
+- Typewriter effect module retained in codebase for potential reuse.
 
 ---
 
