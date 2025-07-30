@@ -142,6 +142,12 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
       checked: isChecked,
       ariaLabel: mode.name
     });
+    if (mode.description) {
+      const desc = document.createElement("p");
+      desc.className = "settings-description";
+      desc.textContent = mode.description;
+      wrapper.appendChild(desc);
+    }
     container.appendChild(wrapper);
     const input = wrapper.querySelector("input");
     input.addEventListener("change", () => {
@@ -189,7 +195,7 @@ export function renderFeatureFlagSwitches(
       ariaLabel: info.label
     });
     const desc = document.createElement("p");
-    desc.className = "flag-description";
+    desc.className = "settings-description";
     desc.textContent = info.description;
     wrapper.appendChild(desc);
     container.appendChild(wrapper);
