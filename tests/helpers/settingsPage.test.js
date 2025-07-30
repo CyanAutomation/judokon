@@ -147,6 +147,7 @@ describe("settingsPage module", () => {
     const updateNavigationItemHidden = vi
       .fn()
       .mockResolvedValue([{ ...gameModes[0], isHidden: true }]);
+    const showSnackbar = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
@@ -156,6 +157,7 @@ describe("settingsPage module", () => {
       loadGameModes: loadNavigationItems,
       updateNavigationItemHidden
     }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -166,6 +168,8 @@ describe("settingsPage module", () => {
     input.dispatchEvent(new Event("change"));
 
     expect(updateNavigationItemHidden).toHaveBeenCalledWith(1, true);
+    await vi.runAllTimersAsync();
+    expect(showSnackbar).toHaveBeenCalledWith("Classic disabled");
   });
 
   it("renders tooltip toggle and updates setting", async () => {
@@ -252,7 +256,7 @@ describe("settingsPage module", () => {
     expect(section.contains(container)).toBe(true);
   });
 
-  it("shows info popup when feature flag changes", async () => {
+  it("shows snackbar when feature flag changes", async () => {
     vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updatedSettings = {
@@ -267,7 +271,7 @@ describe("settingsPage module", () => {
     };
     const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
     const loadNavigationItems = vi.fn().mockResolvedValue([]);
-    const showSettingsInfo = vi.fn();
+    const showSnackbar = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
@@ -277,7 +281,7 @@ describe("settingsPage module", () => {
       loadGameModes: loadNavigationItems,
       updateNavigationItemHidden: vi.fn()
     }));
-    vi.doMock("../../src/helpers/showSettingsInfo.js", () => ({ showSettingsInfo }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -288,9 +292,8 @@ describe("settingsPage module", () => {
     input.dispatchEvent(new Event("change"));
     await vi.runAllTimersAsync();
 
-    expect(showSettingsInfo).toHaveBeenCalledWith(
-      baseSettings.featureFlags.randomStatMode.label,
-      baseSettings.featureFlags.randomStatMode.description
+    expect(showSnackbar).toHaveBeenCalledWith(
+      `${baseSettings.featureFlags.randomStatMode.label} disabled`
     );
   });
 

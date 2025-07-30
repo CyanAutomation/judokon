@@ -251,7 +251,7 @@ To support AI-assisted testing, variant gameplay modes, and scalable development
       </div>
     </div>
     ```
-  - When a flag changes, call `showSettingsInfo(label, description)` to open a modal explaining the feature. The modal uses `createModal` with a single **OK** button.
+  - When a flag changes, display a short confirmation using `showSnackbar()` to inform the user of the new state.
 
 ---
 
