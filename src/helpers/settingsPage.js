@@ -11,6 +11,7 @@ import { loadNavigationItems } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
 import { showSettingsInfo } from "./showSettingsInfo.js";
 import { applyDisplayMode } from "./displayMode.js";
+import { withViewTransition } from "./viewTransition.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
@@ -141,7 +142,9 @@ function initializeControls(settings, gameModes) {
   const resetModal = createResetConfirmation(() => {
     currentSettings = resetSettings();
     applyInitialControlValues(controls, currentSettings);
-    applyDisplayMode(currentSettings.displayMode);
+    withViewTransition(() => {
+      applyDisplayMode(currentSettings.displayMode);
+    });
     applyMotionPreference(currentSettings.motionEffects);
     clearToggles(modesContainer);
     renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
