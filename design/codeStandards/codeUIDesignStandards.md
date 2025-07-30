@@ -313,7 +313,8 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - Disabled buttons must remain visible using `--button-disabled-bg` (and optional `--button-disabled-pattern`); do not rely solely on opacity.
 - Hover/active states scale slightly and use drop shadows
 - Ripple feedback via `setupButtonEffects()`
-- `:focus-visible` outline or underline for keyboard users
+- Hover state also draws a 2px `--color-background` outline
+- `:focus-visible` draws a 2px `--link-color` outline and underlines text
 
 ### 8.8 Battle Layout
 
