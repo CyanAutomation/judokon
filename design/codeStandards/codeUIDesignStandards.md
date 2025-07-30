@@ -50,6 +50,7 @@ Ju-Do-Kon! uses a **bold, high-contrast design system** grounded in clear hierar
 | --color-primary     | #CB2504  | Buttons, highlights         |
 | --color-secondary   | #0C3F7A  | Nav bar, stat blocks        |
 | --color-tertiary    | #E8E8E8  | Backgrounds, outlines       |
+| --link-color        | var(--color-secondary) | Anchor tags               |
 | --button-bg         | #CB2504  | Primary button background   |
 | --button-hover-bg   | #0B5BB0  | Hover state for buttons     |
 | --button-active-bg  | #0C3F7A  | Active button state         |
@@ -57,7 +58,7 @@ Ju-Do-Kon! uses a **bold, high-contrast design system** grounded in clear hierar
 | --switch-off-bg     | #878787  | Toggle off state background |
 | --switch-on-bg      | #08A700  | Toggle on state background  |
 
-The hex values above correspond to CSS custom properties used throughout the project. See [Tokens](#10-tokens) for the complete list.
+The hex values above correspond to CSS custom properties used throughout the project. See [Tokens](#10-tokens) for the complete list. In dark mode `--color-primary` is overridden to `#ff4530` and `--link-color` to `#3399ff` to maintain contrast.
 
 ### Rarity Colours
 

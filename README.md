@@ -410,7 +410,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 
 ## Display Modes
 
-Light, dark and gray themes are supported. See [prdSettingsMenu.md](design/productRequirementsDocuments/prdSettingsMenu.md) for how the Display Mode switch applies these themes and related accessibility checks. If you modify colors, run `npm run check:contrast` while the development server is running.
+Light, dark and gray themes are supported. See [prdSettingsMenu.md](design/productRequirementsDocuments/prdSettingsMenu.md) for how the Display Mode switch applies these themes and related accessibility checks. If you modify colors, run `npm run check:contrast` while the development server is running. The `--link-color` token controls anchor colors and is overridden to `#3399ff` in dark mode (along with `--color-primary: #ff4530`).
 
 ## Settings & Feature Flags
 
