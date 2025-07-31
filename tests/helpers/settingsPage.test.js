@@ -34,6 +34,26 @@ const baseSettings = {
       label: "Card Inspector",
       description: "Shows raw card JSON in a panel"
     },
+    showCardOfTheDay: {
+      enabled: false,
+      label: "Card Of The Day",
+      description: "Displays a rotating featured judoka card on the landing screen"
+    },
+    viewportSimulation: {
+      enabled: false,
+      label: "Viewport Simulation",
+      description: "Adds a dropdown to simulate common device viewport sizes"
+    },
+    tooltipOverlayDebug: {
+      enabled: false,
+      label: "Tooltip Overlay Debug",
+      description: "Shows bounding boxes for tooltip targets"
+    },
+    layoutDebugPanel: {
+      enabled: false,
+      label: "Layout Debug Panel",
+      description: "Displays CSS grid and flex outlines for debugging layout issues"
+    },
     navCacheResetButton: {
       enabled: false,
       label: "Navigation Cache Reset",
@@ -345,8 +365,184 @@ describe("settingsPage module", () => {
       fullNavigationMap: baseSettings.featureFlags.fullNavigationMap,
       enableTestMode: baseSettings.featureFlags.enableTestMode,
       enableCardInspector: baseSettings.featureFlags.enableCardInspector,
+      showCardOfTheDay: baseSettings.featureFlags.showCardOfTheDay,
+      viewportSimulation: baseSettings.featureFlags.viewportSimulation,
+      tooltipOverlayDebug: baseSettings.featureFlags.tooltipOverlayDebug,
+      layoutDebugPanel: baseSettings.featureFlags.layoutDebugPanel,
       navCacheResetButton: baseSettings.featureFlags.navCacheResetButton
     });
+  });
+
+  it("toggling showCardOfTheDay updates setting and shows info modal", async () => {
+    vi.useFakeTimers();
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updatedSettings = {
+      ...baseSettings,
+      featureFlags: {
+        ...baseSettings.featureFlags,
+        showCardOfTheDay: {
+          ...baseSettings.featureFlags.showCardOfTheDay,
+          enabled: true
+        }
+      }
+    };
+    const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
+    const showSettingsInfo = vi.fn();
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
+      updateNavigationItemHidden: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/showSettingsInfo.js", () => ({ showSettingsInfo }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const input = document.querySelector("#feature-show-card-of-the-day");
+    input.checked = true;
+    input.dispatchEvent(new Event("change"));
+    await vi.runAllTimersAsync();
+
+    expect(updateSetting).toHaveBeenCalledWith("featureFlags", updatedSettings.featureFlags);
+    expect(showSettingsInfo).toHaveBeenCalledWith(
+      baseSettings.featureFlags.showCardOfTheDay.label,
+      baseSettings.featureFlags.showCardOfTheDay.description
+    );
+  });
+
+  it("toggling viewportSimulation updates setting and shows info modal", async () => {
+    vi.useFakeTimers();
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updatedSettings = {
+      ...baseSettings,
+      featureFlags: {
+        ...baseSettings.featureFlags,
+        viewportSimulation: {
+          ...baseSettings.featureFlags.viewportSimulation,
+          enabled: true
+        }
+      }
+    };
+    const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
+    const showSettingsInfo = vi.fn();
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
+      updateNavigationItemHidden: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/showSettingsInfo.js", () => ({ showSettingsInfo }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const input = document.querySelector("#feature-viewport-simulation");
+    input.checked = true;
+    input.dispatchEvent(new Event("change"));
+    await vi.runAllTimersAsync();
+
+    expect(updateSetting).toHaveBeenCalledWith("featureFlags", updatedSettings.featureFlags);
+    expect(showSettingsInfo).toHaveBeenCalledWith(
+      baseSettings.featureFlags.viewportSimulation.label,
+      baseSettings.featureFlags.viewportSimulation.description
+    );
+  });
+
+  it("toggling tooltipOverlayDebug updates setting and shows info modal", async () => {
+    vi.useFakeTimers();
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updatedSettings = {
+      ...baseSettings,
+      featureFlags: {
+        ...baseSettings.featureFlags,
+        tooltipOverlayDebug: {
+          ...baseSettings.featureFlags.tooltipOverlayDebug,
+          enabled: true
+        }
+      }
+    };
+    const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
+    const showSettingsInfo = vi.fn();
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
+      updateNavigationItemHidden: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/showSettingsInfo.js", () => ({ showSettingsInfo }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const input = document.querySelector("#feature-tooltip-overlay-debug");
+    input.checked = true;
+    input.dispatchEvent(new Event("change"));
+    await vi.runAllTimersAsync();
+
+    expect(updateSetting).toHaveBeenCalledWith("featureFlags", updatedSettings.featureFlags);
+    expect(showSettingsInfo).toHaveBeenCalledWith(
+      baseSettings.featureFlags.tooltipOverlayDebug.label,
+      baseSettings.featureFlags.tooltipOverlayDebug.description
+    );
+  });
+
+  it("toggling layoutDebugPanel updates setting and shows info modal", async () => {
+    vi.useFakeTimers();
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updatedSettings = {
+      ...baseSettings,
+      featureFlags: {
+        ...baseSettings.featureFlags,
+        layoutDebugPanel: {
+          ...baseSettings.featureFlags.layoutDebugPanel,
+          enabled: true
+        }
+      }
+    };
+    const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
+    const showSettingsInfo = vi.fn();
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
+      updateNavigationItemHidden: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/showSettingsInfo.js", () => ({ showSettingsInfo }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const input = document.querySelector("#feature-layout-debug-panel");
+    input.checked = true;
+    input.dispatchEvent(new Event("change"));
+    await vi.runAllTimersAsync();
+
+    expect(updateSetting).toHaveBeenCalledWith("featureFlags", updatedSettings.featureFlags);
+    expect(showSettingsInfo).toHaveBeenCalledWith(
+      baseSettings.featureFlags.layoutDebugPanel.label,
+      baseSettings.featureFlags.layoutDebugPanel.description
+    );
   });
 
   it("clicking restore defaults requires confirmation", async () => {
