@@ -23,7 +23,7 @@ test.describe("PRD Reader page", () => {
     await expect(container).not.toHaveText("");
     const original = await container.innerHTML();
 
-    await page.getByRole("banner").getByRole("button", { name: /next/i }).click();
+    await page.keyboard.press("ArrowRight");
     hasOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth
     );
@@ -31,10 +31,7 @@ test.describe("PRD Reader page", () => {
     const afterNext = await page.locator("#prd-content").innerHTML();
     expect(afterNext).not.toBe(original);
 
-    await page
-      .getByRole("banner")
-      .getByRole("button", { name: /previous/i })
-      .click();
+    await page.keyboard.press("ArrowLeft");
     const afterPrev = await page.locator("#prd-content").innerHTML();
     expect(afterPrev).toBe(original);
   });
