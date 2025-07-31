@@ -33,11 +33,11 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - The viewer loads all markdown files from the `design/productRequirementsDocuments` directory.
 - The player views the first PRD rendered as styled HTML.
 - The player navigates between PRDs by:
-  - Clicking “Next” or “Previous” buttons,
+  - Selecting a document from the sidebar list,
   - Pressing left/right arrow keys,
   - Swiping left/right on touch devices.
 - Navigation loops around at the ends of the PRD list.
-- The player can click the JU-DO-KON! logo or a dedicated “Home” link to exit the viewer at any time.
+- The player can click the JU-DO-KON! logo to exit the viewer at any time.
 - If loading a markdown file fails, an error message is shown for that document, and the player can continue navigating others.
 - If a markdown file is malformed, partial content is shown with a warning badge.
 - The viewer is fully keyboard operable, supports screen readers, and adapts layout for desktop, tablet, and mobile screens.
@@ -48,7 +48,6 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 | -------- | -------------------------- | -------------------------------------------------------------------- |
 | P1       | Markdown PRD Loading       | Load all markdown files from the PRD directory and display them.     |
 | P1       | Markdown-to-HTML Rendering | Convert markdown to styled HTML with accurate formatting.            |
-| P1       | Next/Previous Navigation   | Buttons for navigating PRDs with wrap-around at ends.                |
 | P1       | Keyboard Navigation        | Allow navigation via arrow keys with focus management.               |
 | P1       | Touch/Swipe Navigation     | Support swipe gestures with gesture threshold to avoid misfires.     |
 | P1       | Sidebar Document List      | Sidebar lists all PRDs and selecting one loads that document.       |
@@ -60,12 +59,10 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 - Given the PRD Viewer is opened, when loading the markdown files in `design/productRequirementsDocuments/`, then all files are loaded and displayed in sequence.
 - Given a markdown file is rendered, then headings, tables, lists, and code blocks appear styled as readable HTML.
-- Given the player clicks “Next” or “Prev” buttons, then navigation moves to the next/previous PRD, looping from last to first or vice versa.
 - Given the player presses the right or left arrow keys, then navigation moves accordingly between PRDs.
 - Given the player selects a document from the sidebar list, then that PRD is displayed in the viewer.
 - Given the player swipes left or right on a touch device, then the viewer navigates to the next or previous PRD respecting a minimum gesture threshold.
 - Given the player is on any screen size, then the layout adapts to desktop, tablet, or mobile formats responsively.
-- Given the navigation buttons are rendered, then they are keyboard focusable with ARIA labels and visible focus outlines.
 - Given the player clicks the JU-DO-KON! logo or “Home” link, then the viewer exits to the main homepage.
 - Given a markdown file fails to load, then an error is logged to the console, a fallback message is shown, and other files remain navigable.
 - Given malformed markdown content, then partial content is rendered with a warning badge visually indicating an issue.
@@ -96,7 +93,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 ## Mockups / Visual Reference
 
-- Header with clickable JU-DO-KON! logo (links Home), page title, and Prev/Next navigation buttons.
+- Header with clickable JU-DO-KON! logo and page title.
 - Large scrollable markdown-rendered content area.
 - Warning badge in content area if markdown partially rendered.
 - Bottom footer with keyboard and swipe navigation instructions.
@@ -118,9 +115,8 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 - [x] 3.0 Build Navigation System
 
-  - [x] 3.1 Add Prev and Next buttons with wrap-around navigation
-  - [x] 3.2 Implement keyboard arrow key navigation and focus management
-  - [x] 3.3 Add swipe gesture detection with minimum threshold to avoid accidental triggers
+  - [x] 3.1 Implement keyboard arrow key navigation and focus management
+  - [x] 3.2 Add swipe gesture detection with minimum threshold to avoid accidental triggers
 
 - [x] 4.0 Ensure Accessibility and Responsiveness
 
