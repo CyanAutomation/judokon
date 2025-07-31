@@ -4,11 +4,11 @@ import { createStatsPanel } from "../../src/components/StatsPanel.js";
 vi.mock("../../src/helpers/stats.js", () => ({
   loadStatNames: () =>
     Promise.resolve([
-      { name: "Power" },
-      { name: "Speed" },
-      { name: "Technique" },
-      { name: "Kumi-kata" },
-      { name: "Ne-waza" }
+      { name: "Alpha" },
+      { name: "Beta" },
+      { name: "Gamma" },
+      { name: "Delta" },
+      { name: "Epsilon" }
     ])
 }));
 
@@ -28,6 +28,8 @@ describe("createStatsPanel", () => {
     expect(items[4].textContent).toContain("9");
     expect(panel).toHaveAttribute("aria-label", "Judoka Stats");
     const labels = panel.querySelectorAll("li.stat > strong");
+    const texts = Array.from(labels).map((l) => l.textContent);
+    expect(texts).toEqual(["Alpha", "Beta", "Gamma", "Delta", "Epsilon"]);
     expect(labels[0]).toHaveAttribute("data-tooltip-id", "stat.power");
     expect(labels[1]).toHaveAttribute("data-tooltip-id", "stat.speed");
     expect(labels[2]).toHaveAttribute("data-tooltip-id", "stat.technique");
