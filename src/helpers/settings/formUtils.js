@@ -240,6 +240,7 @@ export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, 
       tooltipId: info.tooltipId
     });
     const input = wrapper.querySelector("input");
+    if (input) input.dataset.flag = flag;
     const desc = document.createElement("p");
     desc.className = "settings-description";
     desc.id = `feature-${kebab}-desc`;
