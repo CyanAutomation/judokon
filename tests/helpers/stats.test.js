@@ -1,5 +1,12 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { readFile } from "fs/promises";
+import { fileURLToPath } from "url";
+import path from "path";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const dataPath = path.resolve(__dirname, "../../src/data/statNames.json");
+const originalFetch = global.fetch;
 
 const sample = [
   {
@@ -32,6 +39,10 @@ beforeEach(() => {
   vi.resetModules();
 });
 
+afterEach(() => {
+  global.fetch = originalFetch;
+});
+
 describe("stats helper", () => {
   it("loads and caches stat names", async () => {
     const fetchJson = vi.fn().mockResolvedValue(sample);
@@ -51,5 +62,25 @@ describe("stats helper", () => {
     const { getStatLabel } = await import("../../src/helpers/stats.js");
     const label = await getStatLabel("speed");
     expect(label).toBe("Speed");
+  });
+
+  it("returns the five Judo stats in order", async () => {
+    vi.doMock(
+      "../../src/helpers/dataUtils.js",
+      async () => await vi.importActual("../../src/helpers/dataUtils.js")
+    );
+    const fileData = JSON.parse(await readFile(dataPath, "utf8"));
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => fileData });
+    global.fetch = fetchMock;
+    const { loadStatNames } = await import("../../src/helpers/stats.js");
+    const stats = await loadStatNames();
+    expect(stats.map((s) => s.name)).toEqual([
+      "Power",
+      "Speed",
+      "Technique",
+      "Kumi-kata",
+      "Ne-waza"
+    ]);
+    expect(fetchMock).toHaveBeenCalled();
   });
 });
