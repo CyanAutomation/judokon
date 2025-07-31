@@ -7,6 +7,8 @@ import { showSettingsError } from "../showSettingsError.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { toggleViewportSimulation } from "../viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "../tooltipOverlayDebug.js";
+import { toggleLayoutDebugPanel } from "../layoutDebugPanel.js";
+import { showSettingsInfo } from "../showSettingsInfo.js";
 
 /**
  * Apply a value to an input or checkbox element.
@@ -244,6 +246,19 @@ export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, 
         }
         if (flag === "tooltipOverlayDebug") {
           toggleTooltipOverlayDebug(input.checked);
+        }
+        if (flag === "layoutDebugPanel") {
+          toggleLayoutDebugPanel(input.checked);
+        }
+        if (
+          [
+            "showCardOfTheDay",
+            "viewportSimulation",
+            "tooltipOverlayDebug",
+            "layoutDebugPanel"
+          ].includes(flag)
+        ) {
+          showSettingsInfo(info.label, info.description);
         }
       });
     });
