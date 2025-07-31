@@ -66,7 +66,11 @@ document.body.appendChild(card);
 
 ## data and schemas
 
-Structured gameplay data lives in `src/data`. Matching JSON Schemas in `src/schemas` describe and validate these files. The `npm run validate:data` script uses Ajv to ensure data integrity.
+Structured gameplay data lives in `src/data`. Matching JSON Schemas in
+`src/schemas` describe and validate these files. The file
+`src/data/statNames.json` contains the canonical list of stats displayed across
+the UI—changing a name here updates labels everywhere. The `npm run
+validate:data` script uses Ajv to ensure data integrity.
 
 ## tooltip helper
 
