@@ -9,7 +9,6 @@
 import { loadSettings, updateSetting, resetSettings } from "./settingsUtils.js";
 import { loadNavigationItems } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
-import { showSettingsInfo } from "./showSettingsInfo.js";
 import { applyDisplayMode } from "./displayMode.js";
 import { withViewTransition } from "./viewTransition.js";
 import { applyMotionPreference } from "./motionUtils.js";
@@ -136,8 +135,7 @@ function initializeControls(settings, gameModes) {
     flagsContainer,
     currentSettings.featureFlags,
     getCurrentSettings,
-    handleUpdate,
-    showSettingsInfo
+    handleUpdate
   );
 
   const resetModal = createResetConfirmation(() => {
@@ -155,8 +153,7 @@ function initializeControls(settings, gameModes) {
       flagsContainer,
       currentSettings.featureFlags,
       getCurrentSettings,
-      handleUpdate,
-      showSettingsInfo
+      handleUpdate
     );
   });
 

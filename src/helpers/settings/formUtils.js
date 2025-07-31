@@ -146,6 +146,7 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
  * 1. Sort `gameModes` by `order` and create a toggle for each.
  * 2. When toggled, update navigation visibility via `updateNavigationItemHidden`.
  * 3. Persist the updated `gameModes` setting using `handleUpdate`.
+ * 4. Show a snackbar confirming the new mode state.
  *
  * @param {HTMLElement} container - Target container for switches.
  * @param {Array} gameModes - List of mode definitions.
@@ -177,8 +178,12 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
     input.addEventListener("change", () => {
       const prev = !input.checked;
       const updated = { ...getCurrentSettings().gameModes, [mode.id]: input.checked };
-      handleUpdate("gameModes", updated, () => {
-        input.checked = prev;
+      Promise.resolve(
+        handleUpdate("gameModes", updated, () => {
+          input.checked = prev;
+        })
+      ).then(() => {
+        showSnackbar(`${mode.name} ${input.checked ? "enabled" : "disabled"}`);
       });
       updateNavigationItemHidden(mode.id, !input.checked).catch((err) => {
         console.error("Failed to update navigation item", err);
@@ -195,19 +200,14 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
  * @pseudocode
  * 1. For each flag, generate a labelled toggle switch element and description.
  * 2. Persist updates via `handleUpdate` when toggled.
+ * 3. After saving, show a snackbar confirming the new state.
  *
  * @param {HTMLElement} container - Container for the switches.
  * @param {Record<string, { enabled: boolean, label: string, description: string }>} flags - Feature flag metadata.
  * @param {Function} getCurrentSettings - Returns current settings.
  * @param {Function} handleUpdate - Persist function.
  */
-export function renderFeatureFlagSwitches(
-  container,
-  flags,
-  getCurrentSettings,
-  handleUpdate,
-  onToggleInfo
-) {
+export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, handleUpdate) {
   if (!container || !flags) return;
   Object.keys(flags).forEach((flag) => {
     const kebab = flag.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
@@ -235,7 +235,7 @@ export function renderFeatureFlagSwitches(
           input.checked = prev;
         })
       ).then(() => {
-        if (onToggleInfo) onToggleInfo(info.label, info.description);
+        showSnackbar(`${info.label} ${input.checked ? "enabled" : "disabled"}`);
       });
     });
   });
