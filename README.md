@@ -236,7 +236,7 @@ logo in the header.
 - `layout.css` – overall page layout/grid.
 - `components.css` – collection of `@import` rules that pull in
   reusable UI sub-files like `buttons.css`, `card.css`, `navbar.css`,
-  `modal.css`, and `settings.css`. All `<button>` elements use design
+  `modal.css`, `settings.css`, and `sidebar.css`. All `<button>` elements use design
   tokens such as `--button-bg`, `--button-text-color`,
   `--color-slider-dot`, and `--color-slider-active`. The helper
   `setupButtonEffects()` adds a Material-style ripple when elements with
