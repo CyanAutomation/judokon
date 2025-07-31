@@ -5,6 +5,7 @@ import { applyMotionPreference } from "../motionUtils.js";
 import { updateNavigationItemHidden } from "../gameModeUtils.js";
 import { showSettingsError } from "../showSettingsError.js";
 import { showSnackbar } from "../showSnackbar.js";
+import { toggleViewportSimulation } from "../viewportDebug.js";
 
 /**
  * Apply a value to an input or checkbox element.
@@ -201,6 +202,7 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
  * 1. For each flag, generate a labelled toggle switch element and description.
  * 2. Persist updates via `handleUpdate` when toggled.
  * 3. After saving, show a snackbar confirming the new state.
+ * 4. When toggling `viewportSimulation`, call `toggleViewportSimulation`.
  *
  * @param {HTMLElement} container - Container for the switches.
  * @param {Record<string, { enabled: boolean, label: string, description: string }>} flags - Feature flag metadata.
@@ -236,6 +238,9 @@ export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, 
         })
       ).then(() => {
         showSnackbar(`${info.label} ${input.checked ? "enabled" : "disabled"}`);
+        if (flag === "viewportSimulation") {
+          toggleViewportSimulation(input.checked);
+        }
       });
     });
   });

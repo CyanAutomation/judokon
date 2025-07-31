@@ -16,8 +16,9 @@
  *       module uses it for subsequent rounds.
  *    c. Load feature flags, set `data-*` attributes on `#battle-area`, and
  *       toggle the debug panel based on the `battleDebugPanel` flag.
- *    d. Invoke `startRoundWrapper` to begin the match.
- *    e. Initialize tooltips and show the stat help tooltip once for new users.
+ *    d. Toggle the `.simulate-viewport` class based on the viewport flag.
+ *    e. Invoke `startRoundWrapper` to begin the match.
+ *    f. Initialize tooltips and show the stat help tooltip once for new users.
  * 5. Execute `setupClassicBattlePage` with `onDomReady`.
  */
 import { startRound as classicStartRound, handleStatSelection } from "./classicBattle.js";
@@ -26,6 +27,7 @@ import { waitForComputerCard } from "./battleJudokaPage.js";
 import { loadSettings } from "./settingsUtils.js";
 import { initTooltips } from "./tooltip.js";
 import { setTestMode } from "./testModeUtils.js";
+import { toggleViewportSimulation } from "./viewportDebug.js";
 
 function enableStatButtons(enable = true) {
   document.querySelectorAll("#stat-buttons button").forEach((btn) => {
@@ -79,6 +81,8 @@ export async function setupClassicBattlePage() {
     battleArea.dataset.randomStat = String(Boolean(settings.featureFlags.randomStatMode));
     battleArea.dataset.testMode = String(Boolean(settings.featureFlags.enableTestMode?.enabled));
   }
+
+  toggleViewportSimulation(Boolean(settings.featureFlags.viewportSimulation?.enabled));
 
   setTestMode(Boolean(settings.featureFlags.enableTestMode?.enabled));
 

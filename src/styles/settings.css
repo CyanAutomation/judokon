@@ -187,3 +187,9 @@
   line-height: 1.4;
   color: var(--color-text);
 }
+
+/* Simulated viewport for screenshot testing */
+body.simulate-viewport {
+  width: 375px;
+  margin-inline: auto;
+}

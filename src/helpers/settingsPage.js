@@ -4,7 +4,8 @@
  * @pseudocode
  * 1. Load saved settings and available navigation items.
  * 2. Apply the stored display mode and motion preference.
- * 3. Initialize the page controls and event listeners.
+ * 3. Toggle the `.simulate-viewport` class based on the viewport flag.
+ * 4. Initialize the page controls and event listeners.
  */
 import { loadSettings, updateSetting, resetSettings } from "./settingsUtils.js";
 import { loadNavigationItems } from "./gameModeUtils.js";
@@ -16,6 +17,7 @@ import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
 import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
+import { toggleViewportSimulation } from "./viewportDebug.js";
 
 import {
   applyInitialControlValues,
@@ -145,6 +147,7 @@ function initializeControls(settings, gameModes) {
       applyDisplayMode(currentSettings.displayMode);
     });
     applyMotionPreference(currentSettings.motionEffects);
+    toggleViewportSimulation(Boolean(currentSettings.featureFlags.viewportSimulation?.enabled));
     initTooltips();
     clearToggles(modesContainer);
     renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
@@ -168,6 +171,7 @@ async function initializeSettingsPage() {
     const gameModes = await loadNavigationItems();
     applyDisplayMode(settings.displayMode);
     applyMotionPreference(settings.motionEffects);
+    toggleViewportSimulation(Boolean(settings.featureFlags.viewportSimulation?.enabled));
     initializeControls(settings, gameModes);
     setupSectionToggles();
     initTooltips();
