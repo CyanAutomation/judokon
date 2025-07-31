@@ -50,12 +50,6 @@
       <main class="container" role="main">
         <section id="battle-area">
           <div id="player-card" class="card-slot"></div>
-          <div id="computer-card" class="card-slot" aria-label="Mystery Judoka: hidden card">
-            <!--
-  Mystery Judoka card is rendered here. ARIA attributes and stat labels should be set dynamically for accessibility compliance (see PRD: Mystery Card).
--->
-          </div>
-
           <div id="controls">
             <div class="stat-controls">
               <div
@@ -128,6 +122,11 @@
             <div id="debug-panel" class="debug-panel hidden">
               <pre id="debug-output" role="status" aria-live="polite"></pre>
             </div>
+          </div>
+          <div id="computer-card" class="card-slot" aria-label="Mystery Judoka: hidden card">
+            <!--
+  Mystery Judoka card is rendered here. ARIA attributes and stat labels should be set dynamically for accessibility compliance (see PRD: Mystery Card).
+ -->
           </div>
         </section>
       </main>
