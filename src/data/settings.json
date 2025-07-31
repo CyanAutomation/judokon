@@ -30,6 +30,26 @@
       "enabled": false,
       "label": "Card Of The Day",
       "description": "Displays a rotating featured judoka card on the landing screen"
+    },
+    "viewportSimulation": {
+      "enabled": false,
+      "label": "Viewport Simulation",
+      "description": "Adds a dropdown to simulate common device viewport sizes"
+    },
+    "tooltipOverlayDebug": {
+      "enabled": false,
+      "label": "Tooltip Overlay Debug",
+      "description": "Shows bounding boxes for tooltip targets"
+    },
+    "layoutDebugPanel": {
+      "enabled": false,
+      "label": "Layout Debug Panel",
+      "description": "Displays CSS grid and flex outlines for debugging layout issues"
+    },
+    "navCacheResetButton": {
+      "enabled": false,
+      "label": "Navigation Cache Reset",
+      "description": "Adds a button to clear cached navigation data for troubleshooting"
     }
   }
 }
