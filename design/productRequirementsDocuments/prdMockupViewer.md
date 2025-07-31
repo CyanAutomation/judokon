@@ -34,6 +34,7 @@ Designers and developers previously relied on scattered folder structures to fin
 | P1       | Filename Display    | Shows filename of the currently displayed image              |
 | P1       | Mouse Navigation    | Next/Previous buttons for cycling images                     |
 | P1       | Keyboard Navigation | Supports left/right arrow keys for navigation                |
+| P1       | Sidebar File List   | Left panel lists all mockups for direct selection            |
 | P1       | Image Preloading    | Loads adjacent images to reduce wait time                    |
 | P2       | Accessibility       | Keyboard interaction, ARIA labels, and screen reader support |
 | P2       | Responsive Layout   | Adapts layout for desktop, tablet, and mobile                |
@@ -80,6 +81,7 @@ Designers and developers previously relied on scattered folder structures to fin
 
 **Layout Elements (Desktop View):**
 
+- Left sidebar lists all mockup files for quick navigation.
 - Image centered with filename below.
 - Images must scale to fit the viewport so wide mockups remain fully
   visible without horizontal scrolling.
@@ -98,6 +100,7 @@ Designers and developers previously relied on scattered folder structures to fin
   - [x] 1.1 Load and display mockup images from `design/mockups/`
   - [x] 1.2 Display filename below the image
   - [x] 1.3 Show first image on page load
+  - [x] 1.4 Provide sidebar list of mockups for selection
 - [x] 2.0 Implement Image Navigation
   - [x] 2.1 Add "Next" and "Previous" mouse buttons
   - [x] 2.2 Add left/right keyboard arrow navigation

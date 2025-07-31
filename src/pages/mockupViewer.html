@@ -31,13 +31,18 @@
         </div>
         <div class="header-spacer right"></div>
       </header>
-      <main class="kodokan-grid center-content" role="main">
-        <div class="slideshow-container">
-          <img id="mockup-image" class="mockup-image" src="" alt="mockup" />
-          <div id="mockup-filename" class="mockup-filename"></div>
-          <button class="prev" id="prev-btn" aria-label="Previous image">&#10094;</button>
-          <button class="next" id="next-btn" aria-label="Next image">&#10095;</button>
-        </div>
+      <main class="mockup-viewer" role="main">
+        <aside class="sidebar">
+          <ul id="mockup-list"></ul>
+        </aside>
+        <section class="preview">
+          <div class="slideshow-container">
+            <img id="mockup-image" class="mockup-image" src="" alt="mockup" />
+            <div id="mockup-filename" class="mockup-filename"></div>
+            <button class="prev" id="prev-btn" aria-label="Previous image">&#10094;</button>
+            <button class="next" id="next-btn" aria-label="Next image">&#10095;</button>
+          </div>
+        </section>
       </main>
       <footer>
         <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
