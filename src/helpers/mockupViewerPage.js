@@ -1,6 +1,7 @@
 import { setupButtonEffects } from "./buttonEffects.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
+import { createSidebarList } from "../components/SidebarList.js";
 
 /**
  * Initialize the mockup image carousel.
@@ -18,9 +19,9 @@ export function setupMockupViewerPage() {
   const filenameEl = document.getElementById("mockup-filename");
   const prevBtn = document.getElementById("prev-btn");
   const nextBtn = document.getElementById("next-btn");
-  const listEl = document.getElementById("mockup-list");
+  const listPlaceholder = document.getElementById("mockup-list");
 
-  if (!imgEl || !filenameEl || !prevBtn || !nextBtn || !listEl) {
+  if (!imgEl || !filenameEl || !prevBtn || !nextBtn || !listPlaceholder) {
     return;
   }
 
@@ -63,21 +64,12 @@ export function setupMockupViewerPage() {
     "mockupUpdateJudoka1.png"
   ];
 
-  files.forEach((file, i) => {
-    const li = document.createElement("li");
-    li.tabIndex = 0;
-    li.textContent = file;
-    li.addEventListener("click", () => showImage(i));
-    li.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        showImage(i);
-      }
-    });
-    listEl.appendChild(li);
-  });
-
   let currentIndex = 0;
+  const { element: listEl, select: listSelect } = createSidebarList(files, (i) => {
+    if (i !== currentIndex) showImage(i);
+  });
+  listEl.id = "mockup-list";
+  listPlaceholder.replaceWith(listEl);
 
   function showImage(index) {
     currentIndex = (index + files.length) % files.length;
@@ -87,9 +79,7 @@ export function setupMockupViewerPage() {
     filenameEl.textContent = file;
     imgEl.classList.add("fade");
     imgEl.style.display = "block";
-    Array.from(listEl.children).forEach((li, idx) => {
-      li.classList.toggle("selected", idx === currentIndex);
-    });
+    listSelect(currentIndex);
   }
 
   prevBtn.addEventListener("click", () => showImage(currentIndex - 1));

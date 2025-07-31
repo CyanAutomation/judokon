@@ -40,8 +40,9 @@ converts it with `markdownToHtml`—a wrapper around the minimal **Marked** pars
 Factory functions that create reusable UI elements. `Button.js` and
 `ToggleSwitch.js` return styled controls. `Modal.js` builds an accessible dialog with focus trapping and open/close helpers. `StatsPanel.js` constructs
 the `.card-stats` list for displaying attributes and can be reused anywhere
-stats need to be shown. `Card.js` provides a reusable content panel styled with
-the `.card` class. The `createModal()` factory returns `{ element, open, close }` and
+stats need to be shown. `SidebarList.js` produces a selectable sidebar menu and
+returns `{ element, select }` to control the highlighted item. `Card.js` provides
+a reusable content panel styled with the `.card` class. The `createModal()` factory returns `{ element, open, close }` and
 automatically closes on backdrop clicks or when Escape is pressed while
 keeping focus trapped inside the dialog. Pages create their content fragment,
 pass it to `createModal()`, and call `open()` when needed. `StatsPanel.js`

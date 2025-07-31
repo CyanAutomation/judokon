@@ -1,6 +1,7 @@
 import { onDomReady } from "./domReady.js";
 import { markdownToHtml } from "./markdownToHtml.js";
 import { initTooltips } from "./tooltip.js";
+import { createSidebarList } from "../components/SidebarList.js";
 
 /**
  * Initialize the Product Requirements Document reader page.
@@ -8,8 +9,8 @@ import { initTooltips } from "./tooltip.js";
  * @pseudocode
  * 1. Load all markdown files from the PRD directory using `import.meta.glob`.
  * 2. Convert each file to HTML with `parserFn` (defaults to `markdownToHtml`).
- * 3. Build sidebar list items for each document and select the first one.
- * 4. Implement `select(index)` to render the HTML and highlight the item.
+ * 3. Build sidebar list items using `createSidebarList` and select the first document.
+ * 4. Implement `selectDoc(index)` to render the HTML and highlight the item.
  * 5. Provide next/previous navigation with wrap-around.
  *    - Attach click handlers to all navigation buttons.
  * 6. Support arrow key and swipe gestures for navigation.
@@ -61,38 +62,38 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     }
   }
   const container = document.getElementById("prd-content");
-  const listContainer = document.getElementById("prd-list");
+  const listPlaceholder = document.getElementById("prd-list");
   const nextButtons = document.querySelectorAll('[data-nav="next"]');
   const prevButtons = document.querySelectorAll('[data-nav="prev"]');
 
-  if (!container || !listContainer || documents.length === 0) return;
+  if (!container || !listPlaceholder || documents.length === 0) return;
 
-  FILES.forEach((file, i) => {
-    const li = document.createElement("li");
-    li.tabIndex = 0;
-    li.textContent = file
+  const labels = FILES.map((file) =>
+    file
       .replace(/^prd/, "")
       .replace(/\.md$/, "")
       .replace(/([A-Z])/g, " $1")
-      .trim();
-    li.addEventListener("click", () => select(i));
-    li.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        select(i);
-      }
-    });
-    listContainer.appendChild(li);
+      .trim()
+  );
+
+  let current = 0;
+  const { element: listEl, select: listSelect } = createSidebarList(labels, (i) => {
+    current = i;
+    container.innerHTML = documents[current];
+    container.classList.remove("fade-in");
+    void container.offsetWidth;
+    container.classList.add("fade-in");
+    initTooltips();
   });
+  listEl.id = "prd-list";
+  listPlaceholder.replaceWith(listEl);
 
   let index = 0;
 
-  function select(i) {
+  function selectDoc(i) {
     index = (i + documents.length) % documents.length;
+    listSelect(index);
     container.innerHTML = documents[index];
-    Array.from(listContainer.children).forEach((li, idx) => {
-      li.classList.toggle("selected", idx === index);
-    });
     container.classList.remove("fade-in");
     void container.offsetWidth;
     container.classList.add("fade-in");
@@ -100,11 +101,11 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   }
 
   function showNext() {
-    select(index + 1);
+    selectDoc(index + 1);
   }
 
   function showPrev() {
-    select(index - 1);
+    selectDoc(index - 1);
   }
 
   nextButtons.forEach((btn) => btn.addEventListener("click", showNext));
@@ -126,7 +127,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     }
   });
 
-  select(0);
+  selectDoc(0);
 }
 
 if (!window.SKIP_PRD_AUTO_INIT) {

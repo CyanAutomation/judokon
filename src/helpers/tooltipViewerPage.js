@@ -2,6 +2,7 @@ import { fetchJson } from "./dataUtils.js";
 import { parseTooltipText, flattenTooltips, initTooltips } from "./tooltip.js";
 import { DATA_DIR } from "./constants.js";
 import { onDomReady } from "./domReady.js";
+import { createSidebarList } from "../components/SidebarList.js";
 
 /**
  * Initialize the Tooltip Viewer page.
@@ -16,7 +17,7 @@ import { onDomReady } from "./domReady.js";
  */
 export async function setupTooltipViewerPage() {
   const searchInput = document.getElementById("tooltip-search");
-  const listEl = document.getElementById("tooltip-list");
+  let listPlaceholder = document.getElementById("tooltip-list");
   const previewEl = document.getElementById("tooltip-preview");
   const rawEl = document.getElementById("tooltip-raw");
   const keyCopyBtn = document.getElementById("copy-key-btn");
@@ -32,42 +33,40 @@ export async function setupTooltipViewerPage() {
     return;
   }
 
-  function createItem(key, body) {
-    const li = document.createElement("li");
-    li.tabIndex = 0;
-    li.textContent = key;
-    const valid = typeof body === "string" && body.trim().length > 0;
-    li.dataset.key = key;
-    li.dataset.body = body;
-    li.dataset.valid = String(valid);
-    if (!valid) li.classList.add("invalid");
-    li.addEventListener("click", () => select(key));
-    li.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        select(key);
-      }
-    });
-    return li;
-  }
+  let listSelect;
 
   function renderList(filter = "") {
-    listEl.textContent = "";
+    const items = [];
     const terms = filter.toLowerCase().split(/\s+/).filter(Boolean);
     Object.entries(data).forEach(([key, body]) => {
       const haystack = `${key} ${body}`.toLowerCase();
       const match = terms.every((t) => haystack.includes(t));
-      if (match) listEl.appendChild(createItem(key, body));
+      if (match) {
+        const valid = typeof body === "string" && body.trim().length > 0;
+        items.push({
+          label: key,
+          className: valid ? undefined : "invalid",
+          dataset: { key, body, valid: String(valid) }
+        });
+      }
     });
+    const result = createSidebarList(items, (i) => {
+      select(items[i].dataset.key);
+    });
+    listSelect = result.select;
+    result.element.id = "tooltip-list";
+    listPlaceholder.replaceWith(result.element);
+    listPlaceholder = result.element;
   }
 
   let selectedKey;
   function select(key) {
     selectedKey = key;
     const body = data[key] ?? "";
-    Array.from(listEl.children).forEach((el) => {
-      el.classList.toggle("selected", el.dataset.key === key);
-    });
+    if (listSelect) {
+      const index = Array.from(listPlaceholder.children).findIndex((el) => el.dataset.key === key);
+      if (index !== -1) listSelect(index);
+    }
     previewEl.innerHTML = parseTooltipText(body);
     rawEl.textContent = body;
     keyCopyBtn.dataset.copy = key;
@@ -96,7 +95,7 @@ export async function setupTooltipViewerPage() {
   renderList();
   if (location.hash) {
     const key = decodeURIComponent(location.hash.slice(1));
-    const el = listEl.querySelector(`[data-key="${key}"]`);
+    const el = listPlaceholder.querySelector(`[data-key="${key}"]`);
     if (el) {
       select(key);
       el.scrollIntoView({ block: "center" });
