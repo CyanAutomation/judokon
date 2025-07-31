@@ -6,6 +6,8 @@ import { test, expect } from "./fixtures/commonSetup.js";
 test.describe("Classic battle button reset", () => {
   test("no button stays selected after next round", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
+    const timer = page.locator("header #next-round-timer");
+    await timer.waitFor();
     await page.locator("#stat-buttons button[data-stat='power']").click();
     await page.locator("#next-round-button").click();
     await page.waitForFunction(() => {
@@ -17,6 +19,8 @@ test.describe("Classic battle button reset", () => {
 
   test("tap highlight color cleared after reset", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
+    const timer = page.locator("header #next-round-timer");
+    await timer.waitFor();
     const btn = page.locator("#stat-buttons button[data-stat='power']");
     await btn.click();
     await page.locator("#next-round-button").click();
