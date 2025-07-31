@@ -134,3 +134,24 @@ h2 {
     transform: translateX(calc(-250px * 7));
   }
 }
+
+html {
+  view-transition-name: root;
+}
+
+::view-transition-old(root) {
+  animation-delay: 500ms;
+}
+
+::view-transition-new(root) {
+  animation: move-in 500ms forwards;
+}
+
+@keyframes move-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
