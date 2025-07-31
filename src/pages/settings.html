@@ -68,34 +68,40 @@
               role="radiogroup"
               aria-label="Display Mode"
             >
-              <input
-                type="radio"
-                id="display-mode-light"
-                name="display-mode"
-                value="light"
-                tabindex="0"
-              />
-              <label for="display-mode-light">Light</label>
-              <input
-                type="radio"
-                id="display-mode-dark"
-                name="display-mode"
-                value="dark"
-                tabindex="-1"
-              />
-              <label for="display-mode-dark">Dark</label>
-              <input
-                type="radio"
-                id="display-mode-gray"
-                name="display-mode"
-                value="gray"
-                tabindex="-1"
-              />
-              <label for="display-mode-gray">Gray</label>
+              <div class="display-mode-flex">
+                <div class="display-mode-option">
+                  <input
+                    type="radio"
+                    id="display-mode-light"
+                    name="display-mode"
+                    value="light"
+                    tabindex="0"
+                  />
+                  <label for="display-mode-light">Light</label>
+                </div>
+                <div class="display-mode-option">
+                  <input
+                    type="radio"
+                    id="display-mode-dark"
+                    name="display-mode"
+                    value="dark"
+                    tabindex="-1"
+                  />
+                  <label for="display-mode-dark">Dark</label>
+                </div>
+                <div class="display-mode-option">
+                  <input
+                    type="radio"
+                    id="display-mode-gray"
+                    name="display-mode"
+                    value="gray"
+                    tabindex="-1"
+                  />
+                  <label for="display-mode-gray">Gray</label>
+                </div>
+              </div>
             </div>
           </fieldset>
-          <!-- </div>
-          </div> -->
           <br />
 
           <div class="settings-section">
@@ -225,35 +231,39 @@
           </div>
           <fieldset id="links-container" class="settings-form">
             <legend>Links</legend>
+            <ul class="settings-links-list">
+              <li class="settings-item">
+                <a href="../pages/changeLog.html" id="changelog-link" tabindex="99"
+                  >View Change Log</a
+                >
+              </li>
+              <li class="settings-item">
+                <a href="../pages/prdViewer.html" id="prdviewer-link" tabindex="100"
+                  >View PRD Documents</a
+                >
+              </li>
+              <li class="settings-item">
+                <a href="../pages/mockupViewer.html" id="mockupviewer-link" tabindex="101"
+                  >View Design Mockups</a
+                >
+              </li>
+              <li class="settings-item">
+                <a href="../pages/tooltipViewer.html" id="tooltipviewer-link" tabindex="103"
+                  >View Tooltip Descriptions</a
+                >
+              </li>
+              <li class="settings-item">
+                <a href="../pages/vectorSearch.html" id="vectorSearch-link" tabindex="102"
+                  >Vector Search for RAG</a
+                >
+              </li>
+            </ul><br />
             <div class="settings-item">
-              <a href="../pages/changeLog.html" id="changelog-link" tabindex="99"
-                >View Change Log</a
-              >
-            </div>
-            <div class="settings-item">
-              <a href="../pages/prdViewer.html" id="prdviewer-link" tabindex="100"
-                >View PRD Documents</a
-              >
-            </div>
-            <div class="settings-item">
-              <a href="../pages/mockupViewer.html" id="mockupviewer-link" tabindex="101"
-                >View Design Mockups</a
-              >
-            </div>
-            <div class="settings-item">
-              <a href="../pages/tooltipViewer.html" id="tooltipviewer-link" tabindex="103"
-                >View Tooltip Descriptions</a
-              >
-            </div>
-            <div class="settings-item">
-              <a href="../pages/vectorSearch.html" id="vectorSearch-link" tabindex="102"
-                >Vector Search for RAG</a
-              >
-            </div>
-            <div class="settings-item">
-              <button type="button" id="reset-settings-button" tabindex="103">
-                Restore Defaults
-              </button>
+              <div class="centered-button-container" style="display: flex; justify-content: center;">
+                <button type="button" id="reset-settings-button" tabindex="103">
+                  Restore Defaults
+                </button>
+              </div>
             </div>
           </fieldset>
         </form>
