@@ -21,3 +21,8 @@
 .tooltip em {
   font-style: italic;
 }
+
+/* Debug overlay for tooltip targets */
+.tooltip-overlay-debug [data-tooltip-id] {
+  outline: 1px dashed var(--color-primary);
+}

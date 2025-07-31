@@ -6,6 +6,7 @@ import { updateNavigationItemHidden } from "../gameModeUtils.js";
 import { showSettingsError } from "../showSettingsError.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { toggleViewportSimulation } from "../viewportDebug.js";
+import { toggleTooltipOverlayDebug } from "../tooltipOverlayDebug.js";
 
 /**
  * Apply a value to an input or checkbox element.
@@ -240,6 +241,9 @@ export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, 
         showSnackbar(`${info.label} ${input.checked ? "enabled" : "disabled"}`);
         if (flag === "viewportSimulation") {
           toggleViewportSimulation(input.checked);
+        }
+        if (flag === "tooltipOverlayDebug") {
+          toggleTooltipOverlayDebug(input.checked);
         }
       });
     });
