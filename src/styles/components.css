@@ -21,3 +21,17 @@
   margin: 5vh auto;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 }
+
+.display-mode-flex {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.display-mode-option {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem; /* reduce gap between radio and label */
+}
