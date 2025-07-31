@@ -183,14 +183,17 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
       checked: isChecked,
       ariaLabel: mode.name
     });
+    const input = wrapper.querySelector("input");
     if (mode.description) {
       const desc = document.createElement("p");
       desc.className = "settings-description";
+      desc.id = `mode-${mode.id}-desc`;
       desc.textContent = mode.description;
       wrapper.appendChild(desc);
+      if (input) input.setAttribute("aria-describedby", desc.id);
     }
     container.appendChild(wrapper);
-    const input = wrapper.querySelector("input");
+    if (!input) return;
     input.addEventListener("change", () => {
       const prev = !input.checked;
       const updated = { ...getCurrentSettings().gameModes, [mode.id]: input.checked };
@@ -236,12 +239,15 @@ export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, 
       ariaLabel: info.label,
       tooltipId: info.tooltipId
     });
+    const input = wrapper.querySelector("input");
     const desc = document.createElement("p");
     desc.className = "settings-description";
+    desc.id = `feature-${kebab}-desc`;
     desc.textContent = info.description;
     wrapper.appendChild(desc);
+    if (input) input.setAttribute("aria-describedby", desc.id);
     container.appendChild(wrapper);
-    const input = wrapper.querySelector("input");
+    if (!input) return;
     input.addEventListener("change", () => {
       const prev = !input.checked;
       const updated = {

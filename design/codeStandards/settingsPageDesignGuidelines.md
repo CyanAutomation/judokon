@@ -105,6 +105,8 @@ Reuse the following markup for general settings, game modes, and feature flags:
 
   - Use `<label>` where possible
   - For custom toggles, add `aria-label` to `<input>`
+  - When a toggle includes descriptive text, give the `<p>` an `id` and
+    reference it with `aria-describedby` on the checkbox input
   - Fieldsets should include meaningful `<legend>`
 
 - **Screen Reader Considerations**
