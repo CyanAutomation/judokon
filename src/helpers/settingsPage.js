@@ -19,6 +19,7 @@ import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
+import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { populateNavbar } from "./navigationBar.js";
 import { showSnackbar } from "./showSnackbar.js";
 
@@ -178,6 +179,7 @@ function initializeControls(settings, gameModes) {
     applyMotionPreference(currentSettings.motionEffects);
     toggleViewportSimulation(Boolean(currentSettings.featureFlags.viewportSimulation?.enabled));
     toggleTooltipOverlayDebug(Boolean(currentSettings.featureFlags.tooltipOverlayDebug?.enabled));
+    toggleLayoutDebugPanel(Boolean(currentSettings.featureFlags.layoutDebugPanel?.enabled));
     clearToggles(modesContainer);
     renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
     clearToggles(flagsContainer);
@@ -207,6 +209,7 @@ async function initializeSettingsPage() {
     applyMotionPreference(settings.motionEffects);
     toggleViewportSimulation(Boolean(settings.featureFlags.viewportSimulation?.enabled));
     toggleTooltipOverlayDebug(Boolean(settings.featureFlags.tooltipOverlayDebug?.enabled));
+    toggleLayoutDebugPanel(Boolean(settings.featureFlags.layoutDebugPanel?.enabled));
     initializeControls(settings, gameModes);
     setupSectionToggles();
     initTooltips();

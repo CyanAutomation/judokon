@@ -454,7 +454,7 @@ Advanced or debug-oriented flags live under a collapsible **Advanced Settings** 
 
 Game mode data now falls back to a bundled JSON import if the network request fails, so navigation works offline.
 Corrupted settings are detected and automatically reset to defaults, ensuring the Settings page always remains usable.
-Use the **Restore Defaults** button in the Links section to reset all settings. A confirmation dialog now appears before applying the defaults.
+Use the **Restore Defaults** button in the Links section to reset all settings. A confirmation dialog now appears before applying the defaults. The action also turns off any active debug overlays, including the Layout Debug Panel.
 
 ## Browser Compatibility
 
