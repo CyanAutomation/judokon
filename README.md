@@ -418,6 +418,13 @@ The Settings page (`src/pages/settings.html`) groups all player preferences, inc
 Default flag states and descriptions now live in `src/data/settings.json`. The **Tooltips** toggle on this page lets you turn help tooltips on or off globally.
 Each change triggers a small snackbar at the bottom of the screen confirming the new setting. Every feature flag input also includes a `data-flag` attribute with the camelCase flag name so automation scripts can locate specific toggles.
 
+### Tooltip Availability
+
+Every toggle on the Settings page exposes contextual help via a `data-tooltip-id` attribute.
+Hovering or focusing the info icon beside a toggle displays text from `tooltips.json`.
+Feature flag inputs also include `data-flag` for automated scripts, so agents can
+reliably enable or disable individual flags.
+
 Settings tooltips are referenced with `settings.*` keys in `tooltips.json`:
 
 ```

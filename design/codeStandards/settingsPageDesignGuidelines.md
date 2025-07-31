@@ -58,13 +58,23 @@ Reuse the following markup for general settings, game modes, and feature flags:
   - Reuse section `<legend>` headings with consistent styles (font: Russo One, 24px).
 
 - **Toggle Switch Pattern**
-  Use the existing custom toggle structure:
+  Use the existing custom toggle structure. Inputs must include a
+  `data-tooltip-id` attribute so the help text can be displayed. Feature flag
+  toggles must additionally provide `data-flag` for automation.
+  Example markup:
 
   ```html
-  <label for="new-toggle-id" class="switch">
-    <input type="checkbox" id="new-toggle-id" name="newSetting" aria-label="New Setting Name" />
+  <label for="feature-random-stat-mode" class="switch">
+    <input
+      type="checkbox"
+      id="feature-random-stat-mode"
+      name="randomStatMode"
+      data-tooltip-id="settings.randomStatMode"
+      data-flag="randomStatMode"
+      aria-label="Random Stat Mode"
+    />
     <div class="slider round"></div>
-    <span>New Setting Name</span>
+    <span>Random Stat Mode</span>
   </label>
   ```
 
