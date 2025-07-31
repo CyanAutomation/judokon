@@ -1,9 +1,20 @@
 import { describe, it, expect } from "vitest";
 import { createStatsPanel } from "../../src/components/StatsPanel.js";
 
+vi.mock("../../src/helpers/stats.js", () => ({
+  loadStatNames: () =>
+    Promise.resolve([
+      { name: "Power" },
+      { name: "Speed" },
+      { name: "Technique" },
+      { name: "Kumi-kata" },
+      { name: "Ne-waza" }
+    ])
+}));
+
 describe("createStatsPanel", () => {
-  it("creates DOM structure with stat values", () => {
-    const panel = createStatsPanel({
+  it("creates DOM structure with stat values", async () => {
+    const panel = await createStatsPanel({
       power: 5,
       speed: 6,
       technique: 7,
@@ -24,8 +35,8 @@ describe("createStatsPanel", () => {
     expect(labels[4]).toHaveAttribute("data-tooltip-id", "stat.newaza");
   });
 
-  it("applies custom type and class", () => {
-    const panel = createStatsPanel(
+  it("applies custom type and class", async () => {
+    const panel = await createStatsPanel(
       { power: 1, speed: 2 },
       { type: "legendary", className: "extra", ariaLabel: "Player Stats" }
     );
@@ -34,7 +45,7 @@ describe("createStatsPanel", () => {
     expect(panel).toHaveAttribute("aria-label", "Player Stats");
   });
 
-  it("throws when stats is missing", () => {
-    expect(() => createStatsPanel(null)).toThrowError("Stats object is required");
+  it("throws when stats is missing", async () => {
+    await expect(createStatsPanel(null)).rejects.toThrowError("Stats object is required");
   });
 });

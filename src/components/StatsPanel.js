@@ -4,11 +4,13 @@
  * @pseudocode
  * 1. Validate the `stats` object and throw an error when invalid.
  * 2. Resolve panel classes from the provided `type` and `className` options.
- * 3. Build a `<div>` with class `card-stats` containing a `<ul>` list.
- *    - For each stat key (power, speed, technique, kumikata, newaza)
- *      create an `<li>` with a label, value, and tooltip ID.
- * 4. Apply an accessible `aria-label` to the panel when provided.
- * 5. Return the completed panel element.
+ * 3. Load stat labels via `loadStatNames()` and pair them with the
+ *    corresponding values from the `stats` object.
+ * 4. Build a `<div>` with class `card-stats` containing a `<ul>` list.
+ *    - For each loaded label create an `<li>` with the label, value and
+ *      tooltip id.
+ * 5. Apply an accessible `aria-label` to the panel when provided.
+ * 6. Return the completed panel element.
  *
  * @param {object} stats - Object with stat values.
  * @param {object} [options] - Optional configuration.
@@ -18,8 +20,9 @@
  * @returns {HTMLDivElement} The stats panel element.
  */
 import { escapeHTML } from "../helpers/utils.js";
-
-export function createStatsPanel(stats, options = {}) {
+import { loadStatNames } from "../helpers/stats.js";
+import { STATS } from "../helpers/battleEngine.js";
+export async function createStatsPanel(stats, options = {}) {
   if (!stats || typeof stats !== "object") {
     throw new Error("Stats object is required");
   }
@@ -46,13 +49,13 @@ export function createStatsPanel(stats, options = {}) {
     list.appendChild(li);
   }
 
-  const statsEntries = [
-    { label: "Power", key: power, id: "power" },
-    { label: "Speed", key: speed, id: "speed" },
-    { label: "Technique", key: technique, id: "technique" },
-    { label: "Kumi-kata", key: kumikata, id: "kumikata" },
-    { label: "Ne-waza", key: newaza, id: "newaza" }
-  ];
+  const names = await loadStatNames();
+  const values = [power, speed, technique, kumikata, newaza];
+  const statsEntries = STATS.map((key, index) => ({
+    label: names[index]?.name || key,
+    key: values[index],
+    id: key
+  }));
 
   statsEntries.forEach(({ label, key, id }) => addItem(label, key, id));
   panel.appendChild(list);

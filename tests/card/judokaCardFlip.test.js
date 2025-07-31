@@ -1,6 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { generateJudokaCardHTML } from "../../src/helpers/cardBuilder.js";
 
+vi.mock("../../src/helpers/stats.js", () => ({
+  loadStatNames: () =>
+    Promise.resolve([
+      { name: "Power" },
+      { name: "Speed" },
+      { name: "Technique" },
+      { name: "Kumi-kata" },
+      { name: "Ne-waza" }
+    ])
+}));
+
 const judoka = {
   id: 1,
   firstname: "John",

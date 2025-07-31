@@ -1,5 +1,16 @@
 import { createScrollButton } from "../../src/helpers/carousel/scroll.js";
 import { generateCardPortrait, generateCardStats } from "../../src/helpers/cardRender.js";
+
+vi.mock("../../src/helpers/stats.js", () => ({
+  loadStatNames: () =>
+    Promise.resolve([
+      { name: "Power" },
+      { name: "Speed" },
+      { name: "Technique" },
+      { name: "Kumi-kata" },
+      { name: "Ne-waza" }
+    ])
+}));
 import { vi } from "vitest";
 
 // Utility to normalize HTML for comparison
@@ -73,7 +84,7 @@ describe("createScrollButton", () => {
 });
 
 describe("generateCardStats", () => {
-  it("should return a valid HTML string for a judoka's stats", () => {
+  it("should return a valid HTML string for a judoka's stats", async () => {
     const card = {
       stats: { power: 9, speed: 6, technique: 7, kumikata: 7, newaza: 8 }
     };
@@ -87,49 +98,49 @@ describe("generateCardStats", () => {
       '<li class="stat"><strong data-tooltip-id="stat.newaza">Ne-waza</strong><span>8</span></li>' +
       "</ul></div>";
 
-    const result = generateCardStats(card);
+    const result = await generateCardStats(card);
     expect(normalizeHtml(result)).toBe(normalizeHtml(expectedHtml));
   });
 
-  it("should handle missing stats gracefully", () => {
+  it("should handle missing stats gracefully", async () => {
     const card = { stats: {} };
-    const result = generateCardStats(card);
+    const result = await generateCardStats(card);
     expect(result).toContain('<div class="card-stats common"');
   });
 
-  it("should throw an error if stats object is missing", () => {
+  it("should throw an error if stats object is missing", async () => {
     const card = {};
-    expect(() => generateCardStats(card)).toThrowError("Stats object is required");
+    await expect(generateCardStats(card)).rejects.toThrowError("Stats object is required");
   });
 
-  it("should throw an error if stats is null", () => {
+  it("should throw an error if stats is null", async () => {
     const card = { stats: null };
-    expect(() => generateCardStats(card)).toThrowError("Stats object is required");
+    await expect(generateCardStats(card)).rejects.toThrowError("Stats object is required");
   });
 
-  it("should throw an error if stats is undefined", () => {
+  it("should throw an error if stats is undefined", async () => {
     const card = { stats: undefined };
-    expect(() => generateCardStats(card)).toThrowError("Stats object is required");
+    await expect(generateCardStats(card)).rejects.toThrowError("Stats object is required");
   });
 
-  it("should throw an error if card is null", () => {
-    expect(() => generateCardStats(null)).toThrowError("Card object is required");
+  it("should throw an error if card is null", async () => {
+    await expect(generateCardStats(null)).rejects.toThrowError("Card object is required");
   });
 
-  it("should throw an error if card is undefined", () => {
-    expect(() => generateCardStats(undefined)).toThrowError("Card object is required");
+  it("should throw an error if card is undefined", async () => {
+    await expect(generateCardStats(undefined)).rejects.toThrowError("Card object is required");
   });
 
-  it("should handle stats with missing keys gracefully", () => {
+  it("should handle stats with missing keys gracefully", async () => {
     const card = { stats: { power: 5 } };
-    const result = generateCardStats(card);
+    const result = await generateCardStats(card);
     expect(result).toContain("Power");
     expect(result).toContain("5");
   });
 
-  it("should escape HTML in stat values", () => {
+  it("should escape HTML in stat values", async () => {
     const card = { stats: { power: "<b>9</b>", speed: 6, technique: 7, kumikata: 7, newaza: 8 } };
-    const result = generateCardStats(card);
+    const result = await generateCardStats(card);
     expect(result).toContain("&lt;b&gt;9&lt;/b&gt;");
   });
 });

@@ -89,7 +89,7 @@ export function generateCardPortrait(card) {
  * @param {string} cardType - The type of card (e.g., "common", "rare").
  * @returns {string} The HTML string for the stats.
  */
-export function generateCardStats(card, cardType = "common") {
+export async function generateCardStats(card, cardType = "common") {
   if (!card || typeof card !== "object") {
     throw new Error("Card object is required");
   }
@@ -98,7 +98,7 @@ export function generateCardStats(card, cardType = "common") {
     throw new Error("Stats object is required");
   }
 
-  const panel = createStatsPanel(card.stats, { type: cardType });
+  const panel = await createStatsPanel(card.stats, { type: cardType });
   return panel.outerHTML;
 }
 

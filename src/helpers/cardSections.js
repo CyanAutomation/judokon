@@ -39,16 +39,16 @@ export function createPortraitSection(judoka) {
  *
  * @pseudocode
  * 1. Call `createStatsPanel` with the judoka stats and card type.
- * 2. Return the generated element.
+ * 2. Await the generated element and return it.
  * 3. On error, log and return `createNoDataContainer()`.
  *
  * @param {import("./types.js").Judoka} judoka - Judoka data object.
  * @param {string} cardType - Card rarity type.
  * @returns {HTMLElement} Stats panel element.
  */
-export function createStatsSection(judoka, cardType) {
+export async function createStatsSection(judoka, cardType) {
   try {
-    return createStatsPanel(judoka.stats, { type: cardType });
+    return await createStatsPanel(judoka.stats, { type: cardType });
   } catch (error) {
     console.error("Failed to generate stats:", error);
     return createNoDataContainer();
