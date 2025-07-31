@@ -230,6 +230,7 @@ To support AI-assisted testing, variant gameplay modes, and scalable development
   - Name format: camelCase
   - Example: `id="feature-random-stat-mode" name="randomStatMode"`
   - Common example flags include `Battle Debug Panel`, `Full Navigation Map`, and `Card Inspector`
+  - Include `data-flag="<camelCaseName>"` on the input element so automation scripts can locate specific toggles
 
 - **ARIA and Accessibility**
 

@@ -250,11 +250,11 @@ describe("settingsPage module", () => {
     const container = document.getElementById("feature-flags-container");
     expect(container.classList.contains("game-mode-toggle-container")).toBe(true);
     const randomInput = container.querySelector("#feature-random-stat-mode");
-    const debugInput = container.querySelector("#feature-battle-debug-panel");
+    const inspectorInput = container.querySelector('[data-flag="enableCardInspector"]');
     expect(randomInput).toBeTruthy();
-    expect(debugInput).toBeTruthy();
+    expect(inspectorInput).toBeTruthy();
     expect(randomInput.checked).toBe(true);
-    expect(debugInput.checked).toBe(false);
+    expect(inspectorInput.checked).toBe(false);
   });
 
   it("places feature flags inside the advanced settings section", async () => {
