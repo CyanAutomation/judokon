@@ -22,6 +22,10 @@
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 }
 
+.layout-debug-outline {
+  outline: 2px dashed red;
+}
+
 .display-mode-flex {
   display: flex;
   justify-content: space-evenly;

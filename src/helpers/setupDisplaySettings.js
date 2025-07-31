@@ -15,6 +15,7 @@ import { applyDisplayMode } from "./displayMode.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
+import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 
 async function init() {
   try {
@@ -22,6 +23,7 @@ async function init() {
     applyDisplayMode(settings.displayMode);
     applyMotionPreference(settings.motionEffects);
     toggleViewportSimulation(Boolean(settings.featureFlags.viewportSimulation?.enabled));
+    toggleLayoutDebugPanel(Boolean(settings.featureFlags.layoutDebugPanel?.enabled));
   } catch (error) {
     console.error("Failed to apply display mode:", error);
   }
