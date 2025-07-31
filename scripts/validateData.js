@@ -11,6 +11,9 @@ const schemaFiles = await glob("src/schemas/*.schema.json", { cwd: rootDir });
 if (!schemaFiles.includes("src/schemas/tooltips.schema.json")) {
   schemaFiles.push("src/schemas/tooltips.schema.json");
 }
+if (!schemaFiles.includes("src/schemas/statNames.schema.json")) {
+  schemaFiles.push("src/schemas/statNames.schema.json");
+}
 
 let hasErrors = false;
 for (const schemaPath of schemaFiles) {
