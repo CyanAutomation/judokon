@@ -68,3 +68,14 @@ describe("data files conform to schemas", () => {
     expect(validate(bad)).toBe(false);
   });
 });
+
+describe("statNames.json integrity", () => {
+  it("is sorted by statIndex with indexes 1-5", async () => {
+    const data = JSON.parse(await readFile(path.join(dataDir, "statNames.json"), "utf8"));
+    expect(data.length).toBe(5);
+    const indexes = data.map((e) => e.statIndex);
+    const sorted = [...indexes].sort((a, b) => a - b);
+    expect(indexes).toEqual(sorted);
+    expect(indexes).toEqual([1, 2, 3, 4, 5]);
+  });
+});
