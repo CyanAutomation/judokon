@@ -2,6 +2,7 @@ import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { escapeHTML } from "./utils.js";
 import { loadSettings } from "./settingsUtils.js";
+import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 
 let tooltipDataPromise;
 let cachedData;
@@ -99,12 +100,18 @@ function ensureTooltipElement() {
  * @returns {Promise<void>} Resolves when listeners are attached.
  */
 export async function initTooltips(root = document) {
+  let overlay = false;
   try {
-    const { tooltips = true } = await loadSettings();
-    if (!tooltips) return;
+    const settings = await loadSettings();
+    overlay = Boolean(settings.featureFlags?.tooltipOverlayDebug?.enabled);
+    if (!settings.tooltips) {
+      toggleTooltipOverlayDebug(false);
+      return;
+    }
   } catch {
     // ignore settings errors and assume enabled
   }
+  toggleTooltipOverlayDebug(overlay);
   const data = await loadTooltips();
   const elements = root.querySelectorAll?.("[data-tooltip-id]") || [];
   if (elements.length === 0) return;
