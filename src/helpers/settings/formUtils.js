@@ -41,7 +41,13 @@ function applyInputState(element, value) {
  */
 export function applyInitialControlValues(controls, settings) {
   applyInputState(controls.soundToggle, settings.sound);
+  if (controls.soundToggle && settings.tooltipIds?.sound) {
+    controls.soundToggle.dataset.tooltipId = settings.tooltipIds.sound;
+  }
   applyInputState(controls.motionToggle, settings.motionEffects);
+  if (controls.motionToggle && settings.tooltipIds?.motionEffects) {
+    controls.motionToggle.dataset.tooltipId = settings.tooltipIds.motionEffects;
+  }
   if (controls.displayRadios) {
     controls.displayRadios.forEach((radio) => {
       const isSelected = radio.value === settings.displayMode;
@@ -50,7 +56,13 @@ export function applyInitialControlValues(controls, settings) {
     });
   }
   applyInputState(controls.typewriterToggle, settings.typewriterEffect);
+  if (controls.typewriterToggle && settings.tooltipIds?.typewriterEffect) {
+    controls.typewriterToggle.dataset.tooltipId = settings.tooltipIds.typewriterEffect;
+  }
   applyInputState(controls.tooltipsToggle, settings.tooltips);
+  if (controls.tooltipsToggle && settings.tooltipIds?.tooltips) {
+    controls.tooltipsToggle.dataset.tooltipId = settings.tooltipIds.tooltips;
+  }
 }
 
 /**
@@ -221,7 +233,8 @@ export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, 
       id: `feature-${kebab}`,
       name: flag,
       checked: Boolean(getCurrentSettings().featureFlags[flag]?.enabled),
-      ariaLabel: info.label
+      ariaLabel: info.label,
+      tooltipId: info.tooltipId
     });
     const desc = document.createElement("p");
     desc.className = "settings-description";

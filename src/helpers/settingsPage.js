@@ -178,7 +178,6 @@ function initializeControls(settings, gameModes) {
     applyMotionPreference(currentSettings.motionEffects);
     toggleViewportSimulation(Boolean(currentSettings.featureFlags.viewportSimulation?.enabled));
     toggleTooltipOverlayDebug(Boolean(currentSettings.featureFlags.tooltipOverlayDebug?.enabled));
-    initTooltips();
     clearToggles(modesContainer);
     renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
     clearToggles(flagsContainer);
@@ -189,6 +188,7 @@ function initializeControls(settings, gameModes) {
       handleUpdate
     );
     addNavResetButton();
+    initTooltips();
     document.getElementById("feature-nav-cache-reset-button")?.addEventListener("change", () => {
       setTimeout(addNavResetButton);
     });

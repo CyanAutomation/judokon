@@ -5,7 +5,7 @@
  * 1. Create a wrapper div with class `settings-item`.
  * 2. Create a label with class `switch` and set `htmlFor` when an id is provided.
  * 3. Inside the label, add an `input` of type checkbox using provided options
- *    for `id`, `name`, `checked` and `aria-label`.
+ *    for `id`, `name`, `checked`, `aria-label` and optional `tooltipId`.
  * 4. Add a `div` acting as the slider and a `span` containing the label text.
  * 5. Append the input, slider and span to the label and return the wrapper
  *    containing the complete toggle switch markup.
@@ -16,10 +16,11 @@
  * @param {string} [options.name] - Name attribute for the input.
  * @param {boolean} [options.checked=false] - Initial checked state.
  * @param {string} [options.ariaLabel] - Custom ARIA label, defaults to labelText.
+ * @param {string} [options.tooltipId] - Tooltip identifier to attach to the input.
  * @returns {HTMLDivElement} Wrapper element containing the toggle switch.
  */
 export function createToggleSwitch(labelText, options = {}) {
-  const { id, name, checked = false, ariaLabel = labelText } = options;
+  const { id, name, checked = false, ariaLabel = labelText, tooltipId } = options;
 
   const wrapper = document.createElement("div");
   wrapper.className = "settings-item";
@@ -34,6 +35,7 @@ export function createToggleSwitch(labelText, options = {}) {
   if (name) input.name = name;
   input.checked = checked;
   input.setAttribute("aria-label", ariaLabel);
+  if (tooltipId) input.dataset.tooltipId = tooltipId;
 
   const slider = document.createElement("div");
   slider.className = "slider round";
