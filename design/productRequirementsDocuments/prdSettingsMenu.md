@@ -43,6 +43,8 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 | P1       | Sound Toggle                     | Binary toggle updating `settings.json` live on change.                                              |
 | P1       | Full Navigation Map Feature Flag | Enable or disable the full navigation map via feature flag; updates `settings.json` live on change. |
 | P3       | Test Mode Feature Flag           | Enables deterministic battles for automated testing.                                                |
+| P3       | Battle Debug Panel Feature Flag  | Adds a collapsible debug `<pre>` on battle pages showing match state.                                |
+| P3       | Card Inspector Feature Flag      | Reveals a panel on each card with its raw JSON for debugging.                                       |
 | P1       | Motion Effects Toggle            | Binary toggle updating `settings.json` live on change.                                              |
 | P1       | Typewriter Effect Toggle         | Enable or disable quote animation where supported (not used on the meditation screen). |
 | P1       | Tooltips Toggle                  | Globally enable or disable UI tooltips.                                                             |
@@ -62,6 +64,9 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 
 - **Sound (binary):** ON/OFF (default: ON)
 - **Full navigation map feature flag (binary):** ON/OFF (default: ON)
+- **Test mode feature flag (binary):** ON/OFF (default: OFF)
+- **Battle debug panel feature flag (binary):** ON/OFF (default: OFF)
+- **Card inspector feature flag (binary):** ON/OFF (default: OFF)
 - **Motion effects (binary):** ON/OFF (default: ON)
 - **Typewriter effect (binary):** ON/OFF (default: ON, not currently used on the meditation screen)
 - **Tooltips (binary):** ON/OFF (default: ON)
@@ -114,6 +119,18 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - AC-2.4 Enabling the flag displays a "Test Mode Active" banner on battle pages.
 - AC-2.5 Card draws and stat choices become deterministic for repeat tests.
 - AC-2.6 `data-test-mode="true"` appears on the battle area while active.
+
+### Battle Debug Panel Feature Flag
+
+- AC-2.7 Enabling the flag shows a collapsible debug panel on battle pages.
+- AC-2.8 The panel displays real-time match state inside a `<pre>` element.
+- AC-2.9 The panel is keyboard accessible and hidden by default.
+
+### Card Inspector Feature Flag
+
+- AC-2.10 Enabling the flag adds a collapsible panel on each card with its raw JSON.
+- AC-2.11 Opening the panel sets `data-inspector="true"` on the card.
+- AC-2.12 The inspector panel can be toggled via keyboard and is hidden initially.
 
 ### Motion Effects Toggle
 
