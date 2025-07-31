@@ -20,7 +20,8 @@ const pairs = [
   ["aesopsMeta.json", "aesopsMeta.schema.json"],
   ["japaneseConverter.json", "japaneseConverter.schema.json"],
   ["locations.json", "locations.schema.json"],
-  ["settings.json", "settings.schema.json"]
+  ["settings.json", "settings.schema.json"],
+  ["statNames.json", "statNames.schema.json"]
 ];
 
 let ajv;
