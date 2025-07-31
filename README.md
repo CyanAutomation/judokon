@@ -411,7 +411,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 
 ## Display Modes
 
-Light, dark and gray themes are supported. Changing modes uses a smooth cross-fade via the View Transitions API when supported; otherwise the colors update immediately. See [prdSettingsMenu.md](design/productRequirementsDocuments/prdSettingsMenu.md) for how the Display Mode switch applies these themes and related accessibility checks. If you modify colors, run `npm run check:contrast` while the development server is running. The `--link-color` token controls anchor colors and is overridden to `#3399ff` in dark mode (along with `--color-primary: #ff4530`).
+Light, dark and gray themes are supported. Changing modes uses a slide-over transition implemented with the View Transitions API when supported; otherwise the colors update immediately. See [prdSettingsMenu.md](design/productRequirementsDocuments/prdSettingsMenu.md) for how the Display Mode switch applies these themes and related accessibility checks. If you modify colors, run `npm run check:contrast` while the development server is running. The `--link-color` token controls anchor colors and is overridden to `#3399ff` in dark mode (along with `--color-primary: #ff4530`).
 
 ## Settings & Feature Flags
 
