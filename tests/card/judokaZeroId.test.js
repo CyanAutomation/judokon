@@ -1,5 +1,16 @@
 import { generateJudokaCardHTML } from "../../src/helpers/cardBuilder.js";
 
+vi.mock("../../src/helpers/stats.js", () => ({
+  loadStatNames: () =>
+    Promise.resolve([
+      { name: "Power" },
+      { name: "Speed" },
+      { name: "Technique" },
+      { name: "Kumi-kata" },
+      { name: "Ne-waza" }
+    ])
+}));
+
 const judoka = {
   id: 0,
   firstname: "Placeholder",

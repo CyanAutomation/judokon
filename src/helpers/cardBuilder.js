@@ -242,7 +242,7 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup, options = {}) 
   const portraitElement = createPortraitSection(judoka);
   judokaCard.appendChild(portraitElement);
 
-  const statsElement = createStatsSection(judoka, cardType);
+  const statsElement = await createStatsSection(judoka, cardType);
   judokaCard.appendChild(statsElement);
 
   const signatureMoveElement = createSignatureMoveSection(judoka, gokyoLookup, cardType);

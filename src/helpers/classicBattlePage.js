@@ -28,6 +28,8 @@ import { loadSettings } from "./settingsUtils.js";
 import { initTooltips } from "./tooltip.js";
 import { setTestMode } from "./testModeUtils.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
+import { loadStatNames } from "./stats.js";
+import { STATS } from "./battleEngine.js";
 
 function enableStatButtons(enable = true) {
   document.querySelectorAll("#stat-buttons button").forEach((btn) => {
@@ -48,7 +50,20 @@ function onStatSelect(stat) {
   handleStatSelection(stat);
 }
 
+async function applyStatLabels() {
+  const names = await loadStatNames();
+  names.forEach((n, i) => {
+    const key = STATS[i];
+    const btn = document.querySelector(`#stat-buttons button[data-stat="${key}"]`);
+    if (btn) {
+      btn.textContent = n.name;
+      btn.setAttribute("aria-label", `Select ${n.name}`);
+    }
+  });
+}
+
 export async function setupClassicBattlePage() {
+  await applyStatLabels();
   const statButtons = document.querySelectorAll("#stat-buttons button");
   statButtons.forEach((btn) => {
     btn.addEventListener("click", () => {

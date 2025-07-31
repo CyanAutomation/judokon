@@ -32,9 +32,9 @@ describe("generateJudokaCardHTML fallback containers", () => {
   });
 
   it("adds fallback when stats generation throws", async () => {
-    vi.spyOn(cardRender, "generateCardStats").mockImplementation(() => {
-      throw new Error("stats fail");
-    });
+    vi.spyOn(cardRender, "generateCardStats").mockImplementation(() =>
+      Promise.reject(new Error("stats fail"))
+    );
 
     const card = await generateJudokaCardHTML(judoka, gokyoLookup);
 
@@ -60,9 +60,7 @@ describe("generateJudokaCardHTML fallback containers", () => {
   });
 
   it("adds fallback when cardRender throws undefined", async () => {
-    vi.spyOn(cardRender, "generateCardStats").mockImplementation(() => {
-      throw undefined;
-    });
+    vi.spyOn(cardRender, "generateCardStats").mockImplementation(() => Promise.reject(undefined));
     const card = await generateJudokaCardHTML(judoka, gokyoLookup);
     expect(card.textContent).toContain("No data available");
   });
