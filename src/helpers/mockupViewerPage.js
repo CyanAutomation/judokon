@@ -6,11 +6,11 @@ import { initTooltips } from "./tooltip.js";
  * Initialize the mockup image carousel.
  *
  * @pseudocode
- * 1. Select the image, filename display, and navigation buttons.
+ * 1. Select the image, filename display, sidebar list, and navigation buttons.
  * 2. Define an array of mockup filenames and compute their base URL.
- * 3. Implement `showImage(index)` to update the image source, alt text, and filename.
- * 4. Attach click handlers to cycle forward or backward with wraparound.
- * 5. Support arrow key navigation for accessibility.
+ * 3. Build sidebar list items that call `showImage(index)` when activated.
+ * 4. Implement `showImage(index)` to update the image, alt text, filename, and sidebar highlight.
+ * 5. Attach click handlers and keyboard events to cycle images with wraparound.
  * 6. Show the first image and apply button ripple effects.
  */
 export function setupMockupViewerPage() {
@@ -18,8 +18,9 @@ export function setupMockupViewerPage() {
   const filenameEl = document.getElementById("mockup-filename");
   const prevBtn = document.getElementById("prev-btn");
   const nextBtn = document.getElementById("next-btn");
+  const listEl = document.getElementById("mockup-list");
 
-  if (!imgEl || !filenameEl || !prevBtn || !nextBtn) {
+  if (!imgEl || !filenameEl || !prevBtn || !nextBtn || !listEl) {
     return;
   }
 
@@ -62,6 +63,20 @@ export function setupMockupViewerPage() {
     "mockupUpdateJudoka1.png"
   ];
 
+  files.forEach((file, i) => {
+    const li = document.createElement("li");
+    li.tabIndex = 0;
+    li.textContent = file;
+    li.addEventListener("click", () => showImage(i));
+    li.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        showImage(i);
+      }
+    });
+    listEl.appendChild(li);
+  });
+
   let currentIndex = 0;
 
   function showImage(index) {
@@ -72,6 +87,9 @@ export function setupMockupViewerPage() {
     filenameEl.textContent = file;
     imgEl.classList.add("fade");
     imgEl.style.display = "block";
+    Array.from(listEl.children).forEach((li, idx) => {
+      li.classList.toggle("selected", idx === currentIndex);
+    });
   }
 
   prevBtn.addEventListener("click", () => showImage(currentIndex - 1));
@@ -87,4 +105,6 @@ export function setupMockupViewerPage() {
   initTooltips();
 }
 
-onDomReady(setupMockupViewerPage);
+if (!window.SKIP_MOCKUP_AUTO_INIT) {
+  onDomReady(setupMockupViewerPage);
+}
