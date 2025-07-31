@@ -140,11 +140,11 @@ html {
 }
 
 ::view-transition-old(root) {
-  animation-delay: 500ms;
+  animation-delay: 900ms;
 }
 
 ::view-transition-new(root) {
-  animation: move-in 500ms forwards;
+  animation: move-in 900ms forwards;
 }
 
 @keyframes move-in {
