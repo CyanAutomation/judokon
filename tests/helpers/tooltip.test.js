@@ -110,6 +110,42 @@ describe("initTooltips", () => {
       el.dispatchEvent(new Event("mouseleave"));
     });
   });
+
+  it("applies overlay class when flag enabled", async () => {
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ stat: { test: "text" } })
+    }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings: vi.fn().mockResolvedValue({
+        tooltips: true,
+        featureFlags: { tooltipOverlayDebug: { enabled: true } }
+      })
+    }));
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+    const el = document.createElement("div");
+    el.dataset.tooltipId = "stat.test";
+    document.body.appendChild(el);
+    await initTooltips();
+    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(true);
+  });
+
+  it("does not apply overlay class when flag disabled", async () => {
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ stat: { test: "text" } })
+    }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings: vi.fn().mockResolvedValue({
+        tooltips: true,
+        featureFlags: { tooltipOverlayDebug: { enabled: false } }
+      })
+    }));
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+    const el = document.createElement("div");
+    el.dataset.tooltipId = "stat.test";
+    document.body.appendChild(el);
+    await initTooltips();
+    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
+  });
 });
 
 describe("flattenTooltips", () => {
