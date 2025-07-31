@@ -419,10 +419,12 @@ The Settings page (`src/pages/settings.html`) groups all player preferences, inc
 Default flag states and descriptions now live in `src/data/settings.json`. The **Tooltips** toggle on this page lets you turn help tooltips on or off globally.
 Each change triggers a small snackbar at the bottom of the screen confirming the new setting.
 
-Battle pages include a collapsible debug panel. Enable the **Battle Debug Panel** feature flag in **Settings** to reveal real-time match state in a `<pre>` element. The panel is keyboard accessible and hidden by default so normal gameplay remains unaffected.
-Toggle the **Full Navigation Map** flag to display a map overlay with links to all pages for easier orientation during testing.
-Enable the **Test Mode** flag for deterministic card draws and stat results. A "Test Mode Active" banner appears on battle pages, and the battle area receives `data-test-mode="true"` for automated checks. See `src/helpers/classicBattlePage.js` and `testModeUtils.js` for how deterministic behavior is applied.
-Enable the **Card Inspector** flag to add a collapsible panel on each card containing its raw JSON. Opening the panel sets `data-inspector="true"` on the card for automated checks.
+Feature flags allow temporary or advanced tools without code changes:
+
+- **Battle Debug Panel** – shows a collapsible `<pre>` on battle pages with live match data.
+- **Full Navigation Map** – overlays a map linking to every page for quick testing.
+- **Test Mode** – forces deterministic draws and stats with a visible "Test Mode Active" banner.
+- **Card Inspector** – adds a collapsible panel on each card displaying its raw JSON.
 
 Advanced or debug-oriented flags live under a collapsible **Advanced Settings** section. This keeps experimental options out of sight for younger players while remaining accessible to testers.
 
