@@ -19,6 +19,8 @@ import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
+import { populateNavbar } from "./navigationBar.js";
+import { showSnackbar } from "./showSnackbar.js";
 
 import {
   applyInitialControlValues,
@@ -82,7 +84,9 @@ function createResetConfirmation(onConfirm) {
  * 1. Store a mutable copy of `settings` for updates.
  * 2. Query DOM elements for each control and the mode container.
  * 3. Provide helper functions to read and persist settings.
- * 4. Apply initial values, attach listeners, and render mode switches.
+ * 4. Apply initial values, attach listeners, and render mode and flag switches.
+ * 5. When `navCacheResetButton` is enabled, add a button that clears cached
+ *    navigation data and refreshes the navbar.
  *
  * @param {Settings} settings - Current settings object.
  * @param {Array} gameModes - Available game mode options.
@@ -131,6 +135,26 @@ function initializeControls(settings, gameModes) {
     container.querySelectorAll(".settings-item").forEach((el) => el.remove());
   }
 
+  function addNavResetButton() {
+    const section = document.getElementById("advanced-settings-content");
+    const existing = document.getElementById("nav-cache-reset-button");
+    existing?.parentElement?.remove();
+    if (!section) return;
+    if (!currentSettings.featureFlags.navCacheResetButton?.enabled) return;
+    const wrapper = document.createElement("div");
+    wrapper.className = "settings-item";
+    const btn = createButton("Reset Navigation Cache", {
+      id: "nav-cache-reset-button"
+    });
+    wrapper.appendChild(btn);
+    section.appendChild(wrapper);
+    btn.addEventListener("click", () => {
+      localStorage.removeItem("navigationItems");
+      populateNavbar();
+      showSnackbar("Navigation cache cleared");
+    });
+  }
+
   applyInitialControlValues(controls, currentSettings);
   attachToggleListeners(controls, getCurrentSettings, handleUpdate);
   renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
@@ -140,6 +164,10 @@ function initializeControls(settings, gameModes) {
     getCurrentSettings,
     handleUpdate
   );
+  addNavResetButton();
+  document.getElementById("feature-nav-cache-reset-button")?.addEventListener("change", () => {
+    setTimeout(addNavResetButton);
+  });
 
   const resetModal = createResetConfirmation(() => {
     currentSettings = resetSettings();
@@ -160,6 +188,10 @@ function initializeControls(settings, gameModes) {
       getCurrentSettings,
       handleUpdate
     );
+    addNavResetButton();
+    document.getElementById("feature-nav-cache-reset-button")?.addEventListener("change", () => {
+      setTimeout(addNavResetButton);
+    });
   });
 
   resetButton?.addEventListener("click", () => {

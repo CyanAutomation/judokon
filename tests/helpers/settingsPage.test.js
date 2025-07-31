@@ -33,6 +33,11 @@ const baseSettings = {
       enabled: false,
       label: "Card Inspector",
       description: "Shows raw card JSON in a panel"
+    },
+    navCacheResetButton: {
+      enabled: false,
+      label: "Navigation Cache Reset",
+      description: "Adds a button to clear cached navigation data for troubleshooting"
     }
   }
 };
@@ -339,7 +344,8 @@ describe("settingsPage module", () => {
       },
       fullNavigationMap: baseSettings.featureFlags.fullNavigationMap,
       enableTestMode: baseSettings.featureFlags.enableTestMode,
-      enableCardInspector: baseSettings.featureFlags.enableCardInspector
+      enableCardInspector: baseSettings.featureFlags.enableCardInspector,
+      navCacheResetButton: baseSettings.featureFlags.navCacheResetButton
     });
   });
 
@@ -394,6 +400,51 @@ describe("settingsPage module", () => {
     expect(renderFeatureFlagSwitches).toHaveBeenCalledTimes(2);
     expect(applyDisplayMode).toHaveBeenLastCalledWith(baseSettings.displayMode);
     expect(applyMotionPreference).toHaveBeenLastCalledWith(baseSettings.motionEffects);
+    vi.useRealTimers();
+  });
+
+  it("adds navigation cache reset button when flag enabled", async () => {
+    vi.useFakeTimers();
+    const settingsWithButton = {
+      ...baseSettings,
+      featureFlags: {
+        ...baseSettings.featureFlags,
+        navCacheResetButton: {
+          ...baseSettings.featureFlags.navCacheResetButton,
+          enabled: true
+        }
+      }
+    };
+    const loadSettings = vi.fn().mockResolvedValue(settingsWithButton);
+    const updateSetting = vi.fn().mockResolvedValue(settingsWithButton);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
+    const populateNavbar = vi.fn();
+    const showSnackbar = vi.fn();
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting,
+      resetSettings: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
+      updateNavigationItemHidden: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/navigationBar.js", () => ({ populateNavbar }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const btn = document.getElementById("nav-cache-reset-button");
+    expect(btn).toBeTruthy();
+    localStorage.setItem("navigationItems", "foo");
+    btn.dispatchEvent(new Event("click"));
+    await vi.runAllTimersAsync();
+    expect(localStorage.getItem("navigationItems")).toBeNull();
+    expect(populateNavbar).toHaveBeenCalled();
+    expect(showSnackbar).toHaveBeenCalledWith("Navigation cache cleared");
     vi.useRealTimers();
   });
 });
