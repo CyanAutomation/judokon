@@ -207,7 +207,7 @@ body {
   justify-items: center;
   align-items: flex-start;
   gap: var(--space-lg);
-  padding-top: var(--space-lg);
+  padding-top: var(--header-height);
 }
 
 #battle-area .card-slot {
