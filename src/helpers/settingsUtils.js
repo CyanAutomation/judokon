@@ -183,11 +183,13 @@ export function resetSettings() {
  * @property {boolean} motionEffects
  * @property {boolean} typewriterEffect
  * @property {"light"|"dark"|"gray"} displayMode
+ * @property {Record<string, string>} [tooltipIds]
  * @property {Record<string, boolean>} [gameModes]
  * @property {Record<string, {
  *   enabled: boolean,
  *   label: string,
- *   description: string
+ *   description: string,
+ *   tooltipId?: string
  * }>} [featureFlags]
  */
 

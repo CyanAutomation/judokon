@@ -25,6 +25,11 @@
       "enum": ["light", "dark", "gray"],
       "description": "Visual display mode."
     },
+    "tooltipIds": {
+      "type": "object",
+      "description": "Mapping of setting keys to tooltip identifiers.",
+      "additionalProperties": { "type": "string" }
+    },
     "gameModes": {
       "type": "object",
       "description": "Per-mode enable/disable flags.",
@@ -47,6 +52,10 @@
           "description": {
             "type": "string",
             "description": "Brief explanation of the feature."
+          },
+          "tooltipId": {
+            "type": "string",
+            "description": "Tooltip identifier for this flag."
           }
         },
         "required": ["enabled", "label", "description"],

@@ -416,6 +416,24 @@ The Settings page (`src/pages/settings.html`) groups all player preferences, inc
 Default flag states and descriptions now live in `src/data/settings.json`. The **Tooltips** toggle on this page lets you turn help tooltips on or off globally.
 Each change triggers a small snackbar at the bottom of the screen confirming the new setting.
 
+Settings tooltips are referenced with `settings.*` keys in `tooltips.json`:
+
+```
+settings.sound
+settings.motionEffects
+settings.typewriterEffect
+settings.tooltips
+settings.battleDebugPanel
+settings.fullNavigationMap
+settings.enableTestMode
+settings.enableCardInspector
+settings.showCardOfTheDay
+settings.viewportSimulation
+settings.tooltipOverlayDebug
+settings.layoutDebugPanel
+settings.navCacheResetButton
+```
+
 Feature flags allow temporary or advanced tools without code changes:
 
 - **Battle Debug Panel** – shows a collapsible `<pre>` on battle pages with live match data.

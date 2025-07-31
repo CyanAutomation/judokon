@@ -7,7 +7,8 @@ describe("createToggleSwitch", () => {
       id: "sound-toggle",
       name: "sound",
       checked: true,
-      ariaLabel: "Sound toggle"
+      ariaLabel: "Sound toggle",
+      tooltipId: "settings.sound"
     });
     const label = wrapper.querySelector("label.switch");
     const input = wrapper.querySelector("input[type='checkbox']");
@@ -23,6 +24,7 @@ describe("createToggleSwitch", () => {
     expect(input).toHaveAttribute("aria-label", "Sound toggle");
     expect(slider?.classList.contains("round")).toBe(true);
     expect(span?.textContent).toBe("Sound");
+    expect(input?.dataset.tooltipId).toBe("settings.sound");
   });
 
   it("defaults to unchecked when not specified", () => {
@@ -35,5 +37,11 @@ describe("createToggleSwitch", () => {
     const wrapper = createToggleSwitch("AutoToggle");
     const input = wrapper.querySelector("input[type='checkbox']");
     expect(input).toHaveAttribute("aria-label", "AutoToggle");
+  });
+
+  it("omits tooltip attribute when none provided", () => {
+    const wrapper = createToggleSwitch("NoTip");
+    const input = wrapper.querySelector("input[type='checkbox']");
+    expect(input?.dataset.tooltipId).toBeUndefined();
   });
 });
