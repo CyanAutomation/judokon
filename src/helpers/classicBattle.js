@@ -281,7 +281,7 @@ export function scheduleNextRound(result) {
   // use the default 3 second cooldown to avoid async timer lookup
   // during the short delay before the next round
   setTimeout(() => {
-    startCoolDown(onTick, onExpired, 3);
+    startCoolDown(onTick, onExpired, DEFAULT_COOLDOWN_SECONDS);
   }, 2000);
 }
 
