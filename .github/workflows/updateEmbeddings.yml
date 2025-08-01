@@ -88,7 +88,6 @@ jobs:
             💬 **Coding Aphorism**
             _${{ steps.quote.outputs.quote }}_
 
-            🤖 Triggered by: nightly schedule or manual dispatch
           branch: "auto/update-vector-db"
           labels: |
             automated
