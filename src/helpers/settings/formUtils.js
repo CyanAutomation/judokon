@@ -8,7 +8,6 @@ import { showSnackbar } from "../showSnackbar.js";
 import { toggleViewportSimulation } from "../viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "../tooltipOverlayDebug.js";
 import { toggleLayoutDebugPanel } from "../layoutDebugPanel.js";
-import { showSettingsInfo } from "../showSettingsInfo.js";
 
 /**
  * Convert a camelCase flag name into a readable label.
@@ -321,18 +320,6 @@ export function renderFeatureFlagSwitches(
         }
         if (flag === "layoutDebugPanel") {
           toggleLayoutDebugPanel(input.checked);
-        }
-        if (
-          [
-            "showCardOfTheDay",
-            "viewportSimulation",
-            "tooltipOverlayDebug",
-            "layoutDebugPanel"
-          ].includes(flag)
-        ) {
-          const tipLabel = tooltipMap[`${tipId}.label`] || label;
-          const tipDesc = tooltipMap[`${tipId}.description`] || description;
-          showSettingsInfo(tipLabel, tipDesc);
         }
       });
     });

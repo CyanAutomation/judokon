@@ -367,7 +367,7 @@ describe("settingsPage module", () => {
     });
   });
 
-  it("toggling showCardOfTheDay updates setting and shows info modal", async () => {
+  it("toggling showCardOfTheDay updates setting", async () => {
     vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updatedSettings = {
@@ -382,7 +382,6 @@ describe("settingsPage module", () => {
     };
     const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
     const loadNavigationItems = vi.fn().mockResolvedValue([]);
-    const showSettingsInfo = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
@@ -392,7 +391,6 @@ describe("settingsPage module", () => {
       loadGameModes: loadNavigationItems,
       updateNavigationItemHidden: vi.fn()
     }));
-    vi.doMock("../../src/helpers/showSettingsInfo.js", () => ({ showSettingsInfo }));
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -404,13 +402,9 @@ describe("settingsPage module", () => {
     await vi.runAllTimersAsync();
 
     expect(updateSetting).toHaveBeenCalledWith("featureFlags", updatedSettings.featureFlags);
-    expect(showSettingsInfo).toHaveBeenCalledWith(
-      tooltipMap["settings.showCardOfTheDay.label"],
-      tooltipMap["settings.showCardOfTheDay.description"]
-    );
   });
 
-  it("toggling viewportSimulation updates setting and shows info modal", async () => {
+  it("toggling viewportSimulation updates setting", async () => {
     vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updatedSettings = {
@@ -425,7 +419,6 @@ describe("settingsPage module", () => {
     };
     const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
     const loadNavigationItems = vi.fn().mockResolvedValue([]);
-    const showSettingsInfo = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
@@ -435,7 +428,6 @@ describe("settingsPage module", () => {
       loadGameModes: loadNavigationItems,
       updateNavigationItemHidden: vi.fn()
     }));
-    vi.doMock("../../src/helpers/showSettingsInfo.js", () => ({ showSettingsInfo }));
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -447,13 +439,9 @@ describe("settingsPage module", () => {
     await vi.runAllTimersAsync();
 
     expect(updateSetting).toHaveBeenCalledWith("featureFlags", updatedSettings.featureFlags);
-    expect(showSettingsInfo).toHaveBeenCalledWith(
-      tooltipMap["settings.viewportSimulation.label"],
-      tooltipMap["settings.viewportSimulation.description"]
-    );
   });
 
-  it("toggling tooltipOverlayDebug updates setting and shows info modal", async () => {
+  it("toggling tooltipOverlayDebug updates setting", async () => {
     vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updatedSettings = {
@@ -468,7 +456,6 @@ describe("settingsPage module", () => {
     };
     const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
     const loadNavigationItems = vi.fn().mockResolvedValue([]);
-    const showSettingsInfo = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
@@ -478,7 +465,6 @@ describe("settingsPage module", () => {
       loadGameModes: loadNavigationItems,
       updateNavigationItemHidden: vi.fn()
     }));
-    vi.doMock("../../src/helpers/showSettingsInfo.js", () => ({ showSettingsInfo }));
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -490,13 +476,9 @@ describe("settingsPage module", () => {
     await vi.runAllTimersAsync();
 
     expect(updateSetting).toHaveBeenCalledWith("featureFlags", updatedSettings.featureFlags);
-    expect(showSettingsInfo).toHaveBeenCalledWith(
-      tooltipMap["settings.tooltipOverlayDebug.label"],
-      tooltipMap["settings.tooltipOverlayDebug.description"]
-    );
   });
 
-  it("toggling layoutDebugPanel updates setting and shows info modal", async () => {
+  it("toggling layoutDebugPanel updates setting", async () => {
     vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const updatedSettings = {
@@ -511,7 +493,6 @@ describe("settingsPage module", () => {
     };
     const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
     const loadNavigationItems = vi.fn().mockResolvedValue([]);
-    const showSettingsInfo = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
@@ -521,7 +502,6 @@ describe("settingsPage module", () => {
       loadGameModes: loadNavigationItems,
       updateNavigationItemHidden: vi.fn()
     }));
-    vi.doMock("../../src/helpers/showSettingsInfo.js", () => ({ showSettingsInfo }));
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -533,10 +513,6 @@ describe("settingsPage module", () => {
     await vi.runAllTimersAsync();
 
     expect(updateSetting).toHaveBeenCalledWith("featureFlags", updatedSettings.featureFlags);
-    expect(showSettingsInfo).toHaveBeenCalledWith(
-      tooltipMap["settings.layoutDebugPanel.label"],
-      tooltipMap["settings.layoutDebugPanel.description"]
-    );
   });
 
   it("uses updated tooltip text when toggled after map loads", async () => {
@@ -555,7 +531,6 @@ describe("settingsPage module", () => {
     };
     const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
     const loadNavigationItems = vi.fn().mockResolvedValue([]);
-    const showSettingsInfo = vi.fn();
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings,
       updateSetting
@@ -569,7 +544,6 @@ describe("settingsPage module", () => {
       initTooltips: vi.fn(),
       getTooltips: vi.fn().mockResolvedValue(localMap)
     }));
-    vi.doMock("../../src/helpers/showSettingsInfo.js", () => ({ showSettingsInfo }));
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -583,11 +557,6 @@ describe("settingsPage module", () => {
     input.checked = true;
     input.dispatchEvent(new Event("change"));
     await vi.runAllTimersAsync();
-
-    expect(showSettingsInfo).toHaveBeenCalledWith(
-      "Card Of The Day",
-      "Displays a rotating featured judoka card on the landing screen"
-    );
   });
 
   it("clicking restore defaults requires confirmation", async () => {
