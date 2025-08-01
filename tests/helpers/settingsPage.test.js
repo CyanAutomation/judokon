@@ -17,7 +17,7 @@ const baseSettings = {
     showCardOfTheDay: { enabled: false },
     viewportSimulation: { enabled: false },
     tooltipOverlayDebug: { enabled: false },
-    layoutDebugPanel: { enabled: false },
+    layoutDebugPanel: { enabled: false, tooltipId: "settings.layoutDebugPanel" },
     navCacheResetButton: { enabled: false }
   }
 };
