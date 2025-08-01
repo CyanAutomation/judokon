@@ -67,6 +67,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - Given a markdown file fails to load, then an error is logged to the console, a fallback message is shown, and other files remain navigable.
 - Given malformed markdown content, then partial content is rendered with a warning badge visually indicating an issue.
 - Given navigation occurs, then the document renders within 200ms on a standard desktop device.
+- Given a PRD includes a Tasks section, then the viewer displays the total number of tasks and completion percentage above the document content.
 
 ## Non-Functional Requirements / Design Considerations
 
@@ -137,4 +138,6 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - [ ] 6.0 Finalize Visuals and UX Guidelines
   - [ ] 6.1 Create detailed wireframes/mockups with annotations
   - [ ] 6.2 Define UI element sizes, spacing, and animation durations
-  - [ ] 6.3 Specify visual designs for error/warning badges and loading indicators
+- [ ] 6.3 Specify visual designs for error/warning badges and loading indicators
+- [ ] 7.0 Display PRD Task Summary
+  - [ ] 7.1 Show total task count and completion percentage above the document content

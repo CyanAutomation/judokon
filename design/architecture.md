@@ -36,7 +36,7 @@ and builds result snippets with `snippetFormatter.js`.
 `src/helpers/prdReaderPage.js` to display the Product Requirements
 Documents. The Markdown files live in
 `design/productRequirementsDocuments`. The helper fetches each file,
-converts it with `markdownToHtml`—a wrapper around the minimal **Marked** parser (supporting headings, paragraphs, bold text, mixed ordered and unordered lists, tables, and horizontal rules rendered as `<br/><hr/><br/>` for extra spacing)—and injects the HTML into the `#prd-content` container. It also builds the sidebar list in `#prd-list` and loads the chosen document when an item is clicked. Arrow keys and swipe gestures cycle through the loaded documents, and the logo links back to `index.html`.
+converts it with `markdownToHtml`—a wrapper around the minimal **Marked** parser (supporting headings, paragraphs, bold text, mixed ordered and unordered lists, tables, and horizontal rules rendered as `<br/><hr/><br/>` for extra spacing)—and injects the HTML into the `#prd-content` container. It also builds the sidebar list in `#prd-list` and loads the chosen document when an item is clicked. Arrow keys and swipe gestures cycle through the loaded documents, and the logo links back to `index.html`. The viewer additionally displays each PRD's task completion summary above the document content.
 
 ## components/
 

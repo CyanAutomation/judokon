@@ -34,3 +34,8 @@
     flex-direction: column;
   }
 }
+
+.task-summary {
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+}
