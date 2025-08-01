@@ -193,6 +193,7 @@ function initializeControls(settings, gameModes, tooltipMap) {
       tooltipMap
     );
     queueMicrotask(addNavResetButton);
+    setupSectionToggles();
     initTooltips();
     document.getElementById("feature-nav-cache-reset-button")?.addEventListener("change", () => {
       setTimeout(addNavResetButton);
@@ -208,17 +209,19 @@ function initializeControls(settings, gameModes, tooltipMap) {
  * Load saved settings and render the Settings page UI.
  *
  * @pseudocode
- * 1. Fetch settings, navigation items, and tooltip text.
- * 2. Apply display and motion preferences from the settings.
- * 3. Enable debug utilities based on feature flags.
- * 4. Initialize page controls and section toggles.
- * 5. Set up tooltips for all controls.
- * 6. On error, show a fallback message to the user.
+ * 1. Call `setupSectionToggles` so collapsible sections work immediately.
+ * 2. Fetch settings, navigation items, and tooltip text.
+ * 3. Apply display and motion preferences from the settings.
+ * 4. Enable debug utilities based on feature flags.
+ * 5. Initialize page controls and section toggles.
+ * 6. Set up tooltips for all controls.
+ * 7. On error, show a fallback message to the user.
  *
  * @returns {Promise<void>}
  */
 async function initializeSettingsPage() {
   try {
+    setupSectionToggles();
     const settings = await loadSettings();
     const gameModes = await loadNavigationItems();
     const tooltipMap = await getTooltips();
@@ -228,7 +231,6 @@ async function initializeSettingsPage() {
     toggleTooltipOverlayDebug(Boolean(settings.featureFlags.tooltipOverlayDebug?.enabled));
     toggleLayoutDebugPanel(Boolean(settings.featureFlags.layoutDebugPanel?.enabled));
     initializeControls(settings, gameModes, tooltipMap);
-    setupSectionToggles();
     initTooltips();
   } catch (error) {
     console.error("Error loading settings page:", error);
