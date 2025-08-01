@@ -96,4 +96,16 @@ describe("renderJudokaCard", () => {
     toggleInspectorPanels(false);
     expect(container.querySelector(".debug-panel")).toBeNull();
   });
+
+  it("retains existing debug panel when rendering", async () => {
+    generateMock = vi.fn(async () => document.createElement("div"));
+    setupLazyPortraitsMock = vi.fn();
+    const { renderJudokaCard } = await import("../../src/helpers/cardUtils.js");
+    const container = document.createElement("div");
+    const debugPanel = document.createElement("div");
+    debugPanel.id = "debug-panel";
+    container.appendChild(debugPanel);
+    await renderJudokaCard(judoka, {}, container);
+    expect(container.querySelector("#debug-panel")).toBe(debugPanel);
+  });
 });

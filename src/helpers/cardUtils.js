@@ -111,8 +111,11 @@ export async function displayJudokaCard(judoka, gokyo, gameArea) {
  * 3. When `useObscuredStats` is true, clone `judoka` and replace name and stats
  *    with "?".
  * 4. Generate the card element using `generateJudokaCardHTML`.
- * 5. Replace the container contents with the generated card.
- * 6. When `animate` is true, add the `animate-card` class on the next frame.
+ * 5. Keep an existing `#debug-panel` element:
+ *    - Store it before clearing the container.
+ *    - Prepend it back after clearing.
+ * 6. Replace the container contents with the generated card.
+ * 7. When `animate` is true, add the `animate-card` class on the next frame.
  *
  * @param {Judoka} judoka - Judoka data to render.
  * @param {Object<string, GokyoEntry>} gokyoLookup - Lookup of gokyo moves.
@@ -151,7 +154,9 @@ export async function renderJudokaCard(
       enableInspector
     });
     if (!card) return null;
+    const debugEl = container.querySelector("#debug-panel");
     container.innerHTML = "";
+    if (debugEl) container.prepend(debugEl);
     container.appendChild(card);
     setupLazyPortraits(card);
     if (animate) {
