@@ -55,6 +55,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 | P3       | PRD Viewer Link                  | Link to `prdViewer.html` for browsing product requirement documents.                                |
 | P3       | Mockup Viewer Link               | Link to `mockupViewer.html` to browse design mockups.                                               |
 | P3       | Tooltip Viewer Link              | Link to `tooltipViewer.html` for exploring tooltip text.                                            |
+
 ---
 
 ## Settings Features
