@@ -95,6 +95,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 ## Mockups / Visual Reference
 
 - Header with clickable JU-DO-KON! logo and page title.
+- PRD title appears on the left side of the header with a task summary on the right.
 - Large scrollable markdown-rendered content area.
 - Sidebar scrolls independently from the main preview so the list remains visible while reading.
 - Sidebar background uses the `--color-surface` token so zebra stripes stand out.
@@ -142,4 +143,4 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
   - [ ] 6.2 Define UI element sizes, spacing, and animation durations
 - [ ] 6.3 Specify visual designs for error/warning badges and loading indicators
 - [ ] 7.0 Display PRD Task Summary
-  - [ ] 7.1 Show total task count and completion percentage above the document content
+  - [ ] 7.1 Show total task count and completion percentage in the header next to the title

@@ -55,12 +55,15 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
 
   const documents = [];
   const taskStats = [];
+  const titles = [];
   if (docsMap) {
     for (const name of FILES) {
       if (docsMap[name]) {
         const md = docsMap[name];
         documents.push(parserFn(md));
         taskStats.push(getPrdTaskStats(md));
+        const titleMatch = md.match(/^#\s*(.+)/m);
+        titles.push(titleMatch ? titleMatch[1].trim() : "");
       }
     }
   } else {
@@ -69,12 +72,16 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
       const text = await res.text();
       documents.push(parserFn(text));
       taskStats.push(getPrdTaskStats(text));
+      const titleMatch = text.match(/^#\s*(.+)/m);
+      titles.push(titleMatch ? titleMatch[1].trim() : "");
     }
   }
   const container = document.getElementById("prd-content");
   const listPlaceholder = document.getElementById("prd-list");
   const nextButtons = document.querySelectorAll('[data-nav="next"]');
   const prevButtons = document.querySelectorAll('[data-nav="prev"]');
+  const titleEl = document.getElementById("prd-title");
+  const summaryEl = document.getElementById("task-summary");
 
   if (!container || !listPlaceholder || documents.length === 0) return;
 
@@ -86,40 +93,36 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
       .trim()
   );
 
-  let current = 0;
+  let index = 0;
   const { element: listEl, select: listSelect } = createSidebarList(labels, (i) => {
-    current = i;
-    container.innerHTML = documents[current];
-    container.classList.remove("fade-in");
-    void container.offsetWidth;
-    container.classList.add("fade-in");
-    const summaryEl = document.getElementById("task-summary");
-    if (summaryEl) {
-      const { total, completed } = taskStats[current] || { total: 0, completed: 0 };
-      const percent = total ? Math.round((completed / total) * 100) : 0;
-      summaryEl.textContent = `Task Completion: ${completed}/${total} (${percent}%)`;
-    }
-    initTooltips();
+    index = i;
+    renderDoc(index);
   });
   listEl.id = "prd-list";
   listPlaceholder.replaceWith(listEl);
 
-  let index = 0;
+  function updateHeader(i) {
+    if (titleEl) titleEl.textContent = titles[i] || "";
+    if (summaryEl) {
+      const { total, completed } = taskStats[i] || { total: 0, completed: 0 };
+      const percent = total ? Math.round((completed / total) * 100) : 0;
+      summaryEl.textContent = `Tasks: ${completed}/${total} (${percent}%)`;
+    }
+  }
+
+  function renderDoc(i) {
+    container.innerHTML = documents[i];
+    container.classList.remove("fade-in");
+    void container.offsetWidth;
+    container.classList.add("fade-in");
+    updateHeader(i);
+    initTooltips();
+  }
 
   function selectDoc(i) {
     index = (i + documents.length) % documents.length;
     listSelect(index);
-    container.innerHTML = documents[index];
-    container.classList.remove("fade-in");
-    void container.offsetWidth;
-    container.classList.add("fade-in");
-    const summaryEl = document.getElementById("task-summary");
-    if (summaryEl) {
-      const { total, completed } = taskStats[index] || { total: 0, completed: 0 };
-      const percent = total ? Math.round((completed / total) * 100) : 0;
-      summaryEl.textContent = `Tasks: ${completed}/${total} (${percent}%)`;
-    }
-    initTooltips();
+    renderDoc(index);
   }
 
   function showNext() {

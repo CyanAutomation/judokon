@@ -14,20 +14,21 @@
   </head>
   <body>
     <div class="home-screen">
-      <header class="header" role="banner">
-        <div class="header-spacer left"></div>
+      <header class="header prd-header" role="banner">
+        <div class="info-left" id="prd-title"></div>
         <div class="logo-container">
           <a href="../../index.html" data-testid="home-link">
             <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
           </a>
         </div>
-        <div class="header-spacer right"></div>
+        <div class="info-right">
+          <span id="task-summary" class="task-summary"></span>
+        </div>
       </header>
 
       <main class="prd-viewer" role="main">
         <aside class="sidebar"><ul id="prd-list" class="sidebar-list"></ul></aside>
         <section class="preview">
-          <div id="task-summary" class="task-summary"></div>
           <div id="prd-content"></div>
         </section>
       </main>
