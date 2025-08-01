@@ -26,6 +26,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - Allow quick, frustration-free discovery of all game modes (**reach destination in ≤3 s**).
 
 ---
+
 ## Non-Goals
 
 - No dynamic pathfinding or open-world navigation beyond the village map.
