@@ -36,6 +36,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - ≥80% of players use the Draw button at least once per session in the first week post-launch
 
 ---
+
 ## Non-Goals
 
 - Complex filters or search
