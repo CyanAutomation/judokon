@@ -19,7 +19,8 @@ meditation screen. A third schema, `statNames.schema.json`, defines the
 structure of `statNames.json` which lists all available stats. This file is the
 canonical source for stat labels—update it to change the names shown across the
 UI. Tests also verify that each ID in `aesopsMeta.json` exists in
-`aesopsFables.json`.
+`aesopsFables.json`. A new file, `gameTimers.schema.json`, defines the structure
+of `gameTimers.json` which contains the default timer values used in battles.
 
 ## Updating Schemas
 

@@ -207,7 +207,8 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
     exploring tooltip text used across the UI.
   - `data/`
     JSON files powering the game. `statNames.json` lists the canonical stat
-    names—changing a label here updates the UI everywhere.
+    names—changing a label here updates the UI everywhere. `gameTimers.json`
+    defines default timer values for battles.
   - `schemas/`
     JSON Schema definitions used to validate the data files.
   - `assets/`
