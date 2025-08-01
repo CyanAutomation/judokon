@@ -454,6 +454,7 @@ Feature flags allow temporary or advanced tools without code changes:
 - **Full Navigation Map** – overlays a map linking to every page for quick testing.
 - **Test Mode** – forces deterministic draws and stats with a visible "Test Mode Active" banner.
 - **Card Inspector** – adds a collapsible panel on each card displaying its raw JSON.
+- **Layout Debug Panel** – outlines key elements for debugging layout whenever the flag is enabled.
 
 Advanced or debug-oriented flags live under a collapsible **Advanced Settings** section. This keeps experimental options out of sight for younger players while remaining accessible to testers.
 
