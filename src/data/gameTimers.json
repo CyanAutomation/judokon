@@ -1,56 +1,56 @@
 [
-    {
-      "id": 1,
-      "skill": "1",
-      "value": 60,
-      "default": false,
-      "skippable": false,
-      "category": "roundTimer",
-      "description": "A low round timer that is not skippable"
-    },
-    {
-        "id": 2,
-        "skill": "2",
-        "value": 30,
-        "default": true,
-        "skippable": false,
-        "category": "roundTimer",
-        "description": "A medium round timer that is not skippable"
-    },
-    {
-        "id": 3,
-        "skill": "3",
-        "value": 10,
-        "default": false,
-        "skippable": false,
-        "category": "roundTimer",
-        "description": "A high round timer that is not skippable"
-    },
-    {
-        "id": 4,
-        "skill": "1",
-        "value": 5,
-        "default": false,
-        "skippable": false,
-        "category": "coolDownTimer",
-        "description": "A low cooldown timer that is not skippable"
-    },
-    {
-        "id": 5,
-        "skill": "2",
-        "value": 3,
-        "default": true,
-        "skippable": false,
-        "category": "coolDownTimer",
-        "description": "A medium cooldown timer that is not skippable"
-    },
-    {
-        "id": 6,
-        "skill": "3",
-        "value": 0,
-        "default": false,
-        "skippable": true,
-        "category": "coolDownTimer",
-        "description": "A high cooldown timer that is skippable"
-    }
+  {
+    "id": 1,
+    "skill": "1",
+    "value": 60,
+    "default": false,
+    "skippable": false,
+    "category": "roundTimer",
+    "description": "A low round timer that is not skippable"
+  },
+  {
+    "id": 2,
+    "skill": "2",
+    "value": 30,
+    "default": true,
+    "skippable": false,
+    "category": "roundTimer",
+    "description": "A medium round timer that is not skippable"
+  },
+  {
+    "id": 3,
+    "skill": "3",
+    "value": 10,
+    "default": false,
+    "skippable": false,
+    "category": "roundTimer",
+    "description": "A high round timer that is not skippable"
+  },
+  {
+    "id": 4,
+    "skill": "1",
+    "value": 5,
+    "default": false,
+    "skippable": false,
+    "category": "coolDownTimer",
+    "description": "A low cooldown timer that is not skippable"
+  },
+  {
+    "id": 5,
+    "skill": "2",
+    "value": 3,
+    "default": true,
+    "skippable": false,
+    "category": "coolDownTimer",
+    "description": "A medium cooldown timer that is not skippable"
+  },
+  {
+    "id": 6,
+    "skill": "3",
+    "value": 0,
+    "default": false,
+    "skippable": true,
+    "category": "coolDownTimer",
+    "description": "A high cooldown timer that is skippable"
+  }
 ]
