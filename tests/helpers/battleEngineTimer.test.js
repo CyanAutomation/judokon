@@ -14,7 +14,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  timerSpy.clearAllTimers();
+  vi.clearAllTimers();
 });
 
 describe("timer defaults", () => {
