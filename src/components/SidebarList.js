@@ -7,8 +7,9 @@
  *    dataset or className values.
  * 3. Attach click and keyboard handlers so Enter or Space trigger
  *    selection using `select(index)`.
- * 4. Add `even`/`odd` classes for zebra striping and toggle the
- *    `selected` class inside `select()`.
+ * 4. Add `odd`/`even` classes for zebra striping starting with `odd`
+ *    for the first item and toggle the `selected` class inside
+ *    `select()`.
  * 5. Call the `onSelect` callback whenever a new index is selected.
  * 6. Return `{ element, select }` so callers can programmatically
  *    change the highlighted item.
@@ -35,7 +36,7 @@ export function createSidebarList(items, onSelect = () => {}) {
         });
       }
     }
-    li.classList.add(i % 2 === 0 ? "even" : "odd");
+    li.classList.add(i % 2 === 0 ? "odd" : "even");
     li.addEventListener("click", () => select(i));
     li.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
