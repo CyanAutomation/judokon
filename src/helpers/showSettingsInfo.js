@@ -7,6 +7,10 @@
  * 3. Assemble modal with `createModal` and append to `document.body`.
  * 4. When the button is clicked, close and remove the modal.
  * 5. Open the modal immediately.
+ *
+ * @param {string} label - Title text for the modal.
+ * @param {string} description - Detailed description for the feature flag.
+ * @returns {Object} Modal controls.
  */
 import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
