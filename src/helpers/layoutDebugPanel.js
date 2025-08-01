@@ -36,8 +36,8 @@ export function toggleLayoutDebugPanel(enabled, selectors = DEFAULT_SELECTORS) {
           panelContent.classList.add("expanded");
         }
         // If outlines are applied via JS, apply them here:
-        selectors.forEach(sel => {
-          document.querySelectorAll(sel).forEach(el => el.classList.add("layout-debug-outline"));
+        selectors.forEach((sel) => {
+          document.querySelectorAll(sel).forEach((el) => el.classList.add("layout-debug-outline"));
         });
       }
     }
