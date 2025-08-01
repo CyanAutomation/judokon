@@ -1,4 +1,4 @@
-# Ju-Do-Kon! Game Modes – Product Requirements Document
+# PRD: Game Modes
 
 ---
 
