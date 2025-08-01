@@ -12,24 +12,28 @@
     <link rel="stylesheet" href="../styles/utilities.css" />
   </head>
   <body>
-    <header>
-      <div class="logo-container">
-        <a href="../../index.html" data-testid="home-link">
-          <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
-        </a>
-      </div>
-    </header>
+    <div class="home-screen">
+      <header class="header">
+        <div class="header-spacer left"></div>
+        <div class="logo-container">
+          <a href="../../index.html" data-testid="home-link">
+            <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
+          </a>
+        </div>
+        <div class="header-spacer right"></div>
+      </header>
 
-    <main class="prd-viewer">
-      <aside class="sidebar"><ul id="prd-list" class="sidebar-list"></ul></aside>
-      <section class="preview">
-        <div id="prd-content"></div>
-      </section>
-    </main>
+      <main class="prd-viewer" role="main">
+        <aside class="sidebar"><ul id="prd-list" class="sidebar-list"></ul></aside>
+        <section class="preview">
+          <div id="prd-content"></div>
+        </section>
+      </main>
 
-    <footer>
-      <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
-    </footer>
+      <footer>
+        <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
+      </footer>
+    </div>
     <script type="module" src="../helpers/setupBottomNavbar.js"></script>
     <script type="module" src="../helpers/setupDisplaySettings.js"></script>
     <script type="module" src="../helpers/prdReaderPage.js"></script>
