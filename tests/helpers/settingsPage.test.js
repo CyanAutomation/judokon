@@ -622,7 +622,10 @@ describe("settingsPage module", () => {
       renderFeatureFlagSwitches,
       setupSectionToggles: vi.fn()
     }));
-    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips: vi.fn() }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      initTooltips: vi.fn(),
+      getTooltips: vi.fn().mockResolvedValue(tooltipMap)
+    }));
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -632,6 +635,7 @@ describe("settingsPage module", () => {
     btn.dispatchEvent(new Event("click"));
     expect(resetSettings).not.toHaveBeenCalled();
 
+    await vi.runAllTimersAsync();
     const confirm = document.getElementById("confirm-reset-button");
     confirm.dispatchEvent(new Event("click"));
 
