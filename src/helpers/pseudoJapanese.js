@@ -1,5 +1,6 @@
 import { DATA_DIR } from "./constants.js";
 import { fetchJson } from "./dataUtils.js";
+import { seededRandom } from "./testModeUtils.js";
 
 const STATIC_FALLBACK = "\u65e5\u672c\u8a9e\u98a8\u30c6\u30ad\u30b9\u30c8"; // 日本語風テキスト
 let converterPromise;
@@ -26,6 +27,7 @@ async function loadConverter() {
  *    - Preserve whitespace characters as-is.
  *    - Map letters (case-insensitive) using the converter table when possible.
  *    - Replace digits and unmapped letters with a random fallback character.
+ *      - Use `seededRandom()` for deterministic output in Test Mode.
  * 7. Join and return the converted string.
  *
  * @param {string} input - The text to convert.
@@ -56,11 +58,11 @@ export async function convertToPseudoJapanese(input) {
 
       const letters = mapping[char.toLowerCase()];
       if (letters) {
-        return letters[Math.floor(Math.random() * letters.length)];
+        return letters[Math.floor(seededRandom() * letters.length)];
       }
 
       // digits or unmapped letters
-      return fallbackChars[Math.floor(Math.random() * fallbackChars.length)];
+      return fallbackChars[Math.floor(seededRandom() * fallbackChars.length)];
     })
     .join("");
 }
