@@ -204,7 +204,8 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
     mockup centered on screen. The Prev and Next buttons are anchored
     to the left and right edges so they never cover the content. The
     sidebar list scrolls independently so you can browse mockups
-    without moving the main image. It also includes `tooltipViewer.html`, a searchable viewer for
+    without moving the main image. Sidebar items alternate between `--color-surface` and
+    `--color-tertiary` for zebra striping defined in `sidebar.css`. It also includes `tooltipViewer.html`, a searchable viewer for
     exploring tooltip text used across the UI.
   - `data/`
     JSON files powering the game. `statNames.json` lists the canonical stat
@@ -229,7 +230,8 @@ Add new Markdown files there and include the filename in the `FILES` array of
 to browse the documents. A sidebar lists all available PRDs and clicking an
 entry loads it immediately. Arrow keys and swipe gestures also cycle through the
 documents. The sidebar scrolls separately from the main preview so navigation
-remains visible while reading. The page imports `base.css` and `layout.css` so
+remains visible while reading. Sidebar items alternate between `--color-surface`
+and `--color-tertiary` for zebra striping defined in `sidebar.css`. The page imports `base.css` and `layout.css` so
 wide elements stay wrapped inside the viewport. Users can return to the main
 menu by clicking the logo in the header.
 

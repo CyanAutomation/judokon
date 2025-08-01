@@ -81,7 +81,9 @@ Designers and developers previously relied on scattered folder structures to fin
 
 **Layout Elements (Desktop View):**
 
- - Left sidebar lists all mockup files for quick navigation and remains fixed to the left edge of the screen.
+- Left sidebar lists all mockup files for quick navigation and remains fixed to the left edge of the screen.
+- Sidebar list items alternate background colors using the `--color-surface` and
+  `--color-tertiary` tokens for zebra striping.
 - Image centered with filename below.
 - Images must scale to fit the viewport so wide mockups remain fully
   visible without horizontal scrolling.
