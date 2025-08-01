@@ -32,3 +32,80 @@ export function _resetForTest() {
   timersPromise = undefined;
   cachedTimers = undefined;
 }
+
+/**
+ * Create a simple countdown timer with pause/resume support.
+ *
+ * @pseudocode
+ * 1. Store the initial duration and callbacks.
+ * 2. `start()` resets the remaining time and begins a 1s interval.
+ *    - Invoke `onTick` immediately with the starting value.
+ *    - On each tick, decrement `remaining` and call `onTick`.
+ *    - When the value reaches 0, stop the interval and call `onExpired`.
+ *    - When `pauseOnHidden` is true, attach a `visibilitychange` listener that
+ *      pauses when the page is hidden and resumes when visible.
+ * 3. `pause()` and `resume()` toggle a flag checked on each interval tick.
+ * 4. `stop()` clears the interval and removes the visibility listener.
+ *
+ * @param {number} duration - Countdown duration in seconds.
+ * @param {object} [options]
+ * @param {Function} [options.onTick] - Called every second with remaining time.
+ * @param {Function} [options.onExpired] - Called when the timer reaches zero.
+ * @param {boolean} [options.pauseOnHidden=false] - Auto pause on page hide.
+ * @returns {{ start: Function, stop: Function, pause: Function, resume: Function }}
+ *          Timer control methods.
+ */
+export function createCountdownTimer(duration, { onTick, onExpired, pauseOnHidden } = {}) {
+  let remaining = duration;
+  let intervalId = null;
+  let paused = false;
+
+  function tick() {
+    if (paused) return;
+    remaining -= 1;
+    if (typeof onTick === "function") onTick(remaining);
+    if (remaining <= 0) {
+      stop();
+      if (typeof onExpired === "function") onExpired();
+    }
+  }
+
+  function handleVisibility() {
+    if (document.hidden) {
+      pause();
+    } else {
+      resume();
+    }
+  }
+
+  function start() {
+    stop();
+    remaining = duration;
+    paused = false;
+    if (typeof onTick === "function") onTick(remaining);
+    intervalId = setInterval(tick, 1000);
+    if (pauseOnHidden && typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", handleVisibility);
+    }
+  }
+
+  function stop() {
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+    if (pauseOnHidden && typeof document !== "undefined") {
+      document.removeEventListener("visibilitychange", handleVisibility);
+    }
+  }
+
+  function pause() {
+    paused = true;
+  }
+
+  function resume() {
+    paused = false;
+  }
+
+  return { start, stop, pause, resume };
+}
