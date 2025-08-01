@@ -37,6 +37,7 @@ The list of available modes is defined in `gameModes.json`. `navigationItems.jso
 - Navigate easily regardless of device or ability.
 
 ---
+
 ## Non-Goals
 
 - The home page will not expose account or profile management.
