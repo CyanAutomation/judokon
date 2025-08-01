@@ -108,7 +108,9 @@ export async function setupClassicBattlePage() {
 
   const debugPanel = document.getElementById("debug-panel");
   if (debugPanel) {
-    if (settings.featureFlags.battleDebugPanel?.enabled) {
+    const computerSlot = document.getElementById("computer-card");
+    if (settings.featureFlags.battleDebugPanel?.enabled && computerSlot) {
+      computerSlot.prepend(debugPanel);
       debugPanel.classList.remove("hidden");
     } else {
       debugPanel.remove();

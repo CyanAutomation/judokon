@@ -450,7 +450,7 @@ settings.navCacheResetButton
 
 Feature flags allow temporary or advanced tools without code changes:
 
-- **Battle Debug Panel** – shows a collapsible `<pre>` on battle pages with live match data.
+- **Battle Debug Panel** – shows a collapsible `<pre>` beside the opponent's card with live match data.
 - **Full Navigation Map** – overlays a map linking to every page for quick testing.
 - **Test Mode** – forces deterministic draws and stats with a visible "Test Mode Active" banner.
 - **Card Inspector** – adds a collapsible panel on each card displaying its raw JSON.

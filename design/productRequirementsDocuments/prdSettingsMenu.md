@@ -39,11 +39,11 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 ## Functional Requirements
 
 | Priority | Feature                          | Description                                                                                         |
-| -------- | -------------------------------- | --------------------------------------------------------------------------------------------------- |
+| -------- | -------------------------------- | ------------------------------------------------------------------- |
 | P1       | Sound Toggle                     | Binary toggle updating `settings.json` live on change.                                              |
 | P1       | Full Navigation Map Feature Flag | Enable or disable the full navigation map via feature flag; updates `settings.json` live on change. |
 | P3       | Test Mode Feature Flag           | Enables deterministic battles for automated testing.                                                |
-| P3       | Battle Debug Panel Feature Flag  | Adds a collapsible debug `<pre>` on battle pages showing match state.                                |
+| P3       | Battle Debug Panel Feature Flag  | Adds a collapsible debug `<pre>` beside the opponent's card showing match state. |
 | P3       | Card Inspector Feature Flag      | Reveals a panel on each card with its raw JSON for debugging.                                       |
 | P1       | Motion Effects Toggle            | Binary toggle updating `settings.json` live on change.                                              |
 | P1       | Typewriter Effect Toggle         | Enable or disable quote animation where supported (not used on the meditation screen). |
@@ -55,9 +55,6 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 | P3       | PRD Viewer Link                  | Link to `prdViewer.html` for browsing product requirement documents.                                |
 | P3       | Mockup Viewer Link               | Link to `mockupViewer.html` to browse design mockups.                                               |
 | P3       | Tooltip Viewer Link              | Link to `tooltipViewer.html` for exploring tooltip text.                                            |
-
-**Note:** For all settings items, if reading or writing to the data source fails, toggles/selectors **must revert** to their previous state, and a user-facing error should appear.
-
 ---
 
 ## Settings Features
@@ -125,12 +122,13 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - AC-2.7 Enabling the flag shows a collapsible debug panel on battle pages.
 - AC-2.8 The panel displays real-time match state inside a `<pre>` element.
 - AC-2.9 The panel is keyboard accessible and hidden by default.
+- AC-2.10 The panel appears beside the opponent's card rather than at the page bottom.
 
 ### Card Inspector Feature Flag
 
-- AC-2.10 Enabling the flag adds a collapsible panel on each card with its raw JSON.
-- AC-2.11 Opening the panel sets `data-inspector="true"` on the card.
-- AC-2.12 The inspector panel can be toggled via keyboard and is hidden initially.
+- AC-2.11 Enabling the flag adds a collapsible panel on each card with its raw JSON.
+- AC-2.12 Opening the panel sets `data-inspector="true"` on the card.
+- AC-2.13 The inspector panel can be toggled via keyboard and is hidden initially.
 
 ### Motion Effects Toggle
 
