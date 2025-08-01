@@ -21,7 +21,6 @@ This selection screen is the gateway to the three Team Battle modes:
 
 - Guide players to choose the correct team battle format.
 
----
 ## Non-Goals
 
 - Team management or roster editing beyond mode choice.
