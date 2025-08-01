@@ -31,6 +31,7 @@ This issue is timely as our player base is expanding internationally, and region
 - Ensure full accessibility compliance (see Accessibility section).
 
 ---
+
 ## Non-Goals
 
 - Does not cover creation of new flag assets outside the existing judoka roster.
