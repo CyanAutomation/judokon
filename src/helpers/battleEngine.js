@@ -6,6 +6,7 @@
  */
 
 import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
+import { getDefaultTimer } from "./timerUtils.js";
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 
@@ -48,17 +49,28 @@ function endMatchIfNeeded() {
  * Start the round/stat selection timer with pause/resume and auto-selection support.
  *
  * @pseudocode
- * 1. Set remaining seconds and store callbacks.
- * 2. Call onTick immediately.
- * 3. Start a 1s interval: decrement remaining, call onTick.
- * 4. If timer reaches 0, stop and call onExpired.
- * 5. Listen for page visibility changes: pause timer if hidden, resume if visible.
+ * 1. Determine the timer duration when not provided using `getDefaultTimer('roundTimer')`.
+ *    - Fallback to 30 seconds on any error.
+ * 2. Set remaining seconds and store callbacks.
+ * 3. Call onTick immediately.
+ * 4. Start a 1s interval: decrement remaining, call onTick.
+ * 5. If timer reaches 0, stop and call onExpired.
+ * 6. Listen for page visibility changes: pause timer if hidden, resume if visible.
  *
  * @param {function} onTick - Callback each second with remaining time.
  * @param {function} onExpired - Callback when timer expires (auto-select logic).
- * @param {number} [duration=30] - Timer duration in seconds.
+ * @param {number} [duration] - Timer duration in seconds.
+ * @returns {Promise<void>} Resolves when the timer starts.
  */
-export function startRound(onTick, onExpired, duration = 30) {
+export async function startRound(onTick, onExpired, duration) {
+  if (duration === undefined) {
+    try {
+      duration = await getDefaultTimer("roundTimer");
+    } catch {
+      duration = 30;
+    }
+    if (typeof duration !== "number") duration = 30;
+  }
   stopTimer();
   remaining = duration;
   paused = false;

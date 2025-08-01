@@ -4,6 +4,7 @@ import { seededRandom, isTestModeEnabled, getCurrentSeed } from "./testModeUtils
 import { fetchJson } from "./dataUtils.js";
 import { createGokyoLookup } from "./utils.js";
 import { DATA_DIR } from "./constants.js";
+import { getDefaultTimer } from "./timerUtils.js";
 import {
   startRound as engineStartRound,
   handleStatSelection as engineHandleStatSelection,
@@ -95,8 +96,15 @@ export function showSelectionPrompt() {
   el.classList.remove("fading");
 }
 
-function startTimer() {
+async function startTimer() {
   const timerEl = document.getElementById("next-round-timer");
+  let duration;
+  try {
+    duration = await getDefaultTimer("roundTimer");
+  } catch {
+    duration = 30;
+  }
+  if (typeof duration !== "number") duration = 30;
   engineStartRound(
     (remaining) => {
       if (timerEl) timerEl.textContent = `Time Left: ${remaining}s`;
@@ -105,7 +113,8 @@ function startTimer() {
       const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
       infoBar.showMessage(`Time's up! Auto-selecting ${randomStat}`);
       handleStatSelection(randomStat);
-    }
+    },
+    duration
   );
 }
 
@@ -197,7 +206,7 @@ export async function startRound() {
   showSelectionPrompt();
   const { playerScore, computerScore } = getScores();
   infoBar.updateScore(playerScore, computerScore);
-  startTimer();
+  await startTimer();
   updateDebugPanel();
 }
 
