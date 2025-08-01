@@ -244,8 +244,11 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
  * @pseudocode
  * 1. For each flag, generate a labelled toggle switch element and description.
  * 2. Persist updates via `handleUpdate` when toggled.
- * 3. After saving, show a snackbar confirming the new state.
- * 4. When toggling `viewportSimulation`, call `toggleViewportSimulation`.
+ * 3. On toggle, look up the tooltip label and description using the latest
+ *    `tooltipMap` so modals use current text.
+ * 4. After saving, show a snackbar confirming the new state and open a modal
+ *    for select flags.
+ * 5. When toggling `viewportSimulation`, call `toggleViewportSimulation`.
  *
  * @param {HTMLElement} container - Container for the switches.
  * @param {Record<string, { enabled: boolean, tooltipId?: string }>} flags - Feature flag metadata.
@@ -285,6 +288,8 @@ export function renderFeatureFlagSwitches(
     container.appendChild(wrapper);
     if (!input) return;
     input.addEventListener("change", () => {
+      const currentLabel = tooltipMap[`${tipId}.label`] || flag;
+      const currentDesc = tooltipMap[`${tipId}.description`] || "";
       const prev = !input.checked;
       const updated = {
         ...getCurrentSettings().featureFlags,
@@ -295,7 +300,7 @@ export function renderFeatureFlagSwitches(
           input.checked = prev;
         })
       ).then(() => {
-        showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);
+        showSnackbar(`${currentLabel} ${input.checked ? "enabled" : "disabled"}`);
         if (flag === "viewportSimulation") {
           toggleViewportSimulation(input.checked);
         }
@@ -313,7 +318,7 @@ export function renderFeatureFlagSwitches(
             "layoutDebugPanel"
           ].includes(flag)
         ) {
-          showSettingsInfo(label, description);
+          showSettingsInfo(currentLabel, currentDesc);
         }
       });
     });
