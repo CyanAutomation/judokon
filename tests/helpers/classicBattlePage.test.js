@@ -83,4 +83,48 @@ describe("classicBattlePage test mode flag", () => {
     expect(banner.classList.contains("hidden")).toBe(false);
     expect(setTestMode).toHaveBeenCalledWith(true);
   });
+
+  it("storage event updates banner and data attribute", async () => {
+    const startRound = vi.fn();
+    const waitForComputerCard = vi.fn();
+    const loadSettings = vi.fn().mockResolvedValue({
+      featureFlags: {
+        enableTestMode: { enabled: false }
+      }
+    });
+    const initTooltips = vi.fn().mockResolvedValue();
+    const setTestMode = vi.fn();
+
+    vi.doMock("../../src/helpers/classicBattle.js", () => ({
+      startRound,
+      handleStatSelection: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
+    vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
+
+    const battleArea = document.createElement("div");
+    battleArea.id = "battle-area";
+    const banner = document.createElement("div");
+    banner.id = "test-mode-banner";
+    banner.className = "hidden";
+    document.body.append(battleArea, banner);
+
+    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
+    await setupClassicBattlePage();
+
+    expect(battleArea.dataset.testMode).toBe("false");
+    expect(banner.classList.contains("hidden")).toBe(true);
+
+    window.dispatchEvent(
+      new StorageEvent("storage", {
+        key: "settings",
+        newValue: JSON.stringify({ featureFlags: { enableTestMode: { enabled: true } } })
+      })
+    );
+
+    expect(battleArea.dataset.testMode).toBe("true");
+    expect(banner.classList.contains("hidden")).toBe(false);
+  });
 });
