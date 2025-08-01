@@ -1,7 +1,13 @@
 .tooltip-viewer {
   display: flex;
-  height: 100%;
+  height: calc(100dvh - var(--header-height) - var(--footer-height));
   width: 100%;
+  overflow: hidden;
+}
+
+.tooltip-viewer .sidebar,
+.tooltip-viewer .preview {
+  height: 100%;
 }
 
 .tooltip-viewer .sidebar input {
