@@ -82,6 +82,7 @@ Designers and developers previously relied on scattered folder structures to fin
 **Layout Elements (Desktop View):**
 
 - Left sidebar lists all mockup files for quick navigation and remains fixed to the left edge of the screen.
+- Sidebar background uses the `--color-surface` token so zebra stripes stand out.
 - Sidebar list items alternate background colors using the `--color-surface` and
   `--color-tertiary` tokens for zebra striping.
 - Image centered with filename below.
