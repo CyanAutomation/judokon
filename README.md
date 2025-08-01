@@ -236,6 +236,14 @@ wide elements stay wrapped inside the viewport. Users can return to the main
 menu by clicking the logo in the header. The selected PRD title appears on the
 left side of the header with a task completion summary on the right.
 
+### Tooltip Viewer
+
+`src/pages/tooltipViewer.html` provides a searchable directory of every tooltip
+key used by the game. The sidebar on the left lists all keys. Clicking a key
+updates the preview pane to show the rendered tooltip text along with the raw
+string. A search box filters the list on each keystroke, and **Copy Key** and
+**Copy Body** buttons make it easy to copy either value to your clipboard.
+
 ### CSS Organization
 
 - `base.css` – tokens, resets, and global typography.
