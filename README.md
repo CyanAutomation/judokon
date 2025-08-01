@@ -144,7 +144,7 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
   any base URL.
 - `src/` – contains the game logic and assets:
   - `game.js`
-  - `helpers/` – small utilities (for example `lazyPortrait.js` replaces the placeholder card portraits once they enter view)
+  - `helpers/` – small utilities (for example `lazyPortrait.js` replaces the placeholder card portraits once they enter view). `timerUtils.js` now exposes `createCountdownTimer` for generic interval management.
   - `components/` – small DOM factories like `Button`, `ToggleSwitch`, `Card`, the `Modal` dialog, and `StatsPanel`
 
     ```javascript
