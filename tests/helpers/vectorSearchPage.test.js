@@ -117,13 +117,13 @@ describe("vector search page integration", () => {
 
 describe("highlightTerms", () => {
   it("wraps query words in <mark>", async () => {
-    const { highlightTerms } = await import("../../src/helpers/vectorSearchPage.js");
+    const { highlightTerms } = await import("../../src/helpers/snippetFormatter.js");
     const result = highlightTerms("The Quick Brown Fox", ["quick", "fox"]);
     expect(result).toBe("The <mark>Quick</mark> Brown <mark>Fox</mark>");
   });
 
   it("returns escaped text when no terms provided", async () => {
-    const { highlightTerms } = await import("../../src/helpers/vectorSearchPage.js");
+    const { highlightTerms } = await import("../../src/helpers/snippetFormatter.js");
     expect(highlightTerms("<script>", [])).toBe("&lt;script&gt;");
   });
 });
@@ -190,7 +190,7 @@ describe("synonym expansion", () => {
       DATA_DIR: "./"
     }));
 
-    const { expandQueryWithSynonyms } = await import("../../src/helpers/vectorSearchPage.js");
+    const { expandQueryWithSynonyms } = await import("../../src/helpers/vectorSearchQuery.js");
 
     const result = await expandQueryWithSynonyms("shoulder throw");
     expect(result).toContain("seoi-nage");

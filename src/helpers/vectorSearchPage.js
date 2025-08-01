@@ -3,84 +3,15 @@ import { findMatches, fetchContextById, loadEmbeddings } from "./vectorSearch.js
 import { markdownToHtml } from "./markdownToHtml.js";
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
-import { escapeHTML } from "./utils.js";
+import { expandQueryWithSynonyms } from "./vectorSearchQuery.js";
+import { createSnippetElement } from "./snippetFormatter.js";
 // Load Transformers.js dynamically from jsDelivr when first used
 // This avoids bundling the large library with the rest of the code.
 
 let extractor;
 let spinner;
 
-/**
- * Maximum number of characters to show before truncating match text.
- * @type {number}
- */
-const SNIPPET_LIMIT = 200;
-
 const SIMILARITY_THRESHOLD = 0.6;
-
-let synonymsPromise;
-
-/**
- * Load the synonym mapping JSON once.
- *
- * @returns {Promise<Record<string, string[]>>} Synonym map or null on failure.
- */
-async function loadSynonyms() {
-  if (!synonymsPromise) {
-    synonymsPromise = fetchJson(`${DATA_DIR}synonyms.json`).catch(() => null);
-  }
-  return synonymsPromise;
-}
-
-function levenshtein(a, b) {
-  const dp = Array.from({ length: a.length + 1 }, () => []);
-  for (let i = 0; i <= a.length; i++) dp[i][0] = i;
-  for (let j = 0; j <= b.length; j++) dp[0][j] = j;
-  for (let i = 1; i <= a.length; i++) {
-    for (let j = 1; j <= b.length; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
-    }
-  }
-  return dp[a.length][b.length];
-}
-
-/**
- * Expand a query with synonym matches and near spellings.
- *
- * @pseudocode
- * 1. Load the synonym map via `loadSynonyms`.
- * 2. For each mapping key and its synonyms:
- *    - When the query contains the key or is within a Levenshtein distance of 2,
- *      add all mapped terms to the query.
- *    - Also match against each mapped term in the same way.
- * 3. Return the original query plus any additions joined with spaces.
- *
- * @param {string} query - User entered text.
- * @returns {Promise<string>} Expanded query string.
- */
-export async function expandQueryWithSynonyms(query) {
-  const map = await loadSynonyms();
-  if (!map) return query;
-  const lower = query.toLowerCase();
-  const words = lower.split(/\s+/).filter(Boolean);
-  const additions = new Set();
-  for (const [key, arr] of Object.entries(map)) {
-    const variants = Array.isArray(arr) ? arr : [];
-    const all = [key, ...variants];
-    const hit = all.some((term) => {
-      const t = term.toLowerCase();
-      return (
-        lower.includes(t) || levenshtein(lower, t) <= 2 || words.some((w) => levenshtein(w, t) <= 2)
-      );
-    });
-    if (hit) {
-      variants.forEach((v) => additions.add(v.toLowerCase()));
-    }
-  }
-  const expanded = [...new Set([...words, ...additions])];
-  return expanded.join(" ");
-}
 
 /**
  * Score difference threshold for strong matches.
@@ -199,69 +130,6 @@ export function formatTags(tags) {
 }
 
 /**
- * Highlight occurrences of query terms in text.
- *
- * @pseudocode
- * 1. Return the original text when `terms` is empty.
- * 2. Escape HTML in `text` using `escapeHTML`.
- * 3. Build a case-insensitive regular expression from `terms`.
- * 4. Replace matches with `<mark>` wrapped text and return the result.
- *
- * @param {string} text - The text to search within.
- * @param {string[]} terms - Words to highlight.
- * @returns {string} HTML string with `<mark>` wrapped matches.
- */
-export function highlightTerms(text, terms) {
-  const safe = escapeHTML(text ?? "");
-  if (!Array.isArray(terms) || terms.length === 0) return safe;
-  const escaped = terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-  if (escaped.length === 0) return safe;
-  const regex = new RegExp(`\\b(${escaped.join("|")})\\b`, "gi");
-  return safe.replace(regex, "<mark>$1</mark>");
-}
-
-/**
- * Build a snippet element with optional truncation.
- *
- * @pseudocode
- * 1. Create a container and span for the snippet text, highlighting `terms` when provided.
- * 2. When `text` exceeds `SNIPPET_LIMIT`, append an ellipsis and a
- *    "Show more" button that toggles the full content.
- *    - Update the button label to "Show less" when expanded.
- *    - Prevent the toggle from triggering row click events.
- * 3. Return the container element.
- *
- * @param {string} text - The full match text.
- * @param {string[]} [terms=[]] - Search terms for highlighting.
- * @returns {HTMLElement} Snippet DOM element.
- */
-function createSnippetElement(text, terms = []) {
-  const container = document.createElement("div");
-  const span = document.createElement("span");
-  const needsTruncate = text.length > SNIPPET_LIMIT;
-  const shortText = needsTruncate ? text.slice(0, SNIPPET_LIMIT).trimEnd() + "\u2026" : text;
-  const shortHtml = highlightTerms(shortText, terms);
-  const fullHtml = highlightTerms(text, terms);
-  span.innerHTML = shortHtml;
-  container.appendChild(span);
-  if (needsTruncate) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.classList.add("show-more-btn");
-    btn.textContent = "Show more";
-    btn.setAttribute("aria-expanded", "false");
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const expanded = btn.getAttribute("aria-expanded") === "true";
-      btn.setAttribute("aria-expanded", expanded ? "false" : "true");
-      span.innerHTML = expanded ? shortHtml : fullHtml;
-      btn.textContent = expanded ? "Show more" : "Show less";
-    });
-    container.appendChild(document.createTextNode(" "));
-    container.appendChild(btn);
-  }
-  return container;
-}
 
 /**
  * Handle the vector search form submission.
