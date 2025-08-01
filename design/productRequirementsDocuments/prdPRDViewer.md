@@ -99,7 +99,8 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - Sidebar scrolls independently from the main preview so the list remains visible while reading.
 - Sidebar background uses the `--color-surface` token so zebra stripes stand out.
 - Sidebar list items alternate background colors using the `--color-surface` and
-  `--color-tertiary` tokens for zebra striping.
+  `--color-tertiary` tokens for zebra striping. Odd/even classes start with
+  `odd` for the first row.
 - Warning badge in content area if markdown partially rendered.
 - Bottom footer with keyboard and swipe navigation instructions.
 - Responsive layout for desktop, tablet, and mobile.

@@ -84,7 +84,8 @@ Designers and developers previously relied on scattered folder structures to fin
 - Left sidebar lists all mockup files for quick navigation and remains fixed to the left edge of the screen.
 - Sidebar background uses the `--color-surface` token so zebra stripes stand out.
 - Sidebar list items alternate background colors using the `--color-surface` and
-  `--color-tertiary` tokens for zebra striping.
+  `--color-tertiary` tokens for zebra striping. Odd/even classes start with
+  `odd` for the first row.
 - Image centered with filename below.
 - Images must scale to fit the viewport so wide mockups remain fully
   visible without horizontal scrolling.

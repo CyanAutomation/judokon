@@ -7,8 +7,8 @@ describe("createSidebarList", () => {
     const items = element.querySelectorAll("li");
     expect(element.classList.contains("sidebar-list")).toBe(true);
     expect(items).toHaveLength(3);
-    expect(items[0].classList.contains("even")).toBe(true);
-    expect(items[1].classList.contains("odd")).toBe(true);
+    expect(items[0].classList.contains("odd")).toBe(true);
+    expect(items[1].classList.contains("even")).toBe(true);
   });
 
   it("select helper highlights items and calls callback", () => {
