@@ -114,6 +114,7 @@ Motion** enabled, ensuring the card appears instantly without movement.
 - Allow players sensitive to motion to control animation settings for comfort.
 
 ---
+
 ## Non-Goals
 
 - Balancing or adjusting card rarity odds.
