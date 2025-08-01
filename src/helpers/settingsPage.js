@@ -86,8 +86,8 @@ function createResetConfirmation(onConfirm) {
  * 2. Query DOM elements for each control and the mode container.
  * 3. Provide helper functions to read and persist settings.
  * 4. Apply initial values, attach listeners, and render mode and flag switches.
- * 5. When `navCacheResetButton` is enabled, add a button that clears cached
- *    navigation data and refreshes the navbar.
+ * 5. When `navCacheResetButton` is enabled, queue a microtask to append a
+ *    button that clears cached navigation data and refreshes the navbar.
  *
  * @param {Settings} settings - Current settings object.
  * @param {Array} gameModes - Available game mode options.
@@ -166,7 +166,8 @@ function initializeControls(settings, gameModes, tooltipMap) {
     handleUpdate,
     tooltipMap
   );
-  addNavResetButton();
+  // Queue to ensure the section exists before inserting
+  queueMicrotask(addNavResetButton);
   document.getElementById("feature-nav-cache-reset-button")?.addEventListener("change", () => {
     setTimeout(addNavResetButton);
   });
@@ -191,7 +192,7 @@ function initializeControls(settings, gameModes, tooltipMap) {
       handleUpdate,
       tooltipMap
     );
-    addNavResetButton();
+    queueMicrotask(addNavResetButton);
     initTooltips();
     document.getElementById("feature-nav-cache-reset-button")?.addEventListener("change", () => {
       setTimeout(addNavResetButton);

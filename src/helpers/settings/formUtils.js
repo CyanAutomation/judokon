@@ -301,6 +301,8 @@ export function renderFeatureFlagSwitches(
     container.appendChild(wrapper);
     if (!input) return;
     input.addEventListener("change", () => {
+      const currentLabel = tooltipMap[`${tipId}.label`] || flag;
+      const currentDesc = tooltipMap[`${tipId}.description`] || "";
       const prev = !input.checked;
       const updated = {
         ...getCurrentSettings().featureFlags,
@@ -311,7 +313,7 @@ export function renderFeatureFlagSwitches(
           input.checked = prev;
         })
       ).then(() => {
-        showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);
+        showSnackbar(`${currentLabel} ${input.checked ? "enabled" : "disabled"}`);
         if (flag === "viewportSimulation") {
           toggleViewportSimulation(input.checked);
         }
