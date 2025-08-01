@@ -1,5 +1,7 @@
 /**
- * Utility helpers for the Battle Judoka screen.
+ * Wait until the computer's card loads. Resolves when a `.judoka-card` appears.
+ *
+ * @returns {Promise<void>}
  *
  * @pseudocode
  * Export `waitForComputerCard` which resolves once a `.judoka-card` element
