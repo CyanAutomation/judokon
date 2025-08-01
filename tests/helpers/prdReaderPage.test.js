@@ -95,4 +95,27 @@ describe("prdReaderPage", () => {
     items[1].click();
     expect(container.innerHTML).toContain("Beta");
   });
+
+  it("displays task summary when element exists", async () => {
+    const docs = {
+      "task.md": "## Tasks\n- [x] done\n- [ ] todo"
+    };
+    const parser = (md) => `<h1>${md}</h1>`;
+
+    document.body.innerHTML = `
+      <ul id="prd-list"></ul>
+      <div id="task-summary"></div>
+      <div id="prd-content"></div>
+      <button data-nav="prev">Prev</button>
+      <button data-nav="next">Next</button>
+    `;
+
+    globalThis.SKIP_PRD_AUTO_INIT = true;
+    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+
+    await setupPrdReaderPage(docs, parser);
+
+    const summary = document.getElementById("task-summary");
+    expect(summary.textContent).toContain("1/2");
+  });
 });

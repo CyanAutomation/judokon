@@ -2,6 +2,7 @@ import { onDomReady } from "./domReady.js";
 import { markdownToHtml } from "./markdownToHtml.js";
 import { initTooltips } from "./tooltip.js";
 import { createSidebarList } from "../components/SidebarList.js";
+import { getPrdTaskStats } from "./prdTaskStats.js";
 
 /**
  * Initialize the Product Requirements Document reader page.
@@ -50,15 +51,21 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
       ];
 
   const documents = [];
+  const taskStats = [];
   if (docsMap) {
     for (const name of FILES) {
-      if (docsMap[name]) documents.push(parserFn(docsMap[name]));
+      if (docsMap[name]) {
+        const md = docsMap[name];
+        documents.push(parserFn(md));
+        taskStats.push(getPrdTaskStats(md));
+      }
     }
   } else {
     for (const name of FILES) {
       const res = await fetch(`${PRD_DIR}${name}`);
       const text = await res.text();
       documents.push(parserFn(text));
+      taskStats.push(getPrdTaskStats(text));
     }
   }
   const container = document.getElementById("prd-content");
@@ -83,6 +90,12 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     container.classList.remove("fade-in");
     void container.offsetWidth;
     container.classList.add("fade-in");
+    const summaryEl = document.getElementById("task-summary");
+    if (summaryEl) {
+      const { total, completed } = taskStats[current] || { total: 0, completed: 0 };
+      const percent = total ? Math.round((completed / total) * 100) : 0;
+      summaryEl.textContent = `Tasks: ${completed}/${total} (${percent}%)`;
+    }
     initTooltips();
   });
   listEl.id = "prd-list";
@@ -97,6 +110,12 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     container.classList.remove("fade-in");
     void container.offsetWidth;
     container.classList.add("fade-in");
+    const summaryEl = document.getElementById("task-summary");
+    if (summaryEl) {
+      const { total, completed } = taskStats[index] || { total: 0, completed: 0 };
+      const percent = total ? Math.round((completed / total) * 100) : 0;
+      summaryEl.textContent = `Tasks: ${completed}/${total} (${percent}%)`;
+    }
     initTooltips();
   }
 
