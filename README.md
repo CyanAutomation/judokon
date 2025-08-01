@@ -417,7 +417,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 
 ## Display Modes
 
-Light, dark and gray themes are supported. Changing modes uses a slide-over transition implemented with the View Transitions API when supported; otherwise the colors update immediately. See [prdSettingsMenu.md](design/productRequirementsDocuments/prdSettingsMenu.md) for how the Display Mode switch applies these themes and related accessibility checks. If you modify colors, run `npm run check:contrast` while the development server is running. The `--link-color` token controls anchor colors and is overridden to `#3399ff` in dark mode (along with `--color-primary: #ff4530`).
+Light, dark and gray themes are supported. Changing modes uses a slide-over transition implemented with the View Transitions API when supported; otherwise the colors update immediately. See [prdSettingsMenu.md](design/productRequirementsDocuments/prdSettingsMenu.md) for how the Display Mode switch applies these themes and related accessibility checks. If you modify colors, run `npm run check:contrast` while the development server is running. The `--link-color` token controls anchor colors and is overridden to `#3399ff` in dark mode (along with `--color-primary: #ff4530`). In dark mode the tooltip viewer also uses this bright link color to highlight the selected sidebar key for better contrast.
 
 ## Settings & Feature Flags
 
