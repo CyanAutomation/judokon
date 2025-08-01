@@ -237,8 +237,8 @@ This pattern keeps the settings page organized and accessible, especially as mor
 - **Interaction flow:**
 
   - Tab order should proceed top-to-bottom: **display mode → sound → motion → game mode toggles**.
-  - Users can navigate and activate each control without needing a mouse.
-  - **Section layout:** The page begins with an `<h1>` heading followed by two `<fieldset>` sections—**General Settings** and **Game Modes**—each using the `.game-mode-toggle-container` grid. The second fieldset keeps `id="game-mode-toggle-container"` so scripts can find it.
+  - Users can navigate and activate each control without needing a mouse. 
+  - **Section layout:** The page begins with an `h1` heading followed by two `fieldset` sections—**General Settings** and **Game Modes**—each using the `.game-mode-toggle-container` grid. The second fieldset keeps `id="game-mode-toggle-container"` so scripts can find it.
 
   | **Settings Menu Mockup 1**                                         | **Settings Menu Mockup 2**                                         | **Settings Menu Mockup 2**                                         |
   | ------------------------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------ |
