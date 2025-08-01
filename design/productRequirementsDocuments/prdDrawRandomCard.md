@@ -263,4 +263,4 @@ Motion** enabled, ensuring the card appears instantly without movement.
   - [ ] 4.8 Write automated tests verifying color contrast and tap target sizes.
      
 ---
-        \n[Back to Game Modes Overview](prdGameModes.md)
+        [Back to Game Modes Overview](prdGameModes.md)
