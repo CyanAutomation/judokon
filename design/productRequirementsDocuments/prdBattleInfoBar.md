@@ -197,4 +197,4 @@ Implementation for score, message, and countdown/stat selection timer updates is
 
 - [Classic Battle PRD](prdClassicBattle.md) for timer, stat selection, and accessibility requirements.
 
-\n[Back to Game Modes Overview](prdGameModes.md)
+- [Back to Game Modes Overview](prdGameModes.md)
