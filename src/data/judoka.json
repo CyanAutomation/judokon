@@ -6,6 +6,7 @@
     "country": "Vanuatu",
     "countryCode": "vu",
     "weightClass": "+100",
+    "category": "Judo",
     "stats": {
       "power": 9,
       "speed": 9,
@@ -32,6 +33,7 @@
     "country": "Bhutan",
     "countryCode": "bt",
     "weightClass": "+100",
+    "category": "Judo",
     "stats": {
       "power": 0,
       "speed": 0,
@@ -58,6 +60,7 @@
     "country": "Portugal",
     "countryCode": "pt",
     "weightClass": "-52",
+    "category": "Judo",
     "stats": {
       "power": 6,
       "speed": 7,
@@ -84,6 +87,7 @@
     "country": "United States",
     "countryCode": "us",
     "weightClass": "+78",
+    "category": "Judo",
     "stats": {
       "power": 9,
       "speed": 6,
@@ -110,6 +114,7 @@
     "country": "Japan",
     "countryCode": "jp",
     "weightClass": "-81",
+    "category": "Judo",
     "stats": {
       "power": 8,
       "speed": 8,
@@ -136,6 +141,7 @@
     "country": "Jamaica",
     "countryCode": "jm",
     "weightClass": "-60",
+    "category": "Judo",
     "stats": {
       "power": 7,
       "speed": 8,
@@ -162,6 +168,7 @@
     "country": "Georgia",
     "countryCode": "ge",
     "weightClass": "-100",
+    "category": "Judo",
     "stats": {
       "power": 9,
       "speed": 8,
@@ -188,6 +195,7 @@
     "country": "United States",
     "countryCode": "us",
     "weightClass": "-57",
+    "category": "Judo",
     "stats": {
       "power": 6,
       "speed": 7,

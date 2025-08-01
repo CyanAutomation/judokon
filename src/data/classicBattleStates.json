@@ -1,0 +1,57 @@
+[
+  {
+    "id": 1,
+    "name": "waitingForMatchStart",
+    "description": "Waiting for the match to start"
+  },
+  {
+    "id": 2,
+    "name": "matchStart",
+    "description": "Start of the match"
+  },
+  {
+    "id": 3,
+    "name": "roundStart",
+    "description": "Start of the round"
+  },
+  {
+    "id": 3,
+    "name": "waitingForPlayerAction",
+    "description": "Waiting for the player to take action"
+  },
+  {
+    "id": 4,
+    "name": "roundDecision",
+    "description": "The decision of the round"
+  },
+  {
+    "id": 5,
+    "name": "roundOver",
+    "description": "Round is over"
+  },
+  {
+    "id": 9,
+    "name": "matchDecision",
+    "description": "The decision of the match"
+  },
+  {
+    "id": 10,
+    "name": "matchOver",
+    "description": "Match is over"
+  },
+  {
+    "id": 90,
+    "name": "cooldown",
+    "description": "Cooldown period"
+  },
+  {
+    "id": 98,
+    "name": "interruptRound",
+    "description": "Round interrupted"
+  },
+  {
+    "id": 99,
+    "name": "interruptMatch",
+    "description": "Match interrupted"
+  }
+]

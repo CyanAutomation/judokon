@@ -12,7 +12,7 @@
 
 .prd-viewer .preview {
   flex: 1;
-  padding: var(--space-md);
+  padding: var(--space-lg);
   overflow-y: auto;
 }
 
