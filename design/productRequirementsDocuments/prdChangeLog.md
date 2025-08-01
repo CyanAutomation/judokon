@@ -130,28 +130,28 @@ Players and developers currently lack a simple, in-game method to see which Judo
 
 ### 1.0 Design Table Layout for Judoka Updates
 
- - [x] **1.1** Define visual table layout and styling
- - [x] **1.2** Include columns: Judoka ID, Card Code, Portrait, Last Modified, Name
- - [x] **1.3** Add header and footer consistent with game theme
- - [x] **1.4** Design for responsive layout (mobile/tablet)
+- [x] **1.1** Define visual table layout and styling
+- [x] **1.2** Include columns: Judoka ID, Card Code, Portrait, Last Modified, Name
+- [x] **1.3** Add header and footer consistent with game theme
+- [x] **1.4** Design for responsive layout (mobile/tablet)
 
 ### 2.0 Implement Data Loading Logic
 
- - [x] **2.1** Parse `judoka.json` and extract required fields
- - [x] **2.2** Sort by last modified date, then by name
- - [x] **2.3** Limit to 20 entries
+- [x] **2.1** Parse `judoka.json` and extract required fields
+- [x] **2.2** Sort by last modified date, then by name
+- [x] **2.3** Limit to 20 entries
 
 ### 3.0 Build Frontend Page
 
- - [x] **3.1** Render table with dynamic content
- - [x] **3.2** Add alt text for portraits
- - [x] **3.3** Ensure accessibility (keyboard/tab navigation)
+- [x] **3.1** Render table with dynamic content
+- [x] **3.2** Add alt text for portraits
+- [x] **3.3** Ensure accessibility (keyboard/tab navigation)
 
 ### 4.0 Error Handling
 
- - [x] **4.1** Handle missing/empty `judoka.json`
- - [x] **4.2** Gracefully degrade if images or data are unavailable
- - [x] **4.3** Display “No Judoka data found” as appropriate
+- [x] **4.1** Handle missing/empty `judoka.json`
+- [x] **4.2** Gracefully degrade if images or data are unavailable
+- [x] **4.3** Display “No Judoka data found” as appropriate
 
 ### 5.0 QA and Testing
 

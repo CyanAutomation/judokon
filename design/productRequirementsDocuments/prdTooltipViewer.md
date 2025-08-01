@@ -20,12 +20,12 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 
 ## Goals / Success Metrics
 
-| Goal Description                                                                 | Metric                                 | Target              |
-| -------------------------------------------------------------------------------- | -------------------------------------- | ------------------- |
-| Allow team members to browse all tooltip entries without touching the game code | Tooltip Viewer accessibility rate      | 100%                |
-| Reduce tooltip-related QA errors pre-deployment                                 | Tooltip-related bug count              | ↓ 50% per release   |
-| Provide previews styled as in-game                                              | Rendering fidelity rating from QA      | 100% match          |
-| Improve editorial turnaround for tooltip updates                                | Copy revision cycle time               | ↓ from 3 days to 1  |
+| Goal Description                                                                | Metric                            | Target             |
+| ------------------------------------------------------------------------------- | --------------------------------- | ------------------ |
+| Allow team members to browse all tooltip entries without touching the game code | Tooltip Viewer accessibility rate | 100%               |
+| Reduce tooltip-related QA errors pre-deployment                                 | Tooltip-related bug count         | ↓ 50% per release  |
+| Provide previews styled as in-game                                              | Rendering fidelity rating from QA | 100% match         |
+| Improve editorial turnaround for tooltip updates                                | Copy revision cycle time          | ↓ from 3 days to 1 |
 
 ---
 
@@ -68,18 +68,18 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                  | Description                                                                 |
-| -------- | ------------------------ | --------------------------------------------------------------------------- |
-| **P1**   | JSON loader              | Load `tooltips.json` from `src/data/tooltips.json`.                         |
-| **P1**   | Sidebar key list         | Display all keys in a scrollable, clickable list.                           |
-| **P1**   | Preview pane             | Render tooltip content (markdown + raw string).                             |
-| **P1**   | Markdown parser          | Apply JU-DO-KON! tooltip formatting rules.                                  |
-| **P2**   | Search/filter input      | Filter list by tooltip key or body content.                                 |
-| **P2**   | Category highlighting    | Group or color-code by prefix (`stat`, `ui`, `mode`).                       |
-| **P2**   | Invalid key validator    | Flag missing, empty, or malformed entries visually.                         |
-| **P3**   | Mobile responsive layout | Stack sidebar above preview on screens <600px.                              |
-| **P3**   | Copy-to-clipboard button | One-click copying of key or body content.                                   |
-| **P3**   | Jump to key via URL hash | Auto-select a tooltip via `#keyname` on page load.                          |
+| Priority | Feature                  | Description                                           |
+| -------- | ------------------------ | ----------------------------------------------------- |
+| **P1**   | JSON loader              | Load `tooltips.json` from `src/data/tooltips.json`.   |
+| **P1**   | Sidebar key list         | Display all keys in a scrollable, clickable list.     |
+| **P1**   | Preview pane             | Render tooltip content (markdown + raw string).       |
+| **P1**   | Markdown parser          | Apply JU-DO-KON! tooltip formatting rules.            |
+| **P2**   | Search/filter input      | Filter list by tooltip key or body content.           |
+| **P2**   | Category highlighting    | Group or color-code by prefix (`stat`, `ui`, `mode`). |
+| **P2**   | Invalid key validator    | Flag missing, empty, or malformed entries visually.   |
+| **P3**   | Mobile responsive layout | Stack sidebar above preview on screens <600px.        |
+| **P3**   | Copy-to-clipboard button | One-click copying of key or body content.             |
+| **P3**   | Jump to key via URL hash | Auto-select a tooltip via `#keyname` on page load.    |
 
 ---
 
@@ -103,30 +103,33 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 
 ## Edge Cases & Failures
 
-| Case                    | Handling Behavior                                                                 |
-|-------------------------|------------------------------------------------------------------------------------|
-| File missing            | Show "File not found" message in viewer panel                                     |
-| Corrupted JSON          | Render structured parse error (line, column) in preview area                      |
-| Malformed markdown      | Render best-effort version and flag preview with warning icon                     |
-| Missing/empty strings   | Highlight key with red icon and tooltip: "Empty or whitespace-only content"       |
-| Unrecognized key format | Warn if keys deviate from pattern `prefix.name`                                   |
-| Long values             | Truncate preview after 300px height; add “Show more” toggle                       |
+| Case                    | Handling Behavior                                                           |
+| ----------------------- | --------------------------------------------------------------------------- |
+| File missing            | Show "File not found" message in viewer panel                               |
+| Corrupted JSON          | Render structured parse error (line, column) in preview area                |
+| Malformed markdown      | Render best-effort version and flag preview with warning icon               |
+| Missing/empty strings   | Highlight key with red icon and tooltip: "Empty or whitespace-only content" |
+| Unrecognized key format | Warn if keys deviate from pattern `prefix.name`                             |
+| Long values             | Truncate preview after 300px height; add “Show more” toggle                 |
 
 ---
 
 ## Tasks
 
 - [ ] 1.0 Load and Parse Tooltip Data
+
   - [ ] 1.1 Load `tooltips.json` from `src/data/tooltips.json`
   - [ ] 1.2 Handle loading failures with user-friendly error display
   - [ ] 1.3 Parse JSON and extract key-value pairs
 
 - [ ] 2.0 Implement Sidebar Key List
+
   - [ ] 2.1 Render scrollable list of tooltip keys
   - [ ] 2.2 Enable click interaction to select a tooltip
   - [ ] 2.3 Add real-time search/filter functionality (300ms debounce)
 
 - [ ] 3.0 Build Preview Panel
+
   - [ ] 3.1 Render raw tooltip text
   - [ ] 3.2 Parse and render markdown-styled preview
   - [ ] 3.3 Animate panel on update (fade-in, 100ms)
@@ -134,6 +137,7 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
   - [ ] 3.5 Include copy-to-clipboard buttons for key and body
 
 - [ ] 4.0 URL Fragment Support
+
   - [ ] 4.1 Read and parse URL hash on page load
   - [ ] 4.2 Scroll to and pre-select corresponding tooltip key
 

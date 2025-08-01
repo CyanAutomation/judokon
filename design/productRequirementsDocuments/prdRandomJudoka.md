@@ -69,7 +69,6 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 ---
 
-
 ## Dependencies
 
 - Access to the full judoka list

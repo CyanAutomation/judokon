@@ -39,14 +39,14 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 ## Functional Requirements
 
 | Priority | Feature                          | Description                                                                                         |
-| -------- | -------------------------------- | ------------------------------------------------------------------- |
+| -------- | -------------------------------- | --------------------------------------------------------------------------------------------------- |
 | P1       | Sound Toggle                     | Binary toggle updating `settings.json` live on change.                                              |
 | P1       | Full Navigation Map Feature Flag | Enable or disable the full navigation map via feature flag; updates `settings.json` live on change. |
 | P3       | Test Mode Feature Flag           | Enables deterministic battles for automated testing.                                                |
-| P3       | Battle Debug Panel Feature Flag  | Adds a collapsible debug `<pre>` beside the opponent's card showing match state. |
+| P3       | Battle Debug Panel Feature Flag  | Adds a collapsible debug `<pre>` beside the opponent's card showing match state.                    |
 | P3       | Card Inspector Feature Flag      | Reveals a panel on each card with its raw JSON for debugging.                                       |
 | P1       | Motion Effects Toggle            | Binary toggle updating `settings.json` live on change.                                              |
-| P1       | Typewriter Effect Toggle         | Enable or disable quote animation where supported (not used on the meditation screen). |
+| P1       | Typewriter Effect Toggle         | Enable or disable quote animation where supported (not used on the meditation screen).              |
 | P1       | Tooltips Toggle                  | Globally enable or disable UI tooltips.                                                             |
 | P1       | Display Mode Switch              | Three-option switch applying mode instantly across UI.                                              |
 | P2       | Game Modes Toggles               | A list of all defined game modes with binary toggles from `navigationItems.json`.                   |
@@ -237,7 +237,7 @@ This pattern keeps the settings page organized and accessible, especially as mor
 - **Interaction flow:**
 
   - Tab order should proceed top-to-bottom: **display mode → sound → motion → game mode toggles**.
-  - Users can navigate and activate each control without needing a mouse. 
+  - Users can navigate and activate each control without needing a mouse.
   - **Section layout:** The page begins with an `h1` heading followed by two `fieldset` sections—**General Settings** and **Game Modes**—each using the `.game-mode-toggle-container` grid. The second fieldset keeps `id="game-mode-toggle-container"` so scripts can find it.
 
   | **Settings Menu Mockup 1**                                         | **Settings Menu Mockup 2**                                         | **Settings Menu Mockup 2**                                         |

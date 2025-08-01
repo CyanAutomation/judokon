@@ -50,7 +50,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 | P1       | Markdown-to-HTML Rendering | Convert markdown to styled HTML with accurate formatting.            |
 | P1       | Keyboard Navigation        | Allow navigation via arrow keys with focus management.               |
 | P1       | Touch/Swipe Navigation     | Support swipe gestures with gesture threshold to avoid misfires.     |
-| P1       | Sidebar Document List      | Sidebar lists all PRDs and selecting one loads that document.       |
+| P1       | Sidebar Document List      | Sidebar lists all PRDs and selecting one loads that document.        |
 | P2       | Responsive Layout          | Viewer adapts seamlessly to different device screen sizes.           |
 | P2       | Accessibility              | Fully accessible UI including ARIA labels and screen reader support. |
 | P3       | Home Link                  | Provide a prominent link to return to the homepage.                  |

@@ -130,7 +130,6 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
 
 ---
 
-
 ## Player Flow
 
 1. Player opens meditation screen → quote displays in English by default.
