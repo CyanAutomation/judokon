@@ -13,6 +13,8 @@ import { createSidebarList } from "../components/SidebarList.js";
  * 4. Implement `showImage(index)` to update the image, alt text, filename, and sidebar highlight.
  * 5. Attach click handlers and keyboard events to cycle images with wraparound.
  * 6. Show the first image and apply button ripple effects.
+ *
+ * @returns {void}
  */
 export function setupMockupViewerPage() {
   const imgEl = document.getElementById("mockup-image");

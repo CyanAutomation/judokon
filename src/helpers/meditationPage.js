@@ -7,6 +7,8 @@
  *    a. Retrieves the quote element from the DOM.
  *    b. Calls `setupLanguageToggle` with the quote element.
  * 3. Use `onDomReady` to run `setupMeditationPage` once the DOM is ready.
+ *
+ * @returns {void}
  */
 import { setupLanguageToggle } from "./pseudoJapanese.js";
 import { onDomReady } from "./domReady.js";
