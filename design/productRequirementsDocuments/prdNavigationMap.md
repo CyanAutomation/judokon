@@ -141,6 +141,22 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 
 ---
 
+## Dependencies & Integrations
+
+- Relies on existing footer navigation and settings modules.
+- Uses current asset loader for map imagery.
+- Stores preferences in local storage.
+
+---
+
+## Open Questions
+
+- **Pending:** Decide if future game modes will appear on the map automatically.
+- **Pending:** Determine whether audio cues are required for map interactions.
+- **Pending:** Confirm if the map should support landscape-only layouts.
+
+---
+
 ## Tasks
 
 - [ ] **1.0 Design Village Map Navigation (P1)**
@@ -161,29 +177,5 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - [ ] **5.0 Add "Simple Menu Mode" toggle to settings (P3)**
 
 ---
-
-
-## Dependencies & Integrations
-
-- Relies on existing footer navigation and settings modules.
-- Uses current asset loader for map imagery.
-- Stores preferences in local storage.
-
----
-
-## Open Questions
-
-- **Pending:** Decide if future game modes will appear on the map automatically.
-- **Pending:** Determine whether audio cues are required for map interactions.
-- **Pending:** Confirm if the map should support landscape-only layouts.
-
----
-
-## Metadata
-
-- **Author:** Ju-Do-Kon! Team
-- **Last Edited:** 2024-05-01
-- **Target Version:** v1.2
-- **Related Features:** Navigation Bar, Settings Menu
 
 [Back to Game Modes Overview](prdGameModes.md)
