@@ -50,8 +50,8 @@ export async function setupTooltipViewerPage() {
         });
       }
     });
-    const result = createSidebarList(items, (i) => {
-      select(items[i].dataset.key);
+    const result = createSidebarList(items, (_, el) => {
+      select(el.dataset.key);
     });
     listSelect = result.select;
     result.element.id = "tooltip-list";
@@ -61,6 +61,7 @@ export async function setupTooltipViewerPage() {
 
   let selectedKey;
   function select(key) {
+    if (selectedKey === key) return;
     selectedKey = key;
     const body = data[key] ?? "";
     if (listSelect) {
