@@ -1,25 +1,18 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 
 beforeEach(() => {
   document.body.innerHTML = "";
 });
 
 describe("toggleLayoutDebugPanel", () => {
-  it("adds and removes the panel", () => {
-    const create = vi.fn(() => {
-      const el = document.createElement("div");
-      el.id = "layout-debug-panel";
-      return el;
-    });
-    vi.doMock("../../src/components/LayoutDebugPanel.js", () => ({
-      createLayoutDebugPanel: create
-    }));
-    // reload module after mocking
-    return import("../../src/helpers/layoutDebugPanel.js").then((mod) => {
-      mod.toggleLayoutDebugPanel(true);
-      expect(document.getElementById("layout-debug-panel")).toBeTruthy();
-      mod.toggleLayoutDebugPanel(false);
-      expect(document.getElementById("layout-debug-panel")).toBeNull();
-    });
+  it("adds outlines when enabled and cleans up when disabled", async () => {
+    const { toggleLayoutDebugPanel } = await import("../../src/helpers/layoutDebugPanel.js");
+    toggleLayoutDebugPanel(true, ["body"]);
+    const panel = document.getElementById("layout-debug-panel");
+    expect(panel).toBeTruthy();
+    expect(document.body.classList.contains("layout-debug-outline")).toBe(true);
+    toggleLayoutDebugPanel(false, ["body"]);
+    expect(document.getElementById("layout-debug-panel")).toBeNull();
+    expect(document.body.classList.contains("layout-debug-outline")).toBe(false);
   });
 });

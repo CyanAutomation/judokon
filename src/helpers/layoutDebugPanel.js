@@ -15,6 +15,7 @@ const DEFAULT_SELECTORS = [
  * @pseudocode
  * 1. Exit early if `document.body` is unavailable.
  * 2. When `enabled` is true and no panel exists, create it and append to `body`.
+ *    a. Automatically expand the panel so outlines are applied immediately.
  * 3. When disabled and a panel exists, remove outline classes and the panel.
  *
  * @param {boolean} enabled - Whether to show the panel.
@@ -26,6 +27,10 @@ export function toggleLayoutDebugPanel(enabled, selectors = DEFAULT_SELECTORS) {
     if (!panel) {
       panel = createLayoutDebugPanel(selectors);
       document.body.appendChild(panel);
+      const toggle = panel.querySelector("#layout-debug-toggle");
+      if (toggle && toggle.getAttribute("aria-expanded") === "false") {
+        toggle.click();
+      }
     }
   } else if (panel) {
     document
