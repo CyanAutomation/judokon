@@ -279,9 +279,8 @@ export function renderFeatureFlagSwitches(
     const kebab = flag.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
     const info = flags[flag];
     const tipId = info.tooltipId || `settings.${flag}`;
-    const getLabel = () => tooltipMap[`${tipId}.label`] || formatFlagLabel(flag);
+    const label = tooltipMap[`${tipId}.label`] || formatFlagLabel(flag);
     const getDescription = () => tooltipMap[`${tipId}.description`] || "";
-    const label = getLabel();
     const description = getDescription();
     const wrapper = createToggleSwitch(label, {
       id: `feature-${kebab}`,
