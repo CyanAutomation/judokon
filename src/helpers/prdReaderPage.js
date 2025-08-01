@@ -9,6 +9,7 @@ import { getPrdTaskStats } from "./prdTaskStats.js";
  *
  * @pseudocode
  * 1. Load all markdown files from the PRD directory using `import.meta.glob`.
+ *    Sort the filenames alphabetically so sidebar and document order match.
  * 2. Convert each file to HTML with `parserFn` (defaults to `markdownToHtml`).
  * 3. Build sidebar list items using `createSidebarList` and select the first document.
  * 4. Implement `selectDoc(index)` to render the HTML and highlight the item.
@@ -49,6 +50,8 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
         "prdUpdateJudoka.md",
         "prdChangeLog.md"
       ];
+
+  FILES.sort((a, b) => a.localeCompare(b));
 
   const documents = [];
   const taskStats = [];

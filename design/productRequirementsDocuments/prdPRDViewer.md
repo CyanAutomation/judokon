@@ -101,6 +101,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - Sidebar list items alternate background colors using the `--color-surface` and
   `--color-tertiary` tokens for zebra striping. Odd/even classes start with
   `odd` for the first row.
+- Sidebar PRDs are listed alphabetically.
 - Warning badge in content area if markdown partially rendered.
 - Bottom footer with keyboard and swipe navigation instructions.
 - Responsive layout for desktop, tablet, and mobile.

@@ -226,7 +226,7 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
 
 Product Requirements Documents live in `design/productRequirementsDocuments`.
 Add new Markdown files there and include the filename in the `FILES` array of
-`src/helpers/prdReaderPage.js`. Open `src/pages/prdViewer.html` in your browser
+`src/helpers/prdReaderPage.js` (keep the array sorted alphabetically). Open `src/pages/prdViewer.html` in your browser
 to browse the documents. A sidebar lists all available PRDs and clicking an
 entry loads it immediately. Arrow keys and swipe gestures also cycle through the
   documents. The sidebar scrolls separately from the main preview so navigation
