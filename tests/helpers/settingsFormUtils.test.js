@@ -1,8 +1,6 @@
 import { describe, it, expect } from "vitest";
-import {
-  renderGameModeSwitches,
-  renderFeatureFlagSwitches
-} from "../../src/helpers/settings/formUtils.js";
+import { renderGameModeSwitches } from "../../src/helpers/settings/gameModeSwitches.js";
+import { renderFeatureFlagSwitches } from "../../src/helpers/settings/featureFlagSwitches.js";
 
 describe("formUtils ARIA", () => {
   it("adds aria-describedby for game mode descriptions", () => {

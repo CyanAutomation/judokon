@@ -584,11 +584,20 @@ describe("settingsPage module", () => {
     }));
     vi.doMock("../../src/helpers/displayMode.js", () => ({ applyDisplayMode }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
-    vi.doMock("../../src/helpers/settings/index.js", () => ({
+    vi.doMock("../../src/helpers/settings/applyInitialValues.js", () => ({
       applyInitialControlValues,
-      attachToggleListeners,
-      renderGameModeSwitches,
-      renderFeatureFlagSwitches,
+      applyInputState: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/settings/listenerUtils.js", () => ({
+      attachToggleListeners
+    }));
+    vi.doMock("../../src/helpers/settings/gameModeSwitches.js", () => ({
+      renderGameModeSwitches
+    }));
+    vi.doMock("../../src/helpers/settings/featureFlagSwitches.js", () => ({
+      renderFeatureFlagSwitches
+    }));
+    vi.doMock("../../src/helpers/settings/sectionToggle.js", () => ({
       setupSectionToggles: vi.fn()
     }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({

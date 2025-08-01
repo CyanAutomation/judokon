@@ -1,0 +1,79 @@
+/**
+ * Apply a value to an input or checkbox element.
+ *
+ * @pseudocode
+ * 1. Exit early when `element` is null or undefined.
+ * 2. For checkboxes, set the `checked` property based on `value`.
+ * 3. For other inputs, assign the `value` directly.
+ *
+ * @param {HTMLInputElement|HTMLSelectElement|null} element - Control to update.
+ * @param {*} value - Value to apply.
+ */
+export function applyInputState(element, value) {
+  if (!element) return;
+  if (element.type === "checkbox") {
+    element.checked = Boolean(value);
+  } else {
+    element.value = value;
+  }
+}
+
+/**
+ * Initialize control states based on a settings object.
+ *
+ * @pseudocode
+ * 1. Call `applyInputState` for each setting-related control.
+ *
+ * @param {Object} controls - Collection of form elements.
+ * @param {import("../settingsUtils.js").Settings} settings - Current settings.
+ * @param {Record<string, string>} [tooltipMap] - Flattened tooltip lookup.
+ */
+export function applyInitialControlValues(controls, settings, tooltipMap = {}) {
+  applyInputState(controls.soundToggle, settings.sound);
+  if (controls.soundToggle && settings.tooltipIds?.sound) {
+    controls.soundToggle.dataset.tooltipId = settings.tooltipIds.sound;
+  }
+  const soundLabel = tooltipMap["settings.sound.label"];
+  const soundDesc = tooltipMap["settings.sound.description"];
+  const soundLabelEl = controls.soundToggle?.closest("label")?.querySelector("span");
+  const soundDescEl = document.getElementById("sound-desc");
+  if (soundLabel && soundLabelEl) soundLabelEl.textContent = soundLabel;
+  if (soundDesc && soundDescEl) soundDescEl.textContent = soundDesc;
+  applyInputState(controls.motionToggle, settings.motionEffects);
+  if (controls.motionToggle && settings.tooltipIds?.motionEffects) {
+    controls.motionToggle.dataset.tooltipId = settings.tooltipIds.motionEffects;
+  }
+  const motionLabel = tooltipMap["settings.motionEffects.label"];
+  const motionDesc = tooltipMap["settings.motionEffects.description"];
+  const motionLabelEl = controls.motionToggle?.closest("label")?.querySelector("span");
+  const motionDescEl = document.getElementById("motion-desc");
+  if (motionLabel && motionLabelEl) motionLabelEl.textContent = motionLabel;
+  if (motionDesc && motionDescEl) motionDescEl.textContent = motionDesc;
+  if (controls.displayRadios) {
+    controls.displayRadios.forEach((radio) => {
+      const isSelected = radio.value === settings.displayMode;
+      radio.checked = isSelected;
+      radio.tabIndex = isSelected ? 0 : -1;
+    });
+  }
+  applyInputState(controls.typewriterToggle, settings.typewriterEffect);
+  if (controls.typewriterToggle && settings.tooltipIds?.typewriterEffect) {
+    controls.typewriterToggle.dataset.tooltipId = settings.tooltipIds.typewriterEffect;
+  }
+  const typeLabel = tooltipMap["settings.typewriterEffect.label"];
+  const typeDesc = tooltipMap["settings.typewriterEffect.description"];
+  const typeLabelEl = controls.typewriterToggle?.closest("label")?.querySelector("span");
+  const typeDescEl = document.getElementById("typewriter-desc");
+  if (typeLabel && typeLabelEl) typeLabelEl.textContent = typeLabel;
+  if (typeDesc && typeDescEl) typeDescEl.textContent = typeDesc;
+  applyInputState(controls.tooltipsToggle, settings.tooltips);
+  if (controls.tooltipsToggle && settings.tooltipIds?.tooltips) {
+    controls.tooltipsToggle.dataset.tooltipId = settings.tooltipIds.tooltips;
+  }
+  const tipsLabel = tooltipMap["settings.tooltips.label"];
+  const tipsDesc = tooltipMap["settings.tooltips.description"];
+  const tipsLabelEl = controls.tooltipsToggle?.closest("label")?.querySelector("span");
+  const tipsDescEl = document.getElementById("tooltips-desc");
+  if (tipsLabel && tipsLabelEl) tipsLabelEl.textContent = tipsLabel;
+  if (tipsDesc && tipsDescEl) tipsDescEl.textContent = tipsDesc;
+}
