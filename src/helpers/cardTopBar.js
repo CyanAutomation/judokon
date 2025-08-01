@@ -15,6 +15,8 @@ const PLACEHOLDER_FLAG_URL = "../assets/countryFlags/placeholder-flag.png";
  * 2. Log the generated container for debugging.
  *
  * 3. Return the created `<div>` element.
+ *
+ * @returns {HTMLElement} Container element with the fallback message.
  */
 export function createNoDataContainer() {
   const container = document.createElement("div");
@@ -83,6 +85,10 @@ async function resolveCountryName(countryCode) {
  *    - Set its `textContent` to the provided `surname`.
  *
  * 4. Return the `<div>` container.
+ *
+ * @param {string} firstname - Judoka first name.
+ * @param {string} surname - Judoka surname.
+ * @returns {HTMLElement} Container element with the formatted name.
  */
 export function createNameContainer(firstname, surname) {
   const nameContainer = document.createElement("div");
@@ -121,6 +127,10 @@ export function createNameContainer(firstname, surname) {
  * 4. Append the `<img>` element to the container.
  *
  * 5. Return the container `<div>`.
+ *
+ * @param {string} finalFlagUrl - URL for the flag image.
+ * @param {string} countryName - Country name used for alt text.
+ * @returns {HTMLElement} Container element with the flag image.
  */
 export function createFlagImage(finalFlagUrl, countryName) {
   debugLog(`Creating flag image with country name: ${countryName}`); // Debugging
@@ -172,6 +182,10 @@ export function createFlagImage(finalFlagUrl, countryName) {
  *    - Call `createFlagImage` and append the result.
  *
  * 8. Return the main container.
+ *
+ * @param {Judoka} judoka - Judoka data used to populate the top bar.
+ * @param {string} [flagUrl] - Optional URL for the flag image.
+ * @returns {Promise<HTMLElement>} Promise resolving to the top bar element.
  */
 export async function generateCardTopBar(judoka, flagUrl) {
   if (!judoka) {
