@@ -21,6 +21,7 @@
  * @throws {Error} If the fetch request fails or the response is not successful.
  */
 import { DATA_DIR } from "./constants.js";
+import { seededRandom } from "./testModeUtils.js";
 
 let kgImageLoaded = false;
 let quoteLoaded = false;
@@ -149,6 +150,7 @@ function displayFable(fable) {
  * 2. Select a random fable:
  *    - Determine the maximum ID from the fables data.
  *    - Generate a random ID within the range of available IDs.
+ *      - Use `seededRandom()` when Test Mode is active.
  *    - Find the fable corresponding to the random ID.
  *
  * 3. Display the fable:
@@ -166,7 +168,7 @@ async function displayRandomQuote() {
   try {
     const fables = await fetchFables();
     const maxId = Math.max(...fables.map((fable) => fable.id));
-    const randomId = Math.floor(Math.random() * maxId) + 1;
+    const randomId = Math.floor(seededRandom() * maxId) + 1;
     const randomFable = fables.find((fable) => fable.id === randomId);
     displayFable(randomFable);
   } catch (error) {
