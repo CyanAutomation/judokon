@@ -204,6 +204,19 @@ function initializeControls(settings, gameModes, tooltipMap) {
   });
 }
 
+/**
+ * Load saved settings and render the Settings page UI.
+ *
+ * @pseudocode
+ * 1. Fetch settings, navigation items, and tooltip text.
+ * 2. Apply display and motion preferences from the settings.
+ * 3. Enable debug utilities based on feature flags.
+ * 4. Initialize page controls and section toggles.
+ * 5. Set up tooltips for all controls.
+ * 6. On error, show a fallback message to the user.
+ *
+ * @returns {Promise<void>}
+ */
 async function initializeSettingsPage() {
   try {
     const settings = await loadSettings();
