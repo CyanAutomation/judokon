@@ -183,7 +183,10 @@ export function createFlagImage(finalFlagUrl, countryName) {
  *
  * 8. Return the main container.
  *
- * @param {Judoka} judoka - Judoka data used to populate the top bar.
+ * @param {Object} judoka - Judoka data used to populate the top bar.
+ * @param {string} judoka.firstname - The first name of the judoka.
+ * @param {string} judoka.surname - The surname of the judoka.
+ * @param {string} judoka.countryCode - The country code of the judoka.
  * @param {string} [flagUrl] - Optional URL for the flag image.
  * @returns {Promise<HTMLElement>} Promise resolving to the top bar element.
  */
