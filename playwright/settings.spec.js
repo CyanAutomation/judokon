@@ -49,9 +49,10 @@ test.describe("Settings page", () => {
       .map((item) => gameModes.find((m) => m.id === item.gameModeId)?.name)
       .filter(Boolean);
 
-    const flagLabels = Object.keys(DEFAULT_SETTINGS.featureFlags).map(
-      (f) => DEFAULT_SETTINGS.featureFlags[f].label
-    );
+    const tooltips = JSON.parse(fs.readFileSync("src/data/tooltips.json", "utf8"));
+    const flagLabels = Object.keys(DEFAULT_SETTINGS.featureFlags)
+      .map((f) => tooltips.settings?.[f]?.label)
+      .filter(Boolean);
 
     const expectedLabels = [
       "Light",
