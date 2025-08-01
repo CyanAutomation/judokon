@@ -97,7 +97,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     if (summaryEl) {
       const { total, completed } = taskStats[current] || { total: 0, completed: 0 };
       const percent = total ? Math.round((completed / total) * 100) : 0;
-      summaryEl.textContent = `Tasks: ${completed}/${total} (${percent}%)`;
+      summaryEl.textContent = `Task Completion: ${completed}/${total} (${percent}%)`;
     }
     initTooltips();
   });
