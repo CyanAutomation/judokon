@@ -242,7 +242,9 @@ left side of the header with a task completion summary on the right.
 key used by the game. The sidebar on the left lists all keys. Clicking a key
 updates the preview pane to show the rendered tooltip text along with the raw
 string. A search box filters the list on each keystroke, and **Copy Key** and
-**Copy Body** buttons make it easy to copy either value to your clipboard.
+**Copy Body** buttons make it easy to copy either value to your clipboard. The
+sidebar scrolls independently from the preview so the list stays visible while
+browsing.
 
 ### CSS Organization
 
