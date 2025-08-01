@@ -79,32 +79,5 @@
     "required": false,
     "category": "matchStartTimer",
     "description": "A HIGH match start timer that IS NOT required"
-  },
-  {
-    "id": 10,
-    "skill": 1,
-    "value": 5,
-    "default": false,
-    "required": true,
-    "category": "totalRounds",
-    "description": "A LOW round count total that IS required"
-  },
-  {
-    "id": 11,
-    "skill": 2,
-    "value": 10,
-    "default": true,
-    "required": true,
-    "category": "totalRounds",
-    "description": "A MEDIUM round count total that IS required"
-  },
-  {
-    "id": 12,
-    "skill": 3,
-    "value": 15,
-    "default": false,
-    "required": true,
-    "category": "totalRounds",
-    "description": "A HIGH round count total that IS required"
   }
 ]

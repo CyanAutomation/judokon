@@ -1,0 +1,27 @@
+[
+    {
+      "id": 1,
+      "skill": 1,
+      "value": 5,
+      "default": false,
+      "category": "classicBattle",
+      "description": "A LOW round count total"
+    },
+    {
+      "id": 1,
+      "skill": 2,
+      "value": 10,
+      "default": true,
+      "category": "classicBattle",
+      "description": "A MEDIUM round count total that IS required"
+    },
+    {
+      "id": 3,
+      "skill": 3,
+      "value": 15,
+      "default": false,
+      "category": "classicBattle",
+      "description": "A HIGH round count total that IS required"
+    }
+  ]
+  
