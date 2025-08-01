@@ -144,7 +144,7 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
   any base URL.
 - `src/` – contains the game logic and assets:
   - `game.js`
-  - `helpers/` – small utilities (for example `lazyPortrait.js` replaces the placeholder card portraits once they enter view)
+  - `helpers/` – small utilities (for example `lazyPortrait.js` replaces the placeholder card portraits once they enter view). `timerUtils.js` now exposes `createCountdownTimer` for generic interval management.
   - `components/` – small DOM factories like `Button`, `ToggleSwitch`, `Card`, the `Modal` dialog, and `StatsPanel`
 
     ```javascript
@@ -202,8 +202,9 @@ The repository follows a simple layout. GitHub Pages requires `index.html` to li
     under `design/mockups/`. It displays the filename overlay and now
     scales wide images to fit within the viewport while keeping every
     mockup centered on screen. The Prev and Next buttons are anchored
-    to the left and right edges so they never cover the content. It
-    also includes `tooltipViewer.html`, a searchable viewer for
+    to the left and right edges so they never cover the content. The
+    sidebar list scrolls independently so you can browse mockups
+    without moving the main image. It also includes `tooltipViewer.html`, a searchable viewer for
     exploring tooltip text used across the UI.
   - `data/`
     JSON files powering the game. `statNames.json` lists the canonical stat
@@ -227,9 +228,10 @@ Add new Markdown files there and include the filename in the `FILES` array of
 `src/helpers/prdReaderPage.js`. Open `src/pages/prdViewer.html` in your browser
 to browse the documents. A sidebar lists all available PRDs and clicking an
 entry loads it immediately. Arrow keys and swipe gestures also cycle through the
-documents. The page imports `base.css` and `layout.css` so wide elements stay
-wrapped inside the viewport. Users can return to the main menu by clicking the
-logo in the header.
+documents. The sidebar scrolls separately from the main preview so navigation
+remains visible while reading. The page imports `base.css` and `layout.css` so
+wide elements stay wrapped inside the viewport. Users can return to the main
+menu by clicking the logo in the header.
 
 ### CSS Organization
 

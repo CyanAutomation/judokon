@@ -1,7 +1,13 @@
 .prd-viewer {
   display: flex;
-  height: 100%;
+  height: calc(100dvh - var(--header-height) - var(--footer-height));
   width: 100%;
+  overflow: hidden;
+}
+
+.prd-viewer .sidebar,
+.prd-viewer .preview {
+  height: 100%;
 }
 
 .prd-viewer .preview {
