@@ -29,6 +29,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 - Enable quick, easy switching between English and pseudo-Japanese text (**toggle ≤200 ms**).
 
 ---
+
 ## Non-Goals
 
 - No real Japanese translation or full localization; this feature is purely stylistic and does not provide actual Japanese language output.
