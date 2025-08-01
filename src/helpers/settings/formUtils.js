@@ -11,6 +11,19 @@ import { toggleLayoutDebugPanel } from "../layoutDebugPanel.js";
 import { showSettingsInfo } from "../showSettingsInfo.js";
 
 /**
+ * Convert a camelCase flag name into a readable label.
+ *
+ * @pseudocode
+ * 1. Insert spaces before capital letters.
+ * 2. Capitalize the first character.
+ */
+function formatFlagLabel(flag) {
+  return String(flag)
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/^./, (c) => c.toUpperCase());
+}
+
+/**
  * Apply a value to an input or checkbox element.
  *
  * @pseudocode
@@ -243,11 +256,9 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
  *
  * @pseudocode
  * 1. For each flag, generate a labelled toggle switch element and description.
- * 2. Persist updates via `handleUpdate` when toggled.
- * 3. On toggle, look up the tooltip label and description using the latest
- *    `tooltipMap` so modals use current text.
- * 4. After saving, show a snackbar confirming the new state and open a modal
- *    for select flags.
+ * 2. When tooltip text is missing, convert the flag name to a readable label.
+ * 3. Persist updates via `handleUpdate` when toggled.
+ * 4. After saving, show a snackbar confirming the new state.
  * 5. When toggling `viewportSimulation`, call `toggleViewportSimulation`.
  *
  * @param {HTMLElement} container - Container for the switches.
@@ -268,8 +279,9 @@ export function renderFeatureFlagSwitches(
     const kebab = flag.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
     const info = flags[flag];
     const tipId = info.tooltipId || `settings.${flag}`;
-    const label = tooltipMap[`${tipId}.label`] || flag;
-    const description = tooltipMap[`${tipId}.description`] || "";
+    const label = tooltipMap[`${tipId}.label`] || formatFlagLabel(flag);
+    const getDescription = () => tooltipMap[`${tipId}.description`] || "";
+    const description = getDescription();
     const wrapper = createToggleSwitch(label, {
       id: `feature-${kebab}`,
       name: flag,
