@@ -48,9 +48,10 @@ keeping focus trapped inside the dialog. Pages create their content fragment,
 pass it to `createModal()`, and call `open()` when needed. `StatsPanel.js`
 constructs the `.card-stats` section used within judoka cards. `Card.js`
 provides a reusable content panel styled with the `.card` class.
-`InfoBar.js` builds a real-time bar for classic battles. `classicBattle.js` updates it
-each round via `startCountdown` and by passing the latest scores to `updateScore`
-so players see messages, the countdown timer, and the current score. The
+`InfoBar.js` builds a real-time bar for classic battles. `classicBattle.js` now
+uses `createCountdownTimer` from `timerUtils.js` to drive the next-round countdown
+and passes the latest scores to `updateScore` so players see messages, the
+countdown timer, and the current score. The
 `#round-message` and `#next-round-timer` elements have `aria-live="polite"` so
 screen readers announce updates, while `#score-display` uses `aria-live="off"` to
 prevent repetitive announcements of the score.
