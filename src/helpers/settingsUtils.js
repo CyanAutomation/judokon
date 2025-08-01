@@ -187,8 +187,6 @@ export function resetSettings() {
  * @property {Record<string, boolean>} [gameModes]
  * @property {Record<string, {
  *   enabled: boolean,
- *   label: string,
- *   description: string,
  *   tooltipId?: string
  * }>} [featureFlags]
  */

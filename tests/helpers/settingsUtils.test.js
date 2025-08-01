@@ -55,26 +55,10 @@ describe("settings utils", () => {
       displayMode: "dark",
       gameModes: {},
       featureFlags: {
-        battleDebugPanel: {
-          enabled: false,
-          label: "Battle Debug Panel",
-          description: "Adds a collapsible debug panel"
-        },
-        fullNavigationMap: {
-          enabled: false,
-          label: "Full Navigation Map",
-          description: "Expanded map navigation"
-        },
-        enableTestMode: {
-          enabled: false,
-          label: "Test Mode",
-          description: "Deterministic card draws for testing"
-        },
-        enableCardInspector: {
-          enabled: false,
-          label: "Card Inspector",
-          description: "Shows raw card JSON in a panel"
-        }
+        battleDebugPanel: { enabled: false },
+        fullNavigationMap: { enabled: false },
+        enableTestMode: { enabled: false },
+        enableCardInspector: { enabled: false }
       }
     };
     const promise = saveSettings(data);
@@ -142,26 +126,10 @@ describe("settings utils", () => {
         displayMode: "light",
         gameModes: {},
         featureFlags: {
-          battleDebugPanel: {
-            enabled: false,
-            label: "Battle Debug Panel",
-            description: "Adds a collapsible debug panel"
-          },
-          fullNavigationMap: {
-            enabled: false,
-            label: "Full Navigation Map",
-            description: "Expanded map navigation"
-          },
-          enableTestMode: {
-            enabled: false,
-            label: "Test Mode",
-            description: "Deterministic card draws for testing"
-          },
-          enableCardInspector: {
-            enabled: false,
-            label: "Card Inspector",
-            description: "Shows raw card JSON in a panel"
-          }
+          battleDebugPanel: { enabled: false },
+          fullNavigationMap: { enabled: false },
+          enableTestMode: { enabled: false },
+          enableCardInspector: { enabled: false }
         }
       })
     ).rejects.toThrow("fail");
@@ -196,26 +164,10 @@ describe("settings utils", () => {
       displayMode: "light",
       gameModes: {},
       featureFlags: {
-        battleDebugPanel: {
-          enabled: false,
-          label: "Battle Debug Panel",
-          description: "Adds a collapsible debug panel"
-        },
-        fullNavigationMap: {
-          enabled: false,
-          label: "Full Navigation Map",
-          description: "Expanded map navigation"
-        },
-        enableTestMode: {
-          enabled: false,
-          label: "Test Mode",
-          description: "Deterministic card draws for testing"
-        },
-        enableCardInspector: {
-          enabled: false,
-          label: "Card Inspector",
-          description: "Shows raw card JSON in a panel"
-        }
+        battleDebugPanel: { enabled: false },
+        fullNavigationMap: { enabled: false },
+        enableTestMode: { enabled: false },
+        enableCardInspector: { enabled: false }
       }
     };
     const data2 = {
@@ -225,26 +177,10 @@ describe("settings utils", () => {
       displayMode: "dark",
       gameModes: {},
       featureFlags: {
-        battleDebugPanel: {
-          enabled: false,
-          label: "Battle Debug Panel",
-          description: "Adds a collapsible debug panel"
-        },
-        fullNavigationMap: {
-          enabled: false,
-          label: "Full Navigation Map",
-          description: "Expanded map navigation"
-        },
-        enableTestMode: {
-          enabled: false,
-          label: "Test Mode",
-          description: "Deterministic card draws for testing"
-        },
-        enableCardInspector: {
-          enabled: false,
-          label: "Card Inspector",
-          description: "Shows raw card JSON in a panel"
-        }
+        battleDebugPanel: { enabled: false },
+        fullNavigationMap: { enabled: false },
+        enableTestMode: { enabled: false },
+        enableCardInspector: { enabled: false }
       }
     };
     saveSettings(data1);

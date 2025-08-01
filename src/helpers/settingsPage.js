@@ -14,7 +14,7 @@ import { applyDisplayMode } from "./displayMode.js";
 import { withViewTransition } from "./viewTransition.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
-import { initTooltips } from "./tooltip.js";
+import { initTooltips, getTooltips } from "./tooltip.js";
 import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
@@ -92,7 +92,7 @@ function createResetConfirmation(onConfirm) {
  * @param {Settings} settings - Current settings object.
  * @param {Array} gameModes - Available game mode options.
  */
-function initializeControls(settings, gameModes) {
+function initializeControls(settings, gameModes, tooltipMap) {
   let currentSettings = { ...settings };
 
   const controls = {
@@ -156,14 +156,15 @@ function initializeControls(settings, gameModes) {
     });
   }
 
-  applyInitialControlValues(controls, currentSettings);
+  applyInitialControlValues(controls, currentSettings, tooltipMap);
   attachToggleListeners(controls, getCurrentSettings, handleUpdate);
   renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
   renderFeatureFlagSwitches(
     flagsContainer,
     currentSettings.featureFlags,
     getCurrentSettings,
-    handleUpdate
+    handleUpdate,
+    tooltipMap
   );
   addNavResetButton();
   document.getElementById("feature-nav-cache-reset-button")?.addEventListener("change", () => {
@@ -172,7 +173,7 @@ function initializeControls(settings, gameModes) {
 
   const resetModal = createResetConfirmation(() => {
     currentSettings = resetSettings();
-    applyInitialControlValues(controls, currentSettings);
+    applyInitialControlValues(controls, currentSettings, tooltipMap);
     withViewTransition(() => {
       applyDisplayMode(currentSettings.displayMode);
     });
@@ -187,7 +188,8 @@ function initializeControls(settings, gameModes) {
       flagsContainer,
       currentSettings.featureFlags,
       getCurrentSettings,
-      handleUpdate
+      handleUpdate,
+      tooltipMap
     );
     addNavResetButton();
     initTooltips();
@@ -205,12 +207,13 @@ async function initializeSettingsPage() {
   try {
     const settings = await loadSettings();
     const gameModes = await loadNavigationItems();
+    const tooltipMap = await getTooltips();
     applyDisplayMode(settings.displayMode);
     applyMotionPreference(settings.motionEffects);
     toggleViewportSimulation(Boolean(settings.featureFlags.viewportSimulation?.enabled));
     toggleTooltipOverlayDebug(Boolean(settings.featureFlags.tooltipOverlayDebug?.enabled));
     toggleLayoutDebugPanel(Boolean(settings.featureFlags.layoutDebugPanel?.enabled));
-    initializeControls(settings, gameModes);
+    initializeControls(settings, gameModes, tooltipMap);
     setupSectionToggles();
     initTooltips();
   } catch (error) {

@@ -38,16 +38,29 @@ function applyInputState(element, value) {
  *
  * @param {Object} controls - Collection of form elements.
  * @param {import("../settingsUtils.js").Settings} settings - Current settings.
+ * @param {Record<string, string>} [tooltipMap] - Flattened tooltip lookup.
  */
-export function applyInitialControlValues(controls, settings) {
+export function applyInitialControlValues(controls, settings, tooltipMap = {}) {
   applyInputState(controls.soundToggle, settings.sound);
   if (controls.soundToggle && settings.tooltipIds?.sound) {
     controls.soundToggle.dataset.tooltipId = settings.tooltipIds.sound;
   }
+  const soundLabel = tooltipMap["settings.sound.label"];
+  const soundDesc = tooltipMap["settings.sound.description"];
+  const soundLabelEl = controls.soundToggle?.closest("label")?.querySelector("span");
+  const soundDescEl = document.getElementById("sound-desc");
+  if (soundLabel && soundLabelEl) soundLabelEl.textContent = soundLabel;
+  if (soundDesc && soundDescEl) soundDescEl.textContent = soundDesc;
   applyInputState(controls.motionToggle, settings.motionEffects);
   if (controls.motionToggle && settings.tooltipIds?.motionEffects) {
     controls.motionToggle.dataset.tooltipId = settings.tooltipIds.motionEffects;
   }
+  const motionLabel = tooltipMap["settings.motionEffects.label"];
+  const motionDesc = tooltipMap["settings.motionEffects.description"];
+  const motionLabelEl = controls.motionToggle?.closest("label")?.querySelector("span");
+  const motionDescEl = document.getElementById("motion-desc");
+  if (motionLabel && motionLabelEl) motionLabelEl.textContent = motionLabel;
+  if (motionDesc && motionDescEl) motionDescEl.textContent = motionDesc;
   if (controls.displayRadios) {
     controls.displayRadios.forEach((radio) => {
       const isSelected = radio.value === settings.displayMode;
@@ -59,10 +72,22 @@ export function applyInitialControlValues(controls, settings) {
   if (controls.typewriterToggle && settings.tooltipIds?.typewriterEffect) {
     controls.typewriterToggle.dataset.tooltipId = settings.tooltipIds.typewriterEffect;
   }
+  const typeLabel = tooltipMap["settings.typewriterEffect.label"];
+  const typeDesc = tooltipMap["settings.typewriterEffect.description"];
+  const typeLabelEl = controls.typewriterToggle?.closest("label")?.querySelector("span");
+  const typeDescEl = document.getElementById("typewriter-desc");
+  if (typeLabel && typeLabelEl) typeLabelEl.textContent = typeLabel;
+  if (typeDesc && typeDescEl) typeDescEl.textContent = typeDesc;
   applyInputState(controls.tooltipsToggle, settings.tooltips);
   if (controls.tooltipsToggle && settings.tooltipIds?.tooltips) {
     controls.tooltipsToggle.dataset.tooltipId = settings.tooltipIds.tooltips;
   }
+  const tipsLabel = tooltipMap["settings.tooltips.label"];
+  const tipsDesc = tooltipMap["settings.tooltips.description"];
+  const tipsLabelEl = controls.tooltipsToggle?.closest("label")?.querySelector("span");
+  const tipsDescEl = document.getElementById("tooltips-desc");
+  if (tipsLabel && tipsLabelEl) tipsLabelEl.textContent = tipsLabel;
+  if (tipsDesc && tipsDescEl) tipsDescEl.textContent = tipsDesc;
 }
 
 /**
@@ -223,20 +248,30 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
  * 4. When toggling `viewportSimulation`, call `toggleViewportSimulation`.
  *
  * @param {HTMLElement} container - Container for the switches.
- * @param {Record<string, { enabled: boolean, label: string, description: string }>} flags - Feature flag metadata.
+ * @param {Record<string, { enabled: boolean, tooltipId?: string }>} flags - Feature flag metadata.
  * @param {Function} getCurrentSettings - Returns current settings.
  * @param {Function} handleUpdate - Persist function.
+ * @param {Record<string, string>} [tooltipMap] - Flattened tooltip lookup.
  */
-export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, handleUpdate) {
+export function renderFeatureFlagSwitches(
+  container,
+  flags,
+  getCurrentSettings,
+  handleUpdate,
+  tooltipMap = {}
+) {
   if (!container || !flags) return;
   Object.keys(flags).forEach((flag) => {
     const kebab = flag.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
     const info = flags[flag];
-    const wrapper = createToggleSwitch(info.label, {
+    const tipId = info.tooltipId || `settings.${flag}`;
+    const label = tooltipMap[`${tipId}.label`] || flag;
+    const description = tooltipMap[`${tipId}.description`] || "";
+    const wrapper = createToggleSwitch(label, {
       id: `feature-${kebab}`,
       name: flag,
       checked: Boolean(getCurrentSettings().featureFlags[flag]?.enabled),
-      ariaLabel: info.label,
+      ariaLabel: label,
       tooltipId: info.tooltipId
     });
     const input = wrapper.querySelector("input");
@@ -244,7 +279,7 @@ export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, 
     const desc = document.createElement("p");
     desc.className = "settings-description";
     desc.id = `feature-${kebab}-desc`;
-    desc.textContent = info.description;
+    desc.textContent = description;
     wrapper.appendChild(desc);
     if (input) input.setAttribute("aria-describedby", desc.id);
     container.appendChild(wrapper);
@@ -260,7 +295,7 @@ export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, 
           input.checked = prev;
         })
       ).then(() => {
-        showSnackbar(`${info.label} ${input.checked ? "enabled" : "disabled"}`);
+        showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);
         if (flag === "viewportSimulation") {
           toggleViewportSimulation(input.checked);
         }
@@ -278,7 +313,7 @@ export function renderFeatureFlagSwitches(container, flags, getCurrentSettings, 
             "layoutDebugPanel"
           ].includes(flag)
         ) {
-          showSettingsInfo(info.label, info.description);
+          showSettingsInfo(label, description);
         }
       });
     });

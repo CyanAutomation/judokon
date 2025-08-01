@@ -53,6 +53,15 @@ async function loadTooltips() {
 }
 
 /**
+ * Retrieve the flattened tooltip map.
+ *
+ * @returns {Promise<Record<string, string>>} Tooltip lookup object.
+ */
+export function getTooltips() {
+  return loadTooltips();
+}
+
+/**
  * Converts tooltip markdown to sanitized HTML.
  *
  * @pseudocode
