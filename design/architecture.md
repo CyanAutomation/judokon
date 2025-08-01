@@ -27,6 +27,9 @@ initialize page-specific behavior. The change log view uses
 `changeLogPage.js` to fetch `judoka.json`, sort by `lastUpdated`, and render the
 20 most recent updates.
 
+`vectorSearchPage.js` now delegates query expansion to `vectorSearchQuery.js`
+and builds result snippets with `snippetFormatter.js`.
+
 ## PRD reader
 
 `src/pages/prdViewer.html` uses the helper
@@ -48,17 +51,18 @@ keeping focus trapped inside the dialog. Pages create their content fragment,
 pass it to `createModal()`, and call `open()` when needed. `StatsPanel.js`
 constructs the `.card-stats` section used within judoka cards. `Card.js`
 provides a reusable content panel styled with the `.card` class.
-`InfoBar.js` builds a real-time bar for classic battles. `classicBattle.js` now
-uses `createCountdownTimer` from `timerUtils.js` to drive the next-round countdown
-and passes the latest scores to `updateScore` so players see messages, the
-countdown timer, and the current score. The
-`#round-message` and `#next-round-timer` elements have `aria-live="polite"` so
-screen readers announce updates, while `#score-display` uses `aria-live="off"` to
-prevent repetitive announcements of the score.
+`InfoBar.js` builds a real-time bar for classic battles. The modules `cardSelection.js`,
+`timerControl.js`, and `uiHelpers.js` update it each round via `startCountdown`
+and by passing the latest scores to `updateScore` so players see messages, the
+countdown timer, and the current score. The `#round-message` and
+`#next-round-timer` elements have `aria-live="polite"` so screen readers
+announce updates, while `#score-display` uses `aria-live="off"` to prevent
+repetitive announcements of the score.
 
-After each round, `classicBattle.js` calls `battleEngine.getScores()` and forwards
-the returned values to `InfoBar.updateScore`. The helper module `setupBattleInfoBar.js`
-exposes this method for pages, keeping UI updates decoupled from engine logic.
+After each round, `timerControl.js` calls `battleEngine.getScores()` and forwards
+the returned values to `InfoBar.updateScore`. The helper module
+`setupBattleInfoBar.js` exposes this method for pages, keeping UI updates
+decoupled from engine logic.
 
 ```javascript
 import { createCard } from "./src/components/Card.js";
