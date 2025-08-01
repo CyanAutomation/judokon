@@ -93,6 +93,44 @@ export async function startRound(onTick, onExpired, duration) {
   }
 }
 
+/**
+ * Start the cooldown timer shown between rounds.
+ *
+ * @pseudocode
+ * 1. Determine the duration using `getDefaultTimer('coolDownTimer')` when not provided; fallback to 3 seconds.
+ * 2. Stop any existing timer and set remaining seconds.
+ * 3. Invoke `onTick` immediately and every second thereafter.
+ * 4. When the timer hits 0, stop and call `onExpired`.
+ *
+ * @param {function} onTick - Callback each second with remaining time.
+ * @param {function} onExpired - Callback when timer expires.
+ * @param {number} [duration] - Cooldown duration in seconds.
+ * @returns {Promise<void>} Resolves when the timer starts.
+ */
+export async function startCoolDown(onTick, onExpired, duration) {
+  if (duration === undefined) {
+    try {
+      duration = await getDefaultTimer("coolDownTimer");
+    } catch {
+      duration = 3;
+    }
+    if (typeof duration !== "number") duration = 3;
+  }
+  stopTimer();
+  remaining = duration;
+  onTickCb = onTick;
+  onExpiredCb = onExpired;
+  if (onTick) onTick(remaining);
+  timerId = setInterval(() => {
+    remaining -= 1;
+    if (onTickCb) onTickCb(remaining);
+    if (remaining <= 0) {
+      stopTimer();
+      if (!matchEnded && onExpiredCb) onExpiredCb();
+    }
+  }, 1000);
+}
+
 function handleVisibility() {
   if (document.hidden) {
     pauseTimer();

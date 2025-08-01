@@ -12,6 +12,7 @@ import {
   getScores,
   getTimerState,
   isMatchEnded,
+  startCoolDown,
   STATS,
   _resetForTest as engineReset
 } from "./battleEngine.js";
@@ -263,9 +264,21 @@ export function scheduleNextRound(result) {
     await start();
   };
 
-  btn.addEventListener("click", onClick, { once: true });
-  enableNextRoundButton();
-  updateDebugPanel();
+  const timerEl = document.getElementById("next-round-timer");
+
+  const onTick = (remaining) => {
+    if (timerEl) timerEl.textContent = `Next round in: ${remaining}s`;
+  };
+
+  const onExpired = () => {
+    btn.addEventListener("click", onClick, { once: true });
+    enableNextRoundButton();
+    updateDebugPanel();
+  };
+
+  setTimeout(() => {
+    startCoolDown(onTick, onExpired);
+  }, 2000);
 }
 
 /**
