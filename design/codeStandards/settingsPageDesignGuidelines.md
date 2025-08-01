@@ -91,7 +91,9 @@ Reuse the following markup for general settings, game modes, and feature flags:
 
   - Use CSS variables: `--color-primary`, `--button-bg`, etc.
   - Do not hard-code color values.
-  - Ensure all new elements work across Light, Dark, and Gray themes.
+- Ensure all new elements work across Light, Dark, and Gray themes.
+  - Snackbars should use `--color-tertiary` as the background to avoid
+    clashing with the bottom navigation bar.
 
 - **Spacing and Sizing**
   - Use `--space-sm`, `--space-md`, etc. for margins/padding
