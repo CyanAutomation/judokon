@@ -95,6 +95,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 - Header with clickable JU-DO-KON! logo and page title.
 - Large scrollable markdown-rendered content area.
+- Sidebar scrolls independently from the main preview so the list remains visible while reading.
 - Warning badge in content area if markdown partially rendered.
 - Bottom footer with keyboard and swipe navigation instructions.
 - Responsive layout for desktop, tablet, and mobile.
