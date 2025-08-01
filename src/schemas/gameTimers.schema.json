@@ -15,7 +15,7 @@
       },
       "value": {
         "type": "integer",
-        "description": "Seconds or count represented by this timer."
+        "description": "Represents the timer's value. The unit depends on the 'category' field: 'roundTimer', 'coolDownTimer', and 'matchStartTimer' use seconds, while 'totalRounds' uses a count."
       },
       "default": {
         "type": "boolean",
