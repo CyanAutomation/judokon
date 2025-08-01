@@ -1,20 +1,13 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockTimers = [{ id: 1, value: 42, default: true, category: "roundTimer" }];
 
-let timerSpy;
-
 beforeEach(() => {
   vi.resetModules();
-  timerSpy = vi.useFakeTimers();
   vi.doMock("../../src/helpers/dataUtils.js", () => ({
     fetchJson: vi.fn().mockResolvedValue(mockTimers),
     importJsonModule: vi.fn()
   }));
-});
-
-afterEach(() => {
-  vi.clearAllTimers();
 });
 
 describe("timer defaults", () => {
@@ -26,12 +19,27 @@ describe("timer defaults", () => {
   });
 
   it("startRound uses default duration when none provided", async () => {
+    vi.doMock("../../src/helpers/timerUtils.js", async (importOriginal) => {
+      const actual = await importOriginal();
+      return {
+        ...actual,
+        getDefaultTimer: vi.fn().mockResolvedValue(42),
+        createCountdownTimer: vi.fn(() => ({
+          start: vi.fn(),
+          stop: vi.fn(),
+          pause: vi.fn(),
+          resume: vi.fn()
+        }))
+      };
+    });
+
     const { startRound, _resetForTest } = await import("../../src/helpers/battleEngine.js");
-    const { _resetForTest: resetTimerUtils } = await import("../../src/helpers/timerUtils.js");
-    resetTimerUtils();
+    const timerUtils = await import("../../src/helpers/timerUtils.js");
     _resetForTest();
-    const onTick = vi.fn();
-    await startRound(onTick, vi.fn());
-    expect(onTick).toHaveBeenCalledWith(42);
+
+    await startRound(vi.fn(), vi.fn());
+
+    expect(timerUtils.createCountdownTimer).toHaveBeenCalledWith(42, expect.any(Object));
+    expect(timerUtils.createCountdownTimer.mock.results[0].value.start).toHaveBeenCalled();
   });
 });
