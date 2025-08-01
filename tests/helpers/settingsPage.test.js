@@ -537,6 +537,57 @@ describe("settingsPage module", () => {
     );
   });
 
+  it("uses updated tooltip text when toggled after map loads", async () => {
+    vi.useFakeTimers();
+    const localMap = {};
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updatedSettings = {
+      ...baseSettings,
+      featureFlags: {
+        ...baseSettings.featureFlags,
+        showCardOfTheDay: {
+          ...baseSettings.featureFlags.showCardOfTheDay,
+          enabled: true
+        }
+      }
+    };
+    const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
+    const showSettingsInfo = vi.fn();
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
+      updateNavigationItemHidden: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      initTooltips: vi.fn(),
+      getTooltips: vi.fn().mockResolvedValue(localMap)
+    }));
+    vi.doMock("../../src/helpers/showSettingsInfo.js", () => ({ showSettingsInfo }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    localMap["settings.showCardOfTheDay.label"] = "Card Of The Day";
+    localMap["settings.showCardOfTheDay.description"] =
+      "Displays a rotating featured judoka card on the landing screen";
+
+    const input = document.querySelector("#feature-show-card-of-the-day");
+    input.checked = true;
+    input.dispatchEvent(new Event("change"));
+    await vi.runAllTimersAsync();
+
+    expect(showSettingsInfo).toHaveBeenCalledWith(
+      "Card Of The Day",
+      "Displays a rotating featured judoka card on the landing screen"
+    );
+  });
+
   it("clicking restore defaults requires confirmation", async () => {
     vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
