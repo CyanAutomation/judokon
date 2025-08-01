@@ -45,20 +45,12 @@
             "type": "boolean",
             "description": "Whether the flag is active."
           },
-          "label": {
-            "type": "string",
-            "description": "Human readable label for the flag."
-          },
-          "description": {
-            "type": "string",
-            "description": "Brief explanation of the feature."
-          },
           "tooltipId": {
             "type": "string",
             "description": "Tooltip identifier for this flag."
           }
         },
-        "required": ["enabled", "label", "description"],
+        "required": ["enabled"],
         "additionalProperties": false
       }
     }

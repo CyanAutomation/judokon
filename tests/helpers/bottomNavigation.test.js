@@ -149,26 +149,10 @@ describe("populateNavbar", () => {
       displayMode: "light",
       gameModes: { 2: false },
       featureFlags: {
-        battleDebugPanel: {
-          enabled: false,
-          label: "Battle Debug Panel",
-          description: "Adds a collapsible debug panel"
-        },
-        fullNavigationMap: {
-          enabled: true,
-          label: "Full Navigation Map",
-          description: "Expanded map navigation"
-        },
-        enableTestMode: {
-          enabled: false,
-          label: "Test Mode",
-          description: "Deterministic card draws for testing"
-        },
-        enableCardInspector: {
-          enabled: false,
-          label: "Card Inspector",
-          description: "Shows raw card JSON in a panel"
-        }
+        battleDebugPanel: { enabled: false },
+        fullNavigationMap: { enabled: true },
+        enableTestMode: { enabled: false },
+        enableCardInspector: { enabled: false }
       }
     });
     const loadNavigationItems = vi.fn().mockResolvedValue(data);
@@ -229,26 +213,10 @@ describe("populateNavbar", () => {
       displayMode: "light",
       gameModes: {},
       featureFlags: {
-        battleDebugPanel: {
-          enabled: false,
-          label: "Battle Debug Panel",
-          description: "Adds a collapsible debug panel"
-        },
-        fullNavigationMap: {
-          enabled: true,
-          label: "Full Navigation Map",
-          description: "Expanded map navigation"
-        },
-        enableTestMode: {
-          enabled: false,
-          label: "Test Mode",
-          description: "Deterministic card draws for testing"
-        },
-        enableCardInspector: {
-          enabled: false,
-          label: "Card Inspector",
-          description: "Shows raw card JSON in a panel"
-        }
+        battleDebugPanel: { enabled: false },
+        fullNavigationMap: { enabled: true },
+        enableTestMode: { enabled: false },
+        enableCardInspector: { enabled: false }
       }
     });
     const loadNavigationItems = vi.fn().mockResolvedValue(data);
@@ -297,26 +265,10 @@ describe("populateNavbar", () => {
       displayMode: "light",
       gameModes: {},
       featureFlags: {
-        battleDebugPanel: {
-          enabled: false,
-          label: "Battle Debug Panel",
-          description: "Adds a collapsible debug panel"
-        },
-        fullNavigationMap: {
-          enabled: true,
-          label: "Full Navigation Map",
-          description: "Expanded map navigation"
-        },
-        enableTestMode: {
-          enabled: false,
-          label: "Test Mode",
-          description: "Deterministic card draws for testing"
-        },
-        enableCardInspector: {
-          enabled: false,
-          label: "Card Inspector",
-          description: "Shows raw card JSON in a panel"
-        }
+        battleDebugPanel: { enabled: false },
+        fullNavigationMap: { enabled: true },
+        enableTestMode: { enabled: false },
+        enableCardInspector: { enabled: false }
       }
     });
     const loadNavigationItems = vi.fn().mockResolvedValue(data);

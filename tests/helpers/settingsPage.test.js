@@ -9,57 +9,49 @@ const baseSettings = {
   displayMode: "light",
   gameModes: {},
   featureFlags: {
-    randomStatMode: {
-      enabled: true,
-      label: "Random Stat Mode",
-      description: "Auto-selects a random stat when timer expires"
-    },
-    battleDebugPanel: {
-      enabled: false,
-      label: "Battle Debug Panel",
-      description: "Adds a collapsible debug panel"
-    },
-    fullNavigationMap: {
-      enabled: true,
-      label: "Full Navigation Map",
-      description: "Expanded map navigation"
-    },
-    enableTestMode: {
-      enabled: false,
-      label: "Test Mode",
-      description: "Deterministic card draws for testing"
-    },
-    enableCardInspector: {
-      enabled: false,
-      label: "Card Inspector",
-      description: "Shows raw card JSON in a panel"
-    },
-    showCardOfTheDay: {
-      enabled: false,
-      label: "Card Of The Day",
-      description: "Displays a rotating featured judoka card on the landing screen"
-    },
-    viewportSimulation: {
-      enabled: false,
-      label: "Viewport Simulation",
-      description: "Adds a dropdown to simulate common device viewport sizes"
-    },
-    tooltipOverlayDebug: {
-      enabled: false,
-      label: "Tooltip Overlay Debug",
-      description: "Shows bounding boxes for tooltip targets"
-    },
-    layoutDebugPanel: {
-      enabled: false,
-      label: "Layout Debug Panel",
-      description: "Displays CSS grid and flex outlines for debugging layout issues"
-    },
-    navCacheResetButton: {
-      enabled: false,
-      label: "Navigation Cache Reset",
-      description: "Adds a button to clear cached navigation data for troubleshooting"
-    }
+    randomStatMode: { enabled: true },
+    battleDebugPanel: { enabled: false },
+    fullNavigationMap: { enabled: true },
+    enableTestMode: { enabled: false },
+    enableCardInspector: { enabled: false },
+    showCardOfTheDay: { enabled: false },
+    viewportSimulation: { enabled: false },
+    tooltipOverlayDebug: { enabled: false },
+    layoutDebugPanel: { enabled: false },
+    navCacheResetButton: { enabled: false }
   }
+};
+
+vi.mock("../../src/helpers/tooltip.js", () => ({
+  initTooltips: vi.fn(),
+  getTooltips: vi.fn().mockResolvedValue(tooltipMap)
+}));
+
+const tooltipMap = {
+  "settings.randomStatMode.label": "Random Stat Mode",
+  "settings.randomStatMode.description": "Auto-selects a random stat when timer expires",
+  "settings.battleDebugPanel.label": "Battle Debug Panel",
+  "settings.battleDebugPanel.description": "Adds a collapsible debug panel",
+  "settings.fullNavigationMap.label": "Full Navigation Map",
+  "settings.fullNavigationMap.description": "Expanded map navigation",
+  "settings.enableTestMode.label": "Test Mode",
+  "settings.enableTestMode.description": "Deterministic card draws for testing",
+  "settings.enableCardInspector.label": "Card Inspector",
+  "settings.enableCardInspector.description": "Shows raw card JSON in a panel",
+  "settings.showCardOfTheDay.label": "Card Of The Day",
+  "settings.showCardOfTheDay.description":
+    "Displays a rotating featured judoka card on the landing screen",
+  "settings.viewportSimulation.label": "Viewport Simulation",
+  "settings.viewportSimulation.description":
+    "Adds a dropdown to simulate common device viewport sizes",
+  "settings.tooltipOverlayDebug.label": "Tooltip Overlay Debug",
+  "settings.tooltipOverlayDebug.description": "Shows bounding boxes for tooltip targets",
+  "settings.layoutDebugPanel.label": "Layout Debug Panel",
+  "settings.layoutDebugPanel.description":
+    "Displays CSS grid and flex outlines for debugging layout issues",
+  "settings.navCacheResetButton.label": "Navigation Cache Reset",
+  "settings.navCacheResetButton.description":
+    "Adds a button to clear cached navigation data for troubleshooting"
 };
 
 describe("settingsPage module", () => {
@@ -318,7 +310,7 @@ describe("settingsPage module", () => {
     await vi.runAllTimersAsync();
 
     expect(showSnackbar).toHaveBeenCalledWith(
-      `${baseSettings.featureFlags.randomStatMode.label} disabled`
+      `${tooltipMap["settings.randomStatMode.label"]} disabled`
     );
   });
 
@@ -411,8 +403,8 @@ describe("settingsPage module", () => {
 
     expect(updateSetting).toHaveBeenCalledWith("featureFlags", updatedSettings.featureFlags);
     expect(showSettingsInfo).toHaveBeenCalledWith(
-      baseSettings.featureFlags.showCardOfTheDay.label,
-      baseSettings.featureFlags.showCardOfTheDay.description
+      tooltipMap["settings.showCardOfTheDay.label"],
+      tooltipMap["settings.showCardOfTheDay.description"]
     );
   });
 
@@ -454,8 +446,8 @@ describe("settingsPage module", () => {
 
     expect(updateSetting).toHaveBeenCalledWith("featureFlags", updatedSettings.featureFlags);
     expect(showSettingsInfo).toHaveBeenCalledWith(
-      baseSettings.featureFlags.viewportSimulation.label,
-      baseSettings.featureFlags.viewportSimulation.description
+      tooltipMap["settings.viewportSimulation.label"],
+      tooltipMap["settings.viewportSimulation.description"]
     );
   });
 
@@ -497,8 +489,8 @@ describe("settingsPage module", () => {
 
     expect(updateSetting).toHaveBeenCalledWith("featureFlags", updatedSettings.featureFlags);
     expect(showSettingsInfo).toHaveBeenCalledWith(
-      baseSettings.featureFlags.tooltipOverlayDebug.label,
-      baseSettings.featureFlags.tooltipOverlayDebug.description
+      tooltipMap["settings.tooltipOverlayDebug.label"],
+      tooltipMap["settings.tooltipOverlayDebug.description"]
     );
   });
 
@@ -540,8 +532,8 @@ describe("settingsPage module", () => {
 
     expect(updateSetting).toHaveBeenCalledWith("featureFlags", updatedSettings.featureFlags);
     expect(showSettingsInfo).toHaveBeenCalledWith(
-      baseSettings.featureFlags.layoutDebugPanel.label,
-      baseSettings.featureFlags.layoutDebugPanel.description
+      tooltipMap["settings.layoutDebugPanel.label"],
+      tooltipMap["settings.layoutDebugPanel.description"]
     );
   });
 
