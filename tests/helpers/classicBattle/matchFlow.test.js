@@ -142,7 +142,8 @@ describe("classicBattle match flow", () => {
   it("scheduleNextRound waits for cooldown then enables button", async () => {
     document.body.innerHTML += '<button id="next-round-button" disabled></button>';
     const battleMod = await import("../../../src/helpers/classicBattle.js");
-    battleMod.scheduleNextRound({ matchEnded: false });
+    const startStub = vi.fn();
+    battleMod.scheduleNextRound({ matchEnded: false }, startStub);
     const btn = document.getElementById("next-round-button");
     expect(btn.disabled).toBe(true);
     timerSpy.advanceTimersByTime(2000);
@@ -152,6 +153,7 @@ describe("classicBattle match flow", () => {
     btn.click();
     await Promise.resolve();
     expect(btn.disabled).toBe(true);
+    expect(startStub).toHaveBeenCalled();
   });
 
   it("shows selection prompt until a stat is chosen", async () => {
