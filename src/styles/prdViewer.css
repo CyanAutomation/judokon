@@ -39,3 +39,26 @@
   font-weight: 600;
   margin-bottom: var(--space-sm);
 }
+
+.prd-header {
+  --logo-max-height: min(12dvh, 64px);
+}
+
+.prd-header .info-left,
+.prd-header .info-right {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  font-size: clamp(18px, 3vw, 24px);
+}
+
+.prd-header .info-left {
+  grid-column: 1;
+  justify-self: start;
+}
+
+.prd-header .info-right {
+  grid-column: 3;
+  justify-self: end;
+  text-align: right;
+}

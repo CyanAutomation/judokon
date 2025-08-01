@@ -233,7 +233,8 @@ entry loads it immediately. Arrow keys and swipe gestures also cycle through the
   remains visible while reading. The sidebar background uses `--color-surface`
   and rows alternate with `--color-tertiary` for zebra striping defined in `sidebar.css`. The page imports `base.css` and `layout.css` so
 wide elements stay wrapped inside the viewport. Users can return to the main
-menu by clicking the logo in the header.
+menu by clicking the logo in the header. The selected PRD title appears on the
+left side of the header with a task completion summary on the right.
 
 ### CSS Organization
 
@@ -259,8 +260,9 @@ Global rules should not be repeated across files.
 
 All pages include a fixed header and persistent bottom navigation bar. The body
 has top and bottom padding to ensure content scrolls under these elements.
-Each header uses two `.header-spacer` elements flanking the logo so it stays
-centered in the layout grid.
+Most headers use two `.header-spacer` elements flanking the logo so it stays
+centered in the layout grid. The PRD Viewer instead places `.info-left` and
+`.info-right` sections in the header for the document title and summary.
 
 The `.animate-card` class in `buttons.css` (imported via `components.css`)
 reveals new cards with a short fade and upward slide. A
