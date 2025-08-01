@@ -417,7 +417,7 @@ Light, dark and gray themes are supported. Changing modes uses a slide-over tran
 
 The Settings page (`src/pages/settings.html`) groups all player preferences, including experimental **feature flags**. Toggle a flag to enable an optional feature without modifying code. Flag values persist across pages and apply immediately. Implementation guidelines live in [settingsPageDesignGuidelines.md](design/codeStandards/settingsPageDesignGuidelines.md#feature-flags--agent-observability).
 Default flag states and descriptions now live in `src/data/settings.json`. The **Tooltips** toggle on this page lets you turn help tooltips on or off globally.
-Each change triggers a small snackbar at the bottom of the screen confirming the new setting. Every feature flag input also includes a `data-flag` attribute with the camelCase flag name so automation scripts can locate specific toggles.
+Each change triggers a small snackbar at the bottom of the screen confirming the new setting. The snackbar background uses the `--color-tertiary` token so it doesn't conflict with the navigation bar. Every feature flag input also includes a `data-flag` attribute with the camelCase flag name so automation scripts can locate specific toggles.
 
 ### Tooltip Availability
 
