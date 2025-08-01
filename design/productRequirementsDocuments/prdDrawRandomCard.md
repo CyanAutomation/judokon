@@ -68,6 +68,8 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 - `generateJudokaCardHTML()` and `getRandomJudoka()` helper functions.
 - Existing game UI shell built from `game.js` and navigation modules.
 
+---
+
 ## Implementation
 
 The random draw logic is implemented in `src/helpers/randomCard.js`. Its
