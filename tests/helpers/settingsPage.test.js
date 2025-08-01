@@ -22,10 +22,12 @@ const baseSettings = {
   }
 };
 
-vi.mock("../../src/helpers/tooltip.js", () => ({
-  initTooltips: vi.fn(),
-  getTooltips: vi.fn().mockResolvedValue(tooltipMap)
-}));
+beforeEach(() => {
+  vi.doMock("../../src/helpers/tooltip.js", () => ({
+    initTooltips: vi.fn(),
+    getTooltips: vi.fn().mockResolvedValue(tooltipMap)
+  }));
+});
 
 const tooltipMap = {
   "settings.randomStatMode.label": "Random Stat Mode",
