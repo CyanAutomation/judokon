@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "skill": "1",
+    "skill": 1,
     "value": 60,
     "default": false,
     "required": true,
@@ -10,7 +10,7 @@
   },
   {
     "id": 2,
-    "skill": "2",
+    "skill": 2,
     "value": 30,
     "default": true,
     "required": true,
@@ -19,7 +19,7 @@
   },
   {
     "id": 3,
-    "skill": "3",
+    "skill": 3,
     "value": 10,
     "default": false,
     "required": true,
@@ -28,7 +28,7 @@
   },
   {
     "id": 4,
-    "skill": "1",
+    "skill": 1,
     "value": 5,
     "default": false,
     "required": true,
@@ -37,7 +37,7 @@
   },
   {
     "id": 5,
-    "skill": "2",
+    "skill": 2,
     "value": 3,
     "default": true,
     "required": true,
@@ -46,7 +46,7 @@
   },
   {
     "id": 6,
-    "skill": "3",
+    "skill": 3,
     "value": 0,
     "default": false,
     "required": false,
@@ -55,7 +55,7 @@
   },
   {
     "id": 7,
-    "skill": "1",
+    "skill": 1,
     "value": 5,
     "default": false,
     "required": true,
@@ -64,7 +64,7 @@
   },
   {
     "id": 8,
-    "skill": "2",
+    "skill": 2,
     "value": 3,
     "default": true,
     "required": true,
@@ -73,7 +73,7 @@
   },
   {
     "id": 9,
-    "skill": "3",
+    "skill": 3,
     "value": 0,
     "default": false,
     "required": false,
@@ -82,7 +82,7 @@
   },
   {
     "id": 10,
-    "skill": "1",
+    "skill": 1,
     "value": 5,
     "default": false,
     "required": true,
@@ -91,7 +91,7 @@
   },
   {
     "id": 11,
-    "skill": "2",
+    "skill": 2,
     "value": 10,
     "default": true,
     "required": true,
@@ -100,7 +100,7 @@
   },
   {
     "id": 12,
-    "skill": "3",
+    "skill": 3,
     "value": 15,
     "default": false,
     "required": true,
