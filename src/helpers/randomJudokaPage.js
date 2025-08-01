@@ -12,6 +12,7 @@
  * 7. If data fails to load, disable the Draw button and show an error message or fallback card.
  * 8. Use `onDomReady` to execute setup when the DOM content is loaded.
  *
+ * @returns {Promise<void>} Resolves when the page is fully initialized.
  * @see design/productRequirementsDocuments/prdRandomJudoka.md
  * @see design/productRequirementsDocuments/prdDrawRandomCard.md
  */
