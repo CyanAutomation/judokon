@@ -6,6 +6,9 @@
   background-color: var(--color-surface);
   overflow-y: auto;
 }
+[data-theme="dark"] .sidebar {
+  border-right: 1px solid var(--link-color);
+}
 
 @media (max-width: 600px) {
   .sidebar {
@@ -39,6 +42,9 @@
 .sidebar-list li.selected {
   background: var(--color-secondary);
   color: var(--color-text-inverted);
+}
+[data-theme="dark"] .sidebar-list li.selected {
+  background: var(--link-color);
 }
 
 .sidebar-list li.invalid {

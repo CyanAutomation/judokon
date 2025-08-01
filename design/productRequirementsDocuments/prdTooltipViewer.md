@@ -62,6 +62,8 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 
 - All fonts ≥16px
 - Color contrast meets WCAG AA (≥4.5:1)
+- In dark mode the selected key should use the bright `--link-color` value to
+  maintain WCAG AA contrast
 - Full keyboard navigation support (TAB, arrows, ENTER)
 
 ---
