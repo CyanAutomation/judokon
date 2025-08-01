@@ -452,7 +452,7 @@ Feature flags allow temporary or advanced tools without code changes:
 
 - **Battle Debug Panel** – shows a collapsible `<pre>` beside the opponent's card with live match data.
 - **Full Navigation Map** – overlays a map linking to every page for quick testing.
-- **Test Mode** – forces deterministic draws and stats with a visible "Test Mode Active" banner.
+- **Test Mode** – replaces all random calls with a seeded generator. Enable it from the Settings page to make matches reproducible and display a "Test Mode Active" banner. The seed resets on each new page load.
 - **Card Inspector** – adds a collapsible panel on each card displaying its raw JSON.
 - **Layout Debug Panel** – outlines key elements for debugging layout whenever the flag is enabled.
 
