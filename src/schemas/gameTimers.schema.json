@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://judokon.dev/schemas/gameTimers.schema.json",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "description": "Unique identifier for the timer option."
+      },
+      "skill": {
+        "type": "integer",
+        "description": "Skill level associated with the timer."
+      },
+      "value": {
+        "type": "integer",
+        "description": "Represents the timer's value. The unit depends on the 'category' field: 'roundTimer', 'coolDownTimer', and 'matchStartTimer' use seconds, while 'totalRounds' uses a count."
+      },
+      "default": {
+        "type": "boolean",
+        "description": "Indicates whether this timer is the default option."
+      },
+      "required": {
+        "type": "boolean",
+        "description": "Indicates whether this timer must be included in the game configuration for the game to function properly."
+      },
+      "category": {
+        "type": "string",
+        "enum": ["roundTimer", "coolDownTimer", "totalRounds", "matchStartTimer"],
+        "description": "Timer category."
+      },
+      "description": {
+        "type": "string",
+        "description": "Human readable explanation of the timer."
+      }
+    },
+    "required": ["id", "skill", "value", "default", "required", "category", "description"],
+    "additionalProperties": false
+  }
+}
