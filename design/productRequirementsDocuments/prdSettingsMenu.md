@@ -160,8 +160,8 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 ### Advanced Settings & Feature Flag Info
 
 - Experimental and debug flags are grouped under a collapsible **Advanced Settings** section.
-- When a flag is toggled, a modal explains the feature using text from `tooltips.json` keyed by `settings.<flagName>`.
-- The modal is created via `createModal` with an OK button to dismiss it.
+- When a flag is toggled, a snackbar appears with text from `tooltips.json` keyed by `settings.<flagName>`.
+- The snackbar confirms the change and hides itself after a short delay.
 - Debug-focused flags remain tucked away so younger players do not accidentally enable them.
 
 ### Data Persistence & Refresh
