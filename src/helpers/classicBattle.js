@@ -245,10 +245,12 @@ export function evaluateRound(stat) {
  *
  * @pseudocode
  * 1. Exit if the match has ended.
- * 2. Locate `#next-round-button` and enable it.
- * 3. Attach a one-time click handler that:
- *    a. Disables the button.
- *    b. Calls `startRound()` to begin the next round.
+ * 2. Find `#next-round-button` and set up the click handler to:
+ *    a. Disable the button.
+ *    b. Call `startRound()` to begin the next round.
+ * 3. After a short delay start a 3s cooldown timer that:
+ *    a. Updates the timer display each second.
+ *    b. Enables the button and attaches the click handler when expired.
  *
  * @param {{matchEnded: boolean}} result - Result from evaluateRound.
  */
@@ -276,8 +278,10 @@ export function scheduleNextRound(result) {
     updateDebugPanel();
   };
 
+  // use the default 3 second cooldown to avoid async timer lookup
+  // during the short delay before the next round
   setTimeout(() => {
-    startCoolDown(onTick, onExpired);
+    startCoolDown(onTick, onExpired, 3);
   }, 2000);
 }
 
