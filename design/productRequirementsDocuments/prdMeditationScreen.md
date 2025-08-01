@@ -41,6 +41,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - Offer an experience that aligns with judo’s real-world ethos of reflection.
 
 ---
+
 ## Non-Goals
 
 - No guided meditation instruction, breathing audio, or meditation music.
