@@ -33,6 +33,7 @@ This feature will empower players to develop their roster continuously, enhancin
 - **G6:** Decide and implement whether to lock edits once a judoka enters ranked play (pending).
 
 ---
+
 ## Non-Goals
 
 - Full version history or undo/redo for edits is not included.
@@ -132,7 +133,6 @@ And the form fields refresh with the newest data
 - Edit locking policy will be controlled by game rules, not player choice.
 
 ---
-
 
 ## Dependencies
 

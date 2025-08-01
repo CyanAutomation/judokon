@@ -145,7 +145,6 @@ Motion** enabled, ensuring the card appears instantly without movement.
 
 ---
 
-
 ## Prioritized Functional Requirements
 
 | Priority | Feature                        | Description                                                                  |
@@ -261,7 +260,7 @@ Motion** enabled, ensuring the card appears instantly without movement.
   - [ ] 4.6 Disable the “Draw Card” button while loading or animating a card.
   - [ ] 4.7 Add orientation-based layout rules for portrait vs. landscape.
   - [ ] 4.8 Write automated tests verifying color contrast and tap target sizes.
-     
+
 ---
 
 [Back to Game Modes Overview](prdGameModes.md)

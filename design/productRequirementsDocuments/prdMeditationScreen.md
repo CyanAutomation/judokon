@@ -83,7 +83,6 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 ---
 
-
 ## Dependencies / Integrations
 
 - Quote data from `aesopsFables.json` and `aesopsMeta.json`.

@@ -63,7 +63,6 @@ This selection screen is the gateway to the three Team Battle modes:
 
 ---
 
-
 ## Dependencies
 
 - Navigation Map must link to this screen.

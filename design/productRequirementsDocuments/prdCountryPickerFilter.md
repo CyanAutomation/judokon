@@ -153,7 +153,6 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 ---
 
-
 ## Dependencies and Integrations
 
 - `judoka.json` data file for country information.

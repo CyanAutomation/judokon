@@ -166,7 +166,6 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
-
 ## Dependencies
 
 - Judoka dataset loaded from `judoka.json`.

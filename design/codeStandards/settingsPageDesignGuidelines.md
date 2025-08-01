@@ -91,11 +91,14 @@ Reuse the following markup for general settings, game modes, and feature flags:
 
   - Use CSS variables: `--color-primary`, `--button-bg`, etc.
   - Do not hard-code color values.
+
 - Ensure all new elements work across Light, Dark, and Gray themes.
+
   - Snackbars should use `--color-tertiary` as the background to avoid
     clashing with the bottom navigation bar.
 
 - **Spacing and Sizing**
+
   - Use `--space-sm`, `--space-md`, etc. for margins/padding
   - Minimum input height: 48px for tap targets
 
@@ -260,9 +263,25 @@ To support AI-assisted testing, variant gameplay modes, and scalable development
   - Markup example:
     ```html
     <div class="settings-section">
-      <button type="button" class="settings-section-toggle" id="advanced-settings-toggle" aria-expanded="false" aria-controls="advanced-settings-content">Advanced Settings</button>
-      <div class="settings-section-content" id="advanced-settings-content" role="region" aria-labelledby="advanced-settings-toggle" hidden>
-        <fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">...</fieldset>
+      <button
+        type="button"
+        class="settings-section-toggle"
+        id="advanced-settings-toggle"
+        aria-expanded="false"
+        aria-controls="advanced-settings-content"
+      >
+        Advanced Settings
+      </button>
+      <div
+        class="settings-section-content"
+        id="advanced-settings-content"
+        role="region"
+        aria-labelledby="advanced-settings-toggle"
+        hidden
+      >
+        <fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">
+          ...
+        </fieldset>
       </div>
     </div>
     ```

@@ -165,7 +165,6 @@ Each tile contains:
 
 ---
 
-
 ## Non-Functional Requirements
 
 ### Responsiveness
