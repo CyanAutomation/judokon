@@ -9,6 +9,7 @@
  *    c. Add the `svg-fallback` CSS class.
  *
  * @param {string} fallbackSrc - Path to the fallback PNG image.
+ * @returns {void}
  */
 
 /** Default PNG fallback when an SVG fails to load. */
