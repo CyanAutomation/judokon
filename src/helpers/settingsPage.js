@@ -23,13 +23,11 @@ import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { populateNavbar } from "./navigationBar.js";
 import { showSnackbar } from "./showSnackbar.js";
 
-import {
-  applyInitialControlValues,
-  attachToggleListeners,
-  renderGameModeSwitches,
-  renderFeatureFlagSwitches,
-  setupSectionToggles
-} from "./settings/index.js";
+import { applyInitialControlValues } from "./settings/applyInitialValues.js";
+import { attachToggleListeners } from "./settings/listenerUtils.js";
+import { renderGameModeSwitches } from "./settings/gameModeSwitches.js";
+import { renderFeatureFlagSwitches } from "./settings/featureFlagSwitches.js";
+import { setupSectionToggles } from "./settings/sectionToggle.js";
 
 /**
  * Build a confirmation modal for restoring default settings.

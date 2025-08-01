@@ -26,7 +26,7 @@ describe("display mode transitions", () => {
   });
 
   it("uses startViewTransition when mode changes", async () => {
-    const { attachToggleListeners } = await import("../../src/helpers/settings/formUtils.js");
+    const { attachToggleListeners } = await import("../../src/helpers/settings/listenerUtils.js");
     const controls = controlsFromDom();
     const getCurrentSettings = () => ({ displayMode: "light" });
     const handleUpdate = vi.fn();
@@ -41,7 +41,7 @@ describe("display mode transitions", () => {
   });
 
   it("reverts with a transition when update fails", async () => {
-    const { attachToggleListeners } = await import("../../src/helpers/settings/formUtils.js");
+    const { attachToggleListeners } = await import("../../src/helpers/settings/listenerUtils.js");
     const controls = controlsFromDom();
     const getCurrentSettings = () => ({ displayMode: "light" });
     const handleUpdate = vi.fn((_, __, revert) => revert());
