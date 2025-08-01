@@ -85,8 +85,8 @@
       "description": "Outline tooltip targets to debug placement."
     },
     "layoutDebugPanel": {
-      "label": "Layout Debug Panel",
-      "description": "Show CSS outlines to inspect page layout."
+      "label": "Layout Debug Outlines",
+      "description": "Show element outlines to inspect page layout."
     },
     "navCacheResetButton": {
       "label": "Navigation Cache Reset",

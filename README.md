@@ -456,13 +456,13 @@ Feature flags allow temporary or advanced tools without code changes:
 - **Full Navigation Map** – overlays a map linking to every page for quick testing.
 - **Test Mode** – replaces all random calls with a seeded generator. Enable it from the Settings page to make matches reproducible and display a "Test Mode Active" banner. The seed resets on each new page load.
 - **Card Inspector** – adds a collapsible panel on each card displaying its raw JSON.
-- **Layout Debug Panel** – outlines key elements for debugging layout whenever the flag is enabled.
+- **Layout Debug Outlines** – highlights key elements for debugging layout whenever the flag is enabled.
 
 Advanced or debug-oriented flags live under a collapsible **Advanced Settings** section. This keeps experimental options out of sight for younger players while remaining accessible to testers.
 
 Game mode data now falls back to a bundled JSON import if the network request fails, so navigation works offline.
 Corrupted settings are detected and automatically reset to defaults, ensuring the Settings page always remains usable.
-Use the **Restore Defaults** button in the Links section to reset all settings. A confirmation dialog now appears before applying the defaults. The action also turns off any active debug overlays, including the Layout Debug Panel.
+Use the **Restore Defaults** button in the Links section to reset all settings. A confirmation dialog now appears before applying the defaults. The action also turns off any active debug overlays, including the Layout Debug Outlines.
 
 ## Browser Compatibility
 
