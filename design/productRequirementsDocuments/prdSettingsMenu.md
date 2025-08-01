@@ -124,6 +124,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - AC-2.8 The panel displays real-time match state inside a `<pre>` element.
 - AC-2.9 The panel is keyboard accessible and hidden by default.
 - AC-2.10 The panel appears beside the opponent's card rather than at the page bottom.
+- The panel stays visible for the whole match once enabled.
 
 ### Card Inspector Feature Flag
 
