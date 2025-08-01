@@ -318,7 +318,9 @@ export function renderFeatureFlagSwitches(
             "layoutDebugPanel"
           ].includes(flag)
         ) {
-          showSettingsInfo(currentLabel, currentDesc);
+          const tipLabel = tooltipMap[`${currentTipId}.label`] || label;
+          const tipDesc = tooltipMap[`${currentTipId}.description`] || description;
+          showSettingsInfo(tipLabel, tipDesc);
         }
       });
     });
