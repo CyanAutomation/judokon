@@ -19,6 +19,8 @@
  *    d. Toggle the `.simulate-viewport` class based on the viewport flag.
  *    e. Invoke `startRoundWrapper` to begin the match.
  *    f. Initialize tooltips and show the stat help tooltip once for new users.
+ *    g. Listen for `storage` events and update the Test Mode banner and
+ *       `data-test-mode` attribute when settings change.
  * 5. Execute `setupClassicBattlePage` with `onDomReady`.
  */
 import { startRound as classicStartRound, handleStatSelection } from "./classicBattle.js";
@@ -105,6 +107,21 @@ export async function setupClassicBattlePage() {
   if (banner) {
     banner.classList.toggle("hidden", !settings.featureFlags.enableTestMode?.enabled);
   }
+
+  window.addEventListener("storage", (e) => {
+    if (e.key === "settings" && e.newValue) {
+      try {
+        const s = JSON.parse(e.newValue);
+        if (battleArea) {
+          battleArea.dataset.testMode = String(Boolean(s.featureFlags?.enableTestMode?.enabled));
+        }
+        if (banner) {
+          banner.classList.toggle("hidden", !s.featureFlags?.enableTestMode?.enabled);
+        }
+        setTestMode(Boolean(s.featureFlags?.enableTestMode?.enabled));
+      } catch {}
+    }
+  });
 
   const debugPanel = document.getElementById("debug-panel");
   if (debugPanel) {
