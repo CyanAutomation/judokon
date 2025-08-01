@@ -1,4 +1,4 @@
-import { fetchJson } from "./dataUtils.js";
+import { fetchJson, importJsonModule } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { escapeHTML } from "./utils.js";
 import { loadSettings } from "./settingsUtils.js";
@@ -34,17 +34,18 @@ export function flattenTooltips(obj, prefix = "") {
  * @pseudocode
  * 1. When `cachedData` exists, return it.
  * 2. Otherwise fetch `tooltips.json` using `fetchJson`.
+ *    - If the fetch fails, import the file with `importJsonModule` instead.
  * 3. Flatten nested categories with `flattenTooltips()` and cache the result.
- * 4. On failure, log the error once and return an empty object.
+ * 4. Return the cached map.
  *
  * @returns {Promise<Record<string, string>>} Tooltip lookup object.
  */
 async function loadTooltips() {
   if (cachedData) return cachedData;
   if (!tooltipDataPromise) {
-    tooltipDataPromise = fetchJson(`${DATA_DIR}tooltips.json`).catch((err) => {
+    tooltipDataPromise = fetchJson(`${DATA_DIR}tooltips.json`).catch(async (err) => {
       console.error("Failed to load tooltips:", err);
-      return {};
+      return importJsonModule("../data/tooltips.json");
     });
   }
   const data = await tooltipDataPromise;
