@@ -6,13 +6,13 @@
  */
 
 import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
-import { getDefaultTimer } from "./timerUtils.js";
+import { getDefaultTimer, createCountdownTimer } from "./timerUtils.js";
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 
 let playerScore = 0;
 let computerScore = 0;
-let timerId = null;
+let currentTimer = null;
 let remaining = 0;
 let matchEnded = false;
 let roundsPlayed = 0;
@@ -21,9 +21,9 @@ let onTickCb = null;
 let onExpiredCb = null;
 
 function stopTimer() {
-  if (timerId) {
-    clearInterval(timerId);
-    timerId = null;
+  if (currentTimer) {
+    currentTimer.stop();
+    currentTimer = null;
   }
 }
 
@@ -51,11 +51,9 @@ function endMatchIfNeeded() {
  * @pseudocode
  * 1. Determine the timer duration when not provided using `getDefaultTimer('roundTimer')`.
  *    - Fallback to 30 seconds on any error.
- * 2. Set remaining seconds and store callbacks.
- * 3. Call onTick immediately.
- * 4. Start a 1s interval: decrement remaining, call onTick.
- * 5. If timer reaches 0, stop and call onExpired.
- * 6. Listen for page visibility changes: pause timer if hidden, resume if visible.
+ * 2. Create a countdown timer with `createCountdownTimer(duration, { onTick, onExpired, pauseOnHidden: true })`.
+ * 3. Store callbacks and reset remaining time.
+ * 4. Call `start()` on the timer.
  *
  * @param {function} onTick - Callback each second with remaining time.
  * @param {function} onExpired - Callback when timer expires (auto-select logic).
@@ -76,21 +74,17 @@ export async function startRound(onTick, onExpired, duration) {
   paused = false;
   onTickCb = onTick;
   onExpiredCb = onExpired;
-  if (onTick) onTick(remaining);
-  timerId = setInterval(() => {
-    if (!paused) {
-      remaining -= 1;
-      if (onTickCb) onTickCb(remaining);
-      if (remaining <= 0) {
-        stopTimer();
-        if (!matchEnded && onExpiredCb) onExpiredCb();
-      }
-    }
-  }, 1000);
-  if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
-    document.removeEventListener("visibilitychange", handleVisibility, false);
-    document.addEventListener("visibilitychange", handleVisibility, false);
-  }
+  currentTimer = createCountdownTimer(duration, {
+    onTick: (r) => {
+      remaining = r;
+      if (onTickCb) onTickCb(r);
+    },
+    onExpired: () => {
+      if (!matchEnded && onExpiredCb) onExpiredCb();
+    },
+    pauseOnHidden: true
+  });
+  currentTimer.start();
 }
 
 /**
@@ -98,9 +92,9 @@ export async function startRound(onTick, onExpired, duration) {
  *
  * @pseudocode
  * 1. Determine the duration using `getDefaultTimer('coolDownTimer')` when not provided; fallback to 3 seconds.
- * 2. Stop any existing timer and set remaining seconds.
- * 3. Invoke `onTick` immediately and every second thereafter.
- * 4. When the timer hits 0, stop and call `onExpired`.
+ * 2. Create a countdown timer with `createCountdownTimer(duration, { onTick, onExpired })`.
+ * 3. Store callbacks and reset remaining time.
+ * 4. Call `start()` on the timer.
  *
  * @param {function} onTick - Callback each second with remaining time.
  * @param {function} onExpired - Callback when timer expires.
@@ -118,43 +112,40 @@ export async function startCoolDown(onTick, onExpired, duration) {
   }
   stopTimer();
   remaining = duration;
+  paused = false;
   onTickCb = onTick;
   onExpiredCb = onExpired;
-  if (onTick) onTick(remaining);
-  timerId = setInterval(() => {
-    remaining -= 1;
-    if (onTickCb) onTickCb(remaining);
-    if (remaining <= 0) {
-      stopTimer();
+  currentTimer = createCountdownTimer(duration, {
+    onTick: (r) => {
+      remaining = r;
+      if (onTickCb) onTickCb(r);
+    },
+    onExpired: () => {
       if (!matchEnded && onExpiredCb) onExpiredCb();
-    }
-  }, 1000);
-}
-
-function handleVisibility() {
-  if (document.hidden) {
-    pauseTimer();
-  } else {
-    resumeTimer();
-  }
+    },
+    pauseOnHidden: false
+  });
+  currentTimer.start();
 }
 
 /**
  * Pause the round/stat selection timer.
  * @pseudocode
- * 1. Set paused flag to true.
+ * 1. Call `pause()` on the current timer and set the paused flag.
  */
 export function pauseTimer() {
   paused = true;
+  if (currentTimer) currentTimer.pause();
 }
 
 /**
  * Resume the round/stat selection timer.
  * @pseudocode
- * 1. Set paused flag to false.
+ * 1. Call `resume()` on the current timer and clear the paused flag.
  */
 export function resumeTimer() {
   paused = false;
+  if (currentTimer) currentTimer.resume();
 }
 
 /**
