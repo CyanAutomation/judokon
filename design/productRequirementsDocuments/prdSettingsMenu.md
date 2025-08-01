@@ -257,7 +257,7 @@ This pattern keeps the settings page organized and accessible, especially as mor
 
 ## Wireframe
 
-The page begins with an `<h1>` heading labeled "Settings". Two `<fieldset>` sections follow—one for **General Settings** and one for **Game Modes**.
+The page begins with an `h1` heading labeled "Settings". Two `fieldset` sections follow—one for **General Settings** and one for **Game Modes**.
 
 ───────────────────────────────  
 | SETTINGS |  
