@@ -223,7 +223,7 @@ describe("randomJudokaPage module", () => {
     await vi.advanceTimersByTimeAsync(500);
 
     expect(label.textContent).toBe("Draw Card!");
-    expect(button.hasAttribute("aria-busy")).toBe(false);
+    expect(button).not.toHaveAttribute("aria-busy");
   });
 
   it("animation and sound toggles meet minimum size requirements", async () => {
