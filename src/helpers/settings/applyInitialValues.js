@@ -76,6 +76,16 @@ export function applyInitialControlValues(controls, settings, tooltipMap = {}) {
   const tipsDescEl = document.getElementById("tooltips-desc");
   if (tipsLabel && tipsLabelEl) tipsLabelEl.textContent = tipsLabel;
   if (tipsDesc && tipsDescEl) tipsDescEl.textContent = tipsDesc;
+  applyInputState(controls.cardOfTheDayToggle, settings.showCardOfTheDay);
+  if (controls.cardOfTheDayToggle && settings.tooltipIds?.showCardOfTheDay) {
+    controls.cardOfTheDayToggle.dataset.tooltipId = settings.tooltipIds.showCardOfTheDay;
+  }
+  const cardLabel = tooltipMap["settings.showCardOfTheDay.label"];
+  const cardDesc = tooltipMap["settings.showCardOfTheDay.description"];
+  const cardLabelEl = controls.cardOfTheDayToggle?.closest("label")?.querySelector("span");
+  const cardDescEl = document.getElementById("card-of-the-day-desc");
+  if (cardLabel && cardLabelEl) cardLabelEl.textContent = cardLabel;
+  if (cardDesc && cardDescEl) cardDescEl.textContent = cardDesc;
   applyInputState(controls.fullNavigationMapToggle, settings.fullNavigationMap);
   if (controls.fullNavigationMapToggle && settings.tooltipIds?.fullNavigationMap) {
     controls.fullNavigationMapToggle.dataset.tooltipId = settings.tooltipIds.fullNavigationMap;
