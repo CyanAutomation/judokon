@@ -104,12 +104,14 @@ See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel-specific animat
 
 - The Country Flag Picker panel appears below the persistent top bar and stacks above the carousel on screens below 768px.
 - Picker supports keyboard navigation (Tab/Shift+Tab, Enter/Space, Escape) and screen reader accessibility.
-- Picker displays only countries present in `judoka.json`, in alphabetical order, with alt-text and aria-labels.
+- Picker displays only countries present in `judoka.json`. Countries are sorted alphabetically using `localeCompare`, and each flag image includes alt text and an `aria-label` based on the country name.
 - Picker provides a clear filter icon to reset selection.
 - If no judoka exist for a selected country, an empty state message is shown.
-- If a flag asset fails to load, a fallback flag icon is displayed.
+- If a flag asset fails to load, the picker swaps it for a generic fallback flag icon while keeping the accessible label.
 - Picker is responsive and touch targets are ≥44px.
 - Judoka cards must display all stats without scrolling on common desktop resolutions (e.g., 1440px width).
+
+Country list generation uses `localeCompare` for alphabetical sorting, applies the country name as both alt text and `aria-label`, and falls back to a generic icon if a flag image fails to load.
 
 ---
 
@@ -230,10 +232,10 @@ Search will be included in a future update to keep the initial scope focused.
 - [ ] 8.0 UI/UX Enhancements
   - [ ] 8.1 Add header with "Browse Judoka" title and close/back button (currently only logo/home link is present)
   - [ ] 8.2 Add loading spinner or progress indicator while fetching data
-- [ ] 9.0 Country Picker
-  - [ ] 9.1 Ensure country flags are displayed alphabetically and only for countries present in `judoka.json`
-  - [ ] 9.2 Ensure flag assets have alt-text and aria-labels for accessibility
-  - [ ] 9.3 Display fallback flag icon if a flag asset fails to load
+  - [x] 9.0 Country Picker
+    - [x] 9.1 Display flags for countries in `judoka.json`, sorted alphabetically
+    - [x] 9.2 Add alt-text and `aria-label` using each country's name
+    - [x] 9.3 Swap to a fallback icon when a flag asset fails to load
 
 ---
 
