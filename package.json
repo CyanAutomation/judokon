@@ -15,7 +15,8 @@
     "check:contrast": "node scripts/runPa11y.js",
     "prepare": "husky install",
     "validate:data": "node scripts/validateData.js",
-    "generate:embeddings": "node --max-old-space-size=8192 scripts/generateEmbeddings.js"
+    "generate:embeddings": "node --max-old-space-size=8192 scripts/generateEmbeddings.js",
+    "pretest": "node scripts/generatePrdIndex.js"
   },
   "keywords": [],
   "author": "",

@@ -8,14 +8,14 @@ import { getPrdTaskStats } from "./prdTaskStats.js";
  * Initialize the Product Requirements Document reader page.
  *
  * @pseudocode
- * 1. Load all markdown files from the PRD directory using `import.meta.glob`.
- *    Sort the filenames alphabetically so sidebar and document order match.
- * 2. Convert each file to HTML with `parserFn` (defaults to `markdownToHtml`).
- * 3. Build sidebar list items using `createSidebarList` and select the first document.
- * 4. Implement `selectDoc(index)` to render the HTML and highlight the item.
- * 5. Provide next/previous navigation with wrap-around.
- *    - Attach click handlers to all navigation buttons.
- * 6. Support arrow key and swipe gestures for navigation.
+ * 1. Build the list of PRD filenames.
+ *    - Use `import.meta.glob` when available.
+ *    - Otherwise, fetch `prdIndex.json` for the filenames.
+ *    - Sort filenames alphabetically so sidebar and document order match.
+ * 2. Create sidebar items and helper functions.
+ * 3. Fetch each markdown file, parsing to HTML with `parserFn`.
+ *    - After the first file loads, call `selectDoc(0)` so content appears immediately.
+ * 4. Provide next/previous navigation with wrap-around and support arrow key and swipe gestures.
  *
  * @param {Record<string, string>} [docsMap] Optional preloaded docs for testing.
  * @param {Function} [parserFn=markdownToHtml] Parser used to convert Markdown to HTML.
@@ -23,37 +23,24 @@ import { getPrdTaskStats } from "./prdTaskStats.js";
 export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   const PRD_DIR = new URL("../../design/productRequirementsDocuments/", import.meta.url).href;
 
-  const FILES = docsMap
-    ? Object.keys(docsMap)
-    : Object.keys(import.meta.glob("../../design/productRequirementsDocuments/*.md")).map((p) =>
-        p.split("/").pop()
-      );
+  let FILES = [];
+  if (docsMap) {
+    FILES = Object.keys(docsMap);
+  } else if (typeof import.meta.glob === "function") {
+    FILES = Object.keys(import.meta.glob("../../design/productRequirementsDocuments/*.md")).map(
+      (p) => p.split("/").pop()
+    );
+  } else {
+    try {
+      const res = await fetch(`${PRD_DIR}prdIndex.json`);
+      FILES = (await res.json()) || [];
+    } catch {
+      FILES = [];
+    }
+  }
 
   FILES.sort((a, b) => a.localeCompare(b));
 
-  const documents = [];
-  const taskStats = [];
-  const titles = [];
-  if (docsMap) {
-    for (const name of FILES) {
-      if (docsMap[name]) {
-        const md = docsMap[name];
-        documents.push(parserFn(md));
-        taskStats.push(getPrdTaskStats(md));
-        const titleMatch = md.match(/^#\s*(.+)/m);
-        titles.push(titleMatch ? titleMatch[1].trim() : "");
-      }
-    }
-  } else {
-    for (const name of FILES) {
-      const res = await fetch(`${PRD_DIR}${name}`);
-      const text = await res.text();
-      documents.push(parserFn(text));
-      taskStats.push(getPrdTaskStats(text));
-      const titleMatch = text.match(/^#\s*(.+)/m);
-      titles.push(titleMatch ? titleMatch[1].trim() : "");
-    }
-  }
   const container = document.getElementById("prd-content");
   const listPlaceholder = document.getElementById("prd-list");
   const nextButtons = document.querySelectorAll('[data-nav="next"]');
@@ -61,7 +48,11 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   const titleEl = document.getElementById("prd-title");
   const summaryEl = document.getElementById("task-summary");
 
-  if (!container || !listPlaceholder || documents.length === 0) return;
+  if (!container || !listPlaceholder || FILES.length === 0) return;
+
+  const documents = Array(FILES.length);
+  const taskStats = Array(FILES.length);
+  const titles = Array(FILES.length);
 
   const labels = FILES.map((file) =>
     file
@@ -130,7 +121,37 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     }
   });
 
-  selectDoc(0);
+  let firstLoaded = false;
+  if (docsMap) {
+    for (let i = 0; i < FILES.length; i++) {
+      const name = FILES[i];
+      if (docsMap[name]) {
+        const md = docsMap[name];
+        documents[i] = parserFn(md);
+        taskStats[i] = getPrdTaskStats(md);
+        const titleMatch = md.match(/^#\s*(.+)/m);
+        titles[i] = titleMatch ? titleMatch[1].trim() : "";
+        if (!firstLoaded) {
+          firstLoaded = true;
+          selectDoc(0);
+        }
+      }
+    }
+  } else {
+    for (let i = 0; i < FILES.length; i++) {
+      const name = FILES[i];
+      const res = await fetch(`${PRD_DIR}${name}`);
+      const text = await res.text();
+      documents[i] = parserFn(text);
+      taskStats[i] = getPrdTaskStats(text);
+      const titleMatch = text.match(/^#\s*(.+)/m);
+      titles[i] = titleMatch ? titleMatch[1].trim() : "";
+      if (!firstLoaded) {
+        firstLoaded = true;
+        selectDoc(0);
+      }
+    }
+  }
 }
 
 if (!window.SKIP_PRD_AUTO_INIT) {
