@@ -101,8 +101,8 @@ Motion** enabled, ensuring the card appears instantly without movement.
 
 | Goal             | Metric                                                                                    |
 | ---------------- | ----------------------------------------------------------------------------------------- |
-| Fast Response    | Card draw completes quickly.                                                       |
-| Smooth Animation | Reveal animation plays with no visual glitches.                                 |
+| Fast Response    | Card draw completes quickly.                                                              |
+| Smooth Animation | Reveal animation plays with no visual glitches.                                           |
 | Fair Randomness  | Random selection passes chi-square testing for uniformity, 95% confidence over 100 draws. |
 | Low Failure Rate | No more than 1% draw failures.                                                            |
 | Accessibility    | Automatically disable animations if system Reduced Motion is active.                      |
@@ -150,10 +150,10 @@ Motion** enabled, ensuring the card appears instantly without movement.
 | -------- | ------------------------------ | ---------------------------------------------------------------------------- |
 | P1       | Random Card Selection          | Select a random card from the active card set dynamically.                   |
 | P1       | Display Selected Card          | Visually reveal the selected card with animation and sound feedback.         |
-| P2       | Fallback on Failure            | Show fallback card if draw fails or active set is empty.   |
+| P2       | Fallback on Failure            | Show fallback card if draw fails or active set is empty.                     |
 | P2       | Reusable Random Draw Module    | Make the random draw callable from multiple game states or screens.          |
 | P3       | Accessibility Support          | Support Reduced Motion settings and maintain color contrast and readability. |
-| P3       | UX Enhancements                | Optimize for animation, sound effect, and large tap targets.           |
+| P3       | UX Enhancements                | Optimize for animation, sound effect, and large tap targets.                 |
 | P3       | Sound & Animation User Toggles | Allow users to manually mute sounds and disable animations if desired.       |
 
 ---
