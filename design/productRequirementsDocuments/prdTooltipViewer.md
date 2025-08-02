@@ -120,16 +120,19 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 ## Tasks
 
 - [ ] 1.0 Load and Parse Tooltip Data
+
   - [ ] 1.1 Load `tooltips.json` from `src/data/tooltips.json`
   - [ ] 1.2 Handle loading failures with user-friendly error display
   - [ ] 1.3 Parse JSON and extract key-value pairs
 
 - [ ] 2.0 Implement Sidebar Key List
+
   - [ ] 2.1 Render scrollable list of tooltip keys
   - [ ] 2.2 Enable click interaction to select a tooltip
   - [ ] 2.3 Add real-time search/filter functionality (300ms debounce)
 
 - [ ] 3.0 Build Preview Panel
+
   - [ ] 3.1 Render raw tooltip text
   - [ ] 3.2 Parse and render markdown-styled preview
   - [ ] 3.3 Animate panel on update (fade-in, 100ms)
@@ -137,6 +140,7 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
   - [ ] 3.5 Include copy-to-clipboard buttons for key and body
 
 - [ ] 4.0 URL Fragment Support
+
   - [ ] 4.1 Read and parse URL hash on page load
   - [ ] 4.2 Scroll to and pre-select corresponding tooltip key
 
