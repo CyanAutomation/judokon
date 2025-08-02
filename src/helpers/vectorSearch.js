@@ -5,6 +5,14 @@ let embeddingsPromise;
 let cachedEmbeddings;
 
 /**
+ * Current version of the client embedding data.
+ *
+ * Increment this when regenerating embeddings to ensure the
+ * vector search page can detect outdated data.
+ */
+export const CURRENT_EMBEDDING_VERSION = 1;
+
+/**
  * Load vector embeddings from `client_embeddings.json`.
  *
  * @pseudocode
