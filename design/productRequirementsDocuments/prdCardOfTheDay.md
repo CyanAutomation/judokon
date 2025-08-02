@@ -19,7 +19,7 @@ Currently, the JU-DO-KON! landing screen lacks dynamic content, making repeat vi
 | Increase landing screen engagement                 | Avg. dwell time on landing screen increases by 15%                         |
 | Encourage exploration of judoka roster             | ≥30% of users who see the featured card click through to view full details |
 | Achieve stable content refresh without regressions | Featured card rotates or updates successfully in ≥98% of daily sessions    |
-| Enable A/B testing and gradual rollout             | Controlled via `showCardOfTheDay` feature flag                             |
+| Enable A/B testing and gradual rollout             | Controlled via `showCardOfTheDay` setting in General Settings              |
 
 ---
 
@@ -35,7 +35,7 @@ Currently, the JU-DO-KON! landing screen lacks dynamic content, making repeat vi
 
 | Priority | Feature                      | Description                                                                                                   |
 | -------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| P1       | Feature Flag Toggle          | Display controlled via `showCardOfTheDay` toggle in `settings.html`.                                          |
+| P1       | General Settings Toggle      | Display controlled via `showCardOfTheDay` toggle in the General Settings section of `settings.html`.          |
 | P1       | Card Renderer                | Show a valid judoka card using the existing card rendering system in a dedicated space on the landing screen. |
 | P1       | Daily Rotation Logic         | By default, rotate the featured card every 24 hours using a deterministic seed (e.g. based on date hash).     |
 | P2       | Manual Override Option       | Allow manual setting of a specific card ID to override the rotation, useful for campaigns or testing.         |
@@ -47,7 +47,7 @@ Currently, the JU-DO-KON! landing screen lacks dynamic content, making repeat vi
 
 ## Acceptance Criteria
 
-- `showCardOfTheDay` toggle appears in the Settings page and can be turned on/off without reloading the page.
+- `showCardOfTheDay` toggle appears under General Settings and can be turned on/off without reloading the page.
 - When enabled, a valid judoka card appears on the landing screen in a fixed and visible location.
 - The featured card changes once every 24 hours, based on a repeatable algorithm (e.g. rotating through all valid cards by date).
 - When clicked, the featured card navigates to or reveals the full card view.
@@ -72,7 +72,7 @@ Currently, the JU-DO-KON! landing screen lacks dynamic content, making repeat vi
 
 - Access to `judoka.json` card pool
 - Card rendering module used in Battle and Browse views
-- Feature flag system (`settings.html`, `data-feature-flag-*` observability)
+- Settings system (`settings.html`, `data-flag-*` observability)
 
 ### Open Questions
 
@@ -84,9 +84,9 @@ Currently, the JU-DO-KON! landing screen lacks dynamic content, making repeat vi
 
 ## Tasks
 
-- [ ] 1.0 Feature Toggle Integration
+- [ ] 1.0 Settings Toggle Integration
 
-  - [ ] 1.1 Add `showCardOfTheDay` flag to `settings.html`
+  - [ ] 1.1 Add `showCardOfTheDay` toggle to General Settings in `settings.html`
   - [ ] 1.2 Ensure UI re-renders on toggle without page reload
 
 - [ ] 2.0 Card Rendering Implementation
