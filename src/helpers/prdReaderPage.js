@@ -70,6 +70,22 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   listEl.id = "prd-list";
   listPlaceholder.replaceWith(listEl);
 
+  function escapeHtml(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function parseWithWarning(md) {
+    try {
+      return parserFn(md);
+    } catch {
+      const escaped = escapeHtml(md);
+      return (
+        '<div class="markdown-warning" role="alert" aria-label="Content could not be fully rendered" title="Content could not be fully rendered">⚠️ Partial content</div>' +
+        `<pre>${escaped}</pre>`
+      );
+    }
+  }
+
   function updateHeader(i) {
     if (titleEl) titleEl.textContent = titles[i] || "";
     if (summaryEl) {
@@ -127,7 +143,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
       const name = FILES[i];
       if (docsMap[name]) {
         const md = docsMap[name];
-        documents[i] = parserFn(md);
+        documents[i] = parseWithWarning(md);
         taskStats[i] = getPrdTaskStats(md);
         const titleMatch = md.match(/^#\s*(.+)/m);
         titles[i] = titleMatch ? titleMatch[1].trim() : "";
@@ -142,7 +158,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
       const name = FILES[i];
       const res = await fetch(`${PRD_DIR}${name}`);
       const text = await res.text();
-      documents[i] = parserFn(text);
+      documents[i] = parseWithWarning(text);
       taskStats[i] = getPrdTaskStats(text);
       const titleMatch = text.match(/^#\s*(.+)/m);
       titles[i] = titleMatch ? titleMatch[1].trim() : "";

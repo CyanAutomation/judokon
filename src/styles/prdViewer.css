@@ -62,3 +62,14 @@
   justify-self: end;
   text-align: right;
 }
+
+.markdown-warning {
+  display: inline-block;
+  background: #fff3cd;
+  color: #000;
+  border: 1px solid #ffeeba;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 4px;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+}
