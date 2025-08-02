@@ -53,11 +53,12 @@ describe("settings utils", () => {
       motionEffects: true,
       typewriterEffect: false,
       displayMode: "dark",
+      tooltips: true,
+      fullNavigationMap: false,
       gameModes: {},
       featureFlags: {
         randomStatMode: { enabled: true },
         battleDebugPanel: { enabled: false },
-        fullNavigationMap: { enabled: false },
         enableTestMode: { enabled: false },
         enableCardInspector: { enabled: false }
       }
@@ -125,11 +126,12 @@ describe("settings utils", () => {
         motionEffects: true,
         typewriterEffect: false,
         displayMode: "light",
+        tooltips: true,
+        fullNavigationMap: false,
         gameModes: {},
         featureFlags: {
           randomStatMode: { enabled: true },
           battleDebugPanel: { enabled: false },
-          fullNavigationMap: { enabled: false },
           enableTestMode: { enabled: false },
           enableCardInspector: { enabled: false }
         }
@@ -164,11 +166,12 @@ describe("settings utils", () => {
       motionEffects: true,
       typewriterEffect: false,
       displayMode: "light",
+      tooltips: true,
+      fullNavigationMap: false,
       gameModes: {},
       featureFlags: {
         randomStatMode: { enabled: true },
         battleDebugPanel: { enabled: false },
-        fullNavigationMap: { enabled: false },
         enableTestMode: { enabled: false },
         enableCardInspector: { enabled: false }
       }
@@ -178,11 +181,12 @@ describe("settings utils", () => {
       motionEffects: false,
       typewriterEffect: false,
       displayMode: "dark",
+      tooltips: true,
+      fullNavigationMap: false,
       gameModes: {},
       featureFlags: {
         randomStatMode: { enabled: true },
         battleDebugPanel: { enabled: false },
-        fullNavigationMap: { enabled: false },
         enableTestMode: { enabled: false },
         enableCardInspector: { enabled: false }
       }

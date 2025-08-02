@@ -7,11 +7,11 @@ const baseSettings = {
   typewriterEffect: true,
   tooltips: true,
   displayMode: "light",
+  fullNavigationMap: true,
   gameModes: {},
   featureFlags: {
     randomStatMode: { enabled: true },
     battleDebugPanel: { enabled: false },
-    fullNavigationMap: { enabled: true },
     enableTestMode: { enabled: false },
     enableCardInspector: { enabled: false },
     showCardOfTheDay: { enabled: false },
@@ -356,7 +356,6 @@ describe("settingsPage module", () => {
         ...baseSettings.featureFlags.battleDebugPanel,
         enabled: true
       },
-      fullNavigationMap: baseSettings.featureFlags.fullNavigationMap,
       enableTestMode: baseSettings.featureFlags.enableTestMode,
       enableCardInspector: baseSettings.featureFlags.enableCardInspector,
       showCardOfTheDay: baseSettings.featureFlags.showCardOfTheDay,

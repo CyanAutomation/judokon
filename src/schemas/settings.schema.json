@@ -25,6 +25,10 @@
       "enum": ["light", "dark", "gray"],
       "description": "Visual display mode."
     },
+    "fullNavigationMap": {
+      "type": "boolean",
+      "description": "Enable the full navigation map overlay."
+    },
     "tooltipIds": {
       "type": "object",
       "description": "Mapping of setting keys to tooltip identifiers.",
@@ -60,7 +64,8 @@
     "motionEffects",
     "typewriterEffect",
     "tooltips",
-    "displayMode"
+    "displayMode",
+    "fullNavigationMap"
   ],
   "additionalProperties": false
 }

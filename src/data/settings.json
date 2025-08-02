@@ -4,11 +4,13 @@
   "typewriterEffect": false,
   "tooltips": true,
   "displayMode": "light",
+  "fullNavigationMap": false,
   "tooltipIds": {
     "sound": "settings.sound",
     "motionEffects": "settings.motionEffects",
     "typewriterEffect": "settings.typewriterEffect",
-    "tooltips": "settings.tooltips"
+    "tooltips": "settings.tooltips",
+    "fullNavigationMap": "settings.fullNavigationMap"
   },
   "gameModes": {},
   "featureFlags": {
@@ -19,10 +21,6 @@
     "battleDebugPanel": {
       "enabled": false,
       "tooltipId": "settings.battleDebugPanel"
-    },
-    "fullNavigationMap": {
-      "enabled": false,
-      "tooltipId": "settings.fullNavigationMap"
     },
     "enableTestMode": {
       "enabled": false,
