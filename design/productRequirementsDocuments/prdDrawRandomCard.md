@@ -262,8 +262,8 @@ instantly without movement.
   - [ ] 5.1 Implement "Card History" panel. **[Not implemented]**
   - [ ] 5.2 Add celebratory sound effect on card draw. **[Not implemented]**
   - [ ] 5.3 Provide visual or ARIA feedback for loading state. **[Only button disables, no spinner/text]**
-  - [ ] 5.5 Run chi-square test for randomness. **[Not implemented]**
 
+  
 ---
 
 [Back to Game Modes Overview](prdGameModes.md)
