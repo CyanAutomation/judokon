@@ -164,10 +164,25 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
   - [x] 1.2 Call it again when the Draw button is tapped
 - [x] **2.0 Build layout and controls**
   - [x] 2.1 Create card display area and prominent Draw button
-  - [x] 2.2 Add Animation and Sound toggle switches below the Draw button
 - [ ] **3.0 Accessibility & fallback**
-  - [ ] 3.1 Verify WCAG contrast and tap target sizes
+  - [ ] 3.1 Verify WCAG contrast and tap target sizes (manual/automated check needed)
   - [x] 3.2 Display fallback card on error using the module
+- [ ] **4.0 Reduced Motion & Animation**
+  - [ ] 4.1 Animation toggle is a global setting in Settings page (not on Random Judoka page)
+  - [x] 4.2 Respect OS-level Reduced Motion setting for animation toggle (logic present)
+  - [ ] 4.3 Ensure all card reveal animations are fully disabled when Reduced Motion is active (verify in UI and CSS)
+- [ ] **5.0 Audio Feedback**
+  - [ ] 5.1 Play draw sound effect when enabled (sound toggle is a global setting in Settings page)
+  - [ ] 5.2 Ensure sound is off by default in global settings
+- [ ] **6.0 Button Interaction**
+  - [x] 6.1 Disable Draw button during card animation/loading
+  - [ ] 6.2 Add visual feedback for button press (scale-in effect)
+- [ ] **7.0 UI Responsiveness**
+  - [ ] 7.1 Ensure Draw button remains visible above footer on all screen sizes (manual/automated check needed)
+  - [ ] 7.2 Card and controls layout matches mobile/tablet/desktop requirements
+- [ ] **8.0 Testing**
+  - [ ] 8.1 Add/verify unit tests for random card logic
+  - [ ] 8.2 Add/verify Playwright UI tests for draw flow, fallback, and accessibility
 
 ---
 
