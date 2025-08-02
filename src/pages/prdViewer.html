@@ -27,14 +27,21 @@
       </header>
 
       <main class="prd-viewer" role="main">
-        <aside class="sidebar"><ul id="prd-list" class="sidebar-list"></ul></aside>
+        <aside class="sidebar" aria-label="PRD list" role="navigation">
+          <ul id="prd-list" class="sidebar-list"></ul>
+        </aside>
         <section class="preview">
           <div id="prd-content"></div>
         </section>
       </main>
 
       <footer>
-        <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
+        <nav
+          class="bottom-navbar"
+          data-testid="bottom-nav"
+          role="navigation"
+          aria-label="Footer navigation"
+        ></nav>
       </footer>
     </div>
     <script type="module" src="../helpers/setupBottomNavbar.js"></script>
