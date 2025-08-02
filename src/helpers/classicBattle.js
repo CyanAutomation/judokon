@@ -26,6 +26,32 @@ export function getStartRound() {
 
 let quitModal = null;
 
+/**
+ * Update the info bar with current scores and show a waiting message when
+ * synchronizing with the backend fails.
+ *
+ * @pseudocode
+ * 1. Attempt to read scores via `getScores()`.
+ * 2. When scores are not numbers or an error occurs, display
+ *    `"Waiting…"` using `infoBar.showMessage` and return false.
+ * 3. Otherwise, update the score display and return true.
+ *
+ * @returns {boolean} True when scores were updated, false on failure.
+ */
+function syncScoreDisplay() {
+  try {
+    const { playerScore, computerScore } = getScores();
+    if (typeof playerScore === "number" && typeof computerScore === "number") {
+      infoBar.updateScore(playerScore, computerScore);
+      return true;
+    }
+  } catch {
+    // ignore error and fall through to waiting message
+  }
+  infoBar.showMessage("Waiting…");
+  return false;
+}
+
 function createQuitConfirmation(onConfirm) {
   const title = document.createElement("h2");
   title.id = "quit-modal-title";
@@ -64,8 +90,7 @@ export async function startRound() {
   disableNextRoundButton();
   await drawCards();
   showSelectionPrompt();
-  const { playerScore, computerScore } = getScores();
-  infoBar.updateScore(playerScore, computerScore);
+  syncScoreDisplay();
   await startTimer(handleStatSelection);
   updateDebugPanel();
 }
@@ -79,8 +104,7 @@ export function evaluateRound(stat) {
   if (result.message) {
     showResult(result.message);
   }
-  const { playerScore, computerScore } = getScores();
-  infoBar.updateScore(playerScore, computerScore);
+  syncScoreDisplay();
   updateDebugPanel();
   return result;
 }
@@ -128,8 +152,7 @@ export function _resetForTest() {
     quitModal.element.remove();
     quitModal = null;
   }
-  const { playerScore, computerScore } = getScores();
-  infoBar.updateScore(playerScore, computerScore);
+  syncScoreDisplay();
   updateDebugPanel();
 }
 
@@ -141,6 +164,7 @@ export {
 } from "./classicBattle/uiHelpers.js";
 export { getComputerJudoka } from "./classicBattle/cardSelection.js";
 export { scheduleNextRound } from "./classicBattle/timerControl.js";
+export { syncScoreDisplay as _syncScoreDisplay };
 
 const quitButton = document.getElementById("quit-match-button");
 if (quitButton) {
