@@ -38,35 +38,35 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 
 ## Functional Requirements
 
-| Priority | Feature                             | Description                                                                                         |
-| -------- | ----------------------------------- | --------------------------------------------------------------------------------------------------- |
-| P1       | Sound Toggle                        | Binary toggle updating `settings.json` live on change.                                              |
-| P1       | Full Navigation Map Feature Flag    | Enable or disable the full navigation map via feature flag; updates `settings.json` live on change. |
-| P3       | Test Mode Feature Flag              | Enables deterministic battles for automated testing.                                                |
-| P3       | Battle Debug Panel Feature Flag     | Adds a collapsible debug `<pre>` beside the opponent's card showing match state.                    |
-| P3       | Card Inspector Feature Flag         | Reveals a panel on each card with its raw JSON for debugging.                                       |
-| P3       | Viewport Simulation Feature Flag    | Choose preset sizes to simulate different devices.                                                  |
-| P3       | Tooltip Overlay Debug Feature Flag  | Outline tooltip targets to debug placement.                                                         |
-| P3       | Layout Debug Outlines Feature Flag  | Show element outlines to inspect page layout.                                                       |
-| P3       | Navigation Cache Reset Feature Flag | Add a button to clear cached navigation data.                                                       |
-| P1       | Motion Effects Toggle               | Binary toggle updating `settings.json` live on change.                                              |
-| P1       | Typewriter Effect Toggle            | Enable or disable quote animation where supported (not used on the meditation screen).              |
-| P1       | Tooltips Toggle                     | Globally enable or disable UI tooltips.                                                             |
-| P1       | Display Mode Switch                 | Three-option switch applying mode instantly across UI.                                              |
-| P2       | Game Modes Toggles                  | A list of all defined game modes with binary toggles from `navigationItems.json`.                   |
-| P3       | Settings Menu Integration           | Ensure settings appear as a game mode in `navigationItems.json`.                                    |
-| P3       | View Change Log Link                | Link to `changeLog.html` for viewing recent judoka updates.                                         |
-| P3       | View PRD Documents Link             | Link to `prdViewer.html` for browsing product requirement documents.                                |
-| P3       | View Design Mockups Link            | Link to `mockupViewer.html` to browse design mockups.                                               |
-| P3       | View Tooltip Descriptions Link      | Link to `tooltipViewer.html` for exploring tooltip text.                                            |
-| P3       | Vector Search for RAG Link          | Link to `vectorSearch.html` for vector database queries.                                            |
+| Priority | Feature                             | Description                                                                                            |
+| -------- | ----------------------------------- | ---------------------------------------------------------------------------------------------- |
+| P1       | Sound Toggle                        | Binary toggle updating `settings.json` live on change.                                                 |
+| P1       | Full Navigation Map Toggle          | Enable or disable the full navigation map via general setting; updates `settings.json` live on change. |
+| P3       | Test Mode Feature Flag              | Enables deterministic battles for automated testing.                                                   |
+| P3       | Battle Debug Panel Feature Flag     | Adds a collapsible debug `<pre>` beside the opponent's card showing match state.                       |
+| P3       | Card Inspector Feature Flag         | Reveals a panel on each card with its raw JSON for debugging.                                          |
+| P3       | Viewport Simulation Feature Flag    | Choose preset sizes to simulate different devices.                                                     |
+| P3       | Tooltip Overlay Debug Feature Flag  | Outline tooltip targets to debug placement.                                                            |
+| P3       | Layout Debug Outlines Feature Flag  | Show element outlines to inspect page layout.                                                          |
+| P3       | Navigation Cache Reset Feature Flag | Add a button to clear cached navigation data.                                                          |
+| P1       | Motion Effects Toggle               | Binary toggle updating `settings.json` live on change.                                                 |
+| P1       | Typewriter Effect Toggle            | Enable or disable quote animation where supported (not used on the meditation screen).                 |
+| P1       | Tooltips Toggle                     | Globally enable or disable UI tooltips.                                                                |
+| P1       | Display Mode Switch                 | Three-option switch applying mode instantly across UI.                                                 |
+| P2       | Game Modes Toggles                  | A list of all defined game modes with binary toggles from `navigationItems.json`.                      |
+| P3       | Settings Menu Integration           | Ensure settings appear as a game mode in `navigationItems.json`.                                       |
+| P3       | View Change Log Link                | Link to `changeLog.html` for viewing recent judoka updates.                                            |
+| P3       | View PRD Documents Link             | Link to `prdViewer.html` for browsing product requirement documents.                                   |
+| P3       | View Design Mockups Link            | Link to `mockupViewer.html` to browse design mockups.                                                  |
+| P3       | View Tooltip Descriptions Link      | Link to `tooltipViewer.html` for exploring tooltip text.                                               |
+| P3       | Vector Search for RAG Link          | Link to `vectorSearch.html` for vector database queries.                                               |
 
 ---
 
 ## Settings Features
 
 - **Sound (binary):** ON/OFF (default: ON) – Enable or mute game audio.
-- **Full navigation map feature flag (binary):** ON/OFF (default: ON) – Display an overlay map linking to every page.
+- **Full navigation map (binary):** ON/OFF (default: ON) – Display an overlay map linking to every page.
 - **Test mode feature flag (binary):** ON/OFF (default: OFF) – Run deterministic matches for testing.
 - **Battle debug panel feature flag (binary):** ON/OFF (default: OFF) – Show a panel with live match data for debugging.
 - **Card inspector feature flag (binary):** ON/OFF (default: OFF) – Reveal raw card JSON in a collapsible panel.
@@ -117,11 +117,11 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - AC-1.2 Toggling sound updates the UI indicator (toggle visually reflects ON/OFF state).
 - AC-1.3 Toggling sound causes no console errors or JS exceptions.
 
-### Full Navigation Map Feature Flag
+### Full Navigation Map Setting
 
-- AC-2.1 Enabling or disabling the flag updates `settings.json` within 50ms.
-- AC-2.2 The toggle correctly reflects the current flag state in the UI.
-- AC-2.3 The navigation map is available only when the flag is enabled.
+- AC-2.1 Enabling or disabling the setting updates `settings.json` within 50ms.
+- AC-2.2 The toggle correctly reflects the current setting state in the UI.
+- AC-2.3 The navigation map is available only when the setting is enabled.
 
 ### Test Mode Feature Flag
 
