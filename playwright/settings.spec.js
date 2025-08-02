@@ -1,5 +1,6 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import fs from "fs";
+import { hex } from "wcag-contrast";
 import { DEFAULT_SETTINGS } from "../src/helpers/settingsUtils.js";
 import {
   verifyPageBasics,
@@ -109,6 +110,72 @@ test.describe("Settings page", () => {
 
     for (const label of expectedLabels) {
       expect(activeLabels).toContain(label);
+    }
+  });
+
+  test("controls meet minimum color contrast", async ({ page }) => {
+    const rgbToHex = (rgb) => {
+      const [r, g, b] = rgb
+        .replace(/rgba?\(/, "")
+        .replace(/\)/, "")
+        .split(",")
+        .map((v) => parseInt(v.trim(), 10));
+      return `#${[r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("")}`;
+    };
+
+    const buttons = await page.$$eval(".settings-section-toggle, #reset-settings-button", (els) =>
+      els.map((el) => {
+        const style = getComputedStyle(el);
+        return { fg: style.color, bg: style.backgroundColor };
+      })
+    );
+
+    const labels = await page.$$eval(
+      [
+        "label[for='sound-toggle']",
+        "label[for='motion-toggle']",
+        "label[for='typewriter-toggle']",
+        "label[for='tooltips-toggle']",
+        "label[for='display-mode-light']",
+        "label[for='display-mode-dark']",
+        "label[for='display-mode-gray']"
+      ].join(", "),
+      (els) =>
+        els.map((el) => {
+          const style = getComputedStyle(el);
+          let bg = style.backgroundColor;
+          if (bg === "rgba(0, 0, 0, 0)" || bg === "transparent") {
+            bg = getComputedStyle(document.body).backgroundColor;
+          }
+          return { fg: style.color, bg };
+        })
+    );
+
+    for (const { fg, bg } of [...buttons, ...labels]) {
+      const ratio = hex(rgbToHex(bg), rgbToHex(fg));
+      expect(ratio).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  test("controls meet 44px touch target size", async ({ page }) => {
+    const selectors = [
+      "#general-settings-toggle",
+      "#game-modes-toggle",
+      "#advanced-settings-toggle",
+      "#reset-settings-button",
+      "#sound-toggle",
+      "#motion-toggle",
+      "#typewriter-toggle",
+      "#tooltips-toggle",
+      "#display-mode-light",
+      "#display-mode-dark",
+      "#display-mode-gray"
+    ];
+
+    for (const sel of selectors) {
+      const box = await page.locator(sel).boundingBox();
+      expect(box?.width).toBeGreaterThanOrEqual(44);
+      expect(box?.height).toBeGreaterThanOrEqual(44);
     }
   });
 });
