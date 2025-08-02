@@ -1,11 +1,5 @@
 let enabledState = false;
-const DEFAULT_SELECTORS = [
-  ".judoka-card",
-  ".card-container",
-  ".card-carousel",
-  ".home-screen",
-  ".kodokan-screen"
-];
+const DEFAULT_SELECTORS = ["body *:not(script):not(style)"];
 
 /**
  * Toggle the global layout debug panel.
@@ -13,8 +7,9 @@ const DEFAULT_SELECTORS = [
  * @pseudocode
  * 1. Exit early if `document.body` is unavailable.
  * 2. Remove any existing `.layout-debug-outline` classes.
- * 3. When `enabled` is true, add `.layout-debug-outline` to all matching
- *    elements so their boxes are visible.
+ * 3. When `enabled` is true, add `.layout-debug-outline` to all visible
+ *    elements matching the provided selectors. The default selector highlights
+ *    all visible containers across the page.
  *
  * @param {boolean} enabled - Whether to show the outlines.
  * @param {string[]} [selectors] - Optional custom selectors.
@@ -28,7 +23,9 @@ export function toggleLayoutDebugPanel(enabled, selectors = DEFAULT_SELECTORS) {
   if (enabledState) {
     selectors.forEach((sel) => {
       document.querySelectorAll(sel).forEach((el) => {
-        el.classList.add("layout-debug-outline");
+        if (el.offsetParent !== null) {
+          el.classList.add("layout-debug-outline");
+        }
       });
     });
   }
