@@ -11,11 +11,11 @@ const baseSettings = {
   typewriterEffect: true,
   tooltips: true,
   displayMode: "light",
+  fullNavigationMap: true,
   gameModes: {},
   featureFlags: {
     randomStatMode: { enabled: false },
     battleDebugPanel: { enabled: false },
-    fullNavigationMap: { enabled: true },
     enableTestMode: { enabled: false },
     enableCardInspector: { enabled: false }
   }

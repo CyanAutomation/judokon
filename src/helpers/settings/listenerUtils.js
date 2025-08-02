@@ -18,7 +18,14 @@ import { showSnackbar } from "../showSnackbar.js";
  *   Persist function that returns a Promise.
  */
 export function attachToggleListeners(controls, getCurrentSettings, handleUpdate) {
-  const { soundToggle, motionToggle, displayRadios, typewriterToggle, tooltipsToggle } = controls;
+  const {
+    soundToggle,
+    motionToggle,
+    displayRadios,
+    typewriterToggle,
+    tooltipsToggle,
+    fullNavigationMapToggle
+  } = controls;
   soundToggle?.addEventListener("change", () => {
     const prev = !soundToggle.checked;
     Promise.resolve(
@@ -89,6 +96,18 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
       })
     ).then(() => {
       showSnackbar(`Tooltips ${tooltipsToggle.checked ? "enabled" : "disabled"}`);
+    });
+  });
+  fullNavigationMapToggle?.addEventListener("change", () => {
+    const prev = !fullNavigationMapToggle.checked;
+    Promise.resolve(
+      handleUpdate("fullNavigationMap", fullNavigationMapToggle.checked, () => {
+        fullNavigationMapToggle.checked = prev;
+      })
+    ).then(() => {
+      showSnackbar(
+        `Full navigation map ${fullNavigationMapToggle.checked ? "enabled" : "disabled"}`
+      );
     });
   });
 }

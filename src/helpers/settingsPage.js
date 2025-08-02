@@ -98,7 +98,8 @@ function initializeControls(settings, gameModes, tooltipMap) {
     motionToggle: document.getElementById("motion-toggle"),
     displayRadios: document.querySelectorAll('input[name="display-mode"]'),
     typewriterToggle: document.getElementById("typewriter-toggle"),
-    tooltipsToggle: document.getElementById("tooltips-toggle")
+    tooltipsToggle: document.getElementById("tooltips-toggle"),
+    fullNavigationMapToggle: document.getElementById("full-navigation-map-toggle")
   };
   const modesContainer = document.getElementById("game-mode-toggle-container");
   const flagsContainer = document.getElementById("feature-flags-container");

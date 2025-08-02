@@ -147,11 +147,11 @@ describe("populateNavbar", () => {
       motionEffects: true,
       tooltips: true,
       displayMode: "light",
+      fullNavigationMap: true,
       gameModes: { 2: false },
       featureFlags: {
         randomStatMode: { enabled: true },
         battleDebugPanel: { enabled: false },
-        fullNavigationMap: { enabled: true },
         enableTestMode: { enabled: false },
         enableCardInspector: { enabled: false }
       }
@@ -212,11 +212,11 @@ describe("populateNavbar", () => {
       motionEffects: true,
       tooltips: true,
       displayMode: "light",
+      fullNavigationMap: true,
       gameModes: {},
       featureFlags: {
         randomStatMode: { enabled: true },
         battleDebugPanel: { enabled: false },
-        fullNavigationMap: { enabled: true },
         enableTestMode: { enabled: false },
         enableCardInspector: { enabled: false }
       }
@@ -265,11 +265,11 @@ describe("populateNavbar", () => {
       motionEffects: true,
       tooltips: true,
       displayMode: "light",
+      fullNavigationMap: true,
       gameModes: {},
       featureFlags: {
         randomStatMode: { enabled: true },
         battleDebugPanel: { enabled: false },
-        fullNavigationMap: { enabled: true },
         enableTestMode: { enabled: false },
         enableCardInspector: { enabled: false }
       }

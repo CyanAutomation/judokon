@@ -76,4 +76,14 @@ export function applyInitialControlValues(controls, settings, tooltipMap = {}) {
   const tipsDescEl = document.getElementById("tooltips-desc");
   if (tipsLabel && tipsLabelEl) tipsLabelEl.textContent = tipsLabel;
   if (tipsDesc && tipsDescEl) tipsDescEl.textContent = tipsDesc;
+  applyInputState(controls.fullNavigationMapToggle, settings.fullNavigationMap);
+  if (controls.fullNavigationMapToggle && settings.tooltipIds?.fullNavigationMap) {
+    controls.fullNavigationMapToggle.dataset.tooltipId = settings.tooltipIds.fullNavigationMap;
+  }
+  const mapLabel = tooltipMap["settings.fullNavigationMap.label"];
+  const mapDesc = tooltipMap["settings.fullNavigationMap.description"];
+  const mapLabelEl = controls.fullNavigationMapToggle?.closest("label")?.querySelector("span");
+  const mapDescEl = document.getElementById("full-navigation-map-desc");
+  if (mapLabel && mapLabelEl) mapLabelEl.textContent = mapLabel;
+  if (mapDesc && mapDescEl) mapDescEl.textContent = mapDesc;
 }
