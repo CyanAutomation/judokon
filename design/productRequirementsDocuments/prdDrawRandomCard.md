@@ -78,9 +78,10 @@ rendering. This module is used in **Classic Battle** as well as all **Team
 Battle** variants (Female, Male, and Mixed).
 
 Card reveal animations are handled by the `.animate-card` CSS class defined in
-`src/styles/components.css`. The class applies a short fade and upward slide on
-card insert. A media query removes this animation when a user has **Reduced
-Motion** enabled, ensuring the card appears instantly without movement.
+`src/styles/buttons.css` (imported via `src/styles/components.css`). The class
+applies a short fade and upward slide on card insert. A media query removes this
+animation when a user has **Reduced Motion** enabled, ensuring the card appears
+instantly without movement.
 
 ---
 
