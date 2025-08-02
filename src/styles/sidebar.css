@@ -27,6 +27,7 @@
 .sidebar-list li {
   padding: var(--space-xs) var(--space-sm);
   cursor: pointer;
+  border-left: 4px solid transparent;
 }
 
 /* Highlight the item currently focused via keyboard */
@@ -53,6 +54,30 @@
   background: var(--link-color);
 }
 
-.sidebar-list li.invalid {
+.sidebar-list li[data-valid="false"] {
   color: #c62828;
+}
+
+.sidebar-list li.stat {
+  border-left-color: var(--color-primary);
+}
+
+.sidebar-list li.ui {
+  border-left-color: var(--color-secondary);
+}
+
+.sidebar-list li.mode {
+  border-left-color: #08a700;
+}
+
+.sidebar-list li.nav {
+  border-left-color: #ff9800;
+}
+
+.sidebar-list li.settings {
+  border-left-color: #9c27b0;
+}
+
+.sidebar-list li.card {
+  border-left-color: #795548;
 }
