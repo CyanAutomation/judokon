@@ -61,6 +61,7 @@ test.describe("Settings page", () => {
       "Motion Effects",
       "Typewriter Effect",
       "Tooltips",
+      "Card of the Day",
       ...sortedNames,
       ...flagLabels
     ];

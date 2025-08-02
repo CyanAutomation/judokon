@@ -24,6 +24,7 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
     displayRadios,
     typewriterToggle,
     tooltipsToggle,
+    cardOfTheDayToggle,
     fullNavigationMapToggle
   } = controls;
   soundToggle?.addEventListener("change", () => {
@@ -96,6 +97,16 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
       })
     ).then(() => {
       showSnackbar(`Tooltips ${tooltipsToggle.checked ? "enabled" : "disabled"}`);
+    });
+  });
+  cardOfTheDayToggle?.addEventListener("change", () => {
+    const prev = !cardOfTheDayToggle.checked;
+    Promise.resolve(
+      handleUpdate("showCardOfTheDay", cardOfTheDayToggle.checked, () => {
+        cardOfTheDayToggle.checked = prev;
+      })
+    ).then(() => {
+      showSnackbar(`Card of the Day ${cardOfTheDayToggle.checked ? "enabled" : "disabled"}`);
     });
   });
   fullNavigationMapToggle?.addEventListener("change", () => {

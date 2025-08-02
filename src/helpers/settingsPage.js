@@ -99,6 +99,7 @@ function initializeControls(settings, gameModes, tooltipMap) {
     displayRadios: document.querySelectorAll('input[name="display-mode"]'),
     typewriterToggle: document.getElementById("typewriter-toggle"),
     tooltipsToggle: document.getElementById("tooltips-toggle"),
+    cardOfTheDayToggle: document.getElementById("card-of-the-day-toggle"),
     fullNavigationMapToggle: document.getElementById("full-navigation-map-toggle")
   };
   const modesContainer = document.getElementById("game-mode-toggle-container");
