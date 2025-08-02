@@ -22,7 +22,6 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - Support intuitive navigation (buttons, keyboard, swipe) between documents. **(Implemented: Keyboard and swipe; navigation buttons not present in UI)**
 - Render markdown PRDs as readable, styled HTML with tables, code blocks, and headings. **(Implemented)**
 - Ensure accessibility and responsive design for all users. **(Partially implemented: ARIA roles and responsive CSS present; full accessibility testing not yet done)**
-- Achieve markdown rendering performance with document switches completing within 200ms on standard desktop devices. **(Implemented)**
 
 ---
 
@@ -78,7 +77,6 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - Given the player clicks the JU-DO-KON! logo or “Home” link, then the viewer exits to the main homepage. **(Implemented)**
 - Given a markdown file fails to load, then an error is logged to the console, a fallback message is shown, and other files remain navigable. **(Implemented)**
 - Given malformed markdown content, then partial content is rendered with a warning badge visually indicating an issue. **(Not implemented)**
-- Given navigation occurs, then the document renders within 200ms on a standard desktop device. **(Implemented)**
 - Given a PRD includes a Tasks section, then the viewer displays the total number of tasks and completion percentage above the document content. **(Implemented)**
 
 ---
