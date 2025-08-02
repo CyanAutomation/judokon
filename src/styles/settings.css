@@ -57,6 +57,10 @@
     box-shadow var(--transition-fast);
 }
 
+.settings-form button {
+  min-height: var(--touch-target-size);
+}
+
 .settings-form select {
   min-height: var(--touch-target-size);
   padding: 0.5rem;
@@ -158,6 +162,7 @@
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
+  min-height: var(--touch-target-size);
 }
 
 .settings-section-toggle:hover {
