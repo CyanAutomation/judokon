@@ -18,6 +18,10 @@ test.describe("View Judoka screen", () => {
     await battleLink.click();
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
+  test("settings button navigates to settings page", async ({ page }) => {
+    await page.getByTestId("settings-button").click();
+    await expect(page).toHaveURL(/settings\.html/);
+  });
 
   test("logo has alt text", async ({ page }) => {
     const logo = page.getByRole("img", { name: "JU-DO-KON! Logo" });
