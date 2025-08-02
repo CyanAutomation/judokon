@@ -54,16 +54,16 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                    | Description                                                          | Status         |
-| -------- | -------------------------- | -------------------------------------------------------------------- | -------------- |
-| P1       | Markdown PRD Loading       | Load all markdown files from the PRD directory and display them.     | Static list    |
-| P1       | Markdown-to-HTML Rendering | Convert markdown to styled HTML with accurate formatting.            | Implemented    |
-| P1       | Keyboard Navigation        | Allow navigation via arrow keys with focus management.               | Implemented    |
-| P1       | Touch/Swipe Navigation     | Support swipe gestures with gesture threshold to avoid misfires.     | Implemented    |
-| P1       | Sidebar Document List      | Sidebar lists all PRDs and selecting one loads that document.        | Implemented    |
-| P2       | Responsive Layout          | Viewer adapts seamlessly to different device screen sizes.           | Implemented    |
-| P2       | Accessibility              | Fully accessible UI including ARIA labels and screen reader support. | Partial        |
-| P3       | Home Link                  | Provide a prominent link to return to the homepage.                  | Implemented    |
+| Priority | Feature                    | Description                                                          | Status      |
+| -------- | -------------------------- | -------------------------------------------------------------------- | ----------- |
+| P1       | Markdown PRD Loading       | Load all markdown files from the PRD directory and display them.     | Static list |
+| P1       | Markdown-to-HTML Rendering | Convert markdown to styled HTML with accurate formatting.            | Implemented |
+| P1       | Keyboard Navigation        | Allow navigation via arrow keys with focus management.               | Implemented |
+| P1       | Touch/Swipe Navigation     | Support swipe gestures with gesture threshold to avoid misfires.     | Implemented |
+| P1       | Sidebar Document List      | Sidebar lists all PRDs and selecting one loads that document.        | Implemented |
+| P2       | Responsive Layout          | Viewer adapts seamlessly to different device screen sizes.           | Implemented |
+| P2       | Accessibility              | Fully accessible UI including ARIA labels and screen reader support. | Partial     |
+| P3       | Home Link                  | Provide a prominent link to return to the homepage.                  | Implemented |
 
 ---
 
@@ -127,7 +127,8 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - Bottom footer with keyboard and swipe navigation instructions. **(Footer present, instructions may need to be added)**
 - Responsive layout for desktop, tablet, and mobile.
 
-**Note:**  
+**Note:**
+
 - The PRD Viewer currently uses a static list of markdown files. Dynamic directory scanning is not implemented.
 - There are no navigation buttons in the UI; navigation is via sidebar, keyboard, or swipe.
 - Warning badges for malformed markdown and loading spinners are not implemented.
@@ -167,17 +168,19 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
   - [x] 5.3 Hide internal file paths or URLs from the user interface
 
 - [x] 6.0 Display PRD Task Summary
+
   - [x] 6.1 Show total task count and completion percentage in the header next to the title
 
 - [x] 7.0 Sidebar Document List
+
   - [x] 7.1 Sidebar lists all PRDs alphabetically with zebra striping
   - [x] 7.2 Selecting a PRD from the sidebar loads that document
 
 - [x] 8.0 Loading Animation and Error States
+
   - [x] 8.1 Show fade-in animation when switching documents
   - [ ] 8.2 Show loading spinner or status message while fetching files (not yet implemented)
   - [ ] 8.3 Show warning badge for malformed markdown (not yet implemented)
 
 - [x] 9.0 Footer Navigation Instructions
   - [x] 9.1 Footer present for navigation instructions (content may need to be added)
-

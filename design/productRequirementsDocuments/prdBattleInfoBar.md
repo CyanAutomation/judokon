@@ -82,6 +82,7 @@ The round message, timer, and score now sit directly inside the page header rath
 ---
 
 **Implementation status summary:**
+
 - **Score, round messages, timers, stat selection auto-select, pause/resume, and fallback "Waiting..." logic are implemented as described.**
 - **Responsive stacking/truncation and minimum touch target size are implemented in CSS, but some edge cases and accessibility (screen reader labels, explicit contrast checks) are not yet fully implemented.**
 - **See InfoBar.js, battleEngine.js, battleUI.js, and battle.css for current logic.**
@@ -97,6 +98,7 @@ The round message, timer, and score now sit directly inside the page header rath
   - [x] 1.3 Update score within 800ms after round ends
 
 - [x] 2.0 Implement Round Info Messages
+
   - [x] 2.1 Display win/loss messages for 2 seconds
   - [x] 2.2 Start countdown timer after message disappears
   - [x] 2.3 Display selection prompt when input is needed
@@ -117,6 +119,7 @@ The round message, timer, and score now sit directly inside the page header rath
   - [ ] 4.4 Ensure all interactive elements support keyboard navigation (stat buttons: basic support, but needs explicit review/test)
 
 - [x] 5.0 Edge Case Handling and Fallbacks
+
   - [x] 5.1 Show “Waiting…” if backend score sync fails
   - [x] 5.2 Show “Waiting…” if countdown timer mismatches server start
   - [ ] 5.3 Define recovery logic for delayed player input (pending, e.g. if UI freezes)
