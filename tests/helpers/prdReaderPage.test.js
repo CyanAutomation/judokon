@@ -136,4 +136,30 @@ describe("prdReaderPage", () => {
     const summary = document.getElementById("task-summary");
     expect(summary.textContent).toContain("1/2");
   });
+
+  it("shows warning badge when markdown parsing fails", async () => {
+    const docs = {
+      "bad.md": "# Bad\\n[link](../missing.md)"
+    };
+    const parser = (md) => {
+      if (md.includes("../")) throw new Error("bad path");
+      return `<h1>${md}</h1>`;
+    };
+
+    document.body.innerHTML = `
+      <div id="prd-title"></div>
+      <div id="task-summary"></div>
+      <ul id="prd-list"></ul>
+      <div id="prd-content"></div>
+    `;
+
+    globalThis.SKIP_PRD_AUTO_INIT = true;
+    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+
+    await setupPrdReaderPage(docs, parser);
+
+    const warning = document.querySelector(".markdown-warning");
+    expect(warning).toBeTruthy();
+    expect(warning.getAttribute("aria-label")).toBe("Content could not be fully rendered");
+  });
 });

@@ -46,7 +46,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - Navigation loops around at the ends of the PRD list.
 - The player can click the JU-DO-KON! logo to exit the viewer at any time.
 - If loading a markdown file fails, an error message is shown for that document, and the player can continue navigating others. **(Implemented: Fallback message and error logging)**
-- If a markdown file is malformed, partial content is shown with a warning badge. **(Not implemented: No warning badge for malformed markdown)**
+- If a markdown file is malformed, partial content is shown with a warning badge. **(Implemented)**
 - The viewer is fully keyboard operable, supports screen readers, and adapts layout for desktop, tablet, and mobile screens. **(Partially implemented: Keyboard navigation and responsive layout present; screen reader support not fully verified)**
 
 ---
@@ -76,7 +76,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - Given the player is on any screen size, then the layout adapts to desktop, tablet, or mobile formats responsively. **(Implemented)**
 - Given the player clicks the JU-DO-KON! logo or “Home” link, then the viewer exits to the main homepage. **(Implemented)**
 - Given a markdown file fails to load, then an error is logged to the console, a fallback message is shown, and other files remain navigable. **(Implemented)**
-- Given malformed markdown content, then partial content is rendered with a warning badge visually indicating an issue. **(Not implemented)**
+- Given malformed markdown content, then partial content is rendered with a warning badge visually indicating an issue. **(Implemented)**
 - Given a PRD includes a Tasks section, then the viewer displays the total number of tasks and completion percentage above the document content. **(Implemented)**
 
 ---
@@ -95,7 +95,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 ## Edge Cases / Failure States
 
 - **Markdown File Fails to Load:** Log error, show fallback message (“Content unavailable”), continue allowing navigation of others. **(Implemented)**
-- **Malformed Markdown Content:** Display partial content with warning icon and accessible tooltip. **(Not implemented)**
+- **Malformed Markdown Content:** Display partial content with warning icon and accessible tooltip. **(Implemented)**
 - **Slow Network or File Load Delay:** Show a loading spinner or status message while fetching files. **(Not implemented)**
 - **Swipe Misfires on Touch Devices:** Use minimum gesture thresholds and debounce timing to avoid accidental navigations. **(Implemented: 30px threshold)**
 - **Keyboard Navigation Blocked:** Ensure `tabindex`, role attributes, and focus management are correctly implemented. **(Partially implemented)**
@@ -121,14 +121,14 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
   `--color-tertiary` tokens for zebra striping. Odd/even classes start with
   `odd` for the first row.
 - Sidebar PRDs are listed alphabetically.
-- Warning badge in content area if markdown partially rendered. **(Not implemented)**
+- Warning badge in content area if markdown partially rendered. **(Implemented)**
 - Bottom footer with keyboard and swipe navigation instructions. **(Footer present, instructions may need to be added)**
 - Responsive layout for desktop, tablet, and mobile.
 
 **Note:**
 
 - There are no navigation buttons in the UI; navigation is via sidebar, keyboard, or swipe.
-- Warning badges for malformed markdown and loading spinners are not implemented.
+- Loading spinners are not implemented.
 - Accessibility is partially implemented; further testing and improvements may be needed.
 
 ---
@@ -177,7 +177,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
   - [x] 8.1 Show fade-in animation when switching documents
   - [ ] 8.2 Show loading spinner or status message while fetching files (not yet implemented)
-  - [ ] 8.3 Show warning badge for malformed markdown (not yet implemented)
+  - [x] 8.3 Show warning badge for malformed markdown
 
 - [x] 9.0 Footer Navigation Instructions
   - [x] 9.1 Footer present for navigation instructions (content may need to be added)
