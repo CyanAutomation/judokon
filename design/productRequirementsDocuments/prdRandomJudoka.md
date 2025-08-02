@@ -67,7 +67,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - A random judoka is displayed on each visit.
 - Each random judoka is displayed in at least 95% of cases (matches performance goal wording).
 - Draw button reliably refreshes card on tap (≥99% tap success).
-- Show fallback card if judoka list is empty (displays in <1s in 99% of cases).
+- Show fallback card if judoka list is empty (displays in 99% of cases).
 - Respect OS-level Reduced Motion settings (disable animations when active).
 - Sound is off by default.
 
