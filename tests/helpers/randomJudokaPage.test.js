@@ -53,8 +53,8 @@ describe("randomJudokaPage module", () => {
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings, updateSetting }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
-    const { section, container } = createRandomCardDom();
-    document.body.append(section, container);
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
 
     const { setupRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
 
@@ -64,9 +64,13 @@ describe("randomJudokaPage module", () => {
     expect(loadSettings).toHaveBeenCalled();
     expect(createToggleSwitch).toHaveBeenCalledTimes(2);
     expect(applyMotionPreference).toHaveBeenCalledWith(baseSettings.motionEffects);
+    expect(generateRandomCard).not.toHaveBeenCalled();
+    const drawBtn = document.getElementById("draw-card-btn");
+    drawBtn.click();
+    await vi.runAllTimersAsync();
     expect(generateRandomCard.mock.calls[0][3]).toBe(false);
     expect(typeof setupRandomJudokaPage).toBe("function");
-    expect(document.getElementById("draw-card-btn").dataset.tooltipId).toBe("ui.drawCard");
+    expect(drawBtn.dataset.tooltipId).toBe("ui.drawCard");
   });
 
   it("renders card text with sufficient color contrast", async () => {
@@ -85,7 +89,11 @@ describe("randomJudokaPage module", () => {
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
     vi.doMock("../../src/components/Button.js", () => ({
-      createButton: () => document.createElement("button")
+      createButton: (_, opts = {}) => {
+        const btn = document.createElement("button");
+        if (opts.id) btn.id = opts.id;
+        return btn;
+      }
     }));
     vi.doMock("../../src/components/ToggleSwitch.js", () => ({
       createToggleSwitch: () => document.createElement("div")
@@ -104,8 +112,8 @@ describe("randomJudokaPage module", () => {
     }));
     vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
 
-    const { section, container } = createRandomCardDom();
-    document.body.append(section, container);
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
 
     const vars = parseCssVariables(readFileSync(resolve("src/styles/base.css"), "utf8"));
     const cardCss = readFileSync(resolve("src/styles/card.css"), "utf8");
@@ -120,6 +128,8 @@ describe("randomJudokaPage module", () => {
     await import("../../src/helpers/randomJudokaPage.js");
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+    document.getElementById("draw-card-btn").click();
     await vi.runAllTimersAsync();
 
     const cardEl = container.querySelector(".judoka-card");
@@ -159,8 +169,8 @@ describe("randomJudokaPage module", () => {
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
-    const { section, container } = createRandomCardDom();
-    document.body.append(section, container);
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
 
     const navbarCss = readFileSync(resolve("src/styles/navbar.css"), "utf8");
     const style = document.createElement("style");
@@ -204,8 +214,8 @@ describe("randomJudokaPage module", () => {
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
-    const { section, container } = createRandomCardDom();
-    document.body.append(section, container);
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
 
     await import("../../src/helpers/randomJudokaPage.js");
 
@@ -252,8 +262,8 @@ describe("randomJudokaPage module", () => {
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
-    const { section, container } = createRandomCardDom();
-    document.body.append(section, container);
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
 
     const settingsCss = readFileSync(resolve("src/styles/settings.css"), "utf8");
     const style = document.createElement("style");
@@ -316,8 +326,8 @@ describe("randomJudokaPage module", () => {
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings, updateSetting }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
-    const { section, container } = createRandomCardDom();
-    document.body.append(section, container);
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
 
     await import("../../src/helpers/randomJudokaPage.js");
 
@@ -325,7 +335,7 @@ describe("randomJudokaPage module", () => {
     await vi.runOnlyPendingTimersAsync();
 
     const drawBtn = document.getElementById("draw-card-btn");
-    for (let i = 1; i < judokaSeq.length; i++) {
+    for (let i = 0; i < judokaSeq.length; i++) {
       drawBtn.click();
       await Promise.resolve();
       await vi.runOnlyPendingTimersAsync();
@@ -369,12 +379,16 @@ describe("randomJudokaPage module", () => {
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
-    const { section, container } = createRandomCardDom();
-    document.body.append(section, container);
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
 
     await import("../../src/helpers/randomJudokaPage.js");
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const drawBtn = document.getElementById("draw-card-btn");
+    drawBtn.click();
     await vi.runAllTimersAsync();
 
     expect(container.querySelector(".debug-panel")).toBeNull();
