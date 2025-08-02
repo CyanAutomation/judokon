@@ -46,6 +46,25 @@ test.describe("View Judoka screen", () => {
     await expect(flag).toHaveAttribute("alt", /(Portugal|USA|Japan) flag/i);
   });
 
+  test("portrait and landscape layouts", async ({ page }) => {
+    const section = page.locator(".card-section");
+    const controls = page.locator(".draw-controls");
+
+    // Portrait
+    await page.setViewportSize({ width: 600, height: 900 });
+    let flexDir = await section.evaluate((el) => getComputedStyle(el).flexDirection);
+    let marginTop = await controls.evaluate((el) => getComputedStyle(el).marginTop);
+    expect(flexDir).toBe("column");
+    expect(marginTop).toBe("24px");
+
+    // Landscape
+    await page.setViewportSize({ width: 900, height: 600 });
+    flexDir = await section.evaluate((el) => getComputedStyle(el).flexDirection);
+    marginTop = await controls.evaluate((el) => getComputedStyle(el).marginTop);
+    expect(flexDir).toBe("row");
+    expect(marginTop).toBe("0px");
+  });
+
   test("draw button uses design tokens", async ({ page }) => {
     const btn = page.getByTestId("draw-button");
     await btn.waitFor();

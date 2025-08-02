@@ -118,17 +118,6 @@
   height: 24px;
 }
 
-.card-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-bottom: calc(var(--footer-height) + env(safe-area-inset-bottom));
-}
-
-.card-section .draw-card-btn {
-  align-self: center;
-}
-
 .country-panel {
   position: fixed;
   top: var(--header-height);
