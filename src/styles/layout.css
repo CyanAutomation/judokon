@@ -238,17 +238,3 @@ body {
     grid-column: 1;
   }
 }
-
-/* Landscape layout for Random Judoka page */
-@media (orientation: landscape) and (min-width: 600px) {
-  .card-section {
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-start;
-    gap: var(--space-lg);
-  }
-
-  .card-section .draw-card-btn {
-    margin: var(--space-large) 0;
-  }
-}
