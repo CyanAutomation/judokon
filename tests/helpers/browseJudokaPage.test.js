@@ -134,4 +134,70 @@ describe("browseJudokaPage helpers", () => {
     expect(toggleCountryPanel).toHaveBeenCalledWith(toggleBtn, panel, false);
     expect(ariaLive.textContent).toBe("Showing 2 judoka for all countries");
   });
+
+  it("shows a spinner during load and removes it after rendering", async () => {
+    global.requestAnimationFrame = (cb) => cb();
+
+    const fetchResolvers = [];
+    const fetchJson = vi.fn(() => new Promise((resolve) => fetchResolvers.push(resolve)));
+
+    const buildCardCarousel = vi.fn(async () => {
+      const wrapper = document.createElement("div");
+      const ariaLive = document.createElement("div");
+      ariaLive.className = "carousel-aria-live";
+      const inner = document.createElement("div");
+      inner.className = "card-carousel";
+      wrapper.append(ariaLive, inner);
+      return wrapper;
+    });
+
+    const createLoadingSpinner = (wrapper) => {
+      const spinner = document.createElement("div");
+      spinner.className = "loading-spinner";
+      wrapper.appendChild(spinner);
+      return { spinner, timeoutId: 0 };
+    };
+
+    vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady: vi.fn() }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
+      buildCardCarousel,
+      addScrollMarkers: vi.fn(),
+      createLoadingSpinner
+    }));
+    vi.doMock("../../src/helpers/buttonEffects.js", () => ({ setupButtonEffects: vi.fn() }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips: vi.fn() }));
+    vi.doMock("../../src/helpers/countryPanel.js", () => ({
+      toggleCountryPanel: vi.fn(),
+      toggleCountryPanelMode: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/countrySlider.js", () => ({ createCountrySlider: vi.fn() }));
+
+    const { setupBrowseJudokaPage } = await import("../../src/helpers/browseJudokaPage.js");
+
+    const carousel = document.createElement("div");
+    carousel.id = "carousel-container";
+    const list = document.createElement("div");
+    list.id = "country-list";
+    const toggleBtn = document.createElement("button");
+    toggleBtn.id = "country-toggle";
+    const layoutBtn = document.createElement("button");
+    layoutBtn.id = "layout-toggle";
+    const panel = document.createElement("div");
+    panel.id = "country-panel";
+    const clear = document.createElement("button");
+    clear.id = "clear-filter";
+    document.body.append(carousel, list, toggleBtn, layoutBtn, panel, clear);
+
+    const pagePromise = setupBrowseJudokaPage();
+    await Promise.resolve();
+
+    expect(carousel.querySelector(".loading-spinner")).not.toBeNull();
+
+    fetchResolvers[0]([{ id: 1, country: "JP" }]);
+    fetchResolvers[1]([]);
+    await pagePromise;
+
+    expect(carousel.querySelector(".loading-spinner")).toBeNull();
+  });
 });

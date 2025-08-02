@@ -1,4 +1,4 @@
-import { buildCardCarousel, addScrollMarkers } from "./carouselBuilder.js";
+import { buildCardCarousel, addScrollMarkers, createLoadingSpinner } from "./carouselBuilder.js";
 import { createCountrySlider } from "./countrySlider.js";
 import { toggleCountryPanel, toggleCountryPanelMode } from "./countryPanel.js";
 import { fetchJson } from "./dataUtils.js";
@@ -110,8 +110,8 @@ export function setupCountryFilter(
  *
  * @pseudocode
  * 1. Grab DOM elements for the carousel and country filters.
- * 2. Load judoka and gokyo data from JSON files.
- * 3. Render the card carousel with the loaded data.
+ * 2. Show a loading spinner and load judoka and gokyo data from JSON files.
+ * 3. Render the card carousel and hide the spinner once complete.
  * 4. Attach event listeners for filtering and panel controls.
  * 5. Handle errors by showing a retry button when loading fails.
  */
@@ -147,17 +147,21 @@ export async function setupBrowseJudokaPage() {
    * Build and display the card carousel.
    *
    * @pseudocode
-   * 1. Clear the existing carousel container.
-   * 2. Use `buildCardCarousel` to create carousel markup.
+   * 1. Use `buildCardCarousel` to create carousel markup.
+   * 2. Remove the loading spinner and clear the existing container.
    * 3. Append the carousel to the container and add scroll markers.
    * 4. Apply button ripple effects.
    *
    * @param {Judoka[]} list - Judoka to display.
    * @returns {Promise<void>} Resolves when rendering completes.
    */
-  async function renderCarousel(list) {
-    carouselContainer.innerHTML = "";
+  async function renderCarousel(list, spinnerInfo) {
     const carousel = await buildCardCarousel(list, gokyoData);
+    if (spinnerInfo) {
+      clearTimeout(spinnerInfo.timeoutId);
+      spinnerInfo.spinner.remove();
+    }
+    carouselContainer.innerHTML = "";
     carouselContainer.appendChild(carousel);
 
     requestAnimationFrame(() => {
@@ -171,9 +175,10 @@ export async function setupBrowseJudokaPage() {
   }
 
   async function init() {
+    const spinnerInfo = createLoadingSpinner(carouselContainer);
     try {
       await loadData();
-      await renderCarousel(allJudoka);
+      await renderCarousel(allJudoka, spinnerInfo);
       if (allJudoka.length === 0) {
         const noResultsMessage = document.createElement("div");
         noResultsMessage.className = "no-results-message";
@@ -183,6 +188,8 @@ export async function setupBrowseJudokaPage() {
         carouselContainer.appendChild(noResultsMessage);
       }
     } catch (error) {
+      clearTimeout(spinnerInfo.timeoutId);
+      spinnerInfo.spinner.remove();
       console.error("Error building the carousel:", error);
       const errorMessage = document.createElement("div");
       errorMessage.className = "error-message";
