@@ -50,7 +50,7 @@ The round message, timer, and score now sit directly inside the page header rath
 - Action prompt appears during user input phases and disappears after interaction. <!-- Implemented: see showMessage and stat selection logic -->
 - **Stat selection timer (30s) is displayed during stat selection phase; if timer expires, a random stat is auto-selected. Timer pauses/resumes on tab inactivity.** <!-- Implemented: see startRound in battleEngine.js -->
 - Top bar content adapts responsively to different screen sizes and orientations. <!-- Partially implemented: stacking/truncation CSS present, but some edge cases pending -->
-- All messages meet minimum contrast ratio of **4.5:1** and are screen reader compatible. <!-- Contrast: mostly via CSS variables, but explicit checks not enforced; screen reader labels not yet implemented -->
+- All messages meet minimum contrast ratio of **4.5:1** and are screen reader compatible. Run `npm run check:contrast` to audit these colors. <!-- Contrast via CSS variables; screen reader labels not yet implemented -->
 - **All interactive elements meet minimum touch target size (≥44px) and support keyboard navigation.** <!-- Implemented: see CSS min-width/min-height and stat button logic -->
 
 ---
@@ -113,7 +113,7 @@ The round message, timer, and score now sit directly inside the page header rath
 
 - [ ] 4.0 Implement Accessibility Features
 
-  - [ ] 4.1 Ensure text contrast meets 4.5:1 ratio (CSS variables used, but not programmatically checked)
+  - [ ] 4.1 Ensure text contrast meets 4.5:1 ratio. Verify with `npm run check:contrast`.
   - [ ] 4.2 Add screen reader labels for dynamic messages (aria-live, etc. not yet implemented)
   - [x] 4.3 Ensure all interactive elements have minimum 44px touch targets (CSS min-width/min-height present)
   - [ ] 4.4 Ensure all interactive elements support keyboard navigation (stat buttons: basic support, but needs explicit review/test)
