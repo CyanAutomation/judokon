@@ -5,13 +5,14 @@
  * 1. Load persisted settings and fall back to the system motion preference.
  * 2. Preload judoka and gokyo data using `fetchJson`.
  * 3. Toggle the `.simulate-viewport` class based on the stored feature flag.
- * 4. Define `displayCard` that disables the Draw button, updates its text and `aria-busy` state while loading, calls
- *    `generateRandomCard` with the loaded data and the user's motion preference, then restores the button once the
- *    animation completes.
- * 5. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and Animation/Sound toggles.
- * 6. Attach event listeners to persist toggle changes, update motion classes, and handle accessibility.
- * 7. If data fails to load, disable the Draw button and show an error message or fallback card.
- * 8. Use `onDomReady` to execute setup when the DOM content is loaded.
+ * 4. Create a hidden slide-out history panel and a toggle button.
+ * 5. Define `displayCard` that disables the Draw button, updates its text and `aria-busy` state while loading, calls
+ *    `generateRandomCard` with the loaded data and the user's motion preference, updates the history list, then restores
+ *    the button once the animation completes.
+ * 6. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and Animation/Sound toggles.
+ * 7. Attach event listeners to persist toggle changes, update motion classes, and handle accessibility.
+ * 8. If data fails to load, disable the Draw button and show an error message or fallback card.
+ * 9. Use `onDomReady` to execute setup when the DOM content is loaded.
  *
  * @returns {Promise<void>} Resolves when the page is fully initialized.
  * @see design/productRequirementsDocuments/prdRandomJudoka.md
@@ -32,6 +33,7 @@ import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 
 const DRAW_ICON =
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m600-200-56-57 143-143H300q-75 0-127.5-52.5T120-580q0-75 52.5-127.5T300-760h20v80h-20q-42 0-71 29t-29 71q0 42 29 71t71 29h387L544-624l56-56 240 240-240 240Z"/></svg>';
+const HISTORY_LIMIT = 5;
 
 export async function setupRandomJudokaPage() {
   let settings;
@@ -55,6 +57,11 @@ export async function setupRandomJudokaPage() {
   let cachedJudokaData = null;
   let cachedGokyoData = null;
   let dataLoaded = false;
+  const history = [];
+  let historyList;
+  let historyPanel;
+  let toggleHistoryBtn;
+  let historyOpen = false;
 
   async function preloadData() {
     try {
@@ -84,6 +91,30 @@ export async function setupRandomJudokaPage() {
     errorEl.textContent = msg;
   }
 
+  function updateHistoryUI() {
+    if (!historyList) return;
+    historyList.innerHTML = "";
+    history.forEach((j) => {
+      const li = document.createElement("li");
+      li.textContent = `${j.firstname} ${j.surname}`;
+      historyList.appendChild(li);
+    });
+  }
+
+  function addToHistory(judoka) {
+    if (!judoka) return;
+    history.unshift(judoka);
+    if (history.length > HISTORY_LIMIT) history.pop();
+    updateHistoryUI();
+  }
+
+  function toggleHistory() {
+    historyOpen = !historyOpen;
+    historyPanel.style.transform = historyOpen ? "translateX(0)" : "translateX(100%)";
+    historyPanel.setAttribute("aria-hidden", String(!historyOpen));
+    toggleHistoryBtn.setAttribute("aria-expanded", String(historyOpen));
+  }
+
   async function displayCard() {
     if (!dataLoaded) {
       showError("Unable to load judoka data. Please try again later.");
@@ -110,7 +141,7 @@ export async function setupRandomJudokaPage() {
       cachedGokyoData,
       cardContainer,
       prefersReducedMotion,
-      undefined,
+      addToHistory,
       {
         enableInspector: settings.featureFlags.enableCardInspector.enabled
       }
@@ -133,8 +164,35 @@ export async function setupRandomJudokaPage() {
   }
 
   await preloadData();
-
   const cardSection = document.querySelector(".card-section");
+  toggleHistoryBtn = createButton("History", {
+    id: "toggle-history-btn",
+    type: "button"
+  });
+  toggleHistoryBtn.setAttribute("aria-controls", "history-panel");
+  toggleHistoryBtn.setAttribute("aria-expanded", "false");
+  cardSection.appendChild(toggleHistoryBtn);
+  toggleHistoryBtn.addEventListener("click", toggleHistory);
+
+  historyPanel = document.createElement("aside");
+  historyPanel.id = "history-panel";
+  historyPanel.style.position = "fixed";
+  historyPanel.style.top = "0";
+  historyPanel.style.right = "0";
+  historyPanel.style.height = "100%";
+  historyPanel.style.width = "260px";
+  historyPanel.style.background = "#fff";
+  historyPanel.style.boxShadow = "0 0 10px rgba(0,0,0,0.3)";
+  historyPanel.style.padding = "16px";
+  historyPanel.style.transform = "translateX(100%)";
+  historyPanel.style.transition = "transform 0.3s ease";
+  historyPanel.setAttribute("aria-hidden", "true");
+  const historyTitle = document.createElement("h2");
+  historyTitle.textContent = "History";
+  historyList = document.createElement("ul");
+  historyPanel.append(historyTitle, historyList);
+  document.body.appendChild(historyPanel);
+
   // Draw button: min 64px height, 300px width, pill shape, ARIA attributes
   const drawButton = createButton("Draw Card!", {
     id: "draw-card-btn",
