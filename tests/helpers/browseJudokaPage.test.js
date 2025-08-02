@@ -107,6 +107,9 @@ describe("browseJudokaPage helpers", () => {
     const panel = document.createElement("div");
     const toggleBtn = document.createElement("button");
     const carousel = document.createElement("div");
+    const ariaLive = document.createElement("div");
+    ariaLive.className = "carousel-aria-live";
+    carousel.appendChild(ariaLive);
     document.body.append(list, clear, panel, toggleBtn, carousel);
 
     const judoka = [
@@ -115,12 +118,13 @@ describe("browseJudokaPage helpers", () => {
     ];
     const render = vi.fn();
 
-    setupCountryFilter(list, clear, judoka, render, toggleBtn, panel, carousel);
+    setupCountryFilter(list, clear, judoka, render, toggleBtn, panel, carousel, ariaLive);
 
     jpBtn.click();
     await Promise.resolve();
     expect(jpBtn.classList.contains("selected")).toBe(true);
     expect(render).toHaveBeenLastCalledWith([{ id: 1, country: "JP" }]);
+    expect(ariaLive.textContent).toBe("Showing 1 judoka for JP");
 
     clear.click();
     await Promise.resolve();
@@ -128,5 +132,6 @@ describe("browseJudokaPage helpers", () => {
     expect(jpBtn.classList.contains("selected")).toBe(false);
     expect(render).toHaveBeenLastCalledWith(judoka);
     expect(toggleCountryPanel).toHaveBeenCalledWith(toggleBtn, panel, false);
+    expect(ariaLive.textContent).toBe("Showing 2 judoka for all countries");
   });
 });

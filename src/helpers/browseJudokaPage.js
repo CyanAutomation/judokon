@@ -62,12 +62,21 @@ export function setupCountryFilter(
   render,
   toggleButton,
   panel,
-  carouselEl
+  carouselEl,
+  ariaLiveEl
 ) {
+  let liveRegion = ariaLiveEl;
+
+  function updateLiveRegion(count, country) {
+    liveRegion = carouselEl.querySelector(".carousel-aria-live") || liveRegion;
+    liveRegion.textContent = `Showing ${count} judoka for ${country}`;
+  }
+
   clearButton.addEventListener("click", async () => {
     const buttons = listContainer.querySelectorAll("button.flag-button");
     buttons.forEach((b) => b.classList.remove("selected"));
     await render(judokaList);
+    updateLiveRegion(judokaList.length, "all countries");
     toggleCountryPanel(toggleButton, panel, false);
   });
 
@@ -79,6 +88,7 @@ export function setupCountryFilter(
     const filtered =
       selected === "all" ? judokaList : judokaList.filter((j) => j.country === selected);
     await render(filtered);
+    updateLiveRegion(filtered.length, selected === "all" ? "all countries" : selected);
     const existingMessage = carouselEl.querySelector(".no-results-message");
     if (existingMessage) {
       existingMessage.remove();
@@ -203,6 +213,7 @@ export async function setupBrowseJudokaPage() {
     const clearBtn = document.getElementById("clear-filter");
     setupCountryToggle(toggleBtn, countryPanel, countryListContainer);
     setupLayoutToggle(layoutToggle, countryPanel);
+    const ariaLive = carouselContainer.querySelector(".carousel-aria-live");
     setupCountryFilter(
       countryListContainer,
       clearBtn,
@@ -210,7 +221,8 @@ export async function setupBrowseJudokaPage() {
       renderCarousel,
       toggleBtn,
       countryPanel,
-      carouselContainer
+      carouselContainer,
+      ariaLive
     );
   }
 
