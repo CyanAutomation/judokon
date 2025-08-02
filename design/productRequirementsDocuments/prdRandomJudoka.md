@@ -28,12 +28,16 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - Give players quick inspiration for new team ideas (**random card ≤300 ms**)
 - Play sessions average 2 minutes shorter when pre-selecting cards; aim to close this gap
 - Reduce time-to-inspiration by 50% compared to manual team-building (reduce average team-building time from 30 seconds to ≤15 seconds)
-- Ensure each card draw completes in ≤300ms in 95% of cases
-- Achieve 95% error-free card draws across 1000 consecutive draws
-- ≥90% of random draws complete in ≤300ms on mid-tier devices
-- ≤1% fallback error rate over 1000 draws
-- Average time spent on Random Judoka screen ≥40% higher than average team-building time for players who only pre-select cards
-- ≥80% of players use the Draw button at least once per session in the first week post-launch
+
+---
+
+## User Stories
+
+- As a player who wants to try new team combinations, I want to draw a random judoka so that I can discover picks I might not have considered.
+- As a young player with limited patience, I want the random card to appear instantly so that I stay engaged and don’t get bored waiting.
+- As a parent or accessibility user, I want the card reveal to respect Reduced Motion settings so that animations do not cause discomfort.
+- As a player who likes sound effects, I want to enable or disable draw sounds so that I can control my experience.
+- As a player who sometimes loses internet or has device issues, I want to see a fallback card if something goes wrong so that the screen never feels broken.
 
 ---
 
