@@ -55,8 +55,8 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 ### Animations & Interactivity
 
 - Clicked key animates with highlight (fade-in + border pulse, 150ms)
-- Preview panel fades in (100ms delay) on selection
-- Search box debounced (300ms) to avoid lag during input
+- Preview panel fades in on selection
+- Search box debounced to avoid lag during input
 - **Sidebar supports full keyboard navigation (TAB, arrows, ENTER) for accessibility**
 - **Sidebar supports category highlighting/grouping by prefix (e.g., stat, ui, mode)**
 - **Visual indicators (icon/tooltip) for invalid, empty, or malformed entries**
@@ -159,7 +159,7 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 
   - [x] 3.1 Render raw tooltip text
   - [x] 3.2 Parse and render markdown-styled preview
-  - [x] 3.3 Animate panel on update (fade-in, 100ms)
+  - [x] 3.3 Animate panel on update (fade-in)
   - [ ] 3.4 Display visual indicators for blank/malformed tooltips (icon/tooltip)
   - [x] 3.5 Include copy-to-clipboard buttons for key and body
   - [ ] 3.6 Show warning for malformed markdown in preview
