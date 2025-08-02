@@ -87,6 +87,12 @@ scripts/generateEmbeddings.js`). This rebuilds `client_embeddings.json`, now
 pretty-printed for easier diffing, so agents search the latest content. Commit
 the regenerated JSON file along with your changes.
 
+The vector search page checks each embedding's `version` against the
+`CURRENT_EMBEDDING_VERSION` constant in `src/helpers/vectorSearch.js`.
+If a mismatch warning appears, bump the constant and rerun
+`npm run generate:embeddings` to refresh both
+`client_embeddings.json` and `client_embeddings.meta.json`.
+
 If the result would be larger than 6.8MB, the generator exits with
 `"Output exceeds 6.8MB"`. Increase the `CHUNK_SIZE` constant or omit large files to
 reduce the output size before running the script again.

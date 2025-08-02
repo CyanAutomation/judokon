@@ -51,7 +51,8 @@ describe("vector search page integration", () => {
     vi.doMock("../../src/helpers/vectorSearch.js", () => ({
       findMatches,
       fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue([{ tags: ["foo"] }])
+      loadEmbeddings: vi.fn().mockResolvedValue([{ tags: ["foo"], version: 1 }]),
+      CURRENT_EMBEDDING_VERSION: 1
     }));
 
     const { handleSearch, init, __setExtractor } = await import(
@@ -82,14 +83,18 @@ describe("vector search page integration", () => {
   });
 
   it("displays embedding count and tag options on init", async () => {
-    const embeddings = [{ tags: ["alpha"] }, { tags: ["beta"] }];
+    const embeddings = [
+      { tags: ["alpha"], version: 1 },
+      { tags: ["beta"], version: 1 }
+    ];
     vi.doMock("../../src/helpers/vectorSearch.js", () => ({
       findMatches: vi.fn(),
       fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue(embeddings)
+      loadEmbeddings: vi.fn().mockResolvedValue(embeddings),
+      CURRENT_EMBEDDING_VERSION: 1
     }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ count: 2 })
+      fetchJson: vi.fn().mockResolvedValue({ count: 2, version: 1 })
     }));
     vi.doMock("../../src/helpers/constants.js", () => ({
       DATA_DIR: "./"
@@ -121,10 +126,11 @@ describe("search result message styling", () => {
     vi.doMock("../../src/helpers/vectorSearch.js", () => ({
       findMatches,
       fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue([])
+      loadEmbeddings: vi.fn().mockResolvedValue([]),
+      CURRENT_EMBEDDING_VERSION: 1
     }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ count: 0 })
+      fetchJson: vi.fn().mockResolvedValue({ count: 0, version: 1 })
     }));
     vi.doMock("../../src/helpers/constants.js", () => ({
       DATA_DIR: "./"
@@ -161,16 +167,18 @@ describe("search result message styling", () => {
       score: 0.5,
       text: "test",
       source: "doc",
-      tags: []
+      tags: [],
+      version: 1
     };
     const findMatches = vi.fn().mockResolvedValue([match]);
     vi.doMock("../../src/helpers/vectorSearch.js", () => ({
       findMatches,
       fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue([match])
+      loadEmbeddings: vi.fn().mockResolvedValue([match]),
+      CURRENT_EMBEDDING_VERSION: 1
     }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ count: 1 })
+      fetchJson: vi.fn().mockResolvedValue({ count: 1, version: 1 })
     }));
     vi.doMock("../../src/helpers/constants.js", () => ({
       DATA_DIR: "./"
@@ -207,16 +215,18 @@ describe("search result message styling", () => {
       score: 0.8,
       text: "test",
       source: "doc",
-      tags: []
+      tags: [],
+      version: 1
     };
     const findMatches = vi.fn().mockResolvedValue([match]);
     vi.doMock("../../src/helpers/vectorSearch.js", () => ({
       findMatches,
       fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue([match])
+      loadEmbeddings: vi.fn().mockResolvedValue([match]),
+      CURRENT_EMBEDDING_VERSION: 1
     }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ count: 1 })
+      fetchJson: vi.fn().mockResolvedValue({ count: 1, version: 1 })
     }));
     vi.doMock("../../src/helpers/constants.js", () => ({
       DATA_DIR: "./"
@@ -268,16 +278,18 @@ describe("snippet highlighting", () => {
       text: "lorem ipsum dolor",
       score: 1,
       source: "doc",
-      tags: []
+      tags: [],
+      version: 1
     };
     const findMatches = vi.fn().mockResolvedValue([match]);
     vi.doMock("../../src/helpers/vectorSearch.js", () => ({
       findMatches,
       fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue([match])
+      loadEmbeddings: vi.fn().mockResolvedValue([match]),
+      CURRENT_EMBEDDING_VERSION: 1
     }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ count: 1 })
+      fetchJson: vi.fn().mockResolvedValue({ count: 1, version: 1 })
     }));
     vi.doMock("../../src/helpers/constants.js", () => ({
       DATA_DIR: "./"
@@ -314,7 +326,8 @@ describe("synonym expansion", () => {
     vi.doMock("../../src/helpers/vectorSearch.js", () => ({
       findMatches: vi.fn().mockResolvedValue([]),
       fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue([])
+      loadEmbeddings: vi.fn().mockResolvedValue([]),
+      CURRENT_EMBEDDING_VERSION: 1
     }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue(synonyms)
@@ -335,7 +348,8 @@ describe("synonym expansion", () => {
     vi.doMock("../../src/helpers/vectorSearch.js", () => ({
       findMatches,
       fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue([])
+      loadEmbeddings: vi.fn().mockResolvedValue([]),
+      CURRENT_EMBEDDING_VERSION: 1
     }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue(synonyms)

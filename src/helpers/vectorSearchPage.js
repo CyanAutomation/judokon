@@ -1,5 +1,10 @@
 import { onDomReady } from "./domReady.js";
-import { findMatches, fetchContextById, loadEmbeddings } from "./vectorSearch.js";
+import {
+  findMatches,
+  fetchContextById,
+  loadEmbeddings,
+  CURRENT_EMBEDDING_VERSION
+} from "./vectorSearch.js";
 import { markdownToHtml } from "./markdownToHtml.js";
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
@@ -280,11 +285,40 @@ export async function init() {
   spinner = document.getElementById("search-spinner");
   if (spinner) spinner.style.display = "none";
   const form = document.getElementById("vector-search-form");
+  const messageEl = document.getElementById("search-results-message");
 
   const [embeddings, meta] = await Promise.all([
     loadEmbeddings(),
     fetchJson(`${DATA_DIR}client_embeddings.meta.json`).catch(() => null)
   ]);
+
+  let versionMismatch = false;
+  if (Array.isArray(embeddings)) {
+    for (const entry of embeddings) {
+      if (entry.version !== CURRENT_EMBEDDING_VERSION) {
+        versionMismatch = true;
+        console.warn(
+          `Embedding ${entry.id ?? "(unknown id)"} has version ${entry.version}; expected ${CURRENT_EMBEDDING_VERSION}`
+        );
+      }
+    }
+  }
+  if (meta && meta.version !== CURRENT_EMBEDDING_VERSION) {
+    versionMismatch = true;
+    console.warn(
+      `Embedding metadata version ${meta.version} does not match ${CURRENT_EMBEDDING_VERSION}`
+    );
+  }
+  if (versionMismatch && messageEl) {
+    // Use a dedicated warning element to avoid overwriting other messages
+    let warningEl = messageEl.querySelector('.embedding-warning');
+    if (!warningEl) {
+      warningEl = document.createElement('div');
+      warningEl.className = 'embedding-warning';
+      messageEl.appendChild(warningEl);
+    }
+    warningEl.textContent = "⚠️ Embedding data is out of date. Run npm run generate:embeddings.";
+  }
 
   const tagSelect = document.getElementById("tag-filter");
   if (tagSelect && Array.isArray(embeddings)) {
