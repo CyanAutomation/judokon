@@ -35,13 +35,10 @@ npx prettier . --check       # verify formatting
 npx eslint .                 # lint the codebase
 npx vitest run                # run unit tests
 npx playwright test          # run Playwright UI tests
+npm run check:contrast       # Pa11y contrast audit (runs server automatically)
 ```
 
-**For UI-related changes** (styles, components, layouts), also run:
-
-```bash
-npm run check:contrast       # run Pa11y accessibility audit on http://localhost:5000 (start a dev server first)
-```
+The pre-commit hook runs linting, tests, and the contrast audit automatically.
 
 Common fixes:
 

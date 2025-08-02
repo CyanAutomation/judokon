@@ -27,7 +27,7 @@
   margin: 0;
   font-size: clamp(16px, 4vw, 24px);
   font-weight: bold;
-  color: var(--link-color);
+  color: var(--color-text);
 }
 
 .battle-header #score-display {
