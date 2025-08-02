@@ -52,7 +52,8 @@ test.describe("Settings page", () => {
 
     const tooltips = JSON.parse(fs.readFileSync("src/data/tooltips.json", "utf8"));
     const flagLabels = Object.keys(DEFAULT_SETTINGS.featureFlags)
-      .map((f) => tooltips.settings?.[f]?.label)
+      .filter((flag) => DEFAULT_SETTINGS.featureFlags[flag].enabled)
+      .map((flag) => tooltips.settings?.[flag]?.label)
       .filter(Boolean);
 
     const expectedLabels = [
@@ -65,6 +66,10 @@ test.describe("Settings page", () => {
       ...sortedNames,
       ...flagLabels
     ];
+
+    const tabStopCount =
+      expectedLabels.length +
+      (Object.keys(DEFAULT_SETTINGS.featureFlags).length - flagLabels.length);
 
     await expect(page.locator("#sound-toggle")).toHaveAttribute("aria-label", "Sound");
     await expect(page.locator("#motion-toggle")).toHaveAttribute("aria-label", "Motion Effects");
@@ -91,7 +96,7 @@ test.describe("Settings page", () => {
     await page.focus("#display-mode-light");
 
     const activeLabels = [];
-    for (let i = 0; i < expectedLabels.length; i++) {
+    for (let i = 0; i < tabStopCount; i++) {
       const label = await page.evaluate(() => {
         const el = document.activeElement;
         if (!el) return "";
