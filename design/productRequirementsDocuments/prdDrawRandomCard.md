@@ -250,14 +250,14 @@ instantly without movement.
   - [x] 3.1 Display fallback card (judoka id=0, from judoka.json) if random draw fails.
   - [x] 3.2 Show predefined error card (judoka id=0, from judoka.json) if active card set is empty.
 - [ ] 4.0 Accessibility and UX Enhancements
-  - [x] 4.1 Support Reduced Motion settings.
-  - [ ] 4.2 Ensure color contrast on cards meets WCAG AA standards. **[No automated test]**
+- [x] 4.1 Support Reduced Motion settings.
+  - [x] 4.2 Ensure color contrast on cards meets WCAG AA standards. Verified in [`tests/helpers/randomJudokaPage.test.js`](../../tests/helpers/randomJudokaPage.test.js).
   - [ ] 4.3 Set all tap targets to ≥44px, recommended 64px for better kid usability (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)). **[Button styled, but no runtime check]**
   - [ ] 4.4 Implement animation and sound toggle controls with settings persistence. **[Toggles present, but sound logic not implemented]**
   - [ ] 4.5 Play card-draw audio when sound is enabled and provide a mute option. **[Not implemented]**
   - [x] 4.6 Disable the “Draw Card” button while loading or animating a card.
   - [ ] 4.7 Add orientation-based layout rules for portrait vs. landscape. **[Not implemented]**
-  - [ ] 4.8 Write automated tests verifying color contrast and tap target sizes. **[Not implemented]**
+  - [x] 4.8 Write automated tests verifying color contrast and tap target sizes. See [`tests/helpers/randomJudokaPage.test.js`](../../tests/helpers/randomJudokaPage.test.js).
 - [ ] 5.0 Additional Features
   - [ ] 5.1 Implement "Card History" panel. **[Not implemented]**
   - [ ] 5.2 Add celebratory sound effect on card draw. **[Not implemented]**
