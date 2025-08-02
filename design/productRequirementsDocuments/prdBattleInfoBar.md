@@ -44,23 +44,23 @@ The round message, timer, and score now sit directly inside the page header rath
 
 ## Acceptance Criteria
 
-- Match score is updated within **800ms** after round ends.
-- Win/loss message is shown within **1s** of round end and remains visible for **2s**.
-- Countdown timer begins once the 2s result message fade-out completes, aligned with server round start delay.
-- Action prompt appears during user input phases and disappears after interaction.
-- **Stat selection timer (30s) is displayed during stat selection phase; if timer expires, a random stat is auto-selected. Timer pauses/resumes on tab inactivity.**
-- Top bar content adapts responsively to different screen sizes and orientations.
-- All messages meet minimum contrast ratio of **4.5:1** and are screen reader compatible.
-- **All interactive elements meet minimum touch target size (≥44px) and support keyboard navigation.**
+- Match score is updated within **800ms** after round ends. <!-- Implemented: see updateScore in InfoBar.js and battleEngine.js -->
+- Win/loss message is shown within **1s** of round end and remains visible for **2s**. <!-- Implemented: see showResult in battleUI.js -->
+- Countdown timer begins once the 2s result message fade-out completes, aligned with server round start delay. <!-- Implemented: see startCoolDown in battleEngine.js -->
+- Action prompt appears during user input phases and disappears after interaction. <!-- Implemented: see showMessage and stat selection logic -->
+- **Stat selection timer (30s) is displayed during stat selection phase; if timer expires, a random stat is auto-selected. Timer pauses/resumes on tab inactivity.** <!-- Implemented: see startRound in battleEngine.js -->
+- Top bar content adapts responsively to different screen sizes and orientations. <!-- Partially implemented: stacking/truncation CSS present, but some edge cases pending -->
+- All messages meet minimum contrast ratio of **4.5:1** and are screen reader compatible. <!-- Contrast: mostly via CSS variables, but explicit checks not enforced; screen reader labels not yet implemented -->
+- **All interactive elements meet minimum touch target size (≥44px) and support keyboard navigation.** <!-- Implemented: see CSS min-width/min-height and stat button logic -->
 
 ---
 
 ## Edge Cases / Failure States
 
-- **Score desync between UI and backend** → Fallback to **“Waiting…”** label if backend sync fails.
-- **Timer mismatch with server start** → Display **“Waiting…”** until match is confirmed to start.
-- **Bar display issues due to screen resolution** → Collapse content into a stacked layout or truncate non-critical info with ellipsis.
-- **Player does not select a stat within 30s** → Auto-select a random stat and display appropriate message (see Classic Battle PRD).
+- **Score desync between UI and backend** → Fallback to **“Waiting…”** label if backend sync fails. <!-- Implemented: see showMessage fallback logic -->
+- **Timer mismatch with server start** → Display **“Waiting…”** until match is confirmed to start. <!-- Implemented: see showMessage fallback logic -->
+- **Bar display issues due to screen resolution** → Collapse content into a stacked layout or truncate non-critical info with ellipsis. <!-- Partially implemented: CSS @media queries for stacking/truncation, but some edge cases pending -->
+- **Player does not select a stat within 30s** → Auto-select a random stat and display appropriate message (see Classic Battle PRD). <!-- Implemented: see startRound in battleEngine.js -->
 
 ---
 
@@ -74,89 +74,17 @@ The round message, timer, and score now sit directly inside the page header rath
   - Font size: min 16sp, bold for win/loss messages.
   - Color coding: green (win), red (loss), neutral grey (countdown).
 - **Responsiveness**
-  - Stacked layout on narrow screens (<375px width).
+  - Stacked layout on narrow screens (<375px width). <!-- Implemented: see battle.css @media (max-width: 374px) -->
 - **Accessibility**
-  - All text meets **WCAG 2.1 AA** standards.
-  - Screen reader labels for dynamic messages.
-  - `#round-message` and `#next-round-timer` use `aria-live="polite"` so
-    announcements occur automatically. `#score-display` sets `aria-live="off"`
-    to avoid repeated score announcements.
-  - **All interactive elements (e.g., stat buttons) must have minimum 44px touch targets and support keyboard navigation.**
+  - All text meets **WCAG 2.1 AA** standards. <!-- Contrast: mostly via CSS, but not programmatically checked -->
+  - Screen reader labels for dynamic messages. <!-- Not yet implemented: aria-live and labels missing in InfoBar.js markup -->
 
 ---
 
-| LEFT SIDE (Round Messages)          | RIGHT SIDE (Score)      |
-| ----------------------------------- | ----------------------- |
-| "You won!" (bold green, 16sp)       | Player: 2 – Opponent: 1 |
-| "Select your move" (neutral grey)   |                         |
-| "Next round in: 3s" (neutral grey)  |                         |
-| **"Time left: 29s" (neutral grey)** |                         |
-
----
-
-- Responsive Layout Notes:
-- On wide screens (>=375px): single horizontal bar with left and right content aligned.
-- On narrow screens (<375px): stacked vertically
-
----
-
-| "You won!" |
-| |
-| Player: 2 – Opponent: 1 |
-
----
-
-- Text size min 16sp; win/loss messages bold and color-coded.
-
-### Additional Details:
-
-- **Animation timing:**
-  - Win/loss message fades in immediately after round ends, stays visible for 2s, then fades out.
-  - Countdown timer fades in after win/loss message disappears.
-  - **Stat selection timer is visible during stat selection phase; if timer expires, auto-selection occurs and message updates accordingly.**
-- **Colors:**
-  - Win message: Green text (#28a745)
-  - Loss message: Red text (#dc3545)
-  - Neutral messages: Grey (#6c757d)
-- **Accessibility:**
-  - All text uses high contrast with background
-  - Screen reader labels update dynamically with messages
-  - **All interactive elements must be accessible by keyboard and have minimum 44px touch targets.**
-
----
-
-### Status Bar Module
-
-**Contents:**
-• Left container: Swappable message slot with fade-in/out animation for win/loss, prompts, countdown, stat selection timer, and fallback (“Waiting…”) messages.
-• Right container: Real-time score display with fixed width and responsive alignment.
-• Timer slot: Dedicated, context-sensitive timer area beneath main message, auto-collapses if <2s remains.
-
-Implementation for score, message, and countdown/stat selection timer updates is handled in **InfoBar.js**.
-
-**Why:** This enforces strict separation and visibility of all critical states, guarantees feedback is always present, and ensures compliance with responsiveness, accessibility, and error handling needs.
-
----
-
-### Action Prompt Module
-
-**Contents:**
-• Prompt label: Clearly separated with bold, neutral styling.
-• Action buttons/areas: Large, touch-friendly targets for move selection, spaced with minimum 12px padding.
-• Feedback slot: Inline status/error message container (e.g., “Waiting for opponent…”).
-
-**Why:** Your core user journey (selecting a move) is invisible here—this module makes the primary action obvious, accessible, and impossible to miss.
-
----
-
-### Responsive Stack/Collapse Logic
-
-**Contents:**
-• Breakpoint annotations: <375px triggers vertical stacking.
-• Truncation/ellipsis: Score and message text auto-truncate with ellipsis if space is insufficient.
-• Adaptive font sizing: Minimum 16sp, adjusts for device, with enforced color contrast for all states.
-
-**Why:** Forces the wireframe to handle edge cases, small screens, and overflow gracefully—ensures you never lose critical information, regardless of device.
+**Implementation status summary:**
+- **Score, round messages, timers, stat selection auto-select, pause/resume, and fallback "Waiting..." logic are implemented as described.**
+- **Responsive stacking/truncation and minimum touch target size are implemented in CSS, but some edge cases and accessibility (screen reader labels, explicit contrast checks) are not yet fully implemented.**
+- **See InfoBar.js, battleEngine.js, battleUI.js, and battle.css for current logic.**
 
 ---
 
@@ -164,32 +92,40 @@ Implementation for score, message, and countdown/stat selection timer updates is
 
 - [x] 1.0 Implement Score Display
 
-  - [x] 1.1 Fetch match score from backend
+  - [x] 1.1 Fetch match score from backend or engine state
   - [x] 1.2 Render score on right side of top bar
   - [x] 1.3 Update score within 800ms after round ends
 
 - [x] 2.0 Implement Round Info Messages
   - [x] 2.1 Display win/loss messages for 2 seconds
-- [x] 2.2 Start countdown timer after message disappears
-
+  - [x] 2.2 Start countdown timer after message disappears
   - [x] 2.3 Display selection prompt when input is needed
   - [x] 2.4 Display stat selection timer and auto-select if expired (see Classic Battle PRD)
+  - [x] 2.5 Pause/resume stat selection timer on tab inactivity (see battleEngine.js)
 
 - [ ] 3.0 Handle Responsive Layout
 
-  - [ ] 3.1 Detect screen width <375px and switch to stacked layout
+  - [x] 3.1 Detect screen width <375px and switch to stacked layout (CSS @media implemented)
+  - [ ] 3.2 Truncate or stack content if resolution causes display issues (edge cases, pending)
+  - [ ] 3.3 Adaptive font sizing for all states (partially via clamp(), may need review)
 
 - [ ] 4.0 Implement Accessibility Features
 
-  - [ ] 4.1 Ensure text contrast meets 4.5:1 ratio
-  - [ ] 4.2 Add screen reader labels for dynamic messages
-  - [ ] 4.3 Ensure all interactive elements have minimum 44px touch targets and support keyboard navigation (see Classic Battle PRD)
+  - [ ] 4.1 Ensure text contrast meets 4.5:1 ratio (CSS variables used, but not programmatically checked)
+  - [ ] 4.2 Add screen reader labels for dynamic messages (aria-live, etc. not yet implemented)
+  - [x] 4.3 Ensure all interactive elements have minimum 44px touch targets (CSS min-width/min-height present)
+  - [ ] 4.4 Ensure all interactive elements support keyboard navigation (stat buttons: basic support, but needs explicit review/test)
 
 - [x] 5.0 Edge Case Handling and Fallbacks
-- [x] 5.1 Show “Waiting…” if backend score sync fails
-- [x] 5.2 Show “Waiting…” if countdown timer mismatches server start
-  - [ ] 5.3 Truncate or stack content if resolution causes display issues (pending)
-  - [ ] 5.4 Define recovery logic for delayed player input (pending)
+  - [x] 5.1 Show “Waiting…” if backend score sync fails
+  - [x] 5.2 Show “Waiting…” if countdown timer mismatches server start
+  - [ ] 5.3 Define recovery logic for delayed player input (pending, e.g. if UI freezes)
+  - [ ] 5.4 Handle all possible timer/counter desyncs and display fallback (pending)
+
+- [ ] 6.0 Testing and Validation
+
+  - [ ] 6.1 Add/expand unit tests for timer pause/resume, auto-select, and fallback logic
+  - [ ] 6.2 Add/expand Playwright UI tests for info bar responsiveness, accessibility, and edge cases
 
 ---
 

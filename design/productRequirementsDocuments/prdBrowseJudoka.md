@@ -209,7 +209,7 @@ Search will be included in a future update to keep the initial scope focused.
   - [x] 1.3 Invoke `buildCardCarousel` with loaded data.
 - [x] 2.0 Responsive Layout and Accessibility
   - [x] 2.1 Design card layouts for mobile (1-2 cards) and desktop (3-5 cards)
-  - [ ] 2.2 Ensure touch targets ≥44px and WCAG 4.5:1 contrast compliance (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness))
+  - [x] 2.2 Ensure touch targets ≥44px and WCAG 4.5:1 contrast compliance (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness))
   - [x] 2.3 Add card enlargement on hover and keyboard focus highlighting
 - [x] 3.0 Error Handling and Edge Case Management
   - [x] 3.1 Display “No cards available” if list empty
@@ -222,9 +222,18 @@ Search will be included in a future update to keep the initial scope focused.
 - [ ] 5.0 Interaction Enhancements
   - [ ] 5.1 Add ripple or scaling animation on tap/click
   - [x] 5.2 Implement page markers showing "current page of total" with active highlight and aria-live updates
-- [ ] 6.0 Keyboard and Accessibility Support
+- [x] 6.0 Keyboard and Accessibility Support
   - [x] 6.1 Enable arrow key navigation left/right through cards
   - [x] 6.2 Manage focus state and ensure visible outlines
+- [ ] 7.0 Accessibility Announcements
+  - [ ] 7.1 Announce filter changes and carousel updates via `aria-live` for screen readers (beyond just error/empty states)
+- [ ] 8.0 UI/UX Enhancements
+  - [ ] 8.1 Add header with "Browse Judoka" title and close/back button (currently only logo/home link is present)
+  - [ ] 8.2 Add loading spinner or progress indicator while fetching data
+- [ ] 9.0 Country Picker
+  - [ ] 9.1 Ensure country flags are displayed alphabetically and only for countries present in `judoka.json`
+  - [ ] 9.2 Ensure flag assets have alt-text and aria-labels for accessibility
+  - [ ] 9.3 Display fallback flag icon if a flag asset fails to load
 
 ---
 
