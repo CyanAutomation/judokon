@@ -170,3 +170,20 @@ Players and developers currently lack a simple, in-game method to see which Judo
 - [x] **6.1** Validate sorting logic using test data
 - [ ] **6.3** Test responsive behavior on various screen sizes
 - [ ] **6.4** Confirm consistent UI integration with game header/footer
+
+---
+
+## Implementation Status
+
+### Completed
+
+- Data loading, sorting, and 20-entry limit implemented in `changeLogPage.js`.
+- Portraits use placeholder fallback and include alt text for accessibility.
+- Page is linked from the Settings menu and retains global header and footer.
+- Unit and Playwright tests cover sorting logic, portrait fallback, and basic rendering.
+
+### Pending
+
+- Responsive two-column layout for narrow screens has not been built.
+- Loading spinner shows immediately; add delay logic or update requirement.
+- QA: verify responsive behavior (Task **6.3**) and confirm header/footer integration across routes (Task **6.4**).
