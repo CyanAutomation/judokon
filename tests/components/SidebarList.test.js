@@ -23,4 +23,23 @@ describe("createSidebarList", () => {
     select(0);
     expect(items[0].classList.contains("selected")).toBe(true);
   });
+
+  it("handles arrow key navigation and focus", () => {
+    const { element } = createSidebarList(["A", "B", "C"]);
+    document.body.appendChild(element);
+    const items = element.querySelectorAll("li");
+
+    items[0].focus();
+    items[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    expect(items[0].classList.contains("selected")).toBe(true);
+    expect(document.activeElement).toBe(items[0]);
+
+    items[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    expect(items[1].classList.contains("selected")).toBe(true);
+    expect(document.activeElement).toBe(items[1]);
+
+    items[1].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }));
+    expect(items[0].classList.contains("selected")).toBe(true);
+    expect(document.activeElement).toBe(items[0]);
+  });
 });
