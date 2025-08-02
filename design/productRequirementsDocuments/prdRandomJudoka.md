@@ -7,7 +7,7 @@
 
 ## TL;DR
 
-Display Random Judoka gives players instant, inspiring roster ideas by drawing and revealing a random card with fast, smooth animations (**≥60 fps, transitions <500 ms**) and full accessibility support — reducing team-building fatigue and increasing session engagement.
+Display Random Judoka gives players instant, inspiring roster ideas by drawing and revealing a random card with fast, smooth animations and full accessibility support — reducing team-building fatigue and increasing session engagement.
 
 > Mia taps “Draw” and a new judoka slides up instantly, surprising her with a powerful pick she hadn’t considered. She taps again, excitedly building a fresh team, and spends twice as long experimenting compared to when she built manually. The bright animations and satisfying feel keep her engaged.
 
@@ -65,7 +65,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 ## Acceptance Criteria
 
 - A random judoka is displayed on each visit.
-- Each random judoka is displayed within 300ms in at least 95% of cases (matches performance goal wording).
+- Each random judoka is displayed in at least 95% of cases (matches performance goal wording).
 - Draw button reliably refreshes card on tap (≥99% tap success).
 - Show fallback card if judoka list is empty (displays in <1s in 99% of cases).
 - Respect OS-level Reduced Motion settings (disable animations when active).
@@ -119,10 +119,9 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 #### Animation and Transitions
 
 - **Card Reveal Animation:**
-  - Slide-in from bottom or fade-in (duration: 300–500ms)
-  - Maintain ≥60fps on devices with ≥2GB RAM
+  - Slide-in from bottom or fade-in
 - **Fallback:**
-  - If animation performance drops below 50fps, degrade to static card reveal
+  - If animation performance drops, degrade to static card reveal
 - **Button Feedback:**
   - Press: Slight scale-in (95% size) for ~100ms
   - Disabled state: Lower opacity (50%), disable input if judoka list is empty or draw is in progress

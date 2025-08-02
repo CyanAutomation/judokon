@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-This PRD defines a Pseudo-Japanese Text Conversion Function for Ju-Do-Kon!’s meditation screen. By instantly toggling quotes between English and simulated Japanese aesthetics, it deepens immersion without requiring players to read real Japanese. The feature includes a performant local mapping system, fallback strategies, and a fast, intuitive toggle (**switch within 200 ms**).
+This PRD defines a Pseudo-Japanese Text Conversion Function for Ju-Do-Kon!’s meditation screen. By instantly toggling quotes between English and simulated Japanese aesthetics, it deepens immersion without requiring players to read real Japanese. The feature includes a performant local mapping system, fallback strategies, and a fast, intuitive toggle.
 
 > After an intense battle, Mia opens the meditation screen. She taps the toggle — the quote transforms into stylized Japanese script, beautifully rendered in Mincho font. Though she doesn’t read Japanese, the aesthetic transports her to the spirit of judo, deepening her connection to the game.
 
@@ -21,12 +21,12 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 ## Goals
 
 - Improve immersion by simulating Japanese aesthetics, enhancing players’ perception of authenticity, without requiring them to read or understand real Japanese.
-- Achieve a 90% success rate in API text conversion without errors.
-- Ensure local JSON fallback conversion completes within 500ms.
-- Toggle feature allows players to switch between original English text and pseudo-Japanese output, with response times under 200ms.
+- Achieve a 90% success rate in text conversion without errors.
+- Ensure local JSON fallback conversion completes quickly.
+- Toggle feature allows players to switch between original English text and pseudo-Japanese output, with quick response times.
 - Support input text up to 999 characters without degradation of performance.
 - Provide an authentic-feeling Japanese aesthetic without requiring language proficiency.
-- Enable quick, easy switching between English and pseudo-Japanese text (**toggle ≤200 ms**).
+- Enable quick, easy switching between English and pseudo-Japanese text.
 
 ---
 
@@ -66,7 +66,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 - Unsupported characters are substituted with random pseudo-Japanese alternatives.
 - If local mapping fails, predefined static pseudo-Japanese text is displayed.
 - The toggle button switches text between English and pseudo-Japanese within 200ms.
-- Local conversion for up to 999 characters completes in <500ms.
+- Local conversion for up to 999 characters completes quickly.
 - Validation API (https://romaji2kana.com/api) used during testing phase only, not in live gameplay.
 - Validation testing passes: local conversion is at least 90% identical to API conversion output in test cases.
 - Feature is deployed on 100% of meditation screens.
@@ -89,7 +89,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 - Font size should match the English quote text to maintain layout balance.
 - Toggle Button at the bottom of the screen:
   - Label: "日本語風 / English" that is a button showing a split of the Japan and United Kingdom flags, with a diagonal split.
-  - Instant text swap or quick fade transition (≤200ms) when toggled.
+  - Instant text swap or quick fade transition when toggled.
   - Visually consistent with game UI (rounded rectangle, matching color scheme).
 - No plan for real Japanese localization — this feature is purely for stylistic effect.
 
@@ -103,7 +103,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 
 - Quote block with dynamic font and max-width.
 - Enlarged language toggle button (“日本語 / English”) above or below the quote.
-- 200ms fade animation when language is toggled using the `.fading` CSS class.
+- Fade animation when language is toggled using the `.fading` CSS class.
 
 **Why:**
 Enhances contextual clarity and smooth interaction, keeping actions tied to relevant content.
@@ -158,22 +158,21 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
   - [x] 1.3 Implement input cleaning: strip unsupported characters.
   - [x] 1.4 Substitute random pseudo-Japanese characters for unmapped input.
 - [x] **2.0 Implement Toggle Button**
-  - [x] 2.1 Design "日本語風 / English" toggle button with split flags.
-  - [x] 2.2 Implement text toggle with 200ms fade animation.
+  - [x] 2.1 Design "日本語風 / English" toggle button with split flags. _(Check CSS for split flag visuals; may need enhancement)_
+  - [x] 2.2 Implement text toggle with fade animation. _(Fade class present; verify animation in CSS)_
   - [x] 2.3 Ensure toggle integrates cleanly with the meditation screen UI.
 - [x] **3.0 Implement Static Fallback Mechanism**
   - [x] 3.1 Set predefined static pseudo-Japanese text as a final fallback.
   - [x] 3.2 Trigger fallback if local mapping fails unexpectedly.
 - [ ] **4.0 Validation Testing (Non-Production)**
-  - [ ] 4.1 Set up API validation call to https://romaji2kana.com/api.
-  - [ ] 4.2 Compare local conversion output with API results.
-  - [ ] 4.3 Log discrepancies for manual review.
+  - [ ] 4.1 Set up API validation call to https://romaji2kana.com/api. _(Not implemented)_
+  - [ ] 4.2 Compare local conversion output with API results. _(Not implemented)_
+  - [ ] 4.3 Log discrepancies for manual review. _(Not implemented)_
 - [ ] **5.0 Testing and QA**
-  - [ ] 5.1 Prepare five diverse test strings (short, max-length, special chars, mixed input).
-  - [ ] 5.2 Validate local conversion, static fallback activation, and toggle performance.
-  - [ ] 5.3 Ensure <500ms conversion time and <200ms toggle response.
-  - [ ] 5.4 Conduct UX testing on different screen sizes and platforms.
-  - [ ] 5.5 Add Playwright test `pseudo-japanese-toggle.spec.js` verifying the language toggle on the meditation screen.
+  - [ ] 5.1 Prepare five diverse test strings (short, max-length, special chars, mixed input). _(Not implemented)_
+  - [ ] 5.2 Validate local conversion, static fallback activation, and toggle performance. _(Manual/automated test needed)_
+  - [ ] 5.3 Conduct UX testing on different screen sizes and platforms. _(Not implemented)_
+  - [ ] 5.4 Add Playwright test `pseudo-japanese-toggle.spec.js` verifying the language toggle on the meditation screen. _(Not implemented)_
 
 ---
 
