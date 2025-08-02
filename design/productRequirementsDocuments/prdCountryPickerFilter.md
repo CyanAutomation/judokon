@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-This PRD defines a Country Flag Picker Filter for Ju-Do-Kon! that lets players filter Judoka cards by country using an intuitive, accessible flag selector. The goal is to improve user engagement by enabling fast, pride-driven exploration of favorite countries’ athletes (**panel open ≤1 s**), with a performant, responsive, and accessible UI. The picker integrates directly with the Browse Judoka screen and card carousel, supporting both mouse/touch and keyboard navigation.
+This PRD defines a Country Flag Picker Filter for Ju-Do-Kon! that lets players filter Judoka cards by country using an intuitive, accessible flag selector. The goal is to improve user engagement by enabling fast, pride-driven exploration of favorite countries’ athletes, with a performant, responsive, and accessible UI. The picker integrates directly with the Browse Judoka screen and card carousel, supporting both mouse/touch and keyboard navigation.
 
 > Jamal logs into Ju-Do-Kon! after seeing a clip of his country’s top Judoka. He taps the country picker, slides open the panel, and spots his flag among dozens. One tap later, the screen fills with fierce fighters from his homeland. He feels proud — and motivated to start collecting more.
 
@@ -22,7 +22,7 @@ This issue is timely as our player base is expanding internationally, and region
 
 ## Goals
 
-- **Performance Goal**: Enable country filtering in under 1 second for 90% of sessions.
+- **Performance Goal**: Enable country filtering happens quickly for 90% of sessions.
 - **Reliability Goal**: Achieve zero crashes related to the country selector over 100 sessions.
 - **Coverage Goal**: Ensure >90% of available countries are selectable via the flag interface.
 - **UX Goal**: Achieve a >95% success rate where users select the intended country without mis-taps.
@@ -112,10 +112,10 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 ### Performance
 
-- The filtering operation completes within 1 second.
-- The selector appears in under 1 second when toggled open.
+- The filtering operation completes quickly.
+- The selector appears quickly when toggled open.
 - The country selector must:
-  - Support at least 100 countries without exceeding 200ms additional load time.
+  - Support at least 100 countries without exceeding additional load time.
 
 ### Accessibility
 
@@ -185,7 +185,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
   - Selector should respond well to different screen sizes (responsive design).
   - The panel must appear below the persistent top bar so the first row of countries is fully visible.
 - Animation Considerations:
-  - Slide-in animation duration: 300ms and respects the user's `prefers-reduced-motion` setting.
+  - Slide-in animation respects the user's `prefers-reduced-motion` setting.
   - Flag grid fade-in duration uses `var(--transition-fast)`.
 - Keyboard navigation:
   - Tab/Shift+Tab to move between flags and clear filter icon.
@@ -223,9 +223,9 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
   - [x] 2.5 Integrate country filter with card carousel update.
 - [ ] 3.0 Optimize Performance
   - [ ] 3.1 Implement virtual scrolling or paging for >50 countries.
-  - [ ] 3.2 Ensure the filtering action completes within 1 second for 90% of sessions.
-  - [ ] 3.3 Ensure the country selector appears within 1 second when toggled.
-  - [ ] 3.4 Implement progressive flag loading for slow networks.
+  - [ ] 3.2 Ensure the filtering action completes quickly for 90% of sessions.
+  - [ ] 3.3 Ensure the country selector appears quickly when toggled.
+  - [ ] 3.4 Implement progressive flag loading for slower devices.
 - [ ] 4.0 Handle Edge Cases
   - [x] 4.1 Display a fallback icon if a flag asset fails to load.
   - [ ] 4.2 Implement progressive flag loading on slow networks.
