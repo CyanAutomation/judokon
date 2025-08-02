@@ -73,6 +73,24 @@ describe("vectorSearch", () => {
     expect(res).toEqual([]);
   });
 
+  it("skips entries with invalid embeddings", async () => {
+    const malformed = [
+      { id: "a", text: "A", embedding: [1, 0], source: "doc1" },
+      { id: "bad1", text: "X", embedding: [1], source: "doc3" },
+      { id: "bad2", text: "Y", embedding: ["no"], source: "doc4" },
+      { id: "bad3", text: "Z", source: "doc5" },
+      { id: "b", text: "B", embedding: [0, 1], source: "doc2" }
+    ];
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => malformed });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.resetModules();
+    const { findMatches } = await import("../../src/helpers/vectorSearch.js");
+    const res = await findMatches([1, 0], 5);
+    expect(res.map((r) => r.id)).toEqual(["a", "b"]);
+    expect(warn).toHaveBeenCalledTimes(3);
+    warn.mockRestore();
+  });
+
   it("returns null when embeddings fail to load", async () => {
     global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
     vi.resetModules();

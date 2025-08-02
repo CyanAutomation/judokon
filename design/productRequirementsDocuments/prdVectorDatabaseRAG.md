@@ -89,7 +89,7 @@ than an entire file.
 - Agents can request adjacent chunks or the full document by passing the result `id` to `fetchContextById`
 - Search function accepts optional tag filters so agents can restrict matches to specific categories
 - Vector search UI displays how many embeddings are loaded using the meta file
-- The system handles malformed or missing embeddings gracefully (e.g. logs a warning or returns empty result)
+- Malformed or missing embeddings are ignored during search and a warning is logged for each skipped record
 - The `client_embeddings.json` file stays under the 6.8MB threshold to ensure quick page load and GitHub Pages compatibility
 - Match text longer than 200 characters is truncated in the UI with a "Show more" toggle to reveal the full snippet (**Note:** Truncation logic and button are present in CSS and JS, but UI toggle implementation may need review for full compliance.)
 
