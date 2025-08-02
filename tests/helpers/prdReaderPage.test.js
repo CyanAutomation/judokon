@@ -3,8 +3,8 @@ import { describe, it, expect } from "vitest";
 describe("prdReaderPage", () => {
   it("navigates documents with wrap-around", async () => {
     const docs = {
-      "file1.md": "# First doc",
-      "file2.md": "# Second doc"
+      "b.md": "# Second doc",
+      "a.md": "# First doc"
     };
     const parser = (md) => `<h1>${md}</h1>`;
 
@@ -49,8 +49,8 @@ describe("prdReaderPage", () => {
 
   it("selects documents via sidebar", async () => {
     const docs = {
-      "doc1.md": "# One",
-      "doc2.md": "# Two"
+      "docB.md": "# Two",
+      "docA.md": "# One"
     };
     const parser = (md) => `<h1>${md}</h1>`;
 
@@ -85,8 +85,8 @@ describe("prdReaderPage", () => {
 
   it("updates #prd-content when a list item is clicked", async () => {
     const docs = {
-      "alpha.md": "# Alpha",
-      "beta.md": "# Beta"
+      "beta.md": "# Beta",
+      "alpha.md": "# Alpha"
     };
     const parser = (md) => `<h1>${md}</h1>`;
 

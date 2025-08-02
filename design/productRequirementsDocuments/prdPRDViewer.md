@@ -18,7 +18,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 ## Goals
 
-- Enable in-browser reading of all PRDs in the `design/productRequirementsDocuments` directory. **(Implemented: Loads a fixed list of PRDs, not a dynamic directory scan)**
+- Enable in-browser reading of all PRDs in the `design/productRequirementsDocuments` directory. **(Implemented)**
 - Support intuitive navigation (buttons, keyboard, swipe) between documents. **(Implemented: Keyboard and swipe; navigation buttons not present in UI)**
 - Render markdown PRDs as readable, styled HTML with tables, code blocks, and headings. **(Implemented)**
 - Ensure accessibility and responsive design for all users. **(Partially implemented: ARIA roles and responsive CSS present; full accessibility testing not yet done)**
@@ -37,7 +37,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 ## Defined Player Actions and Game Flow
 
 - The player opens the PRD Viewer from the JU-DO-KON! main menu.
-- The viewer loads all markdown files from the `design/productRequirementsDocuments` directory. **(Implemented: Loads a static list of files)**
+- The viewer loads all markdown files from the `design/productRequirementsDocuments` directory. **(Implemented)**
 - The player views the first PRD rendered as styled HTML.
 - The player navigates between PRDs by:
   - Selecting a document from the sidebar list,
@@ -55,7 +55,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 | Priority | Feature                    | Description                                                          | Status      |
 | -------- | -------------------------- | -------------------------------------------------------------------- | ----------- |
-| P1       | Markdown PRD Loading       | Load all markdown files from the PRD directory and display them.     | Static list |
+| P1       | Markdown PRD Loading       | Load all markdown files from the PRD directory and display them.     | Implemented |
 | P1       | Markdown-to-HTML Rendering | Convert markdown to styled HTML with accurate formatting.            | Implemented |
 | P1       | Keyboard Navigation        | Allow navigation via arrow keys with focus management.               | Implemented |
 | P1       | Touch/Swipe Navigation     | Support swipe gestures with gesture threshold to avoid misfires.     | Implemented |
@@ -68,7 +68,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 ## Acceptance Criteria
 
-- Given the PRD Viewer is opened, when loading the markdown files in `design/productRequirementsDocuments/`, then all files are loaded and displayed in sequence. **(Implemented with static file list)**
+- Given the PRD Viewer is opened, when loading the markdown files in `design/productRequirementsDocuments/`, then all files are loaded and displayed in sequence. **(Implemented)**
 - Given a markdown file is rendered, then headings, tables, lists, and code blocks appear styled as readable HTML. **(Implemented)**
 - Given the player presses the right or left arrow keys, then navigation moves accordingly between PRDs. **(Implemented)**
 - Given the player selects a document from the sidebar list, then that PRD is displayed in the viewer. **(Implemented)**
@@ -105,7 +105,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 ## Dependencies and Open Questions
 
 - Depends on the `markdownToHtml` helper for markdown parsing (uses the `marked` library).
-- Requires an up-to-date file list from the `design/productRequirementsDocuments` directory. **(Currently hardcoded)**
+- Requires an up-to-date file list from the `design/productRequirementsDocuments` directory.
 - **Open:** Should the viewer support deep-linking to specific PRDs via URL hash or query parameters? This affects navigation and state restoration.
 
 ---
@@ -127,7 +127,6 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 **Note:**
 
-- The PRD Viewer currently uses a static list of markdown files. Dynamic directory scanning is not implemented.
 - There are no navigation buttons in the UI; navigation is via sidebar, keyboard, or swipe.
 - Warning badges for malformed markdown and loading spinners are not implemented.
 - Accessibility is partially implemented; further testing and improvements may be needed.
@@ -138,7 +137,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 - [x] 1.0 Set Up Markdown File Loader
 
-  - [x] 1.1 Create function to scan `design/productRequirementsDocuments` directory **(Implemented as static list)**
+  - [x] 1.1 Create function to scan `design/productRequirementsDocuments` directory
   - [x] 1.2 Load markdown content of each file asynchronously
   - [x] 1.3 Implement error handling and fallback display for file load failures
 

@@ -25,31 +25,9 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
 
   const FILES = docsMap
     ? Object.keys(docsMap)
-    : [
-        "prdBattleInfoBar.md",
-        "prdBrowseJudoka.md",
-        "prdCardCarousel.md",
-        "prdCardCodeGeneration.md",
-        "prdClassicBattle.md",
-        "prdCountryPickerFilter.md",
-        "prdDrawRandomCard.md",
-        "prdGameModes.md",
-        "prdHomePageNavigation.md",
-        "prdJudokaCard.md",
-        "prdMeditationScreen.md",
-        "prdNavigationBar.md",
-        "prdNavigationMap.md",
-        "prdPseudoJapanese.md",
-        "prdRandomJudoka.md",
-        "prdSettingsMenu.md",
-        "prdTeamBattleFemale.md",
-        "prdTeamBattleMale.md",
-        "prdTeamBattleMixed.md",
-        "prdTeamBattleRules.md",
-        "prdTeamBattleSelection.md",
-        "prdUpdateJudoka.md",
-        "prdChangeLog.md"
-      ];
+    : Object.keys(import.meta.glob("../../design/productRequirementsDocuments/*.md")).map((p) =>
+        p.split("/").pop()
+      );
 
   FILES.sort((a, b) => a.localeCompare(b));
 
