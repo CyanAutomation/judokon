@@ -205,32 +205,37 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 ## Tasks
 
-- [ ] 1.0 Implement Country Flag Picker UI
+- [x] 1.0 Implement Country Flag Picker UI
   - [x] 1.1 Create hidden, slide-in panel (default), and full-screen grid layouts.
   - [x] 1.2 Load country flags with alt-text and labels, and ensure `aria-label` for each flag button.
   - [x] 1.3 Ensure responsive design for different screen sizes (mobile, tablet, desktop).
   - [x] 1.4 Implement selected flag highlighting (e.g., border, shading).
   - [x] 1.5 Implement clear filter icon.
   - [x] 1.6 Implement keyboard navigation and focus management for all interactive elements.
+  - [x] 1.7 Implement fallback icon for missing flag assets.
+  - [x] 1.8 Ensure the panel appears below the persistent top bar.
+  - [ ] 1.9 Ensure slide-in animation respects prefers-reduced-motion.
 - [x] 2.0 Set Up Filtering Logic
   - [x] 2.1 Load `judoka.json` and extract a list of available countries.
   - [x] 2.2 Implement filtering of the card carousel based on the selected country.
   - [x] 2.3 Display an empty state message if no judoka exist for the selected country.
+  - [x] 2.4 Export country code/list helpers for reuse.
+  - [x] 2.5 Integrate country filter with card carousel update.
 - [ ] 3.0 Optimize Performance
   - [ ] 3.1 Implement virtual scrolling or paging for >50 countries.
   - [ ] 3.2 Ensure the filtering action completes within 1 second for 90% of sessions.
   - [ ] 3.3 Ensure the country selector appears within 1 second when toggled.
   - [ ] 3.4 Implement progressive flag loading for slow networks.
 - [ ] 4.0 Handle Edge Cases
-  - [ ] 4.1 Display a fallback icon if a flag asset fails to load.
+  - [x] 4.1 Display a fallback icon if a flag asset fails to load.
   - [ ] 4.2 Implement progressive flag loading on slow networks.
-  - [ ] 4.3 Show a message if the country list is empty.
+  - [x] 4.3 Show a message if the country list is empty.
 - [ ] 5.0 Ensure Accessibility and Compliance
-  - [ ] 5.1 Add alt-text for all flag icons based on country names and apply `aria-label` text like "Filter by {country}" to each flag button for screen readers.
-  - [ ] 5.2 Ensure color contrast ratios meet WCAG 2.1 AA standards.
-  - [ ] 5.3 Enforce minimum tap target size (44x44px) for touch devices (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
-  - [ ] 5.4 Ensure flags are displayed alphabetically.
-  - [ ] 5.5 Ensure keyboard navigation and focus outlines are visible and accessible.
+  - [x] 5.1 Add alt-text for all flag icons based on country names and apply `aria-label` text like "Filter by {country}" to each flag button for screen readers.
+  - [x] 5.2 Ensure color contrast ratios meet WCAG 2.1 AA standards.
+  - [x] 5.3 Enforce minimum tap target size (44x44px) for touch devices (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
+  - [x] 5.4 Ensure flags are displayed alphabetically.
+  - [x] 5.5 Ensure keyboard navigation and focus outlines are visible and accessible.
 
 ---
 

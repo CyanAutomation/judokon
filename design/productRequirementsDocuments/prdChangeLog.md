@@ -34,7 +34,7 @@ Players and developers currently lack a simple, in-game method to see which Judo
 | Priority | Feature                  | Description                                                             |
 | :------: | ------------------------ | ----------------------------------------------------------------------- |
 |  **P1**  | Load and Parse Data      | Extract Judoka entries from `judoka.json`, including required fields.   |
-|  **P1**  | Sort and Display Entries | Sort by `lastModified`, fallback to name; limit to 20 results.          |
+|  **P1**  | Sort and Display Entries | Sort by `lastUpdated`, fallback to name; limit to 20 results.           |
 |  **P2**  | Navigation Integration   | Add “Judoka Updates” access in the main menu with proper back behavior. |
 |  **P2**  | Portrait Display         | Show portrait or fallback image with alt text and size constraints.     |
 |  **P2**  | UI Consistency           | Maintain global game layout: header, footer, fonts, and spacing.        |
@@ -45,16 +45,16 @@ Players and developers currently lack a simple, in-game method to see which Judo
 
 ## Acceptance Criteria
 
-- [ ] The list displays exactly 20 entries from `judoka.json`. (**P1: Sort and Display Entries**)
-- [ ] Entries are sorted by `lastModified` (descending), then `name` (ascending) if dates match. (**P1: Sort and Display Entries**)
-- [ ] Each row includes: Judoka ID, Card Code, Portrait, Last Modified Date, Judoka Name. (**P1: Load and Parse Data**)
-- [ ] Page loads fully in <2s on mid-tier mobile device with 3G connection. (**P1: Load and Parse Data**)
-- [ ] Global header and footer are present and match the main game theme. (**P2: UI Consistency**)
-- [ ] If `judoka.json` is missing or empty, display: "No Judoka data found." (**P3: Error/Fallback Handling**)
-- [ ] If a portrait image is missing, show the default placeholder portrait. (**P2: Portrait Display**)
-- [ ] Alt text is present for all portraits (e.g., "Portrait of Judoka <Name>"). (**P2: Portrait Display**)
-- [ ] The page is navigable by keyboard and screen-reader compatible. (**P4: Accessibility Support**)
-- [ ] If loading takes longer than 3 seconds, show a loading spinner; if still no data, show fallback message. (**P3: Error/Fallback Handling**)
+- The list displays exactly 20 entries from `judoka.json`. (**P1: Sort and Display Entries**)
+- Entries are sorted by `lastUpdated` (descending), then `name` (ascending) if dates match. (**P1: Sort and Display Entries**)
+- Each row includes: Judoka ID, Portrait, Judoka Name, Card Code, Last Modified Date. (**P1: Load and Parse Data**)
+- Page loads fully in <2s on mid-tier mobile device with 3G connection. (**P1: Load and Parse Data**)
+- Global header and footer are present and match the main game theme. (**P2: UI Consistency**)
+- If `judoka.json` is missing or empty, display: "No Judoka data found." (**P3: Error/Fallback Handling**)
+- If a portrait image is missing, show the default placeholder portrait. (**P2: Portrait Display**)
+- Alt text is present for all portraits (e.g., "Portrait of Judoka Kano"). (**P2: Portrait Display**)
+- The page is navigable by keyboard and screen-reader compatible. (**P4: Accessibility Support**)
+- If loading takes longer than 3 seconds, show a loading spinner; if still no data, show fallback message. (**P3: Error/Fallback Handling**)
 
 ---
 
@@ -75,7 +75,7 @@ Players and developers currently lack a simple, in-game method to see which Judo
 
 ### Dependencies:
 
-- Access to `judoka.json` with up-to-date `lastModified` fields.
+- Access to `judoka.json` with up-to-date `lastUpdated` fields.
 - Default placeholder portrait asset.
 - Game header/footer components.
 
@@ -93,10 +93,10 @@ Players and developers currently lack a simple, in-game method to see which Judo
 +------------------------------------------------+
 | [Game Logo]                 [Judoka Updates]    |
 +------------------------------------------------+
-| Judoka ID | Card Code | Portrait | Last Mod. | Name |
-| ----------|-----------|----------|-----------|------|
-| 010       | JK-003    | 🖼️       | Jul 20    | Kano |
-| ...       | ...       | ...      | ...       | ...  |
+| Judoka ID | Portrait | Judoka Name | Card Code | Last Mod. |
+| ----------|----------|-------------|-----------|-----------|
+| 010       | 🖼️       | Kano        | JK-003    | Jul 20    |
+| ...       | ...      | ...         | ...       | ...       |
 +------------------------------------------------+
 | Footer: Links, copyright, etc.                 |
 +------------------------------------------------+
@@ -115,7 +115,7 @@ Players and developers currently lack a simple, in-game method to see which Judo
 - Sort entries by the `lastUpdated` field (desc) and fallback to name when dates
   match. Slice the results to the most recent 20.
 - Build rows using DOM methods to avoid innerHTML injection. Each row includes
-  Judoka ID, card code, portrait (48×48 px), formatted date, and full name.
+  Judoka ID, portrait (48×48 px), full name, card code, and formatted date.
 - Portrait images use a fallback source (`judokaPortrait-0.png`) when loading
   fails, with alt text like "Portrait of Judoka Kano".
 - The page follows existing layout conventions: header, `.home-screen` wrapper,
@@ -131,31 +131,45 @@ Players and developers currently lack a simple, in-game method to see which Judo
 ### 1.0 Design Table Layout for Judoka Updates
 
 - [x] **1.1** Define visual table layout and styling
-- [x] **1.2** Include columns: Judoka ID, Card Code, Portrait, Last Modified, Name
+- [x] **1.2** Include columns: Judoka ID, Portrait, Judoka Name, Card Code, Last Modified
 - [x] **1.3** Add header and footer consistent with game theme
 - [x] **1.4** Design for responsive layout (mobile/tablet)
+- [x] **1.5** Apply zebra striping to table rows using CSS
+- [x] **1.6** Ensure all cells have minimum 44px touch target and row height ≥56px
 
 ### 2.0 Implement Data Loading Logic
 
 - [x] **2.1** Parse `judoka.json` and extract required fields
-- [x] **2.2** Sort by last modified date, then by name
+- [x] **2.2** Sort by last updated date, then by name
 - [x] **2.3** Limit to 20 entries
+- [x] **2.4** Use DOM methods to build table rows (avoid innerHTML injection)
 
 ### 3.0 Build Frontend Page
 
 - [x] **3.1** Render table with dynamic content
-- [x] **3.2** Add alt text for portraits
-- [x] **3.3** Ensure accessibility (keyboard/tab navigation)
+- [x] **3.2** Add alt text for portraits (e.g., "Portrait of Judoka Kano")
+- [x] **3.3** Show fallback portrait if image fails to load
+- [x] **3.4** Add loading spinner while fetching data
+- [x] **3.5** Remove spinner after data loads or on error
+- [x] **3.6** Display "No Judoka data found" if data is missing or empty
 
-### 4.0 Error Handling
+### 4.0 Accessibility and Usability
 
-- [x] **4.1** Handle missing/empty `judoka.json`
-- [x] **4.2** Gracefully degrade if images or data are unavailable
-- [x] **4.3** Display “No Judoka data found” as appropriate
+- [x] **4.1** Ensure table is keyboard navigable
+- [x] **4.2** Add ARIA labels and roles for accessibility
+- [x] **4.3** Ensure alt text and tooltips for images
+- [x] **4.4** Support screen readers
 
-### 5.0 QA and Testing
+### 5.0 Error Handling
 
-- [x] **5.1** Validate sorting logic using test data
-- [ ] **5.2** Test loading time on different devices
-- [ ] **5.3** Test responsive behavior on various screen sizes
-- [ ] **5.4** Confirm consistent UI integration with game header/footer
+- [x] **5.1** Handle missing/empty `judoka.json`
+- [x] **5.2** Gracefully degrade if images or data are unavailable
+- [x] **5.3** Display “No Judoka data found” as appropriate
+- [x] **5.4** Show loading spinner if loading takes longer than 3 seconds
+
+### 6.0 QA and Testing
+
+- [x] **6.1** Validate sorting logic using test data
+- [ ] **6.2** Test loading time on different devices
+- [ ] **6.3** Test responsive behavior on various screen sizes
+- [ ] **6.4** Confirm consistent UI integration with game header/footer
