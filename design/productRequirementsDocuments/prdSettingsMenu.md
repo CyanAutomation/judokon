@@ -332,7 +332,21 @@ The page begins with an `h1` heading labeled "Settings". Two `fieldset` sections
   - [x] 8.1 Link to `mockupViewer.html` from the Settings menu.
 - [ ] 9.0 Add Tooltip Viewer Link
   - [ ] 9.1 Link to `tooltipViewer.html` from the Settings menu.
+- [ ] 10.0 Snackbar Feedback
+  - [ ] 10.1 Show a snackbar confirmation for every successful settings change (not just nav cache reset).
+- [ ] 11.0 Performance & Timing
+  - [ ] 11.1 Profile and verify that all settings changes are reflected in the UI and persisted within 50ms (where possible).
+  - [ ] 11.2 Profile and verify that the settings page loads fully within 200ms on mid-tier devices.
+- [ ] 12.0 Accessibility & UX Audits
+  - [ ] 12.1 Run Pa11y or equivalent accessibility audit on the settings page and resolve any issues.
+  - [ ] 12.2 Verify all color contrast ratios meet WCAG 2.1 (4.5:1) in all display modes.
+  - [ ] 12.3 Verify all touch targets are ≥44px and add Playwright tests if needed.
+  - [ ] 12.4 Add Playwright UI tests for keyboard navigation, ARIA attributes, and section collapse/expand accessibility.
+- [ ] 13.0 Error Handling Tests
+  - [ ] 13.1 Add unit/UI tests to verify error popups appear within 200ms on read/write failure.
+- [ ] 14.0 Visual Regression
+  - [ ] 14.1 Add Playwright screenshot tests for the settings page in all display modes and collapsed/expanded states.
 
 ---
 
-        [Back to Game Modes Overview](prdGameModes.md)
+[Back to Game Modes Overview](prdGameModes.md)
