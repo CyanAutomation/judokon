@@ -210,6 +210,21 @@
   outline-offset: 2px;
 }
 
+/* Disable ripple animations when motion is reduced */
+@media (prefers-reduced-motion: reduce) {
+  .top-navbar button .ripple,
+  .top-navbar .primary-button .ripple,
+  .filter-bar button .ripple {
+    animation: none;
+  }
+}
+
+.reduce-motion .top-navbar button .ripple,
+.reduce-motion .top-navbar .primary-button .ripple,
+.reduce-motion .filter-bar button .ripple {
+  animation: none;
+}
+
 /* Reduce motion for the country panel */
 @media (prefers-reduced-motion: reduce) {
   .country-panel[hidden],

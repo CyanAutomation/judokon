@@ -6,6 +6,7 @@ import { DATA_DIR } from "./constants.js";
 import { createButton } from "../components/Button.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
+import { setupButtonEffects } from "./buttonEffects.js";
 
 function handleKeyboardNavigation(event, container, buttonClass) {
   const buttons = Array.from(container.querySelectorAll(`button.${buttonClass}`));
@@ -139,6 +140,7 @@ export async function setupBrowseJudokaPage() {
    * 1. Clear the existing carousel container.
    * 2. Use `buildCardCarousel` to create carousel markup.
    * 3. Append the carousel to the container and add scroll markers.
+   * 4. Apply button ripple effects.
    *
    * @param {Judoka[]} list - Judoka to display.
    * @returns {Promise<void>} Resolves when rendering completes.
@@ -154,6 +156,8 @@ export async function setupBrowseJudokaPage() {
         addScrollMarkers(containerEl, carousel);
       }
     });
+
+    setupButtonEffects();
   }
 
   async function init() {
