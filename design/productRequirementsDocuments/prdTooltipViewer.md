@@ -57,6 +57,12 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 - Clicked key animates with highlight (fade-in + border pulse, 150ms)
 - Preview panel fades in (100ms delay) on selection
 - Search box debounced (300ms) to avoid lag during input
+- **Sidebar supports full keyboard navigation (TAB, arrows, ENTER) for accessibility**
+- **Sidebar supports category highlighting/grouping by prefix (e.g., stat, ui, mode)**
+- **Visual indicators (icon/tooltip) for invalid, empty, or malformed entries**
+- **Preview panel displays warning for malformed markdown**
+- **Long tooltip values are truncated after 300px height with a “Show more” toggle**
+- **Copy-to-clipboard buttons provide feedback (e.g., tooltip or animation) on success**
 
 ### Accessibility
 
@@ -65,6 +71,7 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 - In dark mode the selected key should use the bright `--link-color` value to
   maintain WCAG AA contrast
 - Full keyboard navigation support (TAB, arrows, ENTER)
+- **ARIA attributes and roles are set for sidebar and preview for screen readers**
 
 ---
 
@@ -79,9 +86,17 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 | **P2**   | Search/filter input      | Filter list by tooltip key or body content.           |
 | **P2**   | Category highlighting    | Group or color-code by prefix (`stat`, `ui`, `mode`). |
 | **P2**   | Invalid key validator    | Flag missing, empty, or malformed entries visually.   |
+| **P2**   | Visual indicators        | Show icon/tooltip for invalid/empty/malformed entries.|
+| **P2**   | Malformed markdown warn  | Show warning in preview for malformed markdown.       |
+| **P2**   | Keyboard navigation      | Support TAB, arrows, ENTER in sidebar and preview.    |
+| **P2**   | Sidebar scroll           | Sidebar scrolls independently from preview.           |
+| **P2**   | Copy feedback            | Copy-to-clipboard buttons show feedback on success.   |
 | **P3**   | Mobile responsive layout | Stack sidebar above preview on screens <600px.        |
 | **P3**   | Copy-to-clipboard button | One-click copying of key or body content.             |
 | **P3**   | Jump to key via URL hash | Auto-select a tooltip via `#keyname` on page load.    |
+| **P3**   | Show more for long vals  | Truncate long values, add “Show more” toggle.         |
+| **P3**   | High-contrast/dark mode  | Selected key uses bright color in dark mode.          |
+| **P3**   | ARIA/Accessibility       | Add ARIA attributes/roles for screen readers.         |
 
 ---
 
@@ -101,6 +116,12 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 - Elements expose `data-key`, `data-body`, and `data-valid` for QA.
 - Viewer operates offline as a static HTML file.
 - Styling matches JU-DO-KON! brand (typography, colors, spacing).
+- **Sidebar supports keyboard navigation and category highlighting**
+- **Visual indicators (icon/tooltip) for invalid/empty/malformed entries are present**
+- **Preview panel displays warning for malformed markdown**
+- **Long tooltip values are truncated with a “Show more” toggle**
+- **Copy-to-clipboard buttons provide feedback on success**
+- **ARIA attributes and roles are present for accessibility**
 
 ---
 
@@ -119,34 +140,42 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 
 ## Tasks
 
-- [ ] 1.0 Load and Parse Tooltip Data
+- [x] 1.0 Load and Parse Tooltip Data
 
-  - [ ] 1.1 Load `tooltips.json` from `src/data/tooltips.json`
-  - [ ] 1.2 Handle loading failures with user-friendly error display
-  - [ ] 1.3 Parse JSON and extract key-value pairs
+  - [x] 1.1 Load `tooltips.json` from `src/data/tooltips.json`
+  - [x] 1.2 Handle loading failures with user-friendly error display
+  - [x] 1.3 Parse JSON and extract key-value pairs
 
-- [ ] 2.0 Implement Sidebar Key List
+- [x] 2.0 Implement Sidebar Key List
 
-  - [ ] 2.1 Render scrollable list of tooltip keys
-  - [ ] 2.2 Enable click interaction to select a tooltip
-  - [ ] 2.3 Add real-time search/filter functionality (300ms debounce)
+  - [x] 2.1 Render scrollable list of tooltip keys
+  - [x] 2.2 Enable click interaction to select a tooltip
+  - [x] 2.3 Add real-time search/filter functionality (300ms debounce)
+  - [ ] 2.4 Support full keyboard navigation (TAB, arrows, ENTER)
+  - [ ] 2.5 Group or color-code keys by prefix (category highlighting)
+  - [ ] 2.6 Sidebar scrolls independently from preview
 
-- [ ] 3.0 Build Preview Panel
+- [x] 3.0 Build Preview Panel
 
-  - [ ] 3.1 Render raw tooltip text
-  - [ ] 3.2 Parse and render markdown-styled preview
-  - [ ] 3.3 Animate panel on update (fade-in, 100ms)
-  - [ ] 3.4 Display visual indicators for blank/malformed tooltips
-  - [ ] 3.5 Include copy-to-clipboard buttons for key and body
+  - [x] 3.1 Render raw tooltip text
+  - [x] 3.2 Parse and render markdown-styled preview
+  - [x] 3.3 Animate panel on update (fade-in, 100ms)
+  - [ ] 3.4 Display visual indicators for blank/malformed tooltips (icon/tooltip)
+  - [x] 3.5 Include copy-to-clipboard buttons for key and body
+  - [ ] 3.6 Show warning for malformed markdown in preview
+  - [ ] 3.7 Truncate long values after 300px height; add “Show more” toggle
+  - [ ] 3.8 Copy-to-clipboard buttons provide feedback (e.g., tooltip/animation)
 
-- [ ] 4.0 URL Fragment Support
+- [x] 4.0 URL Fragment Support
 
-  - [ ] 4.1 Read and parse URL hash on page load
-  - [ ] 4.2 Scroll to and pre-select corresponding tooltip key
+  - [x] 4.1 Read and parse URL hash on page load
+  - [x] 4.2 Scroll to and pre-select corresponding tooltip key
 
-- [ ] 5.0 UI/UX and Accessibility Enhancements
-  - [ ] 5.1 Apply JU-DO-KON! styling (colors, spacing, typography)
-  - [ ] 5.2 Ensure mobile responsiveness (stacked layout <600px)
+- [x] 5.0 UI/UX and Accessibility Enhancements
+  - [x] 5.1 Apply JU-DO-KON! styling (colors, spacing, typography)
+  - [x] 5.2 Ensure mobile responsiveness (stacked layout <600px)
   - [ ] 5.3 Include accessible font sizes and high contrast text
   - [ ] 5.4 Enable keyboard navigation and focus states
-  - [ ] 5.5 Expose `data-*` attributes for automated QA
+  - [x] 5.5 Expose `data-*` attributes for automated QA
+  - [ ] 5.6 Add ARIA attributes/roles for screen readers
+  - [ ] 5.7 Selected key uses bright color in dark mode for contrast

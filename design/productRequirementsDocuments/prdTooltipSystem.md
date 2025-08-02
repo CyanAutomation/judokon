@@ -164,10 +164,13 @@ To ensure tooltips are consistently helpful and aligned with JU-DO-KON!’s tone
   - [x] 5.2 Log error only once
   - [x] 5.3 Avoid using `title=` attribute
   - [x] 5.4 Ensure tooltip is screen-reader compatible
+  - [ ] 5.5 Validate tooltip accessibility for screen readers and mobile/touch (manual and automated checks)
+  - [ ] 5.6 Add unit and Playwright UI tests to verify tooltip triggers, content, and dismissal
+  - [ ] 5.7 Ensure all required UI elements (stat cards, country flags, weight indicators, navigation links, help icons) have tooltips per guidelines
 
 - [ ] 6.0 (Optional) Settings and Configuration
 
   - [ ] 6.1 Add developer setting to configure tooltip delay
   - [ ] 6.2 Add toggle to enable/disable tooltip animation
-  - [ ] 6.3 Document configuration options in README or UI guide
+  - [ ] 6.3 Document tooltip configuration options in README or UI guide
   - [ ] 6.4 Provide a user-facing toggle in the Settings menu to globally enable or disable tooltips
