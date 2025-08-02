@@ -29,6 +29,12 @@
   cursor: pointer;
 }
 
+/* Highlight the item currently focused via keyboard */
+.sidebar-list li:focus {
+  outline: 2px solid var(--link-color);
+  outline-offset: -2px;
+}
+
 .sidebar-list li:nth-child(odd),
 .sidebar-list li.odd {
   background-color: var(--color-surface);

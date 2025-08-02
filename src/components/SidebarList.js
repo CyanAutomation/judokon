@@ -5,12 +5,14 @@
  * 1. Build a `<ul>` element with class `sidebar-list`.
  * 2. For each provided item create an `<li>` with text and optional
  *    dataset or className values.
- * 3. Attach click and keyboard handlers so Enter or Space trigger
- *    selection using `select(index)`.
+ * 3. Attach click and keyboard handlers so Enter/Space trigger
+ *    selection using `select(index)` and Arrow Up/Down move the
+ *    selection relative to the current item.
  * 4. Add `odd`/`even` classes for zebra striping starting with `odd`
  *    for the first item and toggle the `selected` class inside
  *    `select()`.
- * 5. Call the `onSelect` callback whenever a new index is selected.
+ * 5. Inside `select()` update the highlight, focus the newly
+ *    selected element, and call `onSelect`.
  * 6. Return `{ element, select }` so callers can programmatically
  *    change the highlighted item.
  *
@@ -50,11 +52,21 @@ export function createSidebarList(items, onSelect = () => {}) {
 
   let current = -1;
 
+  list.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      const delta = e.key === "ArrowDown" ? 1 : -1;
+      const next = current === -1 ? (delta === 1 ? 0 : elements.length - 1) : current + delta;
+      select(next);
+    }
+  });
+
   function select(index) {
     current = ((index % elements.length) + elements.length) % elements.length;
     elements.forEach((el, idx) => {
       el.classList.toggle("selected", idx === current);
     });
+    elements[current].focus();
     onSelect(current, elements[current]);
   }
 
