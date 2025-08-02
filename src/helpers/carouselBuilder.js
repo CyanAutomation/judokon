@@ -116,7 +116,7 @@ function validateGokyoData(gokyoData) {
  * @param {HTMLElement} wrapper - The wrapper element to append the spinner to.
  * @returns {Object} An object containing the spinner element and timeout ID.
  */
-function createLoadingSpinner(wrapper) {
+export function createLoadingSpinner(wrapper) {
   const spinner = document.createElement("div");
   spinner.className = "loading-spinner";
   wrapper.appendChild(spinner);
