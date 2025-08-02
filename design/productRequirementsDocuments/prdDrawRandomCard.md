@@ -128,7 +128,7 @@ Motion** enabled, ensuring the card appears instantly without movement.
 - Player taps “Draw Card!” button.
 - System triggers generateRandomCard() function.
 - If active card set is not empty: Random card selected, then Card reveal animation plays.
-- If active card set is empty or error occurs: Fallback card (judoka id=0) displayed, then Error message shown if applicable.
+- If active card set is empty or error occurs: Fallback card (judoka id=0) displayed.
 - User can draw again or exit screen.
 
 ---
@@ -150,7 +150,7 @@ Motion** enabled, ensuring the card appears instantly without movement.
 | -------- | ------------------------------ | ---------------------------------------------------------------------------- |
 | P1       | Random Card Selection          | Select a random card from the active card set dynamically.                   |
 | P1       | Display Selected Card          | Visually reveal the selected card with animation and sound feedback.         |
-| P2       | Fallback on Failure            | Show fallback card and error message if draw fails or active set is empty.   |
+| P2       | Fallback on Failure            | Show fallback card if draw fails or active set is empty.   |
 | P2       | Reusable Random Draw Module    | Make the random draw callable from multiple game states or screens.          |
 | P3       | Accessibility Support          | Support Reduced Motion settings and maintain color contrast and readability. |
 | P3       | UX Enhancements                | Optimize for animation, sound effect, and large tap targets.           |
@@ -170,13 +170,13 @@ Motion** enabled, ensuring the card appears instantly without movement.
   - Ensure color contrast and text readability on cards (WCAG AA compliance; validate with `npm run check:contrast`).
 - **Default Setting**: Animations and sound OFF unless user/system preferences state otherwise.
 - **Fallback Visuals**:
-  - If card loading fails, show a placeholder/error graphic (judoka id=0, from judoka.json).
+  - If card loading fails, show a placeholder card (judoka id=0, from judoka.json).
 - **Tap Target Size**:
   - All interactive elements (Draw button) must be ≥44px in height and width, with a recommended 64px for kid-friendly ease. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
 - **Button Size**: Minimum 64px high, 300px wide — central and dominant. Use `--radius-pill` for a capsule shape.
 - **Card Size**: Large enough for excitement, but responsive — 70% of viewport width on mobile, 40% on tablet/desktop.
 - **Spacing**: Tight vertical stacking (~24px between card and button).
-- **Accessibility**: High contrast placeholders; consider light text on dark backgrounds for error/fallback states.
+- **Accessibility**: High contrast placeholders.
 
 ---
 
@@ -203,7 +203,6 @@ Motion** enabled, ensuring the card appears instantly without movement.
 - **Action Button Module**:
   - Giant “Draw Card!” button (64px height min, 90px optimal for kid-friendly tapping).
   - **Loading State**: Button changes to a spinner or text (“Drawing…”).
-  - **Error State**: Subtle inline text under the button (“Connection Issue”).
 
 **Why**: Separate content vs. action modules makes touch flow logical and easily adjustable.
 
@@ -249,7 +248,6 @@ Motion** enabled, ensuring the card appears instantly without movement.
 - [x] 3.0 Error and Fallback Handling
   - [x] 3.1 Display fallback card (judoka id=0, from judoka.json) if random draw fails.
   - [x] 3.2 Show predefined error card (judoka id=0, from judoka.json) if active card set is empty.
-  - [ ] 3.3 Show error message if fallback card fails to load. **[Not implemented: only logs error]**
 - [ ] 4.0 Accessibility and UX Enhancements
   - [x] 4.1 Support Reduced Motion settings.
   - [ ] 4.2 Ensure color contrast on cards meets WCAG AA standards. **[No automated test]**
