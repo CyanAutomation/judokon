@@ -9,7 +9,8 @@ import { createSidebarList } from "../components/SidebarList.js";
  *
  * @pseudocode
  * 1. Load and flatten `tooltips.json` using `fetchJson` and `flattenTooltips`.
- * 2. Render a clickable list of keys filtered by the search box (300ms debounce).
+ * 2. Render a clickable list of keys filtered by the search box (300ms debounce),
+ *    tagging items with a class based on their prefix (e.g. `stat`, `ui`).
  * 3. When a key is selected, display its parsed HTML and raw text in the preview.
  * 4. Provide copy buttons for the key and body using `navigator.clipboard`.
  * 5. On page load, select the key from the URL hash when present and scroll to it.
@@ -43,9 +44,10 @@ export async function setupTooltipViewerPage() {
       const match = terms.every((t) => haystack.includes(t));
       if (match) {
         const valid = typeof body === "string" && body.trim().length > 0;
+        const prefix = key.split(".")[0];
         items.push({
           label: key,
-          className: valid ? undefined : "invalid",
+          className: prefix,
           dataset: { key, body, valid: String(valid) }
         });
       }
