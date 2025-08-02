@@ -253,6 +253,37 @@ describe("settingsPage module", () => {
     expect(showSnackbar).toHaveBeenCalledWith("Full navigation map disabled");
   });
 
+  it("toggling showCardOfTheDay updates setting", async () => {
+    vi.useFakeTimers();
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updated = { ...baseSettings, showCardOfTheDay: true };
+    const updateSetting = vi.fn().mockResolvedValue(updated);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
+    const showSnackbar = vi.fn();
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
+      updateNavigationItemHidden: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const input = document.getElementById("card-of-the-day-toggle");
+    expect(input).toBeTruthy();
+    input.checked = true;
+    input.dispatchEvent(new Event("change"));
+    expect(updateSetting).toHaveBeenCalledWith("showCardOfTheDay", true);
+    await vi.runAllTimersAsync();
+    expect(showSnackbar).toHaveBeenCalledWith("Card of the Day enabled");
+  });
+
   it("renders feature flag switches", async () => {
     vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);

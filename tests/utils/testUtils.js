@@ -59,6 +59,9 @@ export function createSettingsDom() {
   const tooltipsToggle = document.createElement("input");
   tooltipsToggle.id = "tooltips-toggle";
   tooltipsToggle.type = "checkbox";
+  const cardOfTheDayToggle = document.createElement("input");
+  cardOfTheDayToggle.id = "card-of-the-day-toggle";
+  cardOfTheDayToggle.type = "checkbox";
   const fullNavigationMapToggle = document.createElement("input");
   fullNavigationMapToggle.id = "full-navigation-map-toggle";
   fullNavigationMapToggle.type = "checkbox";
@@ -108,6 +111,7 @@ export function createSettingsDom() {
     motionToggle,
     typewriterToggle,
     tooltipsToggle,
+    cardOfTheDayToggle,
     fullNavigationMapToggle,
     displayLight,
     displayDark,
