@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-The **Mystery Judoka Card** is a placeholder card used in _every round against the opponent_. It temporarily hides the opponent’s real card until the player selects a stat, ensuring fair gameplay and preventing stat-based cheating. The card uses a silhouette portrait, obscured stats (`"?"`), and the name “Mystery Judoka”, providing a consistent and thematic experience during the stat selection phase.
+The **Mystery Judoka Card** is a placeholder card used in _every round against the opponent_. It temporarily hides the opponent’s real card until the player selects a stat, ensuring fair gameplay and preventing stat-based cheating. The card uses a **special SVG icon** (not a portrait), obscured stats (`"?"`), and the name “Mystery Judoka”, providing a consistent and thematic experience during the stat selection phase.
 
 ---
 
@@ -24,6 +24,7 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 - Ensure the opponent card reveal animation completes within **400ms**.
 - Guarantee **100% concealment** of all opponent stats during player stat selection.
   - **Note:** The signature move does not need to be obscured and should be displayed as "?" on the Mystery Judoka card.
+- **Mystery Judoka Card must display a provided SVG icon (see Technical Considerations) instead of a portrait image.**
 
 ---
 
@@ -39,7 +40,7 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 
 - **Given** a round starts in any battle mode against an opponent,
   **When** the opponent card is shown,  
-  **Then** the “Mystery Judoka” card (`judokaId=1`) is displayed with silhouette image and question marks in all stat fields.
+  **Then** the “Mystery Judoka” card (`judokaId=1`) is displayed with **the provided SVG icon** and question marks in all stat fields.
 - **Given** the player selects a stat,  
   **When** the opponent’s real card is revealed,  
   **Then** it _replaces_ the Mystery Judoka card via slide or flip animation within **400ms**.
@@ -47,6 +48,8 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
   **Then** its name should be displayed as “Mystery Judoka” and stats as "?", regardless of real underlying values.
 - **Given** the Mystery Judoka card is displayed,  
   **Then** it should retain correct rarity styling, weight class, and flag as defined in `judoka.json`.
+- **Given** the Mystery Judoka card is displayed,  
+  **Then** the portrait area must show the SVG icon (see Technical Considerations) instead of any image.
 - **Given** the reveal animation starts,  
   **Then** the full transition should complete cleanly without layout shift or UI jump.
 
@@ -63,7 +66,8 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 ## Technical Considerations
 
 - **Card Source:** Use `judokaId=1` from `judoka.json` with `"IsHidden": true`.
-- **Portrait Path:** `src/assets/judokaPortraits/judokaPortrait-1.png` (already present).
+- **Portrait/Icon:** **Display the following SVG icon in the portrait area instead of an image:**  
+  `<svg viewBox="0 0 960 960"><path d="M424-320q0-81 14.5-116.5T500-514q41-36 62.5-62.5T584-637q0-41-27.5-68T480-732q-51 0-77.5 31T365-638l-103-44q21-64 77-111t141-47q105 0 161.5 58.5T698-641q0 50-21.5 85.5T609-475q-49 47-59.5 71.5T539-320H424Zm56 240q-33 0-56.5-23.5T400-160q0-33 23.5-56.5T480-240q33 0 56.5 23.5T560-160q0 33-23.5 56.5T480-80Z"/></svg>`
 - **Stat Display:** Override real stat values with `"?"` at render time via `renderJudokaCard()`. (Note: Stat concealment and animation are handled in the UI layer, not in the battle engine.)
 - **Name Display:** Use value from `judoka.json` (`"Mystery Judoka"`) for visual consistency.
 - **Reveal Timing:** Animate swap to real opponent card after player stat choice within **400ms** using `ease-out` transition.
@@ -80,7 +84,7 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 | [ BORDER COLOR BASED ON RARITY OF REAL CARD ]  |
 |                                                |
 | +––––––––––––––+                 |
-| |    [ MYSTERY SILHOUETTE ] |   ← judokaPortrait-1.png  |
+| |    [ MYSTERY SVG ICON ] |   ← uses provided SVG path  |
 | +––––––––––––––+                 |
 |                                                |
 | [ FLAG: ??? ]            [ WEIGHT CLASS: ??? ] |
@@ -128,6 +132,7 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 
 - The **Mystery Judoka card** is never shown in non-opponent modes.
 - Use the existing `renderJudokaCard()` helper with a `useObscuredStats` flag to substitute "?" values at render time.
+- **Render the SVG icon in the portrait area for the Mystery Judoka card.**
 - Maintain card aspect ratio and layout as defined in the core Judoka Cards PRD — do **not** introduce custom card layouts for the mystery variant.
 
 ---
@@ -137,7 +142,8 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 - [x] **1.0 Mystery Card Rendering**
   - [x] 1.1 Show `judokaId=1` as placeholder at start of opponent round
   - [x] 1.2 Hide real stats and show `"?"` for all attributes and move
-  - [ ] 1.3 Apply correct rarity, flag, and weight class styles
+  - [x] 1.3 Apply correct rarity, flag, and weight class styles
+  - [x] 1.4 **Display SVG icon in portrait area instead of image**
 - [ ] **2.0 Reveal Logic**
   - [ ] 2.1 Trigger swap animation upon stat selection
   - [x] 2.2 Load correct opponent card into same slot
