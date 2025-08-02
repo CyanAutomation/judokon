@@ -64,14 +64,19 @@ export function cosineSimilarity(a, b) {
  *
  * @pseudocode
  * 1. Load embeddings using `loadEmbeddings()`.
- * 2. Validate that `queryVector` length matches the embedding dimension.
- *    - If mismatched or embeddings are empty, return an empty array.
+ * 2. Determine expected dimension from the first valid embedding and ensure
+ *    `queryVector` matches it.
  *    - Return `null` when embeddings fail to load.
- * 3. When `tags` are provided, filter the embeddings to those containing all tags.
- * 4. Compute cosine similarity between `queryVector` and each entry's embedding.
- * 5. Normalize scores to the 0–1 range and apply a small bonus when the query
+ *    - Return an empty array for mismatches or when no embeddings are present.
+ * 3. Filter out entries with missing, non-numeric, or mis-sized embeddings.
+ *    - Log a warning for each skipped entry.
+ * 4. When `tags` are provided, filter the remaining entries to those containing
+ *    all tags.
+ * 5. Compute cosine similarity between `queryVector` and each entry's
+ *    embedding.
+ * 6. Normalize scores to the 0–1 range and apply a small bonus when the query
  *    text appears verbatim in the entry.
- * 6. Sort the entries by similarity score and return the top `topN` results.
+ * 7. Sort the entries by similarity score and return the top `topN` results.
  *
  * @param {number[]} queryVector - Vector to compare.
  * @param {number} [topN=5] - Number of matches to return.
@@ -90,14 +95,33 @@ export async function findMatches(queryVector, topN = 5, tags = [], queryText = 
   if (!Array.isArray(entries) || entries.length === 0) {
     return [];
   }
-  if (!Array.isArray(queryVector) || queryVector.length !== entries[0].embedding.length) {
+  const firstValid = entries.find(
+    (e) => Array.isArray(e.embedding) && e.embedding.every((v) => typeof v === "number")
+  );
+  if (!firstValid) {
+    return [];
+  }
+  if (!Array.isArray(queryVector) || queryVector.length !== firstValid.embedding.length) {
     console.warn("Query vector length mismatch.");
     return [];
   }
+  const validEntries = [];
+  for (const entry of entries) {
+    const emb = entry.embedding;
+    if (
+      !Array.isArray(emb) ||
+      emb.length !== queryVector.length ||
+      emb.some((v) => typeof v !== "number")
+    ) {
+      console.warn(`Skipping entry ${entry.id ?? "(unknown id)"} due to invalid embedding.`);
+      continue;
+    }
+    validEntries.push(entry);
+  }
   const filtered =
     Array.isArray(tags) && tags.length > 0
-      ? entries.filter((e) => Array.isArray(e.tags) && tags.every((t) => e.tags.includes(t)))
-      : entries;
+      ? validEntries.filter((e) => Array.isArray(e.tags) && tags.every((t) => e.tags.includes(t)))
+      : validEntries;
 
   const terms = String(queryText).toLowerCase().split(/\s+/).filter(Boolean);
 
