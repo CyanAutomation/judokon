@@ -39,7 +39,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 ## Functional Requirements
 
 | Priority | Feature                             | Description                                                                                            |
-| -------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| -------- | ----------------------------------- | ---------------------------------------------------------------------------------------------- |
 | P1       | Sound Toggle                        | Binary toggle updating `settings.json` live on change.                                                 |
 | P1       | Full Navigation Map Toggle          | Enable or disable the full navigation map via general setting; updates `settings.json` live on change. |
 | P3       | Test Mode Feature Flag              | Enables deterministic battles for automated testing.                                                   |
