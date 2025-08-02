@@ -219,7 +219,7 @@ Search will be included in a future update to keep the initial scope focused.
   - [x] 3.4 Handle network interruptions with retry prompt
 - [ ] 4.0 Performance Optimization
   - [ ] 4.1 Ensure full list loads quickly for 100 cards
-  - [ ] 4.2 Maintain ≥30fps during rapid scrolling
+  - [ ] 4.2 Maintain smooth movements during rapid scrolling
 - [ ] 5.0 Interaction Enhancements
   - [ ] 5.1 Add ripple or scaling animation on tap/click
   - [x] 5.2 Implement page markers showing "current page of total" with active highlight and aria-live updates
