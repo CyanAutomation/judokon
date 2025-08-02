@@ -149,6 +149,7 @@ describe("populateNavbar", () => {
       displayMode: "light",
       gameModes: { 2: false },
       featureFlags: {
+        randomStatMode: { enabled: true },
         battleDebugPanel: { enabled: false },
         fullNavigationMap: { enabled: true },
         enableTestMode: { enabled: false },
@@ -213,6 +214,7 @@ describe("populateNavbar", () => {
       displayMode: "light",
       gameModes: {},
       featureFlags: {
+        randomStatMode: { enabled: true },
         battleDebugPanel: { enabled: false },
         fullNavigationMap: { enabled: true },
         enableTestMode: { enabled: false },
@@ -265,6 +267,7 @@ describe("populateNavbar", () => {
       displayMode: "light",
       gameModes: {},
       featureFlags: {
+        randomStatMode: { enabled: true },
         battleDebugPanel: { enabled: false },
         fullNavigationMap: { enabled: true },
         enableTestMode: { enabled: false },

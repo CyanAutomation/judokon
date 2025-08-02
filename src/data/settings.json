@@ -12,6 +12,10 @@
   },
   "gameModes": {},
   "featureFlags": {
+    "randomStatMode": {
+      "enabled": true,
+      "tooltipId": "settings.randomStatMode"
+    },
     "battleDebugPanel": {
       "enabled": false,
       "tooltipId": "settings.battleDebugPanel"

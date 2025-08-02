@@ -10,7 +10,9 @@ describe("classicBattlePage stat help tooltip", () => {
     vi.useFakeTimers();
     const startRound = vi.fn();
     const waitForComputerCard = vi.fn();
-    const loadSettings = vi.fn().mockResolvedValue({ featureFlags: {} });
+    const loadSettings = vi.fn().mockResolvedValue({
+      featureFlags: { randomStatMode: { enabled: true } }
+    });
     const initTooltips = vi.fn().mockResolvedValue();
     const setTestMode = vi.fn();
 
@@ -50,6 +52,7 @@ describe("classicBattlePage test mode flag", () => {
     const waitForComputerCard = vi.fn();
     const loadSettings = vi.fn().mockResolvedValue({
       featureFlags: {
+        randomStatMode: { enabled: true },
         enableTestMode: {
           enabled: true,
           label: "Test Mode",
@@ -89,6 +92,7 @@ describe("classicBattlePage test mode flag", () => {
     const waitForComputerCard = vi.fn();
     const loadSettings = vi.fn().mockResolvedValue({
       featureFlags: {
+        randomStatMode: { enabled: true },
         enableTestMode: { enabled: false }
       }
     });

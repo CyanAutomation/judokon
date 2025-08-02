@@ -55,6 +55,7 @@ describe("settings utils", () => {
       displayMode: "dark",
       gameModes: {},
       featureFlags: {
+        randomStatMode: { enabled: true },
         battleDebugPanel: { enabled: false },
         fullNavigationMap: { enabled: false },
         enableTestMode: { enabled: false },
@@ -126,6 +127,7 @@ describe("settings utils", () => {
         displayMode: "light",
         gameModes: {},
         featureFlags: {
+          randomStatMode: { enabled: true },
           battleDebugPanel: { enabled: false },
           fullNavigationMap: { enabled: false },
           enableTestMode: { enabled: false },
@@ -164,6 +166,7 @@ describe("settings utils", () => {
       displayMode: "light",
       gameModes: {},
       featureFlags: {
+        randomStatMode: { enabled: true },
         battleDebugPanel: { enabled: false },
         fullNavigationMap: { enabled: false },
         enableTestMode: { enabled: false },
@@ -177,6 +180,7 @@ describe("settings utils", () => {
       displayMode: "dark",
       gameModes: {},
       featureFlags: {
+        randomStatMode: { enabled: true },
         battleDebugPanel: { enabled: false },
         fullNavigationMap: { enabled: false },
         enableTestMode: { enabled: false },
