@@ -178,6 +178,54 @@ describe("randomJudokaPage module", () => {
     expect(parseInt(computed.width)).toBeGreaterThanOrEqual(300);
   });
 
+  it("updates loading state on draw button while drawing", async () => {
+    vi.useFakeTimers();
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    vi.doMock("../../src/components/Button.js", async () => {
+      return await vi.importActual("../../src/components/Button.js");
+    });
+    vi.doMock("../../src/components/ToggleSwitch.js", async () => {
+      return await vi.importActual("../../src/components/ToggleSwitch.js");
+    });
+
+    const generateRandomCard = vi.fn().mockResolvedValue();
+    const fetchJson = vi.fn().mockResolvedValue([]);
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updateSetting = vi.fn();
+    const applyMotionPreference = vi.fn();
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+
+    const { section, container } = createRandomCardDom();
+    document.body.append(section, container);
+
+    await import("../../src/helpers/randomJudokaPage.js");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const button = document.getElementById("draw-card-btn");
+    const label = button.querySelector(".button-label");
+
+    button.click();
+
+    expect(label.textContent).toBe("Drawing…");
+    expect(button.getAttribute("aria-busy")).toBe("true");
+
+    await vi.advanceTimersByTimeAsync(500);
+
+    expect(label.textContent).toBe("Draw Card!");
+    expect(button).not.toHaveAttribute("aria-busy");
+  });
+
   it("animation and sound toggles meet minimum size requirements", async () => {
     vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });

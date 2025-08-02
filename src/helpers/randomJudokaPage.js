@@ -5,8 +5,9 @@
  * 1. Load persisted settings and fall back to the system motion preference.
  * 2. Preload judoka and gokyo data using `fetchJson`.
  * 3. Toggle the `.simulate-viewport` class based on the stored feature flag.
- * 4. Define `displayCard` that disables the Draw button, calls `generateRandomCard` with the loaded data and
- *    the user's motion preference, then re-enables the button after animation completes.
+ * 4. Define `displayCard` that disables the Draw button, updates its text and `aria-busy` state while loading, calls
+ *    `generateRandomCard` with the loaded data and the user's motion preference, then restores the button once the
+ *    animation completes.
  * 5. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and Animation/Sound toggles.
  * 6. Attach event listeners to persist toggle changes, update motion classes, and handle accessibility.
  * 7. If data fails to load, disable the Draw button and show an error message or fallback card.
@@ -90,9 +91,16 @@ export async function setupRandomJudokaPage() {
       drawButton.setAttribute("aria-disabled", "true");
       return;
     }
+    const label = drawButton.querySelector(".button-label");
     drawButton.disabled = true;
     drawButton.setAttribute("aria-disabled", "true");
     drawButton.classList.add("is-loading");
+    if (label) {
+      label.textContent = "Drawing…";
+    } else {
+      drawButton.textContent = "Drawing…";
+    }
+    drawButton.setAttribute("aria-busy", "true");
     // Remove error message if present
     const errorEl = document.getElementById("draw-error-message");
     if (errorEl) errorEl.textContent = "";
@@ -113,6 +121,12 @@ export async function setupRandomJudokaPage() {
         drawButton.disabled = false;
         drawButton.removeAttribute("aria-disabled");
         drawButton.classList.remove("is-loading");
+        if (label) {
+          label.textContent = "Draw Card!";
+        } else {
+          drawButton.textContent = "Draw Card!";
+        }
+        drawButton.removeAttribute("aria-busy");
       },
       prefersReducedMotion ? 0 : 500
     );

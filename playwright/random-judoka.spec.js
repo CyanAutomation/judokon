@@ -46,6 +46,16 @@ test.describe("View Judoka screen", () => {
     await expect(flag).toHaveAttribute("alt", /(Portugal|USA|Japan) flag/i);
   });
 
+  test("draw button shows loading state", async ({ page }) => {
+    const btn = page.getByTestId("draw-button");
+    await btn.click();
+    await expect(btn).toHaveText(/drawing/i);
+    await expect(btn).toHaveAttribute("aria-busy", "true");
+    await page.waitForTimeout(600);
+    await expect(btn).toHaveText(/draw card/i);
+    await expect(btn).not.toHaveAttribute("aria-busy");
+  });
+
   test("portrait and landscape layouts", async ({ page }) => {
     const section = page.locator(".card-section");
     const controls = page.locator(".draw-controls");
