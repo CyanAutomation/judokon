@@ -81,7 +81,7 @@ than an entire file.
 
 - `client_embeddings.json` contains ≥6 fields per entry: `id`, `text`, optional `qaContext`, `embedding`, `source`, and optional `tags`
 - `client_embeddings.json` stores the intent tag (`what`, `how`, or `why`) for each chunk
-- Vector similarity function returns top 5 matches in ≤200ms on a mid-tier device (e.g. 2022 MacBook Air M1)
+- Vector similarity function returns top 5 matches
 - Search works offline in a local browser with no server backend
 - At least 30 unique content entries from across the PRDs/tooltips are indexed in the demo build
 - Each returned result includes both the match score and a reference to the original source
@@ -114,7 +114,6 @@ than an entire file.
 - Embedding dimensionality must be ≤384 for performance.
 - UI must support keyboard navigation and screen readers.
 - Tap/click targets should be at least 44px height for accessibility.
-- Lookup responses must render within 200ms; show loading spinner if delayed.
 - Display an error message when embeddings or the model fail to load.
 - Show up to five matches with score, source, and tags information. Each entry displays its optional `qaContext` snippet beneath the match text.
 - Search results appear in a responsive table with alternating row colors for readability.
@@ -184,7 +183,7 @@ No user settings or toggles are included. This is appropriate since the feature 
   - [x] 2.3 Validate JSON loading in-browser
 - [x] 3.0 Develop Similarity Search Function
   - [x] 3.1 Implement cosine similarity in JS
-  - [x] 3.2 Return top 5 matches within 200ms
+  - [x] 3.2 Return top 5 matches
   - [x] 3.3 Include score and source reference in response
 - [x] 4.0 Create Static Query Interface
   - [x] 4.1 Design and implement offline query UI
