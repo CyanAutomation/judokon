@@ -17,7 +17,7 @@ export const NAV_UPDATE_JUDOKA = "nav-9";
  */
 export async function verifyPageBasics(page, linkIds = []) {
   await expect(page).toHaveTitle(/Ju-Do-Kon!/i);
-  await expect(page.getByRole("navigation")).toBeVisible();
+  await expect(page.getByRole("navigation").first()).toBeVisible();
   await expect(page.getByRole("img", { name: "JU-DO-KON! Logo" })).toBeVisible();
   for (const id of linkIds) {
     await expect(page.getByTestId(id)).toBeVisible();

@@ -62,6 +62,21 @@ In the browser you can enable it from the console before loading the page:
 window.DEBUG_LOGGING = true;
 ```
 
+## Accessibility Checks
+
+Use [Pa11y](https://pa11y.org/) to audit pages for accessibility issues. Ensure
+the development server is running (for example, with `npm start`) and run:
+
+```bash
+npm run check:contrast  # scans http://localhost:5000 using pa11y.config.cjs
+```
+
+To target a specific page:
+
+```bash
+npx pa11y --config pa11y.config.cjs http://localhost:5000/src/pages/prdViewer.html
+```
+
 ## Screenshot Tests (On-Demand)
 
 Run optional Playwright-based screenshot tests with:
