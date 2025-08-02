@@ -311,10 +311,10 @@ export async function init() {
   }
   if (versionMismatch && messageEl) {
     // Use a dedicated warning element to avoid overwriting other messages
-    let warningEl = messageEl.querySelector('.embedding-warning');
+    let warningEl = messageEl.querySelector(".embedding-warning");
     if (!warningEl) {
-      warningEl = document.createElement('div');
-      warningEl.className = 'embedding-warning';
+      warningEl = document.createElement("div");
+      warningEl.className = "embedding-warning";
       messageEl.appendChild(warningEl);
     }
     warningEl.textContent = "⚠️ Embedding data is out of date. Run npm run generate:embeddings.";
