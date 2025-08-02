@@ -275,6 +275,71 @@ describe("randomJudokaPage module", () => {
     expect(parseInt(soundStyle.height)).toBeGreaterThanOrEqual(44);
   });
 
+  it("stores last draws in a slide-out history panel", async () => {
+    vi.useFakeTimers();
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+    const judokaSeq = [
+      { firstname: "A", surname: "One" },
+      { firstname: "B", surname: "Two" },
+      { firstname: "C", surname: "Three" },
+      { firstname: "D", surname: "Four" },
+      { firstname: "E", surname: "Five" },
+      { firstname: "F", surname: "Six" }
+    ];
+    let idx = 0;
+    const generateRandomCard = vi.fn().mockImplementation(async (_c, _g, _el, _m, onSelect) => {
+      onSelect(judokaSeq[idx]);
+      idx += 1;
+    });
+    const fetchJson = vi.fn().mockResolvedValue([]);
+    const createButton = vi.fn((_, opts = {}) => {
+      const btn = document.createElement("button");
+      if (opts.id) btn.id = opts.id;
+      return btn;
+    });
+    const createToggleSwitch = vi.fn(() => {
+      const wrapper = document.createElement("div");
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      wrapper.appendChild(input);
+      return wrapper;
+    });
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updateSetting = vi.fn();
+    const applyMotionPreference = vi.fn();
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
+    vi.doMock("../../src/components/Button.js", () => ({ createButton }));
+    vi.doMock("../../src/components/ToggleSwitch.js", () => ({ createToggleSwitch }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings, updateSetting }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+
+    const { section, container } = createRandomCardDom();
+    document.body.append(section, container);
+
+    await import("../../src/helpers/randomJudokaPage.js");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runOnlyPendingTimersAsync();
+
+    const drawBtn = document.getElementById("draw-card-btn");
+    for (let i = 1; i < judokaSeq.length; i++) {
+      drawBtn.click();
+      await Promise.resolve();
+      await vi.runOnlyPendingTimersAsync();
+    }
+
+    const panel = document.getElementById("history-panel");
+    const toggleBtn = document.getElementById("toggle-history-btn");
+    expect(panel.getAttribute("aria-hidden")).toBe("true");
+    toggleBtn.click();
+    expect(panel.getAttribute("aria-hidden")).toBe("false");
+    const items = Array.from(panel.querySelectorAll("li")).map((li) => li.textContent);
+    expect(items).toEqual(["F Six", "E Five", "D Four", "C Three", "B Two"]);
+  });
+
   it("storage event toggles card inspector", async () => {
     vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
