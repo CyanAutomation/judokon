@@ -23,7 +23,7 @@
 
 .battle-header #round-message {
   margin: 0;
-  font-size: clamp(18px, 4vw, 30px);
+  font-size: clamp(14px, 4vw, 30px);
   font-weight: bold;
   color: var(--link-color);
 }
@@ -37,13 +37,13 @@
 
 .battle-header #score-display {
   margin: 0;
-  font-size: clamp(18px, 3.5vw, 26px);
+  font-size: clamp(14px, 3.5vw, 26px);
   font-weight: bold;
   color: var(--link-color);
   text-align: right;
 }
 
-@media (max-width: 374px) {
+@media (max-width: 375px) {
   .battle-header {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
@@ -60,6 +60,11 @@
     grid-row: 3;
     justify-self: center;
     align-items: center;
+  }
+  .battle-header #round-message,
+  .battle-header #score-display {
+    font-size: clamp(14px, 5vw, 18px);
+    overflow-wrap: anywhere;
   }
 }
 
