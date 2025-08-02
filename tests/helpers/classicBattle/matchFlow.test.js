@@ -32,7 +32,12 @@ describe("classicBattle match flow", () => {
     const header = createBattleHeader();
     document.body.append(playerCard, computerCard, header);
     timerSpy = vi.useFakeTimers();
-    fetchJsonMock = vi.fn(async () => []);
+    fetchJsonMock = vi.fn(async (url) => {
+      if (String(url).includes("gameTimers.json")) {
+        return [{ id: 1, value: 30, default: true, category: "roundTimer" }];
+      }
+      return [];
+    });
     generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {
       container.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
       if (cb) cb({ id: 1 });

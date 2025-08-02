@@ -9,6 +9,7 @@ import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from 
  *
  * @pseudocode
  * 1. Determine timer duration using `getDefaultTimer('roundTimer')`.
+ *    - On error, show "Waiting…" and fallback to 30 seconds.
  * 2. Call `engineStartRound` to update the countdown each second.
  * 3. When expired, auto-select a random stat via `onExpired`.
  *
@@ -17,13 +18,21 @@ import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from 
  */
 export async function startTimer(onExpiredSelect) {
   const timerEl = document.getElementById("next-round-timer");
-  let duration;
+  let duration = 30;
+  let synced = true;
   try {
-    duration = await getDefaultTimer("roundTimer");
+    const val = await getDefaultTimer("roundTimer");
+    if (typeof val === "number") {
+      duration = val;
+    } else {
+      synced = false;
+    }
   } catch {
-    duration = 30;
+    synced = false;
   }
-  if (typeof duration !== "number") duration = 30;
+  if (!synced) {
+    infoBar.showMessage("Waiting…");
+  }
   engineStartRound(
     (remaining) => {
       if (timerEl) timerEl.textContent = `Time Left: ${remaining}s`;
