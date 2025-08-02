@@ -59,6 +59,9 @@ export function createSettingsDom() {
   const tooltipsToggle = document.createElement("input");
   tooltipsToggle.id = "tooltips-toggle";
   tooltipsToggle.type = "checkbox";
+  const fullNavigationMapToggle = document.createElement("input");
+  fullNavigationMapToggle.id = "full-navigation-map-toggle";
+  fullNavigationMapToggle.type = "checkbox";
   const displayLight = document.createElement("input");
   displayLight.id = "display-mode-light";
   displayLight.type = "radio";
@@ -105,6 +108,7 @@ export function createSettingsDom() {
     motionToggle,
     typewriterToggle,
     tooltipsToggle,
+    fullNavigationMapToggle,
     displayLight,
     displayDark,
     displayGray,

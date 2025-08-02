@@ -222,6 +222,37 @@ describe("settingsPage module", () => {
     expect(showSnackbar).toHaveBeenCalledWith("Tooltips disabled");
   });
 
+  it("renders full navigation map toggle and updates setting", async () => {
+    vi.useFakeTimers();
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updated = { ...baseSettings, fullNavigationMap: false };
+    const updateSetting = vi.fn().mockResolvedValue(updated);
+    const loadNavigationItems = vi.fn().mockResolvedValue([]);
+    const showSnackbar = vi.fn();
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems,
+      loadGameModes: loadNavigationItems,
+      updateNavigationItemHidden: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const input = document.getElementById("full-navigation-map-toggle");
+    expect(input).toBeTruthy();
+    input.checked = false;
+    input.dispatchEvent(new Event("change"));
+    expect(updateSetting).toHaveBeenCalledWith("fullNavigationMap", false);
+    await vi.runAllTimersAsync();
+    expect(showSnackbar).toHaveBeenCalledWith("Full navigation map disabled");
+  });
+
   it("renders feature flag switches", async () => {
     vi.useFakeTimers();
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
