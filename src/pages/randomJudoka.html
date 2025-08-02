@@ -41,6 +41,11 @@
 
       <div class="card-section">
         <div id="card-container" data-testid="card-container" class="card-container"></div>
+        <template id="card-placeholder-template">
+          <div class="card placeholder-card" data-testid="placeholder-card">
+            <p>Tap "Draw Card!" to begin.</p>
+          </div>
+        </template>
         <!-- PRD: Draw Card button and toggles per prdRandomJudoka.md & prdDrawRandomCard.md -->
         <div id="draw-controls" class="draw-controls" aria-label="Draw controls">
           <!-- Button and toggles are injected by randomJudokaPage.js -->

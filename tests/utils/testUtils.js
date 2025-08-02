@@ -30,7 +30,11 @@ export function createRandomCardDom() {
   section.className = "card-section";
   const container = document.createElement("div");
   container.id = "card-container";
-  return { section, container };
+  const placeholderTemplate = document.createElement("template");
+  placeholderTemplate.id = "card-placeholder-template";
+  placeholderTemplate.innerHTML =
+    '<div class="card placeholder-card" data-testid="placeholder-card"><p>Tap "Draw Card!" to begin.</p></div>';
+  return { section, container, placeholderTemplate };
 }
 
 export function createBattleCardContainers() {

@@ -9,10 +9,11 @@
  * 5. Define `displayCard` that disables the Draw button, updates its text and `aria-busy` state while loading, calls
  *    `generateRandomCard` with the loaded data and the user's motion preference, updates the history list, then restores
  *    the button once the animation completes.
- * 6. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and Animation/Sound toggles.
- * 7. Attach event listeners to persist toggle changes, update motion classes, and handle accessibility.
- * 8. If data fails to load, disable the Draw button and show an error message or fallback card.
- * 9. Use `onDomReady` to execute setup when the DOM content is loaded.
+ * 6. Render a placeholder card in the card container.
+ * 7. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and Animation/Sound toggles.
+ * 8. Attach event listeners to persist toggle changes, update motion classes, and handle accessibility.
+ * 9. If data fails to load, disable the Draw button and show an error message or fallback card.
+ * 10. Use `onDomReady` to execute setup when the DOM content is loaded.
  *
  * @returns {Promise<void>} Resolves when the page is fully initialized.
  * @see design/productRequirementsDocuments/prdRandomJudoka.md
@@ -163,6 +164,12 @@ export async function setupRandomJudokaPage() {
     );
   }
 
+  const cardContainer = document.getElementById("card-container");
+  const placeholderTemplate = document.getElementById("card-placeholder-template");
+  if (placeholderTemplate && cardContainer) {
+    cardContainer.appendChild(placeholderTemplate.content.cloneNode(true));
+  }
+
   await preloadData();
   const cardSection = document.querySelector(".card-section");
   toggleHistoryBtn = createButton("History", {
@@ -260,10 +267,8 @@ export async function setupRandomJudokaPage() {
     });
   });
 
-  // Initial state: show card if data loaded, else show error
-  if (dataLoaded) {
-    displayCard();
-  } else {
+  // Initial state: placeholder shown; disable draw button only if data failed to load
+  if (!dataLoaded) {
     showError("Unable to load judoka data. Please try again later.");
     drawButton.disabled = true;
     drawButton.setAttribute("aria-disabled", "true");
