@@ -3,6 +3,7 @@
   "motionEffects": true,
   "typewriterEffect": false,
   "tooltips": true,
+  "showCardOfTheDay": false,
   "displayMode": "light",
   "fullNavigationMap": false,
   "tooltipIds": {
@@ -10,6 +11,7 @@
     "motionEffects": "settings.motionEffects",
     "typewriterEffect": "settings.typewriterEffect",
     "tooltips": "settings.tooltips",
+    "showCardOfTheDay": "settings.showCardOfTheDay",
     "fullNavigationMap": "settings.fullNavigationMap"
   },
   "gameModes": {},
@@ -29,10 +31,6 @@
     "enableCardInspector": {
       "enabled": false,
       "tooltipId": "settings.enableCardInspector"
-    },
-    "showCardOfTheDay": {
-      "enabled": false,
-      "tooltipId": "settings.showCardOfTheDay"
     },
     "viewportSimulation": {
       "enabled": false,

@@ -182,6 +182,8 @@ export function resetSettings() {
  * @property {boolean} sound
  * @property {boolean} motionEffects
  * @property {boolean} typewriterEffect
+ * @property {boolean} tooltips
+ * @property {boolean} showCardOfTheDay
  * @property {"light"|"dark"|"gray"} displayMode
  * @property {boolean} fullNavigationMap
  * @property {Record<string, string>} [tooltipIds]

@@ -6,6 +6,7 @@ const baseSettings = {
   motionEffects: true,
   typewriterEffect: true,
   tooltips: true,
+  showCardOfTheDay: false,
   displayMode: "light",
   fullNavigationMap: true,
   gameModes: {},
@@ -14,7 +15,6 @@ const baseSettings = {
     battleDebugPanel: { enabled: false },
     enableTestMode: { enabled: false },
     enableCardInspector: { enabled: false },
-    showCardOfTheDay: { enabled: false },
     viewportSimulation: { enabled: false },
     tooltipOverlayDebug: { enabled: false },
     layoutDebugPanel: { enabled: false, tooltipId: "settings.layoutDebugPanel" },
@@ -358,49 +358,11 @@ describe("settingsPage module", () => {
       },
       enableTestMode: baseSettings.featureFlags.enableTestMode,
       enableCardInspector: baseSettings.featureFlags.enableCardInspector,
-      showCardOfTheDay: baseSettings.featureFlags.showCardOfTheDay,
       viewportSimulation: baseSettings.featureFlags.viewportSimulation,
       tooltipOverlayDebug: baseSettings.featureFlags.tooltipOverlayDebug,
       layoutDebugPanel: baseSettings.featureFlags.layoutDebugPanel,
       navCacheResetButton: baseSettings.featureFlags.navCacheResetButton
     });
-  });
-
-  it("toggling showCardOfTheDay updates setting", async () => {
-    vi.useFakeTimers();
-    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const updatedSettings = {
-      ...baseSettings,
-      featureFlags: {
-        ...baseSettings.featureFlags,
-        showCardOfTheDay: {
-          ...baseSettings.featureFlags.showCardOfTheDay,
-          enabled: true
-        }
-      }
-    };
-    const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
-    const loadNavigationItems = vi.fn().mockResolvedValue([]);
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
-      loadSettings,
-      updateSetting
-    }));
-    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems,
-      loadGameModes: loadNavigationItems,
-      updateNavigationItemHidden: vi.fn()
-    }));
-
-    await import("../../src/helpers/settingsPage.js");
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await vi.runAllTimersAsync();
-
-    const input = document.querySelector("#feature-show-card-of-the-day");
-    input.checked = true;
-    input.dispatchEvent(new Event("change"));
-    await vi.runAllTimersAsync();
-
-    expect(updateSetting).toHaveBeenCalledWith("featureFlags", updatedSettings.featureFlags);
   });
 
   it("toggling viewportSimulation updates setting", async () => {
@@ -512,50 +474,6 @@ describe("settingsPage module", () => {
     await vi.runAllTimersAsync();
 
     expect(updateSetting).toHaveBeenCalledWith("featureFlags", updatedSettings.featureFlags);
-  });
-
-  it("uses updated tooltip text when toggled after map loads", async () => {
-    vi.useFakeTimers();
-    const localMap = {};
-    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const updatedSettings = {
-      ...baseSettings,
-      featureFlags: {
-        ...baseSettings.featureFlags,
-        showCardOfTheDay: {
-          ...baseSettings.featureFlags.showCardOfTheDay,
-          enabled: true
-        }
-      }
-    };
-    const updateSetting = vi.fn().mockResolvedValue(updatedSettings);
-    const loadNavigationItems = vi.fn().mockResolvedValue([]);
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
-      loadSettings,
-      updateSetting
-    }));
-    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems,
-      loadGameModes: loadNavigationItems,
-      updateNavigationItemHidden: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/tooltip.js", () => ({
-      initTooltips: vi.fn(),
-      getTooltips: vi.fn().mockResolvedValue(localMap)
-    }));
-
-    await import("../../src/helpers/settingsPage.js");
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await vi.runAllTimersAsync();
-
-    localMap["settings.showCardOfTheDay.label"] = "Card Of The Day";
-    localMap["settings.showCardOfTheDay.description"] =
-      "Displays a rotating featured judoka card on the landing screen";
-
-    const input = document.querySelector("#feature-show-card-of-the-day");
-    input.checked = true;
-    input.dispatchEvent(new Event("change"));
-    await vi.runAllTimersAsync();
   });
 
   it("clicking restore defaults requires confirmation", async () => {

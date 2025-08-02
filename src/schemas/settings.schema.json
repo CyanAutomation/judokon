@@ -20,6 +20,10 @@
       "default": true,
       "description": "Globally enable or disable UI tooltips."
     },
+    "showCardOfTheDay": {
+      "type": "boolean",
+      "description": "Display the Card of the Day on the landing screen."
+    },
     "displayMode": {
       "type": "string",
       "enum": ["light", "dark", "gray"],
@@ -64,6 +68,7 @@
     "motionEffects",
     "typewriterEffect",
     "tooltips",
+    "showCardOfTheDay",
     "displayMode",
     "fullNavigationMap"
   ],
