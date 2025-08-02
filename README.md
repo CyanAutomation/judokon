@@ -475,10 +475,17 @@ settings.layoutDebugPanel
 settings.navCacheResetButton
 ```
 
+General settings provide basic customization for all players:
+
+- **Sound** – enable or mute game audio.
+- **Motion Effects** – toggle UI motion animations.
+- **Typewriter Effect** – show or hide the quote animation.
+- **Tooltips** – globally show or hide help tips.
+- **Full Navigation Map** – overlays a map linking to every page for quick testing.
+
 -Feature flags allow temporary or advanced tools without code changes:
 
 - **Battle Debug Panel** – shows a collapsible `<pre>` beside the opponent's card that persists across rounds with live match data.
-- **Full Navigation Map** – overlays a map linking to every page for quick testing.
 - **Test Mode** – replaces all random calls with a seeded generator. Enable it from the Settings page to make matches reproducible and display a "Test Mode Active" banner. The seed resets on each new page load.
 - **Card Inspector** – adds a collapsible panel on each card displaying its raw JSON.
 - **Layout Debug Outlines** – highlights all visible containers on every page whenever the flag is enabled.
