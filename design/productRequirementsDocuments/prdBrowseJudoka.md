@@ -179,7 +179,7 @@ Search will be included in a future update to keep the initial scope focused.
 
 ```
 +---------------------------------------------------------+
-| [Browse Judoka] X| <-- Header with close/back button
+| 
 +---------------------------------------------------------+
 |                                                     |
 | < [Card] [Card] [Card] [Card] [Card] > | <-- Carousel with scroll arrows
@@ -192,7 +192,6 @@ Search will be included in a future update to keep the initial scope focused.
 
 **Wireframe Annotations:**
 
-- Header: “Browse Judoka” title with a close (X) button top-right that exits browsing immediately.
 - Carousel: Horizontally scrollable row of cards with large "Previous" and "Next" arrow buttons on desktop; players can also swipe or scroll on mobile.
 - Cards: Each card displays judoka stats; center card is enlarged by ~10%.
 - Page Markers: Display "current page of total" below the carousel with the active page highlighted; updates are announced via `aria-live` for screen readers.
@@ -230,8 +229,7 @@ Search will be included in a future update to keep the initial scope focused.
 - [ ] 7.0 Accessibility Announcements
   - [ ] 7.1 Announce filter changes and carousel updates via `aria-live` for screen readers (beyond just error/empty states)
 - [ ] 8.0 UI/UX Enhancements
-  - [ ] 8.1 Add header with "Browse Judoka" title and close/back button (currently only logo/home link is present)
-  - [ ] 8.2 Add loading spinner or progress indicator while fetching data
+  - [ ] 8.1 Add loading spinner or progress indicator while fetching data
   - [x] 9.0 Country Picker
     - [x] 9.1 Display flags for countries in `judoka.json`, sorted alphabetically
     - [x] 9.2 Add alt-text and `aria-label` using each country's name
