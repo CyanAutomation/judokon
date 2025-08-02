@@ -178,6 +178,55 @@ describe("randomJudokaPage module", () => {
     expect(parseInt(computed.width)).toBeGreaterThanOrEqual(300);
   });
 
+  it("animation and sound toggles meet minimum size requirements", async () => {
+    vi.useFakeTimers();
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    vi.doMock("../../src/components/Button.js", async () => {
+      return await vi.importActual("../../src/components/Button.js");
+    });
+    vi.doMock("../../src/components/ToggleSwitch.js", async () => {
+      return await vi.importActual("../../src/components/ToggleSwitch.js");
+    });
+
+    const generateRandomCard = vi.fn();
+    const fetchJson = vi.fn().mockResolvedValue([]);
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updateSetting = vi.fn();
+    const applyMotionPreference = vi.fn();
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+
+    const { section, container } = createRandomCardDom();
+    document.body.append(section, container);
+
+    const settingsCss = readFileSync(resolve("src/styles/settings.css"), "utf8");
+    const style = document.createElement("style");
+    style.textContent = settingsCss;
+    document.head.appendChild(style);
+
+    await import("../../src/helpers/randomJudokaPage.js");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const animationInput = document.getElementById("animation-toggle");
+    const soundInput = document.getElementById("sound-toggle");
+    const animStyle = getComputedStyle(animationInput);
+    const soundStyle = getComputedStyle(soundInput);
+    expect(parseInt(animStyle.width)).toBeGreaterThanOrEqual(44);
+    expect(parseInt(animStyle.height)).toBeGreaterThanOrEqual(44);
+    expect(parseInt(soundStyle.width)).toBeGreaterThanOrEqual(44);
+    expect(parseInt(soundStyle.height)).toBeGreaterThanOrEqual(44);
+  });
+
   it("storage event toggles card inspector", async () => {
     vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });

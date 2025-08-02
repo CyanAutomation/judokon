@@ -97,8 +97,10 @@
 .switch input {
   position: absolute;
   opacity: 0;
-  width: 0;
-  height: 0;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  cursor: pointer;
 }
 
 .switch input:focus-visible + .slider {
@@ -108,8 +110,8 @@
 .slider {
   position: relative;
   display: inline-block;
-  width: 60px;
-  height: 34px;
+  width: 80px;
+  height: 44px;
   background-color: var(--switch-off-bg);
   border-radius: var(--radius-pill);
   transition: var(--transition-fast);
@@ -118,8 +120,8 @@
 .slider::before {
   content: "";
   position: absolute;
-  height: 26px;
-  width: 26px;
+  height: 36px;
+  width: 36px;
   left: 4px;
   top: 4px;
   background-color: var(--color-surface);
@@ -132,7 +134,7 @@
 }
 
 .switch input:checked + .slider::before {
-  transform: translateX(26px);
+  transform: translateX(36px);
 }
 
 .slider.round {
