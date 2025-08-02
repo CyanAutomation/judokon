@@ -185,7 +185,14 @@ export async function setupRandomJudokaPage() {
   historyPanel.style.boxShadow = "0 0 10px rgba(0,0,0,0.3)";
   historyPanel.style.padding = "16px";
   historyPanel.style.transform = "translateX(100%)";
-  historyPanel.style.transition = "transform 0.3s ease";
+  // Set transition duration based on user's motion preference
+  function getHistoryPanelTransition() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return "transform 0.01s linear";
+    }
+    return "transform 0.3s ease";
+  }
+  historyPanel.style.transition = getHistoryPanelTransition();
   historyPanel.setAttribute("aria-hidden", "true");
   const historyTitle = document.createElement("h2");
   historyTitle.textContent = "History";
