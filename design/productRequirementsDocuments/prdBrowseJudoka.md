@@ -24,7 +24,7 @@ Players currently lack a centralized way to view all available judoka, making ro
 
 > _“I want to see all judoka in one place so I don’t waste time hunting for cards.”_ — Player feedback
 
-This problem is especially pressing now as the roster grows, and players want a quick way (within **5 s** of opening the screen) to plan their team or see which cards are available in the game.
+This problem is especially pressing now as the roster grows, and players want a quick way to plan their team or see which cards are available in the game.
 
 ---
 
@@ -32,7 +32,7 @@ This problem is especially pressing now as the roster grows, and players want a 
 
 - Allow players to explore the entire roster in one place.
 - Encourage discovery of new judoka to build creative teams.
-- Support smooth browsing on phones and desktops (**≥30 fps** during scrolling).
+- Support smooth browsing on devices.
 - Increase attachment to favorite fighters through easy access.
 - Keep players engaged by making team planning enjoyable.
 
@@ -52,7 +52,7 @@ This problem is especially pressing now as the roster grows, and players want a 
 - As a mobile player, I want the roster to display correctly on my phone so I can explore judoka anywhere.
 - As a keyboard-only user, I want to navigate the listed cards using arrow keys so I can browse without a mouse.
 - As a visually impaired player, I want focus highlights and alt text so I can browse judoka using assistive technologies.
-- As a collector, I want smooth, satisfying animations when scrolling (**≤300 ms, ≥30 fps**) so I feel excited about exploring my roster.
+- As a collector, I want smooth, satisfying animations when scrolling, so I feel excited about exploring my roster.
 - As a fan of my national team, I want to filter judoka by country so I can focus on athletes from my homeland.
 
 ---
@@ -65,7 +65,7 @@ This problem is especially pressing now as the roster grows, and players want a 
 | **P1**   | Stats Data Binding              | Pull stats from `judoka.json` for accurate card display.                                                                                                                                                       |
 | **P1**   | Responsive Layout               | Adapt card layout across devices (mobile & desktop).                                                                                                                                                           |
 | **P2**   | Placeholder for Invalid Entries | Show default card if an entry is missing or invalid.                                                                                                                                                           |
-| **P2**   | Carousel Display of Cards       | Present cards in a swipe/scroll carousel with large "Previous" and "Next" arrow buttons for efficient browsing (**≥30 fps**). (See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel requirements.) |
+| **P2**   | Carousel Display of Cards       | Present cards in a swipe/scroll carousel with large "Previous" and "Next" arrow buttons for efficient browsing. (See [PRD: Judoka Card Carousel](prdCardCarousel.md) for carousel requirements.) |
 | **P2**   | Hover/Keyboard Navigation       | Support interactions for accessibility.                                                                                                                                                                        |
 | **P3**   | Page Markers                    | Show "current page of total" below the carousel with the active page highlighted.                                                                                                                              |
 
@@ -74,10 +74,10 @@ This problem is especially pressing now as the roster grows, and players want a 
 ## Acceptance Criteria
 
 - If the judoka list is empty, display a message saying “No cards available.”
-- The full list of up to 100 judoka cards loads and is visible within 1 second.
+- The full list of up to 100 judoka cards loads and is visible quickly.
 - On mobile (320px–600px), 1–2 cards are visible at once; on desktop (>600px), 3–5 cards are visible, and layout adapts fluidly on window resize.
 - If `judoka.json` contains an invalid or missing card entry, show a default placeholder card instead.
-- Scrolling rapidly through the card carousel maintains a frame rate of at least 30fps.
+- Scrolling rapidly through the card carousel remains smooth.
 - If the network fails to load `judoka.json`, display an error message: “Unable to load roster” and provide a button to retry.
 - Using keyboard arrow keys (left/right) moves focus to the previous/next card, and the focused card is visually highlighted and enlarged.
 - The Country Flag Picker panel appears below the top bar, is accessible via keyboard and screen reader, and supports closing with Escape.
@@ -146,7 +146,7 @@ Search will be included in a future update to keep the initial scope focused.
 - Cards display in a horizontal carousel.
 - On mobile: 1–2 cards visible; on desktop: 3–5 cards visible.
 - Player can scroll/swipe cards horizontally.
-- Smooth snapping behavior to center cards on scroll end (**snap ≤200 ms**).
+- Smooth snapping behavior to center cards on scroll end.
 - Center card is visually enlarged (~10%) for focus.
 - Scroll markers update to reflect current carousel position.
 
@@ -217,7 +217,7 @@ Search will be included in a future update to keep the initial scope focused.
   - [x] 3.3 Use default card for invalid/missing entries or failed images
   - [x] 3.4 Handle network interruptions with retry prompt
 - [ ] 4.0 Performance Optimization
-  - [ ] 4.1 Ensure full list within 1 second for 100 cards
+  - [ ] 4.1 Ensure full list loads quickly for 100 cards
   - [ ] 4.2 Maintain ≥30fps during rapid scrolling
 - [ ] 5.0 Interaction Enhancements
   - [ ] 5.1 Add ripple or scaling animation on tap/click
