@@ -71,7 +71,7 @@ The round message, timer, and score now sit directly inside the page header rath
   - Two-line score format appears on narrow screens (`Player: X` line break `Opponent: Y`)
   - Left side: rotating status messages (e.g., "You won!", "Next round in: 3s", "Select your move", **"Time left: 29s"**)
 - **Visuals**
-  - Font size: min 16sp, bold for win/loss messages.
+  - Font size: `clamp(16px, 4vw, 24px)`; on narrow screens (<375px) `clamp(14px, 5vw, 20px)`.
   - Color coding: green (win), red (loss), neutral grey (countdown).
 - **Responsiveness**
   - Stacked layout on narrow screens (<375px width). <!-- Implemented: see battle.css @media (max-width: 374px) -->
