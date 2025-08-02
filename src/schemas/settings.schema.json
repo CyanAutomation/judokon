@@ -22,6 +22,7 @@
     },
     "showCardOfTheDay": {
       "type": "boolean",
+      "default": true,
       "description": "Display the Card of the Day on the landing screen."
     },
     "displayMode": {
