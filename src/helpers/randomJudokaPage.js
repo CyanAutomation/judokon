@@ -187,7 +187,7 @@ export async function setupRandomJudokaPage() {
   historyPanel.style.transform = "translateX(100%)";
   // Set transition duration based on user's motion preference
   function getHistoryPanelTransition() {
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return "transform 0.01s linear";
     }
     return "transform 0.3s ease";
