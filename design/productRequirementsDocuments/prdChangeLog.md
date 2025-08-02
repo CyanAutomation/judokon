@@ -15,7 +15,6 @@ Players and developers currently lack a simple, in-game method to see which Judo
 ## Goals / Success Metrics
 
 - Allow players and developers to view the 20 most recently updated Judoka cards.
-- Page loads fully in under 2 seconds on mid-tier tablets with 2GB RAM over a 3G mobile network.
 - Improve visibility into Judoka rebalances without requiring developer tools or card-by-card comparisons.
 - Maintain global UI consistency: header, footer, fonts, and background style.
 
@@ -48,7 +47,6 @@ Players and developers currently lack a simple, in-game method to see which Judo
 - The list displays exactly 20 entries from `judoka.json`. (**P1: Sort and Display Entries**)
 - Entries are sorted by `lastUpdated` (descending), then `name` (ascending) if dates match. (**P1: Sort and Display Entries**)
 - Each row includes: Judoka ID, Portrait, Judoka Name, Card Code, Last Modified Date. (**P1: Load and Parse Data**)
-- Page loads fully in <2s on mid-tier mobile device with 3G connection. (**P1: Load and Parse Data**)
 - Global header and footer are present and match the main game theme. (**P2: UI Consistency**)
 - If `judoka.json` is missing or empty, display: "No Judoka data found." (**P3: Error/Fallback Handling**)
 - If a portrait image is missing, show the default placeholder portrait. (**P2: Portrait Display**)
@@ -170,6 +168,5 @@ Players and developers currently lack a simple, in-game method to see which Judo
 ### 6.0 QA and Testing
 
 - [x] **6.1** Validate sorting logic using test data
-- [ ] **6.2** Test loading time on different devices
 - [ ] **6.3** Test responsive behavior on various screen sizes
 - [ ] **6.4** Confirm consistent UI integration with game header/footer
