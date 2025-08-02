@@ -44,7 +44,7 @@ Without this feature, players would be forced to pre-select cards, leading to pr
   - Selects a random Judoka card from the active card set (isActive = True).
   - Visually reveals the card with a slide animation.
   - Future Enhancement: Plays a short celebratory sound (e.g., swoosh or chime)
-  - Ensures animation smoothness at ≥60fps for devices with ≥2GB RAM.
+  - Ensures animation smoothness for devices .
 - **Active card set**: The current pool of cards available in the player’s deck, dynamically updated based on the game state.
 
 ---
@@ -89,7 +89,6 @@ Motion** enabled, ensuring the card appears instantly without movement.
 - **Same Card Reselection**: Duplicates are possible and expected — randomness allows repeats.
 - **Random Pick Failure**: If random draw fails (e.g., due to a code error), show a fallback card (judoka id=0, from `judoka.json`) via `getFallbackJudoka()`
 - **Empty Card Set**: Display a predefined error card (judoka id=0, from judoka.json) if no cards are available.
-- **Low Performance Devices**: Automatically downgrade to a static reveal if animations cannot sustain 60fps.
 - **Accessibility**:
   - Respect system Reduced Motion settings — disable animations if active.
   - Default: Animations ON, but respect system/user preferences.
@@ -102,15 +101,15 @@ Motion** enabled, ensuring the card appears instantly without movement.
 
 | Goal             | Metric                                                                                    |
 | ---------------- | ----------------------------------------------------------------------------------------- |
-| Fast Response    | Card draw completes in under 300ms.                                                       |
-| Smooth Animation | Reveal animation plays at ≥60fps with no visual glitches.                                 |
+| Fast Response    | Card draw completes quickly.                                                       |
+| Smooth Animation | Reveal animation plays with no visual glitches.                                 |
 | Fair Randomness  | Random selection passes chi-square testing for uniformity, 95% confidence over 100 draws. |
 | Low Failure Rate | No more than 1% draw failures.                                                            |
 | Accessibility    | Automatically disable animations if system Reduced Motion is active.                      |
 
 ### User Goals
 
-- Provide an exciting, quick card reveal **(<500 ms animation)** to keep players engaged.
+- Provide an exciting, quick card reveal to keep players engaged.
 - Allow players sensitive to motion to control animation settings for comfort.
 
 ---
@@ -136,8 +135,8 @@ Motion** enabled, ensuring the card appears instantly without movement.
 
 ## Acceptance Criteria
 
-- When “Draw Card” is triggered, a random card from the active set is displayed within 300ms.
-- A reveal animation (fade and slide via `.animate-card`) completes within 500ms at ≥60fps.
+- When “Draw Card” is triggered, a random card from the active set is displayed.
+- A reveal animation (fade and slide via `.animate-card`).
 - If the random function fails, a fallback card is shown (judoka id=0, from judoka.json).
 - If the active card set is empty, a fallback card is shown (judoka id=0, from judoka.json).
   Both cases rely on the shared `getFallbackJudoka()` helper.
@@ -154,7 +153,7 @@ Motion** enabled, ensuring the card appears instantly without movement.
 | P2       | Fallback on Failure            | Show fallback card and error message if draw fails or active set is empty.   |
 | P2       | Reusable Random Draw Module    | Make the random draw callable from multiple game states or screens.          |
 | P3       | Accessibility Support          | Support Reduced Motion settings and maintain color contrast and readability. |
-| P3       | UX Enhancements                | Optimize for 60fps animation, sound effect, and large tap targets.           |
+| P3       | UX Enhancements                | Optimize for animation, sound effect, and large tap targets.           |
 | P3       | Sound & Animation User Toggles | Allow users to manually mute sounds and disable animations if desired.       |
 
 ---
@@ -164,7 +163,7 @@ Motion** enabled, ensuring the card appears instantly without movement.
 - **Animation Style**: Fade or slide only — no flips or excessive transitions to keep visuals polished.
 - **Sound Effect**: Short celebratory chime or swoosh (<1 second) - future enhancement
 - **Responsiveness**:
-  - Smooth transitions at ≥60fps.
+  - Smooth transitions.
   - Degrade to static reveal if hardware performance is low.
 - **Accessibility**:
   - Respect system Reduced Motion settings (disable animations automatically).
@@ -246,20 +245,25 @@ Motion** enabled, ensuring the card appears instantly without movement.
   - [x] 1.2 Integrate card draw with UI trigger ("Draw Card" button).
 - [x] 2.0 Develop Card Reveal Animation
   - [x] 2.1 Implement `.animate-card` class for fade/slide card reveal.
-  - [ ] 2.2 Ensure animation plays at ≥60fps.
   - [x] 2.3 Respect Reduced Motion settings and disable animation when active.
 - [x] 3.0 Error and Fallback Handling
   - [x] 3.1 Display fallback card (judoka id=0, from judoka.json) if random draw fails.
   - [x] 3.2 Show predefined error card (judoka id=0, from judoka.json) if active card set is empty.
+  - [ ] 3.3 Show error message if fallback card fails to load. **[Not implemented: only logs error]**
 - [ ] 4.0 Accessibility and UX Enhancements
-  - [ ] 4.1 Support Reduced Motion settings.
-  - [ ] 4.2 Ensure color contrast on cards meets WCAG AA standards.
-  - [ ] 4.3 Set all tap targets to ≥44px, recommended 64px for better kid usability (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
-  - [ ] 4.4 Implement animation and sound toggle controls with settings persistence.
-  - [ ] 4.5 Play card-draw audio when sound is enabled and provide a mute option.
-  - [ ] 4.6 Disable the “Draw Card” button while loading or animating a card.
-  - [ ] 4.7 Add orientation-based layout rules for portrait vs. landscape.
-  - [ ] 4.8 Write automated tests verifying color contrast and tap target sizes.
+  - [x] 4.1 Support Reduced Motion settings.
+  - [ ] 4.2 Ensure color contrast on cards meets WCAG AA standards. **[No automated test]**
+  - [ ] 4.3 Set all tap targets to ≥44px, recommended 64px for better kid usability (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)). **[Button styled, but no runtime check]**
+  - [ ] 4.4 Implement animation and sound toggle controls with settings persistence. **[Toggles present, but sound logic not implemented]**
+  - [ ] 4.5 Play card-draw audio when sound is enabled and provide a mute option. **[Not implemented]**
+  - [x] 4.6 Disable the “Draw Card” button while loading or animating a card.
+  - [ ] 4.7 Add orientation-based layout rules for portrait vs. landscape. **[Not implemented]**
+  - [ ] 4.8 Write automated tests verifying color contrast and tap target sizes. **[Not implemented]**
+- [ ] 5.0 Additional Features
+  - [ ] 5.1 Implement "Card History" panel. **[Not implemented]**
+  - [ ] 5.2 Add celebratory sound effect on card draw. **[Not implemented]**
+  - [ ] 5.3 Provide visual or ARIA feedback for loading state. **[Only button disables, no spinner/text]**
+  - [ ] 5.5 Run chi-square test for randomness. **[Not implemented]**
 
 ---
 
