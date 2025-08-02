@@ -115,6 +115,139 @@ describe("vector search page integration", () => {
   });
 });
 
+describe("search result message styling", () => {
+  it("adds search-result-empty class when no matches", async () => {
+    const findMatches = vi.fn().mockResolvedValue([]);
+    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
+      findMatches,
+      fetchContextById: vi.fn(),
+      loadEmbeddings: vi.fn().mockResolvedValue([])
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ count: 0 })
+    }));
+    vi.doMock("../../src/helpers/constants.js", () => ({
+      DATA_DIR: "./"
+    }));
+
+    const { handleSearch, init, __setExtractor } = await import(
+      "../../src/helpers/vectorSearchPage.js"
+    );
+
+    __setExtractor(async () => ({ data: [0, 0, 0] }));
+
+    document.body.innerHTML = `
+      <div id="search-spinner"></div>
+      <form id="vector-search-form">
+        <input id="vector-search-input" />
+        <select id="tag-filter"><option value="all">all</option></select>
+      </form>
+      <table id="vector-results-table"><tbody></tbody></table>
+      <p id="search-results-message"></p>
+    `;
+
+    await init();
+
+    document.getElementById("vector-search-input").value = "query";
+    await handleSearch(new Event("submit"));
+
+    const messageEl = document.getElementById("search-results-message");
+    expect(messageEl.classList.contains("search-result-empty")).toBe(true);
+  });
+
+  it("adds search-result-empty class when only weak matches returned", async () => {
+    const match = {
+      id: "1",
+      score: 0.5,
+      text: "test",
+      source: "doc",
+      tags: []
+    };
+    const findMatches = vi.fn().mockResolvedValue([match]);
+    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
+      findMatches,
+      fetchContextById: vi.fn(),
+      loadEmbeddings: vi.fn().mockResolvedValue([match])
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ count: 1 })
+    }));
+    vi.doMock("../../src/helpers/constants.js", () => ({
+      DATA_DIR: "./"
+    }));
+
+    const { handleSearch, init, __setExtractor } = await import(
+      "../../src/helpers/vectorSearchPage.js"
+    );
+
+    __setExtractor(async () => ({ data: [0, 0, 0] }));
+
+    document.body.innerHTML = `
+      <div id="search-spinner"></div>
+      <form id="vector-search-form">
+        <input id="vector-search-input" />
+        <select id="tag-filter"><option value="all">all</option></select>
+      </form>
+      <table id="vector-results-table"><tbody></tbody></table>
+      <p id="search-results-message"></p>
+    `;
+
+    await init();
+
+    document.getElementById("vector-search-input").value = "query";
+    await handleSearch(new Event("submit"));
+
+    const messageEl = document.getElementById("search-results-message");
+    expect(messageEl.classList.contains("search-result-empty")).toBe(true);
+  });
+
+  it("removes search-result-empty class when strong matches exist", async () => {
+    const match = {
+      id: "1",
+      score: 0.8,
+      text: "test",
+      source: "doc",
+      tags: []
+    };
+    const findMatches = vi.fn().mockResolvedValue([match]);
+    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
+      findMatches,
+      fetchContextById: vi.fn(),
+      loadEmbeddings: vi.fn().mockResolvedValue([match])
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ count: 1 })
+    }));
+    vi.doMock("../../src/helpers/constants.js", () => ({
+      DATA_DIR: "./"
+    }));
+
+    const { handleSearch, init, __setExtractor } = await import(
+      "../../src/helpers/vectorSearchPage.js"
+    );
+
+    __setExtractor(async () => ({ data: [0, 0, 0] }));
+
+    document.body.innerHTML = `
+      <div id="search-spinner"></div>
+      <form id="vector-search-form">
+        <input id="vector-search-input" />
+        <select id="tag-filter"><option value="all">all</option></select>
+      </form>
+      <table id="vector-results-table"><tbody></tbody></table>
+      <p id="search-results-message" class="search-result-empty"></p>
+    `;
+
+    await init();
+
+    document.getElementById("vector-search-input").value = "query";
+    await handleSearch(new Event("submit"));
+
+    const messageEl = document.getElementById("search-results-message");
+    expect(messageEl.classList.contains("search-result-empty")).toBe(false);
+  });
+});
+
 describe("highlightTerms", () => {
   it("wraps query words in <mark>", async () => {
     const { highlightTerms } = await import("../../src/helpers/snippetFormatter.js");

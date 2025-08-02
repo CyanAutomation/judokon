@@ -70,3 +70,9 @@
   margin-bottom: var(--space-md);
   text-align: justify;
 }
+
+.search-result-empty {
+  color: var(--color-text);
+  font-style: italic;
+  opacity: 0.65;
+}
