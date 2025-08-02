@@ -175,13 +175,19 @@ export async function handleSearch(event) {
   const selected =
     tagSelect && tagSelect.value && tagSelect.value !== "all" ? [tagSelect.value] : [];
   spinner.style.display = "block";
-  if (messageEl) messageEl.textContent = "Searching...";
+  if (messageEl) {
+    messageEl.textContent = "Searching...";
+    messageEl.classList.remove("search-result-empty");
+  }
   try {
     const model = await getExtractor();
     const result = await model(expandedQuery, { pooling: "mean" });
     const vector = Array.from(result.data ?? result);
     const matches = await findMatches(vector, 5, selected, expandedQuery);
-    if (messageEl) messageEl.textContent = "";
+    if (messageEl) {
+      messageEl.textContent = "";
+      messageEl.classList.remove("search-result-empty");
+    }
     spinner.style.display = "none";
     if (matches === null) {
       if (messageEl)
@@ -189,7 +195,10 @@ export async function handleSearch(event) {
       return;
     }
     if (matches.length === 0) {
-      if (messageEl) messageEl.textContent = "No close matches found — refine your query.";
+      if (messageEl) {
+        messageEl.textContent = "No close matches found — refine your query.";
+        messageEl.classList.add("search-result-empty");
+      }
       return;
     }
 
@@ -201,6 +210,7 @@ export async function handleSearch(event) {
     if (strongMatches.length === 0 && messageEl) {
       messageEl.textContent =
         "\u26A0\uFE0F No strong matches found, but here are the closest matches based on similarity.";
+      messageEl.classList.add("search-result-empty");
     }
 
     for (const [idx, match] of toRender.entries()) {
