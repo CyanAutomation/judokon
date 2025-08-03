@@ -8,6 +8,7 @@ beforeEach(() => {
     <input id="tooltip-search" />
     <ul id="tooltip-list"></ul>
     <div id="tooltip-preview"></div>
+    <div id="tooltip-warning"></div>
     <pre id="tooltip-raw"></pre>
     <button id="copy-key-btn"></button>
     <button id="copy-body-btn"></button>
@@ -41,6 +42,7 @@ describe("setupTooltipViewerPage", () => {
 
     expect(document.getElementById("tooltip-preview").innerHTML).toBe("<strong>Bold</strong>");
     expect(document.getElementById("tooltip-raw").textContent).toBe("**Bold**");
+    expect(document.getElementById("tooltip-warning").hidden).toBe(true);
   });
 
   it("adds warning icon to invalid entries", async () => {
@@ -65,5 +67,27 @@ describe("setupTooltipViewerPage", () => {
     const sr = invalid.querySelector(".tooltip-invalid-text");
     expect(sr).toBeTruthy();
     expect(sr.textContent).toBe("Empty or whitespace-only content");
+  });
+
+  it("shows warning for unbalanced markup", async () => {
+    Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ tip: "**Bold" }),
+      importJsonModule: vi.fn().mockResolvedValue({})
+    }));
+
+    await import("../../src/helpers/tooltipViewerPage.js");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+
+    await Promise.resolve();
+
+    const item = document.querySelector("#tooltip-list li");
+    item.click();
+
+    const warnEl = document.getElementById("tooltip-warning");
+    expect(warnEl.hidden).toBe(false);
+    expect(warnEl.textContent).toBe("Unbalanced markup detected");
   });
 });
