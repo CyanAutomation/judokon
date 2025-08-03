@@ -1,6 +1,8 @@
 /**
  * Initialize the Random Judoka page once the DOM is ready.
  *
+ * Relies on global settings to respect motion preferences.
+ *
  * @pseudocode
  * 1. Load persisted settings and fall back to the system motion preference.
  * 2. Preload judoka and gokyo data using `fetchJson`.
@@ -10,10 +12,9 @@
  *    `generateRandomCard` with the loaded data and the user's motion preference, updates the history list, then restores
  *    the button once the animation completes.
  * 6. Render a placeholder card in the card container.
- * 7. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and Animation/Sound toggles.
- * 8. Attach event listeners to persist toggle changes, update motion classes, and handle accessibility.
- * 9. If data fails to load, disable the Draw button and show an error message or fallback card.
- * 10. Use `onDomReady` to execute setup when the DOM content is loaded.
+ * 7. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and attach its event listener.
+ * 8. If data fails to load, disable the Draw button and show an error message or fallback card.
+ * 9. Use `onDomReady` to execute setup when the DOM content is loaded.
  *
  * @returns {Promise<void>} Resolves when the page is fully initialized.
  * @see design/productRequirementsDocuments/prdRandomJudoka.md
@@ -24,8 +25,7 @@ import { generateRandomCard } from "./randomCard.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { createButton } from "../components/Button.js";
-import { createToggleSwitch } from "../components/ToggleSwitch.js";
-import { loadSettings, updateSetting } from "./settingsUtils.js";
+import { loadSettings } from "./settingsUtils.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
@@ -42,12 +42,18 @@ export async function setupRandomJudokaPage() {
     settings = await loadSettings();
   } catch (err) {
     console.error("Error loading settings:", err);
+    // Fallback to system motion preference
     settings = {
-      sound: false,
-      motionEffects: !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      motionEffects: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      featureFlags: {
+        viewportSimulation: { enabled: false },
+        enableCardInspector: { enabled: false },
+        tooltipOverlayDebug: { enabled: false }
+      }
     };
   }
 
+  // Apply global motion preference
   applyMotionPreference(settings.motionEffects);
   toggleViewportSimulation(Boolean(settings.featureFlags.viewportSimulation?.enabled));
   toggleInspectorPanels(Boolean(settings.featureFlags?.enableCardInspector?.enabled));
@@ -225,21 +231,6 @@ export async function setupRandomJudokaPage() {
   cardSection.appendChild(drawButton);
   drawButton.addEventListener("click", displayCard);
 
-  // Animation and Sound toggles
-  const animationToggle = createToggleSwitch("Animation", {
-    id: "animation-toggle",
-    checked: settings.motionEffects,
-    ariaLabel: "Animation"
-  });
-  const soundToggle = createToggleSwitch("Sound", {
-    id: "sound-toggle",
-    checked: settings.sound,
-    ariaLabel: "Sound"
-  });
-  animationToggle.style.marginTop = "24px";
-  soundToggle.style.marginLeft = "16px";
-  cardSection.append(animationToggle, soundToggle);
-
   window.addEventListener("storage", (e) => {
     if (e.key === "settings" && e.newValue) {
       try {
@@ -249,22 +240,6 @@ export async function setupRandomJudokaPage() {
         toggleTooltipOverlayDebug(Boolean(s.featureFlags?.tooltipOverlayDebug?.enabled));
       } catch {}
     }
-  });
-
-  animationToggle.querySelector("input")?.addEventListener("change", (e) => {
-    const value = e.currentTarget.checked;
-    applyMotionPreference(value);
-    updateSetting("motionEffects", value).catch(() => {
-      e.currentTarget.checked = !value;
-      applyMotionPreference(!value);
-    });
-  });
-
-  soundToggle.querySelector("input")?.addEventListener("change", (e) => {
-    const value = e.currentTarget.checked;
-    updateSetting("sound", value).catch(() => {
-      e.currentTarget.checked = !value;
-    });
   });
 
   // Initial state: placeholder shown; disable draw button only if data failed to load

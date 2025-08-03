@@ -6,7 +6,6 @@ import { parseCssVariables } from "../../src/helpers/cssVariableParser.js";
 import { hex } from "wcag-contrast";
 
 const baseSettings = {
-  sound: false,
   motionEffects: true,
   typewriterEffect: true,
   tooltips: true,
@@ -32,25 +31,14 @@ describe("randomJudokaPage module", () => {
       if (opts.id) btn.id = opts.id;
       return btn;
     });
-    const createToggleSwitch = vi.fn((_, opts) => {
-      const wrapper = document.createElement("div");
-      const input = document.createElement("input");
-      input.type = "checkbox";
-      input.id = opts.id;
-      input.checked = opts.checked;
-      wrapper.appendChild(input);
-      return wrapper;
-    });
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const updateSetting = vi.fn().mockResolvedValue(baseSettings);
     const applyMotionPreference = vi.fn();
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
     vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
     vi.doMock("../../src/components/Button.js", () => ({ createButton }));
-    vi.doMock("../../src/components/ToggleSwitch.js", () => ({ createToggleSwitch }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings, updateSetting }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
@@ -62,7 +50,8 @@ describe("randomJudokaPage module", () => {
     await vi.runAllTimersAsync();
 
     expect(loadSettings).toHaveBeenCalled();
-    expect(createToggleSwitch).toHaveBeenCalledTimes(2);
+    expect(document.getElementById("animation-toggle")).toBeNull();
+    expect(document.getElementById("sound-toggle")).toBeNull();
     expect(applyMotionPreference).toHaveBeenCalledWith(baseSettings.motionEffects);
     expect(generateRandomCard).not.toHaveBeenCalled();
     const drawBtn = document.getElementById("draw-card-btn");
@@ -80,12 +69,10 @@ describe("randomJudokaPage module", () => {
     const judoka = getJudokaFixture()[0];
 
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const updateSetting = vi.fn();
     const applyMotionPreference = vi.fn();
 
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
-      loadSettings,
-      updateSetting
+      loadSettings
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
     vi.doMock("../../src/components/Button.js", () => ({
@@ -94,9 +81,6 @@ describe("randomJudokaPage module", () => {
         if (opts.id) btn.id = opts.id;
         return btn;
       }
-    }));
-    vi.doMock("../../src/components/ToggleSwitch.js", () => ({
-      createToggleSwitch: () => document.createElement("div")
     }));
     vi.doMock("../../src/helpers/randomCard.js", async () => {
       const { generateJudokaCardHTML } = await import("../../src/helpers/cardBuilder.js");
@@ -150,22 +134,17 @@ describe("randomJudokaPage module", () => {
     vi.doMock("../../src/components/Button.js", async () => {
       return await vi.importActual("../../src/components/Button.js");
     });
-    vi.doMock("../../src/components/ToggleSwitch.js", async () => {
-      return await vi.importActual("../../src/components/ToggleSwitch.js");
-    });
 
     const generateRandomCard = vi.fn();
     const fetchJson = vi.fn().mockResolvedValue([]);
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const updateSetting = vi.fn();
     const applyMotionPreference = vi.fn();
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
     vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
-      loadSettings,
-      updateSetting
+      loadSettings
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
@@ -195,22 +174,17 @@ describe("randomJudokaPage module", () => {
     vi.doMock("../../src/components/Button.js", async () => {
       return await vi.importActual("../../src/components/Button.js");
     });
-    vi.doMock("../../src/components/ToggleSwitch.js", async () => {
-      return await vi.importActual("../../src/components/ToggleSwitch.js");
-    });
 
     const generateRandomCard = vi.fn().mockResolvedValue();
     const fetchJson = vi.fn().mockResolvedValue([]);
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const updateSetting = vi.fn();
     const applyMotionPreference = vi.fn();
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
     vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
-      loadSettings,
-      updateSetting
+      loadSettings
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
@@ -236,55 +210,6 @@ describe("randomJudokaPage module", () => {
     expect(button).not.toHaveAttribute("aria-busy");
   });
 
-  it("animation and sound toggles meet minimum size requirements", async () => {
-    vi.useFakeTimers();
-    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
-
-    vi.doMock("../../src/components/Button.js", async () => {
-      return await vi.importActual("../../src/components/Button.js");
-    });
-    vi.doMock("../../src/components/ToggleSwitch.js", async () => {
-      return await vi.importActual("../../src/components/ToggleSwitch.js");
-    });
-
-    const generateRandomCard = vi.fn();
-    const fetchJson = vi.fn().mockResolvedValue([]);
-    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const updateSetting = vi.fn();
-    const applyMotionPreference = vi.fn();
-
-    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
-      loadSettings,
-      updateSetting
-    }));
-    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
-
-    const { section, container, placeholderTemplate } = createRandomCardDom();
-    document.body.append(section, container, placeholderTemplate);
-
-    const settingsCss = readFileSync(resolve("src/styles/settings.css"), "utf8");
-    const style = document.createElement("style");
-    style.textContent = settingsCss;
-    document.head.appendChild(style);
-
-    await import("../../src/helpers/randomJudokaPage.js");
-
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await vi.runAllTimersAsync();
-
-    const animationInput = document.getElementById("animation-toggle");
-    const soundInput = document.getElementById("sound-toggle");
-    const animStyle = getComputedStyle(animationInput);
-    const soundStyle = getComputedStyle(soundInput);
-    expect(parseInt(animStyle.width)).toBeGreaterThanOrEqual(44);
-    expect(parseInt(animStyle.height)).toBeGreaterThanOrEqual(44);
-    expect(parseInt(soundStyle.width)).toBeGreaterThanOrEqual(44);
-    expect(parseInt(soundStyle.height)).toBeGreaterThanOrEqual(44);
-  });
-
   it("stores last draws in a slide-out history panel", async () => {
     vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
@@ -307,23 +232,14 @@ describe("randomJudokaPage module", () => {
       if (opts.id) btn.id = opts.id;
       return btn;
     });
-    const createToggleSwitch = vi.fn(() => {
-      const wrapper = document.createElement("div");
-      const input = document.createElement("input");
-      input.type = "checkbox";
-      wrapper.appendChild(input);
-      return wrapper;
-    });
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const updateSetting = vi.fn();
     const applyMotionPreference = vi.fn();
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
     vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
     vi.doMock("../../src/components/Button.js", () => ({ createButton }));
-    vi.doMock("../../src/components/ToggleSwitch.js", () => ({ createToggleSwitch }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings, updateSetting }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
@@ -367,15 +283,13 @@ describe("randomJudokaPage module", () => {
     });
     const fetchJson = vi.fn().mockResolvedValue([]);
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const updateSetting = vi.fn();
     const applyMotionPreference = vi.fn();
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
     vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
-      loadSettings,
-      updateSetting
+      loadSettings
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
