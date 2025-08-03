@@ -132,6 +132,7 @@ export function setupRandomCardButton(button, container) {
  * 3. Call `setupCarouselToggle` with the carousel button and container.
  * 4. Call `setupHideCardButton` with the hide-card button.
  * 5. Call `setupRandomCardButton` with the random button and game area.
+ * 6. Call `initTooltips` to initialize tooltips.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
