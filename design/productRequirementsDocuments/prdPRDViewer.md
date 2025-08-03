@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-The PRD Viewer is a browser-based tool that enables JU-DO-KON! contributors and stakeholders to read, browse, and validate Product Requirements Documents (PRDs) directly within the web application. It provides a user-friendly interface for sequentially viewing all PRDs, supporting keyboard and touch navigation, and rendering markdown content as styled HTML.
+The PRD Viewer is a browser-based tool that enables JU-DO-KON! contributors and stakeholders to read, browse, and validate Product Requirements Documents (PRDs) directly within the web application. It provides a user-friendly interface for sequentially viewing all PRDs with keyboard, touch, and sidebar navigation. A loading spinner and robust error handling keep users informed, and the interface meets accessibility standards with ARIA labels and screen reader support.
 
 ---
 
@@ -129,8 +129,6 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 **Note:**
 
 - There are no navigation buttons in the UI; navigation is via sidebar, keyboard, or swipe.
-- Loading spinners are not implemented.
-- Accessibility is partially implemented; further testing and improvements may be needed.
 
 ---
 
@@ -158,11 +156,11 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
   - [x] 4.1 Add ARIA labels and roles to interactive elements
   - [x] 4.2 Implement responsive CSS for desktop, tablet, and mobile layouts
 
-- [x] 4.3 Conduct accessibility testing with keyboard-only and screen reader tools
+  - [x] 4.3 Conduct accessibility testing with keyboard-only and screen reader tools
 
-  - Focus order proceeds from header logo to sidebar items to footer links.
-  - Sidebar and footer navigation are announced by screen readers.
-  - Pa11y audit of `src/pages/prdViewer.html` reported no accessibility issues.
+    - Focus order proceeds from header logo to sidebar items to footer links.
+    - Sidebar and footer navigation are announced by screen readers.
+    - Pa11y audit of `src/pages/prdViewer.html` reported no accessibility issues.
 
 - [x] 5.0 Add Home Link and Error Handling
 
