@@ -168,7 +168,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - [x] 5.0 Add Home Link and Error Handling
 
   - [x] 5.1 Insert clickable JU-DO-KON! logo and/or dedicated Home link to main page
-  - [x] 5.2 Log markdown loading errors to console and display fallback UI
+  - [x] 5.2 Log markdown loading errors to console, display per-file fallback messages, and continue rendering other documents
   - [x] 5.3 Hide internal file paths or URLs from the user interface
 
 - [x] 6.0 Display PRD Task Summary
