@@ -148,7 +148,7 @@ describe("populateCountryList", () => {
     expect(names).toEqual(["All", "Japan"]);
   });
 
-  it("renders 'All' even if no countries are found", async () => {
+  it("shows a message if no countries are found", async () => {
     global.fetch = vi
       .fn()
       .mockResolvedValueOnce({ ok: true, json: async () => [] })
@@ -156,8 +156,7 @@ describe("populateCountryList", () => {
     const { populateCountryList } = await import("../../src/helpers/country/index.js");
     const container = document.createElement("div");
     await populateCountryList(container);
-    const slides = container.querySelectorAll(".slide");
-    expect(slides.length).toBe(1);
-    expect(slides[0].querySelector("p").textContent).toBe("All");
+    expect(container.textContent).toBe("No countries available.");
+    expect(container.querySelectorAll(".slide").length).toBe(0);
   });
 });
