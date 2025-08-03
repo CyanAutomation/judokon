@@ -144,7 +144,8 @@ test.describe("Settings page", () => {
         "label[for='tooltips-toggle']",
         "label[for='display-mode-light']",
         "label[for='display-mode-dark']",
-        "label[for='display-mode-gray']"
+        "label[for='display-mode-gray']",
+        "label[for='display-mode-high-contrast']"
       ].join(", "),
       (els) =>
         els.map((el) => {
@@ -175,7 +176,8 @@ test.describe("Settings page", () => {
       "#tooltips-toggle",
       "#display-mode-light",
       "#display-mode-dark",
-      "#display-mode-gray"
+      "#display-mode-gray",
+      "#display-mode-high-contrast"
     ];
 
     for (const sel of selectors) {
