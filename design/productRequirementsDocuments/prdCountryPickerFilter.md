@@ -229,17 +229,23 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
   - [ ] 3.1 Implement virtual scrolling or paging for >50 countries.
   - [ ] 3.2 Ensure the filtering action completes quickly for 90% of sessions.
   - [ ] 3.3 Ensure the country selector appears quickly when toggled.
-  - [x] 3.4 Implement progressive flag loading using `IntersectionObserver` and network-aware batch sizes.
+  - [ ] 3.4 Implement progressive flag loading using `IntersectionObserver`; network-aware batching remains outstanding.
 - [ ] 4.0 Handle Edge Cases
   - [x] 4.1 Display a fallback icon if a flag asset fails to load.
-  - [x] 4.2 Implement progressive flag loading on slow networks using `navigator.connection`.
-  - [x] 4.3 Show a message if the country list is empty.
+  - [ ] 4.2 Detect slow networks with `navigator.connection` to adjust flag loading.
+  - [ ] 4.3 Show a message if the country list is empty.
 - [ ] 5.0 Ensure Accessibility and Compliance
   - [x] 5.1 Add alt-text for all flag icons based on country names and apply `aria-label` text like "Filter by {country}" to each flag button for screen readers.
   - [x] 5.2 Ensure color contrast ratios meet WCAG 2.1 AA standards.
   - [x] 5.3 Enforce minimum tap target size (44x44px) for touch devices (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
   - [x] 5.4 Ensure flags are displayed alphabetically.
-  - [x] 5.5 Ensure keyboard navigation and focus outlines are visible and accessible.
+- [x] 5.5 Ensure keyboard navigation and focus outlines are visible and accessible.
+
+### Outstanding Work
+
+- Progressive flag loading requires network-aware batching and better fallback strategies on slow connections.
+- Performance benchmarks are pending; filtering speed and toggle responsiveness must be validated.
+- Slide-in animation should honor the user's `prefers-reduced-motion` setting.
 
 ---
 
