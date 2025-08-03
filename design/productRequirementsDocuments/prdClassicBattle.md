@@ -131,7 +131,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 ## Edge Cases / Failure States
 
 - **Player disconnects mid-match:** round is abandoned; player rejoins at main menu.
-- **Judoka dataset fails to load:** error message appears; player can retry loading.
+- **Judoka or Gokyo dataset fails to load:** error message surfaces in the Info Bar and an error dialog offers a "Retry" button to reload data or the page.
 - **Player does not make a stat selection within 30 seconds:** system randomly selects a stat automatically. **Info Bar must update accordingly.**
 - **AI fails to select a stat (if difficulty logic implemented):** fallback to random stat selection.
 

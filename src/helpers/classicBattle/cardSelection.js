@@ -3,10 +3,52 @@ import { getRandomJudoka, renderJudokaCard } from "../cardUtils.js";
 import { fetchJson } from "../dataUtils.js";
 import { createGokyoLookup } from "../utils.js";
 import { DATA_DIR } from "../constants.js";
+import { showMessage } from "../setupBattleInfoBar.js";
+import { createModal } from "../../components/Modal.js";
+import { createButton } from "../../components/Button.js";
 
 let judokaData = null;
 let gokyoLookup = null;
 let computerJudoka = null;
+let loadErrorModal = null;
+
+function showLoadError(error) {
+  const msg = error?.message || "Unable to load data.";
+  showMessage(msg);
+  if (!loadErrorModal) {
+    const title = document.createElement("h2");
+    title.id = "load-error-title";
+    title.textContent = "Load Error";
+
+    const desc = document.createElement("p");
+    desc.id = "load-error-desc";
+    desc.textContent = msg;
+
+    const actions = document.createElement("div");
+    actions.className = "modal-actions";
+
+    const retry = createButton("Retry", { id: "retry-draw-button" });
+    retry.addEventListener("click", async () => {
+      loadErrorModal.close();
+      try {
+        await drawCards();
+      } catch (retryError) {
+        window.location.reload();
+      }
+    });
+    actions.append(retry);
+
+    const frag = document.createDocumentFragment();
+    frag.append(title, desc, actions);
+
+    loadErrorModal = createModal(frag, { labelledBy: title, describedBy: desc });
+    document.body.appendChild(loadErrorModal.element);
+  } else {
+    const descEl = loadErrorModal.element.querySelector("#load-error-desc");
+    if (descEl) descEl.textContent = msg;
+  }
+  loadErrorModal.open();
+}
 
 /**
  * Draw battle cards for the player and computer.
@@ -23,13 +65,23 @@ let computerJudoka = null;
  */
 export async function drawCards() {
   if (!judokaData) {
-    judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
+    try {
+      judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
+    } catch (error) {
+      showLoadError(error);
+      return { playerJudoka: null, computerJudoka: null };
+    }
   }
   const available = Array.isArray(judokaData) ? judokaData.filter((j) => !j.isHidden) : [];
 
   if (!gokyoLookup) {
-    const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
-    gokyoLookup = createGokyoLookup(gokyoData);
+    try {
+      const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
+      gokyoLookup = createGokyoLookup(gokyoData);
+    } catch (error) {
+      showLoadError(error);
+      return { playerJudoka: null, computerJudoka: null };
+    }
   }
 
   const playerContainer = document.getElementById("player-card");

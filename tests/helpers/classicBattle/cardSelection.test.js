@@ -106,4 +106,29 @@ describe("classicBattle card selection", () => {
       expect.objectContaining({ id: 2, isHidden: false })
     ]);
   });
+
+  it("shows retry dialog when data load fails", async () => {
+    fetchJsonMock
+      .mockRejectedValueOnce(new Error("boom"))
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([]);
+
+    const { drawCards, _resetForTest } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
+    _resetForTest();
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { ...window.location, reload: vi.fn() }
+    });
+
+    await drawCards();
+
+    expect(document.getElementById("round-message").textContent).toBe("boom");
+    const retry = document.getElementById("retry-draw-button");
+    expect(retry).toBeTruthy();
+    await retry.click();
+    await Promise.resolve();
+    expect(fetchJsonMock).toHaveBeenCalledTimes(3);
+  });
 });
