@@ -65,6 +65,13 @@ export async function startTimer(onExpiredSelect) {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
       const expected = duration - elapsed;
       if (Math.abs(remaining - expected) > DRIFT_THRESHOLD) {
+        driftRetries += 1;
+        if (driftRetries > MAX_DRIFT_RETRIES) {
+          clearInterval(driftInterval);
+          infoBar.showMessage("Timer error. Auto-selecting stat.");
+          onExpired();
+          return;
+        }
         infoBar.showMessage("Waiting…");
         runTimer(remaining);
       }
