@@ -3,24 +3,6 @@ player-info {
   padding-left: var(--space-sm);
 }
 
-.settings-button {
-  justify-self: end;
-  background: none;
-  border: none;
-  width: 64px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  color: var(--color-secondary);
-}
-
-.settings-button svg {
-  width: 64px;
-  height: 64px;
-}
-
 .card-section {
   display: flex;
   flex-direction: column;
