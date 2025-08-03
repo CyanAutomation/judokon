@@ -44,7 +44,12 @@ export async function setupRandomJudokaPage() {
     console.error("Error loading settings:", err);
     // Fallback to system motion preference
     settings = {
-      motionEffects: !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      motionEffects: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      featureFlags: {
+        viewportSimulation: { enabled: false },
+        enableCardInspector: { enabled: false },
+        tooltipOverlayDebug: { enabled: false }
+      }
     };
   }
 
