@@ -18,14 +18,31 @@ import { getMissingJudokaFields } from "./judokaValidation.js";
 function isNodeEnvironment() {
   return Boolean(typeof process !== "undefined" && process?.versions?.node);
 }
-
+/**
+ * Lazily instantiate and return a singleton Ajv instance with format support.
+ *
+ * @pseudocode
+ * 1. Return `ajvInstance` when it already exists.
+ * 2. If running under Node:
+ *    - Import `Ajv` and `ajv-formats`.
+ *    - Create an Ajv instance and apply the formats.
+ * 3. If running in a browser window:
+ *    - Import the bundled Ajv v6 locally or from a CDN.
+ * 4. Otherwise:
+ *    - Import `Ajv` and `ajv-formats`, then apply the formats.
+ * 5. Return the Ajv instance.
+ *
+ * @returns {Promise<import("ajv").default>} Ajv instance.
+ */
 export async function getAjv() {
   if (ajvInstance) {
     return ajvInstance;
   }
   if (isNodeEnvironment()) {
     const Ajv = (await import("ajv")).default;
+    const addFormats = (await import("ajv-formats")).default;
     ajvInstance = new Ajv();
+    addFormats(ajvInstance);
   } else if (typeof window !== "undefined") {
     try {
       const module = await import("../vendor/ajv6.min.js");
@@ -37,7 +54,9 @@ export async function getAjv() {
     }
   } else {
     const Ajv = (await import("ajv")).default;
+    const addFormats = (await import("ajv-formats")).default;
     ajvInstance = new Ajv();
+    addFormats(ajvInstance);
   }
   return ajvInstance;
 }
