@@ -179,6 +179,24 @@ describe("setupTooltipViewerPage", () => {
     expect(btn.classList.contains("copied")).toBe(true);
   });
 
+  it("shows 'File not found' when tooltips.json is missing", async () => {
+    Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+
+    const error = Object.assign(new Error("missing"), { code: "ENOENT" });
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockRejectedValue(error),
+      importJsonModule: vi.fn().mockResolvedValue({})
+    }));
+
+    await import("../../src/helpers/tooltipViewerPage.js");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+
+    await Promise.resolve();
+
+    expect(document.getElementById("tooltip-preview").textContent).toBe("File not found");
+  });
+
   it("adds warning icon to invalid key names", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 

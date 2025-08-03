@@ -115,6 +115,7 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 - Sidebar scrolls independently from the preview so the list remains visible while browsing.
 - Elements expose `data-key`, `data-body`, and `data-valid` for QA.
 - Viewer operates offline as a static HTML file.
+- When `tooltips.json` is missing, the preview panel displays "File not found".
 - Styling matches JU-DO-KON! brand (typography, colors, spacing).
 - **Sidebar supports keyboard navigation and category highlighting**
 - **Visual indicators (icon/tooltip) for invalid/empty/malformed entries are present**
