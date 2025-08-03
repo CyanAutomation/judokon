@@ -122,7 +122,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - After confirming the quit action, the player is returned to the main menu (index.html).
 - If AI difficulty affects stat selection, AI uses correct logic per difficulty setting.
 - Animation flow: transitions between card reveal, stat selection, and result screens complete smoothly without stalling (**each ≤400 ms at ≥60 fps**).
-- Stat buttons reset between rounds so no previous selection remains highlighted. The CSS rule `#stat-buttons button { -webkit-tap-highlight-color: transparent; }` combined with a reflow ensures Safari clears the red touch overlay.
+- Stat buttons reset between rounds so no previous selection remains highlighted. The `battle.css` rule `#stat-buttons button { -webkit-tap-highlight-color: transparent; }` combined with a reflow ensures Safari clears the red touch overlay.
 - If the Judoka dataset fails to load, an error message appears with option to reload.
 - **All Info Bar content (messages, timer, score) must meet accessibility and responsiveness requirements as described in prdBattleInfoBar.md.**
 

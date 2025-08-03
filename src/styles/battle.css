@@ -92,3 +92,8 @@
 #battle-area .judoka-card:focus-visible {
   transform: none;
 }
+
+/* Prevent Safari's red overlay from persisting */
+#stat-buttons button {
+  -webkit-tap-highlight-color: transparent;
+}

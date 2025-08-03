@@ -34,7 +34,7 @@ export function getRoundMessageEl() {
  * 1. Loop over buttons returned by `getStatButtons`.
  * 2. Remove the `selected` class and any inline background color.
  * 3. Disable the button to clear active/tap highlight.
- * 4. Force reflow and set `-webkit-tap-highlight-color` to transparent.
+ * 4. Force reflow so Safari clears the overlay.
  * 5. In the next animation frame re-enable, clear styles, and blur.
  */
 export function resetStatButtons() {
@@ -43,10 +43,8 @@ export function resetStatButtons() {
     btn.style.removeProperty("background-color");
     btn.disabled = true;
     void btn.offsetWidth;
-    btn.style.setProperty("-webkit-tap-highlight-color", "transparent");
     requestAnimationFrame(() => {
       btn.disabled = false;
-      btn.style.removeProperty("-webkit-tap-highlight-color");
       btn.style.backgroundColor = "";
       btn.blur();
     });
