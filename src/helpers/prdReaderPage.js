@@ -171,7 +171,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
       const name = FILES[i];
       try {
         const res = await fetch(`${PRD_DIR}${name}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} for ${name}`);
         const text = await res.text();
         documents[i] = parseWithWarning(text);
         taskStats[i] = getPrdTaskStats(text);
