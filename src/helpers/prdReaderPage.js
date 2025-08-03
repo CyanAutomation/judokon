@@ -167,20 +167,22 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
       }
     }
   } else {
-    try {
-      for (let i = 0; i < FILES.length; i++) {
-        const name = FILES[i];
+    for (let i = 0; i < FILES.length; i++) {
+      const name = FILES[i];
+      try {
         const res = await fetch(`${PRD_DIR}${name}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const text = await res.text();
         documents[i] = parseWithWarning(text);
         taskStats[i] = getPrdTaskStats(text);
         const titleMatch = text.match(/^#\s*(.+)/m);
         titles[i] = titleMatch ? titleMatch[1].trim() : "";
+      } catch (err) {
+        console.error(`Failed to load PRD ${name}`, err);
+        documents[i] = "<p>Content unavailable</p>";
+        taskStats[i] = { total: 0, completed: 0 };
+        titles[i] = "";
       }
-    } catch (err) {
-      console.error("Failed to load PRD", err);
-      if (spinner) spinner.style.display = "none";
-      return;
     }
   }
 
