@@ -6,6 +6,7 @@ import { createSidebarList } from "../components/SidebarList.js";
 import { showSnackbar } from "./showSnackbar.js";
 
 const INVALID_TOOLTIP_MSG = "Empty or whitespace-only content";
+const MALFORMED_TOOLTIP_MSG = "Unbalanced markup detected";
 
 /**
  * Initialize the Tooltip Viewer page.
@@ -14,7 +15,7 @@ const INVALID_TOOLTIP_MSG = "Empty or whitespace-only content";
  * 1. Load and flatten `tooltips.json` using `fetchJson` and `flattenTooltips`.
  * 2. Render a clickable list of keys filtered by the search box (300ms debounce),
  *    tagging items with a class based on their prefix (e.g. `stat`, `ui`) and
- *    flagging empty bodies with a warning icon.
+ *    flagging empty or malformed bodies with a warning icon.
  * 3. Wrap the preview in a 300px-high container with a toggle button to expand
  *    or collapse long content.
  * 4. When a key is selected, display its parsed HTML and raw text in the
@@ -88,11 +89,12 @@ export async function setupTooltipViewerPage() {
       const match = terms.every((t) => haystack.includes(t));
       if (match) {
         const valid = typeof body === "string" && body.trim().length > 0;
+        const { warning } = parseTooltipText(body);
         const prefix = key.split(".")[0];
         items.push({
           label: key,
           className: prefix,
-          dataset: { key, body, valid: String(valid) }
+          dataset: { key, body, valid: String(valid), warning: String(warning) }
         });
       }
     });
@@ -100,15 +102,21 @@ export async function setupTooltipViewerPage() {
       select(el.dataset.key);
     });
     Array.from(result.element.children).forEach((li) => {
+      let message = null;
       if (li.dataset.valid === "false") {
+        message = INVALID_TOOLTIP_MSG;
+      } else if (li.dataset.warning === "true") {
+        message = MALFORMED_TOOLTIP_MSG;
+      }
+      if (message) {
         const icon = document.createElement("span");
         icon.className = "tooltip-invalid-icon";
         icon.textContent = "!";
-        icon.title = INVALID_TOOLTIP_MSG;
+        icon.title = message;
         icon.setAttribute("aria-hidden", "true");
         const sr = document.createElement("span");
         sr.className = "tooltip-invalid-text";
-        sr.textContent = INVALID_TOOLTIP_MSG;
+        sr.textContent = message;
         li.append(" ", icon, sr);
       }
     });
@@ -131,7 +139,7 @@ export async function setupTooltipViewerPage() {
     previewEl.innerHTML = html;
     rawEl.textContent = body;
     if (warning) {
-      warningEl.textContent = "Unbalanced markup detected";
+      warningEl.textContent = MALFORMED_TOOLTIP_MSG;
       warningEl.hidden = false;
     } else {
       warningEl.textContent = "";
