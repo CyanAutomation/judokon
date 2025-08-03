@@ -4,7 +4,7 @@ import {
   startRound as engineStartRound,
   startCoolDown,
   STATS,
-  getTimerState
+  watchForDrift
 } from "../battleEngine.js";
 import * as infoBar from "../setupBattleInfoBar.js";
 import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from "./uiHelpers.js";
@@ -16,7 +16,7 @@ import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from 
  * 1. Determine timer duration using `getDefaultTimer('roundTimer')`.
  *    - On error, show "Waiting…" and fallback to 30 seconds.
  * 2. Call `engineStartRound` to update the countdown each second.
- * 3. Compare real elapsed time with `getTimerState()` and restart the timer on drift,
+ * 3. Monitor for drift with `watchForDrift`; on drift show "Waiting…" and restart,
  *    giving up after several retries.
  * 4. When expired, auto-select a random stat via `onExpired`.
  *
@@ -45,40 +45,27 @@ export async function startTimer(onExpiredSelect) {
     if (timerEl) timerEl.textContent = `Time Left: ${remaining}s`;
   };
 
+  let stopWatch;
   const onExpired = () => {
-    clearInterval(driftInterval);
+    if (stopWatch) stopWatch();
     const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
     infoBar.showMessage(`Time's up! Auto-selecting ${randomStat}`);
     onExpiredSelect(randomStat);
   };
 
-  const DRIFT_THRESHOLD = 2;
-  const MAX_DRIFT_RETRIES = 3;
-  let driftRetries = 0;
-  let driftInterval;
-  let startTime = Date.now();
+  const handleDrift = createDriftHandler(
+    (rem) => runTimer(rem),
+    () => {
+      infoBar.showMessage("Timer error. Auto-selecting stat.");
+      onExpired();
+    }
+  );
 
   const runTimer = (dur) => {
-    startTime = Date.now();
     duration = dur;
     engineStartRound(onTick, onExpired, dur);
-    clearInterval(driftInterval);
-    driftInterval = setInterval(() => {
-      const { remaining } = getTimerState();
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const expected = duration - elapsed;
-      if (Math.abs(remaining - expected) > DRIFT_THRESHOLD) {
-        driftRetries += 1;
-        if (driftRetries > MAX_DRIFT_RETRIES) {
-          clearInterval(driftInterval);
-          infoBar.showMessage("Timer error. Auto-selecting stat.");
-          onExpired();
-          return;
-        }
-        infoBar.showMessage("Waiting…");
-        runTimer(remaining);
-      }
-    }, 1000);
+    if (stopWatch) stopWatch();
+    stopWatch = watchForDrift(dur, handleDrift);
   };
 
   runTimer(duration);
@@ -90,7 +77,8 @@ export async function startTimer(onExpiredSelect) {
  * @pseudocode
  * 1. If the match ended, return early.
  * 2. Setup a click handler that disables the button and calls `startRoundFn`.
- * 3. Start a 3 second cooldown via `startCoolDown` after a short delay.
+ * 3. Start a 3 second cooldown via `startCoolDown` after a short delay and
+ *    monitor for drift with `watchForDrift`.
  * 4. When expired, enable the button and attach the click handler.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
@@ -113,13 +101,43 @@ export function scheduleNextRound(result, startRoundFn) {
     if (timerEl) timerEl.textContent = `Next round in: ${remaining}s`;
   };
 
+  let stopWatch;
   const onExpired = () => {
+    if (stopWatch) stopWatch();
     btn.addEventListener("click", onClick, { once: true });
     enableNextRoundButton();
     updateDebugPanel();
   };
 
+  const handleDrift = createDriftHandler(
+    (rem) => runCoolDown(rem),
+    () => {
+      infoBar.showMessage("Timer error. Enabling next round.");
+      onExpired();
+    }
+  );
+
+  const runCoolDown = (dur) => {
+    startCoolDown(onTick, onExpired, dur);
+    if (stopWatch) stopWatch();
+    stopWatch = watchForDrift(dur, handleDrift);
+  };
+
   setTimeout(() => {
-    startCoolDown(onTick, onExpired, 3);
+    runCoolDown(3);
   }, 2000);
+}
+
+function createDriftHandler(restartFn, onGiveUp) {
+  const MAX_DRIFT_RETRIES = 3;
+  let retries = 0;
+  return (remaining) => {
+    retries += 1;
+    if (retries > MAX_DRIFT_RETRIES) {
+      onGiveUp();
+      return;
+    }
+    infoBar.showMessage("Waiting…");
+    restartFn(remaining);
+  };
 }

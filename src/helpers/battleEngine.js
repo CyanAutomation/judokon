@@ -10,6 +10,8 @@ import { getDefaultTimer, createCountdownTimer } from "./timerUtils.js";
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 
+const DRIFT_THRESHOLD = 2;
+
 let playerScore = 0;
 let computerScore = 0;
 let currentTimer = null;
@@ -213,6 +215,32 @@ export function isMatchEnded() {
 
 export function getTimerState() {
   return { remaining, paused };
+}
+
+/**
+ * Monitor the active timer for drift and invoke a callback when detected.
+ *
+ * @pseudocode
+ * 1. Record the current time as the baseline.
+ * 2. Every second compare expected remaining time with `remaining`.
+ * 3. If the difference exceeds `DRIFT_THRESHOLD`, stop the interval and call
+ *    `onDrift` with the latest remaining value.
+ *
+ * @param {number} duration - Duration originally passed to the timer.
+ * @param {function(number): void} onDrift - Callback invoked when drift detected.
+ * @returns {function(): void} Function to stop monitoring.
+ */
+export function watchForDrift(duration, onDrift) {
+  const start = Date.now();
+  const interval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - start) / 1000);
+    const expected = duration - elapsed;
+    if (Math.abs(remaining - expected) > DRIFT_THRESHOLD) {
+      clearInterval(interval);
+      if (typeof onDrift === "function") onDrift(remaining);
+    }
+  }, 1000);
+  return () => clearInterval(interval);
 }
 
 export function _resetForTest() {
