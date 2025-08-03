@@ -5,7 +5,7 @@
  * 1. Create three `<p>` elements:
  *    - `#round-message` with `aria-live="polite"`, `aria-atomic="true"`, and `role="status"` for result text.
  *    - `#next-round-timer` with `aria-live="polite"`, `aria-atomic="true"`, and `role="status"` for countdown updates.
- *    - `#score-display` with `aria-live="off"` and `aria-atomic="true"` for the match score.
+ *    - `#score-display` with `aria-live="polite"` and `aria-atomic="true"` for the match score.
  * 2. Append them to the provided container (typically the page header).
  * 3. Store references to these elements for later updates.
  * 4. Return the container element.
@@ -32,7 +32,8 @@ export function createInfoBar(container = document.createElement("div")) {
 
   scoreEl = document.createElement("p");
   scoreEl.id = "score-display";
-  scoreEl.setAttribute("aria-live", "off");
+  scoreEl.setAttribute("aria-live", "polite");
+  // Score announcements use a polite live region; consider throttling if updates are frequent.
   scoreEl.setAttribute("aria-atomic", "true");
 
   container.append(messageEl, timerEl, scoreEl);
