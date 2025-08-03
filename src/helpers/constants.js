@@ -15,6 +15,11 @@
 /**
  * Absolute URL to the helpers directory.
  *
+ * The `@vite-ignore` directive is used here to prevent Vite from analyzing
+ * or transforming the path as a static asset import. Without this directive,
+ * Vite may attempt to bundle or process the directory, which is not desired
+ * for runtime directory resolution.
+ *
  * @constant {URL}
  */
 const HELPERS_DIR = new URL(/* @vite-ignore */ ".", import.meta.url);
