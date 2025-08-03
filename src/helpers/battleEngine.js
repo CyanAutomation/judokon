@@ -51,9 +51,10 @@ function endMatchIfNeeded() {
  * @pseudocode
  * 1. Determine the timer duration when not provided using `getDefaultTimer('roundTimer')`.
  *    - Fallback to 30 seconds on any error.
- * 2. Create a countdown timer with `createCountdownTimer(duration, { onTick, onExpired, pauseOnHidden: true })`.
- * 3. Store callbacks and reset remaining time.
- * 4. Call `start()` on the timer.
+ * 2. If the duration is invalid or non-numeric, fall back to 30 seconds.
+ * 3. Create a countdown timer with `createCountdownTimer(duration, { onTick, onExpired, pauseOnHidden: true })`.
+ * 4. Store callbacks and reset remaining time.
+ * 5. Call `start()` on the timer.
  *
  * @param {function} onTick - Callback each second with remaining time.
  * @param {function} onExpired - Callback when timer expires (auto-select logic).
@@ -92,9 +93,10 @@ export async function startRound(onTick, onExpired, duration) {
  *
  * @pseudocode
  * 1. Determine the duration using `getDefaultTimer('coolDownTimer')` when not provided; fallback to 3 seconds.
- * 2. Create a countdown timer with `createCountdownTimer(duration, { onTick, onExpired })`.
- * 3. Store callbacks and reset remaining time.
- * 4. Call `start()` on the timer.
+ * 2. If the duration is invalid or non-numeric, fall back to 3 seconds.
+ * 3. Create a countdown timer with `createCountdownTimer(duration, { onTick, onExpired })`.
+ * 4. Store callbacks and reset remaining time.
+ * 5. Call `start()` on the timer.
  *
  * @param {function} onTick - Callback each second with remaining time.
  * @param {function} onExpired - Callback when timer expires.
