@@ -16,7 +16,8 @@ import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from 
  * 1. Determine timer duration using `getDefaultTimer('roundTimer')`.
  *    - On error, show "Waiting…" and fallback to 30 seconds.
  * 2. Call `engineStartRound` to update the countdown each second.
- * 3. Compare real elapsed time with `getTimerState()` and restart the timer on drift.
+ * 3. Compare real elapsed time with `getTimerState()` and restart the timer on drift,
+ *    giving up after several retries.
  * 4. When expired, auto-select a random stat via `onExpired`.
  *
  * @param {function(string): void} onExpiredSelect - Callback to handle stat auto-selection.
@@ -52,6 +53,8 @@ export async function startTimer(onExpiredSelect) {
   };
 
   const DRIFT_THRESHOLD = 2;
+  const MAX_DRIFT_RETRIES = 3;
+  let driftRetries = 0;
   let driftInterval;
   let startTime = Date.now();
 
