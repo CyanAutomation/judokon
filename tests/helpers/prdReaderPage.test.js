@@ -15,7 +15,7 @@ describe("prdReaderPage", () => {
       <div id="prd-title"></div>
       <div id="task-summary"></div>
       <ul id="prd-list"></ul>
-      <div id="prd-content"></div>
+      <div id="prd-content" tabindex="-1"></div>
       <button data-nav="prev">Prev</button>
       <button data-nav="next">Next</button>
       <button data-nav="prev">Prev bottom</button>
@@ -35,18 +35,22 @@ describe("prdReaderPage", () => {
 
     expect(container.innerHTML).toContain("First doc");
     expect(list.children[0].classList.contains("selected")).toBe(true);
+    expect(list.children[0].getAttribute("aria-current")).toBe("page");
     expect(titleEl.textContent).toBe("First doc");
     nextBtns[0].click();
     expect(container.innerHTML).toContain("Second doc");
     expect(list.children[1].classList.contains("selected")).toBe(true);
+    expect(list.children[1].getAttribute("aria-current")).toBe("page");
     expect(titleEl.textContent).toBe("Second doc");
     nextBtns[1].click();
     expect(container.innerHTML).toContain("First doc");
     expect(list.children[0].classList.contains("selected")).toBe(true);
+    expect(list.children[0].getAttribute("aria-current")).toBe("page");
     expect(titleEl.textContent).toBe("First doc");
     prevBtns[1].click();
     expect(container.innerHTML).toContain("Second doc");
     expect(list.children[1].classList.contains("selected")).toBe(true);
+    expect(list.children[1].getAttribute("aria-current")).toBe("page");
     expect(titleEl.textContent).toBe("Second doc");
   });
 
@@ -61,7 +65,7 @@ describe("prdReaderPage", () => {
       <div id="prd-title"></div>
       <div id="task-summary"></div>
       <ul id="prd-list"></ul>
-      <div id="prd-content"></div>
+      <div id="prd-content" tabindex="-1"></div>
       <button data-nav="prev">Prev</button>
       <button data-nav="next">Next</button>
     `;
@@ -80,10 +84,12 @@ describe("prdReaderPage", () => {
     items[1].click();
     expect(container.innerHTML).toContain("Two");
     expect(titleEl.textContent).toBe("Two");
+    expect(items[1].getAttribute("aria-current")).toBe("page");
     items[0].dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
     expect(container.innerHTML).toContain("One");
     expect(titleEl.textContent).toBe("One");
     expect(items[0].classList.contains("selected")).toBe(true);
+    expect(items[0].getAttribute("aria-current")).toBe("page");
   });
 
   it("updates #prd-content when a list item is clicked", async () => {
@@ -97,7 +103,7 @@ describe("prdReaderPage", () => {
       <div id="prd-title"></div>
       <div id="task-summary"></div>
       <ul id="prd-list"></ul>
-      <div id="prd-content"></div>
+      <div id="prd-content" tabindex="-1"></div>
     `;
 
     globalThis.SKIP_PRD_AUTO_INIT = true;
@@ -111,9 +117,11 @@ describe("prdReaderPage", () => {
 
     expect(container.innerHTML).toContain("Alpha");
     expect(titleEl.textContent).toBe("Alpha");
+    expect(items[0].getAttribute("aria-current")).toBe("page");
     items[1].click();
     expect(container.innerHTML).toContain("Beta");
     expect(titleEl.textContent).toBe("Beta");
+    expect(items[1].getAttribute("aria-current")).toBe("page");
   });
 
   it("displays task summary when element exists", async () => {
@@ -126,7 +134,7 @@ describe("prdReaderPage", () => {
       <div id="prd-title"></div>
       <div id="task-summary"></div>
       <ul id="prd-list"></ul>
-      <div id="prd-content"></div>
+      <div id="prd-content" tabindex="-1"></div>
       <button data-nav="prev">Prev</button>
       <button data-nav="next">Next</button>
     `;
@@ -137,7 +145,9 @@ describe("prdReaderPage", () => {
     await setupPrdReaderPage(docs, parser);
 
     const summary = document.getElementById("task-summary");
+    const list = document.getElementById("prd-list");
     expect(summary.textContent).toContain("1/2");
+    expect(list.children[0].getAttribute("aria-current")).toBe("page");
   });
 
   it("loads document from query parameter", async () => {
@@ -153,7 +163,7 @@ describe("prdReaderPage", () => {
       <div id="prd-title"></div>
       <div id="task-summary"></div>
       <ul id="prd-list"></ul>
-      <div id="prd-content"></div>
+      <div id="prd-content" tabindex="-1"></div>
       <button data-nav="prev">Prev</button>
       <button data-nav="next">Next</button>
     `;
@@ -164,8 +174,10 @@ describe("prdReaderPage", () => {
     await setupPrdReaderPage(docs, parser);
 
     const container = document.getElementById("prd-content");
+    const list = document.getElementById("prd-list");
     expect(container.innerHTML).toContain("Second doc");
     expect(window.location.search).toBe("?doc=b");
+    expect(list.children[1].getAttribute("aria-current")).toBe("page");
   });
 
   it("updates URL when navigating", async () => {
@@ -179,7 +191,7 @@ describe("prdReaderPage", () => {
       <div id="prd-title"></div>
       <div id="task-summary"></div>
       <ul id="prd-list"></ul>
-      <div id="prd-content"></div>
+      <div id="prd-content" tabindex="-1"></div>
       <button data-nav="prev">Prev</button>
       <button data-nav="next">Next</button>
     `;
@@ -189,10 +201,13 @@ describe("prdReaderPage", () => {
 
     await setupPrdReaderPage(docs, parser);
 
+    const list = document.getElementById("prd-list");
     expect(window.location.search).toBe("?doc=a");
+    expect(list.children[0].getAttribute("aria-current")).toBe("page");
     const next = document.querySelector('[data-nav="next"]');
     next.click();
     expect(window.location.search).toBe("?doc=b");
+    expect(list.children[1].getAttribute("aria-current")).toBe("page");
   });
 
   it("shows warning badge when markdown parsing fails", async () => {
@@ -217,7 +232,55 @@ describe("prdReaderPage", () => {
     await setupPrdReaderPage(docs, parser);
 
     const warning = document.querySelector(".markdown-warning");
+    const list = document.getElementById("prd-list");
     expect(warning).toBeTruthy();
     expect(warning.getAttribute("aria-label")).toBe("Content could not be fully rendered");
+    expect(list.children[0].getAttribute("aria-current")).toBe("page");
+  });
+
+  it("supports keyboard-only navigation with focus management", async () => {
+    const docs = {
+      "b.md": "# Second doc",
+      "a.md": "# First doc"
+    };
+    const parser = (md) => `<h1>${md}</h1>`;
+
+    document.body.innerHTML = `
+      <div id="prd-title"></div>
+      <div id="task-summary"></div>
+      <ul id="prd-list"></ul>
+      <div id="prd-content" tabindex="-1"></div>
+      <button data-nav="prev">Prev</button>
+      <button data-nav="next">Next</button>
+    `;
+
+    globalThis.SKIP_PRD_AUTO_INIT = true;
+    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+
+    await setupPrdReaderPage(docs, parser);
+
+    const container = document.getElementById("prd-content");
+    const list = document.getElementById("prd-list");
+    const items = list.querySelectorAll("li");
+
+    expect(document.activeElement).toBe(container);
+    expect(items[0].getAttribute("aria-current")).toBe("page");
+
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }));
+    expect(container.innerHTML).toContain("Second doc");
+    expect(items[1].getAttribute("aria-current")).toBe("page");
+    expect(document.activeElement).toBe(container);
+
+    list.focus();
+    list.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp" }));
+    expect(container.innerHTML).toContain("First doc");
+    expect(items[0].getAttribute("aria-current")).toBe("page");
+    expect(document.activeElement).toBe(container);
+
+    list.focus();
+    list.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+    expect(container.innerHTML).toContain("Second doc");
+    expect(items[1].getAttribute("aria-current")).toBe("page");
+    expect(document.activeElement).toBe(container);
   });
 });

@@ -64,7 +64,13 @@ export function createSidebarList(items, onSelect = () => {}) {
   function select(index) {
     current = ((index % elements.length) + elements.length) % elements.length;
     elements.forEach((el, idx) => {
-      el.classList.toggle("selected", idx === current);
+      const isCurrent = idx === current;
+      el.classList.toggle("selected", isCurrent);
+      if (isCurrent) {
+        el.setAttribute("aria-current", "page");
+      } else {
+        el.removeAttribute("aria-current");
+      }
     });
     elements[current].focus();
     onSelect(current, elements[current]);
