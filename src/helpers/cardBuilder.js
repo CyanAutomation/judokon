@@ -162,6 +162,15 @@ async function createTopBar(judoka, flagUrl) {
 }
 
 function createInspectorPanel(container, judoka, sections) {
+  let json;
+  try {
+    json = JSON.stringify(judoka, null, 2);
+  } catch {
+    const p = document.createElement("p");
+    p.textContent = "Invalid card data";
+    return p;
+  }
+
   const panel = document.createElement("details");
   panel.className = "debug-panel";
   panel.setAttribute("aria-label", "Inspector panel");
@@ -191,7 +200,7 @@ function createInspectorPanel(container, judoka, sections) {
   panel.appendChild(summary);
 
   const jsonPre = document.createElement("pre");
-  jsonPre.textContent = JSON.stringify(judoka, null, 2);
+  jsonPre.textContent = json;
   panel.appendChild(jsonPre);
 
   // Only show the card's JSON data. The markup preview was removed to
@@ -247,7 +256,11 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup, options = {}) 
 
   const cardContainer = document.createElement("div");
   cardContainer.className = "card-container";
-  cardContainer.dataset.cardJson = JSON.stringify(judoka);
+  try {
+    cardContainer.dataset.cardJson = JSON.stringify(judoka);
+  } catch {
+    // Ignore serialization errors; inspector will render a fallback
+  }
 
   const judokaCard = document.createElement("div");
   judokaCard.className = `judoka-card ${cardType}`;
