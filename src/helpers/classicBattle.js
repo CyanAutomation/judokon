@@ -75,8 +75,7 @@ async function handleReplay() {
   engineReset();
   const panel = document.getElementById("summary-panel");
   if (panel) panel.classList.add("hidden");
-  const msgEl = document.getElementById("round-message");
-  if (msgEl) msgEl.textContent = "";
+  infoBar.clearMessage();
   const startRoundFn = getStartRound();
   await startRoundFn();
 }
@@ -171,12 +170,12 @@ export function evaluateRound(stat) {
 export async function handleStatSelection(stat) {
   clearTimeout(statTimeoutId);
   clearTimeout(autoSelectId);
-  infoBar.showMessage("Waiting…");
+  const clearWaitingMessage = infoBar.showTemporaryMessage("Waiting…");
   const delay = 300 + Math.floor(Math.random() * 401);
   return new Promise((resolve) => {
     setTimeout(async () => {
       await revealComputerCard();
-      infoBar.showMessage("");
+      clearWaitingMessage();
       const result = evaluateRound(stat);
       resetStatButtons();
       scheduleNextRound(result, getStartRound());
@@ -212,8 +211,7 @@ export function _resetForTest() {
   autoSelectId = null;
   const timerEl = document.getElementById("next-round-timer");
   if (timerEl) timerEl.textContent = "";
-  const resultEl = document.getElementById("round-message");
-  if (resultEl) resultEl.textContent = "";
+  infoBar.clearMessage();
   const nextBtn = document.getElementById("next-round-button");
   if (nextBtn) {
     const clone = nextBtn.cloneNode(true);

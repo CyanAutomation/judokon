@@ -74,6 +74,40 @@ export function showMessage(text) {
 }
 
 /**
+ * Clear the round message.
+ *
+ * @pseudocode
+ * 1. If the message element exists, set its text content to an empty string.
+ *
+ * @returns {void}
+ */
+export function clearMessage() {
+  if (messageEl) {
+    messageEl.textContent = "";
+  }
+}
+
+/**
+ * Display a temporary message and return a function to clear it later.
+ *
+ * @pseudocode
+ * 1. Call `showMessage(text)` to update the round message.
+ * 2. Return `clearMessage` so callers can remove the message when finished.
+ *
+ * @param {string} text - Message to display temporarily.
+ * @returns {() => void} Function that clears the message.
+ */
+export function showTemporaryMessage(text) {
+  showMessage(text);
+  // Return a closure that only clears the message if it matches the one set by this call
+  return function() {
+    if (messageEl && messageEl.textContent === text) {
+      messageEl.textContent = "";
+    }
+  };
+}
+
+/**
  * Start a countdown timer that updates once per second.
  *
  * @pseudocode

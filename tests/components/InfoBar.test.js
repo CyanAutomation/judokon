@@ -3,6 +3,8 @@ import {
   createInfoBar,
   initInfoBar,
   showMessage,
+  clearMessage,
+  showTemporaryMessage,
   startCountdown,
   updateScore
 } from "../../src/components/InfoBar.js";
@@ -37,6 +39,17 @@ describe("InfoBar component", () => {
 
     updateScore(1, 2);
     expect(document.getElementById("score-display").textContent).toBe("You: 1\nOpponent: 2");
+  });
+
+  it("clears and temporarily shows messages", () => {
+    showMessage("Persist");
+    clearMessage();
+    expect(document.getElementById("round-message").textContent).toBe("");
+
+    const clear = showTemporaryMessage("Temp");
+    expect(document.getElementById("round-message").textContent).toBe("Temp");
+    clear();
+    expect(document.getElementById("round-message").textContent).toBe("");
   });
 
   it("startCountdown updates timer each second", () => {
