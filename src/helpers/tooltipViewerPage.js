@@ -24,9 +24,27 @@ const KEY_PATTERN = /^[a-z]+\.[\w-]+$/;
  * @returns {{ line: number, column: number } | null} Parsed line/column or `null`.
  */
 function extractLineAndColumn(error) {
-  const match = /line (\d+) column (\d+)/i.exec(error?.message ?? "");
+  const message = error?.message ?? "";
+  // Try several common error message formats
+  // 1. "line X column Y"
+  let match = /line (\d+)[^\d]+column (\d+)/i.exec(message);
   if (match) {
     return { line: Number(match[1]), column: Number(match[2]) };
+  }
+  // 2. "at line X column Y"
+  match = /at line (\d+)[^\d]+column (\d+)/i.exec(message);
+  if (match) {
+    return { line: Number(match[1]), column: Number(match[2]) };
+  }
+  // 3. "at position Z" (return as column, line unknown)
+  match = /at position (\d+)/i.exec(message);
+  if (match) {
+    return { line: null, column: Number(match[1]) };
+  }
+  // 4. "Unexpected token ... in JSON at position Z"
+  match = /in JSON at position (\d+)/i.exec(message);
+  if (match) {
+    return { line: null, column: Number(match[1]) };
   }
   return null;
 }
