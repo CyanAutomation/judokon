@@ -195,6 +195,25 @@
   color: var(--color-text);
 }
 
+.settings-links-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-lg);
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.settings-links-list .settings-item {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .settings-links-list {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Simulated viewport for screenshot testing */
 body.simulate-viewport {
   width: 375px;

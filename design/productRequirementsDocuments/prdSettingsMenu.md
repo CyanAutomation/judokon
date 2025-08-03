@@ -85,6 +85,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - **View Design Mockups:** Link opens `mockupViewer.html` for viewing design mockups.
 - **View Tooltip Descriptions:** Link opens `tooltipViewer.html` for exploring tooltip text.
 - **Vector Search for RAG:** Link opens `vectorSearch.html` to explore the vector database.
+- Links in this fieldset are arranged in a responsive three-column grid, collapsing to a single column below 768px.
 - **Restore Defaults:** Button opens a confirmation modal to clear stored settings and reapply defaults.
 
 ---
