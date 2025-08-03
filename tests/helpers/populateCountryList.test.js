@@ -56,6 +56,26 @@ describe("populateCountryList", () => {
     expect(buttons[1]).toHaveAttribute("aria-label", "Filter by Japan");
   });
 
+  it("adds lazy loading to flag images", async () => {
+    const judoka = [{ id: 1, firstname: "A", surname: "B", country: "Japan" }];
+    const mapping = [{ country: "Japan", code: "jp", active: true }];
+
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => judoka })
+      .mockResolvedValueOnce({ ok: true, json: async () => mapping });
+
+    const { populateCountryList } = await import("../../src/helpers/country/index.js");
+
+    const container = document.createElement("div");
+    await populateCountryList(container);
+
+    const images = container.querySelectorAll("img.flag-image");
+    images.forEach((img) => {
+      expect(img.getAttribute("loading")).toBe("lazy");
+    });
+  });
+
   it("lazy loads additional countries on scroll", async () => {
     const judoka = Array.from({ length: 60 }, (_, i) => ({
       id: i,
