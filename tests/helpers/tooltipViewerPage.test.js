@@ -28,7 +28,7 @@ describe("setupTooltipViewerPage", () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ tipA: "**Bold**", tipB: "Raw" }),
+      fetchJson: vi.fn().mockResolvedValue({ "stat.tipA": "**Bold**", "ui.tipB": "Raw" }),
       importJsonModule: vi.fn().mockResolvedValue({})
     }));
 
@@ -51,7 +51,7 @@ describe("setupTooltipViewerPage", () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ ok: "text", bad: "" }),
+      fetchJson: vi.fn().mockResolvedValue({ "ui.ok": "text", "ui.bad": "" }),
       importJsonModule: vi.fn().mockResolvedValue({})
     }));
 
@@ -61,7 +61,7 @@ describe("setupTooltipViewerPage", () => {
 
     await Promise.resolve();
 
-    const invalid = document.querySelector('#tooltip-list li[data-key="bad"]');
+    const invalid = document.querySelector('#tooltip-list li[data-key="ui.bad"]');
     expect(invalid).toBeTruthy();
     const icon = invalid.querySelector(".tooltip-invalid-icon");
     expect(icon).toBeTruthy();
@@ -75,7 +75,7 @@ describe("setupTooltipViewerPage", () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ ok: "text", warn: "**Bold" }),
+      fetchJson: vi.fn().mockResolvedValue({ "ui.ok": "text", "ui.warn": "**Bold" }),
       importJsonModule: vi.fn().mockResolvedValue({})
     }));
 
@@ -85,7 +85,7 @@ describe("setupTooltipViewerPage", () => {
 
     await Promise.resolve();
 
-    const malformed = document.querySelector('#tooltip-list li[data-key="warn"]');
+    const malformed = document.querySelector('#tooltip-list li[data-key="ui.warn"]');
     expect(malformed).toBeTruthy();
     const icon = malformed.querySelector(".tooltip-invalid-icon");
     expect(icon).toBeTruthy();
@@ -99,7 +99,7 @@ describe("setupTooltipViewerPage", () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ tip: "**Bold" }),
+      fetchJson: vi.fn().mockResolvedValue({ "ui.tip": "**Bold" }),
       importJsonModule: vi.fn().mockResolvedValue({})
     }));
 
@@ -121,7 +121,7 @@ describe("setupTooltipViewerPage", () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ tip: "long" }),
+      fetchJson: vi.fn().mockResolvedValue({ "ui.tip": "long" }),
       importJsonModule: vi.fn().mockResolvedValue({})
     }));
 
@@ -153,7 +153,7 @@ describe("setupTooltipViewerPage", () => {
     navigator.clipboard = { writeText };
 
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ tip: "text" }),
+      fetchJson: vi.fn().mockResolvedValue({ "ui.tip": "text" }),
       importJsonModule: vi.fn().mockResolvedValue({})
     }));
 
@@ -174,8 +174,32 @@ describe("setupTooltipViewerPage", () => {
 
     await Promise.resolve();
 
-    expect(writeText).toHaveBeenCalledWith("tip");
+    expect(writeText).toHaveBeenCalledWith("ui.tip");
     expect(showSnackbar).toHaveBeenCalledWith("Copied");
     expect(btn.classList.contains("copied")).toBe(true);
+  });
+
+  it("adds warning icon to invalid key names", async () => {
+    Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ badkey: "text" }),
+      importJsonModule: vi.fn().mockResolvedValue({})
+    }));
+
+    await import("../../src/helpers/tooltipViewerPage.js");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+
+    await Promise.resolve();
+
+    const invalid = document.querySelector('#tooltip-list li[data-key="badkey"]');
+    expect(invalid).toBeTruthy();
+    const icon = invalid.querySelector(".tooltip-invalid-icon");
+    expect(icon).toBeTruthy();
+    expect(icon.title).toBe("Invalid key format (prefix.name)");
+    const sr = invalid.querySelector(".tooltip-invalid-text");
+    expect(sr).toBeTruthy();
+    expect(sr.textContent).toBe("Invalid key format (prefix.name)");
   });
 });
