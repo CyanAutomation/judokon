@@ -19,7 +19,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 ## Goals
 
 - Enable in-browser reading of all PRDs in the `design/productRequirementsDocuments` directory. **(Implemented)**
-- Support intuitive navigation (buttons, keyboard, swipe) between documents. **(Implemented: Keyboard and swipe; navigation buttons not present in UI)**
+- Support intuitive navigation (buttons, keyboard, swipe) between documents.
 - Render markdown PRDs as readable, styled HTML with tables, code blocks, and headings. **(Implemented)**
 - Ensure accessibility and responsive design for all users. **(Implemented: ARIA labels, keyboard navigation, and screen reader audit completed)**
 - Allow deep-linking to a specific PRD via a `?doc=` query parameter and update the URL as navigation occurs. **(Implemented)**
@@ -124,7 +124,6 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
   `odd` for the first row.
 - Sidebar PRDs are listed alphabetically.
 - Warning badge in content area if markdown partially rendered. **(Implemented)**
-- Bottom footer with keyboard and swipe navigation instructions. **(Footer present, instructions may need to be added)**
 - Responsive layout for desktop, tablet, and mobile.
 
 **Note:**
@@ -147,7 +146,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
   - [x] 2.1 Integrate `marked` library for parsing markdown
   - [x] 2.2 Apply consistent styles to headings, tables, lists, code blocks
-  - [x] 2.3 Benchmark and optimize rendering to complete within 200ms on desktop
+  - [x] 2.3 Benchmark and optimize rendering to complete quickly on devices 
 
 - [x] 3.0 Build Navigation System
 
@@ -186,8 +185,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
   - [ ] 8.2 Show loading spinner or status message while fetching files (not yet implemented)
   - [x] 8.3 Show warning badge for malformed markdown
 
-- [x] 9.0 Footer Navigation Instructions
-- [x] 9.1 Footer present for navigation instructions (content may need to be added)
+---
 
 ### Accessibility Audit Findings
 
