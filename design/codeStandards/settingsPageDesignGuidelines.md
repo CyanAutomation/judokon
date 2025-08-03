@@ -163,6 +163,7 @@ Reuse the following markup for general settings, game modes, and feature flags:
   - Group supplemental pages under a `Links` heading using a simple `<fieldset>`.
   - Include links to `changeLog.html`, `prdViewer.html`, `mockupViewer.html`, `tooltipViewer.html`, and `vectorSearch.html`.
   - Style each as a `.settings-item` and assign sequential `tabindex` values (e.g., 99, 100, 101).
+  - Arrange the links in a responsive three-column grid using `.settings-links-list`; collapse to a single column below 768px.
   - Position this fieldset after all setting controls and before the error popup container.
 
 - **Error Message Container & ARIA**
