@@ -10,7 +10,7 @@
  * 2. Create a button element:
  *    - Assign a class based on the `direction` (e.g., "scroll-button left" or "scroll-button right").
  *    - Set the inner HTML to display an inline SVG chevron pointing left or right.
- *    - Include a visible `<span class="label">` with "Previous" or "Next" text.
+ *    - Include a visible `<span class="label">` with "Prev." or "Next" text.
  *    - Add an accessible label (`aria-label`) matching the visible text.
  *
  * 3. Add a click event listener to the button:
@@ -41,7 +41,7 @@ export function createScrollButton(direction, container, scrollAmount) {
 
   button.className = `scroll-button ${direction}`;
 
-  const labelText = direction === "left" ? "Previous" : "Next";
+  const labelText = direction === "left" ? "Prev." : "Next";
 
   button.innerHTML =
     (direction === "left"
