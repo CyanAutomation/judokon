@@ -108,7 +108,7 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
   - Markdown-rendered body (`**bold**`, `_italic_`, line breaks)
   - Raw string body for debug
 - Visual indicators for empty, malformed, or invalid entries.
-- Search filters keys live (debounced at 300ms).
+- Search filters keys live.
 - Viewer accepts URL hash (`#key`) and selects/scrolls accordingly.
 - Copy buttons work for both key and body text.
 - Layout adapts responsively to screen size.
@@ -150,7 +150,8 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 
   - [x] 2.1 Render scrollable list of tooltip keys
   - [x] 2.2 Enable click interaction to select a tooltip
-  - [x] 2.3 Add real-time search/filter functionality (300ms debounce)
+  - [x] 2.3 Add real-time search/filter functionality 
+
   - [ ] 2.4 Support full keyboard navigation (TAB, arrows, ENTER)
   - [ ] 2.5 Group or color-code keys by prefix (category highlighting)
   - [ ] 2.6 Sidebar scrolls independently from preview
