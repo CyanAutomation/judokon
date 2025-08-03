@@ -127,14 +127,14 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 
 ## Edge Cases & Failures
 
-| Case                    | Handling Behavior                                                           |
-| ----------------------- | --------------------------------------------------------------------------- |
-| File missing            | Show "File not found" message in viewer panel                               |
-| Corrupted JSON          | Render structured parse error (line, column) in preview area                |
-| Malformed markdown      | Render best-effort version and flag preview with warning icon               |
-| Missing/empty strings   | Highlight key with red icon and tooltip: "Empty or whitespace-only content" |
-| Unrecognized key format | Warn if keys deviate from pattern `prefix.name`                             |
-| Long values             | Truncate preview after 300px height; add “Show more” toggle                 |
+| Case                    | Handling Behavior                                                                                  |
+| ----------------------- | -------------------------------------------------------------------------------------------------- |
+| File missing            | Show "File not found" message in viewer panel                                                      |
+| Corrupted JSON          | Render structured parse error (line, column) in preview area                                       |
+| Malformed markdown      | Render best-effort version and flag preview with warning icon                                      |
+| Missing/empty strings   | Highlight key with red icon and tooltip: "Empty or whitespace-only content"                        |
+| Unrecognized key format | Warn if keys deviate from pattern `prefix.name` (`/^[a-z]+\.[\w-]+$/`); show red icon with tooltip |
+| Long values             | Truncate preview after 300px height; add “Show more” toggle                                        |
 
 ---
 

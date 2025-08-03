@@ -7,6 +7,8 @@ import { showSnackbar } from "./showSnackbar.js";
 
 const INVALID_TOOLTIP_MSG = "Empty or whitespace-only content";
 const MALFORMED_TOOLTIP_MSG = "Unbalanced markup detected";
+const INVALID_KEY_MSG = "Invalid key format (prefix.name)";
+const KEY_PATTERN = /^[a-z]+\.[\w-]+$/;
 
 /**
  * Initialize the Tooltip Viewer page.
@@ -15,7 +17,7 @@ const MALFORMED_TOOLTIP_MSG = "Unbalanced markup detected";
  * 1. Load and flatten `tooltips.json` using `fetchJson` and `flattenTooltips`.
  * 2. Render a clickable list of keys filtered by the search box (300ms debounce),
  *    tagging items with a class based on their prefix (e.g. `stat`, `ui`) and
- *    flagging empty or malformed bodies with a warning icon.
+ *    flagging empty bodies, malformed markup, or invalid key names with a warning icon.
  * 3. Wrap the preview in a 300px-high container with a toggle button to expand
  *    or collapse long content.
  * 4. When a key is selected, display its parsed HTML and raw text in the
@@ -88,13 +90,21 @@ export async function setupTooltipViewerPage() {
       const haystack = `${key} ${body}`.toLowerCase();
       const match = terms.every((t) => haystack.includes(t));
       if (match) {
-        const valid = typeof body === "string" && body.trim().length > 0;
+        const bodyValid = typeof body === "string" && body.trim().length > 0;
+        const keyValid = KEY_PATTERN.test(key);
+        const valid = bodyValid && keyValid;
         const { warning } = parseTooltipText(body);
         const prefix = key.split(".")[0];
         items.push({
           label: key,
           className: prefix,
-          dataset: { key, body, valid: String(valid), warning: String(warning) }
+          dataset: {
+            key,
+            body,
+            valid: String(valid),
+            warning: String(warning),
+            keyValid: String(keyValid)
+          }
         });
       }
     });
@@ -103,7 +113,9 @@ export async function setupTooltipViewerPage() {
     });
     Array.from(result.element.children).forEach((li) => {
       let message = null;
-      if (li.dataset.valid === "false") {
+      if (li.dataset.keyValid === "false") {
+        message = INVALID_KEY_MSG;
+      } else if (li.dataset.valid === "false") {
         message = INVALID_TOOLTIP_MSG;
       } else if (li.dataset.warning === "true") {
         message = MALFORMED_TOOLTIP_MSG;
