@@ -51,12 +51,16 @@ function endMatchIfNeeded() {
  * Start the round/stat selection timer with pause/resume and auto-selection support.
  *
  * @pseudocode
- * 1. Determine the timer duration when not provided using `getDefaultTimer('roundTimer')`.
- *    - Fallback to 30 seconds on any error.
- * 2. If the duration is invalid or non-numeric, fall back to 30 seconds.
- * 3. Create a countdown timer with `createCountdownTimer(duration, { onTick, onExpired, pauseOnHidden: true })`.
- * 4. Store callbacks and reset remaining time.
- * 5. Call `start()` on the timer.
+ * 1. Stop any existing timer.
+ * 2. Determine the timer duration:
+ *    a. If `duration` is undefined, attempt `getDefaultTimer('roundTimer')`, falling back to 30 on error.
+ *    b. If the resulting duration is not a number, fall back to 30.
+ * 3. Reset `paused` flag and set `remaining` to the duration.
+ * 4. Store the `onTick` and `onExpired` callbacks.
+ * 5. Create a countdown timer with `createCountdownTimer(duration, { onTick, onExpired, pauseOnHidden: true })`:
+ *    - onTick: update `remaining` and invoke stored `onTick`.
+ *    - onExpired: if the match hasn't ended, invoke stored `onExpired`.
+ * 6. Start the timer.
  *
  * @param {function} onTick - Callback each second with remaining time.
  * @param {function} onExpired - Callback when timer expires (auto-select logic).
@@ -94,11 +98,16 @@ export async function startRound(onTick, onExpired, duration) {
  * Start the cooldown timer shown between rounds.
  *
  * @pseudocode
- * 1. Determine the duration using `getDefaultTimer('coolDownTimer')` when not provided; fallback to 3 seconds.
- * 2. If the duration is invalid or non-numeric, fall back to 3 seconds.
- * 3. Create a countdown timer with `createCountdownTimer(duration, { onTick, onExpired })`.
- * 4. Store callbacks and reset remaining time.
- * 5. Call `start()` on the timer.
+ * 1. Stop any existing timer.
+ * 2. Determine the cooldown duration:
+ *    a. If `duration` is undefined, attempt `getDefaultTimer('coolDownTimer')`, falling back to 3 on error.
+ *    b. If the resulting duration is not a number, fall back to 3.
+ * 3. Reset `paused` flag and set `remaining` to the duration.
+ * 4. Store the `onTick` and `onExpired` callbacks.
+ * 5. Create a countdown timer with `createCountdownTimer(duration, { onTick, onExpired, pauseOnHidden: false })`:
+ *    - onTick: update `remaining` and invoke stored `onTick`.
+ *    - onExpired: if the match hasn't ended, invoke stored `onExpired`.
+ * 6. Start the timer.
  *
  * @param {function} onTick - Callback each second with remaining time.
  * @param {function} onExpired - Callback when timer expires.
@@ -135,7 +144,8 @@ export async function startCoolDown(onTick, onExpired, duration) {
 /**
  * Pause the round/stat selection timer.
  * @pseudocode
- * 1. Call `pause()` on the current timer and set the paused flag.
+ * 1. Set the `paused` flag to true.
+ * 2. If a timer is running, call `pause()` on it.
  */
 export function pauseTimer() {
   paused = true;
@@ -145,7 +155,8 @@ export function pauseTimer() {
 /**
  * Resume the round/stat selection timer.
  * @pseudocode
- * 1. Call `resume()` on the current timer and clear the paused flag.
+ * 1. Clear the `paused` flag.
+ * 2. If a timer is running, call `resume()` on it.
  */
 export function resumeTimer() {
   paused = false;
@@ -156,12 +167,16 @@ export function resumeTimer() {
  * Compare player and computer stat values to update scores.
  *
  * @pseudocode
- * 1. If the match has already ended, return the current scores.
- * 2. Stop the timer to prevent duplicate selections.
- * 3. Compare the provided values and adjust scores.
- *    - When values are equal, return a tie message.
- * 4. Increment the round counter and check if the match ends.
- * 5. Return the result message along with updated scores.
+ * 1. If the match has already ended, return `matchEnded`, `playerScore`, and `computerScore` with an empty message.
+ * 2. Stop any running timer.
+ * 3. Compare `playerVal` and `computerVal`:
+ *    a. If `playerVal > computerVal`, increment `playerScore` and set win message.
+ *    b. If `playerVal < computerVal`, increment `computerScore` and set loss message.
+ *    c. Otherwise, set tie message without changing scores.
+ * 4. Increment the `roundsPlayed` counter.
+ * 5. Call `endMatchIfNeeded()` to update `matchEnded` and get an end-of-match message.
+ *    - If it returns a non-empty message, override the round message.
+ * 6. Return the message, updated `matchEnded`, and current scores.
  *
  * @param {number} playerVal - Value selected by the player.
  * @param {number} computerVal - Value selected by the computer.
@@ -194,8 +209,8 @@ export function handleStatSelection(playerVal, computerVal) {
  * End the current match and return the final message.
  *
  * @pseudocode
- * 1. Mark the match as ended and stop the timer.
- * 2. Return a message indicating the player quit.
+ * 1. Set `matchEnded` to true and stop any running timer.
+ * 2. Return a quit message along with `playerScore` and `computerScore`.
  *
  * @returns {{message: string, playerScore: number, computerScore: number}}
  */
@@ -221,10 +236,12 @@ export function getTimerState() {
  * Monitor the active timer for drift and invoke a callback when detected.
  *
  * @pseudocode
- * 1. Record the current time as the baseline.
- * 2. Every second compare expected remaining time with `remaining`.
- * 3. If the difference exceeds `DRIFT_THRESHOLD`, stop the interval and call
- *    `onDrift` with the latest remaining value.
+ * 1. Record the current timestamp as `start`.
+ * 2. Every second, compute elapsed = floor((Date.now() - start) / 1000) and expected = duration - elapsed.
+ * 3. If `abs(getTimerState().remaining - expected)` > DRIFT_THRESHOLD:
+ *    a. Clear the monitoring interval.
+ *    b. If `onDrift` is a function, invoke it with current remaining time.
+ * 4. Return a function that clears the monitoring interval to stop drift detection.
  *
  * @param {number} duration - Duration originally passed to the timer.
  * @param {function(number): void} onDrift - Callback invoked when drift detected.
