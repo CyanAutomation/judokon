@@ -80,8 +80,9 @@ export function getTooltips() {
 export function parseTooltipText(text) {
   const safe = escapeHTML(text || "");
   const boldCount = (safe.match(/\*\*/g) || []).length;
-  const italicCount = (safe.match(/_/g) || []).length;
-  const warning = boldCount % 2 !== 0 || italicCount % 2 !== 0;
+  const italicPairMatches = safe.match(/_(.*?)_/g) || [];
+  const totalUnderscores = (safe.match(/_/g) || []).length;
+  const warning = boldCount % 2 !== 0 || totalUnderscores !== italicPairMatches.length * 2;
   const html = safe
     .replace(/\n/g, "<br>")
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
