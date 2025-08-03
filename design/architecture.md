@@ -66,7 +66,7 @@ decoupled from engine logic.
 
 `InfoBar.showTemporaryMessage(text)` displays a transient notice and returns a
 clear function that only removes the message if the same text is still shown.
-`classicBattle.handleStatSelection` uses this helper to show **"Waiting…"** while
+`classicBattle.js.handleStatSelection` uses this helper to show **"Waiting…"** while
 the opponent's move is computed.
 
 `classicBattle.js` now simulates the opponent entirely on the client. After a
