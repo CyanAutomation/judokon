@@ -13,12 +13,49 @@ const LOAD_ERROR_MSG = "Error loading tooltips.";
 const KEY_PATTERN = /^[a-z]+\.[\w-]+$/;
 
 /**
+ * Extract line and column numbers from a JSON parse error.
+ *
+ * @pseudocode
+ * 1. Run a regex on `error.message` to capture `line` and `column` digits.
+ * 2. When both numbers exist, return them as an object.
+ * 3. Otherwise, return `null`.
+ *
+ * @param {SyntaxError} error - SyntaxError thrown during JSON parsing.
+ * @returns {{ line: number, column: number } | null} Parsed line/column or `null`.
+ */
+function extractLineAndColumn(error) {
+  const message = error?.message ?? "";
+  // Try several common error message formats
+  // 1. "line X column Y"
+  let match = /line (\d+)[^\d]+column (\d+)/i.exec(message);
+  if (match) {
+    return { line: Number(match[1]), column: Number(match[2]) };
+  }
+  // 2. "at line X column Y"
+  match = /at line (\d+)[^\d]+column (\d+)/i.exec(message);
+  if (match) {
+    return { line: Number(match[1]), column: Number(match[2]) };
+  }
+  // 3. "at position Z" (return as column, line unknown)
+  match = /at position (\d+)/i.exec(message);
+  if (match) {
+    return { line: null, column: Number(match[1]) };
+  }
+  // 4. "Unexpected token ... in JSON at position Z"
+  match = /in JSON at position (\d+)/i.exec(message);
+  if (match) {
+    return { line: null, column: Number(match[1]) };
+  }
+  return null;
+}
+
+/**
  * Initialize the Tooltip Viewer page.
  *
  * @pseudocode
  * 1. Load and flatten `tooltips.json` using `fetchJson` and `flattenTooltips`.
- *    When the file is missing, show "File not found"; otherwise display a
- *    generic loading error.
+ *    When the file is missing, show "File not found"; on parse errors display
+ *    "Line X, Column Y"; otherwise show a generic loading error.
  * 2. Render a clickable list of keys filtered by the search box (300ms debounce),
  *    tagging items with a class based on their prefix (e.g. `stat`, `ui`) and
  *    flagging empty bodies, malformed markup, or invalid key names with a warning icon.
@@ -84,6 +121,13 @@ export async function setupTooltipViewerPage() {
     const status = err?.status ?? err?.response?.status;
     if (err?.code === "ENOENT" || status === 404) {
       previewEl.textContent = FILE_NOT_FOUND_MSG;
+    } else if (err instanceof SyntaxError) {
+      const pos = extractLineAndColumn(err);
+      if (pos) {
+        previewEl.textContent = `Line ${pos.line}, Column ${pos.column}`;
+      } else {
+        previewEl.textContent = LOAD_ERROR_MSG;
+      }
     } else {
       previewEl.textContent = LOAD_ERROR_MSG;
     }
