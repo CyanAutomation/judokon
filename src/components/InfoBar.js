@@ -103,12 +103,11 @@ export function startCountdown(seconds, onFinish) {
 }
 
 /**
- * Display the current match score.
+ * Display the current match score on two lines.
  *
  * @pseudocode
- * 1. Format the score string with player and opponent values separated by a
- *    line break.
- * 2. Insert the HTML into the score element when present.
+ * 1. Clear existing content and append `"You: {playerScore}"`.
+ * 2. Append a line break and `"Opponent: {computerScore}"` on the next line.
  *
  * @param {number} playerScore - Player's score.
  * @param {number} computerScore - Opponent's score.
@@ -116,13 +115,11 @@ export function startCountdown(seconds, onFinish) {
  */
 export function updateScore(playerScore, computerScore) {
   if (scoreEl) {
-    // Remove all children
+    // Clear previous score text
     scoreEl.textContent = "";
-    // Add "You: {playerScore}"
-    scoreEl.appendChild(document.createTextNode(`You: ${playerScore}`));
-    // Add line break
+    // Add "You" and "Opponent" on separate lines
+    scoreEl.append(`You: ${playerScore}`);
     scoreEl.appendChild(document.createElement("br"));
-    // Add "Opponent: {computerScore}"
-    scoreEl.appendChild(document.createTextNode(`Opponent: ${computerScore}`));
+    scoreEl.append(`\nOpponent: ${computerScore}`);
   }
 }
