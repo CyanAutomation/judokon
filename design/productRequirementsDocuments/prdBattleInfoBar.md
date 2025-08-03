@@ -61,6 +61,7 @@ The round message, timer, and score now sit directly inside the page header rath
 - **Timer mismatch with server start** → Display **“Waiting…”** until match is confirmed to start. <!-- Implemented: see showMessage fallback logic -->
 - **Bar display issues due to screen resolution** → Collapse content into a stacked layout or truncate non-critical info with ellipsis. <!-- Partially implemented: CSS @media queries for stacking/truncation, but some edge cases pending -->
 - **Player does not select a stat within 30s** → Auto-select a random stat and display appropriate message (see Classic Battle PRD). <!-- Implemented: see startRound in battleEngine.js -->
+- **Stat selection appears stalled** → Show "Stat selection stalled" message; auto-select a random stat after 5s if no input. <!-- Implemented: see classicBattle.js -->
 
 ---
 
@@ -84,6 +85,7 @@ The round message, timer, and score now sit directly inside the page header rath
 **Implementation status summary:**
 
 - **Score, round messages, timers, stat selection auto-select, pause/resume, and fallback "Waiting..." logic are implemented as described.**
+- **Recovery logic for stalled stat selection shows a message and auto-selects after a short delay.**
 - **Responsive stacking/truncation and minimum touch target size are implemented in CSS, but some edge cases and explicit contrast checks are not yet fully implemented.**
 - **See InfoBar.js, battleEngine.js, battleUI.js, and battle.css for current logic.**
 
@@ -122,7 +124,7 @@ The round message, timer, and score now sit directly inside the page header rath
 
   - [x] 5.1 Show “Waiting…” if backend score sync fails
   - [x] 5.2 Show “Waiting…” if countdown timer mismatches server start
-  - [ ] 5.3 Define recovery logic for delayed player input (pending, e.g. if UI freezes)
+  - [x] 5.3 Define recovery logic for delayed player input (show message and auto-select after stall)
   - [ ] 5.4 Handle all possible timer/counter desyncs and display fallback (pending)
 
 - [ ] 6.0 Testing and Validation

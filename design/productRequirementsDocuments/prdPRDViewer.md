@@ -146,7 +146,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
   - [x] 2.1 Integrate `marked` library for parsing markdown
   - [x] 2.2 Apply consistent styles to headings, tables, lists, code blocks
-  - [x] 2.3 Benchmark and optimize rendering to complete quickly on devices 
+  - [x] 2.3 Benchmark and optimize rendering to complete quickly on devices
 
 - [x] 3.0 Build Navigation System
 

@@ -10,7 +10,8 @@ import {
   handleStatSelection as engineHandleStatSelection,
   quitMatch as engineQuitMatch,
   getScores,
-  _resetForTest as engineReset
+  _resetForTest as engineReset,
+  STATS
 } from "./battleEngine.js";
 import * as infoBar from "./setupBattleInfoBar.js";
 import { getStatValue, resetStatButtons, showResult } from "./battle/index.js";
@@ -25,6 +26,25 @@ export function getStartRound() {
 }
 
 let quitModal = null;
+let statTimeoutId = null;
+let autoSelectId = null;
+
+/**
+ * Handle stalled stat selection by prompting the player and auto-selecting a
+ * random stat after a short delay.
+ *
+ * @pseudocode
+ * 1. Display "Stat selection stalled" via `infoBar.showMessage`.
+ * 2. After 5 seconds choose a random stat from `STATS`.
+ * 3. Call `handleStatSelection` with the chosen stat.
+ */
+function onStatSelectionTimeout() {
+  infoBar.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
+  autoSelectId = setTimeout(() => {
+    const randomStat = STATS[Math.floor(Math.random() * STATS.length)];
+    handleStatSelection(randomStat);
+  }, 5000);
+}
 
 /**
  * Update the info bar with current scores and show a waiting message when
@@ -92,6 +112,7 @@ export async function startRound() {
   showSelectionPrompt();
   syncScoreDisplay();
   await startTimer(handleStatSelection);
+  statTimeoutId = setTimeout(onStatSelectionTimeout, 35000);
   updateDebugPanel();
 }
 
@@ -110,6 +131,8 @@ export function evaluateRound(stat) {
 }
 
 export async function handleStatSelection(stat) {
+  clearTimeout(statTimeoutId);
+  clearTimeout(autoSelectId);
   await revealComputerCard();
   const result = evaluateRound(stat);
   resetStatButtons();
@@ -134,6 +157,10 @@ export function _resetForTest() {
   if (typeof window !== "undefined") {
     delete window.startRoundOverride;
   }
+  clearTimeout(statTimeoutId);
+  clearTimeout(autoSelectId);
+  statTimeoutId = null;
+  autoSelectId = null;
   const timerEl = document.getElementById("next-round-timer");
   if (timerEl) timerEl.textContent = "";
   const resultEl = document.getElementById("round-message");
