@@ -19,7 +19,9 @@
  *    d. Toggle the `.simulate-viewport` class based on the viewport flag.
  *    e. Invoke `startRoundWrapper` to begin the match.
  *    f. Initialize tooltips and show the stat help tooltip once for new users.
- *    g. Listen for `storage` events and update the Test Mode banner and
+ *    g. Watch for orientation changes and update the battle header's
+ *       `data-orientation` attribute.
+ *    h. Listen for `storage` events and update the Test Mode banner and
  *       `data-test-mode` attribute when settings change.
  * 5. Execute `setupClassicBattlePage` with `onDomReady`.
  */
@@ -62,6 +64,32 @@ async function applyStatLabels() {
       btn.setAttribute("aria-label", `Select ${n.name}`);
     }
   });
+}
+
+/**
+ * Apply orientation data attribute on the battle header and watch for changes.
+ *
+ * @pseudocode
+ * 1. Select the `.battle-header` element and exit if missing.
+ * 2. Define `updateOrientation` that sets `data-orientation` to `portrait` or
+ *    `landscape` based on `matchMedia`.
+ * 3. Invoke `updateOrientation` immediately.
+ * 4. Listen for `orientationchange` and `resize` events to call
+ *    `updateOrientation` on each change.
+ */
+function watchBattleOrientation() {
+  const header = document.querySelector(".battle-header");
+  if (!header) return;
+
+  const updateOrientation = () => {
+    header.dataset.orientation = window.matchMedia("(orientation: portrait)").matches
+      ? "portrait"
+      : "landscape";
+  };
+
+  updateOrientation();
+  window.addEventListener("orientationchange", updateOrientation);
+  window.addEventListener("resize", updateOrientation);
 }
 
 export async function setupClassicBattlePage() {
@@ -137,6 +165,7 @@ export async function setupClassicBattlePage() {
   window.startRoundOverride = startRoundWrapper;
   startRoundWrapper();
   await initTooltips();
+  watchBattleOrientation();
 
   try {
     if (typeof localStorage !== "undefined") {
