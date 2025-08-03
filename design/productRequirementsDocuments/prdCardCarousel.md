@@ -51,7 +51,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 | **P1**   | Display judoka in a carousel.                                          |
 | **P1**   | Scroll left/right using large arrow buttons labeled "Prev" and "Next". |
 | **P2**   | Swipe or scroll navigation on mobile devices.                          |
-| **P2**   | Cards slightly enlarge (10%) on hover.                                 |
+| **P2**   | Cards slightly enlarge on hover.                                 |
 | **P3**   | Page markers show "current page of total" with active highlight.       |
 | **P3**   | Keyboard arrow key navigation for accessibility.                       |
 
@@ -63,7 +63,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - User can scroll left/right via large "Prev" and "Next" arrow buttons.
 - Arrow buttons disable when the carousel reaches either end so players cannot scroll past the available cards.
 - User can see page markers showing "current page of total" with the active page highlighted and announced via `aria-live`.
-- Hovering over a card enlarges it by 10%, verified via bounding box.
+- Hovering over a card enlarges it, verified via bounding box.
 - Carousel is responsive, adapting to both portrait and landscape orientations.
 - Swipe or scroll navigation works on mobile (left/right swipe to move cards).
 - Keyboard arrow keys allow navigation through cards.
@@ -140,7 +140,7 @@ generated carousel so each card's real portrait loads once it becomes visible.
 ### Interaction
 
 - **Touch gestures**: Swipe left/right on mobile devices.
-- **Mouse hover**: Enlarge card by 10% on hover.
+- **Mouse hover**: Enlarge card on hover.
 - **Keyboard navigation**: Support arrow keys for users with accessibility needs.
 
 ### Accessibility
