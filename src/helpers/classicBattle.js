@@ -175,16 +175,16 @@ export async function handleStatSelection(stat) {
   const delay = 300 + Math.floor(Math.random() * 401);
   return new Promise((resolve) => {
     setTimeout(async () => {
-      await revealComputerCard();
-      infoBar.showMessage("");
-      const result = evaluateRound(stat);
-      resetStatButtons();
-      scheduleNextRound(result, getStartRound());
-      if (result.matchEnded) {
-        showSummary(result);
-      }
-      updateDebugPanel();
-      resolve(result);
+        await revealComputerCard();
+        infoBar.showMessage("");
+        const result = evaluateRound(stat);
+        resetStatButtons();
+        scheduleNextRound(result, getStartRound());
+        if (result.matchEnded) {
+            showSummary(result);
+        }
+        updateDebugPanel();
+        resolve(result);
     }, delay);
   });
 }
