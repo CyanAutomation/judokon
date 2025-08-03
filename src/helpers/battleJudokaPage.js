@@ -4,8 +4,9 @@
  * @returns {Promise<void>}
  *
  * @pseudocode
- * Export `waitForComputerCard` which resolves once a `.judoka-card` element
- * appears inside `#computer-card`.
+ * 1. Fetch the `#computer-card` container.
+ * 2. Resolve immediately if missing or a `.judoka-card` is already present.
+ * 3. Otherwise observe mutations and resolve once a `.judoka-card` appears.
  */
 export function waitForComputerCard() {
   const container = document.getElementById("computer-card");
