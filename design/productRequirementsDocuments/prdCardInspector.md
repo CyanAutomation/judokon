@@ -26,7 +26,7 @@ This problem is urgent because:
 - JSON displayed for **100% of visible judoka cards**.
 - Rendering adds minimal latency per card.
 - No overlap with gameplay elements, controls, or animations.
-- Inspector panel **defaults to OFF**, even in devMode.
+- Inspector panel **defaults to OFF**
 
 ---
 
@@ -52,9 +52,6 @@ This problem is urgent because:
 
 - Users can collapse individual panels using the disclosure widget.
 - Turning off the toggle removes all inspector content instantly.
-- Inspector never appears unless both:
-  - Toggle is ON.
-  - `devMode=true` is active.
 
 ### Visual Feedback & Timing
 
@@ -71,7 +68,6 @@ This problem is urgent because:
 - JSON panel appears collapsed by default under each judoka card.
 - JSON output is valid, formatted, and reflects the current state of card data.
 - Disclosure control is keyboard-accessible and screen-reader-friendly.
-- Inspector is completely hidden unless both `devMode=true` and the toggle are ON.
 - The panel never overlaps gameplay UI elements or interferes with interactions.
 - In cases of errors (e.g., invalid JSON, null card), a fallback message (“Invalid card data”) is shown.
 
@@ -79,9 +75,7 @@ This problem is urgent because:
 
 ## Design / Visual UX Guidelines
 
-- Use a **light-gray box** with a 1px border and 4px padding.
 - Content in **monospace font**, 12–14px.
-- Panel height maxes out at 240px; scrollable if longer.
 - Disclosure widget uses system-native `<details>` or custom with WCAG labels.
 - Tap target size for disclosure toggle: **44×44px minimum**.
 - Smooth animation on expand/collapse.
@@ -103,7 +97,6 @@ This problem is urgent because:
 - **Malformed JSON**: Show error block, prevent crash.
 - **Toggle Fails**: Log error, fallback to default OFF state.
 - **Rendering Issues**: If panel glitches, allow QA console reset or hard reload.
-- **Non-DevMode**: Inspector must not render even if toggle is ON.
 
 ---
 
@@ -111,7 +104,6 @@ This problem is urgent because:
 
 - `cardBuilder.js` and `renderJudokaCard()` logic.
 - Shared user preferences for toggle persistence.
-- `devMode` flag accessible globally.
 
 ---
 
@@ -126,15 +118,13 @@ This problem is urgent because:
 
 - [ ] 2.0 Render JSON Panel in Cards
 
-  - [ ] 2.1 Check for `toggle=true` and `devMode=true` in `cardBuilder.js`
+  - [ ] 2.1 Check for `toggle=true` in `cardBuilder.js`
   - [ ] 2.2 Inject formatted JSON into each card
   - [ ] 2.3 Use `<details>` for collapsibility with proper labeling
 
 - [ ] 3.0 Visual and Responsive Styling
 
-  - [ ] 3.1 Use light-gray box with border and monospace font
-  - [ ] 3.2 Ensure 44px tap targets for disclosure toggle
-  - [ ] 3.3 Limit max height and apply scroll behavior
+  - [ ] 3.1 Ensure 44px tap targets for disclosure toggle
 
 - [ ] 4.0 Accessibility and Keyboard Support
 
@@ -148,7 +138,4 @@ This problem is urgent because:
   - [ ] 5.2 Wrap rendering logic in `try/catch`
   - [ ] 5.3 Display fallback message for errors
 
-- [ ] 6.0 QA/Dev Mode Visibility
-  - [ ] 6.1 Confirm dev-only visibility using `devMode` flag
-  - [ ] 6.2 Add console warning if inspector loads without devMode
-  - [ ] 6.3 QA shortcut for hard refresh toggle if needed
+---
