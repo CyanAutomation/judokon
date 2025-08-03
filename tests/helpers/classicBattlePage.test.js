@@ -113,6 +113,47 @@ describe("classicBattlePage keyboard navigation", () => {
   });
 });
 
+describe("classicBattlePage simulated opponent mode", () => {
+  it("auto-selects a stat and disables buttons", async () => {
+    const startRound = vi.fn();
+    const waitForComputerCard = vi.fn();
+    const handleStatSelection = vi.fn().mockResolvedValue();
+    const simulateOpponentStat = vi.fn(() => "power");
+    const loadSettings = vi.fn().mockResolvedValue({
+      featureFlags: { simulatedOpponentMode: { enabled: true } }
+    });
+    const initTooltips = vi.fn().mockResolvedValue();
+    const setTestMode = vi.fn();
+
+    vi.doMock("../../src/helpers/classicBattle.js", () => ({
+      startRound,
+      handleStatSelection,
+      simulateOpponentStat
+    }));
+    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
+    vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
+    vi.doMock("../../src/helpers/stats.js", () => ({ loadStatNames: async () => [] }));
+
+    const container = document.createElement("div");
+    container.id = "stat-buttons";
+    const btn = document.createElement("button");
+    btn.dataset.stat = "power";
+    container.appendChild(btn);
+    document.body.appendChild(container);
+
+    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
+    await setupClassicBattlePage();
+
+    expect(handleStatSelection).toHaveBeenCalledWith("power");
+    const calls = handleStatSelection.mock.calls.length;
+    btn.dispatchEvent(new Event("click", { bubbles: true }));
+    expect(handleStatSelection).toHaveBeenCalledTimes(calls);
+    expect(btn.disabled).toBe(true);
+  });
+});
+
 describe("classicBattlePage stat help tooltip", () => {
   it("shows tooltip only once", async () => {
     vi.useFakeTimers();

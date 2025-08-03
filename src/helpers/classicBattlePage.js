@@ -8,15 +8,15 @@
  *    a. Disables stat buttons.
  *    b. Calls `startRound` from `classicBattle.js`.
  *    c. Waits for the Mystery card to render using `waitForComputerCard`.
- *    d. Enables stat buttons.
+ *    d. In simulated opponent mode, select a stat via `simulateOpponentStat`
+ *       and await `handleStatSelection`; otherwise re-enable stat buttons.
  * 4. Define `setupClassicBattlePage` to:
- *    a. Attach click and keyboard listeners on stat buttons that call
- *       `handleStatSelection`.
- *    b. Set `window.startRoundOverride` to `startRoundWrapper` so the battle
+ *    a. Load feature flags and set `data-*` attributes on `#battle-area`.
+ *    b. Attach click and keyboard listeners on stat buttons that call
+ *       `handleStatSelection` when not in simulated opponent mode.
+ *    c. Set `window.startRoundOverride` to `startRoundWrapper` so the battle
  *       module uses it for subsequent rounds.
- *    c. Load feature flags, set `data-*` attributes on `#battle-area`, and
- *       toggle the debug panel based on the `battleDebugPanel` flag.
- *    d. Toggle the `.simulate-viewport` class based on the viewport flag.
+ *    d. Toggle the debug panel and viewport simulation flags.
  *    e. Invoke `startRoundWrapper` to begin the match.
  *    f. Initialize tooltips and show the stat help tooltip once for new users.
  *    g. Watch for orientation changes and update the battle header's
@@ -25,7 +25,11 @@
  *       `data-test-mode` attribute when settings change.
  * 5. Execute `setupClassicBattlePage` with `onDomReady`.
  */
-import { startRound as classicStartRound, handleStatSelection } from "./classicBattle.js";
+import {
+  startRound as classicStartRound,
+  handleStatSelection,
+  simulateOpponentStat
+} from "./classicBattle.js";
 import { onDomReady } from "./domReady.js";
 import { waitForComputerCard } from "./battleJudokaPage.js";
 import { loadSettings } from "./settingsUtils.js";
@@ -43,15 +47,18 @@ function enableStatButtons(enable = true) {
   });
 }
 
+let simulatedOpponentMode = false;
+
 async function startRoundWrapper() {
   enableStatButtons(false);
   await classicStartRound();
   await waitForComputerCard();
-  enableStatButtons(true);
-}
-
-function onStatSelect(stat) {
-  handleStatSelection(stat);
+  if (simulatedOpponentMode) {
+    const stat = simulateOpponentStat();
+    await handleStatSelection(stat);
+  } else {
+    enableStatButtons(true);
+  }
 }
 
 async function applyStatLabels() {
@@ -95,23 +102,6 @@ function watchBattleOrientation() {
 export async function setupClassicBattlePage() {
   await applyStatLabels();
   const statButtons = document.querySelectorAll("#stat-buttons button");
-  statButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      if (!btn.disabled) {
-        enableStatButtons(false);
-        btn.classList.add("selected");
-        onStatSelect(btn.dataset.stat);
-      }
-    });
-    btn.addEventListener("keydown", (e) => {
-      if ((e.key === "Enter" || e.key === " ") && !btn.disabled) {
-        e.preventDefault();
-        enableStatButtons(false);
-        btn.classList.add("selected");
-        onStatSelect(btn.dataset.stat);
-      }
-    });
-  });
 
   let settings;
   try {
@@ -120,11 +110,35 @@ export async function setupClassicBattlePage() {
     settings = { featureFlags: {} };
   }
 
+  simulatedOpponentMode = Boolean(settings.featureFlags.simulatedOpponentMode?.enabled);
+  if (simulatedOpponentMode) {
+    enableStatButtons(false);
+  } else {
+    statButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (!btn.disabled) {
+          enableStatButtons(false);
+          btn.classList.add("selected");
+          handleStatSelection(btn.dataset.stat);
+        }
+      });
+      btn.addEventListener("keydown", (e) => {
+        if ((e.key === "Enter" || e.key === " ") && !btn.disabled) {
+          e.preventDefault();
+          enableStatButtons(false);
+          btn.classList.add("selected");
+          handleStatSelection(btn.dataset.stat);
+        }
+      });
+    });
+  }
+
   const battleArea = document.getElementById("battle-area");
   if (battleArea) {
     battleArea.dataset.mode = "classic";
     battleArea.dataset.randomStat = String(Boolean(settings.featureFlags.randomStatMode));
     battleArea.dataset.testMode = String(Boolean(settings.featureFlags.enableTestMode?.enabled));
+    battleArea.dataset.simulatedOpponent = String(simulatedOpponentMode);
   }
 
   toggleViewportSimulation(Boolean(settings.featureFlags.viewportSimulation?.enabled));
