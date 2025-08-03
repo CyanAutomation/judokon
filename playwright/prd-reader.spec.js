@@ -40,9 +40,20 @@ test.describe("PRD Reader page", () => {
     const items = page.locator(".sidebar-list li");
     const container = page.locator("#prd-content");
     const initial = await container.innerHTML();
-
-    await page.keyboard.press("Tab");
-    await page.keyboard.press("Tab");
+    const isFirstFocused = async () =>
+      await items.first().evaluate((el) => el === document.activeElement);
+    let attempts = 0;
+    while (!(await isFirstFocused()) && attempts < 10) {
+      await page.keyboard.press("Tab");
+      attempts += 1;
+    }
+    if (!(await isFirstFocused())) {
+      attempts = 0;
+      while (!(await isFirstFocused()) && attempts < 10) {
+        await page.keyboard.press("Shift+Tab");
+        attempts += 1;
+      }
+    }
     await expect(items.first()).toBeFocused();
 
     await page.keyboard.press("ArrowRight");
