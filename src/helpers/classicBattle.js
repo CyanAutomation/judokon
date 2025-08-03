@@ -30,6 +30,44 @@ let statTimeoutId = null;
 let autoSelectId = null;
 
 /**
+ * Display match summary with final message and scores.
+ *
+ * @pseudocode
+ * 1. Find the summary panel and text elements.
+ * 2. Insert the result message and scores.
+ * 3. Reveal the panel by removing the hidden class.
+ *
+ * @param {{message: string, playerScore: number, computerScore: number}} result
+ */
+function showSummary(result) {
+  const panel = document.getElementById("summary-panel");
+  const messageEl = document.getElementById("summary-message");
+  const scoreEl = document.getElementById("summary-score");
+  if (panel && messageEl && scoreEl) {
+    messageEl.textContent = result.message;
+    scoreEl.textContent = `Final Score – You: ${result.playerScore} Opponent: ${result.computerScore}`;
+    panel.classList.remove("hidden");
+  }
+}
+
+/**
+ * Reset match state and start a new game.
+ *
+ * @pseudocode
+ * 1. Reset engine scores and flags.
+ * 2. Hide the summary panel and clear the last round message.
+ * 3. Call the start round function to begin a new match.
+ */
+async function handleReplay() {
+  engineReset();
+  const panel = document.getElementById("summary-panel");
+  if (panel) panel.classList.add("hidden");
+  const msgEl = document.getElementById("round-message");
+  if (msgEl) msgEl.textContent = "";
+  await getStartRound()();
+}
+
+/**
  * Handle stalled stat selection by prompting the player and auto-selecting a
  * random stat after a short delay.
  *
@@ -137,6 +175,9 @@ export async function handleStatSelection(stat) {
   const result = evaluateRound(stat);
   resetStatButtons();
   scheduleNextRound(result, getStartRound());
+  if (result.matchEnded) {
+    showSummary(result);
+  }
   updateDebugPanel();
 }
 
@@ -197,5 +238,12 @@ const quitButton = document.getElementById("quit-match-button");
 if (quitButton) {
   quitButton.addEventListener("click", () => {
     quitMatch();
+  });
+}
+
+const replayButton = document.getElementById("replay-button");
+if (replayButton) {
+  replayButton.addEventListener("click", () => {
+    handleReplay();
   });
 }
