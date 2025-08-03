@@ -21,4 +21,24 @@ test.describe("Battle Judoka page", () => {
     await page.getByTestId(NAV_CLASSIC_BATTLE).click();
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
+
+  test("narrow viewport screenshot and status aria attributes", async ({ page }) => {
+    await page.setViewportSize({ width: 280, height: 800 });
+
+    const axTree = await page.accessibility.snapshot({ interestingOnly: false });
+
+    const collectStatusNodes = (node) => {
+      if (!node) return [];
+      const matches = node.role === "status" ? [node] : [];
+      return node.children ? matches.concat(node.children.flatMap(collectStatusNodes)) : matches;
+    };
+
+    const statusNodes = collectStatusNodes(axTree);
+    expect(statusNodes.length).toBeGreaterThan(0);
+
+    const ariaLiveCount = await page.locator('[role="status"][aria-live]').count();
+    expect(ariaLiveCount).toBeGreaterThan(0);
+
+    await expect(page).toHaveScreenshot("battleJudoka-narrow.png");
+  });
 });
