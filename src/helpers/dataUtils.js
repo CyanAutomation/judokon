@@ -10,14 +10,13 @@ import { getMissingJudokaFields } from "./judokaValidation.js";
  * Determine if the code is running in a Node environment.
  *
  * @pseudocode
- * 1. Verify that `process` is defined.
- * 2. Confirm `process.versions.node` exists.
- * 3. Return `true` when both checks succeed.
+ * 1. Check if `process.versions.node` exists using optional chaining.
+ * 2. Return `true` when it exists; otherwise, return `false`.
  *
  * @returns {boolean} `true` if running under Node.
  */
 function isNodeEnvironment() {
-  return typeof process !== "undefined" && process.versions && process.versions.node;
+  return Boolean(process?.versions?.node);
 }
 
 export async function getAjv() {
