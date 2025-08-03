@@ -1,6 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 
 describe("prdReaderPage", () => {
+  afterEach(() => {
+    history.replaceState(null, "", "/");
+  });
   it("navigates documents with wrap-around", async () => {
     const docs = {
       "b.md": "# Second doc",
@@ -135,6 +138,61 @@ describe("prdReaderPage", () => {
 
     const summary = document.getElementById("task-summary");
     expect(summary.textContent).toContain("1/2");
+  });
+
+  it("loads document from query parameter", async () => {
+    const docs = {
+      "b.md": "# Second doc",
+      "a.md": "# First doc"
+    };
+    const parser = (md) => `<h1>${md}</h1>`;
+
+    history.replaceState(null, "", "/?doc=b");
+
+    document.body.innerHTML = `
+      <div id="prd-title"></div>
+      <div id="task-summary"></div>
+      <ul id="prd-list"></ul>
+      <div id="prd-content"></div>
+      <button data-nav="prev">Prev</button>
+      <button data-nav="next">Next</button>
+    `;
+
+    globalThis.SKIP_PRD_AUTO_INIT = true;
+    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+
+    await setupPrdReaderPage(docs, parser);
+
+    const container = document.getElementById("prd-content");
+    expect(container.innerHTML).toContain("Second doc");
+    expect(window.location.search).toBe("?doc=b");
+  });
+
+  it("updates URL when navigating", async () => {
+    const docs = {
+      "b.md": "# Second doc",
+      "a.md": "# First doc"
+    };
+    const parser = (md) => `<h1>${md}</h1>`;
+
+    document.body.innerHTML = `
+      <div id="prd-title"></div>
+      <div id="task-summary"></div>
+      <ul id="prd-list"></ul>
+      <div id="prd-content"></div>
+      <button data-nav="prev">Prev</button>
+      <button data-nav="next">Next</button>
+    `;
+
+    globalThis.SKIP_PRD_AUTO_INIT = true;
+    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+
+    await setupPrdReaderPage(docs, parser);
+
+    expect(window.location.search).toBe("?doc=a");
+    const next = document.querySelector('[data-nav="next"]');
+    next.click();
+    expect(window.location.search).toBe("?doc=b");
   });
 
   it("shows warning badge when markdown parsing fails", async () => {
