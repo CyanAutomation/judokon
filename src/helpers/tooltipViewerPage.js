@@ -3,6 +3,7 @@ import { parseTooltipText, flattenTooltips, initTooltips } from "./tooltip.js";
 import { DATA_DIR } from "./constants.js";
 import { onDomReady } from "./domReady.js";
 import { createSidebarList } from "../components/SidebarList.js";
+import { showSnackbar } from "./showSnackbar.js";
 
 const INVALID_TOOLTIP_MSG = "Empty or whitespace-only content";
 
@@ -18,7 +19,8 @@ const INVALID_TOOLTIP_MSG = "Empty or whitespace-only content";
  *    or collapse long content.
  * 4. When a key is selected, display its parsed HTML and raw text in the
  *    preview, and show a warning when the markup is unbalanced.
- * 5. Provide copy buttons for the key and body using `navigator.clipboard`.
+ * 5. Provide copy buttons for the key and body using `navigator.clipboard` and
+ *    show feedback with a snackbar and button animation.
  * 6. On page load, select the key from the URL hash when present and scroll to
  *    it.
  * 7. Call `initTooltips()` so help icons inside the page gain tooltips.
@@ -150,7 +152,14 @@ export async function setupTooltipViewerPage() {
   function copy(btn) {
     const text = btn.dataset.copy || "";
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).catch(() => {});
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          showSnackbar("Copied");
+          btn.classList.add("copied");
+          setTimeout(() => btn.classList.remove("copied"), 600);
+        })
+        .catch(() => {});
     }
   }
 

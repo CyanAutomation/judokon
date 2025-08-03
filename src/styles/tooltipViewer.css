@@ -27,6 +27,20 @@
   margin-bottom: var(--space-sm);
 }
 
+.copy-buttons button.copied {
+  animation: copyFlash 0.3s ease-in-out;
+}
+
+@keyframes copyFlash {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+}
+
 .preview-container {
   max-height: 300px;
   overflow: hidden;
