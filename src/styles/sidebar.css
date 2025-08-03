@@ -58,6 +58,24 @@
   color: #c62828;
 }
 
+.tooltip-invalid-icon {
+  margin-left: var(--space-xs);
+  color: #c62828;
+  font-weight: bold;
+}
+
+.tooltip-invalid-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .sidebar-list li.stat {
   border-left-color: var(--color-primary);
 }
