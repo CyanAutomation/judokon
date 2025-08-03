@@ -197,6 +197,24 @@ describe("setupTooltipViewerPage", () => {
     expect(document.getElementById("tooltip-preview").textContent).toBe("File not found");
   });
 
+  it("shows parse error details when JSON is invalid", async () => {
+    Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+
+    const error = new SyntaxError("Unexpected token } in JSON at line 3 column 15");
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockRejectedValue(error),
+      importJsonModule: vi.fn().mockResolvedValue({})
+    }));
+
+    await import("../../src/helpers/tooltipViewerPage.js");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+
+    await Promise.resolve();
+
+    expect(document.getElementById("tooltip-preview").textContent).toBe("Line 3, Column 15");
+  });
+
   it("adds warning icon to invalid key names", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 

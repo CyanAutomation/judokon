@@ -116,6 +116,7 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 - Elements expose `data-key`, `data-body`, and `data-valid` for QA.
 - Viewer operates offline as a static HTML file.
 - When `tooltips.json` is missing, the preview panel displays "File not found".
+- When `tooltips.json` contains invalid JSON, the preview shows `Line X, Column Y`.
 - Styling matches JU-DO-KON! brand (typography, colors, spacing).
 - **Sidebar supports keyboard navigation and category highlighting**
 - **Visual indicators (icon/tooltip) for invalid/empty/malformed entries are present**
@@ -128,14 +129,14 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 
 ## Edge Cases & Failures
 
-| Case                    | Handling Behavior                                                                                  |
-| ----------------------- | -------------------------------------------------------------------------------------------------- |
-| File missing            | Show "File not found" message in viewer panel                                                      |
-| Corrupted JSON          | Render structured parse error (line, column) in preview area                                       |
-| Malformed markdown      | Render best-effort version and flag preview with warning icon                                      |
-| Missing/empty strings   | Highlight key with red icon and tooltip: "Empty or whitespace-only content"                        |
-| Unrecognized key format | Warn if keys deviate from pattern `prefix.name` (`/^[a-z]+\.[\w-]+$/`); show red icon with tooltip |
-| Long values             | Truncate preview after 300px height; add “Show more” toggle                                        |
+| Case                    | Handling Behavior                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| File missing            | Show "File not found" message in viewer panel                                                          |
+| Corrupted JSON          | Render structured parse error with line and column numbers (e.g., "Line 4, Column 10") in preview area |
+| Malformed markdown      | Render best-effort version and flag preview with warning icon                                          |
+| Missing/empty strings   | Highlight key with red icon and tooltip: "Empty or whitespace-only content"                            |
+| Unrecognized key format | Warn if keys deviate from pattern `prefix.name` (`/^[a-z]+\.[\w-]+$/`); show red icon with tooltip     |
+| Long values             | Truncate preview after 300px height; add “Show more” toggle                                            |
 
 ---
 
@@ -146,6 +147,7 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
   - [x] 1.1 Load `tooltips.json` from `src/data/tooltips.json`
   - [x] 1.2 Handle loading failures with user-friendly error display
   - [x] 1.3 Parse JSON and extract key-value pairs
+  - [x] 1.4 Display line and column numbers on JSON parse errors
 
 - [x] 2.0 Implement Sidebar Key List
 
