@@ -193,7 +193,10 @@ function connectScoreSocket(wsUrl, pollUrl) {
 function startScoreSync() {
   if (typeof window === "undefined") return;
   if (scoreSocket || pollIntervalId) return;
-  const wsUrl = "ws://localhost:3000/classic-battle";
+  // Dynamically construct the WebSocket URL based on the current location
+  const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const wsHost = window.location.host;
+  const wsUrl = `${wsProtocol}//${wsHost}/classic-battle`;
   const pollUrl = "/api/classic-battle/score";
   connectScoreSocket(wsUrl, pollUrl);
 }
