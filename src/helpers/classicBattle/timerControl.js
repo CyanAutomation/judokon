@@ -1,6 +1,11 @@
 import { seededRandom } from "../testModeUtils.js";
 import { getDefaultTimer } from "../timerUtils.js";
-import { startRound as engineStartRound, startCoolDown, STATS } from "../battleEngine.js";
+import {
+  startRound as engineStartRound,
+  startCoolDown,
+  STATS,
+  getTimerState
+} from "../battleEngine.js";
 import * as infoBar from "../setupBattleInfoBar.js";
 import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from "./uiHelpers.js";
 
@@ -11,7 +16,8 @@ import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from 
  * 1. Determine timer duration using `getDefaultTimer('roundTimer')`.
  *    - On error, show "Waiting…" and fallback to 30 seconds.
  * 2. Call `engineStartRound` to update the countdown each second.
- * 3. When expired, auto-select a random stat via `onExpired`.
+ * 3. Compare real elapsed time with `getTimerState()` and restart the timer on drift.
+ * 4. When expired, auto-select a random stat via `onExpired`.
  *
  * @param {function(string): void} onExpiredSelect - Callback to handle stat auto-selection.
  * @returns {Promise<void>} Resolves when the timer begins.
@@ -33,17 +39,46 @@ export async function startTimer(onExpiredSelect) {
   if (!synced) {
     infoBar.showMessage("Waiting…");
   }
-  engineStartRound(
-    (remaining) => {
-      if (timerEl) timerEl.textContent = `Time Left: ${remaining}s`;
-    },
-    () => {
-      const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
-      infoBar.showMessage(`Time's up! Auto-selecting ${randomStat}`);
-      onExpiredSelect(randomStat);
-    },
-    duration
-  );
+
+  const onTick = (remaining) => {
+    if (timerEl) timerEl.textContent = `Time Left: ${remaining}s`;
+  };
+
+  const onExpired = () => {
+    clearInterval(driftInterval);
+    const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
+    infoBar.showMessage(`Time's up! Auto-selecting ${randomStat}`);
+    onExpiredSelect(randomStat);
+  };
+
+  const DRIFT_THRESHOLD = 2;
+  let driftInterval;
+  let startTime = Date.now();
+
+  const runTimer = (dur) => {
+    startTime = Date.now();
+    duration = dur;
+    engineStartRound(onTick, onExpired, dur);
+    clearInterval(driftInterval);
+    driftInterval = setInterval(() => {
+      const { remaining } = getTimerState();
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const expected = duration - elapsed;
+      if (Math.abs(remaining - expected) > DRIFT_THRESHOLD) {
+        driftRetries += 1;
+        if (driftRetries > MAX_DRIFT_RETRIES) {
+          clearInterval(driftInterval);
+          infoBar.showMessage("Timer error. Auto-selecting stat.");
+          onExpired();
+          return;
+        }
+        infoBar.showMessage("Waiting…");
+        runTimer(remaining);
+      }
+    }, 1000);
+  };
+
+  runTimer(duration);
 }
 
 /**
