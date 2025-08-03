@@ -31,7 +31,7 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 ## User Stories
 
 - As a player who loves surprises, I want each card draw to feel random so battles stay exciting.
-- As a player sensitive to motion, I want to disable animations so I can play comfortably.
+- As a player sensitive to motion, I want animations to respect my settings so I can play comfortably.
 - As a parent watching my child play, I want the draw button to be large and responsive so they can use it easily.
 
 ---
@@ -43,7 +43,7 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 - The system:
   - Selects a random Judoka card from the active card set (isActive = True).
   - Visually reveals the card with a slide animation.
-  - Future Enhancement: Plays a short celebratory sound (e.g., swoosh or chime)
+  - Future Enhancement: Plays a short celebratory sound (e.g., swoosh or chime) when sound is enabled in `settings.html`
   - Ensures animation smoothness for devices .
 - **Active card set**: The current pool of cards available in the player’s deck, dynamically updated based on the game state.
 
@@ -91,8 +91,8 @@ instantly without movement.
 - **Random Pick Failure**: If random draw fails (e.g., due to a code error), show a fallback card (judoka id=0, from `judoka.json`) via `getFallbackJudoka()`
 - **Empty Card Set**: Display a predefined error card (judoka id=0, from judoka.json) if no cards are available.
 - **Accessibility**:
-  - Respect system Reduced Motion settings — disable animations if active.
-  - Default: Animations ON, but respect system/user preferences.
+  - Respect system Reduced Motion and global motion settings — disable animations if either is active.
+  - Default: Animations ON for device smoothness, unless disabled by system Reduced Motion or in `settings.html`.
   - Provide an `aria-label` on the Draw button so the accessible name stays
     "Draw a random judoka card" even when the visible text is updated.
 
@@ -111,7 +111,7 @@ instantly without movement.
 ### User Goals
 
 - Provide an exciting, quick card reveal to keep players engaged.
-- Allow players sensitive to motion to control animation settings for comfort.
+- Ensure animations honor global motion settings so players sensitive to motion can play comfortably.
 
 ---
 
@@ -141,7 +141,7 @@ instantly without movement.
 - If the random function fails, a fallback card is shown (judoka id=0, from judoka.json).
 - If the active card set is empty, a fallback card is shown (judoka id=0, from judoka.json).
   Both cases rely on the shared `getFallbackJudoka()` helper.
-- Animation is disabled if the user has enabled Reduced Motion settings.
+- Animation is disabled if the user has enabled Reduced Motion or disabled motion in `settings.html`.
 
 ---
 
@@ -153,23 +153,22 @@ instantly without movement.
 | P1       | Display Selected Card          | Visually reveal the selected card with animation and sound feedback.         |
 | P2       | Fallback on Failure            | Show fallback card if draw fails or active set is empty.                     |
 | P2       | Reusable Random Draw Module    | Make the random draw callable from multiple game states or screens.          |
-| P3       | Accessibility Support          | Support Reduced Motion settings and maintain color contrast and readability. |
+| P3       | Accessibility Support          | Honor Reduced Motion and sound settings from `settings.html` and maintain color contrast and readability. |
 | P3       | UX Enhancements                | Optimize for animation, sound effect, and large tap targets.                 |
-| P3       | Sound & Animation User Toggles | Allow users to manually mute sounds and disable animations if desired.       |
 
 ---
 
 ## Design and User Experience Considerations
 
 - **Animation Style**: Fade or slide only — no flips or excessive transitions to keep visuals polished.
-- **Sound Effect**: Short celebratory chime or swoosh (<1 second) - future enhancement
+- **Sound Effect**: Short celebratory chime or swoosh (<1 second) when sound is enabled in `settings.html` – future enhancement
 - **Responsiveness**:
   - Smooth transitions.
   - Degrade to static reveal if hardware performance is low.
 - **Accessibility**:
-  - Respect system Reduced Motion settings (disable animations automatically).
+  - Respect system Reduced Motion and global motion settings (disable animations automatically).
   - Ensure color contrast and text readability on cards (WCAG AA compliance; validate with `npm run check:contrast`).
-- **Default Setting**: Animations and sound OFF unless user/system preferences state otherwise.
+  - Animations and sound follow global preferences from `settings.html` (default ON).
 - **Fallback Visuals**:
   - If card loading fails, show a placeholder card (judoka id=0, from judoka.json).
 - **Tap Target Size**:
@@ -186,10 +185,9 @@ instantly without movement.
 **Contents:**
 
 - **Player Info Module**: “You” + small avatar + status (e.g., “Your Turn” indicator).
-- **Settings Button**: Bigger tappable area (44px+), slight margin from edge, no tiny icons.
 - **Optional Timer** (future feature): If there’s a time limit per draw.
 
-**Why**: Clear identification + quick settings access without hunting for small buttons.
+**Why**: Clear identification of player status.
 
 ---
 
@@ -217,7 +215,7 @@ instantly without movement.
 - **Fallback**:
   - If fail → fallback card (judoka id=0, from judoka.json) slides in with reduced animation.
 - **Accessibility Setting Check**:
-  - Automatically downgrade if Reduced Motion is detected — immediately snap card reveal, no slide.
+  - Automatically downgrade if Reduced Motion is detected or motion is disabled in `settings.html` — immediately snap card reveal, no slide.
 
 **Why**: Players should _feel_ the result without being confused or left staring at nothing.
 
@@ -226,7 +224,6 @@ instantly without movement.
 ### 4. Modular Expandability
 
 - Add a “Card History” mini panel (expandable from side or bottom).
-- Add mute toggle for sound (little speaker icon on card corner or header).
 - Pre-wire zones for device scaling:
   - Flexbox/grid layout so the card & button center stack on small screens, side-by-side on tablets.
 
@@ -245,23 +242,21 @@ instantly without movement.
   - [x] 1.2 Integrate card draw with UI trigger ("Draw Card" button).
 - [x] 2.0 Develop Card Reveal Animation
   - [x] 2.1 Implement `.animate-card` class for fade/slide card reveal.
-  - [x] 2.3 Respect Reduced Motion settings and disable animation when active.
+  - [x] 2.3 Respect Reduced Motion and global motion settings and disable animation when active.
 - [x] 3.0 Error and Fallback Handling
   - [x] 3.1 Display fallback card (judoka id=0, from judoka.json) if random draw fails.
   - [x] 3.2 Show predefined error card (judoka id=0, from judoka.json) if active card set is empty.
 - [ ] 4.0 Accessibility and UX Enhancements
-- [x] 4.1 Support Reduced Motion settings.
+- [x] 4.1 Support Reduced Motion and global motion settings.
   - [x] 4.2 Ensure color contrast on cards meets WCAG AA standards. Verified in [`tests/helpers/randomJudokaPage.test.js`](../../tests/helpers/randomJudokaPage.test.js).
   - [ ] 4.3 Set all tap targets to ≥44px, recommended 64px for better kid usability (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)). **[Button styled, but no runtime check]**
-  - [ ] 4.4 Implement animation and sound toggle controls with settings persistence. **[Toggles present, but sound logic not implemented]**
-  - [ ] 4.5 Play card-draw audio when sound is enabled and provide a mute option. **[Not implemented]**
-  - [x] 4.6 Disable the “Draw Card” button while loading or animating a card.
-  - [ ] 4.7 Add orientation-based layout rules for portrait vs. landscape. **[Not implemented]**
-  - [x] 4.8 Write automated tests verifying color contrast and tap target sizes. See [`tests/helpers/randomJudokaPage.test.js`](../../tests/helpers/randomJudokaPage.test.js).
+  - [ ] 4.4 Play card-draw audio when sound is enabled in `settings.html`. **[Not implemented]**
+  - [x] 4.5 Disable the “Draw Card” button while loading or animating a card.
+  - [ ] 4.6 Add orientation-based layout rules for portrait vs. landscape. **[Not implemented]**
+  - [x] 4.7 Write automated tests verifying color contrast and tap target sizes. See [`tests/helpers/randomJudokaPage.test.js`](../../tests/helpers/randomJudokaPage.test.js).
 - [ ] 5.0 Additional Features
   - [ ] 5.1 Implement "Card History" panel. **[Not implemented]**
-  - [ ] 5.2 Add celebratory sound effect on card draw. **[Not implemented]**
-  - [ ] 5.3 Provide visual or ARIA feedback for loading state. **[Only button disables, no spinner/text]**
+  - [ ] 5.2 Provide visual or ARIA feedback for loading state. **[Only button disables, no spinner/text]**
 
 ---
 
