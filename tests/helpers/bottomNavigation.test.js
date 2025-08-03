@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 
 const originalFetch = global.fetch;
 const originalNavigator = global.navigator;
+const originalMatchMedia = global.matchMedia;
 
 function stubLogoQuery() {
   const originalQuery = document.querySelector.bind(document);
@@ -26,9 +27,23 @@ function setupDom() {
   return navBar;
 }
 
+function stubOrientation(orientation) {
+  global.matchMedia = vi.fn().mockImplementation((query) => ({
+    matches: query === `(orientation: ${orientation})`,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn()
+  }));
+}
+
 afterEach(() => {
   global.fetch = originalFetch;
   global.navigator = originalNavigator;
+  global.matchMedia = originalMatchMedia;
   if (global.localStorage) {
     global.localStorage.clear();
   }
@@ -40,6 +55,7 @@ describe("toggleExpandedMapView", () => {
   beforeEach(() => {
     navBar = setupDom();
     stubLogoQuery();
+    stubOrientation("landscape");
   });
 
   it("creates map tiles for valid game modes", async () => {
@@ -84,6 +100,14 @@ describe("toggleExpandedMapView", () => {
     expect(link).toHaveAttribute("data-tooltip-id", "nav.mode1");
     expect(img).toHaveAttribute("alt", "Mode1");
   });
+
+  it("does nothing in portrait orientation", async () => {
+    stubOrientation("portrait");
+    const modes = [{ name: "Mode1", url: "mode1.html", image: "img1.png" }];
+    const { toggleExpandedMapView } = await import("../../src/helpers/navigation/navMenu.js");
+    toggleExpandedMapView(modes);
+    expect(navBar.querySelector(".expanded-map-view")).toBeNull();
+  });
 });
 
 describe("togglePortraitTextMenu", () => {
@@ -91,6 +115,7 @@ describe("togglePortraitTextMenu", () => {
   beforeEach(() => {
     navBar = setupDom();
     stubLogoQuery();
+    stubOrientation("portrait");
   });
 
   it("creates list items for valid game modes", async () => {
@@ -131,6 +156,14 @@ describe("togglePortraitTextMenu", () => {
     const link = navBar.querySelector(".portrait-text-menu li a");
     expect(link).toHaveAttribute("aria-label", "Mode1");
     expect(link).toHaveAttribute("data-tooltip-id", "nav.mode1");
+  });
+
+  it("does nothing in landscape orientation", async () => {
+    stubOrientation("landscape");
+    const modes = [{ name: "Mode1", url: "mode1.html", image: "img1.png" }];
+    const { togglePortraitTextMenu } = await import("../../src/helpers/navigation/navMenu.js");
+    togglePortraitTextMenu(modes);
+    expect(navBar.querySelector(".portrait-text-menu")).toBeNull();
   });
 });
 
