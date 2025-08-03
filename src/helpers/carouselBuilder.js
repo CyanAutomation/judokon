@@ -4,6 +4,7 @@ import { setupLazyPortraits } from "./lazyPortrait.js";
 import {
   createScrollButton,
   updateScrollButtonState,
+  setupKeyboardNavigation,
   setupSwipeNavigation,
   applyAccessibilityImprovements,
   setupResponsiveSizing,
@@ -221,6 +222,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   window.addEventListener("resize", updateButtons);
 
   setupFocusHandlers(container);
+  setupKeyboardNavigation(container);
   setupSwipeNavigation(container);
   applyAccessibilityImprovements(wrapper);
   setupLazyPortraits(container);
