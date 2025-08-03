@@ -9,10 +9,11 @@ const SCROLL_THRESHOLD_PX = 50;
  * @pseudocode
  * 1. Fetch `judoka.json` to determine which countries appear in the deck.
  * 2. Load the country code mapping and build a sorted list of active entries.
- * 3. Determine batch size based on network conditions.
- * 4. Render an "All" button followed by batches of country buttons with lazily loaded flags.
- * 5. Use `IntersectionObserver` and `loading="lazy"` to defer flag requests until visible.
- * 6. Log errors if data fails to load or individual flags cannot be retrieved.
+ * 3. If no active countries exist, show a message and exit.
+ * 4. Determine batch size based on network conditions.
+ * 5. Render an "All" button followed by batches of country buttons with lazily loaded flags.
+ * 6. Use `IntersectionObserver` and `loading="lazy"` to defer flag requests until visible.
+ * 7. Log errors if data fails to load or individual flags cannot be retrieved.
  *
  * @param {HTMLElement} container - Element where buttons will be appended.
  * @returns {Promise<void>} Resolves when the list is populated.
@@ -32,6 +33,13 @@ export async function populateCountryList(container) {
       .map((name) => countryData.find((entry) => entry.country === name && entry.active))
       .filter(Boolean)
       .sort((a, b) => a.country.localeCompare(b.country));
+
+    if (activeCountries.length === 0) {
+      const message = document.createElement("p");
+      message.textContent = "No countries available.";
+      container.replaceChildren(message);
+      return;
+    }
 
     const allButton = document.createElement("button");
     allButton.className = "flag-button slide";
