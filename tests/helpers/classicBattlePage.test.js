@@ -3,6 +3,114 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 beforeEach(() => {
   document.body.innerHTML = "";
   localStorage.clear();
+  vi.resetModules();
+});
+
+describe("classicBattlePage keyboard navigation", () => {
+  it("activates stat buttons with Enter and Space", async () => {
+    const startRound = vi.fn();
+    const waitForComputerCard = vi.fn();
+    const handleStatSelection = vi.fn();
+    const loadSettings = vi.fn().mockResolvedValue({
+      featureFlags: { randomStatMode: { enabled: true } }
+    });
+    const initTooltips = vi.fn().mockResolvedValue();
+    const setTestMode = vi.fn();
+
+    vi.doMock("../../src/helpers/classicBattle.js", () => ({
+      startRound,
+      handleStatSelection
+    }));
+    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
+    vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
+    vi.doMock("../../src/helpers/stats.js", () => ({
+      loadStatNames: async () => [{ name: "Power" }, { name: "Speed" }]
+    }));
+
+    const container = document.createElement("div");
+    container.id = "stat-buttons";
+    ["power", "speed"].forEach((stat) => {
+      const b = document.createElement("button");
+      b.dataset.stat = stat;
+      container.appendChild(b);
+    });
+    document.body.appendChild(container);
+
+    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
+    await setupClassicBattlePage();
+
+    const [first, second] = container.querySelectorAll("button");
+    first.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    expect(handleStatSelection).toHaveBeenCalledWith("power");
+
+    // re-enable buttons for second key simulation
+    container.querySelectorAll("button").forEach((b) => {
+      b.disabled = false;
+      b.tabIndex = 0;
+    });
+    handleStatSelection.mockClear();
+
+    second.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+    expect(handleStatSelection).toHaveBeenCalledWith("speed");
+  });
+
+  it("navigates to Next Round and Quit buttons", async () => {
+    const startRound = vi.fn();
+    const waitForComputerCard = vi.fn();
+    const handleStatSelection = vi.fn();
+    const loadSettings = vi.fn().mockResolvedValue({
+      featureFlags: { randomStatMode: { enabled: true } }
+    });
+    const initTooltips = vi.fn().mockResolvedValue();
+    const setTestMode = vi.fn();
+
+    vi.doMock("../../src/helpers/classicBattle.js", () => ({
+      startRound,
+      handleStatSelection
+    }));
+    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
+    vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
+    vi.doMock("../../src/helpers/stats.js", () => ({
+      loadStatNames: async () => [{ name: "Power" }]
+    }));
+
+    const stats = document.createElement("div");
+    stats.id = "stat-buttons";
+    const statBtn = document.createElement("button");
+    statBtn.dataset.stat = "power";
+    stats.appendChild(statBtn);
+
+    const next = document.createElement("button");
+    next.id = "next-round-button";
+    const quit = document.createElement("button");
+    quit.id = "quit-match-button";
+    document.body.append(stats, next, quit);
+
+    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
+    await setupClassicBattlePage();
+
+    const focusOrder = () =>
+      Array.from(document.querySelectorAll("button")).filter(
+        (el) => !el.disabled && el.tabIndex !== -1
+      );
+
+    const tab = () => {
+      const order = focusOrder();
+      const idx = order.indexOf(document.activeElement);
+      const nextEl = order[idx + 1];
+      nextEl?.focus();
+    };
+
+    statBtn.focus();
+    tab();
+    expect(document.activeElement).toBe(next);
+    tab();
+    expect(document.activeElement).toBe(quit);
+  });
 });
 
 describe("classicBattlePage stat help tooltip", () => {
@@ -24,6 +132,7 @@ describe("classicBattlePage stat help tooltip", () => {
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
+    vi.doMock("../../src/helpers/stats.js", () => ({ loadStatNames: async () => [] }));
 
     const help = document.createElement("button");
     help.id = "stat-help";
@@ -71,6 +180,7 @@ describe("classicBattlePage test mode flag", () => {
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
+    vi.doMock("../../src/helpers/stats.js", () => ({ loadStatNames: async () => [] }));
 
     const battleArea = document.createElement("div");
     battleArea.id = "battle-area";
@@ -107,6 +217,7 @@ describe("classicBattlePage test mode flag", () => {
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
+    vi.doMock("../../src/helpers/stats.js", () => ({ loadStatNames: async () => [] }));
 
     const battleArea = document.createElement("div");
     battleArea.id = "battle-area";
