@@ -23,12 +23,12 @@ Developers and designers frequently face challenges when diagnosing layout misal
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                    | Description                                                                 |
-| -------- | -------------------------- | --------------------------------------------------------------------------- |
-| P1       | Toggle Layout Debug Panel  | Add a switch in the Settings page to enable/disable the layout debug panel. Only accessible to dev users. |
-| P1       | Visual Outlines            | When enabled, apply a 1px dashed outline to all visible elements via default selector `body *`. |
+| Priority | Feature                    | Description                                                                                                                   |
+| -------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| P1       | Toggle Layout Debug Panel  | Add a switch in the Settings page to enable/disable the layout debug panel. Only accessible to dev users.                     |
+| P1       | Visual Outlines            | When enabled, apply a 1px dashed outline to all visible elements via default selector `body *`.                               |
 | P2       | Custom Selector Support    | Allow developers to input custom CSS selectors for outlining specific elements. Invalid selectors are ignored with a warning. |
-| P3       | Remove Outlines on Disable | All outlines must be removed and cleaned from DOM styles when disabled.    |
+| P3       | Remove Outlines on Disable | All outlines must be removed and cleaned from DOM styles when disabled.                                                       |
 
 ## Defined Player Actions & Game Flow
 
@@ -89,22 +89,26 @@ Developers and designers frequently face challenges when diagnosing layout misal
 ## Tasks
 
 - [ ] 1.0 Add Toggle to Settings Page
+
   - [ ] 1.1 Create "Layout Debug Panel" toggle in Developer Tools section
   - [ ] 1.2 Ensure toggle is visible only to dev users or in dev environment
   - [ ] 1.3 Set default toggle state to OFF on page load
 
 - [ ] 2.0 Implement Outline Rendering Logic
+
   - [ ] 2.1 Select all visible elements via default selector `body *`
   - [ ] 2.2 Apply 1px dashed red border outline to each
   - [ ] 2.3 Delay render until after `DOMContentLoaded` if necessary
 
 - [ ] 3.0 Add Custom Selector Input Handling
+
   - [ ] 3.1 Render input for custom CSS selector when debug panel is active
   - [ ] 3.2 Validate selector syntax on input change
   - [ ] 3.3 Display warning if selector is invalid
   - [ ] 3.4 Display message if valid selector matches no elements
 
 - [ ] 4.0 Clean Up on Disable
+
   - [ ] 4.1 Remove all outlines and injected styles
   - [ ] 4.2 Ensure no side-effects or memory leaks remain
   - [ ] 4.3 Prevent flicker during rapid toggle on/off
