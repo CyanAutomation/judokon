@@ -14,8 +14,8 @@ import { getPrdTaskStats } from "./prdTaskStats.js";
  *    - Sort filenames alphabetically so sidebar and document order match.
  * 2. Create sidebar items and helper functions.
  * 3. Fetch each markdown file, parsing to HTML with `parserFn`.
- *    - After the first file loads, call `selectDoc(0)` so content appears immediately.
  * 4. Provide next/previous navigation with wrap-around and support arrow key and swipe gestures.
+ * 5. Read the `doc` query parameter and update history so URLs deep‑link to PRDs.
  *
  * @param {Record<string, string>} [docsMap] Optional preloaded docs for testing.
  * @param {Function} [parserFn=markdownToHtml] Parser used to convert Markdown to HTML.
@@ -40,6 +40,13 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   }
 
   FILES.sort((a, b) => a.localeCompare(b));
+  const baseNames = FILES.map((f) => f.replace(/\.md$/, ""));
+
+  const params = new URLSearchParams(window.location.search);
+  let startDoc = params.get("doc");
+  if (startDoc && !startDoc.endsWith(".md")) startDoc += ".md";
+  let startIndex = startDoc ? FILES.indexOf(startDoc) : 0;
+  if (startIndex === -1) startIndex = 0;
 
   const container = document.getElementById("prd-content");
   const listPlaceholder = document.getElementById("prd-list");
@@ -62,10 +69,9 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
       .trim()
   );
 
-  let index = 0;
+  let index = startIndex;
   const { element: listEl, select: listSelect } = createSidebarList(labels, (i) => {
-    index = i;
-    renderDoc(index);
+    selectDoc(i, true, true);
   });
   listEl.id = "prd-list";
   listPlaceholder.replaceWith(listEl);
@@ -104,10 +110,15 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     initTooltips();
   }
 
-  function selectDoc(i) {
+  function selectDoc(i, updateHistory = true, skipList = false) {
     index = (i + documents.length) % documents.length;
-    listSelect(index);
+    if (!skipList) listSelect(index);
     renderDoc(index);
+    if (updateHistory) {
+      const url = new URL(window.location);
+      url.searchParams.set("doc", baseNames[index]);
+      history.pushState({ index }, "", url.pathname + url.search);
+    }
   }
 
   function showNext() {
@@ -120,6 +131,11 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
 
   nextButtons.forEach((btn) => btn.addEventListener("click", showNext));
   prevButtons.forEach((btn) => btn.addEventListener("click", showPrev));
+
+  window.addEventListener("popstate", (e) => {
+    const i = e.state && typeof e.state.index === "number" ? e.state.index : null;
+    if (i !== null) selectDoc(i, false);
+  });
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "ArrowRight") showNext();
@@ -137,7 +153,6 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     }
   });
 
-  let firstLoaded = false;
   if (docsMap) {
     for (let i = 0; i < FILES.length; i++) {
       const name = FILES[i];
@@ -147,10 +162,6 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
         taskStats[i] = getPrdTaskStats(md);
         const titleMatch = md.match(/^#\s*(.+)/m);
         titles[i] = titleMatch ? titleMatch[1].trim() : "";
-        if (!firstLoaded) {
-          firstLoaded = true;
-          selectDoc(0);
-        }
       }
     }
   } else {
@@ -162,12 +173,13 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
       taskStats[i] = getPrdTaskStats(text);
       const titleMatch = text.match(/^#\s*(.+)/m);
       titles[i] = titleMatch ? titleMatch[1].trim() : "";
-      if (!firstLoaded) {
-        firstLoaded = true;
-        selectDoc(0);
-      }
     }
   }
+
+  const url = new URL(window.location);
+  url.searchParams.set("doc", baseNames[startIndex]);
+  history.replaceState({ index: startIndex }, "", url.pathname + url.search);
+  selectDoc(startIndex, false);
 }
 
 if (!window.SKIP_PRD_AUTO_INIT) {

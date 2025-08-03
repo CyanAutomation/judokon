@@ -22,6 +22,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - Support intuitive navigation (buttons, keyboard, swipe) between documents. **(Implemented: Keyboard and swipe; navigation buttons not present in UI)**
 - Render markdown PRDs as readable, styled HTML with tables, code blocks, and headings. **(Implemented)**
 - Ensure accessibility and responsive design for all users. **(Implemented: ARIA labels, keyboard navigation, and screen reader audit completed)**
+- Allow deep-linking to a specific PRD via a `?doc=` query parameter and update the URL as navigation occurs. **(Implemented)**
 
 ---
 
@@ -78,6 +79,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - Given a markdown file fails to load, then an error is logged to the console, a fallback message is shown, and other files remain navigable. **(Implemented)**
 - Given malformed markdown content, then partial content is rendered with a warning badge visually indicating an issue. **(Implemented)**
 - Given a PRD includes a Tasks section, then the viewer displays the total number of tasks and completion percentage above the document content. **(Implemented)**
+- Given the viewer is opened with `?doc=<file>`, then that PRD loads first and the query parameter updates as the user navigates. **(Implemented)**
 
 ---
 
@@ -106,7 +108,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 - Depends on the `markdownToHtml` helper for markdown parsing (uses the `marked` library).
 - Requires an up-to-date file list from the `design/productRequirementsDocuments` directory.
-- **Open:** Should the viewer support deep-linking to specific PRDs via URL hash or query parameters? This affects navigation and state restoration.
+- Deep-linking uses the `?doc=` query parameter so URLs can bookmark a specific PRD.
 
 ---
 
