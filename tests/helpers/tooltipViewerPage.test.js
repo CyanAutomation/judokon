@@ -90,4 +90,33 @@ describe("setupTooltipViewerPage", () => {
     expect(warnEl.hidden).toBe(false);
     expect(warnEl.textContent).toBe("Unbalanced markup detected");
   });
+
+  it("toggles preview expansion for long content", async () => {
+    Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ tip: "long" }),
+      importJsonModule: vi.fn().mockResolvedValue({})
+    }));
+
+    await import("../../src/helpers/tooltipViewerPage.js");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+
+    await Promise.resolve();
+
+    const preview = document.getElementById("tooltip-preview");
+    Object.defineProperty(preview, "scrollHeight", { value: 400, configurable: true });
+
+    const item = document.querySelector("#tooltip-list li");
+    item.click();
+
+    const toggle = document.getElementById("toggle-preview-btn");
+    const container = preview.parentElement;
+    expect(toggle.hidden).toBe(false);
+    expect(container.classList.contains("expanded")).toBe(false);
+    toggle.click();
+    expect(container.classList.contains("expanded")).toBe(true);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  });
 });

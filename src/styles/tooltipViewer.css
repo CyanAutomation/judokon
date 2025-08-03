@@ -27,6 +27,19 @@
   margin-bottom: var(--space-sm);
 }
 
+.preview-container {
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.preview-container.expanded {
+  max-height: none;
+}
+
+.preview-toggle {
+  margin-top: var(--space-sm);
+}
+
 .preview-warning {
   color: #c62828;
   margin-top: var(--space-sm);
