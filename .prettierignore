@@ -10,3 +10,5 @@ README.md
 src/data/client_embeddings.json
 src/data/client_embeddings.meta.json
 design/productRequirementsDocuments/prdBrowseJudoka.md
+design/productRequirementsDocuments/prdDrawRandomCard.md
+design/productRequirementsDocuments/prdResetNavigation.md

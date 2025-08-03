@@ -34,12 +34,8 @@
       </header>
       <main class="tooltip-viewer" role="main">
         <aside class="sidebar">
-          <input
-            id="tooltip-search"
-            type="text"
-            placeholder="Search"
-            aria-label="Search tooltips"
-          />
+          <label for="tooltip-search" class="visually-hidden">Search tooltips</label>
+          <input id="tooltip-search" type="text" placeholder="Search" />
           <ul id="tooltip-list" class="sidebar-list"></ul>
         </aside>
         <section class="preview">
