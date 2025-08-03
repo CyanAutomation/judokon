@@ -100,7 +100,7 @@ export function clearMessage() {
 export function showTemporaryMessage(text) {
   showMessage(text);
   // Return a closure that only clears the message if it matches the one set by this call
-  return function() {
+  return function () {
     if (messageEl && messageEl.textContent === text) {
       messageEl.textContent = "";
     }
