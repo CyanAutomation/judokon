@@ -504,7 +504,7 @@ General settings provide basic customization for all players:
 
 - **Battle Debug Panel** – shows a collapsible `<pre>` beside the opponent's card that persists across rounds with live match data.
 - **Test Mode** – replaces all random calls with a seeded generator. Enable it from the Settings page to make matches reproducible and display a "Test Mode Active" banner. The seed resets on each new page load.
-- **Card Inspector** – adds a collapsible panel on each card displaying its raw JSON.
+- **Card Inspector** – when `devMode` (or a QA override) is active, enabling the `enableCardInspector` flag under Advanced Settings adds a collapsible panel on each card displaying its raw JSON.
 - **Layout Debug Outlines** – highlights all visible containers on every page whenever the flag is enabled.
 
 Advanced or debug-oriented flags live under a collapsible **Advanced Settings** section. This keeps experimental options out of sight for younger players while remaining accessible to testers.
