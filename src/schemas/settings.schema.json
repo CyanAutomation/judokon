@@ -27,7 +27,7 @@
     },
     "displayMode": {
       "type": "string",
-      "enum": ["light", "dark", "gray", "high-contrast"],
+      "enum": ["light", "dark", "high-contrast"],
       "description": "Visual display mode."
     },
     "fullNavigationMap": {

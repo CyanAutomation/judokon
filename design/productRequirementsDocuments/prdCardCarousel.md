@@ -51,7 +51,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 | **P1**   | Display judoka in a carousel.                                          |
 | **P1**   | Scroll left/right using large arrow buttons labeled "Prev" and "Next". |
 | **P2**   | Swipe or scroll navigation on mobile devices.                          |
-| **P2**   | Cards slightly enlarge on hover.                                       |
+| **P2**   | Cards scale to **1.05** on hover; center card scales to **1.1**.       |
 | **P3**   | Page markers show "current page of total" with active highlight.       |
 | **P3**   | Keyboard arrow key navigation for accessibility.                       |
 
@@ -63,12 +63,13 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - User can scroll left/right via large "Prev" and "Next" arrow buttons.
 - Arrow buttons disable when the carousel reaches either end so players cannot scroll past the available cards.
 - User can see page markers showing "current page of total" with the active page highlighted and announced via `aria-live`.
-- Hovering over a card enlarges it, verified via bounding box.
+- Hovering over a card scales it to **1.05**, verified via bounding box. The card nearest the center scales to **1.1** when focused.
 - Carousel is responsive, adapting to both portrait and landscape orientations.
 - Swipe or scroll navigation works on mobile (left/right swipe to move cards).
 - Keyboard arrow keys allow navigation through cards.
 - Displays a loading spinner if load time is slow.
-- If card image fails to load, display a default judoka card (judoka id=0).
+- If card image fails to load, display a default judoka card (judoka id=0) without an error message.
+- If card data cannot be fetched, display the default judoka card (judoka id=0) instead of an error message.
 - Playwright tests simulate swipe gestures and arrow-key navigation.
 - A loading spinner appears during simulated slow network conditions.
 
@@ -78,8 +79,8 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 ## Edge Cases / Failure States
 
-- **Network Disconnection**: Display a default judoka card (judoka id=0).
-- **Missing/Broken Card Images**: Default fallback card is shown, display a default judoka card (judoka id=0).
+- **Network Disconnection**: Display a default judoka card (judoka id=0) instead of an error message.
+- **Missing/Broken Card Images**: Display the default judoka card (judoka id=0) rather than an error message.
 - **Slow Network**: Show a loading spinner.
 
 ---
@@ -89,7 +90,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - Cards should lazy-load images as they enter the viewport to reduce initial load time.
 - Use hardware-accelerated CSS transforms (e.g., `translate3d`) for smooth scrolling and animations (**≥60 fps**).
 - Carousel should debounce swipe/scroll events to prevent rapid-fire performance hits.
-- Card metadata must be dynamically fetched from `judoka.json`; errors should gracefully fallback to judoka id=0.
+- Card metadata must be dynamically fetched from `judoka.json`; errors should gracefully fallback to judoka id=0 without showing an error message.
 
 ---
 
@@ -102,9 +103,9 @@ Failure to provide an efficient browsing experience may impact core gameplay —
    - Large "Prev" and "Next" arrow buttons to move left or right,
    - Swipe or scroll gestures on mobile,
    - Or keyboard arrows for navigation.
-5. Hovering enlarges cards (desktop).
+5. Hovering scales cards to **1.05** on desktop.
 6. Page markers show "current page of total" with active highlight.
-7. If an image fails to load → default judoka card is displayed.
+7. If an image fails to load or data is missing → the default judoka card is displayed instead of an error message.
 
 ---
 
@@ -128,7 +129,7 @@ generated carousel so each card's real portrait loads once it becomes visible.
 
 - Carousel will have a darker background to allow the bright, colorful judoka cards to stand out.
 - Snap scrolling for smooth, natural-feeling navigation.
-- Centered active card slightly larger than side cards for visual emphasis.
+- Centered active card scales to **1.1** for emphasis; other cards scale to **1.05** on hover.
 
 ### Responsiveness
 
@@ -140,7 +141,7 @@ generated carousel so each card's real portrait loads once it becomes visible.
 ### Interaction
 
 - **Touch gestures**: Swipe left/right on mobile devices.
-- **Mouse hover**: Enlarge card on hover.
+- **Mouse hover**: Scale card to **1.05** when hovered.
 - **Keyboard navigation**: Support arrow keys for users with accessibility needs.
 
 ### Accessibility
@@ -161,9 +162,9 @@ generated carousel so each card's real portrait loads once it becomes visible.
 
 ### Conceptual Layout
 
-- **Desktop**: 3 cards in view — center card slightly enlarged; large "Prev" and "Next" arrows at the sides; page markers at the bottom.
+- **Desktop**: 3 cards in view — center card scales to **1.1**; large "Prev" and "Next" arrows at the sides; page markers at the bottom.
 - **Mobile**: 1.5 cards visible (peek of next card); swipe or scroll enabled; arrows optional.
-- **Hover Effect**: On desktop, center card enlarges subtly.
+- **Hover Effect**: On desktop, cards scale to **1.05** on hover; the focused center card scales to **1.1**.
 - **Touch Interaction**: On mobile, swipe left/right; smooth snap after swipe.
 
 | **Card Carousel Mockup 1**                                       | **Card Carousel Mockup 2**                                       |
@@ -182,12 +183,12 @@ generated carousel so each card's real portrait loads once it becomes visible.
   - [x] 2.1 Add large "Prev" and "Next" arrow buttons for scrolling.
   - [x] 2.2 Add swipe or scroll support for mobile.
   - [x] 2.3 Add keyboard arrow navigation support.
-- [ ] 3.0 Add UI Enhancements (P2)
+- [x] 3.0 Add UI Enhancements (P2)
   - [x] 3.1 Implement hover enlargement effect.
   - [x] 3.2 Display page markers for carousel position with aria-live updates.
   - [x] 3.3 Implement loading spinner for slow networks.
-- [ ] 4.0 Handle Edge Cases (P2)
-  - [x] 4.1 Fallback judoka card (judoka id=0) for broken card images.
+- [x] 4.0 Handle Edge Cases (P2)
+  - [x] 4.1 Fallback judoka card (judoka id=0) for broken card images or network errors.
 
 ---
 

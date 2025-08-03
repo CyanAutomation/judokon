@@ -77,8 +77,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - **Motion effects (binary):** ON/OFF (default: ON) – Disable animations for a calmer interface.
 - **Typewriter effect (binary):** ON/OFF (default: ON, not currently used on the meditation screen) – Toggle the quote typing animation.
 - **Tooltips (binary):** ON/OFF (default: ON) – Show or hide helpful tooltips.
-- **Display mode (three options):** Light, Dark, Gray (default: Light)
-  - _Gray mode_ provides a grayscale display to reduce visual noise for neurodivergent users.
+- **Display mode (three options):** Light, Dark, High Contrast (default: Light)
 - **Game modes list:** Pulled from `gameModes.json` and cross-referenced with `navigationItems.json` to determine order and visibility; each mode has a binary toggle.
 - **View Change Log:** Link opens `changeLog.html` with the latest 20 judoka updates.
 - **View PRD Documents:** Link opens `prdViewer.html` for browsing product documents.
@@ -157,7 +156,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 
 ### Display Mode Switch
 
-- AC-5.1 Selecting a new display mode (light/dark/gray) applies changes instantly across all relevant UI components.
+- AC-5.1 Selecting a new display mode (light/dark/high-contrast) applies changes instantly across all relevant UI components.
 - AC-4.2 Selected mode persists through a page refresh within the same session.
 - AC-4.3 Current display mode is correctly pulled from `settings.json` on page load.
 - AC-4.4 Transition to new display mode completes without visible flickering or rendering artifacts.
