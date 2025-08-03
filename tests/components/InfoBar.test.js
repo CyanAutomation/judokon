@@ -27,7 +27,7 @@ describe("InfoBar component", () => {
     expect(timer).toHaveAttribute("aria-live", "polite");
     expect(timer).toHaveAttribute("role", "status");
     expect(timer).toHaveAttribute("aria-atomic", "true");
-    expect(score).toHaveAttribute("aria-live", "off");
+    expect(score).toHaveAttribute("aria-live", "polite");
     expect(score).toHaveAttribute("aria-atomic", "true");
   });
 
