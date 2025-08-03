@@ -54,10 +54,9 @@ test.describe("Browse Judoka screen", () => {
     await page.getByRole("button", { name: "Japan" }).click({ force: true });
 
     const filteredCards = page.locator("[data-testid=carousel-container] .judoka-card");
-    const filteredCount = await filteredCards.count();
-    expect(filteredCount).toBe(1);
+    await expect(filteredCards).toHaveCount(1);
 
-    for (let i = 0; i < filteredCount; i++) {
+    for (let i = 0; i < (await filteredCards.count()); i++) {
       const flag = filteredCards.nth(i).locator(".card-top-bar img");
       await expect(flag).toHaveAttribute("alt", /Japan flag/i);
     }

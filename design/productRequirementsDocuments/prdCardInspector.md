@@ -13,6 +13,7 @@ The **Card Inspector** is a developer/debugging utility in JU-DO-KON! that lets 
 Developers and testers frequently need to verify the backend-bound data for each card to debug display issues, confirm game logic, or troubleshoot syncing problems. The current process — inspecting the DOM or logging to console — is slow, disruptive, and error-prone. These workarounds slow down development cycles and increase QA misses, especially as card content scales.
 
 This problem is urgent because:
+
 - Card attributes and logic are rapidly changing during playtesting.
 - Iteration velocity is blocked by inefficient inspection tools.
 - QA teams must validate hundreds of cards across devices.
@@ -40,6 +41,7 @@ This problem is urgent because:
 ## Player Flow & Interaction
 
 ### Player Actions
+
 1. **Toggle ON** Card Inspector from the Settings page (defaults to OFF).
 2. **Judoka cards** will now show a collapsible JSON panel.
 3. Each panel starts **collapsed** and can be expanded via a disclosure triangle (`<details>`).
@@ -47,6 +49,7 @@ This problem is urgent because:
 5. Disabling the toggle **immediately hides** all JSON panels without reloading.
 
 ### Cancel/Exit Options
+
 - Users can collapse individual panels using the disclosure widget.
 - Turning off the toggle removes all inspector content instantly.
 - Inspector never appears unless both:
@@ -54,6 +57,7 @@ This problem is urgent because:
   - `devMode=true` is active.
 
 ### Visual Feedback & Timing
+
 - Panel expands/collapses with an ease-in animation.
 - JSON is pretty-printed with 2-space indentation and syntax highlighting (if supported).
 - Tapping/clicking the disclosure triangle (target size: 44×44px) toggles visibility.
@@ -114,27 +118,32 @@ This problem is urgent because:
 ## Tasks
 
 - [ ] 1.0 Implement Settings Toggle
+
   - [ ] 1.1 Add "Card Inspector" toggle switch to `settings.html`
   - [ ] 1.2 Set default state to OFF
   - [ ] 1.3 Persist toggle in user settings
   - [ ] 1.4 Reflect toggle state in UI immediately
 
 - [ ] 2.0 Render JSON Panel in Cards
+
   - [ ] 2.1 Check for `toggle=true` and `devMode=true` in `cardBuilder.js`
   - [ ] 2.2 Inject formatted JSON into each card
   - [ ] 2.3 Use `<details>` for collapsibility with proper labeling
 
 - [ ] 3.0 Visual and Responsive Styling
+
   - [ ] 3.1 Use light-gray box with border and monospace font
   - [ ] 3.2 Ensure 44px tap targets for disclosure toggle
   - [ ] 3.3 Limit max height and apply scroll behavior
 
 - [ ] 4.0 Accessibility and Keyboard Support
+
   - [ ] 4.1 Add ARIA labels and keyboard controls
   - [ ] 4.2 Test with screen readers for all states
   - [ ] 4.3 Ensure tabbing through collapsed/expanded state works
 
 - [ ] 5.0 Performance and Error Handling
+
   - [ ] 5.1 Profile inspector rendering time per card
   - [ ] 5.2 Wrap rendering logic in `try/catch`
   - [ ] 5.3 Display fallback message for errors
