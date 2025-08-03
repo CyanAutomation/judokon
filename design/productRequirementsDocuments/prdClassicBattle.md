@@ -73,6 +73,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
 - Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices (**≥60 fps**).
 - **Stat selection timer (30s) must be displayed in the Info Bar; if timer expires, a random stat is auto-selected. Timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleInfoBar.md).**
+- Detect timer drift by comparing engine state with real time; if drift exceeds 2s, display "Waiting…" and restart the countdown.
 - Backend must send real-time stat updates via WebSocket or polling for smooth live updates (**<200 ms latency**).
 - The debug panel is available when the `battleDebugPanel` feature flag is enabled and appears beside the opponent's card.
 
