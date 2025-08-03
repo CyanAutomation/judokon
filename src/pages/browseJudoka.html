@@ -60,11 +60,31 @@
               <path d="M160-80v-720l280 220 280-220v720H160Z" />
             </svg>
           </button>
+          <button
+            id="layout-toggle"
+            data-testid="layout-toggle"
+            aria-controls="country-panel"
+            aria-label="Toggle layout"
+            data-tooltip-id="ui.toggleLayout"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 -960 960 960"
+              width="24"
+              height="24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M80-80v-280h280v280H80Zm0-340v-280h280v280H80Zm340 340v-280h280v280H420Zm0-340v-280h280v280H420Z"
+              />
+            </svg>
+          </button>
         </div>
         <div id="carousel-container" data-testid="carousel-container"></div>
       </main>
 
-      <aside id="country-panel" class="country-panel grid" role="region" hidden>
+      <aside id="country-panel" class="country-panel" role="region" hidden>
         <div class="country-flag-slider">
           <div class="country-flag-slide-track" id="country-list">
             <!-- Country names will be dynamically inserted here -->

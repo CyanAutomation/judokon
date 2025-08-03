@@ -46,6 +46,12 @@
   padding: 0;
 }
 
+#layout-toggle {
+  width: var(--touch-target-size, 48px);
+  height: var(--touch-target-size, 48px);
+  padding: 0;
+}
+
 .scroll-markers {
   position: absolute;
   bottom: 0.5rem;
