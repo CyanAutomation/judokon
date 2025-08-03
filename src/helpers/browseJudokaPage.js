@@ -119,7 +119,6 @@ export async function setupBrowseJudokaPage() {
   const carouselContainer = document.getElementById("carousel-container");
   const countryListContainer = document.getElementById("country-list");
   const toggleBtn = document.getElementById("country-toggle");
-  const layoutToggle = document.getElementById("layout-toggle");
   const countryPanel = document.getElementById("country-panel");
 
   toggleCountryPanelMode(countryPanel, false);
