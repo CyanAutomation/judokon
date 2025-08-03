@@ -92,7 +92,7 @@ instantly without movement.
 - **Empty Card Set**: Display a predefined error card (judoka id=0, from judoka.json) if no cards are available.
 - **Accessibility**:
   - Respect system Reduced Motion and global motion settings — disable animations if either is active.
-  - Default: Animations OFF unless enabled in `settings.html`.
+  - Default: Animations ON for device smoothness, unless disabled by system Reduced Motion or in `settings.html`.
   - Provide an `aria-label` on the Draw button so the accessible name stays
     "Draw a random judoka card" even when the visible text is updated.
 
