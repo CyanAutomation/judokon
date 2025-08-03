@@ -71,6 +71,30 @@ describe("setupTooltipViewerPage", () => {
     expect(sr.textContent).toBe("Empty or whitespace-only content");
   });
 
+  it("adds warning icon to malformed entries", async () => {
+    Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ ok: "text", warn: "**Bold" }),
+      importJsonModule: vi.fn().mockResolvedValue({})
+    }));
+
+    await import("../../src/helpers/tooltipViewerPage.js");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+
+    await Promise.resolve();
+
+    const malformed = document.querySelector('#tooltip-list li[data-key="warn"]');
+    expect(malformed).toBeTruthy();
+    const icon = malformed.querySelector(".tooltip-invalid-icon");
+    expect(icon).toBeTruthy();
+    expect(icon.title).toBe("Unbalanced markup detected");
+    const sr = malformed.querySelector(".tooltip-invalid-text");
+    expect(sr).toBeTruthy();
+    expect(sr.textContent).toBe("Unbalanced markup detected");
+  });
+
   it("shows warning for unbalanced markup", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
