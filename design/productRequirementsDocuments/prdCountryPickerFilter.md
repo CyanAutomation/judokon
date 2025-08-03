@@ -62,6 +62,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 - A clear filter icon is provided to reset the selection and revert to displaying all judoka.
 - Default display mode when opened is **slide-in panel**.
 - The toggle is represented by a panel icon with an arrow.
+- A separate layout toggle switches between the slide-in panel and full-screen grid.
 - Countries are displayed in alphabetical order.
 - Each flag button includes alt-text and an `aria-label` (e.g., "Filter by {country}") for accessibility.
 - The picker supports keyboard navigation: Tab/Shift+Tab to move between flags, Enter/Space to select, and Escape to close the panel.
@@ -77,9 +78,10 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 1. Player opens the Browse Judoka screen and taps the country selector toggle.
 2. The slide-in panel opens in under one second.
-3. Tapping or pressing Enter/Space on a flag filters the carousel and highlights the selected country.
-4. The clear filter icon resets the view and the player continues browsing or closes the selector.
-5. Keyboard users can navigate flags and close the panel with Escape.
+3. Players may use the layout toggle to expand to a full-screen grid or return to the slide-in panel.
+4. Tapping or pressing Enter/Space on a flag filters the carousel and highlights the selected country.
+5. The clear filter icon resets the view and the player continues browsing or closes the selector.
+6. Keyboard users can navigate flags and close the panel with Escape.
 
 ---
 
@@ -178,6 +180,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
   - Hidden: No UI visible until toggled.
   - Slide-in Panel (default): Narrow vertical panel with scroll.
   - Full-Screen Grid: Grid layout showing all countries.
+- A layout toggle control switches between the slide-in panel and full-screen grid.
 - Mobile Optimization:
   - Minimum tap target size of 44x44px for flags to ensure touch accessibility (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
   - Color contrast ratios must meet WCAG 2.1 AA standards for readability.

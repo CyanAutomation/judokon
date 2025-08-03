@@ -167,9 +167,11 @@ describe("browseJudokaPage helpers", () => {
     }));
     vi.doMock("../../src/helpers/buttonEffects.js", () => ({ setupButtonEffects: vi.fn() }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips: vi.fn() }));
+    const toggleCountryPanel = vi.fn();
+    const toggleCountryPanelMode = vi.fn();
     vi.doMock("../../src/helpers/countryPanel.js", () => ({
-      toggleCountryPanel: vi.fn(),
-      toggleCountryPanelMode: vi.fn()
+      toggleCountryPanel,
+      toggleCountryPanelMode
     }));
     vi.doMock("../../src/helpers/countrySlider.js", () => ({ createCountrySlider: vi.fn() }));
 
@@ -199,5 +201,6 @@ describe("browseJudokaPage helpers", () => {
     await pagePromise;
 
     expect(carousel.querySelector(".loading-spinner")).toBeNull();
+    expect(toggleCountryPanelMode).toHaveBeenCalledWith(panel, false);
   });
 });

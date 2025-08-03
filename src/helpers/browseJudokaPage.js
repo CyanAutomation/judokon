@@ -122,7 +122,7 @@ export async function setupBrowseJudokaPage() {
   const layoutToggle = document.getElementById("layout-toggle");
   const countryPanel = document.getElementById("country-panel");
 
-  toggleCountryPanelMode(countryPanel, true);
+  toggleCountryPanelMode(countryPanel, false);
 
   let allJudoka = [];
   let gokyoData = [];

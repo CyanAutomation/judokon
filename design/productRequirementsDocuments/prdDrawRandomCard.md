@@ -263,7 +263,6 @@ instantly without movement.
   - [ ] 5.2 Add celebratory sound effect on card draw. **[Not implemented]**
   - [ ] 5.3 Provide visual or ARIA feedback for loading state. **[Only button disables, no spinner/text]**
 
-  
 ---
 
 [Back to Game Modes Overview](prdGameModes.md)
