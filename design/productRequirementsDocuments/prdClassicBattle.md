@@ -117,7 +117,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Player can select a stat within 30 seconds; if not, the system auto-selects a random stat automatically. **Timer and prompt are surfaced in the Info Bar.**
 - After selection, the correct comparison is made, and the score updates based on round outcome.
 - If the selected stats are equal, a tie message displays and the round ends.
-- Summary screen shows match result (win/loss/tie), player stats, and option to replay.
+- After the match ends, a summary panel displays the final result and score with a Replay button that restarts the match.
 - Player can quit mid-match; confirmation prompt appears; if confirmed, match ends with player loss recorded.
 - After confirming the quit action, the player is returned to the main menu (index.html).
 - If AI difficulty affects stat selection, AI uses correct logic per difficulty setting.
