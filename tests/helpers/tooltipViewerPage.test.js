@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const originalReadyState = Object.getOwnPropertyDescriptor(document, "readyState");
+const originalClipboard = navigator.clipboard;
 
 beforeEach(() => {
   vi.resetModules();
@@ -19,6 +20,7 @@ afterEach(() => {
   if (originalReadyState) {
     Object.defineProperty(document, "readyState", originalReadyState);
   }
+  navigator.clipboard = originalClipboard;
 });
 
 describe("setupTooltipViewerPage", () => {
@@ -118,5 +120,38 @@ describe("setupTooltipViewerPage", () => {
     toggle.click();
     expect(container.classList.contains("expanded")).toBe(true);
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("shows feedback when copying", async () => {
+    Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+
+    const writeText = vi.fn().mockResolvedValue();
+    navigator.clipboard = { writeText };
+
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ tip: "text" }),
+      importJsonModule: vi.fn().mockResolvedValue({})
+    }));
+
+    const showSnackbar = vi.fn();
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
+
+    await import("../../src/helpers/tooltipViewerPage.js");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+
+    await Promise.resolve();
+
+    const item = document.querySelector("#tooltip-list li");
+    item.click();
+
+    const btn = document.getElementById("copy-key-btn");
+    btn.click();
+
+    await Promise.resolve();
+
+    expect(writeText).toHaveBeenCalledWith("tip");
+    expect(showSnackbar).toHaveBeenCalledWith("Copied");
+    expect(btn.classList.contains("copied")).toBe(true);
   });
 });
