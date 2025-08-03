@@ -1,92 +1,145 @@
-# Card Inspector PRD (Revised)
+# Card Inspector PRD
 
 ## Overview (TL;DR)
 
-The Card Inspector is a developer/debugging feature in JU-DO-KON! that allows users to view the raw JSON data of a judoka card directly within the UI. It is toggled via a switch in the Settings page and is intended to aid development, QA, and advanced user troubleshooting without disrupting gameplay.
+The **Card Inspector** is a developer/debugging utility in JU-DO-KON! that lets users view the raw JSON data behind each judoka card, directly within the game UI. It’s toggled from the Settings page and is meant for QA, developers, and advanced users to inspect card data in real-time, without interrupting the core gameplay experience.
+
+---
 
 ## Problem Statement / Why It Matters
 
-Developers and testers need a fast, in-context method to inspect the underlying data for each judoka card to verify correctness, debug issues, and validate data binding. Currently, they rely on time-consuming, error-prone workflows like DOM inspection or console logging, which slows down iteration and increases QA errors.
+> “Right now, I have to open the browser dev tools and hunt for the card data in the DOM. It’s clunky and slows everything down.” – QA Tester
+
+Developers and testers frequently need to verify the backend-bound data for each card to debug display issues, confirm game logic, or troubleshoot syncing problems. The current process — inspecting the DOM or logging to console — is slow, disruptive, and error-prone. These workarounds slow down development cycles and increase QA misses, especially as card content scales.
+
+This problem is urgent because:
+- Card attributes and logic are rapidly changing during playtesting.
+- Iteration velocity is blocked by inefficient inspection tools.
+- QA teams must validate hundreds of cards across devices.
+
+---
 
 ## Goals / Success Metrics
 
-- Enable users to toggle Card Inspector from the Settings page with a toggle latency of **<300ms**.
-- Display JSON data for 100% of judoka cards in rendered views, formatted and collapsed by default.
-- Render JSON panels with zero frame drops and **≤100ms additional rendering time** per card.
-- Ensure the inspector never overlaps with primary UI elements or gameplay interactions.
-- Guarantee that Card Inspector is hidden by default in production unless explicitly enabled by QA/dev settings.
+- Toggle from the Settings page.
+- JSON displayed for **100% of visible judoka cards**.
+- Rendering adds minimal latency per card.
+- No overlap with gameplay elements, controls, or animations.
+- Inspector panel **defaults to OFF**, even in devMode.
+
+---
 
 ## User Stories
 
-- As a developer, I want to see JSON data for each card, so I can debug and validate data integrity.
-- As a QA tester, I want to verify card UI matches backend data without external tools.
-- As an advanced user, I want transparency into the game data for troubleshooting and learning.
+- **As a developer**, I want to see raw JSON data for each card so I can debug visual or logic inconsistencies.
+- **As a QA tester**, I want to compare the card UI to backend data without needing browser tools.
+- **As an advanced user**, I want insight into game data to understand card mechanics and report issues.
 
-## Prioritized Functional Requirements
+---
 
-| Priority | Feature                      | Description                                                                  |
-| -------- | ---------------------------- | ---------------------------------------------------------------------------- |
-| P1       | Inspector Toggle in Settings | Add a toggle to enable/disable the Card Inspector in `settings.html`.       |
-| P1       | Inspector Panel on Card      | Each card displays a JSON panel when inspector is enabled.                  |
-| P2       | Inspector Panel Collapsible  | Panel is collapsed by default; user can expand via a disclosure widget.     |
-| P2       | Inspector Panel Styling      | Styled with non-interfering border, monospace font, and scroll support.     |
-| P3       | Dev-Only Visibility Mode     | Feature hidden in production unless explicitly enabled in `devMode=true`.   |
+## Player Flow & Interaction
+
+### Player Actions
+1. **Toggle ON** Card Inspector from the Settings page (defaults to OFF).
+2. **Judoka cards** will now show a collapsible JSON panel.
+3. Each panel starts **collapsed** and can be expanded via a disclosure triangle (`<details>`).
+4. Clicking outside a panel does not close it (explicit collapse required).
+5. Disabling the toggle **immediately hides** all JSON panels without reloading.
+
+### Cancel/Exit Options
+- Users can collapse individual panels using the disclosure widget.
+- Turning off the toggle removes all inspector content instantly.
+- Inspector never appears unless both:
+  - Toggle is ON.
+  - `devMode=true` is active.
+
+### Visual Feedback & Timing
+- Panel expands/collapses with an ease-in animation.
+- JSON is pretty-printed with 2-space indentation and syntax highlighting (if supported).
+- Tapping/clicking the disclosure triangle (target size: 44×44px) toggles visibility.
+
+---
 
 ## Acceptance Criteria
 
-- [ ] Card Inspector toggle appears in Settings with a label and visual ON/OFF state.
-- [ ] Toggling setting enables/disables inspector without page reload.
-- [ ] Inspector appears collapsed by default on every judoka card.
-- [ ] Panel contains formatted, valid JSON reflecting card data.
-- [ ] Panel expands/collapses on user interaction (`<details>` or equivalent).
-- [ ] JSON panel never overlaps or blocks core gameplay elements.
-- [ ] Inspector does not appear unless setting is ON **and** `devMode=true` is enabled.
+- The toggle switch appears in Settings, labeled “Card Inspector”, with the default state set to OFF.
+- Toggle state persists between sessions and updates the UI without a full reload.
+- JSON panel appears collapsed by default under each judoka card.
+- JSON output is valid, formatted, and reflects the current state of card data.
+- Disclosure control is keyboard-accessible and screen-reader-friendly.
+- Inspector is completely hidden unless both `devMode=true` and the toggle are ON.
+- The panel never overlaps gameplay UI elements or interferes with interactions.
+- In cases of errors (e.g., invalid JSON, null card), a fallback message (“Invalid card data”) is shown.
 
-## Non-Functional Requirements / Design Considerations
+---
 
-- Must be **keyboard accessible**, screen-reader navigable, and follow WCAG contrast standards.
-- Must maintain 60fps rendering and ≤100ms render delay per card.
-- Must have robust error handling for malformed or null card data.
-- Use visually distinct but unobtrusive styling (e.g., light gray panel with monospace font).
-- Must scale gracefully across devices (desktop, tablet, mobile).
+## Design / Visual UX Guidelines
 
-## Edge Cases / Failure States
+- Use a **light-gray box** with a 1px border and 4px padding.
+- Content in **monospace font**, 12–14px.
+- Panel height maxes out at 240px; scrollable if longer.
+- Disclosure widget uses system-native `<details>` or custom with WCAG labels.
+- Tap target size for disclosure toggle: **44×44px minimum**.
+- Smooth animation on expand/collapse.
+- Fully responsive layout for tablet and desktop; mobile support optional.
 
-- **Corrupt Card Data:** Show fallback message (“Invalid card data”) instead of JSON.
-- **Settings Toggle Fails to Persist:** Log to console and fallback to default (OFF).
-- **Malformed JSON:** Use `try/catch` to prevent inspector crash; show `Error parsing data`.
-- **Toggle Render Glitch:** Fallback to hard reload via QA console shortcut.
-- **Production Flag Not Set:** Panel must remain fully hidden.
+---
 
-## Dependencies and Open Questions
+## Accessibility & Performance Constraints
 
-- Depends on `cardBuilder.js` and rendering logic.
-- Uses shared settings config via `settings.html`.
-- Open Question: Should inspector support a secondary “Markup View” for UI templates?
+- Must support keyboard tabbing and screen reader hints (e.g., “Card Data: collapsed”).
+- Error handling for malformed card data (`try/catch` around render).
+- No inspector content rendered on production builds unless QA override is active.
+
+---
+
+## Edge Cases / Fallbacks
+
+- **Corrupt Data**: Show “Invalid card data” message.
+- **Malformed JSON**: Show error block, prevent crash.
+- **Toggle Fails**: Log error, fallback to default OFF state.
+- **Rendering Issues**: If panel glitches, allow QA console reset or hard reload.
+- **Non-DevMode**: Inspector must not render even if toggle is ON.
+
+---
+
+## Dependencies
+
+- `cardBuilder.js` and `renderJudokaCard()` logic.
+- Shared user preferences for toggle persistence.
+- `devMode` flag accessible globally.
+
+---
 
 ## Tasks
 
 - [ ] 1.0 Implement Settings Toggle
-  - [ ] 1.1 Add a new switch for "Card Inspector" in `settings.html`
-  - [ ] 1.2 Store toggle state in user preferences
-  - [ ] 1.3 Ensure toggle immediately affects UI without reload
+  - [ ] 1.1 Add "Card Inspector" toggle switch to `settings.html`
+  - [ ] 1.2 Set default state to OFF
+  - [ ] 1.3 Persist toggle in user settings
+  - [ ] 1.4 Reflect toggle state in UI immediately
 
-- [ ] 2.0 Display Inspector Panel on Cards
-  - [ ] 2.1 Modify `cardBuilder.js` to check for inspector toggle
-  - [ ] 2.2 Inject JSON panel into card DOM when enabled
-  - [ ] 2.3 Format JSON data with syntax highlighting or indentation
+- [ ] 2.0 Render JSON Panel in Cards
+  - [ ] 2.1 Check for `toggle=true` and `devMode=true` in `cardBuilder.js`
+  - [ ] 2.2 Inject formatted JSON into each card
+  - [ ] 2.3 Use `<details>` for collapsibility with proper labeling
 
-- [ ] 3.0 Make Inspector Panel Collapsible
-  - [ ] 3.1 Use `<details>` or similar component for collapse behavior
-  - [ ] 3.2 Ensure default collapsed state
+- [ ] 3.0 Visual and Responsive Styling
+  - [ ] 3.1 Use light-gray box with border and monospace font
+  - [ ] 3.2 Ensure 44px tap targets for disclosure toggle
+  - [ ] 3.3 Limit max height and apply scroll behavior
 
-- [ ] 4.0 Style and UX Adjustments
-  - [ ] 4.1 Apply distinct visual styling to the inspector panel
-  - [ ] 4.2 Prevent UI overlap with gameplay elements
-  - [ ] 4.3 Ensure inspector is hidden in production builds
+- [ ] 4.0 Accessibility and Keyboard Support
+  - [ ] 4.1 Add ARIA labels and keyboard controls
+  - [ ] 4.2 Test with screen readers for all states
+  - [ ] 4.3 Ensure tabbing through collapsed/expanded state works
 
-- [ ] 5.0 Accessibility and Performance
-  - [ ] 5.1 Make inspector keyboard-navigable and screen reader compatible
-  - [ ] 5.2 Profile panel performance to avoid render lag
-  - [ ] 5.3 Add error handling for invalid/malformed card data
+- [ ] 5.0 Performance and Error Handling
+  - [ ] 5.1 Profile inspector rendering time per card
+  - [ ] 5.2 Wrap rendering logic in `try/catch`
+  - [ ] 5.3 Display fallback message for errors
 
+- [ ] 6.0 QA/Dev Mode Visibility
+  - [ ] 6.1 Confirm dev-only visibility using `devMode` flag
+  - [ ] 6.2 Add console warning if inspector loads without devMode
+  - [ ] 6.3 QA shortcut for hard refresh toggle if needed
