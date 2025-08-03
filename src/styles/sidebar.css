@@ -25,9 +25,23 @@
 }
 
 .sidebar-list li {
-  padding: var(--space-xs) var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  min-height: var(--touch-target-size, 44px);
   cursor: pointer;
   border-left: 4px solid transparent;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-list li:hover:not(.selected),
+.sidebar-list li:active:not(.selected) {
+  background: var(--color-secondary);
+  color: var(--color-text-inverted);
+}
+
+[data-theme="dark"] .sidebar-list li:hover:not(.selected),
+[data-theme="dark"] .sidebar-list li:active:not(.selected) {
+  background: var(--link-color);
 }
 
 /* Highlight the item currently focused via keyboard */
