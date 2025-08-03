@@ -286,7 +286,7 @@ The page begins with an `h1` heading labeled "Settings". Two `fieldset` sections
 [ ON | OFF ] (default: ON)
 
 [ SELECTOR: DISPLAY MODE ]  
-[ Light | Dark | Gray ] (default: Light)
+[ Light | Dark | High Contrast ] (default: Light)
 
 ───────────────────────────────  
 | GAME MODES |  
