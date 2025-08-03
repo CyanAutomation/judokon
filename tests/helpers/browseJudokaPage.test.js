@@ -203,4 +203,78 @@ describe("browseJudokaPage helpers", () => {
     expect(carousel.querySelector(".loading-spinner")).toBeNull();
     expect(toggleCountryPanelMode).toHaveBeenCalledWith(panel, false);
   });
+
+  it("renders a fallback card when judoka data fails to load", async () => {
+    global.requestAnimationFrame = (cb) => cb();
+
+    const fetchJson = vi.fn((url) => {
+      if (url.includes("judoka.json")) {
+        return Promise.reject(new Error("fail"));
+      }
+      return Promise.resolve([]);
+    });
+
+    const buildCardCarousel = vi.fn(async (list) => {
+      const wrapper = document.createElement("div");
+      const ariaLive = document.createElement("div");
+      ariaLive.className = "carousel-aria-live";
+      const inner = document.createElement("div");
+      inner.className = "card-carousel";
+      const card = document.createElement("div");
+      card.className = "judoka-card";
+      card.setAttribute("data-judoka-name", list[0].firstname);
+      inner.appendChild(card);
+      wrapper.append(ariaLive, inner);
+      return wrapper;
+    });
+
+    const getFallbackJudoka = vi.fn(async () => ({
+      id: 0,
+      firstname: "Fallback",
+      surname: "Judoka"
+    }));
+
+    vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady: vi.fn() }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
+      buildCardCarousel,
+      addScrollMarkers: vi.fn(),
+      createLoadingSpinner: () => ({ spinner: document.createElement("div"), timeoutId: 0 })
+    }));
+    vi.doMock("../../src/helpers/buttonEffects.js", () => ({ setupButtonEffects: vi.fn() }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips: vi.fn() }));
+    const toggleCountryPanel = vi.fn();
+    const toggleCountryPanelMode = vi.fn();
+    vi.doMock("../../src/helpers/countryPanel.js", () => ({
+      toggleCountryPanel,
+      toggleCountryPanelMode
+    }));
+    vi.doMock("../../src/helpers/countrySlider.js", () => ({ createCountrySlider: vi.fn() }));
+    vi.doMock("../../src/helpers/judokaUtils.js", () => ({ getFallbackJudoka }));
+
+    const { setupBrowseJudokaPage } = await import("../../src/helpers/browseJudokaPage.js");
+
+    const carousel = document.createElement("div");
+    carousel.id = "carousel-container";
+    const list = document.createElement("div");
+    list.id = "country-list";
+    const toggleBtn = document.createElement("button");
+    toggleBtn.id = "country-toggle";
+    const layoutBtn = document.createElement("button");
+    layoutBtn.id = "layout-toggle";
+    const panel = document.createElement("div");
+    panel.id = "country-panel";
+    const clear = document.createElement("button");
+    clear.id = "clear-filter";
+    document.body.append(carousel, list, toggleBtn, layoutBtn, panel, clear);
+
+    await setupBrowseJudokaPage();
+
+    expect(buildCardCarousel).toHaveBeenCalledWith(
+      [{ id: 0, firstname: "Fallback", surname: "Judoka" }],
+      []
+    );
+    expect(carousel.querySelector(".judoka-card")).not.toBeNull();
+    expect(carousel.querySelector(".error-message")).not.toBeNull();
+  });
 });
