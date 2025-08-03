@@ -91,7 +91,6 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - The viewer must not expose internal file paths or repository URLs to end users. **(Implemented)**
 - Smooth transitions and interaction feedback (hover and active states, swipe animations) should be implemented. **(Fade-in animation and sidebar hover/active feedback implemented)**
 - Minimum tap/click target size of 44x44 pixels for all interactive elements with adequate padding. **(Implemented for sidebar items; full audit pending)**
-- Provide wireframes and mockups to visualize layout, navigation flow, and error states. (See attached visual reference.) **(Not present in code)**
 
 ---
 
