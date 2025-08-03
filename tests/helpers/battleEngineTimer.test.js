@@ -43,3 +43,59 @@ describe("timer defaults", () => {
     expect(timerUtils.createCountdownTimer.mock.results[0].value.start).toHaveBeenCalled();
   });
 });
+
+describe("pause and resume timer", () => {
+  it("pauses countdown and resumes from remaining time", async () => {
+    let timerApi;
+    vi.doMock("../../src/helpers/timerUtils.js", async (importOriginal) => {
+      const actual = await importOriginal();
+      return {
+        ...actual,
+        createCountdownTimer: (duration, { onTick }) => {
+          let remaining = duration;
+          let paused = false;
+          timerApi = {
+            start() {},
+            stop() {},
+            pause() {
+              paused = true;
+            },
+            resume() {
+              paused = false;
+            },
+            tick() {
+              if (paused) return;
+              remaining -= 1;
+              onTick(remaining);
+            }
+          };
+          return timerApi;
+        }
+      };
+    });
+
+    const { startRound, pauseTimer, resumeTimer, getTimerState, _resetForTest } = await import(
+      "../../src/helpers/battleEngine.js"
+    );
+    _resetForTest();
+    await startRound(
+      () => {},
+      () => {},
+      5
+    );
+    timerApi.tick();
+    timerApi.tick();
+    pauseTimer();
+    let state = getTimerState();
+    expect(state.remaining).toBe(3);
+    expect(state.paused).toBe(true);
+    timerApi.tick();
+    state = getTimerState();
+    expect(state.remaining).toBe(3);
+    resumeTimer();
+    timerApi.tick();
+    state = getTimerState();
+    expect(state.remaining).toBe(2);
+    expect(state.paused).toBe(false);
+  });
+});

@@ -68,3 +68,56 @@ describe("classicBattle backend sync failures", () => {
     expect(updateScore).not.toHaveBeenCalled();
   });
 });
+
+describe("classicBattle timer messages", () => {
+  it("shows waiting message when timer value is not numeric", async () => {
+    document.body.innerHTML = '<p id="next-round-timer"></p>';
+    const showMessage = vi.fn();
+    const timer = vi.useFakeTimers();
+    vi.doMock("../../../src/helpers/setupBattleInfoBar.js", () => ({ showMessage }));
+    vi.doMock("../../../src/helpers/timerUtils.js", () => ({
+      getDefaultTimer: vi.fn().mockResolvedValue("bad")
+    }));
+    vi.doMock("../../../src/helpers/battleEngine.js", () => ({
+      startRound: vi.fn(),
+      startCoolDown: vi.fn(),
+      STATS: ["power"],
+      getTimerState: vi.fn().mockReturnValue({ remaining: 30, paused: false })
+    }));
+    const { startTimer } = await import("../../../src/helpers/classicBattle/timerControl.js");
+    await startTimer(() => {});
+    expect(showMessage).toHaveBeenCalledWith("Waiting…");
+    timer.clearAllTimers();
+    vi.useRealTimers();
+  });
+
+  it("shows auto-selection message when timer expires", async () => {
+    document.body.innerHTML = '<p id="next-round-timer"></p>';
+    const showMessage = vi.fn();
+    const onExpiredSelect = vi.fn();
+    let expiredCb;
+    const timer = vi.useFakeTimers();
+    vi.doMock("../../../src/helpers/setupBattleInfoBar.js", () => ({ showMessage }));
+    vi.doMock("../../../src/helpers/timerUtils.js", () => ({
+      getDefaultTimer: vi.fn().mockResolvedValue(30)
+    }));
+    vi.doMock("../../../src/helpers/testModeUtils.js", () => ({
+      seededRandom: () => 0
+    }));
+    vi.doMock("../../../src/helpers/battleEngine.js", () => ({
+      startRound: (_onTick, onExpired) => {
+        expiredCb = onExpired;
+      },
+      startCoolDown: vi.fn(),
+      STATS: ["power"],
+      getTimerState: vi.fn().mockReturnValue({ remaining: 30, paused: false })
+    }));
+    const { startTimer } = await import("../../../src/helpers/classicBattle/timerControl.js");
+    await startTimer(onExpiredSelect);
+    expiredCb();
+    expect(showMessage).toHaveBeenCalledWith("Time's up! Auto-selecting power");
+    expect(onExpiredSelect).toHaveBeenCalledWith("power");
+    timer.clearAllTimers();
+    vi.useRealTimers();
+  });
+});
