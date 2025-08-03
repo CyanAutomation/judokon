@@ -26,6 +26,7 @@
 }
 
 .bottom-navbar ul li {
+  min-width: var(--touch-target-size);
   min-height: var(--touch-target-size);
   padding: var(--space-sm);
 }
@@ -40,6 +41,11 @@
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target-size);
+  min-height: var(--touch-target-size);
 }
 
 .bottom-navbar a:hover {
