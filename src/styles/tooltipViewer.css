@@ -27,6 +27,11 @@
   margin-bottom: var(--space-sm);
 }
 
+.preview-warning {
+  color: #c62828;
+  margin-top: var(--space-sm);
+}
+
 .fade-in {
   animation: fadeIn 0.1s ease-in;
 }

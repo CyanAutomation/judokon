@@ -14,7 +14,8 @@ const INVALID_TOOLTIP_MSG = "Empty or whitespace-only content";
  * 2. Render a clickable list of keys filtered by the search box (300ms debounce),
  *    tagging items with a class based on their prefix (e.g. `stat`, `ui`) and
  *    flagging empty bodies with a warning icon.
- * 3. When a key is selected, display its parsed HTML and raw text in the preview.
+ * 3. When a key is selected, display its parsed HTML and raw text in the preview,
+ *    and show a warning when the markup is unbalanced.
  * 4. Provide copy buttons for the key and body using `navigator.clipboard`.
  * 5. On page load, select the key from the URL hash when present and scroll to it.
  * 6. Call `initTooltips()` so help icons inside the page gain tooltips.
@@ -24,6 +25,7 @@ export async function setupTooltipViewerPage() {
   let listPlaceholder = document.getElementById("tooltip-list");
   const previewEl = document.getElementById("tooltip-preview");
   const rawEl = document.getElementById("tooltip-raw");
+  const warningEl = document.getElementById("tooltip-warning");
   const keyCopyBtn = document.getElementById("copy-key-btn");
   const bodyCopyBtn = document.getElementById("copy-body-btn");
 
@@ -86,8 +88,16 @@ export async function setupTooltipViewerPage() {
       const index = Array.from(listPlaceholder.children).findIndex((el) => el.dataset.key === key);
       if (index !== -1) listSelect(index);
     }
-    previewEl.innerHTML = parseTooltipText(body);
+    const { html, warning } = parseTooltipText(body);
+    previewEl.innerHTML = html;
     rawEl.textContent = body;
+    if (warning) {
+      warningEl.textContent = "Unbalanced markup detected";
+      warningEl.hidden = false;
+    } else {
+      warningEl.textContent = "";
+      warningEl.hidden = true;
+    }
     keyCopyBtn.dataset.copy = key;
     bodyCopyBtn.dataset.copy = body;
     previewEl.classList.remove("fade-in");

@@ -7,6 +7,7 @@ import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 let tooltipDataPromise;
 let cachedData;
 const loggedMissing = new Set();
+const loggedUnbalanced = new Set();
 let tooltipEl;
 
 /**
@@ -63,24 +64,29 @@ export function getTooltips() {
 }
 
 /**
- * Converts tooltip markdown to sanitized HTML.
+ * Converts tooltip markdown to sanitized HTML and flags unbalanced markup.
  *
  * @pseudocode
  * 1. Escape HTML in `text` using `escapeHTML`.
- * 2. Replace newline characters with `<br>`.
- * 3. Replace `**bold**` with `<strong>` elements.
- * 4. Replace `_italic_` with `<em>` elements.
- * 5. Return the transformed string.
+ * 2. Count occurrences of `**` and `_` to detect unbalanced markers.
+ * 3. Replace newline characters with `<br>`.
+ * 4. Replace `**bold**` with `<strong>` elements.
+ * 5. Replace `_italic_` with `<em>` elements.
+ * 6. Return an object with `html` and a `warning` flag when markers are unbalanced.
  *
  * @param {string} text - Raw tooltip text to parse.
- * @returns {string} HTML markup for the tooltip.
+ * @returns {{ html: string, warning: boolean }} Parsed HTML and warning flag.
  */
 export function parseTooltipText(text) {
   const safe = escapeHTML(text || "");
-  return safe
+  const boldCount = (safe.match(/\*\*/g) || []).length;
+  const italicCount = (safe.match(/_/g) || []).length;
+  const warning = boldCount % 2 !== 0 || italicCount % 2 !== 0;
+  const html = safe
     .replace(/\n/g, "<br>")
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/_(.*?)_/g, "<em>$1</em>");
+  return { html, warning };
 }
 
 function ensureTooltipElement() {
@@ -137,7 +143,12 @@ export async function initTooltips(root = document) {
       }
       return;
     }
-    tip.innerHTML = parseTooltipText(text);
+    const { html, warning } = parseTooltipText(text);
+    tip.innerHTML = html;
+    if (warning && !loggedUnbalanced.has(id)) {
+      console.warn(`Unbalanced markup in tooltip id: ${id}`);
+      loggedUnbalanced.add(id);
+    }
     tip.style.display = "block";
     const rect = e.currentTarget.getBoundingClientRect();
     let top = rect.bottom + window.scrollY;
