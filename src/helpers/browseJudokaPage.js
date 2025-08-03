@@ -3,6 +3,7 @@ import { createCountrySlider } from "./countrySlider.js";
 import { toggleCountryPanel, toggleCountryPanelMode } from "./countryPanel.js";
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
+import { getFallbackJudoka } from "./judokaUtils.js";
 import { createButton } from "../components/Button.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
@@ -113,7 +114,7 @@ export function setupCountryFilter(
  * 2. Show a loading spinner and load judoka and gokyo data from JSON files.
  * 3. Render the card carousel and hide the spinner once complete.
  * 4. Attach event listeners for filtering, layout toggle, and panel controls.
- * 5. Handle errors by showing a retry button when loading fails.
+ * 5. Handle errors by rendering a fallback card and showing a retry button when loading fails.
  */
 export async function setupBrowseJudokaPage() {
   const carouselContainer = document.getElementById("carousel-container");
@@ -192,6 +193,15 @@ export async function setupBrowseJudokaPage() {
       clearTimeout(spinnerInfo.timeoutId);
       spinnerInfo.spinner.remove();
       console.error("Error building the carousel:", error);
+
+      try {
+        gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
+      } catch {
+        gokyoData = [];
+      }
+      const fallback = await getFallbackJudoka();
+      await renderCarousel([fallback]);
+
       const errorMessage = document.createElement("div");
       errorMessage.className = "error-message";
       errorMessage.setAttribute("role", "alert");
@@ -211,6 +221,13 @@ export async function setupBrowseJudokaPage() {
           await renderCarousel(allJudoka);
         } catch (err) {
           console.error("Error during retry:", err);
+          try {
+            gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
+          } catch {
+            gokyoData = [];
+          }
+          const fallbackRetry = await getFallbackJudoka();
+          await renderCarousel([fallbackRetry]);
         } finally {
           retryButton.disabled = false;
         }
