@@ -146,7 +146,8 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 - Pull available countries dynamically from `judoka.json` to avoid hardcoding.
 - Use image sprite sheets or CDN hosting for flag assets to reduce HTTP requests.
-- Prioritize lazy-loading flag images if >50 countries are available.
+- Use `IntersectionObserver` with `loading="lazy"` to defer flag image requests until they enter the viewport.
+- Detect network conditions via `navigator.connection` to reduce initial batch sizes on slow connections.
 - Fallback flag asset should be a small, lightweight SVG or PNG.
 - Ensure caching headers on flags to minimize repeat loads.
 - Integrate with the card carousel to trigger filtering and update the visible cards.
@@ -228,10 +229,10 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
   - [ ] 3.1 Implement virtual scrolling or paging for >50 countries.
   - [ ] 3.2 Ensure the filtering action completes quickly for 90% of sessions.
   - [ ] 3.3 Ensure the country selector appears quickly when toggled.
-  - [ ] 3.4 Implement progressive flag loading for slower devices.
+  - [x] 3.4 Implement progressive flag loading using `IntersectionObserver` and network-aware batch sizes.
 - [ ] 4.0 Handle Edge Cases
   - [x] 4.1 Display a fallback icon if a flag asset fails to load.
-  - [ ] 4.2 Implement progressive flag loading on slow networks.
+  - [x] 4.2 Implement progressive flag loading on slow networks using `navigator.connection`.
   - [x] 4.3 Show a message if the country list is empty.
 - [ ] 5.0 Ensure Accessibility and Compliance
   - [x] 5.1 Add alt-text for all flag icons based on country names and apply `aria-label` text like "Filter by {country}" to each flag button for screen readers.

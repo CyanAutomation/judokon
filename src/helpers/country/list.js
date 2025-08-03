@@ -9,9 +9,10 @@ const SCROLL_THRESHOLD_PX = 50;
  * @pseudocode
  * 1. Fetch `judoka.json` to determine which countries appear in the deck.
  * 2. Load the country code mapping and build a sorted list of active entries.
- * 3. Render an "All" button followed by batches of country buttons with flags.
- * 4. Lazy-load additional batches when the container is scrolled near the end.
- * 5. Log errors if data fails to load or individual flags cannot be retrieved.
+ * 3. Determine batch size based on network conditions.
+ * 4. Render an "All" button followed by batches of country buttons with lazily loaded flags.
+ * 5. Use `IntersectionObserver` and `loading="lazy"` to defer flag requests until visible.
+ * 6. Log errors if data fails to load or individual flags cannot be retrieved.
  *
  * @param {HTMLElement} container - Element where buttons will be appended.
  * @returns {Promise<void>} Resolves when the list is populated.
@@ -39,6 +40,7 @@ export async function populateCountryList(container) {
     const allImg = document.createElement("img");
     allImg.alt = "All countries";
     allImg.className = "flag-image";
+    allImg.setAttribute("loading", "lazy");
     allImg.src = "https://flagcdn.com/w320/vu.png";
     const allLabel = document.createElement("p");
     allLabel.textContent = "All";
@@ -47,7 +49,30 @@ export async function populateCountryList(container) {
     container.appendChild(allButton);
 
     const scrollContainer = container.parentElement || container;
-    const BATCH_SIZE = 50;
+    const connection = typeof navigator !== "undefined" ? navigator.connection : undefined;
+    let BATCH_SIZE = 50;
+    if (connection) {
+      if (connection.saveData || /2g/.test(connection.effectiveType)) {
+        BATCH_SIZE = 20;
+      } else if (connection.downlink && connection.downlink < 1) {
+        BATCH_SIZE = 30;
+      }
+    }
+    let imageObserver;
+    if (typeof IntersectionObserver === "function") {
+      imageObserver = new IntersectionObserver(
+        (entries, observer) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              const img = entry.target;
+              img.src = img.dataset.src;
+              observer.unobserve(img);
+            }
+          }
+        },
+        { root: scrollContainer, rootMargin: "100px" }
+      );
+    }
     let rendered = 0;
     const renderBatch = async () => {
       const batch = activeCountries.slice(rendered, rendered + BATCH_SIZE);
@@ -63,9 +88,15 @@ export async function populateCountryList(container) {
         const flagImg = document.createElement("img");
         flagImg.alt = `${country.country} Flag`;
         flagImg.className = "flag-image";
+        flagImg.setAttribute("loading", "lazy");
         try {
           const flagUrl = await getFlagUrl(country.code);
-          flagImg.src = flagUrl;
+          if (imageObserver) {
+            flagImg.dataset.src = flagUrl;
+            imageObserver.observe(flagImg);
+          } else {
+            flagImg.src = flagUrl;
+          }
         } catch (error) {
           console.warn(`Failed to load flag for ${country.country}:`, error);
           flagImg.src = "https://flagcdn.com/w320/vu.png";
