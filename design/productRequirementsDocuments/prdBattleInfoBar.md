@@ -57,8 +57,8 @@ The round message, timer, and score now sit directly inside the page header rath
 
 ## Edge Cases / Failure States
 
-- **Score desync between UI and backend** → Fallback to **“Waiting…”** label if backend sync fails. <!-- Pending -->
-- **Timer mismatch with server start** → Display **“Waiting…”** until match is confirmed to start. <!-- Pending -->
+- **Score desync between UI and backend** → Fallback to **“Waiting…”** label if backend sync fails. <!-- Implemented: see InfoBar.js -->
+- **Timer mismatch with server start** → Display **“Waiting…”** until match is confirmed to start. <!-- Implemented: see InfoBar.js -->
 - **Bar display issues due to screen resolution** → Collapse content into a stacked layout or truncate non-critical info with ellipsis. <!-- Partially implemented: CSS @media queries for stacking/truncation, but some edge cases pending -->
 - **Player does not select a stat within 30s** → Auto-select a random stat and display appropriate message (see [Classic Battle PRD](prdClassicBattle.md)). <!-- Implemented: see startRound in battleEngine.js -->
 - **Stat selection appears stalled** → Show "Stat selection stalled" message; auto-select a random stat after 5s if no input. <!-- Implemented: see classicBattle.js -->
@@ -84,8 +84,8 @@ The round message, timer, and score now sit directly inside the page header rath
 
 **Implementation status summary:**
 
-- **Score, round messages, timers, stat selection auto-select, pause/resume, and screen-reader attributes are implemented. Fallback "Waiting..." logic is pending.**
-- **Recovery logic for stalled stat selection shows a message and auto-selects after a short delay.**
+- **Score, round messages, timers, stat selection auto-select, pause/resume, screen-reader attributes, and fallback "Waiting..." logic are implemented.**
+- **Recovery logic for stalled stat selection shows a message and auto-selects after a short delay, and keyboard navigation for interactive controls is covered by tests.**
 - **Responsive stacking/truncation and minimum touch target size are implemented in CSS, but some edge cases and explicit contrast checks are not yet fully implemented.**
 - **See InfoBar.js, battleEngine.js, battleUI.js, and battle.css for current logic.**
 
@@ -120,14 +120,14 @@ The round message, timer, and score now sit directly inside the page header rath
   - [ ] 4.1 Ensure text contrast meets 4.5:1 ratio. Verify with `npm run check:contrast`.
   - [x] 4.2 Add screen reader labels for dynamic messages (`aria-live="polite"` and `role="status"`)
   - [x] 4.3 Ensure all interactive elements have minimum 44px touch targets (CSS min-width/min-height present)
-  - [ ] 4.4 Ensure all interactive elements support keyboard navigation (stat buttons: basic support, but needs explicit review/test)
+  - [x] 4.4 Ensure all interactive elements support keyboard navigation; tests cover stat, Next Round, and Quit controls
   - [ ] 4.5 Announce score and timer updates via `aria-live` for screen readers (see [Classic Battle PRD](prdClassicBattle.md))
   - [ ] 4.6 Provide high-contrast theme for Info Bar elements
 
 - [ ] 5.0 Edge Case Handling and Fallbacks
 
-  - [ ] 5.1 Show “Waiting…” if backend score sync fails
-  - [ ] 5.2 Show “Waiting…” if countdown timer mismatches server start
+  - [x] 5.1 Show “Waiting…” if backend score sync fails
+  - [x] 5.2 Show “Waiting…” if countdown timer mismatches server start
   - [x] 5.3 Define recovery logic for delayed player input (show message and auto-select after stall)
   - [ ] 5.4 Handle all possible timer/counter desyncs and display fallback (pending)
 
