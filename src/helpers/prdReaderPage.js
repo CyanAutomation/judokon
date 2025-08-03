@@ -13,9 +13,10 @@ import { getPrdTaskStats } from "./prdTaskStats.js";
  *    - Otherwise, fetch `prdIndex.json` for the filenames.
  *    - Sort filenames alphabetically so sidebar and document order match.
  * 2. Create sidebar items and helper functions.
- * 3. Fetch each markdown file, parsing to HTML with `parserFn`.
- * 4. Provide next/previous navigation with wrap-around and support arrow key and swipe gestures.
- * 5. Read the `doc` query parameter and update history so URLs deep‑link to PRDs.
+ * 3. Show a loading spinner and fetch each markdown file, parsing to HTML with `parserFn`.
+ * 4. Hide the spinner after rendering the first document or on fetch error.
+ * 5. Provide next/previous navigation with wrap-around and support arrow key and swipe gestures.
+ * 6. Read the `doc` query parameter and update history so URLs deep‑link to PRDs.
  *
  * @param {Record<string, string>} [docsMap] Optional preloaded docs for testing.
  * @param {Function} [parserFn=markdownToHtml] Parser used to convert Markdown to HTML.
@@ -54,9 +55,10 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   const prevButtons = document.querySelectorAll('[data-nav="prev"]');
   const titleEl = document.getElementById("prd-title");
   const summaryEl = document.getElementById("task-summary");
+  const spinner = document.getElementById("prd-spinner");
 
   if (!container || !listPlaceholder || FILES.length === 0) return;
-
+  if (spinner) spinner.style.display = "block";
   const documents = Array(FILES.length);
   const taskStats = Array(FILES.length);
   const titles = Array(FILES.length);
@@ -165,14 +167,20 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
       }
     }
   } else {
-    for (let i = 0; i < FILES.length; i++) {
-      const name = FILES[i];
-      const res = await fetch(`${PRD_DIR}${name}`);
-      const text = await res.text();
-      documents[i] = parseWithWarning(text);
-      taskStats[i] = getPrdTaskStats(text);
-      const titleMatch = text.match(/^#\s*(.+)/m);
-      titles[i] = titleMatch ? titleMatch[1].trim() : "";
+    try {
+      for (let i = 0; i < FILES.length; i++) {
+        const name = FILES[i];
+        const res = await fetch(`${PRD_DIR}${name}`);
+        const text = await res.text();
+        documents[i] = parseWithWarning(text);
+        taskStats[i] = getPrdTaskStats(text);
+        const titleMatch = text.match(/^#\s*(.+)/m);
+        titles[i] = titleMatch ? titleMatch[1].trim() : "";
+      }
+    } catch (err) {
+      console.error("Failed to load PRD", err);
+      if (spinner) spinner.style.display = "none";
+      return;
     }
   }
 
@@ -180,6 +188,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   url.searchParams.set("doc", baseNames[startIndex]);
   history.replaceState({ index: startIndex }, "", url.pathname + url.search);
   selectDoc(startIndex, false);
+  if (spinner) spinner.style.display = "none";
 }
 
 if (!window.SKIP_PRD_AUTO_INIT) {
