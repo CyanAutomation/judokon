@@ -64,7 +64,8 @@ async function handleReplay() {
   if (panel) panel.classList.add("hidden");
   const msgEl = document.getElementById("round-message");
   if (msgEl) msgEl.textContent = "";
-  await getStartRound()();
+  const startRoundFn = getStartRound();
+  await startRoundFn();
 }
 
 /**
