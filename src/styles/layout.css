@@ -95,6 +95,15 @@ body {
   height: 100%;
 }
 
+.logo-container a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target-size);
+  min-height: var(--touch-target-size);
+  padding: var(--space-xs);
+}
+
 .logo {
   height: 100%;
   max-height: var(--logo-max-height);
