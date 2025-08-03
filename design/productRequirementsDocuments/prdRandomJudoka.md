@@ -36,7 +36,6 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - As a player who wants to try new team combinations, I want to draw a random judoka so that I can discover picks I might not have considered.
 - As a young player with limited patience, I want the random card to appear instantly so that I stay engaged and don’t get bored waiting.
 - As a parent or accessibility user, I want the card reveal to respect Reduced Motion settings so that animations do not cause discomfort.
-- As a player who likes sound effects, I want to enable or disable draw sounds so that I can control my experience.
 - As a player who sometimes loses internet or has device issues, I want to see a fallback card if something goes wrong so that the screen never feels broken.
 
 ---
@@ -58,7 +57,6 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 |  **P1**  | Animation Timing                | Card reveal animation completes within 500ms and respects Reduced Motion settings.     |
 |  **P2**  | Fallback Card                   | If the judoka list is empty or fails to load, show a default placeholder card.         |
 |  **P2**  | Disable Interaction During Draw | Prevent repeated taps while a new card is loading.                                     |
-|  **P3**  | Optional Sound Toggle           | Play a short draw sound when enabled; default off.                                     |
 
 ---
 
@@ -69,7 +67,6 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - Draw button reliably refreshes card on tap (≥99% tap success).
 - Show fallback card if judoka list is empty (displays in 99% of cases).
 - Respect OS-level Reduced Motion settings (disable animations when active).
-- Sound is off by default.
 
 ---
 
@@ -77,6 +74,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 - Access to the full judoka list
 - Uses `generateRandomCard` as described in [prdDrawRandomCard.md](prdDrawRandomCard.md)
+- Reads global sound and motion preferences from `settings.html`
 
 ---
 
@@ -111,7 +109,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - **Draw Flow:**
   1. Player loads the screen → random judoka card appears automatically
   2. Player taps “Draw Card!” button → new random card slides or fades in
-  3. If Reduced Motion or manual animation toggle is active, card changes instantly without animation
+  3. If Reduced Motion is active or the player disables motion in `settings.html`, the card changes instantly without animation
 - **Button Size:**
   - Minimum: 64px height × 300px width for easy tapping, especially for kids
   - Style: Capsule shape using `--radius-pill` for consistent branding
@@ -129,7 +127,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 #### Accessibility
 
 - Detect OS-level Reduced Motion; disable animations if active
-- Provide manual animation toggle (default ON)
+- Sound and motion preferences are configured via `settings.html` (no on-screen toggles)
 - Tap targets ≥44px × 44px (64px recommended for kid-friendly design). See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)
 - Text must meet WCAG 2.1 AA 4.5:1 contrast ratio (verify with automated tools)
 - All buttons and states require clear text labels
@@ -142,17 +140,17 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 - **Tablet/Desktop (>600px):** card ~40% of viewport; centered draw button with spacing
 - **Landscape Support:** components reposition vertically or side-by-side
 - Card container uses `min-height: 50dvh` to keep the Draw button visible on small screens
-- The Draw button and its toggles must remain fully visible within the viewport even with the fixed footer navigation present
+- The Draw button must remain fully visible within the viewport even with the fixed footer navigation present
 - `.card-section` uses `padding-bottom: calc(var(--footer-height) + env(safe-area-inset-bottom))` so buttons stay visible above the footer
 
 #### Audio Feedback (Optional Enhancement)
 
 - Chime/swoosh sound <1 second, volume at 60% of system volume
-- Mute option via toggle icon near the draw button (default: sound off)
+- Sound effect plays only when enabled in `settings.html`
 
 #### Visual Mockup Description
 
-- **Draw Button Area:** prominent pill-shaped “Draw Card!” button prefixed with a draw icon, with mute and animation toggles ~24px below the card
+- **Draw Button Area:** prominent pill-shaped “Draw Card!” button prefixed with a draw icon; sound and motion settings live in `settings.html`
 
 ---
 
@@ -167,12 +165,12 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
   - [ ] 3.1 Verify WCAG contrast and tap target sizes (manual/automated check needed)
   - [x] 3.2 Display fallback card on error using the module
 - [ ] **4.0 Reduced Motion & Animation**
-  - [ ] 4.1 Animation toggle is a global setting in Settings page (not on Random Judoka page)
-  - [x] 4.2 Respect OS-level Reduced Motion setting for animation toggle (logic present)
-  - [ ] 4.3 Ensure all card reveal animations are fully disabled when Reduced Motion is active (verify in UI and CSS)
+  - [ ] 4.1 Honor animation preference from `settings.html`
+  - [x] 4.2 Respect OS-level Reduced Motion setting (logic present)
+  - [ ] 4.3 Ensure all card reveal animations are fully disabled when Reduced Motion or the global preference is active (verify in UI and CSS)
 - [ ] **5.0 Audio Feedback**
-  - [ ] 5.1 Play draw sound effect when enabled (sound toggle is a global setting in Settings page)
-  - [ ] 5.2 Ensure sound is off by default in global settings
+  - [ ] 5.1 Play draw sound effect when global sound setting in `settings.html` is enabled
+  - [ ] 5.2 Confirm sound is off by default in `settings.html`
 - [ ] **6.0 Button Interaction**
   - [x] 6.1 Disable Draw button during card animation/loading
   - [ ] 6.2 Add visual feedback for button press (scale-in effect)
