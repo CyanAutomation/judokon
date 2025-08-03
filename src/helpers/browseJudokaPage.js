@@ -119,15 +119,8 @@ export async function setupBrowseJudokaPage() {
   const carouselContainer = document.getElementById("carousel-container");
   const countryListContainer = document.getElementById("country-list");
   const toggleBtn = document.getElementById("country-toggle");
-  const layoutToggle = document.getElementById("layout-toggle");
   const countryPanel = document.getElementById("country-panel");
 
-  // Attach event handler for layout toggle if the element exists
-  if (layoutToggle) {
-    layoutToggle.addEventListener("click", () => {
-      carouselContainer.classList.toggle("grid-layout");
-    });
-  }
   toggleCountryPanelMode(countryPanel, false);
 
   let allJudoka = [];
