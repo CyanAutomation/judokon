@@ -152,9 +152,9 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
   - [x] 2.2 Enable click interaction to select a tooltip
   - [x] 2.3 Add real-time search/filter functionality
 
-  - [ ] 2.4 Support full keyboard navigation (TAB, arrows, ENTER)
-  - [ ] 2.5 Group or color-code keys by prefix (category highlighting)
-  - [ ] 2.6 Sidebar scrolls independently from preview
+  - [x] 2.4 Support full keyboard navigation (TAB, arrows, ENTER)
+  - [x] 2.5 Group or color-code keys by prefix (category highlighting)
+  - [x] 2.6 Sidebar scrolls independently from preview
 
 - [x] 3.0 Build Preview Panel
 
@@ -162,10 +162,12 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
   - [x] 3.2 Parse and render markdown-styled preview
   - [x] 3.3 Animate panel on update (fade-in)
   - [ ] 3.4 Display visual indicators for blank/malformed tooltips (icon/tooltip)
+    - [x] Blank entries flagged with warning icon
+    - [ ] Malformed entries not yet flagged
   - [x] 3.5 Include copy-to-clipboard buttons for key and body
-  - [ ] 3.6 Show warning for malformed markdown in preview
-  - [ ] 3.7 Truncate long values after 300px height; add “Show more” toggle
-  - [ ] 3.8 Copy-to-clipboard buttons provide feedback (e.g., tooltip/animation)
+  - [x] 3.6 Show warning for malformed markdown in preview
+  - [x] 3.7 Truncate long values after 300px height; add “Show more” toggle
+  - [x] 3.8 Copy-to-clipboard buttons provide feedback (e.g., tooltip/animation)
 
 - [x] 4.0 URL Fragment Support
 
@@ -175,8 +177,8 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 - [x] 5.0 UI/UX and Accessibility Enhancements
   - [x] 5.1 Apply JU-DO-KON! styling (colors, spacing, typography)
   - [x] 5.2 Ensure mobile responsiveness (stacked layout <600px)
-  - [ ] 5.3 Include accessible font sizes and high contrast text
-  - [ ] 5.4 Enable keyboard navigation and focus states
+  - [x] 5.3 Include accessible font sizes and high contrast text
+  - [x] 5.4 Enable keyboard navigation and focus states
   - [x] 5.5 Expose `data-*` attributes for automated QA
-  - [ ] 5.6 Add ARIA attributes/roles for screen readers
-  - [ ] 5.7 Selected key uses bright color in dark mode for contrast
+  - [x] 5.6 Add ARIA attributes/roles for screen readers
+  - [x] 5.7 Selected key uses bright color in dark mode for contrast
