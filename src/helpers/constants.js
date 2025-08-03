@@ -6,23 +6,33 @@
  * default limits for Classic Battle matches.
  *
  * @pseudocode
- * 1. Provide the base path to JSON data files.
+ * 1. Resolve the helpers directory URL and derive the base path to JSON data files.
  * 2. Define carousel scroll distance, swipe threshold, and spinner delay.
  * 3. Set fade and removal durations for settings error popups.
  * 4. Establish Classic Battle win conditions and maximum rounds.
  */
 
 /**
+ * Absolute URL to the helpers directory.
+ *
+ * The `@vite-ignore` directive is used here to prevent Vite from analyzing
+ * or transforming the path as a static asset import. Without this directive,
+ * Vite may attempt to bundle or process the directory, which is not desired
+ * for runtime directory resolution.
+ *
+ * @constant {URL}
+ */
+const HELPERS_DIR = new URL(/* @vite-ignore */ ".", import.meta.url);
+
+/**
  * Path to the directory containing JSON data files.
  *
- * Using `import.meta.url` ensures the correct absolute URL is
- * generated regardless of which page imports this module. This
- * prevents broken relative paths when pages are nested within the
- * project directory structure.
+ * Resolving the helpers directory separately avoids having Vite
+ * analyze the data directory as an asset import.
  *
  * @constant {string}
  */
-export const DATA_DIR = new URL("../data/", import.meta.url).href;
+export const DATA_DIR = new URL("../data/", HELPERS_DIR).href;
 
 /**
  * Distance in pixels that the carousel scrolls when using keyboard
