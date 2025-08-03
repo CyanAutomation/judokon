@@ -18,7 +18,7 @@ describe("createSidebarList", () => {
     select(1);
     expect(items[1].classList.contains("selected")).toBe(true);
     expect(items[1].getAttribute("aria-current")).toBe("page");
-    expect(cb).toHaveBeenCalledWith(1, items[1]);
+    expect(cb).toHaveBeenCalledWith(1, items[1], {});
     select(-1);
     expect(items[1].classList.contains("selected")).toBe(true);
     expect(items[1].getAttribute("aria-current")).toBe("page");
@@ -34,18 +34,18 @@ describe("createSidebarList", () => {
 
     items[0].focus();
     items[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
-    expect(items[0].classList.contains("selected")).toBe(true);
-    expect(items[0].getAttribute("aria-current")).toBe("page");
-    expect(document.activeElement).toBe(items[0]);
-
-    items[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
     expect(items[1].classList.contains("selected")).toBe(true);
     expect(items[1].getAttribute("aria-current")).toBe("page");
     expect(document.activeElement).toBe(items[1]);
 
-    items[1].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }));
-    expect(items[0].classList.contains("selected")).toBe(true);
-    expect(items[0].getAttribute("aria-current")).toBe("page");
-    expect(document.activeElement).toBe(items[0]);
+    items[1].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    expect(items[2].classList.contains("selected")).toBe(true);
+    expect(items[2].getAttribute("aria-current")).toBe("page");
+    expect(document.activeElement).toBe(items[2]);
+
+    items[2].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }));
+    expect(items[1].classList.contains("selected")).toBe(true);
+    expect(items[1].getAttribute("aria-current")).toBe("page");
+    expect(document.activeElement).toBe(items[1]);
   });
 });

@@ -15,7 +15,7 @@ import { getPrdTaskStats } from "./prdTaskStats.js";
  * 2. Create sidebar items and helper functions.
  * 3. Show a loading spinner and fetch each markdown file, parsing to HTML with `parserFn`.
  * 4. Hide the spinner after rendering the first document or on fetch error.
- * 5. Provide next/previous navigation with wrap-around and support arrow key and swipe gestures.
+ * 5. Provide next/previous navigation with wrap-around and support arrow key (when content is focused) and swipe gestures.
  * 6. Read the `doc` query parameter and update history so URLs deep‑link to PRDs.
  *
  * @param {Record<string, string>} [docsMap] Optional preloaded docs for testing.
@@ -72,8 +72,8 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   );
 
   let index = startIndex;
-  const { element: listEl, select: listSelect } = createSidebarList(labels, (i) => {
-    selectDoc(i, true, true);
+  const { element: listEl, select: listSelect } = createSidebarList(labels, (i, _el, opts = {}) => {
+    selectDoc(i, true, true, !opts.fromListNav);
   });
   listEl.id = "prd-list";
   listPlaceholder.replaceWith(listEl);
@@ -112,11 +112,11 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     initTooltips();
   }
 
-  function selectDoc(i, updateHistory = true, skipList = false) {
+  function selectDoc(i, updateHistory = true, skipList = false, focusContent = true) {
     index = (i + documents.length) % documents.length;
     if (!skipList) listSelect(index);
     renderDoc(index);
-    container.focus();
+    if (focusContent) container.focus();
     if (updateHistory) {
       const url = new URL(window.location);
       url.searchParams.set("doc", baseNames[index]);
@@ -141,6 +141,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   });
 
   document.addEventListener("keydown", (e) => {
+    if (document.activeElement !== container) return;
     if (e.key === "ArrowRight") showNext();
     if (e.key === "ArrowLeft") showPrev();
   });

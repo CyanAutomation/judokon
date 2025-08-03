@@ -15,7 +15,7 @@ describe("prdReaderPage", () => {
       <div id="prd-title"></div>
       <div id="task-summary"></div>
       <ul id="prd-list"></ul>
-      <div id="prd-content" tabindex="-1"></div>
+      <div id="prd-content" tabindex="0"></div>
       <button data-nav="prev">Prev</button>
       <button data-nav="next">Next</button>
       <button data-nav="prev">Prev bottom</button>
@@ -275,12 +275,12 @@ describe("prdReaderPage", () => {
     list.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp" }));
     expect(container.innerHTML).toContain("First doc");
     expect(items[0].getAttribute("aria-current")).toBe("page");
-    expect(document.activeElement).toBe(container);
+    expect(document.activeElement).toBe(items[0]);
 
     list.focus();
     list.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown" }));
     expect(container.innerHTML).toContain("Second doc");
     expect(items[1].getAttribute("aria-current")).toBe("page");
-    expect(document.activeElement).toBe(container);
+    expect(document.activeElement).toBe(items[1]);
   });
 });
