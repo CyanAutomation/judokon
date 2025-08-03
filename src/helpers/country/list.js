@@ -91,12 +91,12 @@ export async function populateCountryList(container) {
         flagImg.setAttribute("loading", "lazy");
         try {
           const flagUrl = await getFlagUrl(country.code);
-          if (imageObserver) {
-            flagImg.dataset.src = flagUrl;
-            imageObserver.observe(flagImg);
-          } else {
-            flagImg.src = flagUrl;
-          }
+        if (imageObserver) {
+          flagImg.dataset.src = flagUrl;
+          imageObserver.observe(flagImg);
+        } else {
+          flagImg.src = flagUrl;
+        }
         } catch (error) {
           console.warn(`Failed to load flag for ${country.country}:`, error);
           flagImg.src = "https://flagcdn.com/w320/vu.png";
