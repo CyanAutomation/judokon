@@ -4,27 +4,27 @@
 
 ## TL;DR
 
-This PRD defines a responsive, interactive carousel for browsing Judoka cards in Ju-Do-Kon! It supports smooth swiping (**snap ≤200 ms**), keyboard interactions, and accessibility features — ensuring players can quickly scan and select cards.
+This PRD defines a responsive, interactive carousel for browsing Judoka cards in Ju-Do-Kon! It supports smooth swiping, keyboard interactions, and accessibility features — ensuring players can quickly scan and select cards.
 
 ---
 
 ## Problem Statement
 
-As part of the game, several screens require an intuitive and interactive way to present judoka cards. With more than 100 cards in the game (ultimate goal), it would be cumbersome and frustrating for players to browse through all cards manually without an efficient navigation system capable of loading **100 cards in ≤1 s**.
+As part of the game, several screens require an intuitive and interactive way to present judoka cards. With more than 100 cards in the game (ultimate goal), it would be cumbersome and frustrating for players to browse through all cards manually without an efficient navigation system capable of loading cards quickly.
 
 > Emi wants to create her ultimate Japanese Judoka team. She opens the carousel and quickly swipes through beautifully animated cards, instantly comparing stats. She feels in control, excited, and invested in building the perfect team — that’s the experience this carousel delivers.
 
 Failure to provide an efficient browsing experience may impact core gameplay — players might struggle to find and build optimal teams, leading to frustration and potential churn.
 
-> A smooth and intuitive browsing experience (scrolling **≥60 fps**) fosters a sense of mastery and control, enhancing overall player satisfaction and engagement.
+> A smooth and intuitive browsing experience fosters a sense of mastery and control, enhancing overall player satisfaction and engagement.
 
 ---
 
 ## User Stories
 
-- As a player, I want smooth scrolling so I can quickly browse a large roster of cards **(≥60 fps)**.
+- As a player, I want smooth scrolling so I can quickly browse a large roster of cards.
 - As a player using keyboard navigation, I want to scroll through cards using arrow keys so I can browse without a mouse.
-- As a mobile player, I want to swipe to move between cards so the experience feels natural and fast **(gesture latency <100 ms)**.
+- As a mobile player, I want to swipe to move between cards so the experience feels natural and fast.
 
 ---
 
@@ -33,15 +33,14 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 **Technical Performance Goals**
 
 - Carousel loads within 1 second for up to 150 cards.
-- Support smooth browsing of up to 50 cards without noticeable lag (**≥60 fps**).
-- Users can browse through at least 10 cards within 30 seconds smoothly without lag.
+- Support smooth browsing of up to 50 cards without noticeable lag.
 - Swipe gesture support for mobile browsing.
 - Keyboard navigation support for accessibility.
 
 **User Experience Goals**
 
 - Users can easily browse and find desired cards to assemble optimized teams.
-- Browsing the carousel feels smooth, intuitive, and visually engaging on both mobile and desktop devices **(transitions ≤300 ms)**.
+- Browsing the carousel feels smooth, intuitive, and visually engaging on both mobile and desktop devices.
 
 ---
 
@@ -60,7 +59,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 ## Acceptance Criteria
 
-- Carousel loads within 1 second for up to 150 cards.
+- Carousel loads quickly for up to 150 cards.
 - User can scroll left/right via large "Prev" and "Next" arrow buttons.
 - Arrow buttons disable when the carousel reaches either end so players cannot scroll past the available cards.
 - User can see page markers showing "current page of total" with the active page highlighted and announced via `aria-live`.
@@ -68,7 +67,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - Carousel is responsive, adapting to both portrait and landscape orientations.
 - Swipe or scroll navigation works on mobile (left/right swipe to move cards).
 - Keyboard arrow keys allow navigation through cards.
-- Displays a loading spinner if load time exceeds 2 seconds.
+- Displays a loading spinner if load time is slow.
 - If card image fails to load, display a default judoka card (judoka id=0).
 - Playwright tests simulate swipe gestures and arrow-key navigation.
 - A loading spinner appears during simulated slow network conditions.
@@ -81,7 +80,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 - **Network Disconnection**: Display a default judoka card (judoka id=0).
 - **Missing/Broken Card Images**: Default fallback card is shown, display a default judoka card (judoka id=0).
-- **Slow Network**: Show a loading spinner if loading exceeds 2 seconds.
+- **Slow Network**: Show a loading spinner.
 
 ---
 
@@ -98,7 +97,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 1. A page calls `buildCardCarousel(judokaList, gokyoData)` from `src/helpers/carouselBuilder.js`.
 2. The returned element is mounted into the page (for example, `browseJudoka.html` inserts it into `#carousel-container`).
-3. Carousel loads cards within 1 second; a loading spinner appears if delayed.
+3. Carousel loads cards quickly; a loading spinner appears if delayed.
 4. Player uses:
    - Large "Prev" and "Next" arrow buttons to move left or right,
    - Swipe or scroll gestures on mobile,
@@ -128,7 +127,7 @@ generated carousel so each card's real portrait loads once it becomes visible.
 ### Visuals
 
 - Carousel will have a darker background to allow the bright, colorful judoka cards to stand out.
-- Snap scrolling for smooth, natural-feeling navigation (**snap ≤200 ms**).
+- Snap scrolling for smooth, natural-feeling navigation.
 - Centered active card slightly larger than side cards for visual emphasis.
 
 ### Responsiveness
@@ -165,7 +164,7 @@ generated carousel so each card's real portrait loads once it becomes visible.
 - **Desktop**: 3 cards in view — center card slightly enlarged; large "Prev" and "Next" arrows at the sides; page markers at the bottom.
 - **Mobile**: 1.5 cards visible (peek of next card); swipe or scroll enabled; arrows optional.
 - **Hover Effect**: On desktop, center card enlarges subtly.
-- **Touch Interaction**: On mobile, swipe left/right; smooth snap after swipe (**≤200 ms**).
+- **Touch Interaction**: On mobile, swipe left/right; smooth snap after swipe.
 
 | **Card Carousel Mockup 1**                                       | **Card Carousel Mockup 2**                                       |
 | ---------------------------------------------------------------- | ---------------------------------------------------------------- |
