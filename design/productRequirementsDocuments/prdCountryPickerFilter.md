@@ -218,7 +218,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
   - [x] 1.6 Implement keyboard navigation and focus management for all interactive elements.
   - [x] 1.7 Implement fallback icon for missing flag assets.
   - [x] 1.8 Ensure the panel appears below the persistent top bar.
-  - [ ] 1.9 Ensure slide-in animation respects prefers-reduced-motion.
+  - [x] 1.9 Ensure slide-in animation respects prefers-reduced-motion.
 - [x] 2.0 Set Up Filtering Logic
   - [x] 2.1 Load `judoka.json` and extract a list of available countries.
   - [x] 2.2 Implement filtering of the card carousel based on the selected country.
@@ -226,14 +226,14 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
   - [x] 2.4 Export country code/list helpers for reuse.
   - [x] 2.5 Integrate country filter with card carousel update.
 - [ ] 3.0 Optimize Performance
-  - [ ] 3.1 Implement virtual scrolling or paging for >50 countries.
+  - [x] 3.1 Implement virtual scrolling or paging for >50 countries.
   - [ ] 3.2 Ensure the filtering action completes quickly for 90% of sessions.
   - [ ] 3.3 Ensure the country selector appears quickly when toggled.
   - [ ] 3.4 Implement progressive flag loading using `IntersectionObserver`; network-aware batching remains outstanding.
 - [ ] 4.0 Handle Edge Cases
   - [x] 4.1 Display a fallback icon if a flag asset fails to load.
-  - [ ] 4.2 Detect slow networks with `navigator.connection` to adjust flag loading.
-  - [ ] 4.3 Show a message if the country list is empty.
+  - [x] 4.2 Detect slow networks with `navigator.connection` to adjust flag loading.
+  - [x] 4.3 Show a message if the country list is empty.
 - [ ] 5.0 Ensure Accessibility and Compliance
   - [x] 5.1 Add alt-text for all flag icons based on country names and apply `aria-label` text like "Filter by {country}" to each flag button for screen readers.
   - [x] 5.2 Ensure color contrast ratios meet WCAG 2.1 AA standards.
@@ -243,9 +243,8 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 ### Outstanding Work
 
-- Progressive flag loading requires network-aware batching and better fallback strategies on slow connections.
-- Performance benchmarks are pending; filtering speed and toggle responsiveness must be validated.
-- Slide-in animation should honor the user's `prefers-reduced-motion` setting.
+- Implement progressive flag loading with `IntersectionObserver`, including network-aware batching and fallback strategies for slow connections.
+- Validate performance benchmarks: filtering must complete within 1 second for 90% of sessions and the selector should appear quickly when toggled.
 
 ---
 
