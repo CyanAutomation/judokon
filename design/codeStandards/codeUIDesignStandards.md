@@ -321,6 +321,11 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
 - In Classic Battle screens, player and opponent cards align horizontally using a three-column grid. Stat controls occupy the center column. On very narrow screens (<480 px) the layout stacks vertically with stat controls below the cards.
 - Stat selection buttons should use a grid layout with equal widths and small gaps so players choose solely based on card stats.
 
+### 8.9 Sidebar Lists
+
+- Selected sidebar items pulse for 150 ms to confirm the choice.
+- Respect the user's `prefers-reduced-motion` setting and disable the animation when set to `reduce`.
+
 ---
 
 ## 9. Accessibility & Responsiveness

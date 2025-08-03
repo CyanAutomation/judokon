@@ -123,6 +123,8 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
   `--color-tertiary` tokens for zebra striping. Odd/even classes start with
   `odd` for the first row.
 - Sidebar PRDs are listed alphabetically.
+- Selected items briefly pulse (150 ms) to confirm the selection and respect
+  reduced motion preferences.
 - Warning badge in content area if markdown partially rendered. **(Implemented)**
 - Responsive layout for desktop, tablet, and mobile.
 
