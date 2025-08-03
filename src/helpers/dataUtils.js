@@ -16,7 +16,7 @@ import { getMissingJudokaFields } from "./judokaValidation.js";
  * @returns {boolean} `true` if running under Node.
  */
 function isNodeEnvironment() {
-  return Boolean(process?.versions?.node);
+  return Boolean(typeof process !== "undefined" && process?.versions?.node);
 }
 
 export async function getAjv() {
