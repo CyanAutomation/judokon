@@ -91,12 +91,17 @@ describe("classicBattle match flow", () => {
       "../../../src/helpers/classicBattle.js"
     );
     _resetForTest();
+    const selectStat = async () => {
+      const p = handleStatSelection("power");
+      await vi.runAllTimersAsync();
+      await p;
+    };
     for (let i = 0; i < 10; i++) {
       document.getElementById("player-card").innerHTML =
         `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
       document.getElementById("computer-card").innerHTML =
         `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-      await handleStatSelection("power");
+      await selectStat();
     }
     expect(document.querySelector("header #score-display").textContent).toBe(
       "You: 10\nOpponent: 0"
@@ -107,7 +112,11 @@ describe("classicBattle match flow", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
     document.getElementById("computer-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    await handleStatSelection("power");
+    {
+      const p = handleStatSelection("power");
+      await vi.runAllTimersAsync();
+      await p;
+    }
 
     expect(document.querySelector("header #score-display").textContent).toBe(
       "You: 10\nOpponent: 0"
@@ -119,12 +128,17 @@ describe("classicBattle match flow", () => {
       "../../../src/helpers/classicBattle.js"
     );
     _resetForTest();
+    const selectStat = async () => {
+      const p = handleStatSelection("power");
+      await vi.runAllTimersAsync();
+      await p;
+    };
     for (let i = 0; i < 10; i++) {
       document.getElementById("player-card").innerHTML =
         `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
       document.getElementById("computer-card").innerHTML =
         `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-      await handleStatSelection("power");
+      await selectStat();
     }
     expect(document.querySelector("header #score-display").textContent).toBe(
       "You: 0\nOpponent: 10"
@@ -137,7 +151,11 @@ describe("classicBattle match flow", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     document.getElementById("computer-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-    await handleStatSelection("power");
+    {
+      const p = handleStatSelection("power");
+      await vi.runAllTimersAsync();
+      await p;
+    }
 
     expect(document.querySelector("header #score-display").textContent).toBe(
       "You: 0\nOpponent: 10"
@@ -174,7 +192,11 @@ describe("classicBattle match flow", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
     document.getElementById("computer-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    await handleStatSelection("power");
+    {
+      const p = handleStatSelection("power");
+      await vi.runAllTimersAsync();
+      await p;
+    }
     expect(document.querySelector("header #round-message").textContent).not.toBe(
       "Select your move"
     );
