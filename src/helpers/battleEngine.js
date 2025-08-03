@@ -154,11 +154,12 @@ export function resumeTimer() {
  * Compare player and computer stat values to update scores.
  *
  * @pseudocode
- * 1. Stop the timer to prevent duplicate selections.
- * 2. Compare the provided values and adjust scores.
+ * 1. If the match has already ended, return the current scores.
+ * 2. Stop the timer to prevent duplicate selections.
+ * 3. Compare the provided values and adjust scores.
  *    - When values are equal, return a tie message.
- * 3. Increment the round counter and check if the match ends.
- * 4. Return the result message along with updated scores.
+ * 4. Increment the round counter and check if the match ends.
+ * 5. Return the result message along with updated scores.
  *
  * @param {number} playerVal - Value selected by the player.
  * @param {number} computerVal - Value selected by the computer.
