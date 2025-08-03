@@ -47,7 +47,7 @@ export function clearBottomNavbar() {
  * Toggles the expanded map view for landscape mode.
  *
  * @pseudocode
- * 1. Check if the device is in landscape orientation.
+ * 1. Exit early if the device is not in landscape orientation.
  * 2. Select the `.bottom-navbar` element and exit early if not found.
  * 3. Create a map view with clickable tiles for game modes.
  * 4. Add a slide-up animation when the logo is clicked.
@@ -56,6 +56,12 @@ export function clearBottomNavbar() {
  * @param {import("../types.js").GameMode[]} gameModes - The list of game modes to display.
  */
 export function toggleExpandedMapView(gameModes) {
+  const isLandscape =
+    typeof window.matchMedia === "function"
+      ? window.matchMedia("(orientation: landscape)").matches
+      : window.innerWidth > window.innerHeight;
+  if (!isLandscape) return; // Guard: only apply in landscape mode
+
   const navBar = document.querySelector(".bottom-navbar");
   if (!navBar) return; // Guard: do nothing if navbar is missing
   clearBottomNavbar(); // Clear existing content
@@ -90,7 +96,7 @@ export function toggleExpandedMapView(gameModes) {
  * Toggles the vertical text menu for portrait mode.
  *
  * @pseudocode
- * 1. Check if the device is in portrait orientation.
+ * 1. Exit early if the device is not in portrait orientation.
  * 2. Create a vertical menu with game modes as list items.
  * 3. Add a slide-down animation when the logo is clicked.
  * 4. Hide the menu when the logo is clicked again.
@@ -98,6 +104,12 @@ export function toggleExpandedMapView(gameModes) {
  * @param {import("../types.js").GameMode[]} gameModes - The list of game modes to display.
  */
 export function togglePortraitTextMenu(gameModes) {
+  const isPortrait =
+    typeof window.matchMedia === "function"
+      ? window.matchMedia("(orientation: portrait)").matches
+      : window.innerHeight >= window.innerWidth;
+  if (!isPortrait) return; // Guard: only apply in portrait mode
+
   const navBar = document.querySelector(".bottom-navbar");
   if (!navBar) return; // Guard: do nothing if navbar is missing
   clearBottomNavbar(); // Clear existing content
