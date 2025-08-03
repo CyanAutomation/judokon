@@ -14,11 +14,14 @@ const INVALID_TOOLTIP_MSG = "Empty or whitespace-only content";
  * 2. Render a clickable list of keys filtered by the search box (300ms debounce),
  *    tagging items with a class based on their prefix (e.g. `stat`, `ui`) and
  *    flagging empty bodies with a warning icon.
- * 3. When a key is selected, display its parsed HTML and raw text in the preview,
- *    and show a warning when the markup is unbalanced.
- * 4. Provide copy buttons for the key and body using `navigator.clipboard`.
- * 5. On page load, select the key from the URL hash when present and scroll to it.
- * 6. Call `initTooltips()` so help icons inside the page gain tooltips.
+ * 3. Wrap the preview in a 300px-high container with a toggle button to expand
+ *    or collapse long content.
+ * 4. When a key is selected, display its parsed HTML and raw text in the
+ *    preview, and show a warning when the markup is unbalanced.
+ * 5. Provide copy buttons for the key and body using `navigator.clipboard`.
+ * 6. On page load, select the key from the URL hash when present and scroll to
+ *    it.
+ * 7. Call `initTooltips()` so help icons inside the page gain tooltips.
  */
 export async function setupTooltipViewerPage() {
   const searchInput = document.getElementById("tooltip-search");
@@ -28,6 +31,40 @@ export async function setupTooltipViewerPage() {
   const warningEl = document.getElementById("tooltip-warning");
   const keyCopyBtn = document.getElementById("copy-key-btn");
   const bodyCopyBtn = document.getElementById("copy-body-btn");
+
+  const previewContainer = document.createElement("div");
+  previewContainer.className = "preview-container";
+  previewEl.parentNode.insertBefore(previewContainer, previewEl);
+  previewContainer.appendChild(previewEl);
+
+  const toggleBtn = document.createElement("button");
+  toggleBtn.id = "toggle-preview-btn";
+  toggleBtn.className = "secondary-button preview-toggle";
+  toggleBtn.type = "button";
+  toggleBtn.textContent = "Expand";
+  toggleBtn.setAttribute("aria-expanded", "false");
+  previewContainer.after(toggleBtn);
+
+  let expanded = false;
+  function updateToggle() {
+    const needsToggle = previewEl.scrollHeight > 300;
+    toggleBtn.hidden = !needsToggle;
+    if (!needsToggle) {
+      expanded = false;
+      previewContainer.classList.remove("expanded");
+      toggleBtn.setAttribute("aria-expanded", "false");
+      toggleBtn.textContent = "Expand";
+    }
+  }
+
+  toggleBtn.addEventListener("click", () => {
+    expanded = !expanded;
+    previewContainer.classList.toggle("expanded", expanded);
+    toggleBtn.textContent = expanded ? "Collapse" : "Expand";
+    toggleBtn.setAttribute("aria-expanded", String(expanded));
+  });
+
+  updateToggle();
 
   let data;
   try {
@@ -103,6 +140,11 @@ export async function setupTooltipViewerPage() {
     previewEl.classList.remove("fade-in");
     void previewEl.offsetWidth;
     previewEl.classList.add("fade-in");
+    expanded = false;
+    previewContainer.classList.remove("expanded");
+    toggleBtn.setAttribute("aria-expanded", "false");
+    toggleBtn.textContent = "Expand";
+    updateToggle();
   }
 
   function copy(btn) {
