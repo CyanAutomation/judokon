@@ -64,10 +64,17 @@ the returned values to `InfoBar.updateScore`. The helper module
 `setupBattleInfoBar.js` exposes this method for pages, keeping UI updates
 decoupled from engine logic.
 
+`InfoBar.showTemporaryMessage(text)` displays a transient notice and returns a
+clear function that only removes the message if the same text is still shown.
+`classicBattle.js.handleStatSelection` uses this helper to show **"Waiting…"** while
+the opponent's move is computed.
+
 `classicBattle.js` now simulates the opponent entirely on the client. After a
-player selects a stat, the opponent’s choice is computed locally and revealed
-after a brief artificial delay. This client-side approach mimics turn-taking
-without any WebSocket or polling endpoints.
+player selects a stat, the module introduces a 300–700 ms delay and clears the
+temporary message once the opponent’s card is revealed. Tests and gameplay
+should expect the brief **"Waiting…"** notice during this pause. This
+client-side approach mimics turn-taking without any WebSocket or polling
+endpoints.
 
 ```javascript
 import { createCard } from "./src/components/Card.js";
