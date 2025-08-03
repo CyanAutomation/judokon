@@ -51,7 +51,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 | **P1**   | Display judoka in a carousel.                                          |
 | **P1**   | Scroll left/right using large arrow buttons labeled "Prev" and "Next". |
 | **P2**   | Swipe or scroll navigation on mobile devices.                          |
-| **P2**   | Cards slightly enlarge on hover.                                 |
+| **P2**   | Cards slightly enlarge on hover.                                       |
 | **P3**   | Page markers show "current page of total" with active highlight.       |
 | **P3**   | Keyboard arrow key navigation for accessibility.                       |
 
