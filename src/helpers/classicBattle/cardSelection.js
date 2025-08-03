@@ -32,7 +32,7 @@ function showLoadError(error) {
       loadErrorModal.close();
       try {
         await drawCards();
-      } catch {
+      } catch (retryError) {
         window.location.reload();
       }
     });
