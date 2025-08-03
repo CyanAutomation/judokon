@@ -64,6 +64,12 @@ the returned values to `InfoBar.updateScore`. The helper module
 `setupBattleInfoBar.js` exposes this method for pages, keeping UI updates
 decoupled from engine logic.
 
+`classicBattle.js` opens a WebSocket to `/classic-battle` so the backend can
+stream opponent stats and scores. If the connection drops or WebSockets are
+unavailable, it falls back to polling `/api/classic-battle/score` with
+exponential backoff. Latency or connection problems are surfaced via
+`InfoBar.showMessage` so players know when updates are delayed.
+
 ```javascript
 import { createCard } from "./src/components/Card.js";
 const card = createCard("<p>Hello</p>");
