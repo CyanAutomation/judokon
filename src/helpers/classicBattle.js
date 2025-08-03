@@ -30,6 +30,19 @@ let statTimeoutId = null;
 let autoSelectId = null;
 
 /**
+ * Return a random stat key for the opponent.
+ *
+ * @pseudocode
+ * 1. Pick a random index from `STATS`.
+ * 2. Return the stat at that index.
+ *
+ * @returns {string} One of the values from `STATS`.
+ */
+export function simulateOpponentStat() {
+  return STATS[Math.floor(Math.random() * STATS.length)];
+}
+
+/**
  * Display match summary with final message and scores.
  *
  * @pseudocode
@@ -80,7 +93,7 @@ async function handleReplay() {
 function onStatSelectionTimeout() {
   infoBar.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
   autoSelectId = setTimeout(() => {
-    const randomStat = STATS[Math.floor(Math.random() * STATS.length)];
+    const randomStat = simulateOpponentStat();
     handleStatSelection(randomStat);
   }, 5000);
 }
@@ -158,14 +171,22 @@ export function evaluateRound(stat) {
 export async function handleStatSelection(stat) {
   clearTimeout(statTimeoutId);
   clearTimeout(autoSelectId);
-  await revealComputerCard();
-  const result = evaluateRound(stat);
-  resetStatButtons();
-  scheduleNextRound(result, getStartRound());
-  if (result.matchEnded) {
-    showSummary(result);
-  }
-  updateDebugPanel();
+  infoBar.showMessage("Waiting…");
+  const delay = 300 + Math.floor(Math.random() * 401);
+  return new Promise((resolve) => {
+    setTimeout(async () => {
+        await revealComputerCard();
+        infoBar.showMessage("");
+        const result = evaluateRound(stat);
+        resetStatButtons();
+        scheduleNextRound(result, getStartRound());
+        if (result.matchEnded) {
+            showSummary(result);
+        }
+        updateDebugPanel();
+        resolve(result);
+    }, delay);
+  });
 }
 
 export function quitMatch() {
