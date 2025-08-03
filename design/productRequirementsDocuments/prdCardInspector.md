@@ -2,7 +2,7 @@
 
 ## Overview (TL;DR)
 
-The **Card Inspector** is a developer/debugging utility in JU-DO-KON! that lets users view the raw JSON data behind each judoka card, directly within the game UI. It’s toggled from the Settings page and is meant for QA, developers, and advanced users to inspect card data in real-time, without interrupting the core gameplay experience.
+The **Card Inspector** is a developer/debugging utility in JU-DO-KON! that lets users view the raw JSON data behind each judoka card, directly within the game UI. It’s exposed via the `enableCardInspector` feature flag on the Settings page and is meant for QA, developers, and advanced users to inspect card data in real time.
 
 ---
 
@@ -42,11 +42,12 @@ This problem is urgent because:
 
 ### Player Actions
 
-1. **Toggle ON** Card Inspector from the Settings page (defaults to OFF).
+1. Enable **Card Inspector** from the Settings page (Advanced → Feature Flags); the switch defaults to OFF.
 2. **Judoka cards** will now show a collapsible JSON panel.
 3. Each panel starts **collapsed** and can be expanded via a disclosure triangle (`<details>`).
 4. Clicking outside a panel does not close it (explicit collapse required).
-5. Disabling the toggle **immediately hides** all JSON panels without reloading.
+5. Opening the panel sets `data-inspector="true"` on the card container for styling.
+6. Disabling the toggle **immediately hides** all JSON panels and removes the data attribute without reloading.
 
 ### Cancel/Exit Options
 
@@ -65,8 +66,9 @@ This problem is urgent because:
 
 - The toggle switch appears in Settings, labeled “Card Inspector”, with the default state set to OFF.
 - Toggle state persists between sessions and updates the UI without a full reload.
-- JSON panel appears collapsed by default under each judoka card.
-- JSON output is valid, formatted, and reflects the current state of card data.
+- Enabling the flag injects a `<details>` element labeled “Card Inspector” under each visible judoka card.
+- JSON panel appears collapsed by default and pretty-prints only the card’s JSON (markup preview removed).
+- Opening the panel sets `data-inspector="true"` on the card container; closing removes the attribute.
 - Disclosure control is keyboard-accessible and screen-reader-friendly.
 - The panel never overlaps gameplay UI elements or interferes with interactions.
 - In cases of errors (e.g., invalid JSON, null card), a fallback message (“Invalid card data”) is shown.
@@ -87,7 +89,6 @@ This problem is urgent because:
 
 - Must support keyboard tabbing and screen reader hints (e.g., “Card Data: collapsed”).
 - Error handling for malformed card data (`try/catch` around render).
-- No inspector content rendered on production builds unless QA override is active.
 
 ---
 
@@ -121,6 +122,7 @@ This problem is urgent because:
   - [ ] 2.1 Check for `toggle=true` in `cardBuilder.js`
   - [ ] 2.2 Inject formatted JSON into each card
   - [ ] 2.3 Use `<details>` for collapsibility with proper labeling
+  - [ ] 2.4 Set `data-inspector="true"` on open; remove on close
 
 - [ ] 3.0 Visual and Responsive Styling
 
