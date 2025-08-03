@@ -26,6 +26,15 @@ describe("setupBattleInfoBar", () => {
     mod.showMessage("Hi");
     expect(document.getElementById("round-message").textContent).toBe("Hi");
 
+    const reset = mod.showTemporaryMessage("Temp");
+    expect(document.getElementById("round-message").textContent).toBe("Temp");
+    reset();
+    expect(document.getElementById("round-message").textContent).toBe("");
+
+    mod.showMessage("Hi");
+    mod.clearMessage();
+    expect(document.getElementById("round-message").textContent).toBe("");
+
     mod.updateScore(1, 2);
     expect(document.getElementById("score-display").textContent).toBe("You: 1\nOpponent: 2");
 
@@ -53,6 +62,8 @@ describe("setupBattleInfoBar", () => {
     const mod = await import("../../src/helpers/setupBattleInfoBar.js");
     mod.showMessage("Hello");
     expect(document.getElementById("round-message").textContent).toBe("Hello");
+    mod.clearMessage();
+    expect(document.getElementById("round-message").textContent).toBe("");
     mod.updateScore(3, 4);
     expect(document.getElementById("score-display").textContent).toBe("You: 3\nOpponent: 4");
     vi.useFakeTimers();
