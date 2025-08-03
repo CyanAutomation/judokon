@@ -134,10 +134,9 @@ This problem is urgent because:
   - [ ] 4.2 Test with screen readers for all states
   - [ ] 4.3 Ensure tabbing through collapsed/expanded state works
 
-- [ ] 5.0 Performance and Error Handling
+- [ ] 5.0 Error Handling
 
-  - [ ] 5.1 Profile inspector rendering time per card
-  - [ ] 5.2 Wrap rendering logic in `try/catch`
-  - [ ] 5.3 Display fallback message for errors
+  - [ ] 5.1 Wrap rendering logic in `try/catch`
+  - [ ] 5.2 Display fallback message for errors
 
 ---
