@@ -8,9 +8,9 @@ const gokyoFixture = JSON.parse(readFileSync(path.join(__dirname, "../fixtures/g
 export function createInfoBarHeader() {
   const header = document.createElement("header");
   header.innerHTML = `
-    <p id="round-message"></p>
-    <p id="next-round-timer"></p>
-    <p id="score-display"></p>
+    <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
+    <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
+    <p id="score-display" aria-live="off" aria-atomic="true"></p>
   `;
   return header;
 }
@@ -18,9 +18,9 @@ export function createInfoBarHeader() {
 export function createBattleHeader() {
   const header = document.createElement("header");
   header.innerHTML = `
-    <p id="round-message"></p>
-    <p id="next-round-timer"></p>
-    <p id="score-display"></p>
+    <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
+    <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
+    <p id="score-display" aria-live="off" aria-atomic="true"></p>
   `;
   return header;
 }
