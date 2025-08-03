@@ -46,21 +46,21 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 
 ## Functional Requirements
 
-| Priority | Requirement                                                            |
-| -------- | ---------------------------------------------------------------------- |
-| **P1**   | Display judoka in a carousel.                                          |
-| **P1**   | Scroll left/right using large arrow buttons labeled "Prev" and "Next". |
-| **P2**   | Swipe or scroll navigation on mobile devices.                          |
-| **P2**   | Cards scale to **1.05** on hover; center card scales to **1.1**.       |
-| **P3**   | Page markers show "current page of total" with active highlight.       |
-| **P3**   | Keyboard arrow key navigation for accessibility.                       |
+| Priority | Requirement                                                             |
+| -------- | ----------------------------------------------------------------------- |
+| **P1**   | Display judoka in a carousel.                                           |
+| **P1**   | Scroll left/right using large arrow buttons labeled "Prev." and "Next". |
+| **P2**   | Swipe or scroll navigation on mobile devices.                           |
+| **P2**   | Cards scale to **1.05** on hover; center card scales to **1.1**.        |
+| **P3**   | Page markers show "current page of total" with active highlight.        |
+| **P3**   | Keyboard arrow key navigation for accessibility.                        |
 
 ---
 
 ## Acceptance Criteria
 
 - Carousel loads quickly for up to 150 cards.
-- User can scroll left/right via large "Prev" and "Next" arrow buttons.
+- User can scroll left/right via large "Prev." and "Next" arrow buttons.
 - Arrow buttons disable when the carousel reaches either end so players cannot scroll past the available cards.
 - User can see page markers showing "current page of total" with the active page highlighted and announced via `aria-live`.
 - Hovering over a card scales it to **1.05**, verified via bounding box. The card nearest the center scales to **1.1** when focused.
@@ -100,7 +100,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 2. The returned element is mounted into the page (for example, `browseJudoka.html` inserts it into `#carousel-container`).
 3. Carousel loads cards quickly; a loading spinner appears if delayed.
 4. Player uses:
-   - Large "Prev" and "Next" arrow buttons to move left or right,
+   - Large "Prev." and "Next" arrow buttons to move left or right,
    - Swipe or scroll gestures on mobile,
    - Or keyboard arrows for navigation.
 5. Hovering scales cards to **1.05** on desktop.
@@ -162,7 +162,7 @@ generated carousel so each card's real portrait loads once it becomes visible.
 
 ### Conceptual Layout
 
-- **Desktop**: 3 cards in view — center card scales to **1.1**; large "Prev" and "Next" arrows at the sides; page markers at the bottom.
+- **Desktop**: 3 cards in view — center card scales to **1.1**; large "Prev." and "Next" arrows at the sides; page markers at the bottom.
 - **Mobile**: 1.5 cards visible (peek of next card); swipe or scroll enabled; arrows optional.
 - **Hover Effect**: On desktop, cards scale to **1.05** on hover; the focused center card scales to **1.1**.
 - **Touch Interaction**: On mobile, swipe left/right; smooth snap after swipe.
@@ -180,7 +180,7 @@ generated carousel so each card's real portrait loads once it becomes visible.
   - [x] 1.2 Implement dynamic loading for up to 100 cards.
   - [x] 1.3 Ensure responsive resizing for mobile and desktop.
 - [x] 2.0 Integrate Navigation Methods (P1)
-  - [x] 2.1 Add large "Prev" and "Next" arrow buttons for scrolling.
+- [x] 2.1 Add large "Prev." and "Next" arrow buttons for scrolling.
   - [x] 2.2 Add swipe or scroll support for mobile.
   - [x] 2.3 Add keyboard arrow navigation support.
 - [x] 3.0 Add UI Enhancements (P2)

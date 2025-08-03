@@ -28,7 +28,7 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test("scroll buttons have labels", async ({ page }) => {
-    const left = page.getByRole("button", { name: /previous/i });
+    const left = page.getByRole("button", { name: /prev\./i });
     const right = page.getByRole("button", { name: /next/i });
     await expect(left).toBeVisible();
     await expect(right).toBeVisible();
