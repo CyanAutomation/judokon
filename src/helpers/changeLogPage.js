@@ -60,6 +60,22 @@ function createRow(judoka) {
   return row;
 }
 
+/**
+ * Initialize the changelog table with the latest judoka entries.
+ *
+ * @pseudocode
+ * 1. Find the table, its `tbody`, and the loading indicator. Exit if table or tbody is missing.
+ * 2. Fetch judoka data from `judoka.json`.
+ *    - If data exists, sort and take the first 20 entries.
+ *    - Create a table row for each entry and append it to the `tbody`.
+ *    - Otherwise, display a "No Judoka data found" message after the table.
+ * 3. If fetching fails:
+ *    - Log the error and display a "No Judoka data found" message.
+ * 4. Remove the loading indicator if present.
+ * 5. Initialize tooltips on the page.
+ *
+ * @returns {Promise<void>} Resolves when setup is complete.
+ */
 export async function setupChangeLogPage() {
   const table = document.getElementById("changelog-table");
   const tbody = table?.querySelector("tbody");
