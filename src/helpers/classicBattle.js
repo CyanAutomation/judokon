@@ -28,12 +28,6 @@ export function getStartRound() {
 let quitModal = null;
 let statTimeoutId = null;
 let autoSelectId = null;
-let latestScores = null;
-let lastScoreUpdate = 0;
-let scoreSocket = null;
-let pollIntervalId = null;
-let reconnectDelay = 1000;
-const MAX_RECONNECT_DELAY = 30000;
 
 /**
  * Display match summary with final message and scores.
@@ -92,148 +86,15 @@ function onStatSelectionTimeout() {
 }
 
 /**
- * Parse score payloads and update the Info Bar.
+ * Update the info bar with current scores.
  *
  * @pseudocode
- * 1. Convert the input to an object.
- * 2. When values are numbers, store and forward them to `infoBar.updateScore`.
- * 3. On failure, show `"Waiting…"`.
- */
-function handleScorePayload(data) {
-  try {
-    const parsed = typeof data === "string" ? JSON.parse(data) : data;
-    const { playerScore, computerScore } = parsed;
-    if (typeof playerScore === "number" && typeof computerScore === "number") {
-      latestScores = { playerScore, computerScore };
-      lastScoreUpdate = Date.now();
-      infoBar.updateScore(playerScore, computerScore);
-      return true;
-    }
-  } catch {
-    // ignore malformed payloads
-  }
-  infoBar.showMessage("Waiting…");
-  return false;
-}
-
-/**
- * Poll the backend for updated scores with retry logic.
- *
- * @pseudocode
- * 1. Fetch the score JSON from `url` with a 2s timeout.
- * 2. On success, call `handleScorePayload` and reset the retry delay.
- * 3. On failure, show `"Waiting…"` and retry with exponential backoff.
- */
-function startPolling(url) {
-  clearInterval(pollIntervalId);
-  async function poll() {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
-    try {
-      const res = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (!res.ok) throw new Error("bad response");
-      const data = await res.json();
-      handleScorePayload(data);
-      reconnectDelay = 1000;
-    } catch {
-      clearTimeout(timeoutId);
-      infoBar.showMessage("Waiting…");
-      clearInterval(pollIntervalId);
-      setTimeout(() => startPolling(url), reconnectDelay);
-      reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
-    }
-  }
-  pollIntervalId = setInterval(poll, 5000);
-  poll();
-}
-
-/**
- * Establish a WebSocket for score updates with polling fallback.
- *
- * @pseudocode
- * 1. Try to open a WebSocket to `wsUrl`.
- * 2. Forward `message` events to `handleScorePayload`.
- * 3. On error or close, display an Info Bar message and retry or fall back to polling.
- */
-function connectScoreSocket(wsUrl, pollUrl) {
-  if (scoreSocket) return;
-  try {
-    scoreSocket = new WebSocket(wsUrl);
-  } catch {
-    startPolling(pollUrl);
-    return;
-  }
-  scoreSocket.addEventListener("message", (e) => handleScorePayload(e.data));
-  scoreSocket.addEventListener("open", () => {
-    reconnectDelay = 1000;
-  });
-  scoreSocket.addEventListener("close", () => {
-    scoreSocket = null;
-    infoBar.showMessage("Connection lost. Retrying…");
-    setTimeout(() => connectScoreSocket(wsUrl, pollUrl), reconnectDelay);
-    reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
-  });
-  scoreSocket.addEventListener("error", () => {
-    infoBar.showMessage("Connection error. Switching to polling…");
-    scoreSocket?.close();
-    scoreSocket = null;
-    startPolling(pollUrl);
-  });
-}
-
-/**
- * Begin real-time score synchronization if not already active.
- *
- * @pseudocode
- * 1. Exit early on server-side renders.
- * 2. Skip when a socket or poller already exists.
- * 3. Connect to the backend via `connectScoreSocket`.
- */
-function startScoreSync() {
-  if (typeof window === "undefined") return;
-  if (scoreSocket || pollIntervalId) return;
-  // Dynamically construct the WebSocket URL based on the current location
-  const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  const wsHost = window.location.host;
-  const wsUrl = `${wsProtocol}//${wsHost}/classic-battle`;
-  const pollUrl = "/api/classic-battle/score";
-  connectScoreSocket(wsUrl, pollUrl);
-}
-
-/**
- * Update the info bar with current scores and show a waiting message when
- * synchronizing with the backend fails.
- *
- * @pseudocode
- * 1. Attempt to read scores via `getScores()`.
- * 2. When scores are not numbers or an error occurs, display
- *    `"Waiting…"` using `infoBar.showMessage` and return false.
- * 3. Otherwise, update the score display and return true.
- *
- * @returns {boolean} True when scores were updated, false on failure.
+ * 1. Read scores via `getScores()`.
+ * 2. Forward the values to `infoBar.updateScore`.
  */
 function syncScoreDisplay() {
-  if (latestScores) {
-    const stale = Date.now() - lastScoreUpdate > 5000;
-    infoBar.updateScore(latestScores.playerScore, latestScores.computerScore);
-    if (stale) {
-      infoBar.showMessage("Waiting…");
-      return false;
-    }
-    return true;
-  }
-  try {
-    const { playerScore, computerScore } = getScores();
-    if (typeof playerScore === "number" && typeof computerScore === "number") {
-      infoBar.updateScore(playerScore, computerScore);
-      return true;
-    }
-  } catch {
-    // ignore and fall through
-  }
-  infoBar.showMessage("Waiting…");
-  return false;
+  const { playerScore, computerScore } = getScores();
+  infoBar.updateScore(playerScore, computerScore);
 }
 
 function createQuitConfirmation(onConfirm) {
@@ -270,7 +131,6 @@ function createQuitConfirmation(onConfirm) {
 }
 
 export async function startRound() {
-  startScoreSync();
   resetStatButtons();
   disableNextRoundButton();
   await drawCards();
@@ -359,7 +219,6 @@ export {
 } from "./classicBattle/uiHelpers.js";
 export { getComputerJudoka } from "./classicBattle/cardSelection.js";
 export { scheduleNextRound } from "./classicBattle/timerControl.js";
-export { syncScoreDisplay as _syncScoreDisplay };
 
 const quitButton = document.getElementById("quit-match-button");
 if (quitButton) {

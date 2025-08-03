@@ -46,27 +46,6 @@ describe("classicBattle backend sync failures", () => {
     expect(startRound).toHaveBeenCalledTimes(2);
     vi.useRealTimers();
   });
-
-  it("shows waiting message when score sync fails", async () => {
-    const showMessage = vi.fn();
-    const updateScore = vi.fn();
-    vi.doMock("../../../src/helpers/setupBattleInfoBar.js", () => ({
-      showMessage,
-      updateScore
-    }));
-    vi.doMock("../../../src/helpers/battleEngine.js", () => ({
-      handleStatSelection: vi.fn(),
-      quitMatch: vi.fn(),
-      getScores: () => {
-        throw new Error("fail");
-      },
-      _resetForTest: vi.fn()
-    }));
-    const { _syncScoreDisplay } = await import("../../../src/helpers/classicBattle.js");
-    _syncScoreDisplay();
-    expect(showMessage).toHaveBeenCalledWith("Waiting…");
-    expect(updateScore).not.toHaveBeenCalled();
-  });
 });
 
 describe("classicBattle timer messages", () => {
