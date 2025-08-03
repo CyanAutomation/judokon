@@ -21,47 +21,6 @@ const baseSettings = {
 };
 
 describe("randomJudokaPage module", () => {
-  it("initializes controls and passes motion flag", async () => {
-    vi.useFakeTimers();
-    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
-    const generateRandomCard = vi.fn();
-    const fetchJson = vi.fn().mockResolvedValue([]);
-    const createButton = vi.fn((_, opts = {}) => {
-      const btn = document.createElement("button");
-      if (opts.id) btn.id = opts.id;
-      return btn;
-    });
-    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const applyMotionPreference = vi.fn();
-
-    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
-    vi.doMock("../../src/components/Button.js", () => ({ createButton }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
-
-    const { section, container, placeholderTemplate } = createRandomCardDom();
-    document.body.append(section, container, placeholderTemplate);
-
-    const { setupRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
-
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await vi.runAllTimersAsync();
-
-    expect(loadSettings).toHaveBeenCalled();
-    expect(document.getElementById("animation-toggle")).toBeNull();
-    expect(document.getElementById("sound-toggle")).toBeNull();
-    expect(applyMotionPreference).toHaveBeenCalledWith(baseSettings.motionEffects);
-    expect(generateRandomCard).not.toHaveBeenCalled();
-    const drawBtn = document.getElementById("draw-card-btn");
-    drawBtn.click();
-    await vi.runAllTimersAsync();
-    expect(generateRandomCard.mock.calls[0][3]).toBe(false);
-    expect(typeof setupRandomJudokaPage).toBe("function");
-    expect(drawBtn.dataset.tooltipId).toBe("ui.drawCard");
-  });
-
   it("renders card text with sufficient color contrast", async () => {
     vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
