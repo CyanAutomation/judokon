@@ -23,7 +23,7 @@
   </head>
   <body>
     <div class="home-screen">
-      <header class="header">
+      <header class="header" role="banner" aria-label="Site header">
         <div class="header-spacer left"></div>
         <div class="logo-container">
           <a href="../../index.html" data-testid="home-link">
@@ -32,13 +32,13 @@
         </div>
         <div class="header-spacer right"></div>
       </header>
-      <main class="tooltip-viewer" role="main">
-        <aside class="sidebar">
+      <main class="tooltip-viewer" role="main" aria-label="Tooltip viewer">
+        <aside class="sidebar" role="navigation" aria-label="Tooltip list">
           <label for="tooltip-search" class="visually-hidden">Search tooltips</label>
           <input id="tooltip-search" type="text" placeholder="Search" />
           <ul id="tooltip-list" class="sidebar-list"></ul>
         </aside>
-        <section class="preview">
+        <section class="preview" aria-label="Tooltip preview">
           <div class="copy-buttons">
             <button id="copy-key-btn" class="secondary-button" aria-label="Copy key">
               Copy Key
@@ -52,8 +52,8 @@
           <pre id="tooltip-raw" class="raw-body"></pre>
         </section>
       </main>
-      <footer>
-        <nav class="bottom-navbar" data-testid="bottom-nav"></nav>
+      <footer role="contentinfo">
+        <nav class="bottom-navbar" aria-label="Bottom navigation" data-testid="bottom-nav"></nav>
       </footer>
       <script type="module" src="../helpers/setupBottomNavbar.js"></script>
       <script type="module" src="../helpers/setupDisplaySettings.js"></script>
