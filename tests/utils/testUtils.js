@@ -75,11 +75,6 @@ export function createSettingsDom() {
   displayDark.type = "radio";
   displayDark.name = "display-mode";
   displayDark.value = "dark";
-  const displayGray = document.createElement("input");
-  displayGray.id = "display-mode-gray";
-  displayGray.type = "radio";
-  displayGray.name = "display-mode";
-  displayGray.value = "gray";
   const displayHighContrast = document.createElement("input");
   displayHighContrast.id = "display-mode-high-contrast";
   displayHighContrast.type = "radio";
@@ -120,7 +115,6 @@ export function createSettingsDom() {
     fullNavigationMapToggle,
     displayLight,
     displayDark,
-    displayGray,
     displayHighContrast,
     gameModeToggleContainer,
     advancedSection,

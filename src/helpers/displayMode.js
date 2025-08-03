@@ -2,17 +2,17 @@
  * Apply the chosen display mode by setting a theme data attribute on the body.
  *
  * @pseudocode
- * 1. Verify that `mode` is one of "light", "dark", "gray", or "high-contrast".
+ * 1. Verify that `mode` is one of "light", "dark", or "high-contrast".
  *    - If the value is invalid, log a warning and exit early.
  *
  * 2. Set `document.body.dataset.theme` to the provided mode value.
  * 3. Remove any existing `*-mode` classes from `document.body` and add the
  *    class corresponding to the new mode (e.g. `dark-mode`).
  *
- * @param {"light"|"dark"|"gray"|"high-contrast"} mode - Desired display mode.
+ * @param {"light"|"dark"|"high-contrast"} mode - Desired display mode.
  */
 export function applyDisplayMode(mode) {
-  const validModes = ["light", "dark", "gray", "high-contrast"];
+  const validModes = ["light", "dark", "high-contrast"];
   if (!validModes.includes(mode)) {
     console.warn(`Invalid display mode: "${mode}". Valid modes are: ${validModes.join(", ")}.`);
     return;
