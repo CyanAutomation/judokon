@@ -9,6 +9,20 @@ import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
 import { setupButtonEffects } from "./buttonEffects.js";
 
+/**
+ * Handle left/right arrow key navigation within a button container.
+ *
+ * @pseudocode
+ * 1. Get all buttons with the specified class in the container.
+ * 2. Find the index of the currently focused button.
+ * 3. If a navigational key (ArrowLeft/ArrowRight) is pressed, prevent default.
+ * 4. Calculate the next index by wrapping around.
+ * 5. Move focus to the button at the next index.
+ *
+ * @param {KeyboardEvent} event
+ * @param {Element} container
+ * @param {string} buttonClass
+ */
 function handleKeyboardNavigation(event, container, buttonClass) {
   const buttons = Array.from(container.querySelectorAll(`button.${buttonClass}`));
   const current = document.activeElement;
@@ -21,12 +35,37 @@ function handleKeyboardNavigation(event, container, buttonClass) {
   }
 }
 
+/**
+ * Update selected state on flag buttons.
+ *
+ * @pseudocode
+ * 1. Remove 'selected' class from all flag buttons in the container.
+ * 2. Add 'selected' class to the provided button.
+ *
+ * @param {Element} container
+ * @param {HTMLButtonElement} button
+ */
 function highlightSelection(container, button) {
   const buttons = container.querySelectorAll("button.flag-button");
   buttons.forEach((b) => b.classList.remove("selected"));
   button.classList.add("selected");
 }
 
+/**
+ * Set up the country selection panel toggle behavior.
+ *
+ * @pseudocode
+ * 1. On toggleButton click:
+ *    a. Toggle panel open state.
+ *    b. If opening for the first time, initialize country slider.
+ * 2. On panel keydown:
+ *    a. Close panel on 'Escape'.
+ *    b. Navigate slider buttons with ArrowLeft/ArrowRight.
+ *
+ * @param {HTMLButtonElement} toggleButton
+ * @param {Element} panel
+ * @param {Element} listContainer
+ */
 export function setupCountryToggle(toggleButton, panel, listContainer) {
   let countriesLoaded = false;
 
@@ -50,12 +89,51 @@ export function setupCountryToggle(toggleButton, panel, listContainer) {
   });
 }
 
+/**
+ * Attach listener to switch layout mode of country panel.
+ *
+ * @pseudocode
+ * 1. If layoutBtn exists, add click listener to toggle panel display mode.
+ *
+ * @param {HTMLButtonElement} layoutBtn
+ * @param {Element} panel
+ */
 export function setupLayoutToggle(layoutBtn, panel) {
   if (layoutBtn) {
     layoutBtn.addEventListener("click", () => toggleCountryPanelMode(panel));
   }
 }
 
+/**
+ * Configure country filter interactions for the carousel.
+ *
+ * @pseudocode
+ * 1. Define helper to update aria-live region with count and country.
+ * 2. On clearButton click:
+ *    a. Deselect all country buttons.
+ *    b. Render full judoka list.
+ *    c. Update live region.
+ *    d. Close country panel.
+ * 3. On listContainer click:
+ *    a. If clicked element is a flag button:
+ *       i. Determine selected country.
+ *       ii. Highlight selection.
+ *       iii. Filter judokaList by country.
+ *       iv. Render filtered list.
+ *       v. Update live region.
+ *       vi. Remove any existing no-results message.
+ *       vii. If no results, show 'no-results-message'.
+ *       viii. Close country panel.
+ *
+ * @param {Element} listContainer
+ * @param {HTMLButtonElement} clearButton
+ * @param {Array<Judoka>} judokaList
+ * @param {Function} render
+ * @param {HTMLButtonElement} toggleButton
+ * @param {Element} panel
+ * @param {Element} carouselEl
+ * @param {Element} ariaLiveEl
+ */
 export function setupCountryFilter(
   listContainer,
   clearButton,
