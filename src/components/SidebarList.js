@@ -13,8 +13,9 @@
  * 5. Add `odd`/`even` classes for zebra striping starting with `odd`
  *    for the first item and toggle the `selected` class inside
  *    `select()`.
- * 6. Inside `select()` update the highlight, focus the newly selected
- *    element, and call `onSelect` with any options.
+ * 6. Inside `select()` update the highlight, trigger a brief pulse
+ *    animation on the newly selected element (unless the user prefers
+ *    reduced motion), focus it, and call `onSelect` with any options.
  * 7. Return `{ element, select }` so callers can programmatically
  *    change the highlighted item.
  *
@@ -73,6 +74,14 @@ export function createSidebarList(items, onSelect = () => {}) {
       el.classList.toggle("selected", isCurrent);
       if (isCurrent) {
         el.setAttribute("aria-current", "page");
+        const prefersReduced = window.matchMedia
+          ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          : false;
+        if (!prefersReduced) {
+          el.style.animation = "none";
+          void el.offsetWidth;
+          el.style.animation = "";
+        }
       } else {
         el.removeAttribute("aria-current");
       }

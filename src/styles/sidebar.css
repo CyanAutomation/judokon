@@ -60,12 +60,31 @@
   background-color: var(--color-tertiary);
 }
 
+@keyframes sidebarPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .sidebar-list li.selected {
   background: var(--color-secondary);
   color: var(--color-text-inverted);
+  animation: sidebarPulse 150ms ease;
 }
 [data-theme="dark"] .sidebar-list li.selected {
   background: var(--link-color);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-list li.selected {
+    animation: none;
+  }
 }
 
 .sidebar-list li[data-valid="false"] {
