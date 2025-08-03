@@ -25,8 +25,9 @@ export function navTooltipKey(name) {
  * Base path for navigation links derived from the current module location.
  */
 export const BASE_PATH = (() => {
-  const url = new URL("../../pages/", import.meta.url);
-  return url.href.endsWith("/") ? url : new URL(url.href + "/");
+  const url = new URL(import.meta.url);
+  url.pathname = url.pathname.replace(/helpers\/navigation\/navMenu.js$/, "pages/");
+  return url;
 })();
 
 /**
