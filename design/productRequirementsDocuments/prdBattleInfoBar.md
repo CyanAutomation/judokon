@@ -29,16 +29,16 @@ The round message, timer, and score now sit directly inside the page header rath
 
 ## Functional Requirements
 
-| Priority | Feature                | Description                                                                                                                                                                 |
-| -------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **P1**   | Match Score Display    | Real-time, fast update of player vs opponent score per round                                                                                                                |
-| **P1**   | Round Status Messaging | Show clear win/loss messages post-round                                                                                                                                     |
-| **P1**   | Stat Selection Timer   | Display 30s countdown for stat selection; auto-select if expired; timer pauses/resumes on tab inactivity (see Classic Battle PRD)                                           |
-| **P2**   | Countdown Timer        | Display countdown to next round with fallback for server sync                                                                                                               |
-| **P2**   | User Action Prompt     | Prompt player for input and hide after interaction                                                                                                                          |
-| **P3**   | Responsive Layout      | Adapt layout for small screens and collapse content as needed                                                                                                               |
-| **P3**   | Accessibility Features | Ensure text contrast, screen reader compatibility (via `role="status"` on messages and timers), minimum touch target size, and keyboard navigation (see Classic Battle PRD) |
-| **P2**   | Edge Case Handling     | Fallback messages for backend sync failure and display issues                                                                                                               |
+| Priority | Feature                | Description                                                                                                                                                                                                         |
+| -------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P1**   | Match Score Display    | Real-time, fast update of player vs opponent score per round                                                                                                                                                        |
+| **P1**   | Round Status Messaging | Show clear win/loss messages post-round                                                                                                                                                                             |
+| **P1**   | Stat Selection Timer   | Display 30s countdown for stat selection; auto-select if expired; timer pauses/resumes on tab inactivity (see Classic Battle PRD)                                                                                   |
+| **P2**   | Countdown Timer        | Display countdown to next round with fallback for server sync                                                                                                                                                       |
+| **P2**   | User Action Prompt     | Prompt player for input and hide after interaction                                                                                                                                                                  |
+| **P3**   | Responsive Layout      | Adapt layout for small screens and collapse content as needed                                                                                                                                                       |
+| **P3**   | Accessibility Features | Ensure text contrast, screen reader compatibility (via `role="status"` on messages and timers), minimum touch target size, and keyboard navigation for stat, Next Round, and Quit controls (see Classic Battle PRD) |
+| **P2**   | Edge Case Handling     | Fallback messages for backend sync failure and display issues                                                                                                                                                       |
 
 ---
 
@@ -51,7 +51,7 @@ The round message, timer, and score now sit directly inside the page header rath
 - **Stat selection timer (30s) is displayed during stat selection phase; if timer expires, a random stat is auto-selected. Timer pauses/resumes on tab inactivity.** <!-- Implemented: see startRound in battleEngine.js -->
 - Top bar content adapts responsively to different screen sizes and orientations. <!-- Partially implemented: stacking/truncation CSS present, but some edge cases pending -->
 - All messages meet minimum contrast ratio of **4.5:1** and are screen reader compatible. Run `npm run check:contrast` to audit these colors. <!-- Contrast via CSS variables; screen reader labels implemented with `role="status"` -->
-- **All interactive elements meet minimum touch target size (≥44px) and support keyboard navigation.** <!-- Implemented: see CSS min-width/min-height and stat button logic -->
+- **All interactive elements, including stat, Next Round, and Quit buttons, meet minimum touch target size (≥44px) and support keyboard navigation with Enter or Space.** <!-- Implemented: see CSS min-width/min-height and stat button logic -->
 
 ---
 
