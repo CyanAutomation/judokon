@@ -35,4 +35,34 @@ test.describe("PRD Reader page", () => {
     const afterPrev = await page.locator("#prd-content").innerHTML();
     expect(afterPrev).toBe(original);
   });
+
+  test("tab and arrow key traversal", async ({ page }) => {
+    const items = page.locator(".sidebar-list li");
+    const container = page.locator("#prd-content");
+    const initial = await container.innerHTML();
+
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Tab");
+    await expect(items.first()).toBeFocused();
+
+    await page.keyboard.press("ArrowRight");
+    await expect(items.first()).toBeFocused();
+    expect(await container.innerHTML()).toBe(initial);
+
+    await page.keyboard.press("ArrowDown");
+    await expect(items.nth(1)).toBeFocused();
+    const afterArrow = await container.innerHTML();
+    expect(afterArrow).not.toBe(initial);
+
+    await page.keyboard.press("Enter");
+    await expect(container).toBeFocused();
+
+    await page.keyboard.press("ArrowRight");
+    await expect(container).toBeFocused();
+    const afterNext = await container.innerHTML();
+    expect(afterNext).not.toBe(afterArrow);
+
+    await page.keyboard.press("Tab");
+    await expect(container).not.toBeFocused();
+  });
 });

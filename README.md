@@ -82,9 +82,12 @@ npx pa11y --config pa11y.config.cjs http://localhost:5000/src/pages/prdViewer.ht
 
 Open the PRD Viewer from the main menu or visit
 `http://localhost:5000/src/pages/prdViewer.html` in a running development
-server. The sidebar lists every PRD; select a title, press the left and right
-arrow keys, or swipe on touch devices to move between documents. Click the
-JU-DO-KON! logo to return to the homepage.
+server. The sidebar lists every PRD; select a title and press **Enter** to move
+focus to the document. Use **Arrow Up/Down** inside the sidebar to move between
+items without leaving the list. When the document content is focused,
+**Arrow Left/Right** move between PRDs, and **Tab** order flows: logo link →
+sidebar items → document content → footer links. Swipe on touch devices or
+click the JU-DO-KON! logo to return to the homepage.
 
 ## Screenshot Tests (On-Demand)
 
