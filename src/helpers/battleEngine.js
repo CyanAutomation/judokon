@@ -235,9 +235,9 @@ export function watchForDrift(duration, onDrift) {
   const interval = setInterval(() => {
     const elapsed = Math.floor((Date.now() - start) / 1000);
     const expected = duration - elapsed;
-    if (Math.abs(remaining - expected) > DRIFT_THRESHOLD) {
+    if (Math.abs(getTimerState().remaining - expected) > DRIFT_THRESHOLD) {
       clearInterval(interval);
-      if (typeof onDrift === "function") onDrift(remaining);
+      if (typeof onDrift === "function") onDrift(getTimerState().remaining);
     }
   }, 1000);
   return () => clearInterval(interval);
