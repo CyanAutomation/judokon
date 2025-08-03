@@ -8,6 +8,8 @@ import { showSnackbar } from "./showSnackbar.js";
 const INVALID_TOOLTIP_MSG = "Empty or whitespace-only content";
 const MALFORMED_TOOLTIP_MSG = "Unbalanced markup detected";
 const INVALID_KEY_MSG = "Invalid key format (prefix.name)";
+const FILE_NOT_FOUND_MSG = "File not found";
+const LOAD_ERROR_MSG = "Error loading tooltips.";
 const KEY_PATTERN = /^[a-z]+\.[\w-]+$/;
 
 /**
@@ -15,6 +17,8 @@ const KEY_PATTERN = /^[a-z]+\.[\w-]+$/;
  *
  * @pseudocode
  * 1. Load and flatten `tooltips.json` using `fetchJson` and `flattenTooltips`.
+ *    When the file is missing, show "File not found"; otherwise display a
+ *    generic loading error.
  * 2. Render a clickable list of keys filtered by the search box (300ms debounce),
  *    tagging items with a class based on their prefix (e.g. `stat`, `ui`) and
  *    flagging empty bodies, malformed markup, or invalid key names with a warning icon.
@@ -77,7 +81,12 @@ export async function setupTooltipViewerPage() {
     data = flattenTooltips(json);
   } catch (err) {
     console.error("Failed to load tooltips", err);
-    previewEl.textContent = "Error loading tooltips.";
+    const status = err?.status ?? err?.response?.status;
+    if (err?.code === "ENOENT" || status === 404) {
+      previewEl.textContent = FILE_NOT_FOUND_MSG;
+    } else {
+      previewEl.textContent = LOAD_ERROR_MSG;
+    }
     return;
   }
 
