@@ -83,14 +83,6 @@
   --button-disabled-pattern: none;
 }
 
-/* Gray mode variable overrides */
-[data-theme="gray"] {
-  --color-surface: #f0f0f0;
-  --color-background: #cdcdcd;
-  --color-text: #000000;
-  --color-text-inverted: #ffffff;
-}
-
 /* High contrast mode variable overrides */
 [data-theme="high-contrast"] {
   --color-surface: #000000;
