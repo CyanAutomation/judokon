@@ -116,6 +116,13 @@ export function startCountdown(seconds, onFinish) {
  */
 export function updateScore(playerScore, computerScore) {
   if (scoreEl) {
-    scoreEl.innerHTML = `You: ${playerScore}<br>\nOpponent: ${computerScore}`;
+    // Remove all children
+    scoreEl.textContent = "";
+    // Add "You: {playerScore}"
+    scoreEl.appendChild(document.createTextNode(`You: ${playerScore}`));
+    // Add line break
+    scoreEl.appendChild(document.createElement("br"));
+    // Add "Opponent: {computerScore}"
+    scoreEl.appendChild(document.createTextNode(`Opponent: ${computerScore}`));
   }
 }
