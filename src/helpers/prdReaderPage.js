@@ -179,7 +179,8 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
         titles[i] = titleMatch ? titleMatch[1].trim() : "";
       } catch (err) {
         console.error(`Failed to load PRD ${name}`, err);
-        documents[i] = '<div class="warning" role="alert" aria-live="polite">Content unavailable</div>';
+        documents[i] =
+          '<div class="warning" role="alert" aria-live="polite">Content unavailable</div>';
         taskStats[i] = { total: 0, completed: 0 };
         titles[i] = "";
       }
