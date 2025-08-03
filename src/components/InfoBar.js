@@ -3,9 +3,9 @@
  *
  * @pseudocode
  * 1. Create three `<p>` elements:
- *    - `#round-message` with `aria-live="polite"` for result text.
- *    - `#next-round-timer` with `aria-live="polite"` for countdown updates.
- *    - `#score-display` with `aria-live="off"` for the match score.
+ *    - `#round-message` with `aria-live="polite"`, `aria-atomic="true"`, and `role="status"` for result text.
+ *    - `#next-round-timer` with `aria-live="polite"`, `aria-atomic="true"`, and `role="status"` for countdown updates.
+ *    - `#score-display` with `aria-live="off"` and `aria-atomic="true"` for the match score.
  * 2. Append them to the provided container (typically the page header).
  * 3. Store references to these elements for later updates.
  * 4. Return the container element.
@@ -21,14 +21,19 @@ export function createInfoBar(container = document.createElement("div")) {
   messageEl = document.createElement("p");
   messageEl.id = "round-message";
   messageEl.setAttribute("aria-live", "polite");
+  messageEl.setAttribute("aria-atomic", "true");
+  messageEl.setAttribute("role", "status");
 
   timerEl = document.createElement("p");
   timerEl.id = "next-round-timer";
   timerEl.setAttribute("aria-live", "polite");
+  timerEl.setAttribute("aria-atomic", "true");
+  timerEl.setAttribute("role", "status");
 
   scoreEl = document.createElement("p");
   scoreEl.id = "score-display";
   scoreEl.setAttribute("aria-live", "off");
+  scoreEl.setAttribute("aria-atomic", "true");
 
   container.append(messageEl, timerEl, scoreEl);
   return container;
