@@ -39,6 +39,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 - The player opens the PRD Viewer from the JU-DO-KON! main menu.
 - The viewer loads all markdown files from the `design/productRequirementsDocuments` directory. **(Implemented)**
+- A loading spinner appears while fetching documents, hiding once content loads or on fetch error. **(Implemented)**
 - The player views the first PRD rendered as styled HTML.
 - The player navigates between PRDs by:
   - Selecting a document from the sidebar list,
@@ -98,7 +99,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 - **Markdown File Fails to Load:** Log error, show fallback message (“Content unavailable”), continue allowing navigation of others. **(Implemented)**
 - **Malformed Markdown Content:** Display partial content with warning icon and accessible tooltip. **(Implemented)**
-- **Slow Network or File Load Delay:** Show a loading spinner or status message while fetching files. **(Not implemented)**
+- **Slow Network or File Load Delay:** Show a loading spinner or status message while fetching files. **(Implemented: spinner shows during load and hides after content renders or on error)**
 - **Swipe Misfires on Touch Devices:** Use minimum gesture thresholds and debounce timing to avoid accidental navigations. **(Implemented: 30px threshold)**
 - **Keyboard Navigation Blocked:** Ensure `tabindex`, role attributes, and focus management are correctly implemented. **(Partially implemented)**
 
@@ -146,7 +147,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
   - [x] 2.1 Integrate `marked` library for parsing markdown
   - [x] 2.2 Apply consistent styles to headings, tables, lists, code blocks
-  - [x] 2.3 Benchmark and optimize rendering to complete quickly on devices 
+  - [x] 2.3 Benchmark and optimize rendering to complete quickly on devices
 
 - [x] 3.0 Build Navigation System
 
@@ -182,7 +183,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - [x] 8.0 Loading Animation and Error States
 
   - [x] 8.1 Show fade-in animation when switching documents
-  - [ ] 8.2 Show loading spinner or status message while fetching files (not yet implemented)
+  - [x] 8.2 Show loading spinner or status message while fetching files
   - [x] 8.3 Show warning badge for malformed markdown
 
 ---

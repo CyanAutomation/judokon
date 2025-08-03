@@ -150,7 +150,7 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 
   - [x] 2.1 Render scrollable list of tooltip keys
   - [x] 2.2 Enable click interaction to select a tooltip
-  - [x] 2.3 Add real-time search/filter functionality 
+  - [x] 2.3 Add real-time search/filter functionality
 
   - [ ] 2.4 Support full keyboard navigation (TAB, arrows, ENTER)
   - [ ] 2.5 Group or color-code keys by prefix (category highlighting)
