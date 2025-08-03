@@ -191,4 +191,5 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 - Screen reader announces the sidebar as "PRD list" and the footer as "Footer navigation".
 - Keyboard focus order: logo link → sidebar items → footer links.
+- After navigating, focus moves to the document content and the active sidebar item sets `aria-current="page"` for assistive technologies.
 - `pa11y` scan of `src/pages/prdViewer.html` reported no accessibility issues.

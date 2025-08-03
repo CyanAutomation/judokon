@@ -116,6 +116,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     index = (i + documents.length) % documents.length;
     if (!skipList) listSelect(index);
     renderDoc(index);
+    container.focus();
     if (updateHistory) {
       const url = new URL(window.location);
       url.searchParams.set("doc", baseNames[index]);
