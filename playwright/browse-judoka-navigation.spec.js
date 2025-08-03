@@ -15,7 +15,7 @@ test.describe("Browse Judoka navigation", () => {
     await page.waitForSelector('[data-testid="carousel"] .judoka-card');
 
     const container = page.locator('[data-testid="carousel"]');
-    const left = page.getByRole("button", { name: /prev\./i });
+    const left = page.getByRole("button", { name: /prev\.?/i });
     const right = page.getByRole("button", { name: /next/i });
     const counter = page.locator(".page-counter");
 
@@ -51,7 +51,7 @@ test.describe("Browse Judoka navigation", () => {
     const container = page.locator(".card-carousel");
     await page.waitForSelector('[data-testid="carousel"] .judoka-card');
 
-    const left = page.getByRole("button", { name: /prev\./i });
+    const left = page.getByRole("button", { name: /prev\.?/i });
     const right = page.getByRole("button", { name: /next/i });
     const counter = page.locator(".page-counter");
 
