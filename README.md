@@ -22,6 +22,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 11. [Future Plans](#future-plans)
 12. [Contributing](#contributing)
 13. [Changelog](#changelog)
+14. [PRD Viewer](#prd-viewer)
 
 ## Quick Start
 
@@ -76,6 +77,14 @@ To target a specific page:
 ```bash
 npx pa11y --config pa11y.config.cjs http://localhost:5000/src/pages/prdViewer.html
 ```
+
+## PRD Viewer
+
+Open the PRD Viewer from the main menu or visit
+`http://localhost:5000/src/pages/prdViewer.html` in a running development
+server. The sidebar lists every PRD; select a title, press the left and right
+arrow keys, or swipe on touch devices to move between documents. Click the
+JU-DO-KON! logo to return to the homepage.
 
 ## Screenshot Tests (On-Demand)
 
