@@ -41,7 +41,7 @@ This issue is timely as our player base is expanding internationally, and region
 
 ## User Stories
 
-- As a player who supports my national team, I want to quickly filter Judoka by my country so I can see my favorite athletes **(results ≤1 s)**.
+- As a player who supports my national team, I want to quickly filter Judoka by my country so I can see my favorite athletes.
 - As a mobile player, I want country flags large enough to tap accurately so I don’t get frustrated with mistaps.
 - As a player with limited vision, I want alt-text and good contrast on flags so I can recognize countries clearly.
 - As a keyboard-only user, I want to navigate the country picker and select flags using the keyboard.
@@ -90,7 +90,7 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 | Priority | Feature                         | Description                                                                                                         |
 | -------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | **P1**   | Country selector toggle         | Allow users to toggle the country selector panel via a panel icon with an arrow and filter judoka cards by country. |
-| **P1**   | Filtering and responsive time   | Ensure filtering is completed within 1 second for 90% of sessions.                                                  |
+| **P1**   | Filtering and responsive time   | Ensure filtering is completed quickly for 90% of sessions.                                                  |
 | **P2**   | Three display modes             | Provide hidden, slide-in (default), and full-screen grid views for the selector.                                    |
 | **P2**   | Clear filter icon               | Provide an easy way to remove the current country filter.                                                           |
 | **P2**   | Accessibility compliance        | Ensure alt-text, aria-labels, color contrast, keyboard navigation, and touch target size are all accessible.        |
