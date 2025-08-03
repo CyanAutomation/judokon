@@ -5,7 +5,9 @@
  * 1. Remove any existing `.settings-error-popup` element.
  * 2. Create a new div with that class containing an error message.
  * 3. Append the div to `document.body`.
- * 4. Remove the popup after 2 seconds.
+ * 4. Schedule removal:
+ *    - After `SETTINGS_FADE_MS`, remove the "show" class to start fading.
+ *    - After `SETTINGS_REMOVE_MS`, remove the popup element.
  */
 import { SETTINGS_FADE_MS, SETTINGS_REMOVE_MS } from "./constants.js";
 
