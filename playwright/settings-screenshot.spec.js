@@ -9,7 +9,7 @@ test.describe.parallel(
     test.use({ viewport: { width: 1280, height: 720 } });
     test.skip(!runScreenshots);
 
-    const modes = ["light", "dark", "gray"];
+    const modes = ["light", "dark"];
 
     for (const mode of modes) {
       test(`mode ${mode} collapsed`, async ({ page }) => {

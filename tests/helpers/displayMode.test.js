@@ -11,7 +11,6 @@ describe("applyDisplayMode", () => {
     style.textContent = `
       body.light-mode { background-color: rgb(255, 255, 255); }
       body.dark-mode { background-color: rgb(0, 0, 0); }
-      body.gray-mode { background-color: rgb(205, 205, 205); }
       body.high-contrast-mode { background-color: rgb(0, 0, 0); }
     `;
     document.head.appendChild(style);
@@ -21,14 +20,11 @@ describe("applyDisplayMode", () => {
     style.remove();
   });
 
-  it.each(["dark", "gray", "light", "high-contrast"])(
-    "sets data-theme and class for %s mode",
-    (mode) => {
-      applyDisplayMode(mode);
-      expect(document.body.dataset.theme).toBe(mode);
-      expect(document.body.classList.contains(`${mode}-mode`)).toBe(true);
-    }
-  );
+  it.each(["dark", "light", "high-contrast"])("sets data-theme and class for %s mode", (mode) => {
+    applyDisplayMode(mode);
+    expect(document.body.dataset.theme).toBe(mode);
+    expect(document.body.classList.contains(`${mode}-mode`)).toBe(true);
+  });
 
   it("warns when an invalid mode is provided", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
