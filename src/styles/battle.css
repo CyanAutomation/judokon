@@ -82,8 +82,8 @@
 /* Collapsible debug panel */
 
 .test-mode-banner {
-  background-color: var(--color-tertiary);
-  color: var(--color-text);
+  background-color: var(--color-secondary);
+  color: var(--color-text-inverted);
   text-align: center;
   padding: var(--space-sm) var(--space-md);
   font-weight: bold;

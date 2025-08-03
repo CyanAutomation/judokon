@@ -184,7 +184,7 @@ export function resetSettings() {
  * @property {boolean} typewriterEffect
  * @property {boolean} tooltips
  * @property {boolean} showCardOfTheDay
- * @property {"light"|"dark"|"gray"} displayMode
+ * @property {"light"|"dark"|"gray"|"high-contrast"} displayMode
  * @property {boolean} fullNavigationMap
  * @property {Record<string, string>} [tooltipIds]
  * @property {Record<string, boolean>} [gameModes]

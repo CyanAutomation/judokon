@@ -91,6 +91,24 @@
   --color-text-inverted: #ffffff;
 }
 
+/* High contrast mode variable overrides */
+[data-theme="high-contrast"] {
+  --color-surface: #000000;
+  --color-background: #000000;
+  --color-tertiary: #000000;
+  --color-text: #ffffff;
+  --color-text-inverted: #000000;
+  --color-primary: #ffff00;
+  --color-secondary: #ffff00;
+  --link-color: #ffff00;
+  --button-bg: #ffff00;
+  --button-hover-bg: #e5e500;
+  --button-active-bg: #ffff00;
+  --button-text-color: #000000;
+  --color-slider-dot: #ffffff;
+  --color-slider-active: #ffff00;
+}
+
 *,
 *::before,
 *::after {
