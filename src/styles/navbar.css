@@ -233,12 +233,16 @@
 
 /* Reduce motion for the country panel */
 @media (prefers-reduced-motion: reduce) {
+  .country-panel,
+  .country-panel.open,
   .country-panel[hidden],
   .country-panel.grid {
     transition: none;
   }
 }
 
+.reduce-motion .country-panel,
+.reduce-motion .country-panel.open,
 .reduce-motion .country-panel[hidden],
 .reduce-motion .country-panel.grid {
   transition: none;
