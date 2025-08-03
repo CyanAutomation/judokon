@@ -168,7 +168,7 @@ instantly without movement.
 - **Accessibility**:
   - Respect system Reduced Motion and global motion settings (disable animations automatically).
   - Ensure color contrast and text readability on cards (WCAG AA compliance; validate with `npm run check:contrast`).
-  - Animations and sound follow global preferences from `settings.html` (default OFF).
+  - Animations and sound follow global preferences from `settings.html` (default ON).
 - **Fallback Visuals**:
   - If card loading fails, show a placeholder card (judoka id=0, from judoka.json).
 - **Tap Target Size**:
