@@ -112,9 +112,10 @@ export function setupCountryFilter(
  * @pseudocode
  * 1. Grab DOM elements for the carousel, layout toggle, and country filters.
  * 2. Show a loading spinner and load judoka and gokyo data from JSON files.
- * 3. Render the card carousel and hide the spinner once complete.
+ * 3. Render the card carousel, display a message if there are no judoka, and hide the spinner.
  * 4. Attach event listeners for filtering, layout toggle, and panel controls.
  * 5. Handle errors by rendering a fallback card and showing a retry button when loading fails.
+ * 6. Initialize tooltips for interactive elements.
  */
 export async function setupBrowseJudokaPage() {
   const carouselContainer = document.getElementById("carousel-container");
