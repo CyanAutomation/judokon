@@ -2,7 +2,7 @@
  * Register routes to serve fixture data for core JSON files and flag images.
  *
  * @param {import('@playwright/test').Page} page - The Playwright page.
- * @returns {Promise<void>} Promise resolving when routes have been registered.
+ * @returns {Promise<void>} Promise resolving when all routes have been registered in parallel.
  */
 export async function registerCommonRoutes(page) {
   await Promise.all([
