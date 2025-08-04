@@ -178,7 +178,7 @@ export async function validateWithSchema(data, schema) {
 export async function importJsonModule(spec) {
   try {
     return (await import(spec, { with: { type: "json" } })).default;
-  } catch (err) {
+  } catch {
     return (await import(spec, { assert: { type: "json" } })).default;
   }
 }
