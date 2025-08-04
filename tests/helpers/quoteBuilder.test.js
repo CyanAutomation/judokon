@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { waitFor } from "../waitFor.js";
+import { loadQuote } from "../../src/helpers/quoteBuilder.js";
 
 const originalFetch = global.fetch;
 
@@ -9,10 +9,13 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.restoreAllMocks();
   global.fetch = originalFetch;
+  document.body.innerHTML = "";
+  localStorage.clear();
 });
 
-describe("displayRandomQuote", () => {
+describe("loadQuote", () => {
   it("renders a fetched quote", async () => {
     const quoteDiv = document.createElement("div");
     quoteDiv.id = "quote";
@@ -37,9 +40,8 @@ describe("displayRandomQuote", () => {
     });
     vi.spyOn(Math, "random").mockReturnValue(0);
 
-    await import("../../src/helpers/quoteBuilder.js");
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await waitFor(() => !quoteDiv.classList.contains("hidden"));
+    await loadQuote();
+    await vi.runAllTimersAsync();
 
     expect(quoteDiv.classList.contains("hidden")).toBe(false);
     expect(loader.classList.contains("hidden")).toBe(true);
@@ -60,9 +62,8 @@ describe("displayRandomQuote", () => {
 
     global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
 
-    await import("../../src/helpers/quoteBuilder.js");
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await waitFor(() => quoteDiv.textContent.length > 0);
+    await loadQuote();
+    await vi.runAllTimersAsync();
 
     expect(quoteDiv.textContent).toContain("Take a breath. Even a still pond reflects the sky.");
   });
@@ -77,16 +78,14 @@ describe("displayRandomQuote", () => {
 
     // Empty array
     global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: async () => [] }));
-    await import("../../src/helpers/quoteBuilder.js");
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await waitFor(() => quoteDiv.textContent.length > 0);
+    await loadQuote();
+    await vi.runAllTimersAsync();
     expect(quoteDiv.textContent).toContain("Take a breath");
 
     // Invalid data
     global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: async () => [{}] }));
-    await import("../../src/helpers/quoteBuilder.js");
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await waitFor(() => quoteDiv.textContent.length > 0);
+    await loadQuote();
+    await vi.runAllTimersAsync();
     expect(quoteDiv.textContent).toContain("Take a breath");
   });
 
@@ -98,8 +97,8 @@ describe("displayRandomQuote", () => {
       }
       return Promise.resolve({ ok: true, json: async () => [{ id: 1, title: "A" }] });
     });
-    await import("../../src/helpers/quoteBuilder.js");
-    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await loadQuote();
+    await vi.runAllTimersAsync();
     // Should not throw even if #quote, #quote-loader, or #language-toggle are missing
   });
 });
