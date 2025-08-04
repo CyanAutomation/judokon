@@ -10,7 +10,7 @@ test.describe("Browse Judoka navigation", () => {
   });
 
   test("desktop arrow keys update markers and disable buttons", async ({ page }) => {
-    await page.setViewportSize({ width: 320, height: 800 });
+    await page.setViewportSize({ width: 800, height: 800 });
     await page.reload();
     await page.waitForSelector('[data-testid="carousel"] .judoka-card');
 
@@ -22,26 +22,18 @@ test.describe("Browse Judoka navigation", () => {
     await expect(counter).toHaveText("Page 1 of 3");
     await expect(left).toBeDisabled();
 
-    await container.evaluate(() => {
-      const el = document.querySelector('[data-testid="carousel"]');
-      const press = (key) => el.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
-      press("ArrowRight");
-      press("ArrowRight");
-      press("ArrowRight");
-    });
-
-    await expect.poll(() => counter.textContent()).not.toBe("Page 1 of 3");
+    await container.focus();
+    await container.press("ArrowRight");
+    await container.press("ArrowRight");
+    await container.press("ArrowRight");
+    await expect(counter).toHaveText("Page 3 of 3");
     await expect(right).toBeDisabled();
 
-    await container.evaluate(() => {
-      const el = document.querySelector('[data-testid="carousel"]');
-      const press = (key) => el.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
-      press("ArrowLeft");
-      press("ArrowLeft");
-      press("ArrowLeft");
-    });
-
-    await expect.poll(() => counter.textContent()).toBe("Page 1 of 3");
+    await container.focus();
+    await container.press("ArrowLeft");
+    await container.press("ArrowLeft");
+    await container.press("ArrowLeft");
+    await expect(counter).toHaveText("Page 1 of 3");
     await expect(left).toBeDisabled();
   });
 
