@@ -27,7 +27,7 @@ export function setupMockupViewerPage() {
     return;
   }
 
-  const basePath = "/design/mockups/";
+  const basePath = new URL("/design/mockups/", document.baseURI).href;
 
   const files = [
     "mockupBattleInfoBar1.png",
