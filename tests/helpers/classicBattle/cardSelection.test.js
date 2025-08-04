@@ -17,7 +17,8 @@ vi.mock("../../../src/helpers/cardUtils.js", () => ({
 
 let fetchJsonMock;
 vi.mock("../../../src/helpers/dataUtils.js", () => ({
-  fetchJson: (...args) => fetchJsonMock(...args)
+  fetchJson: (...args) => fetchJsonMock(...args),
+  importJsonModule: vi.fn()
 }));
 
 vi.mock("../../../src/helpers/utils.js", () => ({
