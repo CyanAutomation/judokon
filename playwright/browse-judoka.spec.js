@@ -94,6 +94,10 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test("carousel responds to arrow keys", async ({ page }) => {
+    await page.unroute("**/src/data/judoka.json");
+    await page.route("**/src/data/judoka.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/judoka-carousel.json" })
+    );
     await page.setViewportSize({ width: 320, height: 800 });
     await page.reload();
     const container = page.locator('[data-testid="carousel"]');
@@ -113,6 +117,10 @@ test.describe("Browse Judoka screen", () => {
   });
 
   test("carousel responds to swipe gestures", async ({ page }) => {
+    await page.unroute("**/src/data/judoka.json");
+    await page.route("**/src/data/judoka.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/judoka-carousel.json" })
+    );
     await page.setViewportSize({ width: 320, height: 800 });
     await page.reload();
     const container = page.locator(".card-carousel");
