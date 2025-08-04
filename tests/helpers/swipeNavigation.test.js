@@ -15,26 +15,45 @@ describe("setupSwipeNavigation", () => {
   it("scrolls container based on pointer swipe distance", () => {
     const container = document.createElement("div");
     Object.defineProperty(container, "clientWidth", { value: 300, configurable: true });
-    container.scrollBy = vi.fn();
+    Object.defineProperty(container, "scrollWidth", { value: 900, configurable: true });
+    container.scrollTo = vi.fn();
 
     setupSwipeNavigation(container);
 
-    container.dispatchEvent(
-      new PointerEvent("pointerdown", { clientX: 100, pointerType: "mouse" })
-    );
-    container.dispatchEvent(new PointerEvent("pointerup", { clientX: 0, pointerType: "mouse" }));
-    expect(container.scrollBy).toHaveBeenCalledWith({
-      left: container.clientWidth,
+    const swipe = (start, end) => {
+      container.dispatchEvent(
+        new PointerEvent("pointerdown", { clientX: start, pointerType: "mouse" })
+      );
+      container.dispatchEvent(
+        new PointerEvent("pointerup", { clientX: end, pointerType: "mouse" })
+      );
+    };
+
+    swipe(100, 0);
+    expect(container.scrollTo).toHaveBeenCalledWith({
+      left: 300,
       behavior: "smooth"
     });
 
-    container.scrollBy.mockClear();
+    container.scrollTo.mockClear();
+    swipe(100, 0);
+    expect(container.scrollTo).toHaveBeenCalledWith({
+      left: 600,
+      behavior: "smooth"
+    });
 
+    container.scrollTo.mockClear();
+    swipe(100, 0);
+    expect(container.scrollTo).toHaveBeenCalledWith({
+      left: 600,
+      behavior: "smooth"
+    });
+
+    container.scrollTo.mockClear();
     const endX = CAROUSEL_SWIPE_THRESHOLD + 60;
-    container.dispatchEvent(new PointerEvent("pointerdown", { clientX: 0, pointerType: "mouse" }));
-    container.dispatchEvent(new PointerEvent("pointerup", { clientX: endX, pointerType: "mouse" }));
-    expect(container.scrollBy).toHaveBeenCalledWith({
-      left: -container.clientWidth,
+    swipe(0, endX);
+    expect(container.scrollTo).toHaveBeenCalledWith({
+      left: 300,
       behavior: "smooth"
     });
   });
