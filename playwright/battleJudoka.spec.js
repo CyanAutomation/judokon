@@ -7,6 +7,12 @@ import {
 
 test.describe("Battle Judoka page", () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        "settings",
+        JSON.stringify({ featureFlags: { enableTestMode: true } })
+      );
+    });
     await page.goto("/src/pages/battleJudoka.html");
   });
 
