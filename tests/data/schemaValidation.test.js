@@ -24,53 +24,52 @@ const pairs = [
   ["statNames.json", "statNames.schema.json"]
 ];
 
-let ajv;
-beforeAll(async () => {
-  ajv = await getAjv();
-  const commonDefs = JSON.parse(
-    await readFile(path.join(schemaDir, "commonDefinitions.schema.json"), "utf8")
-  );
-  ajv.addSchema(commonDefs);
-});
+// Load Ajv and all data/schema files up front
+const ajv = await getAjv();
+const commonDefs = JSON.parse(
+  await readFile(path.join(schemaDir, "commonDefinitions.schema.json"), "utf8")
+);
+ajv.addSchema(commonDefs);
+
+const datasets = await Promise.all(
+  pairs.map(async ([dataFile, schemaFile]) => {
+    const [data, schema] = await Promise.all([
+      readFile(path.join(dataDir, dataFile), "utf8").then(JSON.parse),
+      readFile(path.join(schemaDir, schemaFile), "utf8").then(JSON.parse)
+    ]);
+    const validate = ajv.getSchema(schema.$id) || ajv.compile(schema);
+    return { dataFile, schemaFile, data, schema, validate };
+  })
+);
 
 describe("data files conform to schemas", () => {
-  for (const [dataFile, schemaFile] of pairs) {
-    it(`${dataFile} matches ${schemaFile}`, async () => {
-      const data = JSON.parse(await readFile(path.join(dataDir, dataFile), "utf8"));
-      const schema = JSON.parse(await readFile(path.join(schemaDir, schemaFile), "utf8"));
-      const validate = ajv.compile(schema);
+  it.each(datasets)("$dataFile matches $schemaFile", async ({ data, schema, validate }) => {
+    expect(typeof validate).toBe("function");
 
-      // Check that schema is valid before using it
-      expect(typeof validate).toBe("function");
+    const items = Array.isArray(data) && schema.type !== "array" ? data : [data];
 
-      // Test both array and object data
-      const items = Array.isArray(data) && schema.type !== "array" ? data : [data];
-      for (const item of items) {
+    await Promise.all(
+      items.map(async (item) => {
         const valid = validate(item);
         if (!valid) {
-          // Print detailed error for debugging
-          // ajv.errorsText may be empty, so also log validate.errors
-          // This helps with diagnosing schema/data mismatches
           console.error(validate.errors);
           throw new Error(ajv.errorsText(validate.errors) || JSON.stringify(validate.errors));
         }
         expect(valid).toBe(true);
-      }
-    });
-  }
+      })
+    );
+  });
 
-  it("fails validation for intentionally broken data", async () => {
-    // Use a known-bad object for negative test
-    const schema = JSON.parse(await readFile(path.join(schemaDir, "judoka.schema.json"), "utf8"));
-    const validate = ajv.getSchema(schema.$id) || ajv.compile(schema);
+  it("fails validation for intentionally broken data", () => {
+    const { validate } = datasets.find(({ schemaFile }) => schemaFile === "judoka.schema.json");
     const bad = { foo: "bar" };
     expect(validate(bad)).toBe(false);
   });
 });
 
 describe("statNames.json integrity", () => {
-  it("is sorted by statIndex with indexes 1-5", async () => {
-    const data = JSON.parse(await readFile(path.join(dataDir, "statNames.json"), "utf8"));
+  it("is sorted by statIndex with indexes 1-5", () => {
+    const { data } = datasets.find(({ dataFile }) => dataFile === "statNames.json");
     expect(data.length).toBe(5);
     const indexes = data.map((e) => e.statIndex);
     const sorted = [...indexes].sort((a, b) => a - b);
