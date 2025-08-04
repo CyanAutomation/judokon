@@ -6,6 +6,8 @@ describe("setupKeyboardNavigation", () => {
     const container = document.createElement("div");
     Object.defineProperty(container, "clientWidth", { value: 300, configurable: true });
     container.scrollLeft = 0;
+    const scrollEvents = [];
+    container.addEventListener("scroll", () => scrollEvents.push(true));
     document.body.append(container);
 
     setupKeyboardNavigation(container);
@@ -14,10 +16,12 @@ describe("setupKeyboardNavigation", () => {
     container.focus();
     container.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }));
     expect(container.scrollLeft).toBe(container.clientWidth);
+    expect(scrollEvents.length).toBe(1);
     expect(document.activeElement).toBe(container);
 
     container.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft" }));
     expect(container.scrollLeft).toBe(0);
+    expect(scrollEvents.length).toBe(2);
     expect(document.activeElement).toBe(container);
   });
 
