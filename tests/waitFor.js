@@ -1,8 +1,18 @@
+import { expect } from "vitest";
+
+/**
+ * Waits until the provided predicate returns `true`.
+ *
+ * Uses `expect.poll` so callers can rely on fake timers instead of real
+ * delays. The returned promise rejects if the predicate never returns `true`
+ * within the timeout.
+ *
+ * @param {() => boolean} predicate - Condition to repeatedly evaluate.
+ * @param {object} [options] - Configuration options.
+ * @param {number} [options.timeout=500] - Maximum time to wait in milliseconds.
+ * @param {number} [options.interval=10] - Polling interval in milliseconds.
+ * @returns {Promise<void>} Resolves when the predicate is satisfied.
+ */
 export async function waitFor(predicate, { timeout = 500, interval = 10 } = {}) {
-  const endTime = Date.now() + timeout;
-  while (Date.now() < endTime) {
-    if (predicate()) return;
-    await new Promise((resolve) => setTimeout(resolve, interval));
-  }
-  throw new Error("waitFor timeout");
+  await expect.poll(predicate, { timeout, interval }).toBe(true);
 }
