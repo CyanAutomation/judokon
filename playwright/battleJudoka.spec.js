@@ -10,7 +10,7 @@ test.describe("Battle Judoka page", () => {
     await page.addInitScript(() => {
       localStorage.setItem(
         "settings",
-        JSON.stringify({ featureFlags: { enableTestMode: { enabled: true } } })
+        JSON.stringify({ featureFlags: { enableTestMode: true } })
       );
     });
     await page.goto("/src/pages/battleJudoka.html");
