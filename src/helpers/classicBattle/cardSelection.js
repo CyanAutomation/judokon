@@ -1,5 +1,6 @@
 import { generateRandomCard } from "../randomCard.js";
 import { getRandomJudoka, renderJudokaCard } from "../cardUtils.js";
+import { loadSettings } from "../settingsUtils.js";
 import { fetchJson } from "../dataUtils.js";
 import { createGokyoLookup } from "../utils.js";
 import { DATA_DIR } from "../constants.js";
@@ -87,6 +88,14 @@ export async function drawCards() {
   const playerContainer = document.getElementById("player-card");
   const computerContainer = document.getElementById("computer-card");
 
+  let settings;
+  try {
+    settings = await loadSettings();
+  } catch {
+    settings = { featureFlags: {} };
+  }
+  const enableInspector = Boolean(settings.featureFlags?.enableCardInspector?.enabled);
+
   let playerJudoka = null;
   await generateRandomCard(
     available,
@@ -96,7 +105,7 @@ export async function drawCards() {
     (j) => {
       playerJudoka = j;
     },
-    { enableInspector: false }
+    { enableInspector }
   );
 
   let compJudoka = getRandomJudoka(available);
@@ -114,7 +123,7 @@ export async function drawCards() {
   await renderJudokaCard(placeholder, gokyoLookup, computerContainer, {
     animate: false,
     useObscuredStats: true,
-    enableInspector: false
+    enableInspector
   });
 
   return { playerJudoka, computerJudoka };

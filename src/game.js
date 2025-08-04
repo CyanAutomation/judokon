@@ -4,6 +4,10 @@ import { generateRandomCard } from "./helpers/randomCard.js";
 import { DATA_DIR } from "./helpers/constants.js";
 import { shouldReduceMotionSync } from "./helpers/motionUtils.js";
 import { initTooltips } from "./helpers/tooltip.js";
+import { loadSettings } from "./helpers/settingsUtils.js";
+import { toggleInspectorPanels } from "./helpers/cardUtils.js";
+
+let inspectorEnabled = false;
 
 /**
  * Wire up the carousel toggle button.
@@ -115,7 +119,7 @@ export function setupRandomCardButton(button, container) {
 
     const prefersReducedMotion = shouldReduceMotionSync();
     await generateRandomCard(null, null, container, prefersReducedMotion, undefined, {
-      enableInspector: false
+      enableInspector: inspectorEnabled
     });
   });
 }
@@ -135,7 +139,7 @@ export function setupRandomCardButton(button, container) {
  * 6. Call `initTooltips` to initialize tooltips.
  */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const showRandom = document.getElementById("showRandom");
   const gameArea = document.getElementById("gameArea");
   const carouselContainer = document.getElementById("carousel-container");
@@ -146,6 +150,24 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("Required DOM elements are missing.");
     return;
   }
+
+  try {
+    const settings = await loadSettings();
+    inspectorEnabled = Boolean(settings.featureFlags?.enableCardInspector?.enabled);
+  } catch {
+    inspectorEnabled = false;
+  }
+  toggleInspectorPanels(inspectorEnabled);
+
+  window.addEventListener("storage", (e) => {
+    if (e.key === "settings" && e.newValue) {
+      try {
+        const s = JSON.parse(e.newValue);
+        inspectorEnabled = Boolean(s.featureFlags?.enableCardInspector?.enabled);
+        toggleInspectorPanels(inspectorEnabled);
+      } catch {}
+    }
+  });
 
   setupCarouselToggle(showCarouselButton, carouselContainer);
   setupHideCardButton(hideCard);

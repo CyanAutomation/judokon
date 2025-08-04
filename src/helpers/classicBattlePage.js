@@ -38,6 +38,7 @@ import { setTestMode } from "./testModeUtils.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
 import { loadStatNames } from "./stats.js";
 import { STATS } from "./battleEngine.js";
+import { toggleInspectorPanels } from "./cardUtils.js";
 
 function enableStatButtons(enable = true) {
   document.querySelectorAll("#stat-buttons button").forEach((btn) => {
@@ -109,6 +110,8 @@ export async function setupClassicBattlePage() {
   } catch {
     settings = { featureFlags: {} };
   }
+  const inspectorEnabled = Boolean(settings.featureFlags?.enableCardInspector?.enabled);
+  toggleInspectorPanels(inspectorEnabled);
 
   simulatedOpponentMode = Boolean(settings.featureFlags.simulatedOpponentMode?.enabled);
   if (simulatedOpponentMode) {
@@ -161,6 +164,7 @@ export async function setupClassicBattlePage() {
           banner.classList.toggle("hidden", !s.featureFlags?.enableTestMode?.enabled);
         }
         setTestMode(Boolean(s.featureFlags?.enableTestMode?.enabled));
+        toggleInspectorPanels(Boolean(s.featureFlags?.enableCardInspector?.enabled));
       } catch {}
     }
   });
