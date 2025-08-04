@@ -5,8 +5,12 @@ import { CAROUSEL_SWIPE_THRESHOLD } from "../constants.js";
  * @pseudocode
  * 1. Make the container focusable by setting `tabIndex` to 0.
  * 2. Add a `keydown` event listener to the container.
- *    - When the container is focused, scroll left on "ArrowLeft".
- *    - When the container is focused, scroll right on "ArrowRight".
+ *    - When the container is focused and "ArrowLeft" is pressed:
+ *      - Prevent the default behavior.
+ *      - Scroll left by one container width and dispatch a `scroll` event.
+ *    - When the container is focused and "ArrowRight" is pressed:
+ *      - Prevent the default behavior.
+ *      - Scroll right by one container width and dispatch a `scroll` event.
  *
  * @param {HTMLElement} container - The carousel container element.
  */
@@ -16,9 +20,21 @@ export function setupKeyboardNavigation(container) {
     if (document.activeElement !== container) return;
     const scrollAmount = container.clientWidth;
     if (event.key === "ArrowLeft") {
-      container.scrollLeft -= scrollAmount;
+      event.preventDefault();
+      if (typeof container.scrollBy === "function") {
+        container.scrollBy({ left: -scrollAmount });
+      } else {
+        container.scrollLeft -= scrollAmount;
+      }
+      container.dispatchEvent(new Event("scroll"));
     } else if (event.key === "ArrowRight") {
-      container.scrollLeft += scrollAmount;
+      event.preventDefault();
+      if (typeof container.scrollBy === "function") {
+        container.scrollBy({ left: scrollAmount });
+      } else {
+        container.scrollLeft += scrollAmount;
+      }
+      container.dispatchEvent(new Event("scroll"));
     }
   });
 }
