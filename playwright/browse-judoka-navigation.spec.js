@@ -23,15 +23,17 @@ test.describe("Browse Judoka navigation", () => {
     await expect(left).toBeDisabled();
 
     await container.focus();
+
     await container.press("ArrowRight");
-    await container.press("ArrowRight");
+    await expect(counter).toHaveText("Page 2 of 3");
+
     await container.press("ArrowRight");
     await expect(counter).toHaveText("Page 3 of 3");
     await expect(right).toBeDisabled();
 
-    await container.focus();
     await container.press("ArrowLeft");
-    await container.press("ArrowLeft");
+    await expect(counter).toHaveText("Page 2 of 3");
+
     await container.press("ArrowLeft");
     await expect(counter).toHaveText("Page 1 of 3");
     await expect(left).toBeDisabled();
