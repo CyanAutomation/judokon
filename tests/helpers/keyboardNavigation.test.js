@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { setupKeyboardNavigation } from "../../src/helpers/carousel/navigation.js";
-import { CAROUSEL_SCROLL_DISTANCE } from "../../src/helpers/constants.js";
 
 describe("setupKeyboardNavigation", () => {
   it("scrolls container and updates focus on arrow keys", () => {
     const container = document.createElement("div");
+    Object.defineProperty(container, "clientWidth", { value: 300, configurable: true });
     container.scrollLeft = 0;
     container.scrollBy = ({ left }) => {
       container.scrollLeft += left;
@@ -27,7 +27,7 @@ describe("setupKeyboardNavigation", () => {
 
     first.focus();
     container.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }));
-    expect(container.scrollLeft).toBe(CAROUSEL_SCROLL_DISTANCE);
+    expect(container.scrollLeft).toBe(container.clientWidth);
     expect(document.activeElement).toBe(second);
 
     container.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft" }));

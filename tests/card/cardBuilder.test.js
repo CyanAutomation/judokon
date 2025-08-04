@@ -24,6 +24,7 @@ describe("createScrollButton", () => {
     container.style.overflow = "hidden";
     container.style.width = "200px";
     container.innerHTML = '<div style="width: 1000px;">Content</div>';
+    Object.defineProperty(container, "clientWidth", { value: 100, configurable: true });
     container.scrollLeft = 0;
 
     container.scrollBy = vi.fn(({ left }) => {
@@ -32,7 +33,7 @@ describe("createScrollButton", () => {
   });
 
   it("should create a scroll button with the correct class and inner HTML when direction is left", () => {
-    const button = createScrollButton("left", container, 100);
+    const button = createScrollButton("left", container);
     expect(button.className).toBe("scroll-button left");
     expect(button.innerHTML).toContain("<svg");
     expect(button.innerHTML).toContain("Prev.</span>");
@@ -40,7 +41,7 @@ describe("createScrollButton", () => {
   });
 
   it("should create a scroll button with the correct class and inner HTML when direction is right", () => {
-    const button = createScrollButton("right", container, 100);
+    const button = createScrollButton("right", container);
     expect(button.className).toBe("scroll-button right");
     expect(button.innerHTML).toContain("<svg");
     expect(button.innerHTML).toContain("Next</span>");
@@ -48,38 +49,28 @@ describe("createScrollButton", () => {
   });
 
   it("should throw an error when the direction is invalid", () => {
-    expect(() => createScrollButton("up", container, 100)).toThrowError("Invalid direction");
+    expect(() => createScrollButton("up", container)).toThrowError("Invalid direction");
   });
 
   it("should scroll the container to the left when clicked", () => {
-    const button = createScrollButton("left", container, 100);
+    const button = createScrollButton("left", container);
     button.click();
     expect(container.scrollLeft).toBe(-100);
   });
 
   it("should scroll the container to the right when clicked", () => {
-    const button = createScrollButton("right", container, 100);
+    const button = createScrollButton("right", container);
     button.click();
     expect(container.scrollLeft).toBe(100);
   });
 
   it("should throw an error if container is null", () => {
-    expect(() => createScrollButton("left", null, 100)).toThrowError("Container is required");
+    expect(() => createScrollButton("left", null)).toThrowError("Container is required");
   });
 
   it("should not throw if scrollBy is not defined on container", () => {
     const div = document.createElement("div");
-    expect(() => createScrollButton("left", div, 100)).not.toThrow();
-  });
-
-  it("should return a button even if scroll amount is invalid", () => {
-    const div = document.createElement("div");
-    expect(() => createScrollButton("left", div, null)).not.toThrow();
-    expect(createScrollButton("left", div, null)).toBeInstanceOf(HTMLButtonElement);
-    expect(() => createScrollButton("left", div, undefined)).not.toThrow();
-    expect(createScrollButton("left", div, undefined)).toBeInstanceOf(HTMLButtonElement);
-    expect(() => createScrollButton("left", div, "100")).not.toThrow();
-    expect(createScrollButton("left", div, "100")).toBeInstanceOf(HTMLButtonElement);
+    expect(() => createScrollButton("left", div)).not.toThrow();
   });
 });
 

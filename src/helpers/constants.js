@@ -7,7 +7,7 @@
  *
  * @pseudocode
  * 1. Resolve the helpers directory URL and derive the base path to JSON data files.
- * 2. Define carousel scroll distance, swipe threshold, and spinner delay.
+ * 2. Define carousel swipe threshold and spinner delay.
  * 3. Set fade and removal durations for settings error popups.
  * 4. Establish Classic Battle win conditions and maximum rounds.
  */
@@ -33,14 +33,6 @@ const HELPERS_DIR = new URL(/* @vite-ignore */ ".", import.meta.url);
  * @constant {string}
  */
 export const DATA_DIR = new URL("../data/", HELPERS_DIR).href;
-
-/**
- * Distance in pixels that the carousel scrolls when using keyboard
- * navigation or scroll buttons.
- *
- * @constant {number}
- */
-export const CAROUSEL_SCROLL_DISTANCE = 300;
 
 /**
  * Minimum swipe distance in pixels required to trigger carousel

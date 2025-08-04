@@ -11,7 +11,7 @@ import {
   appendCards,
   setupFocusHandlers
 } from "./carousel/index.js";
-import { CAROUSEL_SCROLL_DISTANCE, SPINNER_DELAY_MS } from "./constants.js";
+import { SPINNER_DELAY_MS } from "./constants.js";
 
 /**
  * Adds scroll markers to indicate the user's position in the carousel.
@@ -206,8 +206,8 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   // Responsive sizing handled by helper
 
-  const leftButton = createScrollButton("left", container, CAROUSEL_SCROLL_DISTANCE);
-  const rightButton = createScrollButton("right", container, CAROUSEL_SCROLL_DISTANCE);
+  const leftButton = createScrollButton("left", container);
+  const rightButton = createScrollButton("right", container);
 
   wrapper.appendChild(leftButton);
   wrapper.appendChild(container);
