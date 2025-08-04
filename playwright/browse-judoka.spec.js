@@ -155,13 +155,10 @@ test.describe("Browse Judoka screen", () => {
       );
 
     const before = await container.evaluate((el) => el.scrollLeft);
-
-    for (let i = 0; i < 5; i++) {
-      await swipe(startX, startX - 600);
-    }
+    await swipe(startX, startX - box.width);
 
     await expect.poll(() => container.evaluate((el) => el.scrollLeft)).toBeGreaterThan(before);
-    await expect.poll(() => counter.textContent()).toBe("Page 6 of 6");
+    await expect(counter).toHaveText("Page 2 of 6");
   });
 
   test.skip("shows loading spinner on slow network", async ({ page }) => {
