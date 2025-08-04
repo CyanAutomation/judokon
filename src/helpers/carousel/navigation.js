@@ -18,11 +18,11 @@ export function setupKeyboardNavigation(container) {
     const active = document.activeElement;
     const index = Array.from(cards).indexOf(active);
     if (event.key === "ArrowLeft") {
-      container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+      container.scrollLeft -= scrollAmount;
       const prevIndex = index > 0 ? index - 1 : 0;
       cards[prevIndex]?.focus();
     } else if (event.key === "ArrowRight") {
-      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+      container.scrollLeft += scrollAmount;
       const nextIndex = index >= 0 ? Math.min(cards.length - 1, index + 1) : 0;
       cards[nextIndex]?.focus();
     }
@@ -47,9 +47,9 @@ export function setupSwipeNavigation(container) {
   const scrollFromDelta = (delta) => {
     const scrollAmount = container.clientWidth;
     if (delta > CAROUSEL_SWIPE_THRESHOLD) {
-      container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+      container.scrollLeft -= scrollAmount;
     } else if (delta < -CAROUSEL_SWIPE_THRESHOLD) {
-      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+      container.scrollLeft += scrollAmount;
     }
   };
 
