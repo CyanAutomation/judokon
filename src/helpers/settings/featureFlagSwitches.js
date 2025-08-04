@@ -60,7 +60,6 @@ export function renderFeatureFlagSwitches(
     if (!input) return;
     input.addEventListener("change", () => {
       const currentLabel = tooltipMap[`${tipId}.label`] || flag;
-      const currentDesc = tooltipMap[`${tipId}.description`] || "";
       const prev = !input.checked;
       const updated = {
         ...getCurrentSettings().featureFlags,
