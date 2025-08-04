@@ -99,3 +99,14 @@
 #stat-buttons button {
   -webkit-tap-highlight-color: transparent;
 }
+
+/* Player and opponent card slots */
+.player-slot {
+  background-color: var(--color-secondary);
+  color: var(--color-text-inverted);
+}
+
+.opponent-slot {
+  background-color: var(--color-primary);
+  color: var(--color-text-inverted);
+}
