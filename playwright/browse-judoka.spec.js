@@ -45,12 +45,10 @@ test.describe("Browse Judoka screen", () => {
 
     await toggle.click();
     const panel = page.getByRole("region");
-    await panel.waitFor();
-    await page.waitForTimeout(500);
-    const countAfterFilter = await page
-      .locator("[data-testid=carousel-container] .judoka-card")
-      .count();
-    expect(countAfterFilter).toBe(initialCount);
+    await expect(panel).toBeVisible();
+    await expect(page.locator("[data-testid=carousel-container] .judoka-card")).toHaveCount(
+      initialCount
+    );
     await page.getByRole("button", { name: "Japan" }).click({ force: true });
 
     const filteredCards = page.locator("[data-testid=carousel-container] .judoka-card");
@@ -62,9 +60,10 @@ test.describe("Browse Judoka screen", () => {
     }
 
     await toggle.click();
-    await panel.waitFor();
-    await page.waitForTimeout(350);
-    await page.getByRole("button", { name: "All" }).click({ force: true });
+    await expect(panel).toBeVisible();
+    const allButton = page.getByRole("button", { name: "All" });
+    await expect(allButton).toBeVisible();
+    await allButton.click({ force: true });
 
     await expect(page.locator("[data-testid=carousel-container] .judoka-card")).toHaveCount(
       initialCount
