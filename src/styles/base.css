@@ -17,12 +17,12 @@
   --button-hover-bg: #0b5bb0;
   --button-active-bg: var(--color-primary);
   --button-text-color: #ffffff;
-  --button-disabled-bg: #a0a0a0;
+  --button-disabled-bg: #757575;
   --button-disabled-pattern: none;
   --switch-off-bg: #707070; /* Toggle off state background */
-  --switch-on-bg: #08a700; /* Toggle on state background */
-  --color-slider-dot: #bbb; /* Carousel indicator default */
-  --color-slider-active: #717171; /* Active indicator */
+  --switch-on-bg: #007f00; /* Toggle on state background */
+  --color-slider-dot: #666666; /* Carousel indicator default */
+  --color-slider-active: #333333; /* Active indicator */
   --radius-pill: 9999px; /* capsule */
 
   /* Updated spacing tokens */
