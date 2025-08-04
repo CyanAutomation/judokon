@@ -34,6 +34,12 @@
       "type": "boolean",
       "description": "Enable the full navigation map overlay."
     },
+    "aiDifficulty": {
+      "type": "string",
+      "enum": ["easy", "medium", "hard"],
+      "description": "Difficulty level for AI stat selection.",
+      "default": "easy"
+    },
     "tooltipIds": {
       "type": "object",
       "description": "Mapping of setting keys to tooltip identifiers.",

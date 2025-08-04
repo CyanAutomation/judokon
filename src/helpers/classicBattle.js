@@ -30,15 +30,44 @@ let statTimeoutId = null;
 let autoSelectId = null;
 
 /**
- * Return a random stat key for the opponent.
+ * Determine the opponent's stat choice based on difficulty.
  *
  * @pseudocode
- * 1. Pick a random index from `STATS`.
- * 2. Return the stat at that index.
+ * 1. When `difficulty` is `hard`:
+ *    a. Read all stat values from the opponent card.
+ *    b. Find the highest value and return one of the stats with that value.
+ * 2. When `difficulty` is `medium`:
+ *    a. Read all stat values from the opponent card.
+ *    b. Compute the average of those values.
+ *    c. Choose randomly among stats whose value is at least the average.
+ *    d. If none qualify, fallback to random.
+ * 3. Otherwise (`easy`): pick a random stat from `STATS`.
  *
+ * @param {"easy"|"medium"|"hard"} [difficulty="easy"] Difficulty setting.
  * @returns {string} One of the values from `STATS`.
  */
-export function simulateOpponentStat() {
+export function simulateOpponentStat(difficulty = "easy") {
+  if (difficulty !== "easy") {
+    const card = document.getElementById("computer-card");
+    if (card) {
+      const values = STATS.map((stat) => ({
+        stat,
+        value: getStatValue(card, stat)
+      }));
+      if (difficulty === "hard") {
+        const max = Math.max(...values.map((v) => v.value));
+        const best = values.filter((v) => v.value === max);
+        return best[Math.floor(Math.random() * best.length)].stat;
+      }
+      if (difficulty === "medium") {
+        const avg = values.reduce((sum, v) => sum + v.value, 0) / values.length;
+        const eligible = values.filter((v) => v.value >= avg);
+        if (eligible.length > 0) {
+          return eligible[Math.floor(Math.random() * eligible.length)].stat;
+        }
+      }
+    }
+  }
   return STATS[Math.floor(Math.random() * STATS.length)];
 }
 

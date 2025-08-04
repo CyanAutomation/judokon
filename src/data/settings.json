@@ -6,6 +6,7 @@
   "showCardOfTheDay": false,
   "displayMode": "light",
   "fullNavigationMap": false,
+  "aiDifficulty": "easy",
   "tooltipIds": {
     "sound": "settings.sound",
     "motionEffects": "settings.motionEffects",
