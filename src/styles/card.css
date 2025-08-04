@@ -77,6 +77,24 @@ svg {
   aspect-ratio: 1 / 1;
   object-fit: contain;
 }
+
+@media (max-width: 320px) {
+  .card {
+    padding: var(--space-md);
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+
+  .tile-content h2 {
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--font-medium);
+  }
+
+  .card svg {
+    width: clamp(24px, 10vw, 48px);
+    height: clamp(24px, 10vw, 48px);
+  }
+}
 /* Card styles */
 .card-container {
   display: flex;
