@@ -34,7 +34,7 @@ describe("classicBattle card selection", () => {
     document.body.append(playerCard, computerCard, header);
     timerSpy = vi.useFakeTimers();
     fetchJsonMock = vi.fn(async () => []);
-    generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb, _opts) => {
+    generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {
       container.innerHTML = "<ul></ul>";
       if (cb) cb({ id: 1 });
     });
@@ -53,7 +53,7 @@ describe("classicBattle card selection", () => {
       }
       return [];
     });
-    generateRandomCardMock = vi.fn(async (d, g, c, _pm, cb, _opts) => {
+    generateRandomCardMock = vi.fn(async (d, g, c, _pm, cb) => {
       c.innerHTML = "<ul></ul>";
       cb({ id: 1 });
     });
@@ -87,7 +87,7 @@ describe("classicBattle card selection", () => {
       }
       return [];
     });
-    generateRandomCardMock = vi.fn(async (d, g, c, _pm, cb, _opts) => {
+    generateRandomCardMock = vi.fn(async (d, g, c, _pm, cb) => {
       c.innerHTML = "<ul></ul>";
       if (cb) cb(d[0]);
     });
