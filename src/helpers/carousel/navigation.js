@@ -30,30 +30,50 @@ export function setupKeyboardNavigation(container) {
 }
 
 /**
- * Sets up swipe navigation for the carousel container.
+ * Sets up swipe navigation for the carousel container, supporting touch and pointer events.
  *
  * @pseudocode
- * 1. Track the starting X position of a touch event (`touchstart`).
- * 2. Track the ending X position of a touch event (`touchend`).
- * 3. Calculate the swipe distance and direction.
- *    - Scroll left if the swipe distance is greater than 50 pixels.
- *    - Scroll right if the swipe distance is less than -50 pixels.
+ * 1. Track the starting X position of a touch or pointer press (`touchstart` or `pointerdown`).
+ * 2. On `touchend` or `pointerup`, calculate the swipe distance.
+ *    - Scroll left if the swipe distance is greater than the carousel swipe threshold.
+ *    - Scroll right if the swipe distance is less than the negative carousel swipe threshold.
  *
  * @param {HTMLElement} container - The carousel container element.
  */
 export function setupSwipeNavigation(container) {
   let touchStartX = 0;
+  let pointerStartX = 0;
+
+  const scrollFromDelta = (delta) => {
+    const scrollAmount = container.clientWidth;
+    if (delta > CAROUSEL_SWIPE_THRESHOLD) {
+      container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+    } else if (delta < -CAROUSEL_SWIPE_THRESHOLD) {
+      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
+
   container.addEventListener("touchstart", (event) => {
     touchStartX = event.touches[0].clientX;
   });
+
   container.addEventListener("touchend", (event) => {
     const touchEndX = event.changedTouches[0].clientX;
     const swipeDistance = touchEndX - touchStartX;
-    const scrollAmount = container.clientWidth;
-    if (swipeDistance > CAROUSEL_SWIPE_THRESHOLD) {
-      container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
-    } else if (swipeDistance < -CAROUSEL_SWIPE_THRESHOLD) {
-      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    scrollFromDelta(swipeDistance);
+  });
+
+  container.addEventListener("pointerdown", (event) => {
+    if (event.pointerType !== "touch") {
+      pointerStartX = event.clientX;
+    }
+  });
+
+  container.addEventListener("pointerup", (event) => {
+    if (event.pointerType !== "touch") {
+      const pointerEndX = event.clientX;
+      const swipeDistance = pointerEndX - pointerStartX;
+      scrollFromDelta(swipeDistance);
     }
   });
 }
