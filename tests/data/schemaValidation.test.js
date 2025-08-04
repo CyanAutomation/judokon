@@ -62,8 +62,7 @@ describe("data files conform to schemas", () => {
   it("fails validation for intentionally broken data", async () => {
     // Use a known-bad object for negative test
     const schema = JSON.parse(await readFile(path.join(schemaDir, "judoka.schema.json"), "utf8"));
-    const ajv = await getAjv();
-    const validate = ajv.compile(schema);
+    const validate = ajv.getSchema(schema.$id) || ajv.compile(schema);
     const bad = { foo: "bar" };
     expect(validate(bad)).toBe(false);
   });

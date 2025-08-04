@@ -8,7 +8,7 @@ import { createSidebarList } from "../components/SidebarList.js";
  *
  * @pseudocode
  * 1. Select the image, filename display, sidebar list, and navigation buttons.
- * 2. Define an array of mockup filenames and compute their base URL.
+ * 2. Define an array of mockup filenames and set a base path.
  * 3. Build sidebar list items that call `showImage(index)` when activated.
  * 4. Implement `showImage(index)` to update the image, alt text, filename, and sidebar highlight.
  * 5. Attach click handlers and keyboard events to cycle images with wraparound.
