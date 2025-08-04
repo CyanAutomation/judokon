@@ -19,7 +19,9 @@ import { SPINNER_DELAY_MS } from "./constants.js";
  * @pseudocode
  * 1. Validate inputs and exit early if `container` or `wrapper` is missing.
  * 2. Create a `<div>` element with the class `scroll-markers`.
- * 3. Determine how many cards fit within one page of the carousel.
+ * 3. Determine how many cards fit within one page of the carousel,
+ *    accounting for the gap between cards and ensuring at least one
+ *    card per page. Calculate the total page count.
  * 4. Add a marker for each page and an accompanying page counter.
  *    - Highlight the marker for the current page.
  * 5. Update the active marker and counter text on scroll events.
@@ -37,7 +39,10 @@ function addScrollMarkers(container, wrapper) {
   const cards = container.querySelectorAll(".judoka-card");
   const firstCard = cards[0];
   const cardWidth = firstCard ? firstCard.offsetWidth : 0;
-  const cardsPerPage = cardWidth ? Math.max(1, Math.round(container.clientWidth / cardWidth)) : 1;
+  const gap = parseFloat(getComputedStyle(container).columnGap) || 0;
+  const cardsPerPage = cardWidth
+    ? Math.max(1, Math.floor((container.clientWidth + gap) / (cardWidth + gap)))
+    : 1;
   const pageCount = Math.ceil(cards.length / cardsPerPage);
 
   for (let i = 0; i < pageCount; i++) {
