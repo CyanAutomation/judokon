@@ -157,9 +157,7 @@ function displayFable(fable) {
  *    - If a fable is found, pass it to `displayFable` to update the quote div.
  *    - If no fable is found or an error occurs, pass `null` to `displayFable` to display a default message.
  *
- * 4. Automatically call the function when the DOM is fully loaded:
- *    - Use the `DOMContentLoaded` event to ensure the function runs after the DOM is ready.
- * 5. When both the KG image and quote have loaded:
+ * 4. When both the KG image and quote have loaded:
  *    - Remove the `fade-in` class from the image and quote container so they fade into view.
  *
  * @throws {Error} If fetching the fables data fails.
@@ -180,8 +178,24 @@ async function displayRandomQuote() {
   }
 }
 
-// Automatically call displayRandomQuote when the DOM is fully loaded
-document.addEventListener("DOMContentLoaded", () => {
+/**
+ * Initializes quote loading and handles KG sprite image readiness.
+ *
+ * @pseudocode
+ * 1. Locate the KG sprite image:
+ *    - Query `.kg-sprite img` from the DOM.
+ *
+ * 2. Monitor the image load state:
+ *    - If already complete, mark `kgImageLoaded` and call `checkAssetsReady`.
+ *    - Otherwise, attach a `load` event listener to perform the same once loaded.
+ *
+ * 3. Display a random quote by calling `displayRandomQuote`.
+ *
+ * 4. Return the promise from `displayRandomQuote` so callers can await completion.
+ *
+ * @returns {Promise<void>} Promise that resolves once the quote is displayed.
+ */
+export function loadQuote() {
   const kgImg = document.querySelector(".kg-sprite img");
   if (kgImg) {
     if (kgImg.complete) {
@@ -194,5 +208,5 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   }
-  displayRandomQuote();
-});
+  return displayRandomQuote();
+}
