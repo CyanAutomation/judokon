@@ -50,7 +50,6 @@ test.describe("View Judoka screen", () => {
     await btn.click();
     await expect(btn).toHaveText(/drawing/i);
     await expect(btn).toHaveAttribute("aria-busy", "true");
-    await page.waitForTimeout(600);
     await expect(btn).toHaveText(/draw card/i);
     await expect(btn).not.toHaveAttribute("aria-busy");
   });
