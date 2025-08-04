@@ -4,7 +4,8 @@
  * @pseudocode
  * 1. Highlight the card nearest the carousel center when focus changes and
  *    focus it only if the container itself is active.
- * 2. Move focus with arrow keys and keep the center card enlarged.
+ * 2. Move focus with arrow keys only when a card already has focus and keep
+ *    the center card enlarged.
  * 3. Update focus styles on mouse hover for desktop users.
  *
  * @param {HTMLElement} container - Carousel container element.
@@ -38,6 +39,7 @@ export function setupFocusHandlers(container) {
   }
 
   container.addEventListener("keydown", (e) => {
+    if (document.activeElement === container) return;
     if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
       const cards = Array.from(container.querySelectorAll(".judoka-card"));
       const current = document.activeElement;
