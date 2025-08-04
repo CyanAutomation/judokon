@@ -5,26 +5,20 @@ import { CAROUSEL_SWIPE_THRESHOLD } from "../constants.js";
  * @pseudocode
  * 1. Make the container focusable by setting `tabIndex` to 0.
  * 2. Add a `keydown` event listener to the container.
- *    - Scroll left when the "ArrowLeft" key is pressed and focus the previous card.
- *    - Scroll right when the "ArrowRight" key is pressed and focus the next card.
+ *    - When the container is focused, scroll left on "ArrowLeft".
+ *    - When the container is focused, scroll right on "ArrowRight".
  *
  * @param {HTMLElement} container - The carousel container element.
  */
 export function setupKeyboardNavigation(container) {
   container.tabIndex = 0;
-  const cards = container.querySelectorAll(".judoka-card");
   container.addEventListener("keydown", (event) => {
+    if (document.activeElement !== container) return;
     const scrollAmount = container.clientWidth;
-    const active = document.activeElement;
-    const index = Array.from(cards).indexOf(active);
     if (event.key === "ArrowLeft") {
       container.scrollLeft -= scrollAmount;
-      const prevIndex = index > 0 ? index - 1 : 0;
-      cards[prevIndex]?.focus();
     } else if (event.key === "ArrowRight") {
       container.scrollLeft += scrollAmount;
-      const nextIndex = index >= 0 ? Math.min(cards.length - 1, index + 1) : 0;
-      cards[nextIndex]?.focus();
     }
   });
 }

@@ -2,36 +2,41 @@ import { describe, it, expect } from "vitest";
 import { setupKeyboardNavigation } from "../../src/helpers/carousel/navigation.js";
 
 describe("setupKeyboardNavigation", () => {
-  it("scrolls container and updates focus on arrow keys", () => {
+  it("scrolls container on arrow keys when container is focused", () => {
     const container = document.createElement("div");
     Object.defineProperty(container, "clientWidth", { value: 300, configurable: true });
     container.scrollLeft = 0;
-    container.scrollBy = ({ left }) => {
-      container.scrollLeft += left;
-    };
-
-    const first = document.createElement("button");
-    first.className = "judoka-card";
-    first.tabIndex = 0;
-    const second = document.createElement("button");
-    second.className = "judoka-card";
-    second.tabIndex = 0;
-    const third = document.createElement("button");
-    third.className = "judoka-card";
-    third.tabIndex = 0;
-    container.append(first, second, third);
     document.body.append(container);
 
     setupKeyboardNavigation(container);
     expect(container.tabIndex).toBe(0);
 
-    first.focus();
+    container.focus();
     container.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }));
     expect(container.scrollLeft).toBe(container.clientWidth);
-    expect(document.activeElement).toBe(second);
+    expect(document.activeElement).toBe(container);
 
     container.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft" }));
     expect(container.scrollLeft).toBe(0);
-    expect(document.activeElement).toBe(first);
+    expect(document.activeElement).toBe(container);
+  });
+
+  it("ignores arrow keys when a card has focus", () => {
+    const container = document.createElement("div");
+    Object.defineProperty(container, "clientWidth", { value: 300, configurable: true });
+    container.scrollLeft = 0;
+
+    const card = document.createElement("button");
+    card.className = "judoka-card";
+    card.tabIndex = 0;
+    container.append(card);
+    document.body.append(container);
+
+    setupKeyboardNavigation(container);
+
+    card.focus();
+    card.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    expect(container.scrollLeft).toBe(0);
+    expect(document.activeElement).toBe(card);
   });
 });
