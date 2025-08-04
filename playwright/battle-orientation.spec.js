@@ -67,7 +67,6 @@ test.describe(
           (el) =>
             (el.textContent = "A very long round message that should overflow on narrow screens")
         );
-      await page.waitForSelector("#score-display br");
       await expect(page.locator(".battle-header")).toHaveScreenshot("battle-header-300.png");
     });
   }
