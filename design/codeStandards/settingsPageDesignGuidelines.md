@@ -18,7 +18,6 @@ To ensure the **Settings** page remains consistent, visually appealing, and acce
 
 - **Grid Layout for Controls**
   Use the `.game-mode-toggle-container` class on fieldsets to enable responsive grid layouts:
-
   - 3-column layout on desktop
   - 1-column stacked layout on mobile
   - The `Feature Flags` fieldset should include this class so flags display in a responsive grid.
@@ -49,12 +48,10 @@ Reuse the following markup for general settings, game modes, and feature flags:
 ## Styling Guidelines
 
 - **Use Existing Classes**
-
   - `.settings-form` on form/fieldset wrappers
   - `.settings-item` on individual setting containers
 
 - **Fieldset Styling**
-
   - Reuse section `<legend>` headings with consistent styles (font: Russo One, 24px).
 
 - **Toggle Switch Pattern**
@@ -79,16 +76,13 @@ Reuse the following markup for general settings, game modes, and feature flags:
   ```
 
 - **Select Boxes / Radio Buttons**
-
   - Use standard `<select>` or `<input type="radio">`, styled within the form using built-in styles (dark background, padding, rounded borders).
 
 - **Typography**
-
   - Headings: Russo One
   - Body text: use base font set in `base.css`
 
 - **Colors**
-
   - Use CSS variables: `--color-primary`, `--button-bg`, etc.
   - Do not hard-code color values.
 
@@ -98,7 +92,6 @@ Reuse the following markup for general settings, game modes, and feature flags:
   clashing with the bottom navigation bar.
 
 - **Spacing and Sizing**
-
   - Use `--space-sm`, `--space-md`, etc. for margins/padding
   - Minimum input height: 48px for tap targets
 
@@ -112,12 +105,10 @@ Reuse the following markup for general settings, game modes, and feature flags:
 ## Accessibility & UX Guidelines
 
 - **Keyboard Navigation**
-
   - All controls must be focusable with Tab
   - Use visible focus indicators (do not remove outlines)
 
 - **ARIA Labels and Roles**
-
   - Use `<label>` where possible
   - For custom toggles, add `aria-label` to `<input>`
   - When a toggle includes descriptive text, give the `<p>` an `id` and
@@ -125,41 +116,34 @@ Reuse the following markup for general settings, game modes, and feature flags:
   - Fieldsets should include meaningful `<legend>`
 
 - **Screen Reader Considerations**
-
   - State changes must be announced via native semantics
   - Use `role="alert"` for error messages if needed
   - Avoid hiding important content visually or semantically
 
 - **Color Contrast**
-
   - Minimum contrast ratio of 4.5:1 for text
   - Test readability in all themes
 
 - **Visible Indicators and Feedback**
-
   - Settings must provide immediate visual feedback
   - Toggle positions, colors, and states must be unambiguous
 
 - **Touch and Click Target Size**
-
   - Minimum target size: 44px × 44px
   - Ensure padding/margins make elements easy to interact with
 
 - **Consistent UX Behavior**
-
   - No "Save" button – all changes are instant
   - Use existing `updateSetting()` pattern for persistence
   - Reflect current saved values on page load
   - Integrate with existing error feedback mechanisms
 
 - **Change Log Link**
-
   - Add a clearly labeled link (e.g., "View Change Log") to the settings page, styled as a `.settings-item`.
   - Place after all settings controls, before the error popup container.
   - The link should point to `changeLog.html` and be accessible via keyboard (tabindex set appropriately).
 
 - **Links Section**
-
   - Group supplemental pages under a `Links` heading using a simple `<fieldset>`.
   - Include links to `changeLog.html`, `prdViewer.html`, `mockupViewer.html`, `tooltipViewer.html`, and `vectorSearch.html`.
   - Style each as a `.settings-item` and assign sequential `tabindex` values (e.g., 99, 100, 101).
@@ -241,7 +225,6 @@ To support AI-assisted testing, variant gameplay modes, and scalable development
 
 - **ID and Naming Convention**  
   Use predictable `id` and `name` values:
-
   - ID format: `feature-<kebab-case-feature-name>`
   - Name format: camelCase
   - Example: `id="feature-random-stat-mode" name="randomStatMode"`
@@ -249,12 +232,10 @@ To support AI-assisted testing, variant gameplay modes, and scalable development
   - Include `data-flag="<camelCaseName>"` on the input element so automation scripts can locate specific toggles
 
 - **ARIA and Accessibility**
-
   - Provide `aria-label` for each feature flag
   - Label must describe the feature clearly, even if experimental
 
 - **Persistence & Feedback**
-
   - Use the `updateSetting()` pattern to store and reflect current flag states
   - UI must reflect the saved state on load and provide immediate visual feedback on toggle
 
@@ -295,7 +276,6 @@ To support AI-assisted testing, variant gameplay modes, and scalable development
 To enable AI agents to test, monitor, and debug the impact of feature flags:
 
 - **Expose State via `data-*` Attributes**
-
   - Dynamic components (e.g. game mode managers, card displays) should include `data-*` attributes on their root elements to indicate current internal state
   - Example:
     ```html
