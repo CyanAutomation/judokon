@@ -102,14 +102,14 @@ test.describe("Browse Judoka screen", () => {
     await container.focus();
     const markers = page.locator(".scroll-marker");
     const counter = page.locator(".page-counter");
-    await expect(markers).toHaveCount(3);
-    await expect(counter).toHaveText("Page 1 of 3");
+    await expect(markers).toHaveCount(6);
+    await expect(counter).toHaveText("Page 1 of 6");
 
     await container.evaluate((el) => {
-      el.scrollTo({ left: 600, behavior: "auto" });
+      el.scrollTo({ left: el.scrollWidth, behavior: "auto" });
     });
 
-    await expect.poll(() => counter.textContent()).not.toBe("Page 1 of 3");
+    await expect.poll(() => counter.textContent()).toBe("Page 6 of 6");
   });
 
   test("carousel responds to swipe gestures", async ({ page }) => {
@@ -121,41 +121,42 @@ test.describe("Browse Judoka screen", () => {
 
     const markers = page.locator(".scroll-marker");
     const counter = page.locator(".page-counter");
-    await expect(markers).toHaveCount(3);
-    await expect(counter).toHaveText("Page 1 of 3");
+    await expect(markers).toHaveCount(6);
+    await expect(counter).toHaveText("Page 1 of 6");
 
     const box = await container.boundingBox();
     const startX = box.x + box.width * 0.9;
     const y = box.y + box.height / 2;
+    const swipe = (from, to) =>
+      page.evaluate(
+        ({ from, to, y }) => {
+          const el = document.querySelector(".card-carousel");
+          el.dispatchEvent(
+            new TouchEvent("touchstart", {
+              bubbles: true,
+              cancelable: true,
+              touches: [new Touch({ identifier: 1, target: el, clientX: from, clientY: y })]
+            })
+          );
+          el.dispatchEvent(
+            new TouchEvent("touchend", {
+              bubbles: true,
+              cancelable: true,
+              changedTouches: [new Touch({ identifier: 1, target: el, clientX: to, clientY: y })]
+            })
+          );
+        },
+        { from, to, y }
+      );
 
     const before = await container.evaluate((el) => el.scrollLeft);
 
-    await page.evaluate(
-      ({ startX, y }) => {
-        const el = document.querySelector(".card-carousel");
-        el.dispatchEvent(
-          new TouchEvent("touchstart", {
-            bubbles: true,
-            cancelable: true,
-            touches: [new Touch({ identifier: 1, target: el, clientX: startX, clientY: y })]
-          })
-        );
-        el.dispatchEvent(
-          new TouchEvent("touchend", {
-            bubbles: true,
-            cancelable: true,
-            changedTouches: [
-              new Touch({ identifier: 1, target: el, clientX: startX - 600, clientY: y })
-            ]
-          })
-        );
-      },
-      { startX, y }
-    );
+    for (let i = 0; i < 5; i++) {
+      await swipe(startX, startX - 600);
+    }
 
     await expect.poll(() => container.evaluate((el) => el.scrollLeft)).toBeGreaterThan(before);
-
-    await expect.poll(() => counter.textContent()).not.toBe("Page 1 of 3");
+    await expect.poll(() => counter.textContent()).toBe("Page 6 of 6");
   });
 
   test.skip("shows loading spinner on slow network", async ({ page }) => {

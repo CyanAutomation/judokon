@@ -47,11 +47,12 @@ test.describe("Browse Judoka navigation", () => {
     const right = page.getByRole("button", { name: /next/i });
     const counter = page.locator(".page-counter");
 
-    await expect(counter).toHaveText("Page 1 of 3");
+    await expect(counter).toHaveText("Page 1 of 6");
     await expect(left).toBeDisabled();
 
     const box = await container.boundingBox();
     const startX = box.x + box.width * 0.9;
+    const endX = box.x + box.width * 0.1;
     const y = box.y + box.height / 2;
     const swipe = (from, to) =>
       page.evaluate(
@@ -77,12 +78,18 @@ test.describe("Browse Judoka navigation", () => {
 
     await swipe(startX, startX - 600);
     await swipe(startX, startX - 600);
-    await expect.poll(() => counter.textContent()).not.toBe("Page 1 of 3");
+    await swipe(startX, startX - 600);
+    await swipe(startX, startX - 600);
+    await swipe(startX, startX - 600);
+    await expect(counter).toHaveText("Page 6 of 6");
     await expect(right).toBeDisabled();
 
-    await swipe(box.x + box.width * 0.1, box.x + box.width * 0.1 + 600);
-    await swipe(box.x + box.width * 0.1, box.x + box.width * 0.1 + 600);
-    await expect.poll(() => counter.textContent()).toBe("Page 1 of 3");
+    await swipe(endX, endX + 600);
+    await swipe(endX, endX + 600);
+    await swipe(endX, endX + 600);
+    await swipe(endX, endX + 600);
+    await swipe(endX, endX + 600);
+    await expect(counter).toHaveText("Page 1 of 6");
     await expect(left).toBeDisabled();
   });
 });
