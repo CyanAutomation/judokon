@@ -2,8 +2,8 @@
  * Add focus, keyboard and hover handlers for carousel cards.
  *
  * @pseudocode
- * 1. Highlight the card nearest the carousel center when focus changes and
- *    focus it only if the container itself is active.
+ * 1. Highlight the card nearest the carousel center when focus changes
+ *    while keeping focus on the container for keyboard navigation.
  * 2. Move focus with arrow keys only when a card already has focus and keep
  *    the center card enlarged.
  * 3. Update focus styles on mouse hover for desktop users.
@@ -32,9 +32,6 @@ export function setupFocusHandlers(container) {
     if (centerCard) {
       centerCard.classList.add("focused-card");
       centerCard.style.transform = "scale(1.1)";
-      if (document.activeElement === container) {
-        centerCard.focus({ preventScroll: true });
-      }
     }
   }
 
