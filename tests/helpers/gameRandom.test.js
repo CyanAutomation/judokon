@@ -23,13 +23,18 @@ function setupDom() {
 describe("game.js", () => {
   it("passes motion preference to generateRandomCard", async () => {
     setupDom();
+    vi.resetModules();
     const generateRandomCard = vi.fn();
     const shouldReduceMotionSync = vi.fn(() => true);
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ shouldReduceMotionSync }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings: vi.fn().mockResolvedValue({ featureFlags: {} })
+    }));
 
     await import("../../src/game.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
+    await Promise.resolve();
     showRandom.dispatchEvent(new Event("click"));
 
     expect(generateRandomCard).toHaveBeenCalledWith(null, null, gameArea, true, undefined, {
