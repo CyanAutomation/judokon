@@ -52,16 +52,18 @@ describe("classicBattle button handlers", () => {
   });
 
   it("enable/disable helpers toggle button state", async () => {
-    const battleMod = await import("../../../src/helpers/classicBattle.js");
-    battleMod.disableNextRoundButton();
+    const { disableNextRoundButton, enableNextRoundButton } = await import(
+      "../../../src/helpers/classicBattle.js"
+    );
+    disableNextRoundButton();
     const btn = document.getElementById("next-round-button");
     expect(btn.disabled).toBe(true);
-    battleMod.enableNextRoundButton();
+    enableNextRoundButton();
     expect(btn.disabled).toBe(false);
   });
 
   it("quit button invokes quitMatch", async () => {
-    const battleMod = await import("../../../src/helpers/classicBattle.js");
+    await import("../../../src/helpers/classicBattle.js");
     document.getElementById("quit-match-button").click();
     const confirmBtn = document.getElementById("confirm-quit-button");
     expect(confirmBtn).not.toBeNull();
