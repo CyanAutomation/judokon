@@ -1,4 +1,4 @@
-import { CAROUSEL_SCROLL_DISTANCE, CAROUSEL_SWIPE_THRESHOLD } from "../constants.js";
+import { CAROUSEL_SWIPE_THRESHOLD } from "../constants.js";
 /**
  * Sets up keyboard navigation for the carousel container.
  *
@@ -14,14 +14,15 @@ export function setupKeyboardNavigation(container) {
   container.tabIndex = 0;
   const cards = container.querySelectorAll(".judoka-card");
   container.addEventListener("keydown", (event) => {
+    const scrollAmount = container.clientWidth;
     const active = document.activeElement;
     const index = Array.from(cards).indexOf(active);
     if (event.key === "ArrowLeft") {
-      container.scrollBy({ left: -CAROUSEL_SCROLL_DISTANCE, behavior: "smooth" });
+      container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
       const prevIndex = index > 0 ? index - 1 : 0;
       cards[prevIndex]?.focus();
     } else if (event.key === "ArrowRight") {
-      container.scrollBy({ left: CAROUSEL_SCROLL_DISTANCE, behavior: "smooth" });
+      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
       const nextIndex = index >= 0 ? Math.min(cards.length - 1, index + 1) : 0;
       cards[nextIndex]?.focus();
     }
@@ -48,10 +49,11 @@ export function setupSwipeNavigation(container) {
   container.addEventListener("touchend", (event) => {
     const touchEndX = event.changedTouches[0].clientX;
     const swipeDistance = touchEndX - touchStartX;
+    const scrollAmount = container.clientWidth;
     if (swipeDistance > CAROUSEL_SWIPE_THRESHOLD) {
-      container.scrollBy({ left: -CAROUSEL_SCROLL_DISTANCE, behavior: "smooth" });
+      container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
     } else if (swipeDistance < -CAROUSEL_SWIPE_THRESHOLD) {
-      container.scrollBy({ left: CAROUSEL_SCROLL_DISTANCE, behavior: "smooth" });
+      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
     }
   });
 }

@@ -14,21 +14,16 @@
  *    - Add an accessible label (`aria-label`) matching the visible text.
  *
  * 3. Add a click event listener to the button:
- *    - Scroll the `container` by the specified `scrollAmount`.
+ *    - Scroll the `container` by its current `clientWidth` in the given direction.
  *    - Use smooth scrolling for better user experience.
  *
  * 4. Return the created button element.
  *
  * @param {String} direction - Either "left" or "right".
  * @param {HTMLElement} container - The carousel container to scroll.
- * @param {Number} scrollAmount - The amount to scroll in pixels.
  * @returns {HTMLElement} The scroll button element.
- *
- * Note: The function assumes `scrollAmount` is a number and does not
- * perform validation. Invalid values will simply be passed to
- * `scrollBy` without throwing an error.
  */
-export function createScrollButton(direction, container, scrollAmount) {
+export function createScrollButton(direction, container) {
   if (direction !== "left" && direction !== "right") {
     throw new Error("Invalid direction: must be 'left' or 'right'");
   }
@@ -52,6 +47,7 @@ export function createScrollButton(direction, container, scrollAmount) {
   button.setAttribute("aria-label", labelText);
 
   button.addEventListener("click", () => {
+    const scrollAmount = container.clientWidth;
     container.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth"
