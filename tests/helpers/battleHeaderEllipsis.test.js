@@ -9,7 +9,10 @@ function hasEllipsisRule(css) {
   root.walkAtRules("media", (at) => {
     if (/max-width:\s*320px/.test(at.params)) {
       at.walkRules((rule) => {
-        if (rule.selector.includes("#round-message") || rule.selector.includes("#score-display")) {
+        if (
+          rule.selector.includes("#round-message") ||
+          rule.selector.includes("#score-display span")
+        ) {
           const overflow = rule.nodes.find((n) => n.prop === "text-overflow");
           const whiteSpace = rule.nodes.find((n) => n.prop === "white-space");
           if (overflow && /ellipsis/.test(overflow.value) && whiteSpace) {
