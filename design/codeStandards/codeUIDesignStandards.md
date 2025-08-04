@@ -55,10 +55,12 @@ Ju-Do-Kon! uses a **bold, high-contrast design system** grounded in clear hierar
 | --button-hover-bg   | #0B5BB0                | Hover state for buttons     |
 | --button-active-bg  | #0C3F7A                | Active button state         |
 | --button-text-color | #FFFFFF                | Button text                 |
-| --switch-off-bg     | #878787                | Toggle off state background |
-| --switch-on-bg      | #08A700                | Toggle on state background  |
+| --switch-off-bg     | #707070                | Toggle off state background |
+| --switch-on-bg      | #007F00                | Toggle on state background  |
 
 The hex values above correspond to CSS custom properties used throughout the project. See [Tokens](#10-tokens) for the complete list. In dark mode `--color-primary` is overridden to `#ff4530` and `--link-color` to `#3399ff` to maintain contrast.
+
+Always validate colour combinations against [WCAG&nbsp;2.1 contrast minimums](https://www.w3.org/TR/WCAG21/#contrast-minimum). Run `npm run check:contrast` or use the `wcag-contrast` library to ensure text and icons meet a ratio of at least **4.5:1**.
 
 ### Rarity Colours
 
@@ -356,15 +358,15 @@ Use these CSS custom properties instead of raw pixel values. Referencing tokens 
 | --button-hover-bg         | #0B5BB0                    | Hover state for buttons; adds drop shadow |
 | --button-active-bg        | #0C3F7A                    | Active button state                       |
 | --button-text-color       | #ffffff                    | Button text                               |
-| --button-disabled-bg      | #a0a0a0                    | Disabled button background                |
+| --button-disabled-bg      | #757575                    | Disabled button background                |
 | --button-disabled-pattern | none                       | Optional disabled texture                 |
-| --switch-off-bg           | #878787                    | Toggle off state background               |
-| --switch-on-bg            | #08A700                    | Toggle on state background                |
+| --switch-off-bg           | #707070                    | Toggle off state background               |
+| --switch-on-bg            | #007F00                    | Toggle on state background                |
 | --shadow-base             | 0 4px 12px rgba(0,0,0,0.1) | Elevation; hover drop-shadow              |
 | --shadow-hover            | 0 8px 24px rgba(0,0,0,0.2) | Hover shadow effect                       |
 | --transition-fast         | all 150ms ease             | UI animations                             |
-| --color-slider-dot        | #BBB                       | Carousel indicator default                |
-| --color-slider-active     | #717171                    | Active/hover indicator                    |
+| --color-slider-dot        | #666666                    | Carousel indicator default                |
+| --color-slider-active     | #333333                    | Active/hover indicator                    |
 | --scroll-marker-size      | 10px                       | Carousel scroll marker size               |
 | --logo-max-height         | min(8dvh, 44px)            | Max height for logo images                |
 
