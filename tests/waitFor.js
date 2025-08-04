@@ -14,5 +14,5 @@ import { expect } from "vitest";
  * @returns {Promise<void>} Resolves when the predicate is satisfied.
  */
 export async function waitFor(predicate, { timeout = 500, interval = 10 } = {}) {
-  await expect.poll(predicate, { timeout, interval }).toBe(true);
+  await expect.poll(() => predicate() === true, { timeout, interval }).toBe(true);
 }
