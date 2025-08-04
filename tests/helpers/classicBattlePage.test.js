@@ -146,6 +146,7 @@ describe("classicBattlePage simulated opponent mode", () => {
     const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
     await setupClassicBattlePage();
 
+    expect(simulateOpponentStat).toHaveBeenCalledWith("easy");
     expect(handleStatSelection).toHaveBeenCalledWith("power");
     const calls = handleStatSelection.mock.calls.length;
     btn.dispatchEvent(new Event("click", { bubbles: true }));

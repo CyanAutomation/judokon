@@ -48,13 +48,14 @@ function enableStatButtons(enable = true) {
 }
 
 let simulatedOpponentMode = false;
+let aiDifficulty = "easy";
 
 async function startRoundWrapper() {
   enableStatButtons(false);
   await classicStartRound();
   await waitForComputerCard();
   if (simulatedOpponentMode) {
-    const stat = simulateOpponentStat();
+    const stat = simulateOpponentStat(aiDifficulty);
     await handleStatSelection(stat);
   } else {
     enableStatButtons(true);
@@ -111,6 +112,13 @@ export async function setupClassicBattlePage() {
   }
 
   simulatedOpponentMode = Boolean(settings.featureFlags.simulatedOpponentMode?.enabled);
+  const params = new URLSearchParams(window.location.search);
+  const paramDifficulty = params.get("difficulty");
+  if (["easy", "medium", "hard"].includes(paramDifficulty)) {
+    aiDifficulty = paramDifficulty;
+  } else if (typeof settings.aiDifficulty === "string") {
+    aiDifficulty = settings.aiDifficulty;
+  }
   if (simulatedOpponentMode) {
     enableStatButtons(false);
   } else {
@@ -139,6 +147,7 @@ export async function setupClassicBattlePage() {
     battleArea.dataset.randomStat = String(Boolean(settings.featureFlags.randomStatMode));
     battleArea.dataset.testMode = String(Boolean(settings.featureFlags.enableTestMode?.enabled));
     battleArea.dataset.simulatedOpponent = String(simulatedOpponentMode);
+    battleArea.dataset.difficulty = aiDifficulty;
   }
 
   toggleViewportSimulation(Boolean(settings.featureFlags.viewportSimulation?.enabled));

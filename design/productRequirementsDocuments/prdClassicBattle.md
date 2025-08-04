@@ -91,7 +91,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 | **P1**   | Match End Condition     | End match on 10 points or after 25 rounds.                                                                                                                                       |
 | **P2**   | Tie Handling            | Show tie message; round ends without score change; continue to next round.                                                                                                       |
 | **P2**   | Player Quit Flow        | Allow player to exit match early with confirmation; counts as a loss.                                                                                                            |
-| **P3**   | AI Stat Selection Logic | Optional: vary AI stat selection by difficulty level; fallback to random if not specified.                                                                                       |
+| **P3**   | AI Stat Selection Logic | AI stat choice follows difficulty setting (`easy` random, `medium` picks stats ≥ average, `hard` selects highest stat). Difficulty can be set via Settings or `?difficulty=` URL param; defaults to `easy`. |
 
 **Additional Behavioral Requirements:**
 
@@ -100,15 +100,6 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card. **The timer and prompt are displayed in the Info Bar.**
 - The opponent's card must always differ from the player's card for each round.
 - **Default:** 30-second timer is fixed (not adjustable by the player at launch), but can be reviewed for future difficulty settings.
-
----
-
-## Future Considerations
-
-- Add easy/medium/hard modes changing AI stat selection strategy:
-  - **Easy**: AI selects randomly.
-  - **Medium**: AI favors stats where it’s average or better.
-  - **Hard**: AI prefers its highest stat each round.
 
 ---
 
@@ -176,12 +167,6 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Uses the shared random card draw module (`generateRandomCard`) as detailed in [prdDrawRandomCard.md](prdDrawRandomCard.md) (see `src/helpers/randomCard.js`).
 - Uses the Mystery Card placeholder outlined in [prdMysteryCard.md](prdMysteryCard.md), which relies on the `useObscuredStats` flag added to `renderJudokaCard()`.
 - **Relies on Info Bar (see prdBattleInfoBar.md) for all round messages, timer, and score display.**
-
----
-
-## Open Questions
-
-_Resolved in [Future Considerations](#future-considerations):_ AI difficulty will control stat selection strategy.
 
 ---
 
