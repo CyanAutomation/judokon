@@ -151,11 +151,9 @@ test.describe("Browse Judoka screen", () => {
 
     const before = await container.evaluate((el) => el.scrollLeft);
 
-    await swipe(startX, startX - 600);
-    await swipe(startX, startX - 600);
-    await swipe(startX, startX - 600);
-    await swipe(startX, startX - 600);
-    await swipe(startX, startX - 600);
+    for (let i = 0; i < 5; i++) {
+      await swipe(startX, startX - 600);
+    }
 
     await expect.poll(() => container.evaluate((el) => el.scrollLeft)).toBeGreaterThan(before);
     await expect.poll(() => counter.textContent()).toBe("Page 6 of 6");
