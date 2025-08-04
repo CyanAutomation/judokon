@@ -9,26 +9,27 @@
   padding-bottom: env(safe-area-inset-bottom);
   height: calc(var(--footer-height) + constant(safe-area-inset-bottom));
   height: calc(var(--footer-height) + env(safe-area-inset-bottom));
-  display: inline-flex;
+  display: flex;
   background-color: var(--color-secondary); /* Buttons, highlights */
   text-align: center;
   align-items: center;
-  justify-content: space-evenly;
   box-shadow: var(--shadow-base); /* Elevation */
   font-size: max(1.3rem, 1.8vw);
   width: 100%;
 }
 
 .bottom-navbar ul {
-  display: inline-flex;
-  gap: var(--space-lg); /* Generous whitespace */
+  display: flex;
+  justify-content: space-between;
   list-style-type: none;
+  width: 100%;
 }
 
 .bottom-navbar ul li {
   min-width: var(--touch-target-size);
   min-height: var(--touch-target-size);
   padding: var(--space-sm);
+  flex: 1 1 0;
 }
 
 .bottom-navbar a,
@@ -46,6 +47,8 @@
   justify-content: center;
   min-width: var(--touch-target-size);
   min-height: var(--touch-target-size);
+  width: 100%;
+  text-align: center;
 }
 
 .bottom-navbar a:hover {
