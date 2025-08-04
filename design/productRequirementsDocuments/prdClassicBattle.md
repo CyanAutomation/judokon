@@ -187,7 +187,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - [ ] 3.2 Handle Judoka dataset load failure with error prompt and reload option
   - [x] 3.3 Add fallback stat selection for AI if difficulty logic fails
 - [ ] 4.0 Polish UX and Accessibility
-  - [ ] 4.1 Integrate consistent color coding (blue for player, red for AI)
+  - [x] 4.1 Integrate consistent color coding (blue for player, red for AI)
   - [ ] 4.2 Apply WCAG-compliant contrast ratios
   - [ ] 4.3 Ensure touch targets ≥44px and support keyboard navigation (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) and prdBattleInfoBar.md)
   - [ ] 4.4 Add alt text to cards and UI elements
