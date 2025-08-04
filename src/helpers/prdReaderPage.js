@@ -22,8 +22,8 @@ import { getPrdTaskStats } from "./prdTaskStats.js";
  * @param {Function} [parserFn=markdownToHtml] Parser used to convert Markdown to HTML.
  */
 export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
-  const prdDir = ["..", "..", "design", "productRequirementsDocuments"].join("/") + "/";
-  const PRD_DIR = new URL(prdDir, import.meta.url).href;
+  const base = (import.meta?.env?.BASE_URL ?? "/").replace(/\/?$/, "/");
+  const PRD_DIR = `${base}design/productRequirementsDocuments/`;
 
   let FILES = [];
   if (docsMap) {
