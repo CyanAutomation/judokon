@@ -137,11 +137,12 @@ export function startCountdown(seconds, onFinish) {
 }
 
 /**
- * Display the current match score on two lines.
+ * Display the current match score using two stacked spans.
  *
  * @pseudocode
- * 1. Clear existing content and append `"You: {playerScore}"`.
- * 2. Append a line break and `"Opponent: {computerScore}"` on the next line.
+ * 1. Create `playerSpan` with `"You: {playerScore}"`.
+ * 2. Create `opponentSpan` with `"\nOpponent: {computerScore}"`.
+ * 3. Replace existing children of `scoreEl` with both spans.
  *
  * @param {number} playerScore - Player's score.
  * @param {number} computerScore - Opponent's score.
@@ -149,11 +150,10 @@ export function startCountdown(seconds, onFinish) {
  */
 export function updateScore(playerScore, computerScore) {
   if (scoreEl) {
-    // Clear previous score text
-    scoreEl.textContent = "";
-    // Add "You" and "Opponent" on separate lines
-    scoreEl.append(`You: ${playerScore}`);
-    scoreEl.appendChild(document.createElement("br"));
-    scoreEl.append(`\nOpponent: ${computerScore}`);
+    const playerSpan = document.createElement("span");
+    playerSpan.textContent = `You: ${playerScore}`;
+    const opponentSpan = document.createElement("span");
+    opponentSpan.textContent = `\nOpponent: ${computerScore}`;
+    scoreEl.replaceChildren(playerSpan, opponentSpan);
   }
 }

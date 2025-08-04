@@ -34,6 +34,10 @@
   text-align: right;
 }
 
+.battle-header #score-display span {
+  display: block;
+}
+
 .battle-header[data-orientation="portrait"] {
   grid-template-columns: 1fr;
   grid-template-rows: auto auto auto;
@@ -64,7 +68,7 @@
 
 @media (max-width: 320px) {
   .battle-header #round-message,
-  .battle-header #score-display {
+  .battle-header #score-display span {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

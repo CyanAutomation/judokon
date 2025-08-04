@@ -69,7 +69,7 @@ The round message, timer, and score now sit directly inside the page header rath
 
 - **Layout**
   - Right side: score display (`Player: X – Opponent: Y`)
-  - Two-line score format appears on narrow screens (`Player: X` line break `Opponent: Y`)
+  - Two-line score format appears on narrow screens via stacked `<span>` elements (`<span>You: X</span> <span>Opponent: Y</span>`)
   - Left side: rotating status messages (e.g., "You won!", "Next round in: 3s", "Select your move", **"Time left: 29s"**)
 - **Visuals**
   - Font size: `clamp(16px, 4vw, 24px)`; on narrow screens (<375px) `clamp(14px, 5vw, 20px)`.
