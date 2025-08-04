@@ -12,4 +12,12 @@ describe("toggleTooltipOverlayDebug", () => {
     toggleTooltipOverlayDebug(false);
     expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
   });
+
+  it("does nothing when document is undefined", () => {
+    const originalDocument = global.document;
+    // @ts-ignore - simulate an environment without document
+    delete global.document;
+    expect(() => toggleTooltipOverlayDebug(true)).not.toThrow();
+    global.document = originalDocument;
+  });
 });
