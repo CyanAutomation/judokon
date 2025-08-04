@@ -5,36 +5,36 @@ import { CAROUSEL_SWIPE_THRESHOLD } from "../constants.js";
  * @pseudocode
  * 1. Make the container focusable by setting `tabIndex` to 0.
  * 2. Add a `keydown` event listener to the container.
- *    - When the container is focused and "ArrowLeft" is pressed:
+ *    - Ignore events that do not originate from the container or are not
+ *      "ArrowLeft"/"ArrowRight".
+ *    - When "ArrowLeft" is pressed:
  *      - Prevent the default behavior.
- *      - Scroll left by one container width and dispatch a `scroll` event.
- *    - When the container is focused and "ArrowRight" is pressed:
+ *      - Scroll left by one container width.
+ *    - When "ArrowRight" is pressed:
  *      - Prevent the default behavior.
- *      - Scroll right by one container width and dispatch a `scroll` event.
+ *      - Scroll right by one container width.
  *
  * @param {HTMLElement} container - The carousel container element.
  */
 export function setupKeyboardNavigation(container) {
   container.tabIndex = 0;
   container.addEventListener("keydown", (event) => {
-    if (document.activeElement !== container) return;
+    if (event.target !== event.currentTarget) return;
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
     const scrollAmount = container.clientWidth;
     if (event.key === "ArrowLeft") {
-      event.preventDefault();
       if (typeof container.scrollBy === "function") {
         container.scrollBy({ left: -scrollAmount });
       } else {
         container.scrollLeft -= scrollAmount;
       }
-      container.dispatchEvent(new Event("scroll"));
     } else if (event.key === "ArrowRight") {
-      event.preventDefault();
       if (typeof container.scrollBy === "function") {
         container.scrollBy({ left: scrollAmount });
       } else {
         container.scrollLeft += scrollAmount;
       }
-      container.dispatchEvent(new Event("scroll"));
     }
   });
 }
