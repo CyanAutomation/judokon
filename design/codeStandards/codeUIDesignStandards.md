@@ -60,7 +60,7 @@ Ju-Do-Kon! uses a **bold, high-contrast design system** grounded in clear hierar
 
 The hex values above correspond to CSS custom properties used throughout the project. See [Tokens](#10-tokens) for the complete list. In dark mode `--color-primary` is overridden to `#ff4530` and `--link-color` to `#3399ff` to maintain contrast.
 
-Always validate colour combinations against [WCAG&nbsp;2.1 contrast minimums](https://www.w3.org/TR/WCAG21/#contrast-minimum). Run `npm run check:contrast` or use the `wcag-contrast` library to ensure text and icons meet a ratio of at least **4.5:1**.
+Always validate color combinations against [WCAG&nbsp;2.1 contrast minimums](https://www.w3.org/TR/WCAG21/#contrast-minimum). Run `npm run check:contrast` or use the `wcag-contrast` library to ensure text and icons meet a ratio of at least **4.5:1**.
 
 ### Rarity Colours
 
