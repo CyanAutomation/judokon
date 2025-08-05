@@ -13,11 +13,11 @@
  * @returns {HTMLDivElement} The info bar element.
  */
 import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
+import { startCoolDown, watchForDrift } from "../helpers/battleEngine.js";
 
 let messageEl;
 let timerEl;
 let scoreEl;
-let countdownRafId = 0;
 let scoreRafId = 0;
 let currentPlayer = 0;
 let currentComputer = 0;
@@ -153,15 +153,14 @@ export function showTemporaryMessage(text) {
 }
 
 /**
- * Start a countdown timer that updates once per second using `requestAnimationFrame`.
+ * Start a countdown timer that monitors for drift and displays a fallback when
+ * desynchronization occurs.
  *
  * @pseudocode
- * 1. Cancel any existing animation frame loop.
- * 2. Store `startTime` using `performance.now()` and show the initial text.
- * 3. On each frame, compute elapsed seconds with a small frame buffer and only
- *    update when the displayed value changes.
- * 4. When no time remains, cancel the loop, show "Next round in: 0s" and run
- *    `onFinish`.
+ * 1. Use `startCoolDown` to update the timer each second.
+ * 2. Monitor for drift via `watchForDrift`; on drift, show "Waiting…" and
+ *    restart the countdown, giving up after several retries.
+ * 3. When the timer expires, stop monitoring and invoke `onFinish`.
  *
  * @param {number} seconds - Seconds to count down from.
  * @param {Function} [onFinish] - Optional callback when countdown ends.
@@ -169,26 +168,26 @@ export function showTemporaryMessage(text) {
  */
 export function startCountdown(seconds, onFinish) {
   if (!timerEl) return;
-  cancelAnimationFrame(countdownRafId);
-  const startTime = performance.now();
-  timerEl.textContent = `Next round in: ${seconds}s`;
-  const frameBuffer = 1000 / 60; // ~16 ms
-  let lastDisplayed = seconds;
-  const step = () => {
-    const elapsed = Math.floor((performance.now() - startTime + frameBuffer) / 1000);
-    const remaining = Math.max(0, seconds - elapsed);
-    if (remaining !== lastDisplayed) {
-      lastDisplayed = remaining;
-      timerEl.textContent = `Next round in: ${remaining}s`;
-    }
-    if (remaining <= 0) {
-      cancelAnimationFrame(countdownRafId);
-      if (typeof onFinish === "function") onFinish();
-      return;
-    }
-    countdownRafId = requestAnimationFrame(step);
+
+  const onTick = (remaining) => {
+    timerEl.textContent = `Next round in: ${remaining}s`;
   };
-  countdownRafId = requestAnimationFrame(step);
+
+  let stopWatch;
+  const onExpired = () => {
+    if (stopWatch) stopWatch();
+    if (typeof onFinish === "function") onFinish();
+  };
+
+  const handleDrift = createDriftHandler((rem) => run(rem), onExpired);
+
+  const run = (dur) => {
+    startCoolDown(onTick, onExpired, dur);
+    if (stopWatch) stopWatch();
+    stopWatch = watchForDrift(dur, handleDrift);
+  };
+
+  run(seconds);
 }
 
 /**
@@ -207,4 +206,18 @@ export function startCountdown(seconds, onFinish) {
 export function updateScore(playerScore, computerScore) {
   if (!scoreEl) return;
   animateScore(playerScore, computerScore);
+}
+
+function createDriftHandler(restartFn, onGiveUp) {
+  const MAX_DRIFT_RETRIES = 3;
+  let retries = 0;
+  return (remaining) => {
+    retries += 1;
+    if (retries > MAX_DRIFT_RETRIES) {
+      onGiveUp();
+      return;
+    }
+    showMessage("Waiting…");
+    restartFn(remaining);
+  };
 }

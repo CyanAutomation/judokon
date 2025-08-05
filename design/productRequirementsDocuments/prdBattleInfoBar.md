@@ -130,7 +130,7 @@ The round message, timer, and score now sit directly inside the page header rath
   - [x] 5.1 Show “Waiting…” if backend score sync fails
   - [x] 5.2 Show “Waiting…” if countdown timer mismatches server start
   - [x] 5.3 Define recovery logic for delayed player input (show message and auto-select after stall)
-  - [ ] 5.4 Handle all possible timer/counter desyncs and display fallback (pending)
+   - [x] 5.4 Handle all timer/counter desyncs via `watchForDrift` with “Waiting…” safeguards
 
 - [ ] 6.0 Testing and Validation
 

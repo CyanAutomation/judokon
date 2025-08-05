@@ -11,6 +11,7 @@ import {
   startCountdown,
   updateScore
 } from "../../src/components/InfoBar.js";
+import * as battleEngine from "../../src/helpers/battleEngine.js";
 import { createInfoBarHeader } from "../utils/testUtils.js";
 
 describe("InfoBar component", () => {
@@ -64,6 +65,17 @@ describe("InfoBar component", () => {
     timer.advanceTimersByTime(1000);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 0s");
     timer.clearAllTimers();
+  });
+
+  it("startCountdown displays fallback on drift", () => {
+    const timer = vi.useFakeTimers();
+    const watchSpy = vi.spyOn(battleEngine, "watchForDrift");
+    startCountdown(2);
+    const [, onDrift] = watchSpy.mock.calls[0];
+    onDrift(1);
+    expect(document.getElementById("round-message").textContent).toBe("Waiting…");
+    timer.clearAllTimers();
+    watchSpy.mockRestore();
   });
 
   it("initializes from existing DOM", () => {
