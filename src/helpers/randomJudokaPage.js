@@ -10,7 +10,7 @@
  * 4. Create a hidden slide-out history panel and a toggle button.
  * 5. Define `displayCard` that disables the Draw button, updates its text and `aria-busy` state while loading, calls
  *    `generateRandomCard` with the loaded data and the user's motion preference, updates the history list, then restores
- *    the button once the animation completes.
+ *    the button once the animation completes (or immediately when motion is disabled).
  * 6. Render a placeholder card in the card container.
  * 7. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and attach its event listener.
  * 8. If data fails to load, disable the Draw button and show an error message or fallback card.
@@ -153,21 +153,31 @@ export async function setupRandomJudokaPage() {
         enableInspector: settings.featureFlags.enableCardInspector.enabled
       }
     );
-    // Wait for animation to finish (max 500ms), then re-enable button
-    setTimeout(
-      () => {
-        drawButton.disabled = false;
-        drawButton.removeAttribute("aria-disabled");
-        drawButton.classList.remove("is-loading");
-        if (label) {
-          label.textContent = "Draw Card!";
-        } else {
-          drawButton.textContent = "Draw Card!";
-        }
-        drawButton.removeAttribute("aria-busy");
-      },
-      prefersReducedMotion ? 0 : 500
-    );
+    function enableButton() {
+      drawButton.disabled = false;
+      drawButton.removeAttribute("aria-disabled");
+      drawButton.classList.remove("is-loading");
+      if (label) {
+        label.textContent = "Draw Card!";
+      } else {
+        drawButton.textContent = "Draw Card!";
+      }
+      drawButton.removeAttribute("aria-busy");
+    }
+    if (prefersReducedMotion) {
+      enableButton();
+    } else {
+      const cardEl = cardContainer.querySelector(".card-container");
+      if (!cardEl) {
+        requestAnimationFrame(enableButton);
+      } else {
+        const onEnd = () => {
+          cardEl.removeEventListener("animationend", onEnd);
+          enableButton();
+        };
+        cardEl.addEventListener("animationend", onEnd);
+      }
+    }
   }
 
   const cardContainer = document.getElementById("card-container");
