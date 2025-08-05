@@ -113,8 +113,8 @@ export function showTemporaryMessage(text) {
  * @pseudocode
  * 1. Cancel any existing animation frame loop.
  * 2. Store `startTime` using `performance.now()` and show the initial text.
- * 3. On each frame, compute elapsed seconds and only update when the displayed
- *    value changes.
+ * 3. On each frame, compute elapsed seconds with a small frame buffer and only
+ *    update when the displayed value changes.
  * 4. When no time remains, cancel the loop, show "Next round in: 0s" and run
  *    `onFinish`.
  *
@@ -127,17 +127,17 @@ export function startCountdown(seconds, onFinish) {
   cancelAnimationFrame(rafId);
   const startTime = performance.now();
   timerEl.textContent = `Next round in: ${seconds}s`;
+  const frameBuffer = 1000 / 60; // ~16 ms
   let lastDisplayed = seconds;
   const step = () => {
-    const elapsed = Math.floor((performance.now() - startTime) / 1000);
-    const remaining = seconds - elapsed;
-    if (remaining !== lastDisplayed && remaining >= 0) {
+    const elapsed = Math.floor((performance.now() - startTime + frameBuffer) / 1000);
+    const remaining = Math.max(0, seconds - elapsed);
+    if (remaining !== lastDisplayed) {
       lastDisplayed = remaining;
       timerEl.textContent = `Next round in: ${remaining}s`;
     }
     if (remaining <= 0) {
       cancelAnimationFrame(rafId);
-      timerEl.textContent = "Next round in: 0s";
       if (typeof onFinish === "function") onFinish();
       return;
     }
