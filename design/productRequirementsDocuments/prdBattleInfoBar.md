@@ -134,10 +134,14 @@ The round message, timer, and score now sit directly inside the page header rath
 
 - [ ] 6.0 Testing and Validation
 
-  - [ ] 6.1 Add/expand unit tests for timer pause/resume, auto-select, and fallback logic
-  - [ ] 6.2 Add/expand Playwright UI tests for info bar responsiveness, accessibility, and edge cases
+- [ ] 6.1 Add/expand unit tests for timer pause/resume, auto-select, and fallback logic
+- [ ] 6.2 Add/expand Playwright UI tests for info bar responsiveness, accessibility, and edge cases
 
 ---
+
+## Accessibility Audit
+
+- **2025-08-05**: `npm run check:contrast` reported no issues after updating `--color-secondary` to `#0074d9`.
 
 **See also:**
 
