@@ -14,7 +14,7 @@ test.describe.parallel("Meditation screen", () => {
   });
 
   test("page basics", async ({ page }) => {
-    await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);
+    await verifyPageBasics(page, []); // Meditation screen has no nav links
   });
 
   test("elements are visible", async ({ page }) => {
