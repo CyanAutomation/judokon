@@ -68,7 +68,6 @@ describe("generateRandomCard", () => {
   it("falls back to id 0 when selection fails", async () => {
     const container = document.createElement("div");
     const fallbackEl = document.createElement("div");
-    const judokaData = getJudokaFixture().slice(0, 2);
     const gokyoData = getGokyoFixture();
 
     getRandomJudokaMock = vi.fn(() => {
