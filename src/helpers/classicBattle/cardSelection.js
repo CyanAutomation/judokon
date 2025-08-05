@@ -133,7 +133,9 @@ export async function drawCards() {
     if (typeof judokaCard.render === "function") {
       card = await judokaCard.render();
     }
-  } catch {}
+  } catch (error) {
+    console.error("Error rendering JudokaCard:", error);
+  }
   if (card instanceof HTMLElement) {
     computerContainer.innerHTML = "";
     computerContainer.appendChild(card);
