@@ -1,5 +1,8 @@
-import { generateCardPortrait, generateCardSignatureMove } from "./cardRender.js";
-import { createStatsPanel } from "../components/StatsPanel.js";
+import {
+  generateCardPortrait,
+  generateCardSignatureMove,
+  generateCardStats
+} from "./cardRender.js";
 import { createNoDataContainer } from "./cardTopBar.js";
 
 /**
@@ -38,8 +41,8 @@ export function createPortraitSection(judoka) {
  * Build the stats section for a judoka card.
  *
  * @pseudocode
- * 1. Call `createStatsPanel` with the judoka stats and card type.
- * 2. Await the generated element and return it.
+ * 1. Call `generateCardStats(judoka, cardType)` to get stats HTML.
+ * 2. Parse the HTML into a fragment and return its first element.
  * 3. On error, log and return `createNoDataContainer()`.
  *
  * @param {import("./types.js").Judoka} judoka - Judoka data object.
@@ -48,7 +51,9 @@ export function createPortraitSection(judoka) {
  */
 export async function createStatsSection(judoka, cardType) {
   try {
-    return await createStatsPanel(judoka.stats, { type: cardType });
+    const statsHTML = await generateCardStats(judoka, cardType);
+    const fragment = document.createRange().createContextualFragment(statsHTML);
+    return fragment.firstElementChild;
   } catch (error) {
     console.error("Failed to generate stats:", error);
     return createNoDataContainer();
