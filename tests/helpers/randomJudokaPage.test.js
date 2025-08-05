@@ -74,6 +74,7 @@ describe("randomJudokaPage module", () => {
     await vi.runAllTimersAsync();
     document.getElementById("draw-card-btn").click();
     await vi.runAllTimersAsync();
+    container.querySelector(".card-container")?.dispatchEvent(new Event("animationend"));
 
     const cardEl = container.querySelector(".judoka-card");
     cardEl.style.setProperty("--card-bg-color", cardBg);
@@ -134,7 +135,11 @@ describe("randomJudokaPage module", () => {
       return await vi.importActual("../../src/components/Button.js");
     });
 
-    const generateRandomCard = vi.fn().mockResolvedValue();
+    const generateRandomCard = vi.fn().mockImplementation(async (_c, _g, container) => {
+      const card = document.createElement("div");
+      card.className = "card-container";
+      container.appendChild(card);
+    });
     const fetchJson = vi.fn().mockResolvedValue([]);
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const applyMotionPreference = vi.fn();
@@ -159,12 +164,11 @@ describe("randomJudokaPage module", () => {
     const label = button.querySelector(".button-label");
 
     button.click();
-
+    await Promise.resolve();
+    const card = container.querySelector(".card-container");
     expect(label.textContent).toBe("Drawing…");
     expect(button.getAttribute("aria-busy")).toBe("true");
-
-    await vi.advanceTimersByTimeAsync(500);
-
+    card.dispatchEvent(new Event("animationend"));
     expect(label.textContent).toBe("Draw Card!");
     expect(button).not.toHaveAttribute("aria-busy");
   });
@@ -181,10 +185,15 @@ describe("randomJudokaPage module", () => {
       { firstname: "F", surname: "Six" }
     ];
     let idx = 0;
-    const generateRandomCard = vi.fn().mockImplementation(async (_c, _g, _el, _m, onSelect) => {
-      onSelect(judokaSeq[idx]);
-      idx += 1;
-    });
+    const generateRandomCard = vi
+      .fn()
+      .mockImplementation(async (_c, _g, container, _m, onSelect) => {
+        const card = document.createElement("div");
+        card.className = "card-container";
+        container.appendChild(card);
+        onSelect(judokaSeq[idx]);
+        idx += 1;
+      });
     const fetchJson = vi.fn().mockResolvedValue([]);
     const createButton = vi.fn((_, opts = {}) => {
       const btn = document.createElement("button");
@@ -207,13 +216,13 @@ describe("randomJudokaPage module", () => {
     await import("../../src/helpers/randomJudokaPage.js");
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
-    await vi.runOnlyPendingTimersAsync();
+    await vi.runAllTimersAsync();
 
     const drawBtn = document.getElementById("draw-card-btn");
     for (let i = 0; i < judokaSeq.length; i++) {
       drawBtn.click();
       await Promise.resolve();
-      await vi.runOnlyPendingTimersAsync();
+      container.querySelector(".card-container")?.dispatchEvent(new Event("animationend"));
     }
 
     const panel = document.getElementById("history-panel");
@@ -263,6 +272,7 @@ describe("randomJudokaPage module", () => {
     const drawBtn = document.getElementById("draw-card-btn");
     drawBtn.click();
     await vi.runAllTimersAsync();
+    container.querySelector(".card-container")?.dispatchEvent(new Event("animationend"));
 
     expect(container.querySelector(".debug-panel")).toBeNull();
 
