@@ -6,7 +6,7 @@
  * default limits for Classic Battle matches.
  *
  * @pseudocode
- * 1. Resolve the helpers directory URL and derive the base path to JSON data files.
+ * 1. Normalize `import.meta.url`, resolve the helpers directory URL, and derive the base path to JSON data files.
  * 2. Define carousel swipe threshold and spinner delay.
  * 3. Set fade and removal durations for settings error popups.
  * 4. Establish Classic Battle win conditions and maximum rounds.
@@ -22,7 +22,10 @@
  *
  * @constant {URL}
  */
-const HELPERS_DIR = new URL(/* @vite-ignore */ ".", import.meta.url);
+// Normalize the module URL to avoid issues in non-browser environments.
+const moduleUrl = typeof import.meta.url === "string" ? import.meta.url : import.meta.url.href;
+
+const HELPERS_DIR = new URL(/* @vite-ignore */ ".", moduleUrl);
 
 /**
  * Path to the directory containing JSON data files.
