@@ -1,7 +1,7 @@
 name: Update Card Codes
 
 on:
-  workflow_dispatch: # Allows manual triggering
+  workflow_dispatch: # Manual trigger
 
 permissions:
   contents: write
@@ -22,39 +22,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Read judoka data
-        id: read_judoka
-        run: |
-          judoka=$(cat src/data/judoka.json)
-          echo "judoka=$judoka" >> $GITHUB_ENV
+      - name: Generate card codes
+        run: node updateCodes.mjs
 
-      - name: Update card codes
+      - name: Check for changes
+        id: changes
         run: |
-          echo "$judoka" | jq -c '.[]' | while read -r judoka; do
-            id=$(echo "$judoka" | jq -r '.id')
-            cardCode=$(node -e "import { generateCardCode } from './src/helpers/cardCode.js'; console.log(generateCardCode(JSON.parse(process.argv[1])))" "$judoka")
-            echo "Updating card code for judoka ID: $id"
-            echo "$judoka" | jq --arg cardCode "$cardCode" '.cardCode = $cardCode' > "src/data/judoka_$id.json"
-          done
+          git diff --quiet || echo "changed=true" >> $GITHUB_OUTPUT
 
-      - name: Combine updated judoka data
-        run: |
-          echo "[" > src/data/updated_judoka.json
-          for file in src/data/judoka_*.json; do
-            cat "$file" >> src/data/updated_judoka.json
-            echo "," >> src/data/updated_judoka.json
-          done
-          sed -i '$ s/,$//' src/data/updated_judoka.json
-          echo "]" >> src/data/updated_judoka.json
-
-      - name: Commit changes
+      - name: Commit updated card codes
+        if: steps.changes.outputs.changed == 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add src/data/updated_judoka.json
+          git add src/data/judoka.json
           git commit -m "Update card codes for judoka"
 
       - name: Create Pull Request
+        if: steps.changes.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
