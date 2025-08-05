@@ -20,7 +20,7 @@ import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from 
  *    giving up after several retries.
  * 4. When expired, auto-select a random stat via `onExpired`.
  *
- * @param {function(string): void} onExpiredSelect - Callback to handle stat auto-selection.
+ * @param {function(string): Promise<void>} onExpiredSelect - Callback to handle stat auto-selection.
  * @returns {Promise<void>} Resolves when the timer begins.
  */
 export async function startTimer(onExpiredSelect) {
@@ -44,29 +44,29 @@ export async function startTimer(onExpiredSelect) {
   };
 
   let stopWatch;
-  const onExpired = () => {
+  const onExpired = async () => {
     if (stopWatch) stopWatch();
     const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
     infoBar.showMessage(`Time's up! Auto-selecting ${randomStat}`);
-    onExpiredSelect(randomStat);
+    await onExpiredSelect(randomStat);
   };
 
   const handleDrift = createDriftHandler(
     (rem) => runTimer(rem),
-    () => {
+    async () => {
       infoBar.showMessage("Timer error. Auto-selecting stat.");
-      onExpired();
+      await onExpired();
     }
   );
 
-  const runTimer = (dur) => {
+  const runTimer = async (dur) => {
     duration = dur;
-    engineStartRound(onTick, onExpired, dur);
+    await engineStartRound(onTick, onExpired, dur);
     if (stopWatch) stopWatch();
     stopWatch = watchForDrift(dur, handleDrift);
   };
 
-  runTimer(duration);
+  await runTimer(duration);
   restore();
 }
 

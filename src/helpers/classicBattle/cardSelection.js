@@ -128,15 +128,18 @@ export async function drawCards() {
     useObscuredStats: true,
     enableInspector
   });
-  if (typeof judokaCard.render === "function") {
-    const card = await judokaCard.render();
-    if (card instanceof HTMLElement) {
-      computerContainer.innerHTML = "";
-      computerContainer.appendChild(card);
-      setupLazyPortraits(card);
-    } else {
-      console.error("JudokaCard did not render an HTMLElement");
+  let card;
+  try {
+    if (typeof judokaCard.render === "function") {
+      card = await judokaCard.render();
     }
+  } catch (error) {
+    console.error("Error rendering JudokaCard:", error);
+  }
+  if (card instanceof HTMLElement) {
+    computerContainer.innerHTML = "";
+    computerContainer.appendChild(card);
+    setupLazyPortraits(card);
   } else {
     console.error("Failed to render computer card: JudokaCard.render method is not available. The computer card will not be displayed.");
   }

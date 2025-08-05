@@ -43,12 +43,21 @@ export async function revealComputerCard() {
     settings = { featureFlags: {} };
   }
   const enableInspector = Boolean(settings.featureFlags?.enableCardInspector?.enabled);
-  const card = await new JudokaCard(judoka, getGokyoLookup(), {
-    enableInspector
-  }).render();
-  container.innerHTML = "";
-  container.appendChild(card);
-  setupLazyPortraits(card);
+  let card;
+  try {
+    card = await new JudokaCard(judoka, getGokyoLookup(), {
+      enableInspector
+    }).render();
+  } catch (err) {
+    console.error("Error rendering JudokaCard:", err);
+  }
+  if (card instanceof HTMLElement) {
+    container.innerHTML = "";
+    container.appendChild(card);
+    setupLazyPortraits(card);
+  } else {
+    console.error("JudokaCard did not render an HTMLElement");
+  }
   clearComputerJudoka();
 }
 
