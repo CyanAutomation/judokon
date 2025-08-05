@@ -29,6 +29,43 @@ export async function registerCommonRoutes(page) {
         contentType: "application/javascript",
         body: "export const marked={parse:(m)=>m};"
       })
-    )
+    ),
+    page.route("https://fonts.googleapis.com/**", (route) =>
+      route.fulfill({
+        contentType: "text/css",
+        body: `@font-face {
+  font-family: "Russo One";
+  src: url("/src/assets/fonts/RussoOneRegular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Open Sans";
+  src: url("/src/assets/fonts/OpenSansRegular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Open Sans";
+  src: url("/src/assets/fonts/OpenSans600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+`
+      })
+    ),
+    page.route("https://fonts.gstatic.com/**", (route) => {
+      const url = route.request().url();
+      if (url.includes("Russo")) {
+        route.fulfill({ path: "src/assets/fonts/RussoOneRegular.woff2" });
+      } else if (url.includes("600") || url.includes("SemiBold")) {
+        route.fulfill({ path: "src/assets/fonts/OpenSans600.woff2" });
+      } else {
+        route.fulfill({ path: "src/assets/fonts/OpenSansRegular.woff2" });
+      }
+    })
   ]);
 }
