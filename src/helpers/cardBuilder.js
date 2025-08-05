@@ -207,6 +207,7 @@ function createInspectorPanel(container, judoka, sections) {
   // keep the inspector output concise.
 
   function updateDataset() {
+    summary.setAttribute("aria-expanded", panel.open ? "true" : "false");
     if (panel.open) {
       container.dataset.inspector = "true";
     } else {
