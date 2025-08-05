@@ -42,8 +42,10 @@ test.describe("Classic battle flow", () => {
 
   test("quit match confirmation", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
-    page.on("dialog", (dialog) => dialog.accept());
     await page.locator("[data-testid='home-link']").click();
+    const confirmButton = page.locator("#confirm-quit-button");
+    await confirmButton.waitFor();
+    await confirmButton.click();
     await expect(page).toHaveURL(/index.html/);
   });
 
