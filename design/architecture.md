@@ -1,119 +1,138 @@
-# Project Architecture Overview
+# 🧱 Project Architecture Overview
 
 This document summarizes the main source folders and their responsibilities.
 
-Throughout the project, keep modules simple. Favor small,
-single-purpose functions over monolithic implementations.
+Throughout the project, keep modules simple. Favor small, single-purpose functions over monolithic implementations.
 
-## game.js
+---
 
-The entry point for the browser. It waits for `DOMContentLoaded` and wires up all game interactions. Helper functions are imported here to build the card carousel, fetch data, and render random judoka cards.
+## 📌 Entry Points
 
-## helpers/
+### `game.js`
+The main entry point for the browser. It waits for `DOMContentLoaded` and wires up all game interactions.
 
-Reusable utilities organized by concern (card building, data fetching, random card generation, etc.). Each module is documented with JSDoc and `@pseudocode` blocks for clarity.
-Key helpers include `generateRandomCard()` for choosing a card and `renderJudokaCard()` for injecting it into the DOM with an optional reveal animation.
+- Imports helper functions to:
+  - Build the card carousel
+  - Fetch JSON data
+  - Render judoka cards
+- Triggers:
+  - Initial card setup
+  - Navigation hooks
+  - Feature flag checks
 
-`navigationBar.js` loads active game modes and injects them into the persistent bottom navigation bar defined in [prdNavigationBar.md](productRequirementsDocuments/prdNavigationBar.md). `setupBottomNavbar.js` calls this helper on DOM ready and wires up button effects so the bar is populated on every page.
+---
 
-`src/components/` holds reusable UI pieces. `Button.js` exposes a `createButton` helper that applies design tokens and can prepend an optional icon. Typical pages import this module along with the `setupButtonEffects` helper to keep button interactions consistent.
+## 🧰 helpers/
 
-## page modules
+Reusable utilities organized by concern (card building, data fetching, random card generation, etc.). Each module is documented with JSDoc and `@pseudocode` blocks.
 
-HTML pages under `src/pages` each load a dedicated module located in
-`src/helpers`. These modules (for example `randomJudokaPage.js` or
-`settingsPage.js`) expose setup functions that attach event listeners and
-initialize page-specific behavior. The change log view uses
-`changeLogPage.js` to fetch `judoka.json`, sort by `lastUpdated`, and render the
-20 most recent updates.
+Key helpers include:
 
-`vectorSearchPage.js` now delegates query expansion to `vectorSearchQuery.js`
-and builds result snippets with `snippetFormatter.js`.
+- `generateRandomCard()` – Randomly selects a card entry
+- `renderJudokaCard()` – Injects the card into the DOM, supports reveal animations
+- `navigationBar.js` – Injects active game modes into the persistent nav bar
+- `setupBottomNavbar.js` – Wires the nav bar into the DOM
 
-## PRD reader
+---
 
-`src/pages/prdViewer.html` uses the helper
-`src/helpers/prdReaderPage.js` to display the Product Requirements
-Documents. The Markdown files live in
-`design/productRequirementsDocuments`. The helper fetches each file,
-converts it with `markdownToHtml`—a wrapper around the minimal **Marked** parser (supporting headings, paragraphs, bold text, mixed ordered and unordered lists, tables, and horizontal rules rendered as `<br/><hr/><br/>` for extra spacing)—and injects the HTML into the `#prd-content` container. It also builds the sidebar list in `#prd-list` and loads the chosen document when an item is clicked. Arrow keys and swipe gestures cycle through the loaded documents, and the logo links back to `index.html`. The viewer additionally displays each PRD's task completion summary above the document content.
+## 📦 data/
 
-## components/
+Static JSON used throughout the game:
 
-Factory functions that create reusable UI elements. `Button.js` and
-`ToggleSwitch.js` return styled controls. `Modal.js` builds an accessible dialog with focus trapping and open/close helpers. `StatsPanel.js` constructs
-the `.card-stats` list for displaying attributes and can be reused anywhere
-stats need to be shown. `SidebarList.js` produces a selectable sidebar menu and
-returns `{ element, select }` to control the highlighted item. `Card.js` provides
-a reusable content panel styled with the `.card` class. The `createModal()` factory returns `{ element, open, close }` and
-automatically closes on backdrop clicks or when Escape is pressed while
-keeping focus trapped inside the dialog. Pages create their content fragment,
-pass it to `createModal()`, and call `open()` when needed. `StatsPanel.js`
-constructs the `.card-stats` section used within judoka cards. `Card.js`
-provides a reusable content panel styled with the `.card` class.
-`InfoBar.js` builds a real-time bar for classic battles. The modules `cardSelection.js`,
-`timerControl.js`, and `uiHelpers.js` update it each round via `startCountdown`
-and by passing the latest scores to `updateScore` so players see messages, the
-countdown timer, and the current score. The `#round-message` and
-`#next-round-timer` elements have `aria-live="polite"` so screen readers
-announce updates, while `#score-display` uses `aria-live="off"` to prevent
-repetitive announcements of the score.
+- `judoka.json` – Master list of judoka and their stats
+- `tooltips.json` – All tooltip keys, text, and display logic
+- `cards.json` – Defines rarity tier rules and UI elements
 
-After each round, `timerControl.js` calls `battleEngine.getScores()` and forwards
-the returned values to `InfoBar.updateScore`. The helper module
-`setupBattleInfoBar.js` exposes this method for pages, keeping UI updates
-decoupled from engine logic.
+---
 
-`InfoBar.showTemporaryMessage(text)` displays a transient notice and returns a
-clear function that only removes the message if the same text is still shown.
-`classicBattle.js.handleStatSelection` uses this helper to show **"Waiting…"** while
-the opponent's move is computed.
+## 🧠 Components
 
-`classicBattle.js` now simulates the opponent entirely on the client. After a
-player selects a stat, the module introduces a 300–700 ms delay and clears the
-temporary message once the opponent’s card is revealed. Tests and gameplay
-should expect the brief **"Waiting…"** notice during this pause. This
-client-side approach mimics turn-taking without any WebSocket or polling
-endpoints.
+UI rendering logic lives in `/components/` and is built to be:
 
-```javascript
-import { createCard } from "./src/components/Card.js";
-const card = createCard("<p>Hello</p>");
-document.body.appendChild(card);
+- Lightweight and DOM-driven
+- Expose internal state via `data-*` attributes
+- Instrumented for AI testability
+
+Key modules:
+
+- `Card.js` – Generates a complete card HTML structure with attached metadata
+- `TooltipManager.js` – Injects tooltip spans into DOM elements
+- `StatsPanel.js` – Renders interactive game stat comparisons
+
+---
+
+## 🧠 AI Agent Design Considerations
+
+JU-DO-KON! is intentionally built to support AI agents in development, testing, and contribution tasks.
+
+Design principles include:
+
+- 🏷️ **State exposure**: Internal game state is mirrored using `data-*` attributes  
+  e.g., `data-stat="power"` or `data-feature="debugMode"`
+- 🧪 **Toggleable debug panels**: Visual overlays for layout validation or test coverage
+- 🔗 **Stable ID/class naming**: Predictable DOM structure for reliable querying
+- 🧩 **Modular JS & HTML**: Encourages safe extension and reuse of logic
+- 🧭 **Observable hashes & query params**: Modes like `#mobile` or `?debug=true` can activate UI states
+
+AI agents are encouraged to parse, test, and modify the system using these architectural supports.
+
+---
+
+## 🧩 Annotated Key Components for Agents
+
+```markdown
+### Component: TooltipManager
+- Loads: `/data/tooltips.json`
+- Injects tooltips into: `.tooltip[data-tooltip-id]`
+- Used by: card panels, game instructions, stat explanations
+
+### Component: CardRenderer
+- Reads data from: `/data/judoka.json`
+- Adds: `data-stat-*` attributes for each stat category
+- Observed by: AI agents comparing or extracting stat values
+
+### Component: FeatureFlagController
+- Renders flags from: `/src/pages/settings.html`
+- Writes active flags to DOM via: `data-feature-*`
+- Supports agent testing for: UI variants, experimental features
+
+### Component: LayoutDebugPanel
+- Controlled by: Settings toggle (`data-feature="layoutDebug"`)
+- Adds outlines to all visible DOM elements for inspection
 ```
 
-## data and schemas
+---
 
-Structured gameplay data lives in `src/data`. Matching JSON Schemas in
-`src/schemas` describe and validate these files. The file
-`src/data/statNames.json` contains the canonical list of stats displayed across
-the UI—changing a name here updates labels everywhere. The `npm run
-validate:data` script uses Ajv to ensure data integrity.
+## 🔍 Observable Features for Agent Testing
 
-## tooltip helper
+| Feature            | Observable Element      | Description                                             |
+|--------------------|------------------------|---------------------------------------------------------|
+| Feature Flags      | `data-feature-*`       | Each flag in the Settings panel updates this attribute   |
+| Layout Debug Panel | `data-debug="layout"` | Injects red outlines around DOM components              |
+| Viewport Simulator | `#mobile` URL hash     | Simulates mobile layout at 375px width                  |
+| Card Stats         | `data-stat="grip"`    | Embedded in rendered card DOM                           |
+| Tooltip Coverage   | `data-tooltip-id`      | Indicates linked tooltip key, used to validate coverage |
 
-`src/helpers/tooltip.js` displays contextual help when elements with
-`data-tooltip-id` gain hover or focus. The helper loads text from
-`src/data/tooltips.json` and positions a small popup near the target.
-Entries in `tooltips.json` are grouped by category (for example `stat`
-or `ui`), so IDs use dot notation. Initialize it after the DOM is ready
-so tooltip listeners are attached.
+---
 
-```html
-<span data-tooltip-id="draw-help">Draw a card</span>
-<script type="module">
-  import { onDomReady } from "../helpers/domReady.js";
-  import { initTooltips } from "../helpers/tooltip.js";
-  onDomReady(() => initTooltips());
-</script>
-```
+## 📚 Files and Interfaces AI Agents Should Know
 
-A help icon on the Classic Battle page uses the same system:
+| Path                          | Purpose                                 |
+|-------------------------------|-----------------------------------------|
+| `/src/pages/settings.html`     | UI to toggle feature flags and debug tools |
+| `/data/judoka.json`           | Master stat source for all cards        |
+| `/data/tooltips.json`         | Text keys used in tooltips              |
+| `/components/Card.js`         | Card rendering logic                    |
+| `/components/TooltipManager.js` | Adds data-tooltip-id spans              |
+| `/components/FeatureFlagController.js` | Activates features via the DOM         |
+| `/game.js`                    | Entry point that wires modules together |
+| `/helpers/`                   | Modular logic (e.g. card building, navigation) |
 
-```html
-<button id="stat-help" class="info-button" data-tooltip-id="ui.selectStat">?</button>
-```
+---
 
-## tests
+## 📎 Related Docs for AI Agents
 
-Unit tests under `tests/` run in the Vitest `jsdom` environment. The `playwright/` directory contains end‑to‑end tests and screenshot comparisons to prevent UI regressions.
+- `AGENTS.md`: Agent prompts, goals, and best practices
+- `CONTRIBUTING.md`: Commit/PR rules for agents
+- `README.md`: Overall project layout
+
