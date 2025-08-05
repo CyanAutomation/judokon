@@ -1,9 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import {
-  verifyPageBasics,
-  NAV_RANDOM_JUDOKA,
-  NAV_CLASSIC_BATTLE
-} from "./fixtures/navigationChecks.js";
+import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 
 test.describe.parallel("Meditation screen", () => {
   test.beforeEach(async ({ page }) => {

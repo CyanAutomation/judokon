@@ -16,6 +16,9 @@ test.describe.parallel("Settings page", () => {
     await page.route("**/src/data/gameModes.json", (route) =>
       route.fulfill({ path: "tests/fixtures/gameModes.json" })
     );
+    await page.route("**/src/data/tooltips.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/tooltips.json" })
+    );
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
     try {
       await page.getByLabel(/Classic Battle/i).waitFor({ state: "attached", timeout: 5000 });

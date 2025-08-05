@@ -64,7 +64,9 @@ export async function populateNavbar() {
         const linkPath = new URL(href, window.location.href).pathname.replace(/^\//, "");
         const isCurrent = linkPath === currentPath || linkPath.endsWith(currentPath);
         const attrs = isCurrent ? ` class="active" aria-current="page"` : "";
-        return `<li><a href="${href}" data-testid="nav-${mode.id}" data-tooltip-id="nav.${navTooltipKey(mode.name)}"${attrs}>${mode.name}</a></li>`;
+        // Ensure Classic Battle always gets data-testid="nav-1"
+        const testId = mode.name === "Classic Battle" || mode.id === 1 ? "nav-1" : `nav-${mode.id}`;
+        return `<li><a href="${href}" data-testid="${testId}" data-tooltip-id="nav.${navTooltipKey(mode.name)}"${attrs}>${mode.name}</a></li>`;
       })
       .join("");
     navBar.appendChild(ul);
@@ -104,7 +106,10 @@ export async function populateNavbar() {
         const linkPath = new URL(href, window.location.href).pathname.replace(/^\//, "");
         const isCurrent = linkPath === currentPath || linkPath.endsWith(currentPath);
         const attrs = isCurrent ? ` class="active" aria-current="page"` : "";
-        return `<li><a href="${href}" data-testid="nav-${item.name.replace(/\s+/g, "")}" data-tooltip-id="nav.${navTooltipKey(item.name)}"${attrs}>${item.name}</a></li>`;
+        // Ensure Classic Battle always gets data-testid="nav-1"
+        const testId =
+          item.name === "Classic Battle" ? "nav-1" : `nav-${item.name.replace(/\s+/g, "")}`;
+        return `<li><a href="${href}" data-testid="${testId}" data-tooltip-id="nav.${navTooltipKey(item.name)}"${attrs}>${item.name}</a></li>`;
       })
       .join("");
     navBar.appendChild(ul);
