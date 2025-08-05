@@ -1,4 +1,4 @@
-import { createToggleSwitch } from "../../components/ToggleSwitch.js";
+import { ToggleSwitch } from "../../components/ToggleSwitch.js";
 import { updateNavigationItemHidden } from "../gameModeUtils.js";
 import { showSettingsError } from "../showSettingsError.js";
 import { showSnackbar } from "../showSnackbar.js";
@@ -25,13 +25,13 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
     const isChecked = Object.hasOwn(current.gameModes, mode.id)
       ? current.gameModes[mode.id]
       : !mode.isHidden;
-    const wrapper = createToggleSwitch(`${mode.name} (${mode.category} - ${mode.order})`, {
+    const toggle = new ToggleSwitch(`${mode.name} (${mode.category} - ${mode.order})`, {
       id: `mode-${mode.id}`,
       name: mode.id,
       checked: isChecked,
       ariaLabel: mode.name
     });
-    const input = wrapper.querySelector("input");
+    const { element: wrapper, input } = toggle;
     if (mode.description) {
       const desc = document.createElement("p");
       desc.className = "settings-description";
