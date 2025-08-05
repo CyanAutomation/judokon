@@ -64,7 +64,7 @@ export class SidebarList {
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
         const delta = e.key === "ArrowDown" ? 1 : -1;
-        const next =
+      const next =
           this.current === -1 ? (delta === 1 ? 0 : this.elements.length - 1) : this.current + delta;
         this.select(next, { fromListNav: true });
       }
