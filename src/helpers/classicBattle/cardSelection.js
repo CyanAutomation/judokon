@@ -141,7 +141,9 @@ export async function drawCards() {
     computerContainer.appendChild(card);
     setupLazyPortraits(card);
   } else {
-    console.error("Failed to render computer card: JudokaCard.render method is not available. The computer card will not be displayed.");
+    console.error(
+      "Failed to render computer card: JudokaCard.render method is not available. The computer card will not be displayed."
+    );
   }
 
   return { playerJudoka, computerJudoka };
