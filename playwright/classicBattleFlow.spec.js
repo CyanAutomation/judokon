@@ -46,4 +46,26 @@ test.describe("Classic battle flow", () => {
     await page.locator("[data-testid='home-link']").click();
     await expect(page).toHaveURL(/index.html/);
   });
+
+  test("animations maintain frame rate", async ({ page }) => {
+    await page.goto("/src/pages/battleJudoka.html");
+    await page.locator("#stat-buttons button").first().click();
+    const frames = await page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          let count = 0;
+          const start = performance.now();
+          function measure(now) {
+            count++;
+            if (now - start >= 1000) {
+              resolve(count);
+            } else {
+              requestAnimationFrame(measure);
+            }
+          }
+          requestAnimationFrame(measure);
+        })
+    );
+    expect(frames).toBeGreaterThanOrEqual(55);
+  });
 });
