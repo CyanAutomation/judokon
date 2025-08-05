@@ -138,7 +138,7 @@ export async function drawCards() {
       console.error("JudokaCard did not render an HTMLElement");
     }
   } else {
-    console.error("JudokaCard.render is not a function");
+    console.error("Failed to render computer card: JudokaCard.render method is not available. The computer card will not be displayed.");
   }
 
   return { playerJudoka, computerJudoka };
