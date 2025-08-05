@@ -97,6 +97,8 @@
   --button-hover-bg: #e5e500;
   --button-active-bg: #ffff00;
   --button-text-color: #000000;
+  --toggle-off-bg: #ffffff; /* Toggle off state background */
+  --toggle-on-bg: #ffff00; /* Toggle on state background */
   --color-slider-dot: #ffffff;
   --color-slider-active: #ffff00;
 }
