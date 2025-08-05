@@ -1,5 +1,5 @@
 import { generateRandomCard } from "../randomCard.js";
-import { getRandomJudoka, renderJudokaCard } from "../cardUtils.js";
+import { getRandomJudoka } from "../cardUtils.js";
 import { loadSettings } from "../settingsUtils.js";
 import { fetchJson } from "../dataUtils.js";
 import { createGokyoLookup } from "../utils.js";
@@ -7,6 +7,8 @@ import { DATA_DIR } from "../constants.js";
 import { showMessage } from "../setupBattleInfoBar.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
+import { JudokaCard } from "../../components/JudokaCard.js";
+import { setupLazyPortraits } from "../lazyPortrait.js";
 
 let judokaData = null;
 let gokyoLookup = null;
@@ -120,11 +122,13 @@ export async function drawCards() {
   computerJudoka = compJudoka;
 
   const placeholder = judokaData.find((j) => j.id === 1) || compJudoka;
-  await renderJudokaCard(placeholder, gokyoLookup, computerContainer, {
-    animate: false,
+  const card = await new JudokaCard(placeholder, gokyoLookup, {
     useObscuredStats: true,
     enableInspector
-  });
+  }).render();
+  computerContainer.innerHTML = "";
+  computerContainer.appendChild(card);
+  setupLazyPortraits(card);
 
   return { playerJudoka, computerJudoka };
 }

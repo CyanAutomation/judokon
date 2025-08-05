@@ -1,9 +1,11 @@
 import { fetchJson } from "./dataUtils.js";
 import { createGokyoLookup } from "./utils.js";
-import { renderJudokaCard, getRandomJudoka } from "./cardUtils.js";
+import { getRandomJudoka } from "./cardUtils.js";
 import { hasRequiredJudokaFields } from "./judokaValidation.js";
 import { DATA_DIR } from "./constants.js";
 import { getFallbackJudoka } from "./judokaUtils.js";
+import { JudokaCard } from "../components/JudokaCard.js";
+import { setupLazyPortraits } from "./lazyPortrait.js";
 
 /**
  * Replaces the contents of an element with the given card and animates it.
@@ -21,6 +23,7 @@ export function displayCard(element, card, skipAnimation = false) {
   if (!element || !card) return;
   element.innerHTML = "";
   element.appendChild(card);
+  setupLazyPortraits(card);
   if (!skipAnimation) {
     requestAnimationFrame(() => {
       card.classList.add("animate-card");
@@ -32,7 +35,7 @@ export function displayCard(element, card, skipAnimation = false) {
  * Creates and displays a card for the specified judoka.
  *
  * @pseudocode
- * 1. Generate the HTML for `judoka` using `generateJudokaCardHTML`.
+ * 1. Build a card for `judoka` using the `JudokaCard` component.
  * 2. When a card element is returned, display it with `displayCard`.
  *
  * @param {Judoka} judoka - Judoka data used to build the card.
@@ -42,7 +45,7 @@ export function displayCard(element, card, skipAnimation = false) {
  * @returns {Promise<void>} Resolves when the card is displayed.
  */
 export async function createCardForJudoka(judoka, gokyoLookup, containerEl, prefersReducedMotion) {
-  const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+  const card = await new JudokaCard(judoka, gokyoLookup).render();
   if (card) {
     displayCard(containerEl, card, prefersReducedMotion);
   }
@@ -104,11 +107,12 @@ export async function generateRandomCard(
     if (typeof onSelect === "function") {
       onSelect(selectedJudoka);
     }
-    await renderJudokaCard(selectedJudoka, gokyoLookup, containerEl, {
-      animate: !prefersReducedMotion,
+    const card = await new JudokaCard(selectedJudoka, gokyoLookup, {
       enableInspector: options.enableInspector
-    });
-    // else: do not update DOM if card is null/undefined
+    }).render();
+    if (card) {
+      displayCard(containerEl, card, prefersReducedMotion);
+    }
   } catch (error) {
     console.error("Error generating random card:", error);
 
@@ -118,10 +122,12 @@ export async function generateRandomCard(
       if (typeof onSelect === "function") {
         onSelect(fallbackJudoka);
       }
-      await renderJudokaCard(fallbackJudoka, gokyoLookup, containerEl, {
-        animate: !prefersReducedMotion,
+      const card = await new JudokaCard(fallbackJudoka, gokyoLookup, {
         enableInspector: options.enableInspector
-      });
+      }).render();
+      if (card) {
+        displayCard(containerEl, card, prefersReducedMotion);
+      }
     } catch (fallbackError) {
       console.error("Error displaying fallback card:", fallbackError);
       // Do not update DOM if fallback also fails

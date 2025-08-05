@@ -12,11 +12,16 @@ vi.mock("../../../src/helpers/randomCard.js", () => ({
 }));
 
 let getRandomJudokaMock;
-let renderJudokaCardMock;
+let renderMock;
+let JudokaCardMock;
 vi.mock("../../../src/helpers/cardUtils.js", () => ({
-  getRandomJudoka: (...args) => getRandomJudokaMock(...args),
-  renderJudokaCard: (...args) => renderJudokaCardMock(...args)
+  getRandomJudoka: (...args) => getRandomJudokaMock(...args)
 }));
+vi.mock("../../../src/components/JudokaCard.js", () => {
+  renderMock = vi.fn();
+  JudokaCardMock = vi.fn().mockImplementation(() => ({ render: renderMock }));
+  return { JudokaCard: JudokaCardMock };
+});
 
 let fetchJsonMock;
 vi.mock("../../../src/helpers/dataUtils.js", () => ({
@@ -42,8 +47,10 @@ describe("classicBattle stalled stat selection recovery", () => {
       if (cb) cb({ id: 1 });
     });
     getRandomJudokaMock = vi.fn(() => ({ id: 2 }));
-    renderJudokaCardMock = vi.fn(async (_j, _g, container) => {
-      container.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+    renderMock = vi.fn(async () => {
+      const el = document.createElement("div");
+      el.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+      return el;
     });
     vi.spyOn(Math, "random").mockReturnValue(0);
   });

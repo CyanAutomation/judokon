@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateJudokaCardHTML } from "../../src/helpers/cardBuilder.js";
+import { JudokaCard } from "../../src/components/JudokaCard.js";
 
 vi.mock("../../src/helpers/stats.js", () => ({
   loadStatNames: () =>
@@ -29,7 +29,7 @@ const gokyoLookup = { 1: { id: 1, name: "Uchi-mata" } };
 
 describe("judoka card flip interactivity", () => {
   it("toggles show-card-back on click", async () => {
-    const container = await generateJudokaCardHTML(judoka, gokyoLookup);
+    const container = await new JudokaCard(judoka, gokyoLookup).render();
     const card = container.querySelector(".judoka-card");
     card.click();
     expect(card.classList.contains("show-card-back")).toBe(true);
@@ -38,7 +38,7 @@ describe("judoka card flip interactivity", () => {
   });
 
   it("toggles show-card-back on Enter key", async () => {
-    const container = await generateJudokaCardHTML(judoka, gokyoLookup);
+    const container = await new JudokaCard(judoka, gokyoLookup).render();
     const card = container.querySelector(".judoka-card");
     const event = new KeyboardEvent("keydown", { key: "Enter" });
     card.dispatchEvent(event);

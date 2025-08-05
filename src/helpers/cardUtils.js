@@ -1,8 +1,9 @@
-import { generateJudokaCardHTML, createInspectorPanel } from "./cardBuilder.js";
+import { createInspectorPanel } from "./cardBuilder.js";
 import { debugLog } from "./debug.js";
 import { seededRandom } from "./testModeUtils.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
 import { setupLazyPortraits } from "./lazyPortrait.js";
+import { JudokaCard } from "../components/JudokaCard.js";
 
 /**
  * Selects a random judoka from the provided data array.
@@ -63,7 +64,7 @@ export function getRandomJudoka(data) {
  *    - Set its `innerHTML` to an empty string to remove existing content.
  *
  * 4. Generate the judoka card:
- *    - Call `generateJudokaCardHTML` with the `judoka` and `gokyo` data.
+ *    - Build the card using `JudokaCard` with the `judoka` and `gokyo` data.
  *    - Append the generated card element to the `gameArea`.
  *    - Log a success message for debugging.
  *
@@ -92,83 +93,13 @@ export async function displayJudokaCard(judoka, gokyo, gameArea) {
 
   try {
     gameArea.innerHTML = "";
-    const cardElement = await generateJudokaCardHTML(judoka, gokyo);
+    const cardElement = await new JudokaCard(judoka, gokyo).render();
     gameArea.appendChild(cardElement);
+    setupLazyPortraits(cardElement);
     debugLog("Judoka card successfully displayed:", cardElement);
   } catch (error) {
     console.error("Error generating judoka card:", error);
     gameArea.innerHTML = "<p>⚠️ Failed to generate judoka card. Please try again later.</p>";
-  }
-}
-
-/**
- * Render a single judoka card into the provided container.
- *
- * @pseudocode
- * 1. Validate `judoka` with `hasRequiredJudokaFields`.
- *    - If invalid, log an error and exit early.
- * 2. Ensure `container` exists before proceeding.
- * 3. When `useObscuredStats` is true, clone `judoka` and replace name and stats
- *    with "?".
- * 4. Generate the card element using `generateJudokaCardHTML`.
- * 5. Keep an existing `#debug-panel` element:
- *    - Store it before clearing the container.
- *    - Prepend it back after clearing.
- * 6. Replace the container contents with the generated card.
- * 7. When `animate` is true, add the `animate-card` class on the next frame.
- *
- * @param {Judoka} judoka - Judoka data to render.
- * @param {Object<string, GokyoEntry>} gokyoLookup - Lookup of gokyo moves.
- * @param {HTMLElement} container - Element where the card is injected.
- * @param {Object} [options] - Render options.
- * @param {boolean} [options.animate=false] - Whether to apply animation.
- * @param {boolean} [options.useObscuredStats=false] - Obscure stats when true.
- * @returns {Promise<HTMLElement|null>} The rendered card element or `null`.
- */
-export async function renderJudokaCard(
-  judoka,
-  gokyoLookup,
-  container,
-  { animate = false, useObscuredStats = false, enableInspector = false } = {}
-) {
-  if (!container) return null;
-  if (!hasRequiredJudokaFields(judoka)) {
-    console.error("Invalid judoka object:", judoka);
-    return null;
-  }
-
-  try {
-    let cardData = judoka;
-    if (useObscuredStats) {
-      cardData = structuredClone(judoka);
-      cardData.firstname = "?";
-      cardData.surname = "?";
-      if (cardData.stats && typeof cardData.stats === "object") {
-        for (const key of Object.keys(cardData.stats)) {
-          cardData.stats[key] = "?";
-        }
-      }
-    }
-
-    const card = await generateJudokaCardHTML(cardData, gokyoLookup, {
-      enableInspector
-    });
-    if (!card) return null;
-    const debugEl = container.querySelector("#debug-panel");
-    container.innerHTML = "";
-    if (debugEl) container.prepend(debugEl);
-    container.appendChild(card);
-    setupLazyPortraits(card);
-    if (animate) {
-      requestAnimationFrame(() => {
-        card.classList.add("animate-card");
-      });
-    }
-    debugLog("Judoka card rendered:", judoka);
-    return card;
-  } catch (error) {
-    console.error("Error rendering judoka card:", error);
-    return null;
   }
 }
 

@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import { generateJudokaCardHTML } from "../../src/helpers/cardBuilder.js";
+import { JudokaCard } from "../../src/components/JudokaCard.js";
 import * as cardRender from "../../src/helpers/cardRender.js";
 
 const judoka = {
@@ -20,13 +20,13 @@ const gokyoLookup = {
   1: { id: 1, name: "Uchi-mata" }
 };
 
-describe("generateJudokaCardHTML fallback containers", () => {
+describe("JudokaCard fallback containers", () => {
   it("adds fallback when portrait generation throws", async () => {
     vi.spyOn(cardRender, "generateCardPortrait").mockImplementation(() => {
       throw new Error("portrait fail");
     });
 
-    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+    const card = await new JudokaCard(judoka, gokyoLookup).render();
 
     expect(card.textContent).toContain("No data available");
   });
@@ -36,7 +36,7 @@ describe("generateJudokaCardHTML fallback containers", () => {
       Promise.reject(new Error("stats fail"))
     );
 
-    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+    const card = await new JudokaCard(judoka, gokyoLookup).render();
 
     expect(card.textContent).toContain("No data available");
   });
@@ -46,7 +46,7 @@ describe("generateJudokaCardHTML fallback containers", () => {
       throw new Error("signature fail");
     });
 
-    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+    const card = await new JudokaCard(judoka, gokyoLookup).render();
 
     expect(card.textContent).toContain("No data available");
   });
@@ -55,18 +55,18 @@ describe("generateJudokaCardHTML fallback containers", () => {
     vi.spyOn(cardRender, "generateCardPortrait").mockImplementation(() => {
       throw "fail string";
     });
-    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+    const card = await new JudokaCard(judoka, gokyoLookup).render();
     expect(card.textContent).toContain("No data available");
   });
 
   it("adds fallback when cardRender throws undefined", async () => {
     vi.spyOn(cardRender, "generateCardStats").mockImplementation(() => Promise.reject(undefined));
-    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+    const card = await new JudokaCard(judoka, gokyoLookup).render();
     expect(card.textContent).toContain("No data available");
   });
 
   it("does not throw if judoka or gokyoLookup is null", async () => {
-    await expect(generateJudokaCardHTML(null, gokyoLookup)).resolves.toBeTruthy();
-    await expect(generateJudokaCardHTML(judoka, null)).resolves.toBeTruthy();
+    expect(() => new JudokaCard(judoka, null)).toThrow();
+    expect(() => new JudokaCard(null, gokyoLookup)).toThrow();
   });
 });

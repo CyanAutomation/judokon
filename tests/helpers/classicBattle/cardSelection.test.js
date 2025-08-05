@@ -8,12 +8,17 @@ vi.mock("../../../src/helpers/randomCard.js", () => ({
 }));
 
 let getRandomJudokaMock;
-let renderJudokaCardMock;
+let renderMock;
+let JudokaCardMock;
 
 vi.mock("../../../src/helpers/cardUtils.js", () => ({
-  getRandomJudoka: (...args) => getRandomJudokaMock(...args),
-  renderJudokaCard: (...args) => renderJudokaCardMock(...args)
+  getRandomJudoka: (...args) => getRandomJudokaMock(...args)
 }));
+vi.mock("../../../src/components/JudokaCard.js", () => {
+  renderMock = vi.fn();
+  JudokaCardMock = vi.fn().mockImplementation(() => ({ render: renderMock }));
+  return { JudokaCard: JudokaCardMock };
+});
 
 let fetchJsonMock;
 vi.mock("../../../src/helpers/dataUtils.js", () => ({
@@ -39,7 +44,7 @@ describe("classicBattle card selection", () => {
       if (cb) cb({ id: 1 });
     });
     getRandomJudokaMock = vi.fn(() => ({ id: 2 }));
-    renderJudokaCardMock = vi.fn(async () => {});
+    renderMock = vi.fn(async () => document.createElement("div"));
   });
 
   afterEach(() => {
@@ -67,11 +72,10 @@ describe("classicBattle card selection", () => {
     );
     classicBattle._resetForTest();
     await classicBattle.startRound();
-    expect(renderJudokaCardMock).toHaveBeenCalledWith(
+    expect(JudokaCardMock).toHaveBeenCalledWith(
       expect.objectContaining({ id: 1 }),
       expect.anything(),
-      expect.anything(),
-      { animate: false, useObscuredStats: true, enableInspector: false }
+      { useObscuredStats: true, enableInspector: false }
     );
     expect(getComputerJudoka()).toEqual(expect.objectContaining({ id: 2 }));
   });
