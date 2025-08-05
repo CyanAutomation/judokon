@@ -55,16 +55,16 @@ Before submitting or completing a task, verify that your work:
 
 ## 📚 Key Files for AI Agents
 
-| Purpose                        | File(s)                                         |
-| ------------------------------ | ----------------------------------------------- |
-| Tooltip content                | src/data/tooltips.json                          |
-| Game stats and player data     | src/data/judoka.json, src/data/statNames.json   |
-| Feature flags & settings       | src/pages/settings.html, src/data/settings.json |
-| Tooltip viewer                 | src/pages/tooltipViewer.html                    |
-| Debug + Observability targets  | Components with data-*, like data-tooltip-id, data-flag, data-feature-* |
-| UI test entry points           | playwright/*.spec.js, tests/**/*.test.js        |
-| Component factories            | src/components/*.js                             |
-| Battle logic and UI            | classicBattle.js, setupBattleInfoBar.js, InfoBar.js |
+| Purpose                       | File(s)                                                                 |
+| ----------------------------- | ----------------------------------------------------------------------- |
+| Tooltip content               | src/data/tooltips.json                                                  |
+| Game stats and player data    | src/data/judoka.json, src/data/statNames.json                           |
+| Feature flags & settings      | src/pages/settings.html, src/data/settings.json                         |
+| Tooltip viewer                | src/pages/tooltipViewer.html                                            |
+| Debug + Observability targets | Components with data-_, like data-tooltip-id, data-flag, data-feature-_ |
+| UI test entry points          | playwright/_.spec.js, tests/\*\*/_.test.js                              |
+| Component factories           | src/components/\*.js                                                    |
+| Battle logic and UI           | classicBattle.js, setupBattleInfoBar.js, InfoBar.js                     |
 
 ---
 
@@ -72,7 +72,7 @@ Before submitting or completing a task, verify that your work:
 
 ### ✅ DO
 
-- Use data-flag, data-tooltip-id, and data-feature-* for all toggles and testable features
+- Use data-flag, data-tooltip-id, and data-feature-\* for all toggles and testable features
 - Refactor large functions into smaller helpers (~50 lines max)
 - Write and maintain clear @pseudocode for public functions
 - Validate all modified JSON files with `npm run validate:data`
@@ -80,7 +80,7 @@ Before submitting or completing a task, verify that your work:
 
 ### ❌ DON’T
 
-- Don’t commit baseline screenshots (playwright/*-snapshots)
+- Don’t commit baseline screenshots (playwright/\*-snapshots)
 - Don’t introduce placeholder text in tooltips or stats
 - Don’t skip pseudocode updates when changing logic
 - Don’t duplicate stat labels or tooltip keys

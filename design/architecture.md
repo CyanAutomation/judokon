@@ -9,6 +9,7 @@ Throughout the project, keep modules simple. Favor small, single-purpose functio
 ## 📌 Entry Points
 
 ### `game.js`
+
 The main entry point for the browser. It waits for `DOMContentLoaded` and wires up all game interactions.
 
 - Imports helper functions to:
@@ -82,21 +83,25 @@ AI agents are encouraged to parse, test, and modify the system using these archi
 
 ```markdown
 ### Component: TooltipManager
+
 - Loads: `/data/tooltips.json`
 - Injects tooltips into: `.tooltip[data-tooltip-id]`
 - Used by: card panels, game instructions, stat explanations
 
 ### Component: CardRenderer
+
 - Reads data from: `/data/judoka.json`
 - Adds: `data-stat-*` attributes for each stat category
 - Observed by: AI agents comparing or extracting stat values
 
 ### Component: FeatureFlagController
+
 - Renders flags from: `/src/pages/settings.html`
 - Writes active flags to DOM via: `data-feature-*`
 - Supports agent testing for: UI variants, experimental features
 
 ### Component: LayoutDebugPanel
+
 - Controlled by: Settings toggle (`data-feature="layoutDebug"`)
 - Adds outlines to all visible DOM elements for inspection
 ```
@@ -105,28 +110,28 @@ AI agents are encouraged to parse, test, and modify the system using these archi
 
 ## 🔍 Observable Features for Agent Testing
 
-| Feature            | Observable Element      | Description                                             |
-|--------------------|------------------------|---------------------------------------------------------|
-| Feature Flags      | `data-feature-*`       | Each flag in the Settings panel updates this attribute   |
+| Feature            | Observable Element    | Description                                             |
+| ------------------ | --------------------- | ------------------------------------------------------- |
+| Feature Flags      | `data-feature-*`      | Each flag in the Settings panel updates this attribute  |
 | Layout Debug Panel | `data-debug="layout"` | Injects red outlines around DOM components              |
-| Viewport Simulator | `#mobile` URL hash     | Simulates mobile layout at 375px width                  |
+| Viewport Simulator | `#mobile` URL hash    | Simulates mobile layout at 375px width                  |
 | Card Stats         | `data-stat="grip"`    | Embedded in rendered card DOM                           |
-| Tooltip Coverage   | `data-tooltip-id`      | Indicates linked tooltip key, used to validate coverage |
+| Tooltip Coverage   | `data-tooltip-id`     | Indicates linked tooltip key, used to validate coverage |
 
 ---
 
 ## 📚 Files and Interfaces AI Agents Should Know
 
-| Path                          | Purpose                                 |
-|-------------------------------|-----------------------------------------|
-| `/src/pages/settings.html`     | UI to toggle feature flags and debug tools |
-| `/data/judoka.json`           | Master stat source for all cards        |
-| `/data/tooltips.json`         | Text keys used in tooltips              |
-| `/components/Card.js`         | Card rendering logic                    |
-| `/components/TooltipManager.js` | Adds data-tooltip-id spans              |
-| `/components/FeatureFlagController.js` | Activates features via the DOM         |
-| `/game.js`                    | Entry point that wires modules together |
-| `/helpers/`                   | Modular logic (e.g. card building, navigation) |
+| Path                                   | Purpose                                        |
+| -------------------------------------- | ---------------------------------------------- |
+| `/src/pages/settings.html`             | UI to toggle feature flags and debug tools     |
+| `/data/judoka.json`                    | Master stat source for all cards               |
+| `/data/tooltips.json`                  | Text keys used in tooltips                     |
+| `/components/Card.js`                  | Card rendering logic                           |
+| `/components/TooltipManager.js`        | Adds data-tooltip-id spans                     |
+| `/components/FeatureFlagController.js` | Activates features via the DOM                 |
+| `/game.js`                             | Entry point that wires modules together        |
+| `/helpers/`                            | Modular logic (e.g. card building, navigation) |
 
 ---
 
@@ -135,4 +140,3 @@ AI agents are encouraged to parse, test, and modify the system using these archi
 - `AGENTS.md`: Agent prompts, goals, and best practices
 - `CONTRIBUTING.md`: Commit/PR rules for agents
 - `README.md`: Overall project layout
-
