@@ -85,7 +85,7 @@ export function showResult(message) {
 
   function step(now) {
     const progress = Math.min((now - start) / 2000, 1);
-    el.style.opacity = String(1 - progress);
+    el.style.opacity = 1 - progress;
     if (progress < 1) {
       frame = requestAnimationFrame(step);
     } else {
