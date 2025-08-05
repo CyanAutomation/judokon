@@ -61,20 +61,20 @@ export function createScrollButton(direction, container) {
  * Update scroll button disabled states based on container position.
  *
  * @pseudocode
- * 1. Calculate the maximum scroll value using `scrollWidth` and
- *    `clientWidth` of `container`.
+ * 1. Calculate the remaining distance using `scrollWidth`, `clientWidth`, and
+ *    `scrollLeft` of `container`.
  * 2. Disable `leftBtn` when `scrollLeft` is within 1px of the carousel's
  *    start to account for rounding differences.
- * 3. Disable `rightBtn` when `scrollLeft` is within 1px of the carousel's
- *    end to account for rounding differences.
+ * 3. Disable `rightBtn` when the remaining distance is within 1px of the
+ *    carousel's end.
  *
  * @param {HTMLElement} container - The scrolling container element.
  * @param {HTMLButtonElement} leftBtn - Button that scrolls left.
  * @param {HTMLButtonElement} rightBtn - Button that scrolls right.
  */
 export function updateScrollButtonState(container, leftBtn, rightBtn) {
-  const maxLeft = container.scrollWidth - container.clientWidth;
   const EPSILON = 1; // allow small rounding differences
+  const remaining = container.scrollWidth - container.clientWidth - container.scrollLeft;
   leftBtn.disabled = container.scrollLeft <= EPSILON;
-  rightBtn.disabled = container.scrollLeft >= maxLeft - EPSILON;
+  rightBtn.disabled = remaining <= EPSILON;
 }
