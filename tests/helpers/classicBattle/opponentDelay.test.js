@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+vi.mock("../../../src/helpers/motionUtils.js", () => ({
+  shouldReduceMotionSync: () => true
+}));
 
 let showMessage;
 let clearMessage;

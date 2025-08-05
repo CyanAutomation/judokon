@@ -12,10 +12,15 @@
  *
  * @returns {HTMLDivElement} The info bar element.
  */
+import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
+
 let messageEl;
 let timerEl;
 let scoreEl;
-let rafId = 0;
+let countdownRafId = 0;
+let scoreRafId = 0;
+let currentPlayer = 0;
+let currentComputer = 0;
 
 export function createInfoBar(container = document.createElement("div")) {
   messageEl = document.createElement("p");
@@ -56,6 +61,46 @@ export function initInfoBar(container) {
   messageEl = container.querySelector("#round-message");
   timerEl = container.querySelector("#next-round-timer");
   scoreEl = container.querySelector("#score-display");
+}
+
+function setScoreText(player, computer) {
+  if (!scoreEl) return;
+  let playerSpan = scoreEl.firstElementChild;
+  let opponentSpan = scoreEl.lastElementChild;
+  if (!playerSpan || !opponentSpan) {
+    playerSpan = document.createElement("span");
+    opponentSpan = document.createElement("span");
+    scoreEl.append(playerSpan, opponentSpan);
+  }
+  playerSpan.textContent = `You: ${player}`;
+  opponentSpan.textContent = `\nOpponent: ${computer}`;
+}
+
+function animateScore(playerTarget, computerTarget) {
+  cancelAnimationFrame(scoreRafId);
+  const startPlayer = currentPlayer;
+  const startComputer = currentComputer;
+  if (shouldReduceMotionSync()) {
+    currentPlayer = playerTarget;
+    currentComputer = computerTarget;
+    setScoreText(playerTarget, computerTarget);
+    return;
+  }
+  const startTime = performance.now();
+  const duration = 500;
+  const step = (now) => {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const playerVal = Math.round(startPlayer + (playerTarget - startPlayer) * progress);
+    const computerVal = Math.round(startComputer + (computerTarget - startComputer) * progress);
+    setScoreText(playerVal, computerVal);
+    if (progress < 1) {
+      scoreRafId = requestAnimationFrame(step);
+    } else {
+      currentPlayer = playerTarget;
+      currentComputer = computerTarget;
+    }
+  };
+  scoreRafId = requestAnimationFrame(step);
 }
 
 /**
@@ -124,7 +169,7 @@ export function showTemporaryMessage(text) {
  */
 export function startCountdown(seconds, onFinish) {
   if (!timerEl) return;
-  cancelAnimationFrame(rafId);
+  cancelAnimationFrame(countdownRafId);
   const startTime = performance.now();
   timerEl.textContent = `Next round in: ${seconds}s`;
   const frameBuffer = 1000 / 60; // ~16 ms
@@ -137,33 +182,29 @@ export function startCountdown(seconds, onFinish) {
       timerEl.textContent = `Next round in: ${remaining}s`;
     }
     if (remaining <= 0) {
-      cancelAnimationFrame(rafId);
+      cancelAnimationFrame(countdownRafId);
       if (typeof onFinish === "function") onFinish();
       return;
     }
-    rafId = requestAnimationFrame(step);
+    countdownRafId = requestAnimationFrame(step);
   };
-  rafId = requestAnimationFrame(step);
+  countdownRafId = requestAnimationFrame(step);
 }
 
 /**
- * Display the current match score using two stacked spans.
+ * Display the current match score with an animated count.
  *
  * @pseudocode
- * 1. Create `playerSpan` with `"You: {playerScore}"`.
- * 2. Create `opponentSpan` with `"\nOpponent: {computerScore}"`.
- * 3. Replace existing children of `scoreEl` with both spans.
+ * 1. Capture starting values for player and computer scores.
+ * 2. When motion isn't reduced, increment both values toward targets using
+ *    `requestAnimationFrame`.
+ * 3. Otherwise, update text immediately.
  *
  * @param {number} playerScore - Player's score.
  * @param {number} computerScore - Opponent's score.
  * @returns {void}
  */
 export function updateScore(playerScore, computerScore) {
-  if (scoreEl) {
-    const playerSpan = document.createElement("span");
-    playerSpan.textContent = `You: ${playerScore}`;
-    const opponentSpan = document.createElement("span");
-    opponentSpan.textContent = `\nOpponent: ${computerScore}`;
-    scoreEl.replaceChildren(playerSpan, opponentSpan);
-  }
+  if (!scoreEl) return;
+  animateScore(playerScore, computerScore);
 }

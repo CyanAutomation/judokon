@@ -17,6 +17,7 @@ import * as infoBar from "./setupBattleInfoBar.js";
 import { getStatValue, resetStatButtons, showResult } from "./battle/index.js";
 import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
+import { shouldReduceMotionSync } from "./motionUtils.js";
 
 /**
  * Determine the opponent's stat choice based on difficulty.
@@ -89,6 +90,8 @@ class ClassicBattle {
     this.statTimeoutId = null;
     /** @type {ReturnType<typeof setTimeout> | null} */
     this.autoSelectId = null;
+    /** @type {number} */
+    this.compareRaf = 0;
 
     const quitButton = document.getElementById("quit-match-button");
     if (quitButton) {
@@ -194,6 +197,8 @@ class ClassicBattle {
   async startRound() {
     resetStatButtons();
     disableNextRoundButton();
+    const roundResultEl = document.getElementById("round-result");
+    if (roundResultEl) roundResultEl.textContent = "";
     await drawCards();
     this.syncScoreDisplay();
     showSelectionPrompt();
@@ -211,6 +216,7 @@ class ClassicBattle {
     if (result.message) {
       showResult(result.message);
     }
+    this.showStatComparison(stat, playerVal, compVal);
     this.syncScoreDisplay();
     updateDebugPanel();
     return result;
@@ -258,9 +264,13 @@ class ClassicBattle {
     clearTimeout(this.autoSelectId);
     this.statTimeoutId = null;
     this.autoSelectId = null;
+    cancelAnimationFrame(this.compareRaf);
+    this.compareRaf = 0;
     const timerEl = document.getElementById("next-round-timer");
     if (timerEl) timerEl.textContent = "";
     infoBar.clearMessage();
+    const roundResultEl = document.getElementById("round-result");
+    if (roundResultEl) roundResultEl.textContent = "";
     const nextBtn = document.getElementById("next-round-button");
     if (nextBtn) {
       const clone = nextBtn.cloneNode(true);
@@ -281,6 +291,46 @@ class ClassicBattle {
 }
 
 export const classicBattle = new ClassicBattle();
+
+/**
+ * Show animated stat comparison for the last round.
+ *
+ * @pseudocode
+ * 1. Locate `#round-result` and exit if missing.
+ * 2. Extract previous values from its text when present.
+ * 3. Increment both player and opponent values toward targets using
+ *    `requestAnimationFrame` unless motion is reduced.
+ * 4. Update the element text on each frame as "Stat – You: x Opponent: y".
+ *
+ * @param {string} stat - Stat key selected for the round.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} compVal - Opponent's stat value.
+ */
+ClassicBattle.prototype.showStatComparison = function (stat, playerVal, compVal) {
+  const el = document.getElementById("round-result");
+  if (!el) return;
+  cancelAnimationFrame(this.compareRaf);
+  const label = stat.charAt(0).toUpperCase() + stat.slice(1);
+  const match = el.textContent.match(/You: (\d+).*Opponent: (\d+)/);
+  const startPlayer = match ? Number(match[1]) : 0;
+  const startComp = match ? Number(match[2]) : 0;
+  if (shouldReduceMotionSync()) {
+    el.textContent = `${label} – You: ${playerVal} Opponent: ${compVal}`;
+    return;
+  }
+  const startTime = performance.now();
+  const duration = 500;
+  const step = (now) => {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const p = Math.round(startPlayer + (playerVal - startPlayer) * progress);
+    const c = Math.round(startComp + (compVal - startComp) * progress);
+    el.textContent = `${label} – You: ${p} Opponent: ${c}`;
+    if (progress < 1) {
+      this.compareRaf = requestAnimationFrame(step);
+    }
+  };
+  this.compareRaf = requestAnimationFrame(step);
+};
 
 /**
  * Trigger the Classic Battle quit confirmation modal.

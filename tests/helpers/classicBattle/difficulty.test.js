@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createBattleCardContainers } from "../../utils/testUtils.js";
 import { STATS } from "../../../src/helpers/battleEngine.js";
+vi.mock("../../../src/helpers/motionUtils.js", () => ({
+  shouldReduceMotionSync: () => true
+}));
 
 describe("simulateOpponentStat difficulty", () => {
   let simulateOpponentStat;
