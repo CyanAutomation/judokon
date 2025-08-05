@@ -6,6 +6,8 @@ const COUNTRY_TOGGLE_LOCATOR = "country-toggle";
 test.describe.parallel("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/browseJudoka.html");
+    // Wait for the bottom navbar links to be rendered
+    await page.waitForSelector("footer .bottom-navbar a[data-testid]", { timeout: 10000 });
   });
 
   test("essential elements visible", async ({ page }) => {

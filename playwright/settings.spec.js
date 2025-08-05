@@ -21,7 +21,6 @@ test.describe.parallel("Settings page", () => {
       await page.getByLabel(/Classic Battle/i).waitFor({ state: "attached", timeout: 5000 });
     } catch (e) {
       const content = await page.content();
-      // eslint-disable-next-line no-console
       console.error("Classic Battle label not found. Page content:\n", content);
       throw e;
     }
