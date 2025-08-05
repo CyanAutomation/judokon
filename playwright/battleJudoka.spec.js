@@ -5,7 +5,7 @@ import {
   NAV_CLASSIC_BATTLE
 } from "./fixtures/navigationChecks.js";
 
-test.describe("Battle Judoka page", () => {
+test.describe.parallel("Battle Judoka page", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       Math.random = () => 0.42;

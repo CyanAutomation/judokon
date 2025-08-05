@@ -5,7 +5,7 @@ import {
   NAV_CLASSIC_BATTLE
 } from "./fixtures/navigationChecks.js";
 
-test.describe("Create Judoka page", () => {
+test.describe.parallel("Create Judoka page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/createJudoka.html");
   });

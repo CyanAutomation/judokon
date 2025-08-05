@@ -5,7 +5,7 @@ import {
   NAV_CLASSIC_BATTLE
 } from "./fixtures/navigationChecks.js";
 
-test.describe("Meditation screen", () => {
+test.describe.parallel("Meditation screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() =>
       localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }))

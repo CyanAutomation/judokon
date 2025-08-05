@@ -2,7 +2,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 
 const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
 
-test.describe(
+test.describe.parallel(
   runScreenshots ? "Signature move screenshots" : "Signature move screenshots (skipped)",
   () => {
     test.skip(!runScreenshots);

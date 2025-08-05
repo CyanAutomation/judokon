@@ -3,7 +3,7 @@ import { verifyPageBasics, NAV_CLASSIC_BATTLE } from "./fixtures/navigationCheck
 
 const COUNTRY_TOGGLE_LOCATOR = "country-toggle";
 
-test.describe("Browse Judoka screen", () => {
+test.describe.parallel("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/browseJudoka.html");
   });

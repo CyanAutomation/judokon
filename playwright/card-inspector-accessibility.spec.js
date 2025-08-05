@@ -13,7 +13,7 @@ const JUDOKA = {
   gender: "male"
 };
 
-test.describe("Card inspector accessibility", () => {
+test.describe.parallel("Card inspector accessibility", () => {
   test("summary keyboard support and ARIA state", async ({ page }) => {
     await page.setContent("<html><body></body></html>");
     const { createInspectorPanel } = await import("../src/helpers/cardBuilder.js");

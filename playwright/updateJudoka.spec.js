@@ -5,7 +5,7 @@ import {
   NAV_CLASSIC_BATTLE
 } from "./fixtures/navigationChecks.js";
 
-test.describe("Update Judoka page", () => {
+test.describe.parallel("Update Judoka page", () => {
   test.beforeEach(async ({ page }) => {
     await page.route("**/src/data/navigationItems.json", (route) =>
       route.fulfill({ path: "tests/fixtures/navigationItems.json" })

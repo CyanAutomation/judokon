@@ -5,7 +5,7 @@ import {
   NAV_CLASSIC_BATTLE
 } from "./fixtures/navigationChecks.js";
 
-test.describe("Homepage", () => {
+test.describe.parallel("Homepage", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/index.html");
   });

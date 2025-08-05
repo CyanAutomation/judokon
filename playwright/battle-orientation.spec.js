@@ -2,7 +2,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 
 const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
 
-test.describe("Battle orientation behavior", () => {
+test.describe.parallel("Battle orientation behavior", () => {
   test("updates orientation data attribute on rotation", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
 
@@ -29,7 +29,7 @@ test.describe("Battle orientation behavior", () => {
   });
 });
 
-test.describe(
+test.describe.parallel(
   runScreenshots ? "Battle orientation screenshots" : "Battle orientation screenshots (skipped)",
   () => {
     test.skip(!runScreenshots);
