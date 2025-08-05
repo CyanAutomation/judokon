@@ -1,4 +1,4 @@
-import { quitMatch } from "./classicBattle.js";
+import { createBattleStore, quitMatch } from "./classicBattle.js";
 
 /**
  * Attach quit confirmation to the header logo in Classic Battle.
@@ -8,12 +8,14 @@ import { quitMatch } from "./classicBattle.js";
  * 2. If found, listen for click events.
  * 3. On click, prevent default navigation and call `quitMatch()`.
  */
+const store = createBattleStore();
+
 export function setupClassicBattleHomeLink() {
   const homeLink = document.querySelector('[data-testid="home-link"]');
   if (homeLink) {
     homeLink.addEventListener("click", (e) => {
       e.preventDefault();
-      quitMatch();
+      quitMatch(store);
     });
   }
 }
