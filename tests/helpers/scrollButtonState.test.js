@@ -48,4 +48,15 @@ describe("updateScrollButtonState", () => {
     updateScrollButtonState(container, left, right);
     expect(right.disabled).toBe(true);
   });
+
+  it("treats near-start positions as start", () => {
+    const container = document.createElement("div");
+    Object.defineProperty(container, "scrollWidth", { value: 300 });
+    Object.defineProperty(container, "clientWidth", { value: 100 });
+    container.scrollLeft = 0.5;
+    const left = document.createElement("button");
+    const right = document.createElement("button");
+    updateScrollButtonState(container, left, right);
+    expect(left.disabled).toBe(true);
+  });
 });
