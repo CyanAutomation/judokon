@@ -40,7 +40,7 @@ describe("setupBattleInfoBar", () => {
 
     mod.startCountdown(1);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 1s");
-    vi.advanceTimersByTime(1000);
+    await vi.advanceTimersByTimeAsync(1000);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 0s");
   });
 
@@ -69,7 +69,7 @@ describe("setupBattleInfoBar", () => {
     vi.useFakeTimers();
     mod.startCountdown(1);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 1s");
-    vi.advanceTimersByTime(1000);
+    await vi.advanceTimersByTimeAsync(1000);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 0s");
   });
 });

@@ -15,7 +15,7 @@
 let messageEl;
 let timerEl;
 let scoreEl;
-let intervalId = null;
+let rafId = 0;
 
 export function createInfoBar(container = document.createElement("div")) {
   messageEl = document.createElement("p");
@@ -108,13 +108,15 @@ export function showTemporaryMessage(text) {
 }
 
 /**
- * Start a countdown timer that updates once per second.
+ * Start a countdown timer that updates once per second using `requestAnimationFrame`.
  *
  * @pseudocode
- * 1. Clear any existing countdown interval.
- * 2. Display "Next round in: {seconds}s" in the timer element.
- * 3. Each second decrement the value and update the element using the same format.
- * 4. When the value reaches zero, set "Next round in: 0s", stop the interval and invoke `onFinish`.
+ * 1. Cancel any existing animation frame loop.
+ * 2. Store `startTime` using `performance.now()` and show the initial text.
+ * 3. On each frame, compute elapsed seconds and only update when the displayed
+ *    value changes.
+ * 4. When no time remains, cancel the loop, show "Next round in: 0s" and run
+ *    `onFinish`.
  *
  * @param {number} seconds - Seconds to count down from.
  * @param {Function} [onFinish] - Optional callback when countdown ends.
@@ -122,18 +124,26 @@ export function showTemporaryMessage(text) {
  */
 export function startCountdown(seconds, onFinish) {
   if (!timerEl) return;
-  clearInterval(intervalId);
+  cancelAnimationFrame(rafId);
+  const startTime = performance.now();
   timerEl.textContent = `Next round in: ${seconds}s`;
-  intervalId = setInterval(() => {
-    seconds -= 1;
-    if (seconds <= 0) {
-      clearInterval(intervalId);
+  let lastDisplayed = seconds;
+  const step = () => {
+    const elapsed = Math.floor((performance.now() - startTime) / 1000);
+    const remaining = seconds - elapsed;
+    if (remaining !== lastDisplayed && remaining > 0) {
+      lastDisplayed = remaining;
+      timerEl.textContent = `Next round in: ${remaining}s`;
+    }
+    if (remaining <= 0) {
+      cancelAnimationFrame(rafId);
       timerEl.textContent = "Next round in: 0s";
       if (typeof onFinish === "function") onFinish();
-    } else {
-      timerEl.textContent = `Next round in: ${seconds}s`;
+      return;
     }
-  }, 1000);
+    rafId = requestAnimationFrame(step);
+  };
+  rafId = requestAnimationFrame(step);
 }
 
 /**
