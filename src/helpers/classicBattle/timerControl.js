@@ -14,8 +14,8 @@ import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from 
  *
  * @pseudocode
  * 1. Determine timer duration using `getDefaultTimer('roundTimer')`.
- *    - On error, show "Waiting…" and fallback to 30 seconds.
- * 2. Call `engineStartRound` to update the countdown each second.
+ *    - On error, temporarily show "Waiting…" and fallback to 30 seconds.
+ * 2. Call `engineStartRound` to update the countdown each second and restore the prompt.
  * 3. Monitor for drift with `watchForDrift`; on drift show "Waiting…" and restart,
  *    giving up after several retries.
  * 4. When expired, auto-select a random stat via `onExpired`.
@@ -37,9 +37,7 @@ export async function startTimer(onExpiredSelect) {
   } catch {
     synced = false;
   }
-  if (!synced) {
-    infoBar.showMessage("Waiting…");
-  }
+  const restore = !synced ? infoBar.showTemporaryMessage("Waiting…") : () => {};
 
   const onTick = (remaining) => {
     if (timerEl) timerEl.textContent = `Time Left: ${remaining}s`;
@@ -69,6 +67,7 @@ export async function startTimer(onExpiredSelect) {
   };
 
   runTimer(duration);
+  restore();
 }
 
 /**
