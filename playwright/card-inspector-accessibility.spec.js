@@ -22,7 +22,7 @@ test.describe("Card inspector accessibility", () => {
       ({ judoka, funcStr }) => {
         const createInspectorPanel = eval(`(${funcStr})`);
         const container = document.createElement("div");
-        const panel = createInspectorPanel(container, judoka, {});
+        const panel = createInspectorPanel(container, judoka);
         container.appendChild(panel);
         document.body.appendChild(container);
       },
@@ -71,7 +71,7 @@ test.describe("Card inspector accessibility", () => {
           gender: "male",
           extra: 1n
         };
-        const result = createInspectorPanel(container, badJudoka, {});
+        const result = createInspectorPanel(container, badJudoka);
         container.appendChild(result);
         document.body.appendChild(container);
       },
