@@ -86,7 +86,9 @@ export function createCountdownTimer(duration, { onTick, onExpired, pauseOnHidde
     intervalId = setInterval(async () => {
       try {
         await tick();
-      } catch {}
+      } catch (err) {
+        console.error("Error in countdown timer tick:", err);
+      }
     }, 1000);
     if (pauseOnHidden && typeof document !== "undefined") {
       document.addEventListener("visibilitychange", handleVisibility);
