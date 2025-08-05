@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockTimers = [{ id: 1, value: 42, default: true, category: "roundTimer" }];

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from "vitest";
 vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
@@ -12,6 +13,7 @@ let updateDebugPanel;
 
 beforeEach(() => {
   vi.resetModules();
+  vi.stubGlobal("document", { getElementById: () => null });
   showMessage = vi.fn();
   clearMessage = vi.fn();
   scheduleNextRound = vi.fn();
