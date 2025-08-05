@@ -8,16 +8,21 @@ let settingsSchemaPromise;
 
 async function getSettingsSchema() {
   if (!settingsSchemaPromise) {
-    settingsSchemaPromise = fetch(new URL("../schemas/settings.schema.json", import.meta.url))
-      .then(async (response) => {
+    settingsSchemaPromise = (async () => {
+      const base = typeof import.meta.url === "string" ? import.meta.url : import.meta.url?.href;
+      try {
+        const url = new URL("../schemas/settings.schema.json", base);
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error(
             `Failed to fetch settings schema: ${response.status} ${response.statusText}`
           );
         }
-        return response.json();
-      })
-      .catch(async () => importJsonModule("../schemas/settings.schema.json"));
+        return await response.json();
+      } catch {
+        return importJsonModule("../schemas/settings.schema.json");
+      }
+    })();
   }
   return settingsSchemaPromise;
 }
@@ -34,16 +39,21 @@ let defaultSettingsPromise;
  */
 export async function loadDefaultSettings() {
   if (!defaultSettingsPromise) {
-    defaultSettingsPromise = fetch(new URL("../data/settings.json", import.meta.url))
-      .then(async (response) => {
+    defaultSettingsPromise = (async () => {
+      const base = typeof import.meta.url === "string" ? import.meta.url : import.meta.url?.href;
+      try {
+        const url = new URL("../data/settings.json", base);
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error(
             `Failed to fetch default settings: ${response.status} ${response.statusText}`
           );
         }
-        return response.json();
-      })
-      .catch(async () => importJsonModule("../data/settings.json"));
+        return await response.json();
+      } catch {
+        return importJsonModule("../data/settings.json");
+      }
+    })();
   }
   const data = await defaultSettingsPromise;
   if (Object.keys(DEFAULT_SETTINGS).length === 0) {
