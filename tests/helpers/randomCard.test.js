@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { getJudokaFixture, getGokyoFixture } from "../utils/testUtils.js";
 
 let getRandomJudokaMock;
-let renderMock;
+const renderMock = vi.fn();
 let JudokaCardMock;
 let getFallbackJudokaMock;
 
@@ -11,8 +11,9 @@ vi.mock("../../src/helpers/cardUtils.js", () => ({
 }));
 
 vi.mock("../../src/components/JudokaCard.js", () => {
-  renderMock = vi.fn();
-  JudokaCardMock = vi.fn().mockImplementation(() => ({ render: renderMock }));
+  JudokaCardMock = vi.fn(function () {
+    return { render: renderMock };
+  });
   return { JudokaCard: JudokaCardMock };
 });
 
@@ -37,10 +38,11 @@ describe("generateRandomCard", () => {
     const gokyoData = getGokyoFixture();
 
     getRandomJudokaMock = vi.fn(() => judokaData[1]);
-    renderMock = vi.fn(async () => generatedEl);
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
 
     const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
+    renderMock.mockClear();
+    renderMock.mockResolvedValue(generatedEl);
 
     await generateRandomCard(judokaData, gokyoData, container, true);
 
@@ -55,9 +57,10 @@ describe("generateRandomCard", () => {
     const judokaData = getJudokaFixture().slice(0, 2);
     const gokyoData = getGokyoFixture();
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
-    renderMock = vi.fn(async () => generatedEl);
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
     const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
+    renderMock.mockClear();
+    renderMock.mockResolvedValue(generatedEl);
     const cb = vi.fn();
     await generateRandomCard(judokaData, gokyoData, container, true, cb);
     expect(cb).toHaveBeenCalledWith(judokaData[0]);
@@ -66,17 +69,19 @@ describe("generateRandomCard", () => {
   it("falls back to id 0 when selection fails", async () => {
     const container = document.createElement("div");
     const fallbackEl = document.createElement("div");
+    const judokaData = getJudokaFixture().slice(0, 2);
     const gokyoData = getGokyoFixture();
 
     getRandomJudokaMock = vi.fn(() => {
       throw new Error("fail");
     });
-    renderMock = vi.fn(async () => fallbackEl);
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
 
     const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
+    renderMock.mockClear();
+    renderMock.mockResolvedValue(fallbackEl);
 
-    await generateRandomCard([], gokyoData, container, true);
+    await generateRandomCard(judokaData, gokyoData, container, true);
 
     expect(renderMock).toHaveBeenCalled();
     expect(container.firstChild).toBe(fallbackEl);
@@ -89,13 +94,14 @@ describe("generateRandomCard", () => {
     getRandomJudokaMock = vi.fn(() => {
       throw new Error("fail");
     });
-    renderMock = vi.fn(async () => fallbackEl);
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
 
     const judokaData = getJudokaFixture().slice(0, 2);
     const gokyoData = getGokyoFixture();
     const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
     const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+    renderMock.mockClear();
+    renderMock.mockResolvedValue(fallbackEl);
     fetchJson.mockResolvedValue(gokyoData);
 
     await generateRandomCard(judokaData, undefined, container, true);
@@ -109,9 +115,10 @@ describe("generateRandomCard", () => {
     const judokaData = getJudokaFixture().slice(0, 2);
     const gokyoData = getGokyoFixture();
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
-    renderMock = vi.fn(async () => document.createElement("div"));
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
     const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
+    renderMock.mockClear();
+    renderMock.mockResolvedValue(document.createElement("div"));
     await expect(generateRandomCard(judokaData, gokyoData, null, true)).resolves.toBeUndefined();
     await expect(
       generateRandomCard(judokaData, gokyoData, undefined, true)
@@ -123,11 +130,10 @@ describe("generateRandomCard", () => {
     const judokaData = getJudokaFixture().slice(0, 2);
     const gokyoData = getGokyoFixture();
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
-    renderMock = vi.fn(async () => {
-      throw new Error("fail");
-    });
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
     const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
+    renderMock.mockClear();
+    renderMock.mockRejectedValue(new Error("fail"));
     await expect(
       generateRandomCard(judokaData, gokyoData, container, true)
     ).resolves.toBeUndefined();
@@ -139,9 +145,10 @@ describe("generateRandomCard", () => {
     const judokaData = getJudokaFixture().slice(0, 2);
     const gokyoData = getGokyoFixture();
     getRandomJudokaMock = vi.fn(() => judokaData[0]);
-    renderMock = vi.fn(async () => null);
     getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
     const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
+    renderMock.mockClear();
+    renderMock.mockResolvedValue(null);
     await generateRandomCard(judokaData, gokyoData, container, true);
     expect(container.childNodes.length).toBe(0);
   });
