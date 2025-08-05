@@ -54,9 +54,9 @@ describe("classicBattle stalled stat selection recovery", () => {
   });
 
   it("auto-selects after stall timeout", async () => {
-    const { startRound, _resetForTest } = await import("../../../src/helpers/classicBattle.js");
-    _resetForTest();
-    await startRound();
+    const { classicBattle } = await import("../../../src/helpers/classicBattle.js");
+    classicBattle._resetForTest();
+    await classicBattle.startRound();
     timerSpy.advanceTimersByTime(35000);
     expect(document.querySelector("header #round-message").textContent).toMatch(/stalled/i);
     timerSpy.advanceTimersByTime(5000);

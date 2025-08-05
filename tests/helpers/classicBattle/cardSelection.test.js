@@ -62,11 +62,11 @@ describe("classicBattle card selection", () => {
       callCount += 1;
       return callCount === 1 ? { id: 1 } : { id: 2 };
     });
-    const { startRound, getComputerJudoka, _resetForTest } = await import(
+    const { classicBattle, getComputerJudoka } = await import(
       "../../../src/helpers/classicBattle.js"
     );
-    _resetForTest();
-    await startRound();
+    classicBattle._resetForTest();
+    await classicBattle.startRound();
     expect(renderJudokaCardMock).toHaveBeenCalledWith(
       expect.objectContaining({ id: 1 }),
       expect.anything(),
@@ -92,9 +92,9 @@ describe("classicBattle card selection", () => {
       if (cb) cb(d[0]);
     });
     getRandomJudokaMock = vi.fn(() => ({ id: 2 }));
-    const { startRound, _resetForTest } = await import("../../../src/helpers/classicBattle.js");
-    _resetForTest();
-    await startRound();
+    const { classicBattle } = await import("../../../src/helpers/classicBattle.js");
+    classicBattle._resetForTest();
+    await classicBattle.startRound();
     expect(generateRandomCardMock).toHaveBeenCalledWith(
       [expect.objectContaining({ id: 2, isHidden: false })],
       null,

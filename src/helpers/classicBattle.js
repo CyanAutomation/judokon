@@ -18,17 +18,6 @@ import { getStatValue, resetStatButtons, showResult } from "./battle/index.js";
 import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
 
-export function getStartRound() {
-  if (typeof window !== "undefined" && window.startRoundOverride) {
-    return window.startRoundOverride;
-  }
-  return startRound;
-}
-
-let quitModal = null;
-let statTimeoutId = null;
-let autoSelectId = null;
-
 /**
  * Determine the opponent's stat choice based on difficulty.
  *
@@ -92,172 +81,206 @@ function showSummary(result) {
   }
 }
 
-/**
- * Reset match state and start a new game.
- *
- * @pseudocode
- * 1. Reset engine scores and flags.
- * 2. Hide the summary panel and clear the last round message.
- * 3. Call the start round function to begin a new match.
- */
-async function handleReplay() {
-  engineReset();
-  const panel = document.getElementById("summary-panel");
-  if (panel) panel.classList.add("hidden");
-  infoBar.clearMessage();
-  const startRoundFn = getStartRound();
-  await startRoundFn();
-}
+class ClassicBattle {
+  constructor() {
+    /** @type {ReturnType<typeof createModal> | null} */
+    this.quitModal = null;
+    /** @type {ReturnType<typeof setTimeout> | null} */
+    this.statTimeoutId = null;
+    /** @type {ReturnType<typeof setTimeout> | null} */
+    this.autoSelectId = null;
 
-/**
- * Handle stalled stat selection by prompting the player and auto-selecting a
- * random stat after a short delay.
- *
- * @pseudocode
- * 1. Display "Stat selection stalled" via `infoBar.showMessage`.
- * 2. After 5 seconds choose a random stat from `STATS`.
- * 3. Call `handleStatSelection` with the chosen stat.
- */
-function onStatSelectionTimeout() {
-  infoBar.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
-  autoSelectId = setTimeout(() => {
-    const randomStat = simulateOpponentStat();
-    handleStatSelection(randomStat);
-  }, 5000);
-}
+    const quitButton = document.getElementById("quit-match-button");
+    if (quitButton) {
+      quitButton.addEventListener("click", () => {
+        this.quitMatch();
+      });
+    }
 
-/**
- * Update the info bar with current scores.
- *
- * @pseudocode
- * 1. Read scores via `getScores()`.
- * 2. Forward the values to `infoBar.updateScore`.
- */
-function syncScoreDisplay() {
-  const { playerScore, computerScore } = getScores();
-  infoBar.updateScore(playerScore, computerScore);
-}
-
-function createQuitConfirmation(onConfirm) {
-  const title = document.createElement("h2");
-  title.id = "quit-modal-title";
-  title.textContent = "Quit the match?";
-
-  const desc = document.createElement("p");
-  desc.id = "quit-modal-desc";
-  desc.textContent = "Your progress will be lost.";
-
-  const actions = document.createElement("div");
-  actions.className = "modal-actions";
-
-  const cancel = createButton("Cancel", {
-    id: "cancel-quit-button",
-    className: "secondary-button"
-  });
-  const quit = createButton("Quit", { id: "confirm-quit-button" });
-  actions.append(cancel, quit);
-
-  const frag = document.createDocumentFragment();
-  frag.append(title, desc, actions);
-
-  const modal = createModal(frag, { labelledBy: title, describedBy: desc });
-  cancel.addEventListener("click", modal.close);
-  quit.addEventListener("click", () => {
-    onConfirm();
-    modal.close();
-    window.location.href = "../../index.html";
-  });
-  document.body.appendChild(modal.element);
-  return modal;
-}
-
-export async function startRound() {
-  resetStatButtons();
-  disableNextRoundButton();
-  await drawCards();
-  showSelectionPrompt();
-  syncScoreDisplay();
-  await startTimer(handleStatSelection);
-  statTimeoutId = setTimeout(onStatSelectionTimeout, 35000);
-  updateDebugPanel();
-}
-
-export function evaluateRound(stat) {
-  const playerContainer = document.getElementById("player-card");
-  const computerContainer = document.getElementById("computer-card");
-  const playerVal = getStatValue(playerContainer, stat);
-  const compVal = getStatValue(computerContainer, stat);
-  const result = engineHandleStatSelection(playerVal, compVal);
-  if (result.message) {
-    showResult(result.message);
+    const replayButton = document.getElementById("replay-button");
+    if (replayButton) {
+      replayButton.addEventListener("click", () => {
+        this.handleReplay();
+      });
+    }
   }
-  syncScoreDisplay();
-  updateDebugPanel();
-  return result;
-}
 
-export async function handleStatSelection(stat) {
-  clearTimeout(statTimeoutId);
-  clearTimeout(autoSelectId);
-  const clearWaitingMessage = infoBar.showTemporaryMessage("Waiting…");
-  const delay = 300 + Math.floor(Math.random() * 401);
-  return new Promise((resolve) => {
-    setTimeout(async () => {
-      await revealComputerCard();
-      clearWaitingMessage();
-      const result = evaluateRound(stat);
-      resetStatButtons();
-      scheduleNextRound(result, getStartRound());
-      if (result.matchEnded) {
-        showSummary(result);
-      }
-      updateDebugPanel();
-      resolve(result);
-    }, delay);
-  });
-}
+  getStartRound() {
+    if (typeof window !== "undefined" && window.startRoundOverride) {
+      return window.startRoundOverride;
+    }
+    return this.startRound.bind(this);
+  }
 
-export function quitMatch() {
-  if (!quitModal) {
-    quitModal = createQuitConfirmation(() => {
-      const result = engineQuitMatch();
+  /**
+   * Reset match state and start a new game.
+   *
+   * @pseudocode
+   * 1. Reset engine scores and flags.
+   * 2. Hide the summary panel and clear the last round message.
+   * 3. Call the start round function to begin a new match.
+   */
+  async handleReplay() {
+    engineReset();
+    const panel = document.getElementById("summary-panel");
+    if (panel) panel.classList.add("hidden");
+    infoBar.clearMessage();
+    const startRoundFn = this.getStartRound();
+    await startRoundFn();
+  }
+
+  /**
+   * Handle stalled stat selection by prompting the player and auto-selecting a
+   * random stat after a short delay.
+   *
+   * @pseudocode
+   * 1. Display "Stat selection stalled" via `infoBar.showMessage`.
+   * 2. After 5 seconds choose a random stat from `STATS`.
+   * 3. Call `handleStatSelection` with the chosen stat.
+   */
+  onStatSelectionTimeout() {
+    infoBar.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
+    this.autoSelectId = setTimeout(() => {
+      const randomStat = simulateOpponentStat();
+      this.handleStatSelection(randomStat);
+    }, 5000);
+  }
+
+  /**
+   * Update the info bar with current scores.
+   *
+   * @pseudocode
+   * 1. Read scores via `getScores()`.
+   * 2. Forward the values to `infoBar.updateScore`.
+   */
+  syncScoreDisplay() {
+    const { playerScore, computerScore } = getScores();
+    infoBar.updateScore(playerScore, computerScore);
+  }
+
+  createQuitConfirmation(onConfirm) {
+    const title = document.createElement("h2");
+    title.id = "quit-modal-title";
+    title.textContent = "Quit the match?";
+
+    const desc = document.createElement("p");
+    desc.id = "quit-modal-desc";
+    desc.textContent = "Your progress will be lost.";
+
+    const actions = document.createElement("div");
+    actions.className = "modal-actions";
+
+    const cancel = createButton("Cancel", {
+      id: "cancel-quit-button",
+      className: "secondary-button"
+    });
+    const quit = createButton("Quit", { id: "confirm-quit-button" });
+    actions.append(cancel, quit);
+
+    const frag = document.createDocumentFragment();
+    frag.append(title, desc, actions);
+
+    const modal = createModal(frag, { labelledBy: title, describedBy: desc });
+    cancel.addEventListener("click", modal.close);
+    quit.addEventListener("click", () => {
+      onConfirm();
+      modal.close();
+      window.location.href = "../../index.html";
+    });
+    document.body.appendChild(modal.element);
+    return modal;
+  }
+
+  async startRound() {
+    resetStatButtons();
+    disableNextRoundButton();
+    await drawCards();
+    showSelectionPrompt();
+    this.syncScoreDisplay();
+    await startTimer(this.handleStatSelection.bind(this));
+    this.statTimeoutId = setTimeout(() => this.onStatSelectionTimeout(), 35000);
+    updateDebugPanel();
+  }
+
+  evaluateRound(stat) {
+    const playerContainer = document.getElementById("player-card");
+    const computerContainer = document.getElementById("computer-card");
+    const playerVal = getStatValue(playerContainer, stat);
+    const compVal = getStatValue(computerContainer, stat);
+    const result = engineHandleStatSelection(playerVal, compVal);
+    if (result.message) {
       showResult(result.message);
+    }
+    this.syncScoreDisplay();
+    updateDebugPanel();
+    return result;
+  }
+
+  async handleStatSelection(stat) {
+    clearTimeout(this.statTimeoutId);
+    clearTimeout(this.autoSelectId);
+    const clearWaitingMessage = infoBar.showTemporaryMessage("Waiting…");
+    const delay = 300 + Math.floor(Math.random() * 401);
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        await revealComputerCard();
+        clearWaitingMessage();
+        const result = this.evaluateRound(stat);
+        resetStatButtons();
+        scheduleNextRound(result, this.getStartRound());
+        if (result.matchEnded) {
+          showSummary(result);
+        }
+        updateDebugPanel();
+        resolve(result);
+      }, delay);
     });
   }
-  const trigger = document.getElementById("quit-match-button");
-  quitModal.open(trigger ?? undefined);
+
+  quitMatch() {
+    if (!this.quitModal) {
+      this.quitModal = this.createQuitConfirmation(() => {
+        const result = engineQuitMatch();
+        showResult(result.message);
+      });
+    }
+    const trigger = document.getElementById("quit-match-button");
+    this.quitModal.open(trigger ?? undefined);
+  }
+
+  _resetForTest() {
+    resetSelection();
+    engineReset();
+    if (typeof window !== "undefined") {
+      delete window.startRoundOverride;
+    }
+    clearTimeout(this.statTimeoutId);
+    clearTimeout(this.autoSelectId);
+    this.statTimeoutId = null;
+    this.autoSelectId = null;
+    const timerEl = document.getElementById("next-round-timer");
+    if (timerEl) timerEl.textContent = "";
+    infoBar.clearMessage();
+    const nextBtn = document.getElementById("next-round-button");
+    if (nextBtn) {
+      const clone = nextBtn.cloneNode(true);
+      nextBtn.replaceWith(clone);
+      clone.disabled = true;
+    }
+    const quitBtn = document.getElementById("quit-match-button");
+    if (quitBtn) {
+      quitBtn.replaceWith(quitBtn.cloneNode(true));
+    }
+    if (this.quitModal) {
+      this.quitModal.element.remove();
+      this.quitModal = null;
+    }
+    this.syncScoreDisplay();
+    updateDebugPanel();
+  }
 }
 
-export function _resetForTest() {
-  resetSelection();
-  engineReset();
-  if (typeof window !== "undefined") {
-    delete window.startRoundOverride;
-  }
-  clearTimeout(statTimeoutId);
-  clearTimeout(autoSelectId);
-  statTimeoutId = null;
-  autoSelectId = null;
-  const timerEl = document.getElementById("next-round-timer");
-  if (timerEl) timerEl.textContent = "";
-  infoBar.clearMessage();
-  const nextBtn = document.getElementById("next-round-button");
-  if (nextBtn) {
-    const clone = nextBtn.cloneNode(true);
-    nextBtn.replaceWith(clone);
-    clone.disabled = true;
-  }
-  const quitBtn = document.getElementById("quit-match-button");
-  if (quitBtn) {
-    quitBtn.replaceWith(quitBtn.cloneNode(true));
-  }
-  if (quitModal) {
-    quitModal.element.remove();
-    quitModal = null;
-  }
-  syncScoreDisplay();
-  updateDebugPanel();
-}
+export const classicBattle = new ClassicBattle();
 
 export {
   revealComputerCard,
@@ -267,17 +290,3 @@ export {
 } from "./classicBattle/uiHelpers.js";
 export { getComputerJudoka } from "./classicBattle/cardSelection.js";
 export { scheduleNextRound } from "./classicBattle/timerControl.js";
-
-const quitButton = document.getElementById("quit-match-button");
-if (quitButton) {
-  quitButton.addEventListener("click", () => {
-    quitMatch();
-  });
-}
-
-const replayButton = document.getElementById("replay-button");
-if (replayButton) {
-  replayButton.addEventListener("click", () => {
-    handleReplay();
-  });
-}
