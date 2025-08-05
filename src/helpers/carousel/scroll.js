@@ -74,6 +74,6 @@ export function createScrollButton(direction, container) {
 export function updateScrollButtonState(container, leftBtn, rightBtn) {
   const maxLeft = container.scrollWidth - container.clientWidth;
   const EPSILON = 1; // allow small rounding differences
-  leftBtn.disabled = container.scrollLeft <= EPSILON;
+  leftBtn.disabled = container.scrollLeft <= 0;
   rightBtn.disabled = container.scrollLeft >= maxLeft - EPSILON;
 }
