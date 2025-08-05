@@ -44,7 +44,7 @@ export class SidebarList {
         }
       }
       li.classList.add(i % 2 === 0 ? "odd" : "even");
-      li.addEventListener("click", () => this.select(i));
+    li.addEventListener("click", () => this.select(i));
       li.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
