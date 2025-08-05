@@ -1,87 +1,118 @@
-# Ju-Do-Kon! Agent Guide
+# 🤖 JU-DO-KON! Agent Guide
 
-This repository contains the source for **JU-DO-KON!**, a browser-based card game about judo.
+This document exists to help AI agents (and human collaborators) make effective, accurate, and consistent contributions to the JU-DO-KON! codebase. Agents should treat this guide as both a checklist and a playbook.
 
-## Key Directories
+---
 
-- `index.html` – landing page.
-- `game.js` – main browser logic.
-- `src/helpers/` – modular utilities used throughout the game. Functions include extensive JSDoc with `@pseudocode` blocks.
-- `data/` – JSON files for judoka, gokyo techniques, and game configuration.
-- `tests/` – Vitest unit tests using the `jsdom` environment.
-- `playwright/` – Playwright tests for UI and end-to-end validation, including **screenshot tests**.
-- `design/` – documentation including code standards. New contributors should read `design/codeStandards/codeJSDocStandards.md` and `design/codeStandards/codePseudocodeStandards.md`.
+## 🎯 Mission Statement
 
-## Coding Standards
+AI agents play a vital role in maintaining quality, clarity, and scalability across JU-DO-KON!. This guide ensures:
 
-- Use ES modules and modern JavaScript (Node 18+ is expected).
-- Format code with Prettier and lint with ESLint. The repo uses the config from `eslint.config.mjs`.
-- **JSDoc comments and pseudocode blocks must remain intact**. Keep `@pseudocode` blocks in place, but update them if the code changes so the description stays accurate.
-- Public functions should have JSDoc documentation following the examples in `design/codeStandards`.
-- Favor small, single-purpose functions and avoid monolithic implementations.
-- Always refactor complex logic into smaller helpers and keep modules focused on a single responsibility.
-- Keep implementations and tests simple. Break logic into small helpers whenever possible, and refactor complex code rather than layering workarounds.
-- Whenever you touch a file, look for opportunities to simplify or refactor the surrounding code.
-- Refactor any function over roughly 50 lines into smaller helpers.
+- Consistent logic and style across contributions
+- Awareness of available tooling and data
+- Efficient collaboration with human reviewers
+- A bias toward clarity, simplicity, and modularity
 
-📝 Note: Code must remain simple and modular at all times.
+A successful agent contribution is **concise**, **compliant with code standards**, and **adds lasting value** without introducing regressions or complexity.
 
-## Programmatic Checks
+---
 
-Run the following commands from the repository root before committing. If any command fails, resolve the issues and rerun:
+## 🧪 Prompt Templates
 
-```bash
-npx prettier . --check       # verify formatting
-npx eslint .                 # lint the codebase
-npx vitest run                # run unit tests
-npx playwright test          # run Playwright UI tests
-npm run check:contrast       # Pa11y contrast audit (runs server automatically)
+Use these prompt formats when engaging with AI or testing tools:
+
+### 📝 Evaluate a PRD
+
+```markdown
+You are a PRD reviewer for the JU-DO-KON! game project. Evaluate the following Product Requirements Document for clarity, completeness, and testability. Identify any gaps or ambiguities and suggest improvements.
 ```
 
-The pre-commit hook runs linting, tests, and the contrast audit automatically.
+### 🧮 Audit a JSON File for Duplication
 
-Common fixes:
+Scan `src/data/<filename>.json` for duplicate stat names, redundant fields, or overlapping values. Recommend deduplication or structural improvements. Include reasoning.
+
+### 🧷 Check Tooltip Coverage
+
+Review `src/data/tooltips.json` and match entries against UI elements using `data-tooltip-id`. Identify missing tooltips or unused keys. Suggest where to add or remove entries.
+
+### 🔘 Validate Feature Flag Functionality
+
+Inspect `src/pages/settings.html` and corresponding helpers. Confirm that all feature flags expose `data-flag` and `data-tooltip-id`. Check toggle persistence and observability.
+
+---
+
+## ✅ Evaluation Criteria for Agent Contributions
+
+Before submitting or completing a task, verify that your work:
+
+- Maintains modular, single-purpose logic
+- Includes or updates appropriate @pseudocode in JSDoc
+- Passes all programmatic checks (format, lint, test, contrast)
+- Improves clarity, reusability, or structure
+- Avoids duplication or placeholder text
+
+---
+
+## 📚 Key Files for AI Agents
+
+| Purpose                        | File(s)                                         |
+| ------------------------------ | ----------------------------------------------- |
+| Tooltip content                | src/data/tooltips.json                          |
+| Game stats and player data     | src/data/judoka.json, src/data/statNames.json   |
+| Feature flags & settings       | src/pages/settings.html, src/data/settings.json |
+| Tooltip viewer                 | src/pages/tooltipViewer.html                    |
+| Debug + Observability targets  | Components with data-*, like data-tooltip-id, data-flag, data-feature-* |
+| UI test entry points           | playwright/*.spec.js, tests/**/*.test.js        |
+| Component factories            | src/components/*.js                             |
+| Battle logic and UI            | classicBattle.js, setupBattleInfoBar.js, InfoBar.js |
+
+---
+
+## ✅ DOs and ❌ DON’Ts
+
+### ✅ DO
+
+- Use data-flag, data-tooltip-id, and data-feature-* for all toggles and testable features
+- Refactor large functions into smaller helpers (~50 lines max)
+- Write and maintain clear @pseudocode for public functions
+- Validate all modified JSON files with `npm run validate:data`
+- Use createButton, createCard, createModal factories when building UI
+
+### ❌ DON’T
+
+- Don’t commit baseline screenshots (playwright/*-snapshots)
+- Don’t introduce placeholder text in tooltips or stats
+- Don’t skip pseudocode updates when changing logic
+- Don’t duplicate stat labels or tooltip keys
+- Don’t forget to run the full test suite before committing
+
+---
+
+## 🛠 Programmatic Checks Before Commit
+
+Run these from the repo root:
 
 ```bash
-npx eslint . --fix          # auto-fix lint errors when possible
-npx prettier . --write      # rewrite files with correct formatting
+npx prettier . --check
+npx eslint .
+npx vitest run
+npx playwright test
+npm run check:contrast
 ```
 
-## UI Testing and Screenshot Validation
+**Common fixes:**
 
-To ensure the game remains visually consistent, we use Playwright for UI testing, including full-page screenshots and element snapshots.
+```bash
+npx prettier . --write
+npx eslint . --fix
+```
 
-When updating or creating UI components:
+---
 
-- Take full-page or element-specific screenshots during test runs.
-- Save manual screenshots to the screenshots/ directory (if needed).
-- Visual regression tests use the **screenshots**/ folders adjacent to test files.
+## 🔗 Related Docs
 
-Run screenshot tests locally:
+- `README.md` – Project overview and setup
+- `architecture.md` – System layout and entry points
+- `CONTRIBUTING.md` – Commit etiquette and agent rules
 
-npm run test:screenshot
-
-Check generated screenshots and diffs carefully.
-
-- **Do not commit files under `playwright/*-snapshots`.** Baseline screenshots
-  are updated automatically by `.github/workflows/playwright-baseline.yml`.
-  If Playwright tests fail because visuals changed, mention the failure in your
-  pull request description but avoid committing new snapshot images.
-
-📝 Note: Screenshot tests are optional for minor changes but strongly encouraged for any updates affecting layout, components, or styles.
-
-## Additional Notes
-
-- Debug logging can be enabled by setting `DEBUG_LOGGING=true` in the environment.
-- The `tests` directory covers helpers and UI functions. Ensure new functionality includes appropriate unit tests.
-- The playwright directory covers UI and browser interaction testing.
-- Ensure new functionality includes unit tests and UI validation if applicable.
-
-### Commit Messages
-
-- Keep commit messages short and in the imperative mood.
-- Reference related issues when applicable.
-- **Examples:**
-  - `Add carousel component to homepage`
-  - `Fix failing date formatter tests`
-  - 'Update Battle Mode layout'
+---
