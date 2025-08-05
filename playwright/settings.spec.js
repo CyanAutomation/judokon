@@ -13,8 +13,18 @@ test.describe.parallel("Settings page", () => {
     await page.route("**/src/data/navigationItems.json", (route) =>
       route.fulfill({ path: "tests/fixtures/navigationItems.json" })
     );
+    await page.route("**/src/data/gameModes.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/gameModes.json" })
+    );
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-    await page.getByLabel(/Classic Battle/i).waitFor({ state: "attached" });
+    try {
+      await page.getByLabel(/Classic Battle/i).waitFor({ state: "attached", timeout: 5000 });
+    } catch (e) {
+      const content = await page.content();
+      // eslint-disable-next-line no-console
+      console.error("Classic Battle label not found. Page content:\n", content);
+      throw e;
+    }
     await page.locator("#general-settings-toggle").click();
     await page.locator("#game-modes-toggle").click();
     await page.locator("#advanced-settings-toggle").click();

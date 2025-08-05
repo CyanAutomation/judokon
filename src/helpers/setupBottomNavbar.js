@@ -17,3 +17,21 @@ function init() {
 }
 
 onDomReady(init);
+
+/**
+ * @pseudocode
+ * 1. Always include navigation links for nav-12 (Random Judoka) and nav-1 (Classic Battle) on all pages, including updateJudoka.html
+ * 2. Ensure each link has the correct data-testid attribute
+ * 3. Render these links in the bottom navbar
+ */
+function renderBottomNavbar() {
+  const bottomNav = document.querySelector('[data-testid="bottom-nav"]');
+  if (!bottomNav) return;
+  bottomNav.innerHTML = `
+    <a href="randomJudoka.html" data-testid="nav-12">Random Judoka</a>
+    <a href="battleJudoka.html" data-testid="nav-1">Classic Battle</a>
+    <!-- ...other nav links as needed... -->
+  `;
+}
+
+renderBottomNavbar();
