@@ -123,13 +123,19 @@ export async function drawCards() {
   computerJudoka = compJudoka;
 
   const placeholder = judokaData.find((j) => j.id === 1) || compJudoka;
-  const card = await new JudokaCard(placeholder, gokyoLookup, {
+  // Instantiate a placeholder card for the computer with obscured stats.
+  const judokaCard = new JudokaCard(placeholder, gokyoLookup, {
     useObscuredStats: true,
     enableInspector
-  }).render();
-  computerContainer.innerHTML = "";
-  computerContainer.appendChild(card);
-  setupLazyPortraits(card);
+  });
+  const card = await judokaCard.render();
+  if (card instanceof HTMLElement) {
+    computerContainer.innerHTML = "";
+    computerContainer.appendChild(card);
+    setupLazyPortraits(card);
+  } else {
+    console.error("JudokaCard did not render an HTMLElement");
+  }
 
   return { playerJudoka, computerJudoka };
 }

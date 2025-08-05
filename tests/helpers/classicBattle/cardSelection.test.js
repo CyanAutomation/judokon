@@ -136,4 +136,18 @@ describe("classicBattle card selection", () => {
     await Promise.resolve();
     expect(fetchJsonMock).toHaveBeenCalledTimes(3);
   });
+
+  it("logs an error when JudokaCard.render does not return an element", async () => {
+    renderMock = vi.fn(async () => "nope");
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { drawCards, _resetForTest } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
+    _resetForTest();
+    await drawCards();
+    expect(consoleSpy).toHaveBeenCalledWith("JudokaCard did not render an HTMLElement");
+    const container = document.getElementById("computer-card");
+    expect(container.innerHTML).toBe("");
+    consoleSpy.mockRestore();
+  });
 });
