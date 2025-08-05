@@ -7,36 +7,41 @@ const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
 test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)", () => {
   test.use({ viewport: { width: 1280, height: 720 } });
   test.skip(!runScreenshots);
-  // List of pages to capture screenshots for
+
+  test.beforeEach(async ({ page }) => {
+    await page.route("**/src/data/navigationItems.json", (route) => {
+      route.fulfill({ path: "tests/fixtures/navigationItems.json" });
+    });
+    await page.route("**/src/data/*.json", (route) => {
+      const file = route.request().url().split("/").pop();
+      const fixturePath = `tests/fixtures/${file}`;
+      if (fs.existsSync(fixturePath)) {
+        route.fulfill({ path: fixturePath });
+      } else {
+        route.continue();
+      }
+    });
+    await page.addInitScript(() => {
+      Math.random = () => 0.42;
+      localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
+    });
+  });
+
+  // List of pages to capture screenshots for. Each entry includes a tag to
+  // enable filtering with `npx playwright test --grep @tag` in CI.
   const pages = [
-    { url: "/", name: "homepage.png" },
-    { url: "/src/pages/browseJudoka.html", name: "browseJudoka.png" },
-    { url: "/src/pages/createJudoka.html", name: "createJudoka.png" },
-    { url: "/src/pages/randomJudoka.html", name: "randomJudoka.png" },
-    { url: "/src/pages/meditation.html", name: "meditation.png" },
-    { url: "/src/pages/updateJudoka.html", name: "updateJudoka.png" },
-    { url: "/src/pages/settings.html", name: "settings.png" },
-    { url: "/src/pages/vectorSearch.html", name: "vectorSearch.png" }
+    { url: "/", name: "homepage.png", tag: "@homepage" },
+    { url: "/src/pages/browseJudoka.html", name: "browseJudoka.png", tag: "@browseJudoka" },
+    { url: "/src/pages/createJudoka.html", name: "createJudoka.png", tag: "@createJudoka" },
+    { url: "/src/pages/randomJudoka.html", name: "randomJudoka.png", tag: "@randomJudoka" },
+    { url: "/src/pages/meditation.html", name: "meditation.png", tag: "@meditation" },
+    { url: "/src/pages/updateJudoka.html", name: "updateJudoka.png", tag: "@updateJudoka" },
+    { url: "/src/pages/settings.html", name: "settings.png", tag: "@settings" },
+    { url: "/src/pages/vectorSearch.html", name: "vectorSearch.png", tag: "@vectorSearch" }
   ];
 
-  for (const { url, name } of pages) {
-    test(`screenshot ${url}`, async ({ page }) => {
-      await page.route("**/src/data/navigationItems.json", (route) => {
-        route.fulfill({ path: "tests/fixtures/navigationItems.json" });
-      });
-      await page.route("**/src/data/*.json", (route) => {
-        const file = route.request().url().split("/").pop();
-        const fixturePath = `tests/fixtures/${file}`;
-        if (fs.existsSync(fixturePath)) {
-          route.fulfill({ path: fixturePath });
-        } else {
-          route.continue();
-        }
-      });
-      await page.addInitScript(() => {
-        Math.random = () => 0.42;
-        localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
-      });
+  for (const { url, name, tag } of pages) {
+    test(`${tag} screenshot ${url}`, async ({ page }) => {
       await page.goto(url, { waitUntil: "domcontentloaded" });
       await expect(page).toHaveScreenshot(name, { fullPage: true });
     });
