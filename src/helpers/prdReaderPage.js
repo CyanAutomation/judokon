@@ -1,7 +1,7 @@
 import { onDomReady } from "./domReady.js";
 import { markdownToHtml } from "./markdownToHtml.js";
 import { initTooltips } from "./tooltip.js";
-import { createSidebarList } from "../components/SidebarList.js";
+import { SidebarList } from "../components/SidebarList.js";
 import { getPrdTaskStats } from "./prdTaskStats.js";
 
 /**
@@ -73,9 +73,11 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   );
 
   let index = startIndex;
-  const { element: listEl, select: listSelect } = createSidebarList(labels, (i, _el, opts = {}) => {
+  const list = new SidebarList(labels, (i, _el, opts = {}) => {
     selectDoc(i, true, true, !opts.fromListNav);
   });
+  const listEl = list.element;
+  const listSelect = list.select.bind(list);
   listEl.id = "prd-list";
   listPlaceholder.replaceWith(listEl);
 
