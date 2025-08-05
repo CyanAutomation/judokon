@@ -60,6 +60,8 @@ test.describe(
           throw new Error("Font loading failed or timed out: " + err.message);
         });
       });
+      await page.waitForFunction(() => document.querySelector(".battle-header img.logo")?.complete);
+      await page.waitForLoadState("networkidle");
       await expect(page.locator(".battle-header")).toHaveScreenshot("battle-header-portrait.png");
 
       await page.setViewportSize({ width: 480, height: 320 });
@@ -68,6 +70,8 @@ test.describe(
       );
       await page.waitForSelector("#score-display span", { state: "attached" });
       await page.evaluate(() => document.fonts.ready);
+      await page.waitForFunction(() => document.querySelector(".battle-header img.logo")?.complete);
+      await page.waitForLoadState("networkidle");
       await expect(page.locator(".battle-header")).toHaveScreenshot("battle-header-landscape.png");
     });
 
