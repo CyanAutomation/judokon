@@ -64,7 +64,8 @@ export function createScrollButton(direction, container) {
  * 1. Calculate the maximum scroll value using `scrollWidth` and
  *    `clientWidth` of `container`.
  * 2. Disable `leftBtn` when `scrollLeft` is at or before the first card.
- * 3. Disable `rightBtn` when `scrollLeft` reaches the end of the carousel.
+ * 3. Disable `rightBtn` when `scrollLeft` is within 1px of the carousel's
+ *    end to account for rounding differences.
  *
  * @param {HTMLElement} container - The scrolling container element.
  * @param {HTMLButtonElement} leftBtn - Button that scrolls left.
@@ -72,6 +73,7 @@ export function createScrollButton(direction, container) {
  */
 export function updateScrollButtonState(container, leftBtn, rightBtn) {
   const maxLeft = container.scrollWidth - container.clientWidth;
-  leftBtn.disabled = container.scrollLeft <= 0;
-  rightBtn.disabled = container.scrollLeft >= maxLeft;
+  const EPSILON = 1; // allow small rounding differences
+  leftBtn.disabled = container.scrollLeft <= EPSILON;
+  rightBtn.disabled = container.scrollLeft >= maxLeft - EPSILON;
 }
