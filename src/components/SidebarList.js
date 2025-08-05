@@ -48,7 +48,7 @@ export class SidebarList {
       li.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          this.select(i);
+        this.select(i);
         }
       });
       li.addEventListener("focus", () => {
