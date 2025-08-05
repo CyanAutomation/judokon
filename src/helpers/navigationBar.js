@@ -80,18 +80,22 @@ export async function populateNavbar() {
     if (!navBar) return; // Guard: do nothing if navbar is missing
     clearBottomNavbar();
 
+    // Include numeric IDs to ensure consistent data-testid values (e.g., nav-12, nav-1)
     const fallbackItems = [
       {
+        id: 12,
         name: "Random Judoka",
         url: `${BASE_PATH}randomJudoka.html`,
         image: "./src/assets/images/randomJudoka.png"
       },
       {
+        id: 0,
         name: "Home",
         url: new URL("../../index.html", BASE_PATH),
         image: "./src/assets/images/home.png"
       },
       {
+        id: 1,
         name: "Classic Battle",
         url: `${BASE_PATH}battleJudoka.html`,
         image: "./src/assets/images/classicBattle.png"
@@ -106,9 +110,7 @@ export async function populateNavbar() {
         const linkPath = new URL(href, window.location.href).pathname.replace(/^\//, "");
         const isCurrent = linkPath === currentPath || linkPath.endsWith(currentPath);
         const attrs = isCurrent ? ` class="active" aria-current="page"` : "";
-        // Ensure Classic Battle always gets data-testid="nav-1"
-        const testId =
-          item.name === "Classic Battle" ? "nav-1" : `nav-${item.name.replace(/\s+/g, "")}`;
+        const testId = `nav-${item.id}`;
         return `<li><a href="${href}" data-testid="${testId}" data-tooltip-id="nav.${navTooltipKey(item.name)}"${attrs}>${item.name}</a></li>`;
       })
       .join("");

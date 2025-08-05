@@ -28,8 +28,8 @@ function renderBottomNavbar() {
   const bottomNav = document.querySelector('[data-testid="bottom-nav"]');
   if (!bottomNav) return;
   bottomNav.innerHTML = `
-    <a href="randomJudoka.html" data-testid="nav-random-judoka">Random Judoka</a>
-    <a href="battleJudoka.html" data-testid="nav-classic-battle">Classic Battle</a>
+    <a href="randomJudoka.html" data-testid="nav-12">Random Judoka</a>
+    <a href="battleJudoka.html" data-testid="nav-1">Classic Battle</a>
     <!-- Add other nav links as needed -->
   `;
 }
