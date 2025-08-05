@@ -26,8 +26,8 @@ test.describe("Classic battle flow", () => {
     const timer = page.locator("header #next-round-timer");
     await timer.waitFor();
     await page.evaluate(async () => {
-      const mod = await import("../helpers/classicBattle.js");
-      mod.classicBattle._resetForTest();
+      const { createBattleStore, _resetForTest } = await import("../helpers/classicBattle.js");
+      _resetForTest(createBattleStore());
       document.querySelector("#next-round-timer").textContent = "Time Left: 3s";
       document.querySelector("#player-card").innerHTML =
         `<ul><li class='stat'><strong>Power</strong> <span>3</span></li></ul>`;
