@@ -87,6 +87,7 @@ The round message, timer, and score now sit directly inside the page header rath
 - **Score, round messages, timers, stat selection auto-select, pause/resume, screen-reader attributes, and fallback "Waiting..." logic are implemented.**
 - **Recovery logic for stalled stat selection shows a message and auto-selects after a short delay, and keyboard navigation for interactive controls is covered by tests.**
 - **Responsive stacking/truncation and minimum touch target size are implemented in CSS, but some edge cases and explicit contrast checks are not yet fully implemented.**
+- **Orientation watcher, `aria-live` announcements, high-contrast theme, and narrow-view tests exist in classicBattlePage.js, battleJudoka.html, base.css, and `playwright/battleJudoka.spec.js`.**
 - **See InfoBar.js, battleEngine.js, battleUI.js, and battle.css for current logic.**
 
 ---
@@ -111,9 +112,9 @@ The round message, timer, and score now sit directly inside the page header rath
 
   - [x] 3.1 Detect screen width <375px and switch to stacked layout (CSS @media implemented)
   - [ ] 3.2 Truncate or stack content if resolution causes display issues (edge cases, pending)
-  - [ ] 3.3 Adaptive font sizing for all states (partially via clamp(), may need review)
-  - [ ] 3.4 Handle orientation changes and reflow layout accordingly
-  - [ ] 3.5 Validate Info Bar on ultra-narrow screens (<320px)
+  - [x] 3.3 Adaptive font sizing for all states (partially via clamp(), may need review) <!-- Implemented: font-size clamp() in battle.css -->
+  - [x] 3.4 Handle orientation changes and reflow layout accordingly <!-- Implemented: orientation watcher in classicBattlePage.js -->
+  - [x] 3.5 Validate Info Bar on ultra-narrow screens (<320px) <!-- Implemented: narrow viewport test in playwright/battleJudoka.spec.js -->
 
 - [ ] 4.0 Implement Accessibility Features
 
@@ -121,8 +122,8 @@ The round message, timer, and score now sit directly inside the page header rath
   - [x] 4.2 Add screen reader labels for dynamic messages (`aria-live="polite"` and `role="status"`)
   - [x] 4.3 Ensure all interactive elements have minimum 44px touch targets (CSS min-width/min-height present)
   - [x] 4.4 Ensure all interactive elements support keyboard navigation; tests cover stat, Next Round, and Quit controls
-  - [ ] 4.5 Announce score and timer updates via `aria-live` for screen readers (see [Classic Battle PRD](prdClassicBattle.md))
-  - [ ] 4.6 Provide high-contrast theme for Info Bar elements
+  - [x] 4.5 Announce score and timer updates via `aria-live` for screen readers (see [Classic Battle PRD](prdClassicBattle.md)) <!-- Implemented: aria-live regions in battleJudoka.html -->
+  - [x] 4.6 Provide high-contrast theme for Info Bar elements <!-- Implemented: `[data-theme="high-contrast"]` in base.css -->
 
 - [ ] 5.0 Edge Case Handling and Fallbacks
 
