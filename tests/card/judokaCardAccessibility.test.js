@@ -1,4 +1,4 @@
-import { generateJudokaCardHTML, generateJudokaCard } from "../../src/helpers/cardBuilder.js";
+import { JudokaCard } from "../../src/components/JudokaCard.js";
 
 vi.mock("../../src/helpers/stats.js", () => ({
   loadStatNames: () =>
@@ -30,7 +30,7 @@ const gokyoLookup = {
 
 describe("judoka card accessibility attributes", () => {
   it("applies role and aria-label to judoka-card element", async () => {
-    const container = await generateJudokaCardHTML(judoka, gokyoLookup);
+    const container = await new JudokaCard(judoka, gokyoLookup).render();
     const card = container.querySelector(".judoka-card");
     expect(card).toHaveAttribute("role", "button");
     expect(card).toHaveAttribute("aria-label", `${judoka.firstname} ${judoka.surname} card`);
@@ -38,7 +38,8 @@ describe("judoka card accessibility attributes", () => {
 
   it("retains accessibility attributes when added to DOM", async () => {
     const containerEl = document.createElement("div");
-    await generateJudokaCard(judoka, gokyoLookup, containerEl);
+    const cardEl = await new JudokaCard(judoka, gokyoLookup).render();
+    containerEl.appendChild(cardEl);
     const card = containerEl.querySelector(".judoka-card");
     expect(card).toHaveAttribute("role", "button");
     expect(card).toHaveAttribute("aria-label", `${judoka.firstname} ${judoka.surname} card`);

@@ -1,4 +1,4 @@
-import { generateJudokaCardHTML } from "../../src/helpers/cardBuilder.js";
+import { JudokaCard } from "../../src/components/JudokaCard.js";
 
 vi.mock("../../src/helpers/stats.js", () => ({
   loadStatNames: () =>
@@ -30,7 +30,7 @@ const gokyoLookup = {
 
 describe("signature move placement", () => {
   it("adds the signature move as a direct child of the judoka card", async () => {
-    const container = await generateJudokaCardHTML(judoka, gokyoLookup);
+    const container = await new JudokaCard(judoka, gokyoLookup).render();
     const card = container.querySelector(".judoka-card");
     const direct = card.querySelector(":scope > .signature-move-container");
     expect(direct).toBeInstanceOf(HTMLElement);

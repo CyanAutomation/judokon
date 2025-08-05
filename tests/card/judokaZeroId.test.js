@@ -1,4 +1,4 @@
-import { generateJudokaCardHTML } from "../../src/helpers/cardBuilder.js";
+import { JudokaCard } from "../../src/components/JudokaCard.js";
 
 vi.mock("../../src/helpers/stats.js", () => ({
   loadStatNames: () =>
@@ -30,7 +30,7 @@ const gokyoLookup = {
 
 describe("judoka id 0 validation", () => {
   it("generates a card when stats are zero", async () => {
-    const card = await generateJudokaCardHTML(judoka, gokyoLookup);
+    const card = await new JudokaCard(judoka, gokyoLookup).render();
     expect(card).toBeInstanceOf(HTMLElement);
     const statsEl = card.querySelector(".card-stats");
     expect(statsEl.textContent).toContain("0");

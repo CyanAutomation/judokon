@@ -42,10 +42,10 @@ describe("randomJudokaPage module", () => {
       }
     }));
     vi.doMock("../../src/helpers/randomCard.js", async () => {
-      const { generateJudokaCardHTML } = await import("../../src/helpers/cardBuilder.js");
+      const { JudokaCard } = await import("../../src/components/JudokaCard.js");
       return {
         generateRandomCard: async (_cards, _gokyo, container) => {
-          const card = await generateJudokaCardHTML(judoka, {});
+          const card = await new JudokaCard(judoka, {}).render();
           container.appendChild(card);
         }
       };

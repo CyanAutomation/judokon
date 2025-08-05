@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateJudokaCardHTML } from "../../src/helpers/cardBuilder.js";
+import { JudokaCard } from "../../src/components/JudokaCard.js";
 
 const judoka = {
   id: 1,
@@ -19,11 +19,11 @@ const gokyoLookup = {
   1: { id: 1, name: "Uchi-mata" }
 };
 
-describe("generateJudokaCardHTML invalid inspector data", () => {
+describe("JudokaCard invalid inspector data", () => {
   it("renders fallback paragraph when card data cannot be stringified", async () => {
-    const container = await generateJudokaCardHTML(judoka, gokyoLookup, {
+    const container = await new JudokaCard(judoka, gokyoLookup, {
       enableInspector: true
-    });
+    }).render();
     const panel = container.querySelector(".debug-panel");
     expect(panel).toBeNull();
     const fallback = container.querySelector("p");
