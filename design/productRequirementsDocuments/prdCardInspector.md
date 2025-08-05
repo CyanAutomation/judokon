@@ -108,35 +108,46 @@ This problem is urgent because:
 
 ---
 
+## Implementation Notes
+
+Currently, the inspector activates only on pages wired to `toggleInspectorPanels`,
+including the main game, Classic Battle, and Random Judoka pages. Planned
+extensions will wire this feature into additional card-rendering views such as
+Team Battle and the Card Carousel.
+
+---
+
 ## Tasks
 
-- [ ] 1.0 Implement Settings Toggle
+- [x] 1.0 Implement Settings Toggle
 
-  - [ ] 1.1 Add "Card Inspector" toggle switch to `settings.html`
-  - [ ] 1.2 Set default state to OFF
-  - [ ] 1.3 Persist toggle in user settings
-  - [ ] 1.4 Reflect toggle state in UI immediately
+  - [x] 1.1 Add "Card Inspector" toggle switch to `settings.html`
+  - [x] 1.2 Set default state to OFF
+  - [x] 1.3 Persist toggle in user settings
+  - [x] 1.4 Reflect toggle state in UI immediately
 
-- [ ] 2.0 Render JSON Panel in Cards
+- [x] 2.0 Render JSON Panel in Cards
 
-  - [ ] 2.1 Check for `toggle=true` in `cardBuilder.js`
-  - [ ] 2.2 Inject formatted JSON into each card
-  - [ ] 2.3 Use `<details>` for collapsibility with proper labeling
-  - [ ] 2.4 Set `data-inspector="true"` on open; remove on close
+  - [x] 2.1 Check for `toggle=true` in `cardBuilder.js`
+  - [x] 2.2 Inject formatted JSON into each card
+  - [x] 2.3 Use `<details>` for collapsibility with proper labeling
+  - [x] 2.4 Set `data-inspector="true"` on open; remove on close
 
-- [ ] 3.0 Visual and Responsive Styling
+- [x] 3.0 Visual and Responsive Styling
 
-  - [ ] 3.1 Ensure 44px tap targets for disclosure toggle
+  - [x] 3.1 Ensure 44px tap targets for disclosure toggle
 
 - [ ] 4.0 Accessibility and Keyboard Support
 
   - [ ] 4.1 Add ARIA labels and keyboard controls
   - [ ] 4.2 Test with screen readers for all states
   - [ ] 4.3 Ensure tabbing through collapsed/expanded state works
+  - _Outstanding_: finalize expand/collapse animation and run full accessibility tests
 
 - [ ] 5.0 Error Handling
 
   - [ ] 5.1 Wrap rendering logic in `try/catch`
   - [ ] 5.2 Display fallback message for errors
+  - _Outstanding_: performance profiling for inspector panel rendering
 
 ---
