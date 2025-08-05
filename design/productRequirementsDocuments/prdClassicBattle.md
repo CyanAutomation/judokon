@@ -10,7 +10,7 @@
 
 ## TL;DR
 
-Classic Battle is Ju-Do-Kon!’s introductory, head-to-head mode. By offering a fast-paced, low-stakes way for new players to learn stats and game flow (match start ≤5 s after selection), it boosts retention and confidence while maintaining quick matches. This PRD defines how the mode operates, from random draws to scoring and end conditions, ensuring a smooth (**≥60 fps**), accessible, and engaging experience.
+Classic Battle is Ju-Do-Kon!’s introductory, head-to-head mode. By offering a fast-paced, low-stakes way for new players to learn stats and game flow (match start ≤5 s after selection), it boosts retention and confidence while maintaining quick matches. This PRD defines how the mode operates, from random draws to scoring and end conditions, ensuring a smooth, accessible, and engaging experience.
 
 > Sora starts a Classic Battle and draws her first card. She confidently taps “Speed,” seeing her stat triumph over the AI’s card. The score ticks up with a satisfying sound. Round after round, she learns which stats matter most. By the end, she feels ready to tackle harder battles — and wants to play again.
 
@@ -18,7 +18,7 @@ Classic Battle is Ju-Do-Kon!’s introductory, head-to-head mode. By offering a 
 
 ## Problem Statement
 
-Classic Battle is the main and simplest mode of the game. Without it, new players lack a quick, low-stakes mode to learn stats and grasp the core mechanics. This leads to higher early player drop-off, increased frustration, and fewer repeat sessions because players don’t build mastery or confidence. By providing a fast, engaging way to compare stats (**UI responses <200 ms**), Classic Battle helps new players onboard smoothly and encourages early retention.
+Classic Battle is the main and simplest mode of the game. Without it, new players lack a quick, low-stakes mode to learn stats and grasp the core mechanics. This leads to higher early player drop-off, increased frustration, and fewer repeat sessions because players don’t build mastery or confidence. By providing a fast, engaging way to compare stats, Classic Battle helps new players onboard smoothly and encourages early retention.
 
 > **Player Feedback Example:**  
 > “I tried Ranked Mode first and felt lost — I didn’t know which stat to pick or what the cards meant.” – Playtester, Age 10
@@ -35,7 +35,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - ≥70% of new players complete a Classic Battle within their first session.
 - Give new players an approachable mode to learn how judoka stats impact outcomes.
 - Reduce frustration by providing immediate, clear feedback on round results.
-- **Ensure all round messages, timers, and score are surfaced via the Info Bar (see prdBattleInfoBar.md) for clarity and accessibility.**
+- Ensure all round messages, timers, and score are surfaced via the Info Bar (see prdBattleInfoBar.md) for clarity and accessibility.
 
 ---
 
@@ -71,12 +71,10 @@ This feedback highlights why Classic Battle is needed now: new players currently
 ## Technical Considerations
 
 - Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
-- Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices (**≥60 fps**).
-- **Stat selection timer (30s) must be displayed in the Info Bar; if timer expires, a random stat is auto-selected. Timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleInfoBar.md).**
+- Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices.
+- Stat selection timer (30s) must be displayed in the Info Bar; if timer expires, a random stat is auto-selected. Timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleInfoBar.md).
 - Detect timer drift by comparing engine state with real time; if drift exceeds 2s, display "Waiting…" and restart the countdown.
-- Opponent stat selection runs entirely on the client. After the player picks a
-  stat (or the timer auto-chooses), the opponent's choice is revealed after a
-  short artificial delay to mimic turn-taking.
+- Opponent stat selection runs entirely on the client. After the player picks a stat (or the timer auto-chooses), the opponent's choice is revealed after a short artificial delay to mimic turn-taking.
 - The debug panel is available when the `battleDebugPanel` feature flag is enabled and appears beside the opponent's card.
 
 ---
@@ -114,7 +112,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Player can quit mid-match; confirmation prompt appears; if confirmed, match ends with player loss recorded.
 - After confirming the quit action, the player is returned to the main menu (index.html).
 - If AI difficulty affects stat selection, AI uses correct logic per difficulty setting.
-- Animation flow: transitions between card reveal, stat selection, and result screens complete smoothly without stalling (**each ≤400 ms at ≥60 fps**).
+- Animation flow: transitions between card reveal, stat selection, and result screens complete smoothly without stalling.
 - Stat buttons reset between rounds so no previous selection remains highlighted. The `battle.css` rule `#stat-buttons button { -webkit-tap-highlight-color: transparent; }` combined with a reflow ensures Safari clears the red touch overlay.
 - If the Judoka dataset fails to load, an error message appears with option to reload.
 - **All Info Bar content (messages, timer, score) must meet accessibility and responsiveness requirements as described in prdBattleInfoBar.md.**
@@ -123,7 +121,6 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ## Edge Cases / Failure States
 
-- **Player disconnects mid-match:** round is abandoned; player rejoins at main menu.
 - **Judoka or Gokyo dataset fails to load:** error message surfaces in the Info Bar and an error dialog offers a "Retry" button to reload data or the page.
 - **Player does not make a stat selection within 30 seconds:** system randomly selects a stat automatically. **Info Bar must update accordingly.**
 - **AI fails to select a stat (if difficulty logic implemented):** fallback to random stat selection.
@@ -156,7 +153,6 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - Support keyboard navigation for stat selection, match progression, and quit confirmation.
   - Provide alt text for cards and labels readable by screen readers.
   - **All Info Bar content must be accessible and responsive as described in prdBattleInfoBar.md.**
-- Animations must run at ≥60fps on mid-tier devices (2GB RAM) to ensure smooth experience.
 
 ---
 
@@ -183,9 +179,8 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - [x] 2.2 Create confirmation prompt flow
   - [x] 2.3 Record match as player loss upon quit confirmation
 - [ ] 3.0 Handle Edge Cases
-  - [ ] 3.1 Implement player disconnect logic: abandon match and redirect to main menu
-  - [x] 3.2 Handle Judoka dataset load failure with error prompt and reload option (see [cardRender.js](../../src/helpers/cardRender.js))
-  - [x] 3.3 Add fallback stat selection for AI if difficulty logic fails
+  - [x] 3.1 Handle Judoka dataset load failure with error prompt and reload option (see [cardRender.js](../../src/helpers/cardRender.js))
+  - [x] 3.2 Add fallback stat selection for AI if difficulty logic fails
 - [x] 4.0 Polish UX and Accessibility
   - [x] 4.1 Integrate consistent color coding (blue for player, red for AI)
   - [x] 4.2 Apply WCAG-compliant contrast ratios
@@ -193,12 +188,6 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - [x] 4.4 Add alt text to cards and UI elements (see [cardSelection.js](../../src/helpers/classicBattle/cardSelection.js))
 - [x] 5.0 Optimize Animations
   - [x] 5.1 Implement card reveal, stat selection, and result transitions using transform/opacity for GPU acceleration
-  - [x] 5.2 Ensure animations maintain ≥60fps on 2GB RAM devices (validated via DevTools and automated frame-rate test)
-
-### Outstanding Subtasks
-
-- [x] 2.1 Trigger quit confirmation when the header logo is clicked
-- [ ] 3.1 Implement player disconnect logic: abandon match and redirect to main menu
 
 ---
 
