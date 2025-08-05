@@ -42,13 +42,28 @@ export function runTypewriterEffect(element, finalHtml, speed = 200) {
   const text = element.textContent;
   element.textContent = "";
   let i = 0;
-  (function type() {
-    if (i < text.length) {
+  let acc = 0;
+  let last = 0;
+  let frameId = 0;
+  const step = (ts) => {
+    if (!element.isConnected) {
+      cancelAnimationFrame(frameId);
+      return;
+    }
+    if (!last) last = ts;
+    acc += ts - last;
+    last = ts;
+    while (acc >= speed && i < text.length) {
       element.textContent += text.charAt(i);
       i += 1;
-      setTimeout(type, speed);
+      acc -= speed;
+    }
+    if (i < text.length) {
+      frameId = requestAnimationFrame(step);
     } else {
       element.innerHTML = finalHtml;
+      cancelAnimationFrame(frameId);
     }
-  })();
+  };
+  frameId = requestAnimationFrame(step);
 }
