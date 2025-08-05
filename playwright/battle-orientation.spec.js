@@ -35,6 +35,13 @@ test.describe(
     test.skip(!runScreenshots);
 
     test("captures portrait and landscape headers", async ({ page }) => {
+      await page.addInitScript(() => {
+        window.startCountdownOverride = () => {};
+        const originalSetInterval = window.setInterval;
+        window.setInterval = (fn, ms, ...args) =>
+          originalSetInterval(fn, Math.max(ms, 3600000), ...args);
+      });
+
       await page.goto("/src/pages/battleJudoka.html");
       await page.waitForSelector("#score-display span", { state: "attached" });
 
@@ -54,6 +61,13 @@ test.describe(
     });
 
     test("captures extra-narrow header", async ({ page }) => {
+      await page.addInitScript(() => {
+        window.startCountdownOverride = () => {};
+        const originalSetInterval = window.setInterval;
+        window.setInterval = (fn, ms, ...args) =>
+          originalSetInterval(fn, Math.max(ms, 3600000), ...args);
+      });
+
       await page.goto("/src/pages/battleJudoka.html");
       await page.waitForSelector("#score-display span", { state: "attached" });
 
