@@ -1,6 +1,7 @@
 import { vi } from "vitest";
 import { JudokaCard } from "../../src/components/JudokaCard.js";
 import * as cardRender from "../../src/helpers/cardRender.js";
+import * as statsPanel from "../../src/components/StatsPanel.js";
 
 const judoka = {
   id: 1,
@@ -31,8 +32,8 @@ describe("JudokaCard fallback containers", () => {
     expect(card.textContent).toContain("No data available");
   });
 
-  it("adds fallback when stats generation throws", async () => {
-    vi.spyOn(cardRender, "generateCardStats").mockImplementation(() =>
+  it("adds fallback when stats panel generation throws", async () => {
+    vi.spyOn(statsPanel, "createStatsPanel").mockImplementation(() =>
       Promise.reject(new Error("stats fail"))
     );
 
@@ -59,8 +60,8 @@ describe("JudokaCard fallback containers", () => {
     expect(card.textContent).toContain("No data available");
   });
 
-  it("adds fallback when cardRender throws undefined", async () => {
-    vi.spyOn(cardRender, "generateCardStats").mockImplementation(() => Promise.reject(undefined));
+  it("adds fallback when stats panel throws undefined", async () => {
+    vi.spyOn(statsPanel, "createStatsPanel").mockImplementation(() => Promise.reject(undefined));
     const card = await new JudokaCard(judoka, gokyoLookup).render();
     expect(card.textContent).toContain("No data available");
   });
