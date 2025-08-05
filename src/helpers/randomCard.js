@@ -117,20 +117,13 @@ export async function generateRandomCard(
     console.error("Error generating random card:", error);
 
     const fallbackJudoka = await getFallbackJudoka();
-
-    try {
-      if (typeof onSelect === "function") {
-        onSelect(fallbackJudoka);
-      }
-      const card = await new JudokaCard(fallbackJudoka, gokyoLookup, {
-        enableInspector: options.enableInspector
-      }).render();
-      if (card) {
-        displayCard(containerEl, card, prefersReducedMotion);
-      }
-    } catch (fallbackError) {
-      console.error("Error displaying fallback card:", fallbackError);
-      // Do not update DOM if fallback also fails
+    if (typeof onSelect === "function") {
+      onSelect(fallbackJudoka);
     }
+    await createCardForJudoka(fallbackJudoka, gokyoLookup, containerEl, prefersReducedMotion).catch(
+      (fallbackError) => {
+        console.error("Error displaying fallback card:", fallbackError);
+      }
+    );
   }
 }
