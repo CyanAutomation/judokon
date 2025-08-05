@@ -55,7 +55,7 @@ test.describe(
           document.fonts.ready,
           new Promise((_, reject) =>
             setTimeout(() => reject(new Error("Timeout waiting for document.fonts.ready")), 5000)
-          ),
+          )
         ]).catch((err) => {
           throw new Error("Font loading failed or timed out: " + err.message);
         });
