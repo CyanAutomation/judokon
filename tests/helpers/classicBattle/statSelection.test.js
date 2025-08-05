@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { STATS } from "../../../src/helpers/battleEngine.js";
+vi.mock("../../../src/helpers/motionUtils.js", () => ({
+  shouldReduceMotionSync: () => true
+}));
 
 let generateRandomCardMock;
 
@@ -45,7 +48,11 @@ describe("classicBattle stat selection", () => {
     document.body.innerHTML = "";
     const { playerCard, computerCard } = createBattleCardContainers();
     const header = createBattleHeader();
-    document.body.append(playerCard, computerCard, header);
+    const roundResult = document.createElement("p");
+    roundResult.id = "round-result";
+    roundResult.setAttribute("aria-live", "polite");
+    roundResult.setAttribute("aria-atomic", "true");
+    document.body.append(playerCard, computerCard, header, roundResult);
     timerSpy = vi.useFakeTimers();
     fetchJsonMock = vi.fn(async () => []);
     generateRandomCardMock = vi.fn(async (_data, _g, container, _pm, cb) => {
@@ -122,6 +129,15 @@ describe("classicBattle stat selection", () => {
     const result = classicBattle.evaluateRound("power");
     expect(result.message).toMatch(/win/);
     expect(document.querySelector("header #score-display").textContent).toBe("You: 1\nOpponent: 0");
+  });
+
+  it("shows stat comparison after selection", async () => {
+    document.getElementById("player-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
+    document.getElementById("computer-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+    await selectStat("power");
+    expect(document.getElementById("round-result").textContent).toBe("Power – You: 5 Opponent: 3");
   });
 
   it("simulateOpponentStat returns a valid stat", () => {

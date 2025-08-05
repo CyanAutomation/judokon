@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
+vi.mock("../../../src/helpers/motionUtils.js", () => ({
+  shouldReduceMotionSync: () => true
+}));
 
 vi.mock("../../../src/helpers/classicBattle/timerControl.js", () => ({
   startTimer: vi.fn().mockResolvedValue(undefined),

@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { createInfoBarHeader } from "../utils/testUtils.js";
+vi.mock("../../src/helpers/motionUtils.js", () => ({
+  shouldReduceMotionSync: () => true
+}));
 
 const originalReadyState = Object.getOwnPropertyDescriptor(document, "readyState");
 
