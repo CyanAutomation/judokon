@@ -1,13 +1,9 @@
 import { seededRandom } from "../testModeUtils.js";
 import { getDefaultTimer } from "../timerUtils.js";
-import {
-  startRound as engineStartRound,
-  startCoolDown,
-  STATS,
-  watchForDrift
-} from "../battleEngine.js";
+import { startRound as engineStartRound, startCoolDown, STATS } from "../battleEngine.js";
 import * as infoBar from "../setupBattleInfoBar.js";
 import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from "./uiHelpers.js";
+import { runTimerWithDrift } from "./runTimerWithDrift.js";
 
 /**
  * Start the round timer and auto-select a random stat when time expires.
@@ -15,10 +11,10 @@ import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from 
  * @pseudocode
  * 1. Determine timer duration using `getDefaultTimer('roundTimer')`.
  *    - On error, temporarily show "Waiting…" and fallback to 30 seconds.
- * 2. Call `engineStartRound` to update the countdown each second and restore the prompt.
- * 3. Monitor for drift with `watchForDrift`; on drift show "Waiting…" and restart,
- *    giving up after several retries.
- * 4. When expired, auto-select a random stat via `onExpired`.
+ * 2. Use `runTimerWithDrift(engineStartRound)` to update the countdown each second
+ *    and monitor for drift.
+ *    - On drift show "Waiting…" and restart, giving up after several retries.
+ * 3. When expired, auto-select a random stat via `onExpired`.
  *
  * @param {function(string): Promise<void>} onExpiredSelect - Callback to handle stat auto-selection.
  * @returns {Promise<void>} Resolves when the timer begins.
@@ -43,30 +39,17 @@ export async function startTimer(onExpiredSelect) {
     if (timerEl) timerEl.textContent = `Time Left: ${remaining}s`;
   };
 
-  let stopWatch;
   const onExpired = async () => {
-    if (stopWatch) stopWatch();
     const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
     infoBar.showMessage(`Time's up! Auto-selecting ${randomStat}`);
     await onExpiredSelect(randomStat);
   };
 
-  const handleDrift = createDriftHandler(
-    (rem) => runTimer(rem),
-    async () => {
-      infoBar.showMessage("Timer error. Auto-selecting stat.");
-      await onExpired();
-    }
-  );
-
-  const runTimer = async (dur) => {
-    duration = dur;
-    await engineStartRound(onTick, onExpired, dur);
-    if (stopWatch) stopWatch();
-    stopWatch = watchForDrift(dur, handleDrift);
-  };
-
-  await runTimer(duration);
+  const run = runTimerWithDrift(engineStartRound);
+  await run(duration, onTick, onExpired, async () => {
+    infoBar.showMessage("Timer error. Auto-selecting stat.");
+    await onExpired();
+  });
   restore();
 }
 
@@ -97,8 +80,7 @@ export function handleStatSelectionTimeout(store, onSelect) {
  * @pseudocode
  * 1. If the match ended, return early.
  * 2. Setup a click handler that disables the button and calls `startRoundFn`.
- * 3. Start a 3 second cooldown via `startCoolDown` after a short delay and
- *    monitor for drift with `watchForDrift`.
+ * 3. After a short delay, run a 3 second cooldown via `runTimerWithDrift(startCoolDown)`.
  * 4. When expired, enable the button and attach the click handler.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
@@ -121,43 +103,17 @@ export function scheduleNextRound(result, startRoundFn) {
     if (timerEl) timerEl.textContent = `Next round in: ${remaining}s`;
   };
 
-  let stopWatch;
   const onExpired = () => {
-    if (stopWatch) stopWatch();
     btn.addEventListener("click", onClick, { once: true });
     enableNextRoundButton();
     updateDebugPanel();
   };
 
-  const handleDrift = createDriftHandler(
-    (rem) => runCoolDown(rem),
-    () => {
+  const run = runTimerWithDrift(startCoolDown);
+  setTimeout(() => {
+    run(3, onTick, onExpired, () => {
       infoBar.showMessage("Timer error. Enabling next round.");
       onExpired();
-    }
-  );
-
-  const runCoolDown = (dur) => {
-    startCoolDown(onTick, onExpired, dur);
-    if (stopWatch) stopWatch();
-    stopWatch = watchForDrift(dur, handleDrift);
-  };
-
-  setTimeout(() => {
-    runCoolDown(3);
+    });
   }, 2000);
-}
-
-function createDriftHandler(restartFn, onGiveUp) {
-  const MAX_DRIFT_RETRIES = 3;
-  let retries = 0;
-  return (remaining) => {
-    retries += 1;
-    if (retries > MAX_DRIFT_RETRIES) {
-      onGiveUp();
-      return;
-    }
-    infoBar.showMessage("Waiting…");
-    restartFn(remaining);
-  };
 }
