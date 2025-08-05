@@ -62,7 +62,7 @@ function showLoadError(error) {
  * 2. Filter out judoka marked `isHidden`.
  * 3. Render a random player card using `generateRandomCard` and store the result.
  * 4. Choose a random opponent judoka avoiding duplicates.
- * 5. If `JudokaCard.render` exists, render a placeholder card for the computer with obscured stats; otherwise log an error.
+ * 5. If `JudokaCard.render` returns an HTMLElement, render a placeholder card for the computer with obscured stats; otherwise log an error.
  * 6. Return the selected judoka objects.
  *
  * @returns {Promise<{playerJudoka: object|null, computerJudoka: object|null}>}
@@ -141,9 +141,7 @@ export async function drawCards() {
     computerContainer.appendChild(card);
     setupLazyPortraits(card);
   } else {
-    console.error(
-      "Failed to render computer card: JudokaCard.render method is not available. The computer card will not be displayed."
-    );
+    console.error("JudokaCard did not render an HTMLElement", { placeholder, card });
   }
 
   return { playerJudoka, computerJudoka };
