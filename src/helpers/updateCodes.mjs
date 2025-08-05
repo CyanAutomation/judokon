@@ -1,7 +1,12 @@
 // update-codes.js
-const fs = require("fs");
-const path = require("path");
-const { generateCardCode } = require("./src/helpers/cardCode.js");
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { generateCardCode } from "./src/helpers/cardCode.js";
+
+// Resolve __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load judoka.json
 const judokaPath = path.join(__dirname, "src/data/judoka.json");
