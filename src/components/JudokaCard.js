@@ -121,12 +121,7 @@ export class JudokaCard {
     container.appendChild(card);
 
     if (this.enableInspector) {
-      const panel = createInspectorPanel(container, this.judoka, {
-        topBar,
-        portrait,
-        stats,
-        signature
-      });
+      const panel = createInspectorPanel(container, this.judoka);
       container.appendChild(panel);
     }
 

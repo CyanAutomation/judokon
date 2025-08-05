@@ -7,7 +7,7 @@ const judoka = {};
 describe("createInspectorPanel accessibility", () => {
   it("adds label, focus styles, and keyboard support", () => {
     const container = document.createElement("div");
-    const panel = createInspectorPanel(container, judoka, {});
+    const panel = createInspectorPanel(container, judoka);
     const summary = panel.querySelector("summary");
 
     expect(panel.getAttribute("aria-label")).toBe("Inspector panel");

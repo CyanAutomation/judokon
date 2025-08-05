@@ -111,12 +111,7 @@ export function toggleInspectorPanels(enable) {
         const json = container.dataset.cardJson;
         const card = container.querySelector(".judoka-card");
         if (!json || !card) return;
-        const panel = createInspectorPanel(container, JSON.parse(json), {
-          topBar: card.querySelector(".card-top-bar"),
-          portrait: card.querySelector(".card-portrait"),
-          stats: card.querySelector(".card-stats"),
-          signature: card.querySelector(".signature-move-container")
-        });
+        const panel = createInspectorPanel(container, JSON.parse(json));
         container.appendChild(panel);
       }
     } else if (existing) {
