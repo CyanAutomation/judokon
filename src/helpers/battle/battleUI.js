@@ -57,20 +57,51 @@ export function resetStatButtons() {
  * @pseudocode
  * 1. Get the round message element using `getRoundMessageEl`.
  * 2. Exit early if the element is missing.
- * 3. Add `fade-transition`, set the text content, and ensure it's visible.
- * 4. If `message` is non-empty, add the `fading` class after 2 seconds.
+ * 3. Cancel any in-progress fade and clear styles.
+ * 4. Add `fade-transition`, set the text content, and ensure it's visible.
+ * 5. If `message` is non-empty, reduce opacity to 0 over 2s using `requestAnimationFrame`.
+ * 6. When complete, add the `fading` class and remove inline opacity.
  *
  * @param {string} message - Result text to show.
  */
+let cancelFade;
 export function showResult(message) {
   const el = getRoundMessageEl();
   if (!el) return;
+
+  if (cancelFade) {
+    cancelFade();
+  }
+
   el.classList.add("fade-transition");
   el.textContent = message;
   el.classList.remove("fading");
-  if (message) {
-    setTimeout(() => {
+  el.style.removeProperty("opacity");
+
+  if (!message) return;
+
+  const start = performance.now();
+  let frame;
+
+  function step(now) {
+    const progress = Math.min((now - start) / 2000, 1);
+    el.style.opacity = String(1 - progress);
+    if (progress < 1) {
+      frame = requestAnimationFrame(step);
+    } else {
       el.classList.add("fading");
-    }, 2000);
+      el.style.removeProperty("opacity");
+      cancelFade = undefined;
+    }
   }
+
+  function cancel() {
+    cancelAnimationFrame(frame);
+    el.classList.remove("fading");
+    el.style.removeProperty("opacity");
+    cancelFade = undefined;
+  }
+
+  cancelFade = cancel;
+  frame = requestAnimationFrame(step);
 }

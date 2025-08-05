@@ -32,10 +32,27 @@ describe("battleUI helpers", () => {
   it("showResult updates text and fades after delay", () => {
     document.body.innerHTML = '<p id="round-message" class="fading"></p>';
     vi.useFakeTimers();
+    vi.stubGlobal("requestAnimationFrame", (cb) => setTimeout(() => cb(performance.now()), 16));
+    vi.stubGlobal("cancelAnimationFrame", (id) => clearTimeout(id));
     showResult("You win!");
     const el = getRoundMessageEl();
     expect(el.textContent).toBe("You win!");
     expect(el.classList.contains("fade-transition")).toBe(true);
+    expect(el.classList.contains("fading")).toBe(false);
+    vi.advanceTimersByTime(2000);
+    expect(el.classList.contains("fading")).toBe(true);
+  });
+
+  it("showResult cancels previous fade when new text appears", () => {
+    document.body.innerHTML = '<p id="round-message" class="fading"></p>';
+    vi.useFakeTimers();
+    vi.stubGlobal("requestAnimationFrame", (cb) => setTimeout(() => cb(performance.now()), 16));
+    vi.stubGlobal("cancelAnimationFrame", (id) => clearTimeout(id));
+    showResult("First");
+    vi.advanceTimersByTime(1000);
+    showResult("Second");
+    const el = getRoundMessageEl();
+    expect(el.textContent).toBe("Second");
     expect(el.classList.contains("fading")).toBe(false);
     vi.advanceTimersByTime(2000);
     expect(el.classList.contains("fading")).toBe(true);
