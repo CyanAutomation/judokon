@@ -62,6 +62,9 @@ test.describe.parallel(
       });
       await page.waitForFunction(() => document.querySelector(".battle-header img.logo")?.complete);
       await page.waitForLoadState("networkidle");
+      await page.waitForFunction(
+        () => document.querySelector("#round-message")?.textContent.trim().length > 0
+      );
       await expect(page.locator(".battle-header")).toHaveScreenshot("battle-header-portrait.png");
 
       await page.setViewportSize({ width: 480, height: 320 });
@@ -72,6 +75,9 @@ test.describe.parallel(
       await page.evaluate(() => document.fonts.ready);
       await page.waitForFunction(() => document.querySelector(".battle-header img.logo")?.complete);
       await page.waitForLoadState("networkidle");
+      await page.waitForFunction(
+        () => document.querySelector("#round-message")?.textContent.trim().length > 0
+      );
       await expect(page.locator(".battle-header")).toHaveScreenshot("battle-header-landscape.png");
     });
 
@@ -97,6 +103,9 @@ test.describe.parallel(
           (el) =>
             (el.textContent = "A very long round message that should overflow on narrow screens")
         );
+      await page.waitForFunction(
+        () => document.querySelector("#round-message")?.textContent.trim().length > 0
+      );
       await expect(page.locator(".battle-header")).toHaveScreenshot("battle-header-300.png");
     });
   }
