@@ -175,7 +175,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - [x] 1.4 Add "Next Round" and "Quit Match" buttons to controls
   - [x] 1.5 End match after 10 points or 25 rounds
 - [ ] 2.0 Add Early Quit Functionality
-  - [ ] 2.1 Trigger quit confirmation when the header logo is clicked
+  - [x] 2.1 Trigger quit confirmation when the header logo is clicked
   - [x] 2.2 Create confirmation prompt flow
   - [x] 2.3 Record match as player loss upon quit confirmation
 - [ ] 3.0 Handle Edge Cases

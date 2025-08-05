@@ -71,4 +71,22 @@ describe("classicBattle button handlers", () => {
     expect(document.querySelector("#round-message").textContent).toMatch(/quit/i);
     expect(window.location.href).toMatch(/(?:index\.html)?\/?$/);
   });
+
+  it("home link invokes quitMatch", async () => {
+    const header = document.querySelector("header");
+    const homeLink = document.createElement("a");
+    homeLink.href = "../../index.html";
+    homeLink.dataset.testid = "home-link";
+    header.appendChild(homeLink);
+    await import("../../../src/helpers/classicBattle.js");
+    await import("../../../src/helpers/setupClassicBattleHomeLink.js");
+    const beforeHref = window.location.href;
+    homeLink.click();
+    expect(window.location.href).toBe(beforeHref);
+    const confirmBtn = document.getElementById("confirm-quit-button");
+    expect(confirmBtn).not.toBeNull();
+    confirmBtn.dispatchEvent(new Event("click"));
+    expect(document.querySelector("#round-message").textContent).toMatch(/quit/i);
+    expect(window.location.href).toMatch(/(?:index\.html)?\/?$/);
+  });
 });

@@ -282,6 +282,16 @@ class ClassicBattle {
 
 export const classicBattle = new ClassicBattle();
 
+/**
+ * Trigger the Classic Battle quit confirmation modal.
+ *
+ * @pseudocode
+ * 1. Call `classicBattle.quitMatch()` to show the existing confirmation modal.
+ */
+export function quitMatch() {
+  classicBattle.quitMatch();
+}
+
 export {
   revealComputerCard,
   enableNextRoundButton,
