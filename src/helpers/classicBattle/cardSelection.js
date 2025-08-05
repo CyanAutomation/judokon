@@ -141,7 +141,7 @@ export async function drawCards() {
     computerContainer.appendChild(card);
     setupLazyPortraits(card);
   } else {
-    console.error("JudokaCard did not render an HTMLElement");
+    console.error("JudokaCard did not render an HTMLElement", { placeholder, card });
   }
 
   return { playerJudoka, computerJudoka };
