@@ -12,7 +12,7 @@ The **Card Inspector** is a developer/debugging utility in JU-DO-KON! that lets 
 
 Developers and testers frequently need to verify the backend-bound data for each card to debug display issues, confirm game logic, or troubleshoot syncing problems. The current process — inspecting the DOM or logging to console — is slow, disruptive, and error-prone. These workarounds slow down development cycles and increase QA misses, especially as card content scales.
 
-This problem is urgent because:
+This problem is pressing because:
 
 - Card attributes and logic are rapidly changing during playtesting.
 - Iteration velocity is blocked by inefficient inspection tools.
@@ -85,7 +85,7 @@ This problem is urgent because:
 
 ---
 
-## Accessibility & Performance Constraints
+## Accessibility Constraints
 
 - Must support keyboard tabbing and screen reader hints (e.g., “Card Data: collapsed”).
 - Error handling for malformed card data (`try/catch` around render).
@@ -110,10 +110,7 @@ This problem is urgent because:
 
 ## Implementation Notes
 
-Currently, the inspector activates only on pages wired to `toggleInspectorPanels`,
-including the main game, Classic Battle, and Random Judoka pages. Planned
-extensions will wire this feature into additional card-rendering views such as
-Team Battle and the Card Carousel.
+Currently, the inspector activates only on pages wired to `toggleInspectorPanels`, including the main game, Classic Battle, and Random Judoka pages. Planned extensions will wire this feature into additional card-rendering views such as Team Battle and the Card Carousel.
 
 ---
 
@@ -142,12 +139,11 @@ Team Battle and the Card Carousel.
   - [ ] 4.1 Add ARIA labels and keyboard controls
   - [ ] 4.2 Test with screen readers for all states
   - [ ] 4.3 Ensure tabbing through collapsed/expanded state works
-  - _Outstanding_: finalize expand/collapse animation and run full accessibility tests
+  - [ ] 4.4 Finalize expand/collapse animation and run full accessibility tests
 
 - [ ] 5.0 Error Handling
 
   - [ ] 5.1 Wrap rendering logic in `try/catch`
   - [ ] 5.2 Display fallback message for errors
-  - _Outstanding_: performance profiling for inspector panel rendering
 
 ---
