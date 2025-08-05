@@ -36,7 +36,7 @@ function showLoadError(error) {
       try {
         await drawCards();
       } catch (retryError) {
-        console.error(retryError);
+        console.error("Failed to retry card draw:", retryError);
         window.location.reload();
       }
     });
