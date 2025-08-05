@@ -60,13 +60,13 @@ export function createCountdownTimer(duration, { onTick, onExpired, pauseOnHidde
   let intervalId = null;
   let paused = false;
 
-  function tick() {
+  async function tick() {
     if (paused) return;
     remaining -= 1;
     if (typeof onTick === "function") onTick(remaining);
     if (remaining <= 0) {
       stop();
-      if (typeof onExpired === "function") onExpired();
+      if (typeof onExpired === "function") await onExpired();
     }
   }
 
@@ -83,7 +83,11 @@ export function createCountdownTimer(duration, { onTick, onExpired, pauseOnHidde
     remaining = duration;
     paused = false;
     if (typeof onTick === "function") onTick(remaining);
-    intervalId = setInterval(tick, 1000);
+    intervalId = setInterval(async () => {
+      try {
+        await tick();
+      } catch {}
+    }, 1000);
     if (pauseOnHidden && typeof document !== "undefined") {
       document.addEventListener("visibilitychange", handleVisibility);
     }

@@ -128,7 +128,12 @@ export async function drawCards() {
     useObscuredStats: true,
     enableInspector
   });
-  const card = await judokaCard.render();
+  let card;
+  try {
+    if (typeof judokaCard.render === "function") {
+      card = await judokaCard.render();
+    }
+  } catch {}
   if (card instanceof HTMLElement) {
     computerContainer.innerHTML = "";
     computerContainer.appendChild(card);

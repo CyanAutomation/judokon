@@ -63,7 +63,7 @@ function endMatchIfNeeded() {
  * 6. Start the timer.
  *
  * @param {function} onTick - Callback each second with remaining time.
- * @param {function} onExpired - Callback when timer expires (auto-select logic).
+ * @param {function(): Promise<void>} onExpired - Callback when timer expires (auto-select logic).
  * @param {number} [duration] - Timer duration in seconds.
  * @returns {Promise<void>} Resolves when the timer starts.
  */
@@ -86,8 +86,8 @@ export async function startRound(onTick, onExpired, duration) {
       remaining = r;
       if (onTickCb) onTickCb(r);
     },
-    onExpired: () => {
-      if (!matchEnded && onExpiredCb) onExpiredCb();
+    onExpired: async () => {
+      if (!matchEnded && onExpiredCb) await onExpiredCb();
     },
     pauseOnHidden: true
   });
@@ -110,7 +110,7 @@ export async function startRound(onTick, onExpired, duration) {
  * 6. Start the timer.
  *
  * @param {function} onTick - Callback each second with remaining time.
- * @param {function} onExpired - Callback when timer expires.
+ * @param {function(): (void|Promise<void>)} onExpired - Callback when timer expires.
  * @param {number} [duration] - Cooldown duration in seconds.
  * @returns {Promise<void>} Resolves when the timer starts.
  */
@@ -133,8 +133,8 @@ export async function startCoolDown(onTick, onExpired, duration) {
       remaining = r;
       if (onTickCb) onTickCb(r);
     },
-    onExpired: () => {
-      if (!matchEnded && onExpiredCb) onExpiredCb();
+    onExpired: async () => {
+      if (!matchEnded && onExpiredCb) await onExpiredCb();
     },
     pauseOnHidden: false
   });
