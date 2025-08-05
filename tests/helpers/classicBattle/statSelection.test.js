@@ -32,8 +32,7 @@ function expectDeselected(button) {
 
 describe("classicBattle stat selection", () => {
   let timerSpy;
-  let handleStatSelection;
-  let _resetForTest;
+  let classicBattle;
   let selectStat;
   let simulateOpponentStat;
 
@@ -57,12 +56,12 @@ describe("classicBattle stat selection", () => {
   beforeEach(async () => {
     document.body.innerHTML +=
       '<div id="stat-buttons" data-tooltip-id="ui.selectStat"><button data-stat="power"></button></div>';
-    ({ handleStatSelection, _resetForTest, simulateOpponentStat } = await import(
+    ({ classicBattle, simulateOpponentStat } = await import(
       "../../../src/helpers/classicBattle.js"
     ));
-    _resetForTest();
+    classicBattle._resetForTest();
     selectStat = async (stat) => {
-      const p = handleStatSelection(stat);
+      const p = classicBattle.handleStatSelection(stat);
       await vi.runAllTimersAsync();
       await p;
     };
@@ -107,13 +106,13 @@ describe("classicBattle stat selection", () => {
   });
 
   it("evaluateRound updates the score", async () => {
-    const { evaluateRound, _resetForTest } = await import("../../../src/helpers/classicBattle.js");
-    _resetForTest();
+    const { classicBattle } = await import("../../../src/helpers/classicBattle.js");
+    classicBattle._resetForTest();
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
     document.getElementById("computer-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    const result = evaluateRound("power");
+    const result = classicBattle.evaluateRound("power");
     expect(result.message).toMatch(/win/);
     expect(document.querySelector("header #score-display").textContent).toBe("You: 1\nOpponent: 0");
   });

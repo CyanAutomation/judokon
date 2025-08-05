@@ -25,11 +25,7 @@
  *       `data-test-mode` attribute when settings change.
  * 5. Execute `setupClassicBattlePage` with `onDomReady`.
  */
-import {
-  startRound as classicStartRound,
-  handleStatSelection,
-  simulateOpponentStat
-} from "./classicBattle.js";
+import { classicBattle, simulateOpponentStat } from "./classicBattle.js";
 import { onDomReady } from "./domReady.js";
 import { waitForComputerCard } from "./battleJudokaPage.js";
 import { loadSettings } from "./settingsUtils.js";
@@ -53,11 +49,11 @@ let aiDifficulty = "easy";
 
 async function startRoundWrapper() {
   enableStatButtons(false);
-  await classicStartRound();
+  await classicBattle.startRound();
   await waitForComputerCard();
   if (simulatedOpponentMode) {
     const stat = simulateOpponentStat(aiDifficulty);
-    await handleStatSelection(stat);
+    await classicBattle.handleStatSelection(stat);
   } else {
     enableStatButtons(true);
   }
@@ -130,7 +126,7 @@ export async function setupClassicBattlePage() {
         if (!btn.disabled) {
           enableStatButtons(false);
           btn.classList.add("selected");
-          handleStatSelection(btn.dataset.stat);
+          classicBattle.handleStatSelection(btn.dataset.stat);
         }
       });
       btn.addEventListener("keydown", (e) => {
@@ -138,7 +134,7 @@ export async function setupClassicBattlePage() {
           e.preventDefault();
           enableStatButtons(false);
           btn.classList.add("selected");
-          handleStatSelection(btn.dataset.stat);
+          classicBattle.handleStatSelection(btn.dataset.stat);
         }
       });
     });
