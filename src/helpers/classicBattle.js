@@ -196,8 +196,8 @@ class ClassicBattle {
     disableNextRoundButton();
     await drawCards();
     this.syncScoreDisplay();
-    await startTimer(this.handleStatSelection.bind(this));
     showSelectionPrompt();
+    await startTimer(this.handleStatSelection.bind(this));
     this.statTimeoutId = setTimeout(() => this.onStatSelectionTimeout(), 35000);
     updateDebugPanel();
   }
