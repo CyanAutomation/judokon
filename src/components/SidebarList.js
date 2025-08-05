@@ -52,7 +52,7 @@ export class SidebarList {
         }
       });
       li.addEventListener("focus", () => {
-        this.current = i;
+      this.current = i;
       });
       this.element.appendChild(li);
       return li;
