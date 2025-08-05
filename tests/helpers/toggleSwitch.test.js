@@ -1,21 +1,21 @@
 import { describe, it, expect } from "vitest";
-import { createToggleSwitch } from "../../src/components/ToggleSwitch.js";
+import { ToggleSwitch } from "../../src/components/ToggleSwitch.js";
 
-describe("createToggleSwitch", () => {
+describe("ToggleSwitch", () => {
   it("creates the correct DOM structure", () => {
-    const wrapper = createToggleSwitch("Sound", {
+    const toggle = new ToggleSwitch("Sound", {
       id: "sound-toggle",
       name: "sound",
       checked: true,
       ariaLabel: "Sound toggle",
       tooltipId: "settings.sound"
     });
-    const label = wrapper.querySelector("label.switch");
-    const input = wrapper.querySelector("input[type='checkbox']");
-    const slider = wrapper.querySelector(".slider");
-    const span = wrapper.querySelector("span");
+    const { element, input } = toggle;
+    const label = element.querySelector("label.switch");
+    const slider = element.querySelector(".slider");
+    const span = element.querySelector("span");
 
-    expect(wrapper.className).toBe("settings-item");
+    expect(element.className).toBe("settings-item");
     expect(label).toBeInstanceOf(HTMLLabelElement);
     expect(label?.htmlFor).toBe("sound-toggle");
     expect(input?.id).toBe("sound-toggle");
@@ -28,20 +28,23 @@ describe("createToggleSwitch", () => {
   });
 
   it("defaults to unchecked when not specified", () => {
-    const wrapper = createToggleSwitch("Option");
-    const input = wrapper.querySelector("input[type='checkbox']");
-    expect(input?.checked).toBe(false);
+    const toggle = new ToggleSwitch("Option");
+    expect(toggle.isChecked()).toBe(false);
   });
 
   it("uses label text as aria-label by default", () => {
-    const wrapper = createToggleSwitch("AutoToggle");
-    const input = wrapper.querySelector("input[type='checkbox']");
-    expect(input).toHaveAttribute("aria-label", "AutoToggle");
+    const toggle = new ToggleSwitch("AutoToggle");
+    expect(toggle.input).toHaveAttribute("aria-label", "AutoToggle");
   });
 
   it("omits tooltip attribute when none provided", () => {
-    const wrapper = createToggleSwitch("NoTip");
-    const input = wrapper.querySelector("input[type='checkbox']");
-    expect(input?.dataset.tooltipId).toBeUndefined();
+    const toggle = new ToggleSwitch("NoTip");
+    expect(toggle.input.dataset.tooltipId).toBeUndefined();
+  });
+
+  it("allows programmatic state changes", () => {
+    const toggle = new ToggleSwitch("Changeable");
+    toggle.setChecked(true);
+    expect(toggle.isChecked()).toBe(true);
   });
 });

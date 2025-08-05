@@ -1,4 +1,4 @@
-import { createToggleSwitch } from "../../components/ToggleSwitch.js";
+import { ToggleSwitch } from "../../components/ToggleSwitch.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { toggleViewportSimulation } from "../viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "../tooltipOverlayDebug.js";
@@ -41,14 +41,14 @@ export function renderFeatureFlagSwitches(
     const label = tooltipMap[`${tipId}.label`] || formatFlagLabel(flag);
     const getDescription = () => tooltipMap[`${tipId}.description`] || "";
     const description = getDescription();
-    const wrapper = createToggleSwitch(label, {
+    const toggle = new ToggleSwitch(label, {
       id: `feature-${kebab}`,
       name: flag,
       checked: Boolean(getCurrentSettings().featureFlags[flag]?.enabled),
       ariaLabel: label,
       tooltipId: info.tooltipId
     });
-    const input = wrapper.querySelector("input");
+    const { element: wrapper, input } = toggle;
     if (input) input.dataset.flag = flag;
     const desc = document.createElement("p");
     desc.className = "settings-description";
