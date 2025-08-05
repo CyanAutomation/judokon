@@ -2,14 +2,14 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { generateCardCode } from "./src/helpers/cardCode.js";
+import { generateCardCode } from "./cardCode.js";
 
 // Resolve __dirname equivalent for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load judoka.json
-const judokaPath = path.join(__dirname, "src/data/judoka.json");
+const judokaPath = path.join(__dirname, "../data/judoka.json");
 const rawData = fs.readFileSync(judokaPath, "utf8");
 const judokaList = JSON.parse(rawData);
 
