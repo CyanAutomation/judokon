@@ -141,7 +141,7 @@ The round message, timer, and score now sit directly inside the page header rath
 
 ## Accessibility Audit
 
-- **2025-08-05**: `npm run check:contrast` reported no issues after updating `--color-secondary` to `#0074d9`.
+- **2025-08-05**: `npm run check:contrast` reported no issues after updating `--color-secondary` to `#0066cc`.
 
 **See also:**
 
