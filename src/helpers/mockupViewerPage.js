@@ -1,7 +1,7 @@
 import { setupButtonEffects } from "./buttonEffects.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
-import { createSidebarList } from "../components/SidebarList.js";
+import { SidebarList } from "../components/SidebarList.js";
 
 /**
  * Initialize the mockup image carousel.
@@ -67,9 +67,11 @@ export function setupMockupViewerPage() {
   ];
 
   let currentIndex = 0;
-  const { element: listEl, select: listSelect } = createSidebarList(files, (i) => {
+  const list = new SidebarList(files, (i) => {
     if (i !== currentIndex) showImage(i);
   });
+  const listEl = list.element;
+  const listSelect = list.select.bind(list);
   listEl.id = "mockup-list";
   listPlaceholder.replaceWith(listEl);
 

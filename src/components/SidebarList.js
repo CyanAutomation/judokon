@@ -1,5 +1,5 @@
 /**
- * Create a sidebar list with selectable items.
+ * Sidebar list with selectable items.
  *
  * @pseudocode
  * 1. Build a `<ul>` element with class `sidebar-list`.
@@ -16,61 +16,72 @@
  * 6. Inside `select()` update the highlight, trigger a brief pulse
  *    animation on the newly selected element (unless the user prefers
  *    reduced motion), focus it, and call `onSelect` with any options.
- * 7. Return `{ element, select }` so callers can programmatically
- *    change the highlighted item.
- *
- * @param {Array<string|object>} items - Labels or config objects.
- * @param {Function} onSelect - Callback invoked with the new index.
- * @returns {{ element: HTMLUListElement, select: Function }}
+ * 7. Store the list element on `this.element` and expose `select()`
+ *    as a public method.
  */
-export function createSidebarList(items, onSelect = () => {}) {
-  const list = document.createElement("ul");
-  list.className = "sidebar-list";
+export class SidebarList {
+  /**
+   * @param {Array<string|object>} items - Labels or config objects.
+   * @param {Function} [onSelect=() => {}] - Callback invoked with the new index.
+   */
+  constructor(items, onSelect = () => {}) {
+    this.onSelect = onSelect;
+    this.element = document.createElement("ul");
+    this.element.className = "sidebar-list";
 
-  const elements = items.map((item, i) => {
-    const li = document.createElement("li");
-    li.tabIndex = 0;
-    if (typeof item === "string") {
-      li.textContent = item;
-    } else if (item && typeof item === "object") {
-      li.textContent = item.label || "";
-      if (item.className) li.classList.add(item.className);
-      if (item.dataset) {
-        Object.entries(item.dataset).forEach(([k, v]) => {
-          li.dataset[k] = v;
-        });
+    this.elements = items.map((item, i) => {
+      const li = document.createElement("li");
+      li.tabIndex = 0;
+      if (typeof item === "string") {
+        li.textContent = item;
+      } else if (item && typeof item === "object") {
+        li.textContent = item.label || "";
+        if (item.className) li.classList.add(item.className);
+        if (item.dataset) {
+          Object.entries(item.dataset).forEach(([k, v]) => {
+            li.dataset[k] = v;
+          });
+        }
       }
-    }
-    li.classList.add(i % 2 === 0 ? "odd" : "even");
-    li.addEventListener("click", () => select(i));
-    li.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
+      li.classList.add(i % 2 === 0 ? "odd" : "even");
+      li.addEventListener("click", () => this.select(i));
+      li.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          this.select(i);
+        }
+      });
+      li.addEventListener("focus", () => {
+        this.current = i;
+      });
+      this.element.appendChild(li);
+      return li;
+    });
+
+    this.current = -1;
+
+    this.element.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
-        select(i);
+        const delta = e.key === "ArrowDown" ? 1 : -1;
+        const next =
+          this.current === -1 ? (delta === 1 ? 0 : this.elements.length - 1) : this.current + delta;
+        this.select(next, { fromListNav: true });
       }
     });
-    li.addEventListener("focus", () => {
-      current = i;
-    });
-    list.appendChild(li);
-    return li;
-  });
+  }
 
-  let current = -1;
-
-  list.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-      e.preventDefault();
-      const delta = e.key === "ArrowDown" ? 1 : -1;
-      const next = current === -1 ? (delta === 1 ? 0 : elements.length - 1) : current + delta;
-      select(next, { fromListNav: true });
-    }
-  });
-
-  function select(index, opts = {}) {
-    current = ((index % elements.length) + elements.length) % elements.length;
-    elements.forEach((el, idx) => {
-      const isCurrent = idx === current;
+  /**
+   * Select an item by index.
+   *
+   * @param {number} index - Item index to highlight.
+   * @param {object} [opts={}] - Options passed to `onSelect`.
+   * @returns {void}
+   */
+  select(index, opts = {}) {
+    this.current = ((index % this.elements.length) + this.elements.length) % this.elements.length;
+    this.elements.forEach((el, idx) => {
+      const isCurrent = idx === this.current;
       el.classList.toggle("selected", isCurrent);
       if (isCurrent) {
         el.setAttribute("aria-current", "page");
@@ -86,9 +97,7 @@ export function createSidebarList(items, onSelect = () => {}) {
         el.removeAttribute("aria-current");
       }
     });
-    elements[current].focus();
-    onSelect(current, elements[current], opts);
+    this.elements[this.current].focus();
+    this.onSelect(this.current, this.elements[this.current], opts);
   }
-
-  return { element: list, select };
 }

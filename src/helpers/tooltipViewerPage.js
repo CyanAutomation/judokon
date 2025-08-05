@@ -2,7 +2,7 @@ import { fetchJson } from "./dataUtils.js";
 import { parseTooltipText, flattenTooltips, initTooltips } from "./tooltip.js";
 import { DATA_DIR } from "./constants.js";
 import { onDomReady } from "./domReady.js";
-import { createSidebarList } from "../components/SidebarList.js";
+import { SidebarList } from "../components/SidebarList.js";
 import { showSnackbar } from "./showSnackbar.js";
 
 const INVALID_TOOLTIP_MSG = "Empty or whitespace-only content";
@@ -161,10 +161,10 @@ export async function setupTooltipViewerPage() {
         });
       }
     });
-    const result = createSidebarList(items, (_, el) => {
+    const list = new SidebarList(items, (_, el) => {
       select(el.dataset.key);
     });
-    Array.from(result.element.children).forEach((li) => {
+    Array.from(list.element.children).forEach((li) => {
       let message = null;
       if (li.dataset.keyValid === "false") {
         message = INVALID_KEY_MSG;
@@ -185,10 +185,10 @@ export async function setupTooltipViewerPage() {
         li.append(" ", icon, sr);
       }
     });
-    listSelect = result.select;
-    result.element.id = "tooltip-list";
-    listPlaceholder.replaceWith(result.element);
-    listPlaceholder = result.element;
+    listSelect = list.select.bind(list);
+    list.element.id = "tooltip-list";
+    listPlaceholder.replaceWith(list.element);
+    listPlaceholder = list.element;
   }
 
   let selectedKey;
