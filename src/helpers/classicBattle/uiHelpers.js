@@ -30,7 +30,8 @@ export function showSelectionPrompt() {
  * @pseudocode
  * 1. Exit early if no stored judoka exists.
  * 2. Render `computerJudoka` into the computer card container.
- * 3. Clear the stored judoka after rendering.
+ * 3. Verify the rendered card is an `HTMLElement`; log and exit if not.
+ * 4. Clear the container, append the card, set up lazy portraits, and clear stored judoka.
  */
 export async function revealComputerCard() {
   const judoka = getComputerJudoka();
@@ -46,6 +47,10 @@ export async function revealComputerCard() {
   const card = await new JudokaCard(judoka, getGokyoLookup(), {
     enableInspector
   }).render();
+  if (!(card instanceof HTMLElement)) {
+    console.error("revealComputerCard: rendered card is not a valid HTMLElement");
+    return;
+  }
   container.innerHTML = "";
   container.appendChild(card);
   setupLazyPortraits(card);
