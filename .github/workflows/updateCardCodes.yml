@@ -1,0 +1,68 @@
+name: Update Card Codes
+
+on:
+  workflow_dispatch: # Allows manual triggering
+
+permissions:
+  contents: write
+
+jobs:
+  update_card_codes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Read judoka data
+        id: read_judoka
+        run: |
+          judoka=$(cat src/data/judoka.json)
+          echo "judoka=$judoka" >> $GITHUB_ENV
+
+      - name: Update card codes
+        run: |
+          echo "$judoka" | jq -c '.[]' | while read -r judoka; do
+            id=$(echo "$judoka" | jq -r '.id')
+            cardCode=$(node -e "import { generateCardCode } from './src/helpers/cardCode.js'; console.log(generateCardCode(JSON.parse(process.argv[1])))" "$judoka")
+            echo "Updating card code for judoka ID: $id"
+            echo "$judoka" | jq --arg cardCode "$cardCode" '.cardCode = $cardCode' > "src/data/judoka_$id.json"
+          done
+
+      - name: Combine updated judoka data
+        run: |
+          echo "[" > src/data/updated_judoka.json
+          for file in src/data/judoka_*.json; do
+            cat "$file" >> src/data/updated_judoka.json
+            echo "," >> src/data/updated_judoka.json
+          done
+          sed -i '$ s/,$//' src/data/updated_judoka.json
+          echo "]" >> src/data/updated_judoka.json
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add src/data/updated_judoka.json
+          git commit -m "Update card codes for judoka"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update card codes for judoka"
+          title: "PR: Update Judoka Card Codes"
+          body: "This PR updates the card codes for all judoka based on the latest data."
+          branch: "auto/update-card-codes"
+          labels: |
+            automated
+            backend
+          assignees: ${{ github.actor }}
