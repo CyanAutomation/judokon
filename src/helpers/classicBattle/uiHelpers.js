@@ -48,7 +48,9 @@ export async function revealComputerCard() {
     card = await new JudokaCard(judoka, getGokyoLookup(), {
       enableInspector
     }).render();
-  } catch {}
+  } catch (err) {
+    console.error("Error rendering JudokaCard:", err);
+  }
   if (card instanceof HTMLElement) {
     container.innerHTML = "";
     container.appendChild(card);
