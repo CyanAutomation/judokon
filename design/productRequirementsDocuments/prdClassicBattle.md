@@ -184,16 +184,21 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - [x] 2.3 Record match as player loss upon quit confirmation
 - [ ] 3.0 Handle Edge Cases
   - [ ] 3.1 Implement player disconnect logic: abandon match and redirect to main menu
-  - [ ] 3.2 Handle Judoka dataset load failure with error prompt and reload option
+  - [x] 3.2 Handle Judoka dataset load failure with error prompt and reload option (see [cardRender.js](../../src/helpers/cardRender.js))
   - [x] 3.3 Add fallback stat selection for AI if difficulty logic fails
-- [ ] 4.0 Polish UX and Accessibility
+- [x] 4.0 Polish UX and Accessibility
   - [x] 4.1 Integrate consistent color coding (blue for player, red for AI)
   - [x] 4.2 Apply WCAG-compliant contrast ratios
-  - [ ] 4.3 Ensure touch targets ≥44px and support keyboard navigation (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) and prdBattleInfoBar.md)
-  - [ ] 4.4 Add alt text to cards and UI elements
+  - [x] 4.3 Ensure touch targets ≥44px and support keyboard navigation (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) and prdBattleInfoBar.md; implemented in [buttons.css](../../src/styles/buttons.css))
+  - [x] 4.4 Add alt text to cards and UI elements (see [cardSelection.js](../../src/helpers/classicBattle/cardSelection.js))
 - [x] 5.0 Optimize Animations
   - [x] 5.1 Implement card reveal, stat selection, and result transitions using transform/opacity for GPU acceleration
   - [x] 5.2 Ensure animations maintain ≥60fps on 2GB RAM devices (validated via DevTools and automated frame-rate test)
+
+### Outstanding Subtasks
+
+- [ ] 2.1 Trigger quit confirmation when the header logo is clicked
+- [ ] 3.1 Implement player disconnect logic: abandon match and redirect to main menu
 
 ---
 
