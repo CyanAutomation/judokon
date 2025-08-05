@@ -2,8 +2,8 @@ import { test, expect } from "./fixtures/commonSetup.js";
 
 const ALLOWED_OFFSET = 2;
 
-test.describe("Homepage layout", () => {
-  test.describe("desktop", () => {
+test.describe.parallel("Homepage layout", () => {
+  test.describe.parallel("desktop", () => {
     test.use({ viewport: { width: 1024, height: 800 } });
 
     test.beforeEach(async ({ page }) => {
@@ -42,7 +42,7 @@ test.describe("Homepage layout", () => {
     });
   });
 
-  test.describe("mobile", () => {
+  test.describe.parallel("mobile", () => {
     test.use({ viewport: { width: 500, height: 800 } });
 
     test("grid has one column", async ({ page }) => {

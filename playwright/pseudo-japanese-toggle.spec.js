@@ -14,7 +14,7 @@ const META_FIXTURE = path.resolve(__dirname, "../tests/fixtures/aesopsMeta.json"
 /**
  * Ensure the language toggle swaps between English and pseudo-Japanese text.
  */
-test.describe("Pseudo-Japanese toggle", () => {
+test.describe.parallel("Pseudo-Japanese toggle", () => {
   test.beforeEach(async ({ page }) => {
     await page.route("**/src/data/aesopsFables.json", (route) =>
       route.fulfill({ path: STORY_FIXTURE })

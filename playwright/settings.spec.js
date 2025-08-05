@@ -8,7 +8,7 @@ import {
   NAV_RANDOM_JUDOKA
 } from "./fixtures/navigationChecks.js";
 
-test.describe("Settings page", () => {
+test.describe.parallel("Settings page", () => {
   test.beforeEach(async ({ page }) => {
     await page.route("**/src/data/navigationItems.json", (route) =>
       route.fulfill({ path: "tests/fixtures/navigationItems.json" })

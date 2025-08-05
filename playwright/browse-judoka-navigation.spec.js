@@ -1,6 +1,6 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 
-test.describe("Browse Judoka navigation", () => {
+test.describe.parallel("Browse Judoka navigation", () => {
   test.beforeEach(async ({ page }) => {
     await page.unroute("**/src/data/judoka.json");
     await page.route("**/src/data/judoka.json", (route) =>

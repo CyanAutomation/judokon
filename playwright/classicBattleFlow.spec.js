@@ -1,7 +1,7 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 // selectors use header as the container for battle info
 
-test.describe("Classic battle flow", () => {
+test.describe.parallel("Classic battle flow", () => {
   test("timer auto-selects when expired", async ({ page }) => {
     await page.addInitScript(() => {
       window.startCountdownOverride = () => {};

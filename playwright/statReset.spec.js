@@ -3,7 +3,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 /**
  * Verify stat buttons are cleared after the next round begins.
  */
-test.describe("Classic battle button reset", () => {
+test.describe.parallel("Classic battle button reset", () => {
   test("no button stays selected after next round", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
     await page.waitForFunction(() => {

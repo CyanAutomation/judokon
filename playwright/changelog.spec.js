@@ -5,7 +5,7 @@ import {
   NAV_CLASSIC_BATTLE
 } from "./fixtures/navigationChecks.js";
 
-test.describe("Change log page", () => {
+test.describe.parallel("Change log page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/changeLog.html");
   });
