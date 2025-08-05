@@ -9,7 +9,7 @@ let settingsSchemaPromise;
 async function getSettingsSchema() {
   if (!settingsSchemaPromise) {
     settingsSchemaPromise = (async () => {
-      const base = typeof import.meta.url === "string" ? import.meta.url : import.meta.url?.href;
+      const base = typeof import.meta.url === "string" ? import.meta.url : undefined;
       try {
         const url = new URL("../schemas/settings.schema.json", base);
         const response = await fetch(url);
