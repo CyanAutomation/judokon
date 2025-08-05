@@ -13,10 +13,12 @@ button,
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-pill);
+  opacity: 1;
   transition:
     transform var(--transition-fast),
-    box-shadow var(--transition-fast),
+    opacity var(--transition-fast),
     background-color var(--transition-fast);
+  will-change: transform, opacity;
 }
 
 button:hover,
@@ -24,6 +26,7 @@ button:hover,
   background-color: var(--button-hover-bg);
   box-shadow: var(--shadow-base);
   outline: 2px solid var(--color-background);
+  opacity: 0.95;
 }
 
 button:active,
@@ -144,6 +147,7 @@ button .ripple,
 
 .animate-card {
   animation: card-enter var(--scale-duration, 0.4s) ease-out forwards;
+  will-change: transform, opacity;
 }
 
 @media (prefers-reduced-motion: reduce) {

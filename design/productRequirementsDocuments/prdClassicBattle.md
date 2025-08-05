@@ -191,9 +191,9 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - [x] 4.2 Apply WCAG-compliant contrast ratios
   - [ ] 4.3 Ensure touch targets ≥44px and support keyboard navigation (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) and prdBattleInfoBar.md)
   - [ ] 4.4 Add alt text to cards and UI elements
-- [ ] 5.0 Optimize Animations
-  - [ ] 5.1 Implement card reveal, stat selection, and result transitions
-  - [ ] 5.2 Ensure animations maintain ≥60fps on 2GB RAM devices
+- [x] 5.0 Optimize Animations
+  - [x] 5.1 Implement card reveal, stat selection, and result transitions using transform/opacity for GPU acceleration
+  - [x] 5.2 Ensure animations maintain ≥60fps on 2GB RAM devices (validated via DevTools and automated frame-rate test)
 
 ---
 
