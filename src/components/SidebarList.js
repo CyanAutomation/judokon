@@ -44,17 +44,17 @@ export class SidebarList {
         }
       }
       li.classList.add(i % 2 === 0 ? "odd" : "even");
-    li.addEventListener("click", () => this.select(i));
+      li.addEventListener("click", () => this.select(i));
       li.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-        this.select(i);
+          this.select(i);
         }
       });
       li.addEventListener("focus", () => {
-      this.current = i;
+        this.current = i;
       });
-    this.element.appendChild(li);
+      this.element.appendChild(li);
       return li;
     });
 
@@ -64,9 +64,9 @@ export class SidebarList {
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
         const delta = e.key === "ArrowDown" ? 1 : -1;
-      const next =
-        this.current === -1 ? (delta === 1 ? 0 : this.elements.length - 1) : this.current + delta;
-      this.select(next, { fromListNav: true });
+        const next =
+          this.current === -1 ? (delta === 1 ? 0 : this.elements.length - 1) : this.current + delta;
+        this.select(next, { fromListNav: true });
       }
     });
   }
