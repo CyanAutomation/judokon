@@ -36,6 +36,7 @@ function showLoadError(error) {
       try {
         await drawCards();
       } catch (retryError) {
+        console.error(retryError);
         window.location.reload();
       }
     });
