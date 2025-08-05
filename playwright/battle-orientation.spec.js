@@ -50,7 +50,16 @@ test.describe(
         () => document.querySelector(".battle-header")?.dataset.orientation === "portrait"
       );
       await page.waitForSelector("#score-display span", { state: "attached" });
-      await page.evaluate(() => document.fonts.ready);
+      await page.evaluate(() => {
+        return Promise.race([
+          document.fonts.ready,
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Timeout waiting for document.fonts.ready")), 5000)
+          ),
+        ]).catch((err) => {
+          throw new Error("Font loading failed or timed out: " + err.message);
+        });
+      });
       await expect(page.locator(".battle-header")).toHaveScreenshot("battle-header-portrait.png");
 
       await page.setViewportSize({ width: 480, height: 320 });
