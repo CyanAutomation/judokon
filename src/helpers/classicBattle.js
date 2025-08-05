@@ -1,5 +1,9 @@
 import { drawCards, _resetForTest as resetSelection } from "./classicBattle/cardSelection.js";
-import { startTimer, scheduleNextRound } from "./classicBattle/timerControl.js";
+import {
+  startTimer,
+  scheduleNextRound,
+  handleStatSelectionTimeout
+} from "./classicBattle/timerService.js";
 import {
   showSelectionPrompt,
   revealComputerCard,
@@ -9,7 +13,6 @@ import {
 import {
   handleStatSelection as engineHandleStatSelection,
   quitMatch as engineQuitMatch,
-  getScores,
   _resetForTest as engineReset,
   STATS
 } from "./battleEngine.js";
@@ -18,6 +21,7 @@ import { getStatValue, resetStatButtons, showResult } from "./battle/index.js";
 import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
 import { shouldReduceMotionSync } from "./motionUtils.js";
+import { syncScoreDisplay, showSummary } from "./classicBattle/uiService.js";
 
 /**
  * Determine the opponent's stat choice based on difficulty.
@@ -62,235 +66,201 @@ export function simulateOpponentStat(difficulty = "easy") {
 }
 
 /**
- * Display match summary with final message and scores.
+ * Create a new battle state store and attach button handlers.
+ *
+ * @returns {{quitModal: ReturnType<typeof createModal>|null, statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number}}
+ */
+export function createBattleStore() {
+  const store = {
+    quitModal: null,
+    statTimeoutId: null,
+    autoSelectId: null,
+    compareRaf: 0
+  };
+  const quitButton = document.getElementById("quit-match-button");
+  if (quitButton) {
+    quitButton.addEventListener("click", () => {
+      quitMatch(store);
+    });
+  }
+  const replayButton = document.getElementById("replay-button");
+  if (replayButton) {
+    replayButton.addEventListener("click", () => {
+      handleReplay(store);
+    });
+  }
+  return store;
+}
+
+function getStartRound(store) {
+  if (typeof window !== "undefined" && window.startRoundOverride) {
+    return window.startRoundOverride;
+  }
+  return () => startRound(store);
+}
+
+/**
+ * Reset match state and start a new game.
  *
  * @pseudocode
- * 1. Find the summary panel and text elements.
- * 2. Insert the result message and scores.
- * 3. Reveal the panel by removing the hidden class.
+ * 1. Reset engine scores and flags.
+ * 2. Hide the summary panel and clear the last round message.
+ * 3. Call the start round function to begin a new match.
  *
- * @param {{message: string, playerScore: number, computerScore: number}} result
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
-function showSummary(result) {
+export async function handleReplay(store) {
+  engineReset();
   const panel = document.getElementById("summary-panel");
-  const messageEl = document.getElementById("summary-message");
-  const scoreEl = document.getElementById("summary-score");
-  if (panel && messageEl && scoreEl) {
-    messageEl.textContent = result.message;
-    scoreEl.textContent = `Final Score – You: ${result.playerScore} Opponent: ${result.computerScore}`;
-    panel.classList.remove("hidden");
-  }
+  if (panel) panel.classList.add("hidden");
+  infoBar.clearMessage();
+  const startRoundFn = getStartRound(store);
+  await startRoundFn();
 }
 
-class ClassicBattle {
-  constructor() {
-    /** @type {ReturnType<typeof createModal> | null} */
-    this.quitModal = null;
-    /** @type {ReturnType<typeof setTimeout> | null} */
-    this.statTimeoutId = null;
-    /** @type {ReturnType<typeof setTimeout> | null} */
-    this.autoSelectId = null;
-    /** @type {number} */
-    this.compareRaf = 0;
+/**
+ * Start a new round by drawing cards and starting timers.
+ *
+ * @pseudocode
+ * 1. Reset buttons and disable the Next Round button.
+ * 2. Draw player and opponent cards.
+ * 3. Sync the score display and show the selection prompt.
+ * 4. Start the round timer and stall timeout.
+ * 5. Update the debug panel.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ */
+export async function startRound(store) {
+  resetStatButtons();
+  disableNextRoundButton();
+  const roundResultEl = document.getElementById("round-result");
+  if (roundResultEl) roundResultEl.textContent = "";
+  await drawCards();
+  syncScoreDisplay();
+  showSelectionPrompt();
+  await startTimer((stat) => handleStatSelection(store, stat));
+  store.statTimeoutId = setTimeout(
+    () => handleStatSelectionTimeout(store, (s) => handleStatSelection(store, s)),
+    35000
+  );
+  updateDebugPanel();
+}
 
-    const quitButton = document.getElementById("quit-match-button");
-    if (quitButton) {
-      quitButton.addEventListener("click", () => {
-        this.quitMatch();
-      });
-    }
-
-    const replayButton = document.getElementById("replay-button");
-    if (replayButton) {
-      replayButton.addEventListener("click", () => {
-        this.handleReplay();
-      });
-    }
+/**
+ * Evaluate a selected stat and update the UI.
+ *
+ * @pseudocode
+ * 1. Read stat values from both cards.
+ * 2. Run `engineHandleStatSelection` to get the result.
+ * 3. Show result message and stat comparison.
+ * 4. Sync scores and update debug panel.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @returns {{message?: string, matchEnded: boolean}}
+ */
+export function evaluateRound(store, stat) {
+  const playerContainer = document.getElementById("player-card");
+  const computerContainer = document.getElementById("computer-card");
+  const playerVal = getStatValue(playerContainer, stat);
+  const compVal = getStatValue(computerContainer, stat);
+  const result = engineHandleStatSelection(playerVal, compVal);
+  if (result.message) {
+    showResult(result.message);
   }
+  showStatComparison(store, stat, playerVal, compVal);
+  syncScoreDisplay();
+  updateDebugPanel();
+  return result;
+}
 
-  getStartRound() {
-    if (typeof window !== "undefined" && window.startRoundOverride) {
-      return window.startRoundOverride;
-    }
-    return this.startRound.bind(this);
-  }
+/**
+ * Handle player stat selection with a brief delay to reveal the opponent card.
+ *
+ * @pseudocode
+ * 1. Clear any pending timeouts.
+ * 2. Show "Waiting…" in the info bar.
+ * 3. After a short delay, reveal the opponent card and evaluate the round.
+ * 4. Reset stat buttons and schedule the next round.
+ * 5. If the match ended, show the summary panel.
+ * 6. Update the debug panel.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @returns {Promise<{matchEnded: boolean}>}
+ */
+export async function handleStatSelection(store, stat) {
+  clearTimeout(store.statTimeoutId);
+  clearTimeout(store.autoSelectId);
+  const clearWaitingMessage = infoBar.showTemporaryMessage("Waiting…");
+  const delay = 300 + Math.floor(Math.random() * 401);
+  return new Promise((resolve) => {
+    setTimeout(async () => {
+      await revealComputerCard();
+      clearWaitingMessage();
+      const result = evaluateRound(store, stat);
+      resetStatButtons();
+      scheduleNextRound(result, getStartRound(store));
+      if (result.matchEnded) {
+        showSummary(result);
+      }
+      updateDebugPanel();
+      resolve(result);
+    }, delay);
+  });
+}
 
-  /**
-   * Reset match state and start a new game.
-   *
-   * @pseudocode
-   * 1. Reset engine scores and flags.
-   * 2. Hide the summary panel and clear the last round message.
-   * 3. Call the start round function to begin a new match.
-   */
-  async handleReplay() {
-    engineReset();
-    const panel = document.getElementById("summary-panel");
-    if (panel) panel.classList.add("hidden");
-    infoBar.clearMessage();
-    const startRoundFn = this.getStartRound();
-    await startRoundFn();
-  }
+function createQuitConfirmation(store, onConfirm) {
+  const title = document.createElement("h2");
+  title.id = "quit-modal-title";
+  title.textContent = "Quit the match?";
 
-  /**
-   * Handle stalled stat selection by prompting the player and auto-selecting a
-   * random stat after a short delay.
-   *
-   * @pseudocode
-   * 1. Display "Stat selection stalled" via `infoBar.showMessage`.
-   * 2. After 5 seconds choose a random stat from `STATS`.
-   * 3. Call `handleStatSelection` with the chosen stat.
-   */
-  onStatSelectionTimeout() {
-    infoBar.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
-    this.autoSelectId = setTimeout(() => {
-      const randomStat = simulateOpponentStat();
-      this.handleStatSelection(randomStat);
-    }, 5000);
-  }
+  const desc = document.createElement("p");
+  desc.id = "quit-modal-desc";
+  desc.textContent = "Your progress will be lost.";
 
-  /**
-   * Update the info bar with current scores.
-   *
-   * @pseudocode
-   * 1. Read scores via `getScores()`.
-   * 2. Forward the values to `infoBar.updateScore`.
-   */
-  syncScoreDisplay() {
-    const { playerScore, computerScore } = getScores();
-    infoBar.updateScore(playerScore, computerScore);
-  }
+  const actions = document.createElement("div");
+  actions.className = "modal-actions";
 
-  createQuitConfirmation(onConfirm) {
-    const title = document.createElement("h2");
-    title.id = "quit-modal-title";
-    title.textContent = "Quit the match?";
+  const cancel = createButton("Cancel", {
+    id: "cancel-quit-button",
+    className: "secondary-button"
+  });
+  const quit = createButton("Quit", { id: "confirm-quit-button" });
+  actions.append(cancel, quit);
 
-    const desc = document.createElement("p");
-    desc.id = "quit-modal-desc";
-    desc.textContent = "Your progress will be lost.";
+  const frag = document.createDocumentFragment();
+  frag.append(title, desc, actions);
 
-    const actions = document.createElement("div");
-    actions.className = "modal-actions";
+  const modal = createModal(frag, { labelledBy: title, describedBy: desc });
+  cancel.addEventListener("click", modal.close);
+  quit.addEventListener("click", () => {
+    onConfirm();
+    modal.close();
+    window.location.href = "../../index.html";
+  });
+  document.body.appendChild(modal.element);
+  return modal;
+}
 
-    const cancel = createButton("Cancel", {
-      id: "cancel-quit-button",
-      className: "secondary-button"
-    });
-    const quit = createButton("Quit", { id: "confirm-quit-button" });
-    actions.append(cancel, quit);
-
-    const frag = document.createDocumentFragment();
-    frag.append(title, desc, actions);
-
-    const modal = createModal(frag, { labelledBy: title, describedBy: desc });
-    cancel.addEventListener("click", modal.close);
-    quit.addEventListener("click", () => {
-      onConfirm();
-      modal.close();
-      window.location.href = "../../index.html";
-    });
-    document.body.appendChild(modal.element);
-    return modal;
-  }
-
-  async startRound() {
-    resetStatButtons();
-    disableNextRoundButton();
-    const roundResultEl = document.getElementById("round-result");
-    if (roundResultEl) roundResultEl.textContent = "";
-    await drawCards();
-    this.syncScoreDisplay();
-    showSelectionPrompt();
-    await startTimer(this.handleStatSelection.bind(this));
-    this.statTimeoutId = setTimeout(() => this.onStatSelectionTimeout(), 35000);
-    updateDebugPanel();
-  }
-
-  evaluateRound(stat) {
-    const playerContainer = document.getElementById("player-card");
-    const computerContainer = document.getElementById("computer-card");
-    const playerVal = getStatValue(playerContainer, stat);
-    const compVal = getStatValue(computerContainer, stat);
-    const result = engineHandleStatSelection(playerVal, compVal);
-    if (result.message) {
+/**
+ * Trigger the Classic Battle quit confirmation modal.
+ *
+ * @pseudocode
+ * 1. Create the modal if needed and open it.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ */
+export function quitMatch(store) {
+  if (!store.quitModal) {
+    store.quitModal = createQuitConfirmation(store, () => {
+      const result = engineQuitMatch();
       showResult(result.message);
-    }
-    this.showStatComparison(stat, playerVal, compVal);
-    this.syncScoreDisplay();
-    updateDebugPanel();
-    return result;
-  }
-
-  async handleStatSelection(stat) {
-    clearTimeout(this.statTimeoutId);
-    clearTimeout(this.autoSelectId);
-    const clearWaitingMessage = infoBar.showTemporaryMessage("Waiting…");
-    const delay = 300 + Math.floor(Math.random() * 401);
-    return new Promise((resolve) => {
-      setTimeout(async () => {
-        await revealComputerCard();
-        clearWaitingMessage();
-        const result = this.evaluateRound(stat);
-        resetStatButtons();
-        scheduleNextRound(result, this.getStartRound());
-        if (result.matchEnded) {
-          showSummary(result);
-        }
-        updateDebugPanel();
-        resolve(result);
-      }, delay);
     });
   }
-
-  quitMatch() {
-    if (!this.quitModal) {
-      this.quitModal = this.createQuitConfirmation(() => {
-        const result = engineQuitMatch();
-        showResult(result.message);
-      });
-    }
-    const trigger = document.getElementById("quit-match-button");
-    this.quitModal.open(trigger ?? undefined);
-  }
-
-  _resetForTest() {
-    resetSelection();
-    engineReset();
-    if (typeof window !== "undefined") {
-      delete window.startRoundOverride;
-    }
-    clearTimeout(this.statTimeoutId);
-    clearTimeout(this.autoSelectId);
-    this.statTimeoutId = null;
-    this.autoSelectId = null;
-    cancelAnimationFrame(this.compareRaf);
-    this.compareRaf = 0;
-    const timerEl = document.getElementById("next-round-timer");
-    if (timerEl) timerEl.textContent = "";
-    infoBar.clearMessage();
-    const roundResultEl = document.getElementById("round-result");
-    if (roundResultEl) roundResultEl.textContent = "";
-    const nextBtn = document.getElementById("next-round-button");
-    if (nextBtn) {
-      const clone = nextBtn.cloneNode(true);
-      nextBtn.replaceWith(clone);
-      clone.disabled = true;
-    }
-    const quitBtn = document.getElementById("quit-match-button");
-    if (quitBtn) {
-      quitBtn.replaceWith(quitBtn.cloneNode(true));
-    }
-    if (this.quitModal) {
-      this.quitModal.element.remove();
-      this.quitModal = null;
-    }
-    this.syncScoreDisplay();
-    updateDebugPanel();
-  }
+  const trigger = document.getElementById("quit-match-button");
+  store.quitModal.open(trigger ?? undefined);
 }
-
-export const classicBattle = new ClassicBattle();
 
 /**
  * Show animated stat comparison for the last round.
@@ -302,14 +272,15 @@ export const classicBattle = new ClassicBattle();
  *    `requestAnimationFrame` unless motion is reduced.
  * 4. Update the element text on each frame as "Stat – You: x Opponent: y".
  *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Stat key selected for the round.
  * @param {number} playerVal - Player's stat value.
  * @param {number} compVal - Opponent's stat value.
  */
-ClassicBattle.prototype.showStatComparison = function (stat, playerVal, compVal) {
+export function showStatComparison(store, stat, playerVal, compVal) {
   const el = document.getElementById("round-result");
   if (!el) return;
-  cancelAnimationFrame(this.compareRaf);
+  cancelAnimationFrame(store.compareRaf);
   const label = stat.charAt(0).toUpperCase() + stat.slice(1);
   const match = el.textContent.match(/You: (\d+).*Opponent: (\d+)/);
   const startPlayer = match ? Number(match[1]) : 0;
@@ -326,20 +297,50 @@ ClassicBattle.prototype.showStatComparison = function (stat, playerVal, compVal)
     const c = Math.round(startComp + (compVal - startComp) * progress);
     el.textContent = `${label} – You: ${p} Opponent: ${c}`;
     if (progress < 1) {
-      this.compareRaf = requestAnimationFrame(step);
+      store.compareRaf = requestAnimationFrame(step);
     }
   };
-  this.compareRaf = requestAnimationFrame(step);
-};
+  store.compareRaf = requestAnimationFrame(step);
+}
 
 /**
- * Trigger the Classic Battle quit confirmation modal.
+ * Reset internal state for tests.
  *
- * @pseudocode
- * 1. Call `classicBattle.quitMatch()` to show the existing confirmation modal.
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
-export function quitMatch() {
-  classicBattle.quitMatch();
+export function _resetForTest(store) {
+  resetSelection();
+  engineReset();
+  if (typeof window !== "undefined") {
+    delete window.startRoundOverride;
+  }
+  clearTimeout(store.statTimeoutId);
+  clearTimeout(store.autoSelectId);
+  store.statTimeoutId = null;
+  store.autoSelectId = null;
+  cancelAnimationFrame(store.compareRaf);
+  store.compareRaf = 0;
+  const timerEl = document.getElementById("next-round-timer");
+  if (timerEl) timerEl.textContent = "";
+  infoBar.clearMessage();
+  const roundResultEl = document.getElementById("round-result");
+  if (roundResultEl) roundResultEl.textContent = "";
+  const nextBtn = document.getElementById("next-round-button");
+  if (nextBtn) {
+    const clone = nextBtn.cloneNode(true);
+    nextBtn.replaceWith(clone);
+    clone.disabled = true;
+  }
+  const quitBtn = document.getElementById("quit-match-button");
+  if (quitBtn) {
+    quitBtn.replaceWith(quitBtn.cloneNode(true));
+  }
+  if (store.quitModal) {
+    store.quitModal.element.remove();
+    store.quitModal = null;
+  }
+  syncScoreDisplay();
+  updateDebugPanel();
 }
 
 export {
@@ -349,4 +350,4 @@ export {
   updateDebugPanel
 } from "./classicBattle/uiHelpers.js";
 export { getComputerJudoka } from "./classicBattle/cardSelection.js";
-export { scheduleNextRound } from "./classicBattle/timerControl.js";
+export { scheduleNextRound } from "./classicBattle/timerService.js";

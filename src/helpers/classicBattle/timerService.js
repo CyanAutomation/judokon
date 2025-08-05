@@ -71,6 +71,27 @@ export async function startTimer(onExpiredSelect) {
 }
 
 /**
+ * Handle stalled stat selection by prompting the player and auto-selecting a
+ * random stat.
+ *
+ * @pseudocode
+ * 1. Display "Stat selection stalled" via `infoBar.showMessage`.
+ * 2. After 5 seconds choose a random stat from `STATS`.
+ * 3. Call `onSelect` with the chosen stat.
+ *
+ * @param {{autoSelectId: ReturnType<typeof setTimeout> | null}} store
+ * - Battle state store.
+ * @param {(stat: string) => void} onSelect - Callback to handle stat selection.
+ */
+export function handleStatSelectionTimeout(store, onSelect) {
+  infoBar.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
+  store.autoSelectId = setTimeout(() => {
+    const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
+    onSelect(randomStat);
+  }, 5000);
+}
+
+/**
  * Enable the Next Round button after a cooldown period.
  *
  * @pseudocode

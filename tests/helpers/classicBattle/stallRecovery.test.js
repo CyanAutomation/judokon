@@ -4,10 +4,14 @@ vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
 
-vi.mock("../../../src/helpers/classicBattle/timerControl.js", () => ({
-  startTimer: vi.fn().mockResolvedValue(undefined),
-  scheduleNextRound: vi.fn()
-}));
+vi.mock("../../../src/helpers/classicBattle/timerService.js", async () => {
+  const actual = await vi.importActual("../../../src/helpers/classicBattle/timerService.js");
+  return {
+    ...actual,
+    startTimer: vi.fn().mockResolvedValue(undefined),
+    scheduleNextRound: vi.fn()
+  };
+});
 
 let generateRandomCardMock;
 vi.mock("../../../src/helpers/randomCard.js", () => ({
@@ -64,9 +68,10 @@ describe("classicBattle stalled stat selection recovery", () => {
   });
 
   it("auto-selects after stall timeout", async () => {
-    const { classicBattle } = await import("../../../src/helpers/classicBattle.js");
-    classicBattle._resetForTest();
-    await classicBattle.startRound();
+    const battleMod = await import("../../../src/helpers/classicBattle.js");
+    const store = battleMod.createBattleStore();
+    battleMod._resetForTest(store);
+    await battleMod.startRound(store);
     timerSpy.advanceTimersByTime(35000);
     expect(document.querySelector("header #round-message").textContent).toMatch(/stalled/i);
     timerSpy.advanceTimersByTime(5000);

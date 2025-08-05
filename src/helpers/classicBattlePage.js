@@ -25,7 +25,12 @@
  *       `data-test-mode` attribute when settings change.
  * 5. Execute `setupClassicBattlePage` with `onDomReady`.
  */
-import { classicBattle, simulateOpponentStat } from "./classicBattle.js";
+import {
+  createBattleStore,
+  startRound,
+  handleStatSelection,
+  simulateOpponentStat
+} from "./classicBattle.js";
 import { onDomReady } from "./domReady.js";
 import { waitForComputerCard } from "./battleJudokaPage.js";
 import { loadSettings } from "./settingsUtils.js";
@@ -44,16 +49,17 @@ function enableStatButtons(enable = true) {
   });
 }
 
+const battleStore = createBattleStore();
 let simulatedOpponentMode = false;
 let aiDifficulty = "easy";
 
 async function startRoundWrapper() {
   enableStatButtons(false);
-  await classicBattle.startRound();
+  await startRound(battleStore);
   await waitForComputerCard();
   if (simulatedOpponentMode) {
     const stat = simulateOpponentStat(aiDifficulty);
-    await classicBattle.handleStatSelection(stat);
+    await handleStatSelection(battleStore, stat);
   } else {
     enableStatButtons(true);
   }
@@ -126,7 +132,7 @@ export async function setupClassicBattlePage() {
         if (!btn.disabled) {
           enableStatButtons(false);
           btn.classList.add("selected");
-          classicBattle.handleStatSelection(btn.dataset.stat);
+          handleStatSelection(battleStore, btn.dataset.stat);
         }
       });
       btn.addEventListener("keydown", (e) => {
@@ -134,7 +140,7 @@ export async function setupClassicBattlePage() {
           e.preventDefault();
           enableStatButtons(false);
           btn.classList.add("selected");
-          classicBattle.handleStatSelection(btn.dataset.stat);
+          handleStatSelection(battleStore, btn.dataset.stat);
         }
       });
     });
@@ -185,7 +191,7 @@ export async function setupClassicBattlePage() {
     }
   }
 
-  window.startRoundOverride = startRoundWrapper;
+  window.startRoundOverride = () => startRoundWrapper();
   startRoundWrapper();
   await initTooltips();
   watchBattleOrientation();
