@@ -16,6 +16,7 @@ let messageEl;
 let timerEl;
 let scoreEl;
 let rafId = 0;
+let timeoutId = 0;
 
 export function createInfoBar(container = document.createElement("div")) {
   messageEl = document.createElement("p");
@@ -108,15 +109,18 @@ export function showTemporaryMessage(text) {
 }
 
 /**
- * Start a countdown timer that updates once per second using `requestAnimationFrame`.
+ * Start a countdown timer that updates once per second using
+ * `requestAnimationFrame` backed by `Date.now()`.
  *
  * @pseudocode
- * 1. Cancel any existing animation frame loop.
- * 2. Store `startTime` using `performance.now()` and show the initial text.
- * 3. On each frame, compute elapsed seconds and only update when the displayed
+ * 1. Cancel any existing animation frame loop and timeout.
+ * 2. Record `startTime` with `Date.now()` and show the initial text.
+ * 3. In `step`, compute elapsed seconds from `Date.now()` and update when the
  *    value changes.
- * 4. When no time remains, cancel the loop, show "Next round in: 0s" and run
- *    `onFinish`.
+ * 4. When no time remains, cancel both timers, show "Next round in: 0s" and
+ *    run `onFinish`.
+ * 5. Kick off the loop with `requestAnimationFrame(step)` and schedule a
+ *    `setTimeout` as a final check.
  *
  * @param {number} seconds - Seconds to count down from.
  * @param {Function} [onFinish] - Optional callback when countdown ends.
@@ -125,11 +129,12 @@ export function showTemporaryMessage(text) {
 export function startCountdown(seconds, onFinish) {
   if (!timerEl) return;
   cancelAnimationFrame(rafId);
-  const startTime = performance.now();
+  clearTimeout(timeoutId);
+  const startTime = Date.now();
   timerEl.textContent = `Next round in: ${seconds}s`;
   let lastDisplayed = seconds;
   const step = () => {
-    const elapsed = Math.floor((performance.now() - startTime) / 1000);
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
     const remaining = seconds - elapsed;
     if (remaining !== lastDisplayed && remaining >= 0) {
       lastDisplayed = remaining;
@@ -137,6 +142,7 @@ export function startCountdown(seconds, onFinish) {
     }
     if (remaining <= 0) {
       cancelAnimationFrame(rafId);
+      clearTimeout(timeoutId);
       timerEl.textContent = "Next round in: 0s";
       if (typeof onFinish === "function") onFinish();
       return;
@@ -144,6 +150,7 @@ export function startCountdown(seconds, onFinish) {
     rafId = requestAnimationFrame(step);
   };
   rafId = requestAnimationFrame(step);
+  timeoutId = setTimeout(step, seconds * 1000);
 }
 
 /**
