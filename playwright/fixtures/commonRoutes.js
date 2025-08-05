@@ -1,3 +1,5 @@
+import fs from "fs";
+
 /**
  * Register routes to serve fixture data for core JSON files and flag images.
  *
@@ -18,6 +20,18 @@ export async function registerCommonRoutes(page) {
     page.route("**/src/data/tooltips.json", (route) =>
       route.fulfill({ path: "tests/fixtures/tooltips.json" })
     ),
+    page.route("**/src/data/navigationItems.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/navigationItems.json" })
+    ),
+    page.route("**/src/data/*.json", (route) => {
+      const file = route.request().url().split("/").pop();
+      const fixturePath = `tests/fixtures/${file}`;
+      if (fs.existsSync(fixturePath)) {
+        route.fulfill({ path: fixturePath });
+      } else {
+        route.continue();
+      }
+    }),
     page.route("https://flagcdn.com/**", (route) =>
       route.fulfill({ path: "src/assets/countryFlags/placeholder-flag.png" })
     ),

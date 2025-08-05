@@ -1,5 +1,4 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import fs from "fs";
 
 // Allow skipping screenshots via the SKIP_SCREENSHOTS environment variable
 const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
@@ -9,18 +8,6 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
   test.skip(!runScreenshots);
 
   test.beforeEach(async ({ page }) => {
-    await page.route("**/src/data/navigationItems.json", (route) => {
-      route.fulfill({ path: "tests/fixtures/navigationItems.json" });
-    });
-    await page.route("**/src/data/*.json", (route) => {
-      const file = route.request().url().split("/").pop();
-      const fixturePath = `tests/fixtures/${file}`;
-      if (fs.existsSync(fixturePath)) {
-        route.fulfill({ path: fixturePath });
-      } else {
-        route.continue();
-      }
-    });
     await page.addInitScript(() => {
       Math.random = () => 0.42;
       localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
