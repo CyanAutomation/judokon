@@ -61,7 +61,7 @@ export async function loadCountryCodeMapping() {
  *
  * @pseudocode
  * 1. Validate that `code` is a two-letter string; return "Vanuatu" when invalid.
- * 2. Load the mapping via `loadCountryCodeMapping()`.
+ * 2. Attempt to load the mapping via `loadCountryCodeMapping()`; return "Vanuatu" on failure.
  * 3. Find the matching active entry and return its country name.
  * 4. Default to "Vanuatu" if no match is found.
  *
@@ -73,12 +73,17 @@ export async function getCountryNameFromCode(code) {
     console.warn("Invalid country code format. Expected a 2-letter code.");
     return "Vanuatu";
   }
-  const countryCodeMapping = await loadCountryCodeMapping();
-  const match = countryCodeMapping.find(
-    (entry) => entry.code.toLowerCase() === code.toLowerCase() && entry.active
-  );
-  debugLog(`Resolved country name for code "${code}":`, match ? match.country : "Vanuatu");
-  return match ? match.country : "Vanuatu";
+  try {
+    const countryCodeMapping = await loadCountryCodeMapping();
+    const match = countryCodeMapping.find(
+      (entry) => entry.code.toLowerCase() === code.toLowerCase() && entry.active
+    );
+    debugLog(`Resolved country name for code "${code}":`, match ? match.country : "Vanuatu");
+    return match ? match.country : "Vanuatu";
+  } catch {
+    console.warn("Failed to load country code mapping. Defaulting to Vanuatu.");
+    return "Vanuatu";
+  }
 }
 
 /**
@@ -86,7 +91,7 @@ export async function getCountryNameFromCode(code) {
  *
  * @pseudocode
  * 1. Validate `countryCode` as a two-letter string; return the Vanuatu flag when invalid.
- * 2. Load the mapping and verify the code exists and is active.
+ * 2. Attempt to load the mapping and verify the code exists and is active; return the Vanuatu flag on failure.
  * 3. Return the CDN URL using the lower-cased code or the Vanuatu flag when invalid.
  *
  * @param {string} countryCode - Two-letter country code.
@@ -97,13 +102,19 @@ export async function getFlagUrl(countryCode) {
     console.warn("Invalid or missing country code. Defaulting to Vanuatu flag.");
     return "https://flagcdn.com/w320/vu.png";
   }
-  const countryCodeMapping = await loadCountryCodeMapping();
-  const isValid = countryCodeMapping.some(
-    (entry) => entry.code && entry.code.toLowerCase() === countryCode.toLowerCase() && entry.active
-  );
-  if (!isValid) {
-    console.warn("Invalid country code. Defaulting to Vanuatu flag.");
+  try {
+    const countryCodeMapping = await loadCountryCodeMapping();
+    const isValid = countryCodeMapping.some(
+      (entry) =>
+        entry.code && entry.code.toLowerCase() === countryCode.toLowerCase() && entry.active
+    );
+    if (!isValid) {
+      console.warn("Invalid country code. Defaulting to Vanuatu flag.");
+      return "https://flagcdn.com/w320/vu.png";
+    }
+    return `https://flagcdn.com/w320/${countryCode.toLowerCase()}.png`;
+  } catch {
+    console.warn("Failed to load country code mapping. Defaulting to Vanuatu flag.");
     return "https://flagcdn.com/w320/vu.png";
   }
-  return `https://flagcdn.com/w320/${countryCode.toLowerCase()}.png`;
 }
