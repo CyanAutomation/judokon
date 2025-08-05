@@ -131,7 +131,7 @@ export function startCountdown(seconds, onFinish) {
   const step = () => {
     const elapsed = Math.floor((performance.now() - startTime) / 1000);
     const remaining = seconds - elapsed;
-    if (remaining !== lastDisplayed && remaining > 0) {
+    if (remaining !== lastDisplayed && remaining >= 0) {
       lastDisplayed = remaining;
       timerEl.textContent = `Next round in: ${remaining}s`;
     }
