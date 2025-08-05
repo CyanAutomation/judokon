@@ -59,9 +59,9 @@ describe("classicBattle opponent delay", () => {
     const timer = vi.useFakeTimers();
     const mod = await import("../../../src/helpers/classicBattle.js");
     vi.spyOn(mod, "simulateOpponentStat").mockReturnValue("power");
-    vi.spyOn(mod.classicBattle, "evaluateRound").mockReturnValue({ matchEnded: false });
+    const store = mod.createBattleStore();
 
-    const promise = mod.classicBattle.handleStatSelection(mod.simulateOpponentStat());
+    const promise = mod.handleStatSelection(store, mod.simulateOpponentStat());
 
     expect(showMessage).toHaveBeenCalledWith("Waiting…");
     expect(clearMessage).not.toHaveBeenCalled();

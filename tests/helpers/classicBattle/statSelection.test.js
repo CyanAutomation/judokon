@@ -37,9 +37,12 @@ function expectDeselected(button) {
 
 describe("classicBattle stat selection", () => {
   let timerSpy;
-  let classicBattle;
   let selectStat;
   let simulateOpponentStat;
+  let handleStatSelection;
+  let createBattleStore;
+  let _resetForTest;
+  let store;
 
   beforeEach(() => {
     document.body.innerHTML = "";
@@ -63,12 +66,13 @@ describe("classicBattle stat selection", () => {
   beforeEach(async () => {
     document.body.innerHTML +=
       '<div id="stat-buttons" data-tooltip-id="ui.selectStat"><button data-stat="power"></button></div>';
-    ({ classicBattle, simulateOpponentStat } = await import(
+    ({ createBattleStore, handleStatSelection, simulateOpponentStat, _resetForTest } = await import(
       "../../../src/helpers/classicBattle.js"
     ));
-    classicBattle._resetForTest();
+    store = createBattleStore();
+    _resetForTest(store);
     selectStat = async (stat) => {
-      const p = classicBattle.handleStatSelection(stat);
+      const p = handleStatSelection(store, stat);
       await vi.runAllTimersAsync();
       await p;
     };
@@ -113,13 +117,16 @@ describe("classicBattle stat selection", () => {
   });
 
   it("evaluateRound updates the score", async () => {
-    const { classicBattle } = await import("../../../src/helpers/classicBattle.js");
-    classicBattle._resetForTest();
+    const { createBattleStore, evaluateRound, _resetForTest } = await import(
+      "../../../src/helpers/classicBattle.js"
+    );
+    const storeEval = createBattleStore();
+    _resetForTest(storeEval);
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
     document.getElementById("computer-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    const result = classicBattle.evaluateRound("power");
+    const result = evaluateRound("power");
     expect(result.message).toMatch(/win/);
     expect(document.querySelector("header #score-display").textContent).toBe("You: 1\nOpponent: 0");
   });

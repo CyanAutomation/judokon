@@ -62,9 +62,9 @@ describe("classicBattle match flow", () => {
 
   it("auto-selects a stat when timer expires", async () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
-    const { classicBattle } = await import("../../../src/helpers/classicBattle.js");
-    classicBattle._resetForTest();
-    await classicBattle.startRound();
+    const mod = await import("../../../src/helpers/classicBattle.js");
+    mod._resetForTest();
+    await mod.startRound();
     timerSpy.advanceTimersByTime(31000);
     await vi.runAllTimersAsync();
     const score = document.querySelector("header #score-display").textContent;
@@ -74,8 +74,8 @@ describe("classicBattle match flow", () => {
   });
 
   it("quits match after confirmation", async () => {
-    const { classicBattle } = await import("../../../src/helpers/classicBattle.js");
-    classicBattle.quitMatch();
+    const mod = await import("../../../src/helpers/classicBattle.js");
+    mod.quitMatch();
     const confirmBtn = document.getElementById("confirm-quit-button");
     expect(confirmBtn).not.toBeNull();
     confirmBtn.dispatchEvent(new Event("click"));
@@ -83,10 +83,10 @@ describe("classicBattle match flow", () => {
   });
 
   it("does not quit match when cancel is chosen", async () => {
-    const { classicBattle } = await import("../../../src/helpers/classicBattle.js");
-    classicBattle._resetForTest();
+    const mod = await import("../../../src/helpers/classicBattle.js");
+    mod._resetForTest();
     document.querySelector("#round-message").textContent = "Select your move";
-    classicBattle.quitMatch();
+    mod.quitMatch();
     const cancelBtn = document.getElementById("cancel-quit-button");
     expect(cancelBtn).not.toBeNull();
     cancelBtn.dispatchEvent(new Event("click"));
@@ -95,10 +95,10 @@ describe("classicBattle match flow", () => {
   });
 
   it("ends the match when player reaches 10 wins", async () => {
-    const { classicBattle } = await import("../../../src/helpers/classicBattle.js");
-    classicBattle._resetForTest();
+    const mod = await import("../../../src/helpers/classicBattle.js");
+    mod._resetForTest();
     const selectStat = async () => {
-      const p = classicBattle.handleStatSelection("power");
+      const p = mod.handleStatSelection("power");
       await vi.runAllTimersAsync();
       await p;
     };
@@ -119,7 +119,7 @@ describe("classicBattle match flow", () => {
     document.getElementById("computer-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     {
-      const p = classicBattle.handleStatSelection("power");
+      const p = mod.handleStatSelection("power");
       await vi.runAllTimersAsync();
       await p;
     }
@@ -130,10 +130,10 @@ describe("classicBattle match flow", () => {
   });
 
   it("ends the match when opponent reaches 10 wins", async () => {
-    const { classicBattle } = await import("../../../src/helpers/classicBattle.js");
-    classicBattle._resetForTest();
+    const mod = await import("../../../src/helpers/classicBattle.js");
+    mod._resetForTest();
     const selectStat = async () => {
-      const p = classicBattle.handleStatSelection("power");
+      const p = mod.handleStatSelection("power");
       await vi.runAllTimersAsync();
       await p;
     };
@@ -156,7 +156,7 @@ describe("classicBattle match flow", () => {
     document.getElementById("computer-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
     {
-      const p = classicBattle.handleStatSelection("power");
+      const p = mod.handleStatSelection("power");
       await vi.runAllTimersAsync();
       await p;
     }
@@ -168,9 +168,11 @@ describe("classicBattle match flow", () => {
 
   it("scheduleNextRound waits for cooldown then enables button", async () => {
     document.body.innerHTML += '<button id="next-round-button" disabled></button>';
-    const battleMod = await import("../../../src/helpers/classicBattle.js");
+    const { scheduleNextRound } = await import(
+      "../../../src/helpers/classicBattle/timerService.js"
+    );
     const startStub = vi.fn();
-    battleMod.scheduleNextRound({ matchEnded: false }, startStub);
+    scheduleNextRound({ matchEnded: false }, startStub);
     const btn = document.getElementById("next-round-button");
     expect(btn.disabled).toBe(true);
     timerSpy.advanceTimersByTime(2000);
@@ -184,9 +186,9 @@ describe("classicBattle match flow", () => {
   });
 
   it("shows selection prompt until a stat is chosen", async () => {
-    const { classicBattle } = await import("../../../src/helpers/classicBattle.js");
-    classicBattle._resetForTest();
-    await classicBattle.startRound();
+    const mod = await import("../../../src/helpers/classicBattle.js");
+    mod._resetForTest();
+    await mod.startRound();
     expect(document.querySelector("header #round-message").textContent).toBe("Select your move");
     timerSpy.advanceTimersByTime(5000);
     expect(document.querySelector("header #round-message").textContent).toBe("Select your move");
@@ -195,7 +197,7 @@ describe("classicBattle match flow", () => {
     document.getElementById("computer-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     {
-      const p = classicBattle.handleStatSelection("power");
+      const p = mod.handleStatSelection("power");
       await vi.runAllTimersAsync();
       await p;
     }
