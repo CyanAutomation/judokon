@@ -18,7 +18,9 @@ test.describe.parallel("Update Judoka page", () => {
   });
 
   test("navigation links work", async ({ page }) => {
-    await page.getByTestId(NAV_RANDOM_JUDOKA).click();
+    const randomLink = page.getByTestId(NAV_RANDOM_JUDOKA);
+    await randomLink.waitFor();
+    await randomLink.click();
     await expect(page).toHaveURL(/randomJudoka\.html/);
     await page.goBack({ waitUntil: "load" });
 
