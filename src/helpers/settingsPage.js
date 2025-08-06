@@ -227,6 +227,11 @@ async function initializeSettingsPage() {
     toggleLayoutDebugPanel(Boolean(settings.featureFlags.layoutDebugPanel?.enabled));
     const controlsApi = initializeControls(settings);
     const [gameModes, tooltipMap] = await Promise.all([gameModesPromise, tooltipMapPromise]);
+    if (!Array.isArray(gameModes)) {
+      console.error("Failed to load game modes", gameModes);
+      showSettingsError();
+      return;
+    }
     controlsApi.renderSwitches(gameModes, tooltipMap);
   } catch (error) {
     console.error("Error loading settings page:", error);
