@@ -95,6 +95,41 @@ describe("settingsPage module", () => {
     expect(applyMotionPreference).toHaveBeenCalledWith(baseSettings.motionEffects);
     vi.useRealTimers();
   });
+
+  it("renders fallback game modes when navigation items fail", async () => {
+    vi.useFakeTimers();
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const updateSetting = vi.fn().mockResolvedValue(baseSettings);
+    const loadNavigationItems = vi.fn().mockRejectedValue(new Error("fail"));
+    const loadGameModes = vi
+      .fn()
+      .mockResolvedValue([{ id: 1, name: "Classic", category: "mainMenu", order: 10 }]);
+    const updateNavigationItemHidden = vi.fn();
+    const showSettingsError = vi.fn();
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      loadSettings,
+      updateSetting
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems,
+      loadGameModes,
+      updateNavigationItemHidden
+    }));
+    vi.doMock("../../src/helpers/showSettingsError.js", () => ({ showSettingsError }));
+
+    await import("../../src/helpers/settingsPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    expect(loadNavigationItems).toHaveBeenCalled();
+    expect(loadGameModes).toHaveBeenCalled();
+    expect(showSettingsError).toHaveBeenCalled();
+    const container = document.getElementById("game-mode-toggle-container");
+    const checkboxes = container.querySelectorAll("input[type='checkbox']");
+    expect(checkboxes).toHaveLength(1);
+    expect(container.querySelector("#mode-1")).toBeTruthy();
+    vi.useRealTimers();
+  });
   it("renders checkboxes for all modes", async () => {
     vi.useFakeTimers();
     const gameModes = [

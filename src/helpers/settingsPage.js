@@ -8,7 +8,7 @@
  * 4. Initialize the page controls and event listeners.
  */
 import { loadSettings, updateSetting, resetSettings } from "./settingsUtils.js";
-import { loadNavigationItems } from "./gameModeUtils.js";
+import { loadNavigationItems, loadGameModes } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
 import { applyDisplayMode } from "./displayMode.js";
 import { withViewTransition } from "./viewTransition.js";
@@ -214,7 +214,7 @@ function initializeControls(settings) {
  * 2. Begin loading navigation items and tooltip text in parallel.
  * 3. Await settings, apply display/motion prefs, and bind control listeners.
  * 4. Resolve navigation and tooltip requests with `Promise.allSettled`.
- * 5. If navigation fails, show the settings error and abort.
+ * 5. If navigation fails, show the settings error and fall back to minimal modes.
  * 6. If tooltip load fails, warn and fall back to an empty map.
  * 7. Render switches and apply tooltips.
  * 8. On error, show a fallback message to the user.
@@ -237,21 +237,32 @@ async function initializeSettingsPage() {
       gameModesPromise,
       tooltipMapPromise
     ]);
-    if (gameModesResult.status !== "fulfilled" || !Array.isArray(gameModesResult.value)) {
+
+    let gameModes;
+    if (gameModesResult.status === "fulfilled" && Array.isArray(gameModesResult.value)) {
+      gameModes = gameModesResult.value;
+    } else {
       console.error(
         "Failed to load game modes",
         gameModesResult.status === "fulfilled" ? gameModesResult.value : gameModesResult.reason
       );
       showSettingsError();
-      return;
+      try {
+        const fallback = await loadGameModes();
+        gameModes = Array.isArray(fallback) ? fallback : [];
+      } catch (err) {
+        console.error("Failed to load fallback game modes", err);
+        gameModes = [];
+      }
     }
+
     let tooltipMap = {};
     if (tooltipMapResult.status === "fulfilled") {
       tooltipMap = tooltipMapResult.value;
     } else {
       console.warn("Failed to load tooltips", tooltipMapResult.reason);
     }
-    controlsApi.renderSwitches(gameModesResult.value, tooltipMap);
+    controlsApi.renderSwitches(gameModes, tooltipMap);
   } catch (error) {
     console.error("Error loading settings page:", error);
     const errorPopup = document.getElementById("settings-error-popup");
