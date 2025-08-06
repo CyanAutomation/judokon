@@ -117,10 +117,10 @@ async function loadRawNavigationItems() {
 export async function loadNavigationItems() {
   const navItems = await loadRawNavigationItems();
   const modes = await loadGameModes();
-  return navItems.map((item) => ({
-    ...(modes.find((m) => m.id === Number(item.gameModeId)) || {}),
-    ...item
-  }));
+  return navItems.map((item) => {
+    const mode = modes.find((m) => m.id === Number(item.gameModeId)) || {};
+    return { ...item, ...mode };
+  });
 }
 
 /**
@@ -175,10 +175,10 @@ export async function updateNavigationItemHidden(id, isHidden) {
   items[index] = { ...items[index], isHidden };
   await saveNavigationItems(items);
   const modes = await loadGameModes();
-  return items.map((item) => ({
-    ...(modes.find((m) => m.id === Number(item.gameModeId)) || {}),
-    ...item
-  }));
+  return items.map((item) => {
+    const mode = modes.find((m) => m.id === Number(item.gameModeId)) || {};
+    return { ...item, ...mode };
+  });
 }
 
 /**
