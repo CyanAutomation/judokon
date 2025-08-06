@@ -7,7 +7,7 @@ import { showSnackbar } from "../showSnackbar.js";
  * Render game mode toggle switches within the settings page.
  *
  * @pseudocode
- * 1. Sort `gameModes` by `order` and create a toggle for each.
+ * 1. Sort `gameModes` by `order`, warn on missing `name`, and create a toggle for each.
  * 2. When toggled, update navigation visibility via `updateNavigationItemHidden`.
  * 3. Persist the updated `gameModes` setting using `handleUpdate`.
  * 4. Show a snackbar confirming the new mode state.
@@ -25,11 +25,15 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
     const isChecked = Object.hasOwn(current.gameModes, mode.id)
       ? current.gameModes[mode.id]
       : !mode.isHidden;
-    const toggle = new ToggleSwitch(`${mode.name} (${mode.category} - ${mode.order})`, {
+    const label = mode.name ?? mode.id ?? "Unknown mode";
+    if (!mode.name) {
+      console.warn("Game mode missing name", mode);
+    }
+    const toggle = new ToggleSwitch(`${label} (${mode.category} - ${mode.order})`, {
       id: `mode-${mode.id}`,
       name: mode.id,
       checked: isChecked,
-      ariaLabel: mode.name
+      ariaLabel: label
     });
     const { element: wrapper, input } = toggle;
     if (mode.description) {
@@ -50,7 +54,7 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
           input.checked = prev;
         })
       ).then(() => {
-        showSnackbar(`${mode.name} ${input.checked ? "enabled" : "disabled"}`);
+        showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);
       });
       updateNavigationItemHidden(mode.id, !input.checked).catch((err) => {
         console.error("Failed to update navigation item", err);
