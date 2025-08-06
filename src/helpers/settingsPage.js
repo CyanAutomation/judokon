@@ -103,8 +103,6 @@ function initializeControls(settings) {
     cardOfTheDayToggle: document.getElementById("card-of-the-day-toggle"),
     fullNavigationMapToggle: document.getElementById("full-navigation-map-toggle")
   };
-  const modesContainer = document.getElementById("game-mode-toggle-container");
-  const flagsContainer = document.getElementById("feature-flags-container");
   const errorPopup = document.getElementById("settings-error-popup");
   const resetButton = document.getElementById("reset-settings-button");
 
@@ -161,20 +159,26 @@ function initializeControls(settings) {
   attachToggleListeners(controls, getCurrentSettings, handleUpdate);
 
   function renderSwitches(gameModes, tooltipMap) {
-    latestGameModes = gameModes;
+    latestGameModes = Array.isArray(gameModes) ? gameModes : [];
     latestTooltipMap = tooltipMap;
     // Apply current settings once toggles are available.
     applyInitialControlValues(controls, currentSettings, tooltipMap);
-    clearToggles(modesContainer);
-    renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
-    clearToggles(flagsContainer);
-    renderFeatureFlagSwitches(
-      flagsContainer,
-      currentSettings.featureFlags,
-      getCurrentSettings,
-      handleUpdate,
-      tooltipMap
-    );
+    const modesContainerEl = document.getElementById("game-mode-toggle-container");
+    if (modesContainerEl && Array.isArray(gameModes)) {
+      clearToggles(modesContainerEl);
+      renderGameModeSwitches(modesContainerEl, gameModes, getCurrentSettings, handleUpdate);
+    }
+    const flagsContainerEl = document.getElementById("feature-flags-container");
+    if (flagsContainerEl) {
+      clearToggles(flagsContainerEl);
+      renderFeatureFlagSwitches(
+        flagsContainerEl,
+        currentSettings.featureFlags,
+        getCurrentSettings,
+        handleUpdate,
+        tooltipMap
+      );
+    }
     queueMicrotask(addNavResetButton);
     document.getElementById("feature-nav-cache-reset-button")?.addEventListener("change", () => {
       setTimeout(addNavResetButton);
