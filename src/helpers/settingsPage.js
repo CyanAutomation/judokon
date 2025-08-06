@@ -2,7 +2,7 @@
  * Set up the Settings page once the document is ready.
  *
  * @pseudocode
- * 1. Load saved settings and available navigation items.
+ * 1. Load saved settings, navigation items, and tooltip text.
  * 2. Apply the stored display mode and motion preference.
  * 3. Toggle the `.simulate-viewport` class based on the viewport flag.
  * 4. Initialize the page controls and event listeners.
@@ -209,8 +209,11 @@ function initializeControls(settings) {
  * 1. Call `setupSectionToggles` so collapsible sections work immediately.
  * 2. Begin loading navigation items and tooltip text in parallel.
  * 3. Await settings, apply display/motion prefs, and bind control listeners.
- * 4. Wait for navigation and tooltips, then render switches and tooltips.
- * 5. On error, show a fallback message to the user.
+ * 4. Resolve navigation and tooltip requests with `Promise.allSettled`.
+ * 5. If navigation fails, show the settings error and abort.
+ * 6. If tooltip load fails, warn and fall back to an empty map.
+ * 7. Render switches and apply tooltips.
+ * 8. On error, show a fallback message to the user.
  *
  * @returns {Promise<void>}
  */
@@ -226,13 +229,25 @@ async function initializeSettingsPage() {
     toggleTooltipOverlayDebug(Boolean(settings.featureFlags.tooltipOverlayDebug?.enabled));
     toggleLayoutDebugPanel(Boolean(settings.featureFlags.layoutDebugPanel?.enabled));
     const controlsApi = initializeControls(settings);
-    const [gameModes, tooltipMap] = await Promise.all([gameModesPromise, tooltipMapPromise]);
-    if (!Array.isArray(gameModes)) {
-      console.error("Failed to load game modes", gameModes);
+    const [gameModesResult, tooltipMapResult] = await Promise.allSettled([
+      gameModesPromise,
+      tooltipMapPromise
+    ]);
+    if (gameModesResult.status !== "fulfilled" || !Array.isArray(gameModesResult.value)) {
+      console.error(
+        "Failed to load game modes",
+        gameModesResult.status === "fulfilled" ? gameModesResult.value : gameModesResult.reason
+      );
       showSettingsError();
       return;
     }
-    controlsApi.renderSwitches(gameModes, tooltipMap);
+    let tooltipMap = {};
+    if (tooltipMapResult.status === "fulfilled") {
+      tooltipMap = tooltipMapResult.value;
+    } else {
+      console.warn("Failed to load tooltips", tooltipMapResult.reason);
+    }
+    controlsApi.renderSwitches(gameModesResult.value, tooltipMap);
   } catch (error) {
     console.error("Error loading settings page:", error);
     const errorPopup = document.getElementById("settings-error-popup");
