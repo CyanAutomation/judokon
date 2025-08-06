@@ -21,7 +21,9 @@ test.describe.parallel("Settings page", () => {
     );
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
     try {
-      await page.getByLabel("Classic Battle").waitFor({ state: "attached", timeout: 5000 });
+      await page
+        .getByRole("checkbox", { name: "Classic Battle" })
+        .waitFor({ state: "attached", timeout: 5000 });
     } catch (e) {
       const content = await page.content();
       console.error("Classic Battle label not found. Page content:\n", content);
@@ -37,7 +39,7 @@ test.describe.parallel("Settings page", () => {
   });
 
   test("mode toggle visible", async ({ page }) => {
-    const toggle = page.getByLabel("Classic Battle");
+    const toggle = page.getByRole("checkbox", { name: "Classic Battle" });
     await toggle.waitFor({ state: "attached" });
     await expect(toggle).toBeVisible();
   });
@@ -51,7 +53,7 @@ test.describe.parallel("Settings page", () => {
   });
 
   test("controls expose correct labels and follow tab order", async ({ page }) => {
-    await page.getByLabel("Classic Battle").waitFor({ state: "attached" });
+    await page.getByRole("checkbox", { name: "Classic Battle" }).waitFor({ state: "attached" });
 
     const navItems = JSON.parse(fs.readFileSync("tests/fixtures/navigationItems.json", "utf8"));
     const gameModes = JSON.parse(fs.readFileSync("tests/fixtures/gameModes.json", "utf8"));
@@ -95,11 +97,14 @@ test.describe.parallel("Settings page", () => {
     );
 
     for (const name of sortedNames) {
-      await expect(page.getByLabel(name, { exact: true })).toHaveAttribute("aria-label", name);
+      await expect(page.getByRole("checkbox", { name, exact: true })).toHaveAttribute(
+        "aria-label",
+        name
+      );
     }
 
     for (const label of flagLabels) {
-      const locator = page.getByLabel(label, { exact: true });
+      const locator = page.getByRole("checkbox", { name: label, exact: true });
       if ((await locator.count()) > 0) {
         await expect(locator).toHaveAttribute("aria-label", label);
       }
