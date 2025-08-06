@@ -7,10 +7,11 @@ import { showSnackbar } from "../showSnackbar.js";
  * Render game mode toggle switches within the settings page.
  *
  * @pseudocode
- * 1. Sort `gameModes` by `order`, warn on missing `name`, skip malformed entries, create a toggle for each, and attach debug data attributes.
- * 2. When toggled, update navigation visibility via `updateNavigationItemHidden`.
- * 3. Persist the updated `gameModes` setting using `handleUpdate`.
- * 4. Show a snackbar confirming the new mode state.
+ * 1. If `container` is missing or `gameModes` is not an array, warn and exit.
+ * 2. Sort `gameModes` by `order`, warn on missing `name`, skip malformed entries, create a toggle for each, and attach debug data attributes.
+ * 3. When toggled, update navigation visibility via `updateNavigationItemHidden`.
+ * 4. Persist the updated `gameModes` setting using `handleUpdate`.
+ * 5. Show a snackbar confirming the new mode state.
  *
  * @param {HTMLElement} container - Target container for switches.
  * @param {Array} gameModes - List of mode definitions.
@@ -18,7 +19,13 @@ import { showSnackbar } from "../showSnackbar.js";
  * @param {Function} handleUpdate - Persist function.
  */
 export function renderGameModeSwitches(container, gameModes, getCurrentSettings, handleUpdate) {
-  if (!container || !Array.isArray(gameModes)) return;
+  if (!container || !Array.isArray(gameModes)) {
+    console.warn("renderGameModeSwitches: invalid container or gameModes", {
+      container,
+      gameModes
+    });
+    return;
+  }
   const sortedModes = [...gameModes].sort((a, b) => a.order - b.order);
   sortedModes.forEach((mode) => {
     const current = getCurrentSettings();
