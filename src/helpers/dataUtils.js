@@ -27,7 +27,9 @@ function isNodeEnvironment() {
  *    - Import `Ajv` and `ajv-formats`.
  *    - Create an Ajv instance and apply the formats.
  * 3. If running in a browser window:
- *    - Import the bundled Ajv v6 locally or from a CDN.
+ *    - Import the bundled Ajv v6 locally.
+ *    - Use `module.default` or fall back to `window.Ajv` for the constructor.
+ *    - On failure, import from a CDN and repeat the same checks.
  * 4. Otherwise:
  *    - Import `Ajv` and `ajv-formats`, then apply the formats.
  * 5. Return the Ajv instance.
@@ -46,11 +48,19 @@ export async function getAjv() {
   } else if (typeof window !== "undefined") {
     try {
       const module = await import("../vendor/ajv6.min.js");
-      ajvInstance = new module.default();
+      const AjvCtor = module?.default || window?.Ajv;
+      if (!AjvCtor) {
+        throw new Error("AJV constructor not found in local module");
+      }
+      ajvInstance = new AjvCtor();
     } catch (error) {
       console.error("Error importing local AJV module:", error);
       const module = await import("https://esm.sh/ajv@6");
-      ajvInstance = new module.default();
+      const AjvCtor = module?.default || window?.Ajv;
+      if (!AjvCtor) {
+        throw new Error("AJV constructor not found in CDN module");
+      }
+      ajvInstance = new AjvCtor();
     }
   } else {
     const Ajv = (await import("ajv")).default;
