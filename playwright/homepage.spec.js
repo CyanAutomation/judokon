@@ -29,6 +29,24 @@ test.describe.parallel("Homepage", () => {
     await expect(footerLinks).not.toHaveCount(0);
   });
 
+  test("navigation order and visibility", async ({ page }) => {
+    await page.waitForSelector("footer .bottom-navbar a");
+    const classic = page.getByTestId(NAV_CLASSIC_BATTLE);
+    const random = page.getByTestId(NAV_RANDOM_JUDOKA);
+    const update = page.getByTestId("nav-9");
+
+    await expect(classic).not.toHaveClass(/hidden/);
+    await expect(random).not.toHaveClass(/hidden/);
+    await expect(update).toHaveClass(/hidden/);
+
+    const classicOrder = Number(await classic.evaluate((el) => getComputedStyle(el).order));
+    const randomOrder = Number(await random.evaluate((el) => getComputedStyle(el).order));
+    const updateOrder = Number(await update.evaluate((el) => getComputedStyle(el).order));
+
+    expect(classicOrder).toBeLessThan(updateOrder);
+    expect(updateOrder).toBeLessThan(randomOrder);
+  });
+
   test("view judoka link navigates", async ({ page }) => {
     await page.getByTestId(NAV_RANDOM_JUDOKA).click();
     await expect(page).toHaveURL(/randomJudoka\.html/);
