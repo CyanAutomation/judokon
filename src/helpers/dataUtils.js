@@ -27,9 +27,10 @@ function isNodeEnvironment() {
  *    - Import `Ajv` and `ajv-formats`.
  *    - Create an Ajv instance and apply the formats.
  * 3. If running in a browser window:
- *    - Import the bundled Ajv v6 locally.
- *    - Use `module.default` or fall back to `window.Ajv` for the constructor.
- *    - On failure, import from a CDN and repeat the same checks.
+ *    - Use `window.Ajv` when it already exists.
+ *    - Otherwise, inject a `<script src="../vendor/ajv6.min.js">` tag and wait
+ *      for it to load.
+ *    - On failure, import Ajv from a CDN and try again.
  * 4. Otherwise:
  *    - Import `Ajv` and `ajv-formats`, then apply the formats.
  * 5. Return the Ajv instance.
@@ -46,21 +47,30 @@ export async function getAjv() {
     ajvInstance = new Ajv();
     addFormats(ajvInstance);
   } else if (typeof window !== "undefined") {
-    try {
-      const module = await import("../vendor/ajv6.min.js");
-      const AjvCtor = module?.default || window?.Ajv;
-      if (!AjvCtor) {
-        throw new Error("AJV constructor not found in local module");
+    if (window.Ajv) {
+      ajvInstance = new window.Ajv();
+    } else {
+      try {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "../vendor/ajv6.min.js";
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+        if (!window.Ajv) {
+          throw new Error("AJV constructor not found after script load");
+        }
+        ajvInstance = new window.Ajv();
+      } catch (error) {
+        console.error("Error loading local AJV script:", error);
+        const module = await import("https://esm.sh/ajv@6");
+        const AjvCtor = module?.default || window?.Ajv;
+        if (!AjvCtor) {
+          throw new Error("AJV constructor not found in CDN module");
+        }
+        ajvInstance = new AjvCtor();
       }
-      ajvInstance = new AjvCtor();
-    } catch (error) {
-      console.error("Error importing local AJV module:", error);
-      const module = await import("https://esm.sh/ajv@6");
-      const AjvCtor = module?.default || window?.Ajv;
-      if (!AjvCtor) {
-        throw new Error("AJV constructor not found in CDN module");
-      }
-      ajvInstance = new AjvCtor();
     }
   } else {
     const Ajv = (await import("ajv")).default;
