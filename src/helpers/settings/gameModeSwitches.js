@@ -22,9 +22,8 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
   const sortedModes = [...gameModes].sort((a, b) => a.order - b.order);
   sortedModes.forEach((mode) => {
     const current = getCurrentSettings();
-    const isChecked = Object.hasOwn(current.gameModes, mode.id)
-      ? current.gameModes[mode.id]
-      : !mode.isHidden;
+    const currentModes = current.gameModes ?? {};
+    const isChecked = Object.hasOwn(currentModes, mode.id) ? currentModes[mode.id] : !mode.isHidden;
     const label = mode.name ?? mode.id ?? "Unknown mode";
     if (!mode.name) {
       console.warn("Game mode missing name", mode);
@@ -49,7 +48,10 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
     if (!input) return;
     input.addEventListener("change", () => {
       const prev = !input.checked;
-      const updated = { ...getCurrentSettings().gameModes, [mode.id]: input.checked };
+      const updated = {
+        ...(getCurrentSettings().gameModes ?? {}),
+        [mode.id]: input.checked
+      };
       Promise.resolve(
         handleUpdate("gameModes", updated, () => {
           input.checked = prev;
