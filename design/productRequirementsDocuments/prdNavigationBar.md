@@ -40,7 +40,7 @@ The **JU-DO-KON!** game features multiple game modes and screens. Players need e
 - Increase average session duration per player by **15%**.
 - Ensure **44px minimum** touch target size (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 - Achieve **≥60fps** animation performance on standard mid-tier devices.
-- Guarantee fallback loading time of **<2 seconds** if `navigationItems.json` fails.
+- Guarantee fallback application time of **<2 seconds** if `navigationItems.json` fails.
 - Meet a text contrast ratio of at least **4.5:1** against the navigation bar background.
 - Allow players to confidently navigate between modes without frustration.
 - Ensure a consistent, easy-to-use navigation experience across devices.
@@ -56,7 +56,7 @@ The **JU-DO-KON!** game features multiple game modes and screens. Players need e
 
 ## How It Works
 
-The bottom navigation bar appears consistently across all game screens, dynamically loading active game modes from `navigationItems.json`. Each item references an entry in `gameModes.json` via its `id` so mode names and descriptions remain consistent.
+The bottom navigation bar appears consistently across all game screens, populated with pre-seeded links whose visibility and order are driven by `navigationItems.json` via CSS. Each item references an entry in `gameModes.json` via its `id` so mode names and descriptions remain consistent.
 
 ### Standard Mode (Default View)
 
@@ -75,11 +75,11 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 - After any activity, the persistent nav bar is visible.
 - In portrait view only the logo shows; tapping it expands the text list.
 - Player selects a mode and is taken to that screen.
-- If `navigationItems.json` fails, load the fallback list and auto-reload.
+- If `navigationItems.json` fails, revert to a default order and auto-reload.
 
 ### Technical Considerations
 
-- Load active game modes dynamically from `navigationItems.json`, fallback to default on failure.
+- Use `navigationItems.json` to drive CSS classes that control which pre-seeded links are visible and in what order; fallback to defaults on failure.
 - Cache loaded mode list to avoid redundant fetches across sessions.
 - Use hardware-accelerated CSS transforms for nav animations (e.g., `translate3d`).
 - Optimize for devices as small as 320px width (typical of older low-end Android devices).
@@ -109,7 +109,7 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 |  **P2**  | Portrait Text Menu     | Text-based vertical menu expansion on logo click for portrait and landscape (collapsed) orientation.              |
 |  **P2**  | Small Screens Support  | Adjust text menu for screens as small as 320px — scale font and spacing.                                          |
 |  **P2**  | Visual Feedback        | Positive click/tap feedback animation for all links and buttons.                                                  |
-|  **P1**  | Fallback Data Handling | Hardcoded default mode list if `navigationItems.json` fails to load.                                              |
+|  **P1**  | Fallback Data Handling | Hardcoded default order and visibility if `navigationItems.json` fails to load.                                |
 
 ---
 
@@ -117,12 +117,12 @@ The bottom navigation bar appears consistently across all game screens, dynamica
 
 - Touch targets maintain **≥44px** size across all device resolutions (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 - Navigation is visible on **100%** of game screens.
-- Standard nav bar displays active game modes loaded from `navigationItems.json`.
+- Standard nav bar shows pre-seeded links whose visibility and order are driven by `navigationItems.json` via CSS.
 - Portrait mode initially shows only the logo in the bottom left corner (no links in the navigation bar); tapping reveals a vertical list.
 - The function of tapping the icon in the bottom left corner works in landscape or portrait mode.
 - Clicking a link navigates successfully to the intended screen.
 - Tapping the logo toggles expansion/collapse.
-- If `navigationItems.json` fails, load a hardcoded default list within **<2 seconds**.
+- If `navigationItems.json` fails, apply a hardcoded default order within **<2 seconds**.
 - Show notification and auto-reload if mid-session loading fails.
 - Smooth re-layout during device rotation mid-animation, with transition completion time **<500ms**.
 - Text contrast meets WCAG **4.5:1**.

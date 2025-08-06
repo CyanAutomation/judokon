@@ -53,7 +53,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 | P1       | Typewriter Effect Toggle            | Enable or disable quote animation where supported (not used on the meditation screen).                 |
 | P1       | Tooltips Toggle                     | Globally enable or disable UI tooltips.                                                                |
 | P1       | Display Mode Switch                 | Three-option switch applying mode instantly across UI.                                                 |
-| P2       | Game Modes Toggles                  | A list of all defined game modes with binary toggles from `navigationItems.json`.                      |
+| P2       | Game Modes Toggles                  | Binary toggles controlling pre-seeded links via `navigationItems.json`.                      |
 | P3       | Settings Menu Integration           | Ensure settings appear as a game mode in `navigationItems.json`.                                       |
 | P3       | View Change Log Link                | Link to `changeLog.html` for viewing recent judoka updates.                                            |
 | P3       | View PRD Documents Link             | Link to `prdViewer.html` for browsing product requirement documents.                                   |
@@ -78,7 +78,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 - **Typewriter effect (binary):** ON/OFF (default: ON, not currently used on the meditation screen) – Toggle the quote typing animation.
 - **Tooltips (binary):** ON/OFF (default: ON) – Show or hide helpful tooltips.
 - **Display mode (three options):** Light, Dark, High Contrast (default: Light)
-- **Game modes list:** Pulled from `gameModes.json` and cross-referenced with `navigationItems.json` to determine order and visibility; each mode has a binary toggle.
+- **Game modes list:** Pre-seeded entries cross-referenced with `navigationItems.json` to determine order and visibility via CSS; each mode has a binary toggle.
 - **View Change Log:** Link opens `changeLog.html` with the latest 20 judoka updates.
 - **View PRD Documents:** Link opens `prdViewer.html` for browsing product documents.
 - **View Design Mockups:** Link opens `mockupViewer.html` for viewing design mockups.
@@ -102,7 +102,7 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 
 - The Settings page **must pull current states** from data sources (`settings.json`, `gameModes.json`, and `navigationItems.json`) on load.
 - Default feature flag values live in `settings.json`, while their labels and descriptions come from `tooltips.json`.
-- `gameModes.json` defines all available modes, while `navigationItems.json` references each by `id` to control order and hidden status.
+- `gameModes.json` defines all available modes, while `navigationItems.json` references each by `id` to control order and visibility via CSS.
 - Changes should trigger **immediate data writes** without requiring a “Save Changes” button.
 - All live updates must persist across page refreshes within the same session.
 - If `navigationItems.json` fails to load, the game modes section should **disable gracefully** and show an error message.
@@ -290,7 +290,7 @@ The page begins with an `h1` heading labeled "Settings". Two `fieldset` sections
 
 ───────────────────────────────  
 | GAME MODES |  
-| (Dynamic list from JSON) |  
+| (Pre-seeded list; visibility and order driven by `navigationItems.json` via CSS) |
 ───────────────────────────────
 
 [ Game Mode 1 ]  
@@ -329,7 +329,7 @@ The page begins with an `h1` heading labeled "Settings". Two `fieldset` sections
 
 - [ ] 4.0 List Game Modes
 
-  - [x] 4.1 Load all game modes from `navigationItems.json`.
+    - [x] 4.1 Ensure game mode toggles map to pre-seeded links defined in `navigationItems.json`.
   - [x] 4.2 Display error message if loading fails.
 
 - [ ] 6.0 Add Change Log Link
