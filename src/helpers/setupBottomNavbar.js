@@ -7,9 +7,9 @@
  * 3. Import `onDomReady`.
  * 4. Define `renderBottomNavbar` as a fallback renderer.
  * 5. Define `ensureUniqueNavTestIds` to remove duplicate nav links.
- * 6. Define async `init` to await `populateNavbar` and handle errors with `renderBottomNavbar`.
- * 7. After navigation is populated, call `ensureUniqueNavTestIds` and `setupButtonEffects`.
- * 8. Use `onDomReady` to invoke `init` when the DOM is ready.
+ * 6. Define async `init` to call `setupButtonEffects`, await `populateNavbar`, and handle errors with `renderBottomNavbar`.
+ * 7. After navigation is populated, call `ensureUniqueNavTestIds`.
+ * 8. Use `onDomReady` to invoke `init` with guarded error handling.
  */
 import { populateNavbar } from "./navigationBar.js";
 import { setupButtonEffects } from "./buttonEffects.js";
@@ -36,11 +36,13 @@ function renderBottomNavbar() {
  * Remove duplicate navigation links for key test IDs.
  *
  * @pseudocode
- * 1. For each of `nav-1` and `nav-12`:
+ * 1. Guard: return if `document` is undefined.
+ * 2. For each of `nav-1` and `nav-12`:
  *    a. Query all matching elements.
  *    b. Remove any element beyond the first.
  */
 function ensureUniqueNavTestIds() {
+  if (typeof document === "undefined") return;
   ["nav-1", "nav-12"].forEach((id) => {
     const elements = document.querySelectorAll(`[data-testid="${id}"]`);
     elements.forEach((el, index) => {
@@ -50,13 +52,13 @@ function ensureUniqueNavTestIds() {
 }
 
 async function init() {
+  setupButtonEffects();
   try {
     await populateNavbar();
   } catch {
     renderBottomNavbar();
   }
   ensureUniqueNavTestIds();
-  setupButtonEffects();
 }
 
-onDomReady(init);
+onDomReady(() => init().catch(() => {}));
