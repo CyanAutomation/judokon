@@ -168,162 +168,30 @@ describe("togglePortraitTextMenu", () => {
 });
 
 describe("populateNavbar", () => {
-  it("loads game modes and populates the navbar", async () => {
+  it("orders and hides links based on navigation data", async () => {
     const navBar = setupDom();
-    stubLogoQuery();
-    const data = [
-      { id: 1, name: "A", url: "a.html", category: "mainMenu", order: 2, isHidden: false },
-      { id: 2, name: "B", url: "b.html", category: "mainMenu", order: 1, isHidden: false }
-    ];
-    const loadSettings = vi.fn().mockResolvedValue({
-      sound: true,
-      motionEffects: true,
-      tooltips: true,
-      displayMode: "light",
-      fullNavigationMap: true,
-      gameModes: { 2: false },
-      featureFlags: {
-        randomStatMode: { enabled: true },
-        battleDebugPanel: { enabled: false },
-        enableTestMode: { enabled: false },
-        enableCardInspector: { enabled: false }
-      }
-    });
-    const loadNavigationItems = vi.fn().mockResolvedValue(data);
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems,
-      loadGameModes: loadNavigationItems
-    }));
+    navBar.innerHTML = `
+      <a data-testid="nav-1"></a>
+      <a data-testid="nav-2"></a>
+      <a data-testid="nav-3"></a>
+    `;
+    const loadNavigationItems = vi.fn().mockResolvedValue([
+      { id: 1, category: "mainMenu", order: 2, isHidden: false },
+      { id: 2, category: "mainMenu", order: 1, isHidden: true },
+      { id: 4, category: "mainMenu", order: 3, isHidden: false }
+    ]);
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({ loadNavigationItems }));
 
     const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
 
     await populateNavbar();
 
-    const items = navBar.querySelectorAll("li");
-    expect(items).toHaveLength(1);
-    expect(items[0].textContent).toBe("A");
-    const link = items[0].querySelector("a");
-    expect(link).toHaveAttribute("data-tooltip-id", "nav.a");
-    expect(loadSettings).toHaveBeenCalled();
+    const links = navBar.querySelectorAll("a");
+    expect(links[0].style.order).toBe("2");
+    expect(links[0].classList.contains("hidden")).toBe(false);
+    expect(links[1].style.order).toBe("1");
+    expect(links[1].classList.contains("hidden")).toBe(true);
+    expect(links[2].classList.contains("hidden")).toBe(true);
     expect(loadNavigationItems).toHaveBeenCalled();
-  });
-
-  it("falls back to default items when fetch fails", async () => {
-    const navBar = setupDom();
-    stubLogoQuery();
-    localStorage.removeItem("navigationItems");
-    const loadNavigationItems = vi.fn().mockRejectedValue(new Error("fail"));
-    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems,
-      loadGameModes: loadNavigationItems
-    }));
-
-    const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
-
-    await populateNavbar();
-
-    const items = navBar.querySelectorAll("li");
-    expect(items).toHaveLength(3);
-    expect(items[0].textContent).toBe("Random Judoka");
-    expect(items[0].querySelector("a")).toHaveAttribute("data-tooltip-id", "nav.randomJudoka");
-    expect(items[1].textContent).toBe("Home");
-    expect(items[1].querySelector("a")).toHaveAttribute("data-tooltip-id", "nav.home");
-    expect(items[2].textContent).toBe("Classic Battle");
-    expect(items[2].querySelector("a")).toHaveAttribute("data-tooltip-id", "nav.classicBattle");
-  });
-
-  it("uses cached game modes when offline", async () => {
-    const navBar = setupDom();
-    stubLogoQuery();
-    const data = [
-      { id: 3, name: "X", url: "x.html", category: "mainMenu", order: 1, isHidden: false }
-    ];
-    localStorage.setItem("navigationItems", JSON.stringify(data));
-    const loadSettings = vi.fn().mockResolvedValue({
-      sound: true,
-      motionEffects: true,
-      tooltips: true,
-      displayMode: "light",
-      fullNavigationMap: true,
-      gameModes: {},
-      featureFlags: {
-        randomStatMode: { enabled: true },
-        battleDebugPanel: { enabled: false },
-        enableTestMode: { enabled: false },
-        enableCardInspector: { enabled: false }
-      }
-    });
-    const loadNavigationItems = vi.fn().mockResolvedValue(data);
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems,
-      loadGameModes: loadNavigationItems
-    }));
-
-    const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
-
-    await populateNavbar();
-
-    const items = navBar.querySelectorAll("li");
-    expect(items).toHaveLength(1);
-    expect(items[0].textContent).toBe("X");
-    expect(items[0].querySelector("a")).toHaveAttribute("data-tooltip-id", "nav.x");
-    expect(loadNavigationItems).toHaveBeenCalled();
-  });
-
-  it("marks current page link as active", async () => {
-    const navBar = setupDom();
-    stubLogoQuery();
-    const data = [
-      {
-        id: 1,
-        name: "Home",
-        url: "home.html",
-        category: "mainMenu",
-        order: 1,
-        isHidden: false
-      },
-      {
-        id: 2,
-        name: "About",
-        url: "about.html",
-        category: "mainMenu",
-        order: 2,
-        isHidden: false
-      }
-    ];
-    const loadSettings = vi.fn().mockResolvedValue({
-      sound: true,
-      motionEffects: true,
-      tooltips: true,
-      displayMode: "light",
-      fullNavigationMap: true,
-      gameModes: {},
-      featureFlags: {
-        randomStatMode: { enabled: true },
-        battleDebugPanel: { enabled: false },
-        enableTestMode: { enabled: false },
-        enableCardInspector: { enabled: false }
-      }
-    });
-    const loadNavigationItems = vi.fn().mockResolvedValue(data);
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems,
-      loadGameModes: loadNavigationItems
-    }));
-
-    window.history.pushState({}, "", "/src/pages/home.html");
-
-    const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
-
-    await populateNavbar();
-
-    const activeLink = navBar.querySelector("a.active");
-    expect(activeLink).toBeTruthy();
-    expect(activeLink).toHaveAttribute("aria-current", "page");
-    expect(activeLink).toHaveAttribute("data-tooltip-id", "nav.home");
-    expect(activeLink.textContent).toBe("Home");
   });
 });
