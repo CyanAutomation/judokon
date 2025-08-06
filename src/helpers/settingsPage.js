@@ -81,17 +81,18 @@ function createResetConfirmation(onConfirm) {
  *
  * @pseudocode
  * 1. Store a mutable copy of `settings` for updates.
- * 2. Query DOM elements for each control and the mode container.
- * 3. Provide helper functions to read and persist settings.
- * 4. Apply initial values, attach listeners, and render mode and flag switches.
- * 5. When `navCacheResetButton` is enabled, queue a microtask to append a
- *    button that clears cached navigation data and refreshes the navbar.
+ * 2. Query DOM elements for each control and container.
+ * 3. Provide helpers to read/persist settings and show errors.
+ * 4. Apply initial values and attach listeners immediately.
+ * 5. Return `renderSwitches` to inject game-mode and feature-flag toggles later.
  *
  * @param {Settings} settings - Current settings object.
- * @param {Array} gameModes - Available game mode options.
+ * @returns {{ renderSwitches(gameModes: Array, tooltipMap: object): void }} Control API.
  */
-function initializeControls(settings, gameModes, tooltipMap) {
+function initializeControls(settings) {
   let currentSettings = { ...settings };
+  let latestGameModes = [];
+  let latestTooltipMap = {};
 
   const controls = {
     soundToggle: document.getElementById("sound-toggle"),
@@ -156,32 +157,13 @@ function initializeControls(settings, gameModes, tooltipMap) {
     });
   }
 
-  applyInitialControlValues(controls, currentSettings, tooltipMap);
+  applyInitialControlValues(controls, currentSettings);
   attachToggleListeners(controls, getCurrentSettings, handleUpdate);
-  renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
-  renderFeatureFlagSwitches(
-    flagsContainer,
-    currentSettings.featureFlags,
-    getCurrentSettings,
-    handleUpdate,
-    tooltipMap
-  );
-  // Queue to ensure the section exists before inserting
-  queueMicrotask(addNavResetButton);
-  document.getElementById("feature-nav-cache-reset-button")?.addEventListener("change", () => {
-    setTimeout(addNavResetButton);
-  });
 
-  const resetModal = createResetConfirmation(() => {
-    currentSettings = resetSettings();
+  function renderSwitches(gameModes, tooltipMap) {
+    latestGameModes = gameModes;
+    latestTooltipMap = tooltipMap;
     applyInitialControlValues(controls, currentSettings, tooltipMap);
-    withViewTransition(() => {
-      applyDisplayMode(currentSettings.displayMode);
-    });
-    applyMotionPreference(currentSettings.motionEffects);
-    toggleViewportSimulation(Boolean(currentSettings.featureFlags.viewportSimulation?.enabled));
-    toggleTooltipOverlayDebug(Boolean(currentSettings.featureFlags.tooltipOverlayDebug?.enabled));
-    toggleLayoutDebugPanel(Boolean(currentSettings.featureFlags.layoutDebugPanel?.enabled));
     clearToggles(modesContainer);
     renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
     clearToggles(flagsContainer);
@@ -193,16 +175,30 @@ function initializeControls(settings, gameModes, tooltipMap) {
       tooltipMap
     );
     queueMicrotask(addNavResetButton);
-    setupSectionToggles();
-    initTooltips();
     document.getElementById("feature-nav-cache-reset-button")?.addEventListener("change", () => {
       setTimeout(addNavResetButton);
     });
+    initTooltips();
+  }
+
+  const resetModal = createResetConfirmation(() => {
+    currentSettings = resetSettings();
+    withViewTransition(() => {
+      applyDisplayMode(currentSettings.displayMode);
+    });
+    applyMotionPreference(currentSettings.motionEffects);
+    toggleViewportSimulation(Boolean(currentSettings.featureFlags.viewportSimulation?.enabled));
+    toggleTooltipOverlayDebug(Boolean(currentSettings.featureFlags.tooltipOverlayDebug?.enabled));
+    toggleLayoutDebugPanel(Boolean(currentSettings.featureFlags.layoutDebugPanel?.enabled));
+    renderSwitches(latestGameModes, latestTooltipMap);
+    setupSectionToggles();
   });
 
   resetButton?.addEventListener("click", () => {
     resetModal.open(resetButton);
   });
+
+  return { renderSwitches };
 }
 
 /**
@@ -210,28 +206,27 @@ function initializeControls(settings, gameModes, tooltipMap) {
  *
  * @pseudocode
  * 1. Call `setupSectionToggles` so collapsible sections work immediately.
- * 2. Fetch settings, navigation items, and tooltip text.
- * 3. Apply display and motion preferences from the settings.
- * 4. Enable debug utilities based on feature flags.
- * 5. Initialize page controls and section toggles.
- * 6. Set up tooltips for all controls.
- * 7. On error, show a fallback message to the user.
+ * 2. Begin loading navigation items and tooltip text in parallel.
+ * 3. Await settings, apply display/motion prefs, and bind control listeners.
+ * 4. Wait for navigation and tooltips, then render switches and tooltips.
+ * 5. On error, show a fallback message to the user.
  *
  * @returns {Promise<void>}
  */
 async function initializeSettingsPage() {
   try {
     setupSectionToggles();
+    const gameModesPromise = loadNavigationItems();
+    const tooltipMapPromise = getTooltips();
     const settings = await loadSettings();
-    const gameModes = await loadNavigationItems();
-    const tooltipMap = await getTooltips();
     applyDisplayMode(settings.displayMode);
     applyMotionPreference(settings.motionEffects);
     toggleViewportSimulation(Boolean(settings.featureFlags.viewportSimulation?.enabled));
     toggleTooltipOverlayDebug(Boolean(settings.featureFlags.tooltipOverlayDebug?.enabled));
     toggleLayoutDebugPanel(Boolean(settings.featureFlags.layoutDebugPanel?.enabled));
-    initializeControls(settings, gameModes, tooltipMap);
-    initTooltips();
+    const controlsApi = initializeControls(settings);
+    const [gameModes, tooltipMap] = await Promise.all([gameModesPromise, tooltipMapPromise]);
+    controlsApi.renderSwitches(gameModes, tooltipMap);
   } catch (error) {
     console.error("Error loading settings page:", error);
     const errorPopup = document.getElementById("settings-error-popup");
