@@ -83,8 +83,8 @@ function createResetConfirmation(onConfirm) {
  * 1. Store a mutable copy of `settings` for updates.
  * 2. Query DOM elements for each control and container.
  * 3. Provide helpers to read/persist settings and show errors.
- * 4. Apply initial values and attach listeners immediately.
- * 5. Return `renderSwitches` to inject game-mode and feature-flag toggles later.
+ * 4. Attach listeners for existing controls.
+ * 5. Return `renderSwitches` to inject game-mode/feature-flag toggles and apply initial values later.
  *
  * @param {Settings} settings - Current settings object.
  * @returns {{ renderSwitches(gameModes: Array, tooltipMap: object): void }} Control API.
@@ -157,12 +157,13 @@ function initializeControls(settings) {
     });
   }
 
-  applyInitialControlValues(controls, currentSettings);
+  // Initial control values are applied when `renderSwitches` executes.
   attachToggleListeners(controls, getCurrentSettings, handleUpdate);
 
   function renderSwitches(gameModes, tooltipMap) {
     latestGameModes = gameModes;
     latestTooltipMap = tooltipMap;
+    // Apply current settings once toggles are available.
     applyInitialControlValues(controls, currentSettings, tooltipMap);
     clearToggles(modesContainer);
     renderGameModeSwitches(modesContainer, gameModes, getCurrentSettings, handleUpdate);
