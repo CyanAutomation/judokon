@@ -22,7 +22,7 @@ test.describe.parallel("Responsive scenarios", () => {
 
   test("toggles high-contrast display mode", async ({ page }) => {
     await page.goto("/src/pages/settings.html");
-    await page.getByLabel(/Classic Battle/i).waitFor({ state: "attached" });
+    await page.locator("#display-mode-high-contrast").waitFor();
     await page.check("#display-mode-high-contrast");
     await expect(page.locator("body")).toHaveAttribute("data-theme", "high-contrast");
   });
