@@ -4,25 +4,24 @@
  * @pseudocode
  * 1. Import `populateNavbar` from `navigationBar.js`.
  * 2. Import `setupButtonEffects` from `buttonEffects.js`.
- * 3. Define `init` to call `populateNavbar` and `setupButtonEffects`.
- * 4. Use `onDomReady` to invoke `init` when the DOM is ready.
+ * 3. Import `onDomReady`.
+ * 4. Define `renderBottomNavbar` as a fallback renderer.
+ * 5. Define `ensureUniqueNavTestIds` to remove duplicate nav links.
+ * 6. Define async `init` to await `populateNavbar` and handle errors with `renderBottomNavbar`.
+ * 7. After navigation is populated, call `ensureUniqueNavTestIds` and `setupButtonEffects`.
+ * 8. Use `onDomReady` to invoke `init` when the DOM is ready.
  */
 import { populateNavbar } from "./navigationBar.js";
 import { setupButtonEffects } from "./buttonEffects.js";
 import { onDomReady } from "./domReady.js";
 
-function init() {
-  populateNavbar();
-  setupButtonEffects();
-}
-
-onDomReady(init);
-
 /**
+ * Render a minimal bottom navbar when dynamic population fails.
+ *
  * @pseudocode
- * 1. Always include navigation links for nav-12 (Random Judoka) and nav-1 (Classic Battle) on all pages, including updateJudoka.html
- * 2. Ensure each link has the correct data-testid attribute
- * 3. Render these links in the bottom navbar
+ * 1. Select the element with `data-testid="bottom-nav"`.
+ * 2. Guard: return if the element is not found.
+ * 3. Replace its contents with links for Random Judoka (nav-12) and Classic Battle (nav-1).
  */
 function renderBottomNavbar() {
   const bottomNav = document.querySelector('[data-testid="bottom-nav"]');
@@ -30,8 +29,34 @@ function renderBottomNavbar() {
   bottomNav.innerHTML = `
     <a href="randomJudoka.html" data-testid="nav-12">Random Judoka</a>
     <a href="battleJudoka.html" data-testid="nav-1">Classic Battle</a>
-    <!-- Add other nav links as needed -->
   `;
 }
 
-renderBottomNavbar();
+/**
+ * Remove duplicate navigation links for key test IDs.
+ *
+ * @pseudocode
+ * 1. For each of `nav-1` and `nav-12`:
+ *    a. Query all matching elements.
+ *    b. Remove any element beyond the first.
+ */
+function ensureUniqueNavTestIds() {
+  ["nav-1", "nav-12"].forEach((id) => {
+    const elements = document.querySelectorAll(`[data-testid="${id}"]`);
+    elements.forEach((el, index) => {
+      if (index > 0) el.remove();
+    });
+  });
+}
+
+async function init() {
+  try {
+    await populateNavbar();
+  } catch {
+    renderBottomNavbar();
+  }
+  ensureUniqueNavTestIds();
+  setupButtonEffects();
+}
+
+onDomReady(init);
