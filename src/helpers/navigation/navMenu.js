@@ -50,7 +50,7 @@ export function clearBottomNavbar() {
  * @pseudocode
  * 1. Exit early if the device is not in landscape orientation.
  * 2. Select the `.bottom-navbar` element and exit early if not found.
- * 3. Create a map view with clickable tiles for game modes.
+ * 3. Create a map view with anchor tiles for game modes, applying test ids, order, and hidden class.
  * 4. Add a slide-up animation when the logo is clicked.
  * 5. Hide the map view when the logo is clicked again.
  *
@@ -75,10 +75,17 @@ export function toggleExpandedMapView(gameModes) {
   mapView.innerHTML = validModes
     .map(
       (mode) =>
-        `<div class="map-tile">
+        `<a
+          href="${BASE_PATH}${mode.url}"
+          aria-label="${mode.name}"
+          data-tooltip-id="nav.${navTooltipKey(mode.name)}"
+          data-testid="nav-${mode.id}"
+          style="order: ${mode.order}"
+          class="map-tile${mode.isHidden ? " hidden" : ""}"
+        >
           <img src="${mode.image}" alt="${mode.name}" loading="lazy">
-          <a href="${BASE_PATH}${mode.url}" aria-label="${mode.name}" data-tooltip-id="nav.${navTooltipKey(mode.name)}">${mode.name}</a>
-        </div>`
+          ${mode.name}
+        </a>`
     )
     .join("");
 
@@ -98,7 +105,7 @@ export function toggleExpandedMapView(gameModes) {
  *
  * @pseudocode
  * 1. Exit early if the device is not in portrait orientation.
- * 2. Create a vertical menu with game modes as list items.
+ * 2. Create a vertical menu with anchor items ordered and optionally hidden.
  * 3. Add a slide-down animation when the logo is clicked.
  * 4. Hide the menu when the logo is clicked again.
  *
@@ -117,13 +124,22 @@ export function togglePortraitTextMenu(gameModes) {
 
   const validModes = validateGameModes(gameModes);
 
-  const textMenu = document.createElement("ul");
+  const textMenu = document.createElement("div");
   textMenu.className = "portrait-text-menu";
 
   textMenu.innerHTML = validModes
     .map(
       (mode) =>
-        `<li><a href="${BASE_PATH}${mode.url}" aria-label="${mode.name}" data-tooltip-id="nav.${navTooltipKey(mode.name)}">${mode.name}</a></li>`
+        `<a
+          href="${BASE_PATH}${mode.url}"
+          aria-label="${mode.name}"
+          data-tooltip-id="nav.${navTooltipKey(mode.name)}"
+          data-testid="nav-${mode.id}"
+          style="order: ${mode.order}"
+          class="${mode.isHidden ? "hidden" : ""}"
+        >
+          ${mode.name}
+        </a>`
     )
     .join("");
 
