@@ -35,7 +35,8 @@ function addTouchFeedback() {
  * 3. Clear existing content using `clearBottomNavbar()`.
  * 4. Call `loadMenuModes()` to retrieve active game modes.
  * 5. If none are returned, display "No game modes available".
- * 6. Map the modes to list items and mark the current page link as active.
+ * 6. Map the modes to list items, adding `aria-label` for accessibility, and
+ *    mark the current page link as active.
  * 7. Append the list to the navigation bar and add touch feedback.
  * 8. On error, log the issue and show fallback items.
  *
@@ -66,7 +67,7 @@ export async function populateNavbar() {
         const attrs = isCurrent ? ` class="active" aria-current="page"` : "";
         // Ensure Classic Battle always gets data-testid="nav-1"
         const testId = mode.name === "Classic Battle" || mode.id === 1 ? "nav-1" : `nav-${mode.id}`;
-        return `<li><a href="${href}" data-testid="${testId}" data-tooltip-id="nav.${navTooltipKey(mode.name)}"${attrs}>${mode.name}</a></li>`;
+        return `<li><a href="${href}" aria-label="${mode.name}" data-testid="${testId}" data-tooltip-id="nav.${navTooltipKey(mode.name)}"${attrs}>${mode.name}</a></li>`;
       })
       .join("");
     navBar.appendChild(ul);
@@ -111,7 +112,7 @@ export async function populateNavbar() {
         const isCurrent = linkPath === currentPath || linkPath.endsWith(currentPath);
         const attrs = isCurrent ? ` class="active" aria-current="page"` : "";
         const testId = `nav-${item.id}`;
-        return `<li><a href="${href}" data-testid="${testId}" data-tooltip-id="nav.${navTooltipKey(item.name)}"${attrs}>${item.name}</a></li>`;
+        return `<li><a href="${href}" aria-label="${item.name}" data-testid="${testId}" data-tooltip-id="nav.${navTooltipKey(item.name)}"${attrs}>${item.name}</a></li>`;
       })
       .join("");
     navBar.appendChild(ul);
