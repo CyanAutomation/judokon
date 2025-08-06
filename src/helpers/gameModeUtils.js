@@ -114,9 +114,24 @@ async function loadRawNavigationItems() {
   return data;
 }
 
+/**
+ * Load navigation items merged with game mode data.
+ *
+ * @pseudocode
+ * 1. Retrieve raw navigation items via `loadRawNavigationItems()`.
+ * 2. Retrieve game modes via `loadGameModes()`.
+ * 3. Ensure both results are arrays; throw if validation fails.
+ * 4. Merge each navigation item with its corresponding game mode by `gameModeId`.
+ * 5. Return the merged array.
+ *
+ * @returns {Promise<Array>} Array of merged navigation and game mode objects.
+ */
 export async function loadNavigationItems() {
   const navItems = await loadRawNavigationItems();
   const modes = await loadGameModes();
+  if (!Array.isArray(navItems) || !Array.isArray(modes)) {
+    throw new Error("Invalid navigation or game mode data");
+  }
   return navItems.map((item) => {
     const mode = modes.find((m) => m.id === Number(item.gameModeId)) || {};
     return { ...item, ...mode };
