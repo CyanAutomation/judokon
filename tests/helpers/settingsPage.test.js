@@ -120,23 +120,23 @@ describe("settingsPage module", () => {
     document.dispatchEvent(new Event("DOMContentLoaded"));
     await vi.runAllTimersAsync();
 
-      const container = document.getElementById("game-mode-toggle-container");
-      const checkboxes = container.querySelectorAll("input[type='checkbox']");
-      const labels = container.querySelectorAll("label span");
-      const wrappers = container.querySelectorAll(".settings-item");
-      expect(checkboxes).toHaveLength(3);
-      expect(container.querySelector("#mode-1")).toBeTruthy();
-      expect(container.querySelector("#mode-3")).toBeTruthy();
-      expect(container.querySelector("#mode-2")).toBeTruthy();
-      expect(labels[0].textContent).toBe("Classic");
-      expect(labels[1].textContent).toBe("Blitz");
-      expect(labels[2].textContent).toBe("Dojo");
-      expect(wrappers[0].dataset.category).toBe("mainMenu");
-      expect(wrappers[0].dataset.order).toBe("10");
-      expect(wrappers[1].dataset.category).toBe("bonus");
-      expect(wrappers[1].dataset.order).toBe("20");
-      expect(wrappers[2].dataset.category).toBe("mainMenu");
-      expect(wrappers[2].dataset.order).toBe("30");
+    const container = document.getElementById("game-mode-toggle-container");
+    const checkboxes = container.querySelectorAll("input[type='checkbox']");
+    const labels = container.querySelectorAll("label span");
+    const wrappers = container.querySelectorAll(".settings-item");
+    expect(checkboxes).toHaveLength(3);
+    expect(container.querySelector("#mode-1")).toBeTruthy();
+    expect(container.querySelector("#mode-3")).toBeTruthy();
+    expect(container.querySelector("#mode-2")).toBeTruthy();
+    expect(labels[0].textContent).toBe("Classic");
+    expect(labels[1].textContent).toBe("Blitz");
+    expect(labels[2].textContent).toBe("Dojo");
+    expect(wrappers[0].dataset.category).toBe("mainMenu");
+    expect(wrappers[0].dataset.order).toBe("10");
+    expect(wrappers[1].dataset.category).toBe("bonus");
+    expect(wrappers[1].dataset.order).toBe("20");
+    expect(wrappers[2].dataset.category).toBe("mainMenu");
+    expect(wrappers[2].dataset.order).toBe("30");
   });
 
   it("checkbox state reflects isHidden when no setting exists", async () => {
