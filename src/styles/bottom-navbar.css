@@ -66,3 +66,7 @@
   background-color: var(--color-secondary);
   color: var(--color-text-inverted);
 }
+
+.bottom-navbar a.hidden {
+  display: none;
+}
