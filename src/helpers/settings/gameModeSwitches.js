@@ -7,7 +7,7 @@ import { showSnackbar } from "../showSnackbar.js";
  * Render game mode toggle switches within the settings page.
  *
  * @pseudocode
- * 1. Sort `gameModes` by `order`, warn on missing `name`, create a toggle for each, and attach debug data attributes.
+ * 1. Sort `gameModes` by `order`, warn on missing `name`, skip malformed entries, create a toggle for each, and attach debug data attributes.
  * 2. When toggled, update navigation visibility via `updateNavigationItemHidden`.
  * 3. Persist the updated `gameModes` setting using `handleUpdate`.
  * 4. Show a snackbar confirming the new mode state.
@@ -24,9 +24,14 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
     const current = getCurrentSettings();
     const currentModes = current.gameModes ?? {};
     const isChecked = Object.hasOwn(currentModes, mode.id) ? currentModes[mode.id] : !mode.isHidden;
-    const label = mode.name ?? mode.id ?? "Unknown mode";
+    let label = mode.name;
     if (!mode.name) {
       console.warn("Game mode missing name", mode);
+      if (!mode.id) {
+        console.warn("Skipping malformed game mode", mode);
+        return;
+      }
+      label = mode.id;
     }
     const toggle = new ToggleSwitch(label, {
       id: `mode-${mode.id}`,
