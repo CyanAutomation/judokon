@@ -28,7 +28,6 @@ async function getSettingsSchema() {
 }
 
 const SETTINGS_KEY = "settings";
-export let DEFAULT_SETTINGS = {};
 
 let defaultSettingsPromise;
 
@@ -56,11 +55,17 @@ export async function loadDefaultSettings() {
     })();
   }
   const data = await defaultSettingsPromise;
-  if (Object.keys(DEFAULT_SETTINGS).length === 0) {
-    DEFAULT_SETTINGS = data;
-  }
   return { ...data };
 }
+
+/**
+ * Default settings object preloaded during module initialization.
+ *
+ * Ready for immediate use after import.
+ *
+ * @type {Settings}
+ */
+export const DEFAULT_SETTINGS = await loadDefaultSettings();
 
 let saveTimer;
 const SAVE_DELAY_MS = 100;
@@ -70,21 +75,17 @@ const SAVE_DELAY_MS = 100;
  *
  * @pseudocode
  * 1. Call `getSettingsSchema()` to lazily load the schema.
- * 2. Ensure defaults are loaded by invoking `loadDefaultSettings` when `DEFAULT_SETTINGS` is empty.
- * 3. Throw an error if `localStorage` is unavailable.
- * 4. Retrieve the JSON string stored under `SETTINGS_KEY`.
+ * 2. Throw an error if `localStorage` is unavailable.
+ * 3. Retrieve the JSON string stored under `SETTINGS_KEY`.
  *    - When no value exists, return `DEFAULT_SETTINGS`.
- * 5. Parse the JSON and merge with `DEFAULT_SETTINGS`.
- * 6. Validate the merged object with `settingsSchema`.
- * 7. Return the validated settings or throw on failure.
+ * 4. Parse the JSON and merge with `DEFAULT_SETTINGS`.
+ * 5. Validate the merged object with `settingsSchema`.
+ * 6. Return the validated settings or throw on failure.
  *
  * @returns {Promise<Settings>} Resolved settings object.
  */
 export async function loadSettings() {
   await getSettingsSchema();
-  if (!Object.keys(DEFAULT_SETTINGS).length) {
-    await loadDefaultSettings();
-  }
   if (typeof localStorage === "undefined") {
     throw new Error("localStorage unavailable");
   }
@@ -207,5 +208,3 @@ export function resetSettings() {
  *   tooltipId?: string
  * }>} [featureFlags]
  */
-
-await loadDefaultSettings();
