@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 
+const originalLocation = window.location;
+
 function setupDom() {
   const navBar = document.createElement("nav");
   navBar.className = "bottom-navbar";
@@ -14,6 +16,10 @@ afterEach(() => {
   }
   document.body.innerHTML = "";
   vi.resetModules();
+  Object.defineProperty(window, "location", {
+    value: originalLocation,
+    configurable: true
+  });
 });
 
 describe("populateNavbar", () => {
@@ -44,5 +50,27 @@ describe("populateNavbar", () => {
     expect(links[1].style.order).toBe("1");
     expect(links[1].classList.contains("hidden")).toBe(true);
     expect(links[2].classList.contains("hidden")).toBe(true);
+  });
+
+  it("highlights the active link based on pathname", async () => {
+    const navBar = setupDom();
+    const list = navBar.querySelector("ul");
+    list.innerHTML = `
+      <li><a href="/home?x=1"></a></li>
+      <li><a href="/about"></a></li>
+    `;
+
+    Object.defineProperty(window, "location", {
+      value: { href: "https://example.com/home", pathname: "/home" },
+      configurable: true
+    });
+
+    const { highlightActiveLink } = await import("../../src/helpers/navigationBar.js");
+
+    highlightActiveLink();
+
+    const links = navBar.querySelectorAll("a");
+    expect(links[0].classList.contains("active")).toBe(true);
+    expect(links[1].classList.contains("active")).toBe(false);
   });
 });
