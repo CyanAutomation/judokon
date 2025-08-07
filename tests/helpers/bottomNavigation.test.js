@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 
 function setupDom() {
-  const navBar = document.createElement("div");
+  const navBar = document.createElement("nav");
   navBar.className = "bottom-navbar";
+  navBar.innerHTML = "<ul></ul>";
   document.body.appendChild(navBar);
   return navBar;
 }
@@ -18,10 +19,11 @@ afterEach(() => {
 describe("populateNavbar", () => {
   it("applies order and visibility from navigation data", async () => {
     const navBar = setupDom();
-    navBar.innerHTML = `
-      <a data-testid="nav-1"></a>
-      <a data-testid="nav-2"></a>
-      <a data-testid="nav-3"></a>
+    const list = navBar.querySelector("ul");
+    list.innerHTML = `
+      <li><a data-testid="nav-1"></a></li>
+      <li><a data-testid="nav-2"></a></li>
+      <li><a data-testid="nav-3"></a></li>
     `;
 
     vi.mock("../../src/helpers/gameModeUtils.js", () => ({

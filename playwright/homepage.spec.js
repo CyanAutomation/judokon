@@ -47,6 +47,19 @@ test.describe.parallel("Homepage", () => {
     expect(updateOrder).toBeLessThan(randomOrder);
   });
 
+  test("hamburger menu toggles navigation on narrow screens", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.reload();
+    await page.waitForSelector(".bottom-navbar .nav-toggle");
+    const toggle = page.locator(".bottom-navbar .nav-toggle");
+    const list = page.locator(".bottom-navbar ul");
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(list).not.toHaveClass(/expanded/);
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(list).toHaveClass(/expanded/);
+  });
+
   test("view judoka link navigates", async ({ page }) => {
     await page.getByTestId(NAV_RANDOM_JUDOKA).click();
     await expect(page).toHaveURL(/randomJudoka\.html/);
