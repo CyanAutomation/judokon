@@ -36,10 +36,16 @@ export async function startTimer(onExpiredSelect) {
   const restore = !synced ? infoBar.showTemporaryMessage("Waiting…") : () => {};
 
   const onTick = (remaining) => {
-    if (timerEl) timerEl.textContent = `Time Left: ${remaining}s`;
+    if (!timerEl) return;
+    if (remaining <= 0) {
+      infoBar.clearTimer();
+      return;
+    }
+    timerEl.textContent = `Time Left: ${remaining}s`;
   };
 
   const onExpired = async () => {
+    infoBar.clearTimer();
     const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
     infoBar.showMessage(`Time's up! Auto-selecting ${randomStat}`);
     await onExpiredSelect(randomStat);
@@ -100,10 +106,16 @@ export function scheduleNextRound(result, startRoundFn) {
   const timerEl = document.getElementById("next-round-timer");
 
   const onTick = (remaining) => {
-    if (timerEl) timerEl.textContent = `Next round in: ${remaining}s`;
+    if (!timerEl) return;
+    if (remaining <= 0) {
+      infoBar.clearTimer();
+      return;
+    }
+    timerEl.textContent = `Next round in: ${remaining}s`;
   };
 
   const onExpired = () => {
+    infoBar.clearTimer();
     btn.addEventListener("click", onClick, { once: true });
     enableNextRoundButton();
     updateDebugPanel();
