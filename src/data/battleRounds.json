@@ -8,7 +8,7 @@
     "description": "A LOW round count total"
   },
   {
-    "id": 1,
+    "id": 2,
     "skill": 2,
     "value": 10,
     "default": true,
