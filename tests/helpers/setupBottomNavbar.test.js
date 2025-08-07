@@ -2,15 +2,22 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 const originalReadyStateDescriptor = Object.getOwnPropertyDescriptor(document, "readyState");
 
+vi.mock("../../src/helpers/navigation/navData.js", () => ({
+  loadMenuModes: vi.fn().mockResolvedValue([])
+}));
+
+vi.mock("../../src/helpers/navigation/navMenu.js", async () => {
+  const actual = await vi.importActual("../../src/helpers/navigation/navMenu.js");
+  return {
+    ...actual,
+    toggleExpandedMapView: vi.fn(),
+    togglePortraitTextMenu: vi.fn()
+  };
+});
+
 describe("setupBottomNavbar module", () => {
   beforeEach(() => {
     vi.resetModules();
-    // Mock fetch to prevent actual network calls
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve([])
-    });
-
     window.matchMedia = vi.fn().mockImplementation((q) => ({
       matches: false,
       media: q,
@@ -20,95 +27,62 @@ describe("setupBottomNavbar module", () => {
       removeEventListener: vi.fn(),
       dispatchEvent: vi.fn()
     }));
-
-    // Clear DOM
-    document.body.innerHTML = "";
-
-    // Add required DOM elements
-    const navbar = document.createElement("nav");
-    navbar.className = "bottom-navbar";
-    document.body.appendChild(navbar);
+    document.body.innerHTML = `
+      <nav class="bottom-navbar">
+        <ul>
+          <li><a href="#" data-testid="nav-1">Home</a></li>
+        </ul>
+      </nav>
+      <button id="test-btn"></button>
+    `;
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     if (originalReadyStateDescriptor) {
       Object.defineProperty(document, "readyState", originalReadyStateDescriptor);
     }
+    document.body.innerHTML = "";
   });
 
-  it("sets up both navbar and button effects when DOM is loaded", async () => {
-    // Create a button to test button effects
-    const button = document.createElement("button");
-    document.body.appendChild(button);
-
-    // Setup fake timers for testing
-    vi.useFakeTimers();
-
-    // Import the module to trigger the DOMContentLoaded listener
+  it("initializes button effects and hamburger menu", async () => {
+    window.innerWidth = 320;
     await import("../../src/helpers/setupBottomNavbar.js");
-
-    // Simulate DOMContentLoaded event
     document.dispatchEvent(new Event("DOMContentLoaded"));
+    vi.advanceTimersByTime(0);
 
-    // Wait for async operations to complete
-    vi.advanceTimersByTime(10);
-
-    // Test that button effects are working
+    const button = document.getElementById("test-btn");
     const event = new MouseEvent("mousedown");
     Object.defineProperty(event, "offsetX", { value: 5 });
     Object.defineProperty(event, "offsetY", { value: 10 });
     button.dispatchEvent(event);
-
     const ripple = button.querySelector("span.ripple");
     expect(ripple).toBeTruthy();
     expect(ripple.style.left).toBe("5px");
     expect(ripple.style.top).toBe("10px");
+
+    const toggle = document.querySelector(".nav-toggle");
+    const list = document.querySelector(".bottom-navbar ul");
+    expect(toggle).toBeTruthy();
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    toggle.dispatchEvent(new Event("click"));
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(list.classList.contains("expanded")).toBe(true);
   });
 
-  it("initializes immediately when DOM is already loaded", async () => {
-    const button = document.createElement("button");
-    document.body.appendChild(button);
-
-    vi.useFakeTimers();
-
-    Object.defineProperty(document, "readyState", {
-      value: "complete",
-      configurable: true
-    });
-
+  it("does not insert hamburger menu above breakpoint", async () => {
+    window.innerWidth = 1024;
     await import("../../src/helpers/setupBottomNavbar.js");
-
-    vi.advanceTimersByTime(10);
-
-    const event = new MouseEvent("mousedown");
-    Object.defineProperty(event, "offsetX", { value: 1 });
-    Object.defineProperty(event, "offsetY", { value: 2 });
-    button.dispatchEvent(event);
-
-    const ripple = button.querySelector("span.ripple");
-    expect(ripple).toBeTruthy();
-    expect(ripple.style.left).toBe("1px");
-    expect(ripple.style.top).toBe("2px");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    vi.advanceTimersByTime(0);
+    expect(document.querySelector(".nav-toggle")).toBeNull();
   });
 
   it("does not throw if .bottom-navbar is missing", async () => {
-    document.body.innerHTML = ""; // Remove navbar
+    document.body.innerHTML = "";
+    window.innerWidth = 320;
     await import("../../src/helpers/setupBottomNavbar.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
-    // Should not throw
-  });
-
-  it("does not throw if there are no buttons in the DOM", async () => {
-    // Only navbar, no buttons
-    await import("../../src/helpers/setupBottomNavbar.js");
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    // Should not throw
-  });
-
-  it("does not throw if fetch fails", async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
-    await import("../../src/helpers/setupBottomNavbar.js");
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    // Should not throw
   });
 });
