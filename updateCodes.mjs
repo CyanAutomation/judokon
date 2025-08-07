@@ -1,25 +1,45 @@
 // updateCodes.mjs
-import fs from "fs";
+import { promises as fs } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { generateCardCode } from "./src/helpers/cardCode.js";
 
-// Resolve __dirname equivalent for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+/**
+ * Update card codes for all judoka entries.
+ *
+ * @pseudocode
+ * 1. Load `judoka.json`.
+ * 2. Generate fallback code from the judoka with id `0`.
+ * 3. For each judoka:
+ *    a. Try to generate a card code.
+ *    b. On failure, log the error and assign the fallback code.
+ * 4. Write the updated list back to `judoka.json`.
+ * 5. Log the result.
+ */
+async function updateCardCodes() {
+  try {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const judokaPath = path.join(__dirname, "src/data/judoka.json");
+    const rawData = await fs.readFile(judokaPath, "utf8");
+    const judokaList = JSON.parse(rawData);
+    const fallbackCode = generateCardCode(judokaList.find((j) => j.id === 0));
 
-// Load judoka.json
-const judokaPath = path.join(__dirname, "src/data/judoka.json");
-const rawData = fs.readFileSync(judokaPath, "utf8");
-const judokaList = JSON.parse(rawData);
+    const updatedJudoka = judokaList.map((j) => {
+      try {
+        return { ...j, cardCode: generateCardCode(j) };
+      } catch (error) {
+        console.error(`Failed to generate card code for judoka id ${j.id}:`, error);
+        return { ...j, cardCode: fallbackCode };
+      }
+    });
 
-// Update each judoka with a generated card code
-const updatedJudoka = judokaList.map((j) => ({
-  ...j,
-  cardCode: generateCardCode(j)
-}));
+    await fs.writeFile(judokaPath, JSON.stringify(updatedJudoka, null, 2), "utf8");
 
-// Write the updated list back to file
-fs.writeFileSync(judokaPath, JSON.stringify(updatedJudoka, null, 2), "utf8");
+    console.log(`✅ Updated ${updatedJudoka.length} judoka card codes in: ${judokaPath}`);
+  } catch (error) {
+    console.error("Failed to update judoka card codes:", error);
+  }
+}
 
-console.log(`✅ Updated ${updatedJudoka.length} judoka card codes in: ${judokaPath}`);
+updateCardCodes();
