@@ -3,15 +3,19 @@
  *
  * @pseudocode
  * 1. Import `loadMenuModes` from `navigation/navData.js`.
- * 2. Import `toggleExpandedMapView` and `togglePortraitTextMenu` from `navigation/navMenu.js`.
+ * 2. Import `toggleExpandedMapView`, `togglePortraitTextMenu`, and `setupHamburgerMenu` from `navigation/navMenu.js`.
  * 3. Import `setupButtonEffects` from `buttonEffects.js`.
  * 4. Import `onDomReady`.
  * 5. Define async `configureBottomNavbar` to load active modes and apply both navigation layouts.
- * 6. Define async `init` to call `setupButtonEffects` then `configureBottomNavbar`.
+ * 6. Define async `init` to call `setupButtonEffects`, `configureBottomNavbar`, and `setupHamburgerMenu`.
  * 7. Use `onDomReady` to invoke `init` with guarded error handling.
  */
 import { loadMenuModes } from "./navigation/navData.js";
-import { toggleExpandedMapView, togglePortraitTextMenu } from "./navigation/navMenu.js";
+import {
+  toggleExpandedMapView,
+  togglePortraitTextMenu,
+  setupHamburgerMenu
+} from "./navigation/navMenu.js";
 import { setupButtonEffects } from "./buttonEffects.js";
 import { onDomReady } from "./domReady.js";
 
@@ -28,6 +32,7 @@ async function configureBottomNavbar() {
 async function init() {
   setupButtonEffects();
   await configureBottomNavbar();
+  setupHamburgerMenu();
 }
 
 onDomReady(() => init().catch(() => {}));
