@@ -75,7 +75,8 @@ export function createBattleStore() {
     quitModal: null,
     statTimeoutId: null,
     autoSelectId: null,
-    compareRaf: 0
+    compareRaf: 0,
+    selectionMade: false
   };
   const quitButton = document.getElementById("quit-match-button");
   if (quitButton) {
@@ -131,6 +132,7 @@ export async function handleReplay(store) {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
 export async function startRound(store) {
+  store.selectionMade = false;
   resetStatButtons();
   disableNextRoundButton();
   const roundResultEl = document.getElementById("round-result");
@@ -160,15 +162,15 @@ export async function startRound(store) {
  * @returns {{message?: string, matchEnded: boolean}}
  */
 export function evaluateRound(store, stat) {
-  const playerContainer = document.getElementById("player-card");
-  const computerContainer = document.getElementById("computer-card");
-  const playerVal = getStatValue(playerContainer, stat);
-  const compVal = getStatValue(computerContainer, stat);
-  const result = engineHandleStatSelection(playerVal, compVal);
+  const playerCard = document.getElementById("player-card");
+  const computerCard = document.getElementById("computer-card");
+  const playerVal = getStatValue(playerCard, stat);
+  const computerVal = getStatValue(computerCard, stat);
+  const result = engineHandleStatSelection(playerVal, computerVal);
   if (result.message) {
     showResult(result.message);
   }
-  showStatComparison(store, stat, playerVal, compVal);
+  showStatComparison(store, stat, playerVal, computerVal);
   syncScoreDisplay();
   updateDebugPanel();
   return result;
@@ -190,6 +192,10 @@ export function evaluateRound(store, stat) {
  * @returns {Promise<{matchEnded: boolean}>}
  */
 export async function handleStatSelection(store, stat) {
+  if (store.selectionMade) {
+    return { matchEnded: false };
+  }
+  store.selectionMade = true;
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   const clearWaitingMessage = infoBar.showTemporaryMessage("Waiting…");
@@ -318,6 +324,7 @@ export function _resetForTest(store) {
   clearTimeout(store.autoSelectId);
   store.statTimeoutId = null;
   store.autoSelectId = null;
+  store.selectionMade = false;
   cancelAnimationFrame(store.compareRaf);
   store.compareRaf = 0;
   const timerEl = document.getElementById("next-round-timer");

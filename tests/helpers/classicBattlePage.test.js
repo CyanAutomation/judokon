@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createBattleHeader } from "../utils/testUtils.js";
 
 beforeEach(() => {
   document.body.innerHTML = "";
@@ -154,7 +155,9 @@ describe("classicBattlePage simulated opponent mode", () => {
     const btn = document.createElement("button");
     btn.dataset.stat = "power";
     container.appendChild(btn);
-    document.body.appendChild(container);
+    const next = document.createElement("button");
+    next.id = "next-round-button";
+    document.body.append(container, next);
 
     const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
     await setupClassicBattlePage();
@@ -163,6 +166,7 @@ describe("classicBattlePage simulated opponent mode", () => {
     expect(handleStatSelection).toHaveBeenCalledWith(store, "power");
     const calls = handleStatSelection.mock.calls.length;
     btn.dispatchEvent(new Event("click", { bubbles: true }));
+    next.dispatchEvent(new Event("click", { bubbles: true }));
     expect(handleStatSelection).toHaveBeenCalledTimes(calls);
     expect(btn.disabled).toBe(true);
   });
@@ -305,5 +309,44 @@ describe("classicBattlePage test mode flag", () => {
 
     expect(battleArea.dataset.testMode).toBe("true");
     expect(banner.classList.contains("hidden")).toBe(false);
+  });
+});
+
+describe("syncScoreDisplay", () => {
+  it("keeps scoreboard and summary in sync", async () => {
+    window.matchMedia = () => ({ matches: true, addListener() {}, removeListener() {} });
+    const header = createBattleHeader();
+    const panel = document.createElement("div");
+    panel.id = "summary-panel";
+    const msg = document.createElement("p");
+    msg.id = "summary-message";
+    const score = document.createElement("p");
+    score.id = "summary-score";
+    panel.append(msg, score);
+    document.body.append(header, panel);
+
+    const getScores = vi
+      .fn()
+      .mockReturnValueOnce({ playerScore: 1, computerScore: 2 })
+      .mockReturnValueOnce({ playerScore: 3, computerScore: 4 });
+    vi.doMock("../../src/helpers/battleEngine.js", () => ({ getScores }));
+
+    const { syncScoreDisplay, showSummary } = await import(
+      "../../src/helpers/classicBattle/uiService.js"
+    );
+
+    syncScoreDisplay();
+    showSummary({ message: "", playerScore: 1, computerScore: 2 });
+    let board = document.getElementById("score-display").textContent;
+    let summary = document.getElementById("summary-score").textContent;
+    let match = board.match(/You: (\d+)\nOpponent: (\d+)/);
+    expect(summary).toBe(`Final Score – You: ${match[1]} Opponent: ${match[2]}`);
+
+    syncScoreDisplay();
+    showSummary({ message: "", playerScore: 3, computerScore: 4 });
+    board = document.getElementById("score-display").textContent;
+    summary = document.getElementById("summary-score").textContent;
+    match = board.match(/You: (\d+)\nOpponent: (\d+)/);
+    expect(summary).toBe(`Final Score – You: ${match[1]} Opponent: ${match[2]}`);
   });
 });
