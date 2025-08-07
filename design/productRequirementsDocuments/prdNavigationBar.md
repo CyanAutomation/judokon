@@ -61,19 +61,20 @@ The bottom navigation bar appears consistently across all game screens, populate
 ### Standard Mode (Default View)
 
 - Navigation links are laid out in a horizontal row.
+- Each navigation item occupies **equal width**, keeping touch targets balanced across the bar.
 - A bottom-left corner **ju-do-kon!** logo acts as an interactive button.
 - Tapping the logo reveals a vertically unrolled text menu listing the available game modes (functions in both landscape and portrait orientation).
 - Links and labels scale responsively with screen size.
 
 ### Portrait Mode
 
-- In portrait orientation, the navigation collapses into just the logo.
-- Tapping the logo reveals a vertically unrolled text menu listing the available game modes (functions in both landscape and portrait orientation).
+- In portrait orientation, or on screens narrower than **480px**, the horizontal row collapses into a **hamburger button** in the bottom left corner.
+- Tapping the hamburger reveals a vertically unrolled text menu listing the available game modes (functions in both landscape and portrait orientation).
 
 ### Flow
 
 - After any activity, the persistent nav bar is visible.
-- In portrait view only the logo shows; tapping it expands the text list.
+- On small screens or portrait orientation, only the hamburger button shows; tapping it expands the text list.
 - Player selects a mode and is taken to that screen.
 - If `navigationItems.json` fails, revert to a default order and auto-reload.
 
@@ -97,7 +98,7 @@ The bottom navigation bar appears consistently across all game screens, populate
 ## Wireframes / Visual Reference
 
 - **Default Mode**: Horizontal navigation bar with clickable links and a bottom-left corner ju-do-kon logo. A simplified vertical text list expands on logo tap. _(Visual reference to be attached.)_
-- **Portrait Mode**: A simplified vertical text list expands on logo tap.
+- **Portrait Mode**: A hamburger button in the bottom left expands a simplified vertical text list.
 
 ---
 
@@ -105,10 +106,10 @@ The bottom navigation bar appears consistently across all game screens, populate
 
 | Priority | Feature                | Description                                                                                                       |
 | :------: | :--------------------- | :---------------------------------------------------------------------------------------------------------------- |
-|  **P1**  | Standard Nav Bar       | Fixed horizontal navigation pinned to the bottom of the viewport with scalable links and bottom-left corner logo. |
-|  **P2**  | Portrait Text Menu     | Text-based vertical menu expansion on logo click for portrait and landscape (collapsed) orientation.              |
-|  **P2**  | Small Screens Support  | Adjust text menu for screens as small as 320px — scale font and spacing.                                          |
-|  **P2**  | Visual Feedback        | Positive click/tap feedback animation for all links and buttons.                                                  |
+|  **P1**  | Standard Nav Bar       | Fixed horizontal navigation pinned to the bottom of the viewport with scalable, equal-width links and a bottom-left corner logo. |
+|  **P2**  | Portrait Text Menu     | Text-based vertical menu expansion on button click for portrait and landscape (collapsed) orientation.              |
+|  **P2**  | Small Screens Support  | Row collapses to a hamburger menu and adjusts for screens as small as 320px — scale font and spacing.                                |
+|  **P2**  | Visual Feedback        | Positive click/tap feedback animation for all links and buttons.                                |
 |  **P1**  | Fallback Data Handling | Hardcoded default order and visibility if `navigationItems.json` fails to load.                                |
 
 ---
@@ -118,10 +119,11 @@ The bottom navigation bar appears consistently across all game screens, populate
 - Touch targets maintain **≥44px** size across all device resolutions (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 - Navigation is visible on **100%** of game screens.
 - Standard nav bar shows pre-seeded links whose visibility and order are driven by `navigationItems.json` via CSS.
-- Portrait mode initially shows only the logo in the bottom left corner (no links in the navigation bar); tapping reveals a vertical list.
+- Each link in the horizontal layout spans equal width to keep the bar balanced.
+- On screens <**480px** the bar collapses into a hamburger button; tapping reveals a vertical list.
 - The function of tapping the icon in the bottom left corner works in landscape or portrait mode.
 - Clicking a link navigates successfully to the intended screen.
-- Tapping the logo toggles expansion/collapse.
+- Tapping the bottom-left button toggles expansion/collapse.
 - If `navigationItems.json` fails, apply a hardcoded default order within **<2 seconds**.
 - Show notification and auto-reload if mid-session loading fails.
 - Smooth re-layout during device rotation mid-animation, with transition completion time **<500ms**.
@@ -156,6 +158,8 @@ The standard navbar uses `--color-secondary` for its background and `--button-te
 ### Responsiveness
 
 - Layout adapts to screen widths from **320px to 2560px**.
+- Equal-width links ensure buttons remain evenly spaced at all sizes.
+- Below **480px**, the row collapses into a hamburger button to conserve space.
 
 ### Interaction Feedback
 
