@@ -341,6 +341,7 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
   - Mobile-first
   - Desktop-focused layout enhancements
   - Tablet scaling
+- Navigation bars and similar button rows should distribute items with equal width and collapse into a hamburger menu on viewports narrower than 480px.
 
 ---
 
