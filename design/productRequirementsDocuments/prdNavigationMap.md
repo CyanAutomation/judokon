@@ -51,6 +51,7 @@ Currently, the menu is purely functional but lacks the thematic cohesion that dr
 - **Cancel/Back Out:** Tapping outside the map area or pressing the map icon button again collapses the map. If device orientation changes mid-animation, the expansion is canceled and reverts to the default footer state.
 - **Fallback:** If the map fails to load, a simplified, high-contrast text menu appears instantly.
 - **Responsiveness:** If viewport height <400px or width <640px, hide the map icon entirely. Map and tiles dynamically resize based on screen size and resolution. Animations must maintain 60fps on devices.
+- Map icon and tiles must follow [Navigation Bar](prdNavigationBar.md) hover and active state guidelines.
 
 ---
 

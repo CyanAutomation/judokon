@@ -110,6 +110,7 @@ The bottom navigation bar appears consistently across all game screens, populate
 |  **P2**  | Portrait Text Menu     | Text-based vertical menu expansion on button click for portrait and landscape (collapsed) orientation.              |
 |  **P2**  | Small Screens Support  | Row collapses to a hamburger menu and adjusts for screens as small as 320px — scale font and spacing.                                |
 |  **P2**  | Visual Feedback        | Positive click/tap feedback animation for all links and buttons.                                |
+|  **P1**  | Hover & Active States  | Distinct hover feedback and a persistent active state indicate the current screen. |
 |  **P1**  | Fallback Data Handling | Hardcoded default order and visibility if `navigationItems.json` fails to load.                                |
 
 ---
@@ -120,6 +121,8 @@ The bottom navigation bar appears consistently across all game screens, populate
 - Navigation is visible on **100%** of game screens.
 - Standard nav bar shows pre-seeded links whose visibility and order are driven by `navigationItems.json` via CSS.
 - Each link in the horizontal layout spans equal width to keep the bar balanced.
+- Each navigation button shows a distinct hover state on pointer devices.
+- The navigation button for the current screen remains visibly active.
 - On screens <**480px** the bar collapses into a hamburger button; tapping reveals a vertical list.
 - The function of tapping the icon in the bottom left corner works in landscape or portrait mode.
 - Clicking a link navigates successfully to the intended screen.

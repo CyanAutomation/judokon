@@ -342,6 +342,8 @@ Each **game mode or feature area** is assigned a **unique dominant colour**, cre
   - Desktop-focused layout enhancements
   - Tablet scaling
 - Navigation bars and similar button rows should distribute items with equal width and collapse into a hamburger menu on viewports narrower than 480px.
+- Navigation elements must show a distinct hover state.
+- The active or selected navigation element should remain visibly highlighted to indicate the current screen.
 
 ---
 
