@@ -69,6 +69,10 @@ AI agents should begin by reading:
 - ✅ Validate stat blocks against rarity rules
 - ✅ Generate or evaluate PRDs for new features
 
+## 🔄 Updating Judoka Card Codes
+
+Run `npm run update:codes` whenever you add or edit judoka in `src/data/judoka.json`. The script regenerates the `cardCode` for each entry and falls back to the code from judoka `id=0` if generation fails.
+
 ---
 
 ## 📎 Related Docs for Agents

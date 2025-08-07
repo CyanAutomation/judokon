@@ -229,9 +229,9 @@ F7KP-WQ9M-ZD23-HYTR
   - [x] 1.4 Map encoded string to 32-character readable alphabet.
   - [x] 1.5 Format string into chunks of 4 characters with hyphens.
   - [x] 1.6 Return the final formatted code.
-  - [ ] 1.7 Save the generated code into `judoka.json`.
+  - [x] 1.7 Save the generated code into `judoka.json`.
 - [ ] 2.0 Error Handling and Edge Cases
-  - [ ] 2.1 Fallback to a generic card code (judoka id=0) if encoding fails.
+  - [x] 2.1 Fallback to a generic card code (judoka id=0) if encoding fails. ([tests/helpers/cardCode.test.js](../../tests/helpers/cardCode.test.js))
   - [ ] 2.2 Handle unusually large string input safely.
 - [ ] 3.0 Unit Tests
   - [x] 3.1 Test valid Judoka object produces correct code format.
