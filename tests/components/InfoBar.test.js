@@ -63,7 +63,7 @@ describe("InfoBar component", () => {
     timer.advanceTimersByTime(1000);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 1s");
     timer.advanceTimersByTime(1000);
-    expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 0s");
+    expect(document.getElementById("next-round-timer").textContent).toBe("");
     timer.clearAllTimers();
   });
 
@@ -91,7 +91,7 @@ describe("InfoBar component", () => {
     startCountdown(1);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 1s");
     timer.advanceTimersByTime(1000);
-    expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 0s");
+    expect(document.getElementById("next-round-timer").textContent).toBe("");
     timer.clearAllTimers();
   });
 });

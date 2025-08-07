@@ -181,7 +181,7 @@ export function evaluateRound(store, stat) {
  *
  * @pseudocode
  * 1. Clear any pending timeouts.
- * 2. Show "Waiting…" in the info bar.
+ * 2. Clear the countdown and show "Opponent is choosing…" in the info bar.
  * 3. After a short delay, reveal the opponent card and evaluate the round.
  * 4. Reset stat buttons and schedule the next round.
  * 5. If the match ended, show the summary panel.
@@ -198,12 +198,12 @@ export async function handleStatSelection(store, stat) {
   store.selectionMade = true;
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
-  const clearWaitingMessage = infoBar.showTemporaryMessage("Waiting…");
+  infoBar.clearTimer();
+  infoBar.showMessage("Opponent is choosing…");
   const delay = 300 + Math.floor(Math.random() * 401);
   return new Promise((resolve) => {
     setTimeout(async () => {
       await revealComputerCard();
-      clearWaitingMessage();
       const result = evaluateRound(store, stat);
       resetStatButtons();
       scheduleNextRound(result, getStartRound(store));

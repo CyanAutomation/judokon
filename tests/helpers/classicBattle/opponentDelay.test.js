@@ -6,6 +6,7 @@ vi.mock("../../../src/helpers/motionUtils.js", () => ({
 
 let showMessage;
 let clearMessage;
+let clearTimer;
 let scheduleNextRound;
 let revealComputerCard;
 let resetStatButtons;
@@ -16,6 +17,7 @@ beforeEach(() => {
   vi.stubGlobal("document", { getElementById: () => null });
   showMessage = vi.fn();
   clearMessage = vi.fn();
+  clearTimer = vi.fn();
   scheduleNextRound = vi.fn();
   revealComputerCard = vi.fn();
   resetStatButtons = vi.fn();
@@ -24,10 +26,7 @@ beforeEach(() => {
   vi.mock("../../../src/helpers/setupBattleInfoBar.js", () => ({
     showMessage,
     clearMessage,
-    showTemporaryMessage: vi.fn((msg) => {
-      showMessage(msg);
-      return clearMessage;
-    }),
+    clearTimer,
     updateScore: vi.fn(),
     startCountdown: vi.fn()
   }));
@@ -69,17 +68,14 @@ describe("classicBattle opponent delay", () => {
 
     const promise = mod.handleStatSelection(store, mod.simulateOpponentStat());
 
-    expect(showMessage).toHaveBeenCalledWith("Waiting…");
-    expect(clearMessage).not.toHaveBeenCalled();
+    expect(showMessage).toHaveBeenCalledWith("Opponent is choosing…");
 
     await vi.advanceTimersByTimeAsync(299);
     expect(scheduleNextRound).not.toHaveBeenCalled();
-    expect(clearMessage).not.toHaveBeenCalled();
 
     await vi.advanceTimersByTimeAsync(402);
     await promise;
     expect(scheduleNextRound).toHaveBeenCalled();
-    expect(clearMessage).toHaveBeenCalled();
     timer.clearAllTimers();
   });
 });

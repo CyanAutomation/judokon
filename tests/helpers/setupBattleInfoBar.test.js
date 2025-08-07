@@ -44,7 +44,7 @@ describe("setupBattleInfoBar", () => {
     mod.startCountdown(1);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 1s");
     await vi.advanceTimersByTimeAsync(1000);
-    expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 0s");
+    expect(document.getElementById("next-round-timer").textContent).toBe("");
   });
 
   it("initializes immediately when DOM already loaded", async () => {
@@ -73,6 +73,6 @@ describe("setupBattleInfoBar", () => {
     mod.startCountdown(1);
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 1s");
     await vi.advanceTimersByTimeAsync(1000);
-    expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 0s");
+    expect(document.getElementById("next-round-timer").textContent).toBe("");
   });
 });

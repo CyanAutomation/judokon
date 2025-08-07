@@ -153,6 +153,18 @@ export function showTemporaryMessage(text) {
 }
 
 /**
+ * Clear the countdown display.
+ *
+ * @pseudocode
+ * 1. If the timer element exists, set its text content to an empty string.
+ */
+export function clearTimer() {
+  if (timerEl) {
+    timerEl.textContent = "";
+  }
+}
+
+/**
  * Start a countdown timer that monitors for drift and displays a fallback when
  * desynchronization occurs.
  *
@@ -160,7 +172,7 @@ export function showTemporaryMessage(text) {
  * 1. Use `startCoolDown` to update the timer each second.
  * 2. Monitor for drift via `watchForDrift`; on drift, show "Waiting…" and
  *    restart the countdown, giving up after several retries.
- * 3. When the timer expires, stop monitoring and invoke `onFinish`.
+ * 3. When the timer expires, stop monitoring, clear the display, and invoke `onFinish`.
  *
  * @param {number} seconds - Seconds to count down from.
  * @param {Function} [onFinish] - Optional callback when countdown ends.
@@ -170,12 +182,17 @@ export function startCountdown(seconds, onFinish) {
   if (!timerEl) return;
 
   const onTick = (remaining) => {
+    if (remaining <= 0) {
+      clearTimer();
+      return;
+    }
     timerEl.textContent = `Next round in: ${remaining}s`;
   };
 
   let stopWatch;
   const onExpired = () => {
     if (stopWatch) stopWatch();
+    clearTimer();
     if (typeof onFinish === "function") onFinish();
   };
 
