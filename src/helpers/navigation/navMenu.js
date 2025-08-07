@@ -142,7 +142,7 @@ export function togglePortraitTextMenu(gameModes) {
           data-tooltip-id="nav.${navTooltipKey(mode.name)}"
           data-testid="nav-${mode.id}"
           style="order: ${mode.order}"
-          class="${mode.isHidden ? "hidden" : ""}"
+          class="text-menu-item${mode.isHidden ? " hidden" : ""}"
         >
           ${mode.name}
         </a>`
