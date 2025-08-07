@@ -16,7 +16,8 @@
     "prepare": "husky install",
     "validate:data": "node scripts/validateData.js",
     "generate:embeddings": "node --max-old-space-size=8192 scripts/generateEmbeddings.js",
-    "pretest": "node scripts/generatePrdIndex.js"
+    "pretest": "node scripts/generatePrdIndex.js",
+    "update:codes": "node updateCodes.mjs"
   },
   "keywords": [],
   "author": "",
