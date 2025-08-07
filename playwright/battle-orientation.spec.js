@@ -34,6 +34,16 @@ test.describe.parallel(
   () => {
     test.skip(!runScreenshots);
 
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(() => {
+        Math.random = () => 0.42;
+        localStorage.setItem(
+          "settings",
+          JSON.stringify({ featureFlags: { enableTestMode: true } })
+        );
+      });
+    });
+
     test("captures portrait and landscape headers", async ({ page }) => {
       await page.addInitScript(() => {
         window.startCountdownOverride = () => {};
