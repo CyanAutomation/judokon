@@ -1,6 +1,27 @@
 import { loadNavigationItems } from "./gameModeUtils.js";
 
 /**
+ * Highlight the navigation link matching the current location.
+ *
+ * @pseudocode
+ * 1. Guard: return if `document` or `window` is undefined.
+ * 2. Select all `.bottom-navbar a` elements.
+ * 3. Resolve each link's `href` with `new URL()`.
+ * 4. Compare `URL.pathname` with `window.location.pathname`.
+ * 5. Toggle the `active` class on match.
+ */
+export function highlightActiveLink() {
+  if (typeof document === "undefined" || typeof window === "undefined") return;
+  const links = document.querySelectorAll(".bottom-navbar a");
+  const current = window.location.pathname;
+  links.forEach((link) => {
+    const href = link.getAttribute("href") || "";
+    const resolved = new URL(href, window.location.href);
+    link.classList.toggle("active", resolved.pathname === current);
+  });
+}
+
+/**
  * Adds touch feedback animations to navigation links.
  *
  * @pseudocode
@@ -63,6 +84,7 @@ export async function populateNavbar() {
     });
 
     addTouchFeedback();
+    highlightActiveLink();
   } catch (error) {
     console.error("Error applying navigation items:", error);
   }

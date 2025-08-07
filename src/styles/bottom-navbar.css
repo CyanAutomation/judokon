@@ -70,6 +70,7 @@
 .bottom-navbar a.active {
   background-color: var(--color-secondary);
   color: var(--color-text-inverted);
+  border-top: 3px solid var(--color-primary);
 }
 
 .bottom-navbar a.hidden {
