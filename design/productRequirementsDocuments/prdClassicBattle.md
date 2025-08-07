@@ -131,6 +131,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 - Use consistent color coding for player (blue) vs opponent (red) as shown in attached mockups.
 - Display clear, large call-to-action text for "Choose an attribute to challenge!" to guide new players.
+- When a player selects a stat, surface a snackbar via [showSnackbar.js](../../src/helpers/showSnackbar.js) reading `You Picked: <stat>` (e.g., `You Picked: Power`) so tests can confirm the feedback.
 - Provide a quit confirmation when the player clicks the logo in the header to return to the Home screen.
   - Match screens should follow the style and layouts demonstrated in shared mockups:
   - Player and opponent cards side-by-side.
