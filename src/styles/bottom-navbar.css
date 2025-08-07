@@ -75,3 +75,29 @@
 .bottom-navbar a.hidden {
   display: none;
 }
+
+.bottom-navbar .nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--button-text-color);
+  font-size: 2rem;
+  cursor: pointer;
+  min-width: var(--touch-target-size);
+  min-height: var(--touch-target-size);
+}
+
+@media (max-width: 480px) {
+  .bottom-navbar .nav-toggle {
+    display: block;
+  }
+
+  .bottom-navbar ul {
+    display: none;
+    flex-direction: column;
+  }
+
+  .bottom-navbar ul.expanded {
+    display: flex;
+  }
+}

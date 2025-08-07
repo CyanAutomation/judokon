@@ -153,3 +153,56 @@ export function togglePortraitTextMenu(gameModes) {
       : "slide-up 500ms ease-in-out";
   });
 }
+
+/**
+ * Initialize a hamburger toggle for narrow viewports.
+ *
+ * @pseudocode
+ * 1. Select the `.bottom-navbar` and its `<ul>`; exit if either is missing.
+ * 2. Create a button with `aria-expanded="false"` linked to the list via `aria-controls`.
+ * 3. Define `update()` to insert the button and hide the list when the width is below the breakpoint; otherwise remove the button.
+ * 4. Define `toggle()` to flip `aria-expanded` and the `.expanded` class on the list.
+ * 5. Attach `click` and `resize` listeners and invoke `update()` once.
+ *
+ * @param {number} [breakpoint=480] - Maximum width to show the hamburger menu.
+ */
+export function setupHamburgerMenu(breakpoint = 480) {
+  const navBar = document.querySelector(".bottom-navbar");
+  const list = navBar?.querySelector("ul");
+  if (!navBar || !list) return;
+
+  const id = list.id || "bottom-nav-menu";
+  list.id = id;
+
+  const button = document.createElement("button");
+  button.className = "nav-toggle";
+  button.setAttribute("aria-expanded", "false");
+  button.setAttribute("aria-controls", id);
+  button.setAttribute("aria-label", "Menu");
+  button.innerHTML = "\u2630"; // ☰
+
+  const toggle = () => {
+    const expanded = button.getAttribute("aria-expanded") === "true";
+    button.setAttribute("aria-expanded", String(!expanded));
+    list.classList.toggle("expanded", !expanded);
+  };
+
+  button.addEventListener("click", toggle);
+
+  const update = () => {
+    if (window.innerWidth < breakpoint) {
+      if (!navBar.contains(button)) {
+        navBar.insertBefore(button, list);
+      }
+      button.setAttribute("aria-expanded", "false");
+      list.classList.remove("expanded");
+    } else if (navBar.contains(button)) {
+      button.remove();
+      list.classList.remove("expanded");
+      button.setAttribute("aria-expanded", "false");
+    }
+  };
+
+  window.addEventListener("resize", update);
+  update();
+}
