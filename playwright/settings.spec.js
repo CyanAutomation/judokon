@@ -8,6 +8,10 @@ import {
   NAV_RANDOM_JUDOKA
 } from "./fixtures/navigationChecks.js";
 
+const NAV_ITEMS = JSON.parse(fs.readFileSync("tests/fixtures/navigationItems.json", "utf8"));
+const GAME_MODES = JSON.parse(fs.readFileSync("tests/fixtures/gameModes.json", "utf8"));
+const TOOLTIP_DATA = JSON.parse(fs.readFileSync("src/data/tooltips.json", "utf8"));
+
 test.describe.parallel("Settings page", () => {
   test.beforeEach(async ({ page }) => {
     await page.route("**/src/data/navigationItems.json", (route) =>
@@ -54,20 +58,14 @@ test.describe.parallel("Settings page", () => {
 
   test("controls expose correct labels and follow tab order", async ({ page }) => {
     await page.getByRole("checkbox", { name: "Classic Battle" }).waitFor({ state: "attached" });
-
-    const navItems = JSON.parse(fs.readFileSync("tests/fixtures/navigationItems.json", "utf8"));
-    const gameModes = JSON.parse(fs.readFileSync("tests/fixtures/gameModes.json", "utf8"));
-
-    const sortedNames = navItems
-      .slice()
+    const sortedNames = NAV_ITEMS.slice()
       .sort((a, b) => a.order - b.order)
-      .map((item) => gameModes.find((m) => m.id === item.gameModeId)?.name)
+      .map((item) => GAME_MODES.find((m) => m.id === item.gameModeId)?.name)
       .filter(Boolean);
 
-    const tooltips = JSON.parse(fs.readFileSync("src/data/tooltips.json", "utf8"));
     const flagLabels = Object.keys(DEFAULT_SETTINGS.featureFlags)
       .filter((flag) => DEFAULT_SETTINGS.featureFlags[flag].enabled)
-      .map((flag) => tooltips.settings?.[flag]?.label)
+      .map((flag) => TOOLTIP_DATA.settings?.[flag]?.label)
       .filter(Boolean);
 
     const expectedLabels = [
