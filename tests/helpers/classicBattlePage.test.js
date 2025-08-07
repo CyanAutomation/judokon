@@ -17,6 +17,7 @@ describe("classicBattlePage keyboard navigation", () => {
     });
     const initTooltips = vi.fn().mockResolvedValue();
     const setTestMode = vi.fn();
+    const showSnackbar = vi.fn();
 
     vi.doMock("../../src/helpers/classicBattle.js", () => ({
       createBattleStore: () => store,
@@ -28,6 +29,7 @@ describe("classicBattlePage keyboard navigation", () => {
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
     vi.doMock("../../src/helpers/stats.js", () => ({
       loadStatNames: async () => [{ name: "Power" }, { name: "Speed" }]
     }));
@@ -47,6 +49,7 @@ describe("classicBattlePage keyboard navigation", () => {
     const [first, second] = container.querySelectorAll("button");
     first.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     expect(handleStatSelection).toHaveBeenCalledWith(store, "power");
+    expect(showSnackbar).toHaveBeenCalledWith("You Picked: Power");
 
     // re-enable buttons for second key simulation
     container.querySelectorAll("button").forEach((b) => {
@@ -54,9 +57,11 @@ describe("classicBattlePage keyboard navigation", () => {
       b.tabIndex = 0;
     });
     handleStatSelection.mockClear();
+    showSnackbar.mockClear();
 
     second.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
     expect(handleStatSelection).toHaveBeenCalledWith(store, "speed");
+    expect(showSnackbar).toHaveBeenCalledWith("You Picked: Speed");
   });
 
   it("navigates to Next Round and Quit buttons", async () => {
