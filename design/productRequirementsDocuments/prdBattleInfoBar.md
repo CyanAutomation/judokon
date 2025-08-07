@@ -22,6 +22,7 @@ The round message, timer, and score now sit directly inside the page header rath
    - If awaiting action: show **selection prompt** until a decision is made.
    - If waiting for next round: show **countdown timer** that begins **within 1s** of round end.
    - If in stat selection phase: show **30-second countdown timer** and prompt; if timer expires, auto-select a stat (see [Classic Battle PRD](prdClassicBattle.md)).
+   - After the player picks a stat: show **"Opponent is choosing..."** until the opponent's choice is revealed.
 3. Ensure all messages are clearly readable, positioned responsively, and maintain usability across devices.
 4. Display fallback messages within 500ms of sync failure.
 
@@ -46,9 +47,10 @@ The round message, timer, and score now sit directly inside the page header rath
 
 - Match score is updated within **800ms** after round ends. <!-- Implemented: see updateScore in InfoBar.js and battleEngine.js -->
 - Win/loss message is shown within **1s** of round end and remains visible for **2s**. <!-- Implemented: see showResult in battleUI.js -->
-- Countdown timer begins once the 2s result message fade-out completes, aligned with server round start delay. <!-- Implemented: see startCoolDown in battleEngine.js -->
+- Countdown timer begins only after the 2s result message fades out, aligned with server round start delay. <!-- Implemented: see startCoolDown in battleEngine.js -->
 - Action prompt appears during user input phases and disappears after interaction. <!-- Implemented: see showMessage and stat selection logic -->
-- **Stat selection timer (30s) is displayed during stat selection phase; if timer expires, a random stat is auto-selected. Timer pauses/resumes on tab inactivity.** <!-- Implemented: see startRound in battleEngine.js and [Classic Battle PRD](prdClassicBattle.md) -->
+- **Stat selection timer (30s) is displayed during stat selection phase; if timer expires, a random stat is auto-selected. Timer stops immediately once a stat is picked and pauses/resumes on tab inactivity.** <!-- Implemented: see startRound in battleEngine.js and [Classic Battle PRD](prdClassicBattle.md) -->
+- After the player selects a stat, the Info Bar shows "Opponent is choosing..." until the opponent's stat is revealed.
 - Top bar content adapts responsively to different screen sizes and orientations. <!-- Partially implemented: stacking/truncation CSS present, but some edge cases pending -->
 - All messages meet minimum contrast ratio of **4.5:1** and are screen reader compatible. Run `npm run check:contrast` to audit these colors. <!-- Implemented: screen reader labels via `aria-live` and `role="status"`; contrast via CSS variables -->
 - **All interactive elements, including stat, Next Round, and Quit buttons, meet minimum touch target size (≥44px) and support keyboard navigation with Enter or Space.** <!-- Implemented: see CSS min-width/min-height and stat button logic -->
