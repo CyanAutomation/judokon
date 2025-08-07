@@ -121,7 +121,8 @@ async function loadRawNavigationItems() {
  * 1. Retrieve raw navigation items via `loadRawNavigationItems()`.
  * 2. Retrieve game modes via `loadGameModes()`.
  * 3. Ensure both results are arrays; throw if validation fails.
- * 4. Merge each navigation item with its corresponding game mode by `gameModeId`.
+ * 4. Merge each navigation item with its corresponding game mode by `gameModeId`,
+ *    with navigation item properties taking precedence.
  * 5. Return the merged array.
  *
  * @returns {Promise<Array>} Array of merged navigation and game mode objects.
@@ -134,7 +135,7 @@ export async function loadNavigationItems() {
   }
   return navItems.map((item) => {
     const mode = modes.find((m) => m.id === Number(item.gameModeId)) || {};
-    return { ...item, ...mode };
+    return { ...mode, ...item };
   });
 }
 
@@ -173,7 +174,8 @@ async function saveNavigationItems(items) {
  * 2. Find the item matching `id` and update its `isHidden` property.
  *    - Throw an error if the item is not found.
  * 3. Validate and persist the updated array with `saveNavigationItems()`.
- * 4. Return the merged navigation items.
+ * 4. Return the merged navigation items, ensuring navigation item properties
+ *    override game mode properties.
  *
  * @param {number} id - Identifier of the navigation item to update.
  * @param {boolean} isHidden - New hidden state for the item.
@@ -192,7 +194,7 @@ export async function updateNavigationItemHidden(id, isHidden) {
   const modes = await loadGameModes();
   return items.map((item) => {
     const mode = modes.find((m) => m.id === Number(item.gameModeId)) || {};
-    return { ...item, ...mode };
+    return { ...mode, ...item };
   });
 }
 
