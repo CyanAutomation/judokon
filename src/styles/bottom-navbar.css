@@ -10,6 +10,8 @@
   height: calc(var(--footer-height) + constant(safe-area-inset-bottom));
   height: calc(var(--footer-height) + env(safe-area-inset-bottom));
   display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
   background-color: var(--color-secondary); /* Buttons, highlights */
   text-align: center;
   align-items: center;
@@ -32,6 +34,10 @@
   flex: 1 1 0;
 }
 
+.bottom-navbar ul li a {
+  flex: 1;
+}
+
 .bottom-navbar a,
 .top-navbar a {
   color: var(--button-text-color); /* Adaptive text color */
@@ -47,7 +53,6 @@
   justify-content: center;
   min-width: var(--touch-target-size);
   min-height: var(--touch-target-size);
-  width: 100%;
   text-align: center;
 }
 
