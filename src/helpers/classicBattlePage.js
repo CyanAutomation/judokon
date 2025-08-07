@@ -13,7 +13,8 @@
  * 4. Define `setupClassicBattlePage` to:
  *    a. Load feature flags and set `data-*` attributes on `#battle-area`.
  *    b. Attach click and keyboard listeners on stat buttons that call
- *       `handleStatSelection` when not in simulated opponent mode.
+ *       `handleStatSelection` and display a snackbar with the chosen stat when
+ *       not in simulated opponent mode.
  *    c. Set `window.startRoundOverride` to `startRoundWrapper` so the battle
  *       module uses it for subsequent rounds.
  *    d. Toggle the debug panel and viewport simulation flags.
@@ -40,6 +41,7 @@ import { toggleViewportSimulation } from "./viewportDebug.js";
 import { loadStatNames } from "./stats.js";
 import { STATS } from "./battleEngine.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
+import { showSnackbar } from "./showSnackbar.js";
 
 function enableStatButtons(enable = true) {
   document.querySelectorAll("#stat-buttons button").forEach((btn) => {
@@ -132,6 +134,7 @@ export async function setupClassicBattlePage() {
         if (!btn.disabled) {
           enableStatButtons(false);
           btn.classList.add("selected");
+          showSnackbar(`You Picked: ${btn.textContent}`);
           handleStatSelection(battleStore, btn.dataset.stat);
         }
       });
@@ -140,6 +143,7 @@ export async function setupClassicBattlePage() {
           e.preventDefault();
           enableStatButtons(false);
           btn.classList.add("selected");
+          showSnackbar(`You Picked: ${btn.textContent}`);
           handleStatSelection(battleStore, btn.dataset.stat);
         }
       });
