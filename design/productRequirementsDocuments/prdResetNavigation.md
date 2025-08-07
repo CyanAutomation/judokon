@@ -47,4 +47,5 @@ Users and testers may encounter issues where the navigation bar does not reflect
 
 - Depends on the navigation bar population logic (populateNavbar) and localStorage usage.
 - Relies on the feature flag system for conditional UI display.
+- See [Navigation Bar](prdNavigationBar.md) for hover and active state requirements to ensure UI consistency after cache reset.
 - No known open questions.

@@ -67,6 +67,7 @@ The tile links are pre-seeded. `navigationItems.json` references each mode by `i
 | P3       | SVG Optimization            | Icons must be <50KB and optimized for fast loading.                                                                                                            |
 | P3       | Accessibility Compliance    | Text contrast ≥4.5:1 and screen-reader friendly (aria-labels, alt text).                                                                                       |
 
+- Navigation tiles must follow [Navigation Bar](prdNavigationBar.md) hover and active state guidelines.
 ---
 
 ### Navigation Menu Layout
