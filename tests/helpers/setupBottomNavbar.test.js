@@ -71,6 +71,17 @@ describe("setupBottomNavbar module", () => {
     expect(list.classList.contains("expanded")).toBe(true);
   });
 
+  it("retains nav-toggle class after initialization", async () => {
+    window.innerWidth = 320;
+    await import("../../src/helpers/setupBottomNavbar.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    vi.advanceTimersByTime(0);
+
+    const toggle = document.querySelector("button[aria-label='Menu']");
+    expect(toggle).toBeTruthy();
+    expect(toggle.classList.contains("nav-toggle")).toBe(true);
+  });
+
   it("does not insert hamburger menu above breakpoint", async () => {
     window.innerWidth = 1024;
     await import("../../src/helpers/setupBottomNavbar.js");
