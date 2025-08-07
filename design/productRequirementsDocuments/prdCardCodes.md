@@ -1,4 +1,4 @@
-# PRD: Card Code Generation Function
+# PRD: Card Codes
 
 ---
 
