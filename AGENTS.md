@@ -87,6 +87,7 @@ Before submitting or completing a task, verify that your work:
 - Don’t forget to run the full test suite before committing
 
 ---
+
 ## 🧯 Runtime Safeguards
 
 ### 🚫 Avoid Output Errors in Terminal
@@ -103,6 +104,7 @@ grep "kumi-kata" . --exclude=client_embeddings.json
 ```
 
 Or recursively:
+
 ```bash
 grep -r "kumi-kata" . --exclude-dir=node_modules --exclude=client_embeddings.json
 ```
