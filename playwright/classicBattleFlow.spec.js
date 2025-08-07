@@ -37,6 +37,8 @@ test.describe.parallel("Classic battle flow", () => {
         `<ul><li class='stat'><strong>Power</strong> <span>3</span></li></ul>`;
     });
     await page.locator("button[data-stat='power']").click();
+    const snackbar = page.locator(".snackbar");
+    await expect(snackbar).toHaveText("You Picked: Power");
     const msg = page.locator("header #round-message");
     await expect(msg).toHaveText(/Tie/);
     await expect(timer).toHaveText(/\d+/);
