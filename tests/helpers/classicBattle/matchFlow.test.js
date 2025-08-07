@@ -105,6 +105,7 @@ describe("classicBattle match flow", () => {
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     const selectStat = async () => {
+      store.selectionMade = false;
       const p = battleMod.handleStatSelection(store, "power");
       await vi.runAllTimersAsync();
       await p;
@@ -141,6 +142,7 @@ describe("classicBattle match flow", () => {
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     const selectStat = async () => {
+      store.selectionMade = false;
       const p = battleMod.handleStatSelection(store, "power");
       await vi.runAllTimersAsync();
       await p;
