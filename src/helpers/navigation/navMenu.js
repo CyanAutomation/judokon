@@ -49,7 +49,7 @@ export function clearBottomNavbar() {
  *
  * @pseudocode
  * 1. Exit early if the device is not in landscape orientation.
- * 2. Select the `.bottom-navbar` element and exit early if not found.
+ * 2. Select the `.bottom-navbar` element and ensure it contains a `.logo`; exit early if either is missing.
  * 3. Create a map view with anchor tiles for game modes, applying test ids, order, and hidden class.
  * 4. Add a slide-up animation when the logo is clicked.
  * 5. Hide the map view when the logo is clicked again.
@@ -65,7 +65,10 @@ export function toggleExpandedMapView(gameModes) {
 
   const navBar = document.querySelector(".bottom-navbar");
   if (!navBar) return; // Guard: do nothing if navbar is missing
+  const logo = navBar.querySelector(".logo");
+  if (!logo) return; // Guard: do nothing if logo is missing
   clearBottomNavbar(); // Clear existing content
+  navBar.appendChild(logo); // Preserve logo for toggle
 
   const validModes = validateGameModes(gameModes);
 
@@ -91,7 +94,6 @@ export function toggleExpandedMapView(gameModes) {
 
   navBar.appendChild(mapView);
 
-  const logo = document.querySelector(".bottom-navbar .logo");
   logo.addEventListener("click", () => {
     mapView.classList.toggle("visible");
     mapView.style.animation = mapView.classList.contains("visible")
@@ -105,9 +107,10 @@ export function toggleExpandedMapView(gameModes) {
  *
  * @pseudocode
  * 1. Exit early if the device is not in portrait orientation.
- * 2. Create a vertical menu with anchor items ordered and optionally hidden.
- * 3. Add a slide-down animation when the logo is clicked.
- * 4. Hide the menu when the logo is clicked again.
+ * 2. Select the `.bottom-navbar` element and ensure it contains a `.logo`; exit early if either is missing.
+ * 3. Create a vertical menu with anchor items ordered and optionally hidden.
+ * 4. Add a slide-down animation when the logo is clicked.
+ * 5. Hide the menu when the logo is clicked again.
  *
  * @param {import("../types.js").GameMode[]} gameModes - The list of game modes to display.
  */
@@ -120,7 +123,10 @@ export function togglePortraitTextMenu(gameModes) {
 
   const navBar = document.querySelector(".bottom-navbar");
   if (!navBar) return; // Guard: do nothing if navbar is missing
+  const logo = navBar.querySelector(".logo");
+  if (!logo) return; // Guard: do nothing if logo is missing
   clearBottomNavbar(); // Clear existing content
+  navBar.appendChild(logo); // Preserve logo for toggle
 
   const validModes = validateGameModes(gameModes);
 
@@ -145,7 +151,6 @@ export function togglePortraitTextMenu(gameModes) {
 
   navBar.appendChild(textMenu);
 
-  const logo = document.querySelector(".bottom-navbar .logo");
   logo.addEventListener("click", () => {
     textMenu.classList.toggle("visible");
     textMenu.style.animation = textMenu.classList.contains("visible")
