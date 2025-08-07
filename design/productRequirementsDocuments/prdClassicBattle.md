@@ -73,8 +73,11 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
 - Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices.
 - Stat selection timer (30s) must be displayed in the Info Bar; if timer expires, a random stat is auto-selected. Timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleInfoBar.md).
+- Stat selection timer halts immediately once the player picks a stat.
 - Detect timer drift by comparing engine state with real time; if drift exceeds 2s, display "Waiting…" and restart the countdown.
 - Opponent stat selection runs entirely on the client. After the player picks a stat (or the timer auto-chooses), the opponent's choice is revealed after a short artificial delay to mimic turn-taking.
+- During this delay, the Info Bar displays "Opponent is choosing..." to reinforce turn flow.
+- The cooldown timer between rounds begins only after round results are shown in the Info Bar.
 - The debug panel is available when the `battleDebugPanel` feature flag is enabled and appears beside the opponent's card.
 
 ---
@@ -106,8 +109,11 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Cards are revealed in the correct sequence each round.
 - The opponent card displays a placeholder ("Mystery Judoka") until the player selects a stat ([prdMysteryCard.md](prdMysteryCard.md)).
 - Player can select a stat within 30 seconds; if not, the system auto-selects a random stat automatically. **Timer and prompt are surfaced in the Info Bar.**
+- Stat-selection timer stops the moment a stat is chosen.
 - After selection, the correct comparison is made, and the score updates based on round outcome.
+- After the player selects a stat, the Info Bar shows "Opponent is choosing..." until the opponent's stat is revealed.
 - If the selected stats are equal, a tie message displays and the round ends.
+- Cooldown timer to enable the next round starts only after round results are shown.
 - After the match ends, a summary panel displays the final result and score with a Replay button that restarts the match.
 - Player can quit mid-match; confirmation prompt appears; if confirmed, match ends with player loss recorded.
 - After confirming the quit action, the player is returned to the main menu (index.html).
