@@ -45,6 +45,7 @@ describe("countdown resets after stat selection", () => {
 
     await vi.advanceTimersByTimeAsync(2000);
     expect(document.querySelector(".snackbar").textContent).toBe("Next round in: 3s");
+    expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 3s");
     timer.clearAllTimers();
   });
 });

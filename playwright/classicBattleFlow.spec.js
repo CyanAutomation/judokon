@@ -14,6 +14,7 @@ test.describe.parallel("Classic battle flow", () => {
     await expect(countdown).toHaveText(/\d+/);
     const result = page.locator("header #round-message");
     await expect(result).not.toHaveText("", { timeout: 8000 });
+    await expect(countdown).toHaveText(/Next round in: \d+s/);
   });
 
   test("tie message appears on equal stats", async ({ page }) => {
@@ -41,7 +42,7 @@ test.describe.parallel("Classic battle flow", () => {
     await expect(snackbar).toHaveText("You Picked: Power");
     const msg = page.locator("header #round-message");
     await expect(msg).toHaveText(/Tie/);
-    await expect(timer).toHaveText(/\d+/);
+    await expect(timer).toHaveText(/Next round in: \d+s/);
   });
 
   test("quit match confirmation", async ({ page }) => {

@@ -88,8 +88,8 @@ export function handleStatSelectionTimeout(store, onSelect) {
  * 1. If the match ended, return early.
  * 2. Setup a click handler that disables the button and calls `startRoundFn`.
  * 3. After a short delay, run a 3 second cooldown via `runTimerWithDrift(startCoolDown)`
- *    and display `"Next round in: <n>s"` with `showSnackbar`.
- * 4. When expired, enable the button and attach the click handler.
+ *    and display `"Next round in: <n>s"` in the snackbar and timer element.
+ * 4. When expired, clear the timer text, enable the button, and attach the click handler.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
  * @param {function(): Promise<void>} startRoundFn - Function to begin the next round.
@@ -98,6 +98,7 @@ export function scheduleNextRound(result, startRoundFn) {
   if (result.matchEnded) return;
 
   const btn = document.getElementById("next-round-button");
+  const timerEl = document.getElementById("next-round-timer");
   if (!btn) return;
 
   const onClick = async () => {
@@ -111,10 +112,16 @@ export function scheduleNextRound(result, startRoundFn) {
       return;
     }
     showSnackbar(`Next round in: ${remaining}s`);
+    if (timerEl) {
+      timerEl.textContent = `Next round in: ${remaining}s`;
+    }
   };
 
   const onExpired = () => {
     infoBar.clearTimer();
+    if (timerEl) {
+      timerEl.textContent = "";
+    }
     btn.addEventListener("click", onClick, { once: true });
     enableNextRoundButton();
     updateDebugPanel();
