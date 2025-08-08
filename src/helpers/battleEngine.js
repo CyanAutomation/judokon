@@ -12,6 +12,7 @@ export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 
 const DRIFT_THRESHOLD = 2;
 
+let pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN;
 let playerScore = 0;
 let computerScore = 0;
 let currentTimer = null;
@@ -22,6 +23,31 @@ let paused = false;
 let onTickCb = null;
 let onExpiredCb = null;
 
+/**
+ * Set the points required to win the match.
+ *
+ * @pseudocode
+ * 1. Assign `value` to `pointsToWin`.
+ *
+ * @param {number} value - New points threshold to win.
+ * @returns {void}
+ */
+export function setPointsToWin(value) {
+  pointsToWin = value;
+}
+
+/**
+ * Get the points required to win the match.
+ *
+ * @pseudocode
+ * 1. Return `pointsToWin`.
+ *
+ * @returns {number}
+ */
+export function getPointsToWin() {
+  return pointsToWin;
+}
+
 function stopTimer() {
   if (currentTimer) {
     currentTimer.stop();
@@ -31,8 +57,8 @@ function stopTimer() {
 
 function endMatchIfNeeded() {
   if (
-    playerScore >= CLASSIC_BATTLE_POINTS_TO_WIN ||
-    computerScore >= CLASSIC_BATTLE_POINTS_TO_WIN ||
+    playerScore >= pointsToWin ||
+    computerScore >= pointsToWin ||
     roundsPlayed >= CLASSIC_BATTLE_MAX_ROUNDS
   ) {
     matchEnded = true;
@@ -261,6 +287,7 @@ export function watchForDrift(duration, onDrift) {
 }
 
 export function _resetForTest() {
+  pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN;
   playerScore = 0;
   computerScore = 0;
   matchEnded = false;
