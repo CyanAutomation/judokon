@@ -10,7 +10,13 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       Math.random = () => 0.42;
-      localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
+      localStorage.setItem(
+        "settings",
+        JSON.stringify({
+          typewriterEffect: false,
+          featureFlags: { enableTestMode: { enabled: true } }
+        })
+      );
     });
   });
 

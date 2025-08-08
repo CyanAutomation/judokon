@@ -15,7 +15,13 @@ export const test = base.extend({
   /** @type {import('@playwright/test').Page} */
   page: async ({ page }, use) => {
     await registerCommonRoutes(page);
-    await page.addInitScript(() => localStorage.clear());
+    await page.addInitScript(() => {
+      localStorage.clear();
+      localStorage.setItem(
+        "settings",
+        JSON.stringify({ featureFlags: { enableTestMode: { enabled: true } } })
+      );
+    });
     await use(page);
   }
 });

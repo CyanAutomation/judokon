@@ -39,7 +39,9 @@ test.describe.parallel(
         Math.random = () => 0.42;
         localStorage.setItem(
           "settings",
-          JSON.stringify({ featureFlags: { enableTestMode: true } })
+          JSON.stringify({
+            featureFlags: { enableTestMode: { enabled: true } }
+          })
         );
       });
     });
