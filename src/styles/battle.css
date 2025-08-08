@@ -115,3 +115,11 @@
   background-color: var(--color-primary);
   color: var(--color-text-inverted);
 }
+
+/* Round select modal button layout */
+.round-select-buttons {
+  display: flex;
+  justify-content: space-evenly;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
