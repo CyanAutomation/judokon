@@ -50,7 +50,7 @@ test.describe.parallel("Classic battle flow", () => {
     await page.waitForFunction(() => window.homeLinkReady);
     await page.locator("[data-testid='home-link']").click();
     const confirmButton = page.locator("#confirm-quit-button");
-    await confirmButton.waitFor();
+    await confirmButton.waitFor({ state: "attached" });
     await confirmButton.click();
     await expect(page).toHaveURL(/index.html/);
   });
