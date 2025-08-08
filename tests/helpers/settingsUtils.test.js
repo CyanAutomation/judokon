@@ -43,6 +43,22 @@ describe("settings utils", () => {
   });
 
   /**
+   * Should retain default feature flags when partially loading from storage.
+   */
+  it("retains default feature flags on partial load", async () => {
+    localStorage.setItem(
+      "settings",
+      JSON.stringify({ featureFlags: { enableTestMode: { enabled: true } } })
+    );
+    const { loadSettings } = await import("../../src/helpers/settingsUtils.js");
+    const settings = await loadSettings();
+    expect(settings.featureFlags.randomStatMode).toEqual(
+      DEFAULT_SETTINGS.featureFlags.randomStatMode
+    );
+    expect(settings.featureFlags.enableTestMode.enabled).toBe(true);
+  });
+
+  /**
    * Should debounce and save settings to localStorage.
    */
   it("saves settings with debounce", async () => {
