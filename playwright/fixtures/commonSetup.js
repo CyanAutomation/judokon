@@ -4,8 +4,10 @@
  * @pseudocode
  * 1. Import base test and expect from Playwright.
  * 2. Import registerCommonRoutes helper.
- * 3. Extend the base test's page fixture to register routes and clear
- *    localStorage before each test.
+ * 3. Extend the base test's page fixture to:
+ *    a. Clear localStorage and enable test-mode settings.
+ *    b. Inject a MutationObserver to remove unexpected modal backdrops.
+ *    c. Register common routes.
  * 4. Export the extended test and expect.
  */
 import { test as base, expect } from "@playwright/test";
@@ -20,6 +22,12 @@ export const test = base.extend({
         "settings",
         JSON.stringify({ featureFlags: { enableTestMode: { enabled: true } } })
       );
+    });
+    await page.addInitScript(() => {
+      const observer = new MutationObserver(() => {
+        document.querySelectorAll(".modal-backdrop")?.forEach((el) => el.remove());
+      });
+      observer.observe(document, { childList: true, subtree: true });
     });
     await registerCommonRoutes(page);
     await use(page);
