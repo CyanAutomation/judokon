@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
+import { CLASSIC_BATTLE_POINTS_TO_WIN } from "../../../src/helpers/constants.js";
 vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
@@ -100,7 +101,7 @@ describe("classicBattle match flow", () => {
     expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nOpponent: 0");
   });
 
-  it("ends the match when player reaches 10 wins", async () => {
+  it("ends the match when player reaches required wins", async () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
@@ -110,7 +111,7 @@ describe("classicBattle match flow", () => {
       await vi.runAllTimersAsync();
       await p;
     };
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < CLASSIC_BATTLE_POINTS_TO_WIN; i++) {
       document.getElementById("player-card").innerHTML =
         `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
       document.getElementById("computer-card").innerHTML =
@@ -118,7 +119,7 @@ describe("classicBattle match flow", () => {
       await selectStat();
     }
     expect(document.querySelector("header #score-display").textContent).toBe(
-      "You: 10\nOpponent: 0"
+      `You: ${CLASSIC_BATTLE_POINTS_TO_WIN}\nOpponent: 0`
     );
     expect(document.querySelector("header #round-message").textContent).toMatch(/win the match/i);
 
@@ -133,11 +134,11 @@ describe("classicBattle match flow", () => {
     }
 
     expect(document.querySelector("header #score-display").textContent).toBe(
-      "You: 10\nOpponent: 0"
+      `You: ${CLASSIC_BATTLE_POINTS_TO_WIN}\nOpponent: 0`
     );
   });
 
-  it("ends the match when opponent reaches 10 wins", async () => {
+  it("ends the match when opponent reaches required wins", async () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
@@ -147,7 +148,7 @@ describe("classicBattle match flow", () => {
       await vi.runAllTimersAsync();
       await p;
     };
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < CLASSIC_BATTLE_POINTS_TO_WIN; i++) {
       document.getElementById("player-card").innerHTML =
         `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
       document.getElementById("computer-card").innerHTML =
@@ -155,7 +156,7 @@ describe("classicBattle match flow", () => {
       await selectStat();
     }
     expect(document.querySelector("header #score-display").textContent).toBe(
-      "You: 0\nOpponent: 10"
+      `You: 0\nOpponent: ${CLASSIC_BATTLE_POINTS_TO_WIN}`
     );
     expect(document.querySelector("header #round-message").textContent).toMatch(
       /opponent wins the match/i
@@ -172,7 +173,7 @@ describe("classicBattle match flow", () => {
     }
 
     expect(document.querySelector("header #score-display").textContent).toBe(
-      "You: 0\nOpponent: 10"
+      `You: 0\nOpponent: ${CLASSIC_BATTLE_POINTS_TO_WIN}`
     );
   });
 
