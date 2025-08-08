@@ -10,13 +10,7 @@ import {
   disableNextRoundButton,
   updateDebugPanel
 } from "./classicBattle/uiHelpers.js";
-import {
-  handleStatSelection as engineHandleStatSelection,
-  quitMatch as engineQuitMatch,
-  _resetForTest as engineReset,
-  STATS,
-  pauseTimer
-} from "./battleEngine.js";
+import * as engine from "./battleEngine.js";
 import * as infoBar from "./setupBattleInfoBar.js";
 import { getStatValue, resetStatButtons, showResult } from "./battle/index.js";
 import { createModal } from "../components/Modal.js";
@@ -45,7 +39,7 @@ export function simulateOpponentStat(difficulty = "easy") {
   if (difficulty !== "easy") {
     const card = document.getElementById("computer-card");
     if (card) {
-      const values = STATS.map((stat) => ({
+    const values = engine.STATS.map((stat) => ({
         stat,
         value: getStatValue(card, stat)
       }));
@@ -63,7 +57,7 @@ export function simulateOpponentStat(difficulty = "easy") {
       }
     }
   }
-  return STATS[Math.floor(Math.random() * STATS.length)];
+  return engine.STATS[Math.floor(Math.random() * engine.STATS.length)];
 }
 
 /**
@@ -106,7 +100,7 @@ function getStartRound(store) {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
 export async function handleReplay(store) {
-  engineReset();
+  engine._resetForTest();
   document.querySelectorAll(".modal-backdrop").forEach((m) => {
     if (typeof m.remove === "function") m.remove();
   });
@@ -149,7 +143,7 @@ export async function startRound(store) {
  *
  * @pseudocode
  * 1. Read stat values from both cards.
- * 2. Run `engineHandleStatSelection` to get the result.
+ * 2. Run `engine.handleStatSelection` to get the result.
  * 3. Show result message and stat comparison.
  * 4. Sync scores and update debug panel.
  *
@@ -162,7 +156,7 @@ export function evaluateRound(store, stat) {
   const computerCard = document.getElementById("computer-card");
   const playerVal = getStatValue(playerCard, stat);
   const computerVal = getStatValue(computerCard, stat);
-  const result = engineHandleStatSelection(playerVal, computerVal);
+  const result = engine.handleStatSelection(playerVal, computerVal);
   if (result.message) {
     showResult(result.message);
   }
@@ -192,7 +186,15 @@ export async function handleStatSelection(store, stat) {
     return { matchEnded: false };
   }
   store.selectionMade = true;
-  pauseTimer();
+  let pauseFn;
+  try {
+    pauseFn = engine.pauseTimer;
+  } catch {
+    pauseFn = undefined;
+  }
+  if (typeof pauseFn === "function") {
+    pauseFn();
+  }
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   infoBar.clearTimer();
@@ -257,7 +259,7 @@ function createQuitConfirmation(store, onConfirm) {
 export function quitMatch(store) {
   if (!store.quitModal) {
     store.quitModal = createQuitConfirmation(store, () => {
-      const result = engineQuitMatch();
+      const result = engine.quitMatch();
       showResult(result.message);
     });
   }
