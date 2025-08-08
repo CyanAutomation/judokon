@@ -13,6 +13,7 @@ import { generateCardCode } from "./src/helpers/cardCode.js";
  * 3. For each judoka:
  *    a. Try to generate a card code.
  *    b. On failure, log the error and assign the fallback code.
+ *    c. Update the `lastUpdated` field to the current date.
  * 4. Write the updated list back to `judoka.json`.
  * 5. Log the result.
  */
@@ -25,12 +26,13 @@ async function updateCardCodes() {
     const judokaList = JSON.parse(rawData);
     const fallbackCode = generateCardCode(judokaList.find((j) => j.id === 0));
 
+    const now = new Date().toISOString();
     const updatedJudoka = judokaList.map((j) => {
       try {
-        return { ...j, cardCode: generateCardCode(j) };
+        return { ...j, cardCode: generateCardCode(j), lastUpdated: now };
       } catch (error) {
         console.error(`Failed to generate card code for judoka id ${j.id}:`, error);
-        return { ...j, cardCode: fallbackCode };
+        return { ...j, cardCode: fallbackCode, lastUpdated: now };
       }
     });
 
