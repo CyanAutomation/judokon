@@ -45,40 +45,86 @@ export function clearBottomNavbar() {
 }
 
 /**
+ * Preserve the logo and attach toggle behavior for a menu.
+ *
+ * @pseudocode
+ * 1. Clear the existing navbar content.
+ * 2. Reinsert the logo into the navbar.
+ * 3. Append the provided menu element.
+ * 4. Toggle visibility and animation on logo click.
+ *
+ * @param {HTMLElement} navBar - The bottom navigation bar element.
+ * @param {HTMLElement} logo - The logo element to preserve.
+ * @param {HTMLElement} menu - The menu element to toggle.
+ * @param {{show: string, hide: string}} animations - CSS animations for show/hide.
+ */
+function preserveLogoAndWire(navBar, logo, menu, animations) {
+  clearBottomNavbar();
+  navBar.appendChild(logo);
+  navBar.appendChild(menu);
+  logo.addEventListener("click", () => {
+    menu.classList.toggle("visible");
+    menu.style.animation = menu.classList.contains("visible") ? animations.show : animations.hide;
+  });
+}
+
+/**
+ * Build a navigation menu for a given orientation.
+ *
+ * @pseudocode
+ * 1. Exit early if the current orientation does not match.
+ * 2. Select the `.bottom-navbar` and `.logo`; exit if either is missing.
+ * 3. Validate game modes and create a menu container with orientation class.
+ * 4. Populate the container using the provided template for each mode.
+ * 5. Preserve the logo and wire click animations based on orientation.
+ *
+ * @param {object} options - Menu build options.
+ * @param {import("../types.js").GameMode[]} options.gameModes - Modes to display.
+ * @param {"landscape"|"portrait"} options.orientation - Required device orientation.
+ * @param {(mode: import("../types.js").GameMode) => string} options.template - HTML template per mode.
+ */
+export function buildNavMenu({ gameModes, orientation, template }) {
+  const matches =
+    typeof window.matchMedia === "function"
+      ? window.matchMedia(`(orientation: ${orientation})`).matches
+      : orientation === "landscape"
+        ? window.innerWidth > window.innerHeight
+        : window.innerHeight >= window.innerWidth;
+  if (!matches) return;
+
+  const navBar = document.querySelector(".bottom-navbar");
+  if (!navBar) return;
+  const logo = navBar.querySelector(".logo");
+  if (!logo) return;
+
+  const validModes = validateGameModes(gameModes);
+
+  const menu = document.createElement("div");
+  menu.className = orientation === "landscape" ? "expanded-map-view" : "portrait-text-menu";
+  menu.innerHTML = validModes.map(template).join("");
+
+  const animations =
+    orientation === "landscape"
+      ? { show: "slide-up 500ms ease-in-out", hide: "slide-down 500ms ease-in-out" }
+      : { show: "slide-down 500ms ease-in-out", hide: "slide-up 500ms ease-in-out" };
+
+  preserveLogoAndWire(navBar, logo, menu, animations);
+}
+
+/**
  * Toggles the expanded map view for landscape mode.
  *
  * @pseudocode
- * 1. Exit early if the device is not in landscape orientation.
- * 2. Select the `.bottom-navbar` element and ensure it contains a `.logo`; exit early if either is missing.
- * 3. Create a map view with anchor tiles for game modes, applying test ids, order, and hidden class.
- * 4. Add a slide-up animation when the logo is clicked.
- * 5. Hide the map view when the logo is clicked again.
+ * 1. Call {@link buildNavMenu} with landscape checks and tile template.
  *
  * @param {import("../types.js").GameMode[]} gameModes - The list of game modes to display.
  */
 export function toggleExpandedMapView(gameModes) {
-  const isLandscape =
-    typeof window.matchMedia === "function"
-      ? window.matchMedia("(orientation: landscape)").matches
-      : window.innerWidth > window.innerHeight;
-  if (!isLandscape) return; // Guard: only apply in landscape mode
-
-  const navBar = document.querySelector(".bottom-navbar");
-  if (!navBar) return; // Guard: do nothing if navbar is missing
-  const logo = navBar.querySelector(".logo");
-  if (!logo) return; // Guard: do nothing if logo is missing
-  clearBottomNavbar(); // Clear existing content
-  navBar.appendChild(logo); // Preserve logo for toggle
-
-  const validModes = validateGameModes(gameModes);
-
-  const mapView = document.createElement("div");
-  mapView.className = "expanded-map-view";
-
-  mapView.innerHTML = validModes
-    .map(
-      (mode) =>
-        `<a
+  buildNavMenu({
+    gameModes,
+    orientation: "landscape",
+    template: (mode) =>
+      `<a
           href="${BASE_PATH}${mode.url}"
           aria-label="${mode.name}"
           data-tooltip-id="nav.${navTooltipKey(mode.name)}"
@@ -89,16 +135,6 @@ export function toggleExpandedMapView(gameModes) {
           <img src="${mode.image}" alt="${mode.name}" loading="lazy">
           ${mode.name}
         </a>`
-    )
-    .join("");
-
-  navBar.appendChild(mapView);
-
-  logo.addEventListener("click", () => {
-    mapView.classList.toggle("visible");
-    mapView.style.animation = mapView.classList.contains("visible")
-      ? "slide-up 500ms ease-in-out"
-      : "slide-down 500ms ease-in-out";
   });
 }
 
@@ -106,37 +142,16 @@ export function toggleExpandedMapView(gameModes) {
  * Toggles the vertical text menu for portrait mode.
  *
  * @pseudocode
- * 1. Exit early if the device is not in portrait orientation.
- * 2. Select the `.bottom-navbar` element and ensure it contains a `.logo`; exit early if either is missing.
- * 3. Create a vertical menu with anchor items ordered and optionally hidden.
- * 4. Add a slide-down animation when the logo is clicked.
- * 5. Hide the menu when the logo is clicked again.
+ * 1. Call {@link buildNavMenu} with portrait checks and text template.
  *
  * @param {import("../types.js").GameMode[]} gameModes - The list of game modes to display.
  */
 export function togglePortraitTextMenu(gameModes) {
-  const isPortrait =
-    typeof window.matchMedia === "function"
-      ? window.matchMedia("(orientation: portrait)").matches
-      : window.innerHeight >= window.innerWidth;
-  if (!isPortrait) return; // Guard: only apply in portrait mode
-
-  const navBar = document.querySelector(".bottom-navbar");
-  if (!navBar) return; // Guard: do nothing if navbar is missing
-  const logo = navBar.querySelector(".logo");
-  if (!logo) return; // Guard: do nothing if logo is missing
-  clearBottomNavbar(); // Clear existing content
-  navBar.appendChild(logo); // Preserve logo for toggle
-
-  const validModes = validateGameModes(gameModes);
-
-  const textMenu = document.createElement("div");
-  textMenu.className = "portrait-text-menu";
-
-  textMenu.innerHTML = validModes
-    .map(
-      (mode) =>
-        `<a
+  buildNavMenu({
+    gameModes,
+    orientation: "portrait",
+    template: (mode) =>
+      `<a
           href="${BASE_PATH}${mode.url}"
           aria-label="${mode.name}"
           data-tooltip-id="nav.${navTooltipKey(mode.name)}"
@@ -146,16 +161,6 @@ export function togglePortraitTextMenu(gameModes) {
         >
           ${mode.name}
         </a>`
-    )
-    .join("");
-
-  navBar.appendChild(textMenu);
-
-  logo.addEventListener("click", () => {
-    textMenu.classList.toggle("visible");
-    textMenu.style.animation = textMenu.classList.contains("visible")
-      ? "slide-down 500ms ease-in-out"
-      : "slide-up 500ms ease-in-out";
   });
 }
 

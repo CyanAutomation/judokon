@@ -59,12 +59,13 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ## Gameplay Basics
 
+- On first visit to `battleJudoka.html`, a modal prompts the player to select a win target of **5, 10, or 15 points** (default 10).
 - The standard deck contains **99 unique cards**.
 - Each match begins with both sides receiving **25 random cards**.
 - At the start of each round, both players draw their top card.
 - The player selects one stat (Power, Speed, Technique, etc.).
 - The higher value wins the round and scores **1 point**; used cards are discarded.
-- The match ends when a player reaches **10 points** or after **25 rounds** (draw).
+- The match ends when a player reaches a **user-selected win target of 5, 10, or 15 points** (default 10) or after **25 rounds** (draw).
 
 ---
 
@@ -89,7 +90,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 | **P1**   | Random Card Draw        | Draw one random card per player each round; the opponent card must differ from the player's.                                                                                     |
 | **P1**   | Stat Selection Timer    | Player selects stat within 30 seconds; otherwise, random stat is chosen. Default timer is fixed at 30s. Timer is displayed in the Info Bar and pauses/resumes on tab inactivity. |
 | **P1**   | Scoring                 | Increase score by one for each round win.                                                                                                                                        |
-| **P1**   | Match End Condition     | End match on 10 points or after 25 rounds.                                                                                                                                       |
+| **P1**   | Match End Condition     | End match when either player reaches a user-selected win target of 5, 10, or 15 points (default 10) or after 25 rounds.                                                                                                                                       |
 | **P2**   | Tie Handling            | Show tie message; round ends without score change; continue to next round.                                                                                                       |
 | **P2**   | Player Quit Flow        | Allow player to exit match early with confirmation; counts as a loss.                                                                                                            |
 | **P3**   | AI Stat Selection Logic | AI stat choice follows difficulty setting (`easy` random, `medium` picks stats ≥ average, `hard` selects highest stat). Difficulty can be set via Settings or `?difficulty=` URL param; defaults to `easy`. |
@@ -180,7 +181,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - [x] 1.2 Implement 30-second stat selection timer with auto-selection fallback (displayed in Info Bar)
   - [x] 1.3 Handle scoring updates on win, loss, and tie
   - [x] 1.4 Add "Next Round" and "Quit Match" buttons to controls
-  - [x] 1.5 End match after 10 points or 25 rounds
+  - [x] 1.5 End match after the user-selected win target (5, 10, or 15 points; default 10) or 25 rounds
 - [ ] 2.0 Add Early Quit Functionality
   - [x] 2.1 Trigger quit confirmation when the header logo is clicked
   - [x] 2.2 Create confirmation prompt flow

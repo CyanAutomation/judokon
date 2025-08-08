@@ -5,6 +5,9 @@ beforeEach(() => {
   document.body.innerHTML = "";
   localStorage.clear();
   vi.resetModules();
+  vi.doMock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
+    initRoundSelectModal: (cb) => cb()
+  }));
 });
 
 describe("classicBattlePage keyboard navigation", () => {
