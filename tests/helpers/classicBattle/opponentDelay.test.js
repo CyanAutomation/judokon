@@ -52,6 +52,7 @@ beforeEach(() => {
   vi.mock("../../../src/helpers/battleEngine.js", () => ({
     handleStatSelection: vi.fn().mockReturnValue({ message: "", matchEnded: false }),
     quitMatch: vi.fn(),
+    pauseTimer: vi.fn(),
     getScores: vi.fn().mockReturnValue({ playerScore: 0, computerScore: 0 }),
     _resetForTest: vi.fn(),
     STATS: ["power"]
