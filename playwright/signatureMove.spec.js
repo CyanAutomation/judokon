@@ -8,9 +8,6 @@ test.describe.parallel(
     test.skip(!runScreenshots);
 
     test("random judoka page", async ({ page }) => {
-      await page.addInitScript(() => {
-        Math.random = () => 0.42;
-      });
       await page.goto("/src/pages/randomJudoka.html");
       await page.getByTestId("draw-button").click();
       const sigMove = page.locator(".signature-move-container");
