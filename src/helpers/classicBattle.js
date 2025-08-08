@@ -39,7 +39,7 @@ export function simulateOpponentStat(difficulty = "easy") {
   if (difficulty !== "easy") {
     const card = document.getElementById("computer-card");
     if (card) {
-    const values = engine.STATS.map((stat) => ({
+      const values = engine.STATS.map((stat) => ({
         stat,
         value: getStatValue(card, stat)
       }));
