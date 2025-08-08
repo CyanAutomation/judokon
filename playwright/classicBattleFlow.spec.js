@@ -6,7 +6,7 @@ test.describe.parallel("Classic battle flow", () => {
     await page.addInitScript(() => {
       window.startCountdownOverride = () => {};
       const orig = window.setInterval;
-      window.setInterval = (fn, ms, ...args) => orig(fn, Math.min(ms, 10), ...args);
+      window.setInterval = (fn, ms, ...args) => orig(fn, Math.min(ms, 100), ...args);
     });
     await page.goto("/src/pages/battleJudoka.html");
     const countdown = page.locator("header #next-round-timer");
