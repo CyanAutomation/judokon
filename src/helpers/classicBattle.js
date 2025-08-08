@@ -21,7 +21,7 @@ import { getStatValue, resetStatButtons, showResult } from "./battle/index.js";
 import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
 import { shouldReduceMotionSync } from "./motionUtils.js";
-import { syncScoreDisplay, showSummary } from "./classicBattle/uiService.js";
+import { syncScoreDisplay, showMatchSummaryModal } from "./classicBattle/uiService.js";
 
 /**
  * Determine the opponent's stat choice based on difficulty.
@@ -84,12 +84,6 @@ export function createBattleStore() {
       quitMatch(store);
     });
   }
-  const replayButton = document.getElementById("replay-button");
-  if (replayButton) {
-    replayButton.addEventListener("click", () => {
-      handleReplay(store);
-    });
-  }
   return store;
 }
 
@@ -105,15 +99,16 @@ function getStartRound(store) {
  *
  * @pseudocode
  * 1. Reset engine scores and flags.
- * 2. Hide the summary panel and clear the last round message.
+ * 2. Close any open modals and clear the last round message.
  * 3. Call the start round function to begin a new match.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
 export async function handleReplay(store) {
   engineReset();
-  const panel = document.getElementById("summary-panel");
-  if (panel) panel.classList.add("hidden");
+  document.querySelectorAll(".modal-backdrop").forEach((m) => {
+    if (typeof m.remove === "function") m.remove();
+  });
   infoBar.clearMessage();
   const startRoundFn = getStartRound(store);
   await startRoundFn();
@@ -208,7 +203,7 @@ export async function handleStatSelection(store, stat) {
       resetStatButtons();
       scheduleNextRound(result, getStartRound(store));
       if (result.matchEnded) {
-        showSummary(result);
+        showMatchSummaryModal(result, () => handleReplay(store));
       }
       updateDebugPanel();
       resolve(result);
