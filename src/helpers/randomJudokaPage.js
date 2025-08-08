@@ -150,7 +150,7 @@ export async function setupRandomJudokaPage() {
       prefersReducedMotion,
       addToHistory,
       {
-        enableInspector: settings.featureFlags.enableCardInspector.enabled
+        enableInspector: Boolean(settings.featureFlags?.enableCardInspector?.enabled)
       }
     );
     function enableButton() {
