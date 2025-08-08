@@ -61,27 +61,23 @@ export function decodeHTML(str) {
  *    - If `value` is a string, trim whitespace.
  *    - Return the trimmed string if it is not empty; otherwise, return `fallback`.
  *
- * 2. Handle number and boolean values:
- *    - If `value` is a number or boolean, return it as-is.
+ * 2. Handle number values:
+ *    - If `value` is a number, return it as-is.
  *
- * 3. Handle invalid types:
- *    - If `value` is an object, function, or symbol, return `fallback`.
+ * 3. Handle all other types:
+ *    - Return `fallback` for any non-string, non-number value.
  *
- * 4. Handle nullish values:
- *    - Use the nullish coalescing operator (`??`) to return `value` if it is not `null` or `undefined`.
- *    - Otherwise, return `fallback`.
- *
- * @param {*} value - The value to check.
- * @param {*} fallback - The fallback value if the input is invalid.
- * @returns {*} The value or the fallback.
+ * @param {string|number} value - The value to check.
+ * @param {string|number} fallback - The fallback value if the input is invalid.
+ * @returns {string|number} The value or the fallback.
  */
 export function getValue(value, fallback = "Unknown") {
-  if (typeof value === "string") return value.trim() || fallback;
-  if (typeof value === "number" || typeof value === "boolean") return value;
-  if (typeof value === "object" || typeof value === "function" || typeof value === "symbol") {
-    return fallback;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed ? trimmed : fallback;
   }
-  return value ?? fallback;
+  if (typeof value === "number") return value;
+  return fallback;
 }
 
 /**
