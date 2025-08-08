@@ -53,7 +53,10 @@ describe("randomJudokaPage module", () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue([])
     }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
+    vi.doMock("../../src/helpers/constants.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/constants.js")),
+      DATA_DIR: ""
+    }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);
@@ -102,7 +105,10 @@ describe("randomJudokaPage module", () => {
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
+    vi.doMock("../../src/helpers/constants.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/constants.js")),
+      DATA_DIR: ""
+    }));
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings
     }));
@@ -146,7 +152,10 @@ describe("randomJudokaPage module", () => {
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
+    vi.doMock("../../src/helpers/constants.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/constants.js")),
+      DATA_DIR: ""
+    }));
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings
     }));
@@ -205,7 +214,10 @@ describe("randomJudokaPage module", () => {
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
+    vi.doMock("../../src/helpers/constants.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/constants.js")),
+      DATA_DIR: ""
+    }));
     vi.doMock("../../src/components/Button.js", () => ({ createButton }));
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
@@ -255,7 +267,10 @@ describe("randomJudokaPage module", () => {
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
+    vi.doMock("../../src/helpers/constants.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/constants.js")),
+      DATA_DIR: ""
+    }));
     vi.doMock("../../src/helpers/settingsUtils.js", () => ({
       loadSettings
     }));
