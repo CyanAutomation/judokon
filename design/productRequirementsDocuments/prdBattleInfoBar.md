@@ -50,6 +50,7 @@ The round message, timer, and score now sit directly inside the page header rath
 - Countdown timer begins only after the 2s result message fades out, aligned with server round start delay. <!-- Implemented: see startCoolDown in battleEngine.js -->
 - Action prompt appears during user input phases and disappears after interaction. <!-- Implemented: see showMessage and stat selection logic -->
 - **Stat selection timer (30s) is displayed during stat selection phase; if timer expires, a random stat is auto-selected. Timer stops immediately once a stat is picked and pauses/resumes on tab inactivity.** <!-- Implemented: see startRound in battleEngine.js and [Classic Battle PRD](prdClassicBattle.md) -->
+- Auto-select messages are only shown if no stat was chosen before the timer runs out.
 - After the player selects a stat, the Info Bar shows "Opponent is choosing..." until the opponent's stat is revealed.
 - Top bar content adapts responsively to different screen sizes and orientations. <!-- Partially implemented: stacking/truncation CSS present, but some edge cases pending -->
 - All messages meet minimum contrast ratio of **4.5:1** and are screen reader compatible. Run `npm run check:contrast` to audit these colors. <!-- Implemented: screen reader labels via `aria-live` and `role="status"`; contrast via CSS variables -->
