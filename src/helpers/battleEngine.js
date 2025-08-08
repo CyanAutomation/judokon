@@ -263,13 +263,15 @@ export function getTimerState() {
  *
  * @pseudocode
  * 1. Record the current timestamp as `start`.
- * 2. Every second, compute `elapsed = floor((Date.now() - start) / 1000)` and
- *    `expected = duration - elapsed`.
- * 3. Skip drift checks when the timer is paused.
- * 4. If `abs(remaining - expected)` > `DRIFT_THRESHOLD`:
- *    a. Clear the monitoring interval.
- *    b. If `onDrift` is a function, invoke it with current remaining time.
- * 5. Return a function that clears the monitoring interval to stop drift detection.
+ * 2. Every second:
+ *    a. If `currentTimer` is absent, stop monitoring.
+ *    b. Compute `elapsed = floor((Date.now() - start) / 1000)` and
+ *       `expected = duration - elapsed`.
+ *    c. Skip drift checks when the timer is paused.
+ *    d. If `abs(remaining - expected)` > `DRIFT_THRESHOLD`:
+ *       i. Clear the monitoring interval.
+ *       ii. If `onDrift` is a function, invoke it with current remaining time.
+ * 3. Return a function that clears the monitoring interval to stop drift detection.
  *
  * @param {number} duration - Duration originally passed to the timer.
  * @param {function(number): void} onDrift - Callback invoked when drift detected.
@@ -278,6 +280,10 @@ export function getTimerState() {
 export function watchForDrift(duration, onDrift) {
   const start = Date.now();
   const interval = setInterval(() => {
+    if (!currentTimer) {
+      clearInterval(interval);
+      return;
+    }
     const elapsed = Math.floor((Date.now() - start) / 1000);
     const expected = duration - elapsed;
     const { remaining, paused } = getTimerState();
