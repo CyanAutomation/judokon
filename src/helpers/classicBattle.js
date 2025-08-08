@@ -251,19 +251,22 @@ function createQuitConfirmation(store, onConfirm) {
  * Trigger the Classic Battle quit confirmation modal.
  *
  * @pseudocode
- * 1. Create the modal if needed and open it.
+ * 1. Create the modal if needed.
+ * 2. Determine the element that opened the modal.
+ * 3. Open the modal focusing the triggering element when available.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {HTMLElement} [trigger] - Element that initiated the quit action.
  */
-export function quitMatch(store) {
+export function quitMatch(store, trigger) {
   if (!store.quitModal) {
     store.quitModal = createQuitConfirmation(store, () => {
       const result = engineQuitMatch();
       showResult(result.message);
     });
   }
-  const trigger = document.getElementById("quit-match-button");
-  store.quitModal.open(trigger ?? undefined);
+  const fallback = document.getElementById("quit-match-button");
+  store.quitModal.open(trigger ?? fallback ?? undefined);
 }
 
 /**

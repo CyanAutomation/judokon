@@ -7,7 +7,7 @@ import { createBattleStore, quitMatch } from "./classicBattle.js";
  * @pseudocode
  * 1. When the DOM is ready, create the battle store.
  * 2. Select the `[data-testid="home-link"]` element.
- * 3. If found, attach a click listener that prevents navigation and calls `quitMatch()`.
+ * 3. If found, attach a click listener that prevents navigation and calls `quitMatch()` with the link as trigger.
  * 4. After binding, set `window.homeLinkReady = true` for tests.
  */
 export function setupClassicBattleHomeLink() {
@@ -16,7 +16,7 @@ export function setupClassicBattleHomeLink() {
   if (homeLink) {
     homeLink.addEventListener("click", (e) => {
       e.preventDefault();
-      quitMatch(store);
+      quitMatch(store, homeLink);
     });
     window.homeLinkReady = true;
   }
