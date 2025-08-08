@@ -319,36 +319,49 @@ describe("syncScoreDisplay", () => {
   it("keeps scoreboard and summary in sync", async () => {
     window.matchMedia = () => ({ matches: true, addListener() {}, removeListener() {} });
     const header = createBattleHeader();
-    const panel = document.createElement("div");
-    panel.id = "summary-panel";
-    const msg = document.createElement("p");
-    msg.id = "summary-message";
-    const score = document.createElement("p");
-    score.id = "summary-score";
-    panel.append(msg, score);
-    document.body.append(header, panel);
+    document.body.append(header);
 
     const getScores = vi
       .fn()
       .mockReturnValueOnce({ playerScore: 1, computerScore: 2 })
       .mockReturnValueOnce({ playerScore: 3, computerScore: 4 });
     vi.doMock("../../src/helpers/battleEngine.js", () => ({ getScores }));
+    vi.doMock("../../src/components/Button.js", () => ({
+      createButton: (label, { id } = {}) => {
+        const btn = document.createElement("button");
+        if (id) btn.id = id;
+        btn.textContent = label;
+        return btn;
+      }
+    }));
+    vi.doMock("../../src/components/Modal.js", () => ({
+      createModal: (content) => {
+        const element = document.createElement("div");
+        element.className = "modal-backdrop";
+        element.appendChild(content);
+        return { element, open: vi.fn(), close: vi.fn() };
+      }
+    }));
 
-    const { syncScoreDisplay, showSummary } = await import(
+    const { syncScoreDisplay, showMatchSummaryModal } = await import(
       "../../src/helpers/classicBattle/uiService.js"
     );
 
     syncScoreDisplay();
-    showSummary({ message: "", playerScore: 1, computerScore: 2 });
+    showMatchSummaryModal({ message: "", playerScore: 1, computerScore: 2 }, vi.fn());
     let board = document.getElementById("score-display").textContent;
-    let summary = document.getElementById("summary-score").textContent;
+    let summaryEls = document.querySelectorAll("#match-summary-score");
+    let summary = summaryEls[summaryEls.length - 1].textContent;
     let match = board.match(/You: (\d+)\nOpponent: (\d+)/);
     expect(summary).toBe(`Final Score – You: ${match[1]} Opponent: ${match[2]}`);
 
+    document.querySelectorAll(".modal-backdrop").forEach((el) => el.remove());
+
     syncScoreDisplay();
-    showSummary({ message: "", playerScore: 3, computerScore: 4 });
+    showMatchSummaryModal({ message: "", playerScore: 3, computerScore: 4 }, vi.fn());
     board = document.getElementById("score-display").textContent;
-    summary = document.getElementById("summary-score").textContent;
+    summaryEls = document.querySelectorAll("#match-summary-score");
+    summary = summaryEls[summaryEls.length - 1].textContent;
     match = board.match(/You: (\d+)\nOpponent: (\d+)/);
     expect(summary).toBe(`Final Score – You: ${match[1]} Opponent: ${match[2]}`);
   });
