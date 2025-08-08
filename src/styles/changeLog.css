@@ -1,7 +1,7 @@
 #changelog-table {
   display: grid;
   /* IDs never exceed three digits; portraits are 48×48 px */
-  grid-template-columns: var(--touch-target-size) var(--touch-target-size) 1fr 1fr 1fr;
+  grid-template-columns: var(--touch-target-size) var(--touch-target-size) 0.5fr 1fr 0.25fr;
   width: 100%;
   padding: var(--space-lg);
   gap: var(--space-md);
