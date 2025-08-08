@@ -48,7 +48,7 @@ export function getPointsToWin() {
   return pointsToWin;
 }
 
-function stopTimer() {
+export function stopTimer() {
   if (currentTimer) {
     currentTimer.stop();
     currentTimer = null;

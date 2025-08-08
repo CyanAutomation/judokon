@@ -15,7 +15,7 @@ import {
   quitMatch as engineQuitMatch,
   _resetForTest as engineReset,
   STATS,
-  pauseTimer
+  stopTimer
 } from "./battleEngine.js";
 import * as infoBar from "./setupBattleInfoBar.js";
 import { getStatValue, resetStatButtons, showResult } from "./battle/index.js";
@@ -192,7 +192,8 @@ export async function handleStatSelection(store, stat) {
     return { matchEnded: false };
   }
   store.selectionMade = true;
-  pauseTimer();
+  // Stop the countdown timer to prevent further ticks
+  stopTimer();
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   infoBar.clearTimer();
