@@ -53,6 +53,7 @@ beforeEach(() => {
     handleStatSelection: vi.fn().mockReturnValue({ message: "", matchEnded: false }),
     quitMatch: vi.fn(),
     pauseTimer: vi.fn(),
+    stopTimer: vi.fn(),
     getScores: vi.fn().mockReturnValue({ playerScore: 0, computerScore: 0 }),
     _resetForTest: vi.fn(),
     STATS: ["power"]
