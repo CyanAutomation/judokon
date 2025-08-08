@@ -6,7 +6,7 @@ test.describe.parallel("Classic battle flow", () => {
     await page.addInitScript(() => {
       window.startCountdownOverride = () => {};
       const orig = window.setInterval;
-      window.setInterval = (fn, ms, ...args) => orig(fn, Math.min(ms, 100), ...args);
+      window.setInterval = (fn, ms, ...args) => orig(fn, ms > 1000 ? 250 : ms, ...args); // 4× speed instead of 10×
     });
     await page.goto("/src/pages/battleJudoka.html");
     const countdown = page.locator("header #next-round-timer");
@@ -14,7 +14,7 @@ test.describe.parallel("Classic battle flow", () => {
     await expect(countdown).toHaveText(/\d+/);
     const result = page.locator("header #round-message");
     await expect(result).not.toHaveText("", { timeout: 8000 });
-    await expect(countdown).toHaveText(/Next round in: \d+s/);
+    await expect.poll(async () => await countdown.textContent()).toMatch(/Next round in: \d+s/);
   });
 
   test("tie message appears on equal stats", async ({ page }) => {
