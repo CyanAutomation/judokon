@@ -81,10 +81,6 @@ describe("classicBattle timer pause", () => {
       clearMessage: vi.fn(),
       updateScore: vi.fn()
     }));
-    vi.doMock("../../../src/helpers/battleEngine.js", async () => {
-      const actual = await vi.importActual("../../../src/helpers/battleEngine.js");
-      return { ...actual, watchForDrift: vi.fn(() => () => {}) };
-    });
 
     battleMod = await import("../../../src/helpers/classicBattle.js");
     store = battleMod.createBattleStore();
@@ -98,10 +94,10 @@ describe("classicBattle timer pause", () => {
   it("does not show auto-select message when stat picked before timer expires", async () => {
     await battleMod.startRound(store);
     timer.advanceTimersByTime(900);
-    const p = battleMod.handleStatSelection(store, "power");
-    await vi.runAllTimersAsync();
-    await p;
-    await vi.runAllTimersAsync();
+    const promise = battleMod.handleStatSelection(store, "power");
+    timer.advanceTimersByTime(1000);
+    await promise;
+    timer.advanceTimersByTime(10000);
     const messages = showMessage.mock.calls.map((c) => c[0]);
     expect(messages.some((m) => /Time's up! Auto-selecting/.test(m))).toBe(false);
   });

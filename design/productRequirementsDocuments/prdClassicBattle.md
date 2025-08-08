@@ -111,6 +111,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - The opponent card displays a placeholder ("Mystery Judoka") until the player selects a stat ([prdMysteryCard.md](prdMysteryCard.md)).
 - Player can select a stat within 30 seconds; if not, the system auto-selects a random stat automatically. **Timer and prompt are surfaced in the Info Bar.**
 - Stat-selection timer stops the moment a stat is chosen.
+- "Time's up! Auto-selecting <stat>" appears only if no stat was chosen before the timer expires.
 - After selection, the correct comparison is made, and the score updates based on round outcome.
 - After the player selects a stat, the Info Bar shows "Opponent is choosing..." until the opponent's stat is revealed.
 - If the selected stats are equal, a tie message displays and the round ends.
