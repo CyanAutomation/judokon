@@ -100,7 +100,7 @@ svg {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: var(--space-lg) var(--space-lg) 0; /* 24px bottom gap handled by button */
+  padding: var(--space-lg) var(--space-lg);
   min-height: 60vh; /* fallback */
   min-height: 60dvh;
   border-radius: var(--radius-lg);
