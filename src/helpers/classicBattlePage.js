@@ -3,14 +3,15 @@
  *
  * @pseudocode
  * 1. Import battle helpers, settings loader and DOM ready utility.
- * 2. Define `enableStatButtons` to toggle disabled state on all stat buttons.
- * 3. Define `startRoundWrapper` that:
+ * 2. Create a shared `battleStore` and expose it on `window`.
+ * 3. Define `enableStatButtons` to toggle disabled state on all stat buttons.
+ * 4. Define `startRoundWrapper` that:
  *    a. Disables stat buttons.
  *    b. Calls `startRound` from `classicBattle.js`.
  *    c. Waits for the Mystery card to render using `waitForComputerCard`.
  *    d. In simulated opponent mode, select a stat via `simulateOpponentStat`
  *       and await `handleStatSelection`; otherwise re-enable stat buttons.
- * 4. Define `setupClassicBattlePage` to:
+ * 5. Define `setupClassicBattlePage` to:
  *    a. Load feature flags and set `data-*` attributes on `#battle-area`.
  *    b. Attach click and keyboard listeners on stat buttons that call
  *       `handleStatSelection` and display a snackbar with the chosen stat when
@@ -24,7 +25,7 @@
  *       `data-orientation` attribute.
  *    h. Listen for `storage` events and update the Test Mode banner and
  *       `data-test-mode` attribute when settings change.
- * 5. Execute `setupClassicBattlePage` with `onDomReady`.
+ * 6. Execute `setupClassicBattlePage` with `onDomReady`.
  */
 import {
   createBattleStore,
@@ -53,6 +54,8 @@ function enableStatButtons(enable = true) {
 }
 
 const battleStore = createBattleStore();
+window.battleStore = battleStore;
+export const getBattleStore = () => battleStore;
 let simulatedOpponentMode = false;
 let aiDifficulty = "easy";
 
