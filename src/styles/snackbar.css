@@ -5,7 +5,7 @@
   background-color: var(--color-tertiary);
   color: color-contrast(var(--color-tertiary) vs var(--color-text), var(--color-text-inverted));
   text-align: center;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   padding: var(--space-md);
   position: fixed;
   z-index: 1000;
