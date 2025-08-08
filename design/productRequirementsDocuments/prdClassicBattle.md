@@ -115,7 +115,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - After the player selects a stat, the Info Bar shows "Opponent is choosing..." until the opponent's stat is revealed.
 - If the selected stats are equal, a tie message displays and the round ends.
 - Cooldown timer to enable the next round starts only after round results are shown.
-- After the match ends, a summary panel displays the final result and score with a Replay button that restarts the match.
+- After the match ends, a modal appears showing the final result and score with **Quit Match** and **Next Match** buttons; **Quit Match** exits to the main menu and **Next Match** starts a new match.
 - Player can quit mid-match; confirmation prompt appears; if confirmed, match ends with player loss recorded.
 - After confirming the quit action, the player is returned to the main menu (index.html).
 - If AI difficulty affects stat selection, AI uses correct logic per difficulty setting.
