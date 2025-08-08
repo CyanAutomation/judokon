@@ -14,7 +14,6 @@ import { registerCommonRoutes } from "./commonRoutes.js";
 export const test = base.extend({
   /** @type {import('@playwright/test').Page} */
   page: async ({ page }, use) => {
-    await registerCommonRoutes(page);
     await page.addInitScript(() => {
       localStorage.clear();
       localStorage.setItem(
@@ -22,6 +21,7 @@ export const test = base.extend({
         JSON.stringify({ featureFlags: { enableTestMode: { enabled: true } } })
       );
     });
+    await registerCommonRoutes(page);
     await use(page);
   }
 });
