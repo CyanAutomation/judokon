@@ -78,7 +78,7 @@ const SAVE_DELAY_MS = 100;
  * 2. Throw an error if `localStorage` is unavailable.
  * 3. Retrieve the JSON string stored under `SETTINGS_KEY`.
  *    - When no value exists, return `DEFAULT_SETTINGS`.
- * 4. Parse the JSON and merge with `DEFAULT_SETTINGS`.
+ * 4. Parse the JSON and deep merge nested objects with `DEFAULT_SETTINGS`.
  * 5. Validate the merged object with `settingsSchema`.
  * 6. Return the validated settings or throw on failure.
  *
@@ -95,7 +95,22 @@ export async function loadSettings() {
   }
   try {
     const parsed = JSON.parse(raw);
-    const merged = { ...DEFAULT_SETTINGS, ...parsed };
+    const merged = {
+      ...DEFAULT_SETTINGS,
+      ...parsed,
+      featureFlags: {
+        ...DEFAULT_SETTINGS.featureFlags,
+        ...parsed.featureFlags
+      },
+      gameModes: {
+        ...DEFAULT_SETTINGS.gameModes,
+        ...parsed.gameModes
+      },
+      tooltipIds: {
+        ...DEFAULT_SETTINGS.tooltipIds,
+        ...parsed.tooltipIds
+      }
+    };
     await validateWithSchema(merged, await getSettingsSchema());
     return merged;
   } catch (error) {
