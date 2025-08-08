@@ -14,7 +14,8 @@ import {
   handleStatSelection as engineHandleStatSelection,
   quitMatch as engineQuitMatch,
   _resetForTest as engineReset,
-  STATS
+  STATS,
+  pauseTimer
 } from "./battleEngine.js";
 import * as infoBar from "./setupBattleInfoBar.js";
 import { getStatValue, resetStatButtons, showResult } from "./battle/index.js";
@@ -175,7 +176,7 @@ export function evaluateRound(store, stat) {
  * Handle player stat selection with a brief delay to reveal the opponent card.
  *
  * @pseudocode
- * 1. Clear any pending timeouts.
+ * 1. Pause the round timer and clear any pending timeouts.
  * 2. Clear the countdown and show "Opponent is choosing…" in the info bar.
  * 3. After a short delay, reveal the opponent card and evaluate the round.
  * 4. Reset stat buttons and schedule the next round.
@@ -191,6 +192,7 @@ export async function handleStatSelection(store, stat) {
     return { matchEnded: false };
   }
   store.selectionMade = true;
+  pauseTimer();
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   infoBar.clearTimer();
