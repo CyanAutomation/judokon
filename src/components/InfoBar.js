@@ -180,6 +180,11 @@ export function clearTimer() {
  */
 export function startCountdown(seconds, onFinish) {
   if (!timerEl) return;
+  if (seconds <= 0) {
+    clearTimer();
+    if (typeof onFinish === "function") onFinish();
+    return;
+  }
 
   const onTick = (remaining) => {
     if (remaining <= 0) {
@@ -196,15 +201,13 @@ export function startCountdown(seconds, onFinish) {
     if (typeof onFinish === "function") onFinish();
   };
 
-  const handleDrift = createDriftHandler((rem) => run(rem), onExpired);
-
-  const run = (dur) => {
-    startCoolDown(onTick, onExpired, dur);
-    if (stopWatch) stopWatch();
-    stopWatch = watchForDrift(dur, handleDrift);
+  let handleDrift;
+  const restart = (rem) => {
+    stopWatch = runCountdown(rem, onTick, onExpired, handleDrift, stopWatch);
   };
+  handleDrift = createDriftHandler(restart, onExpired);
 
-  run(seconds);
+  stopWatch = runCountdown(seconds, onTick, onExpired, handleDrift, stopWatch);
 }
 
 /**
@@ -223,6 +226,12 @@ export function startCountdown(seconds, onFinish) {
 export function updateScore(playerScore, computerScore) {
   if (!scoreEl) return;
   animateScore(playerScore, computerScore);
+}
+
+function runCountdown(duration, onTick, onExpired, handleDrift, prevStopWatch) {
+  startCoolDown(onTick, onExpired, duration);
+  if (prevStopWatch) prevStopWatch();
+  return watchForDrift(duration, handleDrift);
 }
 
 function createDriftHandler(restartFn, onGiveUp) {
