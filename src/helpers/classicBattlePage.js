@@ -18,7 +18,7 @@
  *    c. Set `window.startRoundOverride` to `startRoundWrapper` so the battle
  *       module uses it for subsequent rounds.
  *    d. Toggle the debug panel and viewport simulation flags.
- *    e. Invoke `startRoundWrapper` to begin the match.
+ *    e. Show a round selection modal that sets points-to-win and starts the first round.
  *    f. Initialize tooltips and show the stat help tooltip once for new users.
  *    g. Watch for orientation changes and update the battle header's
  *       `data-orientation` attribute.
@@ -42,6 +42,7 @@ import { loadStatNames } from "./stats.js";
 import { STATS } from "./battleEngine.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
+import { initRoundSelectModal } from "./classicBattle/roundSelectModal.js";
 
 function enableStatButtons(enable = true) {
   document.querySelectorAll("#stat-buttons button").forEach((btn) => {
@@ -196,7 +197,7 @@ export async function setupClassicBattlePage() {
   }
 
   window.startRoundOverride = () => startRoundWrapper();
-  startRoundWrapper();
+  await initRoundSelectModal(() => startRoundWrapper());
   await initTooltips();
   watchBattleOrientation();
 
