@@ -21,9 +21,9 @@
     "nextRound": "**Next round**\nBegin when you’re ready.",
     "quitMatch": "**Quit match**\nReturn to the menu.",
     "drawCard": "**Draw card**\nGet a new random judoka card.",
-    "roundQuick": "**Quick match**\\nFirst to 5 points.",
-    "roundMedium": "**Medium match**\\nFirst to 10 points (default).",
-    "roundLong": "**Long match**\\nFirst to 15 points."
+    "roundQuick": "**Quick**\\nFirst to 5 points wins.",
+    "roundMedium": "**Medium**\\nFirst to 10 points wins.",
+    "roundLong": "**Long**\\nFirst to 15 points wins."
   },
 
   "mode": {
