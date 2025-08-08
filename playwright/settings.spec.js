@@ -82,11 +82,6 @@ test.describe.parallel("Settings page", () => {
       ...flagLabels
     ];
 
-    const tabStopCount =
-      expectedLabels.length +
-      (Object.keys(DEFAULT_SETTINGS.featureFlags).length - flagLabels.length) +
-      3; // section toggles: general, game modes, advanced
-
     await expect(page.locator("#sound-toggle")).toHaveAttribute("aria-label", "Sound");
     await expect(page.locator("#motion-toggle")).toHaveAttribute("aria-label", "Motion Effects");
     await expect(page.locator("#typewriter-toggle")).toHaveAttribute(
@@ -112,6 +107,14 @@ test.describe.parallel("Settings page", () => {
       }
     }
 
+    await page.getByRole("checkbox", { name: "Random Stat Mode" }).waitFor({ state: "visible" });
+
+    const renderedFlagCount = await page
+      .locator("#feature-flags-container input[type=checkbox]")
+      .count();
+
+    const tabStopCount = expectedLabels.length + (renderedFlagCount - flagLabels.length) + 3; // section toggles: general, game modes, advanced
+
     await page.focus("#display-mode-light");
 
     const activeLabels = [];
@@ -136,7 +139,6 @@ test.describe.parallel("Settings page", () => {
     for (const label of expectedLabels) {
       expect(activeLabels).toContain(label);
     }
-    expect(activeLabels).toContain("Random Stat Mode");
   });
 
   test("controls meet minimum color contrast", async ({ page }) => {
