@@ -74,7 +74,7 @@ describe("classicBattle button handlers", () => {
 
   it("quit button invokes quitMatch", async () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
-    battleMod.createBattleStore();
+    window.battleStore = battleMod.createBattleStore();
     document.getElementById("quit-match-button").click();
     const confirmBtn = document.getElementById("confirm-quit-button");
     expect(confirmBtn).not.toBeNull();
@@ -90,7 +90,7 @@ describe("classicBattle button handlers", () => {
     homeLink.dataset.testid = "home-link";
     header.appendChild(homeLink);
     const battleMod = await import("../../../src/helpers/classicBattle.js");
-    battleMod.createBattleStore();
+    window.battleStore = battleMod.createBattleStore();
     await import("../../../src/helpers/setupClassicBattleHomeLink.js");
     const beforeHref = window.location.href;
     homeLink.click();
