@@ -55,8 +55,17 @@ export function renderFeatureFlagSwitches(
     desc.id = `feature-${kebab}-desc`;
     desc.textContent = description;
     wrapper.appendChild(desc);
-    if (input) input.setAttribute("aria-describedby", desc.id);
-    container.appendChild(wrapper);
+    if (input) {
+      input.setAttribute("aria-describedby", desc.id);
+      input.removeAttribute("tabindex");
+      input.tabIndex = 0;
+    }
+    const firstHidden = container.querySelector(":scope > [hidden]");
+    if (firstHidden) {
+      container.insertBefore(wrapper, firstHidden);
+    } else {
+      container.appendChild(wrapper);
+    }
     if (!input) return;
     input.addEventListener("change", () => {
       const currentLabel = tooltipMap[`${tipId}.label`] || flag;

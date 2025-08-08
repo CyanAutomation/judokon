@@ -35,7 +35,10 @@ test.describe.parallel("Settings page", () => {
     }
     await page.locator("#general-settings-toggle").click();
     await page.locator("#game-modes-toggle").click();
-    await page.locator("#advanced-settings-toggle").click();
+    const advancedContent = page.locator("#advanced-settings-content");
+    if (await advancedContent.getAttribute("hidden")) {
+      await page.locator("#advanced-settings-toggle").click();
+    }
   });
 
   test("page loads", async ({ page }) => {
@@ -81,7 +84,8 @@ test.describe.parallel("Settings page", () => {
 
     const tabStopCount =
       expectedLabels.length +
-      (Object.keys(DEFAULT_SETTINGS.featureFlags).length - flagLabels.length);
+      (Object.keys(DEFAULT_SETTINGS.featureFlags).length - flagLabels.length) +
+      3; // section toggles: general, game modes, advanced
 
     await expect(page.locator("#sound-toggle")).toHaveAttribute("aria-label", "Sound");
     await expect(page.locator("#motion-toggle")).toHaveAttribute("aria-label", "Motion Effects");
@@ -132,6 +136,7 @@ test.describe.parallel("Settings page", () => {
     for (const label of expectedLabels) {
       expect(activeLabels).toContain(label);
     }
+    expect(activeLabels).toContain("Random Stat Mode");
   });
 
   test("controls meet minimum color contrast", async ({ page }) => {
