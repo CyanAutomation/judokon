@@ -46,6 +46,7 @@ test.describe.parallel("Classic battle flow", () => {
 
   test("quit match confirmation", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
+    await page.waitForFunction(() => window.homeLinkReady);
     await page.locator("[data-testid='home-link']").click();
     const confirmButton = page.locator("#confirm-quit-button");
     await confirmButton.waitFor();
