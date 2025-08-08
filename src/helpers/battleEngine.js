@@ -268,8 +268,8 @@ export function getTimerState() {
  *    b. Compute `elapsed = floor((Date.now() - start) / 1000)` and
  *       `expected = duration - elapsed`.
  *    c. Skip drift checks when the timer is paused.
- *    d. If `abs(remaining - expected)` > `DRIFT_THRESHOLD`:
- *       i. Clear the monitoring interval.
+ *    d. If `remaining - expected` > `DRIFT_THRESHOLD`:
+ *       i. The timer is behind schedule; clear the monitoring interval.
  *       ii. If `onDrift` is a function, invoke it with current remaining time.
  * 3. Return a function that clears the monitoring interval to stop drift detection.
  *
@@ -288,7 +288,7 @@ export function watchForDrift(duration, onDrift) {
     const expected = duration - elapsed;
     const { remaining, paused } = getTimerState();
     if (paused) return;
-    if (Math.abs(remaining - expected) > DRIFT_THRESHOLD) {
+    if (remaining - expected > DRIFT_THRESHOLD) {
       clearInterval(interval);
       if (typeof onDrift === "function") onDrift(remaining);
     }
