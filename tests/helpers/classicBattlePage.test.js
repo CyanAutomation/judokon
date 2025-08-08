@@ -348,20 +348,21 @@ describe("syncScoreDisplay", () => {
     );
 
     syncScoreDisplay();
-    showMatchSummaryModal({ message: "", playerScore: 1, computerScore: 2 }, vi.fn());
+    const handleReplay = vi.fn();
+    showMatchSummaryModal({ message: "", playerScore: 1, computerScore: 2 }, handleReplay);
     let board = document.getElementById("score-display").textContent;
-    let summaryEls = document.querySelectorAll("#match-summary-score");
-    let summary = summaryEls[summaryEls.length - 1].textContent;
+    let summary = document.querySelector(".modal-backdrop #match-summary-score").textContent;
     let match = board.match(/You: (\d+)\nOpponent: (\d+)/);
     expect(summary).toBe(`Final Score – You: ${match[1]} Opponent: ${match[2]}`);
+    document.getElementById("match-summary-next").click();
+    expect(handleReplay).toHaveBeenCalled();
 
     document.querySelectorAll(".modal-backdrop").forEach((el) => el.remove());
 
     syncScoreDisplay();
     showMatchSummaryModal({ message: "", playerScore: 3, computerScore: 4 }, vi.fn());
     board = document.getElementById("score-display").textContent;
-    summaryEls = document.querySelectorAll("#match-summary-score");
-    summary = summaryEls[summaryEls.length - 1].textContent;
+    summary = document.querySelector(".modal-backdrop #match-summary-score").textContent;
     match = board.match(/You: (\d+)\nOpponent: (\d+)/);
     expect(summary).toBe(`Final Score – You: ${match[1]} Opponent: ${match[2]}`);
   });
