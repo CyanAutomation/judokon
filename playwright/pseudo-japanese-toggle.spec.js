@@ -19,7 +19,13 @@ test.describe.parallel("Pseudo-Japanese toggle", () => {
       route.fulfill({ path: META_FIXTURE })
     );
     await page.addInitScript(() =>
-      localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }))
+      localStorage.setItem(
+        "settings",
+        JSON.stringify({
+          typewriterEffect: false,
+          featureFlags: { enableTestMode: { enabled: true } }
+        })
+      )
     );
     await page.goto("/src/pages/meditation.html");
     await page.waitForSelector("#quote .quote-content");

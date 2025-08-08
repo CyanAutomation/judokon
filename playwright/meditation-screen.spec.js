@@ -4,7 +4,13 @@ import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 test.describe.parallel("Meditation screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() =>
-      localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }))
+      localStorage.setItem(
+        "settings",
+        JSON.stringify({
+          typewriterEffect: false,
+          featureFlags: { enableTestMode: { enabled: true } }
+        })
+      )
     );
     await page.goto("/src/pages/meditation.html");
   });

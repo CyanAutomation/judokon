@@ -15,7 +15,11 @@ test.describe.parallel(
         await page.addInitScript((mode) => {
           localStorage.setItem(
             "settings",
-            JSON.stringify({ displayMode: mode, typewriterEffect: false })
+            JSON.stringify({
+              displayMode: mode,
+              typewriterEffect: false,
+              featureFlags: { enableTestMode: { enabled: true } }
+            })
           );
         }, mode);
         await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
@@ -26,7 +30,11 @@ test.describe.parallel(
         await page.addInitScript((mode) => {
           localStorage.setItem(
             "settings",
-            JSON.stringify({ displayMode: mode, typewriterEffect: false })
+            JSON.stringify({
+              displayMode: mode,
+              typewriterEffect: false,
+              featureFlags: { enableTestMode: { enabled: true } }
+            })
           );
         }, mode);
         await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
