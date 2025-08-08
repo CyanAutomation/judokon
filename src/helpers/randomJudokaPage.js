@@ -31,6 +31,7 @@ import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
+import { setTestMode } from "./testModeUtils.js";
 
 const DRAW_ICON =
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m600-200-56-57 143-143H300q-75 0-127.5-52.5T120-580q0-75 52.5-127.5T300-760h20v80h-20q-42 0-71 29t-29 71q0 42 29 71t71 29h387L544-624l56-56 240 240-240 240Z"/></svg>';
@@ -52,6 +53,8 @@ export async function setupRandomJudokaPage() {
       }
     };
   }
+
+  setTestMode(Boolean(settings.featureFlags.enableTestMode?.enabled));
 
   // Apply global motion preference
   applyMotionPreference(settings.motionEffects);
