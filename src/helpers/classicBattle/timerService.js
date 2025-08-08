@@ -4,6 +4,7 @@ import { startRound as engineStartRound, startCoolDown, STATS } from "../battleE
 import * as infoBar from "../setupBattleInfoBar.js";
 import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from "./uiHelpers.js";
 import { runTimerWithDrift } from "./runTimerWithDrift.js";
+import { showSnackbar } from "../showSnackbar.js";
 
 /**
  * Start the round timer and auto-select a random stat when time expires.
@@ -86,7 +87,8 @@ export function handleStatSelectionTimeout(store, onSelect) {
  * @pseudocode
  * 1. If the match ended, return early.
  * 2. Setup a click handler that disables the button and calls `startRoundFn`.
- * 3. After a short delay, run a 3 second cooldown via `runTimerWithDrift(startCoolDown)`.
+ * 3. After a short delay, run a 3 second cooldown via `runTimerWithDrift(startCoolDown)`
+ *    and display `"Next round in: <n>s"` with `showSnackbar`.
  * 4. When expired, enable the button and attach the click handler.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
@@ -103,15 +105,12 @@ export function scheduleNextRound(result, startRoundFn) {
     await startRoundFn();
   };
 
-  const timerEl = document.getElementById("next-round-timer");
-
   const onTick = (remaining) => {
-    if (!timerEl) return;
     if (remaining <= 0) {
       infoBar.clearTimer();
       return;
     }
-    timerEl.textContent = `Next round in: ${remaining}s`;
+    showSnackbar(`Next round in: ${remaining}s`);
   };
 
   const onExpired = () => {

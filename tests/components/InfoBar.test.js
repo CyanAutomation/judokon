@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
+vi.mock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn() }));
 import {
   createInfoBar,
   initInfoBar,
@@ -11,6 +12,7 @@ import {
   startCountdown,
   updateScore
 } from "../../src/components/InfoBar.js";
+import { showSnackbar } from "../../src/helpers/showSnackbar.js";
 import * as battleEngine from "../../src/helpers/battleEngine.js";
 import { createInfoBarHeader } from "../utils/testUtils.js";
 
@@ -18,6 +20,7 @@ describe("InfoBar component", () => {
   let header;
 
   beforeEach(() => {
+    showSnackbar.mockClear();
     header = document.createElement("header");
     createInfoBar(header);
     document.body.appendChild(header);
@@ -56,14 +59,14 @@ describe("InfoBar component", () => {
     expect(document.getElementById("round-message").textContent).toBe("");
   });
 
-  it("startCountdown updates timer each second", () => {
+  it("startCountdown shows snackbar each second", () => {
     const timer = vi.useFakeTimers();
     startCountdown(2);
-    expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 2s");
+    expect(showSnackbar).toHaveBeenCalledWith("Next round in: 2s");
     timer.advanceTimersByTime(1000);
-    expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 1s");
+    expect(showSnackbar).toHaveBeenCalledWith("Next round in: 1s");
     timer.advanceTimersByTime(1000);
-    expect(document.getElementById("next-round-timer").textContent).toBe("");
+    expect(showSnackbar).toHaveBeenCalledTimes(2);
     timer.clearAllTimers();
   });
 
@@ -89,9 +92,9 @@ describe("InfoBar component", () => {
     updateScore(2, 3);
     expect(document.getElementById("score-display").textContent).toBe("You: 2\nOpponent: 3");
     startCountdown(1);
-    expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 1s");
+    expect(showSnackbar).toHaveBeenCalledWith("Next round in: 1s");
     timer.advanceTimersByTime(1000);
-    expect(document.getElementById("next-round-timer").textContent).toBe("");
+    expect(showSnackbar).toHaveBeenCalledTimes(1);
     timer.clearAllTimers();
   });
 });
