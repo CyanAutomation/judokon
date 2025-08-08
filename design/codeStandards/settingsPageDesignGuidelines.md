@@ -88,7 +88,7 @@ Reuse the following markup for general settings, game modes, and feature flags:
 
 - Ensure all new elements work across Light, Dark, and High Contrast themes.
 
-- Snackbars should use `--color-tertiary` as the background to avoid
+- Snackbars should use `--color-tertiary` as the background with a contrasting border, to avoid
   clashing with the bottom navigation bar.
 
 - **Spacing and Sizing**
