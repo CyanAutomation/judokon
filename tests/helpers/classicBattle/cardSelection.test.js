@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
+import { createBattleHeader, createBattleCardContainers, resetDom } from "../../utils/testUtils.js";
 vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
@@ -33,7 +33,7 @@ vi.mock("../../../src/helpers/utils.js", () => ({
   createGokyoLookup: () => ({})
 }));
 
-describe("classicBattle card selection", () => {
+describe.sequential("classicBattle card selection", () => {
   let timerSpy;
   beforeEach(() => {
     document.body.innerHTML = "";
@@ -51,7 +51,9 @@ describe("classicBattle card selection", () => {
   });
 
   afterEach(() => {
+    // Clear timers then fully reset DOM and module state between tests
     timerSpy.clearAllTimers();
+    resetDom();
   });
 
   it("draws a different card for the computer", async () => {
@@ -71,6 +73,8 @@ describe("classicBattle card selection", () => {
       return callCount === 1 ? { id: 1 } : { id: 2 };
     });
     const battleMod = await import("../../../src/helpers/classicBattle.js");
+    // Ensure the mocked JudokaCard.render returns an element after module mocks initialize
+    renderMock = vi.fn(async () => document.createElement("div"));
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await battleMod.startRound(store);
@@ -100,6 +104,7 @@ describe("classicBattle card selection", () => {
     });
     getRandomJudokaMock = vi.fn(() => ({ id: 2 }));
     const battleMod = await import("../../../src/helpers/classicBattle.js");
+    renderMock = vi.fn(async () => document.createElement("div"));
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await battleMod.startRound(store);
@@ -176,11 +181,12 @@ describe("classicBattle card selection", () => {
   });
 
   it("logs an error when JudokaCard.render does not return an element", async () => {
-    renderMock = vi.fn(async () => "nope");
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const { drawCards, _resetForTest } = await import(
       "../../../src/helpers/classicBattle/cardSelection.js"
     );
+    // Override after import to ensure the mock is used by constructor
+    renderMock = vi.fn(async () => "nope");
     _resetForTest();
     await drawCards();
     expect(consoleSpy).toHaveBeenCalledWith("JudokaCard did not render an HTMLElement");
