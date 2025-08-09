@@ -1,13 +1,17 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 
 const originalFetch = global.fetch;
 
-const mockCountryService = {
+vi.mock("../../src/helpers/api/countryService.js", () => ({
   loadCountryMapping: vi.fn(),
   getFlagUrl: vi.fn()
-};
+}));
 
-vi.mock("../../src/helpers/api/countryService.js", () => mockCountryService);
+import { loadCountryMapping, getFlagUrl } from "../../src/helpers/api/countryService.js";
+
+beforeEach(() => {
+  getFlagUrl.mockImplementation((code) => `https://flagcdn.com/w320/${code}.png`);
+});
 
 afterEach(() => {
   global.fetch = originalFetch;
@@ -28,8 +32,7 @@ describe("populateCountryList", () => {
       ca: { country: "Canada", code: "ca", active: true },
       jp: { country: "Japan", code: "jp", active: true }
     };
-    mockCountryService.loadCountryMapping.mockResolvedValue(mapping);
-    mockCountryService.getFlagUrl.mockImplementation(async (code) => `https://flags/${code}.png`);
+    loadCountryMapping.mockResolvedValue(mapping);
 
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => judoka });
 
@@ -49,8 +52,7 @@ describe("populateCountryList", () => {
     const mapping = {
       jp: { country: "Japan", code: "jp", active: true }
     };
-    mockCountryService.loadCountryMapping.mockResolvedValue(mapping);
-    mockCountryService.getFlagUrl.mockResolvedValue("https://flags/jp.png");
+    loadCountryMapping.mockResolvedValue(mapping);
 
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => judoka });
 
@@ -70,8 +72,7 @@ describe("populateCountryList", () => {
     const mapping = {
       jp: { country: "Japan", code: "jp", active: true }
     };
-    mockCountryService.loadCountryMapping.mockResolvedValue(mapping);
-    mockCountryService.getFlagUrl.mockResolvedValue("https://flags/jp.png");
+    loadCountryMapping.mockResolvedValue(mapping);
 
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => judoka });
 
@@ -106,8 +107,7 @@ describe("populateCountryList", () => {
     for (const [country, code] of codeMap) {
       mapping[code] = { country, code, active: true };
     }
-    mockCountryService.loadCountryMapping.mockResolvedValue(mapping);
-    mockCountryService.getFlagUrl.mockImplementation(async (code) => `https://flags/${code}.png`);
+    loadCountryMapping.mockResolvedValue(mapping);
 
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => judoka });
 
@@ -133,8 +133,7 @@ describe("populateCountryList", () => {
   });
 
   it("handles fetch failure gracefully", async () => {
-    mockCountryService.loadCountryMapping.mockResolvedValue({});
-    mockCountryService.getFlagUrl.mockResolvedValue("https://flags/jp.png");
+    loadCountryMapping.mockResolvedValue({});
     global.fetch = vi.fn().mockRejectedValue(new Error("network error"));
     const { populateCountryList } = await import("../../src/helpers/country/list.js");
     const container = document.createElement("div");
@@ -150,8 +149,7 @@ describe("populateCountryList", () => {
     const mapping = {
       jp: { country: "Japan", code: "jp", active: true }
     };
-    mockCountryService.loadCountryMapping.mockResolvedValue(mapping);
-    mockCountryService.getFlagUrl.mockResolvedValue("https://flags/jp.png");
+    loadCountryMapping.mockResolvedValue(mapping);
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => judoka });
     const { populateCountryList } = await import("../../src/helpers/country/list.js");
     const container = document.createElement("div");
@@ -163,8 +161,7 @@ describe("populateCountryList", () => {
   });
 
   it("shows a message if no countries are found", async () => {
-    mockCountryService.loadCountryMapping.mockResolvedValue({});
-    mockCountryService.getFlagUrl.mockResolvedValue("");
+    loadCountryMapping.mockResolvedValue({});
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => [] });
     const { populateCountryList } = await import("../../src/helpers/country/list.js");
     const container = document.createElement("div");
