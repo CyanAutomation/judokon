@@ -14,7 +14,7 @@ describe("createCountrySlider", () => {
       c.appendChild(slideB);
     });
 
-    vi.doMock("../../src/helpers/country/index.js", () => ({ populateCountryList }));
+    vi.doMock("../../src/helpers/country/list.js", () => ({ populateCountryList }));
 
     const { createCountrySlider } = await import("../../src/helpers/countrySlider.js");
 

@@ -1,4 +1,4 @@
-import { populateCountryList } from "./country/index.js";
+import { populateCountryList } from "./country/list.js";
 
 /**
  * Build a horizontally scrolling slider of country flags for filtering judoka cards by country.
