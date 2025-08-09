@@ -18,6 +18,11 @@
         "type": "string",
         "description": "The name of the technique in Japanese."
       },
+      "style": {
+        "type": "string",
+        "description": "The related martial art.",
+        "enum": ["Judo", "Karate"]
+      },
       "category": {
         "type": "string",
         "description": "The main category of the technique.",
@@ -38,6 +43,6 @@
         "description": "A URL link to more information about the technique."
       }
     },
-    "required": ["id", "name", "japanese", "category", "subCategory", "description", "link"]
+    "required": ["id", "name", "japanese", "style", "category", "subCategory", "description", "link"]
   }
 }
