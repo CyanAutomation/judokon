@@ -2,13 +2,12 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 
 const originalFetch = global.fetch;
 
-const mockCountryUtils = {
-  listCountries: vi.fn(),
-  getCodeByCountry: vi.fn(),
-  normalizeCode: vi.fn((c) => c?.toLowerCase())
+const mockCountryService = {
+  loadCountryMapping: vi.fn(),
+  getFlagUrl: vi.fn()
 };
 
-vi.mock("../../src/utils/countryCodes.js", () => mockCountryUtils);
+vi.mock("../../src/helpers/api/countryService.js", () => mockCountryService);
 
 afterEach(() => {
   global.fetch = originalFetch;
@@ -24,11 +23,15 @@ describe("populateCountryList", () => {
       { id: 3, firstname: "E", surname: "F", country: "Japan" }
     ];
 
-    mockCountryUtils.listCountries.mockResolvedValue(["Brazil", "Canada", "Japan"]);
-    const codes = { Brazil: "br", Canada: "ca", Japan: "jp" };
-    mockCountryUtils.getCodeByCountry.mockImplementation(async (name) => codes[name]);
+    const mapping = {
+      br: { country: "Brazil", code: "br", active: true },
+      ca: { country: "Canada", code: "ca", active: true },
+      jp: { country: "Japan", code: "jp", active: true }
+    };
+    mockCountryService.loadCountryMapping.mockResolvedValue(mapping);
+    mockCountryService.getFlagUrl.mockImplementation(async (code) => `https://flags/${code}.png`);
 
-    global.fetch = vi.fn().mockResolvedValueOnce({ ok: true, json: async () => judoka });
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => judoka });
 
     const { populateCountryList } = await import("../../src/helpers/country/list.js");
 
@@ -43,10 +46,13 @@ describe("populateCountryList", () => {
   it("applies accessible aria-labels to flag buttons", async () => {
     const judoka = [{ id: 1, firstname: "A", surname: "B", country: "Japan" }];
 
-    mockCountryUtils.listCountries.mockResolvedValue(["Japan"]);
-    mockCountryUtils.getCodeByCountry.mockResolvedValue("jp");
+    const mapping = {
+      jp: { country: "Japan", code: "jp", active: true }
+    };
+    mockCountryService.loadCountryMapping.mockResolvedValue(mapping);
+    mockCountryService.getFlagUrl.mockResolvedValue("https://flags/jp.png");
 
-    global.fetch = vi.fn().mockResolvedValueOnce({ ok: true, json: async () => judoka });
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => judoka });
 
     const { populateCountryList } = await import("../../src/helpers/country/list.js");
 
@@ -61,10 +67,13 @@ describe("populateCountryList", () => {
   it("adds lazy loading to flag images", async () => {
     const judoka = [{ id: 1, firstname: "A", surname: "B", country: "Japan" }];
 
-    mockCountryUtils.listCountries.mockResolvedValue(["Japan"]);
-    mockCountryUtils.getCodeByCountry.mockResolvedValue("jp");
+    const mapping = {
+      jp: { country: "Japan", code: "jp", active: true }
+    };
+    mockCountryService.loadCountryMapping.mockResolvedValue(mapping);
+    mockCountryService.getFlagUrl.mockResolvedValue("https://flags/jp.png");
 
-    global.fetch = vi.fn().mockResolvedValueOnce({ ok: true, json: async () => judoka });
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => judoka });
 
     const { populateCountryList } = await import("../../src/helpers/country/list.js");
 
@@ -93,15 +102,14 @@ describe("populateCountryList", () => {
       })
     );
 
-    mockCountryUtils.listCountries.mockResolvedValue(Array.from(codeMap.keys()).sort());
-    mockCountryUtils.getCodeByCountry.mockImplementation(async (name) => codeMap.get(name));
+    const mapping = {};
+    for (const [country, code] of codeMap) {
+      mapping[code] = { country, code, active: true };
+    }
+    mockCountryService.loadCountryMapping.mockResolvedValue(mapping);
+    mockCountryService.getFlagUrl.mockImplementation(async (code) => `https://flags/${code}.png`);
 
-    global.fetch = vi.fn().mockImplementation((url) => {
-      if (url.includes("judoka.json")) {
-        return Promise.resolve({ ok: true, json: async () => judoka });
-      }
-      return Promise.resolve({ ok: true, json: async () => ({}) });
-    });
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => judoka });
 
     const { populateCountryList } = await import("../../src/helpers/country/list.js");
 
@@ -125,7 +133,8 @@ describe("populateCountryList", () => {
   });
 
   it("handles fetch failure gracefully", async () => {
-    mockCountryUtils.listCountries.mockResolvedValue([]);
+    mockCountryService.loadCountryMapping.mockResolvedValue({});
+    mockCountryService.getFlagUrl.mockResolvedValue("https://flags/jp.png");
     global.fetch = vi.fn().mockRejectedValue(new Error("network error"));
     const { populateCountryList } = await import("../../src/helpers/country/list.js");
     const container = document.createElement("div");
@@ -138,9 +147,12 @@ describe("populateCountryList", () => {
       { id: 1, firstname: "A", surname: "B", country: "Japan" },
       { id: 2, firstname: "C", surname: "D", country: "Japan" }
     ];
-    mockCountryUtils.listCountries.mockResolvedValue(["Japan"]);
-    mockCountryUtils.getCodeByCountry.mockResolvedValue("jp");
-    global.fetch = vi.fn().mockResolvedValueOnce({ ok: true, json: async () => judoka });
+    const mapping = {
+      jp: { country: "Japan", code: "jp", active: true }
+    };
+    mockCountryService.loadCountryMapping.mockResolvedValue(mapping);
+    mockCountryService.getFlagUrl.mockResolvedValue("https://flags/jp.png");
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => judoka });
     const { populateCountryList } = await import("../../src/helpers/country/list.js");
     const container = document.createElement("div");
     await populateCountryList(container);
@@ -151,8 +163,9 @@ describe("populateCountryList", () => {
   });
 
   it("shows a message if no countries are found", async () => {
-    mockCountryUtils.listCountries.mockResolvedValue([]);
-    global.fetch = vi.fn().mockResolvedValueOnce({ ok: true, json: async () => [] });
+    mockCountryService.loadCountryMapping.mockResolvedValue({});
+    mockCountryService.getFlagUrl.mockResolvedValue("");
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => [] });
     const { populateCountryList } = await import("../../src/helpers/country/list.js");
     const container = document.createElement("div");
     await populateCountryList(container);
