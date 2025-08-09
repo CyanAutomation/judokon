@@ -61,26 +61,27 @@ export async function setFlag(flag, value) {
 // Sync changes across tabs by relaying storage events.
 if (typeof window !== "undefined") {
   window.addEventListener("storage", (e) => {
-    if (e.key === "settings") {
-      // Prefer the newValue payload for immediate updates, fallback to loadSettings
-      if (e.newValue) {
-        try {
-          const stored = JSON.parse(e.newValue);
-          cachedFlags = stored.featureFlags || {};
+    // First try parsing the newValue payload directly (covering cross-tab updates and custom events)
+    if (e.newValue) {
+      try {
+        const stored = JSON.parse(e.newValue);
+        if (stored.featureFlags) {
+          cachedFlags = stored.featureFlags;
           featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
-        } catch {
-          // ignore malformed payload
+          return;
         }
-      } else {
-        loadSettings()
-          .then((s) => {
-            cachedFlags = s.featureFlags || {};
-            featureFlagsEmitter.dispatchEvent(
-              new CustomEvent("change", { detail: { flag: null } })
-            );
-          })
-          .catch(() => {});
+      } catch {
+        // ignore malformed payload
       }
+    }
+    // Fallback: when settings key changed or parsing failed, reload persisted settings
+    if (e.key === "settings") {
+      loadSettings()
+        .then((s) => {
+          cachedFlags = s.featureFlags || {};
+          featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
+        })
+        .catch(() => {});
     }
   });
 }
