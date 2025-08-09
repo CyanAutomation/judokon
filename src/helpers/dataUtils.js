@@ -15,7 +15,7 @@ import { getMissingJudokaFields } from "./judokaValidation.js";
  *
  * @returns {boolean} `true` if running under Node.
  */
-function isNodeEnvironment() {
+export function isNodeEnvironment() {
   return Boolean(typeof process !== "undefined" && process?.versions?.node);
 }
 /**
@@ -80,11 +80,13 @@ const schemaCache = new WeakMap();
  *
  * @pseudocode
  * 1. Check the cache for `url` and return the value when present.
- * 2. Request `url` using `fetch` and throw an error when the response is not OK.
- * 3. Parse the response with `response.json()`.
- * 4. When a `schema` is provided, validate the data with `validateWithSchema`.
- * 5. Store the parsed data in the cache and return it.
- * 6. On any error, log the issue, remove a stale cache entry, and rethrow.
+ * 2. Resolve the URL and when running in Node with a `file:` protocol:
+ *    - Read and parse the file with `fs.promises.readFile`.
+ * 3. Otherwise request `url` using `fetch` and throw an error when the response is not OK.
+ * 4. Parse the response or file contents as JSON.
+ * 5. When a `schema` is provided, validate the data with `validateWithSchema`.
+ * 6. Store the parsed data in the cache and return it.
+ * 7. On any error, log the issue, remove a stale cache entry, and rethrow.
  *
  * @template T
  * @param {string} url - The URL to fetch data from.
@@ -98,12 +100,18 @@ export async function fetchJson(url, schema) {
       return dataCache.get(url);
     }
 
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${url} (HTTP ${response.status})`);
+    const parsedUrl = new URL(url, "http://localhost");
+    let data;
+    if (isNodeEnvironment() && parsedUrl.protocol === "file:") {
+      const { readFile } = await import("fs/promises");
+      data = JSON.parse(await readFile(parsedUrl, "utf8"));
+    } else {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${url} (HTTP ${response.status})`);
+      }
+      data = await response.json();
     }
-
-    const data = await response.json();
     if (schema) {
       await validateWithSchema(data, schema);
     }

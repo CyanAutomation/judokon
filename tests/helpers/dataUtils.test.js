@@ -40,6 +40,19 @@ describe("fetchJson", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it("loads and caches data from file URLs without using fetch", async () => {
+    const fileUrl = new URL("../../src/data/statNames.json", import.meta.url).href;
+    const fetchMock = vi.fn();
+    global.fetch = fetchMock;
+    const schema = { type: "array" };
+    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+    const first = await fetchJson(fileUrl, schema);
+    const second = await fetchJson(fileUrl, schema);
+    expect(Array.isArray(first)).toBe(true);
+    expect(second).toBe(first);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("does not share cache between different URLs", async () => {
     const data1 = { foo: "bar" };
     const data2 = { baz: "qux" };
