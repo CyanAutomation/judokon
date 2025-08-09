@@ -59,8 +59,9 @@ export async function setFlag(flag, value) {
 }
 
 // Sync changes across tabs by relaying storage events.
+// Sync changes across tabs by relaying storage events.
 if (typeof window !== "undefined") {
-  window.addEventListener("storage", (e) => {
+  window.addEventListener("storage", async (e) => {
     // First try parsing the newValue payload directly (covering cross-tab updates and custom events)
     if (e.newValue) {
       try {
@@ -76,12 +77,13 @@ if (typeof window !== "undefined") {
     }
     // Fallback: when settings key changed or parsing failed, reload persisted settings
     if (e.key === "settings") {
-      loadSettings()
-        .then((s) => {
-          cachedFlags = s.featureFlags || {};
-          featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
-        })
-        .catch(() => {});
+      try {
+        const s = await loadSettings();
+        cachedFlags = s.featureFlags || {};
+        featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
+      } catch {
+        // ignore errors
+      }
     }
   });
 }
