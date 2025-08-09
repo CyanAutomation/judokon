@@ -1,10 +1,11 @@
 /**
- * Create a battle info bar showing round messages, countdown timer and score.
+ * Create a battle info bar showing round messages, round counter, countdown timer and score.
  *
  * @pseudocode
- * 1. Create three `<p>` elements:
+ * 1. Create four `<p>` elements:
  *    - `#round-message` with `aria-live="polite"`, `aria-atomic="true"`, and `role="status"` for result text.
  *    - `#next-round-timer` with `aria-live="polite"`, `aria-atomic="true"`, and `role="status"` for countdown updates.
+ *    - `#round-counter` with `aria-live="polite"` and `aria-atomic="true"` for the round tracker.
  *    - `#score-display` with `aria-live="polite"` and `aria-atomic="true"` for the match score.
  * 2. Append them to the provided container (typically the page header).
  * 3. Store references to these elements for later updates.
@@ -19,6 +20,7 @@ import { showSnackbar, updateSnackbar } from "../helpers/showSnackbar.js";
 let messageEl;
 let timerEl;
 let scoreEl;
+let roundCounterEl;
 let scoreRafId = 0;
 let currentPlayer = 0;
 let currentComputer = 0;
@@ -36,13 +38,18 @@ export function createInfoBar(container = document.createElement("div")) {
   timerEl.setAttribute("aria-atomic", "true");
   timerEl.setAttribute("role", "status");
 
+  roundCounterEl = document.createElement("p");
+  roundCounterEl.id = "round-counter";
+  roundCounterEl.setAttribute("aria-live", "polite");
+  roundCounterEl.setAttribute("aria-atomic", "true");
+
   scoreEl = document.createElement("p");
   scoreEl.id = "score-display";
   scoreEl.setAttribute("aria-live", "polite");
   // Score announcements use a polite live region; consider throttling if updates are frequent.
   scoreEl.setAttribute("aria-atomic", "true");
 
-  container.append(messageEl, timerEl, scoreEl);
+  container.append(messageEl, timerEl, roundCounterEl, scoreEl);
   return container;
 }
 
@@ -61,6 +68,7 @@ export function initInfoBar(container) {
   if (!container) return;
   messageEl = container.querySelector("#round-message");
   timerEl = container.querySelector("#next-round-timer");
+  roundCounterEl = container.querySelector("#round-counter");
   scoreEl = container.querySelector("#score-display");
 }
 
@@ -165,6 +173,38 @@ export function showAutoSelect(stat) {
 export function clearTimer() {
   if (timerEl) {
     timerEl.textContent = "";
+  }
+}
+
+/**
+ * Update the round counter display.
+ *
+ * @pseudocode
+ * 1. When the round counter element exists, set its text content to
+ *    `"Round <current> of <total>"`.
+ *
+ * @param {number} current - Current round number.
+ * @param {number} total - Total number of rounds.
+ * @returns {void}
+ */
+export function updateRoundCounter(current, total) {
+  if (roundCounterEl) {
+    roundCounterEl.textContent = `Round ${current} of ${total}`;
+  }
+}
+
+/**
+ * Clear the round counter display.
+ *
+ * @pseudocode
+ * 1. If the round counter element exists, set its text content to an empty
+ *    string.
+ *
+ * @returns {void}
+ */
+export function clearRoundCounter() {
+  if (roundCounterEl) {
+    roundCounterEl.textContent = "";
   }
 }
 

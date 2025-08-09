@@ -19,6 +19,7 @@ import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
 import { shouldReduceMotionSync } from "./motionUtils.js";
 import { syncScoreDisplay, showMatchSummaryModal } from "./classicBattle/uiService.js";
+import { CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
 
 /**
  * Determine the opponent's stat choice based on difficulty.
@@ -93,8 +94,10 @@ export async function handleReplay(store) {
  * 1. Reset buttons and disable the Next Round button.
  * 2. Draw player and opponent cards.
  * 3. Sync the score display and show the selection prompt.
- * 4. Start the round timer and stall timeout.
- * 5. Update the debug panel.
+ * 4. Update the round counter using `battleEngine.getRoundsPlayed() + 1` and
+ *    `CLASSIC_BATTLE_MAX_ROUNDS`.
+ * 5. Start the round timer and stall timeout.
+ * 6. Update the debug panel.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
@@ -106,6 +109,8 @@ export async function startRound(store) {
   if (roundResultEl) roundResultEl.textContent = "";
   await drawCards();
   syncScoreDisplay();
+  const currentRound = battleEngine.getRoundsPlayed() + 1;
+  infoBar.updateRoundCounter(currentRound, CLASSIC_BATTLE_MAX_ROUNDS);
   showSelectionPrompt();
   await startTimer((stat, opts) => handleStatSelection(store, stat, opts));
   store.statTimeoutId = setTimeout(
@@ -152,9 +157,10 @@ export function evaluateRound(store, stat) {
  * 2. Clear the countdown and show "Opponent is choosing…" in the info bar,
  *    optionally delaying the message when `delayOpponentMessage` is true.
  * 3. After a short delay, reveal the opponent card and evaluate the round.
- * 4. Reset stat buttons and schedule the next round.
- * 5. If the match ended, show the summary panel.
- * 6. Update the debug panel.
+ * 4. If the match ended, clear the round counter.
+ * 5. Reset stat buttons and schedule the next round.
+ * 6. If the match ended, show the summary panel.
+ * 7. Update the debug panel.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -181,6 +187,9 @@ export async function handleStatSelection(store, stat, options = {}) {
     setTimeout(async () => {
       await revealComputerCard();
       const result = evaluateRound(store, stat);
+      if (result.matchEnded) {
+        infoBar.clearRoundCounter();
+      }
       resetStatButtons();
       scheduleNextRound(result, getStartRound(store));
       if (result.matchEnded) {

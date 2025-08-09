@@ -14,6 +14,7 @@ export const resumeTimer = () => battleEngine.resumeTimer();
 export const handleStatSelection = (...args) => battleEngine.handleStatSelection(...args);
 export const quitMatch = () => battleEngine.quitMatch();
 export const getScores = () => battleEngine.getScores();
+export const getRoundsPlayed = () => battleEngine.getRoundsPlayed();
 export const isMatchEnded = () => battleEngine.isMatchEnded();
 export const getTimerState = () => battleEngine.getTimerState();
 export const watchForDrift = (...args) => battleEngine.watchForDrift(...args);
