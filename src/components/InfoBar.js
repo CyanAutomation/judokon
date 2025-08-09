@@ -14,7 +14,7 @@
  */
 import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
 import { startCoolDown, watchForDrift } from "../helpers/battleEngine.js";
-import { showSnackbar } from "../helpers/showSnackbar.js";
+import { showSnackbar, updateSnackbar } from "../helpers/showSnackbar.js";
 
 let messageEl;
 let timerEl;
@@ -171,7 +171,8 @@ export function clearTimer() {
  *
  * @pseudocode
  * 1. Use `startCoolDown` to update the remaining time each second.
- * 2. On each tick, call `showSnackbar` with `"Next round in: <n>s"`.
+ * 2. Call `showSnackbar` once and update its text each tick with
+ *    `"Next round in: <n>s"`.
  * 3. Monitor for drift via `watchForDrift`; on drift, show "Waiting…" and
  *    restart the countdown, giving up after several retries.
  * 4. When the timer expires, stop monitoring, clear the timer display, and invoke `onFinish`.
@@ -187,12 +188,19 @@ export function startCountdown(seconds, onFinish) {
     return;
   }
 
+  let started = false;
   const onTick = (remaining) => {
     if (remaining <= 0) {
       clearTimer();
       return;
     }
-    showSnackbar(`Next round in: ${remaining}s`);
+    const text = `Next round in: ${remaining}s`;
+    if (!started) {
+      showSnackbar(text);
+      started = true;
+    } else {
+      updateSnackbar(text);
+    }
   };
 
   let stopWatch;

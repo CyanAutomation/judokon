@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { showSnackbar } from "../../src/helpers/showSnackbar.js";
+import { showSnackbar, updateSnackbar } from "../../src/helpers/showSnackbar.js";
 import { SNACKBAR_FADE_MS, SNACKBAR_REMOVE_MS } from "../../src/helpers/constants.js";
 
 beforeEach(() => {
@@ -7,18 +7,20 @@ beforeEach(() => {
 });
 
 describe("showSnackbar", () => {
-  it("shows and removes the snackbar", () => {
+  it("updates text and resets timers", () => {
     vi.useFakeTimers();
     vi.stubGlobal("requestAnimationFrame", (cb) => cb());
 
     showSnackbar("Hello");
+    updateSnackbar("World");
     let bar = document.querySelector(".snackbar");
     expect(bar).toBeTruthy();
+    expect(bar.textContent).toBe("World");
     expect(bar.classList.contains("show")).toBe(true);
 
-    vi.advanceTimersByTime(SNACKBAR_FADE_MS);
-    bar = document.querySelector(".snackbar");
-    expect(bar).toBeTruthy();
+    vi.advanceTimersByTime(SNACKBAR_FADE_MS - 1);
+    expect(bar.classList.contains("show")).toBe(true);
+    vi.advanceTimersByTime(1);
     expect(bar.classList.contains("show")).toBe(false);
 
     vi.advanceTimersByTime(SNACKBAR_REMOVE_MS - SNACKBAR_FADE_MS);

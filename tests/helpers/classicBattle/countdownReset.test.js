@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
+import * as snackbar from "../../../src/helpers/showSnackbar.js";
 
 vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
@@ -38,14 +39,30 @@ describe("countdown resets after stat selection", () => {
       '<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>';
 
     const timer = vi.useFakeTimers();
+    const showSpy = vi.spyOn(snackbar, "showSnackbar");
+    const updateSpy = vi.spyOn(snackbar, "updateSnackbar");
     const p = battleMod.handleStatSelection(store, "power");
     await vi.advanceTimersByTimeAsync(1000);
     await p;
     expect(document.getElementById("next-round-timer").textContent).toBe("");
 
     await vi.advanceTimersByTimeAsync(2000);
+    expect(showSpy).toHaveBeenCalledWith("Next round in: 3s");
+    expect(updateSpy).not.toHaveBeenCalled();
     expect(document.querySelector(".snackbar").textContent).toBe("Next round in: 3s");
     expect(document.getElementById("next-round-timer").textContent).toBe("Next round in: 3s");
+    expect(document.querySelectorAll(".snackbar").length).toBe(1);
+
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(updateSpy).toHaveBeenCalledWith("Next round in: 2s");
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(updateSpy).toHaveBeenCalledWith("Next round in: 1s");
+    expect(showSpy).toHaveBeenCalledTimes(1);
+    expect(updateSpy).toHaveBeenCalledTimes(2);
+    expect(document.querySelectorAll(".snackbar").length).toBe(1);
+
     timer.clearAllTimers();
+    showSpy.mockRestore();
+    updateSpy.mockRestore();
   });
 });
