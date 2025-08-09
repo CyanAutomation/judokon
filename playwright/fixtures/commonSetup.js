@@ -6,7 +6,7 @@
  * 2. Import registerCommonRoutes helper.
  * 3. Extend the base test's page fixture to:
  *    a. Clear localStorage and enable test-mode settings.
- *    b. Inject a MutationObserver to remove unexpected modal backdrops.
+ *    b. Remove unexpected modal backdrops once after DOMContentLoaded.
  *    c. Register common routes.
  * 4. Export the extended test and expect.
  */
@@ -24,10 +24,11 @@ export const test = base.extend({
       );
     });
     await page.addInitScript(() => {
-      const observer = new MutationObserver(() => {
-        document.querySelectorAll(".modal-backdrop")?.forEach((el) => el.remove());
-      });
-      observer.observe(document, { childList: true, subtree: true });
+      document.addEventListener(
+        "DOMContentLoaded",
+        () => document.querySelectorAll(".modal-backdrop").forEach((el) => el.remove()),
+        { once: true }
+      );
     });
     await registerCommonRoutes(page);
     await use(page);
