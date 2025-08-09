@@ -44,6 +44,7 @@ test.describe.parallel(
           })
         );
       });
+      await page.emulateMedia({ reducedMotion: "reduce" });
     });
 
     test("captures portrait and landscape headers", async ({ page }) => {
