@@ -32,7 +32,9 @@ export async function populateCountryList(container) {
     const entries = Object.values(mapping)
       .filter((e) => e.active)
       .sort((a, b) => a.country.localeCompare(b.country));
-    const activeCountries = entries
+    const uniqueEntries = [...new Map(entries.map((e) => [e.country, e])).values()];
+    const nameToCode = new Map(uniqueEntries.map((e) => [e.country, e.code]));
+    const activeCountries = uniqueEntries
       .map((e) => e.country)
       .filter((name) => uniqueCountries.has(name));
 
@@ -42,8 +44,6 @@ export async function populateCountryList(container) {
       container.replaceChildren(message);
       return;
     }
-
-    const nameToCode = new Map(entries.map((e) => [e.country, e.code]));
 
     const allButton = document.createElement("button");
     allButton.className = "flag-button slide";
