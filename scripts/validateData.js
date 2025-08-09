@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -47,6 +48,32 @@ for (const schemaPath of schemaFiles) {
       resolve();
     });
   });
+}
+
+try {
+  const mappingRaw = await readFile(path.join(rootDir, "src/data/countryCodeMapping.json"), "utf8");
+  const mapping = JSON.parse(mappingRaw);
+  const seen = new Set();
+  for (const [code, entry] of Object.entries(mapping)) {
+    if (!/^[a-z]{2}$/.test(code)) {
+      console.error(`Invalid country code key: "${code}". Expected two-letter lowercase ISO code.`);
+      hasErrors = true;
+      continue;
+    }
+    if (seen.has(code)) {
+      console.error(`Duplicate country code detected: "${code}"`);
+      hasErrors = true;
+    } else {
+      seen.add(code);
+    }
+    if (entry.code !== code) {
+      console.error(`Code mismatch for key "${code}": entry.code is "${entry.code}"`);
+      hasErrors = true;
+    }
+  }
+} catch (error) {
+  console.error("Failed to validate countryCodeMapping.json:", error);
+  hasErrors = true;
 }
 
 if (hasErrors) {

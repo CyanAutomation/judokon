@@ -28,9 +28,10 @@ export async function populateCountryList(container) {
     const uniqueCountries = new Set(
       Array.isArray(judoka) ? judoka.map((j) => j.country).filter(Boolean) : []
     );
-    const countryData = await loadCountryCodeMapping();
+    const mapping = await loadCountryCodeMapping();
+    const entries = Object.values(mapping);
     const activeCountries = [...uniqueCountries]
-      .map((name) => countryData.find((entry) => entry.country === name && entry.active))
+      .map((name) => entries.find((entry) => entry.country === name && entry.active))
       .filter(Boolean)
       .sort((a, b) => a.country.localeCompare(b.country));
 

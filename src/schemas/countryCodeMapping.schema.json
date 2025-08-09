@@ -1,29 +1,33 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://judokon.dev/schemas/countryCodeMapping.schema.json",
-  "type": "array",
-  "items": {
-    "type": "object",
-    "properties": {
-      "country": {
-        "type": "string",
-        "description": "The name of the country."
+  "type": "object",
+  "patternProperties": {
+    "^[a-z]{2}$": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "type": "string",
+          "description": "The name of the country."
+        },
+        "code": {
+          "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/CountryCode",
+          "description": "The country code in ISO 3166-1 alpha-2 format."
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp of the last update."
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Indicates whether the country is active."
+        }
       },
-      "code": {
-        "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/CountryCode",
-        "description": "The country code in ISO 3166-1 alpha-2 format."
-      },
-      "lastUpdated": {
-        "type": "string",
-        "format": "date-time",
-        "description": "The timestamp of the last update."
-      },
-      "active": {
-        "type": "boolean",
-        "description": "Indicates whether the country is active."
-      }
-    },
-    "required": ["country", "code", "lastUpdated", "active"],
-    "additionalProperties": false
-  }
+      "required": ["country", "code", "lastUpdated", "active"],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
 }
+
