@@ -6,7 +6,9 @@ import {
   clearMessage,
   showTemporaryMessage,
   clearTimer,
-  showAutoSelect
+  showAutoSelect,
+  updateRoundCounter,
+  clearRoundCounter
 } from "../components/InfoBar.js";
 import { onDomReady } from "./domReady.js";
 
@@ -32,5 +34,7 @@ export {
   clearMessage,
   showTemporaryMessage,
   clearTimer,
-  showAutoSelect
+  showAutoSelect,
+  updateRoundCounter,
+  clearRoundCounter
 };

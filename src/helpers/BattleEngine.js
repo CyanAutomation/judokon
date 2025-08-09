@@ -263,6 +263,18 @@ export class BattleEngine {
     return { playerScore: this.playerScore, computerScore: this.computerScore };
   }
 
+  /**
+   * Get the number of rounds played so far.
+   *
+   * @pseudocode
+   * 1. Return `roundsPlayed`.
+   *
+   * @returns {number}
+   */
+  getRoundsPlayed() {
+    return this.roundsPlayed;
+  }
+
   isMatchEnded() {
     return this.matchEnded;
   }
