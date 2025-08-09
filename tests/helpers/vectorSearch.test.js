@@ -1,13 +1,22 @@
 // @vitest-environment node
 import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
 
-const originalFetch = global.fetch;
+vi.mock("../../src/helpers/dataUtils.js", () => ({
+  fetchJson: vi.fn()
+}));
 
-beforeEach(() => {
+const originalFetch = global.fetch;
+let fetchJsonMock;
+
+beforeEach(async () => {
   vi.resetModules();
+  fetchJsonMock = (await import("../../src/helpers/dataUtils.js")).fetchJson;
+  fetchJsonMock.mockReset();
+  fetchJsonMock.mockResolvedValue(sample);
 });
 
 afterEach(() => {
+  fetchJsonMock.mockReset();
   global.fetch = originalFetch;
 });
 
@@ -18,17 +27,16 @@ const sample = [
 
 describe("vectorSearch", () => {
   it("loads embeddings once and caches", async () => {
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sample });
     const { loadEmbeddings } = await import("../../src/helpers/vectorSearch.js");
     const first = await loadEmbeddings();
     const second = await loadEmbeddings();
     expect(first).toEqual(sample);
     expect(second).toBe(first);
-    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(fetchJsonMock).toHaveBeenCalledTimes(1);
   });
 
   it("returns null when loading fails", async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
+    fetchJsonMock.mockRejectedValueOnce(new Error("fail"));
     const { loadEmbeddings } = await import("../../src/helpers/vectorSearch.js");
     const result = await loadEmbeddings();
     expect(result).toBeNull();
@@ -41,7 +49,6 @@ describe("vectorSearch", () => {
   });
 
   it("finds top matches", async () => {
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sample });
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 0], 1);
     expect(res.length).toBe(1);
@@ -50,7 +57,6 @@ describe("vectorSearch", () => {
   });
 
   it("filters by tags", async () => {
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sample });
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 0], 1, ["foo"]);
     expect(res[0].id).toBe("a");
@@ -59,14 +65,12 @@ describe("vectorSearch", () => {
   });
 
   it("boosts results containing exact query terms", async () => {
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sample });
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 1], 2, [], "B");
     expect(res[0].id).toBe("b");
   });
 
   it("returns empty array for dimension mismatch", async () => {
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sample });
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 0, 0], 1);
     expect(res).toEqual([]);
@@ -80,7 +84,7 @@ describe("vectorSearch", () => {
       { id: "bad3", text: "Z", source: "doc5" },
       { id: "b", text: "B", embedding: [0, 1], source: "doc2" }
     ];
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => malformed });
+    fetchJsonMock.mockResolvedValueOnce(malformed);
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 0], 5);
@@ -90,7 +94,7 @@ describe("vectorSearch", () => {
   });
 
   it("returns null when embeddings fail to load", async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
+    fetchJsonMock.mockRejectedValueOnce(new Error("fail"));
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 0], 1);
     expect(res).toBeNull();
