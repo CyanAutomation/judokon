@@ -1,7 +1,6 @@
 [
   {
     "kodokan": {
-      "id": 1,
       "name": "Kodokan",
       "japaneseName": "講道館",
       "description": "The Kodokan is the headquarters of the worldwide judo community, founded by Jigoro Kano in 1882.",
@@ -9,7 +8,6 @@
       "active": true
     },
     "budokan": {
-      "id": 2,
       "name": "Budokan",
       "japaneseName": "日本武道館",
       "description": "The Nippon Budokan is a famous arena in Tokyo, originally built for the 1964 Summer Olympics judo competition.",

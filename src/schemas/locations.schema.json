@@ -4,30 +4,33 @@
   "type": "array",
   "items": {
     "type": "object",
-    "properties": {
-      "name": {
-        "type": "string",
-        "description": "Location name in English."
+    "additionalProperties": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Location name in English."
+        },
+        "japaneseName": {
+          "type": "string",
+          "description": "Location name in Japanese."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the location."
+        },
+        "externalLink": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL with more information about the location."
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Whether the location is currently active."
+        }
       },
-      "japaneseName": {
-        "type": "string",
-        "description": "Location name in Japanese."
-      },
-      "description": {
-        "type": "string",
-        "description": "A brief description of the location."
-      },
-      "externalLink": {
-        "type": "string",
-        "format": "uri",
-        "description": "URL with more information about the location."
-      },
-      "active": {
-        "type": "boolean",
-        "description": "Whether the location is currently active."
-      }
-    },
-    "required": ["name", "japaneseName", "description", "externalLink", "active"],
-    "additionalProperties": false
+      "required": ["name", "japaneseName", "description", "externalLink", "active"],
+      "additionalProperties": false
+    }
   }
 }
