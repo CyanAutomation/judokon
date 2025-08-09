@@ -10,12 +10,7 @@ import {
   disableNextRoundButton,
   updateDebugPanel
 } from "./classicBattle/uiHelpers.js";
-import {
-  quitMatch as engineQuitMatch,
-  _resetForTest as engineReset,
-  STATS,
-  stopTimer
-} from "./battleEngine.js";
+import { battleEngine, STATS } from "./battleEngine.js";
 import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "./api/battleUI.js";
 import * as infoBar from "./setupBattleInfoBar.js";
 import { getStatValue, resetStatButtons, showResult } from "./battle/index.js";
@@ -81,7 +76,7 @@ function getStartRound(store) {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
 export async function handleReplay(store) {
-  engineReset();
+  battleEngine._resetForTest();
   document.querySelectorAll(".modal-backdrop").forEach((m) => {
     if (typeof m.remove === "function") m.remove();
   });
@@ -168,7 +163,7 @@ export async function handleStatSelection(store, stat) {
   }
   store.selectionMade = true;
   // Stop the countdown timer to prevent further ticks
-  stopTimer();
+  battleEngine.stopTimer();
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   infoBar.clearTimer();
@@ -236,7 +231,7 @@ function createQuitConfirmation(store, onConfirm) {
 export function quitMatch(store, trigger) {
   if (!store.quitModal) {
     store.quitModal = createQuitConfirmation(store, () => {
-      const result = engineQuitMatch();
+      const result = battleEngine.quitMatch();
       showResult(result.message);
     });
   }
@@ -292,7 +287,7 @@ export function showStatComparison(store, stat, playerVal, compVal) {
  */
 export function _resetForTest(store) {
   resetSelection();
-  engineReset();
+  battleEngine._resetForTest();
   if (typeof window !== "undefined") {
     delete window.startRoundOverride;
   }
