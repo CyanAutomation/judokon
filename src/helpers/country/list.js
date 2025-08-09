@@ -16,6 +16,7 @@ const SCROLL_THRESHOLD_PX = 50;
  * 6. Use `getFlagUrl(code)` to build flag URLs from the mapping.
  * 7. Use `IntersectionObserver` and `loading="lazy"` to defer flag requests until visible.
  * 8. Log errors if data fails to load or individual flags cannot be retrieved.
+ * 9. Replace the container's contents with "No countries available." when an error occurs.
  *
  * @param {HTMLElement} container - Element where buttons will be appended.
  * @returns {Promise<void>} Resolves when the list is populated.
@@ -135,5 +136,8 @@ export async function populateCountryList(container) {
     }
   } catch (error) {
     console.error("Error fetching country data:", error);
+    const message = document.createElement("p");
+    message.textContent = "No countries available.";
+    container.replaceChildren(message);
   }
 }
