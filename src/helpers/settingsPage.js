@@ -249,7 +249,7 @@ async function initializeSettingsPage() {
     if (gameModesResult.status === "fulfilled" && Array.isArray(gameModesResult.value)) {
       gameModes = gameModesResult.value;
     } else {
-      console.error(
+      console.warn(
         "Failed to load game modes",
         gameModesResult.status === "fulfilled" ? gameModesResult.value : gameModesResult.reason
       );
