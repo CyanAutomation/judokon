@@ -1,10 +1,45 @@
 import { seededRandom } from "../testModeUtils.js";
 import { getDefaultTimer } from "../timerUtils.js";
-import { startRound as engineStartRound, startCoolDown, STATS } from "../battleEngine.js";
+import {
+  startRound as engineStartRound,
+  startCoolDown,
+  STATS,
+  stopTimer
+} from "../battleEngine.js";
 import * as infoBar from "../setupBattleInfoBar.js";
 import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from "./uiHelpers.js";
 import { runTimerWithDrift } from "./runTimerWithDrift.js";
 import { showSnackbar } from "../showSnackbar.js";
+
+let skipHandler = null;
+
+/**
+ * Set the current skip handler and notify listeners of its presence.
+ *
+ * @param {null|function(): void|Promise<void>} fn - Handler to invoke when skipping.
+ * @returns {void}
+ */
+export function setSkipHandler(fn) {
+  skipHandler = typeof fn === "function" ? fn : null;
+  window.dispatchEvent(
+    new CustomEvent("skip-handler-change", {
+      detail: { active: Boolean(skipHandler) }
+    })
+  );
+}
+
+/**
+ * Skip the current timer phase if a handler is set.
+ *
+ * @returns {void}
+ */
+export function skipCurrentPhase() {
+  if (skipHandler) {
+    const fn = skipHandler;
+    setSkipHandler(null);
+    fn();
+  }
+}
 
 /**
  * Start the round timer and auto-select a random stat when time expires.
@@ -15,7 +50,8 @@ import { showSnackbar } from "../showSnackbar.js";
  * 2. Use `runTimerWithDrift(engineStartRound)` to update the countdown each second
  *    and monitor for drift.
  *    - On drift show "Waiting…" and restart, giving up after several retries.
- * 3. When expired, auto-select a random stat via `onExpired`.
+ * 3. Register a skip handler that stops the timer and triggers `onExpired`.
+ * 4. When expired, auto-select a random stat via `onExpired` and clear the handler.
  *
  * @param {function(string): Promise<void>} onExpiredSelect - Callback to handle stat auto-selection.
  * @returns {Promise<void>} Resolves when the timer begins.
@@ -46,11 +82,17 @@ export async function startTimer(onExpiredSelect) {
   };
 
   const onExpired = async () => {
+    setSkipHandler(null);
     infoBar.clearTimer();
     const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
     infoBar.showMessage(`Time's up! Auto-selecting ${randomStat}`);
     await onExpiredSelect(randomStat);
   };
+
+  setSkipHandler(async () => {
+    stopTimer();
+    await onExpired();
+  });
 
   const run = runTimerWithDrift(engineStartRound);
   await run(duration, onTick, onExpired, async () => {
@@ -89,13 +131,17 @@ export function handleStatSelectionTimeout(store, onSelect) {
  * 2. Setup a click handler that disables the button and calls `startRoundFn`.
  * 3. After a short delay, run a 3 second cooldown via `runTimerWithDrift(startCoolDown)`
  *    and display `"Next round in: <n>s"` in the snackbar and timer element.
- * 4. When expired, clear the timer text, enable the button, and attach the click handler.
+ * 4. Register a skip handler that stops the timer and invokes the expiration logic.
+ * 5. When expired, clear the timer text, enable the button, attach the click handler, and clear the handler.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
  * @param {function(): Promise<void>} startRoundFn - Function to begin the next round.
  */
 export function scheduleNextRound(result, startRoundFn) {
-  if (result.matchEnded) return;
+  if (result.matchEnded) {
+    setSkipHandler(null);
+    return;
+  }
 
   const btn = document.getElementById("next-round-button");
   const timerEl = document.getElementById("next-round-timer");
@@ -118,6 +164,7 @@ export function scheduleNextRound(result, startRoundFn) {
   };
 
   const onExpired = () => {
+    setSkipHandler(null);
     infoBar.clearTimer();
     if (timerEl) {
       timerEl.textContent = "";
@@ -126,6 +173,11 @@ export function scheduleNextRound(result, startRoundFn) {
     enableNextRoundButton();
     updateDebugPanel();
   };
+
+  setSkipHandler(() => {
+    stopTimer();
+    onExpired();
+  });
 
   const run = runTimerWithDrift(startCoolDown);
   setTimeout(() => {

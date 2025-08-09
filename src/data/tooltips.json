@@ -6,11 +6,9 @@
     "technique": "**Technique** measures mastery of judo throws and transitions.\nHigh values indicate sharp, precise execution.",
     "newaza": "_Ne-waza_ means **ground grappling**.\nThis stat reflects skill in pins, holds, and other mat techniques."
   },
-
   "ui": {
     "countryFilter": "**Country filter**\nToggle the panel to pick flags and narrow the roster.",
     "clearFilter": "**Clear filter**\nShow all judoka.",
-
     "selectStat": "**Select a stat**\nThe higher value wins the round!",
     "cardOfTheDay": "**Card of the Day** shows a featured judoka.\nCheck back tomorrow for a new pick!",
     "winMessage": "**Victory!**\nYou chose the stronger stat.",
@@ -19,21 +17,20 @@
     "signatureBar": "**Signature move**\nThis bar shows the judoka’s special technique.",
     "languageToggle": "**Language toggle**\nSwitch quote language between English and pseudo-Japanese.",
     "nextRound": "**Next round**\nBegin when you’re ready.",
+    "skipPhase": "Skip the countdown and move on.",
     "quitMatch": "**Quit match**\nReturn to the menu.",
     "drawCard": "**Draw card**\nGet a new random judoka card.",
     "roundQuick": "**Quick**\\nFirst to 5 points wins.",
     "roundMedium": "**Medium**\\nFirst to 10 points wins.",
     "roundLong": "**Long**\\nFirst to 15 points wins."
   },
-
   "mode": {
-    "classicBattle": "**Classic Battle Mode** pits you against an opponent.\nFirst to 10 round\u2011wins becomes the champion.",
+    "classicBattle": "**Classic Battle Mode** pits you against an opponent.\nFirst to 10 round‑wins becomes the champion.",
     "teamBattle": "**Team Battle Mode** lets you fight with your whole deck of cards.\nForm a team and win more rounds than the opposing team to triumph!",
     "meditation": "**Meditation Mode** lets you reflect and compare cards.\nNo battles, just peaceful analysis.",
     "randomJudoka": "**Random Judoka** picks a random card for quick inspiration.",
     "browseJudoka": "**Browse Judoka** opens the full roster in a carousel."
   },
-
   "nav": {
     "classicBattle": "**Classic Battle**\nBegin a head-to-head match.",
     "randomJudoka": "**Random Judoka**\nShow a random judoka card.",
