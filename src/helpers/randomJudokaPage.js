@@ -32,6 +32,7 @@ import { initTooltips } from "./tooltip.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { setTestMode } from "./testModeUtils.js";
+import { isEnabled, featureFlagsEmitter } from "./featureFlags.js";
 
 const DRAW_ICON =
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m600-200-56-57 143-143H300q-75 0-127.5-52.5T120-580q0-75 52.5-127.5T300-760h20v80h-20q-42 0-71 29t-29 71q0 42 29 71t71 29h387L544-624l56-56 240 240-240 240Z"/></svg>';
@@ -54,13 +55,13 @@ export async function setupRandomJudokaPage() {
     };
   }
 
-  setTestMode(Boolean(settings.featureFlags.enableTestMode?.enabled));
+  setTestMode(isEnabled("enableTestMode"));
 
   // Apply global motion preference
   applyMotionPreference(settings.motionEffects);
-  toggleViewportSimulation(Boolean(settings.featureFlags.viewportSimulation?.enabled));
-  toggleInspectorPanels(Boolean(settings.featureFlags?.enableCardInspector?.enabled));
-  toggleTooltipOverlayDebug(Boolean(settings.featureFlags.tooltipOverlayDebug?.enabled));
+  toggleViewportSimulation(isEnabled("viewportSimulation"));
+  toggleInspectorPanels(isEnabled("enableCardInspector"));
+  toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
   const prefersReducedMotion =
     !settings.motionEffects || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -153,7 +154,7 @@ export async function setupRandomJudokaPage() {
       prefersReducedMotion,
       addToHistory,
       {
-        enableInspector: Boolean(settings.featureFlags?.enableCardInspector?.enabled)
+        enableInspector: isEnabled("enableCardInspector")
       }
     );
     function enableButton() {
@@ -244,15 +245,10 @@ export async function setupRandomJudokaPage() {
   cardSection.appendChild(drawButton);
   drawButton.addEventListener("click", displayCard);
 
-  window.addEventListener("storage", (e) => {
-    if (e.key === "settings" && e.newValue) {
-      try {
-        const s = JSON.parse(e.newValue);
-        toggleInspectorPanels(Boolean(s.featureFlags?.enableCardInspector?.enabled));
-        toggleViewportSimulation(Boolean(s.featureFlags?.viewportSimulation?.enabled));
-        toggleTooltipOverlayDebug(Boolean(s.featureFlags?.tooltipOverlayDebug?.enabled));
-      } catch {}
-    }
+  featureFlagsEmitter.addEventListener("change", () => {
+    toggleInspectorPanels(isEnabled("enableCardInspector"));
+    toggleViewportSimulation(isEnabled("viewportSimulation"));
+    toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
   });
 
   // Initial state: placeholder shown; disable draw button only if data failed to load
