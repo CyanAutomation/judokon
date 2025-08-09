@@ -121,8 +121,9 @@ export async function startRound(store) {
  * @pseudocode
  * 1. Read stat values from both cards.
  * 2. Call `evaluateRoundApi(playerVal, computerVal)`.
- * 3. Show result message and stat comparison.
- * 4. Sync scores and update debug panel.
+ * 3. Sync scores.
+ * 4. Show result message and stat comparison.
+ * 5. Update debug panel.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -134,11 +135,11 @@ export function evaluateRound(store, stat) {
   const playerVal = getStatValue(playerCard, stat);
   const computerVal = getStatValue(computerCard, stat);
   const result = evaluateRoundApi(playerVal, computerVal);
+  syncScoreDisplay();
   if (result.message) {
     showResult(result.message);
   }
   showStatComparison(store, stat, playerVal, computerVal);
-  syncScoreDisplay();
   updateDebugPanel();
   return result;
 }
