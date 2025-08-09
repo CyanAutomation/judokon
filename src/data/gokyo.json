@@ -137,7 +137,7 @@
     "category": "Nage-waza",
     "subCategory": "Te-waza",
     "description": "Belt-grab reversal",
-    "link": null
+    "link": "https://en.wikipedia.org/wiki/Obi_tori_gaeshi"
   },
   {
     "id": 14,
@@ -687,7 +687,7 @@
     "category": "Nage-waza",
     "subCategory": "Yoko-sutemi-waza",
     "description": "Utsuri-goshi counter (rare)",
-    "link": null
+    "link": "https://en.wikipedia.org/wiki/Utsuri_goshi_gaeshi"
   },
   {
     "id": 69,
@@ -695,7 +695,7 @@
     "japanese": "袈裟固",
     "style": "Judo",
     "category": "Katame-waza",
-    "subCategory": "Osaekomi-waza",
+    "subCategory": "Osae-komi-waza",
     "description": "Scarf hold",
     "link": "https://en.wikipedia.org/wiki/Kesa_gatame"
   },
@@ -705,7 +705,7 @@
     "japanese": "崩袈裟固",
     "style": "Judo",
     "category": "Katame-waza",
-    "subCategory": "Osaekomi-waza",
+    "subCategory": "Osae-komi-waza",
     "description": "Modified scarf hold",
     "link": "https://en.wikipedia.org/wiki/Kuzure_kesa_gatame"
   },
@@ -715,7 +715,7 @@
     "japanese": "後袈裟固",
     "style": "Judo",
     "category": "Katame-waza",
-    "subCategory": "Osaekomi-waza",
+    "subCategory": "Osae-komi-waza",
     "description": "Reverse scarf hold",
     "link": "https://en.wikipedia.org/wiki/Ushiro_kesa_gatame"
   },
@@ -725,7 +725,7 @@
     "japanese": "肩固",
     "style": "Judo",
     "category": "Katame-waza",
-    "subCategory": "Osaekomi-waza",
+    "subCategory": "Osae-komi-waza",
     "description": "Shoulder hold",
     "link": "https://en.wikipedia.org/wiki/Kata_gatame"
   },
@@ -735,7 +735,7 @@
     "japanese": "上四方固",
     "style": "Judo",
     "category": "Katame-waza",
-    "subCategory": "Osaekomi-waza",
+    "subCategory": "Osae-komi-waza",
     "description": "Upper four-quarter hold",
     "link": "https://en.wikipedia.org/wiki/Kami_shiho_gatame"
   },
@@ -745,7 +745,7 @@
     "japanese": "崩上四方固",
     "style": "Judo",
     "category": "Katame-waza",
-    "subCategory": "Osaekomi-waza",
+    "subCategory": "Osae-komi-waza",
     "description": "Modified upper four-quarter hold",
     "link": "https://en.wikipedia.org/wiki/Kuzure_kami_shiho_gatame"
   },
@@ -755,7 +755,7 @@
     "japanese": "横四方固",
     "style": "Judo",
     "category": "Katame-waza",
-    "subCategory": "Osaekomi-waza",
+    "subCategory": "Osae-komi-waza",
     "description": "Side four-quarter hold",
     "link": "https://en.wikipedia.org/wiki/Yoko_shiho_gatame"
   },
@@ -765,7 +765,7 @@
     "japanese": "縦四方固",
     "style": "Judo",
     "category": "Katame-waza",
-    "subCategory": "Osaekomi-waza",
+    "subCategory": "Osae-komi-waza",
     "description": "Vertical four-quarter hold",
     "link": "https://en.wikipedia.org/wiki/Tate_shiho_gatame"
   },
@@ -775,7 +775,7 @@
     "japanese": "浮固",
     "style": "Judo",
     "category": "Katame-waza",
-    "subCategory": "Osaekomi-waza",
+    "subCategory": "Osae-komi-waza",
     "description": "Floating hold",
     "link": "https://en.wikipedia.org/wiki/Uki_gatame"
   },
@@ -785,7 +785,7 @@
     "japanese": "裏固",
     "style": "Judo",
     "category": "Katame-waza",
-    "subCategory": "Osaekomi-waza",
+    "subCategory": "Osae-komi-waza",
     "description": "Back hold",
     "link": "https://en.wikipedia.org/wiki/Ura_gatame"
   },
