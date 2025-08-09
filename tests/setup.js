@@ -56,6 +56,16 @@ beforeEach(() => {
           }
         },
         reload: () => {},
+        toString() {
+          return state.href;
+        },
+        get origin() {
+          try {
+            return new URL(state.href).origin;
+          } catch {
+            return "";
+          }
+        },
         assign: (val) => {
           try {
             const url = new URL(String(val), state.href).href;
