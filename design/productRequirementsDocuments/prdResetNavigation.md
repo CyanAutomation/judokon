@@ -2,7 +2,7 @@
 
 ## Overview
 
-The "Reset Navigation Cache" feature allows users to manually clear cached navigation data (navigationItems) from localStorage and refresh the navigation bar from the Settings page. This is useful for troubleshooting, ensuring up-to-date navigation, and supporting advanced users or testers.
+The "Reset Navigation Cache" feature allows users to manually clear cached navigation data (navigationItems) using the `navigationCache.reset()` API and refresh the navigation bar from the Settings page. This is useful for troubleshooting, ensuring up-to-date navigation, and supporting advanced users or testers.
 
 ## Problem Statement
 
@@ -31,7 +31,7 @@ Users and testers may encounter issues where the navigation bar does not reflect
 ## Acceptance Criteria
 
 - The "Reset Navigation Cache" button appears in the Settings page only when the navCacheResetButton feature flag is enabled.
-- Clicking the button removes the navigationItems entry from localStorage.
+- Clicking the button invokes `navigationCache.reset()`, which removes the navigationItems entry from localStorage.
 - After clicking, the navigation bar is immediately refreshed with up-to-date navigation items.
 - A snackbar or toast message appears confirming the cache was cleared.
 - The button is not visible when the feature flag is disabled.
