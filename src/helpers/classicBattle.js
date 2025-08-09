@@ -10,7 +10,12 @@ import {
   disableNextRoundButton,
   updateDebugPanel
 } from "./classicBattle/uiHelpers.js";
-import { battleEngine, STATS } from "./battleEngine.js";
+import {
+  STATS,
+  stopTimer,
+  quitMatch,
+  _resetForTest as resetEngineForTest
+} from "./battleEngine.js";
 import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "./api/battleUI.js";
 import * as infoBar from "./setupBattleInfoBar.js";
 import { getStatValue, resetStatButtons, showResult } from "./battle/index.js";
@@ -76,7 +81,7 @@ function getStartRound(store) {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
 export async function handleReplay(store) {
-  battleEngine._resetForTest();
+  resetEngineForTest();
   document.querySelectorAll(".modal-backdrop").forEach((m) => {
     if (typeof m.remove === "function") m.remove();
   });
@@ -163,7 +168,7 @@ export async function handleStatSelection(store, stat) {
   }
   store.selectionMade = true;
   // Stop the countdown timer to prevent further ticks
-  battleEngine.stopTimer();
+  stopTimer();
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   infoBar.clearTimer();
