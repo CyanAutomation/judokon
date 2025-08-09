@@ -1,7 +1,11 @@
 // @vitest-environment node
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
 
 const originalFetch = global.fetch;
+
+beforeEach(() => {
+  vi.resetModules();
+});
 
 afterEach(() => {
   global.fetch = originalFetch;
@@ -25,7 +29,6 @@ describe("vectorSearch", () => {
 
   it("returns null when loading fails", async () => {
     global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
-    vi.resetModules();
     const { loadEmbeddings } = await import("../../src/helpers/vectorSearch.js");
     const result = await loadEmbeddings();
     expect(result).toBeNull();
@@ -39,7 +42,6 @@ describe("vectorSearch", () => {
 
   it("finds top matches", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sample });
-    vi.resetModules();
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 0], 1);
     expect(res.length).toBe(1);
@@ -49,7 +51,6 @@ describe("vectorSearch", () => {
 
   it("filters by tags", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sample });
-    vi.resetModules();
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 0], 1, ["foo"]);
     expect(res[0].id).toBe("a");
@@ -59,7 +60,6 @@ describe("vectorSearch", () => {
 
   it("boosts results containing exact query terms", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sample });
-    vi.resetModules();
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 1], 2, [], "B");
     expect(res[0].id).toBe("b");
@@ -67,7 +67,6 @@ describe("vectorSearch", () => {
 
   it("returns empty array for dimension mismatch", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sample });
-    vi.resetModules();
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 0, 0], 1);
     expect(res).toEqual([]);
@@ -83,7 +82,6 @@ describe("vectorSearch", () => {
     ];
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => malformed });
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    vi.resetModules();
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 0], 5);
     expect(res.map((r) => r.id)).toEqual(["a", "b"]);
@@ -93,7 +91,6 @@ describe("vectorSearch", () => {
 
   it("returns null when embeddings fail to load", async () => {
     global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
-    vi.resetModules();
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 0], 1);
     expect(res).toBeNull();
@@ -105,7 +102,6 @@ describe("vectorSearch", () => {
     const seg3 = "z".repeat(1600);
     const md = `${seg1}\n\n${seg2}\n\n${seg3}`;
     global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => md });
-    vi.resetModules();
     const { fetchContextById } = await import("../../src/helpers/vectorSearch.js");
     const result = await fetchContextById("doc.md-chunk-3", 1);
     expect(global.fetch).toHaveBeenCalled();
