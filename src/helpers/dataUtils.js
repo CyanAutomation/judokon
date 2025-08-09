@@ -104,7 +104,8 @@ export async function fetchJson(url, schema) {
     let data;
     if (isNodeEnvironment() && parsedUrl.protocol === "file:") {
       const { readFile } = await import("fs/promises");
-      data = JSON.parse(await readFile(parsedUrl, "utf8"));
+      const { fileURLToPath } = await import("node:url");
+      data = JSON.parse(await readFile(fileURLToPath(parsedUrl), "utf8"));
     } else {
       const response = await fetch(url);
       if (!response.ok) {
