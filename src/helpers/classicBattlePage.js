@@ -116,115 +116,128 @@ export async function setupClassicBattlePage() {
   await applyStatLabels();
   const statButtons = document.querySelectorAll("#stat-buttons button");
 
-  let settings;
-  try {
-    settings = await loadSettings();
-  } catch {
-    settings = { featureFlags: {} };
-  }
-  const inspectorEnabled = isEnabled("enableCardInspector");
-  toggleInspectorPanels(inspectorEnabled);
+  const settings = await safeLoadSettings();
+  toggleInspectorPanels(isEnabled("enableCardInspector"));
 
   simulatedOpponentMode = isEnabled("simulatedOpponentMode");
-  const params = new URLSearchParams(window.location.search);
-  const paramDifficulty = params.get("difficulty");
-  if (["easy", "medium", "hard"].includes(paramDifficulty)) {
-    aiDifficulty = paramDifficulty;
-  } else if (typeof settings.aiDifficulty === "string") {
-    aiDifficulty = settings.aiDifficulty;
-  }
+  aiDifficulty = determineDifficulty(settings);
   if (simulatedOpponentMode) {
     enableStatButtons(false);
   } else {
-    statButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        if (!btn.disabled) {
-          enableStatButtons(false);
-          btn.classList.add("selected");
-          showSnackbar(`You Picked: ${btn.textContent}`);
-          handleStatSelection(battleStore, btn.dataset.stat);
-        }
-      });
-      btn.addEventListener("keydown", (e) => {
-        if ((e.key === "Enter" || e.key === " ") && !btn.disabled) {
-          e.preventDefault();
-          enableStatButtons(false);
-          btn.classList.add("selected");
-          showSnackbar(`You Picked: ${btn.textContent}`);
-          handleStatSelection(battleStore, btn.dataset.stat);
-        }
-      });
-    });
+    wireStatButtons(statButtons);
   }
 
   const battleArea = document.getElementById("battle-area");
-  if (battleArea) {
-    battleArea.dataset.mode = "classic";
-    battleArea.dataset.randomStat = String(isEnabled("randomStatMode"));
-    battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
-    battleArea.dataset.simulatedOpponent = String(simulatedOpponentMode);
-    battleArea.dataset.difficulty = aiDifficulty;
-  }
+  updateBattleAreaDataset(battleArea);
 
   toggleViewportSimulation(isEnabled("viewportSimulation"));
-
   setTestMode(isEnabled("enableTestMode"));
 
   const banner = document.getElementById("test-mode-banner");
-  if (banner) {
-    banner.classList.toggle("hidden", !isEnabled("enableTestMode"));
-  }
+  if (banner) banner.classList.toggle("hidden", !isEnabled("enableTestMode"));
+  applyFeatureFlagListeners(battleArea, banner);
 
-  featureFlagsEmitter.addEventListener("change", () => {
-    if (battleArea) {
-      battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
-    }
-    if (banner) {
-      banner.classList.toggle("hidden", !isEnabled("enableTestMode"));
-    }
-    setTestMode(isEnabled("enableTestMode"));
-    toggleInspectorPanels(isEnabled("enableCardInspector"));
-  });
-
-  const debugPanel = document.getElementById("debug-panel");
-  if (debugPanel) {
-    const computerSlot = document.getElementById("computer-card");
-    if (isEnabled("battleDebugPanel") && computerSlot) {
-      computerSlot.prepend(debugPanel);
-      debugPanel.classList.remove("hidden");
-    } else {
-      debugPanel.remove();
-    }
-  }
-
-  const skipBtn = document.getElementById("skip-phase-button");
-  if (skipBtn) {
-    skipBtn.addEventListener("click", () => skipCurrentPhase());
-    window.addEventListener("skip-handler-change", (e) => {
-      const { active } = e.detail || {};
-      skipBtn.disabled = !active;
-    });
-  }
+  initDebugPanel();
+  setupSkipButton();
 
   window.startRoundOverride = () => startRoundWrapper();
   await initRoundSelectModal(() => startRoundWrapper());
   await initTooltips();
   watchBattleOrientation();
+  maybeShowStatHint();
+}
 
-  try {
-    if (typeof localStorage !== "undefined") {
-      const hintShown = localStorage.getItem("statHintShown");
-      if (!hintShown) {
-        const help = document.getElementById("stat-help");
-        help?.dispatchEvent(new Event("mouseenter"));
-        setTimeout(() => {
-          help?.dispatchEvent(new Event("mouseleave"));
-        }, 3000);
-        localStorage.setItem("statHintShown", "true");
+function determineDifficulty(settings) {
+  const params = new URLSearchParams(window.location.search);
+  const paramDifficulty = params.get("difficulty");
+  if (["easy", "medium", "hard"].includes(paramDifficulty)) return paramDifficulty;
+  if (typeof settings.aiDifficulty === "string") return settings.aiDifficulty;
+  return aiDifficulty;
+}
+
+function wireStatButtons(statButtons) {
+  statButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (!btn.disabled) {
+        enableStatButtons(false);
+        btn.classList.add("selected");
+        showSnackbar(`You Picked: ${btn.textContent}`);
+        handleStatSelection(battleStore, btn.dataset.stat);
       }
-    }
+    });
+    btn.addEventListener("keydown", (e) => {
+      if ((e.key === "Enter" || e.key === " ") && !btn.disabled) {
+        e.preventDefault();
+        enableStatButtons(false);
+        btn.classList.add("selected");
+        showSnackbar(`You Picked: ${btn.textContent}`);
+        handleStatSelection(battleStore, btn.dataset.stat);
+      }
+    });
+  });
+}
+
+function updateBattleAreaDataset(battleArea) {
+  if (!battleArea) return;
+  battleArea.dataset.mode = "classic";
+  battleArea.dataset.randomStat = String(isEnabled("randomStatMode"));
+  battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
+  battleArea.dataset.simulatedOpponent = String(simulatedOpponentMode);
+  battleArea.dataset.difficulty = aiDifficulty;
+}
+
+function applyFeatureFlagListeners(battleArea, banner) {
+  featureFlagsEmitter.addEventListener("change", () => {
+    if (battleArea) battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
+    if (banner) banner.classList.toggle("hidden", !isEnabled("enableTestMode"));
+    setTestMode(isEnabled("enableTestMode"));
+    toggleInspectorPanels(isEnabled("enableCardInspector"));
+  });
+}
+
+function initDebugPanel() {
+  const debugPanel = document.getElementById("debug-panel");
+  if (!debugPanel) return;
+  const computerSlot = document.getElementById("computer-card");
+  if (isEnabled("battleDebugPanel") && computerSlot) {
+    computerSlot.prepend(debugPanel);
+    debugPanel.classList.remove("hidden");
+  } else {
+    debugPanel.remove();
+  }
+}
+
+function setupSkipButton() {
+  const skipBtn = document.getElementById("skip-phase-button");
+  if (!skipBtn) return;
+  skipBtn.addEventListener("click", () => skipCurrentPhase());
+  window.addEventListener("skip-handler-change", (e) => {
+    const { active } = e.detail || {};
+    skipBtn.disabled = !active;
+  });
+}
+
+function maybeShowStatHint() {
+  try {
+    if (typeof localStorage === "undefined") return;
+    const hintShown = localStorage.getItem("statHintShown");
+    if (hintShown) return;
+    const help = document.getElementById("stat-help");
+    help?.dispatchEvent(new Event("mouseenter"));
+    setTimeout(() => {
+      help?.dispatchEvent(new Event("mouseleave"));
+    }, 3000);
+    localStorage.setItem("statHintShown", "true");
   } catch {
     // ignore localStorage errors
+  }
+}
+
+async function safeLoadSettings() {
+  try {
+    return await loadSettings();
+  } catch {
+    return { featureFlags: {} };
   }
 }
 

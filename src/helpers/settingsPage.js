@@ -96,97 +96,19 @@ function initializeControls(settings) {
   let latestGameModes = [];
   let latestTooltipMap = {};
 
-  const controls = {
-    soundToggle: document.getElementById("sound-toggle"),
-    motionToggle: document.getElementById("motion-toggle"),
-    displayRadios: document.querySelectorAll('input[name="display-mode"]'),
-    typewriterToggle: document.getElementById("typewriter-toggle"),
-    tooltipsToggle: document.getElementById("tooltips-toggle"),
-    cardOfTheDayToggle: document.getElementById("card-of-the-day-toggle"),
-    fullNavigationMapToggle: document.getElementById("full-navigation-map-toggle")
-  };
-  const errorPopup = document.getElementById("settings-error-popup");
-  const resetButton = document.getElementById("reset-settings-button");
-
+  const { controls, errorPopup, resetButton } = createControlsRefs();
   const getCurrentSettings = () => currentSettings;
 
-  function showErrorAndRevert(revert) {
-    if (typeof revert === "function") revert();
-    if (errorPopup) {
-      errorPopup.textContent = "Failed to update settings. Please try again.";
-      errorPopup.style.display = "block";
-      setTimeout(() => {
-        errorPopup.style.display = "none";
-        errorPopup.textContent = "";
-      }, 3000);
-    }
-  }
-
-  function handleUpdate(key, value, revert) {
-    return updateSetting(key, value)
-      .then((updated) => {
-        currentSettings = updated;
-      })
-      .catch((err) => {
-        console.error("Failed to update setting", err);
-        showErrorAndRevert(revert);
-      });
-  }
-
-  function clearToggles(container) {
-    container.querySelectorAll(".settings-item").forEach((el) => el.remove());
-  }
-
-  function addNavResetButton() {
-    const section = document.getElementById("advanced-settings-content");
-    const existing = document.getElementById("nav-cache-reset-button");
-    existing?.parentElement?.remove();
-    if (!section) return;
-    if (!isEnabled("navCacheResetButton")) return;
-    const wrapper = document.createElement("div");
-    wrapper.className = "settings-item";
-    const btn = createButton("Reset Navigation Cache", {
-      id: "nav-cache-reset-button"
-    });
-    wrapper.appendChild(btn);
-    section.appendChild(wrapper);
-    btn.addEventListener("click", () => {
-      resetNavigationCache();
-      populateNavbar();
-      showSnackbar("Navigation cache cleared");
-    });
-  }
+  const showErrorAndRevert = makeErrorPopupHandler(errorPopup);
+  const handleUpdate = makeHandleUpdate(
+    (updated) => (currentSettings = updated),
+    showErrorAndRevert
+  );
 
   // Initial control values are applied when `renderSwitches` executes.
   attachToggleListeners(controls, getCurrentSettings, handleUpdate);
 
-  function renderSwitches(gameModes, tooltipMap) {
-    latestGameModes = Array.isArray(gameModes) ? gameModes : [];
-    latestTooltipMap = tooltipMap;
-    // Apply current settings once toggles are available.
-    applyInitialControlValues(controls, currentSettings, tooltipMap);
-    const modesContainerEl = document.getElementById("game-mode-toggle-container");
-    if (modesContainerEl && Array.isArray(gameModes)) {
-      clearToggles(modesContainerEl);
-      renderGameModeSwitches(modesContainerEl, gameModes, getCurrentSettings, handleUpdate);
-    }
-    const flagsContainerEl = document.getElementById("feature-flags-container");
-    if (flagsContainerEl) {
-      clearToggles(flagsContainerEl);
-      renderFeatureFlagSwitches(
-        flagsContainerEl,
-        currentSettings.featureFlags,
-        getCurrentSettings,
-        handleUpdate,
-        tooltipMap
-      );
-    }
-    queueMicrotask(addNavResetButton);
-    document.getElementById("feature-nav-cache-reset-button")?.addEventListener("change", () => {
-      setTimeout(addNavResetButton);
-    });
-    initTooltips();
-  }
+  const renderSwitches = makeRenderSwitches(controls, () => currentSettings, handleUpdate);
 
   const resetModal = createResetConfirmation(() => {
     currentSettings = resetSettings();
@@ -205,7 +127,110 @@ function initializeControls(settings) {
     resetModal.open(resetButton);
   });
 
-  return { renderSwitches };
+  return {
+    renderSwitches: (gameModes, tooltipMap) => {
+      latestGameModes = Array.isArray(gameModes) ? gameModes : [];
+      latestTooltipMap = tooltipMap;
+      renderSwitches(gameModes, tooltipMap);
+    }
+  };
+}
+
+function createControlsRefs() {
+  const controls = {
+    soundToggle: document.getElementById("sound-toggle"),
+    motionToggle: document.getElementById("motion-toggle"),
+    displayRadios: document.querySelectorAll('input[name="display-mode"]'),
+    typewriterToggle: document.getElementById("typewriter-toggle"),
+    tooltipsToggle: document.getElementById("tooltips-toggle"),
+    cardOfTheDayToggle: document.getElementById("card-of-the-day-toggle"),
+    fullNavigationMapToggle: document.getElementById("full-navigation-map-toggle")
+  };
+  return {
+    controls,
+    errorPopup: document.getElementById("settings-error-popup"),
+    resetButton: document.getElementById("reset-settings-button")
+  };
+}
+
+function makeErrorPopupHandler(errorPopup) {
+  return function showErrorAndRevert(revert) {
+    if (typeof revert === "function") revert();
+    if (errorPopup) {
+      errorPopup.textContent = "Failed to update settings. Please try again.";
+      errorPopup.style.display = "block";
+      setTimeout(() => {
+        errorPopup.style.display = "none";
+        errorPopup.textContent = "";
+      }, 3000);
+    }
+  };
+}
+
+function makeHandleUpdate(setCurrentSettings, showErrorAndRevert) {
+  return function handleUpdate(key, value, revert) {
+    return updateSetting(key, value)
+      .then((updated) => {
+        setCurrentSettings(updated);
+      })
+      .catch((err) => {
+        console.error("Failed to update setting", err);
+        showErrorAndRevert(revert);
+      });
+  };
+}
+
+function clearToggles(container) {
+  container.querySelectorAll(".settings-item").forEach((el) => el.remove());
+}
+
+function addNavResetButton() {
+  const section = document.getElementById("advanced-settings-content");
+  const existing = document.getElementById("nav-cache-reset-button");
+  existing?.parentElement?.remove();
+  if (!section) return;
+  if (!isEnabled("navCacheResetButton")) return;
+  const wrapper = document.createElement("div");
+  wrapper.className = "settings-item";
+  const btn = createButton("Reset Navigation Cache", {
+    id: "nav-cache-reset-button"
+  });
+  wrapper.appendChild(btn);
+  section.appendChild(wrapper);
+  btn.addEventListener("click", () => {
+    resetNavigationCache();
+    populateNavbar();
+    showSnackbar("Navigation cache cleared");
+  });
+}
+
+function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
+  return function renderSwitches(gameModes, tooltipMap) {
+    // Apply current settings once toggles are available.
+    const current = getCurrentSettings();
+    applyInitialControlValues(controls, current, tooltipMap);
+    const modesContainerEl = document.getElementById("game-mode-toggle-container");
+    if (modesContainerEl && Array.isArray(gameModes)) {
+      clearToggles(modesContainerEl);
+      renderGameModeSwitches(modesContainerEl, gameModes, getCurrentSettings, handleUpdate);
+    }
+    const flagsContainerEl = document.getElementById("feature-flags-container");
+    if (flagsContainerEl) {
+      clearToggles(flagsContainerEl);
+      renderFeatureFlagSwitches(
+        flagsContainerEl,
+        current.featureFlags,
+        getCurrentSettings,
+        handleUpdate,
+        tooltipMap
+      );
+    }
+    queueMicrotask(addNavResetButton);
+    document.getElementById("feature-nav-cache-reset-button")?.addEventListener("change", () => {
+      setTimeout(addNavResetButton);
+    });
+    initTooltips();
+  };
 }
 
 /**
@@ -226,60 +251,72 @@ function initializeControls(settings) {
 async function initializeSettingsPage() {
   try {
     setupSectionToggles();
-    const gameModesPromise = loadNavigationItems().then(
-      (v) => ({ status: "fulfilled", value: v }),
-      (r) => ({ status: "rejected", reason: r })
-    );
-    const tooltipMapPromise = getTooltips().then(
-      (v) => ({ status: "fulfilled", value: v }),
-      (r) => ({ status: "rejected", reason: r })
-    );
+    const gameModesPromise = settled(loadNavigationItems());
+    const tooltipMapPromise = settled(getTooltips());
     const settings = await loadSettings();
-    applyDisplayMode(settings.displayMode);
-    applyMotionPreference(settings.motionEffects);
-    toggleViewportSimulation(isEnabled("viewportSimulation"));
-    toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
-    toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
+    applyInitialSettings(settings);
     const controlsApi = initializeControls(settings);
     const [gameModesResult, tooltipMapResult] = await Promise.all([
       gameModesPromise,
       tooltipMapPromise
     ]);
 
-    let gameModes;
-    if (gameModesResult.status === "fulfilled" && Array.isArray(gameModesResult.value)) {
-      gameModes = gameModesResult.value;
-    } else {
-      console.warn(
-        "Failed to load game modes",
-        gameModesResult.status === "fulfilled" ? gameModesResult.value : gameModesResult.reason
-      );
-      showSettingsError();
-      try {
-        const fallback = await loadGameModes();
-        gameModes = Array.isArray(fallback) ? fallback : [];
-      } catch (err) {
-        console.error("Failed to load fallback game modes", err);
-        gameModes = [];
-      }
-    }
+    const gameModes = await resolveGameModes(gameModesResult);
 
-    let tooltipMap = {};
-    if (tooltipMapResult.status === "fulfilled") {
-      tooltipMap = tooltipMapResult.value;
-    } else {
-      console.warn("Failed to load tooltips", tooltipMapResult.reason);
-    }
+    const tooltipMap = resolveTooltipMap(tooltipMapResult);
     controlsApi.renderSwitches(gameModes, tooltipMap);
   } catch (error) {
     console.error("Error loading settings page:", error);
-    const errorPopup = document.getElementById("settings-error-popup");
-    if (errorPopup) {
-      errorPopup.textContent = "Failed to load settings. Please refresh the page.";
-      errorPopup.style.display = "block";
-    }
-    showSettingsError();
+    showLoadSettingsError();
   }
+}
+
+function settled(promise) {
+  return promise.then(
+    (v) => ({ status: "fulfilled", value: v }),
+    (r) => ({ status: "rejected", reason: r })
+  );
+}
+
+function applyInitialSettings(settings) {
+  applyDisplayMode(settings.displayMode);
+  applyMotionPreference(settings.motionEffects);
+  toggleViewportSimulation(isEnabled("viewportSimulation"));
+  toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
+  toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
+}
+
+async function resolveGameModes(result) {
+  if (result.status === "fulfilled" && Array.isArray(result.value)) {
+    return result.value;
+  }
+  console.warn(
+    "Failed to load game modes",
+    result.status === "fulfilled" ? result.value : result.reason
+  );
+  showSettingsError();
+  try {
+    const fallback = await loadGameModes();
+    return Array.isArray(fallback) ? fallback : [];
+  } catch (err) {
+    console.error("Failed to load fallback game modes", err);
+    return [];
+  }
+}
+
+function resolveTooltipMap(result) {
+  if (result.status === "fulfilled") return result.value;
+  console.warn("Failed to load tooltips", result.reason);
+  return {};
+}
+
+function showLoadSettingsError() {
+  const errorPopup = document.getElementById("settings-error-popup");
+  if (errorPopup) {
+    errorPopup.textContent = "Failed to load settings. Please refresh the page.";
+    errorPopup.style.display = "block";
+  }
+  showSettingsError();
 }
 
 onDomReady(initializeSettingsPage);
