@@ -1,11 +1,5 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { readFile } from "fs/promises";
-import { fileURLToPath } from "url";
-import path from "path";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataPath = path.resolve(__dirname, "../../src/data/statNames.json");
 const originalFetch = global.fetch;
 
 const sample = [
@@ -69,8 +63,7 @@ describe("stats helper", () => {
       "../../src/helpers/dataUtils.js",
       async () => await vi.importActual("../../src/helpers/dataUtils.js")
     );
-    const fileData = JSON.parse(await readFile(dataPath, "utf8"));
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => fileData });
+    const fetchMock = vi.fn();
     global.fetch = fetchMock;
     const { loadStatNames } = await import("../../src/helpers/stats.js");
     const stats = await loadStatNames();
@@ -81,6 +74,6 @@ describe("stats helper", () => {
       "Kumi-kata",
       "Ne-waza"
     ]);
-    expect(fetchMock).toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
