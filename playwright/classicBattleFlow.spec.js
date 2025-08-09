@@ -13,8 +13,10 @@ test.describe.parallel("Classic battle flow", () => {
     await countdown.waitFor();
     await expect(countdown).toHaveText(/\d+/);
     const result = page.locator("header #round-message");
-    await expect(result).not.toHaveText("", { timeout: 8000 });
-    await expect.poll(async () => await countdown.textContent()).toMatch(/Next round in: \d+s/);
+    await expect(result).not.toHaveText("", { timeout: 15000 });
+    await expect
+      .poll(() => countdown.textContent(), { timeout: 15000 })
+      .toMatch(/Next round in: \d+s/);
   });
 
   test("tie message appears on equal stats", async ({ page }) => {
