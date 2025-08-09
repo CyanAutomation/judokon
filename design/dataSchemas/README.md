@@ -13,7 +13,7 @@ npx ajv validate -s src/schemas/judoka.schema.json -d src/data/judoka.json
 Run the command for every pair of schema and data file (e.g. `gameModes`,
 `weightCategories`). The CLI reports any mismatches so they can be fixed before
 runtime. A new schema, `navigationItems.schema.json`, validates the structure of
-`navigationItems.json` which drives navigation order and visibility. Another
+`navigationItems.json` which drives navigation order and visibility and is cached via the `navigationCache` helper. Another
 schema, `aesopsMeta.schema.json`, describes the quote metadata file used on the
 meditation screen. A third schema, `statNames.schema.json`, defines the
 structure of `statNames.json` which lists all available stats. This file is the
