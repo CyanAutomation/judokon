@@ -11,12 +11,12 @@ import {
   updateDebugPanel
 } from "./classicBattle/uiHelpers.js";
 import {
-  handleStatSelection as engineHandleStatSelection,
   quitMatch as engineQuitMatch,
   _resetForTest as engineReset,
   STATS,
   stopTimer
 } from "./battleEngine.js";
+import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "./api/battleUI.js";
 import * as infoBar from "./setupBattleInfoBar.js";
 import { getStatValue, resetStatButtons, showResult } from "./battle/index.js";
 import { createModal } from "../components/Modal.js";
@@ -28,42 +28,17 @@ import { syncScoreDisplay, showMatchSummaryModal } from "./classicBattle/uiServi
  * Determine the opponent's stat choice based on difficulty.
  *
  * @pseudocode
- * 1. When `difficulty` is `hard`:
- *    a. Read all stat values from the opponent card.
- *    b. Find the highest value and return one of the stats with that value.
- * 2. When `difficulty` is `medium`:
- *    a. Read all stat values from the opponent card.
- *    b. Compute the average of those values.
- *    c. Choose randomly among stats whose value is at least the average.
- *    d. If none qualify, fallback to random.
- * 3. Otherwise (`easy`): pick a random stat from `STATS`.
+ * 1. Collect stat values from the opponent card when available.
+ * 2. Pass the values and `difficulty` to `chooseOpponentStat`.
+ * 3. Return the chosen stat.
  *
  * @param {"easy"|"medium"|"hard"} [difficulty="easy"] Difficulty setting.
  * @returns {string} One of the values from `STATS`.
  */
 export function simulateOpponentStat(difficulty = "easy") {
-  if (difficulty !== "easy") {
-    const card = document.getElementById("computer-card");
-    if (card) {
-      const values = STATS.map((stat) => ({
-        stat,
-        value: getStatValue(card, stat)
-      }));
-      if (difficulty === "hard") {
-        const max = Math.max(...values.map((v) => v.value));
-        const best = values.filter((v) => v.value === max);
-        return best[Math.floor(Math.random() * best.length)].stat;
-      }
-      if (difficulty === "medium") {
-        const avg = values.reduce((sum, v) => sum + v.value, 0) / values.length;
-        const eligible = values.filter((v) => v.value >= avg);
-        if (eligible.length > 0) {
-          return eligible[Math.floor(Math.random() * eligible.length)].stat;
-        }
-      }
-    }
-  }
-  return STATS[Math.floor(Math.random() * STATS.length)];
+  const card = document.getElementById("computer-card");
+  const values = card ? STATS.map((stat) => ({ stat, value: getStatValue(card, stat) })) : [];
+  return chooseOpponentStat(values, difficulty);
 }
 
 /**
@@ -149,7 +124,7 @@ export async function startRound(store) {
  *
  * @pseudocode
  * 1. Read stat values from both cards.
- * 2. Run `engineHandleStatSelection` to get the result.
+ * 2. Call `evaluateRoundApi(playerVal, computerVal)`.
  * 3. Show result message and stat comparison.
  * 4. Sync scores and update debug panel.
  *
@@ -162,7 +137,7 @@ export function evaluateRound(store, stat) {
   const computerCard = document.getElementById("computer-card");
   const playerVal = getStatValue(playerCard, stat);
   const computerVal = getStatValue(computerCard, stat);
-  const result = engineHandleStatSelection(playerVal, computerVal);
+  const result = evaluateRoundApi(playerVal, computerVal);
   if (result.message) {
     showResult(result.message);
   }

@@ -34,6 +34,10 @@ Key helpers include:
 - `navigationBar.js` – Injects active game modes into the persistent nav bar
 - `setupBottomNavbar.js` – Wires the nav bar into the DOM
 
+### Engine vs UI layers
+
+Core battle logic lives in `helpers/battleEngine.js` with no DOM access. UI scripts gather values from the page and delegate to this engine through the facade in `helpers/api/battleUI.js`, which exposes pure helpers like `chooseOpponentStat()` and `evaluateRound()`. Files such as `classicBattle.js` keep DOM manipulation localized and pass raw numbers into the facade, maintaining a clear separation between presentation and game mechanics.
+
 ### helpers/navigation
 
 Use `helpers/api/navigation.js` to build orientation-specific menus and responsive hamburger toggles. Pages should import only this API.
