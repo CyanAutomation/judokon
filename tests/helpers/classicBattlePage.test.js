@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createBattleHeader } from "../utils/testUtils.js";
+import * as storage from "../../src/helpers/storage.js";
 
 beforeEach(() => {
   document.body.innerHTML = "";
-  localStorage.clear();
+  storage.removeItem("statHintShown");
   vi.resetModules();
   vi.doUnmock("../../src/helpers/settingsUtils.js");
   vi.doMock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
@@ -212,7 +213,7 @@ describe("classicBattlePage stat help tooltip", () => {
     expect(spy).toHaveBeenCalledTimes(2);
     expect(spy.mock.calls[0][0].type).toBe("mouseenter");
     expect(spy.mock.calls[1][0].type).toBe("mouseleave");
-    expect(localStorage.getItem("statHintShown")).toBe("true");
+    expect(storage.getItem("statHintShown")).toBe(true);
 
     spy.mockClear();
     await setupClassicBattlePage();

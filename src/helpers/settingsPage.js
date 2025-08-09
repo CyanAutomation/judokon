@@ -22,6 +22,7 @@ import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { populateNavbar } from "./navigationBar.js";
 import { showSnackbar } from "./showSnackbar.js";
+import { removeItem } from "./storage.js";
 
 import { applyInitialControlValues } from "./settings/applyInitialValues.js";
 import { attachToggleListeners } from "./settings/listenerUtils.js";
@@ -149,7 +150,7 @@ function initializeControls(settings) {
     wrapper.appendChild(btn);
     section.appendChild(wrapper);
     btn.addEventListener("click", () => {
-      localStorage.removeItem("navigationItems");
+      removeItem("navigationItems");
       populateNavbar();
       showSnackbar("Navigation cache cleared");
     });

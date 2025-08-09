@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSettingsDom } from "../utils/testUtils.js";
+import * as storage from "../../src/helpers/storage.js";
 
 const baseSettings = {
   sound: true,
@@ -677,16 +678,18 @@ describe("settingsPage module", () => {
     vi.doMock("../../src/helpers/navigationBar.js", () => ({ populateNavbar }));
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
 
+    const removeSpy = vi.spyOn(storage, "removeItem");
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
     await vi.runAllTimersAsync();
 
     const btn = document.getElementById("nav-cache-reset-button");
     expect(btn).toBeTruthy();
-    localStorage.setItem("navigationItems", "foo");
+    storage.setItem("navigationItems", "foo");
     btn.dispatchEvent(new Event("click"));
     await vi.runAllTimersAsync();
-    expect(localStorage.getItem("navigationItems")).toBeNull();
+    expect(removeSpy).toHaveBeenCalledWith("navigationItems");
+    expect(storage.getItem("navigationItems")).toBeNull();
     expect(populateNavbar).toHaveBeenCalled();
     expect(showSnackbar).toHaveBeenCalledWith("Navigation cache cleared");
     vi.useRealTimers();

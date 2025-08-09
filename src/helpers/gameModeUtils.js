@@ -1,5 +1,6 @@
 import { fetchJson, validateWithSchema, importJsonModule } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
+import { getItem, setItem, removeItem } from "./storage.js";
 
 /**
  * The game modes JSON schema is loaded on demand. This avoids fetching the
@@ -40,33 +41,28 @@ const GAMEMODES_KEY = "gameModes";
 const NAV_ITEMS_KEY = "navigationItems";
 
 /**
- * Load game modes from localStorage or fallback to the default game modes JSON file.
+ * Load game modes from storage or fallback to the default game modes JSON file.
  *
  * @pseudocode
  * 1. Call `getSchema()` to lazily load the validation schema.
- * 2. Attempt to read `GAMEMODES_KEY` from `localStorage`.
- *    - Parse and validate the JSON when present.
+ * 2. Attempt to read `GAMEMODES_KEY` from storage and validate when present.
  * 3. If no stored data exists, attempt to fetch `gameModes.json` from `DATA_DIR`.
  *    - On failure, dynamically import the JSON file instead.
- *    - Persist the resolved array to `localStorage`.
+ *    - Persist the resolved array to storage.
  * 4. Return the validated array of game mode objects.
  *
  * @returns {Promise<import("./types.js").GameMode[]>} Resolved array of game mode objects.
  */
 export async function loadGameModes() {
   await getSchema();
-  if (typeof localStorage === "undefined") {
-    throw new Error("localStorage unavailable");
-  }
-  const raw = localStorage.getItem(GAMEMODES_KEY);
-  if (raw) {
+  const stored = getItem(GAMEMODES_KEY);
+  if (stored) {
     try {
-      const parsed = JSON.parse(raw);
-      await validateWithSchema(parsed, await getSchema());
-      return parsed;
+      await validateWithSchema(stored, await getSchema());
+      return stored;
     } catch (err) {
       console.warn("Failed to parse stored game modes", err);
-      localStorage.removeItem(GAMEMODES_KEY);
+      removeItem(GAMEMODES_KEY);
     }
   }
   let data;
@@ -77,7 +73,7 @@ export async function loadGameModes() {
     data = await importJsonModule("../data/gameModes.json");
     await validateWithSchema(data, await getSchema());
   }
-  localStorage.setItem(GAMEMODES_KEY, JSON.stringify(data));
+  setItem(GAMEMODES_KEY, data);
   return data;
 }
 
@@ -88,18 +84,14 @@ export async function loadGameModes() {
  */
 async function loadRawNavigationItems() {
   await getNavigationSchema();
-  if (typeof localStorage === "undefined") {
-    throw new Error("localStorage unavailable");
-  }
-  const raw = localStorage.getItem(NAV_ITEMS_KEY);
-  if (raw) {
+  const stored = getItem(NAV_ITEMS_KEY);
+  if (stored) {
     try {
-      const parsed = JSON.parse(raw);
-      await validateWithSchema(parsed, await getNavigationSchema());
-      return parsed;
+      await validateWithSchema(stored, await getNavigationSchema());
+      return stored;
     } catch (err) {
       console.warn("Failed to parse stored navigation items", err);
-      localStorage.removeItem(NAV_ITEMS_KEY);
+      removeItem(NAV_ITEMS_KEY);
     }
   }
   let data;
@@ -110,7 +102,7 @@ async function loadRawNavigationItems() {
     data = await importJsonModule("../data/navigationItems.json");
     await validateWithSchema(data, await getNavigationSchema());
   }
-  localStorage.setItem(NAV_ITEMS_KEY, JSON.stringify(data));
+  setItem(NAV_ITEMS_KEY, data);
   return data;
 }
 
@@ -140,7 +132,7 @@ export async function loadNavigationItems() {
 }
 
 /**
- * Persist an array of game modes to localStorage.
+ * Persist an array of game modes to storage.
  *
  * @pseudocode
  * 1. Call `getSchema()` to lazily load the schema.
@@ -152,18 +144,12 @@ export async function loadNavigationItems() {
  */
 export async function saveGameModes(modes) {
   await validateWithSchema(modes, await getSchema());
-  if (typeof localStorage === "undefined") {
-    throw new Error("localStorage unavailable");
-  }
-  localStorage.setItem(GAMEMODES_KEY, JSON.stringify(modes));
+  setItem(GAMEMODES_KEY, modes);
 }
 
 async function saveNavigationItems(items) {
   await validateWithSchema(items, await getNavigationSchema());
-  if (typeof localStorage === "undefined") {
-    throw new Error("localStorage unavailable");
-  }
-  localStorage.setItem(NAV_ITEMS_KEY, JSON.stringify(items));
+  setItem(NAV_ITEMS_KEY, items);
 }
 
 /**

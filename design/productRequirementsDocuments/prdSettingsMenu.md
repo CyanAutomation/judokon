@@ -72,7 +72,7 @@ Modules access player preferences via helpers in
 - `getFeatureFlag(flagName)` – returns `true` when the flag is enabled.
 
 `loadSettings()` should run during startup to populate the cache, avoiding
-direct `localStorage` reads throughout the app.
+direct storage access throughout the app. All persistence goes through `src/helpers/storage.js`.
 
 ## Settings Features
 
@@ -103,7 +103,7 @@ direct `localStorage` reads throughout the app.
 ## Technical Considerations
 
 - All data reads/writes should use asynchronous, promise-based functions with error handling.
-- `settings.json` must persist in localStorage/sessionStorage for session retention.
+- `settings.json` must persist via the storage helper (backed by `localStorage`/`sessionStorage`) for session retention.
 - Updates should debounce writes to avoid excessive file operations if toggles are changed rapidly.
 - Wrap the page contents in a `.home-screen` container so the fixed header does not cover the first settings control.
 

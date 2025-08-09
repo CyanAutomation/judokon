@@ -1,5 +1,6 @@
 import { debugLog } from "../debug.js";
 import { DATA_DIR } from "../constants.js";
+import { getItem, setItem } from "../storage.js";
 
 let countryCodeMappingCache = null;
 const COUNTRY_CACHE_KEY = "countryCodeMappingCache";
@@ -8,10 +9,10 @@ const COUNTRY_CACHE_KEY = "countryCodeMappingCache";
  * Load the mapping of country codes to country names.
  *
  * @pseudocode
- * 1. Return cached data when available, including localStorage cache.
+ * 1. Return cached data when available, including storage cache.
  * 2. Fetch `countryCodeMapping.json` from `DATA_DIR` when no cache exists.
  * 3. Validate each entry and log warnings for invalid data.
- * 4. Store the result in memory and localStorage, then return the mapping.
+ * 4. Store the result in memory and storage, then return the mapping.
  *
  * @returns {Promise<Array<{country:string,code:string,active:boolean}>>} Mapping data.
  */
@@ -19,16 +20,10 @@ export async function loadCountryCodeMapping() {
   if (countryCodeMappingCache) {
     return countryCodeMappingCache;
   }
-  if (typeof localStorage !== "undefined") {
-    const cached = localStorage.getItem(COUNTRY_CACHE_KEY);
-    if (cached) {
-      try {
-        countryCodeMappingCache = JSON.parse(cached);
-        return countryCodeMappingCache;
-      } catch (e) {
-        console.warn("Failed to parse cached country code mapping", e);
-      }
-    }
+  const cached = getItem(COUNTRY_CACHE_KEY);
+  if (cached) {
+    countryCodeMappingCache = cached;
+    return countryCodeMappingCache;
   }
   const response = await fetch(`${DATA_DIR}countryCodeMapping.json`);
   if (!response.ok) {
@@ -46,13 +41,7 @@ export async function loadCountryCodeMapping() {
   });
   debugLog("Loaded country code mapping:", data);
   countryCodeMappingCache = data;
-  if (typeof localStorage !== "undefined") {
-    try {
-      localStorage.setItem(COUNTRY_CACHE_KEY, JSON.stringify(data));
-    } catch (e) {
-      console.warn("Failed to cache country code mapping", e);
-    }
-  }
+  setItem(COUNTRY_CACHE_KEY, data);
   return data;
 }
 

@@ -154,8 +154,8 @@ This feedback highlights why Classic Battle is needed now: new players currently
     **Restore Defaults** dialog from the Settings page.
   - A small help icon (`#stat-help`) sits between the **Next Round** and
     **Quit Match** buttons. It displays a tooltip explaining how to pick an
-    attribute and auto-opens on first visit using `localStorage` to remember the
-    dismissal.
+    attribute and auto-opens on first visit using the storage helper to remember
+    the dismissal.
   - Tooltips on stat names, country flags, weight indicators, and navigation icons provide accessible explanations.
   - **Accessibility:**
   - Minimum text contrast ratio: ≥4.5:1 (per WCAG).

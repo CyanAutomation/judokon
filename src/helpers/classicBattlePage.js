@@ -45,6 +45,7 @@ import { toggleInspectorPanels } from "./cardUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
 import { initRoundSelectModal } from "./classicBattle/roundSelectModal.js";
 import { skipCurrentPhase } from "./classicBattle/timerService.js";
+import { getItem, setItem } from "./storage.js";
 
 function enableStatButtons(enable = true) {
   document.querySelectorAll("#stat-buttons button").forEach((btn) => {
@@ -216,19 +217,17 @@ export async function setupClassicBattlePage() {
   watchBattleOrientation();
 
   try {
-    if (typeof localStorage !== "undefined") {
-      const hintShown = localStorage.getItem("statHintShown");
-      if (!hintShown) {
-        const help = document.getElementById("stat-help");
-        help?.dispatchEvent(new Event("mouseenter"));
-        setTimeout(() => {
-          help?.dispatchEvent(new Event("mouseleave"));
-        }, 3000);
-        localStorage.setItem("statHintShown", "true");
-      }
+    const hintShown = getItem("statHintShown");
+    if (!hintShown) {
+      const help = document.getElementById("stat-help");
+      help?.dispatchEvent(new Event("mouseenter"));
+      setTimeout(() => {
+        help?.dispatchEvent(new Event("mouseleave"));
+      }, 3000);
+      setItem("statHintShown", true);
     }
   } catch {
-    // ignore localStorage errors
+    // ignore storage errors
   }
 }
 

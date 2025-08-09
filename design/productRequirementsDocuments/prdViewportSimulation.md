@@ -27,7 +27,7 @@ Developers and testers need a reliable, efficient way to verify the game's layou
 | -------- | --------------------------- | --------------------------------------------------------------------------- |
 | P1       | Viewport Simulation Toggle  | Add a switch in Settings to enable/disable simulated mobile viewport width. |
 | P1       | Simulated Viewport Styling  | When enabled, apply a fixed width (375px) and center the game UI.           |
-| P2       | Persistent State (Optional) | Remember the toggle state across page reloads using localStorage.           |
+| P2       | Persistent State (Optional) | Remember the toggle state across page reloads using the storage helper.     |
 
 ## Acceptance Criteria
 
@@ -35,7 +35,7 @@ Developers and testers need a reliable, efficient way to verify the game's layou
 - The `<body>` element receives the `.simulate-viewport` class when simulation is enabled, and it is removed when disabled.
 - The UI is visually constrained and centered when simulation is active.
 - No errors occur if the toggle is used before the DOM is fully loaded (e.g., via `DOMContentLoaded` check).
-- (Optional) The simulation state is saved to and restored from `localStorage` after reload.
+- (Optional) The simulation state is saved to and restored from the storage helper after reload.
 - The toggle is accessible via keyboard and announced correctly by screen readers.
 - The simulation does not interfere with navigation, gameplay, or existing responsive breakpoints.
 
@@ -81,7 +81,7 @@ Developers and testers need a reliable, efficient way to verify the game's layou
 
 - [ ] 4.0 Optional: Implement Persistent Toggle State
 
-  - [ ] 4.1 Store toggle state in localStorage or equivalent
+  - [ ] 4.1 Store toggle state using `src/helpers/storage.js`
   - [ ] 4.2 On page load, read and re-apply state if stored
 
 - [ ] 5.0 Accessibility Validation
