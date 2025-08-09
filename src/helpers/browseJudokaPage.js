@@ -212,16 +212,24 @@ export async function setupBrowseJudokaPage() {
    * Fetch judoka and gokyo data concurrently.
    *
    * @pseudocode
-   * 1. Request `judoka.json` and `gokyo.json` using `fetchJson`.
-   * 2. Store the results in `allJudoka` and `gokyoData`.
+   * 1. Concurrently request `judoka.json` and `gokyo.json`.
+   * 2. If the judoka request fails, throw the error.
+   * 3. Otherwise, store the results in `allJudoka` and `gokyoData`.
    *
    * @returns {Promise<void>} Resolves when data is loaded.
    */
   async function loadData() {
-    [allJudoka, gokyoData] = await Promise.all([
+    const [judokaRes, gokyoRes] = await Promise.allSettled([
       fetchJson(`${DATA_DIR}judoka.json`),
       fetchJson(`${DATA_DIR}gokyo.json`)
     ]);
+
+    gokyoData = gokyoRes.status === "fulfilled" ? gokyoRes.value : [];
+
+    if (judokaRes.status === "rejected") {
+      throw judokaRes.reason;
+    }
+    allJudoka = judokaRes.value;
   }
 
   /**
@@ -273,11 +281,6 @@ export async function setupBrowseJudokaPage() {
       spinnerInfo.spinner.remove();
       console.error("Error building the carousel:", error);
 
-      try {
-        gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
-      } catch {
-        gokyoData = [];
-      }
       const fallback = await getFallbackJudoka();
       await renderCarousel([fallback]);
 
@@ -300,11 +303,6 @@ export async function setupBrowseJudokaPage() {
           await renderCarousel(allJudoka);
         } catch (err) {
           console.error("Error during retry:", err);
-          try {
-            gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
-          } catch {
-            gokyoData = [];
-          }
           const fallbackRetry = await getFallbackJudoka();
           await renderCarousel([fallbackRetry]);
         } finally {
@@ -312,6 +310,7 @@ export async function setupBrowseJudokaPage() {
         }
       });
       carouselContainer.appendChild(retryButton);
+      return;
     }
 
     const clearBtn = document.getElementById("clear-filter");
