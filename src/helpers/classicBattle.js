@@ -10,11 +10,7 @@ import {
   disableNextRoundButton,
   updateDebugPanel
 } from "./classicBattle/uiHelpers.js";
-import {
-  STATS,
-  stopTimer,
-  _resetForTest as resetEngineForTest
-} from "./battleEngine.js";
+import { STATS, stopTimer, _resetForTest as resetEngineForTest } from "./battleEngine.js";
 import * as battleEngine from "./battleEngine.js";
 import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "./api/battleUI.js";
 import * as infoBar from "./setupBattleInfoBar.js";
