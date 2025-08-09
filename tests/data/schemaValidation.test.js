@@ -43,22 +43,25 @@ const datasets = await Promise.all(
 );
 
 describe("data files conform to schemas", () => {
-  it.each(datasets)("$dataFile matches $schemaFile", async ({ data, schema, validate }) => {
-    expect(typeof validate).toBe("function");
+  it.each(datasets)(
+    "$dataFile matches $schemaFile",
+    async ({ dataFile, data, schema, validate }) => {
+      expect(typeof validate).toBe("function");
 
-    const items = Array.isArray(data) && schema.type !== "array" ? data : [data];
+      const items = Array.isArray(data) && schema.type !== "array" ? data : [data];
 
-    await Promise.all(
-      items.map(async (item) => {
-        const valid = validate(item);
-        if (!valid) {
-          console.error(validate.errors);
-          throw new Error(ajv.errorsText(validate.errors) || JSON.stringify(validate.errors));
-        }
-        expect(valid).toBe(true);
-      })
-    );
-  });
+      await Promise.all(
+        items.map(async (item) => {
+          const valid = validate(item);
+          if (!valid) {
+            console.error(validate.errors);
+            throw new Error(ajv.errorsText(validate.errors) || JSON.stringify(validate.errors));
+          }
+          expect(valid).toBe(true);
+        })
+      );
+    }
+  );
 
   it("fails validation for intentionally broken data", () => {
     const { validate } = datasets.find(({ schemaFile }) => schemaFile === "judoka.schema.json");
