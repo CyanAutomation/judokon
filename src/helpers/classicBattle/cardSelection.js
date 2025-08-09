@@ -68,26 +68,69 @@ function showLoadError(error) {
  *
  * @returns {Promise<{playerJudoka: object|null, computerJudoka: object|null}>}
  */
-export async function drawCards() {
-  if (!judokaData) {
-    try {
-      judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
-    } catch (error) {
-      showLoadError(error);
-      return { playerJudoka: null, computerJudoka: null };
-    }
+async function ensureJudokaData() {
+  if (judokaData) return Array.isArray(judokaData) ? judokaData : [];
+  try {
+    judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
+    return Array.isArray(judokaData) ? judokaData : [];
+  } catch (error) {
+    showLoadError(error);
+    return [];
   }
-  const available = Array.isArray(judokaData) ? judokaData.filter((j) => !j.isHidden) : [];
+}
 
-  if (!gokyoLookup) {
-    try {
-      const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
-      gokyoLookup = createGokyoLookup(gokyoData);
-    } catch (error) {
-      showLoadError(error);
-      return { playerJudoka: null, computerJudoka: null };
-    }
+async function ensureGokyoLookup() {
+  if (gokyoLookup) return gokyoLookup;
+  try {
+    const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
+    gokyoLookup = createGokyoLookup(gokyoData);
+    return gokyoLookup;
+  } catch (error) {
+    showLoadError(error);
+    return null;
   }
+}
+
+function pickOpponent(available, playerJudoka) {
+  let compJudoka = getRandomJudoka(available);
+  if (!playerJudoka) return compJudoka;
+  let attempts = 0;
+  const maxAttempts = Math.max(available.length || 0, 5);
+  while (compJudoka.id === playerJudoka.id && attempts < maxAttempts) {
+    compJudoka = getRandomJudoka(available);
+    attempts += 1;
+  }
+  return compJudoka;
+}
+
+async function renderComputerPlaceholder(container, placeholder, enableInspector) {
+  const judokaCard = new JudokaCard(placeholder, gokyoLookup, {
+    useObscuredStats: true,
+    enableInspector
+  });
+  try {
+    if (typeof judokaCard.render === "function") {
+      const card = await judokaCard.render();
+      if (card instanceof HTMLElement) {
+        container.innerHTML = "";
+        container.appendChild(card);
+        setupLazyPortraits(card);
+      } else {
+        console.error("JudokaCard did not render an HTMLElement");
+      }
+    }
+  } catch (error) {
+    console.error("Error rendering JudokaCard:", error);
+  }
+}
+
+export async function drawCards() {
+  const allJudoka = await ensureJudokaData();
+  if (allJudoka.length === 0) return { playerJudoka: null, computerJudoka: null };
+  const available = allJudoka.filter((j) => !j.isHidden);
+
+  const lookup = await ensureGokyoLookup();
+  if (!lookup) return { playerJudoka: null, computerJudoka: null };
 
   const playerContainer = document.getElementById("player-card");
   const computerContainer = document.getElementById("computer-card");
@@ -109,38 +152,11 @@ export async function drawCards() {
     { enableInspector }
   );
 
-  let compJudoka = getRandomJudoka(available);
-  if (playerJudoka) {
-    let attempts = 0;
-    const maxAttempts = Math.max(available.length || 0, 5);
-    while (compJudoka.id === playerJudoka.id && attempts < maxAttempts) {
-      compJudoka = getRandomJudoka(available);
-      attempts += 1;
-    }
-  }
+  const compJudoka = pickOpponent(available, playerJudoka);
   computerJudoka = compJudoka;
 
-  const placeholder = judokaData.find((j) => j.id === 1) || compJudoka;
-  // Instantiate a placeholder card for the computer with obscured stats.
-  const judokaCard = new JudokaCard(placeholder, gokyoLookup, {
-    useObscuredStats: true,
-    enableInspector
-  });
-  let card;
-  try {
-    if (typeof judokaCard.render === "function") {
-      card = await judokaCard.render();
-    }
-  } catch (error) {
-    console.error("Error rendering JudokaCard:", error);
-  }
-  if (card instanceof HTMLElement) {
-    computerContainer.innerHTML = "";
-    computerContainer.appendChild(card);
-    setupLazyPortraits(card);
-  } else {
-    console.error("JudokaCard did not render an HTMLElement");
-  }
+  const placeholder = allJudoka.find((j) => j.id === 1) || compJudoka;
+  await renderComputerPlaceholder(computerContainer, placeholder, enableInspector);
 
   return { playerJudoka, computerJudoka };
 }

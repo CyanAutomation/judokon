@@ -67,108 +67,144 @@ async function loadResultContext(el) {
  */
 export async function handleSearch(event) {
   event.preventDefault();
-  const input = document.getElementById("vector-search-input");
-  const table = document.getElementById("vector-results-table");
-  const tbody = table?.querySelector("tbody");
-  const query = input.value.trim();
-  if (tbody) tbody.textContent = "";
+  const { query, tbody, messageEl } = prepareSearchUi();
   if (!query) return;
   const queryTerms = query.toLowerCase().split(/\s+/).filter(Boolean);
   const expandedQuery = await vectorSearch.expandQueryWithSynonyms(query);
-  const messageEl = document.getElementById("search-results-message");
-  const tagSelect = document.getElementById("tag-filter");
-  const selected =
-    tagSelect && tagSelect.value && tagSelect.value !== "all" ? [tagSelect.value] : [];
-  spinner.style.display = "block";
-  if (messageEl) {
-    messageEl.textContent = "Searching...";
-    messageEl.classList.remove("search-result-empty");
-  }
+  const selected = getSelectedTags();
+  showSearching(messageEl);
   try {
-    const model = await getExtractor();
-    const result = await model(expandedQuery, { pooling: "mean" });
-    const vector = Array.from(result.data ?? result);
+    const vector = await getQueryVector(expandedQuery);
     const matches = await vectorSearch.findMatches(vector, 5, selected, expandedQuery);
-    if (messageEl) {
-      messageEl.textContent = "";
-      messageEl.classList.remove("search-result-empty");
-    }
-    spinner.style.display = "none";
-    if (matches === null) {
-      if (messageEl)
-        messageEl.textContent = "Embeddings could not be loaded – please check console.";
-      return;
-    }
-    if (matches.length === 0) {
-      if (messageEl) {
-        messageEl.textContent = "No close matches found — refine your query.";
-        messageEl.classList.add("search-result-empty");
-      }
-      return;
-    }
+    finalizeSearchUi(messageEl);
+    if (handleNoMatches(matches, messageEl)) return;
 
-    const strongMatches = matches.filter((m) => m.score >= SIMILARITY_THRESHOLD);
-    const weakMatches = matches.filter((m) => m.score < SIMILARITY_THRESHOLD);
-
-    const toRender = selectMatches(strongMatches, weakMatches);
-
+    const { strongMatches, toRender } = partitionAndSelect(matches);
     if (strongMatches.length === 0 && messageEl) {
       messageEl.textContent =
         "\u26A0\uFE0F No strong matches found, but here are the closest matches based on similarity.";
       messageEl.classList.add("search-result-empty");
     }
-
-    for (const [idx, match] of toRender.entries()) {
-      const row = document.createElement("tr");
-      row.classList.add("search-result-item");
-      if (idx === 0) row.classList.add("top-match");
-      row.dataset.id = match.id;
-      row.setAttribute("role", "button");
-      row.tabIndex = 0;
-      row.setAttribute("aria-expanded", "false");
-
-      const textCell = document.createElement("td");
-      textCell.classList.add("match-text");
-      const snippet = createSnippetElement(match.text, queryTerms);
-      textCell.appendChild(snippet);
-      if (match.qaContext) {
-        const qa = document.createElement("div");
-        qa.classList.add("qa-context", "small-text");
-        qa.textContent = match.qaContext;
-        textCell.appendChild(qa);
-      }
-      const context = document.createElement("div");
-      context.classList.add("result-context", "small-text");
-      context.setAttribute("aria-live", "polite");
-      textCell.appendChild(context);
-
-      const sourceCell = document.createElement("td");
-      sourceCell.appendChild(formatSourcePath(match.source));
-
-      const tagsCell = document.createElement("td");
-      tagsCell.textContent = formatTags(match.tags);
-
-      const scoreCell = document.createElement("td");
-      scoreCell.textContent = match.score.toFixed(2);
-      if (match.score >= 0.8) scoreCell.classList.add("score-high");
-      else if (match.score >= 0.6) scoreCell.classList.add("score-mid");
-      else scoreCell.classList.add("score-low");
-
-      row.append(textCell, sourceCell, tagsCell, scoreCell);
-      row.addEventListener("click", () => loadResultContext(row));
-      row.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          loadResultContext(row);
-        }
-      });
-      tbody?.appendChild(row);
-    }
+    renderResults(tbody, toRender, queryTerms);
   } catch (err) {
     console.error("Search failed", err);
     spinner.style.display = "none";
     if (messageEl) messageEl.textContent = "An error occurred while searching.";
   }
+}
+
+function prepareSearchUi() {
+  const input = document.getElementById("vector-search-input");
+  const table = document.getElementById("vector-results-table");
+  const tbody = table?.querySelector("tbody");
+  const query = input.value.trim();
+  if (tbody) tbody.textContent = "";
+  const messageEl = document.getElementById("search-results-message");
+  return { query, tbody, messageEl };
+}
+
+function getSelectedTags() {
+  const tagSelect = document.getElementById("tag-filter");
+  return tagSelect && tagSelect.value && tagSelect.value !== "all" ? [tagSelect.value] : [];
+}
+
+function showSearching(messageEl) {
+  spinner.style.display = "block";
+  if (messageEl) {
+    messageEl.textContent = "Searching...";
+    messageEl.classList.remove("search-result-empty");
+  }
+}
+
+function buildResultRow(match, queryTerms, isTop) {
+  const row = document.createElement("tr");
+  row.classList.add("search-result-item");
+  if (isTop) row.classList.add("top-match");
+  row.dataset.id = match.id;
+  row.setAttribute("role", "button");
+  row.tabIndex = 0;
+  row.setAttribute("aria-expanded", "false");
+
+  const textCell = document.createElement("td");
+  textCell.classList.add("match-text");
+  const snippet = createSnippetElement(match.text, queryTerms);
+  textCell.appendChild(snippet);
+  if (match.qaContext) {
+    const qa = document.createElement("div");
+    qa.classList.add("qa-context", "small-text");
+    qa.textContent = match.qaContext;
+    textCell.appendChild(qa);
+  }
+  const context = document.createElement("div");
+  context.classList.add("result-context", "small-text");
+  context.setAttribute("aria-live", "polite");
+  textCell.appendChild(context);
+
+  const sourceCell = document.createElement("td");
+  sourceCell.appendChild(formatSourcePath(match.source));
+
+  const tagsCell = document.createElement("td");
+  tagsCell.textContent = formatTags(match.tags);
+
+  const scoreCell = document.createElement("td");
+  scoreCell.textContent = match.score.toFixed(2);
+  if (match.score >= 0.8) scoreCell.classList.add("score-high");
+  else if (match.score >= 0.6) scoreCell.classList.add("score-mid");
+  else scoreCell.classList.add("score-low");
+
+  row.append(textCell, sourceCell, tagsCell, scoreCell);
+  return row;
+}
+
+function partitionAndSelect(matches) {
+  const strongMatches = matches.filter((m) => m.score >= SIMILARITY_THRESHOLD);
+  const weakMatches = matches.filter((m) => m.score < SIMILARITY_THRESHOLD);
+  return { strongMatches, toRender: selectMatches(strongMatches, weakMatches) };
+}
+
+function renderResults(tbody, toRender, queryTerms) {
+  for (const [idx, match] of toRender.entries()) {
+    const row = buildResultRow(match, queryTerms, idx === 0);
+    row.addEventListener("click", () => loadResultContext(row));
+    row.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        loadResultContext(row);
+      }
+    });
+    tbody?.appendChild(row);
+  }
+}
+
+async function getQueryVector(expandedQuery) {
+  const model = await getExtractor();
+  const result = await model(expandedQuery, { pooling: "mean" });
+  return Array.from(result.data ?? result);
+}
+
+function finalizeSearchUi(messageEl) {
+  if (messageEl) {
+    messageEl.textContent = "";
+    messageEl.classList.remove("search-result-empty");
+  }
+  spinner.style.display = "none";
+}
+
+function handleNoMatches(matches, messageEl) {
+  if (matches === null) {
+    if (messageEl) {
+      messageEl.textContent = "Embeddings could not be loaded – please check console.";
+    }
+    return true;
+  }
+  if (matches.length === 0) {
+    if (messageEl) {
+      messageEl.textContent = "No close matches found — refine your query.";
+      messageEl.classList.add("search-result-empty");
+    }
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -192,25 +228,19 @@ export async function init() {
     fetchJson(`${DATA_DIR}client_embeddings.meta.json`).catch(() => null)
   ]);
 
-  let versionMismatch = false;
-  if (Array.isArray(embeddings)) {
-    for (const entry of embeddings) {
-      if (entry.version !== vectorSearch.CURRENT_EMBEDDING_VERSION) {
-        versionMismatch = true;
-        console.warn(
-          `Embedding ${entry.id ?? "(unknown id)"} has version ${entry.version}; expected ${vectorSearch.CURRENT_EMBEDDING_VERSION}`
-        );
-      }
-    }
-  }
-  if (meta && meta.version !== vectorSearch.CURRENT_EMBEDDING_VERSION) {
-    versionMismatch = true;
-    console.warn(
-      `Embedding metadata version ${meta.version} does not match ${vectorSearch.CURRENT_EMBEDDING_VERSION}`
-    );
-  }
-  if (versionMismatch && messageEl) {
-    // Use a dedicated warning element to avoid overwriting other messages
+  maybeWarnVersionMismatch(embeddings, meta, messageEl);
+  populateTagFilter(embeddings);
+  updateStats(meta);
+  attachFormHandlers(form);
+}
+
+onDomReady(init);
+
+function maybeWarnVersionMismatch(embeddings, meta, messageEl) {
+  const entryMismatch = hasEntryVersionMismatch(embeddings);
+  const metaMismatch = hasMetaMismatch(meta);
+  const mismatch = entryMismatch || metaMismatch;
+  if (mismatch && messageEl) {
     let warningEl = messageEl.querySelector(".embedding-warning");
     if (!warningEl) {
       warningEl = document.createElement("div");
@@ -219,28 +249,56 @@ export async function init() {
     }
     warningEl.textContent = "⚠️ Embedding data is out of date. Run npm run generate:embeddings.";
   }
+}
 
-  const tagSelect = document.getElementById("tag-filter");
-  if (tagSelect && Array.isArray(embeddings)) {
-    const tags = new Set();
-    embeddings.forEach((e) => {
-      if (Array.isArray(e.tags)) {
-        e.tags.forEach((t) => tags.add(t));
-      }
-    });
-    tagSelect.innerHTML =
-      '<option value="all">All</option>' +
-      [...tags]
-        .sort()
-        .map((t) => `<option value="${t}">${t}</option>`)
-        .join("");
+function hasEntryVersionMismatch(embeddings) {
+  if (!Array.isArray(embeddings)) return false;
+  let mismatch = false;
+  for (const entry of embeddings) {
+    if (entry.version !== vectorSearch.CURRENT_EMBEDDING_VERSION) {
+      mismatch = true;
+      console.warn(
+        `Embedding ${entry.id ?? "(unknown id)"} has version ${entry.version}; expected ${vectorSearch.CURRENT_EMBEDDING_VERSION}`
+      );
+    }
   }
+  return mismatch;
+}
 
+function hasMetaMismatch(meta) {
+  if (!meta) return false;
+  if (meta.version !== vectorSearch.CURRENT_EMBEDDING_VERSION) {
+    console.warn(
+      `Embedding metadata version ${meta.version} does not match ${vectorSearch.CURRENT_EMBEDDING_VERSION}`
+    );
+    return true;
+  }
+  return false;
+}
+
+function populateTagFilter(embeddings) {
+  const tagSelect = document.getElementById("tag-filter");
+  if (!tagSelect || !Array.isArray(embeddings)) return;
+  const tags = new Set();
+  embeddings.forEach((e) => {
+    if (Array.isArray(e.tags)) e.tags.forEach((t) => tags.add(t));
+  });
+  tagSelect.innerHTML =
+    '<option value="all">All</option>' +
+    [...tags]
+      .sort()
+      .map((t) => `<option value="${t}">${t}</option>`)
+      .join("");
+}
+
+function updateStats(meta) {
   const statsEl = document.getElementById("embedding-stats");
   if (statsEl && meta && typeof meta.count === "number") {
     statsEl.textContent = `${meta.count} embeddings loaded`;
   }
+}
 
+function attachFormHandlers(form) {
   form?.addEventListener("submit", handleSearch);
   form?.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
@@ -249,5 +307,3 @@ export async function init() {
     }
   });
 }
-
-onDomReady(init);

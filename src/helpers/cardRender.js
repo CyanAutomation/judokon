@@ -135,35 +135,31 @@ export async function generateCardStats(card, cardType = "common") {
  */
 import { debugLog } from "./debug.js";
 
-export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
-  // Handle null or undefined judoka
-  if (!judoka) {
-    judoka = {}; // Default to an empty object
-  }
-
-  const signatureMoveId = Number(judoka.signatureMoveId ?? PLACEHOLDER_ID); // Ensure signatureMoveId is a number
-
-  debugLog("Signature Move ID:", signatureMoveId);
-  debugLog("Judoka Object:", judoka);
+function resolveTechnique(judoka, gokyoLookup) {
+  const safeJudoka = judoka ?? {};
+  const id = Number(safeJudoka.signatureMoveId ?? PLACEHOLDER_ID);
+  debugLog("Signature Move ID:", id);
+  debugLog("Judoka Object:", safeJudoka);
   debugLog("Gokyo Lookup Object:", gokyoLookup);
+  return (
+    (gokyoLookup && gokyoLookup[id]) ||
+    (gokyoLookup && gokyoLookup[PLACEHOLDER_ID]) || { id: PLACEHOLDER_ID, name: "Jigoku-guruma" }
+  );
+}
 
-  const technique = (gokyoLookup && gokyoLookup[signatureMoveId]) ||
-    (gokyoLookup && gokyoLookup[PLACEHOLDER_ID]) || { id: PLACEHOLDER_ID, name: "Jigoku-guruma" };
-
-  let techniqueName = "Jigoku-guruma";
+function formatTechniqueName(technique) {
+  const fallback = "Jigoku-guruma";
   const foundName = technique?.name;
+  if (!foundName) return escapeHTML(fallback);
+  const decoded = decodeHTML(foundName).trim();
+  return escapeHTML(decoded);
+}
 
-  if (foundName) {
-    const decodedName = decodeHTML(foundName).trim();
-    techniqueName = escapeHTML(decodedName);
-  } else {
-    techniqueName = escapeHTML(techniqueName);
-  }
-
+export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
+  const technique = resolveTechnique(judoka, gokyoLookup);
   debugLog("Selected Technique:", technique);
-
+  const techniqueName = formatTechniqueName(technique);
   const cardClass = cardType.toLowerCase();
-
   return `
     <div class="signature-move-container ${cardClass}" data-tooltip-id="ui.signatureBar">
       <span class="signature-move-label">Signature Move:</span>

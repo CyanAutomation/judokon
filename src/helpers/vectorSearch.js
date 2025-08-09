@@ -95,45 +95,66 @@ export function cosineSimilarity(a, b) {
 /** Bonus applied when the query text contains exact terms from the entry. */
 const EXACT_MATCH_BONUS = 0.1;
 
-export async function findMatches(queryVector, topN = 5, tags = [], queryText = "") {
-  const entries = await loadEmbeddings();
-  if (entries === null) {
-    return null;
-  }
-  if (!Array.isArray(entries) || entries.length === 0) {
-    return [];
-  }
+/**
+ * Validate and normalize the raw embeddings array.
+ *
+ * @param {any} entries
+ * @param {number[]} queryVector
+ * @returns {{status: "null"}|{status: "empty"}|{status: "invalid_query"}|{status: "ok", list: any[]}}
+ */
+function resolveFirstValid(entries) {
+  if (entries === null) return { kind: "null" };
+  if (!Array.isArray(entries) || entries.length === 0) return { kind: "empty" };
   const firstValid = entries.find(
     (e) => Array.isArray(e.embedding) && e.embedding.every((v) => typeof v === "number")
   );
-  if (!firstValid) {
-    return [];
-  }
-  if (!Array.isArray(queryVector) || queryVector.length !== firstValid.embedding.length) {
+  if (!firstValid) return { kind: "empty" };
+  return { kind: "ok", firstValid };
+}
+
+function validateQueryVector(vec, expectedLen) {
+  if (!Array.isArray(vec) || vec.length !== expectedLen) {
     console.warn("Query vector length mismatch.");
-    return [];
+    return false;
   }
-  const validEntries = [];
+  return true;
+}
+
+function collectValidEntries(entries, expectedLen) {
+  const out = [];
   for (const entry of entries) {
     const emb = entry.embedding;
     if (
       !Array.isArray(emb) ||
-      emb.length !== queryVector.length ||
+      emb.length !== expectedLen ||
       emb.some((v) => typeof v !== "number")
     ) {
       console.warn(`Skipping entry ${entry.id ?? "(unknown id)"} due to invalid embedding.`);
       continue;
     }
-    validEntries.push(entry);
+    out.push(entry);
   }
-  const filtered =
-    Array.isArray(tags) && tags.length > 0
-      ? validEntries.filter((e) => Array.isArray(e.tags) && tags.every((t) => e.tags.includes(t)))
-      : validEntries;
+  return out;
+}
 
+function normalizeEmbeddings(entries, queryVector) {
+  const status = resolveFirstValid(entries);
+  if (status.kind !== "ok") return { status: status.kind };
+  if (!validateQueryVector(queryVector, status.firstValid.embedding.length)) {
+    return { status: "invalid_query" };
+  }
+  const validEntries = collectValidEntries(entries, status.firstValid.embedding.length);
+  return { status: "ok", list: validEntries };
+}
+
+function filterByTags(entries, tags) {
+  if (!Array.isArray(tags) || tags.length === 0) return entries;
+  return entries.filter((e) => Array.isArray(e.tags) && tags.every((t) => e.tags.includes(t)));
+}
+
+function scoreEntries(entries, queryVector, queryText) {
   const terms = String(queryText).toLowerCase().split(/\s+/).filter(Boolean);
-
-  return filtered
+  return entries
     .map((entry) => {
       const sim = cosineSimilarity(queryVector, entry.embedding);
       const normalized = (sim + 1) / 2;
@@ -142,26 +163,37 @@ export async function findMatches(queryVector, topN = 5, tags = [], queryText = 
       const bonus = hasTerm ? EXACT_MATCH_BONUS : 0;
       return { score: Math.min(1, normalized + bonus), ...entry };
     })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, topN);
+    .sort((a, b) => b.score - a.score);
+}
+
+export async function findMatches(queryVector, topN = 5, tags = [], queryText = "") {
+  const entries = await loadEmbeddings();
+  const normalized = normalizeEmbeddings(entries, queryVector);
+  if (normalized.status === "null") return null;
+  if (normalized.status !== "ok") return [];
+  const filtered = filterByTags(normalized.list, tags);
+  return scoreEntries(filtered, queryVector, queryText).slice(0, topN);
 }
 
 const CHUNK_SIZE = 1500;
 const OVERLAP = 100;
 
-function chunkMarkdown(text) {
-  const lines = text.split(/\r?\n/);
+function splitIntoSections(lines) {
   const heading = /^(#{1,6})\s+/;
   const sections = [];
   let i = 0;
-
   while (i < lines.length && !heading.test(lines[i])) i++;
   if (i > 0) {
     const pre = lines.slice(0, i).join("\n").trim();
     if (pre) sections.push(pre);
   }
+  collectHeadingSections(lines, i, sections);
+  return sections;
+}
 
-  for (let idx = i; idx < lines.length; idx++) {
+function collectHeadingSections(lines, startIdx, out) {
+  const heading = /^(#{1,6})\s+/;
+  for (let idx = startIdx; idx < lines.length; idx++) {
     const match = heading.exec(lines[idx]);
     if (!match) continue;
     const level = match[1].length;
@@ -172,20 +204,26 @@ function chunkMarkdown(text) {
       j++;
     }
     const section = lines.slice(idx, j).join("\n").trim();
-    if (section) sections.push(section);
+    if (section) out.push(section);
   }
+}
 
+function chunkSection(section) {
+  if (section.length <= CHUNK_SIZE) return [section];
+  const chunks = [];
+  for (let start = 0; start < section.length; start += CHUNK_SIZE - OVERLAP) {
+    chunks.push(section.slice(start, start + CHUNK_SIZE));
+  }
+  return chunks;
+}
+
+function chunkMarkdown(text) {
+  const lines = text.split(/\r?\n/);
+  const sections = splitIntoSections(lines);
   const chunks = [];
   for (const section of sections) {
-    if (section.length > CHUNK_SIZE) {
-      for (let start = 0; start < section.length; start += CHUNK_SIZE - OVERLAP) {
-        chunks.push(section.slice(start, start + CHUNK_SIZE));
-      }
-    } else {
-      chunks.push(section);
-    }
+    chunks.push(...chunkSection(section));
   }
-
   return chunks;
 }
 
