@@ -2,6 +2,17 @@ import { fetchJson, importJsonModule } from "../helpers/dataUtils.js";
 import { DATA_DIR } from "../helpers/constants.js";
 
 /**
+ * Utilities for working with two-letter ISO country codes backed by a
+ * dictionary mapping. The data file `countryCodeMapping.json` stores entries
+ * keyed by code, enabling direct lookups without array traversal.
+ *
+ * @example
+ * import { getCountryByCode, getCodeByCountry, listCountries } from "./countryCodes.js";
+ * const name = await getCountryByCode("fr"); // "France"
+ * const code = await getCodeByCountry("Japan"); // "jp"
+ * const countries = await listCountries(); // ["Brazil", "France", "Japan", ...]
+ */
+/**
  * @typedef {import("../helpers/types.js").CountryCodeEntry} CountryCodeEntry
  * @exports CountryCodeEntry
  */
@@ -50,6 +61,10 @@ export function normalizeCode(code) {
  *
  * @param {string} code - Two-letter country code.
  * @returns {Promise<string|undefined>} Resolved country name or undefined.
+ *
+ * @example
+ * const name = await getCountryByCode("fr");
+ * console.log(name); // "France"
  */
 export async function getCountryByCode(code) {
   const normalized = normalizeCode(code);
@@ -71,6 +86,10 @@ export async function getCountryByCode(code) {
  *
  * @param {string} country - Country name to search.
  * @returns {Promise<string|undefined>} Resolved code or undefined.
+ *
+ * @example
+ * const code = await getCodeByCountry("Japan");
+ * console.log(code); // "jp"
  */
 export async function getCodeByCountry(country) {
   if (typeof country !== "string" || !country.trim()) return undefined;
@@ -112,6 +131,10 @@ export async function toArray() {
  * 3. Return the array of names.
  *
  * @returns {Promise<Array<string>>} Sorted list of country names.
+ *
+ * @example
+ * const countries = await listCountries();
+ * console.log(countries); // ["Brazil", "France", "Japan", ...]
  */
 export async function listCountries() {
   const entries = await toArray();
