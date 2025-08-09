@@ -72,7 +72,7 @@ Modules access player preferences via helpers in
 - `getFeatureFlag(flagName)` – returns `true` when the flag is enabled.
 
 `loadSettings()` should run during startup to populate the cache, avoiding
-direct `localStorage` reads throughout the app.
+direct `localStorage` reads throughout the app by using `src/helpers/storage.js`.
 
 ## Settings Features
 
@@ -103,7 +103,7 @@ direct `localStorage` reads throughout the app.
 ## Technical Considerations
 
 - All data reads/writes should use asynchronous, promise-based functions with error handling.
-- `settings.json` must persist in localStorage/sessionStorage for session retention.
+- `settings.json` must persist via the storage utility for session retention.
 - Updates should debounce writes to avoid excessive file operations if toggles are changed rapidly.
 - Wrap the page contents in a `.home-screen` container so the fixed header does not cover the first settings control.
 
@@ -111,7 +111,7 @@ direct `localStorage` reads throughout the app.
 
 ## Data & Persistence
 
-- The Settings page **must pull current states** from data sources (`settings.json`, `gameModes.json`, and `navigationItems.json`) on load.
+- The Settings page **must pull current states** from data sources (`settings.json`, `gameModes.json`, and `navigationItems.json`) on load, using the `navigationCache` helper for navigation persistence.
 - Default feature flag values live in `settings.json`, while their labels and descriptions come from `tooltips.json`.
 - `gameModes.json` defines all available modes, while `navigationItems.json` references each by `id` to control order and visibility via CSS.
 - Changes should trigger **immediate data writes** without requiring a “Save Changes” button.

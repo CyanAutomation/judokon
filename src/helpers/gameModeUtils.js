@@ -1,12 +1,13 @@
 import { fetchJson, validateWithSchema, importJsonModule } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
+import { load as loadNavCache, save as saveNavCache } from "./navigationCache.js";
+import { getItem, setItem, removeItem } from "./storage.js";
 
 /**
  * The game modes JSON schema is loaded on demand. This avoids fetching the
  * schema during module initialization.
  */
 let schemaPromise;
-let navSchemaPromise;
 
 async function getSchema() {
   if (!schemaPromise) {
@@ -22,51 +23,32 @@ async function getSchema() {
   return schemaPromise;
 }
 
-async function getNavigationSchema() {
-  if (!navSchemaPromise) {
-    navSchemaPromise = fetch(new URL("../schemas/navigationItems.schema.json", import.meta.url))
-      .then(async (r) => {
-        if (!r.ok) {
-          throw new Error(`Failed to fetch navigation schema: ${r.status}`);
-        }
-        return r.json();
-      })
-      .catch(async () => importJsonModule("../schemas/navigationItems.schema.json"));
-  }
-  return navSchemaPromise;
-}
-
 const GAMEMODES_KEY = "gameModes";
-const NAV_ITEMS_KEY = "navigationItems";
 
 /**
- * Load game modes from localStorage or fallback to the default game modes JSON file.
+ * Load game modes from storage or fallback to the default game modes JSON file.
  *
  * @pseudocode
  * 1. Call `getSchema()` to lazily load the validation schema.
- * 2. Attempt to read `GAMEMODES_KEY` from `localStorage`.
+ * 2. Attempt to read `GAMEMODES_KEY` from storage.
  *    - Parse and validate the JSON when present.
  * 3. If no stored data exists, attempt to fetch `gameModes.json` from `DATA_DIR`.
  *    - On failure, dynamically import the JSON file instead.
- *    - Persist the resolved array to `localStorage`.
+ *    - Persist the resolved array to storage.
  * 4. Return the validated array of game mode objects.
  *
  * @returns {Promise<import("./types.js").GameMode[]>} Resolved array of game mode objects.
  */
 export async function loadGameModes() {
   await getSchema();
-  if (typeof localStorage === "undefined") {
-    throw new Error("localStorage unavailable");
-  }
-  const raw = localStorage.getItem(GAMEMODES_KEY);
-  if (raw) {
+  const cached = getItem(GAMEMODES_KEY);
+  if (cached) {
     try {
-      const parsed = JSON.parse(raw);
-      await validateWithSchema(parsed, await getSchema());
-      return parsed;
+      await validateWithSchema(cached, await getSchema());
+      return cached;
     } catch (err) {
-      console.warn("Failed to parse stored game modes", err);
-      localStorage.removeItem(GAMEMODES_KEY);
+      console.warn("Failed to validate stored game modes", err);
+      removeItem(GAMEMODES_KEY);
     }
   }
   let data;
@@ -77,40 +59,7 @@ export async function loadGameModes() {
     data = await importJsonModule("../data/gameModes.json");
     await validateWithSchema(data, await getSchema());
   }
-  localStorage.setItem(GAMEMODES_KEY, JSON.stringify(data));
-  return data;
-}
-
-/**
- * Load raw navigation items from storage or the bundled JSON file.
- *
- * @returns {Promise<Array>} Resolved array of navigation items.
- */
-async function loadRawNavigationItems() {
-  await getNavigationSchema();
-  if (typeof localStorage === "undefined") {
-    throw new Error("localStorage unavailable");
-  }
-  const raw = localStorage.getItem(NAV_ITEMS_KEY);
-  if (raw) {
-    try {
-      const parsed = JSON.parse(raw);
-      await validateWithSchema(parsed, await getNavigationSchema());
-      return parsed;
-    } catch (err) {
-      console.warn("Failed to parse stored navigation items", err);
-      localStorage.removeItem(NAV_ITEMS_KEY);
-    }
-  }
-  let data;
-  try {
-    data = await fetchJson(`${DATA_DIR}navigationItems.json`, await getNavigationSchema());
-  } catch (error) {
-    console.warn("Failed to fetch navigation items, falling back to import", error);
-    data = await importJsonModule("../data/navigationItems.json");
-    await validateWithSchema(data, await getNavigationSchema());
-  }
-  localStorage.setItem(NAV_ITEMS_KEY, JSON.stringify(data));
+  setItem(GAMEMODES_KEY, data);
   return data;
 }
 
@@ -118,7 +67,7 @@ async function loadRawNavigationItems() {
  * Load navigation items merged with game mode data.
  *
  * @pseudocode
- * 1. Retrieve raw navigation items via `loadRawNavigationItems()`.
+ * 1. Retrieve raw navigation items via `navigationCache.load()`.
  * 2. Retrieve game modes via `loadGameModes()`.
  * 3. Ensure both results are arrays; throw if validation fails.
  * 4. Merge each navigation item with its corresponding game mode by `gameModeId`,
@@ -128,7 +77,7 @@ async function loadRawNavigationItems() {
  * @returns {Promise<Array>} Array of merged navigation and game mode objects.
  */
 export async function loadNavigationItems() {
-  const navItems = await loadRawNavigationItems();
+  const navItems = await loadNavCache();
   const modes = await loadGameModes();
   if (!Array.isArray(navItems) || !Array.isArray(modes)) {
     throw new Error("Invalid navigation or game mode data");
@@ -140,7 +89,7 @@ export async function loadNavigationItems() {
 }
 
 /**
- * Persist an array of game modes to localStorage.
+ * Persist an array of game modes to storage.
  *
  * @pseudocode
  * 1. Call `getSchema()` to lazily load the schema.
@@ -152,28 +101,17 @@ export async function loadNavigationItems() {
  */
 export async function saveGameModes(modes) {
   await validateWithSchema(modes, await getSchema());
-  if (typeof localStorage === "undefined") {
-    throw new Error("localStorage unavailable");
-  }
-  localStorage.setItem(GAMEMODES_KEY, JSON.stringify(modes));
-}
-
-async function saveNavigationItems(items) {
-  await validateWithSchema(items, await getNavigationSchema());
-  if (typeof localStorage === "undefined") {
-    throw new Error("localStorage unavailable");
-  }
-  localStorage.setItem(NAV_ITEMS_KEY, JSON.stringify(items));
+  setItem(GAMEMODES_KEY, modes);
 }
 
 /**
  * Update the `isHidden` value for a specific navigation item.
  *
  * @pseudocode
- * 1. Load the current navigation items using `loadRawNavigationItems()`.
+ * 1. Load the current navigation items using `navigationCache.load()`.
  * 2. Find the item matching `id` and update its `isHidden` property.
  *    - Throw an error if the item is not found.
- * 3. Validate and persist the updated array with `saveNavigationItems()`.
+ * 3. Validate and persist the updated array with `navigationCache.save()`.
  * 4. Return the merged navigation items, ensuring navigation item properties
  *    override game mode properties.
  *
@@ -182,15 +120,14 @@ async function saveNavigationItems(items) {
  * @returns {Promise<Array>} Updated array of merged items.
  */
 export async function updateNavigationItemHidden(id, isHidden) {
-  await getNavigationSchema();
-  const items = await loadRawNavigationItems();
+  const items = await loadNavCache();
   const numericId = Number(id);
   const index = items.findIndex((m) => Number(m.id) === numericId);
   if (index === -1) {
     throw new Error(`Navigation item not found: ${id}`);
   }
   items[index] = { ...items[index], isHidden };
-  await saveNavigationItems(items);
+  await saveNavCache(items);
   const modes = await loadGameModes();
   return items.map((item) => {
     const mode = modes.find((m) => m.id === Number(item.gameModeId)) || {};

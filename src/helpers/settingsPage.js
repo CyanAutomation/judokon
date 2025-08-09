@@ -21,6 +21,7 @@ import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { populateNavbar } from "./navigationBar.js";
+import { reset as resetNavigationCache } from "./navigationCache.js";
 import { showSnackbar } from "./showSnackbar.js";
 
 import { applyInitialControlValues } from "./settings/applyInitialValues.js";
@@ -149,7 +150,7 @@ function initializeControls(settings) {
     wrapper.appendChild(btn);
     section.appendChild(wrapper);
     btn.addEventListener("click", () => {
-      localStorage.removeItem("navigationItems");
+      resetNavigationCache();
       populateNavbar();
       showSnackbar("Navigation cache cleared");
     });

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSettingsDom } from "../utils/testUtils.js";
+import { setItem, getItem } from "../../src/helpers/storage.js";
 
 const baseSettings = {
   sound: true,
@@ -683,10 +684,10 @@ describe("settingsPage module", () => {
 
     const btn = document.getElementById("nav-cache-reset-button");
     expect(btn).toBeTruthy();
-    localStorage.setItem("navigationItems", "foo");
+    setItem("navigationItems", "foo");
     btn.dispatchEvent(new Event("click"));
     await vi.runAllTimersAsync();
-    expect(localStorage.getItem("navigationItems")).toBeNull();
+    expect(getItem("navigationItems")).toBeNull();
     expect(populateNavbar).toHaveBeenCalled();
     expect(showSnackbar).toHaveBeenCalledWith("Navigation cache cleared");
     vi.useRealTimers();

@@ -1,5 +1,6 @@
 import { debugLog } from "../debug.js";
 import { DATA_DIR } from "../constants.js";
+import { getItem, setItem } from "../storage.js";
 
 /** @typedef {{country: string, code: string, lastUpdated: string, active: boolean}} CountryEntry */
 
@@ -11,13 +12,13 @@ const COUNTRY_CACHE_KEY = "countryCodeMappingCache";
  * Load the mapping of country codes to country names.
  *
  * @pseudocode
- * 1. Return cached data when available, including localStorage cache.
+ * 1. Return cached data when available, including persisted storage cache.
  * 2. Fetch `countryCodeMapping.json` from `DATA_DIR` when no cache exists.
  * 3. Validate each `[code, entry]` pair:
  *    - Ensure `code` is lowercase two-letter ISO.
  *    - Verify `entry.code` matches the key and required fields exist.
  *    - Throw an error on invalid data.
- * 4. Cache the mapping in memory and localStorage, then return it.
+ * 4. Store the result in memory and persistent storage, then return the mapping.
  *
  * @returns {Promise<Record<string, CountryEntry>>} Mapping data.
  */
@@ -25,16 +26,10 @@ export async function loadCountryCodeMapping() {
   if (countryCodeMappingCache) {
     return countryCodeMappingCache;
   }
-  if (typeof localStorage !== "undefined") {
-    const cached = localStorage.getItem(COUNTRY_CACHE_KEY);
-    if (cached) {
-      try {
-        countryCodeMappingCache = JSON.parse(cached);
-        return countryCodeMappingCache;
-      } catch (e) {
-        console.warn("Failed to parse cached country code mapping", e);
-      }
-    }
+  const cached = getItem(COUNTRY_CACHE_KEY);
+  if (cached) {
+    countryCodeMappingCache = cached;
+    return countryCodeMappingCache;
   }
   const response = await fetch(`${DATA_DIR}countryCodeMapping.json`);
   if (!response.ok) {
@@ -61,13 +56,7 @@ export async function loadCountryCodeMapping() {
   }
   debugLog("Loaded country code mapping:", data);
   countryCodeMappingCache = data;
-  if (typeof localStorage !== "undefined") {
-    try {
-      localStorage.setItem(COUNTRY_CACHE_KEY, JSON.stringify(data));
-    } catch (e) {
-      console.warn("Failed to cache country code mapping", e);
-    }
-  }
+  setItem(COUNTRY_CACHE_KEY, data);
   return data;
 }
 

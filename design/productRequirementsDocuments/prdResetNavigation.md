@@ -2,7 +2,7 @@
 
 ## Overview
 
-The "Reset Navigation Cache" feature allows users to manually clear cached navigation data (navigationItems) from localStorage and refresh the navigation bar from the Settings page. This is useful for troubleshooting, ensuring up-to-date navigation, and supporting advanced users or testers.
+The "Reset Navigation Cache" feature allows users to manually clear cached navigation data (navigationItems) using the `navigationCache.reset()` API and refresh the navigation bar from the Settings page. This is useful for troubleshooting, ensuring up-to-date navigation, and supporting advanced users or testers.
 
 ## Problem Statement
 
@@ -31,11 +31,11 @@ Users and testers may encounter issues where the navigation bar does not reflect
 ## Acceptance Criteria
 
 - The "Reset Navigation Cache" button appears in the Settings page only when the navCacheResetButton feature flag is enabled.
-- Clicking the button removes the navigationItems entry from localStorage.
-- After clicking, the navigation bar is immediately refreshed with up-to-date navigation items.
-- A snackbar or toast message appears confirming the cache was cleared.
-- The button is not visible when the feature flag is disabled.
-- No errors are shown if navigationItems is already missing from localStorage.
+ - Clicking the button invokes `navigationCache.reset()`, which removes the navigationItems entry using the storage utility.
+ - After clicking, the navigation bar is immediately refreshed with up-to-date navigation items.
+ - A snackbar or toast message appears confirming the cache was cleared.
+ - The button is not visible when the feature flag is disabled.
+ - No errors are shown if navigationItems is already missing from storage.
 
 ## Non-Functional Requirements / Design Considerations
 
@@ -45,7 +45,7 @@ Users and testers may encounter issues where the navigation bar does not reflect
 
 ## Dependencies and Open Questions
 
-- Depends on the navigation bar population logic (populateNavbar) and localStorage usage.
+- Depends on the navigation bar population logic (populateNavbar) and storage usage.
 - Relies on the feature flag system for conditional UI display.
 - See [Navigation Bar](prdNavigationBar.md) for hover and active state requirements to ensure UI consistency after cache reset.
 - No known open questions.

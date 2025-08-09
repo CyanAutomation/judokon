@@ -76,7 +76,7 @@ Currently, the JU-DO-KON! landing screen lacks dynamic content, making repeat vi
 
 ### Open Questions
 
-- Should the featured card be pinned in localStorage to avoid flicker if a user visits multiple times a day?
+- Should the featured card be pinned using the storage utility to avoid flicker if a user visits multiple times a day?
 - Will the rotation logic exclude `Mystery` cards or only include playable cards?
 - Should the feature support queued campaigns (e.g. “7 Days of Champions”)?
 
