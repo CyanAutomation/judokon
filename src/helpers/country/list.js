@@ -1,5 +1,6 @@
 import { DATA_DIR } from "../constants.js";
-import { listCountries, getCodeByCountry, normalizeCode } from "../../utils/countryCodes.js";
+import { fetchJson } from "../dataUtils.js";
+import { loadCountryMapping, getFlagUrl } from "../api/countryService.js";
 
 const SCROLL_THRESHOLD_PX = 50;
 
@@ -7,12 +8,12 @@ const SCROLL_THRESHOLD_PX = 50;
  * Populate a scrolling list of active countries with flag buttons.
  *
  * @pseudocode
- * 1. Fetch `judoka.json` to determine which countries appear in the deck.
- * 2. Retrieve sorted active country names via `listCountries`.
+ * 1. Load judoka data via `fetchJson` to determine countries used in the deck.
+ * 2. Call `loadCountryMapping` and derive sorted active country names.
  * 3. Filter to the countries present in the deck; show a message and exit when empty.
  * 4. Determine batch size based on network conditions.
  * 5. Render an "All" button followed by batches of country buttons with lazily loaded flags.
- * 6. Use `getCodeByCountry` and `normalizeCode` to build flag URLs.
+ * 6. Use `getFlagUrl(code)` to build flag URLs from the mapping.
  * 7. Use `IntersectionObserver` and `loading="lazy"` to defer flag requests until visible.
  * 8. Log errors if data fails to load or individual flags cannot be retrieved.
  *
@@ -21,16 +22,18 @@ const SCROLL_THRESHOLD_PX = 50;
  */
 export async function populateCountryList(container) {
   try {
-    const judokaResponse = await fetch(`${DATA_DIR}judoka.json`);
-    if (!judokaResponse.ok) {
-      throw new Error("Failed to load judoka data");
-    }
-    const judoka = await judokaResponse.json();
+    const judoka = await fetchJson(`${DATA_DIR}judoka.json`);
     const uniqueCountries = new Set(
       Array.isArray(judoka) ? judoka.map((j) => j.country).filter(Boolean) : []
     );
-    const allCountries = await listCountries();
-    const activeCountries = allCountries.filter((name) => uniqueCountries.has(name));
+
+    const mapping = await loadCountryMapping();
+    const entries = Object.values(mapping)
+      .filter((e) => e.active)
+      .sort((a, b) => a.country.localeCompare(b.country));
+    const activeCountries = entries
+      .map((e) => e.country)
+      .filter((name) => uniqueCountries.has(name));
 
     if (activeCountries.length === 0) {
       const message = document.createElement("p");
@@ -38,6 +41,8 @@ export async function populateCountryList(container) {
       container.replaceChildren(message);
       return;
     }
+
+    const nameToCode = new Map(entries.map((e) => [e.country, e.code]));
 
     const allButton = document.createElement("button");
     allButton.className = "flag-button slide";
@@ -92,11 +97,8 @@ export async function populateCountryList(container) {
         flagImg.className = "flag-image";
         flagImg.setAttribute("loading", "lazy");
         try {
-          const code = await getCodeByCountry(countryName);
-          const normalized = normalizeCode(code);
-          const flagUrl = normalized
-            ? `https://flagcdn.com/w320/${normalized}.png`
-            : "https://flagcdn.com/w320/vu.png";
+          const code = nameToCode.get(countryName);
+          const flagUrl = await getFlagUrl(code);
           if (imageObserver) {
             flagImg.dataset.src = flagUrl;
             imageObserver.observe(flagImg);
