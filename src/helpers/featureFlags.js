@@ -62,12 +62,25 @@ export async function setFlag(flag, value) {
 if (typeof window !== "undefined") {
   window.addEventListener("storage", (e) => {
     if (e.key === "settings") {
-      loadSettings()
-        .then((s) => {
-          cachedFlags = s.featureFlags || {};
+      // Prefer the newValue payload for immediate updates, fallback to loadSettings
+      if (e.newValue) {
+        try {
+          const stored = JSON.parse(e.newValue);
+          cachedFlags = stored.featureFlags || {};
           featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
-        })
-        .catch(() => {});
+        } catch {
+          // ignore malformed payload
+        }
+      } else {
+        loadSettings()
+          .then((s) => {
+            cachedFlags = s.featureFlags || {};
+            featureFlagsEmitter.dispatchEvent(
+              new CustomEvent("change", { detail: { flag: null } })
+            );
+          })
+          .catch(() => {});
+      }
     }
   });
 }
