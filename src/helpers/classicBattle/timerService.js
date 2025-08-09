@@ -144,7 +144,6 @@ export function scheduleNextRound(result, startRoundFn) {
   }
 
   const btn = document.getElementById("next-round-button");
-  const timerEl = document.getElementById("next-round-timer");
   if (!btn) return;
 
   const onClick = async () => {
@@ -165,17 +164,11 @@ export function scheduleNextRound(result, startRoundFn) {
     } else {
       updateSnackbar(text);
     }
-    if (timerEl) {
-      timerEl.textContent = text;
-    }
   };
 
   const onExpired = () => {
     setSkipHandler(null);
     infoBar.clearTimer();
-    if (timerEl) {
-      timerEl.textContent = "";
-    }
     btn.addEventListener("click", onClick, { once: true });
     enableNextRoundButton();
     updateDebugPanel();
