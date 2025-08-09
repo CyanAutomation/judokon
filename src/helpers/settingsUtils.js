@@ -70,6 +70,9 @@ export const DEFAULT_SETTINGS = await loadDefaultSettings();
 let saveTimer;
 const SAVE_DELAY_MS = 100;
 
+// Cached settings object for synchronous access
+let cachedSettings = { ...DEFAULT_SETTINGS };
+
 /**
  * Load persisted settings from localStorage.
  *
@@ -91,7 +94,8 @@ export async function loadSettings() {
   }
   const raw = localStorage.getItem(SETTINGS_KEY);
   if (!raw) {
-    return { ...DEFAULT_SETTINGS };
+    cachedSettings = { ...DEFAULT_SETTINGS };
+    return cachedSettings;
   }
   try {
     const parsed = JSON.parse(raw);
@@ -112,11 +116,13 @@ export async function loadSettings() {
       }
     };
     await validateWithSchema(merged, await getSettingsSchema());
+    cachedSettings = merged;
     return merged;
   } catch (error) {
     console.warn("Invalid stored settings, resetting to defaults", error);
     localStorage.removeItem(SETTINGS_KEY);
-    return { ...DEFAULT_SETTINGS };
+    cachedSettings = { ...DEFAULT_SETTINGS };
+    return cachedSettings;
   }
 }
 
@@ -178,6 +184,7 @@ export async function updateSetting(key, value) {
     } else {
       await saveSettings(updated);
     }
+    cachedSettings = updated;
     return updated;
   } catch (error) {
     // For PRD: error popup handled in UI
@@ -204,7 +211,35 @@ export function resetSettings() {
     // For PRD: error popup handled in UI
     console.error("Failed to reset settings", err);
   }
-  return { ...DEFAULT_SETTINGS };
+  cachedSettings = { ...DEFAULT_SETTINGS };
+  return cachedSettings;
+}
+
+/**
+ * Retrieve a setting value synchronously from the cached settings.
+ *
+ * @pseudocode
+ * 1. Return `cachedSettings[key]`.
+ *
+ * @param {keyof Settings} key - The setting key to read.
+ * @returns {*} Setting value.
+ */
+export function getSetting(key) {
+  return cachedSettings[key];
+}
+
+/**
+ * Retrieve a feature flag's enabled state.
+ *
+ * @pseudocode
+ * 1. Access `cachedSettings.featureFlags?.[flagName]?.enabled`.
+ * 2. Return `false` when no flag exists.
+ *
+ * @param {string} flagName - Name of the feature flag.
+ * @returns {boolean} True when the flag is enabled.
+ */
+export function getFeatureFlag(flagName) {
+  return cachedSettings.featureFlags?.[flagName]?.enabled ?? false;
 }
 
 /**

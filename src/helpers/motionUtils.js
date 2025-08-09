@@ -2,29 +2,21 @@
  * Utilities for handling motion preference.
  */
 
+import { getSetting } from "./settingsUtils.js";
 /**
  * Determine synchronously if motion effects should be reduced.
  *
  * @pseudocode
- * 1. Attempt to read the "settings" item from `localStorage`.
- *    - Parse the JSON and check the `motionEffects` property.
- * 2. If `motionEffects` is `false`, return `true`.
- * 3. Otherwise, return whether the user prefers reduced motion via
+ * 1. Call `getSetting("motionEffects")`.
+ * 2. If the result is `false`, return `true`.
+ * 3. Otherwise, return the value of
  *    `matchMedia('(prefers-reduced-motion: reduce)')`.
  *
  * @returns {boolean} True if motion effects should be reduced.
  */
 export function shouldReduceMotionSync() {
-  try {
-    const raw = localStorage.getItem("settings");
-    if (raw) {
-      const data = JSON.parse(raw);
-      if (data && data.motionEffects === false) {
-        return true;
-      }
-    }
-  } catch {
-    // Ignore JSON and localStorage errors
+  if (getSetting("motionEffects") === false) {
+    return true;
   }
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }

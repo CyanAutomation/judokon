@@ -69,6 +69,18 @@ AI agents should begin by reading:
 - ✅ Validate stat blocks against rarity rules
 - ✅ Generate or evaluate PRDs for new features
 
+## Settings API
+
+Settings are loaded once and cached for synchronous use. Helpers in
+`src/helpers/settingsUtils.js` provide safe access:
+
+- `getSetting(key)` – read a setting value from the cache.
+- `getFeatureFlag(flagName)` – check whether a feature flag is enabled.
+
+Call `loadSettings()` during startup to populate the cache before using
+these helpers. This approach avoids direct `localStorage` reads in modules
+that need fast, synchronous access to settings.
+
 ## 🔄 Updating Judoka Card Codes
 
 Run `npm run update:codes` whenever you add or edit judoka in `src/data/judoka.json`. The script regenerates the `cardCode` for each entry and falls back to the code from judoka `id=0` if generation fails.

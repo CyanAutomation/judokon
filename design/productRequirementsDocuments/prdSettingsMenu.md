@@ -63,6 +63,17 @@ As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as
 
 ---
 
+### Settings API
+
+Modules access player preferences via helpers in
+`src/helpers/settingsUtils.js`:
+
+- `getSetting(key)` – synchronous access to cached settings.
+- `getFeatureFlag(flagName)` – returns `true` when the flag is enabled.
+
+`loadSettings()` should run during startup to populate the cache, avoiding
+direct `localStorage` reads throughout the app.
+
 ## Settings Features
 
 - **Sound (binary):** ON/OFF (default: ON) – Enable or mute game audio.

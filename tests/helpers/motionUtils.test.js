@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { shouldReduceMotionSync, applyMotionPreference } from "../../src/helpers/motionUtils.js";
+import { loadSettings, resetSettings } from "../../src/helpers/settingsUtils.js";
 
 const matchMediaMock = (matches) =>
   vi.fn().mockImplementation((query) => ({
@@ -13,9 +14,11 @@ const matchMediaMock = (matches) =>
   }));
 
 describe("motionUtils", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    resetSettings();
     localStorage.clear();
     document.body.className = "";
+    await loadSettings();
   });
 
   it("returns true when matchMedia prefers reduced motion", () => {
@@ -26,18 +29,22 @@ describe("motionUtils", () => {
   it("returns true when settings disable motion effects", () => {
     window.matchMedia = matchMediaMock(false);
     localStorage.setItem("settings", JSON.stringify({ motionEffects: false }));
-    expect(shouldReduceMotionSync()).toBe(true);
+    return loadSettings().then(() => {
+      expect(shouldReduceMotionSync()).toBe(true);
+    });
   });
 
-  it("returns false when motion is enabled and no media preference", () => {
+  it("returns false when motion is enabled and no media preference", async () => {
     window.matchMedia = matchMediaMock(false);
     localStorage.setItem("settings", JSON.stringify({ motionEffects: true }));
+    await loadSettings();
     expect(shouldReduceMotionSync()).toBe(false);
   });
 
-  it("handles invalid stored settings gracefully", () => {
+  it("handles invalid stored settings gracefully", async () => {
     window.matchMedia = matchMediaMock(true);
     localStorage.setItem("settings", "not json");
+    await loadSettings();
     expect(shouldReduceMotionSync()).toBe(true);
   });
 
