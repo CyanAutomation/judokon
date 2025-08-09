@@ -1,5 +1,5 @@
 import { DATA_DIR } from "../constants.js";
-import { loadCountryCodeMapping, getFlagUrl } from "./codes.js";
+import { listCountries, getCodeByCountry, normalizeCode } from "../../utils/countryCodes.js";
 
 const SCROLL_THRESHOLD_PX = 50;
 
@@ -8,12 +8,13 @@ const SCROLL_THRESHOLD_PX = 50;
  *
  * @pseudocode
  * 1. Fetch `judoka.json` to determine which countries appear in the deck.
- * 2. Load the country code mapping and build a sorted list of active entries.
- * 3. If no active countries exist, show a message and exit.
+ * 2. Retrieve sorted active country names via `listCountries`.
+ * 3. Filter to the countries present in the deck; show a message and exit when empty.
  * 4. Determine batch size based on network conditions.
  * 5. Render an "All" button followed by batches of country buttons with lazily loaded flags.
- * 6. Use `IntersectionObserver` and `loading="lazy"` to defer flag requests until visible.
- * 7. Log errors if data fails to load or individual flags cannot be retrieved.
+ * 6. Use `getCodeByCountry` and `normalizeCode` to build flag URLs.
+ * 7. Use `IntersectionObserver` and `loading="lazy"` to defer flag requests until visible.
+ * 8. Log errors if data fails to load or individual flags cannot be retrieved.
  *
  * @param {HTMLElement} container - Element where buttons will be appended.
  * @returns {Promise<void>} Resolves when the list is populated.
@@ -28,12 +29,8 @@ export async function populateCountryList(container) {
     const uniqueCountries = new Set(
       Array.isArray(judoka) ? judoka.map((j) => j.country).filter(Boolean) : []
     );
-    const mapping = await loadCountryCodeMapping();
-    const entries = Object.values(mapping);
-    const activeCountries = [...uniqueCountries]
-      .map((name) => entries.find((entry) => entry.country === name && entry.active))
-      .filter(Boolean)
-      .sort((a, b) => a.country.localeCompare(b.country));
+    const allCountries = await listCountries();
+    const activeCountries = allCountries.filter((name) => uniqueCountries.has(name));
 
     if (activeCountries.length === 0) {
       const message = document.createElement("p");
@@ -85,21 +82,21 @@ export async function populateCountryList(container) {
     let rendered = 0;
     const renderBatch = async () => {
       const batch = activeCountries.slice(rendered, rendered + BATCH_SIZE);
-      for (const country of batch) {
-        if (!country.country || !country.code) {
-          console.warn("Skipping invalid country entry:", country);
-          continue;
-        }
+      for (const countryName of batch) {
         const button = document.createElement("button");
         button.className = "flag-button slide";
-        button.value = country.country;
-        button.setAttribute("aria-label", `Filter by ${country.country}`);
+        button.value = countryName;
+        button.setAttribute("aria-label", `Filter by ${countryName}`);
         const flagImg = document.createElement("img");
-        flagImg.alt = `${country.country} Flag`;
+        flagImg.alt = `${countryName} Flag`;
         flagImg.className = "flag-image";
         flagImg.setAttribute("loading", "lazy");
         try {
-          const flagUrl = await getFlagUrl(country.code);
+          const code = await getCodeByCountry(countryName);
+          const normalized = normalizeCode(code);
+          const flagUrl = normalized
+            ? `https://flagcdn.com/w320/${normalized}.png`
+            : "https://flagcdn.com/w320/vu.png";
           if (imageObserver) {
             flagImg.dataset.src = flagUrl;
             imageObserver.observe(flagImg);
@@ -107,13 +104,13 @@ export async function populateCountryList(container) {
             flagImg.src = flagUrl;
           }
         } catch (error) {
-          console.warn(`Failed to load flag for ${country.country}:`, error);
+          console.warn(`Failed to load flag for ${countryName}:`, error);
           flagImg.src = "https://flagcdn.com/w320/vu.png";
         }
-        const countryName = document.createElement("p");
-        countryName.textContent = country.country;
+        const countryLabel = document.createElement("p");
+        countryLabel.textContent = countryName;
         button.appendChild(flagImg);
-        button.appendChild(countryName);
+        button.appendChild(countryLabel);
         container.appendChild(button);
       }
       rendered += batch.length;

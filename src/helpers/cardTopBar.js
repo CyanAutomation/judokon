@@ -1,4 +1,4 @@
-import { getCountryNameFromCode } from "./country/index.js";
+import { getCountryByCode } from "../utils/countryCodes.js";
 import { getValue } from "./utils.js";
 import { debugLog } from "./debug.js";
 
@@ -53,17 +53,13 @@ function extractJudokaData(judoka) {
  *
  * @pseudocode
  * 1. Check if `countryCode` is valid (not `"unknown"`):
- *    - If valid:
- *      a. Call `getCountryNameFromCode` asynchronously.
- *      b. Return the resolved country name.
- *
- * 2. If `countryCode` is `"unknown"`:
- *    - Return `"Unknown"` as the fallback country name.
+ *    - If valid, call `getCountryByCode` and return the resolved name or `"Unknown"`.
+ * 2. If `countryCode` is `"unknown"`, return `"Unknown"`.
  */
 async function resolveCountryName(countryCode) {
   if (countryCode !== "unknown") {
-    const countryName = await getCountryNameFromCode(countryCode);
-    return countryName;
+    const countryName = await getCountryByCode(countryCode);
+    return countryName || "Unknown";
   }
   debugLog("Country name is unknown.");
   return "Unknown";

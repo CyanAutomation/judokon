@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import * as countryUtils from "../../src/helpers/country/index.js";
+import * as countryUtils from "../../src/utils/countryCodes.js";
 import {
   generateCardTopBar,
   createNameContainer,
@@ -19,7 +19,7 @@ const judoka = {
 const flagUrl = "https://flagcdn.com/w320/fr.png";
 
 beforeEach(() => {
-  vi.spyOn(countryUtils, "getCountryNameFromCode").mockResolvedValue("France");
+  vi.spyOn(countryUtils, "getCountryByCode").mockResolvedValue("France");
 });
 
 describe("generateCardTopBar", () => {
@@ -72,7 +72,7 @@ describe("generateCardTopBar", () => {
   });
 
   it("should fallback to 'Unknown' when countryCode is missing", async () => {
-    countryUtils.getCountryNameFromCode.mockResolvedValueOnce("Unknown");
+    countryUtils.getCountryByCode.mockResolvedValueOnce("Unknown");
     const incompleteJudoka = { firstname: "Clarisse", surname: "Agbegnenou" };
     const result = await generateCardTopBar(incompleteJudoka, flagUrl);
     expect(result.outerHTML).toContain('alt="Unknown flag"');
@@ -94,13 +94,13 @@ describe("generateCardTopBar", () => {
   });
 
   it("escapes HTML in country name for alt attribute", async () => {
-    vi.spyOn(countryUtils, "getCountryNameFromCode").mockResolvedValueOnce("<France>");
+    vi.spyOn(countryUtils, "getCountryByCode").mockResolvedValueOnce("<France>");
     const result = await generateCardTopBar(judoka, flagUrl);
     expect(result.outerHTML).toContain('alt="<France> flag"');
   });
 
   it("includes alt attribute even if countryName is falsy", async () => {
-    vi.spyOn(countryUtils, "getCountryNameFromCode").mockResolvedValueOnce("");
+    vi.spyOn(countryUtils, "getCountryByCode").mockResolvedValueOnce("");
     const result = await generateCardTopBar(judoka, flagUrl);
     expect(result.outerHTML).toContain('alt="Unknown flag"');
   });
