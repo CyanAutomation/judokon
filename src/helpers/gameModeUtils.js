@@ -1,6 +1,7 @@
 import { fetchJson, validateWithSchema, importJsonModule } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { load as loadNavCache, save as saveNavCache } from "./navigationCache.js";
+import { getItem, setItem, removeItem } from "./storage.js";
 
 /**
  * The game modes JSON schema is loaded on demand. This avoids fetching the
@@ -25,33 +26,29 @@ async function getSchema() {
 const GAMEMODES_KEY = "gameModes";
 
 /**
- * Load game modes from localStorage or fallback to the default game modes JSON file.
+ * Load game modes from storage or fallback to the default game modes JSON file.
  *
  * @pseudocode
  * 1. Call `getSchema()` to lazily load the validation schema.
- * 2. Attempt to read `GAMEMODES_KEY` from `localStorage`.
+ * 2. Attempt to read `GAMEMODES_KEY` from storage.
  *    - Parse and validate the JSON when present.
  * 3. If no stored data exists, attempt to fetch `gameModes.json` from `DATA_DIR`.
  *    - On failure, dynamically import the JSON file instead.
- *    - Persist the resolved array to `localStorage`.
+ *    - Persist the resolved array to storage.
  * 4. Return the validated array of game mode objects.
  *
  * @returns {Promise<import("./types.js").GameMode[]>} Resolved array of game mode objects.
  */
 export async function loadGameModes() {
   await getSchema();
-  if (typeof localStorage === "undefined") {
-    throw new Error("localStorage unavailable");
-  }
-  const raw = localStorage.getItem(GAMEMODES_KEY);
-  if (raw) {
+  const cached = getItem(GAMEMODES_KEY);
+  if (cached) {
     try {
-      const parsed = JSON.parse(raw);
-      await validateWithSchema(parsed, await getSchema());
-      return parsed;
+      await validateWithSchema(cached, await getSchema());
+      return cached;
     } catch (err) {
-      console.warn("Failed to parse stored game modes", err);
-      localStorage.removeItem(GAMEMODES_KEY);
+      console.warn("Failed to validate stored game modes", err);
+      removeItem(GAMEMODES_KEY);
     }
   }
   let data;
@@ -62,7 +59,7 @@ export async function loadGameModes() {
     data = await importJsonModule("../data/gameModes.json");
     await validateWithSchema(data, await getSchema());
   }
-  localStorage.setItem(GAMEMODES_KEY, JSON.stringify(data));
+  setItem(GAMEMODES_KEY, data);
   return data;
 }
 
@@ -92,7 +89,7 @@ export async function loadNavigationItems() {
 }
 
 /**
- * Persist an array of game modes to localStorage.
+ * Persist an array of game modes to storage.
  *
  * @pseudocode
  * 1. Call `getSchema()` to lazily load the schema.
@@ -104,10 +101,7 @@ export async function loadNavigationItems() {
  */
 export async function saveGameModes(modes) {
   await validateWithSchema(modes, await getSchema());
-  if (typeof localStorage === "undefined") {
-    throw new Error("localStorage unavailable");
-  }
-  localStorage.setItem(GAMEMODES_KEY, JSON.stringify(modes));
+  setItem(GAMEMODES_KEY, modes);
 }
 
 /**
