@@ -85,3 +85,22 @@ Edit the arrays under `CountryCode` and `WeightClass` in the shared schema to
 add or remove values. You can update them manually or run a local script that
 rebuilds the lists from the JSON data files. After changing the enums, run
 `npm run validate:data` to ensure all data still passes validation.
+
+## Country Code Mapping
+
+Country names and codes are stored in
+[`src/data/countryCodeMapping.json`](../../src/data/countryCodeMapping.json) as a
+dictionary keyed by two-letter ISO code. Helper functions in
+[`src/utils/countryCodes.js`](../../src/utils/countryCodes.js) provide safe
+access to this mapping without manual array lookups.
+
+```javascript
+import { getCountryByCode, getCodeByCountry, listCountries } from "../../src/utils/countryCodes.js";
+
+await getCountryByCode("fr"); // "France"
+await getCodeByCountry("Japan"); // "jp"
+await listCountries(); // ["Brazil", "France", "Japan", ...]
+```
+
+Using an object mapping ensures direct lookups and simplifies updates compared
+to iterating through arrays.
