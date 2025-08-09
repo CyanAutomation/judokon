@@ -5,10 +5,6 @@
   "items": {
     "type": "object",
     "properties": {
-      "id": {
-        "type": "integer",
-        "description": "Unique identifier for the location."
-      },
       "name": {
         "type": "string",
         "description": "Location name in English."
@@ -31,7 +27,7 @@
         "description": "Whether the location is currently active."
       }
     },
-    "required": ["id", "name", "japaneseName", "description", "externalLink", "active"],
+    "required": ["name", "japaneseName", "description", "externalLink", "active"],
     "additionalProperties": false
   }
 }
