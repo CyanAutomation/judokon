@@ -214,7 +214,7 @@ function initializeControls(settings) {
  * 1. Call `setupSectionToggles` so collapsible sections work immediately.
  * 2. Begin loading navigation items and tooltip text in parallel.
  * 3. Await settings, apply display/motion prefs, and bind control listeners.
- * 4. Resolve navigation and tooltip requests with `Promise.allSettled`.
+ * 4. Resolve navigation and tooltip requests with `Promise.all` on wrapped promises.
  * 5. If navigation fails, show the settings error and fall back to minimal modes.
  * 6. If tooltip load fails, warn and fall back to an empty map.
  * 7. Render switches and apply tooltips.
@@ -225,8 +225,14 @@ function initializeControls(settings) {
 async function initializeSettingsPage() {
   try {
     setupSectionToggles();
-    const gameModesPromise = loadNavigationItems();
-    const tooltipMapPromise = getTooltips();
+    const gameModesPromise = loadNavigationItems().then(
+      (v) => ({ status: "fulfilled", value: v }),
+      (r) => ({ status: "rejected", reason: r })
+    );
+    const tooltipMapPromise = getTooltips().then(
+      (v) => ({ status: "fulfilled", value: v }),
+      (r) => ({ status: "rejected", reason: r })
+    );
     const settings = await loadSettings();
     applyDisplayMode(settings.displayMode);
     applyMotionPreference(settings.motionEffects);
@@ -234,7 +240,7 @@ async function initializeSettingsPage() {
     toggleTooltipOverlayDebug(Boolean(settings.featureFlags.tooltipOverlayDebug?.enabled));
     toggleLayoutDebugPanel(Boolean(settings.featureFlags.layoutDebugPanel?.enabled));
     const controlsApi = initializeControls(settings);
-    const [gameModesResult, tooltipMapResult] = await Promise.allSettled([
+    const [gameModesResult, tooltipMapResult] = await Promise.all([
       gameModesPromise,
       tooltipMapPromise
     ]);
