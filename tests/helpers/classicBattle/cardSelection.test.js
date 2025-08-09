@@ -181,12 +181,19 @@ describe.sequential("classicBattle card selection", () => {
   });
 
   it("logs an error when JudokaCard.render does not return an element", async () => {
+    await vi.resetModules();
+    // Force the JudokaCard module to return a non-HTMLElement deterministically
+    vi.doMock("../../../src/components/JudokaCard.js", () => {
+      return {
+        JudokaCard: vi.fn().mockImplementation(() => ({
+          render: vi.fn(async () => "nope")
+        }))
+      };
+    });
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const { drawCards, _resetForTest } = await import(
       "../../../src/helpers/classicBattle/cardSelection.js"
     );
-    // Override after import to ensure the mock is used by constructor
-    renderMock = vi.fn(async () => "nope");
     _resetForTest();
     await drawCards();
     expect(consoleSpy).toHaveBeenCalledWith("JudokaCard did not render an HTMLElement");
