@@ -47,15 +47,13 @@ test.describe.parallel(
     });
 
     test("captures portrait and landscape headers", async ({ page }) => {
-      await page.addInitScript(() => {
-        window.startCountdownOverride = () => {};
-        const originalSetInterval = window.setInterval;
-        window.setInterval = (fn, ms, ...args) =>
-          originalSetInterval(fn, Math.max(ms, 3600000), ...args);
-      });
-
       await page.goto("/src/pages/battleJudoka.html");
       await page.waitForSelector("#score-display span", { state: "attached" });
+      await page.evaluate(() => window.skipBattlePhase?.());
+      await page.waitForFunction(
+        () => document.querySelector("#round-message")?.textContent.trim().length > 0
+      );
+      await page.evaluate(() => window.skipBattlePhase?.());
 
       await page.setViewportSize({ width: 320, height: 480 });
       await page.waitForFunction(
@@ -94,15 +92,13 @@ test.describe.parallel(
     });
 
     test("captures extra-narrow header", async ({ page }) => {
-      await page.addInitScript(() => {
-        window.startCountdownOverride = () => {};
-        const originalSetInterval = window.setInterval;
-        window.setInterval = (fn, ms, ...args) =>
-          originalSetInterval(fn, Math.max(ms, 3600000), ...args);
-      });
-
       await page.goto("/src/pages/battleJudoka.html");
       await page.waitForSelector("#score-display span", { state: "attached" });
+      await page.evaluate(() => window.skipBattlePhase?.());
+      await page.waitForFunction(
+        () => document.querySelector("#round-message")?.textContent.trim().length > 0
+      );
+      await page.evaluate(() => window.skipBattlePhase?.());
       await page.evaluate(() => document.fonts.ready);
 
       await page.setViewportSize({ width: 300, height: 600 });

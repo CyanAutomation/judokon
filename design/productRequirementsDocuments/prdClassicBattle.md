@@ -94,6 +94,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 | **P2**   | Tie Handling            | Show tie message; round ends without score change; continue to next round.                                                                                                       |
 | **P2**   | Player Quit Flow        | Allow player to exit match early with confirmation; counts as a loss.                                                                                                            |
 | **P3**   | AI Stat Selection Logic | AI stat choice follows difficulty setting (`easy` random, `medium` picks stats ≥ average, `hard` selects highest stat). Difficulty can be set via Settings or `?difficulty=` URL param; defaults to `easy`. |
+| **P3**   | Skip Control            | Optional control that bypasses round and cooldown timers so testers can fast-forward gameplay or users can quickly move through a match. |
 
 **Additional Behavioral Requirements:**
 
