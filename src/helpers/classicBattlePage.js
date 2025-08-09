@@ -44,6 +44,7 @@ import { STATS } from "./battleEngine.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
 import { initRoundSelectModal } from "./classicBattle/roundSelectModal.js";
+import { skipCurrentPhase } from "./classicBattle/timerService.js";
 
 function enableStatButtons(enable = true) {
   document.querySelectorAll("#stat-buttons button").forEach((btn) => {
@@ -55,6 +56,7 @@ function enableStatButtons(enable = true) {
 
 const battleStore = createBattleStore();
 window.battleStore = battleStore;
+window.skipBattlePhase = skipCurrentPhase;
 export const getBattleStore = () => battleStore;
 let simulatedOpponentMode = false;
 let aiDifficulty = "easy";
@@ -197,6 +199,15 @@ export async function setupClassicBattlePage() {
     } else {
       debugPanel.remove();
     }
+  }
+
+  const skipBtn = document.getElementById("skip-phase-button");
+  if (skipBtn) {
+    skipBtn.addEventListener("click", () => skipCurrentPhase());
+    window.addEventListener("skip-handler-change", (e) => {
+      const { active } = e.detail || {};
+      skipBtn.disabled = !active;
+    });
   }
 
   window.startRoundOverride = () => startRoundWrapper();
