@@ -4,24 +4,25 @@ import { getScores, getTimerState, isMatchEnded } from "../battleEngine.js";
 import { isTestModeEnabled, getCurrentSeed } from "../testModeUtils.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
+import { showSnackbar } from "../showSnackbar.js";
 
 function getDebugOutputEl() {
   return document.getElementById("debug-output");
 }
 
 /**
- * Display a persistent prompt instructing the player to choose a stat.
+ * Display a snackbar prompting the player to choose a stat.
  *
  * @pseudocode
- * 1. Locate `#round-message` and set text to "Select your move".
- * 2. Add fade transition class and ensure the element is visible.
+ * 1. Clear any existing text in `#round-message`.
+ * 2. Show "Select your move" via `showSnackbar`.
  */
 export function showSelectionPrompt() {
   const el = document.getElementById("round-message");
-  if (!el) return;
-  el.classList.add("fade-transition");
-  el.textContent = "Select your move";
-  el.classList.remove("fading");
+  if (el) {
+    el.textContent = "";
+  }
+  showSnackbar("Select your move");
 }
 
 /**

@@ -35,7 +35,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - ≥70% of new players complete a Classic Battle within their first session.
 - Give new players an approachable mode to learn how judoka stats impact outcomes.
 - Reduce frustration by providing immediate, clear feedback on round results.
-- Ensure all round messages, stat selection timer, and score are surfaced via the Info Bar (see prdBattleInfoBar.md) for clarity and accessibility. The countdown to the next round is shown in a single snackbar whose text updates each second.
+- Ensure round result messages, stat selection timer, and score are surfaced via the Info Bar (see prdBattleInfoBar.md) for clarity and accessibility. The "Select your move" prompt and the countdown to the next round are shown in snackbars that update their text each second.
 
 ---
 
@@ -100,7 +100,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 - Behavior on tie rounds: round ends with a message explaining the tie and an option to start the next round.
 - Match start conditions: both players begin with a score of zero; player goes first by drawing their card.
-- Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card. **The timer and prompt are displayed in the Info Bar.**
+  - Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card. **The timer is displayed in the Info Bar and the prompt appears in a snackbar.**
 - The opponent's card must always differ from the player's card for each round.
 - **Default:** 30-second timer is fixed (not adjustable by the player at launch), but can be reviewed for future difficulty settings.
 
@@ -110,7 +110,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 - Cards are revealed in the correct sequence each round.
 - The opponent card displays a placeholder ("Mystery Judoka") until the player selects a stat ([prdMysteryCard.md](prdMysteryCard.md)).
-- Player can select a stat within 30 seconds; if not, the system auto-selects a random stat automatically. **Timer and prompt are surfaced in the Info Bar.**
+- Player can select a stat within 30 seconds; if not, the system auto-selects a random stat automatically. **Timer is surfaced in the Info Bar, and the "Select your move" prompt appears in a snackbar.**
 - Stat-selection timer stops the moment a stat is chosen.
 - "Time's up! Auto-selecting <stat>" appears only if no stat was chosen before the timer expires.
 - After selection, the correct comparison is made, and the score updates based on round outcome.
@@ -131,7 +131,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 ## Edge Cases / Failure States
 
 - **Judoka or Gokyo dataset fails to load:** error message surfaces in the Info Bar and an error dialog offers a "Retry" button to reload data or the page.
-- **Player does not make a stat selection within 30 seconds:** system randomly selects a stat automatically. **Info Bar must update accordingly.**
+- **Player does not make a stat selection within 30 seconds:** system randomly selects a stat automatically. **Info Bar updates the timer, and the snackbar prompt informs the player.**
 - **AI fails to select a stat (if difficulty logic implemented):** fallback to random stat selection.
 
 ---

@@ -92,12 +92,12 @@ describe("classicBattle match flow", () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
-    document.querySelector("#round-message").textContent = "Select your move";
+    document.querySelector("#round-message").textContent = "Ready";
     battleMod.quitMatch(store);
     const cancelBtn = document.getElementById("cancel-quit-button");
     expect(cancelBtn).not.toBeNull();
     cancelBtn.dispatchEvent(new Event("click"));
-    expect(document.querySelector("header #round-message").textContent).toBe("Select your move");
+    expect(document.querySelector("header #round-message").textContent).toBe("Ready");
     expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nOpponent: 0");
   });
 
@@ -199,9 +199,10 @@ describe("classicBattle match flow", () => {
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await battleMod.startRound(store);
-    expect(document.querySelector("header #round-message").textContent).toBe("Select your move");
+    expect(document.querySelector(".snackbar").textContent).toBe("Select your move");
     timerSpy.advanceTimersByTime(5000);
-    expect(document.querySelector("header #round-message").textContent).toBe("Select your move");
+    expect(document.querySelector(".snackbar")).toBeNull();
+    expect(document.querySelector("header #round-message").textContent).toBe("");
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
     document.getElementById("computer-card").innerHTML =
@@ -211,8 +212,6 @@ describe("classicBattle match flow", () => {
       await vi.runAllTimersAsync();
       await p;
     }
-    expect(document.querySelector("header #round-message").textContent).not.toBe(
-      "Select your move"
-    );
+    expect(document.querySelector(".snackbar")?.textContent).not.toBe("Select your move");
   });
 });
