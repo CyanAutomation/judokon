@@ -2,31 +2,20 @@
  * Utility for the typewriter effect on quote text.
  *
  * @pseudocode
- * 1. `shouldEnableTypewriter` reads the `settings` item from `localStorage`.
- *    - If `typewriterEffect` is `false`, return `false`.
- *    - Otherwise return `true`.
+ * 1. `shouldEnableTypewriter` calls `getSetting("typewriterEffect")` and
+ *    returns that value.
  * 2. `runTypewriterEffect` types textContent of an element character by
  *    character at the given speed and restores the final HTML when done.
  */
 
+import { getSetting } from "./settingsUtils.js";
 /**
  * Determine whether the typewriter effect should run.
  *
  * @returns {boolean} True when the effect is enabled.
  */
 export function shouldEnableTypewriter() {
-  try {
-    const raw = localStorage.getItem("settings");
-    if (raw) {
-      const data = JSON.parse(raw);
-      if (data && data.typewriterEffect === false) {
-        return false;
-      }
-    }
-  } catch {
-    // ignore
-  }
-  return true;
+  return Boolean(getSetting("typewriterEffect"));
 }
 
 /**

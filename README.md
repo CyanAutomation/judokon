@@ -69,6 +69,18 @@ AI agents should begin by reading:
 - ✅ Validate stat blocks against rarity rules
 - ✅ Generate or evaluate PRDs for new features
 
+## Settings API
+
+Settings are loaded once and cached for synchronous use. Helpers in
+`src/helpers/settingsUtils.js` provide safe access:
+
+- `getSetting(key)` – read a setting value from the cache.
+- `getFeatureFlag(flagName)` – check whether a feature flag is enabled.
+
+Call `loadSettings()` during startup to populate the cache before using
+these helpers. This approach avoids direct `localStorage` reads in modules
+that need fast, synchronous access to settings.
+
 ## 🧪 Testing
 
 The game includes a **Skip** button that bypasses the current round and cooldown timers. Use it to fast-forward through matches when debugging or running rapid gameplay tests.

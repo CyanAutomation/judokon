@@ -5,6 +5,7 @@ beforeEach(() => {
   document.body.innerHTML = "";
   localStorage.clear();
   vi.resetModules();
+  vi.doUnmock("../../src/helpers/settingsUtils.js");
   vi.doMock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
     initRoundSelectModal: (cb) => cb()
   }));
@@ -343,6 +344,10 @@ describe("syncScoreDisplay", () => {
       }
     }));
 
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+      getSetting: () => true,
+      loadSettings: vi.fn()
+    }));
     const { syncScoreDisplay, showMatchSummaryModal } = await import(
       "../../src/helpers/classicBattle/uiService.js"
     );

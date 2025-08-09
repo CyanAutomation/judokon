@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { DEFAULT_SETTINGS } from "../../src/helpers/settingsUtils.js";
+import { DEFAULT_SETTINGS, resetSettings } from "../../src/helpers/settingsUtils.js";
 
 /**
  * @fileoverview
@@ -26,6 +26,7 @@ describe("settings utils", () => {
     if (global.localStorage) {
       global.localStorage.clear();
     }
+    resetSettings();
     Object.defineProperty(global, "localStorage", {
       value: originalLocalStorage,
       configurable: true,
@@ -219,5 +220,25 @@ describe("settings utils", () => {
     const result = resetSettings();
     expect(result).toEqual(DEFAULT_SETTINGS);
     expect(JSON.parse(localStorage.getItem("settings"))).toEqual(DEFAULT_SETTINGS);
+  });
+
+  it("provides synchronous access via getSetting", async () => {
+    localStorage.setItem("settings", JSON.stringify({ sound: false }));
+    const { loadSettings, getSetting } = await import("../../src/helpers/settingsUtils.js");
+    await loadSettings();
+    expect(getSetting("sound")).toBe(false);
+    localStorage.setItem("settings", JSON.stringify({ sound: true }));
+    expect(getSetting("sound")).toBe(false);
+  });
+
+  it("retrieves feature flags via getFeatureFlag", async () => {
+    localStorage.setItem(
+      "settings",
+      JSON.stringify({ featureFlags: { enableTestMode: { enabled: true } } })
+    );
+    const { loadSettings, getFeatureFlag } = await import("../../src/helpers/settingsUtils.js");
+    await loadSettings();
+    expect(getFeatureFlag("enableTestMode")).toBe(true);
+    expect(getFeatureFlag("nonexistent")).toBe(false);
   });
 });
