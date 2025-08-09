@@ -6,12 +6,11 @@ vi.mock("../../src/helpers/navigation/navData.js", () => ({
   loadMenuModes: vi.fn().mockResolvedValue([])
 }));
 
-vi.mock("../../src/helpers/navigation/navMenu.js", async () => {
-  const actual = await vi.importActual("../../src/helpers/navigation/navMenu.js");
+vi.mock("../../src/helpers/api/navigation.js", async () => {
+  const actual = await vi.importActual("../../src/helpers/api/navigation.js");
   return {
     ...actual,
-    toggleExpandedMapView: vi.fn(),
-    togglePortraitTextMenu: vi.fn()
+    buildMenu: vi.fn()
   };
 });
 

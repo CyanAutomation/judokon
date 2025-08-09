@@ -34,6 +34,17 @@ Key helpers include:
 - `navigationBar.js` – Injects active game modes into the persistent nav bar
 - `setupBottomNavbar.js` – Wires the nav bar into the DOM
 
+### helpers/navigation
+
+Use `helpers/api/navigation.js` to build orientation-specific menus and responsive hamburger toggles. Pages should import only this API.
+
+```js
+import { buildMenu, setupHamburger } from "../helpers/api/navigation.js";
+```
+
+- `buildMenu(gameModes, { orientation })` returns the created menu element.
+- `setupHamburger(breakpoint?)` inserts a toggle button and returns `{button, list}`.
+
 ---
 
 ## 📦 data/
