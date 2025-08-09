@@ -15,11 +15,26 @@ describe("populateCountryList", () => {
       { id: 3, firstname: "E", surname: "F", country: "Japan" }
     ];
 
-    const mapping = [
-      { country: "Japan", code: "jp", active: true },
-      { country: "Brazil", code: "br", active: true },
-      { country: "Canada", code: "ca", active: true }
-    ];
+    const mapping = {
+      jp: {
+        country: "Japan",
+        code: "jp",
+        lastUpdated: "2025-04-23T10:00:00Z",
+        active: true
+      },
+      br: {
+        country: "Brazil",
+        code: "br",
+        lastUpdated: "2025-04-23T10:00:00Z",
+        active: true
+      },
+      ca: {
+        country: "Canada",
+        code: "ca",
+        lastUpdated: "2025-04-23T10:00:00Z",
+        active: true
+      }
+    };
 
     global.fetch = vi
       .fn()
@@ -39,7 +54,14 @@ describe("populateCountryList", () => {
   it("applies accessible aria-labels to flag buttons", async () => {
     const judoka = [{ id: 1, firstname: "A", surname: "B", country: "Japan" }];
 
-    const mapping = [{ country: "Japan", code: "jp", active: true }];
+    const mapping = {
+      jp: {
+        country: "Japan",
+        code: "jp",
+        lastUpdated: "2025-04-23T10:00:00Z",
+        active: true
+      }
+    };
 
     global.fetch = vi
       .fn()
@@ -58,7 +80,14 @@ describe("populateCountryList", () => {
 
   it("adds lazy loading to flag images", async () => {
     const judoka = [{ id: 1, firstname: "A", surname: "B", country: "Japan" }];
-    const mapping = [{ country: "Japan", code: "jp", active: true }];
+    const mapping = {
+      jp: {
+        country: "Japan",
+        code: "jp",
+        lastUpdated: "2025-04-23T10:00:00Z",
+        active: true
+      }
+    };
 
     global.fetch = vi
       .fn()
@@ -84,11 +113,21 @@ describe("populateCountryList", () => {
       country: `Country${i}`
     }));
 
-    const mapping = judoka.map((j, i) => ({
-      country: j.country,
-      code: `c${i}`,
-      active: true
-    }));
+    const mapping = Object.fromEntries(
+      judoka.map((j, i) => {
+        const code =
+          String.fromCharCode(97 + (i % 26)) + String.fromCharCode(97 + Math.floor(i / 26));
+        return [
+          code,
+          {
+            country: j.country,
+            code,
+            lastUpdated: "2025-04-23T10:00:00Z",
+            active: true
+          }
+        ];
+      })
+    );
 
     global.fetch = vi.fn().mockImplementation((url) => {
       if (url.includes("judoka.json")) {
@@ -131,10 +170,14 @@ describe("populateCountryList", () => {
       { id: 1, firstname: "A", surname: "B", country: "Japan" },
       { id: 2, firstname: "C", surname: "D", country: "Japan" }
     ];
-    const mapping = [
-      { country: "Japan", code: "jp", active: true },
-      { country: "Japan", code: "jp", active: true }
-    ];
+    const mapping = {
+      jp: {
+        country: "Japan",
+        code: "jp",
+        lastUpdated: "2025-04-23T10:00:00Z",
+        active: true
+      }
+    };
     global.fetch = vi
       .fn()
       .mockResolvedValueOnce({ ok: true, json: async () => judoka })

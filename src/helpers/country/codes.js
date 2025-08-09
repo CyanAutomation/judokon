@@ -2,6 +2,9 @@ import { debugLog } from "../debug.js";
 import { DATA_DIR } from "../constants.js";
 import { getItem, setItem } from "../storage.js";
 
+/** @typedef {{country: string, code: string, lastUpdated: string, active: boolean}} CountryEntry */
+
+/** @type {Record<string, CountryEntry>|null} */
 let countryCodeMappingCache = null;
 const COUNTRY_CACHE_KEY = "countryCodeMappingCache";
 
@@ -11,10 +14,13 @@ const COUNTRY_CACHE_KEY = "countryCodeMappingCache";
  * @pseudocode
  * 1. Return cached data when available, including persisted storage cache.
  * 2. Fetch `countryCodeMapping.json` from `DATA_DIR` when no cache exists.
- * 3. Validate each entry and log warnings for invalid data.
+ * 3. Validate each `[code, entry]` pair:
+ *    - Ensure `code` is lowercase two-letter ISO.
+ *    - Verify `entry.code` matches the key and required fields exist.
+ *    - Throw an error on invalid data.
  * 4. Store the result in memory and persistent storage, then return the mapping.
  *
- * @returns {Promise<Array<{country:string,code:string,active:boolean}>>} Mapping data.
+ * @returns {Promise<Record<string, CountryEntry>>} Mapping data.
  */
 export async function loadCountryCodeMapping() {
   if (countryCodeMappingCache) {
@@ -30,15 +36,24 @@ export async function loadCountryCodeMapping() {
     throw new Error("Error - Failed to load the country code mapping");
   }
   const data = await response.json();
-  data.forEach((entry) => {
+  for (const [code, entry] of Object.entries(data)) {
+    if (!/^[a-z]{2}$/.test(code)) {
+      throw new Error(`Invalid country code key: "${code}"`);
+    }
+    if (!entry || typeof entry !== "object") {
+      throw new Error(`Invalid entry for code "${code}": not an object`);
+    }
+    if (entry.code !== code) {
+      throw new Error(`Code mismatch for key "${code}": entry.code is "${entry.code}"`);
+    }
     if (
       typeof entry.country !== "string" ||
-      !/^[A-Za-z]{2}$/.test(entry.code) ||
-      typeof entry.active !== "boolean"
+      typeof entry.active !== "boolean" ||
+      typeof entry.lastUpdated !== "string"
     ) {
-      console.warn(`Invalid country code entry found:`, entry);
+      throw new Error(`Invalid country code entry found for "${code}"`);
     }
-  });
+  }
   debugLog("Loaded country code mapping:", data);
   countryCodeMappingCache = data;
   setItem(COUNTRY_CACHE_KEY, data);
@@ -51,8 +66,8 @@ export async function loadCountryCodeMapping() {
  * @pseudocode
  * 1. Validate that `code` is a two-letter string; return "Vanuatu" when invalid.
  * 2. Attempt to load the mapping via `loadCountryCodeMapping()`; return "Vanuatu" on failure.
- * 3. Find the matching active entry and return its country name.
- * 4. Default to "Vanuatu" if no match is found.
+ * 3. Look up the lower-cased `code` and return the `country` when the entry is active.
+ * 4. Default to "Vanuatu" if no matching active entry is found.
  *
  * @param {string} code - Two-letter country code.
  * @returns {Promise<string>} Resolved country name or fallback.
@@ -64,11 +79,10 @@ export async function getCountryNameFromCode(code) {
   }
   try {
     const countryCodeMapping = await loadCountryCodeMapping();
-    const match = countryCodeMapping.find(
-      (entry) => entry.code.toLowerCase() === code.toLowerCase() && entry.active
-    );
-    debugLog(`Resolved country name for code "${code}":`, match ? match.country : "Vanuatu");
-    return match ? match.country : "Vanuatu";
+    const entry = countryCodeMapping[code.toLowerCase()];
+    const result = entry && entry.active ? entry.country : "Vanuatu";
+    debugLog(`Resolved country name for code "${code}":`, result);
+    return result;
   } catch {
     console.warn("Failed to load country code mapping. Defaulting to Vanuatu.");
     return "Vanuatu";
@@ -93,11 +107,8 @@ export async function getFlagUrl(countryCode) {
   }
   try {
     const countryCodeMapping = await loadCountryCodeMapping();
-    const isValid = countryCodeMapping.some(
-      (entry) =>
-        entry.code && entry.code.toLowerCase() === countryCode.toLowerCase() && entry.active
-    );
-    if (!isValid) {
+    const entry = countryCodeMapping[countryCode.toLowerCase()];
+    if (!entry || !entry.active) {
       console.warn("Invalid country code. Defaulting to Vanuatu flag.");
       return "https://flagcdn.com/w320/vu.png";
     }
