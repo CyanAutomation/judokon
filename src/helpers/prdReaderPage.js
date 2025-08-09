@@ -45,9 +45,8 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   const baseNames = FILES.map((f) => f.replace(/\.md$/, ""));
 
   const params = new URLSearchParams(window.location.search);
-  let startDoc = params.get("doc");
-  if (startDoc && !startDoc.endsWith(".md")) startDoc += ".md";
-  let startIndex = startDoc ? FILES.indexOf(startDoc) : 0;
+  const docParam = params.get("doc");
+  let startIndex = docParam ? baseNames.indexOf(docParam.replace(/\.md$/, "")) : 0;
   if (startIndex === -1) startIndex = 0;
 
   const container = document.getElementById("prd-content");
@@ -194,7 +193,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
 
   const url = new URL(window.location);
   url.searchParams.set("doc", baseNames[startIndex]);
-  history.replaceState({ index: startIndex }, "", url.pathname + url.search);
+  history.replaceState({ index: startIndex }, "", url.toString());
   selectDoc(startIndex, false);
   if (spinner) spinner.style.display = "none";
 }
