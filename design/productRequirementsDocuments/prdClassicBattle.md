@@ -35,7 +35,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - ≥70% of new players complete a Classic Battle within their first session.
 - Give new players an approachable mode to learn how judoka stats impact outcomes.
 - Reduce frustration by providing immediate, clear feedback on round results.
-- Ensure all round messages, stat selection timer, and score are surfaced via the Info Bar (see prdBattleInfoBar.md) for clarity and accessibility. The countdown to the next round is shown in a snackbar.
+- Ensure all round messages, stat selection timer, and score are surfaced via the Info Bar (see prdBattleInfoBar.md) for clarity and accessibility. The countdown to the next round is shown in a single snackbar whose text updates each second.
 
 ---
 
@@ -78,7 +78,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Detect timer drift by comparing engine state with real time; if drift exceeds 2s, display "Waiting…" and restart the countdown.
 - Opponent stat selection runs entirely on the client. After the player picks a stat (or the timer auto-chooses), the opponent's choice is revealed after a short artificial delay to mimic turn-taking.
 - During this delay, the Info Bar displays "Opponent is choosing..." to reinforce turn flow.
-- The cooldown timer between rounds begins only after round results are shown in the Info Bar and is displayed using a snackbar countdown.
+- The cooldown timer between rounds begins only after round results are shown in the Info Bar and is displayed using one persistent snackbar that updates its text each second.
 - The debug panel is available when the `battleDebugPanel` feature flag is enabled and appears beside the opponent's card.
 
 ---

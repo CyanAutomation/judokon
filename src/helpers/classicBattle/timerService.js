@@ -9,7 +9,7 @@ import {
 import * as infoBar from "../setupBattleInfoBar.js";
 import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from "./uiHelpers.js";
 import { runTimerWithDrift } from "./runTimerWithDrift.js";
-import { showSnackbar } from "../showSnackbar.js";
+import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
 
 let skipHandler = null;
 
@@ -130,7 +130,7 @@ export function handleStatSelectionTimeout(store, onSelect) {
  * 1. If the match ended, return early.
  * 2. Setup a click handler that disables the button and calls `startRoundFn`.
  * 3. After a short delay, run a 3 second cooldown via `runTimerWithDrift(startCoolDown)`
- *    and display `"Next round in: <n>s"` in the snackbar and timer element.
+ *    and display `"Next round in: <n>s"` using one snackbar that updates each tick.
  * 4. Register a skip handler that stops the timer and invokes the expiration logic.
  * 5. When expired, clear the timer text, enable the button, attach the click handler, and clear the handler.
  *
@@ -152,14 +152,21 @@ export function scheduleNextRound(result, startRoundFn) {
     await startRoundFn();
   };
 
+  let started = false;
   const onTick = (remaining) => {
     if (remaining <= 0) {
       infoBar.clearTimer();
       return;
     }
-    showSnackbar(`Next round in: ${remaining}s`);
+    const text = `Next round in: ${remaining}s`;
+    if (!started) {
+      showSnackbar(text);
+      started = true;
+    } else {
+      updateSnackbar(text);
+    }
     if (timerEl) {
-      timerEl.textContent = `Next round in: ${remaining}s`;
+      timerEl.textContent = text;
     }
   };
 

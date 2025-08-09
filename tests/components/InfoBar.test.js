@@ -2,7 +2,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
-vi.mock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn() }));
+vi.mock("../../src/helpers/showSnackbar.js", () => ({
+  showSnackbar: vi.fn(),
+  updateSnackbar: vi.fn()
+}));
 import {
   createInfoBar,
   initInfoBar,
@@ -12,7 +15,7 @@ import {
   startCountdown,
   updateScore
 } from "../../src/components/InfoBar.js";
-import { showSnackbar } from "../../src/helpers/showSnackbar.js";
+import { showSnackbar, updateSnackbar } from "../../src/helpers/showSnackbar.js";
 import * as battleEngine from "../../src/helpers/battleEngine.js";
 import { createInfoBarHeader } from "../utils/testUtils.js";
 
@@ -21,6 +24,7 @@ describe("InfoBar component", () => {
 
   beforeEach(() => {
     showSnackbar.mockClear();
+    updateSnackbar.mockClear();
     header = document.createElement("header");
     createInfoBar(header);
     document.body.appendChild(header);
@@ -59,14 +63,15 @@ describe("InfoBar component", () => {
     expect(document.getElementById("round-message").textContent).toBe("");
   });
 
-  it("startCountdown shows snackbar each second", () => {
+  it("startCountdown updates a single snackbar each second", () => {
     const timer = vi.useFakeTimers();
     startCountdown(2);
     expect(showSnackbar).toHaveBeenCalledWith("Next round in: 2s");
+    expect(showSnackbar).toHaveBeenCalledTimes(1);
     timer.advanceTimersByTime(1000);
-    expect(showSnackbar).toHaveBeenCalledWith("Next round in: 1s");
+    expect(updateSnackbar).toHaveBeenCalledWith("Next round in: 1s");
     timer.advanceTimersByTime(1000);
-    expect(showSnackbar).toHaveBeenCalledTimes(2);
+    expect(updateSnackbar).toHaveBeenCalledTimes(1);
     timer.clearAllTimers();
   });
 
@@ -93,6 +98,7 @@ describe("InfoBar component", () => {
     expect(document.getElementById("score-display").textContent).toBe("You: 2\nOpponent: 3");
     startCountdown(1);
     expect(showSnackbar).toHaveBeenCalledWith("Next round in: 1s");
+    expect(updateSnackbar).not.toHaveBeenCalled();
     timer.advanceTimersByTime(1000);
     expect(showSnackbar).toHaveBeenCalledTimes(1);
     timer.clearAllTimers();
