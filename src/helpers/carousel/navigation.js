@@ -9,10 +9,10 @@ import { CAROUSEL_SWIPE_THRESHOLD } from "../constants.js";
  *      "ArrowLeft"/"ArrowRight".
  *    - When "ArrowLeft" is pressed:
  *      - Prevent the default behavior.
- *      - Scroll left by one container width.
+ *      - Scroll left by one page width plus gap.
  *    - When "ArrowRight" is pressed:
  *      - Prevent the default behavior.
- *      - Scroll right by one container width.
+ *      - Scroll right by one page width plus gap.
  *
  * @param {HTMLElement} container - The carousel container element.
  */
@@ -22,7 +22,8 @@ export function setupKeyboardNavigation(container) {
     if (event.target !== event.currentTarget) return;
     if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
     event.preventDefault();
-    const scrollAmount = container.clientWidth;
+    const gap = parseFloat(getComputedStyle(container).columnGap) || 0;
+    const scrollAmount = container.clientWidth + gap;
     if (event.key === "ArrowLeft") {
       if (typeof container.scrollBy === "function") {
         container.scrollBy({ left: -scrollAmount });

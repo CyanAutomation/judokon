@@ -14,7 +14,7 @@
  *    - Add an accessible label (`aria-label`) matching the visible text.
  *
  * 3. Add a click event listener to the button:
- *    - Scroll the `container` by its current `clientWidth` in the given direction.
+ *    - Scroll the `container` by one page width plus gap in the given direction.
  *    - Use smooth scrolling for better user experience.
  *
  * 4. Return the created button element.
@@ -47,7 +47,8 @@ export function createScrollButton(direction, container) {
   button.setAttribute("aria-label", labelText);
 
   button.addEventListener("click", () => {
-    const scrollAmount = container.clientWidth;
+    const gap = parseFloat(getComputedStyle(container).columnGap) || 0;
+    const scrollAmount = container.clientWidth + gap;
     container.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth"
