@@ -13,9 +13,9 @@ import {
 import {
   STATS,
   stopTimer,
-  quitMatch,
   _resetForTest as resetEngineForTest
 } from "./battleEngine.js";
+import * as battleEngine from "./battleEngine.js";
 import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "./api/battleUI.js";
 import * as infoBar from "./setupBattleInfoBar.js";
 import { getStatValue, resetStatButtons, showResult } from "./battle/index.js";
