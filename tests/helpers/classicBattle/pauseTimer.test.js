@@ -79,7 +79,8 @@ describe("classicBattle timer pause", () => {
       showTemporaryMessage: () => () => {},
       clearTimer: vi.fn(),
       clearMessage: vi.fn(),
-      updateScore: vi.fn()
+      updateScore: vi.fn(),
+      showAutoSelect: vi.fn()
     }));
 
     battleMod = await import("../../../src/helpers/classicBattle.js");

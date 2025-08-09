@@ -28,7 +28,8 @@ beforeEach(() => {
     clearMessage,
     clearTimer,
     updateScore: vi.fn(),
-    startCountdown: vi.fn()
+    startCountdown: vi.fn(),
+    showAutoSelect: vi.fn()
   }));
 
   vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({

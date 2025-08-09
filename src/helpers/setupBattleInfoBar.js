@@ -5,7 +5,8 @@ import {
   startCountdown,
   clearMessage,
   showTemporaryMessage,
-  clearTimer
+  clearTimer,
+  showAutoSelect
 } from "../components/InfoBar.js";
 import { onDomReady } from "./domReady.js";
 
@@ -24,4 +25,12 @@ function setupBattleInfoBar() {
 
 onDomReady(setupBattleInfoBar);
 
-export { showMessage, updateScore, startCountdown, clearMessage, showTemporaryMessage, clearTimer };
+export {
+  showMessage,
+  updateScore,
+  startCountdown,
+  clearMessage,
+  showTemporaryMessage,
+  clearTimer,
+  showAutoSelect
+};

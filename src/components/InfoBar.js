@@ -144,6 +144,19 @@ export function showTemporaryMessage(text) {
 }
 
 /**
+ * Display a message announcing an auto-selected stat.
+ *
+ * @pseudocode
+ * 1. Call `showMessage` with `"Time's up! Auto-selecting <stat>"`.
+ *
+ * @param {string} stat - Label of the auto-selected stat.
+ * @returns {void}
+ */
+export function showAutoSelect(stat) {
+  showMessage(`Time's up! Auto-selecting ${stat}`);
+}
+
+/**
  * Clear the countdown display.
  *
  * @pseudocode

@@ -107,9 +107,9 @@ export async function startRound(store) {
   await drawCards();
   syncScoreDisplay();
   showSelectionPrompt();
-  await startTimer((stat) => handleStatSelection(store, stat));
+  await startTimer((stat, opts) => handleStatSelection(store, stat, opts));
   store.statTimeoutId = setTimeout(
-    () => handleStatSelectionTimeout(store, (s) => handleStatSelection(store, s)),
+    () => handleStatSelectionTimeout(store, (s, opts) => handleStatSelection(store, s, opts)),
     35000
   );
   updateDebugPanel();
@@ -149,7 +149,8 @@ export function evaluateRound(store, stat) {
  *
  * @pseudocode
  * 1. Pause the round timer and clear any pending timeouts.
- * 2. Clear the countdown and show "Opponent is choosing…" in the info bar.
+ * 2. Clear the countdown and show "Opponent is choosing…" in the info bar,
+ *    optionally delaying the message when `delayOpponentMessage` is true.
  * 3. After a short delay, reveal the opponent card and evaluate the round.
  * 4. Reset stat buttons and schedule the next round.
  * 5. If the match ended, show the summary panel.
@@ -157,9 +158,10 @@ export function evaluateRound(store, stat) {
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
+ * @param {{delayOpponentMessage?: boolean}} [options={}] - Optional settings.
  * @returns {Promise<{matchEnded: boolean}>}
  */
-export async function handleStatSelection(store, stat) {
+export async function handleStatSelection(store, stat, options = {}) {
   if (store.selectionMade) {
     return { matchEnded: false };
   }
@@ -169,7 +171,11 @@ export async function handleStatSelection(store, stat) {
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   infoBar.clearTimer();
-  infoBar.showMessage("Opponent is choosing…");
+  if (options.delayOpponentMessage) {
+    setTimeout(() => infoBar.showMessage("Opponent is choosing…"), 500);
+  } else {
+    infoBar.showMessage("Opponent is choosing…");
+  }
   const delay = 300 + Math.floor(Math.random() * 401);
   return new Promise((resolve) => {
     setTimeout(async () => {
