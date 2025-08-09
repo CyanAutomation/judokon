@@ -10,10 +10,6 @@
           "type": "string",
           "description": "The name of the country."
         },
-        "code": {
-          "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/CountryCode",
-          "description": "The country code in ISO 3166-1 alpha-2 format."
-        },
         "lastUpdated": {
           "type": "string",
           "format": "date-time",
@@ -24,7 +20,7 @@
           "description": "Indicates whether the country is active."
         }
       },
-      "required": ["country", "code", "lastUpdated", "active"],
+      "required": ["country", "lastUpdated", "active"],
       "additionalProperties": false
     }
   },
