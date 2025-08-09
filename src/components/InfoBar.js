@@ -77,16 +77,9 @@ function setScoreText(player, computer) {
   opponentSpan.textContent = `\nOpponent: ${computer}`;
 }
 
-function animateScore(playerTarget, computerTarget) {
+function animateScore(startPlayer, startComputer, playerTarget, computerTarget) {
   cancelAnimationFrame(scoreRafId);
-  const startPlayer = currentPlayer;
-  const startComputer = currentComputer;
-  if (shouldReduceMotionSync()) {
-    currentPlayer = playerTarget;
-    currentComputer = computerTarget;
-    setScoreText(playerTarget, computerTarget);
-    return;
-  }
+  if (shouldReduceMotionSync()) return;
   const startTime = performance.now();
   const duration = 500;
   const step = (now) => {
@@ -96,9 +89,6 @@ function animateScore(playerTarget, computerTarget) {
     setScoreText(playerVal, computerVal);
     if (progress < 1) {
       scoreRafId = requestAnimationFrame(step);
-    } else {
-      currentPlayer = playerTarget;
-      currentComputer = computerTarget;
     }
   };
   scoreRafId = requestAnimationFrame(step);
@@ -223,10 +213,12 @@ export function startCountdown(seconds, onFinish) {
  * Display the current match score with an animated count.
  *
  * @pseudocode
- * 1. Capture starting values for player and computer scores.
- * 2. When motion isn't reduced, increment both values toward targets using
- *    `requestAnimationFrame`.
- * 3. Otherwise, update text immediately.
+ * 1. Update the score text to the final values.
+ * 2. Store the previous score values.
+ * 3. Update internal trackers to the new scores so they remain correct if
+ *    animation frames are skipped.
+ * 4. When motion isn't reduced, animate from the previous values toward the
+ *    targets using `requestAnimationFrame`.
  *
  * @param {number} playerScore - Player's score.
  * @param {number} computerScore - Opponent's score.
@@ -234,7 +226,12 @@ export function startCountdown(seconds, onFinish) {
  */
 export function updateScore(playerScore, computerScore) {
   if (!scoreEl) return;
-  animateScore(playerScore, computerScore);
+  setScoreText(playerScore, computerScore);
+  const startPlayer = currentPlayer;
+  const startComputer = currentComputer;
+  currentPlayer = playerScore;
+  currentComputer = computerScore;
+  animateScore(startPlayer, startComputer, playerScore, computerScore);
 }
 
 function runCountdown(duration, onTick, onExpired, handleDrift, prevStopWatch) {
