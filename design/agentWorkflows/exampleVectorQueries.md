@@ -32,11 +32,11 @@ Agents can filter by these tag values when calling `findMatches`.
 
 ## Prompt Examples
 
-Agent scripts can import `findMatches` from `src/helpers/vectorSearch.js` to query the embeddings programmatically.
+Agent scripts can import the bundled helper from `src/helpers/vectorSearch/index.js` to query the embeddings programmatically.
 
 ```javascript
-import { findMatches } from "../../src/helpers/vectorSearch.js";
-const matches = await findMatches(vector, 5, ["prd"]);
+import vectorSearch from "../../src/helpers/vectorSearch/index.js";
+const matches = await vectorSearch.findMatches(vector, 5, ["prd"]);
 ```
 
 Because embeddings capture semantics, synonyms like "grip fighting" and "kumi-kata" map closely. The demo interface marks scores of 0.6 and above as strong matches and only shows weaker results when no strong hits are returned.
@@ -53,12 +53,12 @@ Query: "settings feature flags order"
 To narrow results, pass tag filters to your search call:
 
 ```
-findMatches(queryVector, 5, ["judoka-data"]);
+vectorSearch.findMatches(queryVector, 5, ["judoka-data"]);
 ```
 
 ```
-const results = await findMatches(queryVector, 5);
-const context = await fetchContextById(results[0].id);
+const results = await vectorSearch.findMatches(queryVector, 5);
+const context = await vectorSearch.fetchContextById(results[0].id);
 ```
 
 ### Card Generation Agent
@@ -88,7 +88,7 @@ pretty-printed for easier diffing, so agents search the latest content. Commit
 the regenerated JSON file along with your changes.
 
 The vector search page checks each embedding's `version` against the
-`CURRENT_EMBEDDING_VERSION` constant in `src/helpers/vectorSearch.js`.
+`CURRENT_EMBEDDING_VERSION` constant provided by `vectorSearch.CURRENT_EMBEDDING_VERSION`.
 If a mismatch warning appears, bump the constant and rerun
 `npm run generate:embeddings` to refresh both
 `client_embeddings.json` and `client_embeddings.meta.json`.

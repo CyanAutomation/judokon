@@ -81,6 +81,20 @@ Call `loadSettings()` during startup to populate the cache before using
 these helpers. This approach avoids direct `localStorage` reads in modules
 that need fast, synchronous access to settings.
 
+## Vector Search Helpers
+
+Utilities for working with the embedding database are centralized in
+`src/helpers/vectorSearch/index.js`. The default export provides methods to
+load embeddings, expand queries, find matches, and fetch surrounding
+context:
+
+```javascript
+import vectorSearch from "./src/helpers/vectorSearch/index.js";
+const embeddings = await vectorSearch.loadEmbeddings();
+const expanded = await vectorSearch.expandQueryWithSynonyms("grip fighting");
+const results = await vectorSearch.findMatches([0, 1, 0], 5, ["prd"], expanded);
+```
+
 ## 🧪 Testing
 
 The game includes a **Skip** button that bypasses the current round and cooldown timers. Use it to fast-forward through matches when debugging or running rapid gameplay tests.

@@ -48,11 +48,14 @@ describe("selectMatches", () => {
 describe("vector search page integration", () => {
   it("passes selected tag to findMatches", async () => {
     const findMatches = vi.fn().mockResolvedValue([]);
-    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
-      findMatches,
-      fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue([{ tags: ["foo"], version: 1 }]),
-      CURRENT_EMBEDDING_VERSION: 1
+    vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
+      default: {
+        findMatches,
+        fetchContextById: vi.fn(),
+        loadEmbeddings: vi.fn().mockResolvedValue([{ tags: ["foo"], version: 1 }]),
+        expandQueryWithSynonyms: vi.fn((q) => q),
+        CURRENT_EMBEDDING_VERSION: 1
+      }
     }));
 
     const { handleSearch, init, __setExtractor } = await import(
@@ -87,11 +90,14 @@ describe("vector search page integration", () => {
       { tags: ["alpha"], version: 1 },
       { tags: ["beta"], version: 1 }
     ];
-    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
-      findMatches: vi.fn(),
-      fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue(embeddings),
-      CURRENT_EMBEDDING_VERSION: 1
+    vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
+      default: {
+        findMatches: vi.fn(),
+        fetchContextById: vi.fn(),
+        loadEmbeddings: vi.fn().mockResolvedValue(embeddings),
+        expandQueryWithSynonyms: vi.fn((q) => q),
+        CURRENT_EMBEDDING_VERSION: 1
+      }
     }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue({ count: 2, version: 1 })
@@ -123,11 +129,14 @@ describe("vector search page integration", () => {
 describe("search result message styling", () => {
   it("adds search-result-empty class when no matches", async () => {
     const findMatches = vi.fn().mockResolvedValue([]);
-    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
-      findMatches,
-      fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue([]),
-      CURRENT_EMBEDDING_VERSION: 1
+    vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
+      default: {
+        findMatches,
+        fetchContextById: vi.fn(),
+        loadEmbeddings: vi.fn().mockResolvedValue([]),
+        expandQueryWithSynonyms: vi.fn((q) => q),
+        CURRENT_EMBEDDING_VERSION: 1
+      }
     }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue({ count: 0, version: 1 })
@@ -171,11 +180,14 @@ describe("search result message styling", () => {
       version: 1
     };
     const findMatches = vi.fn().mockResolvedValue([match]);
-    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
-      findMatches,
-      fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue([match]),
-      CURRENT_EMBEDDING_VERSION: 1
+    vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
+      default: {
+        findMatches,
+        fetchContextById: vi.fn(),
+        loadEmbeddings: vi.fn().mockResolvedValue([match]),
+        expandQueryWithSynonyms: vi.fn((q) => q),
+        CURRENT_EMBEDDING_VERSION: 1
+      }
     }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue({ count: 1, version: 1 })
@@ -219,11 +231,14 @@ describe("search result message styling", () => {
       version: 1
     };
     const findMatches = vi.fn().mockResolvedValue([match]);
-    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
-      findMatches,
-      fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue([match]),
-      CURRENT_EMBEDDING_VERSION: 1
+    vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
+      default: {
+        findMatches,
+        fetchContextById: vi.fn(),
+        loadEmbeddings: vi.fn().mockResolvedValue([match]),
+        expandQueryWithSynonyms: vi.fn((q) => q),
+        CURRENT_EMBEDDING_VERSION: 1
+      }
     }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue({ count: 1, version: 1 })
@@ -282,11 +297,14 @@ describe("snippet highlighting", () => {
       version: 1
     };
     const findMatches = vi.fn().mockResolvedValue([match]);
-    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
-      findMatches,
-      fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue([match]),
-      CURRENT_EMBEDDING_VERSION: 1
+    vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
+      default: {
+        findMatches,
+        fetchContextById: vi.fn(),
+        loadEmbeddings: vi.fn().mockResolvedValue([match]),
+        expandQueryWithSynonyms: vi.fn((q) => q),
+        CURRENT_EMBEDDING_VERSION: 1
+      }
     }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue({ count: 1, version: 1 })
@@ -323,12 +341,18 @@ describe("snippet highlighting", () => {
 describe("synonym expansion", () => {
   it("expands query terms using the synonym list", async () => {
     const synonyms = { "shoulder throw": ["seoi-nage"] };
-    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
-      findMatches: vi.fn().mockResolvedValue([]),
-      fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue([]),
-      CURRENT_EMBEDDING_VERSION: 1
-    }));
+    vi.doMock("../../src/helpers/vectorSearch/index.js", async () => {
+      const { expandQueryWithSynonyms } = await import("../../src/helpers/vectorSearchQuery.js");
+      return {
+        default: {
+          findMatches: vi.fn().mockResolvedValue([]),
+          fetchContextById: vi.fn(),
+          loadEmbeddings: vi.fn().mockResolvedValue([]),
+          expandQueryWithSynonyms,
+          CURRENT_EMBEDDING_VERSION: 1
+        }
+      };
+    });
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue(synonyms)
     }));
@@ -336,21 +360,27 @@ describe("synonym expansion", () => {
       DATA_DIR: "./"
     }));
 
-    const { expandQueryWithSynonyms } = await import("../../src/helpers/vectorSearchQuery.js");
+    const vectorSearch = (await import("../../src/helpers/vectorSearch/index.js")).default;
 
-    const result = await expandQueryWithSynonyms("shoulder throw");
+    const result = await vectorSearch.expandQueryWithSynonyms("shoulder throw");
     expect(result).toContain("seoi-nage");
   });
 
   it("handles misspellings via Levenshtein check", async () => {
     const synonyms = { "seoi nage": ["seoi-nage"] };
     const findMatches = vi.fn().mockResolvedValue([]);
-    vi.doMock("../../src/helpers/vectorSearch.js", () => ({
-      findMatches,
-      fetchContextById: vi.fn(),
-      loadEmbeddings: vi.fn().mockResolvedValue([]),
-      CURRENT_EMBEDDING_VERSION: 1
-    }));
+    vi.doMock("../../src/helpers/vectorSearch/index.js", async () => {
+      const { expandQueryWithSynonyms } = await import("../../src/helpers/vectorSearchQuery.js");
+      return {
+        default: {
+          findMatches,
+          fetchContextById: vi.fn(),
+          loadEmbeddings: vi.fn().mockResolvedValue([]),
+          expandQueryWithSynonyms,
+          CURRENT_EMBEDDING_VERSION: 1
+        }
+      };
+    });
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue(synonyms)
     }));
