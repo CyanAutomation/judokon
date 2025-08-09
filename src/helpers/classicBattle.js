@@ -213,7 +213,17 @@ function createQuitConfirmation(store, onConfirm) {
   quit.addEventListener("click", () => {
     onConfirm();
     modal.close();
-    window.location.href = "../../index.html";
+    // In browsers, navigate to home; in jsdom, history.replaceState avoids Not Implemented errors
+    try {
+      window.location.href = "../../index.html";
+    } catch (_e) {
+      try {
+        const target = new URL("../../index.html", window.location.href).href;
+        if (typeof history !== "undefined" && typeof history.replaceState === "function") {
+          history.replaceState(null, "", target);
+        }
+      } catch {}
+    }
   });
   document.body.appendChild(modal.element);
   return modal;

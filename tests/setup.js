@@ -1,4 +1,4 @@
-import { expect, afterEach } from "vitest";
+import { expect, afterEach, beforeEach } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 
 const originalMatchMedia = global.matchMedia;
@@ -30,4 +30,51 @@ expect.extend({
 afterEach(() => {
   global.matchMedia = originalMatchMedia;
   resetDom();
+});
+
+// Prevent JSDOM navigation errors when tests assign to window.location.href.
+// Simulate URL changes by updating history without performing a real navigation.
+beforeEach(() => {
+  try {
+    const currentHref = String(window.location.href || "http://localhost/");
+    const state = { href: currentHref };
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: {
+        get href() {
+          return state.href;
+        },
+        set href(val) {
+          try {
+            const url = new URL(String(val), state.href).href;
+            state.href = url;
+            if (typeof history !== "undefined" && typeof history.replaceState === "function") {
+              history.replaceState(null, "", url);
+            }
+          } catch {
+            state.href = String(val);
+          }
+        },
+        reload: () => {},
+        assign: (val) => {
+          try {
+            const url = new URL(String(val), state.href).href;
+            state.href = url;
+            if (typeof history !== "undefined" && typeof history.replaceState === "function") {
+              history.replaceState(null, "", url);
+            }
+          } catch {}
+        },
+        replace: (val) => {
+          try {
+            const url = new URL(String(val), state.href).href;
+            state.href = url;
+            if (typeof history !== "undefined" && typeof history.replaceState === "function") {
+              history.replaceState(null, "", url);
+            }
+          } catch {}
+        }
+      }
+    });
+  } catch {}
 });

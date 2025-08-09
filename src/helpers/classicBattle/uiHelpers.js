@@ -50,10 +50,14 @@ export async function revealComputerCard() {
   } catch (err) {
     console.error("Error rendering JudokaCard:", err);
   }
-  if (card instanceof HTMLElement) {
+  if (card && typeof card === "object" && card.nodeType === 1) {
     container.innerHTML = "";
     container.appendChild(card);
-    setupLazyPortraits(card);
+    if (typeof IntersectionObserver !== "undefined") {
+      try {
+        setupLazyPortraits(card);
+      } catch {}
+    }
   } else {
     console.error("JudokaCard did not render an HTMLElement");
   }
