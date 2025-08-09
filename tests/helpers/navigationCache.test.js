@@ -1,6 +1,7 @@
 /** @jest-environment jsdom */
 // @vitest-environment jsdom
 import { load, save, reset } from "../../src/helpers/navigationCache.js";
+import { getItem, setItem, removeItem } from "../../src/helpers/storage.js";
 
 const mockFn = () => (globalThis.jest || globalThis.vi).fn();
 
@@ -18,7 +19,7 @@ const validItems = [
 describe("navigationCache", () => {
   const originalFetch = global.fetch;
   beforeEach(() => {
-    localStorage.clear();
+    removeItem("navigationItems");
     global.fetch = mockFn().mockRejectedValue(new Error("fail"));
   });
   afterEach(() => {
@@ -27,9 +28,9 @@ describe("navigationCache", () => {
 
   test("reset clears persisted items", async () => {
     await save(validItems);
-    expect(localStorage.getItem("navigationItems")).not.toBeNull();
+    expect(getItem("navigationItems")).not.toBeNull();
     reset();
-    expect(localStorage.getItem("navigationItems")).toBeNull();
+    expect(getItem("navigationItems")).toBeNull();
   });
 
   test("save rejects invalid data", async () => {
@@ -37,9 +38,9 @@ describe("navigationCache", () => {
   });
 
   test("load removes invalid stored data", async () => {
-    localStorage.setItem("navigationItems", '[{"id":1}]');
+    setItem("navigationItems", [{ id: 1 }]);
     const items = await load();
     expect(Array.isArray(items)).toBe(true);
-    expect(localStorage.getItem("navigationItems")).not.toBe('[{"id":1}]');
+    expect(getItem("navigationItems")).not.toEqual([{ id: 1 }]);
   });
 });

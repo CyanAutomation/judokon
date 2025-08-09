@@ -18,6 +18,7 @@ npx playwright test # run Playwright UI tests
 
 - Confirm that any new or modified functions include JSDoc with an `@pseudocode` block so documentation stays complete.
 - Playwright tests clear localStorage at startup. If a manual run fails unexpectedly, clear it in your browser and ensure [http://localhost:5000](http://localhost:5000) is served (start it with `npm start`).
+- Use `src/helpers/storage.js` for persistent data access instead of direct `localStorage` calls.
 
 **For UI-related changes (styles, components, layout):**
 
