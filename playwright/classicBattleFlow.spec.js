@@ -3,15 +3,11 @@ import { test, expect } from "./fixtures/commonSetup.js";
 
 test.describe.parallel("Classic battle flow", () => {
   test("timer auto-selects when expired", async ({ page }) => {
-    await page.addInitScript(() => {
-      window.startCountdownOverride = () => {};
-      const orig = window.setInterval;
-      window.setInterval = (fn, ms, ...args) => orig(fn, ms >= 1000 ? 250 : ms, ...args); // 4× speed instead of 10×
-    });
     await page.goto("/src/pages/battleJudoka.html");
     const countdown = page.locator("header #next-round-timer");
     await countdown.waitFor();
     await expect(countdown).toHaveText(/\d+/);
+    await page.evaluate(() => window.skipBattlePhase?.());
     const result = page.locator("header #round-message");
     await expect(result).not.toHaveText("", { timeout: 15000 });
     await expect
@@ -20,12 +16,8 @@ test.describe.parallel("Classic battle flow", () => {
   });
 
   test("tie message appears on equal stats", async ({ page }) => {
-    await page.addInitScript(() => {
-      window.startCountdownOverride = () => {};
-      const orig = window.setInterval;
-      window.setInterval = (fn, ms, ...args) => orig(fn, Math.max(ms, 3600000), ...args);
-    });
     await page.goto("/src/pages/battleJudoka.html");
+    await page.evaluate(() => window.skipBattlePhase?.());
     const timer = page.locator("header #next-round-timer");
     await timer.waitFor();
     await page.evaluate(async () => {
