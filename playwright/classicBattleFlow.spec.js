@@ -10,9 +10,8 @@ test.describe.parallel("Classic battle flow", () => {
     await page.evaluate(() => window.skipBattlePhase?.());
     const result = page.locator("header #round-message");
     await expect(result).not.toHaveText("", { timeout: 15000 });
-    await expect
-      .poll(() => countdown.textContent(), { timeout: 15000 })
-      .toMatch(/Next round in: \d+s/);
+    const snackbar = page.locator(".snackbar");
+    await expect(snackbar).toHaveText(/Next round in: \d+s/, { timeout: 15000 });
   });
 
   test("tie message appears on equal stats", async ({ page }) => {
@@ -36,7 +35,7 @@ test.describe.parallel("Classic battle flow", () => {
     await expect(snackbar).toHaveText("You Picked: Power");
     const msg = page.locator("header #round-message");
     await expect(msg).toHaveText(/Tie/);
-    await expect(timer).toHaveText(/Next round in: \d+s/);
+    await expect(snackbar).toHaveText(/Next round in: \d+s/, { timeout: 15000 });
   });
 
   test("quit match confirmation", async ({ page }) => {
