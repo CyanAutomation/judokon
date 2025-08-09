@@ -1,4 +1,4 @@
-import { STATS, handleStatSelection as engineHandleStatSelection } from "../battleEngine.js";
+import { STATS, battleEngine } from "../battleEngine.js";
 
 /**
  * Choose an opponent stat based on difficulty and available values.
@@ -37,7 +37,7 @@ export function chooseOpponentStat(values, difficulty = "easy") {
  * Evaluate a round using player and opponent stat values.
  *
  * @pseudocode
- * 1. Delegate to `handleStatSelection` from the battle engine with the provided values.
+ * 1. Delegate to `handleStatSelection` on the battle engine with the provided values.
  * 2. Return its result.
  *
  * @param {number} playerVal - Player's stat value.
@@ -45,5 +45,5 @@ export function chooseOpponentStat(values, difficulty = "easy") {
  * @returns {{message: string, matchEnded: boolean, playerScore: number, computerScore: number}}
  */
 export function evaluateRound(playerVal, opponentVal) {
-  return engineHandleStatSelection(playerVal, opponentVal);
+  return battleEngine.handleStatSelection(playerVal, opponentVal);
 }
