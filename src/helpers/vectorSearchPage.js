@@ -1,14 +1,8 @@
 import { onDomReady } from "./domReady.js";
-import {
-  findMatches,
-  fetchContextById,
-  loadEmbeddings,
-  CURRENT_EMBEDDING_VERSION
-} from "./vectorSearch.js";
+import vectorSearch from "./vectorSearch/index.js";
 import { markdownToHtml } from "./markdownToHtml.js";
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
-import { expandQueryWithSynonyms } from "./vectorSearchQuery.js";
 import { createSnippetElement } from "./snippetFormatter.js";
 // Load Transformers.js dynamically from jsDelivr when first used
 // This avoids bundling the large library with the rest of the code.
@@ -66,7 +60,7 @@ async function loadResultContext(el) {
   const live = el.querySelector(".result-context");
   if (!live) return;
   live.textContent = "Loading context...";
-  const chunks = await fetchContextById(id, 1);
+  const chunks = await vectorSearch.fetchContextById(id, 1);
   const markdown = chunks.join("\n\n");
   live.innerHTML = markdown.length > 0 ? markdownToHtml(markdown) : "No additional context found.";
   el.dataset.loaded = "true";
@@ -174,7 +168,7 @@ export async function handleSearch(event) {
   if (tbody) tbody.textContent = "";
   if (!query) return;
   const queryTerms = query.toLowerCase().split(/\s+/).filter(Boolean);
-  const expandedQuery = await expandQueryWithSynonyms(query);
+  const expandedQuery = await vectorSearch.expandQueryWithSynonyms(query);
   const messageEl = document.getElementById("search-results-message");
   const tagSelect = document.getElementById("tag-filter");
   const selected =
@@ -188,7 +182,7 @@ export async function handleSearch(event) {
     const model = await getExtractor();
     const result = await model(expandedQuery, { pooling: "mean" });
     const vector = Array.from(result.data ?? result);
-    const matches = await findMatches(vector, 5, selected, expandedQuery);
+    const matches = await vectorSearch.findMatches(vector, 5, selected, expandedQuery);
     if (messageEl) {
       messageEl.textContent = "";
       messageEl.classList.remove("search-result-empty");
@@ -288,25 +282,25 @@ export async function init() {
   const messageEl = document.getElementById("search-results-message");
 
   const [embeddings, meta] = await Promise.all([
-    loadEmbeddings(),
+    vectorSearch.loadEmbeddings(),
     fetchJson(`${DATA_DIR}client_embeddings.meta.json`).catch(() => null)
   ]);
 
   let versionMismatch = false;
   if (Array.isArray(embeddings)) {
     for (const entry of embeddings) {
-      if (entry.version !== CURRENT_EMBEDDING_VERSION) {
+      if (entry.version !== vectorSearch.CURRENT_EMBEDDING_VERSION) {
         versionMismatch = true;
         console.warn(
-          `Embedding ${entry.id ?? "(unknown id)"} has version ${entry.version}; expected ${CURRENT_EMBEDDING_VERSION}`
+          `Embedding ${entry.id ?? "(unknown id)"} has version ${entry.version}; expected ${vectorSearch.CURRENT_EMBEDDING_VERSION}`
         );
       }
     }
   }
-  if (meta && meta.version !== CURRENT_EMBEDDING_VERSION) {
+  if (meta && meta.version !== vectorSearch.CURRENT_EMBEDDING_VERSION) {
     versionMismatch = true;
     console.warn(
-      `Embedding metadata version ${meta.version} does not match ${CURRENT_EMBEDDING_VERSION}`
+      `Embedding metadata version ${meta.version} does not match ${vectorSearch.CURRENT_EMBEDDING_VERSION}`
     );
   }
   if (versionMismatch && messageEl) {
