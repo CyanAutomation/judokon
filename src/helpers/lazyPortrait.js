@@ -14,6 +14,9 @@
  * @param {ParentNode} [root=document] - Root element containing card images.
  */
 export function setupLazyPortraits(root = document) {
+  // Short-circuit in non-browser/test environments where IntersectionObserver
+  // is not available (e.g., JSDOM) to avoid runtime errors during tests.
+  if (typeof IntersectionObserver === "undefined") return;
   const images = root.querySelectorAll("img[data-portrait-src]");
   if (!images.length) return;
 

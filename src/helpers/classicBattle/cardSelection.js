@@ -111,12 +111,17 @@ async function renderComputerPlaceholder(container, placeholder, enableInspector
   try {
     if (typeof judokaCard.render === "function") {
       const card = await judokaCard.render();
-      if (card instanceof HTMLElement) {
-        container.innerHTML = "";
-        container.appendChild(card);
-        setupLazyPortraits(card);
-      } else {
+      if (!(card && typeof card === "object" && card.nodeType === 1)) {
         console.error("JudokaCard did not render an HTMLElement");
+        return;
+      }
+      container.innerHTML = "";
+      container.appendChild(card);
+      // Defer lazy portrait setup when unsupported (e.g., JSDOM)
+      if (typeof IntersectionObserver !== "undefined") {
+        try {
+          setupLazyPortraits(card);
+        } catch {}
       }
     }
   } catch (error) {
@@ -125,11 +130,12 @@ async function renderComputerPlaceholder(container, placeholder, enableInspector
 }
 
 export async function drawCards() {
+  // Always attempt to load both datasets so retries re-fetch both.
   const allJudoka = await ensureJudokaData();
-  if (allJudoka.length === 0) return { playerJudoka: null, computerJudoka: null };
   const available = allJudoka.filter((j) => !j.isHidden);
 
   const lookup = await ensureGokyoLookup();
+  // If lookup failed completely, bail out; judoka may be empty but we can still proceed.
   if (!lookup) return { playerJudoka: null, computerJudoka: null };
 
   const playerContainer = document.getElementById("player-card");
@@ -177,4 +183,5 @@ export function _resetForTest() {
   judokaData = null;
   gokyoLookup = null;
   computerJudoka = null;
+  loadErrorModal = null;
 }

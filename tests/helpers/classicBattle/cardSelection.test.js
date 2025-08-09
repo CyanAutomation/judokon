@@ -141,6 +141,40 @@ describe("classicBattle card selection", () => {
     expect(fetchJsonMock).toHaveBeenCalledTimes(3);
   });
 
+  it("retries both judoka and gokyo loads after failure", async () => {
+    const calls = [];
+    fetchJsonMock.mockImplementation(async (p) => {
+      calls.push(p);
+      if (calls.length === 1) {
+        throw new Error("boom");
+      }
+      // After retry, respond with empty arrays for both resources
+      return [];
+    });
+
+    const { drawCards, _resetForTest } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
+    _resetForTest();
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { ...window.location, reload: vi.fn() }
+    });
+
+    await drawCards();
+
+    const retry = document.getElementById("retry-draw-button");
+    expect(retry).toBeTruthy();
+    await retry.click();
+    await Promise.resolve();
+
+    expect(calls.length).toBe(3);
+    // Expect sequence: judoka (fail), gokyo (success in same attempt), judoka (success on retry)
+    expect(calls[0]).toMatch(/judoka\.json/);
+    expect(calls[1]).toMatch(/gokyo\.json/);
+    expect(calls[2]).toMatch(/judoka\.json/);
+  });
+
   it("logs an error when JudokaCard.render does not return an element", async () => {
     renderMock = vi.fn(async () => "nope");
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
