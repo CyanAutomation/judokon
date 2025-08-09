@@ -17,9 +17,6 @@ export async function registerCommonRoutes(page) {
     page.route("**/src/data/gameModes.json", (route) =>
       route.fulfill({ path: "tests/fixtures/gameModes.json" })
     ),
-    page.route("**/src/data/countryCodeMapping.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/countryCodeMapping.json" })
-    ),
     page.route("**/src/data/tooltips.json", (route) =>
       route.fulfill({ path: "tests/fixtures/tooltips.json" })
     ),
