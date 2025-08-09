@@ -2,6 +2,8 @@ import { expect, afterEach, beforeEach } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 
 const originalMatchMedia = global.matchMedia;
+let originalPushState;
+let originalReplaceState;
 
 expect.extend({
   toHaveAttribute(element, attribute, expected) {
@@ -29,6 +31,10 @@ expect.extend({
 
 afterEach(() => {
   global.matchMedia = originalMatchMedia;
+  if (typeof history !== "undefined") {
+    if (originalPushState) history.pushState = originalPushState;
+    if (originalReplaceState) history.replaceState = originalReplaceState;
+  }
   resetDom();
 });
 
@@ -66,6 +72,23 @@ beforeEach(() => {
             return "";
           }
         },
+        get search() {
+          try {
+            return new URL(state.href).search;
+          } catch {
+            return "";
+          }
+        },
+        set search(val) {
+          try {
+            const url = new URL(state.href);
+            url.search = String(val);
+            state.href = url.href;
+            if (typeof history !== "undefined" && typeof history.replaceState === "function") {
+              history.replaceState(null, "", url.href);
+            }
+          } catch {}
+        },
         assign: (val) => {
           try {
             const url = new URL(String(val), state.href).href;
@@ -86,5 +109,33 @@ beforeEach(() => {
         }
       }
     });
+    if (typeof history !== "undefined") {
+      if (!originalPushState) {
+        originalPushState = history.pushState.bind(history);
+      }
+      if (!originalReplaceState) {
+        originalReplaceState = history.replaceState.bind(history);
+      }
+      history.pushState = (...args) => {
+        const result = originalPushState(...args);
+        const url = args[2];
+        if (url !== undefined && url !== null) {
+          try {
+            state.href = new URL(String(url), state.href).href;
+          } catch {}
+        }
+        return result;
+      };
+      history.replaceState = (...args) => {
+        const result = originalReplaceState(...args);
+        const url = args[2];
+        if (url !== undefined && url !== null) {
+          try {
+            state.href = new URL(String(url), state.href).href;
+          } catch {}
+        }
+        return result;
+      };
+    }
   } catch {}
 });
