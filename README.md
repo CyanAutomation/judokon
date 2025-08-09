@@ -75,11 +75,16 @@ Settings are loaded once and cached for synchronous use. Helpers in
 `src/helpers/settingsUtils.js` provide safe access:
 
 - `getSetting(key)` – read a setting value from the cache.
-- `getFeatureFlag(flagName)` – check whether a feature flag is enabled.
+
+Feature flags are managed through `src/helpers/featureFlags.js`:
+
+- `isEnabled(flag)` – synchronous check for a flag's enabled state.
+- `setFlag(flag, value)` – persist a flag change and emit an update.
+- `featureFlagsEmitter` – listen for `change` events when flags toggle.
 
 Call `loadSettings()` during startup to populate the cache before using
-these helpers. This approach avoids direct `localStorage` reads in modules
-that need fast, synchronous access to settings.
+these helpers. Pages should rely on `featureFlags.isEnabled` rather than
+accessing `settings.featureFlags` directly.
 
 ## Vector Search Helpers
 

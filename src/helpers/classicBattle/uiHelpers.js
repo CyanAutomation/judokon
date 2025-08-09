@@ -1,5 +1,6 @@
 import { getComputerJudoka, getGokyoLookup, clearComputerJudoka } from "./cardSelection.js";
 import { loadSettings } from "../settingsUtils.js";
+import { isEnabled } from "../featureFlags.js";
 import { getScores, getTimerState, isMatchEnded } from "../battleEngine.js";
 import { isTestModeEnabled, getCurrentSeed } from "../testModeUtils.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
@@ -37,13 +38,10 @@ export async function revealComputerCard() {
   const judoka = getComputerJudoka();
   if (!judoka) return;
   const container = document.getElementById("computer-card");
-  let settings;
   try {
-    settings = await loadSettings();
-  } catch {
-    settings = { featureFlags: {} };
-  }
-  const enableInspector = Boolean(settings.featureFlags?.enableCardInspector?.enabled);
+    await loadSettings();
+  } catch {}
+  const enableInspector = isEnabled("enableCardInspector");
   let card;
   try {
     card = await new JudokaCard(judoka, getGokyoLookup(), {

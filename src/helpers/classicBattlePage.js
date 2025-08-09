@@ -45,6 +45,7 @@ import { toggleInspectorPanels } from "./cardUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
 import { initRoundSelectModal } from "./classicBattle/roundSelectModal.js";
 import { skipCurrentPhase } from "./classicBattle/timerService.js";
+import { isEnabled, featureFlagsEmitter } from "./featureFlags.js";
 
 function enableStatButtons(enable = true) {
   document.querySelectorAll("#stat-buttons button").forEach((btn) => {
@@ -121,10 +122,10 @@ export async function setupClassicBattlePage() {
   } catch {
     settings = { featureFlags: {} };
   }
-  const inspectorEnabled = Boolean(settings.featureFlags?.enableCardInspector?.enabled);
+  const inspectorEnabled = isEnabled("enableCardInspector");
   toggleInspectorPanels(inspectorEnabled);
 
-  simulatedOpponentMode = Boolean(settings.featureFlags.simulatedOpponentMode?.enabled);
+  simulatedOpponentMode = isEnabled("simulatedOpponentMode");
   const params = new URLSearchParams(window.location.search);
   const paramDifficulty = params.get("difficulty");
   if (["easy", "medium", "hard"].includes(paramDifficulty)) {
@@ -159,41 +160,36 @@ export async function setupClassicBattlePage() {
   const battleArea = document.getElementById("battle-area");
   if (battleArea) {
     battleArea.dataset.mode = "classic";
-    battleArea.dataset.randomStat = String(Boolean(settings.featureFlags.randomStatMode));
-    battleArea.dataset.testMode = String(Boolean(settings.featureFlags.enableTestMode?.enabled));
+    battleArea.dataset.randomStat = String(isEnabled("randomStatMode"));
+    battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
     battleArea.dataset.simulatedOpponent = String(simulatedOpponentMode);
     battleArea.dataset.difficulty = aiDifficulty;
   }
 
-  toggleViewportSimulation(Boolean(settings.featureFlags.viewportSimulation?.enabled));
+  toggleViewportSimulation(isEnabled("viewportSimulation"));
 
-  setTestMode(Boolean(settings.featureFlags.enableTestMode?.enabled));
+  setTestMode(isEnabled("enableTestMode"));
 
   const banner = document.getElementById("test-mode-banner");
   if (banner) {
-    banner.classList.toggle("hidden", !settings.featureFlags.enableTestMode?.enabled);
+    banner.classList.toggle("hidden", !isEnabled("enableTestMode"));
   }
 
-  window.addEventListener("storage", (e) => {
-    if (e.key === "settings" && e.newValue) {
-      try {
-        const s = JSON.parse(e.newValue);
-        if (battleArea) {
-          battleArea.dataset.testMode = String(Boolean(s.featureFlags?.enableTestMode?.enabled));
-        }
-        if (banner) {
-          banner.classList.toggle("hidden", !s.featureFlags?.enableTestMode?.enabled);
-        }
-        setTestMode(Boolean(s.featureFlags?.enableTestMode?.enabled));
-        toggleInspectorPanels(Boolean(s.featureFlags?.enableCardInspector?.enabled));
-      } catch {}
+  featureFlagsEmitter.addEventListener("change", () => {
+    if (battleArea) {
+      battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
     }
+    if (banner) {
+      banner.classList.toggle("hidden", !isEnabled("enableTestMode"));
+    }
+    setTestMode(isEnabled("enableTestMode"));
+    toggleInspectorPanels(isEnabled("enableCardInspector"));
   });
 
   const debugPanel = document.getElementById("debug-panel");
   if (debugPanel) {
     const computerSlot = document.getElementById("computer-card");
-    if (settings.featureFlags.battleDebugPanel?.enabled && computerSlot) {
+    if (isEnabled("battleDebugPanel") && computerSlot) {
       computerSlot.prepend(debugPanel);
       debugPanel.classList.remove("hidden");
     } else {

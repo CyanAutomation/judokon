@@ -23,6 +23,7 @@ import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { populateNavbar } from "./navigationBar.js";
 import { reset as resetNavigationCache } from "./navigationCache.js";
 import { showSnackbar } from "./showSnackbar.js";
+import { isEnabled } from "./featureFlags.js";
 
 import { applyInitialControlValues } from "./settings/applyInitialValues.js";
 import { attachToggleListeners } from "./settings/listenerUtils.js";
@@ -141,7 +142,7 @@ function initializeControls(settings) {
     const existing = document.getElementById("nav-cache-reset-button");
     existing?.parentElement?.remove();
     if (!section) return;
-    if (!currentSettings.featureFlags.navCacheResetButton?.enabled) return;
+    if (!isEnabled("navCacheResetButton")) return;
     const wrapper = document.createElement("div");
     wrapper.className = "settings-item";
     const btn = createButton("Reset Navigation Cache", {
@@ -193,9 +194,9 @@ function initializeControls(settings) {
       applyDisplayMode(currentSettings.displayMode);
     });
     applyMotionPreference(currentSettings.motionEffects);
-    toggleViewportSimulation(Boolean(currentSettings.featureFlags.viewportSimulation?.enabled));
-    toggleTooltipOverlayDebug(Boolean(currentSettings.featureFlags.tooltipOverlayDebug?.enabled));
-    toggleLayoutDebugPanel(Boolean(currentSettings.featureFlags.layoutDebugPanel?.enabled));
+    toggleViewportSimulation(isEnabled("viewportSimulation"));
+    toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
+    toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
     renderSwitches(latestGameModes, latestTooltipMap);
     setupSectionToggles();
   });
@@ -236,9 +237,9 @@ async function initializeSettingsPage() {
     const settings = await loadSettings();
     applyDisplayMode(settings.displayMode);
     applyMotionPreference(settings.motionEffects);
-    toggleViewportSimulation(Boolean(settings.featureFlags.viewportSimulation?.enabled));
-    toggleTooltipOverlayDebug(Boolean(settings.featureFlags.tooltipOverlayDebug?.enabled));
-    toggleLayoutDebugPanel(Boolean(settings.featureFlags.layoutDebugPanel?.enabled));
+    toggleViewportSimulation(isEnabled("viewportSimulation"));
+    toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
+    toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
     const controlsApi = initializeControls(settings);
     const [gameModesResult, tooltipMapResult] = await Promise.all([
       gameModesPromise,

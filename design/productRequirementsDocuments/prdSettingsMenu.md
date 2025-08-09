@@ -69,10 +69,16 @@ Modules access player preferences via helpers in
 `src/helpers/settingsUtils.js`:
 
 - `getSetting(key)` – synchronous access to cached settings.
-- `getFeatureFlag(flagName)` – returns `true` when the flag is enabled.
+
+Feature flags are handled by `src/helpers/featureFlags.js`:
+
+- `isEnabled(flag)` – check whether a flag is enabled.
+- `setFlag(flag, value)` – persist a flag change and emit a `change` event via `featureFlagsEmitter`.
 
 `loadSettings()` should run during startup to populate the cache, avoiding
 direct `localStorage` reads throughout the app by using `src/helpers/storage.js`.
+Pages should query `featureFlags.isEnabled` rather than reading
+`settings.featureFlags` directly.
 
 ## Settings Features
 

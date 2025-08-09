@@ -6,6 +6,7 @@ import { shouldReduceMotionSync } from "./helpers/motionUtils.js";
 import { initTooltips } from "./helpers/tooltip.js";
 import { loadSettings } from "./helpers/settingsUtils.js";
 import { toggleInspectorPanels } from "./helpers/cardUtils.js";
+import { isEnabled, featureFlagsEmitter } from "./helpers/featureFlags.js";
 
 let inspectorEnabled = false;
 
@@ -152,21 +153,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    const settings = await loadSettings();
-    inspectorEnabled = Boolean(settings.featureFlags?.enableCardInspector?.enabled);
+    await loadSettings();
+    inspectorEnabled = isEnabled("enableCardInspector");
   } catch {
     inspectorEnabled = false;
   }
   toggleInspectorPanels(inspectorEnabled);
 
-  window.addEventListener("storage", (e) => {
-    if (e.key === "settings" && e.newValue) {
-      try {
-        const s = JSON.parse(e.newValue);
-        inspectorEnabled = Boolean(s.featureFlags?.enableCardInspector?.enabled);
-        toggleInspectorPanels(inspectorEnabled);
-      } catch {}
-    }
+  featureFlagsEmitter.addEventListener("change", () => {
+    inspectorEnabled = isEnabled("enableCardInspector");
+    toggleInspectorPanels(inspectorEnabled);
   });
 
   setupCarouselToggle(showCarouselButton, carouselContainer);
