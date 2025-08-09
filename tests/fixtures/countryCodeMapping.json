@@ -12,9 +12,9 @@
     "active": true
   },
   "us": {
-    "country": "USA",
+    "country": "United States",
     "code": "us",
     "lastUpdated": "2025-04-23T10:00:00Z",
-    "active": false
+    "active": true
   }
 }
