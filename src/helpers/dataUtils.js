@@ -81,7 +81,7 @@ const schemaCache = new WeakMap();
  * @pseudocode
  * 1. Check the cache for `url` and return the value when present.
  * 2. Resolve the URL and when running in Node with a `file:` protocol:
- *    - Read and parse the file with `fs.promises.readFile`.
+ *    - Convert the file URL to a path and read and parse the file with `fs.promises.readFile`.
  * 3. Otherwise request `url` using `fetch` and throw an error when the response is not OK.
  * 4. Parse the response or file contents as JSON.
  * 5. When a `schema` is provided, validate the data with `validateWithSchema`.
@@ -105,7 +105,8 @@ export async function fetchJson(url, schema) {
     if (isNodeEnvironment() && parsedUrl.protocol === "file:") {
       const { readFile } = await import("fs/promises");
       const { fileURLToPath } = await import("node:url");
-      data = JSON.parse(await readFile(fileURLToPath(parsedUrl), "utf8"));
+      const filePath = fileURLToPath(parsedUrl.href);
+      data = JSON.parse(await readFile(filePath, "utf8"));
     } else {
       const response = await fetch(url);
       if (!response.ok) {
