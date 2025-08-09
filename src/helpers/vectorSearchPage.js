@@ -4,41 +4,15 @@ import { markdownToHtml } from "./markdownToHtml.js";
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { createSnippetElement } from "./snippetFormatter.js";
-// Load Transformers.js dynamically from jsDelivr when first used
-// This avoids bundling the large library with the rest of the code.
+import {
+  selectMatches,
+  formatSourcePath,
+  formatTags,
+  getExtractor,
+  SIMILARITY_THRESHOLD
+} from "./api/vectorSearchPage.js";
 
-let extractor;
 let spinner;
-
-const SIMILARITY_THRESHOLD = 0.6;
-
-/**
- * Score difference threshold for strong matches.
- * When the top score exceeds the second best by more than this value,
- * only the highest scoring result is shown.
- * @type {number}
- */
-const DROP_OFF_THRESHOLD = 0.4;
-
-/**
- * Select matches to render based on similarity scores.
- *
- * @param {Array<{score:number}>} strongMatches - Results meeting the similarity threshold.
- * @param {Array<{score:number}>} weakMatches - Results below the threshold.
- * @returns {Array} Matches chosen for display.
- */
-export function selectMatches(strongMatches, weakMatches) {
-  if (strongMatches.length > 0) {
-    if (
-      strongMatches.length > 1 &&
-      strongMatches[0].score - strongMatches[1].score > DROP_OFF_THRESHOLD
-    ) {
-      return [strongMatches[0]];
-    }
-    return strongMatches;
-  }
-  return weakMatches.slice(0, 3);
-}
 
 /**
  * Load surrounding context for a search result element.
@@ -68,69 +42,6 @@ async function loadResultContext(el) {
 }
 
 /**
- * Load the MiniLM feature extractor on first use.
- *
- * @pseudocode
- * 1. Return the cached `extractor` when available.
- * 2. Dynamically import the Transformers.js `pipeline` helper.
- * 3. Instantiate a quantized feature-extraction pipeline with the MiniLM model
- *    and store it.
- *    - On failure, log the error, reset `extractor` to `null`, and rethrow.
- * 4. Return the initialized `extractor`.
- *
- * @returns {Promise<any>} The feature extraction pipeline instance.
- */
-async function getExtractor() {
-  if (!extractor) {
-    try {
-      const { pipeline } = await import(
-        "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0/dist/transformers.min.js"
-      );
-      extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
-        quantized: true
-      });
-    } catch (error) {
-      console.error("Model failed to load", error);
-      extractor = null;
-      throw error;
-    }
-  }
-  return extractor;
-}
-
-/**
- * Format a file path string for display in the Source column.
- * Each path segment appears on a new line.
- *
- * @param {string} source - File path like "design/foo/bar.md".
- * @returns {DocumentFragment} Fragment with line breaks between segments.
- */
-export function formatSourcePath(source) {
-  const fragment = document.createDocumentFragment();
-  source.split("/").forEach((part, idx, arr) => {
-    const span = document.createElement("span");
-    span.textContent = part;
-    fragment.appendChild(span);
-    if (idx < arr.length - 1) {
-      fragment.appendChild(document.createElement("br"));
-    }
-  });
-  return fragment;
-}
-
-/**
- * Format tag arrays for display.
- *
- * @param {string[]} tags - Tag names.
- * @returns {string} Comma separated tag string.
- */
-export function formatTags(tags) {
-  return Array.isArray(tags) ? tags.join(", ") : "";
-}
-
-/**
-
-/**
  * Handle the vector search form submission.
  *
  * @pseudocode
@@ -144,18 +55,13 @@ export function formatTags(tags) {
  *    pass them to `findMatches` when fetching results.
  * 6. Split matches by `SIMILARITY_THRESHOLD` into strong and weak groups.
  *    - When multiple strong matches exist, compare the top two scores and keep
- *      only the first when the difference exceeds `DROP_OFF_THRESHOLD`.
+ *      only the first when the difference exceeds the drop-off threshold.
  * 7. Hide the spinner and handle empty or missing embeddings cases.
  * 8. Build a results table, highlighting query terms in each snippet.
  *    - Add a `top-match` class to the first row and color-code the Score cell.
  *    - When no strong matches exist, show a warning and display up to three weak matches.
  * 9. Attach handlers to load surrounding context on result activation.
  * 10. On error, log the issue, hide the spinner, and display a fallback message.
- *
- * @param {Event} event - The submit event from the form.
- */
-/**
- * Handle the vector search form submission.
  *
  * @param {Event} event - The submit event from the form.
  */
@@ -342,14 +248,6 @@ export async function init() {
       form.requestSubmit();
     }
   });
-}
-
-/**
- * Inject a custom extractor for testing.
- * @param {any} model - Mock extractor to use.
- */
-export function __setExtractor(model) {
-  extractor = model;
 }
 
 onDomReady(init);

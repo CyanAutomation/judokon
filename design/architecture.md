@@ -45,6 +45,10 @@ import { buildMenu, setupHamburger } from "../helpers/api/navigation.js";
 - `buildMenu(gameModes, { orientation })` returns the created menu element.
 - `setupHamburger(breakpoint?)` inserts a toggle button and returns `{button, list}`.
 
+### helpers/vector search
+
+Vector-search pages import DOM-free utilities from `helpers/api/vectorSearchPage.js` for match selection, tag formatting, and loading the MiniLM extractor. This keeps page scripts focused on wiring the DOM.
+
 ---
 
 ## 📦 data/
