@@ -53,6 +53,10 @@ import { buildMenu, setupHamburger } from "../helpers/api/navigation.js";
 
 Vector-search pages import DOM-free utilities from `helpers/api/vectorSearchPage.js` for match selection, tag formatting, and loading the MiniLM extractor. This keeps page scripts focused on wiring the DOM.
 
+### helpers/country service
+
+`helpers/api/countryService.js` centralizes country code lookups and flag URL generation. It loads `countryCodeMapping.json` with caching and persists the mapping through `storage.js`. UI modules like `helpers/country/codes.js` and `helpers/country/list.js` call `loadCountryMapping`, `getCountryName`, and `getFlagUrl` so country data flows from the data file through the service into the rendered flag buttons.
+
 ---
 
 ## 📦 data/
