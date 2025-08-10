@@ -2,20 +2,18 @@
  * Page wrapper for Classic Battle mode.
  *
  * @pseudocode
- * 1. Import battle helpers, settings loader and DOM ready utility.
+ * 1. Import battle helpers and DOM ready utility.
  * 2. Create a shared `battleStore` and expose it on `window`.
  * 3. Define `enableStatButtons` to toggle disabled state on all stat buttons.
  * 4. Define `startRoundWrapper` that:
  *    a. Disables stat buttons.
  *    b. Calls `startRound` from `classicBattle.js`.
- *    c. Waits for the Mystery card to render using `waitForComputerCard`.
- *    d. In simulated opponent mode, select a stat via `simulateOpponentStat`
- *       and await `handleStatSelection`; otherwise re-enable stat buttons.
+ *    c. Waits for the Mystery card to render using `waitForComputerCard` then
+ *       re-enables stat buttons.
  * 5. Define `setupClassicBattlePage` to:
  *    a. Load feature flags and set `data-*` attributes on `#battle-area`.
  *    b. Attach click and keyboard listeners on stat buttons that call
- *       `handleStatSelection` and display a snackbar with the chosen stat when
- *       not in simulated opponent mode.
+ *       `handleStatSelection` and display a snackbar with the chosen stat.
  *    c. Set `window.startRoundOverride` to `startRoundWrapper` so the battle
  *       module uses it for subsequent rounds.
  *    d. Toggle the debug panel and viewport simulation flags.
@@ -28,10 +26,9 @@
  * 6. Execute `setupClassicBattlePage` with `onDomReady`.
  */
 import { createBattleStore, startRound } from "./classicBattle/roundManager.js";
-import { handleStatSelection, simulateOpponentStat } from "./classicBattle/selectionHandler.js";
+import { handleStatSelection } from "./classicBattle/selectionHandler.js";
 import { onDomReady } from "./domReady.js";
 import { waitForComputerCard } from "./battleJudokaPage.js";
-import { loadSettings } from "./settingsStorage.js";
 import { initTooltips } from "./tooltip.js";
 import { setTestMode } from "./testModeUtils.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
@@ -55,19 +52,11 @@ const battleStore = createBattleStore();
 window.battleStore = battleStore;
 window.skipBattlePhase = skipCurrentPhase;
 export const getBattleStore = () => battleStore;
-let simulatedOpponentMode = false;
-let aiDifficulty = "easy";
-
 async function startRoundWrapper() {
   enableStatButtons(false);
   await startRound(battleStore);
   await waitForComputerCard();
-  if (simulatedOpponentMode) {
-    const stat = simulateOpponentStat(aiDifficulty);
-    await handleStatSelection(battleStore, stat);
-  } else {
-    enableStatButtons(true);
-  }
+  enableStatButtons(true);
 }
 
 function setupNextButton() {
@@ -119,16 +108,8 @@ export async function setupClassicBattlePage() {
   const statButtons = document.querySelectorAll("#stat-buttons button");
   setupNextButton();
 
-  const settings = await safeLoadSettings();
   toggleInspectorPanels(isEnabled("enableCardInspector"));
-
-  simulatedOpponentMode = isEnabled("simulatedOpponentMode");
-  aiDifficulty = determineDifficulty(settings);
-  if (simulatedOpponentMode) {
-    enableStatButtons(false);
-  } else {
-    wireStatButtons(statButtons);
-  }
+  wireStatButtons(statButtons);
 
   const battleArea = document.getElementById("battle-area");
   updateBattleAreaDataset(battleArea);
@@ -147,14 +128,6 @@ export async function setupClassicBattlePage() {
   await initTooltips();
   watchBattleOrientation();
   maybeShowStatHint();
-}
-
-function determineDifficulty(settings) {
-  const params = new URLSearchParams(window.location.search);
-  const paramDifficulty = params.get("difficulty");
-  if (["easy", "medium", "hard"].includes(paramDifficulty)) return paramDifficulty;
-  if (typeof settings.aiDifficulty === "string") return settings.aiDifficulty;
-  return aiDifficulty;
 }
 
 function wireStatButtons(statButtons) {
@@ -184,8 +157,6 @@ function updateBattleAreaDataset(battleArea) {
   battleArea.dataset.mode = "classic";
   battleArea.dataset.randomStat = String(isEnabled("randomStatMode"));
   battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
-  battleArea.dataset.simulatedOpponent = String(simulatedOpponentMode);
-  battleArea.dataset.difficulty = aiDifficulty;
 }
 
 function applyFeatureFlagListeners(battleArea, banner) {
@@ -222,14 +193,6 @@ function maybeShowStatHint() {
     localStorage.setItem("statHintShown", "true");
   } catch {
     // ignore localStorage errors
-  }
-}
-
-async function safeLoadSettings() {
-  try {
-    return await loadSettings();
-  } catch {
-    return { featureFlags: {} };
   }
 }
 
