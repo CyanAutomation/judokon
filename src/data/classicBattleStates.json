@@ -50,7 +50,7 @@
     "triggers": [
       { "on": "outcome=winP1", "target": "roundOver" },
       { "on": "outcome=winP2", "target": "roundOver" },
-      { "on": "outcome=draw",  "target": "roundOver" },
+      { "on": "outcome=draw", "target": "roundOver" },
       { "on": "interrupt", "target": "interruptRound" }
     ]
   },
@@ -58,9 +58,18 @@
     "id": 6,
     "name": "roundOver",
     "description": "Executes transfers (winner takes both; draw sends both to bottom), updates score, flips next starter.",
-    "onEnter": ["apply:cardTransfers", "update:score", "set:nextStartingPlayer", "update:UIRoundSummary"],
+    "onEnter": [
+      "apply:cardTransfers",
+      "update:score",
+      "set:nextStartingPlayer",
+      "update:UIRoundSummary"
+    ],
     "triggers": [
-      { "on": "matchPointReached", "target": "matchDecision", "guard": "winnerHas10Wins || noCardsLeft" },
+      {
+        "on": "matchPointReached",
+        "target": "matchDecision",
+        "guard": "winnerHas10Wins || noCardsLeft"
+      },
       { "on": "continue", "target": "cooldown" },
       { "on": "interrupt", "target": "interruptRound" }
     ]
@@ -111,8 +120,6 @@
     "name": "interruptMatch",
     "description": "Match interrupted (quit from lobby or critical error). Cleanly tears down match.",
     "onEnter": ["teardown:matchContext", "log:analyticsInterruptMatch"],
-    "triggers": [
-      { "on": "toLobby", "target": "waitingForMatchStart" }
-    ]
+    "triggers": [{ "on": "toLobby", "target": "waitingForMatchStart" }]
   }
 ]
