@@ -172,7 +172,7 @@ describe("classicBattlePage simulated opponent mode", () => {
     btn.dispatchEvent(new Event("click", { bubbles: true }));
     next.dispatchEvent(new Event("click", { bubbles: true }));
     expect(handleStatSelection).toHaveBeenCalledTimes(calls);
-    expect(btn.disabled).toBe(true);
+    expect(btn.classList.contains("disabled")).toBe(true);
   });
 });
 
