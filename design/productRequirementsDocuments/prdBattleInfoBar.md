@@ -39,7 +39,7 @@ The round message, timer, and score now sit directly inside the page header rath
 | **P2**   | Countdown Timer        | Display countdown to next round with fallback for server sync                                                                                                                                                                              |
 | **P2**   | User Action Prompt     | Prompt player for input and hide after interaction                                                                                                                                                                                         |
 | **P3**   | Responsive Layout      | Adapt layout for small screens and collapse content as needed                                                                                                                                                                              |
-| **P3**   | Accessibility Features | Ensure text contrast, screen reader compatibility (via `role="status"` on messages and timers), minimum touch target size, and keyboard navigation for stat, Next Round, and Quit controls (see [Classic Battle PRD](prdClassicBattle.md)) |
+| **P3**   | Accessibility Features | Ensure text contrast, screen reader compatibility (via `role="status"` on messages and timers), minimum touch target size, and keyboard navigation for stat, Next, and Quit controls. The **Next** button advances rounds and skips timers (see [Classic Battle PRD](prdClassicBattle.md)) |
 | **P2**   | Edge Case Handling     | Fallback messages for backend sync failure and display issues                                                                                                                                                                              |
 
 ---
@@ -55,7 +55,7 @@ The round message, timer, and score now sit directly inside the page header rath
 - After the player selects a stat, the Info Bar shows "Opponent is choosing..." until the opponent's stat is revealed.
 - Top bar content adapts responsively to different screen sizes and orientations. <!-- Partially implemented: stacking/truncation CSS present, but some edge cases pending -->
 - All messages meet minimum contrast ratio of **4.5:1** and are screen reader compatible. Run `npm run check:contrast` to audit these colors. <!-- Implemented: screen reader labels via `aria-live` and `role="status"`; contrast via CSS variables -->
-- **All interactive elements, including stat, Next Round, and Quit buttons, meet minimum touch target size (≥44px) and support keyboard navigation with Enter or Space.** <!-- Implemented: see CSS min-width/min-height and stat button logic -->
+- **All interactive elements, including stat, Next, and Quit buttons, meet minimum touch target size (≥44px) and support keyboard navigation with Enter or Space. The Next button doubles as the timer skip and round progression control.** <!-- Implemented: see CSS min-width/min-height and stat button logic -->
 
 ---
 
@@ -127,7 +127,7 @@ The round message, timer, and score now sit directly inside the page header rath
   - [ ] 4.1 Ensure text contrast meets 4.5:1 ratio. Verify with `npm run check:contrast`.
   - [x] 4.2 Add screen reader labels for dynamic messages (`aria-live="polite"` and `role="status"`)
   - [x] 4.3 Ensure all interactive elements have minimum 44px touch targets (CSS min-width/min-height present)
-  - [x] 4.4 Ensure all interactive elements support keyboard navigation; tests cover stat, Next Round, and Quit controls
+  - [x] 4.4 Ensure all interactive elements support keyboard navigation; tests cover stat, Next, and Quit controls
   - [x] 4.5 Announce score and timer updates via `aria-live` for screen readers (see [Classic Battle PRD](prdClassicBattle.md)) <!-- Implemented: aria-live regions in battleJudoka.html -->
   - [x] 4.6 Provide high-contrast theme for Info Bar elements <!-- Implemented: `[data-theme="high-contrast"]` in base.css -->
 

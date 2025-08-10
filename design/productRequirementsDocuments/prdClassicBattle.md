@@ -94,11 +94,11 @@ This feedback highlights why Classic Battle is needed now: new players currently
 | **P2**   | Tie Handling            | Show tie message; round ends without score change; continue to next round.                                                                                                       |
 | **P2**   | Player Quit Flow        | Allow player to exit match early with confirmation; counts as a loss.                                                                                                            |
 | **P3**   | AI Stat Selection Logic | AI stat choice follows difficulty setting (`easy` random, `medium` picks stats ≥ average, `hard` selects highest stat). Difficulty can be set via Settings or `?difficulty=` URL param; defaults to `easy`. |
-| **P3**   | Skip Control            | Optional control that bypasses round and cooldown timers so testers can fast-forward gameplay or users can quickly move through a match. |
+| **P3**   | Next Button             | Single control that starts the next round and, when pressed during stat selection or cooldown, skips the remaining timer so gameplay can move forward immediately. |
 
 **Additional Behavioral Requirements:**
 
-- Behavior on tie rounds: round ends with a message explaining the tie and an option to start the next round.
+ - Behavior on tie rounds: round ends with a message explaining the tie and an option to start the next round via the **Next** button.
 - Match start conditions: both players begin with a score of zero; player goes first by drawing their card.
   - Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card. **The timer is displayed in the Info Bar and the prompt appears in a snackbar.**
 - The opponent's card must always differ from the player's card for each round.
@@ -148,12 +148,12 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - Stat selection buttons sit in a center column between the two cards on screens wider than 480px; on narrow screens they appear below the cards.
   - Central score prominently displayed.
   - Tie or win/loss messages placed centrally.
-  - Clear "Next Round" button with distinct state (enabled/disabled). When disabled, the button should remain visible using the `--button-disabled-bg` token.
+  - Clear **Next** button with distinct state (enabled/disabled). When pressed while a selection or cooldown timer is active, **Next** skips the remaining time and starts the following round. When disabled, the button should remain visible using the `--button-disabled-bg` token.
   - Ensure player and opponent cards show all stats without scrolling on common desktop resolutions (e.g., 1440px width).
   - Provide a dedicated "Quit Match" button below the controls.
     Clicking it opens a confirmation modal styled like the
     **Restore Defaults** dialog from the Settings page.
-  - A small help icon (`#stat-help`) sits between the **Next Round** and
+  - A small help icon (`#stat-help`) sits between the **Next** and
     **Quit Match** buttons. It displays a tooltip explaining how to pick an
     attribute and auto-opens on first visit using the storage helper to remember the
     dismissal.
@@ -162,7 +162,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
   - **Accessibility:**
   - Minimum text contrast ratio: ≥4.5:1 (per WCAG).
   - Minimum touch target size: ≥44px. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) for the full rule.
-  - Support keyboard navigation for stat selection, match progression, and quit confirmation.
+  - Support keyboard navigation for stat selection, the **Next** button (for round progression and timer skipping), and quit confirmation.
   - Provide alt text for cards and labels readable by screen readers.
   - **All Info Bar content must be accessible and responsive as described in prdBattleInfoBar.md.**
 
@@ -184,7 +184,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - [x] 1.1 Create round loop: random card draw, stat selection, comparison
   - [x] 1.2 Implement 30-second stat selection timer with auto-selection fallback (displayed in Info Bar)
   - [x] 1.3 Handle scoring updates on win, loss, and tie
-  - [x] 1.4 Add "Next Round" and "Quit Match" buttons to controls
+  - [x] 1.4 Add "Next" (round advance/timer skip) and "Quit Match" buttons to controls
   - [x] 1.5 End match after the user-selected win target (5, 10, or 15 points; default 10) or 25 rounds
 - [ ] 2.0 Add Early Quit Functionality
   - [x] 2.1 Trigger quit confirmation when the header logo is clicked
