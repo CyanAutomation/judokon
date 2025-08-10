@@ -37,7 +37,7 @@ export class BattleStateMachine {
     const machine = new BattleStateMachine(byName, initName, onEnterMap, context, onTransition);
     if (machine.onTransition) {
       try {
-        await machine.onTransition(initName);
+        await machine.onTransition({ from: null, to: initName, event: "init" });
       } catch {}
     }
     await machine.#runOnEnter(initName);
@@ -55,10 +55,11 @@ export class BattleStateMachine {
     if (!match) return;
     const target = match.target;
     if (!this.statesByName.has(target)) return;
+    const from = this.current;
     this.current = target;
     if (this.onTransition) {
       try {
-        await this.onTransition(target);
+        await this.onTransition({ from, to: target, event: eventName });
       } catch {}
     }
     await this.#runOnEnter(target, payload);

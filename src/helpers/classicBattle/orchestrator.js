@@ -53,10 +53,12 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
     }
   };
 
-  const onTransition = async (name) => {
+  const onTransition = async ({ from, to, event }) => {
     try {
       if (typeof window !== "undefined") {
-        window.__classicBattleState = name;
+        window.__classicBattleState = to;
+        if (from) window.__classicBattlePrevState = from;
+        if (event) window.__classicBattleLastEvent = event;
       }
     } catch {}
     updateDebugPanel();

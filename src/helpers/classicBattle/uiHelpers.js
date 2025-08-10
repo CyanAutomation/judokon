@@ -101,6 +101,8 @@ export function updateDebugPanel() {
   try {
     if (typeof window !== "undefined" && window.__classicBattleState) {
       state.machineState = window.__classicBattleState;
+      if (window.__classicBattlePrevState) state.machinePrevState = window.__classicBattlePrevState;
+      if (window.__classicBattleLastEvent) state.machineLastEvent = window.__classicBattleLastEvent;
     }
   } catch {}
   pre.textContent = JSON.stringify(state, null, 2);
