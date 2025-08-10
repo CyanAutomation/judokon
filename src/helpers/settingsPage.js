@@ -7,7 +7,7 @@
  * 3. Toggle the `.simulate-viewport` class based on the viewport flag.
  * 4. Initialize the page controls and event listeners.
  */
-import { loadSettings, updateSetting, resetSettings } from "./settingsUtils.js";
+import { loadSettings, resetSettings } from "./settingsUtils.js";
 import { loadNavigationItems, loadGameModes } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
 import { applyDisplayMode } from "./displayMode.js";
@@ -20,9 +20,6 @@ import { createButton } from "../components/Button.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
-import { populateNavbar } from "./navigationBar.js";
-import { reset as resetNavigationCache } from "./navigationCache.js";
-import { showSnackbar } from "./showSnackbar.js";
 import { isEnabled } from "./featureFlags.js";
 
 import { applyInitialControlValues } from "./settings/applyInitialValues.js";
@@ -30,6 +27,8 @@ import { attachToggleListeners } from "./settings/listenerUtils.js";
 import { renderGameModeSwitches } from "./settings/gameModeSwitches.js";
 import { renderFeatureFlagSwitches } from "./settings/featureFlagSwitches.js";
 import { setupSectionToggles } from "./settings/sectionToggle.js";
+import { makeHandleUpdate } from "./settings/makeHandleUpdate.js";
+import { addNavResetButton } from "./settings/addNavResetButton.js";
 
 /**
  * Build a confirmation modal for restoring default settings.
@@ -167,41 +166,8 @@ function makeErrorPopupHandler(errorPopup) {
   };
 }
 
-function makeHandleUpdate(setCurrentSettings, showErrorAndRevert) {
-  return function handleUpdate(key, value, revert) {
-    return updateSetting(key, value)
-      .then((updated) => {
-        setCurrentSettings(updated);
-      })
-      .catch((err) => {
-        console.error("Failed to update setting", err);
-        showErrorAndRevert(revert);
-      });
-  };
-}
-
 function clearToggles(container) {
   container.querySelectorAll(".settings-item").forEach((el) => el.remove());
-}
-
-function addNavResetButton() {
-  const section = document.getElementById("advanced-settings-content");
-  const existing = document.getElementById("nav-cache-reset-button");
-  existing?.parentElement?.remove();
-  if (!section) return;
-  if (!isEnabled("navCacheResetButton")) return;
-  const wrapper = document.createElement("div");
-  wrapper.className = "settings-item";
-  const btn = createButton("Reset Navigation Cache", {
-    id: "nav-cache-reset-button"
-  });
-  wrapper.appendChild(btn);
-  section.appendChild(wrapper);
-  btn.addEventListener("click", () => {
-    resetNavigationCache();
-    populateNavbar();
-    showSnackbar("Navigation cache cleared");
-  });
 }
 
 function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
@@ -234,37 +200,51 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
 }
 
 /**
- * Load saved settings and render the Settings page UI.
+ * Render the Settings page with supplied data.
  *
  * @pseudocode
- * 1. Call `setupSectionToggles` so collapsible sections work immediately.
- * 2. Begin loading navigation items and tooltip text in parallel.
- * 3. Await settings, apply display/motion prefs, and bind control listeners.
- * 4. Resolve navigation and tooltip requests with `Promise.all` on wrapped promises.
- * 5. If navigation fails, show the settings error and fall back to minimal modes.
- * 6. If tooltip load fails, warn and fall back to an empty map.
- * 7. Render switches and apply tooltips.
- * 8. On error, show a fallback message to the user.
+ * 1. Enable section toggles via `setupSectionToggles`.
+ * 2. Apply initial display, motion, and feature settings.
+ * 3. Initialize controls and render switches using provided data.
+ * 4. Return the updated `document.body` for inspection.
+ *
+ * @param {Settings} settings - Current settings.
+ * @param {Array} gameModes - List of available game modes.
+ * @param {object} tooltipMap - Map of tooltip text.
+ * @returns {HTMLElement} Updated DOM root.
+ */
+export function renderSettingsUI(settings, gameModes, tooltipMap) {
+  setupSectionToggles();
+  applyInitialSettings(settings);
+  const controlsApi = initializeControls(settings);
+  controlsApi.renderSwitches(gameModes, tooltipMap);
+  return document.body;
+}
+
+/**
+ * Load data and render the Settings page UI.
+ *
+ * @pseudocode
+ * 1. Start loading navigation items and tooltips in parallel.
+ * 2. Load saved settings.
+ * 3. Resolve navigation items and tooltips with `Promise.all` on wrapped promises.
+ * 4. Invoke `renderSettingsUI` with the retrieved data.
+ * 5. On error, show a fallback message to the user.
  *
  * @returns {Promise<void>}
  */
 async function initializeSettingsPage() {
   try {
-    setupSectionToggles();
     const gameModesPromise = settled(loadNavigationItems());
     const tooltipMapPromise = settled(getTooltips());
     const settings = await loadSettings();
-    applyInitialSettings(settings);
-    const controlsApi = initializeControls(settings);
     const [gameModesResult, tooltipMapResult] = await Promise.all([
       gameModesPromise,
       tooltipMapPromise
     ]);
-
     const gameModes = await resolveGameModes(gameModesResult);
-
     const tooltipMap = resolveTooltipMap(tooltipMapResult);
-    controlsApi.renderSwitches(gameModes, tooltipMap);
+    renderSettingsUI(settings, gameModes, tooltipMap);
   } catch (error) {
     console.error("Error loading settings page:", error);
     showLoadSettingsError();
