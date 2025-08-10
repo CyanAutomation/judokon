@@ -1,5 +1,5 @@
 import { onDomReady } from "./domReady.js";
-import { quitMatch } from "./classicBattle.js";
+import { quitMatch } from "./classicBattle/quitModal.js";
 
 /**
  * Attach quit confirmation to the header logo in Classic Battle.

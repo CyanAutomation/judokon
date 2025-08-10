@@ -27,12 +27,8 @@
  *       `data-test-mode` attribute when settings change.
  * 6. Execute `setupClassicBattlePage` with `onDomReady`.
  */
-import {
-  createBattleStore,
-  startRound,
-  handleStatSelection,
-  simulateOpponentStat
-} from "./classicBattle.js";
+import { createBattleStore, startRound } from "./classicBattle/roundManager.js";
+import { handleStatSelection, simulateOpponentStat } from "./classicBattle/selectionHandler.js";
 import { onDomReady } from "./domReady.js";
 import { waitForComputerCard } from "./battleJudokaPage.js";
 import { loadSettings } from "./settingsUtils.js";

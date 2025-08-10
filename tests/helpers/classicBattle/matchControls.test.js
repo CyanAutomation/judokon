@@ -92,8 +92,9 @@ describe("classicBattle button handlers", () => {
     homeLink.dataset.testid = "home-link";
     header.appendChild(homeLink);
     const battleMod = await import("../../../src/helpers/classicBattle.js");
+    const quitMod = await import("../../../src/helpers/classicBattle/quitModal.js");
     const store = (window.battleStore = battleMod.createBattleStore());
-    const quitSpy = vi.spyOn(battleMod, "quitMatch");
+    const quitSpy = vi.spyOn(quitMod, "quitMatch");
     await import("../../../src/helpers/setupClassicBattleHomeLink.js");
     const beforeHref = window.location.href;
     homeLink.click();
