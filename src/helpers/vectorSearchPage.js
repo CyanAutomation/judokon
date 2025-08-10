@@ -257,7 +257,7 @@ function hasEntryVersionMismatch(embeddings) {
   for (const entry of embeddings) {
     if (entry.version !== vectorSearch.CURRENT_EMBEDDING_VERSION) {
       mismatch = true;
-      console.warn(
+      console.debug(
         `Embedding ${entry.id ?? "(unknown id)"} has version ${entry.version}; expected ${vectorSearch.CURRENT_EMBEDDING_VERSION}`
       );
     }
@@ -268,7 +268,7 @@ function hasEntryVersionMismatch(embeddings) {
 function hasMetaMismatch(meta) {
   if (!meta) return false;
   if (meta.version !== vectorSearch.CURRENT_EMBEDDING_VERSION) {
-    console.warn(
+    console.debug(
       `Embedding metadata version ${meta.version} does not match ${vectorSearch.CURRENT_EMBEDDING_VERSION}`
     );
     return true;

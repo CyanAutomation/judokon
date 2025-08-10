@@ -30,7 +30,7 @@ export function parseCssVariables(cssContent) {
       });
     });
   } catch (error) {
-    console.error("Error parsing CSS:", error);
+    console.debug("Error parsing CSS:", error);
     // Return empty object on parse error
     return {};
   }

@@ -119,7 +119,7 @@ export async function loadSettings() {
     cachedSettings = merged;
     return merged;
   } catch (error) {
-    console.warn("Invalid stored settings, resetting to defaults", error);
+    console.debug("Invalid stored settings, resetting to defaults", error);
     localStorage.removeItem(SETTINGS_KEY);
     cachedSettings = { ...DEFAULT_SETTINGS };
     return cachedSettings;

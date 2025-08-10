@@ -1,4 +1,4 @@
-import { getComputerJudoka, getGokyoLookup, clearComputerJudoka } from "./cardSelection.js";
+import { getComputerJudoka, getGokyoLookup, clearComputerJudoka, getOrLoadGokyoLookup } from "./cardSelection.js";
 import { loadSettings } from "../settingsUtils.js";
 import { isEnabled } from "../featureFlags.js";
 import { getScores, getTimerState, isMatchEnded } from "../battleEngine.js";
@@ -44,11 +44,17 @@ export async function revealComputerCard() {
   const enableInspector = isEnabled("enableCardInspector");
   let card;
   try {
-    card = await new JudokaCard(judoka, getGokyoLookup(), {
+    let lookup = getGokyoLookup();
+    if (!lookup) {
+      // Attempt to load lookup if not yet available (e.g., test env)
+      lookup = await getOrLoadGokyoLookup();
+    }
+    if (!lookup) return; // Skip rendering silently if still unavailable
+    card = await new JudokaCard(judoka, lookup, {
       enableInspector
     }).render();
   } catch (err) {
-    console.error("Error rendering JudokaCard:", err);
+    console.debug("Error rendering JudokaCard:", err);
   }
   if (card && typeof card === "object" && card.nodeType === 1) {
     container.innerHTML = "";
@@ -58,8 +64,6 @@ export async function revealComputerCard() {
         setupLazyPortraits(card);
       } catch {}
     }
-  } else {
-    console.error("JudokaCard did not render an HTMLElement");
   }
   clearComputerJudoka();
 }

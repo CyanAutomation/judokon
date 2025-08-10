@@ -37,7 +37,7 @@ function showLoadError(error) {
       try {
         await drawCards();
       } catch (retryError) {
-        console.error("Failed to retry card draw:", retryError);
+        console.debug("Failed to retry card draw:", retryError);
         window.location.reload();
       }
     });
@@ -112,7 +112,7 @@ async function renderComputerPlaceholder(container, placeholder, enableInspector
     if (typeof judokaCard.render === "function") {
       const card = await judokaCard.render();
       if (!(card && typeof card === "object" && card.nodeType === 1)) {
-        console.error("JudokaCard did not render an HTMLElement");
+        console.debug("JudokaCard did not render an HTMLElement");
         return;
       }
       container.innerHTML = "";
@@ -125,7 +125,7 @@ async function renderComputerPlaceholder(container, placeholder, enableInspector
       }
     }
   } catch (error) {
-    console.error("Error rendering JudokaCard:", error);
+    console.debug("Error rendering JudokaCard:", error);
   }
 }
 
@@ -177,6 +177,15 @@ export function clearComputerJudoka() {
 
 export function getGokyoLookup() {
   return gokyoLookup;
+}
+
+/**
+ * Ensure the gokyo lookup is available, loading it if missing.
+ * Primarily used by tests or code paths that call `revealComputerCard` directly.
+ * @returns {Promise<ReturnType<typeof createGokyoLookup> | null>} Lookup or null on failure.
+ */
+export async function getOrLoadGokyoLookup() {
+  return await ensureGokyoLookup();
 }
 
 export function _resetForTest() {

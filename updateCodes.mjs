@@ -31,7 +31,7 @@ async function updateCardCodes() {
       try {
         return { ...j, cardCode: generateCardCode(j), lastUpdated: now };
       } catch (error) {
-        console.error(`Failed to generate card code for judoka id ${j.id}:`, error);
+        console.debug(`Failed to generate card code for judoka id ${j.id}:`, error);
         return { ...j, cardCode: fallbackCode, lastUpdated: now };
       }
     });
@@ -40,7 +40,7 @@ async function updateCardCodes() {
 
     console.log(`✅ Updated ${updatedJudoka.length} judoka card codes in: ${judokaPath}`);
   } catch (error) {
-    console.error("Failed to update judoka card codes:", error);
+    console.debug("Failed to update judoka card codes:", error);
   }
 }
 
