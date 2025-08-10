@@ -3,11 +3,13 @@ import { describe, it, expect, vi } from "vitest";
 describe("browseJudokaPage helpers", () => {
   it("setupCountryToggle toggles panel and loads flags once", async () => {
     const toggleCountryPanel = vi.fn();
-    const createCountrySlider = vi.fn();
-
-    vi.doMock("../../src/helpers/domReady.js", () => ({
-      onDomReady: vi.fn()
-    }));
+    const createCountrySlider = vi.fn(async (container) => {
+      const first = document.createElement("button");
+      first.className = "flag-button";
+      const second = document.createElement("button");
+      second.className = "flag-button";
+      container.append(first, second);
+    });
 
     vi.doMock("../../src/helpers/countryPanel.js", () => ({
       toggleCountryPanel,
@@ -17,29 +19,27 @@ describe("browseJudokaPage helpers", () => {
       createCountrySlider
     }));
 
-    const { setupCountryToggle } = await import("../../src/helpers/browseJudokaPage.js");
+    const { setupCountryToggle } = await import("../../src/helpers/browse/setupCountryToggle.js");
 
     const toggleBtn = document.createElement("button");
     const panel = document.createElement("div");
     const list = document.createElement("div");
-    const first = document.createElement("button");
-    first.className = "flag-button";
-    const second = document.createElement("button");
-    second.className = "flag-button";
-    list.append(first, second);
     document.body.append(toggleBtn, panel, list);
 
-    setupCountryToggle(toggleBtn, panel, list);
+    const countriesLoaded = setupCountryToggle(toggleBtn, panel, list);
 
     toggleBtn.click();
     await Promise.resolve();
     expect(toggleCountryPanel).toHaveBeenCalledWith(toggleBtn, panel);
     expect(createCountrySlider).toHaveBeenCalledTimes(1);
+    expect(countriesLoaded()).toBe(true);
 
     toggleBtn.click();
     await Promise.resolve();
     expect(createCountrySlider).toHaveBeenCalledTimes(1);
 
+    const first = list.querySelectorAll("button.flag-button")[0];
+    const second = list.querySelectorAll("button.flag-button")[1];
     first.focus();
     const arrowEvent = new KeyboardEvent("keydown", { key: "ArrowRight" });
     panel.dispatchEvent(arrowEvent);
@@ -83,16 +83,12 @@ describe("browseJudokaPage helpers", () => {
   it("setupCountryFilter filters judoka and clears selection", async () => {
     const toggleCountryPanel = vi.fn();
 
-    vi.doMock("../../src/helpers/domReady.js", () => ({
-      onDomReady: vi.fn()
-    }));
-
     vi.doMock("../../src/helpers/countryPanel.js", () => ({
       toggleCountryPanel,
       toggleCountryPanelMode: vi.fn()
     }));
 
-    const { setupCountryFilter } = await import("../../src/helpers/browseJudokaPage.js");
+    const { setupCountryFilter } = await import("../../src/helpers/browse/setupCountryFilter.js");
 
     const list = document.createElement("div");
     const allBtn = document.createElement("button");
