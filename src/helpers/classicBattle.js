@@ -231,7 +231,7 @@ function createQuitConfirmation(store, onConfirm) {
     // In browsers, navigate to home; in jsdom, history.replaceState avoids Not Implemented errors
     try {
       window.location.href = "../../index.html";
-    } catch (_e) {
+    } catch {
       try {
         const target = new URL("../../index.html", window.location.href).href;
         if (typeof history !== "undefined" && typeof history.replaceState === "function") {
