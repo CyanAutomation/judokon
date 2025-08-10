@@ -7,10 +7,8 @@ describe("resetGame reattaches Next button handler", () => {
   });
 
   it("clones Next button and wires onNextButtonClick", async () => {
-    const onNextButtonClick = vi.fn();
-
     vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
-      onNextButtonClick
+      onNextButtonClick: vi.fn()
     }));
 
     // Original Next button before reset
@@ -20,6 +18,7 @@ describe("resetGame reattaches Next button handler", () => {
     document.body.appendChild(btn);
 
     const { resetGame } = await import("../../../src/helpers/classicBattle/roundManager.js");
+    const timerSvc = await import("../../../src/helpers/classicBattle/timerService.js");
 
     // Act: reset replaces the button and reattaches the click handler
     resetGame();
@@ -31,6 +30,6 @@ describe("resetGame reattaches Next button handler", () => {
 
     // Clicking should invoke the reattached handler
     cloned.click();
-    expect(onNextButtonClick).toHaveBeenCalledTimes(1);
+    expect(timerSvc.onNextButtonClick).toHaveBeenCalledTimes(1);
   });
 });
