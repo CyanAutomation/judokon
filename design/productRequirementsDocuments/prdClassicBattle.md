@@ -189,29 +189,35 @@ Match interrupted from lobby or critical error. Tears down match context.
 ### Transition Table
 
 | State | Trigger | Next State | Notes |
-|-------|---------|------------|-------|
-| waitingForMatchStart | startClicked | matchStart | Player starts a new match |
-| waitingForMatchStart | interrupt | interruptMatch | Return to home |
-| matchStart | ready | roundStart | Match setup complete |
-| matchStart | interrupt / error | interruptMatch | Match aborted |
-| roundStart | cardsRevealed | waitingForPlayerAction | Cards face-up |
-| roundStart | interrupt | interruptRound | Round aborted |
-| waitingForPlayerAction | statSelected / timeout (statAutoSelect) | roundDecision | Compare stats |
-| waitingForPlayerAction | interrupt | interruptRound | Round aborted |
-| roundDecision | winPlayer / winOpponent / draw | roundOver | Outcome decided |
-| roundDecision | interrupt | interruptRound | Round aborted |
-| roundOver | matchPointReached | matchDecision | Win target met or no cards left |
-| roundOver | continue | cooldown | Move to next round |
-| roundOver | interrupt | interruptRound | Round aborted |
-| cooldown | done | roundStart | Start new round |
-| cooldown | interrupt | interruptRound | Round aborted |
-| matchDecision | finalize | matchOver | End match |
-| matchDecision | interrupt | interruptMatch | Match aborted |
-| matchOver | rematch | matchStart | Start another match |
-| matchOver | home | waitingForMatchStart | Return to main screen |
-| interruptRound | resumeLobby | waitingForMatchStart | Return to lobby |
-| interruptRound | abortMatch | matchOver | Match cancelled |
-| interruptMatch | toLobby | waitingForMatchStart | Return to lobby |
+|---|---|---|---|
+| **waitingForMatchStart** | startClicked | matchStart | Player starts a new match. |
+| waitingForMatchStart | interrupt | matchOver | Abort from lobby goes directly to end screen. |
+| **matchStart** | ready | cooldown | Match init completes, then pacing pause before first round. |
+| matchStart | interrupt / error | interruptMatch | Critical abort path. |
+| **cooldown** | ready | roundStart | Matches diagram C → D (“Ready”). |
+| cooldown | interrupt | interruptRound | Round-level abort rail. |
+| **roundStart** | cardsRevealed | waitingForPlayerAction | Cards face-up; active player set. |
+| roundStart | interrupt | interruptRound | Round-level abort rail. |
+| **waitingForPlayerAction** | statSelected | roundDecision | Player (or AI) made a choice. |
+| waitingForPlayerAction | timeout (guard: statAutoSelect) | roundDecision | Timer expired; engine auto-chooses a stat. |
+| waitingForPlayerAction | interrupt | interruptRound | Round-level abort rail. |
+| **roundDecision** | outcome=winPlayer / outcome=winOpponent / outcome=draw | roundOver | Explicit outcome event names. |
+| roundDecision | interrupt | interruptRound | Round-level abort rail. |
+| **roundOver** | matchPointReached (guard: winnerHasPointsToWin OR noCardsLeft) | matchDecision | Win target met or decks exhausted. |
+| roundOver | continue | cooldown | Proceed to pacing pause before next round. |
+| roundOver | interrupt | interruptRound | Round-level abort rail. |
+| **matchDecision** | finalize | matchOver | Outcome declared; move to end screen. |
+| matchDecision | interrupt | interruptMatch | Match-level abort rail. |
+| **matchOver** | rematch | waitingForMatchStart | Return to lobby to re-select match length. |
+| matchOver | home | waitingForMatchStart | Return to main screen. |
+| **interruptRound** | roundModifyFlag | roundModification | Enter optional admin/test branch. |
+| interruptRound | restartRound | cooldown | Re-enter round loop cleanly. |
+| interruptRound | resumeLobby | waitingForMatchStart | Exit to lobby (keep session). |
+| interruptRound | abortMatch | matchOver | Hard-cancel current match. |
+| **roundModification** | modifyRoundDecision | roundDecision | Apply edits, re-evaluate decision. |
+| roundModification | cancelModification | interruptRound | Back out without changes. |
+| **interruptMatch** | restartMatch | matchStart | Clean restart of the whole match. |
+| interruptMatch | toLobby | waitingForMatchStart | Exit to lobby. |
 
 ---
 
