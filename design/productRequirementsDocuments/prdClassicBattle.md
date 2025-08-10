@@ -111,7 +111,7 @@ The game waits for the player to choose a stat (or the AI to choose if it’s th
 
 - **Triggers:**
   - `statSelected` → **`roundDecision`**
-  - `timeout` (AI turn) → **`roundDecision`**
+  - `timeout` (statAutoSelect) → **`roundDecision`**
   - `interrupt` → **`interruptRound`**
 - **Notes:** Info Bar shows the stat-selection timer and prompt (see [prdBattleInfoBar.md](prdBattleInfoBar.md)). The UI highlights selectable stats.
 
@@ -196,9 +196,9 @@ Match interrupted from lobby or critical error. Tears down match context.
 | matchStart | interrupt / error | interruptMatch | Match aborted |
 | roundStart | cardsRevealed | waitingForPlayerAction | Cards face-up |
 | roundStart | interrupt | interruptRound | Round aborted |
-| waitingForPlayerAction | statSelected / timeout (AI turn) | roundDecision | Compare stats |
+| waitingForPlayerAction | statSelected / timeout (statAutoSelect) | roundDecision | Compare stats |
 | waitingForPlayerAction | interrupt | interruptRound | Round aborted |
-| roundDecision | outcome=winP1 / outcome=winP2 / outcome=draw | roundOver | Outcome decided |
+| roundDecision | winPlayer / winOpponent / draw | roundOver | Outcome decided |
 | roundDecision | interrupt | interruptRound | Round aborted |
 | roundOver | matchPointReached | matchDecision | Win target met or no cards left |
 | roundOver | continue | cooldown | Move to next round |
@@ -235,7 +235,7 @@ flowchart TD
     %% Decision: player acts or times out
     E --> F{Stat selected?}
     F -->|Yes| G[Round decision]
-    F -->|No, Timeout autoselect| G
+    F -->|No, Timeout statAutoSelect| G
 
     %% Decision: who won & what next
     G --> |Reveal Round Outcome| H[Round over]
