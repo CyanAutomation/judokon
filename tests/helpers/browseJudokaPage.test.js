@@ -206,6 +206,7 @@ describe("browseJudokaPage helpers", () => {
 
   it("renders a fallback card when judoka data fails to load", async () => {
     global.requestAnimationFrame = (cb) => cb();
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const fetchJson = vi.fn((url) => {
       if (url.includes("judoka.json")) {
@@ -276,5 +277,7 @@ describe("browseJudokaPage helpers", () => {
     );
     expect(carousel.querySelector(".judoka-card")).not.toBeNull();
     expect(carousel.querySelector(".error-message")).not.toBeNull();
+
+    consoleErrorSpy.mockRestore();
   });
 });
