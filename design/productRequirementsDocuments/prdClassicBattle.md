@@ -69,6 +69,51 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
+## Mermaid Diagram of Game States
+
+```mermaid
+flowchart TD
+  A([waitingForMatchStart]) -->|startClicked| B[matchStart]
+  A -->|interrupt| M[interruptMatch]
+
+  subgraph InMatch
+    direction LR
+    B -->|ready| C[roundStart]
+    C -->|cardsRevealed| D[waitingForPlayerAction]
+    C -->|interrupt| L[interruptRound]
+
+    D -->|statSelected| E[roundDecision]
+    D -->|aiTimeout| E
+    D -->|interrupt| L
+
+    E -->|winP1 / winP2 / draw| F[roundOver]
+    E -->|interrupt| L
+
+    F -->|matchPointReached| G[matchDecision]
+    F -->|continue| H[cooldown]
+    F -->|interrupt| L
+
+    H -->|done| C
+    H -->|interrupt| L
+  end
+
+  G -->|finalize| I([matchOver])
+  G -->|interrupt| M
+
+  I -->|rematch| B
+  I -->|home| A
+
+  %% Guards
+  F -- [winnerHas10Wins || noCardsLeft] --> G
+
+  %% Interrupt rails
+  L -->|resumeLobby| A
+  L -->|abortMatch| I
+  M -->|toLobby| A
+```
+
+---
+
 ## Technical Considerations
 
 - Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
