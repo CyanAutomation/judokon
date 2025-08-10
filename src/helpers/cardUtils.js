@@ -1,4 +1,4 @@
-import { createInspectorPanel } from "./cardBuilder.js";
+import { createInspectorPanel } from "./inspector/createInspectorPanel.js";
 import { debugLog } from "./debug.js";
 import { seededRandom } from "./testModeUtils.js";
 import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
