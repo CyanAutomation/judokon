@@ -15,17 +15,17 @@
     "description": "Start of the round"
   },
   {
-    "id": 3,
+    "id": 4,
     "name": "waitingForPlayerAction",
     "description": "Waiting for the player to take action"
   },
   {
-    "id": 4,
+    "id": 5,
     "name": "roundDecision",
     "description": "The decision of the round"
   },
   {
-    "id": 5,
+    "id": 6,
     "name": "roundOver",
     "description": "Round is over"
   },
