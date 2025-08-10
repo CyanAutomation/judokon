@@ -188,6 +188,8 @@ describe("setupTooltipViewerPage", () => {
       importJsonModule: vi.fn().mockResolvedValue({})
     }));
 
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+
     await import("../../src/helpers/tooltipViewerPage.js");
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -195,6 +197,8 @@ describe("setupTooltipViewerPage", () => {
     await Promise.resolve();
 
     expect(document.getElementById("tooltip-preview").textContent).toBe("File not found");
+
+    consoleError.mockRestore();
   });
 
   it("shows parse error details when JSON is invalid", async () => {
@@ -206,6 +210,8 @@ describe("setupTooltipViewerPage", () => {
       importJsonModule: vi.fn().mockResolvedValue({})
     }));
 
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+
     await import("../../src/helpers/tooltipViewerPage.js");
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -213,6 +219,8 @@ describe("setupTooltipViewerPage", () => {
     await Promise.resolve();
 
     expect(document.getElementById("tooltip-preview").textContent).toBe("Line 3, Column 15");
+
+    consoleError.mockRestore();
   });
 
   it("adds warning icon to invalid key names", async () => {
