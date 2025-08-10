@@ -50,7 +50,7 @@ beforeEach(() => {
     showResult: vi.fn()
   }));
 
-  vi.mock("../../../src/helpers/battleEngine.js", () => ({
+  vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
     handleStatSelection: vi.fn().mockReturnValue({ message: "", matchEnded: false }),
     quitMatch: vi.fn(),
     pauseTimer: vi.fn(),

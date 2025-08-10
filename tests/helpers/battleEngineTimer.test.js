@@ -34,7 +34,7 @@ describe("timer defaults", () => {
       };
     });
 
-    const { startRound, _resetForTest } = await import("../../src/helpers/battleEngine.js");
+    const { startRound, _resetForTest } = await import("../../src/helpers/battleEngineFacade.js");
     const timerUtils = await import("../../src/helpers/timerUtils.js");
     _resetForTest();
 
@@ -76,7 +76,7 @@ describe("pause and resume timer", () => {
     });
 
     const { startRound, pauseTimer, resumeTimer, getTimerState, _resetForTest } = await import(
-      "../../src/helpers/battleEngine.js"
+      "../../src/helpers/battleEngineFacade.js"
     );
     _resetForTest();
     await startRound(

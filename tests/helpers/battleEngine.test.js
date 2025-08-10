@@ -31,7 +31,7 @@ describe("BattleEngine timer interactions", () => {
       pauseTimer,
       resumeTimer,
       getTimerState
-    } = await import("../../src/helpers/battleEngine.js");
+    } = await import("../../src/helpers/battleEngineFacade.js");
 
     await start(vi.fn(), vi.fn(), 10);
     expect(startRound).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), 10);

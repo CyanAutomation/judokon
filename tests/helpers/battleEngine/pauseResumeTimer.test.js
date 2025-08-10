@@ -36,7 +36,7 @@ beforeEach(() => {
 describe("pauseTimer/resumeTimer", () => {
   it("resumes countdown from paused remaining time", async () => {
     const { startRound, pauseTimer, resumeTimer, getTimerState, _resetForTest } = await import(
-      "../../../src/helpers/battleEngine.js"
+      "../../../src/helpers/battleEngineFacade.js"
     );
     _resetForTest();
 

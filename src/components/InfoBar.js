@@ -14,7 +14,7 @@
  * @returns {HTMLDivElement} The info bar element.
  */
 import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
-import { startCoolDown, watchForDrift } from "../helpers/battleEngine.js";
+import { startCoolDown, watchForDrift } from "../helpers/battleEngineFacade.js";
 import { showSnackbar, updateSnackbar } from "../helpers/showSnackbar.js";
 
 let messageEl;

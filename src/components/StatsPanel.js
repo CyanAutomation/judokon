@@ -21,7 +21,7 @@
  */
 import { escapeHTML } from "../helpers/utils.js";
 import { loadStatNames } from "../helpers/stats.js";
-import { STATS } from "../helpers/battleEngine.js";
+import { STATS } from "../helpers/battleEngineFacade.js";
 export async function createStatsPanel(stats, options = {}) {
   if (!stats || typeof stats !== "object") {
     throw new Error("Stats object is required");

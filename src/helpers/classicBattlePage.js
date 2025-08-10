@@ -33,7 +33,7 @@ import { initTooltips } from "./tooltip.js";
 import { setTestMode } from "./testModeUtils.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
 import { loadStatNames } from "./stats.js";
-import { STATS } from "./battleEngine.js";
+import { STATS } from "./battleEngineFacade.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
 import {

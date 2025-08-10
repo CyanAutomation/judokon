@@ -26,7 +26,9 @@ vi.mock("../../../src/components/Modal.js", () => ({
     return { element, open: vi.fn(), close: vi.fn() };
   }
 }));
-vi.mock("../../../src/helpers/battleEngine.js", () => ({ setPointsToWin: mocks.setPointsToWin }));
+vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+  setPointsToWin: mocks.setPointsToWin
+}));
 vi.mock("../../../src/helpers/tooltip.js", () => ({ initTooltips: mocks.initTooltips }));
 
 import { initRoundSelectModal } from "../../../src/helpers/classicBattle/roundSelectModal.js";

@@ -284,7 +284,7 @@ describe("syncScoreDisplay", () => {
       .fn()
       .mockReturnValueOnce({ playerScore: 1, computerScore: 2 })
       .mockReturnValueOnce({ playerScore: 3, computerScore: 4 });
-    vi.doMock("../../src/helpers/battleEngine.js", () => ({ getScores }));
+    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({ getScores }));
     vi.doMock("../../src/components/Button.js", () => ({
       createButton: (label, { id } = {}) => {
         const btn = document.createElement("button");

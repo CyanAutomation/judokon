@@ -16,7 +16,9 @@ describe("battleEngine startCoolDown", () => {
         }))
       };
     });
-    const { startCoolDown, _resetForTest } = await import("../../src/helpers/battleEngine.js");
+    const { startCoolDown, _resetForTest } = await import(
+      "../../src/helpers/battleEngineFacade.js"
+    );
     const timerUtils = await import("../../src/helpers/timerUtils.js");
     _resetForTest();
     await startCoolDown(vi.fn(), vi.fn());

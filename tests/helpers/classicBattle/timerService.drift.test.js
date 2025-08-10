@@ -20,8 +20,8 @@ describe("timerService drift handling", () => {
     const startRound = vi.fn(async (onTick) => {
       onTick(3);
     });
-    vi.doMock("../../../src/helpers/battleEngine.js", async () => {
-      const actual = await vi.importActual("../../../src/helpers/battleEngine.js");
+    vi.doMock("../../../src/helpers/battleEngineFacade.js", async () => {
+      const actual = await vi.importActual("../../../src/helpers/battleEngineFacade.js");
       return { ...actual, startRound, watchForDrift: watchSpy };
     });
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
@@ -51,8 +51,8 @@ describe("timerService drift handling", () => {
     const startCoolDown = vi.fn((onTick) => {
       onTick(3);
     });
-    vi.doMock("../../../src/helpers/battleEngine.js", async () => {
-      const actual = await vi.importActual("../../../src/helpers/battleEngine.js");
+    vi.doMock("../../../src/helpers/battleEngineFacade.js", async () => {
+      const actual = await vi.importActual("../../../src/helpers/battleEngineFacade.js");
       return { ...actual, startCoolDown, watchForDrift: watchSpy };
     });
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
@@ -84,7 +84,7 @@ describe("timerService drift handling", () => {
       disableNextRoundButton: vi.fn(),
       updateDebugPanel: vi.fn()
     }));
-    vi.doMock("../../../src/helpers/battleEngine.js", () => ({
+    vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
       startCoolDown: vi.fn(),
       stopTimer: vi.fn(),
       STATS: []

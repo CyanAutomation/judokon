@@ -16,7 +16,7 @@ import {
   updateScore
 } from "../../src/components/InfoBar.js";
 import { showSnackbar, updateSnackbar } from "../../src/helpers/showSnackbar.js";
-import * as battleEngine from "../../src/helpers/battleEngine.js";
+import * as battleEngine from "../../src/helpers/battleEngineFacade.js";
 import { createInfoBarHeader } from "../utils/testUtils.js";
 
 describe("InfoBar component", () => {
