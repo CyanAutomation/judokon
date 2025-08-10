@@ -29,8 +29,7 @@ describe("classicBattlePage keyboard navigation", () => {
       startRound
     }));
     vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
-      handleStatSelection,
-      simulateOpponentStat: vi.fn()
+      handleStatSelection
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
@@ -87,8 +86,7 @@ describe("classicBattlePage keyboard navigation", () => {
       startRound
     }));
     vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
-      handleStatSelection,
-      simulateOpponentStat: vi.fn()
+      handleStatSelection
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
@@ -133,55 +131,6 @@ describe("classicBattlePage keyboard navigation", () => {
   });
 });
 
-describe("classicBattlePage simulated opponent mode", () => {
-  it("auto-selects a stat and disables buttons", async () => {
-    const startRound = vi.fn();
-    const waitForComputerCard = vi.fn();
-    const handleStatSelection = vi.fn().mockResolvedValue();
-    const simulateOpponentStat = vi.fn(() => "power");
-    const store = {};
-    const loadSettings = vi.fn().mockResolvedValue({
-      featureFlags: { simulatedOpponentMode: { enabled: true } }
-    });
-    const initTooltips = vi.fn().mockResolvedValue();
-    const setTestMode = vi.fn();
-
-    vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
-      createBattleStore: () => store,
-      startRound
-    }));
-    vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
-      handleStatSelection,
-      simulateOpponentStat
-    }));
-    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
-    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
-    vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
-    vi.doMock("../../src/helpers/stats.js", () => ({ loadStatNames: async () => [] }));
-
-    const container = document.createElement("div");
-    container.id = "stat-buttons";
-    const btn = document.createElement("button");
-    btn.dataset.stat = "power";
-    container.appendChild(btn);
-    const next = document.createElement("button");
-    next.id = "next-button";
-    document.body.append(container, next);
-
-    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
-    await setupClassicBattlePage();
-
-    expect(simulateOpponentStat).toHaveBeenCalledWith("easy");
-    expect(handleStatSelection).toHaveBeenCalledWith(store, "power");
-    const calls = handleStatSelection.mock.calls.length;
-    btn.dispatchEvent(new Event("click", { bubbles: true }));
-    next.dispatchEvent(new Event("click", { bubbles: true }));
-    expect(handleStatSelection).toHaveBeenCalledTimes(calls);
-    expect(btn.classList.contains("disabled")).toBe(true);
-  });
-});
-
 describe("classicBattlePage stat help tooltip", () => {
   it("shows tooltip only once", async () => {
     vi.useFakeTimers();
@@ -199,8 +148,7 @@ describe("classicBattlePage stat help tooltip", () => {
       startRound
     }));
     vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
-      handleStatSelection: vi.fn(),
-      simulateOpponentStat: vi.fn()
+      handleStatSelection: vi.fn()
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
@@ -252,8 +200,7 @@ describe("classicBattlePage test mode flag", () => {
       startRound
     }));
     vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
-      handleStatSelection: vi.fn(),
-      simulateOpponentStat: vi.fn()
+      handleStatSelection: vi.fn()
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
@@ -294,8 +241,7 @@ describe("classicBattlePage test mode flag", () => {
       startRound
     }));
     vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
-      handleStatSelection: vi.fn(),
-      simulateOpponentStat: vi.fn()
+      handleStatSelection: vi.fn()
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
