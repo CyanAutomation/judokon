@@ -1,4 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+// Avoid matchMedia usage in jsdom via reduced motion stub
+vi.mock("../../src/helpers/motionUtils.js", () => ({
+  shouldReduceMotionSync: () => true
+}));
 
 // We intentionally DO NOT call setupBattleInfoBar's onDomReady init here.
 // The goal is to verify InfoBar functions work without explicit initialization.
