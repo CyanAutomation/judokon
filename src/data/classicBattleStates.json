@@ -38,7 +38,7 @@
   {
     "id": 3,
     "name": "roundStart",
-    "description": "Begins a new round. Reveals top cards, sets active player for this round.",
+    "description": "Begins a new round. Reveals player's top card, sets active player for this round.",
     "onEnter": ["reveal:topCards", "set:activePlayer"],
     "triggers": [
       { "on": "cardsRevealed", "target": "waitingForPlayerAction" },
