@@ -66,11 +66,15 @@ export async function revealComputerCard() {
 
 export function enableNextRoundButton(enable = true) {
   const btn = document.getElementById("next-button");
-  if (btn) btn.disabled = !enable;
+  if (!btn) return;
+  btn.setAttribute("aria-disabled", String(!enable));
 }
 
 export function disableNextRoundButton() {
+  const btn = document.getElementById("next-button");
+  if (!btn) return;
   enableNextRoundButton(false);
+  delete btn.dataset.nextReady;
 }
 
 export function updateDebugPanel() {

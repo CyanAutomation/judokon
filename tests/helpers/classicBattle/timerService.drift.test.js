@@ -63,7 +63,7 @@ describe("timerService drift handling", () => {
     const timerNode = document.createElement("p");
     timerNode.id = "next-round-timer";
     document.body.appendChild(timerNode);
-    mod.scheduleNextRound({ matchEnded: false }, async () => {});
+    mod.scheduleNextRound({ matchEnded: false });
     timer.advanceTimersByTime(2000);
     onDrift(1);
     expect(showMessage).toHaveBeenCalledWith("Waiting…");
