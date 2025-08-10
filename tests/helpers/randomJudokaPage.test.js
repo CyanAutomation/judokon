@@ -30,7 +30,7 @@ describe("randomJudokaPage module", () => {
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
     const applyMotionPreference = vi.fn();
 
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       loadSettings
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
@@ -113,7 +113,7 @@ describe("randomJudokaPage module", () => {
       ...(await vi.importActual("../../src/helpers/constants.js")),
       DATA_DIR: ""
     }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       loadSettings
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
@@ -163,7 +163,7 @@ describe("randomJudokaPage module", () => {
       ...(await vi.importActual("../../src/helpers/constants.js")),
       DATA_DIR: ""
     }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       loadSettings
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
@@ -229,7 +229,7 @@ describe("randomJudokaPage module", () => {
       DATA_DIR: ""
     }));
     vi.doMock("../../src/components/Button.js", () => ({ createButton }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
@@ -272,7 +272,7 @@ describe("randomJudokaPage module", () => {
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard: vi.fn() }));
     vi.doMock("../../src/components/Button.js", () => ({ createButton }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
     vi.doMock("../../src/helpers/constants.js", async () => ({
       ...(await vi.importActual("../../src/helpers/constants.js")),
@@ -323,7 +323,7 @@ describe("randomJudokaPage module", () => {
       ...(await vi.importActual("../../src/helpers/constants.js")),
       DATA_DIR: ""
     }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       loadSettings
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));

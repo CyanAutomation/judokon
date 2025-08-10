@@ -4,7 +4,7 @@ import {
   clearComputerJudoka,
   getOrLoadGokyoLookup
 } from "./cardSelection.js";
-import { loadSettings } from "../settingsUtils.js";
+import { loadSettings } from "../settingsStorage.js";
 import { isEnabled } from "../featureFlags.js";
 import { getScores, getTimerState, isMatchEnded } from "../battleEngine.js";
 import { isTestModeEnabled, getCurrentSeed } from "../testModeUtils.js";

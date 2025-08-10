@@ -10,7 +10,7 @@
  * @param {(revert?: Function) => void} showErrorAndRevert - Displays an error and reverts UI state.
  * @returns {(key: string, value: any, revert?: Function) => Promise<void>} Persist helper.
  */
-import { updateSetting } from "../settingsUtils.js";
+import { updateSetting } from "../settingsStorage.js";
 
 export function makeHandleUpdate(setCurrentSettings, showErrorAndRevert) {
   return function handleUpdate(key, value, revert) {

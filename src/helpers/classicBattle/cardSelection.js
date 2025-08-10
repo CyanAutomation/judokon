@@ -1,6 +1,6 @@
 import { generateRandomCard } from "../randomCard.js";
 import { getRandomJudoka } from "../cardUtils.js";
-import { loadSettings } from "../settingsUtils.js";
+import { loadSettings } from "../settingsStorage.js";
 import { isEnabled } from "../featureFlags.js";
 import { fetchJson } from "../dataUtils.js";
 import { createGokyoLookup } from "../utils.js";

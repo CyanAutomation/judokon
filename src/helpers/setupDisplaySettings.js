@@ -11,7 +11,7 @@
  *    e. Log any errors to the console.
  * 2. Use `onDomReady` to run `init` when the DOM is ready.
  */
-import { loadSettings } from "./settingsUtils.js";
+import { loadSettings } from "./settingsStorage.js";
 import { applyDisplayMode } from "./displayMode.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";

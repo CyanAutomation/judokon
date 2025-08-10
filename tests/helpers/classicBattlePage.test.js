@@ -5,7 +5,7 @@ beforeEach(() => {
   document.body.innerHTML = "";
   localStorage.clear();
   vi.resetModules();
-  vi.doUnmock("../../src/helpers/settingsUtils.js");
+  vi.doUnmock("../../src/helpers/settingsStorage.js");
   vi.doMock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
     initRoundSelectModal: (cb) => cb()
   }));
@@ -33,7 +33,7 @@ describe("classicBattlePage keyboard navigation", () => {
       simulateOpponentStat: vi.fn()
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
@@ -91,7 +91,7 @@ describe("classicBattlePage keyboard navigation", () => {
       simulateOpponentStat: vi.fn()
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
     vi.doMock("../../src/helpers/stats.js", () => ({
@@ -155,7 +155,7 @@ describe("classicBattlePage simulated opponent mode", () => {
       simulateOpponentStat
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
     vi.doMock("../../src/helpers/stats.js", () => ({ loadStatNames: async () => [] }));
@@ -203,7 +203,7 @@ describe("classicBattlePage stat help tooltip", () => {
       simulateOpponentStat: vi.fn()
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
     vi.doMock("../../src/helpers/stats.js", () => ({ loadStatNames: async () => [] }));
@@ -256,7 +256,7 @@ describe("classicBattlePage test mode flag", () => {
       simulateOpponentStat: vi.fn()
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
     vi.doMock("../../src/helpers/stats.js", () => ({ loadStatNames: async () => [] }));
@@ -298,7 +298,7 @@ describe("classicBattlePage test mode flag", () => {
       simulateOpponentStat: vi.fn()
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
     vi.doMock("../../src/helpers/stats.js", () => ({ loadStatNames: async () => [] }));
@@ -356,7 +356,7 @@ describe("syncScoreDisplay", () => {
       }
     }));
 
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       getSetting: () => true,
       loadSettings: vi.fn()
     }));

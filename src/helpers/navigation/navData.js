@@ -1,5 +1,5 @@
 import { debugLog } from "../debug.js";
-import { loadSettings } from "../settingsUtils.js";
+import { loadSettings } from "../settingsStorage.js";
 import { loadNavigationItems } from "../gameModeUtils.js";
 
 /**

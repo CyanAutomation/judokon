@@ -31,7 +31,7 @@ import { createBattleStore, startRound } from "./classicBattle/roundManager.js";
 import { handleStatSelection, simulateOpponentStat } from "./classicBattle/selectionHandler.js";
 import { onDomReady } from "./domReady.js";
 import { waitForComputerCard } from "./battleJudokaPage.js";
-import { loadSettings } from "./settingsUtils.js";
+import { loadSettings } from "./settingsStorage.js";
 import { initTooltips } from "./tooltip.js";
 import { setTestMode } from "./testModeUtils.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";

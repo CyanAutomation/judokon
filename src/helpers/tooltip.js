@@ -1,7 +1,7 @@
 import { fetchJson, importJsonModule } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { escapeHTML } from "./utils.js";
-import { loadSettings } from "./settingsUtils.js";
+import { loadSettings } from "./settingsStorage.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 
 let tooltipDataPromise;

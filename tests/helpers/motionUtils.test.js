@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { shouldReduceMotionSync, applyMotionPreference } from "../../src/helpers/motionUtils.js";
-import { loadSettings, resetSettings } from "../../src/helpers/settingsUtils.js";
+import { loadSettings, resetSettings } from "../../src/helpers/settingsStorage.js";
 
 const matchMediaMock = (matches) =>
   vi.fn().mockImplementation((query) => ({

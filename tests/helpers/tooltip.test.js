@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 beforeEach(() => {
   document.body.innerHTML = "";
   vi.resetModules();
-  vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+  vi.doMock("../../src/helpers/settingsStorage.js", () => ({
     loadSettings: vi.fn().mockResolvedValue({ tooltips: true })
   }));
 });
@@ -115,7 +115,7 @@ describe("initTooltips", () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue({ stat: { test: "text" } })
     }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       loadSettings: vi.fn().mockResolvedValue({
         tooltips: true,
         featureFlags: { tooltipOverlayDebug: { enabled: true } }
@@ -133,7 +133,7 @@ describe("initTooltips", () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue({ stat: { test: "text" } })
     }));
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       loadSettings: vi.fn().mockResolvedValue({
         tooltips: true,
         featureFlags: { tooltipOverlayDebug: { enabled: false } }
