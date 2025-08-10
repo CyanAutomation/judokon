@@ -117,6 +117,7 @@ describe("settingsPage module", () => {
       updateNavigationItemHidden
     }));
     vi.doMock("../../src/helpers/showSettingsError.js", () => ({ showSettingsError }));
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     await import("../../src/helpers/settingsPage.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -130,6 +131,7 @@ describe("settingsPage module", () => {
     expect(checkboxes).toHaveLength(1);
     expect(container.querySelector("#mode-1")).toBeTruthy();
     vi.useRealTimers();
+    warnSpy.mockRestore();
   });
   it("renders checkboxes for all modes", async () => {
     vi.useFakeTimers();
