@@ -9,6 +9,7 @@ import {
   createSignatureMoveSection
 } from "../helpers/cardSections.js";
 import { createInspectorPanel } from "../helpers/cardBuilder.js";
+import { Card } from "./Card.js";
 
 /**
  * Component for rendering a judoka card.
@@ -26,7 +27,7 @@ import { createInspectorPanel } from "../helpers/cardBuilder.js";
  *    - Append an inspector panel when enabled.
  *    - Return the container element.
  */
-export class JudokaCard {
+export class JudokaCard extends Card {
   /**
    * @param {import("../helpers/types.js").Judoka} judoka - Judoka data.
    * @param {Record<number, import("../helpers/types.js").GokyoEntry>} gokyoLookup - Move lookup.
@@ -42,13 +43,23 @@ export class JudokaCard {
     }
 
     const { useObscuredStats = false, enableInspector = false } = options;
-    this.judoka = useObscuredStats ? this.#obscureJudoka(judoka) : judoka;
+    const processedJudoka = useObscuredStats ? JudokaCard.#obscureJudoka(judoka) : judoka;
+    const cardType = processedJudoka.rarity?.toLowerCase() || "common";
+
+    super("", { className: `judoka-card ${cardType}` });
+
+    this.judoka = processedJudoka;
     this.gokyoLookup = gokyoLookup;
     this.enableInspector = enableInspector;
-    this.cardType = this.judoka.rarity?.toLowerCase() || "common";
+    this.cardType = cardType;
+
+    this.element.setAttribute("role", "button");
+    this.element.setAttribute("tabindex", "0");
+    this.element.setAttribute("aria-label", `${this.judoka.firstname} ${this.judoka.surname} card`);
+    this.element.classList.add(this.judoka.gender === "female" ? "female-card" : "male-card");
   }
 
-  #obscureJudoka(judoka) {
+  static #obscureJudoka(judoka) {
     const clone = structuredClone(judoka);
     clone.firstname = "?";
     clone.surname = "?";
@@ -80,16 +91,6 @@ export class JudokaCard {
     return createSignatureMoveSection(this.judoka, this.gokyoLookup, this.cardType);
   }
 
-  #createCardElement() {
-    const el = document.createElement("div");
-    el.className = `judoka-card ${this.cardType}`;
-    el.setAttribute("role", "button");
-    el.setAttribute("tabindex", "0");
-    el.setAttribute("aria-label", `${this.judoka.firstname} ${this.judoka.surname} card`);
-    el.classList.add(this.judoka.gender === "female" ? "female-card" : "male-card");
-    return el;
-  }
-
   /**
    * Render the card and return the container element.
    *
@@ -110,7 +111,7 @@ export class JudokaCard {
       "https://flagcdn.com/w320/vu.png"
     );
 
-    const card = this.#createCardElement();
+    const card = this.element;
     const topBar = await this.#buildTopBar(flagUrl);
     const portrait = this.#buildPortraitSection();
     const stats = await this.#buildStatsSection();
