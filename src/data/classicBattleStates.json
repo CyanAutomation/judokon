@@ -2,56 +2,117 @@
   {
     "id": 1,
     "name": "waitingForMatchStart",
-    "description": "Waiting for the match to start"
+    "type": "initial",
+    "description": "Idle state before the match begins. UI shows a Start/Ready control.",
+    "onEnter": ["render:matchLobby", "reset:scoreAndDecksPreview"],
+    "triggers": [
+      { "on": "startClicked", "target": "matchStart" },
+      { "on": "interrupt", "target": "interruptMatch" }
+    ]
   },
   {
     "id": 2,
     "name": "matchStart",
-    "description": "Start of the match"
+    "description": "Initialises match data, shuffles and deals 25 cards to each player, sets first player.",
+    "onEnter": ["init:matchContext", "shuffleAndDeal:decks", "determine:firstPlayer"],
+    "triggers": [
+      { "on": "ready", "target": "roundStart" },
+      { "on": "interrupt", "target": "interruptMatch" },
+      { "on": "error", "target": "interruptMatch" }
+    ]
   },
   {
     "id": 3,
     "name": "roundStart",
-    "description": "Start of the round"
+    "description": "Begins a new round. Reveals top cards, sets active player for this round.",
+    "onEnter": ["reveal:topCards", "set:activePlayer"],
+    "triggers": [
+      { "on": "cardsRevealed", "target": "waitingForPlayerAction" },
+      { "on": "interrupt", "target": "interruptRound" }
+    ]
   },
   {
     "id": 4,
     "name": "waitingForPlayerAction",
-    "description": "Waiting for the player to take action"
+    "description": "Awaiting the stat choice. If AI's turn, auto-select after a short delay.",
+    "onEnter": ["prompt:chooseStatIfHuman", "schedule:autoSelectIfAI"],
+    "triggers": [
+      { "on": "statSelected", "target": "roundDecision" },
+      { "on": "timeout", "target": "roundDecision", "guard": "activePlayerIsAI" },
+      { "on": "interrupt", "target": "interruptRound" }
+    ]
   },
   {
     "id": 5,
     "name": "roundDecision",
-    "description": "The decision of the round"
+    "description": "Compares selected stat, determines win/draw and prepares transfers.",
+    "onEnter": ["compare:selectedStat", "compute:roundOutcome"],
+    "triggers": [
+      { "on": "outcome=winP1", "target": "roundOver" },
+      { "on": "outcome=winP2", "target": "roundOver" },
+      { "on": "outcome=draw",  "target": "roundOver" },
+      { "on": "interrupt", "target": "interruptRound" }
+    ]
   },
   {
     "id": 6,
     "name": "roundOver",
-    "description": "Round is over"
+    "description": "Executes transfers (winner takes both; draw sends both to bottom), updates score, flips next starter.",
+    "onEnter": ["apply:cardTransfers", "update:score", "set:nextStartingPlayer", "update:UIRoundSummary"],
+    "triggers": [
+      { "on": "matchPointReached", "target": "matchDecision", "guard": "winnerHas10Wins || noCardsLeft" },
+      { "on": "continue", "target": "cooldown" },
+      { "on": "interrupt", "target": "interruptRound" }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "cooldown",
+    "description": "Short pacing pause between rounds; allows animations and readability.",
+    "onEnter": ["delay:short", "animate:roundWrap"],
+    "triggers": [
+      { "on": "done", "target": "roundStart" },
+      { "on": "interrupt", "target": "interruptRound" }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "matchDecision",
+    "description": "Determines overall winner based on score or exhaustion of cards.",
+    "onEnter": ["compute:matchOutcome", "render:matchSummary"],
+    "triggers": [
+      { "on": "finalize", "target": "matchOver" },
+      { "on": "interrupt", "target": "interruptMatch" }
+    ]
   },
   {
     "id": 9,
-    "name": "matchDecision",
-    "description": "The decision of the match"
-  },
-  {
-    "id": 10,
     "name": "matchOver",
-    "description": "Match is over"
-  },
-  {
-    "id": 90,
-    "name": "cooldown",
-    "description": "Cooldown period"
+    "type": "final",
+    "description": "Match completed. Offer Rematch, Home, or Share.",
+    "onEnter": ["show:matchResultScreen"],
+    "triggers": [
+      { "on": "rematch", "target": "matchStart" },
+      { "on": "home", "target": "waitingForMatchStart" }
+    ]
   },
   {
     "id": 98,
     "name": "interruptRound",
-    "description": "Round interrupted"
+    "description": "Round interrupted (quit, navigation, or error). Performs safe rollback and returns to lobby or ends match.",
+    "onEnter": ["rollback:roundContextIfNeeded", "log:analyticsInterruptRound"],
+    "triggers": [
+      { "on": "resumeLobby", "target": "waitingForMatchStart" },
+      { "on": "abortMatch", "target": "matchOver" }
+    ]
   },
   {
     "id": 99,
     "name": "interruptMatch",
-    "description": "Match interrupted"
+    "description": "Match interrupted (quit from lobby or critical error). Cleanly tears down match.",
+    "onEnter": ["teardown:matchContext", "log:analyticsInterruptMatch"],
+    "triggers": [
+      { "on": "toLobby", "target": "waitingForMatchStart" }
+    ]
   }
 ]
