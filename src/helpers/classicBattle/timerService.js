@@ -13,6 +13,7 @@ import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
 
 let skipHandler = null;
 let pendingSkip = false;
+const AUTO_SELECT_FEEDBACK_MS = 500;
 
 /**
  * Set the current skip handler and notify listeners of its presence.
@@ -65,8 +66,8 @@ export function skipCurrentPhase() {
  *    - On drift show "Waiting…" and restart, giving up after several retries.
  * 3. Register a skip handler that stops the timer and triggers `onExpired`.
  * 4. When expired, highlight a random stat button, announce the choice via the
- *    info bar and snackbar, invoke `onExpiredSelect` with `delayOpponentMessage`
- *    set, and clear the handler.
+ *    info bar and snackbar, wait `AUTO_SELECT_FEEDBACK_MS`, invoke
+ *    `onExpiredSelect` with `delayOpponentMessage` set, and clear the handler.
  *
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>} onExpiredSelect
  * - Callback to handle stat auto-selection.
@@ -108,6 +109,7 @@ export async function startTimer(onExpiredSelect) {
     }
     infoBar.showAutoSelect(label);
     showSnackbar(`Time's up! Auto-selecting ${label}`);
+    await new Promise((resolve) => setTimeout(resolve, AUTO_SELECT_FEEDBACK_MS));
     await onExpiredSelect(randomStat, { delayOpponentMessage: true });
   };
 
@@ -131,8 +133,9 @@ export async function startTimer(onExpiredSelect) {
  * @pseudocode
  * 1. Display "Stat selection stalled" via `infoBar.showMessage`.
  * 2. After 5 seconds choose a random stat from `STATS`.
- * 3. Highlight the stat button, show an auto-select message, and call `onSelect`
- *    with the chosen stat and `delayOpponentMessage` option.
+ * 3. Highlight the stat button, show an auto-select message, wait
+ *    `AUTO_SELECT_FEEDBACK_MS`, and call `onSelect` with the chosen stat and
+ *    `delayOpponentMessage` option.
  *
  * @param {{autoSelectId: ReturnType<typeof setTimeout> | null}} store
  * - Battle state store.
@@ -141,7 +144,7 @@ export async function startTimer(onExpiredSelect) {
  */
 export function handleStatSelectionTimeout(store, onSelect) {
   infoBar.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
-  store.autoSelectId = setTimeout(() => {
+  store.autoSelectId = setTimeout(async () => {
     const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
     const btn = document.querySelector(`#stat-buttons button[data-stat="${randomStat}"]`);
     const label = btn?.textContent || randomStat;
@@ -150,6 +153,7 @@ export function handleStatSelectionTimeout(store, onSelect) {
     }
     infoBar.showAutoSelect(label);
     showSnackbar(`Time's up! Auto-selecting ${label}`);
+    await new Promise((resolve) => setTimeout(resolve, AUTO_SELECT_FEEDBACK_MS));
     onSelect(randomStat, { delayOpponentMessage: true });
   }, 5000);
 }
