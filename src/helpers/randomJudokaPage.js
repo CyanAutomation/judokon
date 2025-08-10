@@ -5,25 +5,24 @@
  *
  * @pseudocode
  * 1. Load persisted settings and fall back to the system motion preference.
- * 2. Preload judoka and gokyo data using `fetchJson`.
- * 3. Toggle the `.simulate-viewport` class based on the stored feature flag.
- * 4. Create a hidden slide-out history panel and a toggle button.
- * 5. Define `displayCard` that disables the Draw button, updates its text and `aria-busy` state while loading, calls
+ * 2. Preload judoka and gokyo data via `preloadRandomCardData` service.
+ * 3. Initialize a draw history manager with a 5-entry limit.
+ * 4. Toggle the `.simulate-viewport` class based on the stored feature flag.
+ * 5. Create a hidden slide-out history panel and a toggle button.
+ * 6. Define `displayCard` that disables the Draw button, updates its text and `aria-busy` state while loading, calls
  *    `generateRandomCard` with the loaded data and the user's motion preference, updates the history list, then restores
  *    the button once the animation completes (or immediately when motion is disabled).
- * 6. Render a placeholder card in the card container.
- * 7. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and attach its event listener.
- * 8. If data fails to load, disable the Draw button and show an error message or fallback card.
- * 9. Use `onDomReady` to execute setup when the DOM content is loaded.
+ * 7. Render a placeholder card in the card container.
+ * 8. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and attach its event listener.
+ * 9. If data fails to load, disable the Draw button and show an error message or fallback card.
+ * 10. Use `onDomReady` to execute setup when the DOM content is loaded.
  *
  * @returns {Promise<void>} Resolves when the page is fully initialized.
  * @see design/productRequirementsDocuments/prdRandomJudoka.md
  * @see design/productRequirementsDocuments/prdDrawRandomCard.md
  */
-import { fetchJson } from "./dataUtils.js";
 import { generateRandomCard } from "./randomCard.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
-import { DATA_DIR } from "./constants.js";
 import { createButton } from "../components/Button.js";
 import { loadSettings } from "./settingsUtils.js";
 import { applyMotionPreference } from "./motionUtils.js";
@@ -33,11 +32,10 @@ import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { setTestMode } from "./testModeUtils.js";
 import { isEnabled, featureFlagsEmitter } from "./featureFlags.js";
+import { preloadRandomCardData, createHistoryManager } from "./randomCardService.js";
 
 const DRAW_ICON =
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m600-200-56-57 143-143H300q-75 0-127.5-52.5T120-580q0-75 52.5-127.5T300-760h20v80h-20q-42 0-71 29t-29 71q0 42 29 71t71 29h387L544-624l56-56 240 240-240 240Z"/></svg>';
-const HISTORY_LIMIT = 5;
-
 export async function setupRandomJudokaPage() {
   let settings;
   try {
@@ -68,22 +66,11 @@ export async function setupRandomJudokaPage() {
   let cachedJudokaData = null;
   let cachedGokyoData = null;
   let dataLoaded = false;
-  const history = [];
+  const historyManager = createHistoryManager();
   let historyList;
   let historyPanel;
   let toggleHistoryBtn;
   let historyOpen = false;
-
-  async function preloadData() {
-    try {
-      cachedJudokaData = await fetchJson(`${DATA_DIR}judoka.json`);
-      cachedGokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
-      dataLoaded = true;
-    } catch (error) {
-      console.error("Error preloading data:", error);
-      dataLoaded = false;
-    }
-  }
 
   // Accessibility: Announce errors to screen readers
   function showError(msg) {
@@ -105,7 +92,7 @@ export async function setupRandomJudokaPage() {
   function updateHistoryUI() {
     if (!historyList) return;
     historyList.innerHTML = "";
-    history.forEach((j) => {
+    historyManager.get().forEach((j) => {
       const li = document.createElement("li");
       li.textContent = `${j.firstname} ${j.surname}`;
       historyList.appendChild(li);
@@ -113,9 +100,7 @@ export async function setupRandomJudokaPage() {
   }
 
   function addToHistory(judoka) {
-    if (!judoka) return;
-    history.unshift(judoka);
-    if (history.length > HISTORY_LIMIT) history.pop();
+    historyManager.add(judoka);
     updateHistoryUI();
   }
 
@@ -190,7 +175,10 @@ export async function setupRandomJudokaPage() {
     cardContainer.appendChild(placeholderTemplate.content.cloneNode(true));
   }
 
-  await preloadData();
+  const { judokaData, gokyoData, error: preloadError } = await preloadRandomCardData();
+  cachedJudokaData = judokaData;
+  cachedGokyoData = gokyoData;
+  dataLoaded = !preloadError;
   const cardSection = document.querySelector(".card-section");
   toggleHistoryBtn = createButton("History", {
     id: "toggle-history-btn",
