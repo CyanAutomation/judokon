@@ -25,6 +25,7 @@ The round message, timer, and score now sit directly inside the page header rath
    - After the player picks a stat: show **"Opponent is choosing..."** until the opponent's choice is revealed.
 3. Ensure all messages are clearly readable, positioned responsively, and maintain usability across devices.
 4. Display fallback messages within 500ms of sync failure.
+5. Surface a round counter and a field showing the player's selected stat for the current round.
 
 ---
 
@@ -74,9 +75,11 @@ The round message, timer, and score now sit directly inside the page header rath
   - Right side: score display (`Player: X – Opponent: Y`)
   - Two-line score format appears on narrow screens via stacked `<span>` elements (`<span>You: X</span> <span>Opponent: Y</span>`)
   - Left side: rotating status messages (e.g., "You won!", **"Time left: 29s"**, "Opponent is choosing..."). Selection prompts and the countdown to the next round appear in snackbars whose text update each second.
+  - Center: round counter (`Round 3`) and field showing the player's selected stat (`Selected: Power`).
 - **Visuals**
   - Font size: `clamp(16px, 4vw, 24px)`; on narrow screens (<375px) `clamp(14px, 5vw, 20px)`.
   - Color coding: green (win), red (loss), neutral grey (countdown).
+  - Snackbars slide in/out using fade/translate animations and auto-select feedback remains visible for at least 1s before "Opponent is choosing..." appears.
 - **Responsiveness**
   - Stacked layout on narrow screens (<375px width). <!-- Implemented: see battle.css @media (max-width: 374px) -->
 - **Accessibility**

@@ -141,6 +141,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Use consistent color coding for player (blue) vs opponent (red) as shown in attached mockups.
 - Display clear, large call-to-action text for "Choose an attribute to challenge!" to guide new players.
 - When a player selects a stat, surface a snackbar via [showSnackbar.js](../../src/helpers/showSnackbar.js) reading `You Picked: <stat>` (e.g., `You Picked: Power`) so tests can confirm the feedback.
+- Snackbars slide in/out using standard fade/translate animations and auto-select feedback remains visible for at least 1s before "Opponent is choosing..." appears.
 - Provide a quit confirmation when the player clicks the logo in the header to return to the Home screen.
   - Match screens should follow the style and layouts demonstrated in shared mockups:
   - Player and opponent cards side-by-side.
@@ -157,6 +158,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
     attribute and auto-opens on first visit using the storage helper to remember the
     dismissal.
   - Tooltips on stat names, country flags, weight indicators, and navigation icons provide accessible explanations.
+  - The Info Bar includes a round counter and a field showing the player's selected stat for the current round.
   - **Accessibility:**
   - Minimum text contrast ratio: ≥4.5:1 (per WCAG).
   - Minimum touch target size: ≥44px. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) for the full rule.
