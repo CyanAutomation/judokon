@@ -58,9 +58,8 @@ export function skipCurrentPhase() {
 export async function onNextButtonClick() {
   const btn = document.getElementById("next-button");
   if (!btn) return;
-  if (skipHandler) {
-    skipCurrentPhase();
-  }
+
+  // If the next round is ready, start it immediately.
   if (btn.dataset.nextReady === "true") {
     btn.classList.add("disabled");
     delete btn.dataset.nextReady;
@@ -69,7 +68,42 @@ export async function onNextButtonClick() {
     if (typeof start === "function") {
       await start();
     }
+    return;
   }
+
+  // Otherwise, request skipping the current cooldown phase.
+  // If no skip handler is active yet, this marks the skip as pending and
+  // it will trigger as soon as the handler is registered.
+  skipCurrentPhase();
+
+  // If skipping completed synchronously and the next round became ready,
+  // start it right away. Otherwise, observe the button until it becomes ready
+  // and then start automatically (covers early clicks before cooldown begins).
+  const maybeStart = async () => {
+    if (btn.dataset.nextReady === "true") {
+      btn.classList.add("disabled");
+      delete btn.dataset.nextReady;
+      const start = window.startRoundOverride;
+      setSkipHandler(null);
+      if (typeof start === "function") {
+        await start();
+      }
+      return true;
+    }
+    return false;
+  };
+
+  if (await maybeStart()) return;
+
+  const obs = new MutationObserver(async () => {
+    if (await maybeStart()) {
+      obs.disconnect();
+    }
+  });
+  obs.observe(btn, { attributes: true, attributeFilter: ["data-next-ready", "class"] });
+
+  // Safety timeout to avoid leaking the observer if nothing happens.
+  setTimeout(() => obs.disconnect(), 10000);
 }
 
 /**
