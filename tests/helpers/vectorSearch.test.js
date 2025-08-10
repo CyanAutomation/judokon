@@ -36,10 +36,12 @@ describe("vectorSearch", () => {
   });
 
   it("returns null when loading fails", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     fetchJsonMock.mockRejectedValueOnce(new Error("fail"));
     const { loadEmbeddings } = await import("../../src/helpers/vectorSearch.js");
     const result = await loadEmbeddings();
     expect(result).toBeNull();
+    errorSpy.mockRestore();
   });
 
   it("computes cosine similarity", async () => {
@@ -94,10 +96,12 @@ describe("vectorSearch", () => {
   });
 
   it("returns null when embeddings fail to load", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     fetchJsonMock.mockRejectedValueOnce(new Error("fail"));
     const { findMatches } = await import("../../src/helpers/vectorSearch.js");
     const res = await findMatches([1, 0], 1);
     expect(res).toBeNull();
+    errorSpy.mockRestore();
   });
 
   it("fetches context around an id", async () => {
