@@ -311,6 +311,26 @@ export function showStatComparison(store, stat, playerVal, compVal) {
 }
 
 /**
+ * Reset the Next Round button to its initial disabled state.
+ *
+ * @pseudocode
+ * 1. Locate `#next-button` and exit if missing.
+ * 2. Replace it with a cloned element to drop event listeners.
+ * 3. Remove `data-next-ready` and add the `disabled` class on the clone.
+ *
+ * @returns {void}
+ */
+export function resetGame() {
+  const nextBtn = document.getElementById("next-button");
+  if (nextBtn) {
+    const clone = nextBtn.cloneNode(true);
+    clone.classList.add("disabled");
+    delete clone.dataset.nextReady;
+    nextBtn.replaceWith(clone);
+  }
+}
+
+/**
  * Reset internal state for tests.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
@@ -333,13 +353,7 @@ export function _resetForTest(store) {
   infoBar.clearMessage();
   const roundResultEl = document.getElementById("round-result");
   if (roundResultEl) roundResultEl.textContent = "";
-  const nextBtn = document.getElementById("next-button");
-  if (nextBtn) {
-    const clone = nextBtn.cloneNode(true);
-    nextBtn.replaceWith(clone);
-    clone.setAttribute("aria-disabled", "true");
-    delete clone.dataset.nextReady;
-  }
+  resetGame();
   const quitBtn = document.getElementById("quit-match-button");
   if (quitBtn) {
     quitBtn.replaceWith(quitBtn.cloneNode(true));

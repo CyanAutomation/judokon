@@ -7,7 +7,7 @@ import {
   stopTimer
 } from "../battleEngine.js";
 import * as infoBar from "../setupBattleInfoBar.js";
-import { enableNextRoundButton, updateDebugPanel } from "./uiHelpers.js";
+import { updateDebugPanel } from "./uiHelpers.js";
 import { runTimerWithDrift } from "./runTimerWithDrift.js";
 import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
 
@@ -52,6 +52,24 @@ export function skipCurrentPhase() {
     fn();
   } else {
     pendingSkip = true;
+  }
+}
+
+export async function onNextButtonClick() {
+  const btn = document.getElementById("next-button");
+  if (!btn) return;
+  if (skipHandler) {
+    skipCurrentPhase();
+    return;
+  }
+  if (btn.dataset.nextReady === "true") {
+    btn.classList.add("disabled");
+    delete btn.dataset.nextReady;
+    const start = window.startRoundOverride;
+    setSkipHandler(null);
+    if (typeof start === "function") {
+      await start();
+    }
   }
 }
 
@@ -163,12 +181,12 @@ export function handleStatSelectionTimeout(store, onSelect) {
  *
  * @pseudocode
  * 1. If the match ended, return early.
- * 2. Setup a click handler that disables the button and calls `startRoundFn`.
+ * 2. Attach the unified Next button handler.
  * 3. After a short delay, run a 3 second cooldown via `runTimerWithDrift(startCoolDown)`
  *    and display `"Next round in: <n>s"` using one snackbar that updates each tick.
  * 4. Register a skip handler that stops the timer and invokes the expiration logic.
- * 5. When expired, clear the `#next-round-timer` element, enable the button, mark it ready,
- *    and clear the handler.
+ * 5. When expired, clear the `#next-round-timer` element, set `data-next-ready="true"`,
+ *    remove the disabled styling, and clear the handler.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
  */
@@ -181,6 +199,8 @@ export function scheduleNextRound(result) {
   const btn = document.getElementById("next-button");
   if (!btn) return;
   const timerEl = document.getElementById("next-round-timer");
+
+  btn.addEventListener("click", onNextButtonClick);
 
   let started = false;
   const onTick = (remaining) => {
@@ -203,8 +223,8 @@ export function scheduleNextRound(result) {
     if (timerEl) {
       timerEl.textContent = "";
     }
-    enableNextRoundButton();
     btn.dataset.nextReady = "true";
+    btn.classList.remove("disabled");
     updateDebugPanel();
   };
 
