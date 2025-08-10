@@ -64,7 +64,7 @@ describe("InfoBar integration without explicit init", () => {
       },
       watchForDrift: () => () => {},
       stopTimer: vi.fn(),
-      STATS: ["power"],
+      STATS: ["power"]
       // the rest are not needed in this test
     }));
 
@@ -87,7 +87,10 @@ describe("InfoBar integration without explicit init", () => {
 
     // Score
     info.updateScore(2, 1);
-    const scoreText = document.getElementById("score-display").textContent.replace(/\s+/g, " ").trim();
+    const scoreText = document
+      .getElementById("score-display")
+      .textContent.replace(/\s+/g, " ")
+      .trim();
     expect(scoreText).toContain("You: 2");
     expect(scoreText).toContain("Opponent: 1");
 
