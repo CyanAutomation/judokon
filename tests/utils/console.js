@@ -12,4 +12,3 @@ export async function withMutedConsole(fn, levels = ["error", "warn"]) {
 export async function withAllowedConsole(fn) {
   return await fn();
 }
-
