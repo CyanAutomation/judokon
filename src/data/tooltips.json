@@ -36,7 +36,16 @@
     "browseJudoka": "**Browse Judoka**\nBrowse every judoka card.",
     "meditation": "**Meditation**\nCompare cards at your own pace.",
     "settings": "**Settings**\nAdjust game options.",
-    "home": "**Home**\nReturn to the main screen."
+    "home": "**Home**\nReturn to the main screen.",
+    "teamBattleSelection": "**Team Battle Selection**\nChoose a team battle variant.",
+    "manageJudoka": "**Manage Judoka**\nCreate or update a judoka.",
+    "teamBattleMale": "**Team Battle (Male)**\nCompete with male teams.",
+    "teamBattleFemale": "**Team Battle (Female)**\nCompete with female teams.",
+    "teamBattleMixed": "**Team Battle (Mixed)**\nCompete with mixed teams.",
+    "createAJudoka": "**Create A Judoka**\nMake a new judoka card.",
+    "updateJudoka": "**Update Judoka**\nEdit an existing judoka.",
+    "teamBattleRuleset": "**Team Battle Ruleset**\nView team battle rules.",
+    "viewJudoka": "**View Judoka**\nDisplay a single judoka."
   },
   "settings": {
     "sound": {

@@ -171,6 +171,9 @@ function applyFeatureFlagListeners(battleArea, banner) {
     if (banner) banner.classList.toggle("hidden", !isEnabled("enableTestMode"));
     setTestMode(isEnabled("enableTestMode"));
     toggleInspectorPanels(isEnabled("enableCardInspector"));
+    // React to additional flags in real-time
+    toggleViewportSimulation(isEnabled("viewportSimulation"));
+    setDebugPanelEnabled(isEnabled("battleDebugPanel"));
   });
 }
 
@@ -183,6 +186,31 @@ function initDebugPanel() {
     debugPanel.classList.remove("hidden");
   } else {
     debugPanel.remove();
+  }
+}
+
+// Ensure a debug panel exists and is attached/visible when enabled; remove when disabled
+function setDebugPanelEnabled(enabled) {
+  const computerSlot = document.getElementById("computer-card");
+  let panel = document.getElementById("debug-panel");
+  if (enabled) {
+    if (!panel) {
+      panel = document.createElement("div");
+      panel.id = "debug-panel";
+      panel.className = "debug-panel";
+      const pre = document.createElement("pre");
+      pre.id = "debug-output";
+      pre.setAttribute("role", "status");
+      pre.setAttribute("aria-live", "polite");
+      panel.appendChild(pre);
+    }
+    panel.classList.remove("hidden");
+    if (computerSlot && panel.parentElement !== computerSlot) {
+      computerSlot.prepend(panel);
+    }
+  } else if (panel) {
+    panel.classList.add("hidden");
+    panel.remove();
   }
 }
 
