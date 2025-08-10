@@ -112,7 +112,7 @@ async function renderComputerPlaceholder(container, placeholder, enableInspector
     if (typeof judokaCard.render === "function") {
       const card = await judokaCard.render();
       if (!(card && typeof card === "object" && card.nodeType === 1)) {
-        console.debug("JudokaCard did not render an HTMLElement");
+        console.error("JudokaCard did not render an HTMLElement");
         return;
       }
       container.innerHTML = "";
