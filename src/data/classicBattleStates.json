@@ -7,7 +7,11 @@
     "onEnter": ["render:matchLobby", "reset:scoreAndDecksPreview"],
     "triggers": [
       { "on": "startClicked", "target": "matchStart" },
-      { "on": "interrupt", "target": "matchOver", "note": "Abort from lobby goes directly to Match over per diagram." }
+      {
+        "on": "interrupt",
+        "target": "matchOver",
+        "note": "Abort from lobby goes directly to Match over per diagram."
+      }
     ]
   },
   {
@@ -48,7 +52,12 @@
     "onEnter": ["prompt:chooseStat", "schedule:statAutoSelect"],
     "triggers": [
       { "on": "statSelected", "target": "roundDecision" },
-      { "on": "timeout", "target": "roundDecision", "guard": "statAutoSelect", "note": "Timeout => statAutoSelect path." },
+      {
+        "on": "timeout",
+        "target": "roundDecision",
+        "guard": "statAutoSelect",
+        "note": "Timeout => statAutoSelect path."
+      },
       { "on": "interrupt", "target": "interruptRound" }
     ]
   },
