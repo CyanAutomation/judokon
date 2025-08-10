@@ -38,9 +38,14 @@ describe("navigationCache", () => {
   });
 
   test("load removes invalid stored data", async () => {
-    setItem("navigationItems", [{ id: 1 }]);
-    const items = await load();
-    expect(Array.isArray(items)).toBe(true);
-    expect(getItem("navigationItems")).not.toEqual([{ id: 1 }]);
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      setItem("navigationItems", [{ id: 1 }]);
+      const items = await load();
+      expect(Array.isArray(items)).toBe(true);
+      expect(getItem("navigationItems")).not.toEqual([{ id: 1 }]);
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 });
