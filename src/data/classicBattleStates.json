@@ -55,8 +55,8 @@
   {
     "id": 4,
     "name": "waitingForPlayerAction",
-    "description": "Awaiting the stat choice. If AI's turn, auto-select after a short delay.",
-    "onEnter": ["prompt:chooseStatIfHuman", "schedule:autoSelectIfAI"],
+    "description": "Awaiting the stat choice. If no player action, then auto-select stat after a round timer.",
+    "onEnter": ["prompt:chooseStat", "schedule:statAutoSelect"],
     "triggers": [
       {
         "on": "statSelected",
@@ -65,7 +65,7 @@
       {
         "on": "timeout",
         "target": "roundDecision",
-        "guard": "activePlayerIsAI"
+        "guard": "statAutoSelect"
       },
       {
         "on": "interrupt",
@@ -80,11 +80,11 @@
     "onEnter": ["compare:selectedStat", "compute:roundOutcome"],
     "triggers": [
       {
-        "on": "outcome=winP1",
+        "on": "outcome=winPlayer",
         "target": "roundOver"
       },
       {
-        "on": "outcome=winP2",
+        "on": "outcome=winOpponent",
         "target": "roundOver"
       },
       {
@@ -100,7 +100,7 @@
   {
     "id": 6,
     "name": "roundOver",
-    "description": "Executes transfers (winner takes both; draw sends both to bottom), updates score, flips next starter.",
+    "description": "Updates score, flips next card.",
     "onEnter": [
       "apply:cardTransfers",
       "update:score",
@@ -160,7 +160,7 @@
     "id": 9,
     "name": "matchOver",
     "type": "final",
-    "description": "Match completed. Offer Rematch, Home, or Share.",
+    "description": "Match completed. Offer Rematch, or Home.",
     "onEnter": ["show:matchResultScreen"],
     "triggers": [
       {
