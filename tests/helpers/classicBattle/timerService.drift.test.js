@@ -95,6 +95,7 @@ describe("timerService drift handling", () => {
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
     const btn = document.createElement("button");
     btn.id = "next-button";
+    btn.addEventListener("click", mod.onNextButtonClick);
     document.body.appendChild(btn);
     const timerNode = document.createElement("p");
     timerNode.id = "next-round-timer";

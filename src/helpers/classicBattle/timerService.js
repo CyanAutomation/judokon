@@ -180,7 +180,7 @@ export function handleStatSelectionTimeout(store, onSelect) {
  *
  * @pseudocode
  * 1. If the match ended, return early.
- * 2. Attach the unified Next button handler.
+ * 2. Locate `#next-button` and `#next-round-timer`; exit if the button is missing.
  * 3. After a short delay, run a 3 second cooldown via `runTimerWithDrift(startCoolDown)`
  *    and display `"Next round in: <n>s"` using one snackbar that updates each tick.
  * 4. Register a skip handler that stops the timer and invokes the expiration logic.
@@ -198,8 +198,6 @@ export function scheduleNextRound(result) {
   const btn = document.getElementById("next-button");
   if (!btn) return;
   const timerEl = document.getElementById("next-round-timer");
-
-  btn.addEventListener("click", onNextButtonClick);
 
   let started = false;
   const onTick = (remaining) => {
