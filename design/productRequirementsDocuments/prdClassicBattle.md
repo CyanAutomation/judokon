@@ -71,6 +71,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ## Mermaid Diagram of Game States
 
+```mermaid
 flowchart TD
   A([waitingForMatchStart]) -->|startClicked| B[matchStart]
   A -->|interrupt| M[interruptMatch]
@@ -109,6 +110,7 @@ flowchart TD
   L -->|resumeLobby| A
   L -->|abortMatch| I
   M -->|toLobby| A
+```
 
 ---
 
