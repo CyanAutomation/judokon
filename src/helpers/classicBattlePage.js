@@ -44,7 +44,7 @@ import { STATS } from "./battleEngine.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
 import { initRoundSelectModal } from "./classicBattle/roundSelectModal.js";
-import { skipCurrentPhase } from "./classicBattle/timerService.js";
+import { skipCurrentPhase, onNextButtonClick } from "./classicBattle/timerService.js";
 import { isEnabled, featureFlagsEmitter } from "./featureFlags.js";
 
 function enableStatButtons(enable = true) {
@@ -61,7 +61,6 @@ window.skipBattlePhase = skipCurrentPhase;
 export const getBattleStore = () => battleStore;
 let simulatedOpponentMode = false;
 let aiDifficulty = "easy";
-let skipActive = false;
 
 async function startRoundWrapper() {
   enableStatButtons(false);
@@ -78,17 +77,7 @@ async function startRoundWrapper() {
 function setupNextButton() {
   const btn = document.getElementById("next-button");
   if (!btn) return;
-  window.addEventListener("skip-handler-change", (e) => {
-    skipActive = e.detail.active;
-  });
-  btn.addEventListener("click", async () => {
-    if (skipActive) {
-      skipCurrentPhase();
-    }
-    if (btn.dataset.nextReady === "true") {
-      await startRoundWrapper();
-    }
-  });
+  btn.addEventListener("click", onNextButtonClick);
 }
 
 async function applyStatLabels() {

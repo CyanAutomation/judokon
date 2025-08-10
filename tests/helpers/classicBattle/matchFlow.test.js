@@ -178,15 +178,15 @@ describe("classicBattle match flow", () => {
   });
 
   it("scheduleNextRound waits for cooldown then enables button", async () => {
-    document.body.innerHTML += '<button id="next-button" aria-disabled="true"></button>';
+    document.body.innerHTML += '<button id="next-button" class="disabled"></button>';
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     battleMod.scheduleNextRound({ matchEnded: false });
     const btn = document.getElementById("next-button");
-    expect(btn.getAttribute("aria-disabled")).toBe("true");
+    expect(btn.classList.contains("disabled")).toBe(true);
     timerSpy.advanceTimersByTime(2000);
     timerSpy.advanceTimersByTime(3000);
     await Promise.resolve();
-    expect(btn.getAttribute("aria-disabled")).toBe("false");
+    expect(btn.classList.contains("disabled")).toBe(false);
     expect(btn.dataset.nextReady).toBe("true");
   });
 

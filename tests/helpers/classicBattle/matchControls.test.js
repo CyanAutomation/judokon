@@ -40,7 +40,7 @@ describe("classicBattle button handlers", () => {
     const header = createBattleHeader();
     const nextBtn = document.createElement("button");
     nextBtn.id = "next-button";
-    nextBtn.setAttribute("aria-disabled", "true");
+    nextBtn.className = "disabled";
     const quitBtn = document.createElement("button");
     quitBtn.id = "quit-match-button";
     document.body.append(playerCard, computerCard, header, nextBtn, quitBtn);
@@ -67,9 +67,11 @@ describe("classicBattle button handlers", () => {
     );
     disableNextRoundButton();
     const btn = document.getElementById("next-button");
-    expect(btn.getAttribute("aria-disabled")).toBe("true");
+    expect(btn.classList.contains("disabled")).toBe(true);
+    expect(btn.dataset.nextReady).toBeUndefined();
     enableNextRoundButton();
-    expect(btn.getAttribute("aria-disabled")).toBe("false");
+    expect(btn.classList.contains("disabled")).toBe(false);
+    expect(btn.dataset.nextReady).toBe("true");
   });
 
   it("quit button invokes quitMatch", async () => {

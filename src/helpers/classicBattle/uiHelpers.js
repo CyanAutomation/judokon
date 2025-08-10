@@ -64,16 +64,17 @@ export async function revealComputerCard() {
   clearComputerJudoka();
 }
 
-export function enableNextRoundButton(enable = true) {
+export function enableNextRoundButton() {
   const btn = document.getElementById("next-button");
   if (!btn) return;
-  btn.setAttribute("aria-disabled", String(!enable));
+  btn.classList.remove("disabled");
+  btn.dataset.nextReady = "true";
 }
 
 export function disableNextRoundButton() {
   const btn = document.getElementById("next-button");
   if (!btn) return;
-  enableNextRoundButton(false);
+  btn.classList.add("disabled");
   delete btn.dataset.nextReady;
 }
 
