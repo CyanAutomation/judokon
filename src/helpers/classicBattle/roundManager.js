@@ -1,5 +1,5 @@
 import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
-import { startTimer, handleStatSelectionTimeout } from "./timerService.js";
+import { startTimer, handleStatSelectionTimeout, onNextButtonClick } from "./timerService.js";
 import { showSelectionPrompt, disableNextRoundButton, updateDebugPanel } from "./uiHelpers.js";
 import { _resetForTest as resetEngineForTest } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
@@ -108,6 +108,8 @@ export function resetGame() {
     const clone = nextBtn.cloneNode(true);
     clone.classList.add("disabled");
     delete clone.dataset.nextReady;
+    // Reattach click handler lost due to cloning
+    clone.addEventListener("click", onNextButtonClick);
     nextBtn.replaceWith(clone);
   }
 }
