@@ -1,5 +1,6 @@
 import { vi } from "vitest";
 import { JudokaCard } from "../../src/components/JudokaCard.js";
+import { withMutedConsole } from "../utils/console.js";
 import * as cardRender from "../../src/helpers/cardRender.js";
 import * as statsPanel from "../../src/components/StatsPanel.js";
 
@@ -27,7 +28,7 @@ describe("JudokaCard fallback containers", () => {
       throw new Error("portrait fail");
     });
 
-    const card = await new JudokaCard(judoka, gokyoLookup).render();
+    const card = await withMutedConsole(async () => new JudokaCard(judoka, gokyoLookup).render());
 
     expect(card.textContent).toContain("No data available");
   });
@@ -37,7 +38,7 @@ describe("JudokaCard fallback containers", () => {
       Promise.reject(new Error("stats fail"))
     );
 
-    const card = await new JudokaCard(judoka, gokyoLookup).render();
+    const card = await withMutedConsole(async () => new JudokaCard(judoka, gokyoLookup).render());
 
     expect(card.textContent).toContain("No data available");
   });
@@ -47,7 +48,7 @@ describe("JudokaCard fallback containers", () => {
       throw new Error("signature fail");
     });
 
-    const card = await new JudokaCard(judoka, gokyoLookup).render();
+    const card = await withMutedConsole(async () => new JudokaCard(judoka, gokyoLookup).render());
 
     expect(card.textContent).toContain("No data available");
   });
@@ -56,13 +57,13 @@ describe("JudokaCard fallback containers", () => {
     vi.spyOn(cardRender, "generateCardPortrait").mockImplementation(() => {
       throw "fail string";
     });
-    const card = await new JudokaCard(judoka, gokyoLookup).render();
+    const card = await withMutedConsole(async () => new JudokaCard(judoka, gokyoLookup).render());
     expect(card.textContent).toContain("No data available");
   });
 
   it("adds fallback when stats panel throws undefined", async () => {
     vi.spyOn(statsPanel, "createStatsPanel").mockImplementation(() => Promise.reject(undefined));
-    const card = await new JudokaCard(judoka, gokyoLookup).render();
+    const card = await withMutedConsole(async () => new JudokaCard(judoka, gokyoLookup).render());
     expect(card.textContent).toContain("No data available");
   });
 
