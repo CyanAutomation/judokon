@@ -3,14 +3,9 @@ import vectorSearch from "./vectorSearch/index.js";
 import { markdownToHtml } from "./markdownToHtml.js";
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
-import { createSnippetElement } from "./snippetFormatter.js";
-import {
-  selectMatches,
-  formatSourcePath,
-  formatTags,
-  getExtractor,
-  SIMILARITY_THRESHOLD
-} from "./api/vectorSearchPage.js";
+import { prepareSearchUi, getSelectedTags } from "./vectorSearchPage/queryUi.js";
+import { renderResults } from "./vectorSearchPage/renderResults.js";
+import { selectMatches, getExtractor, SIMILARITY_THRESHOLD } from "./api/vectorSearchPage.js";
 
 let spinner;
 
@@ -85,27 +80,12 @@ export async function handleSearch(event) {
         "\u26A0\uFE0F No strong matches found, but here are the closest matches based on similarity.";
       messageEl.classList.add("search-result-empty");
     }
-    renderResults(tbody, toRender, queryTerms);
+    renderResults(tbody, toRender, queryTerms, loadResultContext);
   } catch (err) {
     console.error("Search failed", err);
     spinner.style.display = "none";
     if (messageEl) messageEl.textContent = "An error occurred while searching.";
   }
-}
-
-function prepareSearchUi() {
-  const input = document.getElementById("vector-search-input");
-  const table = document.getElementById("vector-results-table");
-  const tbody = table?.querySelector("tbody");
-  const query = input.value.trim();
-  if (tbody) tbody.textContent = "";
-  const messageEl = document.getElementById("search-results-message");
-  return { query, tbody, messageEl };
-}
-
-function getSelectedTags() {
-  const tagSelect = document.getElementById("tag-filter");
-  return tagSelect && tagSelect.value && tagSelect.value !== "all" ? [tagSelect.value] : [];
 }
 
 function showSearching(messageEl) {
@@ -116,64 +96,10 @@ function showSearching(messageEl) {
   }
 }
 
-function buildResultRow(match, queryTerms, isTop) {
-  const row = document.createElement("tr");
-  row.classList.add("search-result-item");
-  if (isTop) row.classList.add("top-match");
-  row.dataset.id = match.id;
-  row.setAttribute("role", "button");
-  row.tabIndex = 0;
-  row.setAttribute("aria-expanded", "false");
-
-  const textCell = document.createElement("td");
-  textCell.classList.add("match-text");
-  const snippet = createSnippetElement(match.text, queryTerms);
-  textCell.appendChild(snippet);
-  if (match.qaContext) {
-    const qa = document.createElement("div");
-    qa.classList.add("qa-context", "small-text");
-    qa.textContent = match.qaContext;
-    textCell.appendChild(qa);
-  }
-  const context = document.createElement("div");
-  context.classList.add("result-context", "small-text");
-  context.setAttribute("aria-live", "polite");
-  textCell.appendChild(context);
-
-  const sourceCell = document.createElement("td");
-  sourceCell.appendChild(formatSourcePath(match.source));
-
-  const tagsCell = document.createElement("td");
-  tagsCell.textContent = formatTags(match.tags);
-
-  const scoreCell = document.createElement("td");
-  scoreCell.textContent = match.score.toFixed(2);
-  if (match.score >= 0.8) scoreCell.classList.add("score-high");
-  else if (match.score >= 0.6) scoreCell.classList.add("score-mid");
-  else scoreCell.classList.add("score-low");
-
-  row.append(textCell, sourceCell, tagsCell, scoreCell);
-  return row;
-}
-
 function partitionAndSelect(matches) {
   const strongMatches = matches.filter((m) => m.score >= SIMILARITY_THRESHOLD);
   const weakMatches = matches.filter((m) => m.score < SIMILARITY_THRESHOLD);
   return { strongMatches, toRender: selectMatches(strongMatches, weakMatches) };
-}
-
-function renderResults(tbody, toRender, queryTerms) {
-  for (const [idx, match] of toRender.entries()) {
-    const row = buildResultRow(match, queryTerms, idx === 0);
-    row.addEventListener("click", () => loadResultContext(row));
-    row.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        loadResultContext(row);
-      }
-    });
-    tbody?.appendChild(row);
-  }
 }
 
 async function getQueryVector(expandedQuery) {
