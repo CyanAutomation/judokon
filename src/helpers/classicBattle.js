@@ -154,8 +154,9 @@ export function evaluateRound(store, stat) {
  *
  * @pseudocode
  * 1. Pause the round timer and clear any pending timeouts.
- * 2. Clear the countdown and show "Opponent is choosing…" in the info bar,
- *    optionally delaying the message when `delayOpponentMessage` is true.
+ * 2. Clear the countdown and show "Opponent is choosing…" in the info bar.
+ *    When `delayOpponentMessage` is true, delay the message by 500ms and
+ *    cancel it if the round resolves before it displays.
  * 3. After a short delay, reveal the opponent card and evaluate the round.
  * 4. If the match ended, clear the round counter.
  * 5. Reset stat buttons and schedule the next round.
@@ -177,14 +178,16 @@ export async function handleStatSelection(store, stat, options = {}) {
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   infoBar.clearTimer();
+  let opponentMsgId = 0;
   if (options.delayOpponentMessage) {
-    setTimeout(() => infoBar.showMessage("Opponent is choosing…"), 500);
+    opponentMsgId = setTimeout(() => infoBar.showMessage("Opponent is choosing…"), 500);
   } else {
     infoBar.showMessage("Opponent is choosing…");
   }
   const delay = 300 + Math.floor(Math.random() * 401);
   return new Promise((resolve) => {
     setTimeout(async () => {
+      clearTimeout(opponentMsgId);
       await revealComputerCard();
       const result = evaluateRound(store, stat);
       if (result.matchEnded) {
