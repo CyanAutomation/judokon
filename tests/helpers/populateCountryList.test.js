@@ -143,15 +143,21 @@ describe("populateCountryList", () => {
   });
 
   it("handles fetch failure gracefully", async () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockRejectedValue(new Error("network error"))
     }));
     vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
     loadCountryMapping.mockResolvedValue({});
+
     const { populateCountryList } = await import("../../src/helpers/country/list.js");
     const container = document.createElement("div");
+
     await expect(populateCountryList(container)).resolves.toBeUndefined();
     expect(container.querySelectorAll(".slide").length).toBe(0);
+
+    consoleErrorSpy.mockRestore();
   });
 
   it("does not duplicate countries if mapping has duplicates", async () => {
