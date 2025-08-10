@@ -17,6 +17,7 @@ if (!schemaFiles.includes("src/schemas/statNames.schema.json")) {
 }
 
 let hasErrors = false;
+const npxCmd = process.platform === "win32" ? "npx.cmd" : "npx";
 for (const schemaPath of schemaFiles) {
   const baseName = path.basename(schemaPath, ".schema.json");
   const dataPath = path.join("src", "data", `${baseName}.json`);
@@ -25,7 +26,7 @@ for (const schemaPath of schemaFiles) {
   }
   await new Promise((resolve) => {
     const child = spawn(
-      "npx",
+      npxCmd,
       [
         "ajv",
         "validate",

@@ -4,7 +4,7 @@ This project stores gameplay data in JSON files under `src/data`. Each file has 
 
 ## Running Validation
 
-Run `npm run validate:data` to check all schema and data pairs at once. The command executes `scripts/validateData.js`, which calls the Ajv CLI internally. If needed, you can validate a single pair manually using `npx ajv validate`:
+Run `npm run validate:data` to check all schema and data pairs at once. The command executes `scripts/validateData.js`, which calls the Ajv CLI provided by the `ajv-cli` dev dependency. After running `npm install`, you can also validate a single pair manually using `npx ajv validate`:
 
 ```bash
 npx ajv validate -s src/schemas/judoka.schema.json -d src/data/judoka.json
