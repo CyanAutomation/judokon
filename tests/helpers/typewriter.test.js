@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { shouldEnableTypewriter } from "../../src/helpers/typewriter.js";
-import { loadSettings, resetSettings, updateSetting } from "../../src/helpers/settingsUtils.js";
+import { loadSettings, resetSettings, updateSetting } from "../../src/helpers/settingsStorage.js";
 
 // Tests for typewriter helper
 

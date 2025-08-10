@@ -24,7 +24,7 @@
 import { generateRandomCard } from "./randomCard.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
 import { createButton } from "../components/Button.js";
-import { loadSettings } from "./settingsUtils.js";
+import { loadSettings } from "./settingsStorage.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";

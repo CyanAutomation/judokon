@@ -1,4 +1,4 @@
-import { loadSettings, updateSetting } from "./settingsUtils.js";
+import { loadSettings, updateSetting } from "./settingsStorage.js";
 
 /**
  * Event emitter broadcasting feature flag changes.
@@ -41,7 +41,7 @@ export function isEnabled(flag) {
  *
  * @param {string} flag - Feature flag to update.
  * @param {boolean} value - Desired enabled state.
- * @returns {Promise<import("./settingsUtils.js").Settings>} Updated settings.
+ * @returns {Promise<import("./settingsSchema.js").Settings>} Updated settings.
  */
 export async function setFlag(flag, value) {
   const settings = await loadSettings();

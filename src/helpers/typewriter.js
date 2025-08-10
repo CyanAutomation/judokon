@@ -8,7 +8,7 @@
  *    character at the given speed and restores the final HTML when done.
  */
 
-import { getSetting } from "./settingsUtils.js";
+import { getSetting } from "./settingsCache.js";
 /**
  * Determine whether the typewriter effect should run.
  *

@@ -2,7 +2,7 @@
  * Utilities for handling motion preference.
  */
 
-import { getSetting } from "./settingsUtils.js";
+import { getSetting } from "./settingsCache.js";
 /**
  * Determine synchronously if motion effects should be reduced.
  *

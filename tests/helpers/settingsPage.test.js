@@ -86,7 +86,7 @@ describe("renderSettingsUI", () => {
     const gameModes = [{ id: 1, name: "Classic", category: "mainMenu", isHidden: false }];
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
     const updateNavigationItemHidden = vi.fn().mockResolvedValue([]);
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       updateSetting,
       loadSettings: vi.fn(),
       resetSettings: vi.fn()
@@ -109,7 +109,7 @@ describe("renderSettingsUI", () => {
 
   it("persists feature flag changes", async () => {
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
-    vi.doMock("../../src/helpers/settingsUtils.js", () => ({
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       updateSetting,
       loadSettings: vi.fn(),
       resetSettings: vi.fn()

@@ -7,7 +7,7 @@
  * 3. Toggle the `.simulate-viewport` class based on the viewport flag.
  * 4. Initialize the page controls and event listeners.
  */
-import { loadSettings, resetSettings } from "./settingsUtils.js";
+import { loadSettings, resetSettings } from "./settingsStorage.js";
 import { loadNavigationItems, loadGameModes } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
 import { applyDisplayMode } from "./displayMode.js";
