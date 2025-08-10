@@ -179,7 +179,7 @@ export function scheduleNextRound(result, startRoundFn) {
     return;
   }
 
-  const btn = document.getElementById("next-round-button");
+  const btn = document.getElementById("next-button");
   if (!btn) return;
   const timerEl = document.getElementById("next-round-timer");
 

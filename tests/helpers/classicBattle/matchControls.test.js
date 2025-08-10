@@ -39,7 +39,7 @@ describe("classicBattle button handlers", () => {
     const { playerCard, computerCard } = createBattleCardContainers();
     const header = createBattleHeader();
     const nextBtn = document.createElement("button");
-    nextBtn.id = "next-round-button";
+    nextBtn.id = "next-button";
     nextBtn.disabled = true;
     const quitBtn = document.createElement("button");
     quitBtn.id = "quit-match-button";
@@ -66,7 +66,7 @@ describe("classicBattle button handlers", () => {
       "../../../src/helpers/classicBattle.js"
     );
     disableNextRoundButton();
-    const btn = document.getElementById("next-round-button");
+    const btn = document.getElementById("next-button");
     expect(btn.disabled).toBe(true);
     enableNextRoundButton();
     expect(btn.disabled).toBe(false);

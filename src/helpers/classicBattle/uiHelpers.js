@@ -65,7 +65,7 @@ export async function revealComputerCard() {
 }
 
 export function enableNextRoundButton(enable = true) {
-  const btn = document.getElementById("next-round-button");
+  const btn = document.getElementById("next-button");
   if (btn) btn.disabled = !enable;
 }
 

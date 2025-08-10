@@ -101,7 +101,7 @@ describe("classicBattlePage keyboard navigation", () => {
     stats.appendChild(statBtn);
 
     const next = document.createElement("button");
-    next.id = "next-round-button";
+    next.id = "next-button";
     const quit = document.createElement("button");
     quit.id = "quit-match-button";
     document.body.append(stats, next, quit);
@@ -160,7 +160,7 @@ describe("classicBattlePage simulated opponent mode", () => {
     btn.dataset.stat = "power";
     container.appendChild(btn);
     const next = document.createElement("button");
-    next.id = "next-round-button";
+    next.id = "next-button";
     document.body.append(container, next);
 
     const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
