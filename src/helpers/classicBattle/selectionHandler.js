@@ -1,4 +1,4 @@
-import { STATS, stopTimer } from "../battleEngine.js";
+import { STATS, stopTimer } from "../BattleEngine.js";
 import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
 import * as infoBar from "../setupBattleInfoBar.js";
 import { getStatValue, resetStatButtons, showResult } from "../battle/index.js";

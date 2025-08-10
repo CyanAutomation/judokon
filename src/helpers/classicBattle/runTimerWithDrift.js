@@ -1,4 +1,4 @@
-import { watchForDrift } from "../battleEngine.js";
+import { watchForDrift } from "../BattleEngine.js";
 import * as infoBar from "../setupBattleInfoBar.js";
 
 /**

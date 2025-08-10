@@ -1,8 +1,8 @@
 import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
 import { startTimer, handleStatSelectionTimeout } from "./timerService.js";
 import { showSelectionPrompt, disableNextRoundButton, updateDebugPanel } from "./uiHelpers.js";
-import { _resetForTest as resetEngineForTest } from "../battleEngine.js";
-import * as battleEngine from "../battleEngine.js";
+import { _resetForTest as resetEngineForTest } from "../BattleEngine.js";
+import * as battleEngine from "../BattleEngine.js";
 import * as infoBar from "../setupBattleInfoBar.js";
 import { resetStatButtons } from "../battle/index.js";
 import { syncScoreDisplay } from "./uiService.js";

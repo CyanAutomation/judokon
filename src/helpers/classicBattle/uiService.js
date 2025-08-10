@@ -1,4 +1,4 @@
-import { getScores } from "../battleEngine.js";
+import { getScores } from "../BattleEngine.js";
 import * as infoBar from "../setupBattleInfoBar.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
