@@ -155,7 +155,8 @@ export function createLoadingSpinner(wrapper) {
  * 4. For each judoka:
  *    a. Validate fields; use fallback card if invalid.
  *    b. Generate card, handle broken images, and make focusable.
- * 5. Add scroll buttons, scroll markers, and ensure ARIA roles/labels for accessibility.
+ * 5. Add scroll buttons and markers, ensuring ARIA roles/labels.
+ *    - Update button state on scroll and after scroll-snap completes.
  * 6. Use ResizeObserver to adapt card sizing and scroll marker logic on window resize.
  * 7. Enable keyboard navigation (arrow keys), swipe gestures, and focus/hover enlargement for the center card only.
  * 8. Provide aria-live region for dynamic messages (errors, empty state).
@@ -222,8 +223,16 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   addScrollMarkers(container, wrapper);
 
   const updateButtons = () => updateScrollButtonState(container, leftButton, rightButton);
+
+  let scrollTimeout;
+  const handleScroll = () => {
+    updateButtons();
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(updateButtons, 100); // re-check after snap
+  };
+
   updateButtons();
-  container.addEventListener("scroll", updateButtons);
+  container.addEventListener("scroll", handleScroll);
   window.addEventListener("resize", updateButtons);
 
   setupFocusHandlers(container);
