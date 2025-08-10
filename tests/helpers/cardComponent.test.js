@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { createCard } from "../../src/components/Card.js";
+import { Card, createCard } from "../../src/components/Card.js";
 
 describe("createCard", () => {
   it("creates a div card with text content", () => {
@@ -30,5 +30,13 @@ describe("createCard", () => {
     span.textContent = "inside";
     const card = createCard(span);
     expect(card.firstChild).toBe(span);
+  });
+});
+
+describe("Card class", () => {
+  it("exposes the created element", () => {
+    const instance = new Card("Hello");
+    expect(instance.element).toBeInstanceOf(HTMLDivElement);
+    expect(instance.element.classList.contains("card")).toBe(true);
   });
 });
