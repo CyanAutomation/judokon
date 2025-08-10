@@ -61,6 +61,7 @@ window.skipBattlePhase = skipCurrentPhase;
 export const getBattleStore = () => battleStore;
 let simulatedOpponentMode = false;
 let aiDifficulty = "easy";
+let skipActive = false;
 
 async function startRoundWrapper() {
   enableStatButtons(false);
@@ -72,6 +73,22 @@ async function startRoundWrapper() {
   } else {
     enableStatButtons(true);
   }
+}
+
+function setupNextButton() {
+  const btn = document.getElementById("next-button");
+  if (!btn) return;
+  window.addEventListener("skip-handler-change", (e) => {
+    skipActive = e.detail.active;
+  });
+  btn.addEventListener("click", async () => {
+    if (skipActive) {
+      skipCurrentPhase();
+    }
+    if (btn.dataset.nextReady === "true") {
+      await startRoundWrapper();
+    }
+  });
 }
 
 async function applyStatLabels() {
@@ -115,6 +132,7 @@ function watchBattleOrientation() {
 export async function setupClassicBattlePage() {
   await applyStatLabels();
   const statButtons = document.querySelectorAll("#stat-buttons button");
+  setupNextButton();
 
   const settings = await safeLoadSettings();
   toggleInspectorPanels(isEnabled("enableCardInspector"));

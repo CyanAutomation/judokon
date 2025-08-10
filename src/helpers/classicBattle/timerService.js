@@ -7,7 +7,7 @@ import {
   stopTimer
 } from "../battleEngine.js";
 import * as infoBar from "../setupBattleInfoBar.js";
-import { enableNextRoundButton, disableNextRoundButton, updateDebugPanel } from "./uiHelpers.js";
+import { enableNextRoundButton, updateDebugPanel } from "./uiHelpers.js";
 import { runTimerWithDrift } from "./runTimerWithDrift.js";
 import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
 
@@ -167,13 +167,12 @@ export function handleStatSelectionTimeout(store, onSelect) {
  * 3. After a short delay, run a 3 second cooldown via `runTimerWithDrift(startCoolDown)`
  *    and display `"Next round in: <n>s"` using one snackbar that updates each tick.
  * 4. Register a skip handler that stops the timer and invokes the expiration logic.
- * 5. When expired, clear the `#next-round-timer` element, enable the button, attach the click
- *    handler, and clear the handler.
+ * 5. When expired, clear the `#next-round-timer` element, enable the button, mark it ready,
+ *    and clear the handler.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
- * @param {function(): Promise<void>} startRoundFn - Function to begin the next round.
  */
-export function scheduleNextRound(result, startRoundFn) {
+export function scheduleNextRound(result) {
   if (result.matchEnded) {
     setSkipHandler(null);
     return;
@@ -182,11 +181,6 @@ export function scheduleNextRound(result, startRoundFn) {
   const btn = document.getElementById("next-button");
   if (!btn) return;
   const timerEl = document.getElementById("next-round-timer");
-
-  const onClick = async () => {
-    disableNextRoundButton();
-    await startRoundFn();
-  };
 
   let started = false;
   const onTick = (remaining) => {
@@ -209,8 +203,8 @@ export function scheduleNextRound(result, startRoundFn) {
     if (timerEl) {
       timerEl.textContent = "";
     }
-    btn.addEventListener("click", onClick, { once: true });
     enableNextRoundButton();
+    btn.dataset.nextReady = "true";
     updateDebugPanel();
   };
 

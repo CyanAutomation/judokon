@@ -194,7 +194,7 @@ export async function handleStatSelection(store, stat, options = {}) {
         infoBar.clearRoundCounter();
       }
       resetStatButtons();
-      scheduleNextRound(result, getStartRound(store));
+      scheduleNextRound(result);
       if (result.matchEnded) {
         showMatchSummaryModal(result, () => handleReplay(store));
       }
@@ -337,7 +337,8 @@ export function _resetForTest(store) {
   if (nextBtn) {
     const clone = nextBtn.cloneNode(true);
     nextBtn.replaceWith(clone);
-    clone.disabled = true;
+    clone.setAttribute("aria-disabled", "true");
+    delete clone.dataset.nextReady;
   }
   const quitBtn = document.getElementById("quit-match-button");
   if (quitBtn) {
