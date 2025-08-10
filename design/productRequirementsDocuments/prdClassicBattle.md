@@ -381,7 +381,7 @@ flowchart TD
   - [x] 1.3 Handle scoring updates on win, loss, and tie
   - [x] 1.4 Add "Next" (round advance/timer skip) and "Quit Match" buttons to controls
   - [x] 1.5 End match after the user-selected win target (5, 10, or 15 points; default 10) or 25 rounds
-- [ ] 2.0 Add Early Quit Functionality
+- [x] 2.0 Add Early Quit Functionality
   - [x] 2.1 Trigger quit confirmation when the header logo is clicked
   - [x] 2.2 Create confirmation prompt flow
   - [x] 2.3 Record match as player loss upon quit confirmation
