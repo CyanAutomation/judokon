@@ -72,6 +72,22 @@ export function initInfoBar(container) {
   scoreEl = container.querySelector("#score-display");
 }
 
+// Best-effort lazy lookup for header elements in case initialization runs late
+function ensureRefs() {
+  if (!messageEl || !messageEl.isConnected) {
+    messageEl = document.getElementById("round-message") || messageEl;
+  }
+  if (!timerEl || !timerEl.isConnected) {
+    timerEl = document.getElementById("next-round-timer") || timerEl;
+  }
+  if (!roundCounterEl || !roundCounterEl.isConnected) {
+    roundCounterEl = document.getElementById("round-counter") || roundCounterEl;
+  }
+  if (!scoreEl || !scoreEl.isConnected) {
+    scoreEl = document.getElementById("score-display") || scoreEl;
+  }
+}
+
 function setScoreText(player, computer) {
   if (!scoreEl) return;
   let playerSpan = scoreEl.firstElementChild;
@@ -112,6 +128,7 @@ function animateScore(startPlayer, startComputer, playerTarget, computerTarget) 
  * @returns {void}
  */
 export function showMessage(text) {
+  ensureRefs();
   if (messageEl) {
     messageEl.textContent = text;
   }
@@ -126,6 +143,7 @@ export function showMessage(text) {
  * @returns {void}
  */
 export function clearMessage() {
+  ensureRefs();
   if (messageEl) {
     messageEl.textContent = "";
   }
@@ -171,6 +189,7 @@ export function showAutoSelect(stat) {
  * 1. If the timer element exists, set its text content to an empty string.
  */
 export function clearTimer() {
+  ensureRefs();
   if (timerEl) {
     timerEl.textContent = "";
   }
@@ -188,6 +207,7 @@ export function clearTimer() {
  * @returns {void}
  */
 export function updateRoundCounter(current, total) {
+  ensureRefs();
   if (roundCounterEl) {
     roundCounterEl.textContent = `Round ${current} of ${total}`;
   }
@@ -203,6 +223,7 @@ export function updateRoundCounter(current, total) {
  * @returns {void}
  */
 export function clearRoundCounter() {
+  ensureRefs();
   if (roundCounterEl) {
     roundCounterEl.textContent = "";
   }
@@ -278,6 +299,7 @@ export function startCountdown(seconds, onFinish) {
  * @returns {void}
  */
 export function updateScore(playerScore, computerScore) {
+  ensureRefs();
   if (!scoreEl) return;
   setScoreText(playerScore, computerScore);
   const startPlayer = currentPlayer;
