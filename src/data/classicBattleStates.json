@@ -6,8 +6,14 @@
     "description": "Idle state before the match begins. UI shows a Start/Ready control.",
     "onEnter": ["render:matchLobby", "reset:scoreAndDecksPreview"],
     "triggers": [
-      { "on": "startClicked", "target": "matchStart" },
-      { "on": "interrupt", "target": "interruptMatch" }
+      {
+        "on": "startClicked",
+        "target": "matchStart"
+      },
+      {
+        "on": "interrupt",
+        "target": "interruptMatch"
+      }
     ]
   },
   {
@@ -16,9 +22,18 @@
     "description": "Initialises match data, shuffles and deals 25 cards to each player, sets first player.",
     "onEnter": ["init:matchContext", "shuffleAndDeal:decks", "determine:firstPlayer"],
     "triggers": [
-      { "on": "ready", "target": "roundStart" },
-      { "on": "interrupt", "target": "interruptMatch" },
-      { "on": "error", "target": "interruptMatch" }
+      {
+        "on": "ready",
+        "target": "roundStart"
+      },
+      {
+        "on": "interrupt",
+        "target": "interruptMatch"
+      },
+      {
+        "on": "error",
+        "target": "interruptMatch"
+      }
     ]
   },
   {
@@ -27,8 +42,14 @@
     "description": "Begins a new round. Reveals top cards, sets active player for this round.",
     "onEnter": ["reveal:topCards", "set:activePlayer"],
     "triggers": [
-      { "on": "cardsRevealed", "target": "waitingForPlayerAction" },
-      { "on": "interrupt", "target": "interruptRound" }
+      {
+        "on": "cardsRevealed",
+        "target": "waitingForPlayerAction"
+      },
+      {
+        "on": "interrupt",
+        "target": "interruptRound"
+      }
     ]
   },
   {
@@ -37,9 +58,19 @@
     "description": "Awaiting the stat choice. If AI's turn, auto-select after a short delay.",
     "onEnter": ["prompt:chooseStatIfHuman", "schedule:autoSelectIfAI"],
     "triggers": [
-      { "on": "statSelected", "target": "roundDecision" },
-      { "on": "timeout", "target": "roundDecision", "guard": "activePlayerIsAI" },
-      { "on": "interrupt", "target": "interruptRound" }
+      {
+        "on": "statSelected",
+        "target": "roundDecision"
+      },
+      {
+        "on": "timeout",
+        "target": "roundDecision",
+        "guard": "activePlayerIsAI"
+      },
+      {
+        "on": "interrupt",
+        "target": "interruptRound"
+      }
     ]
   },
   {
@@ -48,10 +79,22 @@
     "description": "Compares selected stat, determines win/draw and prepares transfers.",
     "onEnter": ["compare:selectedStat", "compute:roundOutcome"],
     "triggers": [
-      { "on": "outcome=winP1", "target": "roundOver" },
-      { "on": "outcome=winP2", "target": "roundOver" },
-      { "on": "outcome=draw", "target": "roundOver" },
-      { "on": "interrupt", "target": "interruptRound" }
+      {
+        "on": "outcome=winP1",
+        "target": "roundOver"
+      },
+      {
+        "on": "outcome=winP2",
+        "target": "roundOver"
+      },
+      {
+        "on": "outcome=draw",
+        "target": "roundOver"
+      },
+      {
+        "on": "interrupt",
+        "target": "interruptRound"
+      }
     ]
   },
   {
@@ -68,10 +111,17 @@
       {
         "on": "matchPointReached",
         "target": "matchDecision",
-        "guard": "winnerHas10Wins || noCardsLeft"
+        "guard": "winnerHasPointsToWin || noCardsLeft",
+        "note": "Guard compares current score against BattleEngine.pointsToWin"
       },
-      { "on": "continue", "target": "cooldown" },
-      { "on": "interrupt", "target": "interruptRound" }
+      {
+        "on": "continue",
+        "target": "cooldown"
+      },
+      {
+        "on": "interrupt",
+        "target": "interruptRound"
+      }
     ]
   },
   {
@@ -80,8 +130,14 @@
     "description": "Short pacing pause between rounds; allows animations and readability.",
     "onEnter": ["delay:short", "animate:roundWrap"],
     "triggers": [
-      { "on": "done", "target": "roundStart" },
-      { "on": "interrupt", "target": "interruptRound" }
+      {
+        "on": "done",
+        "target": "roundStart"
+      },
+      {
+        "on": "interrupt",
+        "target": "interruptRound"
+      }
     ]
   },
   {
@@ -90,8 +146,14 @@
     "description": "Determines overall winner based on score or exhaustion of cards.",
     "onEnter": ["compute:matchOutcome", "render:matchSummary"],
     "triggers": [
-      { "on": "finalize", "target": "matchOver" },
-      { "on": "interrupt", "target": "interruptMatch" }
+      {
+        "on": "finalize",
+        "target": "matchOver"
+      },
+      {
+        "on": "interrupt",
+        "target": "interruptMatch"
+      }
     ]
   },
   {
@@ -101,8 +163,14 @@
     "description": "Match completed. Offer Rematch, Home, or Share.",
     "onEnter": ["show:matchResultScreen"],
     "triggers": [
-      { "on": "rematch", "target": "matchStart" },
-      { "on": "home", "target": "waitingForMatchStart" }
+      {
+        "on": "rematch",
+        "target": "matchStart"
+      },
+      {
+        "on": "home",
+        "target": "waitingForMatchStart"
+      }
     ]
   },
   {
@@ -111,8 +179,14 @@
     "description": "Round interrupted (quit, navigation, or error). Performs safe rollback and returns to lobby or ends match.",
     "onEnter": ["rollback:roundContextIfNeeded", "log:analyticsInterruptRound"],
     "triggers": [
-      { "on": "resumeLobby", "target": "waitingForMatchStart" },
-      { "on": "abortMatch", "target": "matchOver" }
+      {
+        "on": "resumeLobby",
+        "target": "waitingForMatchStart"
+      },
+      {
+        "on": "abortMatch",
+        "target": "matchOver"
+      }
     ]
   },
   {
@@ -120,6 +194,11 @@
     "name": "interruptMatch",
     "description": "Match interrupted (quit from lobby or critical error). Cleanly tears down match.",
     "onEnter": ["teardown:matchContext", "log:analyticsInterruptMatch"],
-    "triggers": [{ "on": "toLobby", "target": "waitingForMatchStart" }]
+    "triggers": [
+      {
+        "on": "toLobby",
+        "target": "waitingForMatchStart"
+      }
+    ]
   }
 ]
