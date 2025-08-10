@@ -52,37 +52,10 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-      # 🧮 Collect Test Suite Stats
-      - name: Get Test Suite Stats
+      # 🧮 Collect Test Suite Stats and Roll Dice
+      - name: Collect Test Suite Stats
         id: stats
-        run: |
-          SNAPSHOTS=$(find test-results -type f -name "*.png" 2>/dev/null | wc -l)
-          PLAYWRIGHT_TESTS=$(find playwright -type f \( -name "*.spec.js" -o -name "*.spec.ts" \) | wc -l)
-          VITEST_TESTS=$(find tests -type f \( -name "*.test.js" -o -name "*.spec.js" -o -name "*.test.ts" -o -name "*.spec.ts" \) | wc -l)
-          TESTFILES=$((PLAYWRIGHT_TESTS + VITEST_TESTS))
-
-          TESTCASES=$(grep -rE "test\\(|it\\(" tests playwright --include="*.js" --include="*.ts" | wc -l)
-          UPDATED_SNAPSHOTS=$(git diff --name-only | grep -E 'test-results/.+\.png$' | wc -l)
-
-          echo "snapshots=$SNAPSHOTS" >> $GITHUB_OUTPUT
-          echo "testfiles=$TESTFILES" >> $GITHUB_OUTPUT
-          echo "testcases=$TESTCASES" >> $GITHUB_OUTPUT
-          echo "updated=$UPDATED_SNAPSHOTS" >> $GITHUB_OUTPUT
-
-      # 🎲 Random Dice Roll
-      - name: Generate Judo Throw Dice Roll
-        id: dice
-        run: |
-          DICE=$(( RANDOM % 6 + 1 ))
-          case $DICE in
-            1) MOOD="🎲 Roll: 1 — *Seoi Nage* lightning strike! ⚡️ Shoulder throw supremacy." ;;
-            2) MOOD="🎲 Roll: 2 — *Osoto Gari* sweep! 🌪 The ground says hello." ;;
-            3) MOOD="🎲 Roll: 3 — *Uchi Mata* whirl! 🌀 You’re airborne now." ;;
-            4) MOOD="🎲 Roll: 4 — *Harai Goshi* slash! 🌊 A clean hip-and-leg combo." ;;
-            5) MOOD="🎲 Roll: 5 — *Tai Otoshi* drop! 💥 Straight to the tatami." ;;
-            6) MOOD="🎲 Roll: 6 — *Kouchi Gari* trip! 🎯 Small but deadly." ;;
-          esac
-          echo "mood=$MOOD" >> $GITHUB_OUTPUT
+        run: node scripts/collectTestStats.mjs
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
@@ -102,7 +75,7 @@ jobs:
             - 🖋️ Snapshots updated in this PR: ${{ steps.stats.outputs.updated }}
 
             **Let The Die Roll!**
-            ${{ steps.dice.outputs.mood }}
+            ${{ steps.stats.outputs.mood }}
           branch: ${{ env.BRANCH_NAME }}
           labels: |
             automated
