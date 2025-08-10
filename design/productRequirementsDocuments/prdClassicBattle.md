@@ -111,68 +111,78 @@ The game waits for the player to choose a stat (or the AI to choose if it’s th
 
 - **Triggers:**
   - `statSelected` → **`roundDecision`**
-  - `timeout_AiTurn` → **`roundDecision`**
+  - `timeout` (AI turn) → **`roundDecision`**
   - `interrupt` → **`interruptRound`**
-- **Notes:** A timer may apply for AI turns. The UI highlights selectable stats.
+- **Notes:** Info Bar shows the stat-selection timer and prompt (see [prdBattleInfoBar.md](prdBattleInfoBar.md)). The UI highlights selectable stats.
 
 ---
 
 ### 5. `roundDecision`
-The chosen stats are compared to determine the round’s winner.
+Compares the selected stat values and determines the round’s winner.
 
 - **Triggers:**
-  - `winP1 / winP2 / draw` → **`roundOver`**
+  - `outcome=winP1 / outcome=winP2 / outcome=draw` → **`roundOver`**
   - `interrupt` → **`interruptRound`**
-- **Notes:** Includes animations showing the outcome.
+- **Notes:** Info Bar surfaces the win/loss/tie message and reveals the chosen stats (see [prdBattleInfoBar.md](prdBattleInfoBar.md)).
 
 ---
 
 ### 6. `roundOver`
-The round concludes and cards are redistributed or discarded according to the rules.
+Executes card transfers, updates the score, and sets the next starting player.
 
 - **Triggers:**
-  - `matchPointReached_10_wins_or_no_cards` → **`matchDecision`**
+  - `matchPointReached` (winner hits win target or no cards left) → **`matchDecision`**
   - `continue` → **`cooldown`**
   - `interrupt` → **`interruptRound`**
-- **Notes:** UI displays round results, updated score, and any streaks.
+- **Notes:** Info Bar updates the score and round summary, including streaks (see [prdBattleInfoBar.md](prdBattleInfoBar.md)).
 
 ---
 
 ### 7. `cooldown`
-A short delay between rounds to pace gameplay.
+A short pacing pause between rounds.
 
 - **Triggers:**
   - `done` → **`roundStart`**
   - `interrupt` → **`interruptRound`**
-- **Notes:** Allows animations and audio cues to complete before the next round.
+- **Notes:** Info Bar and snackbar show a countdown to the next round (see [prdBattleInfoBar.md](prdBattleInfoBar.md)).
 
 ---
 
 ### 8. `matchDecision`
-Final check to see if the match has a winner or ends in a draw.
+Determines the overall winner based on score or remaining cards.
 
 - **Triggers:**
   - `finalize` → **`matchOver`**
   - `interrupt` → **`interruptMatch`**
-- **Notes:** End-game logic runs here.
+- **Notes:** Info Bar announces the final match result (see [prdBattleInfoBar.md](prdBattleInfoBar.md)).
 
 ---
 
 ### 9. `matchOver`
-The match is complete.
+Match completed; player chooses next action.
 
 - **Triggers:**
   - `rematch` → **`matchStart`**
   - `home` → **`waitingForMatchStart`**
-- **Notes:** UI displays final scores and outcomes.
+- **Notes:** Info Bar keeps the final score visible until the player exits or rematches (see [prdBattleInfoBar.md](prdBattleInfoBar.md)).
+
+---
+### 10. `interruptRound`
+Round interrupted due to quit, navigation, or error. Rolls back round context and logs analytics.
+
+- **Triggers:**
+  - `resumeLobby` → **`waitingForMatchStart`**
+  - `abortMatch` → **`matchOver`**
+- **Notes:** Info Bar displays an interruption message and current score (see [prdBattleInfoBar.md](prdBattleInfoBar.md)).
 
 ---
 
-### Interrupt States
-Interrupts can occur at any major phase.
+### 11. `interruptMatch`
+Match interrupted from lobby or critical error. Tears down match context.
 
-- **`interruptMatch`** → Terminates the entire match and returns to home.
-- **`interruptRound`** → Ends the current round and returns to `waitingForMatchStart` or `matchStart` depending on context.
+- **Triggers:**
+  - `toLobby` → **`waitingForMatchStart`**
+- **Notes:** Info Bar announces that the match was aborted (see [prdBattleInfoBar.md](prdBattleInfoBar.md)).
 
 ---
 
@@ -186,11 +196,11 @@ Interrupts can occur at any major phase.
 | matchStart | interrupt / error | interruptMatch | Match aborted |
 | roundStart | cardsRevealed | waitingForPlayerAction | Cards face-up |
 | roundStart | interrupt | interruptRound | Round aborted |
-| waitingForPlayerAction | statSelected / timeout_AiTurn | roundDecision | Compare stats |
+| waitingForPlayerAction | statSelected / timeout (AI turn) | roundDecision | Compare stats |
 | waitingForPlayerAction | interrupt | interruptRound | Round aborted |
-| roundDecision | winP1 / winP2 / draw | roundOver | Outcome decided |
+| roundDecision | outcome=winP1 / outcome=winP2 / outcome=draw | roundOver | Outcome decided |
 | roundDecision | interrupt | interruptRound | Round aborted |
-| roundOver | matchPointReached_10_wins_or_no_cards | matchDecision | Check for winner |
+| roundOver | matchPointReached | matchDecision | Win target met or no cards left |
 | roundOver | continue | cooldown | Move to next round |
 | roundOver | interrupt | interruptRound | Round aborted |
 | cooldown | done | roundStart | Start new round |
@@ -199,6 +209,9 @@ Interrupts can occur at any major phase.
 | matchDecision | interrupt | interruptMatch | Match aborted |
 | matchOver | rematch | matchStart | Start another match |
 | matchOver | home | waitingForMatchStart | Return to main screen |
+| interruptRound | resumeLobby | waitingForMatchStart | Return to lobby |
+| interruptRound | abortMatch | matchOver | Match cancelled |
+| interruptMatch | toLobby | waitingForMatchStart | Return to lobby |
 
 ---
 
