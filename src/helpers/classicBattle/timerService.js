@@ -5,7 +5,7 @@ import {
   startCoolDown,
   STATS,
   stopTimer
-} from "../BattleEngine.js";
+} from "../battleEngineFacade.js";
 import * as infoBar from "../setupBattleInfoBar.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 import { runTimerWithDrift } from "./runTimerWithDrift.js";

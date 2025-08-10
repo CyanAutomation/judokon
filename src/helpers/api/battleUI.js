@@ -1,4 +1,4 @@
-import { STATS, handleStatSelection } from "../BattleEngine.js";
+import { STATS, handleStatSelection } from "../battleEngineFacade.js";
 
 /**
  * Choose an opponent stat based on difficulty and available values.

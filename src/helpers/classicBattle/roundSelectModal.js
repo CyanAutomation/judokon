@@ -2,7 +2,7 @@ import { fetchJson } from "../dataUtils.js";
 import { DATA_DIR, CLASSIC_BATTLE_POINTS_TO_WIN } from "../constants.js";
 import { createButton } from "../../components/Button.js";
 import { createModal } from "../../components/Modal.js";
-import { setPointsToWin } from "../BattleEngine.js";
+import { setPointsToWin } from "../battleEngineFacade.js";
 import { initTooltips } from "../tooltip.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 

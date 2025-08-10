@@ -1,4 +1,4 @@
-import { STATS } from "../BattleEngine.js";
+import { STATS } from "../battleEngineFacade.js";
 
 /**
  * Retrieve a numeric stat value from a battle score container.

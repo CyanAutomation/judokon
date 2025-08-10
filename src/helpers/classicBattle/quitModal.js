@@ -1,6 +1,6 @@
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
-import * as battleEngine from "../BattleEngine.js";
+import * as battleEngine from "../battleEngineFacade.js";
 import { showResult } from "../battle/index.js";
 
 function createQuitConfirmation(store, onConfirm) {

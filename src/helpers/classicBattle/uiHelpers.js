@@ -6,7 +6,7 @@ import {
 } from "./cardSelection.js";
 import { loadSettings } from "../settingsStorage.js";
 import { isEnabled } from "../featureFlags.js";
-import { getScores, getTimerState, isMatchEnded } from "../BattleEngine.js";
+import { getScores, getTimerState, isMatchEnded } from "../battleEngineFacade.js";
 import { isTestModeEnabled, getCurrentSeed } from "../testModeUtils.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
