@@ -97,6 +97,19 @@ This helps reviewers validate AI-generated work more quickly.
 
 ---
 
+## Testing Discipline: Keep Vitest Output Clean (console.warn / console.error)
+
+To keep CI and local runs readable, **no test should emit unsilenced `console.warn` or `console.error`**. Expected logs must be **stubbed, spied, or muted**.
+
+### Agent / Developer Checklist
+
+- Wrap code paths that intentionally log with **`withMutedConsole(fn)`** (see helper below), or
+- Use `vi.spyOn(console, 'error').mockImplementation(() => {})` (same for `warn`) for the narrowest scope possible.
+- If a test *must* allow logs, wrap the specific execution in `withAllowedConsole(fn)`.
+- Never leave raw `console.warn/error` in production code. Prefer domain-specific loggers or error channels.
+
+---
+
 ## 📎 Related AI Agent Docs
 
 - `AGENTS.md` – Tasks, prompts, and expectations for agents
