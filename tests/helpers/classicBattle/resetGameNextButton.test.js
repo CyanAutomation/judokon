@@ -19,9 +19,7 @@ describe("resetGame reattaches Next button handler", () => {
     btn.dataset.nextReady = "true"; // simulate previously ready state
     document.body.appendChild(btn);
 
-    const { resetGame } = await import(
-      "../../../src/helpers/classicBattle/roundManager.js"
-    );
+    const { resetGame } = await import("../../../src/helpers/classicBattle/roundManager.js");
 
     // Act: reset replaces the button and reattaches the click handler
     resetGame();
@@ -36,4 +34,3 @@ describe("resetGame reattaches Next button handler", () => {
     expect(onNextButtonClick).toHaveBeenCalledTimes(1);
   });
 });
-
