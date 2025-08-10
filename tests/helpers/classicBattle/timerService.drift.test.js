@@ -100,7 +100,9 @@ describe("timerService drift handling", () => {
     timerNode.id = "next-round-timer";
     document.body.appendChild(timerNode);
     mod.scheduleNextRound({ matchEnded: false });
+    window.startRoundOverride = vi.fn();
     btn.click();
-    expect(btn.dataset.nextReady).toBe("true");
+    expect(btn.dataset.nextReady).toBeUndefined();
+    expect(window.startRoundOverride).toHaveBeenCalled();
   });
 });

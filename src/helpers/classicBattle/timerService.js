@@ -60,7 +60,6 @@ export async function onNextButtonClick() {
   if (!btn) return;
   if (skipHandler) {
     skipCurrentPhase();
-    return;
   }
   if (btn.dataset.nextReady === "true") {
     btn.classList.add("disabled");
