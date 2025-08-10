@@ -107,10 +107,9 @@ export async function handleStatSelection(store, stat, options = {}) {
         infoBar.clearRoundCounter();
       }
       resetStatButtons();
-      // Ensure the visible round message reflects the outcome, not the auto-select banner
-      if (result.message) {
-        infoBar.showMessage(result.message);
-      }
+      // Ensure the outcome message always replaces any pending "Opponent is choosing…"
+      // If no message is provided (unexpected), clear the message area.
+      infoBar.showMessage(result.message || "");
       // From roundOver, either continue to cooldown or decide match
       try {
         const { dispatchBattleEvent } = await import("./orchestrator.js");
