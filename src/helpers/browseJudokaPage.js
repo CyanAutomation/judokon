@@ -1,6 +1,5 @@
 import { buildCardCarousel, addScrollMarkers, createLoadingSpinner } from "./carouselBuilder.js";
-import { createCountrySlider } from "./countrySlider.js";
-import { toggleCountryPanel, toggleCountryPanelMode } from "./countryPanel.js";
+import { toggleCountryPanelMode } from "./countryPanel.js";
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { getFallbackJudoka } from "./judokaUtils.js";
@@ -8,86 +7,8 @@ import { createButton } from "../components/Button.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
 import { setupButtonEffects } from "./buttonEffects.js";
-
-/**
- * Handle left/right arrow key navigation within a button container.
- *
- * @pseudocode
- * 1. Get all buttons with the specified class in the container.
- * 2. Find the index of the currently focused button.
- * 3. If a navigational key (ArrowLeft/ArrowRight) is pressed, prevent default.
- * 4. Calculate the next index by wrapping around.
- * 5. Move focus to the button at the next index.
- *
- * @param {KeyboardEvent} event
- * @param {Element} container
- * @param {string} buttonClass
- */
-function handleKeyboardNavigation(event, container, buttonClass) {
-  const buttons = Array.from(container.querySelectorAll(`button.${buttonClass}`));
-  const current = document.activeElement;
-  const index = buttons.indexOf(current);
-  if (index !== -1) {
-    event.preventDefault();
-    const offset = event.key === "ArrowRight" ? 1 : -1;
-    const next = (index + offset + buttons.length) % buttons.length;
-    buttons[next].focus();
-  }
-}
-
-/**
- * Update selected state on flag buttons.
- *
- * @pseudocode
- * 1. Remove 'selected' class from all flag buttons in the container.
- * 2. Add 'selected' class to the provided button.
- *
- * @param {Element} container
- * @param {HTMLButtonElement} button
- */
-function highlightSelection(container, button) {
-  const buttons = container.querySelectorAll("button.flag-button");
-  buttons.forEach((b) => b.classList.remove("selected"));
-  button.classList.add("selected");
-}
-
-/**
- * Set up the country selection panel toggle behavior.
- *
- * @pseudocode
- * 1. On toggleButton click:
- *    a. Toggle panel open state.
- *    b. If opening for the first time, initialize country slider.
- * 2. On panel keydown:
- *    a. Close panel on 'Escape'.
- *    b. Navigate slider buttons with ArrowLeft/ArrowRight.
- *
- * @param {HTMLButtonElement} toggleButton
- * @param {Element} panel
- * @param {Element} listContainer
- */
-export function setupCountryToggle(toggleButton, panel, listContainer) {
-  let countriesLoaded = false;
-
-  toggleButton.addEventListener("click", async () => {
-    const wasOpen = panel.classList.contains("open");
-    toggleCountryPanel(toggleButton, panel);
-    if (!wasOpen && !countriesLoaded) {
-      await createCountrySlider(listContainer);
-      countriesLoaded = true;
-    }
-  });
-
-  panel.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      toggleCountryPanel(toggleButton, panel, false);
-    }
-
-    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
-      handleKeyboardNavigation(e, listContainer, "flag-button");
-    }
-  });
-}
+import { setupCountryToggle } from "./browse/setupCountryToggle.js";
+import { setupCountryFilter } from "./browse/setupCountryFilter.js";
 
 /**
  * Attach listener to switch layout mode of country panel.
@@ -102,86 +23,6 @@ export function setupLayoutToggle(layoutBtn, panel) {
   if (layoutBtn) {
     layoutBtn.addEventListener("click", () => toggleCountryPanelMode(panel));
   }
-}
-
-/**
- * Configure country filter interactions for the carousel.
- *
- * @pseudocode
- * 1. Define helper to update aria-live region with count and country.
- * 2. On clearButton click:
- *    a. Deselect all country buttons.
- *    b. Render full judoka list.
- *    c. Update live region.
- *    d. Close country panel.
- * 3. On listContainer click:
- *    a. If clicked element is a flag button:
- *       i. Determine selected country.
- *       ii. Highlight selection.
- *       iii. Filter judokaList by country.
- *       iv. Render filtered list.
- *       v. Update live region.
- *       vi. Remove any existing no-results message.
- *       vii. If no results, show 'no-results-message'.
- *       viii. Close country panel.
- *
- * @param {Element} listContainer
- * @param {HTMLButtonElement} clearButton
- * @param {Array<Judoka>} judokaList
- * @param {Function} render
- * @param {HTMLButtonElement} toggleButton
- * @param {Element} panel
- * @param {Element} carouselEl
- * @param {Element} ariaLiveEl
- */
-export function setupCountryFilter(
-  listContainer,
-  clearButton,
-  judokaList,
-  render,
-  toggleButton,
-  panel,
-  carouselEl,
-  ariaLiveEl
-) {
-  let liveRegion = ariaLiveEl;
-
-  function updateLiveRegion(count, country) {
-    liveRegion = carouselEl.querySelector(".carousel-aria-live") || liveRegion;
-    liveRegion.textContent = `Showing ${count} judoka for ${country}`;
-  }
-
-  clearButton.addEventListener("click", async () => {
-    const buttons = listContainer.querySelectorAll("button.flag-button");
-    buttons.forEach((b) => b.classList.remove("selected"));
-    await render(judokaList);
-    updateLiveRegion(judokaList.length, "all countries");
-    toggleCountryPanel(toggleButton, panel, false);
-  });
-
-  listContainer.addEventListener("click", async (e) => {
-    const button = e.target.closest("button.flag-button");
-    if (!button) return;
-    const selected = button.value;
-    highlightSelection(listContainer, button);
-    const filtered =
-      selected === "all" ? judokaList : judokaList.filter((j) => j.country === selected);
-    await render(filtered);
-    updateLiveRegion(filtered.length, selected === "all" ? "all countries" : selected);
-    const existingMessage = carouselEl.querySelector(".no-results-message");
-    if (existingMessage) {
-      existingMessage.remove();
-    }
-    if (filtered.length === 0) {
-      const noResultsMessage = document.createElement("div");
-      noResultsMessage.className = "no-results-message";
-      noResultsMessage.setAttribute("role", "status");
-      noResultsMessage.setAttribute("aria-live", "polite");
-      noResultsMessage.textContent = "No judoka available for this country";
-      carouselEl.appendChild(noResultsMessage);
-    }
-    toggleCountryPanel(toggleButton, panel, false);
-  });
 }
 
 /**
@@ -205,18 +46,15 @@ export async function setupBrowseJudokaPage() {
 
   toggleCountryPanelMode(countryPanel, false);
 
-  let allJudoka = [];
-  let gokyoData = [];
-
   /**
    * Fetch judoka and gokyo data concurrently.
    *
    * @pseudocode
    * 1. Concurrently request `judoka.json` and `gokyo.json`.
    * 2. If the judoka request fails, throw the error.
-   * 3. Otherwise, store the results in `allJudoka` and `gokyoData`.
+   * 3. Otherwise, return both datasets.
    *
-   * @returns {Promise<void>} Resolves when data is loaded.
+   * @returns {Promise<{allJudoka: Judoka[], gokyoData: Array}>}
    */
   async function loadData() {
     const [judokaRes, gokyoRes] = await Promise.allSettled([
@@ -224,12 +62,12 @@ export async function setupBrowseJudokaPage() {
       fetchJson(`${DATA_DIR}gokyo.json`)
     ]);
 
-    gokyoData = gokyoRes.status === "fulfilled" ? gokyoRes.value : [];
+    const gokyoData = gokyoRes.status === "fulfilled" ? gokyoRes.value : [];
 
     if (judokaRes.status === "rejected") {
       throw judokaRes.reason;
     }
-    allJudoka = judokaRes.value;
+    return { allJudoka: judokaRes.value, gokyoData };
   }
 
   /**
@@ -244,7 +82,7 @@ export async function setupBrowseJudokaPage() {
    * @param {Judoka[]} list - Judoka to display.
    * @returns {Promise<void>} Resolves when rendering completes.
    */
-  async function renderCarousel(list, spinnerInfo) {
+  async function renderCarousel(list, gokyoData, spinnerInfo) {
     const carousel = await buildCardCarousel(list, gokyoData);
     if (spinnerInfo) {
       clearTimeout(spinnerInfo.timeoutId);
@@ -266,8 +104,9 @@ export async function setupBrowseJudokaPage() {
   async function init() {
     const spinnerInfo = createLoadingSpinner(carouselContainer);
     try {
-      await loadData();
-      await renderCarousel(allJudoka, spinnerInfo);
+      const { allJudoka, gokyoData } = await loadData();
+      const render = (list) => renderCarousel(list, gokyoData);
+      await renderCarousel(allJudoka, gokyoData, spinnerInfo);
       if (allJudoka.length === 0) {
         const noResultsMessage = document.createElement("div");
         noResultsMessage.className = "no-results-message";
@@ -276,13 +115,28 @@ export async function setupBrowseJudokaPage() {
         noResultsMessage.textContent = "No judoka available.";
         carouselContainer.appendChild(noResultsMessage);
       }
+
+      const clearBtn = document.getElementById("clear-filter");
+      setupCountryToggle(toggleBtn, countryPanel, countryListContainer);
+      setupLayoutToggle(layoutToggle, countryPanel);
+      const ariaLive = carouselContainer.querySelector(".carousel-aria-live");
+      setupCountryFilter(
+        countryListContainer,
+        clearBtn,
+        allJudoka,
+        render,
+        toggleBtn,
+        countryPanel,
+        carouselContainer,
+        ariaLive
+      );
     } catch (error) {
       clearTimeout(spinnerInfo.timeoutId);
       spinnerInfo.spinner.remove();
       console.error("Error building the carousel:", error);
 
       const fallback = await getFallbackJudoka();
-      await renderCarousel([fallback]);
+      await renderCarousel([fallback], [], undefined);
 
       const errorMessage = document.createElement("div");
       errorMessage.className = "error-message";
@@ -299,12 +153,12 @@ export async function setupBrowseJudokaPage() {
       retryButton.addEventListener("click", async () => {
         retryButton.disabled = true;
         try {
-          await loadData();
-          await renderCarousel(allJudoka);
+          const data = await loadData();
+          await renderCarousel(data.allJudoka, data.gokyoData);
         } catch (err) {
           console.error("Error during retry:", err);
           const fallbackRetry = await getFallbackJudoka();
-          await renderCarousel([fallbackRetry]);
+          await renderCarousel([fallbackRetry], [], undefined);
         } finally {
           retryButton.disabled = false;
         }
@@ -312,21 +166,6 @@ export async function setupBrowseJudokaPage() {
       carouselContainer.appendChild(retryButton);
       return;
     }
-
-    const clearBtn = document.getElementById("clear-filter");
-    setupCountryToggle(toggleBtn, countryPanel, countryListContainer);
-    setupLayoutToggle(layoutToggle, countryPanel);
-    const ariaLive = carouselContainer.querySelector(".carousel-aria-live");
-    setupCountryFilter(
-      countryListContainer,
-      clearBtn,
-      allJudoka,
-      renderCarousel,
-      toggleBtn,
-      countryPanel,
-      carouselContainer,
-      ariaLive
-    );
   }
 
   await init();
