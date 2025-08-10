@@ -21,6 +21,9 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
     },
     async matchStart(m) {
       // Context already initialized via modal; proceed to first round immediately
+      // Skip the initial cooldown and go straight to the first round
+      // by dispatching "ready" twice: matchStart -> cooldown -> roundStart.
+      await m.dispatch("ready");
       await m.dispatch("ready");
     },
     async cooldown() {
