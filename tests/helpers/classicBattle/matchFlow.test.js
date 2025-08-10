@@ -178,11 +178,11 @@ describe("classicBattle match flow", () => {
   });
 
   it("scheduleNextRound waits for cooldown then enables button", async () => {
-    document.body.innerHTML += '<button id="next-round-button" disabled></button>';
+    document.body.innerHTML += '<button id="next-button" disabled></button>';
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const startStub = vi.fn();
     battleMod.scheduleNextRound({ matchEnded: false }, startStub);
-    const btn = document.getElementById("next-round-button");
+    const btn = document.getElementById("next-button");
     expect(btn.disabled).toBe(true);
     timerSpy.advanceTimersByTime(2000);
     timerSpy.advanceTimersByTime(3000);

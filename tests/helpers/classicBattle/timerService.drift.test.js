@@ -58,7 +58,7 @@ describe("timerService drift handling", () => {
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
     const timer = vi.useFakeTimers();
     const btn = document.createElement("button");
-    btn.id = "next-round-button";
+    btn.id = "next-button";
     document.body.appendChild(btn);
     const timerNode = document.createElement("p");
     timerNode.id = "next-round-timer";

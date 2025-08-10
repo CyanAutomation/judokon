@@ -138,7 +138,6 @@ export async function setupClassicBattlePage() {
   applyFeatureFlagListeners(battleArea, banner);
 
   initDebugPanel();
-  setupSkipButton();
 
   window.startRoundOverride = () => startRoundWrapper();
   await initRoundSelectModal(() => startRoundWrapper());
@@ -205,16 +204,6 @@ function initDebugPanel() {
   } else {
     debugPanel.remove();
   }
-}
-
-function setupSkipButton() {
-  const skipBtn = document.getElementById("skip-phase-button");
-  if (!skipBtn) return;
-  skipBtn.addEventListener("click", () => skipCurrentPhase());
-  window.addEventListener("skip-handler-change", (e) => {
-    const { active } = e.detail || {};
-    skipBtn.disabled = !active;
-  });
 }
 
 function maybeShowStatHint() {

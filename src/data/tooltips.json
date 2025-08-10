@@ -16,13 +16,12 @@
     "drawMessage": "_It’s a draw._\nBoth stats were equal!",
     "signatureBar": "**Signature move**\nThis bar shows the judoka’s special technique.",
     "languageToggle": "**Language toggle**\nSwitch quote language between English and pseudo-Japanese.",
-    "nextRound": "**Next round**\nBegin when you’re ready.",
-    "skipPhase": "Skip the countdown and move on.",
     "quitMatch": "**Quit match**\nReturn to the menu.",
     "drawCard": "**Draw card**\nGet a new random judoka card.",
     "roundQuick": "**Quick**\\nFirst to 5 points wins.",
     "roundMedium": "**Medium**\\nFirst to 10 points wins.",
-    "roundLong": "**Long**\\nFirst to 15 points wins."
+    "roundLong": "**Long**\\nFirst to 15 points wins.",
+    "next": "**Next**\nBegin when you’re ready."
   },
   "mode": {
     "classicBattle": "**Classic Battle Mode** pits you against an opponent.\nFirst to 10 round‑wins becomes the champion.",

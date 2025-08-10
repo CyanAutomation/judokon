@@ -23,7 +23,7 @@ describe("countdown resets after stat selection", () => {
     const roundResult = document.createElement("p");
     roundResult.id = "round-result";
     const nextBtn = document.createElement("button");
-    nextBtn.id = "next-round-button";
+    nextBtn.id = "next-button";
     document.body.append(playerCard, computerCard, header, roundResult, nextBtn);
     document.body.innerHTML += '<div id="stat-buttons"><button data-stat="power"></button></div>';
     battleMod = await import("../../../src/helpers/classicBattle.js");

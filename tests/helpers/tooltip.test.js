@@ -83,7 +83,7 @@ describe("initTooltips", () => {
       fetchJson: vi.fn().mockResolvedValue({
         ui: {
           languageToggle: "toggle",
-          nextRound: "next",
+          next: "next",
           quitMatch: "quit",
           drawCard: "draw"
         }
@@ -92,7 +92,7 @@ describe("initTooltips", () => {
 
     const { initTooltips } = await import("../../src/helpers/tooltip.js");
 
-    const ids = ["ui.languageToggle", "ui.nextRound", "ui.quitMatch", "ui.drawCard"];
+    const ids = ["ui.languageToggle", "ui.next", "ui.quitMatch", "ui.drawCard"];
     const text = ["toggle", "next", "quit", "draw"];
     const els = ids.map((id) => {
       const el = document.createElement("button");

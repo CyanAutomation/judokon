@@ -333,7 +333,7 @@ export function _resetForTest(store) {
   infoBar.clearMessage();
   const roundResultEl = document.getElementById("round-result");
   if (roundResultEl) roundResultEl.textContent = "";
-  const nextBtn = document.getElementById("next-round-button");
+  const nextBtn = document.getElementById("next-button");
   if (nextBtn) {
     const clone = nextBtn.cloneNode(true);
     nextBtn.replaceWith(clone);

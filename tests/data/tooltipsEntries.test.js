@@ -13,7 +13,7 @@ describe("tooltips.json", () => {
   it("contains new ui tooltip entries", () => {
     const keys = [
       "ui.languageToggle",
-      "ui.nextRound",
+      "ui.next",
       "ui.quitMatch",
       "ui.drawCard",
       "card.flag",
