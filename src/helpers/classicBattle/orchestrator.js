@@ -53,11 +53,19 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
     }
   };
 
-  machine = await BattleStateMachine.create(onEnter, { store });
+  const onTransition = async (name) => {
+    try {
+      if (typeof window !== "undefined") {
+        window.__classicBattleState = name;
+      }
+    } catch {}
+    updateDebugPanel();
+  };
+
+  machine = await BattleStateMachine.create(onEnter, { store }, onTransition);
   return machine;
 }
 
 export async function dispatchBattleEvent(eventName, payload) {
   if (machine) await machine.dispatch(eventName, payload);
 }
-
