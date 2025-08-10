@@ -69,6 +69,139 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
+## Match Flow
+
+The Classic Battle match follows a fixed sequence of states and transitions, as illustrated in the diagram below.  
+Each state describes what the game is doing, what events trigger a change, and where it transitions next.
+
+---
+
+### 1. `waitingForMatchStart`
+The game is idle before a match begins. The UI displays a “Start Match” button.
+
+- **Triggers:**
+  - `startClicked` → **`matchStart`**
+  - `interrupt` → **`interruptMatch`**
+- **Notes:** No cards are in play yet. Interrupts here simply return the player to the home screen.
+
+---
+
+### 2. `matchStart`
+The match setup phase — decks are shuffled, players and AI are readied.
+
+- **Triggers:**
+  - `ready` → **`roundStart`**
+  - `interrupt / error` → **`interruptMatch`**
+- **Notes:** All pre-match animations and loading occur here.
+
+---
+
+### 3. `roundStart`
+A new round begins. Cards are drawn and displayed face-down.
+
+- **Triggers:**
+  - `cardsRevealed` → **`waitingForPlayerAction`**
+  - `interrupt` → **`interruptRound`**
+- **Notes:** Both players have their top card revealed simultaneously.
+
+---
+
+### 4. `waitingForPlayerAction`
+The game waits for the player to choose a stat (or the AI to choose if it’s their turn).
+
+- **Triggers:**
+  - `statSelected` → **`roundDecision`**
+  - `timeout_AiTurn` → **`roundDecision`**
+  - `interrupt` → **`interruptRound`**
+- **Notes:** A timer may apply for AI turns. The UI highlights selectable stats.
+
+---
+
+### 5. `roundDecision`
+The chosen stats are compared to determine the round’s winner.
+
+- **Triggers:**
+  - `winP1 / winP2 / draw` → **`roundOver`**
+  - `interrupt` → **`interruptRound`**
+- **Notes:** Includes animations showing the outcome.
+
+---
+
+### 6. `roundOver`
+The round concludes and cards are redistributed or discarded according to the rules.
+
+- **Triggers:**
+  - `matchPointReached_10_wins_or_no_cards` → **`matchDecision`**
+  - `continue` → **`cooldown`**
+  - `interrupt` → **`interruptRound`**
+- **Notes:** UI displays round results, updated score, and any streaks.
+
+---
+
+### 7. `cooldown`
+A short delay between rounds to pace gameplay.
+
+- **Triggers:**
+  - `done` → **`roundStart`**
+  - `interrupt` → **`interruptRound`**
+- **Notes:** Allows animations and audio cues to complete before the next round.
+
+---
+
+### 8. `matchDecision`
+Final check to see if the match has a winner or ends in a draw.
+
+- **Triggers:**
+  - `finalize` → **`matchOver`**
+  - `interrupt` → **`interruptMatch`**
+- **Notes:** End-game logic runs here.
+
+---
+
+### 9. `matchOver`
+The match is complete.
+
+- **Triggers:**
+  - `rematch` → **`matchStart`**
+  - `home` → **`waitingForMatchStart`**
+- **Notes:** UI displays final scores and outcomes.
+
+---
+
+### Interrupt States
+Interrupts can occur at any major phase.
+
+- **`interruptMatch`** → Terminates the entire match and returns to home.
+- **`interruptRound`** → Ends the current round and returns to `waitingForMatchStart` or `matchStart` depending on context.
+
+---
+
+### Transition Table
+
+| State | Trigger | Next State | Notes |
+|-------|---------|------------|-------|
+| waitingForMatchStart | startClicked | matchStart | Player starts a new match |
+| waitingForMatchStart | interrupt | interruptMatch | Return to home |
+| matchStart | ready | roundStart | Match setup complete |
+| matchStart | interrupt / error | interruptMatch | Match aborted |
+| roundStart | cardsRevealed | waitingForPlayerAction | Cards face-up |
+| roundStart | interrupt | interruptRound | Round aborted |
+| waitingForPlayerAction | statSelected / timeout_AiTurn | roundDecision | Compare stats |
+| waitingForPlayerAction | interrupt | interruptRound | Round aborted |
+| roundDecision | winP1 / winP2 / draw | roundOver | Outcome decided |
+| roundDecision | interrupt | interruptRound | Round aborted |
+| roundOver | matchPointReached_10_wins_or_no_cards | matchDecision | Check for winner |
+| roundOver | continue | cooldown | Move to next round |
+| roundOver | interrupt | interruptRound | Round aborted |
+| cooldown | done | roundStart | Start new round |
+| cooldown | interrupt | interruptRound | Round aborted |
+| matchDecision | finalize | matchOver | End match |
+| matchDecision | interrupt | interruptMatch | Match aborted |
+| matchOver | rematch | matchStart | Start another match |
+| matchOver | home | waitingForMatchStart | Return to main screen |
+
+---
+
 ## Mermaid Diagram of Game States
 
 ```mermaid
