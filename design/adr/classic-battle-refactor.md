@@ -17,6 +17,7 @@ Split the original helper into dedicated modules:
 - `roundManager.js` — handles round setup and timer coordination.
 - `selectionHandler.js` — manages stat selection and evaluation.
 - `quitModal.js` — encapsulates quit confirmation modal creation.
+- `TimerController.js` — centralizes countdown timer logic for rounds and cooldowns.
 
 A lightweight `classicBattle.js` file now re-exports these modules for backward
 compatibility. Page code such as `classicBattlePage.js` imports the new modules
