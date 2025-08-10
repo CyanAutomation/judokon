@@ -60,12 +60,14 @@ describe("loadQuote", () => {
     document.body.append(quoteDiv, loader);
     localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
 
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
 
     await loadQuote();
     await vi.runAllTimersAsync();
 
     expect(quoteDiv.textContent).toContain("Take a breath. Even a still pond reflects the sky.");
+    consoleErrorSpy.mockRestore();
   });
 
   it("handles empty or invalid quote data gracefully", async () => {
