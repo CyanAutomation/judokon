@@ -73,43 +73,47 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ```mermaid
 flowchart TD
-  A([waitingForMatchStart]) -->|startClicked| B[matchStart]
-  A -->|interrupt| M[interruptMatch]
+  %% Global direction
+  %% TD for overall flow; LR inside round loop for readability
 
-  subgraph InMatch
+  A([Waiting for match start]) -->|Match length selected| B[Match start]
+  A -->|Abort match| I([Match over])
+
+  subgraph Inmatch
     direction LR
-    B -->|ready| C[roundStart]
-    C -->|cardsRevealed| D[waitingForPlayerAction]
-    C -->|interrupt| L[interruptRound]
 
-    D -->|statSelected| E[roundDecision]
-    D -->|aiTimeout| E
-    D -->|interrupt| L
+    B --> C[Cooldown]
+    C -->|Ready| D[Round start]
+    D -->|Card revealed| E[Waiting for player action]
 
-    E -->|winP1 / winP2 / draw| F[roundOver]
-    E -->|interrupt| L
+    %% Decision: player acts or times out
+    E --> F{Stat selected?}
+    F -->|Yes| G[Round decision]
+    F -->|No, Timeout autoselect| G
 
-    F -->|matchPointReached| G[matchDecision]
-    F -->|continue| H[cooldown]
-    F -->|interrupt| L
+    %% Decision: who won & what next
+    G --> |Reveal Round Outcome| H[Round over]
 
-    H -->|done| C
-    H -->|interrupt| L
+    H --> J{Match point reached?}
+    J -->|Yes| K[Match decision]
+    J -->|No, Next round| C
+
+    %% Interrupts within match
+    E -->|Interrupt| L[Round interrupted]
+    G -->|Interrupt| L
+    L -->|Round Modify Flag| N[Round Modification]
+    N -->|Modify Round Decision| G
+    K -->|Interrupt| M[Match interrupted]
   end
 
-  G -->|finalize| I([matchOver])
-  G -->|interrupt| M
+  %% Post‑match transitions
+  K -->|Outcome declared| I
+  L -->|Restart Round| C
+  M -->|Restart Match| B
+  I -->|Rematch| A
 
-  I -->|rematch| B
-  I -->|home| A
-
-  %% Guards
-  F -- [winnerHas10Wins || noCardsLeft] --> G
-
-  %% Interrupt rails
-  L -->|resumeLobby| A
-  L -->|abortMatch| I
-  M -->|toLobby| A
+  %% Optional: color the interrupt rails
+  linkStyle 10,11,12 stroke:#a33,stroke-width:2px
 ```
 
 ---
