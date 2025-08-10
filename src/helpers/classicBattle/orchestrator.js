@@ -60,4 +60,3 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
 export async function dispatchBattleEvent(eventName, payload) {
   if (machine) await machine.dispatch(eventName, payload);
 }
-
