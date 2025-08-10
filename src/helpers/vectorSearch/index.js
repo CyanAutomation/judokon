@@ -1,9 +1,6 @@
-import {
-  loadEmbeddings,
-  findMatches,
-  fetchContextById,
-  CURRENT_EMBEDDING_VERSION
-} from "../vectorSearch.js";
+import { loadEmbeddings, CURRENT_EMBEDDING_VERSION } from "./loader.js";
+import { findMatches } from "./scorer.js";
+import { fetchContextById } from "./context.js";
 import { expandQueryWithSynonyms } from "../vectorSearchQuery.js";
 
 /**
@@ -11,7 +8,7 @@ import { expandQueryWithSynonyms } from "../vectorSearchQuery.js";
  *
  * @pseudocode
  * 1. Re-export helpers from existing modules under a single object.
- * 2. Provide access to embedding utilities and query expansion.
+ * 2. Provide access to embedding utilities, scoring, and query expansion.
  */
 const vectorSearch = {
   loadEmbeddings,

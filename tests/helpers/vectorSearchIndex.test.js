@@ -1,10 +1,14 @@
 import { describe, it, expect, vi } from "vitest";
 
-vi.doMock("../../src/helpers/vectorSearch.js", () => ({
+vi.doMock("../../src/helpers/vectorSearch/loader.js", () => ({
   loadEmbeddings: vi.fn().mockResolvedValue([1]),
-  findMatches: vi.fn().mockResolvedValue([2]),
-  fetchContextById: vi.fn().mockResolvedValue(["ctx"]),
   CURRENT_EMBEDDING_VERSION: 1
+}));
+vi.doMock("../../src/helpers/vectorSearch/scorer.js", () => ({
+  findMatches: vi.fn().mockResolvedValue([2])
+}));
+vi.doMock("../../src/helpers/vectorSearch/context.js", () => ({
+  fetchContextById: vi.fn().mockResolvedValue(["ctx"])
 }));
 vi.doMock("../../src/helpers/vectorSearchQuery.js", () => ({
   expandQueryWithSynonyms: vi.fn().mockResolvedValue("expanded")
