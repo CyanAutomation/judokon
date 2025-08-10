@@ -199,16 +199,20 @@ export function scheduleNextRound(result) {
   if (!btn) return;
   const timerEl = document.getElementById("next-round-timer");
 
-  let started = false;
+  // Track snackbar lifecycle and whether the cooldown actually started.
+  let snackbarStarted = false;
+  let cooldownStarted = false;
+  let startTimeoutId = null;
+
   const onTick = (remaining) => {
     if (remaining <= 0) {
       infoBar.clearTimer();
       return;
     }
     const text = `Next round in: ${remaining}s`;
-    if (!started) {
+    if (!snackbarStarted) {
       showSnackbar(text);
-      started = true;
+      snackbarStarted = true;
     } else {
       updateSnackbar(text);
     }
@@ -225,13 +229,20 @@ export function scheduleNextRound(result) {
     updateDebugPanel();
   };
 
+  // Allow immediate skipping, even before cooldown starts. If the cooldown
+  // hasn't begun yet (during the initial delay), cancel the pending start.
   setSkipHandler(() => {
+    if (!cooldownStarted && startTimeoutId) {
+      clearTimeout(startTimeoutId);
+      startTimeoutId = null;
+    }
     stopTimer();
     onExpired();
   });
 
   const run = runTimerWithDrift(startCoolDown);
-  setTimeout(() => {
+  startTimeoutId = setTimeout(() => {
+    cooldownStarted = true;
     run(3, onTick, onExpired, () => {
       infoBar.showMessage("Timer error. Enabling next round.");
       onExpired();
