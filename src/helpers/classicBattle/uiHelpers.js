@@ -1,4 +1,9 @@
-import { getComputerJudoka, getGokyoLookup, clearComputerJudoka, getOrLoadGokyoLookup } from "./cardSelection.js";
+import {
+  getComputerJudoka,
+  getGokyoLookup,
+  clearComputerJudoka,
+  getOrLoadGokyoLookup
+} from "./cardSelection.js";
 import { loadSettings } from "../settingsUtils.js";
 import { isEnabled } from "../featureFlags.js";
 import { getScores, getTimerState, isMatchEnded } from "../battleEngine.js";
