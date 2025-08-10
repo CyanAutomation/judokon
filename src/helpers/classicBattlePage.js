@@ -36,7 +36,10 @@ import { loadStatNames } from "./stats.js";
 import { STATS } from "./battleEngine.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
-import { initClassicBattleOrchestrator, dispatchBattleEvent } from "./classicBattle/orchestrator.js";
+import {
+  initClassicBattleOrchestrator,
+  dispatchBattleEvent
+} from "./classicBattle/orchestrator.js";
 import { skipCurrentPhase, onNextButtonClick } from "./classicBattle/timerService.js";
 import { isEnabled, featureFlagsEmitter } from "./featureFlags.js";
 
