@@ -8,14 +8,15 @@ import { DATA_DIR } from "../constants.js";
  * Transitions are matched by the `on` field value in each state's `triggers`.
  */
 export class BattleStateMachine {
-  constructor(statesByName, initialName, onEnterMap, context = {}) {
+  constructor(statesByName, initialName, onEnterMap, context = {}, onTransition) {
     this.statesByName = statesByName;
     this.current = initialName;
     this.onEnterMap = onEnterMap || {};
     this.context = context;
+    this.onTransition = typeof onTransition === "function" ? onTransition : null;
   }
 
-  static async create(onEnterMap, context = {}) {
+  static async create(onEnterMap, context = {}, onTransition) {
     let states = [];
     try {
       states = await fetchJson(`${DATA_DIR}classicBattleStates.json`);
@@ -33,7 +34,12 @@ export class BattleStateMachine {
     }
     // Fallback initial state to keep orchestration alive even if JSON is missing in tests
     const initName = initial || "waitingForMatchStart";
-    const machine = new BattleStateMachine(byName, initName, onEnterMap, context);
+    const machine = new BattleStateMachine(byName, initName, onEnterMap, context, onTransition);
+    if (machine.onTransition) {
+      try {
+        await machine.onTransition(initName);
+      } catch {}
+    }
     await machine.#runOnEnter(initName);
     return machine;
   }
@@ -50,6 +56,11 @@ export class BattleStateMachine {
     const target = match.target;
     if (!this.statesByName.has(target)) return;
     this.current = target;
+    if (this.onTransition) {
+      try {
+        await this.onTransition(target);
+      } catch {}
+    }
     await this.#runOnEnter(target, payload);
   }
 

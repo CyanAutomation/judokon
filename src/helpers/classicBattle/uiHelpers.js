@@ -98,5 +98,10 @@ export function updateDebugPanel() {
   if (isTestModeEnabled()) {
     state.seed = getCurrentSeed();
   }
+  try {
+    if (typeof window !== "undefined" && window.__classicBattleState) {
+      state.machineState = window.__classicBattleState;
+    }
+  } catch {}
   pre.textContent = JSON.stringify(state, null, 2);
 }
