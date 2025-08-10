@@ -16,7 +16,9 @@ const JUDOKA = {
 test.describe.parallel("Card inspector accessibility", () => {
   test("summary keyboard support and ARIA state", async ({ page }) => {
     await page.setContent("<html><body></body></html>");
-    const { createInspectorPanel } = await import("../src/helpers/cardBuilder.js");
+    const { createInspectorPanel } = await import(
+      "../src/helpers/inspector/createInspectorPanel.js"
+    );
     const func = createInspectorPanel.toString();
     await page.evaluate(
       ({ judoka, funcStr }) => {
@@ -46,7 +48,9 @@ test.describe.parallel("Card inspector accessibility", () => {
 
   test("announces invalid card data on JSON failure", async ({ page }) => {
     await page.setContent("<html><body></body></html>");
-    const { createInspectorPanel } = await import("../src/helpers/cardBuilder.js");
+    const { createInspectorPanel } = await import(
+      "../src/helpers/inspector/createInspectorPanel.js"
+    );
     const func = createInspectorPanel.toString();
     await page.evaluate(
       ({ funcStr }) => {

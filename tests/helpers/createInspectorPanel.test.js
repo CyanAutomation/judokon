@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createInspectorPanel } from "../../src/helpers/cardBuilder.js";
+import { createInspectorPanel } from "../../src/helpers/inspector/createInspectorPanel.js";
 
 const judoka = {};
 

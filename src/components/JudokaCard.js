@@ -8,7 +8,7 @@ import {
   createStatsSection,
   createSignatureMoveSection
 } from "../helpers/cardSections.js";
-import { createInspectorPanel } from "../helpers/cardBuilder.js";
+import { createInspectorPanel } from "../helpers/inspector/createInspectorPanel.js";
 import { Card } from "./Card.js";
 
 /**

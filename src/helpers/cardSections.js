@@ -3,7 +3,28 @@ import {
   generateCardSignatureMove,
   generateCardStats
 } from "./cardRender.js";
-import { createNoDataContainer } from "./cardTopBar.js";
+import { generateCardTopBar, createNoDataContainer } from "./cardTopBar.js";
+import { safeGenerate } from "./errorUtils.js";
+
+/**
+ * Build the top bar section for a judoka card.
+ *
+ * @pseudocode
+ * 1. Generate the top bar with `safeGenerate(generateCardTopBar)`.
+ *    - On failure, return `createNoDataContainer()`.
+ * 2. Return the resulting element.
+ *
+ * @param {import("./types.js").Judoka} judoka - Judoka data object.
+ * @param {string} flagUrl - URL of the country flag.
+ * @returns {Promise<HTMLElement>} Top bar element.
+ */
+export async function createTopBarSection(judoka, flagUrl) {
+  return await safeGenerate(
+    () => generateCardTopBar(judoka, flagUrl),
+    "Failed to generate top bar:",
+    createNoDataContainer()
+  );
+}
 
 /**
  * Build the portrait section for a judoka card.
@@ -83,3 +104,10 @@ export function createSignatureMoveSection(judoka, gokyoLookup, cardType) {
     return createNoDataContainer();
   }
 }
+
+export const cardSectionRegistry = [
+  async (judoka, { flagUrl }) => await createTopBarSection(judoka, flagUrl),
+  (judoka) => createPortraitSection(judoka),
+  async (judoka, { cardType }) => await createStatsSection(judoka, cardType),
+  (judoka, { gokyoLookup, cardType }) => createSignatureMoveSection(judoka, gokyoLookup, cardType)
+];
