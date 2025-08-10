@@ -15,4 +15,3 @@ describe("navigation tooltips coverage", () => {
     expect(missing).toEqual([]);
   });
 });
-

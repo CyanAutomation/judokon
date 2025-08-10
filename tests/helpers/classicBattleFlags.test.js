@@ -69,4 +69,3 @@ describe("classicBattlePage feature flag updates", () => {
     expect(document.getElementById("debug-panel")).toBeFalsy();
   });
 });
-
