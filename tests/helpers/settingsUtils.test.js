@@ -124,9 +124,11 @@ describe("settings utils", () => {
   it("recovers from invalid stored JSON", async () => {
     localStorage.setItem("settings", "{bad json}");
     const { loadSettings } = await import("../../src/helpers/settingsUtils.js");
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const settings = await loadSettings();
     expect(settings).toEqual(DEFAULT_SETTINGS);
     expect(localStorage.getItem("settings")).toBeNull();
+    warnSpy.mockRestore();
   });
 
   /**
