@@ -6,7 +6,7 @@
  */
 
 import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
-import { getDefaultTimer, createCountdownTimer } from "./timerUtils.js";
+import { TimerController } from "./TimerController.js";
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 const DRIFT_THRESHOLD = 2;
@@ -16,13 +16,9 @@ export class BattleEngine {
     this.pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN;
     this.playerScore = 0;
     this.computerScore = 0;
-    this.currentTimer = null;
-    this.remaining = 0;
+    this.timer = new TimerController();
     this.matchEnded = false;
     this.roundsPlayed = 0;
-    this.paused = false;
-    this.onTickCb = null;
-    this.onExpiredCb = null;
   }
 
   /**
@@ -51,10 +47,7 @@ export class BattleEngine {
   }
 
   stopTimer() {
-    if (this.currentTimer) {
-      this.currentTimer.stop();
-      this.currentTimer = null;
-    }
+    this.timer.stop();
   }
 
   #endMatchIfNeeded() {
@@ -79,89 +72,44 @@ export class BattleEngine {
    * Start the round/stat selection timer with pause/resume and auto-selection support.
    *
    * @pseudocode
-   * 1. Stop any existing timer.
-   * 2. Determine the timer duration:
-   *    a. If `duration` is undefined, attempt `getDefaultTimer('roundTimer')`, falling back to 30 on error.
-   *    b. If the resulting duration is not a number, fall back to 30.
-   * 3. Reset `paused` flag and set `remaining` to the duration.
-   * 4. Store the `onTick` and `onExpired` callbacks.
-   * 5. Create a countdown timer with `createCountdownTimer(duration, { onTick, onExpired, pauseOnHidden: true })`:
-   *    - onTick: update `remaining` and invoke stored `onTick`.
-   *    - onExpired: if the match hasn't ended, invoke stored `onExpired`.
-   * 6. Start the timer.
+   * 1. Delegate to `TimerController.startRound` with callbacks.
+   * 2. Guard the expiration callback so it doesn't fire after the match ends.
    *
    * @param {function} onTick - Callback each second with remaining time.
    * @param {function(): Promise<void>} onExpired - Callback when timer expires (auto-select logic).
    * @param {number} [duration] - Timer duration in seconds.
    * @returns {Promise<void>} Resolves when the timer starts.
    */
-  async startRound(onTick, onExpired, duration) {
-    if (duration === undefined) {
-      try {
-        duration = await getDefaultTimer("roundTimer");
-      } catch {
-        duration = 30;
-      }
-      if (typeof duration !== "number") duration = 30;
-    }
-    this.stopTimer();
-    this.remaining = duration;
-    this.paused = false;
-    this.onTickCb = onTick;
-    this.onExpiredCb = onExpired;
-    this.currentTimer = createCountdownTimer(duration, {
-      onTick: (r) => {
-        this.remaining = r;
-        if (this.onTickCb) this.onTickCb(r);
+  startRound(onTick, onExpired, duration) {
+    return this.timer.startRound(
+      onTick,
+      async () => {
+        if (!this.matchEnded) await onExpired();
       },
-      onExpired: async () => {
-        if (!this.matchEnded && this.onExpiredCb) await this.onExpiredCb();
-      },
-      pauseOnHidden: true
-    });
-    this.currentTimer.start();
+      duration
+    );
   }
 
   /**
    * Start the cooldown timer between rounds.
    *
    * @pseudocode
-   * 1. Stop any existing timer.
-   * 2. Determine duration via `getDefaultTimer('coolDownTimer')`, falling back to 3.
-   * 3. Reset `paused` flag and set `remaining`.
-   * 4. Store callbacks and create countdown timer with `pauseOnHidden: false`.
-   * 5. Start the timer.
+   * 1. Delegate to `TimerController.startCoolDown` with callbacks.
+   * 2. Guard the expiration callback against post-match execution.
    *
    * @param {function} onTick - Callback each second with remaining time.
    * @param {function(): (void|Promise<void>)} onExpired - Callback when timer expires.
    * @param {number} [duration] - Cooldown duration in seconds.
    * @returns {Promise<void>} Resolves when the timer starts.
    */
-  async startCoolDown(onTick, onExpired, duration) {
-    if (duration === undefined) {
-      try {
-        duration = await getDefaultTimer("coolDownTimer");
-      } catch {
-        duration = 3;
-      }
-      if (typeof duration !== "number") duration = 3;
-    }
-    this.stopTimer();
-    this.remaining = duration;
-    this.paused = false;
-    this.onTickCb = onTick;
-    this.onExpiredCb = onExpired;
-    this.currentTimer = createCountdownTimer(duration, {
-      onTick: (r) => {
-        this.remaining = r;
-        if (this.onTickCb) this.onTickCb(r);
+  startCoolDown(onTick, onExpired, duration) {
+    return this.timer.startCoolDown(
+      onTick,
+      async () => {
+        if (!this.matchEnded) await onExpired();
       },
-      onExpired: async () => {
-        if (!this.matchEnded && this.onExpiredCb) await this.onExpiredCb();
-      },
-      pauseOnHidden: false
-    });
-    this.currentTimer.start();
+      duration
+    );
   }
 
   /**
@@ -172,8 +120,7 @@ export class BattleEngine {
    * 2. If a timer is running, call `pause()` on it.
    */
   pauseTimer() {
-    this.paused = true;
-    if (this.currentTimer) this.currentTimer.pause();
+    this.timer.pause();
   }
 
   /**
@@ -184,8 +131,7 @@ export class BattleEngine {
    * 2. If a timer is running, call `resume()` on it.
    */
   resumeTimer() {
-    this.paused = false;
-    if (this.currentTimer) this.currentTimer.resume();
+    this.timer.resume();
   }
 
   /**
@@ -217,23 +163,32 @@ export class BattleEngine {
       };
     }
     this.stopTimer();
-    let message = "";
     if (playerVal > computerVal) {
       this.playerScore += 1;
-      message = "You win the round!";
-    } else if (playerVal < computerVal) {
+      this.roundsPlayed += 1;
+      const endMsg = this.#endMatchIfNeeded();
+      return {
+        message: endMsg || "You win the round!",
+        matchEnded: this.matchEnded,
+        playerScore: this.playerScore,
+        computerScore: this.computerScore
+      };
+    }
+    if (playerVal < computerVal) {
       this.computerScore += 1;
-      message = "Opponent wins the round!";
-    } else {
-      message = "Tie – no score!";
+      this.roundsPlayed += 1;
+      const endMsg = this.#endMatchIfNeeded();
+      return {
+        message: endMsg || "Opponent wins the round!",
+        matchEnded: this.matchEnded,
+        playerScore: this.playerScore,
+        computerScore: this.computerScore
+      };
     }
     this.roundsPlayed += 1;
     const endMsg = this.#endMatchIfNeeded();
-    if (endMsg) {
-      message = endMsg;
-    }
     return {
-      message,
+      message: endMsg || "Tie – no score!",
       matchEnded: this.matchEnded,
       playerScore: this.playerScore,
       computerScore: this.computerScore
@@ -280,7 +235,7 @@ export class BattleEngine {
   }
 
   getTimerState() {
-    return { remaining: this.remaining, paused: this.paused };
+    return this.timer.getState();
   }
 
   /**
@@ -289,7 +244,7 @@ export class BattleEngine {
    * @pseudocode
    * 1. Record the current timestamp as `start`.
    * 2. Every second:
-   *    a. If `currentTimer` is absent, stop monitoring.
+   *    a. If the `TimerController` has no active timer, stop monitoring.
    *    b. Compute `elapsed = floor((Date.now() - start) / 1000)` and `expected = duration - elapsed`.
    *    c. Skip drift checks when the timer is paused.
    *    d. If `remaining - expected` > `DRIFT_THRESHOLD`:
@@ -304,13 +259,13 @@ export class BattleEngine {
   watchForDrift(duration, onDrift) {
     const start = Date.now();
     const interval = setInterval(() => {
-      if (!this.currentTimer) {
+      if (!this.timer.hasActiveTimer()) {
         clearInterval(interval);
         return;
       }
       const elapsed = Math.floor((Date.now() - start) / 1000);
       const expected = duration - elapsed;
-      const { remaining, paused } = this.getTimerState();
+      const { remaining, paused } = this.timer.getState();
       if (paused) return;
       if (remaining - expected > DRIFT_THRESHOLD) {
         clearInterval(interval);
@@ -326,8 +281,6 @@ export class BattleEngine {
     this.computerScore = 0;
     this.matchEnded = false;
     this.roundsPlayed = 0;
-    this.remaining = 0;
-    this.paused = false;
-    this.stopTimer();
+    this.timer = new TimerController();
   }
 }
