@@ -179,6 +179,39 @@ describe("setupTooltipViewerPage", () => {
     expect(btn.classList.contains("copied")).toBe(true);
   });
 
+  it("copies body text when body copy button is clicked", async () => {
+    Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+
+    const writeText = vi.fn().mockResolvedValue();
+    navigator.clipboard = { writeText };
+
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ "ui.tip": "body text" }),
+      importJsonModule: vi.fn().mockResolvedValue({})
+    }));
+
+    const showSnackbar = vi.fn();
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
+
+    await import("../../src/helpers/tooltipViewerPage.js");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+
+    await Promise.resolve();
+
+    const item = document.querySelector("#tooltip-list li");
+    item.click();
+
+    const btn = document.getElementById("copy-body-btn");
+    btn.click();
+
+    await Promise.resolve();
+
+    expect(writeText).toHaveBeenCalledWith("body text");
+    expect(showSnackbar).toHaveBeenCalledWith("Copied");
+    expect(btn.classList.contains("copied")).toBe(true);
+  });
+
   it("shows 'File not found' when tooltips.json is missing", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
@@ -239,6 +272,7 @@ describe("setupTooltipViewerPage", () => {
 
     const invalid = document.querySelector('#tooltip-list li[data-key="badkey"]');
     expect(invalid).toBeTruthy();
+    expect(invalid.dataset.keyValid).toBe("false");
     const icon = invalid.querySelector(".tooltip-invalid-icon");
     expect(icon).toBeTruthy();
     expect(icon.title).toBe("Invalid key format (prefix.name)");

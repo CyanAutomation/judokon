@@ -2,52 +2,13 @@ import { fetchJson } from "./dataUtils.js";
 import { parseTooltipText, flattenTooltips, initTooltips } from "./tooltip.js";
 import { DATA_DIR } from "./constants.js";
 import { onDomReady } from "./domReady.js";
-import { SidebarList } from "../components/SidebarList.js";
 import { showSnackbar } from "./showSnackbar.js";
+import { PreviewToggle } from "../components/PreviewToggle.js";
+import { extractLineAndColumn } from "./tooltipViewer/extractLineAndColumn.js";
+import { renderList, MALFORMED_TOOLTIP_MSG } from "./tooltipViewer/renderList.js";
 
-const INVALID_TOOLTIP_MSG = "Empty or whitespace-only content";
-const MALFORMED_TOOLTIP_MSG = "Unbalanced markup detected";
-const INVALID_KEY_MSG = "Invalid key format (prefix.name)";
 const FILE_NOT_FOUND_MSG = "File not found";
 const LOAD_ERROR_MSG = "Error loading tooltips.";
-const KEY_PATTERN = /^[a-z]+\.[\w-]+$/;
-
-/**
- * Extract line and column numbers from a JSON parse error.
- *
- * @pseudocode
- * 1. Run a regex on `error.message` to capture `line` and `column` digits.
- * 2. When both numbers exist, return them as an object.
- * 3. Otherwise, return `null`.
- *
- * @param {SyntaxError} error - SyntaxError thrown during JSON parsing.
- * @returns {{ line: number, column: number } | null} Parsed line/column or `null`.
- */
-function extractLineAndColumn(error) {
-  const message = error?.message ?? "";
-  // Try several common error message formats
-  // 1. "line X column Y"
-  let match = /line (\d+)[^\d]+column (\d+)/i.exec(message);
-  if (match) {
-    return { line: Number(match[1]), column: Number(match[2]) };
-  }
-  // 2. "at line X column Y"
-  match = /at line (\d+)[^\d]+column (\d+)/i.exec(message);
-  if (match) {
-    return { line: Number(match[1]), column: Number(match[2]) };
-  }
-  // 3. "at position Z" (return as column, line unknown)
-  match = /at position (\d+)/i.exec(message);
-  if (match) {
-    return { line: null, column: Number(match[1]) };
-  }
-  // 4. "Unexpected token ... in JSON at position Z"
-  match = /in JSON at position (\d+)/i.exec(message);
-  if (match) {
-    return { line: null, column: Number(match[1]) };
-  }
-  return null;
-}
 
 /**
  * Initialize the Tooltip Viewer page.
@@ -77,40 +38,7 @@ export async function setupTooltipViewerPage() {
   const warningEl = document.getElementById("tooltip-warning");
   const keyCopyBtn = document.getElementById("copy-key-btn");
   const bodyCopyBtn = document.getElementById("copy-body-btn");
-
-  const previewContainer = document.createElement("div");
-  previewContainer.className = "preview-container";
-  previewEl.parentNode.insertBefore(previewContainer, previewEl);
-  previewContainer.appendChild(previewEl);
-
-  const toggleBtn = document.createElement("button");
-  toggleBtn.id = "toggle-preview-btn";
-  toggleBtn.className = "secondary-button preview-toggle";
-  toggleBtn.type = "button";
-  toggleBtn.textContent = "Expand";
-  toggleBtn.setAttribute("aria-expanded", "false");
-  previewContainer.after(toggleBtn);
-
-  let expanded = false;
-  function updateToggle() {
-    const needsToggle = previewEl.scrollHeight > 300;
-    toggleBtn.hidden = !needsToggle;
-    if (!needsToggle) {
-      expanded = false;
-      previewContainer.classList.remove("expanded");
-      toggleBtn.setAttribute("aria-expanded", "false");
-      toggleBtn.textContent = "Expand";
-    }
-  }
-
-  toggleBtn.addEventListener("click", () => {
-    expanded = !expanded;
-    previewContainer.classList.toggle("expanded", expanded);
-    toggleBtn.textContent = expanded ? "Collapse" : "Expand";
-    toggleBtn.setAttribute("aria-expanded", String(expanded));
-  });
-
-  updateToggle();
+  const previewToggle = new PreviewToggle(previewEl);
 
   let data;
   try {
@@ -136,59 +64,10 @@ export async function setupTooltipViewerPage() {
 
   let listSelect;
 
-  function renderList(filter = "") {
-    const items = [];
-    const terms = filter.toLowerCase().split(/\s+/).filter(Boolean);
-    Object.entries(data).forEach(([key, body]) => {
-      const haystack = `${key} ${body}`.toLowerCase();
-      const match = terms.every((t) => haystack.includes(t));
-      if (match) {
-        const bodyValid = typeof body === "string" && body.trim().length > 0;
-        const keyValid = KEY_PATTERN.test(key);
-        const valid = bodyValid && keyValid;
-        const { warning } = parseTooltipText(body);
-        const prefix = key.split(".")[0];
-        items.push({
-          label: key,
-          className: prefix,
-          dataset: {
-            key,
-            body,
-            valid: String(valid),
-            warning: String(warning),
-            keyValid: String(keyValid)
-          }
-        });
-      }
-    });
-    const list = new SidebarList(items, (_, el) => {
-      select(el.dataset.key);
-    });
-    Array.from(list.element.children).forEach((li) => {
-      let message = null;
-      if (li.dataset.keyValid === "false") {
-        message = INVALID_KEY_MSG;
-      } else if (li.dataset.valid === "false") {
-        message = INVALID_TOOLTIP_MSG;
-      } else if (li.dataset.warning === "true") {
-        message = MALFORMED_TOOLTIP_MSG;
-      }
-      if (message) {
-        const icon = document.createElement("span");
-        icon.className = "tooltip-invalid-icon";
-        icon.textContent = "!";
-        icon.title = message;
-        icon.setAttribute("aria-hidden", "true");
-        const sr = document.createElement("span");
-        sr.className = "tooltip-invalid-text";
-        sr.textContent = message;
-        li.append(" ", icon, sr);
-      }
-    });
-    listSelect = list.select.bind(list);
-    list.element.id = "tooltip-list";
-    listPlaceholder.replaceWith(list.element);
-    listPlaceholder = list.element;
+  function updateList(filter = "") {
+    const { element, listSelect: selectFn } = renderList(data, filter, select, listPlaceholder);
+    listPlaceholder = element;
+    listSelect = selectFn;
   }
 
   let selectedKey;
@@ -215,11 +94,8 @@ export async function setupTooltipViewerPage() {
     previewEl.classList.remove("fade-in");
     void previewEl.offsetWidth;
     previewEl.classList.add("fade-in");
-    expanded = false;
-    previewContainer.classList.remove("expanded");
-    toggleBtn.setAttribute("aria-expanded", "false");
-    toggleBtn.textContent = "Expand";
-    updateToggle();
+    previewToggle.reset();
+    previewToggle.update();
   }
 
   function copy(btn) {
@@ -242,10 +118,10 @@ export async function setupTooltipViewerPage() {
   let timer;
   searchInput.addEventListener("input", () => {
     clearTimeout(timer);
-    timer = setTimeout(() => renderList(searchInput.value), 300);
+    timer = setTimeout(() => updateList(searchInput.value), 300);
   });
 
-  renderList();
+  updateList();
   if (location.hash) {
     const key = decodeURIComponent(location.hash.slice(1));
     const el = listPlaceholder.querySelector(`[data-key="${key}"]`);
