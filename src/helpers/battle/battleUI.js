@@ -43,11 +43,20 @@ export function resetStatButtons() {
     btn.style.removeProperty("background-color");
     btn.disabled = true;
     void btn.offsetWidth;
-    requestAnimationFrame(() => {
+    const enable = () => {
       btn.disabled = false;
       btn.style.backgroundColor = "";
       btn.blur();
-    });
+    };
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(enable);
+    } else {
+      setTimeout(enable, 0);
+    }
+    // Fallback to ensure re-enable even if RAF is throttled under fake timers
+    setTimeout(() => {
+      if (btn.disabled) enable();
+    }, 0);
   });
 }
 
