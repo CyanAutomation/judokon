@@ -235,6 +235,9 @@ export function renderSettingsUI(settings, gameModes, tooltipMap) {
  */
 async function initializeSettingsPage() {
   try {
+    // Enable section toggles immediately so the UI is responsive
+    // even if data loading is slow or fails.
+    setupSectionToggles();
     const gameModesPromise = settled(loadNavigationItems());
     const tooltipMapPromise = settled(getTooltips());
     const settings = await loadSettings();

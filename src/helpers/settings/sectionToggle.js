@@ -10,6 +10,8 @@
 export function setupSectionToggles() {
   const buttons = document.querySelectorAll(".settings-section-toggle");
   buttons.forEach((btn) => {
+    // Avoid attaching duplicate listeners if called multiple times
+    if (btn.dataset.toggleInitialized === "true") return;
     const contentId = btn.getAttribute("aria-controls");
     const content = document.getElementById(contentId);
     if (!content) return;
@@ -31,5 +33,6 @@ export function setupSectionToggles() {
         toggle();
       }
     });
+    btn.dataset.toggleInitialized = "true";
   });
 }
