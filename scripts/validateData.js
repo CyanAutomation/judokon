@@ -1,9 +1,10 @@
 import { glob } from "glob";
-import { spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import Ajv from "ajv";
+import addFormats from "ajv-formats";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -17,38 +18,56 @@ if (!schemaFiles.includes("src/schemas/statNames.schema.json")) {
 }
 
 let hasErrors = false;
-const npxCmd = process.platform === "win32" ? "npx.cmd" : "npx";
+
+// Initialize Ajv once
+const ajv = new Ajv({ allErrors: true, strict: false });
+addFormats(ajv);
+
+// Preload common definitions for $ref resolution
+let commonDefs;
+try {
+  commonDefs = JSON.parse(
+    await readFile(path.join(rootDir, "src/schemas/commonDefinitions.schema.json"), "utf8")
+  );
+  ajv.addSchema(commonDefs);
+} catch (err) {
+  console.error("Failed to load commonDefinitions.schema.json:", err);
+  process.exitCode = 1;
+}
+
 for (const schemaPath of schemaFiles) {
   const baseName = path.basename(schemaPath, ".schema.json");
   const dataPath = path.join("src", "data", `${baseName}.json`);
-  if (!existsSync(path.join(rootDir, dataPath))) {
+  const absSchemaPath = path.join(rootDir, schemaPath);
+  const absDataPath = path.join(rootDir, dataPath);
+
+  if (!existsSync(absDataPath)) {
     continue;
   }
-  await new Promise((resolve) => {
-    const child = spawn(
-      npxCmd,
-      [
-        "ajv",
-        "validate",
-        "-s",
-        schemaPath,
-        "-d",
-        dataPath,
-        "-r",
-        "src/schemas/commonDefinitions.schema.json"
-      ],
-      {
-        cwd: rootDir,
-        stdio: "inherit"
+
+  try {
+    const schema = JSON.parse(await readFile(absSchemaPath, "utf8"));
+    const data = JSON.parse(await readFile(absDataPath, "utf8"));
+
+    // Ensure schemas with $id can be referenced consistently
+    if (schema && schema.$id) {
+      ajv.removeSchema(schema.$id);
+    }
+
+    const validate = ajv.compile(schema);
+    const valid = validate(data);
+    if (!valid) {
+      hasErrors = true;
+      console.error(`Validation failed for ${dataPath}`);
+      for (const err of validate.errors ?? []) {
+        const instancePath = err.instancePath || "";
+        console.error(` - ${instancePath} ${err.message}`);
       }
-    );
-    child.on("exit", (code) => {
-      if (code !== 0) {
-        hasErrors = true;
-      }
-      resolve();
-    });
-  });
+    }
+  } catch (err) {
+    hasErrors = true;
+    console.error(`Error validating ${dataPath}:`, err);
+  }
 }
 
 try {
