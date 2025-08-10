@@ -52,7 +52,9 @@ export function evaluateRound(store, stat) {
   }
   showStatComparison(store, stat, playerVal, computerVal);
   updateDebugPanel();
-  return result;
+  const outcome =
+    playerVal > computerVal ? "winPlayer" : playerVal < computerVal ? "winOpponent" : "draw";
+  return { ...result, outcome, playerVal, computerVal };
 }
 
 /**
@@ -96,13 +98,35 @@ export async function handleStatSelection(store, stat, options = {}) {
       clearTimeout(opponentMsgId);
       await revealComputerCard();
       const result = evaluateRound(store, stat);
+      // Move to decision and then roundOver in the state machine
+      try {
+        const { dispatchBattleEvent } = await import("./orchestrator.js");
+        await dispatchBattleEvent("outcome=" + result.outcome);
+      } catch {}
       if (result.matchEnded) {
         infoBar.clearRoundCounter();
       }
       resetStatButtons();
+      // From roundOver, either continue to cooldown or decide match
+      try {
+        const { dispatchBattleEvent } = await import("./orchestrator.js");
+        if (result.matchEnded) {
+          await dispatchBattleEvent("matchPointReached");
+        } else {
+          await dispatchBattleEvent("continue");
+        }
+      } catch {}
       scheduleNextRound(result);
       if (result.matchEnded) {
-        showMatchSummaryModal(result, () => handleReplay(store));
+        showMatchSummaryModal(result, async () => {
+          try {
+            const { dispatchBattleEvent } = await import("./orchestrator.js");
+            await dispatchBattleEvent("finalize");
+            await dispatchBattleEvent("rematch");
+            await dispatchBattleEvent("startClicked");
+          } catch {}
+          handleReplay(store);
+        });
       }
       updateDebugPanel();
       resolve(result);

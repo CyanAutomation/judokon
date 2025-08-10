@@ -36,7 +36,7 @@ import { loadStatNames } from "./stats.js";
 import { STATS } from "./battleEngine.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
-import { initRoundSelectModal } from "./classicBattle/roundSelectModal.js";
+import { initClassicBattleOrchestrator, dispatchBattleEvent } from "./classicBattle/orchestrator.js";
 import { skipCurrentPhase, onNextButtonClick } from "./classicBattle/timerService.js";
 import { isEnabled, featureFlagsEmitter } from "./featureFlags.js";
 
@@ -124,7 +124,7 @@ export async function setupClassicBattlePage() {
   initDebugPanel();
 
   window.startRoundOverride = () => startRoundWrapper();
-  await initRoundSelectModal(() => startRoundWrapper());
+  await initClassicBattleOrchestrator(battleStore, startRoundWrapper);
   await initTooltips();
   watchBattleOrientation();
   maybeShowStatHint();
@@ -137,6 +137,8 @@ function wireStatButtons(statButtons) {
         enableStatButtons(false);
         btn.classList.add("selected");
         showSnackbar(`You Picked: ${btn.textContent}`);
+        // Inform state machine that the player acted
+        dispatchBattleEvent("statSelected");
         handleStatSelection(battleStore, btn.dataset.stat);
       }
     });
@@ -146,6 +148,7 @@ function wireStatButtons(statButtons) {
         enableStatButtons(false);
         btn.classList.add("selected");
         showSnackbar(`You Picked: ${btn.textContent}`);
+        dispatchBattleEvent("statSelected");
         handleStatSelection(battleStore, btn.dataset.stat);
       }
     });

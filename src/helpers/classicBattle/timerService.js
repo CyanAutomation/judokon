@@ -65,6 +65,10 @@ export async function onNextButtonClick() {
     delete btn.dataset.nextReady;
     const start = window.startRoundOverride;
     setSkipHandler(null);
+    try {
+      const { dispatchBattleEvent } = await import("./orchestrator.js");
+      await dispatchBattleEvent("ready");
+    } catch {}
     if (typeof start === "function") {
       await start();
     }
@@ -152,6 +156,10 @@ export async function startTimer(onExpiredSelect) {
   const onExpired = async () => {
     setSkipHandler(null);
     infoBar.clearTimer();
+    try {
+      const { dispatchBattleEvent } = await import("./orchestrator.js");
+      await dispatchBattleEvent("timeout");
+    } catch {}
     const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
     const btn = document.querySelector(`#stat-buttons button[data-stat="${randomStat}"]`);
     const label = btn?.textContent || randomStat;

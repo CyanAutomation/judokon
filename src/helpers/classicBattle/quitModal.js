@@ -30,6 +30,13 @@ function createQuitConfirmation(store, onConfirm) {
   quit.addEventListener("click", () => {
     onConfirm();
     modal.close();
+    try {
+      // Drive state machine to interruption path
+      import("./orchestrator.js").then(({ dispatchBattleEvent }) => {
+        dispatchBattleEvent("interrupt");
+        dispatchBattleEvent("finalize");
+      });
+    } catch {}
     // In browsers, navigate to home; in jsdom, history.replaceState avoids Not Implemented errors
     try {
       window.location.href = "../../index.html";
