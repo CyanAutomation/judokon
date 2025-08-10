@@ -24,9 +24,11 @@ describe("classicBattlePage keyboard navigation", () => {
     const setTestMode = vi.fn();
     const showSnackbar = vi.fn();
 
-    vi.doMock("../../src/helpers/classicBattle.js", () => ({
+    vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
       createBattleStore: () => store,
-      startRound,
+      startRound
+    }));
+    vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
       handleStatSelection,
       simulateOpponentStat: vi.fn()
     }));
@@ -80,9 +82,11 @@ describe("classicBattlePage keyboard navigation", () => {
     const initTooltips = vi.fn().mockResolvedValue();
     const setTestMode = vi.fn();
 
-    vi.doMock("../../src/helpers/classicBattle.js", () => ({
+    vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
       createBattleStore: () => store,
-      startRound,
+      startRound
+    }));
+    vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
       handleStatSelection,
       simulateOpponentStat: vi.fn()
     }));
@@ -142,9 +146,11 @@ describe("classicBattlePage simulated opponent mode", () => {
     const initTooltips = vi.fn().mockResolvedValue();
     const setTestMode = vi.fn();
 
-    vi.doMock("../../src/helpers/classicBattle.js", () => ({
+    vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
       createBattleStore: () => store,
-      startRound,
+      startRound
+    }));
+    vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
       handleStatSelection,
       simulateOpponentStat
     }));
@@ -188,9 +194,11 @@ describe("classicBattlePage stat help tooltip", () => {
     const setTestMode = vi.fn();
 
     const store = {};
-    vi.doMock("../../src/helpers/classicBattle.js", () => ({
+    vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
       createBattleStore: () => store,
-      startRound,
+      startRound
+    }));
+    vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
       handleStatSelection: vi.fn(),
       simulateOpponentStat: vi.fn()
     }));
@@ -239,9 +247,11 @@ describe("classicBattlePage test mode flag", () => {
     const setTestMode = vi.fn();
 
     const store = {};
-    vi.doMock("../../src/helpers/classicBattle.js", () => ({
+    vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
       createBattleStore: () => store,
-      startRound,
+      startRound
+    }));
+    vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
       handleStatSelection: vi.fn(),
       simulateOpponentStat: vi.fn()
     }));
@@ -279,9 +289,11 @@ describe("classicBattlePage test mode flag", () => {
     const setTestMode = vi.fn();
 
     const store = {};
-    vi.doMock("../../src/helpers/classicBattle.js", () => ({
+    vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
       createBattleStore: () => store,
-      startRound,
+      startRound
+    }));
+    vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
       handleStatSelection: vi.fn(),
       simulateOpponentStat: vi.fn()
     }));
