@@ -50,7 +50,8 @@ describe("randomJudokaPage module", () => {
         }
       };
     });
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+    vi.doMock("../../src/helpers/dataUtils.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson: vi.fn().mockResolvedValue([])
     }));
     vi.doMock("../../src/helpers/constants.js", async () => ({
@@ -104,7 +105,10 @@ describe("randomJudokaPage module", () => {
     const applyMotionPreference = vi.fn();
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    vi.doMock("../../src/helpers/dataUtils.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/dataUtils.js")),
+      fetchJson
+    }));
     vi.doMock("../../src/helpers/constants.js", async () => ({
       ...(await vi.importActual("../../src/helpers/constants.js")),
       DATA_DIR: ""
@@ -151,7 +155,10 @@ describe("randomJudokaPage module", () => {
     const applyMotionPreference = vi.fn();
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    vi.doMock("../../src/helpers/dataUtils.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/dataUtils.js")),
+      fetchJson
+    }));
     vi.doMock("../../src/helpers/constants.js", async () => ({
       ...(await vi.importActual("../../src/helpers/constants.js")),
       DATA_DIR: ""
@@ -182,7 +189,7 @@ describe("randomJudokaPage module", () => {
     expect(button).not.toHaveAttribute("aria-busy");
   });
 
-  it("stores last draws in a slide-out history panel", async () => {
+  it("caps history at 5 entries", async () => {
     vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
     const judokaSeq = [
@@ -213,7 +220,10 @@ describe("randomJudokaPage module", () => {
     const applyMotionPreference = vi.fn();
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    vi.doMock("../../src/helpers/dataUtils.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/dataUtils.js")),
+      fetchJson
+    }));
     vi.doMock("../../src/helpers/constants.js", async () => ({
       ...(await vi.importActual("../../src/helpers/constants.js")),
       DATA_DIR: ""
@@ -246,6 +256,45 @@ describe("randomJudokaPage module", () => {
     expect(items).toEqual(["F Six", "E Five", "D Four", "C Three", "B Two"]);
   });
 
+  it("shows error and disables draw button when data fails to load", async () => {
+    vi.useFakeTimers();
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+    const dataUtils = await import("../../src/helpers/dataUtils.js");
+    const fetchSpy = vi.spyOn(dataUtils, "fetchJson").mockRejectedValue(new Error("fail"));
+    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+    const applyMotionPreference = vi.fn();
+    const createButton = vi.fn((_, opts = {}) => {
+      const btn = document.createElement("button");
+      if (opts.id) btn.id = opts.id;
+      return btn;
+    });
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard: vi.fn() }));
+    vi.doMock("../../src/components/Button.js", () => ({ createButton }));
+    vi.doMock("../../src/helpers/settingsUtils.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+    vi.doMock("../../src/helpers/constants.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/constants.js")),
+      DATA_DIR: ""
+    }));
+
+    const { section, container, placeholderTemplate } = createRandomCardDom();
+    document.body.append(section, container, placeholderTemplate);
+
+    await import("../../src/helpers/randomJudokaPage.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await vi.runAllTimersAsync();
+
+    const button = document.getElementById("draw-card-btn");
+    expect(button.disabled).toBe(true);
+    expect(button.getAttribute("aria-disabled")).toBe("true");
+    const errorEl = document.getElementById("draw-error-message");
+    expect(errorEl?.textContent).toMatch(/Unable to load judoka data/);
+    fetchSpy.mockRestore();
+    consoleError.mockRestore();
+  });
+
   it("storage event toggles card inspector", async () => {
     vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
@@ -266,7 +315,10 @@ describe("randomJudokaPage module", () => {
     const applyMotionPreference = vi.fn();
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    vi.doMock("../../src/helpers/dataUtils.js", async () => ({
+      ...(await vi.importActual("../../src/helpers/dataUtils.js")),
+      fetchJson
+    }));
     vi.doMock("../../src/helpers/constants.js", async () => ({
       ...(await vi.importActual("../../src/helpers/constants.js")),
       DATA_DIR: ""
