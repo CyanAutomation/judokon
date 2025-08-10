@@ -23,6 +23,7 @@ describe("timerUtils", () => {
   });
 
   it("falls back to import when fetch fails", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const fallback = [{ id: 3, value: 5, default: true, category: "coolDownTimer" }];
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockRejectedValue(new Error("fail")),
@@ -31,5 +32,7 @@ describe("timerUtils", () => {
     const { getDefaultTimer } = await import("../../src/helpers/timerUtils.js");
     const val = await getDefaultTimer("coolDownTimer");
     expect(val).toBe(5);
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
   });
 });
