@@ -17,6 +17,29 @@
       "type": "object",
       "description": "Tooltip text for game modes.",
       "additionalProperties": { "type": "string" }
+    },
+    "nav": {
+      "type": "object",
+      "description": "Tooltip text for navigation items.",
+      "additionalProperties": { "type": "string" }
+    },
+    "card": {
+      "type": "object",
+      "description": "Tooltip text for judoka card UI.",
+      "additionalProperties": { "type": "string" }
+    },
+    "settings": {
+      "type": "object",
+      "description": "Tooltip text for settings toggles and options.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "label": { "type": "string" },
+          "description": { "type": "string" }
+        },
+        "required": ["label", "description"],
+        "additionalProperties": false
+      }
     }
   },
   "additionalProperties": false

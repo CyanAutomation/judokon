@@ -1,106 +1,109 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://judokon.dev/schemas/judoka.schema.json",
-  "title": "Judoka",
-  "type": "object",
-  "properties": {
-    "id": {
-      "type": "integer",
-      "description": "Unique identifier for the judoka."
+  "title": "Judoka List",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "description": "Unique identifier for the judoka."
+      },
+      "firstname": {
+        "type": "string",
+        "description": "First name of the judoka."
+      },
+      "surname": {
+        "type": "string",
+        "description": "Surname of the judoka."
+      },
+      "country": {
+        "type": "string",
+        "description": "Country of the judoka."
+      },
+      "countryCode": {
+        "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/CountryCode",
+        "description": "ISO 3166-1 alpha-2 country code."
+      },
+      "weightClass": {
+        "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/WeightClass",
+        "description": "Weight class of the judoka."
+      },
+      "stats": {
+        "allOf": [
+          { "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/Stats" }
+        ],
+        "description": "Performance stats of the judoka."
+      },
+      "signatureMoveId": {
+        "type": "integer",
+        "description": "ID of the judoka's signature move."
+      },
+      "lastUpdated": {
+        "type": "string",
+        "format": "date-time",
+        "description": "Timestamp of the last update."
+      },
+      "profileUrl": {
+        "type": "string",
+        "format": "uri",
+        "description": "URL to the judoka's profile."
+      },
+      "bio": {
+        "type": "string",
+        "description": "Biography of the judoka."
+      },
+      "gender": {
+        "type": "string",
+        "enum": ["male", "female"],
+        "description": "Gender of the judoka."
+      },
+      "isHidden": {
+        "type": "boolean",
+        "description": "Visibility status of the judoka."
+      },
+      "rarity": {
+        "type": "string",
+        "enum": ["Common", "Epic", "Legendary"],
+        "description": "Rarity level of the judoka."
+      },
+      "cardCode": {
+        "type": "string",
+        "description": "Unique card code for the judoka."
+      },
+      "matchesWon": {
+        "type": "integer",
+        "description": "Number of matches won by the judoka."
+      },
+      "matchesLost": {
+        "type": "integer",
+        "description": "Number of matches lost by the judoka."
+      },
+      "matchesDrawn": {
+        "type": "integer",
+        "description": "Number of matches drawn by the judoka."
+      }
     },
-    "firstname": {
-      "type": "string",
-      "description": "First name of the judoka."
-    },
-    "surname": {
-      "type": "string",
-      "description": "Surname of the judoka."
-    },
-    "country": {
-      "type": "string",
-      "description": "Country of the judoka."
-    },
-    "countryCode": {
-      "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/CountryCode",
-      "description": "ISO 3166-1 alpha-2 country code."
-    },
-    "weightClass": {
-      "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/WeightClass",
-      "description": "Weight class of the judoka."
-    },
-    "stats": {
-      "allOf": [
-        { "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/Stats" }
-      ],
-      "description": "Performance stats of the judoka."
-    },
-    "signatureMoveId": {
-      "type": "integer",
-      "description": "ID of the judoka's signature move."
-    },
-    "lastUpdated": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Timestamp of the last update."
-    },
-    "profileUrl": {
-      "type": "string",
-      "format": "uri",
-      "description": "URL to the judoka's profile."
-    },
-    "bio": {
-      "type": "string",
-      "description": "Biography of the judoka."
-    },
-    "gender": {
-      "type": "string",
-      "enum": ["male", "female"],
-      "description": "Gender of the judoka."
-    },
-    "isHidden": {
-      "type": "boolean",
-      "description": "Visibility status of the judoka."
-    },
-    "rarity": {
-      "type": "string",
-      "enum": ["Common", "Epic", "Legendary"],
-      "description": "Rarity level of the judoka."
-    },
-    "cardCode": {
-      "type": "string",
-      "description": "Unique card code for the judoka."
-    },
-    "matchesWon": {
-      "type": "integer",
-      "description": "Number of matches won by the judoka."
-    },
-    "matchesLost": {
-      "type": "integer",
-      "description": "Number of matches lost by the judoka."
-    },
-    "matchesDrawn": {
-      "type": "integer",
-      "description": "Number of matches drawn by the judoka."
-    }
-  },
-  "required": [
-    "id",
-    "firstname",
-    "surname",
-    "country",
-    "countryCode",
-    "weightClass",
-    "stats",
-    "signatureMoveId",
-    "lastUpdated",
-    "profileUrl",
-    "bio",
-    "gender",
-    "isHidden",
-    "rarity",
-    "cardCode",
-    "matchesWon",
-    "matchesLost",
-    "matchesDrawn"
-  ]
+    "required": [
+      "id",
+      "firstname",
+      "surname",
+      "country",
+      "countryCode",
+      "weightClass",
+      "stats",
+      "signatureMoveId",
+      "lastUpdated",
+      "profileUrl",
+      "bio",
+      "gender",
+      "isHidden",
+      "rarity",
+      "cardCode",
+      "matchesWon",
+      "matchesLost",
+      "matchesDrawn"
+    ]
+  }
 }
