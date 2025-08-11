@@ -63,15 +63,18 @@ describe("InfoBar component", () => {
     expect(document.getElementById("round-message").textContent).toBe("");
   });
 
-  it("startCountdown updates a single snackbar each second", () => {
+  it("countdown displays and clears correctly", () => {
     const timer = vi.useFakeTimers();
-    startCountdown(2);
+    const onFinish = vi.fn();
+    startCountdown(2, onFinish);
     expect(showSnackbar).toHaveBeenCalledWith("Next round in: 2s");
     expect(showSnackbar).toHaveBeenCalledTimes(1);
     timer.advanceTimersByTime(1000);
     expect(updateSnackbar).toHaveBeenCalledWith("Next round in: 1s");
     timer.advanceTimersByTime(1000);
     expect(updateSnackbar).toHaveBeenCalledTimes(1);
+    expect(onFinish).toHaveBeenCalled();
+    expect(document.getElementById("next-round-timer").textContent).toBe("");
     timer.clearAllTimers();
   });
 
@@ -83,6 +86,25 @@ describe("InfoBar component", () => {
     onDrift(1);
     expect(document.getElementById("round-message").textContent).toBe("Waiting…");
     timer.clearAllTimers();
+    watchSpy.mockRestore();
+  });
+
+  it("drift handler restarts only up to the retry limit", () => {
+    const timer = vi.useFakeTimers();
+    const coolSpy = vi.spyOn(battleEngine, "startCoolDown");
+    const watchSpy = vi.spyOn(battleEngine, "watchForDrift");
+    const onFinish = vi.fn();
+    startCountdown(5, onFinish);
+    const [, onDrift] = watchSpy.mock.calls[0];
+    onDrift(4);
+    onDrift(4);
+    onDrift(4);
+    expect(coolSpy).toHaveBeenCalledTimes(4);
+    onDrift(4);
+    expect(onFinish).toHaveBeenCalled();
+    expect(coolSpy).toHaveBeenCalledTimes(4);
+    timer.clearAllTimers();
+    coolSpy.mockRestore();
     watchSpy.mockRestore();
   });
 

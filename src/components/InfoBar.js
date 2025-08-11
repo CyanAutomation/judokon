@@ -234,12 +234,9 @@ export function clearRoundCounter() {
  * desynchronization occurs.
  *
  * @pseudocode
- * 1. Use `startCoolDown` to update the remaining time each second.
- * 2. Call `showSnackbar` once and update its text each tick with
- *    `"Next round in: <n>s"`.
- * 3. Monitor for drift via `watchForDrift`; on drift, show "Waiting…" and
- *    restart the countdown, giving up after several retries.
- * 4. When the timer expires, stop monitoring, clear the timer display, and invoke `onFinish`.
+ * 1. Create a countdown `state` object.
+ * 2. Build pure helpers for tick rendering, expiration handling, and drift restarts.
+ * 3. Kick off the countdown with `runCountdown` and monitor for drift.
  *
  * @param {number} seconds - Seconds to count down from.
  * @param {Function} [onFinish] - Optional callback when countdown ends.
@@ -252,35 +249,12 @@ export function startCountdown(seconds, onFinish) {
     return;
   }
 
-  let started = false;
-  const onTick = (remaining) => {
-    if (remaining <= 0) {
-      clearTimer();
-      return;
-    }
-    const text = `Next round in: ${remaining}s`;
-    if (!started) {
-      showSnackbar(text);
-      started = true;
-    } else {
-      updateSnackbar(text);
-    }
-  };
+  const state = createCountdownState();
+  const onTick = createTickRenderer(state);
+  const onExpired = createExpirationHandler(state, onFinish);
+  setupDriftRestart(state, onTick, onExpired);
 
-  let stopWatch;
-  const onExpired = () => {
-    if (stopWatch) stopWatch();
-    clearTimer();
-    if (typeof onFinish === "function") onFinish();
-  };
-
-  let handleDrift;
-  const restart = (rem) => {
-    stopWatch = runCountdown(rem, onTick, onExpired, handleDrift, stopWatch);
-  };
-  handleDrift = createDriftHandler(restart, onExpired);
-
-  stopWatch = runCountdown(seconds, onTick, onExpired, handleDrift, stopWatch);
+  state.stopWatch = runCountdown(seconds, onTick, onExpired, state.handleDrift, state.stopWatch);
 }
 
 /**
@@ -327,4 +301,39 @@ function createDriftHandler(restartFn, onGiveUp) {
     showMessage("Waiting…");
     restartFn(remaining);
   };
+}
+
+function createCountdownState() {
+  return { started: false, stopWatch: undefined, handleDrift: undefined };
+}
+
+function createTickRenderer(state) {
+  return (remaining) => {
+    if (remaining <= 0) {
+      clearTimer();
+      return;
+    }
+    const text = `Next round in: ${remaining}s`;
+    if (!state.started) {
+      showSnackbar(text);
+      state.started = true;
+    } else {
+      updateSnackbar(text);
+    }
+  };
+}
+
+function createExpirationHandler(state, onFinish) {
+  return () => {
+    if (state.stopWatch) state.stopWatch();
+    clearTimer();
+    if (typeof onFinish === "function") onFinish();
+  };
+}
+
+function setupDriftRestart(state, onTick, onExpired) {
+  const restart = (rem) => {
+    state.stopWatch = runCountdown(rem, onTick, onExpired, state.handleDrift, state.stopWatch);
+  };
+  state.handleDrift = createDriftHandler(restart, onExpired);
 }
