@@ -1,4 +1,5 @@
 import { CAROUSEL_SWIPE_THRESHOLD } from "../constants.js";
+import { createScrollButton, updateScrollButtonState } from "./scroll.js";
 /**
  * Sets up keyboard navigation for the carousel container.
  *
@@ -94,4 +95,40 @@ export function setupSwipeNavigation(container) {
       scrollFromDelta(swipeDistance);
     }
   });
+}
+
+/**
+ * Create scroll buttons and synchronize their disabled state with the
+ * container's scroll position.
+ *
+ * @pseudocode
+ * 1. Build a `buttons` map with `left` and `right` using `createScrollButton`.
+ * 2. Append `left`, `container`, and `right` to `wrapper` in that order.
+ * 3. Define `updateButtons` via `updateScrollButtonState`.
+ * 4. Call `updateButtons` initially, on `scroll` (with a delayed recheck) and
+ *    on `resize`.
+ *
+ * @param {HTMLElement} container - Carousel container element.
+ * @param {HTMLElement} wrapper - Wrapper element to hold buttons and container.
+ */
+export function wireCarouselNavigation(container, wrapper) {
+  const buttons = {
+    left: createScrollButton("left", container),
+    right: createScrollButton("right", container)
+  };
+
+  wrapper.append(buttons.left, container, buttons.right);
+
+  const updateButtons = () => updateScrollButtonState(container, buttons.left, buttons.right);
+
+  let scrollTimeout;
+  const handleScroll = () => {
+    updateButtons();
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(updateButtons, 100);
+  };
+
+  updateButtons();
+  container.addEventListener("scroll", handleScroll);
+  window.addEventListener("resize", updateButtons);
 }
