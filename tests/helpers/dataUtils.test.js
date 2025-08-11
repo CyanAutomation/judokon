@@ -57,6 +57,15 @@ describe("fetchJson", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("reads local files from relative paths without using fetch", async () => {
+    const fetchMock = vi.fn();
+    global.fetch = fetchMock;
+    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+    const data = await fetchJson("src/data/statNames.json");
+    expect(Array.isArray(data)).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("does not share cache between different URLs", async () => {
     const data1 = { foo: "bar" };
     const data2 = { baz: "qux" };

@@ -80,16 +80,21 @@ const schemaCache = new WeakMap();
  *
  * @pseudocode
  * 1. Check the cache for `url` and return the value when present.
- * 2. Resolve the URL.
+ * 2. Resolve the URL:
+ *    - In Node, resolve relative paths against `process.cwd()`.
+ *    - Otherwise resolve against `http://localhost`.
  * 3. When running under Node with a `file:` protocol, convert the file URL to a path and
  *    read and parse the file with `fs.promises.readFile`.
- * 4. Otherwise, request `url` using `fetch` and parse the JSON response.
+ * 4. Otherwise, request `parsedUrl.href` using `fetch` and parse the JSON response.
  * 5. When a `schema` is provided, validate the data with `validateWithSchema`.
  * 6. Store the parsed data in the cache and return it.
  * 7. On any error, log the issue, remove a stale cache entry, and rethrow.
  *
  * @template T
- * @param {string} url - The URL to fetch data from.
+ * @param {string|URL} url - Resource location. Accepts absolute HTTP(S) URLs,
+ *   `file:` URLs, or filesystem-relative paths when running under Node.
+ *   Relative paths resolve against the current working directory and read
+ *   from disk instead of over the network.
  * @param {object} [schema] - Optional JSON schema used for validation.
  * @returns {Promise<T>} A promise that resolves to the parsed JSON data.
  * @throws {Error} If the fetch request fails, validation fails, or JSON parsing fails.
@@ -100,7 +105,11 @@ export async function fetchJson(url, schema) {
       return dataCache.get(url);
     }
 
-    const parsedUrl = new URL(url, "http://localhost");
+    const base =
+      isNodeEnvironment() && !/^[a-zA-Z]+:/.test(url) && !url.startsWith("/")
+        ? (await import("node:url")).pathToFileURL(process.cwd() + "/").href
+        : "http://localhost";
+    const parsedUrl = new URL(url, base);
     let data;
     if (isNodeEnvironment() && parsedUrl.protocol === "file:") {
       const { readFile } = await import("fs/promises");
@@ -108,7 +117,7 @@ export async function fetchJson(url, schema) {
       const filePath = fileURLToPath(parsedUrl.href);
       data = JSON.parse(await readFile(filePath, "utf8"));
     } else {
-      const response = await fetch(url);
+      const response = await fetch(parsedUrl.href);
       if (!response.ok) {
         throw new Error(`Failed to fetch ${url} (HTTP ${response.status})`);
       }
