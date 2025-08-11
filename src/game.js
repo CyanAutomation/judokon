@@ -7,6 +7,7 @@ import { initTooltips } from "./helpers/tooltip.js";
 import { loadSettings } from "./helpers/settingsStorage.js";
 import { toggleInspectorPanels } from "./helpers/cardUtils.js";
 import { isEnabled, featureFlagsEmitter } from "./helpers/featureFlags.js";
+import { debugLog } from "./helpers/debug.js";
 
 let inspectorEnabled = false;
 
@@ -64,7 +65,7 @@ export function setupCarouselToggle(button, container) {
       });
 
       isBuilt = true;
-      console.log("Carousel displayed on demand.");
+      debugLog("Carousel displayed on demand.");
     } catch (error) {
       console.error("Failed to build carousel:", error);
     }
