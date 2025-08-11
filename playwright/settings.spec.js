@@ -24,17 +24,15 @@ test.describe.parallel("Settings page", () => {
       route.fulfill({ path: "tests/fixtures/tooltips.json" })
     );
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-    try {
-      await page
-        .getByRole("checkbox", { name: "Classic Battle" })
-        .waitFor({ state: "attached", timeout: 5000 });
-    } catch (e) {
-      const content = await page.content();
-      console.error("Classic Battle label not found. Page content:\n", content);
-      throw e;
-    }
     await page.locator("#general-settings-toggle").click();
     await page.locator("#game-modes-toggle").click();
+    await page.getByRole("checkbox", { name: "Classic Battle" }).waitFor({ state: "visible" });
+    if (await page.locator("#general-settings-content").getAttribute("hidden")) {
+      await page.locator("#general-settings-toggle").click();
+    }
+    if (await page.locator("#game-modes-content").getAttribute("hidden")) {
+      await page.locator("#game-modes-toggle").click();
+    }
     const advancedContent = page.locator("#advanced-settings-content");
     if (await advancedContent.getAttribute("hidden")) {
       await page.locator("#advanced-settings-toggle").click();
