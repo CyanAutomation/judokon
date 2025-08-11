@@ -4,9 +4,8 @@ import { generateRandomCard } from "./helpers/randomCard.js";
 import { DATA_DIR } from "./helpers/constants.js";
 import { shouldReduceMotionSync } from "./helpers/motionUtils.js";
 import { initTooltips } from "./helpers/tooltip.js";
-import { loadSettings } from "./helpers/settingsStorage.js";
 import { toggleInspectorPanels } from "./helpers/cardUtils.js";
-import { isEnabled, featureFlagsEmitter } from "./helpers/featureFlags.js";
+import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./helpers/featureFlags.js";
 
 let inspectorEnabled = false;
 
@@ -140,10 +139,11 @@ export function setupRandomCardButton(button, container) {
  * @pseudocode
  * 1. Wait for the `DOMContentLoaded` event.
  * 2. Query elements used by the game (buttons, containers).
- * 3. Call `setupCarouselToggle` with the carousel button and container.
- * 4. Call `setupHideCardButton` with the hide-card button.
- * 5. Call `setupRandomCardButton` with the random button and game area.
- * 6. Call `initTooltips` to initialize tooltips.
+ * 3. Call `initFeatureFlags` and set `inspectorEnabled` via `isEnabled`.
+ * 4. Call `setupCarouselToggle` with the carousel button and container.
+ * 5. Call `setupHideCardButton` with the hide-card button.
+ * 6. Call `setupRandomCardButton` with the random button and game area.
+ * 7. Call `initTooltips` to initialize tooltips.
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -158,12 +158,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  try {
-    await loadSettings();
-    inspectorEnabled = isEnabled("enableCardInspector");
-  } catch {
-    inspectorEnabled = false;
-  }
+  await initFeatureFlags();
+  inspectorEnabled = isEnabled("enableCardInspector");
   toggleInspectorPanels(inspectorEnabled);
 
   featureFlagsEmitter.addEventListener("change", () => {

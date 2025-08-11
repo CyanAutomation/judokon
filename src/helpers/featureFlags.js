@@ -8,11 +8,25 @@ import { loadSettings, updateSetting } from "./settingsStorage.js";
 export const featureFlagsEmitter = new EventTarget();
 
 let cachedFlags = {};
-try {
-  const settings = await loadSettings();
-  cachedFlags = settings.featureFlags || {};
-} catch {
-  cachedFlags = {};
+
+/**
+ * Initialize feature flags cache.
+ *
+ * @pseudocode
+ * 1. Call `loadSettings()` to retrieve current settings.
+ * 2. Set `cachedFlags` to `settings.featureFlags` or `{}`.
+ * 3. Dispatch a `change` event on `featureFlagsEmitter`.
+ *
+ * @returns {Promise<void>} Resolves once flags are loaded.
+ */
+export async function initFeatureFlags() {
+  try {
+    const settings = await loadSettings();
+    cachedFlags = settings.featureFlags || {};
+  } catch {
+    cachedFlags = {};
+  }
+  featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
 }
 
 /**
