@@ -7,7 +7,7 @@
  * 3. Toggle the `.simulate-viewport` class based on the viewport flag.
  * 4. Initialize the page controls and event listeners.
  */
-import { loadSettings, resetSettings } from "./settingsStorage.js";
+import { resetSettings } from "./settingsStorage.js";
 import { loadNavigationItems, loadGameModes } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
 import { applyDisplayMode } from "./displayMode.js";
@@ -20,7 +20,7 @@ import { createButton } from "../components/Button.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
-import { isEnabled } from "./featureFlags.js";
+import { initFeatureFlags, isEnabled } from "./featureFlags.js";
 
 import { applyInitialControlValues } from "./settings/applyInitialValues.js";
 import { attachToggleListeners } from "./settings/listenerUtils.js";
@@ -241,7 +241,7 @@ async function initializeSettingsPage() {
   try {
     const gameModesPromise = settled(loadNavigationItems());
     const tooltipMapPromise = settled(getTooltips());
-    const settings = await loadSettings();
+    const settings = await initFeatureFlags();
     const [gameModesResult, tooltipMapResult] = await Promise.all([
       gameModesPromise,
       tooltipMapPromise

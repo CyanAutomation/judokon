@@ -28,8 +28,10 @@ describe("game.js", () => {
     const shouldReduceMotionSync = vi.fn(() => true);
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ shouldReduceMotionSync }));
-    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
-      loadSettings: vi.fn().mockResolvedValue({ featureFlags: {} })
+    vi.doMock("../../src/helpers/featureFlags.js", () => ({
+      initFeatureFlags: vi.fn().mockResolvedValue({ featureFlags: {} }),
+      isEnabled: vi.fn(() => false),
+      featureFlagsEmitter: new EventTarget()
     }));
 
     await import("../../src/game.js");

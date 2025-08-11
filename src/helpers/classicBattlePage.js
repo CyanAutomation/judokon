@@ -41,7 +41,7 @@ import {
   dispatchBattleEvent
 } from "./classicBattle/orchestrator.js";
 import { skipCurrentPhase, onNextButtonClick } from "./classicBattle/timerService.js";
-import { isEnabled, featureFlagsEmitter } from "./featureFlags.js";
+import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
 
 function enableStatButtons(enable = true) {
   document.querySelectorAll("#stat-buttons button").forEach((btn) => {
@@ -107,6 +107,7 @@ function watchBattleOrientation() {
 }
 
 export async function setupClassicBattlePage() {
+  await initFeatureFlags();
   await applyStatLabels();
   const statButtons = document.querySelectorAll("#stat-buttons button");
   setupNextButton();

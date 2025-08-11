@@ -4,9 +4,8 @@ import { generateRandomCard } from "./helpers/randomCard.js";
 import { DATA_DIR } from "./helpers/constants.js";
 import { shouldReduceMotionSync } from "./helpers/motionUtils.js";
 import { initTooltips } from "./helpers/tooltip.js";
-import { loadSettings } from "./helpers/settingsStorage.js";
 import { toggleInspectorPanels } from "./helpers/cardUtils.js";
-import { isEnabled, featureFlagsEmitter } from "./helpers/featureFlags.js";
+import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./helpers/featureFlags.js";
 import { debugLog } from "./helpers/debug.js";
 
 let inspectorEnabled = false;
@@ -158,7 +157,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    await loadSettings();
+    await initFeatureFlags();
     inspectorEnabled = isEnabled("enableCardInspector");
   } catch {
     inspectorEnabled = false;
