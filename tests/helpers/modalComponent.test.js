@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createModal } from "../../src/components/Modal.js";
+import { createModal, Modal } from "../../src/components/Modal.js";
 
 function buildContent() {
   const frag = document.createDocumentFragment();
@@ -43,5 +43,18 @@ describe("createModal", () => {
     const dialog = element.querySelector(".modal");
     expect(dialog).toHaveAttribute("aria-labelledby", "modal-title");
     expect(dialog).toHaveAttribute("aria-describedby", "modal-desc");
+  });
+});
+
+describe("Modal class", () => {
+  it("allows direct instantiation", () => {
+    const trigger = document.createElement("button");
+    document.body.appendChild(trigger);
+    const modal = new Modal(buildContent());
+    document.body.appendChild(modal.element);
+    modal.open(trigger);
+    expect(modal.element.hasAttribute("hidden")).toBe(false);
+    modal.close();
+    expect(modal.element.hasAttribute("hidden")).toBe(true);
   });
 });

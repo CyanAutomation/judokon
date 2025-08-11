@@ -7,7 +7,7 @@
  * 3. When options include `labelledBy` or `describedBy`, set
  *    `aria-labelledby` and `aria-describedby` on the modal.
  * 4. Append provided content nodes into the modal.
- * 5. Expose `open()` and `close()` functions to toggle the backdrop,
+ * 5. Expose `open()` and `close()` instance methods to toggle the backdrop,
  *    manage focus and `aria-expanded` on the trigger.
  * 6. Clicking the backdrop or pressing Escape closes the modal.
  * 7. While open, trap focus inside the modal container.
@@ -18,44 +18,55 @@
  *   for `aria-labelledby`.
  * @param {string|HTMLElement} [options.describedBy] - ID string or element used
  *   for `aria-describedby`.
- * @returns {{ element: HTMLElement, open(trigger?: HTMLElement): void, close(): void }}
- *   Modal API with DOM element and controls.
  */
-export function createModal(content, options = {}) {
-  const { labelledBy, describedBy } = options;
+export class Modal {
+  constructor(content, options = {}) {
+    const { labelledBy, describedBy } = options;
 
-  const backdrop = document.createElement("div");
-  backdrop.className = "modal-backdrop";
-  backdrop.setAttribute("hidden", "");
+    this.element = document.createElement("div");
+    this.element.className = "modal-backdrop";
+    this.element.setAttribute("hidden", "");
 
-  const dialog = document.createElement("div");
-  dialog.className = "modal";
-  dialog.setAttribute("role", "dialog");
-  dialog.setAttribute("aria-modal", "true");
-  if (labelledBy) {
-    const id = typeof labelledBy === "string" ? labelledBy : labelledBy.id;
-    if (id) dialog.setAttribute("aria-labelledby", id);
+    this.dialog = document.createElement("div");
+    this.dialog.className = "modal";
+    this.dialog.setAttribute("role", "dialog");
+    this.dialog.setAttribute("aria-modal", "true");
+    if (labelledBy) {
+      const id = typeof labelledBy === "string" ? labelledBy : labelledBy.id;
+      if (id) this.dialog.setAttribute("aria-labelledby", id);
+    }
+    if (describedBy) {
+      const id = typeof describedBy === "string" ? describedBy : describedBy.id;
+      if (id) this.dialog.setAttribute("aria-describedby", id);
+    }
+    this.dialog.tabIndex = -1;
+
+    this.dialog.append(content);
+    this.element.append(this.dialog);
+
+    this.returnFocus = null;
+    this.removeTrap = () => {};
+
+    this.handleBackdropClick = this.handleBackdropClick.bind(this);
+    this.handleEscape = this.handleEscape.bind(this);
+    this.open = this.open.bind(this);
+    this.close = this.close.bind(this);
+    this.element.addEventListener("click", this.handleBackdropClick);
   }
-  if (describedBy) {
-    const id = typeof describedBy === "string" ? describedBy : describedBy.id;
-    if (id) dialog.setAttribute("aria-describedby", id);
-  }
-  dialog.tabIndex = -1;
 
-  dialog.append(content);
-  backdrop.append(dialog);
-
-  let returnFocus = null;
-  let removeTrap = () => {};
-
-  function trapFocus(el) {
+  /**
+   * Trap focus within the given element.
+   * @param {HTMLElement} el
+   * @returns {() => void} Cleanup function.
+   */
+  trapFocus(el) {
     const selectors = "a[href], button, textarea, input, select, [tabindex]:not([tabindex='-1'])";
     const focusables = Array.from(el.querySelectorAll(selectors));
     if (focusables.length === 0) return () => {};
     const first = focusables[0];
     const last = focusables[focusables.length - 1];
 
-    function handle(e) {
+    const handle = (e) => {
       if (e.key !== "Tab") return;
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault();
@@ -64,43 +75,52 @@ export function createModal(content, options = {}) {
         e.preventDefault();
         first.focus();
       }
-    }
+    };
 
     el.addEventListener("keydown", handle);
     return () => el.removeEventListener("keydown", handle);
   }
 
-  function handleEscape(e) {
-    if (e.key === "Escape") close();
+  handleEscape(e) {
+    if (e.key === "Escape") this.close();
   }
 
-  function open(trigger) {
-    returnFocus = trigger ?? null;
-    backdrop.removeAttribute("hidden");
-    dialog.classList.add("open");
+  handleBackdropClick(e) {
+    if (e.target === this.element) this.close();
+  }
+
+  open(trigger) {
+    this.returnFocus = trigger ?? null;
+    this.element.removeAttribute("hidden");
+    this.dialog.classList.add("open");
     if (trigger) trigger.setAttribute("aria-expanded", "true");
-    removeTrap = trapFocus(dialog);
-    const focusTarget = dialog.querySelector(
+    this.removeTrap = this.trapFocus(this.dialog);
+    const focusTarget = this.dialog.querySelector(
       "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])"
     );
-    (focusTarget || dialog).focus();
-    document.addEventListener("keydown", handleEscape);
+    (focusTarget || this.dialog).focus();
+    document.addEventListener("keydown", this.handleEscape);
   }
 
-  function close() {
-    dialog.classList.remove("open");
-    backdrop.setAttribute("hidden", "");
-    removeTrap();
-    document.removeEventListener("keydown", handleEscape);
-    if (returnFocus) {
-      returnFocus.setAttribute("aria-expanded", "false");
-      returnFocus.focus();
+  close() {
+    this.dialog.classList.remove("open");
+    this.element.setAttribute("hidden", "");
+    this.removeTrap();
+    document.removeEventListener("keydown", this.handleEscape);
+    if (this.returnFocus) {
+      this.returnFocus.setAttribute("aria-expanded", "false");
+      this.returnFocus.focus();
     }
   }
+}
 
-  backdrop.addEventListener("click", (e) => {
-    if (e.target === backdrop) close();
-  });
-
-  return { element: backdrop, open, close };
+/**
+ * Compatibility helper returning a `Modal` instance.
+ *
+ * @param {HTMLElement|DocumentFragment} content
+ * @param {object} [options]
+ * @returns {Modal}
+ */
+export function createModal(content, options = {}) {
+  return new Modal(content, options);
 }

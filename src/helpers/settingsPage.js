@@ -68,7 +68,7 @@ function createResetConfirmation(onConfirm) {
   frag.append(title, desc, actions);
 
   const modal = createModal(frag, { labelledBy: title, describedBy: desc });
-  cancel.addEventListener("click", modal.close);
+  cancel.addEventListener("click", () => modal.close());
   yes.addEventListener("click", () => {
     onConfirm();
     modal.close();
