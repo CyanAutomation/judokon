@@ -50,6 +50,11 @@ describe("scheduleNextRound early click", () => {
       }
       if (String(url).includes("classicBattleStates.json")) {
         return [
+          {
+            name: "roundOver",
+            type: "initial",
+            triggers: [{ on: "continue", target: "cooldown" }]
+          },
           { name: "cooldown", triggers: [{ on: "ready", target: "roundStart" }] },
           {
             name: "roundStart",
@@ -79,27 +84,30 @@ describe("scheduleNextRound early click", () => {
     vi.restoreAllMocks();
   });
 
-  it("transitions from cooldown to waitingForPlayerAction when skipping", async () => {
+  it("transitions roundOver \u2192 cooldown \u2192 roundStart without duplicates", async () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
-    await orchestrator.initClassicBattleOrchestrator(store, async () => {});
+    const startRoundWrapper = vi.fn(async () => {
+      await battleMod.startRound(store);
+    });
+    await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
     const machine = orchestrator.getBattleStateMachine();
 
+    // Start first round to wire Next button
     await battleMod.startRound(store);
     expect(generateRandomCardMock).toHaveBeenCalledTimes(1);
-    machine.current = "cooldown";
 
-    window.startRoundOverride = async () => {
-      await orchestrator.dispatchBattleEvent("ready");
-      await battleMod.startRound(store);
-    };
+    machine.current = "roundOver";
+    await orchestrator.dispatchBattleEvent("continue");
+    expect(machine.getState()).toBe("cooldown");
 
     battleMod.scheduleNextRound({ matchEnded: false });
     document.getElementById("next-button").click();
     await vi.runAllTimersAsync();
 
+    expect(startRoundWrapper).toHaveBeenCalledTimes(1);
     expect(machine.getState()).toBe("waitingForPlayerAction");
     expect(generateRandomCardMock).toHaveBeenCalledTimes(2);
   });

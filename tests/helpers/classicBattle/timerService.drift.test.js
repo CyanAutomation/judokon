@@ -92,6 +92,10 @@ describe("timerService drift handling", () => {
     vi.doMock("../../../src/helpers/classicBattle/runTimerWithDrift.js", () => ({
       runTimerWithDrift: () => async () => {}
     }));
+    const dispatchBattleEvent = vi.fn();
+    vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
+      dispatchBattleEvent
+    }));
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
     const btn = document.createElement("button");
     btn.id = "next-button";
@@ -101,11 +105,11 @@ describe("timerService drift handling", () => {
     timerNode.id = "next-round-timer";
     document.body.appendChild(timerNode);
     mod.scheduleNextRound({ matchEnded: false });
-    window.startRoundOverride = vi.fn();
     btn.click();
     await vi.waitFor(() => {
-      expect(window.startRoundOverride).toHaveBeenCalled();
+      expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
     });
+    expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
     expect(btn.dataset.nextReady).toBeUndefined();
   });
 });
