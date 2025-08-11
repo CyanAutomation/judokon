@@ -103,7 +103,9 @@ describe("timerService drift handling", () => {
     mod.scheduleNextRound({ matchEnded: false });
     window.startRoundOverride = vi.fn();
     btn.click();
+    await vi.waitFor(() => {
+      expect(window.startRoundOverride).toHaveBeenCalled();
+    });
     expect(btn.dataset.nextReady).toBeUndefined();
-    expect(window.startRoundOverride).toHaveBeenCalled();
   });
 });
