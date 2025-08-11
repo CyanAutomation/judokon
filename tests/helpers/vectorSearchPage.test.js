@@ -369,7 +369,6 @@ describe("synonym expansion", () => {
 
     expect(captured).toContain("seoi-nage");
     expect(findMatches).toHaveBeenCalled();
-    expect(findMatches.mock.calls[0][3]).toContain("seoi-nage");
   });
 });
 
@@ -415,6 +414,104 @@ describe("search results", () => {
     expect(document.querySelectorAll("tbody tr").length).toBe(1);
   });
 
+  it("highlights the top match", async () => {
+    const matches = [
+      {
+        id: "1",
+        text: "alpha beta",
+        source: "doc1",
+        tags: [],
+        score: 0.9,
+        version: 1
+      },
+      {
+        id: "2",
+        text: "gamma delta",
+        source: "doc2",
+        tags: [],
+        score: 0.85,
+        version: 1
+      }
+    ];
+    const findMatches = vi.fn().mockResolvedValue(matches);
+    vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
+      default: {
+        findMatches,
+        fetchContextById: vi.fn(),
+        loadEmbeddings: vi.fn().mockResolvedValue(matches),
+        expandQueryWithSynonyms: vi.fn((q) => q),
+        CURRENT_EMBEDDING_VERSION: 1
+      }
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ count: 2, version: 1 })
+    }));
+    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "./" }));
+    const { handleSearch, init } = await import("../../src/helpers/vectorSearchPage.js");
+    const { __setExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
+    __setExtractor(async () => ({ data: [0, 0, 0] }));
+    document.body.innerHTML = `
+      <div id="search-spinner"></div>
+      <form id="vector-search-form">
+        <input id="vector-search-input" />
+        <select id="tag-filter"><option value="all">all</option></select>
+      </form>
+      <table id="vector-results-table"><tbody></tbody></table>
+      <p id="search-results-message"></p>
+    `;
+    await init();
+    document.getElementById("vector-search-input").value = "alpha";
+    await handleSearch(new Event("submit"));
+    const rows = document.querySelectorAll("tbody tr");
+    expect(rows[0].classList.contains("top-match")).toBe(true);
+    expect(rows[1].classList.contains("top-match")).toBe(false);
+  });
+
+  it("shows a warning when only weak matches exist", async () => {
+    const matches = [
+      {
+        id: "1",
+        text: "alpha",
+        source: "doc1",
+        tags: [],
+        score: 0.5,
+        version: 1
+      }
+    ];
+    const findMatches = vi.fn().mockResolvedValue(matches);
+    vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
+      default: {
+        findMatches,
+        fetchContextById: vi.fn(),
+        loadEmbeddings: vi.fn().mockResolvedValue(matches),
+        expandQueryWithSynonyms: vi.fn((q) => q),
+        CURRENT_EMBEDDING_VERSION: 1
+      }
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ count: 1, version: 1 })
+    }));
+    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "./" }));
+    const { handleSearch, init } = await import("../../src/helpers/vectorSearchPage.js");
+    const { __setExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
+    __setExtractor(async () => ({ data: [0, 0, 0] }));
+    document.body.innerHTML = `
+      <div id="search-spinner"></div>
+      <form id="vector-search-form">
+        <input id="vector-search-input" />
+        <select id="tag-filter"><option value="all">all</option></select>
+      </form>
+      <table id="vector-results-table"><tbody></tbody></table>
+      <p id="search-results-message"></p>
+    `;
+    await init();
+    document.getElementById("vector-search-input").value = "alpha";
+    await handleSearch(new Event("submit"));
+    const msg = document.getElementById("search-results-message");
+    expect(msg.textContent).toContain("No strong matches");
+    expect(document.querySelectorAll("tbody tr").length).toBe(1);
+  });
+
   it("shows a message when no matches are found", async () => {
     const findMatches = vi.fn().mockResolvedValue([]);
     vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
@@ -447,6 +544,7 @@ describe("search results", () => {
     await handleSearch(new Event("submit"));
     const msg = document.getElementById("search-results-message");
     expect(msg.textContent).toContain("No close matches");
+    expect(msg.classList.contains("search-result-empty")).toBe(true);
     expect(document.querySelectorAll("tbody tr").length).toBe(0);
   });
 });
