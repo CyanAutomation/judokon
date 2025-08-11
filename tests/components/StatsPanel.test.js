@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createStatsPanel } from "../../src/components/StatsPanel.js";
+import { StatsPanel, createStatsPanel } from "../../src/components/StatsPanel.js";
 
 vi.mock("../../src/helpers/stats.js", () => ({
   loadStatNames: () =>
@@ -49,5 +49,17 @@ describe("createStatsPanel", () => {
 
   it("throws when stats is missing", async () => {
     await expect(createStatsPanel(null)).rejects.toThrowError("Stats object is required");
+  });
+});
+
+describe("StatsPanel", () => {
+  it("updates stat values", async () => {
+    const panel = new StatsPanel({ power: 1 });
+    await panel.update();
+    let items = panel.element.querySelectorAll("li.stat");
+    expect(items[0].textContent).toContain("1");
+    await panel.update({ power: 9 });
+    items = panel.element.querySelectorAll("li.stat");
+    expect(items[0].textContent).toContain("9");
   });
 });
