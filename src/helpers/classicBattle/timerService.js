@@ -63,15 +63,11 @@ export async function onNextButtonClick() {
   if (btn.dataset.nextReady === "true") {
     btn.classList.add("disabled");
     delete btn.dataset.nextReady;
-    const start = window.startRoundOverride;
     try {
       const { dispatchBattleEvent } = await import("./orchestrator.js");
       await dispatchBattleEvent("ready");
     } catch {}
     setSkipHandler(null);
-    if (typeof start === "function") {
-      await start();
-    }
     return;
   }
 
@@ -87,15 +83,11 @@ export async function onNextButtonClick() {
     if (btn.dataset.nextReady === "true") {
       btn.classList.add("disabled");
       delete btn.dataset.nextReady;
-      const start = window.startRoundOverride;
       try {
         const { dispatchBattleEvent } = await import("./orchestrator.js");
         await dispatchBattleEvent("ready");
       } catch {}
       setSkipHandler(null);
-      if (typeof start === "function") {
-        await start();
-      }
       return true;
     }
     return false;
