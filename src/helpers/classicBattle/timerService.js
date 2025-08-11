@@ -1,59 +1,13 @@
-import { seededRandom } from "../testModeUtils.js";
 import { getDefaultTimer } from "../timerUtils.js";
-import {
-  startRound as engineStartRound,
-  startCoolDown,
-  STATS,
-  stopTimer
-} from "../battleEngineFacade.js";
+import { startRound as engineStartRound, startCoolDown, stopTimer } from "../battleEngineFacade.js";
 import * as infoBar from "../setupBattleInfoBar.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 import { runTimerWithDrift } from "./runTimerWithDrift.js";
 import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
+import { setSkipHandler, skipCurrentPhase } from "./skipHandler.js";
+import { autoSelectStat } from "./autoSelectStat.js";
 
-let skipHandler = null;
-let pendingSkip = false;
-const AUTO_SELECT_FEEDBACK_MS = 500;
-
-/**
- * Set the current skip handler and notify listeners of its presence.
- * If a skip was requested before a handler existed, invoking this with
- * a function will immediately trigger it and clear the pending state.
- *
- * @param {null|function(): void|Promise<void>} fn - Handler to invoke when skipping.
- * @returns {void}
- */
-export function setSkipHandler(fn) {
-  skipHandler = typeof fn === "function" ? fn : null;
-  window.dispatchEvent(
-    new CustomEvent("skip-handler-change", {
-      detail: { active: Boolean(skipHandler) }
-    })
-  );
-  if (pendingSkip && skipHandler) {
-    pendingSkip = false;
-    const current = skipHandler;
-    skipHandler = null;
-    window.dispatchEvent(new CustomEvent("skip-handler-change", { detail: { active: false } }));
-    current();
-  }
-}
-
-/**
- * Skip the current timer phase if a handler is set. When no handler is
- * available, mark the skip as pending so it runs once a handler is provided.
- *
- * @returns {void}
- */
-export function skipCurrentPhase() {
-  if (skipHandler) {
-    const fn = skipHandler;
-    setSkipHandler(null);
-    fn();
-  } else {
-    pendingSkip = true;
-  }
-}
+// Skip handler utilities moved to skipHandler.js
 
 export async function onNextButtonClick() {
   const btn = document.getElementById("next-button");
@@ -116,9 +70,9 @@ export async function onNextButtonClick() {
  *    and monitor for drift.
  *    - On drift show "Waiting…" and restart, giving up after several retries.
  * 3. Register a skip handler that stops the timer and triggers `onExpired`.
- * 4. When expired, highlight a random stat button, announce the choice via the
- *    info bar and snackbar, wait `AUTO_SELECT_FEEDBACK_MS`, invoke
- *    `onExpiredSelect` with `delayOpponentMessage` set, and clear the handler.
+ * 4. When expired, delegate stat auto-selection to `autoSelectStat`, which
+ *    highlights the chosen stat, shows UI feedback, invokes `onExpiredSelect`
+ *    with `delayOpponentMessage`, and clears the handler.
  *
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>} onExpiredSelect
  * - Callback to handle stat auto-selection.
@@ -156,16 +110,7 @@ export async function startTimer(onExpiredSelect) {
       const { dispatchBattleEvent } = await import("./orchestrator.js");
       await dispatchBattleEvent("timeout");
     } catch {}
-    const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
-    const btn = document.querySelector(`#stat-buttons button[data-stat="${randomStat}"]`);
-    const label = btn?.textContent || randomStat;
-    if (btn) {
-      btn.classList.add("selected");
-    }
-    infoBar.showAutoSelect(label);
-    showSnackbar(`Time's up! Auto-selecting ${label}`);
-    await new Promise((resolve) => setTimeout(resolve, AUTO_SELECT_FEEDBACK_MS));
-    await onExpiredSelect(randomStat, { delayOpponentMessage: true });
+    await autoSelectStat(onExpiredSelect);
   };
 
   setSkipHandler(async () => {
@@ -187,10 +132,7 @@ export async function startTimer(onExpiredSelect) {
  *
  * @pseudocode
  * 1. Display "Stat selection stalled" via `infoBar.showMessage`.
- * 2. After 5 seconds choose a random stat from `STATS`.
- * 3. Highlight the stat button, show an auto-select message, wait
- *    `AUTO_SELECT_FEEDBACK_MS`, and call `onSelect` with the chosen stat and
- *    `delayOpponentMessage` option.
+ * 2. After 5 seconds call `autoSelectStat(onSelect)`.
  *
  * @param {{autoSelectId: ReturnType<typeof setTimeout> | null}} store
  * - Battle state store.
@@ -199,17 +141,8 @@ export async function startTimer(onExpiredSelect) {
  */
 export function handleStatSelectionTimeout(store, onSelect) {
   infoBar.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
-  store.autoSelectId = setTimeout(async () => {
-    const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
-    const btn = document.querySelector(`#stat-buttons button[data-stat="${randomStat}"]`);
-    const label = btn?.textContent || randomStat;
-    if (btn) {
-      btn.classList.add("selected");
-    }
-    infoBar.showAutoSelect(label);
-    showSnackbar(`Time's up! Auto-selecting ${label}`);
-    await new Promise((resolve) => setTimeout(resolve, AUTO_SELECT_FEEDBACK_MS));
-    onSelect(randomStat, { delayOpponentMessage: true });
+  store.autoSelectId = setTimeout(() => {
+    autoSelectStat(onSelect);
   }, 5000);
 }
 
@@ -277,6 +210,10 @@ export function scheduleNextRound(result) {
     stopTimer();
     onExpired();
   });
+
+  if (btn.dataset.nextReady === "true") {
+    return;
+  }
 
   const run = runTimerWithDrift(startCoolDown);
   startTimeoutId = setTimeout(() => {
