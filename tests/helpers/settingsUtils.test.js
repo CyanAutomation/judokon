@@ -211,9 +211,11 @@ describe("settings utils", () => {
         enableCardInspector: { enabled: false }
       }
     };
-    saveSettings(data1);
-    saveSettings(data2);
+    const first = saveSettings(data1);
+    const second = saveSettings(data2);
+    await expect(first).rejects.toThrow("Debounced");
     await vi.advanceTimersByTimeAsync(110);
+    await expect(second).resolves.toBeUndefined();
     expect(JSON.parse(localStorage.getItem("settings"))).toEqual(data2);
   });
 
