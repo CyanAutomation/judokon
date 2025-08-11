@@ -54,7 +54,10 @@ let currentFlags = baseSettings.featureFlags;
 beforeEach(() => {
   resetDom();
   document.body.appendChild(createSettingsDom());
-  vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips: vi.fn() }));
+  vi.doMock("../../src/helpers/tooltip.js", () => ({
+    initTooltips: vi.fn(),
+    getTooltips: vi.fn()
+  }));
   vi.doMock("../../src/helpers/displayMode.js", () => ({ applyDisplayMode: vi.fn() }));
   vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference: vi.fn() }));
   vi.doMock("../../src/helpers/viewportDebug.js", () => ({ toggleViewportSimulation: vi.fn() }));
@@ -64,22 +67,46 @@ beforeEach(() => {
   vi.doMock("../../src/helpers/layoutDebugPanel.js", () => ({ toggleLayoutDebugPanel: vi.fn() }));
   vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady: vi.fn() }));
   vi.doMock("../../src/helpers/featureFlags.js", () => ({
-    isEnabled: (flag) => currentFlags[flag]?.enabled ?? false
+    isEnabled: (flag) => currentFlags[flag]?.enabled ?? false,
+    initFeatureFlags: vi.fn().mockResolvedValue(baseSettings)
+  }));
+  vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+    loadNavigationItems: vi.fn().mockResolvedValue([])
   }));
 });
 
-describe("renderSettingsUI", () => {
-  it("renders checkboxes for all modes", async () => {
+describe("loadSettingsData", () => {
+  it("rejects on fetch failure", async () => {
+    vi.resetModules();
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems: vi.fn().mockResolvedValue([])
+    }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      getTooltips: vi.fn().mockResolvedValue({}),
+      initTooltips: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/featureFlags.js", () => ({
+      initFeatureFlags: vi.fn().mockRejectedValue(new Error("fail")),
+      isEnabled: vi.fn()
+    }));
+    const { loadSettingsData } = await import("../../src/helpers/settingsPage.js");
+    await expect(loadSettingsData()).rejects.toThrow("fail");
+  });
+});
+
+describe("renderSettingsControls", () => {
+  it("renders expected toggles", async () => {
     const gameModes = [
       { id: 1, name: "Classic", category: "mainMenu", order: 10 },
       { id: 2, name: "Blitz", category: "bonus", order: 20 },
       { id: 3, name: "Dojo", category: "mainMenu", order: 30 }
     ];
-    const { renderSettingsUI } = await import("../../src/helpers/settingsPage.js");
-    renderSettingsUI(baseSettings, gameModes, tooltipMap);
+    const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
+    renderSettingsControls(baseSettings, gameModes, tooltipMap);
     const container = document.getElementById("game-mode-toggle-container");
     const checkboxes = container.querySelectorAll("input[type='checkbox']");
     expect(checkboxes).toHaveLength(3);
+    expect(document.getElementById("feature-random-stat-mode")).toBeTruthy();
   });
 
   it("updates navigation hidden state when a mode is toggled", async () => {
@@ -93,12 +120,11 @@ describe("renderSettingsUI", () => {
     }));
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
       updateNavigationItemHidden,
-      loadNavigationItems: vi.fn(),
-      loadGameModes: vi.fn()
+      loadNavigationItems: vi.fn()
     }));
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn() }));
-    const { renderSettingsUI } = await import("../../src/helpers/settingsPage.js");
-    renderSettingsUI(baseSettings, gameModes, tooltipMap);
+    const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
+    renderSettingsControls(baseSettings, gameModes, tooltipMap);
     const input = document.getElementById("mode-1");
     input.checked = false;
     input.dispatchEvent(new Event("change"));
@@ -115,8 +141,8 @@ describe("renderSettingsUI", () => {
       resetSettings: vi.fn()
     }));
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn() }));
-    const { renderSettingsUI } = await import("../../src/helpers/settingsPage.js");
-    renderSettingsUI(baseSettings, [], tooltipMap);
+    const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
+    renderSettingsControls(baseSettings, [], tooltipMap);
     const input = document.querySelector("#feature-random-stat-mode");
     input.checked = false;
     input.dispatchEvent(new Event("change"));
@@ -143,8 +169,8 @@ describe("renderSettingsUI", () => {
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
     vi.doMock("../../src/helpers/navigationCache.js", () => ({ reset: resetNavigationCache }));
     currentFlags = settingsWithButton.featureFlags;
-    const { renderSettingsUI } = await import("../../src/helpers/settingsPage.js");
-    renderSettingsUI(settingsWithButton, [], tooltipMap);
+    const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
+    renderSettingsControls(settingsWithButton, [], tooltipMap);
     await Promise.resolve();
     await Promise.resolve();
     const btn = document.getElementById("nav-cache-reset-button");

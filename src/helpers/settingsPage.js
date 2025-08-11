@@ -2,13 +2,12 @@
  * Set up the Settings page once the document is ready.
  *
  * @pseudocode
- * 1. Load saved settings, navigation items, and tooltip text.
- * 2. Apply the stored display mode and motion preference.
- * 3. Toggle the `.simulate-viewport` class based on the viewport flag.
- * 4. Initialize the page controls and event listeners.
+ * 1. Fetch feature flags, game modes, and tooltips via `loadSettingsData`.
+ * 2. Render page controls with `renderSettingsControls`.
+ * 3. Show an error message if initialization fails.
  */
 import { resetSettings } from "./settingsStorage.js";
-import { loadNavigationItems, loadGameModes } from "./gameModeUtils.js";
+import { loadNavigationItems } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
 import { applyDisplayMode } from "./displayMode.js";
 import { withViewTransition } from "./viewTransition.js";
@@ -200,7 +199,26 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
 }
 
 /**
- * Render the Settings page with supplied data.
+ * Fetch settings, game modes, and tooltips in parallel.
+ *
+ * @pseudocode
+ * 1. Start requests for feature flags, navigation items, and tooltips.
+ * 2. Await all requests with `Promise.all`.
+ * 3. Return a tuple of `[settings, gameModes, tooltipMap]`.
+ *
+ * @returns {Promise<[Settings, Array, object]>} Loaded data tuple.
+ */
+export async function loadSettingsData() {
+  const [settings, gameModes, tooltipMap] = await Promise.all([
+    initFeatureFlags(),
+    loadNavigationItems(),
+    getTooltips()
+  ]);
+  return [settings, gameModes, tooltipMap];
+}
+
+/**
+ * Render controls for the Settings page using fetched data.
  *
  * @pseudocode
  * 1. Enable section toggles via `setupSectionToggles`.
@@ -213,7 +231,7 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
  * @param {object} tooltipMap - Map of tooltip text.
  * @returns {HTMLElement} Updated DOM root.
  */
-export function renderSettingsUI(settings, gameModes, tooltipMap) {
+export function renderSettingsControls(settings, gameModes, tooltipMap) {
   setupSectionToggles();
   applyInitialSettings(settings);
   const controlsApi = initializeControls(settings);
@@ -222,15 +240,13 @@ export function renderSettingsUI(settings, gameModes, tooltipMap) {
 }
 
 /**
- * Load data and render the Settings page UI.
+ * Load data then render Settings controls.
  *
  * @pseudocode
  * 1. Enable section toggles immediately.
- * 2. Start loading navigation items and tooltips in parallel.
- * 3. Load saved settings.
- * 4. Resolve navigation items and tooltips with `Promise.all` on wrapped promises.
- * 5. Invoke `renderSettingsUI` with the retrieved data.
- * 6. On error, show a fallback message to the user.
+ * 2. Await `loadSettingsData` for required data.
+ * 3. Pass data to `renderSettingsControls`.
+ * 4. On error, show a fallback message to the user.
  *
  * @returns {Promise<void>}
  */
@@ -239,27 +255,12 @@ async function initializeSettingsPage() {
   // subsequent initialization fails.
   setupSectionToggles();
   try {
-    const gameModesPromise = settled(loadNavigationItems());
-    const tooltipMapPromise = settled(getTooltips());
-    const settings = await initFeatureFlags();
-    const [gameModesResult, tooltipMapResult] = await Promise.all([
-      gameModesPromise,
-      tooltipMapPromise
-    ]);
-    const gameModes = await resolveGameModes(gameModesResult);
-    const tooltipMap = resolveTooltipMap(tooltipMapResult);
-    renderSettingsUI(settings, gameModes, tooltipMap);
+    const [settings, gameModes, tooltipMap] = await loadSettingsData();
+    renderSettingsControls(settings, gameModes, tooltipMap);
   } catch (error) {
     console.error("Error loading settings page:", error);
     showLoadSettingsError();
   }
-}
-
-function settled(promise) {
-  return promise.then(
-    (v) => ({ status: "fulfilled", value: v }),
-    (r) => ({ status: "rejected", reason: r })
-  );
 }
 
 function applyInitialSettings(settings) {
@@ -268,30 +269,6 @@ function applyInitialSettings(settings) {
   toggleViewportSimulation(isEnabled("viewportSimulation"));
   toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
   toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
-}
-
-async function resolveGameModes(result) {
-  if (result.status === "fulfilled" && Array.isArray(result.value)) {
-    return result.value;
-  }
-  console.warn(
-    "Failed to load game modes",
-    result.status === "fulfilled" ? result.value : result.reason
-  );
-  showSettingsError();
-  try {
-    const fallback = await loadGameModes();
-    return Array.isArray(fallback) ? fallback : [];
-  } catch (err) {
-    console.error("Failed to load fallback game modes", err);
-    return [];
-  }
-}
-
-function resolveTooltipMap(result) {
-  if (result.status === "fulfilled") return result.value;
-  console.warn("Failed to load tooltips", result.reason);
-  return {};
 }
 
 function showLoadSettingsError() {
