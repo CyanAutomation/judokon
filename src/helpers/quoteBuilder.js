@@ -23,11 +23,19 @@
 import { DATA_DIR } from "./constants.js";
 import { seededRandom } from "./testModeUtils.js";
 
-let kgImageLoaded = false;
-let quoteLoaded = false;
+/**
+ * @typedef {Object} QuoteLoadState
+ * @property {boolean} kgImageLoaded
+ * @property {boolean} quoteLoaded
+ */
 
-function checkAssetsReady() {
-  if (kgImageLoaded && quoteLoaded) {
+/**
+ * Removes fade-in once the KG image and quote have loaded.
+ *
+ * @param {QuoteLoadState} state
+ */
+function checkAssetsReady(state) {
+  if (state.kgImageLoaded && state.quoteLoaded) {
     document.querySelector(".kg-sprite img")?.classList.remove("fade-in");
     document.querySelector(".quote-block")?.classList.remove("fade-in");
   }
@@ -85,6 +93,33 @@ function formatFableStory(story) {
 }
 
 /**
+ * Renders the provided fable inside the `#quote` element.
+ *
+ * @param {Object} fable
+ */
+function renderQuote(fable) {
+  const quoteDiv = document.getElementById("quote");
+  if (!quoteDiv) {
+    return;
+  }
+  const formattedStory = formatFableStory(fable.story);
+  quoteDiv.innerHTML = `
+      <div class="quote-heading" id="quote-heading">${fable.title}</div>
+      <div class="quote-content long-form" id="quote-content">${formattedStory}</div>
+    `;
+}
+
+/**
+ * Renders a fallback message inside the `#quote` element.
+ */
+function renderFallback() {
+  const quoteDiv = document.getElementById("quote");
+  if (quoteDiv) {
+    quoteDiv.innerHTML = "<p>Take a breath. Even a still pond reflects the sky.</p>";
+  }
+}
+
+/**
  * Displays a fable in the designated quote div on the page.
  *
  * @pseudocode
@@ -117,14 +152,11 @@ function displayFable(fable) {
   }
 
   if (fable) {
-    const formattedStory = formatFableStory(fable.story);
-    quoteDiv.innerHTML = `
-      <div class="quote-heading" id="quote-heading">${fable.title}</div>
-      <div class="quote-content long-form" id="quote-content">${formattedStory}</div>
-    `;
+    renderQuote(fable);
   } else {
-    quoteDiv.innerHTML = "<p>Take a breath. Even a still pond reflects the sky.</p>";
+    renderFallback();
   }
+
   loaderDiv.classList.add("hidden");
   quoteDiv.classList.remove("hidden");
   const toggleBtn = document.getElementById("language-toggle");
@@ -143,26 +175,14 @@ function displayFable(fable) {
  * Displays a random quote from Aesop's Fables in the designated quote div.
  *
  * @pseudocode
- * 1. Fetch the fables data:
- *    - Call `fetchFables` to retrieve the JSON data containing Aesop's Fables.
- *    - Handle any errors that occur during the fetch process.
- *
- * 2. Select a random fable:
- *    - Determine the maximum ID from the fables data.
- *    - Generate a random ID within the range of available IDs.
- *      - Use `seededRandom()` when Test Mode is active.
- *    - Find the fable corresponding to the random ID.
- *
- * 3. Display the fable:
- *    - If a fable is found, pass it to `displayFable` to update the quote div.
- *    - If no fable is found or an error occurs, pass `null` to `displayFable` to display a default message.
- *
- * 4. When both the KG image and quote have loaded:
- *    - Remove the `fade-in` class from the image and quote container so they fade into view.
+ * 1. Fetch the fables data.
+ * 2. Select a random fable using `seededRandom`.
+ * 3. Render the fable or a fallback message via `displayFable`.
+ * 4. Mark `quoteLoaded` on the provided state and call `checkAssetsReady`.
  *
  * @throws {Error} If fetching the fables data fails.
  */
-async function displayRandomQuote() {
+async function displayRandomQuote(state) {
   try {
     const fables = await fetchFables();
     const maxId = Math.max(...fables.map((fable) => fable.id));
@@ -173,40 +193,61 @@ async function displayRandomQuote() {
     console.error("Error fetching or displaying the fable:", error);
     displayFable(null);
   } finally {
-    quoteLoaded = true;
-    checkAssetsReady();
+    state.quoteLoaded = true;
+    checkAssetsReady(state);
   }
+}
+
+/**
+ * Waits for the KG sprite image to load, updating the load state accordingly.
+ *
+ * @pseudocode
+ * 1. Query `.kg-sprite img`.
+ * 2. If the image doesn't exist or is already complete, update state and check assets.
+ * 3. Otherwise, await the `load` event before updating state and checking assets.
+ *
+ * @param {QuoteLoadState} state
+ * @returns {Promise<void>}
+ */
+async function waitForKgImage(state) {
+  const kgImg = document.querySelector(".kg-sprite img");
+  if (!kgImg) {
+    state.kgImageLoaded = true;
+    checkAssetsReady(state);
+    return;
+  }
+
+  if (kgImg.complete) {
+    state.kgImageLoaded = true;
+    checkAssetsReady(state);
+    return;
+  }
+
+  await new Promise((resolve) => {
+    kgImg.addEventListener(
+      "load",
+      () => {
+        state.kgImageLoaded = true;
+        checkAssetsReady(state);
+        resolve();
+      },
+      { once: true }
+    );
+  });
 }
 
 /**
  * Initializes quote loading and handles KG sprite image readiness.
  *
  * @pseudocode
- * 1. Locate the KG sprite image:
- *    - Query `.kg-sprite img` from the DOM.
- *
- * 2. Monitor the image load state:
- *    - If already complete, mark `kgImageLoaded` and call `checkAssetsReady`.
- *    - Otherwise, attach a `load` event listener to perform the same once loaded.
- *
- * 3. Display a random quote by calling `displayRandomQuote`.
- *
- * 4. Return the promise from `displayRandomQuote` so callers can await completion.
+ * 1. Create a `QuoteLoadState` object.
+ * 2. Await `displayRandomQuote(state)` to render the quote.
+ * 3. Await `waitForKgImage(state)` to handle the KG sprite image.
  *
  * @returns {Promise<void>} Promise that resolves once the quote is displayed.
  */
-export function loadQuote() {
-  const kgImg = document.querySelector(".kg-sprite img");
-  if (kgImg) {
-    if (kgImg.complete) {
-      kgImageLoaded = true;
-      checkAssetsReady();
-    } else {
-      kgImg.addEventListener("load", () => {
-        kgImageLoaded = true;
-        checkAssetsReady();
-      });
-    }
-  }
-  return displayRandomQuote();
+export async function loadQuote() {
+  const state = { kgImageLoaded: false, quoteLoaded: false };
+  await displayRandomQuote(state);
+  await waitForKgImage(state);
 }

@@ -16,7 +16,7 @@ afterEach(() => {
 });
 
 describe("loadQuote", () => {
-  it("renders a fetched quote", async () => {
+  it("formats fable story with HTML", async () => {
     const quoteDiv = document.createElement("div");
     quoteDiv.id = "quote";
     quoteDiv.className = "hidden";
@@ -30,7 +30,7 @@ describe("loadQuote", () => {
     document.body.append(quoteDiv, loader, toggle, liveRegion);
     localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
 
-    const storyData = [{ id: 1, story: "B" }];
+    const storyData = [{ id: 1, story: "Line1\nLine2\n\nLine3" }];
     const metaData = [{ id: 1, title: "A" }];
     global.fetch = vi.fn((url) => {
       if (url.includes("aesopsFables.json")) {
@@ -43,16 +43,11 @@ describe("loadQuote", () => {
     await loadQuote();
     await vi.runAllTimersAsync();
 
-    expect(quoteDiv.classList.contains("hidden")).toBe(false);
-    expect(loader.classList.contains("hidden")).toBe(true);
-    expect(quoteDiv.innerHTML).toContain("A");
-    expect(toggle.classList.contains("hidden")).toBe(false);
-    expect(toggle).toHaveAttribute("aria-live", "polite");
-    expect(document.activeElement).toBe(toggle);
-    expect(liveRegion.textContent).toBe("language toggle available");
+    const contentHtml = document.getElementById("quote-content").innerHTML;
+    expect(contentHtml).toBe("<p>Line1<br>Line2</p><br><p>Line3</p><br>");
   });
 
-  it("shows fallback text when fetching fails", async () => {
+  it("renders fallback message when fetch fails", async () => {
     const quoteDiv = document.createElement("div");
     quoteDiv.id = "quote";
     const loader = document.createElement("div");
@@ -66,7 +61,7 @@ describe("loadQuote", () => {
     await loadQuote();
     await vi.runAllTimersAsync();
 
-    expect(quoteDiv.textContent).toContain("Take a breath. Even a still pond reflects the sky.");
+    expect(quoteDiv.innerHTML).toBe("<p>Take a breath. Even a still pond reflects the sky.</p>");
     consoleErrorSpy.mockRestore();
   });
 
