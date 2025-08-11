@@ -18,10 +18,11 @@ let inspectorEnabled = false;
  * 2. Maintain an `isBuilt` flag inside the closure.
  * 3. On click:
  *    a. If the carousel is built, simply reveal `container`.
- *    b. Otherwise fetch and validate judoka and gokyo data.
- *    c. Build the carousel, append it to `container`, and add scroll markers.
- *    d. Reveal `container` and mark the carousel as built.
- *    e. Log any errors that occur.
+ *    b. If `container` is missing, log an error.
+ *    c. Otherwise fetch and validate judoka and gokyo data.
+ *    d. Build the carousel, append it to `container`, and add scroll markers.
+ *    e. Reveal `container` and mark the carousel as built.
+ *    f. Log any errors that occur.
  *
  * @param {HTMLElement} button - Button to show the carousel.
  * @param {HTMLElement} container - Container for the carousel.
@@ -39,6 +40,11 @@ export function setupCarouselToggle(button, container) {
       return;
     }
 
+    if (!container) {
+      console.error("Carousel container not found.");
+      return;
+    }
+
     try {
       const judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
       const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
@@ -47,8 +53,8 @@ export function setupCarouselToggle(button, container) {
       validateData(gokyoData, "gokyo");
 
       const carousel = await buildCardCarousel(judokaData, gokyoData);
-      container?.appendChild(carousel);
-      container?.classList.remove("hidden");
+      container.appendChild(carousel);
+      container.classList.remove("hidden");
 
       requestAnimationFrame(() => {
         const containerEl = carousel.querySelector(".card-carousel");
