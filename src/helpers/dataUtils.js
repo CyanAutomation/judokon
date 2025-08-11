@@ -37,50 +37,94 @@ export function isNodeEnvironment() {
  *
  * @returns {Promise<import("ajv").default>} Ajv instance.
  */
+/**
+ * Strategy loader for Ajv in Node environments.
+ * @type {{load: () => Promise<import('ajv').default>}}
+ */
+export const nodeAjvLoader = {
+  async load() {
+    const Ajv = (await import("ajv")).default;
+    const addFormats = (await import("ajv-formats")).default;
+    const ajv = new Ajv();
+    addFormats(ajv);
+    return ajv;
+  }
+};
+
+/**
+ * Strategy loader for Ajv in browser environments.
+ * @type {{load: () => Promise<import('ajv').default>}}
+ */
+export const browserAjvLoader = {
+  async load() {
+    if (window.Ajv) {
+      return new window.Ajv();
+    }
+    try {
+      const { default: Ajv } = await import("../vendor/ajv6.min.js");
+      return new Ajv();
+    } catch (localError) {
+      try {
+        const { default: Ajv } = await import("https://esm.sh/ajv@6");
+        return new Ajv();
+      } catch (cdnError) {
+        console.error("Error loading Ajv:", localError, cdnError);
+        return fallbackAjvLoader.load();
+      }
+    }
+  }
+};
+
+/**
+ * Fallback loader returning a stub that disables validation.
+ * @type {{load: () => import('ajv').default}}
+ */
+export const fallbackAjvLoader = {
+  load() {
+    const message = "Ajv import failed; validation disabled";
+    const stub = {
+      errors: null,
+      compile: () => {
+        const validate = () => {
+          const error = { message };
+          stub.errors = [error];
+          validate.errors = [error];
+          return false;
+        };
+        return validate;
+      },
+      errorsText: () => message
+    };
+    return stub;
+  }
+};
+
+/**
+ * Lazily instantiate and return a singleton Ajv instance with format support.
+ *
+ * @pseudocode
+ * 1. Return `ajvInstance` when already created.
+ * 2. Select `nodeAjvLoader` when running in Node, otherwise `browserAjvLoader`.
+ * 3. Attempt to load Ajv using the selected strategy.
+ * 4. On failure, fall back to `fallbackAjvLoader`.
+ * 5. Return the Ajv instance.
+ *
+ * @returns {Promise<import("ajv").default>} Ajv instance.
+ */
 export async function getAjv() {
   if (ajvInstance) {
     return ajvInstance;
   }
-  if (isNodeEnvironment()) {
-    const Ajv = (await import("ajv")).default;
-    const addFormats = (await import("ajv-formats")).default;
-    ajvInstance = new Ajv();
-    addFormats(ajvInstance);
-  } else if (typeof window !== "undefined") {
-    if (window.Ajv) {
-      ajvInstance = new window.Ajv();
+  try {
+    if (isNodeEnvironment()) {
+      ajvInstance = await nodeAjvLoader.load();
+    } else if (typeof window !== "undefined") {
+      ajvInstance = await browserAjvLoader.load();
     } else {
-      try {
-        const { default: Ajv } = await import("../vendor/ajv6.min.js");
-        ajvInstance = new Ajv();
-      } catch (localError) {
-        try {
-          const { default: Ajv } = await import("https://esm.sh/ajv@6");
-          ajvInstance = new Ajv();
-        } catch (cdnError) {
-          console.error("Error loading Ajv:", localError, cdnError);
-          const message = "Ajv import failed; validation disabled";
-          ajvInstance = {
-            errors: null,
-            compile: () => {
-              const validate = () => {
-                const error = { message };
-                ajvInstance.errors = [error];
-                validate.errors = [error];
-                return false;
-              };
-              return validate;
-            },
-            errorsText: () => message
-          };
-        }
-      }
+      ajvInstance = await nodeAjvLoader.load();
     }
-  } else {
-    const Ajv = (await import("ajv")).default;
-    const addFormats = (await import("ajv-formats")).default;
-    ajvInstance = new Ajv();
-    addFormats(ajvInstance);
+  } catch {
+    ajvInstance = fallbackAjvLoader.load();
   }
   return ajvInstance;
 }
@@ -89,25 +133,88 @@ export async function getAjv() {
 const schemaCache = new WeakMap();
 
 /**
+ * Resolve a resource identifier to a fully qualified URL.
+ *
+ * @pseudocode
+ * 1. When running in Node and given a relative path, convert `process.cwd()` to a `file:` URL and use as the base.
+ * 2. Otherwise, use `http://localhost` as the base.
+ * 3. Return a new `URL` object combining `url` with the base.
+ *
+ * @param {string|URL} url - Resource location.
+ * @returns {Promise<URL>} Resolved URL instance.
+ */
+export async function resolveUrl(url) {
+  const urlStr = url.toString();
+  const base =
+    isNodeEnvironment() && !/^[a-zA-Z]+:/.test(urlStr) && !urlStr.startsWith("/")
+      ? (await import("node:url")).pathToFileURL(process.cwd() + "/").href
+      : "http://localhost";
+  return new URL(urlStr, base);
+}
+
+/**
+ * Read and parse JSON from a resolved URL.
+ *
+ * @pseudocode
+ * 1. When the protocol is `file:` under Node, convert to a filesystem path and read the file.
+ * 2. Otherwise, request the URL using `fetch` and parse the JSON response.
+ * 3. On HTTP errors, throw with the original `url` and status code.
+ *
+ * @param {URL} parsedUrl - Previously resolved URL.
+ * @param {string} originalUrl - Original URL string for error messages.
+ * @returns {Promise<any>} Parsed JSON data.
+ */
+export async function readData(parsedUrl, originalUrl) {
+  if (isNodeEnvironment() && parsedUrl.protocol === "file:") {
+    const { readFile } = await import("fs/promises");
+    const { fileURLToPath } = await import("node:url");
+    const filePath = fileURLToPath(parsedUrl.href);
+    return JSON.parse(await readFile(filePath, "utf8"));
+  }
+  const response = await fetch(parsedUrl.href);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${originalUrl} (HTTP ${response.status})`);
+  }
+  return await response.json();
+}
+
+/**
+ * Validate data against a schema and cache the result.
+ *
+ * @pseudocode
+ * 1. When a `schema` is provided, ensure it is an object and validate `data` using `validateWithSchema`.
+ * 2. Store `data` in the in-memory cache under `url`.
+ * 3. Return the cached data.
+ *
+ * @template T
+ * @param {string|URL} url - Original resource identifier.
+ * @param {T} data - Parsed JSON data.
+ * @param {object} [schema] - Optional JSON schema used for validation.
+ * @returns {Promise<T>} Validated data.
+ */
+export async function validateAndCache(url, data, schema) {
+  if (schema) {
+    if (typeof schema !== "object" || schema === null) {
+      throw new Error("Invalid schema");
+    }
+    await validateWithSchema(data, schema);
+  }
+  dataCache.set(url, data);
+  return data;
+}
+
+/**
  * Fetch JSON data with caching and optional schema validation.
  *
  * @pseudocode
- * 1. Check the cache for `url` and return the value when present.
- * 2. Resolve the URL:
- *    - In Node, resolve relative paths against `process.cwd()`.
- *    - Otherwise resolve against `http://localhost`.
- * 3. When running under Node with a `file:` protocol, convert the file URL to a path and
- *    read and parse the file with `fs.promises.readFile`.
- * 4. Otherwise, request `parsedUrl.href` using `fetch` and parse the JSON response.
- * 5. When a `schema` is provided, validate the data with `validateWithSchema`.
- * 6. Store the parsed data in the cache and return it.
- * 7. On any error, log the issue, remove a stale cache entry, and rethrow.
+ * 1. Return cached data when available.
+ * 2. Resolve the URL with `resolveUrl`.
+ * 3. Read the data via `readData`.
+ * 4. Validate and cache the result using `validateAndCache`.
+ * 5. On error, remove any stale cache entry, log, and rethrow.
  *
  * @template T
- * @param {string|URL} url - Resource location. Accepts absolute HTTP(S) URLs,
- *   `file:` URLs, or filesystem-relative paths when running under Node.
- *   Relative paths resolve against the current working directory and read
- *   from disk instead of over the network.
+ * @param {string|URL} url - Resource location.
  * @param {object} [schema] - Optional JSON schema used for validation.
  * @returns {Promise<T>} A promise that resolves to the parsed JSON data.
  * @throws {Error} If the fetch request fails, validation fails, or JSON parsing fails.
@@ -117,30 +224,9 @@ export async function fetchJson(url, schema) {
     if (dataCache.has(url)) {
       return dataCache.get(url);
     }
-
-    const base =
-      isNodeEnvironment() && !/^[a-zA-Z]+:/.test(url) && !url.startsWith("/")
-        ? (await import("node:url")).pathToFileURL(process.cwd() + "/").href
-        : "http://localhost";
-    const parsedUrl = new URL(url, base);
-    let data;
-    if (isNodeEnvironment() && parsedUrl.protocol === "file:") {
-      const { readFile } = await import("fs/promises");
-      const { fileURLToPath } = await import("node:url");
-      const filePath = fileURLToPath(parsedUrl.href);
-      data = JSON.parse(await readFile(filePath, "utf8"));
-    } else {
-      const response = await fetch(parsedUrl.href);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch ${url} (HTTP ${response.status})`);
-      }
-      data = await response.json();
-    }
-    if (schema) {
-      await validateWithSchema(data, schema);
-    }
-    dataCache.set(url, data);
-    return data;
+    const parsedUrl = await resolveUrl(url);
+    const data = await readData(parsedUrl, String(url));
+    return await validateAndCache(url, data, schema);
   } catch (error) {
     dataCache.delete(url);
     console.error(`Error fetching ${url}:`, error);
