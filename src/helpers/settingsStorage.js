@@ -86,11 +86,12 @@ export async function loadSettings() {
  * Update a single setting and persist the result.
  *
  * @pseudocode
- * 1. Load current settings via `loadSettings`.
- * 2. Merge `key`/`value` into the settings object.
- * 3. Validate with the schema.
- * 4. Persist using `saveSettings`.
- * 5. Update the cache and return the updated settings.
+ * 1. Ensure the settings schema is loaded.
+ * 2. Retrieve current settings from `localStorage` when available; otherwise use the cache.
+ * 3. Merge `key`/`value` into the settings object.
+ * 4. Validate with the schema.
+ * 5. Persist using `localStorage` when available.
+ * 6. Update the cache and return the updated settings.
  *
  * @param {string} key - Name of the setting to update.
  * @param {*} value - Value to assign to the setting.
@@ -98,13 +99,11 @@ export async function loadSettings() {
  */
 export async function updateSetting(key, value) {
   await getSettingsSchema();
-  const current = await loadSettings();
+  const current = typeof localStorage !== "undefined" ? await loadSettings() : getCachedSettings();
   const updated = { ...current, [key]: value };
   await validateWithSchema(updated, await getSettingsSchema());
   if (typeof localStorage !== "undefined") {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
-  } else {
-    await saveSettings(updated);
   }
   setCachedSettings(updated);
   return updated;
