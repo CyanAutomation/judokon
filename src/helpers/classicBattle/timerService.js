@@ -64,11 +64,11 @@ export async function onNextButtonClick() {
     btn.classList.add("disabled");
     delete btn.dataset.nextReady;
     const start = window.startRoundOverride;
-    setSkipHandler(null);
     try {
       const { dispatchBattleEvent } = await import("./orchestrator.js");
       await dispatchBattleEvent("ready");
     } catch {}
+    setSkipHandler(null);
     if (typeof start === "function") {
       await start();
     }
@@ -88,6 +88,10 @@ export async function onNextButtonClick() {
       btn.classList.add("disabled");
       delete btn.dataset.nextReady;
       const start = window.startRoundOverride;
+      try {
+        const { dispatchBattleEvent } = await import("./orchestrator.js");
+        await dispatchBattleEvent("ready");
+      } catch {}
       setSkipHandler(null);
       if (typeof start === "function") {
         await start();
