@@ -10,7 +10,10 @@ let synonymsPromise;
  */
 async function loadSynonyms() {
   if (!synonymsPromise) {
-    synonymsPromise = fetchJson(`${DATA_DIR}synonyms.json`).catch(() => null);
+    synonymsPromise = fetchJson(`${DATA_DIR}synonyms.json`).catch(() => {
+      synonymsPromise = undefined;
+      return null;
+    });
   }
   return synonymsPromise;
 }
