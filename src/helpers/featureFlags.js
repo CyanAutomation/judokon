@@ -8,11 +8,29 @@ import { loadSettings, updateSetting } from "./settingsStorage.js";
 export const featureFlagsEmitter = new EventTarget();
 
 let cachedFlags = {};
-try {
-  const settings = await loadSettings();
-  cachedFlags = settings.featureFlags || {};
-} catch {
-  cachedFlags = {};
+
+/**
+ * Initialize feature flags from persisted settings.
+ *
+ * @pseudocode
+ * 1. Call `loadSettings()` to retrieve current settings.
+ * 2. Set `cachedFlags` to `settings.featureFlags` or `{}`.
+ * 3. Dispatch a `change` event with `flag: null`.
+ * 4. Return the loaded `settings`.
+ *
+ * @returns {Promise<import("./settingsSchema.js").Settings>} Loaded settings.
+ */
+export async function initFeatureFlags() {
+  let settings;
+  try {
+    settings = await loadSettings();
+    cachedFlags = settings.featureFlags || {};
+  } catch {
+    settings = { featureFlags: {} };
+    cachedFlags = {};
+  }
+  featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
+  return settings;
 }
 
 /**
@@ -78,9 +96,7 @@ if (typeof window !== "undefined") {
     // Fallback: when settings key changed or parsing failed, reload persisted settings
     if (e.key === "settings") {
       try {
-        const s = await loadSettings();
-        cachedFlags = s.featureFlags || {};
-        featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
+        await initFeatureFlags();
       } catch {
         // ignore errors
       }

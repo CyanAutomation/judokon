@@ -11,17 +11,16 @@
  *    e. Log any errors to the console.
  * 2. Use `onDomReady` to run `init` when the DOM is ready.
  */
-import { loadSettings } from "./settingsStorage.js";
 import { applyDisplayMode } from "./displayMode.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
-import { isEnabled } from "./featureFlags.js";
+import { initFeatureFlags, isEnabled } from "./featureFlags.js";
 
 async function init() {
   try {
-    const settings = await loadSettings();
+    const settings = await initFeatureFlags();
     applyDisplayMode(settings.displayMode);
     applyMotionPreference(settings.motionEffects);
     toggleViewportSimulation(isEnabled("viewportSimulation"));

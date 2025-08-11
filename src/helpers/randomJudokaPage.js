@@ -24,14 +24,13 @@
 import { generateRandomCard } from "./randomCard.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
 import { createButton } from "../components/Button.js";
-import { loadSettings } from "./settingsStorage.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { setTestMode } from "./testModeUtils.js";
-import { isEnabled, featureFlagsEmitter } from "./featureFlags.js";
+import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
 import { preloadRandomCardData, createHistoryManager } from "./randomCardService.js";
 
 const DRAW_ICON =
@@ -39,7 +38,7 @@ const DRAW_ICON =
 export async function setupRandomJudokaPage() {
   let settings;
   try {
-    settings = await loadSettings();
+    settings = await initFeatureFlags();
   } catch (err) {
     console.error("Error loading settings:", err);
     // Fallback to system motion preference

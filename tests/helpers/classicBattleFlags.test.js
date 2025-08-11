@@ -35,7 +35,8 @@ describe("classicBattlePage feature flag updates", () => {
     }));
     vi.doMock("../../src/helpers/featureFlags.js", () => ({
       featureFlagsEmitter,
-      isEnabled: (flag) => currentFlags[flag]?.enabled ?? false
+      isEnabled: (flag) => currentFlags[flag]?.enabled ?? false,
+      initFeatureFlags: vi.fn().mockResolvedValue({ featureFlags: currentFlags })
     }));
     vi.doMock("../../src/helpers/stats.js", () => ({
       loadStatNames: async () => [{ name: "Power" }]
