@@ -1,15 +1,10 @@
 import { createGokyoLookup } from "./utils.js";
-
-import { setupLazyPortraits } from "./lazyPortrait.js";
 import {
-  createScrollButton,
-  updateScrollButtonState,
-  setupKeyboardNavigation,
-  setupSwipeNavigation,
-  applyAccessibilityImprovements,
+  createCarouselStructure,
+  wireCarouselNavigation,
+  initAccessibility,
   setupResponsiveSizing,
-  appendCards,
-  setupFocusHandlers
+  appendCards
 } from "./carousel/index.js";
 import { SPINNER_DELAY_MS } from "./constants.js";
 
@@ -183,79 +178,29 @@ export function createLoadingSpinner(wrapper) {
  * @returns {Promise<HTMLElement>} A promise that resolves to the carousel wrapper element.
  */
 export async function buildCardCarousel(judokaList, gokyoData) {
-  // --- Accessibility: aria-live region for dynamic messages ---
-  const ariaLive = document.createElement("div");
-  ariaLive.setAttribute("aria-live", "polite");
-  ariaLive.className = "carousel-aria-live";
+  const { wrapper, container, ariaLive } = createCarouselStructure();
 
   if (!validateJudokaList(judokaList)) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "carousel-container";
     const msg = document.createElement("div");
     msg.className = "carousel-message";
     msg.textContent = "No cards available.";
     wrapper.appendChild(msg);
-    wrapper.appendChild(ariaLive);
     ariaLive.textContent = "No cards available.";
     return wrapper;
   }
 
   const gokyoLookup = validateGokyoData(gokyoData);
 
-  const container = document.createElement("div");
-  container.className = "card-carousel";
-  container.dataset.testid = "carousel";
-  container.setAttribute("role", "list");
-  container.setAttribute("aria-label", "Judoka card carousel");
-  // Responsive scroll snap
-  container.style.scrollSnapType = "x mandatory";
-  container.style.overflowX = "auto";
-  container.style.display = "flex";
-  container.style.gap = "var(--carousel-gap, 1rem)";
-
-  const wrapper = document.createElement("div");
-  wrapper.className = "carousel-container";
-  wrapper.appendChild(ariaLive);
-
   const { spinner, timeoutId } = createLoadingSpinner(wrapper);
 
-  // Create cards and responsive sizing
   await appendCards(container, judokaList, gokyoLookup);
   setupResponsiveSizing(container);
 
   clearTimeout(timeoutId);
   spinner.style.display = "none";
 
-  // Responsive sizing handled by helper
-
-  const leftButton = createScrollButton("left", container);
-  const rightButton = createScrollButton("right", container);
-
-  wrapper.appendChild(leftButton);
-  wrapper.appendChild(container);
-  wrapper.appendChild(rightButton);
-
-  const updateButtons = () => updateScrollButtonState(container, leftButton, rightButton);
-
-  let scrollTimeout;
-  const handleScroll = () => {
-    updateButtons();
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(updateButtons, 100); // re-check after snap
-  };
-
-  updateButtons();
-  container.addEventListener("scroll", handleScroll);
-  window.addEventListener("resize", updateButtons);
-
-  setupFocusHandlers(container);
-  setupKeyboardNavigation(container);
-  setupSwipeNavigation(container);
-  applyAccessibilityImprovements(wrapper);
-  setupLazyPortraits(container);
-
-  // --- Error handling: network failure/retry ---
-  // (Assume this is handled at a higher level, but aria-live region is ready)
+  wireCarouselNavigation(container, wrapper);
+  initAccessibility(container, wrapper);
 
   return wrapper;
 }

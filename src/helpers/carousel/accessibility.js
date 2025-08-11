@@ -1,3 +1,7 @@
+import { setupFocusHandlers } from "./focus.js";
+import { setupKeyboardNavigation, setupSwipeNavigation } from "./navigation.js";
+import { setupLazyPortraits } from "../lazyPortrait.js";
+
 const MIN_TOUCH_TARGET_SIZE = 48;
 
 /**
@@ -40,3 +44,22 @@ export function applyAccessibilityImprovements(wrapper) {
 }
 
 export { ensureTouchTargetSize };
+
+/**
+ * Initialize carousel accessibility and interaction helpers.
+ *
+ * @pseudocode
+ * 1. Setup focus handlers for cards.
+ * 2. Enable keyboard and swipe navigation.
+ * 3. Apply accessibility improvements and lazy portrait loading.
+ *
+ * @param {HTMLElement} container - Carousel container element.
+ * @param {HTMLElement} wrapper - Carousel wrapper element.
+ */
+export function initAccessibility(container, wrapper) {
+  setupFocusHandlers(container);
+  setupKeyboardNavigation(container);
+  setupSwipeNavigation(container);
+  applyAccessibilityImprovements(wrapper);
+  setupLazyPortraits(container);
+}
