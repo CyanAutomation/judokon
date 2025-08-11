@@ -73,6 +73,22 @@ function addScrollMarkers(container, wrapper) {
 }
 
 /**
+ * Initialize scroll markers after the carousel is attached to the document.
+ *
+ * @pseudocode
+ * 1. Exit early if `container` or `wrapper` is missing.
+ * 2. Schedule `addScrollMarkers` inside `requestAnimationFrame` to ensure
+ *    measurements occur after layout.
+ *
+ * @param {HTMLElement} [container] - The carousel container element.
+ * @param {HTMLElement} [wrapper] - The carousel wrapper element.
+ */
+export function initScrollMarkers(container, wrapper) {
+  if (!container || !wrapper) return;
+  requestAnimationFrame(() => addScrollMarkers(container, wrapper));
+}
+
+/**
  * Validates the judoka list to ensure it is a non-empty array.
  *
  * @pseudocode
@@ -155,9 +171,9 @@ export function createLoadingSpinner(wrapper) {
  * 4. For each judoka:
  *    a. Validate fields; use fallback card if invalid.
  *    b. Generate card, handle broken images, and make focusable.
- * 5. Add scroll buttons and markers, ensuring ARIA roles/labels.
+ * 5. Add scroll buttons; scroll markers are initialized after insertion.
  *    - Update button state on scroll and after scroll-snap completes.
- * 6. Use ResizeObserver to adapt card sizing and scroll marker logic on window resize.
+ * 6. Use ResizeObserver to adapt card sizing on window resize.
  * 7. Enable keyboard navigation (arrow keys), swipe gestures, and focus/hover enlargement for the center card only.
  * 8. Provide aria-live region for dynamic messages (errors, empty state).
  * 9. Return the completed wrapper element.
@@ -218,9 +234,6 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   wrapper.appendChild(leftButton);
   wrapper.appendChild(container);
   wrapper.appendChild(rightButton);
-
-  // Add scroll markers below the carousel
-  addScrollMarkers(container, wrapper);
 
   const updateButtons = () => updateScrollButtonState(container, leftButton, rightButton);
 

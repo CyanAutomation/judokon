@@ -28,7 +28,7 @@ describe("setupCarouselToggle", () => {
     const fetchJson = vi.fn().mockResolvedValue([]);
     const validateData = vi.fn();
     const buildCardCarousel = vi.fn().mockResolvedValue(createCarousel());
-    const addScrollMarkers = vi.fn();
+    const initScrollMarkers = vi.fn();
 
     vi.doMock("../../src/helpers/dataUtils.js", async () => {
       const actual = await vi.importActual("../../src/helpers/dataUtils.js");
@@ -36,7 +36,7 @@ describe("setupCarouselToggle", () => {
     });
     vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
       buildCardCarousel,
-      addScrollMarkers
+      initScrollMarkers
     }));
 
     const { setupCarouselToggle } = await import("../../src/game.js");
@@ -61,7 +61,7 @@ describe("setupCarouselToggle", () => {
     const fetchJson = vi.fn();
     const validateData = vi.fn();
     const buildCardCarousel = vi.fn();
-    const addScrollMarkers = vi.fn();
+    const initScrollMarkers = vi.fn();
 
     vi.doMock("../../src/helpers/dataUtils.js", async () => {
       const actual = await vi.importActual("../../src/helpers/dataUtils.js");
@@ -69,7 +69,7 @@ describe("setupCarouselToggle", () => {
     });
     vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
       buildCardCarousel,
-      addScrollMarkers
+      initScrollMarkers
     }));
 
     const { setupCarouselToggle } = await import("../../src/game.js");
