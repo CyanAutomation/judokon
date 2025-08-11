@@ -59,7 +59,20 @@ export async function getAjv() {
           ajvInstance = new Ajv();
         } catch (cdnError) {
           console.error("Error loading Ajv:", localError, cdnError);
-          ajvInstance = { compile: () => () => true };
+          const message = "Ajv import failed; validation disabled";
+          ajvInstance = {
+            errors: null,
+            compile: () => {
+              const validate = () => {
+                const error = { message };
+                ajvInstance.errors = [error];
+                validate.errors = [error];
+                return false;
+              };
+              return validate;
+            },
+            errorsText: () => message
+          };
         }
       }
     }
