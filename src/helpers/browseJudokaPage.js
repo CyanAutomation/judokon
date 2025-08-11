@@ -1,4 +1,4 @@
-import { buildCardCarousel, addScrollMarkers, createLoadingSpinner } from "./carouselBuilder.js";
+import { buildCardCarousel, initScrollMarkers, createLoadingSpinner } from "./carouselBuilder.js";
 import { toggleCountryPanelMode } from "./countryPanel.js";
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
@@ -76,7 +76,7 @@ export async function setupBrowseJudokaPage() {
    * @pseudocode
    * 1. Use `buildCardCarousel` to create carousel markup.
    * 2. Remove the loading spinner and clear the existing container.
-   * 3. Append the carousel to the container and add scroll markers.
+   * 3. Append the carousel to the container and initialize scroll markers.
    * 4. Apply button ripple effects.
    *
    * @param {Judoka[]} list - Judoka to display.
@@ -91,12 +91,10 @@ export async function setupBrowseJudokaPage() {
     carouselContainer.innerHTML = "";
     carouselContainer.appendChild(carousel);
 
-    requestAnimationFrame(() => {
-      const containerEl = carousel.querySelector(".card-carousel");
-      if (containerEl) {
-        addScrollMarkers(containerEl, carousel);
-      }
-    });
+    const containerEl = carousel.querySelector(".card-carousel");
+    if (containerEl) {
+      initScrollMarkers(containerEl, carousel);
+    }
 
     setupButtonEffects();
   }

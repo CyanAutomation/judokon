@@ -158,7 +158,7 @@ describe("browseJudokaPage helpers", () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
     vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
       buildCardCarousel,
-      addScrollMarkers: vi.fn(),
+      initScrollMarkers: vi.fn(),
       createLoadingSpinner
     }));
     vi.doMock("../../src/helpers/buttonEffects.js", () => ({ setupButtonEffects: vi.fn() }));
@@ -235,7 +235,7 @@ describe("browseJudokaPage helpers", () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
     vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
       buildCardCarousel,
-      addScrollMarkers: vi.fn(),
+      initScrollMarkers: vi.fn(),
       createLoadingSpinner: () => ({ spinner: document.createElement("div"), timeoutId: 0 })
     }));
     vi.doMock("../../src/helpers/buttonEffects.js", () => ({ setupButtonEffects: vi.fn() }));

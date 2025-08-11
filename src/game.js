@@ -1,5 +1,5 @@
 import { fetchJson, validateData } from "./helpers/dataUtils.js";
-import { buildCardCarousel, addScrollMarkers } from "./helpers/carouselBuilder.js";
+import { buildCardCarousel, initScrollMarkers } from "./helpers/carouselBuilder.js";
 import { generateRandomCard } from "./helpers/randomCard.js";
 import { DATA_DIR } from "./helpers/constants.js";
 import { shouldReduceMotionSync } from "./helpers/motionUtils.js";
@@ -21,7 +21,7 @@ let inspectorEnabled = false;
  *    a. If the carousel is built, simply reveal `container`.
  *    b. If `container` is missing, log an error.
  *    c. Otherwise fetch and validate judoka and gokyo data.
- *    d. Build the carousel, append it to `container`, and add scroll markers.
+ *    d. Build the carousel, append it to `container`, and initialize scroll markers.
  *    e. Reveal `container` and mark the carousel as built.
  *    f. Log any errors that occur.
  *
@@ -57,12 +57,10 @@ export function setupCarouselToggle(button, container) {
       container.appendChild(carousel);
       container.classList.remove("hidden");
 
-      requestAnimationFrame(() => {
-        const containerEl = carousel.querySelector(".card-carousel");
-        if (containerEl) {
-          addScrollMarkers(containerEl, carousel);
-        }
-      });
+      const containerEl = carousel.querySelector(".card-carousel");
+      if (containerEl) {
+        initScrollMarkers(containerEl, carousel);
+      }
 
       isBuilt = true;
       debugLog("Carousel displayed on demand.");
