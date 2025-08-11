@@ -1,10 +1,36 @@
 // @vitest-environment node
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 
 const originalFetch = global.fetch;
 
 afterEach(() => {
   global.fetch = originalFetch;
+});
+
+describe("resolveUrl and readData", () => {
+  it("resolves Node paths to file URLs and reads without fetch", async () => {
+    const fetchMock = vi.fn();
+    global.fetch = fetchMock;
+    const { resolveUrl, readData } = await import("../../src/helpers/dataUtils.js");
+    const parsed = await resolveUrl("src/data/statNames.json");
+    const data = await readData(parsed, "src/data/statNames.json");
+    expect(parsed.protocol).toBe("file:");
+    expect(Array.isArray(data)).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("fetches HTTP URLs over the network", async () => {
+    const data = { foo: "bar" };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
+    global.fetch = fetchMock;
+    const { resolveUrl, readData } = await import("../../src/helpers/dataUtils.js");
+    const parsed = await resolveUrl("http://example.com/data.json");
+    const result = await readData(parsed, "http://example.com/data.json");
+    expect(result).toEqual(data);
+    expect(fetchMock).toHaveBeenCalled();
+  });
 });
 
 describe("fetchJson", () => {
@@ -215,5 +241,44 @@ describe("validateWithSchema", () => {
     const schema = { type: "object", properties: { a: { type: "string" } }, required: ["a"] };
     const { validateWithSchema } = await import("../../src/helpers/dataUtils.js");
     await expect(validateWithSchema({ a: "b" }, schema)).resolves.toBeUndefined();
+  });
+});
+
+describe("getAjv fallback stub", () => {
+  const message = "Ajv import failed; validation disabled";
+  let originalNodeVersion;
+  let originalWindow;
+  let errorSpy;
+  beforeEach(() => {
+    originalNodeVersion = process.versions.node;
+    Object.defineProperty(process.versions, "node", {
+      value: undefined,
+      configurable: true
+    });
+    originalWindow = global.window;
+    global.window = {};
+    errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    Object.defineProperty(process.versions, "node", {
+      value: originalNodeVersion,
+      configurable: true
+    });
+    global.window = originalWindow;
+    errorSpy.mockRestore();
+  });
+
+  it("provides stub with errorsText and sets errors", async () => {
+    const module = await import("../../src/helpers/dataUtils.js");
+    vi.spyOn(module.browserAjvLoader, "load").mockRejectedValue(new Error("fail"));
+    const ajv = await module.getAjv();
+    const validate = ajv.compile({});
+    const result = validate({});
+    expect(result).toBe(false);
+    expect(ajv.errors).toEqual([{ message }]);
+    expect(validate.errors).toEqual([{ message }]);
+    expect(ajv.errorsText(validate.errors)).toBe(message);
   });
 });
