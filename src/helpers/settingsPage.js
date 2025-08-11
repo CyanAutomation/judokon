@@ -225,19 +225,20 @@ export function renderSettingsUI(settings, gameModes, tooltipMap) {
  * Load data and render the Settings page UI.
  *
  * @pseudocode
- * 1. Start loading navigation items and tooltips in parallel.
- * 2. Load saved settings.
- * 3. Resolve navigation items and tooltips with `Promise.all` on wrapped promises.
- * 4. Invoke `renderSettingsUI` with the retrieved data.
- * 5. On error, show a fallback message to the user.
+ * 1. Enable section toggles immediately.
+ * 2. Start loading navigation items and tooltips in parallel.
+ * 3. Load saved settings.
+ * 4. Resolve navigation items and tooltips with `Promise.all` on wrapped promises.
+ * 5. Invoke `renderSettingsUI` with the retrieved data.
+ * 6. On error, show a fallback message to the user.
  *
  * @returns {Promise<void>}
  */
 async function initializeSettingsPage() {
+  // Enable section toggles immediately so handlers attach even if
+  // subsequent initialization fails.
+  setupSectionToggles();
   try {
-    // Enable section toggles immediately so the UI is responsive
-    // even if data loading is slow or fails.
-    setupSectionToggles();
     const gameModesPromise = settled(loadNavigationItems());
     const tooltipMapPromise = settled(getTooltips());
     const settings = await loadSettings();

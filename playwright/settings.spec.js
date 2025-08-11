@@ -206,4 +206,25 @@ test.describe.parallel("Settings page", () => {
       expect(box?.height).toBeGreaterThanOrEqual(44);
     }
   });
+
+  test("section toggles reveal content", async ({ page }) => {
+    const sections = [
+      { toggle: "#general-settings-toggle", content: "#general-settings-content" },
+      { toggle: "#game-modes-toggle", content: "#game-modes-content" },
+      { toggle: "#advanced-settings-toggle", content: "#advanced-settings-content" }
+    ];
+
+    for (const { toggle, content } of sections) {
+      const toggleLocator = page.locator(toggle);
+      const contentLocator = page.locator(content);
+
+      // Collapse if opened by beforeEach
+      await toggleLocator.click();
+      await expect(contentLocator).toHaveAttribute("hidden", "");
+
+      // Click again to expand and verify visibility
+      await toggleLocator.click();
+      await expect(contentLocator).not.toHaveAttribute("hidden", "");
+    }
+  });
 });
