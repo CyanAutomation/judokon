@@ -35,13 +35,13 @@ import { preloadRandomCardData, createHistoryManager } from "./randomCardService
 
 const DRAW_ICON =
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m600-200-56-57 143-143H300q-75 0-127.5-52.5T120-580q0-75 52.5-127.5T300-760h20v80h-20q-42 0-71 29t-29 71q0 42 29 71t71 29h387L544-624l56-56 240 240-240 240Z"/></svg>';
-export async function setupRandomJudokaPage() {
+
+export async function initFeatureFlagState() {
   let settings;
   try {
     settings = await initFeatureFlags();
   } catch (err) {
     console.error("Error loading settings:", err);
-    // Fallback to system motion preference
     settings = {
       motionEffects: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
       featureFlags: {
@@ -53,142 +53,27 @@ export async function setupRandomJudokaPage() {
   }
 
   setTestMode(isEnabled("enableTestMode"));
-
-  // Apply global motion preference
   applyMotionPreference(settings.motionEffects);
   toggleViewportSimulation(isEnabled("viewportSimulation"));
   toggleInspectorPanels(isEnabled("enableCardInspector"));
   toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
+
   const prefersReducedMotion =
     !settings.motionEffects || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return { prefersReducedMotion };
+}
 
-  let cachedJudokaData = null;
-  let cachedGokyoData = null;
-  let dataLoaded = false;
-  const historyManager = createHistoryManager();
-  let historyList;
-  let historyPanel;
-  let toggleHistoryBtn;
-  let historyOpen = false;
-
-  // Accessibility: Announce errors to screen readers
-  function showError(msg) {
-    let errorEl = document.getElementById("draw-error-message");
-    if (!errorEl) {
-      errorEl = document.createElement("div");
-      errorEl.id = "draw-error-message";
-      errorEl.setAttribute("role", "alert");
-      errorEl.setAttribute("aria-live", "assertive");
-      errorEl.style.color = "#b00020";
-      errorEl.style.marginTop = "12px";
-      errorEl.style.fontSize = "1.1rem";
-      const cardSection = document.querySelector(".card-section");
-      cardSection.appendChild(errorEl);
-    }
-    errorEl.textContent = msg;
-  }
-
-  function updateHistoryUI() {
-    if (!historyList) return;
-    historyList.innerHTML = "";
-    historyManager.get().forEach((j) => {
-      const li = document.createElement("li");
-      li.textContent = `${j.firstname} ${j.surname}`;
-      historyList.appendChild(li);
-    });
-  }
-
-  function addToHistory(judoka) {
-    historyManager.add(judoka);
-    updateHistoryUI();
-  }
-
-  function toggleHistory() {
-    historyOpen = !historyOpen;
-    historyPanel.style.transform = historyOpen ? "translateX(0)" : "translateX(100%)";
-    historyPanel.setAttribute("aria-hidden", String(!historyOpen));
-    toggleHistoryBtn.setAttribute("aria-expanded", String(historyOpen));
-  }
-
-  async function displayCard() {
-    if (!dataLoaded) {
-      showError("Unable to load judoka data. Please try again later.");
-      drawButton.disabled = true;
-      drawButton.setAttribute("aria-disabled", "true");
-      return;
-    }
-    const label = drawButton.querySelector(".button-label");
-    drawButton.disabled = true;
-    drawButton.setAttribute("aria-disabled", "true");
-    drawButton.classList.add("is-loading");
-    if (label) {
-      label.textContent = "Drawing…";
-    } else {
-      drawButton.textContent = "Drawing…";
-    }
-    drawButton.setAttribute("aria-busy", "true");
-    // Remove error message if present
-    const errorEl = document.getElementById("draw-error-message");
-    if (errorEl) errorEl.textContent = "";
-    const cardContainer = document.getElementById("card-container");
-    await generateRandomCard(
-      cachedJudokaData,
-      cachedGokyoData,
-      cardContainer,
-      prefersReducedMotion,
-      addToHistory,
-      {
-        enableInspector: isEnabled("enableCardInspector")
-      }
-    );
-    function enableButton() {
-      drawButton.disabled = false;
-      drawButton.removeAttribute("aria-disabled");
-      drawButton.classList.remove("is-loading");
-      if (label) {
-        label.textContent = "Draw Card!";
-      } else {
-        drawButton.textContent = "Draw Card!";
-      }
-      drawButton.removeAttribute("aria-busy");
-    }
-    if (prefersReducedMotion) {
-      enableButton();
-    } else {
-      const cardEl = cardContainer.querySelector(".card-container");
-      if (!cardEl) {
-        requestAnimationFrame(enableButton);
-      } else {
-        const onEnd = () => {
-          cardEl.removeEventListener("animationend", onEnd);
-          enableButton();
-        };
-        cardEl.addEventListener("animationend", onEnd);
-      }
-    }
-  }
-
-  const cardContainer = document.getElementById("card-container");
-  const placeholderTemplate = document.getElementById("card-placeholder-template");
-  if (placeholderTemplate && cardContainer) {
-    cardContainer.appendChild(placeholderTemplate.content.cloneNode(true));
-  }
-
-  const { judokaData, gokyoData, error: preloadError } = await preloadRandomCardData();
-  cachedJudokaData = judokaData;
-  cachedGokyoData = gokyoData;
-  dataLoaded = !preloadError;
+export function buildHistoryPanel(prefersReducedMotion) {
   const cardSection = document.querySelector(".card-section");
-  toggleHistoryBtn = createButton("History", {
+  const toggleHistoryBtn = createButton("History", {
     id: "toggle-history-btn",
     type: "button"
   });
   toggleHistoryBtn.setAttribute("aria-controls", "history-panel");
   toggleHistoryBtn.setAttribute("aria-expanded", "false");
   cardSection.appendChild(toggleHistoryBtn);
-  toggleHistoryBtn.addEventListener("click", toggleHistory);
 
-  historyPanel = document.createElement("aside");
+  const historyPanel = document.createElement("aside");
   historyPanel.id = "history-panel";
   historyPanel.style.position = "fixed";
   historyPanel.style.top = "0";
@@ -199,22 +84,18 @@ export async function setupRandomJudokaPage() {
   historyPanel.style.boxShadow = "0 0 10px rgba(0,0,0,0.3)";
   historyPanel.style.padding = "16px";
   historyPanel.style.transform = "translateX(100%)";
-  // Set transition duration based on user's motion preference
-  function getHistoryPanelTransition() {
-    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return "transform 0.01s linear";
-    }
-    return "transform 0.3s ease";
-  }
-  historyPanel.style.transition = getHistoryPanelTransition();
+  historyPanel.style.transition = getHistoryPanelTransition(prefersReducedMotion);
   historyPanel.setAttribute("aria-hidden", "true");
   const historyTitle = document.createElement("h2");
   historyTitle.textContent = "History";
-  historyList = document.createElement("ul");
+  const historyList = document.createElement("ul");
   historyPanel.append(historyTitle, historyList);
   document.body.appendChild(historyPanel);
 
-  // Draw button: min 64px height, 300px width, pill shape, ARIA attributes
+  return { historyPanel, historyList, toggleHistoryBtn };
+}
+
+export function createDrawButton() {
   const drawButton = createButton("Draw Card!", {
     id: "draw-card-btn",
     className: "draw-card-btn",
@@ -229,8 +110,146 @@ export async function setupRandomJudokaPage() {
   drawButton.setAttribute("aria-label", "Draw a random judoka card");
   drawButton.setAttribute("aria-live", "polite");
   drawButton.setAttribute("tabindex", "0");
+  return drawButton;
+}
+
+function showError(msg) {
+  let errorEl = document.getElementById("draw-error-message");
+  if (!errorEl) {
+    errorEl = document.createElement("div");
+    errorEl.id = "draw-error-message";
+    errorEl.setAttribute("role", "alert");
+    errorEl.setAttribute("aria-live", "assertive");
+    errorEl.style.color = "#b00020";
+    errorEl.style.marginTop = "12px";
+    errorEl.style.fontSize = "1.1rem";
+    const cardSection = document.querySelector(".card-section");
+    cardSection.appendChild(errorEl);
+  }
+  errorEl.textContent = msg;
+}
+
+function updateHistoryUI(historyList, historyManager) {
+  if (!historyList) return;
+  historyList.innerHTML = "";
+  historyManager.get().forEach((j) => {
+    const li = document.createElement("li");
+    li.textContent = `${j.firstname} ${j.surname}`;
+    historyList.appendChild(li);
+  });
+}
+
+function addToHistory(historyManager, historyList, judoka) {
+  historyManager.add(judoka);
+  updateHistoryUI(historyList, historyManager);
+}
+
+function toggleHistory(historyPanel, toggleHistoryBtn) {
+  const isOpen = historyPanel.getAttribute("aria-hidden") === "false";
+  const nextOpen = !isOpen;
+  historyPanel.style.transform = nextOpen ? "translateX(0)" : "translateX(100%)";
+  historyPanel.setAttribute("aria-hidden", String(!nextOpen));
+  toggleHistoryBtn.setAttribute("aria-expanded", String(nextOpen));
+}
+
+function getHistoryPanelTransition(prefersReducedMotion) {
+  return prefersReducedMotion ? "transform 0.01s linear" : "transform 0.3s ease";
+}
+
+async function displayCard({
+  dataLoaded,
+  drawButton,
+  cachedJudokaData,
+  cachedGokyoData,
+  prefersReducedMotion,
+  onSelect
+}) {
+  if (!dataLoaded) {
+    showError("Unable to load judoka data. Please try again later.");
+    drawButton.disabled = true;
+    drawButton.setAttribute("aria-disabled", "true");
+    return;
+  }
+  const label = drawButton.querySelector(".button-label");
+  drawButton.disabled = true;
+  drawButton.setAttribute("aria-disabled", "true");
+  drawButton.classList.add("is-loading");
+  if (label) {
+    label.textContent = "Drawing…";
+  } else {
+    drawButton.textContent = "Drawing…";
+  }
+  drawButton.setAttribute("aria-busy", "true");
+  const errorEl = document.getElementById("draw-error-message");
+  if (errorEl) errorEl.textContent = "";
+  const cardContainer = document.getElementById("card-container");
+  await generateRandomCard(
+    cachedJudokaData,
+    cachedGokyoData,
+    cardContainer,
+    prefersReducedMotion,
+    onSelect,
+    { enableInspector: isEnabled("enableCardInspector") }
+  );
+  function enableButton() {
+    drawButton.disabled = false;
+    drawButton.removeAttribute("aria-disabled");
+    drawButton.classList.remove("is-loading");
+    if (label) {
+      label.textContent = "Draw Card!";
+    } else {
+      drawButton.textContent = "Draw Card!";
+    }
+    drawButton.removeAttribute("aria-busy");
+  }
+  if (prefersReducedMotion) {
+    enableButton();
+  } else {
+    const cardEl = cardContainer.querySelector(".card-container");
+    if (!cardEl) {
+      requestAnimationFrame(enableButton);
+    } else {
+      const onEnd = () => {
+        cardEl.removeEventListener("animationend", onEnd);
+        enableButton();
+      };
+      cardEl.addEventListener("animationend", onEnd);
+    }
+  }
+}
+
+export async function setupRandomJudokaPage() {
+  const { prefersReducedMotion } = await initFeatureFlagState();
+
+  const cardContainer = document.getElementById("card-container");
+  const placeholderTemplate = document.getElementById("card-placeholder-template");
+  if (placeholderTemplate && cardContainer) {
+    cardContainer.appendChild(placeholderTemplate.content.cloneNode(true));
+  }
+
+  const { judokaData, gokyoData, error: preloadError } = await preloadRandomCardData();
+  const dataLoaded = !preloadError;
+  const historyManager = createHistoryManager();
+  const { historyPanel, historyList, toggleHistoryBtn } = buildHistoryPanel(prefersReducedMotion);
+
+  const cardSection = document.querySelector(".card-section");
+  const drawButton = createDrawButton();
   cardSection.appendChild(drawButton);
-  drawButton.addEventListener("click", displayCard);
+
+  const onSelect = (j) => addToHistory(historyManager, historyList, j);
+
+  drawButton.addEventListener("click", () =>
+    displayCard({
+      dataLoaded,
+      drawButton,
+      cachedJudokaData: judokaData,
+      cachedGokyoData: gokyoData,
+      prefersReducedMotion,
+      onSelect
+    })
+  );
+
+  toggleHistoryBtn.addEventListener("click", () => toggleHistory(historyPanel, toggleHistoryBtn));
 
   featureFlagsEmitter.addEventListener("change", () => {
     toggleInspectorPanels(isEnabled("enableCardInspector"));
@@ -238,7 +257,6 @@ export async function setupRandomJudokaPage() {
     toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
   });
 
-  // Initial state: placeholder shown; disable draw button only if data failed to load
   if (!dataLoaded) {
     showError("Unable to load judoka data. Please try again later.");
     drawButton.disabled = true;
