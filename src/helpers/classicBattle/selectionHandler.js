@@ -1,7 +1,6 @@
 import { STATS, stopTimer } from "../battleEngineFacade.js";
 import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
 import * as infoBar from "../setupBattleInfoBar.js";
-import { showSnackbar } from "../showSnackbar.js";
 import { getStatValue, resetStatButtons, showResult } from "../battle/index.js";
 import { revealComputerCard } from "./uiHelpers.js";
 import { scheduleNextRound } from "./timerService.js";
@@ -88,18 +87,12 @@ export async function handleStatSelection(store, stat, options = {}) {
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   infoBar.clearTimer();
-  // Prefer transient feedback for the opponent-thinking phase to avoid
-  // occupying the result message region used by tests and screen readers.
-  // Show it after a brief delay and cancel if the round resolves first.
-  let opponentMsgId = 0;
-  const showOpponentThinking = () => showSnackbar("Opponent is choosing…");
-  const delayMs = 500;
-  opponentMsgId = setTimeout(showOpponentThinking, delayMs);
+  // Surface opponent-thinking status immediately in the Info Bar for clarity
+  // and unit-test observability.
+  infoBar.showMessage("Opponent is choosing…");
   const delay = 300 + Math.floor(Math.random() * 401);
   return new Promise((resolve) => {
     setTimeout(async () => {
-      // Ensure any pending opponent-thinking hint does not fire after the outcome
-      clearTimeout(opponentMsgId);
       await revealComputerCard();
       const result = evaluateRound(store, stat);
       // Move to decision and then roundOver in the state machine

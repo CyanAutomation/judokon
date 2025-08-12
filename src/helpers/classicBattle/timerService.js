@@ -174,6 +174,9 @@ export function scheduleNextRound(result) {
   let snackbarStarted = false;
   let cooldownStarted = false;
   let startTimeoutId = null;
+  // When we pre-show the initial countdown message, suppress updating it
+  // with the same value on the first onTick call (remaining === 3).
+  let suppressFirstUpdate = false;
 
   const onTick = (remaining) => {
     if (remaining <= 0) {
@@ -185,6 +188,10 @@ export function scheduleNextRound(result) {
       showSnackbar(text);
       snackbarStarted = true;
     } else {
+      if (suppressFirstUpdate && remaining === 3) {
+        suppressFirstUpdate = false;
+        return;
+      }
       updateSnackbar(text);
     }
   };
@@ -224,6 +231,7 @@ export function scheduleNextRound(result) {
   if (!snackbarStarted) {
     showSnackbar("Next round in: 3s");
     snackbarStarted = true;
+    suppressFirstUpdate = true;
   }
 
   startTimeoutId = setTimeout(() => {
