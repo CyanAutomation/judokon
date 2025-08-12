@@ -16,6 +16,28 @@ import { registerCommonRoutes } from "./commonRoutes.js";
 export const test = base.extend({
   /** @type {import('@playwright/test').Page} */
   page: async ({ page }, use) => {
+    // Surface browser-side warnings and errors in test output for debugging
+    page.on("console", (msg) => {
+      const type = msg.type();
+      if (type === "warning" || type === "error") {
+        try {
+          console.log(`[browser:${type}]`, msg.text());
+        } catch {}
+      }
+    });
+    page.on("pageerror", (err) => {
+      try {
+        console.log(`[pageerror] ${err?.message || err}`);
+        if (err?.stack) console.log(err.stack);
+      } catch {}
+    });
+    page.on("requestfailed", (req) => {
+      try {
+        const f = req.failure();
+        console.log(`[requestfailed] ${req.method()} ${req.url()} ${f?.errorText || ""}`);
+      } catch {}
+    });
+
     await page.addInitScript(() => {
       localStorage.clear();
       localStorage.setItem(
