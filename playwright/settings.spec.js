@@ -190,6 +190,9 @@ test.describe.parallel("Settings page", () => {
     }
   });
 
+  
+  
+
   test("sections visible", async ({ page }) => {
     await expect(page.locator("#general-settings-container")).toBeVisible();
     await expect(page.locator("#game-mode-toggle-container")).toBeVisible();

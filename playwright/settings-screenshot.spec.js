@@ -11,7 +11,7 @@ test.describe.parallel(
     const modes = ["light", "dark", "high-contrast"];
 
     for (const mode of modes) {
-      test(`mode ${mode} collapsed`, async ({ page }) => {
+      test(`mode ${mode}`, async ({ page }) => {
         await page.addInitScript((mode) => {
           localStorage.setItem(
             "settings",
