@@ -12,7 +12,7 @@ body {
   width: 100%;
   overflow-x: hidden;
   /* Use path relative to this CSS file; styles/ -> assets/ */
-  background-image: url("../assets/images/bgTileBlue.png");
+  /* background-image: url("../assets/images/bgTileBlue.png"); */
   background-repeat: repeat;
   background-size: 50vw auto;
 }
