@@ -12,18 +12,19 @@
  *    c. Waits for the Mystery card to render using `waitForComputerCard` then
  *       re-enables stat buttons.
  * 5. Define `setupClassicBattlePage` to:
- *    a. Initialize the battle info bar.
- *    b. Load feature flags, apply them to `#battle-area` and react to changes.
- *    c. Initialize stat buttons, attach listeners, and display a snackbar with
+ *    a. Start the shared scheduler.
+ *    b. Initialize the battle info bar.
+ *    c. Load feature flags, apply them to `#battle-area` and react to changes.
+ *    d. Initialize stat buttons, attach listeners, and display a snackbar with
  *       the chosen stat.
- *    d. Set `window.startRoundOverride` to `startRoundWrapper` so the battle
+ *    e. Set `window.startRoundOverride` to `startRoundWrapper` so the battle
  *       module uses it for subsequent rounds.
- *    e. Toggle the debug panel.
- *    f. Show a round selection modal that sets points-to-win and starts the first round.
- *    g. Initialize tooltips and show the stat help tooltip once for new users.
- *    h. Watch for orientation changes and update the battle header's
+ *    f. Toggle the debug panel.
+ *    g. Show a round selection modal that sets points-to-win and starts the first round.
+ *    h. Initialize tooltips and show the stat help tooltip once for new users.
+ *    i. Watch for orientation changes and update the battle header's
  *       `data-orientation` attribute.
- *    i. Listen for `storage` events and update the Test Mode banner and
+ *    j. Listen for `storage` events and update the Test Mode banner and
  *       `data-test-mode` attribute when settings change.
  * 6. Execute `setupClassicBattlePage` with `onDomReady`.
  */
@@ -46,6 +47,7 @@ import {
 import { onNextButtonClick } from "./classicBattle/timerService.js";
 import { skipCurrentPhase } from "./classicBattle/skipHandler.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
+import { start as startScheduler } from "../utils/scheduler.js";
 
 const battleStore = createBattleStore();
 window.battleStore = battleStore;
@@ -139,6 +141,7 @@ function watchBattleOrientation() {
 }
 
 export async function setupClassicBattlePage() {
+  if (!(typeof process !== "undefined" && process.env.VITEST)) startScheduler();
   setupBattleInfoBar();
   // Apply orientation ASAP so tests observing the header don't block
   // behind async initialization (flags, data fetches, tooltips, etc.).
