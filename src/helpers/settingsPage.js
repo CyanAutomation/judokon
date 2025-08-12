@@ -25,7 +25,6 @@ import { applyInitialControlValues } from "./settings/applyInitialValues.js";
 import { attachToggleListeners } from "./settings/listenerUtils.js";
 import { renderGameModeSwitches } from "./settings/gameModeSwitches.js";
 import { renderFeatureFlagSwitches } from "./settings/featureFlagSwitches.js";
-import { setupSectionToggles } from "./settings/sectionToggle.js";
 import { makeHandleUpdate } from "./settings/makeHandleUpdate.js";
 import { addNavResetButton } from "./settings/addNavResetButton.js";
 
@@ -118,7 +117,7 @@ function initializeControls(settings) {
     toggleTooltipOverlayDebug(isEnabled("tooltipOverlayDebug"));
     toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
     renderSwitches(latestGameModes, latestTooltipMap);
-    setupSectionToggles();
+    expandAllSections();
   });
 
   resetButton?.addEventListener("click", () => {
@@ -199,6 +198,22 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
 }
 
 /**
+ * Ensure all settings sections are expanded.
+ *
+ * @pseudocode
+ * 1. Remove the `hidden` attribute from each `.settings-section-content`.
+ * 2. Set `aria-expanded` to `true` on every `.settings-section-toggle`.
+ */
+function expandAllSections() {
+  document.querySelectorAll(".settings-section-content").forEach((el) => {
+    el.removeAttribute("hidden");
+  });
+  document.querySelectorAll(".settings-section-toggle").forEach((btn) => {
+    btn.setAttribute("aria-expanded", "true");
+  });
+}
+
+/**
  * Fetch settings, game modes, and tooltips in parallel.
  *
  * @pseudocode
@@ -221,7 +236,7 @@ export async function loadSettingsData() {
  * Render controls for the Settings page using fetched data.
  *
  * @pseudocode
- * 1. Enable section toggles via `setupSectionToggles`.
+ * 1. Sections render expanded by default.
  * 2. Apply initial display, motion, and feature settings.
  * 3. Initialize controls and render switches using provided data.
  * 4. Return the updated `document.body` for inspection.
@@ -232,7 +247,7 @@ export async function loadSettingsData() {
  * @returns {HTMLElement} Updated DOM root.
  */
 export function renderSettingsControls(settings, gameModes, tooltipMap) {
-  setupSectionToggles();
+  expandAllSections();
   applyInitialSettings(settings);
   const controlsApi = initializeControls(settings);
   controlsApi.renderSwitches(gameModes, tooltipMap);
@@ -243,17 +258,13 @@ export function renderSettingsControls(settings, gameModes, tooltipMap) {
  * Load data then render Settings controls.
  *
  * @pseudocode
- * 1. Enable section toggles immediately.
- * 2. Await `loadSettingsData` for required data.
- * 3. Pass data to `renderSettingsControls`.
- * 4. On error, show a fallback message to the user.
+ * 1. Await `loadSettingsData` for required data.
+ * 2. Pass data to `renderSettingsControls`.
+ * 3. On error, show a fallback message to the user.
  *
  * @returns {Promise<void>}
  */
 async function initializeSettingsPage() {
-  // Enable section toggles immediately so handlers attach even if
-  // subsequent initialization fails.
-  setupSectionToggles();
   try {
     const [settings, gameModes, tooltipMap] = await loadSettingsData();
     renderSettingsControls(settings, gameModes, tooltipMap);

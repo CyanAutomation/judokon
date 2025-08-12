@@ -11,7 +11,7 @@ test.describe.parallel(
     const modes = ["light", "dark", "high-contrast"];
 
     for (const mode of modes) {
-      test(`mode ${mode} collapsed`, async ({ page }) => {
+      test(`mode ${mode}`, async ({ page }) => {
         await page.addInitScript((mode) => {
           localStorage.setItem(
             "settings",
@@ -23,25 +23,7 @@ test.describe.parallel(
           );
         }, mode);
         await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-        await expect(page).toHaveScreenshot(`settings-${mode}-collapsed.png`, { fullPage: true });
-      });
-
-      test(`mode ${mode} expanded`, async ({ page }) => {
-        await page.addInitScript((mode) => {
-          localStorage.setItem(
-            "settings",
-            JSON.stringify({
-              displayMode: mode,
-              typewriterEffect: false,
-              featureFlags: { enableTestMode: { enabled: true } }
-            })
-          );
-        }, mode);
-        await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-        await page.locator("#general-settings-toggle").click();
-        await page.locator("#game-modes-toggle").click();
-        await page.locator("#advanced-settings-toggle").click();
-        await expect(page).toHaveScreenshot(`settings-${mode}-expanded.png`, { fullPage: true });
+        await expect(page).toHaveScreenshot(`settings-${mode}.png`, { fullPage: true });
       });
     }
   }
