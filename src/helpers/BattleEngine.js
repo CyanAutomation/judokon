@@ -11,6 +11,83 @@ import { TimerController } from "./TimerController.js";
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 const DRIFT_THRESHOLD = 2;
 
+/**
+ * Compare two stat values and report the winner.
+ *
+ * @pseudocode
+ * 1. Compute `delta = playerVal - computerVal`.
+ * 2. If `delta > 0` winner is `"player"`.
+ * 3. Else if `delta < 0` winner is `"computer"`.
+ * 4. Otherwise winner is `"tie"`.
+ * 5. Return `{ delta, winner }`.
+ *
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} computerVal - Opponent's stat value.
+ * @returns {{delta: number, winner: "player"|"computer"|"tie"}}
+ */
+export function compareStats(playerVal, computerVal) {
+  const delta = playerVal - computerVal;
+  let winner = "tie";
+  if (delta > 0) winner = "player";
+  else if (delta < 0) winner = "computer";
+  return { delta, winner };
+}
+
+const DELTA_OUTCOME = {
+  1: {
+    message: "You win the round!",
+    update(engine) {
+      engine.playerScore += 1;
+    }
+  },
+  0: {
+    message: "Tie – no score!",
+    update() {}
+  },
+  [-1]: {
+    message: "Opponent wins the round!",
+    update(engine) {
+      engine.computerScore += 1;
+    }
+  }
+};
+
+/**
+ * Create a drift watcher for a timer controller.
+ *
+ * @pseudocode
+ * 1. Record `start = Date.now()`.
+ * 2. Every second:
+ *    a. If `timer.hasActiveTimer()` is false, clear the interval.
+ *    b. Compute `elapsed` and `expected = duration - elapsed`.
+ *    c. Read `{remaining, paused}` from `timer.getState()`; skip when paused.
+ *    d. If `remaining - expected` exceeds `DRIFT_THRESHOLD`, clear interval and call `onDrift(remaining)`.
+ * 3. Return a function that clears the interval.
+ *
+ * @param {TimerController} timer - Timer to monitor.
+ * @returns {(duration: number, onDrift: function(number): void) => function(): void}
+ */
+export function createDriftWatcher(timer) {
+  return (duration, onDrift) => {
+    const start = Date.now();
+    const interval = setInterval(() => {
+      if (!timer.hasActiveTimer()) {
+        clearInterval(interval);
+        return;
+      }
+      const elapsed = Math.floor((Date.now() - start) / 1000);
+      const expected = duration - elapsed;
+      const { remaining, paused } = timer.getState();
+      if (paused) return;
+      if (remaining - expected > DRIFT_THRESHOLD) {
+        clearInterval(interval);
+        if (typeof onDrift === "function") onDrift(remaining);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  };
+}
+
 export class BattleEngine {
   constructor() {
     this.pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN;
@@ -138,16 +215,13 @@ export class BattleEngine {
    * Compare player and computer stat values to update scores.
    *
    * @pseudocode
-   * 1. If the match has already ended, return `matchEnded`, `playerScore`, and `computerScore` with an empty message.
+   * 1. If the match has already ended, return current scores and `matchEnded`.
    * 2. Stop any running timer.
-   * 3. Compare `playerVal` and `computerVal`:
-   *    a. If `playerVal > computerVal`, increment `playerScore` and set win message.
-   *    b. If `playerVal < computerVal`, increment `computerScore` and set loss message.
-   *    c. Otherwise, set tie message without changing scores.
-   * 4. Increment the `roundsPlayed` counter.
-   * 5. Call `#endMatchIfNeeded()` to update `matchEnded` and get an end-of-match message.
-   *    - If it returns a non-empty message, override the round message.
-   * 6. Return the message, updated `matchEnded`, and current scores.
+   * 3. Use `compareStats` to obtain `delta` between values.
+   * 4. Look up the outcome by `Math.sign(delta)` and apply its score update.
+   * 5. Increment `roundsPlayed`.
+   * 6. Call `#endMatchIfNeeded()` and override the round message if it returns one.
+   * 7. Return the round message, `matchEnded`, and current scores.
    *
    * @param {number} playerVal - Value selected by the player.
    * @param {number} computerVal - Value selected by the computer.
@@ -163,32 +237,13 @@ export class BattleEngine {
       };
     }
     this.stopTimer();
-    if (playerVal > computerVal) {
-      this.playerScore += 1;
-      this.roundsPlayed += 1;
-      const endMsg = this.#endMatchIfNeeded();
-      return {
-        message: endMsg || "You win the round!",
-        matchEnded: this.matchEnded,
-        playerScore: this.playerScore,
-        computerScore: this.computerScore
-      };
-    }
-    if (playerVal < computerVal) {
-      this.computerScore += 1;
-      this.roundsPlayed += 1;
-      const endMsg = this.#endMatchIfNeeded();
-      return {
-        message: endMsg || "Opponent wins the round!",
-        matchEnded: this.matchEnded,
-        playerScore: this.playerScore,
-        computerScore: this.computerScore
-      };
-    }
+    const { delta } = compareStats(playerVal, computerVal);
+    const outcome = DELTA_OUTCOME[Math.sign(delta)];
+    outcome.update(this);
     this.roundsPlayed += 1;
     const endMsg = this.#endMatchIfNeeded();
     return {
-      message: endMsg || "Tie – no score!",
+      message: endMsg || outcome.message,
       matchEnded: this.matchEnded,
       playerScore: this.playerScore,
       computerScore: this.computerScore
@@ -242,37 +297,16 @@ export class BattleEngine {
    * Monitor the active timer for drift and invoke a callback when detected.
    *
    * @pseudocode
-   * 1. Record the current timestamp as `start`.
-   * 2. Every second:
-   *    a. If the `TimerController` has no active timer, stop monitoring.
-   *    b. Compute `elapsed = floor((Date.now() - start) / 1000)` and `expected = duration - elapsed`.
-   *    c. Skip drift checks when the timer is paused.
-   *    d. If `remaining - expected` > `DRIFT_THRESHOLD`:
-   *       i. The timer is behind schedule; clear the monitoring interval.
-   *       ii. If `onDrift` is a function, invoke it with current remaining time.
-   * 3. Return a function that clears the monitoring interval to stop drift detection.
+   * 1. Delegate to `createDriftWatcher` with the internal timer.
+   * 2. Return the stopper function from the created watcher.
    *
    * @param {number} duration - Duration originally passed to the timer.
    * @param {function(number): void} onDrift - Callback invoked when drift detected.
    * @returns {function(): void} Function to stop monitoring.
    */
   watchForDrift(duration, onDrift) {
-    const start = Date.now();
-    const interval = setInterval(() => {
-      if (!this.timer.hasActiveTimer()) {
-        clearInterval(interval);
-        return;
-      }
-      const elapsed = Math.floor((Date.now() - start) / 1000);
-      const expected = duration - elapsed;
-      const { remaining, paused } = this.timer.getState();
-      if (paused) return;
-      if (remaining - expected > DRIFT_THRESHOLD) {
-        clearInterval(interval);
-        if (typeof onDrift === "function") onDrift(remaining);
-      }
-    }, 1000);
-    return () => clearInterval(interval);
+    const watch = createDriftWatcher(this.timer);
+    return watch(duration, onDrift);
   }
 
   _resetForTest() {
