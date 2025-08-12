@@ -1,4 +1,4 @@
-import { fetchJson } from "./dataUtils.js";
+import { fetchJson, importJsonModule } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 
 let namesPromise;
@@ -24,9 +24,14 @@ function slug(name) {
 export async function loadStatNames(category = "Judo") {
   if (!cachedNames) {
     if (!namesPromise) {
-      namesPromise = fetchJson(`${DATA_DIR}statNames.json`).catch((err) => {
+      namesPromise = fetchJson(`${DATA_DIR}statNames.json`).catch(async (err) => {
         console.error("Failed to load stat names:", err);
-        return [];
+        // Fallback to module import so tests/dev still function when fetch fails.
+        try {
+          return await importJsonModule("../data/statNames.json");
+        } catch {
+          return [];
+        }
       });
     }
     cachedNames = (await namesPromise).sort((a, b) => a.statIndex - b.statIndex);

@@ -146,10 +146,13 @@ const schemaCache = new WeakMap();
  */
 export async function resolveUrl(url) {
   const urlStr = url.toString();
-  const base =
-    isNodeEnvironment() && !/^[a-zA-Z]+:/.test(urlStr) && !urlStr.startsWith("/")
-      ? (await import("node:url")).pathToFileURL(process.cwd() + "/").href
-      : "http://localhost";
+  // In Node with a relative path, resolve against CWD as a file URL.
+  if (isNodeEnvironment() && !/^[a-zA-Z]+:/.test(urlStr) && !urlStr.startsWith("/")) {
+    const { pathToFileURL } = await import("node:url");
+    return new URL(urlStr, pathToFileURL(process.cwd() + "/").href);
+  }
+  // In browsers, prefer the current origin to preserve the active port.
+  const base = typeof window !== "undefined" && window.location?.origin ? window.location.origin : "http://localhost";
   return new URL(urlStr, base);
 }
 
