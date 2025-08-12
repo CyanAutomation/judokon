@@ -100,3 +100,7 @@ export async function registerCommonRoutes(page) {
     })
   ]);
 }
+    // Ensure stat names are always served promptly to avoid flaky fetches
+    page.route("**/src/data/statNames.json", (route) =>
+      route.fulfill({ path: "src/data/statNames.json" })
+    ),

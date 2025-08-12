@@ -25,7 +25,11 @@ export async function loadStatNames(category = "Judo") {
   if (!cachedNames) {
     if (!namesPromise) {
       namesPromise = fetchJson(`${DATA_DIR}statNames.json`).catch(async (err) => {
-        console.error("Failed to load stat names:", err);
+        // Use debug logging to avoid noisy browser error output in tests/CI
+        try {
+          const { debugLog } = await import("./debug.js");
+          debugLog("Failed to load stat names:", err);
+        } catch {}
         // Fallback to module import so tests/dev still function when fetch fails.
         try {
           return await importJsonModule("../data/statNames.json");
