@@ -265,6 +265,11 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     await selectDoc(i, true, true, !opts.fromListNav);
   });
 
+  // Ensure the initially visible document is reflected in the sidebar
+  // selection and accessibility state before any navigation.
+  // This keeps aria-current/selected in sync with the rendered content.
+  listSelect(startIndex);
+
   function renderDoc(i) {
     container.innerHTML = documents[i] || "";
     container.classList.remove("fade-in");
