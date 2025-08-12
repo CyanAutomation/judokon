@@ -106,14 +106,14 @@ test.describe.parallel("Browse Judoka screen", () => {
     await container.focus();
     const markers = page.locator(".scroll-marker");
     const counter = page.locator(".page-counter");
-    await expect(markers).toHaveCount(6);
-    await expect(counter).toHaveText("Page 1 of 6");
+    const pageCount = await markers.count();
+    await expect(counter).toHaveText(`Page 1 of ${pageCount}`);
 
-    await container.evaluate((el) => {
-      el.scrollTo({ left: el.scrollWidth, behavior: "auto" });
-    });
+    for (let i = 1; i < pageCount; i++) {
+      await container.press("ArrowRight");
+    }
 
-    await expect.poll(() => counter.textContent()).toBe("Page 6 of 6");
+    await expect.poll(() => counter.textContent()).toBe(`Page ${pageCount} of ${pageCount}`);
   });
 
   test("carousel responds to swipe gestures", async ({ page }) => {
@@ -128,8 +128,8 @@ test.describe.parallel("Browse Judoka screen", () => {
 
     const markers = page.locator(".scroll-marker");
     const counter = page.locator(".page-counter");
-    await expect(markers).toHaveCount(6);
-    await expect(counter).toHaveText("Page 1 of 6");
+    const pageCount = await markers.count();
+    await expect(counter).toHaveText(`Page 1 of ${pageCount}`);
 
     const box = await container.boundingBox();
     const startX = box.x + box.width * 0.9;
@@ -156,11 +156,12 @@ test.describe.parallel("Browse Judoka screen", () => {
         { from, to, y }
       );
 
-    const before = await container.evaluate((el) => el.scrollLeft);
-    await swipe(startX, startX - box.width);
+    for (let i = 1; i < pageCount; i++) {
+      await swipe(startX, startX - box.width);
+      await expect.poll(() => counter.textContent()).toBe(`Page ${i + 1} of ${pageCount}`);
+    }
 
-    await expect.poll(() => container.evaluate((el) => el.scrollLeft)).toBeGreaterThan(before);
-    await expect(counter).toHaveText("Page 2 of 6");
+    await expect(counter).toHaveText(`Page ${pageCount} of ${pageCount}`);
   });
 
   test.skip("shows loading spinner on slow network", async ({ page }) => {

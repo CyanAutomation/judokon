@@ -20,6 +20,8 @@ import { SPINNER_DELAY_MS } from "./constants.js";
  * 4. Add a marker for each page and an accompanying page counter.
  *    - Highlight the marker for the current page.
  * 5. Update the active marker and counter text on scroll events.
+ *    - Clamp to the last page when the remaining scroll distance is
+ *      within 1px to avoid rounding to a non-existent page.
  *
  * @param {HTMLElement} [container] - The carousel container element.
  * @param {HTMLElement} [wrapper] - The carousel wrapper element.
@@ -58,9 +60,14 @@ function addScrollMarkers(container, wrapper) {
   container.addEventListener("scroll", () => {
     const gapPx = parseFloat(getComputedStyle(container).columnGap) || 0;
     const pageWidth = container.clientWidth + gapPx;
-    const currentPage = pageWidth
-      ? Math.min(pageCount - 1, Math.round(container.scrollLeft / pageWidth))
-      : 0;
+    const maxScroll = container.scrollWidth - container.clientWidth;
+    const remaining = maxScroll - container.scrollLeft;
+    const currentPage =
+      remaining <= 1
+        ? pageCount - 1
+        : pageWidth
+          ? Math.min(pageCount - 1, Math.round(container.scrollLeft / pageWidth))
+          : 0;
 
     markers.querySelectorAll(".scroll-marker").forEach((marker, index) => {
       marker.classList.toggle("active", index === currentPage);
