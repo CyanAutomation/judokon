@@ -40,31 +40,31 @@ export function setupKeyboardNavigation(container) {
  * @pseudocode
  * 1. Track the starting X position of a touch or pointer press (`touchstart` or `pointerdown`).
  * 2. On `touchend` or `pointerup`, calculate the swipe distance.
- *    - Update a `targetLeft` value by one container width in the swipe direction.
- *    - Clamp `targetLeft` to the scrollable range and smoothly scroll the container to that position.
+ *    - Determine the next scroll position from the current `scrollLeft` plus or minus one page width.
+ *    - Clamp this value to the scrollable range and smoothly scroll the container to that position.
  *
  * @param {HTMLElement} container - The carousel container element.
  */
 export function setupSwipeNavigation(container) {
   let touchStartX = 0;
   let pointerStartX = 0;
-  let targetLeft = container.scrollLeft;
 
   const scrollFromDelta = (delta) => {
     // Keep swipe step aligned with one "page" width used by markers
     const gap = parseFloat(getComputedStyle(container).columnGap) || 0;
     const step = container.clientWidth + gap;
+    let left = container.scrollLeft;
     if (delta > CAROUSEL_SWIPE_THRESHOLD) {
-      targetLeft -= step;
+      left -= step;
     } else if (delta < -CAROUSEL_SWIPE_THRESHOLD) {
-      targetLeft += step;
+      left += step;
     } else {
       return;
     }
 
     const maxScroll = container.scrollWidth - container.clientWidth;
-    targetLeft = Math.max(0, Math.min(targetLeft, maxScroll));
-    container.scrollTo({ left: targetLeft, behavior: "smooth" });
+    left = Math.max(0, Math.min(left, maxScroll));
+    container.scrollTo({ left, behavior: "smooth" });
   };
 
   container.addEventListener("touchstart", (event) => {
