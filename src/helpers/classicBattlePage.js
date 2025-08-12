@@ -120,7 +120,10 @@ function watchBattleOrientation() {
   const apply = () => {
     const header = document.querySelector(".battle-header");
     if (header) {
-      header.dataset.orientation = getOrientation();
+      const next = getOrientation();
+      if (header.dataset.orientation !== next) {
+        header.dataset.orientation = next;
+      }
       return true;
     }
     return false;
@@ -136,7 +139,12 @@ function watchBattleOrientation() {
 
   const onChange = () => {
     const header = document.querySelector(".battle-header");
-    if (header) header.dataset.orientation = getOrientation();
+    if (header) {
+      const next = getOrientation();
+      if (header.dataset.orientation !== next) {
+        header.dataset.orientation = next;
+      }
+    }
   };
   window.addEventListener("orientationchange", onChange);
   window.addEventListener("resize", onChange);
