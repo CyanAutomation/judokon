@@ -47,7 +47,11 @@ import {
 import { onNextButtonClick } from "./classicBattle/timerService.js";
 import { skipCurrentPhase } from "./classicBattle/skipHandler.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
-import { start as startScheduler } from "../utils/scheduler.js";
+import {
+  start as startScheduler,
+  onFrame as scheduleFrame,
+  cancel as cancelFrame
+} from "../utils/scheduler.js";
 
 const battleStore = createBattleStore();
 window.battleStore = battleStore;
@@ -83,12 +87,14 @@ async function applyStatLabels() {
  * Apply orientation data attribute on the battle header and watch for changes.
  *
  * @pseudocode
- * 1. Select the `.battle-header` element and exit if missing.
- * 2. Define `updateOrientation` that sets `data-orientation` to `portrait` or
- *    `landscape` based on `matchMedia`.
- * 3. Invoke `updateOrientation` immediately.
- * 4. Listen for `orientationchange` and `resize` events to call
- *    `updateOrientation` on each change.
+ * 1. Define `getOrientation` to compute `portrait` or `landscape` using
+ *    viewport size and `matchMedia`.
+ * 2. Define `apply` that selects `.battle-header`, sets `data-orientation`
+ *    using `getOrientation`, and returns `true` if the header exists.
+ * 3. Run `apply` immediately; if it returns `false`, poll with
+ *    `scheduler.onFrame` until `apply` succeeds, then cancel the polling task.
+ * 4. Listen for `orientationchange` and `resize` events to update the header in
+ *    real time.
  */
 function watchBattleOrientation() {
   const getOrientation = () => {
@@ -120,16 +126,12 @@ function watchBattleOrientation() {
     return false;
   };
 
-  // Apply immediately when possible; if header not yet available, observe for it.
+  // Apply immediately; if header not yet available, poll using the scheduler.
   if (!apply()) {
-    const obs = new MutationObserver(() => {
-      if (apply()) {
-        obs.disconnect();
-      }
+    let id;
+    id = scheduleFrame(() => {
+      if (apply()) cancelFrame(id);
     });
-    obs.observe(document.documentElement, { childList: true, subtree: true });
-    // Safety timeout in case header never appears
-    setTimeout(() => obs.disconnect(), 10000);
   }
 
   const onChange = () => {
