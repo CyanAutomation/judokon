@@ -33,4 +33,36 @@ describe("createDriftWatcher", () => {
     vi.advanceTimersByTime(1000);
     expect(onDrift).toHaveBeenCalledWith(13);
   });
+
+  it("ignores time spent paused when checking for drift", () => {
+    vi.useFakeTimers();
+    let remaining = 10;
+    let paused = false;
+    const timer = {
+      hasActiveTimer: vi.fn().mockReturnValue(true),
+      getState: vi.fn(() => ({ remaining, paused }))
+    };
+    const onDrift = vi.fn();
+    const watch = createDriftWatcher(timer);
+    watch(10, onDrift);
+
+    // run for 3 seconds
+    remaining = 9;
+    vi.advanceTimersByTime(1000);
+    remaining = 8;
+    vi.advanceTimersByTime(1000);
+    remaining = 7;
+    vi.advanceTimersByTime(1000);
+
+    // pause for 5 seconds
+    paused = true;
+    vi.advanceTimersByTime(5000);
+
+    // resume and run one more second
+    paused = false;
+    remaining = 6;
+    vi.advanceTimersByTime(1000);
+
+    expect(onDrift).not.toHaveBeenCalled();
+  });
 });

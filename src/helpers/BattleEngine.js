@@ -56,12 +56,15 @@ const DELTA_OUTCOME = {
  * Create a drift watcher for a timer controller.
  *
  * @pseudocode
- * 1. Record `start = Date.now()`.
+ * 1. Record `start = Date.now()` and `pausedAt = null; pausedMs = 0`.
  * 2. Every second:
  *    a. If `timer.hasActiveTimer()` is false, clear the interval.
- *    b. Compute `elapsed` and `expected = duration - elapsed`.
- *    c. Read `{remaining, paused}` from `timer.getState()`; skip when paused.
- *    d. If `remaining - expected` exceeds `DRIFT_THRESHOLD`, clear interval and call `onDrift(remaining)`.
+ *    b. Read `{remaining, paused}` from `timer.getState()`.
+ *    c. If `paused` and `pausedAt` is null, set `pausedAt = Date.now()` and continue.
+ *    d. If not `paused` and `pausedAt` exists, add `Date.now() - pausedAt` to `pausedMs` and clear `pausedAt`.
+ *    e. Compute `elapsed = (Date.now() - start - pausedMs) / 1000`.
+ *    f. Set `expected = duration - floor(elapsed)`.
+ *    g. If `remaining - expected` exceeds `DRIFT_THRESHOLD`, clear interval and call `onDrift(remaining)`.
  * 3. Return a function that clears the interval.
  *
  * @param {TimerController} timer - Timer to monitor.
@@ -70,15 +73,24 @@ const DELTA_OUTCOME = {
 export function createDriftWatcher(timer) {
   return (duration, onDrift) => {
     const start = Date.now();
+    let pausedAt = null;
+    let pausedMs = 0;
     const interval = setInterval(() => {
       if (!timer.hasActiveTimer()) {
         clearInterval(interval);
         return;
       }
-      const elapsed = Math.floor((Date.now() - start) / 1000);
-      const expected = duration - elapsed;
       const { remaining, paused } = timer.getState();
-      if (paused) return;
+      if (paused) {
+        if (pausedAt === null) pausedAt = Date.now();
+        return;
+      }
+      if (pausedAt !== null) {
+        pausedMs += Date.now() - pausedAt;
+        pausedAt = null;
+      }
+      const elapsed = Math.floor((Date.now() - start - pausedMs) / 1000);
+      const expected = duration - elapsed;
       if (remaining - expected > DRIFT_THRESHOLD) {
         clearInterval(interval);
         if (typeof onDrift === "function") onDrift(remaining);
