@@ -38,9 +38,6 @@ test.describe.parallel(
           );
         }, mode);
         await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-        await page.locator("#general-settings-toggle").click();
-        await page.locator("#game-modes-toggle").click();
-        await page.locator("#advanced-settings-toggle").click();
         await expect(page).toHaveScreenshot(`settings-${mode}-expanded.png`, { fullPage: true });
       });
     }

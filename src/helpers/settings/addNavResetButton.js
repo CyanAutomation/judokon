@@ -3,7 +3,7 @@
  *
  * @pseudocode
  * 1. Remove any existing reset button.
- * 2. If the advanced settings section or feature flag is missing, exit.
+ * 2. If the feature flags container or feature flag is missing, exit.
  * 3. Create and append the button via `createButton`.
  * 4. On click, clear the navigation cache, repopulate the navbar, and show confirmation.
  */
@@ -14,7 +14,7 @@ import { showSnackbar } from "../showSnackbar.js";
 import { isEnabled } from "../featureFlags.js";
 
 export function addNavResetButton() {
-  const section = document.getElementById("advanced-settings-content");
+  const section = document.getElementById("feature-flags-container");
   const existing = document.getElementById("nav-cache-reset-button");
   existing?.parentElement?.remove();
   if (!section) return;

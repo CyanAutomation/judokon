@@ -24,19 +24,7 @@ test.describe.parallel("Settings page", () => {
       route.fulfill({ path: "tests/fixtures/tooltips.json" })
     );
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-    await page.locator("#general-settings-toggle").click();
-    await page.locator("#game-modes-toggle").click();
     await page.getByRole("checkbox", { name: "Classic Battle" }).waitFor({ state: "visible" });
-    if ((await page.locator("#general-settings-content").getAttribute("hidden")) !== null) {
-      await page.locator("#general-settings-toggle").click();
-    }
-    if ((await page.locator("#game-modes-content").getAttribute("hidden")) !== null) {
-      await page.locator("#game-modes-toggle").click();
-    }
-    const advancedContent = page.locator("#advanced-settings-content");
-    if ((await advancedContent.getAttribute("hidden")) !== null) {
-      await page.locator("#advanced-settings-toggle").click();
-    }
   });
 
   test("page loads", async ({ page }) => {
@@ -111,7 +99,7 @@ test.describe.parallel("Settings page", () => {
       .locator("#feature-flags-container input[type=checkbox]")
       .count();
 
-    const tabStopCount = expectedLabels.length + (renderedFlagCount - flagLabels.length) + 3; // section toggles: general, game modes, advanced
+    const tabStopCount = expectedLabels.length + (renderedFlagCount - flagLabels.length);
 
     await page.focus("#display-mode-light");
 
@@ -149,7 +137,7 @@ test.describe.parallel("Settings page", () => {
       return `#${[r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("")}`;
     };
 
-    const buttons = await page.$$eval(".settings-section-toggle, #reset-settings-button", (els) =>
+    const buttons = await page.$$eval("#reset-settings-button", (els) =>
       els.map((el) => {
         const style = getComputedStyle(el);
         return { fg: style.color, bg: style.backgroundColor };
@@ -185,9 +173,6 @@ test.describe.parallel("Settings page", () => {
 
   test("controls meet 44px touch target size", async ({ page }) => {
     const selectors = [
-      "#general-settings-toggle",
-      "#game-modes-toggle",
-      "#advanced-settings-toggle",
       "#reset-settings-button",
       "#sound-toggle",
       "#motion-toggle",
@@ -205,24 +190,9 @@ test.describe.parallel("Settings page", () => {
     }
   });
 
-  test("section toggles reveal content", async ({ page }) => {
-    const sections = [
-      { toggle: "#general-settings-toggle", content: "#general-settings-content" },
-      { toggle: "#game-modes-toggle", content: "#game-modes-content" },
-      { toggle: "#advanced-settings-toggle", content: "#advanced-settings-content" }
-    ];
-
-    for (const { toggle, content } of sections) {
-      const toggleLocator = page.locator(toggle);
-      const contentLocator = page.locator(content);
-
-      // Collapse if opened by beforeEach
-      await toggleLocator.click();
-      await expect(contentLocator).toHaveAttribute("hidden", "");
-
-      // Click again to expand and verify visibility
-      await toggleLocator.click();
-      await expect(contentLocator).not.toHaveAttribute("hidden", "");
-    }
+  test("sections visible", async ({ page }) => {
+    await expect(page.locator("#general-settings-container")).toBeVisible();
+    await expect(page.locator("#game-mode-toggle-container")).toBeVisible();
+    await expect(page.locator("#feature-flags-container")).toBeVisible();
   });
 });

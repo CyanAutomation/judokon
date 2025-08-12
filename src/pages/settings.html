@@ -104,178 +104,116 @@
           </fieldset>
           <br />
 
-          <div class="settings-section">
-            <button
-              type="button"
-              class="settings-section-toggle"
-              id="general-settings-toggle"
-              aria-expanded="false"
-              aria-controls="general-settings-content"
-            >
-              General Settings
-            </button>
-            <div
-              class="settings-section-content"
-              id="general-settings-content"
-              role="region"
-              aria-labelledby="general-settings-toggle"
-              hidden
-            >
-              <fieldset
-                id="general-settings-container"
-                class="game-mode-toggle-container settings-form"
-              >
-                <legend>General Settings</legend>
-                <div class="settings-item">
-                  <label for="sound-toggle" class="switch">
-                    <input
-                      type="checkbox"
-                      id="sound-toggle"
-                      name="sound"
-                      aria-label="Sound"
-                      aria-describedby="sound-desc"
-                    />
-                    <div class="slider round"></div>
-                    <span>Sound</span>
-                  </label>
-                  <p id="sound-desc" class="settings-description">Enable or mute game audio.</p>
-                </div>
-                <div class="settings-item">
-                  <label for="motion-toggle" class="switch">
-                    <input
-                      type="checkbox"
-                      id="motion-toggle"
-                      name="motion"
-                      aria-label="Motion Effects"
-                      aria-describedby="motion-desc"
-                    />
-                    <div class="slider round"></div>
-                    <span>Motion Effects</span>
-                  </label>
-                  <p id="motion-desc" class="settings-description">
-                    Disable animations for a calmer interface.
-                  </p>
-                </div>
-                <div class="settings-item">
-                  <label for="typewriter-toggle" class="switch">
-                    <input
-                      type="checkbox"
-                      id="typewriter-toggle"
-                      name="typewriter"
-                      aria-label="Typewriter Effect"
-                      aria-describedby="typewriter-desc"
-                    />
-                    <div class="slider round"></div>
-                    <span>Typewriter Effect</span>
-                  </label>
-                  <p id="typewriter-desc" class="settings-description">
-                    Toggle the quote typing animation.
-                  </p>
-                </div>
-                <div class="settings-item">
-                  <label for="tooltips-toggle" class="switch">
-                    <input
-                      type="checkbox"
-                      id="tooltips-toggle"
-                      name="tooltips"
-                      aria-label="Tooltips"
-                      aria-describedby="tooltips-desc"
-                    />
-                    <div class="slider round"></div>
-                    <span>Tooltips</span>
-                  </label>
-                  <p id="tooltips-desc" class="settings-description">
-                    Show or hide helpful tooltips.
-                  </p>
-                </div>
-                <div class="settings-item">
-                  <label for="card-of-the-day-toggle" class="switch">
-                    <input
-                      type="checkbox"
-                      id="card-of-the-day-toggle"
-                      name="cardOfTheDay"
-                      aria-label="Card of the Day"
-                      aria-describedby="card-of-the-day-desc"
-                    />
-                    <div class="slider round"></div>
-                    <span>Card of the Day</span>
-                  </label>
-                  <p id="card-of-the-day-desc" class="settings-description">
-                    Display a rotating featured card on the landing screen.
-                  </p>
-                </div>
-                <div class="settings-item">
-                  <label for="full-navigation-map-toggle" class="switch">
-                    <input
-                      type="checkbox"
-                      id="full-navigation-map-toggle"
-                      name="fullNavigationMap"
-                      aria-label="Full Navigation Map"
-                      aria-describedby="full-navigation-map-desc"
-                    />
-                    <div class="slider round"></div>
-                    <span>Full Navigation Map</span>
-                  </label>
-                  <p id="full-navigation-map-desc" class="settings-description">
-                    Display an overlay map linking to every page.
-                  </p>
-                </div>
-              </fieldset>
+          <fieldset
+            id="general-settings-container"
+            class="game-mode-toggle-container settings-form"
+          >
+            <legend>General Settings</legend>
+            <div class="settings-item">
+              <label for="sound-toggle" class="switch">
+                <input
+                  type="checkbox"
+                  id="sound-toggle"
+                  name="sound"
+                  aria-label="Sound"
+                  aria-describedby="sound-desc"
+                />
+                <div class="slider round"></div>
+                <span>Sound</span>
+              </label>
+              <p id="sound-desc" class="settings-description">Enable or mute game audio.</p>
             </div>
-          </div>
+            <div class="settings-item">
+              <label for="motion-toggle" class="switch">
+                <input
+                  type="checkbox"
+                  id="motion-toggle"
+                  name="motion"
+                  aria-label="Motion Effects"
+                  aria-describedby="motion-desc"
+                />
+                <div class="slider round"></div>
+                <span>Motion Effects</span>
+              </label>
+              <p id="motion-desc" class="settings-description">
+                Disable animations for a calmer interface.
+              </p>
+            </div>
+            <div class="settings-item">
+              <label for="typewriter-toggle" class="switch">
+                <input
+                  type="checkbox"
+                  id="typewriter-toggle"
+                  name="typewriter"
+                  aria-label="Typewriter Effect"
+                  aria-describedby="typewriter-desc"
+                />
+                <div class="slider round"></div>
+                <span>Typewriter Effect</span>
+              </label>
+              <p id="typewriter-desc" class="settings-description">
+                Toggle the quote typing animation.
+              </p>
+            </div>
+            <div class="settings-item">
+              <label for="tooltips-toggle" class="switch">
+                <input
+                  type="checkbox"
+                  id="tooltips-toggle"
+                  name="tooltips"
+                  aria-label="Tooltips"
+                  aria-describedby="tooltips-desc"
+                />
+                <div class="slider round"></div>
+                <span>Tooltips</span>
+              </label>
+              <p id="tooltips-desc" class="settings-description">Show or hide helpful tooltips.</p>
+            </div>
+            <div class="settings-item">
+              <label for="card-of-the-day-toggle" class="switch">
+                <input
+                  type="checkbox"
+                  id="card-of-the-day-toggle"
+                  name="cardOfTheDay"
+                  aria-label="Card of the Day"
+                  aria-describedby="card-of-the-day-desc"
+                />
+                <div class="slider round"></div>
+                <span>Card of the Day</span>
+              </label>
+              <p id="card-of-the-day-desc" class="settings-description">
+                Display a rotating featured card on the landing screen.
+              </p>
+            </div>
+            <div class="settings-item">
+              <label for="full-navigation-map-toggle" class="switch">
+                <input
+                  type="checkbox"
+                  id="full-navigation-map-toggle"
+                  name="fullNavigationMap"
+                  aria-label="Full Navigation Map"
+                  aria-describedby="full-navigation-map-desc"
+                />
+                <div class="slider round"></div>
+                <span>Full Navigation Map</span>
+              </label>
+              <p id="full-navigation-map-desc" class="settings-description">
+                Display an overlay map linking to every page.
+              </p>
+            </div>
+          </fieldset>
 
-          <div class="settings-section">
-            <button
-              type="button"
-              class="settings-section-toggle"
-              id="game-modes-toggle"
-              aria-expanded="false"
-              aria-controls="game-modes-content"
-            >
-              Game Modes
-            </button>
-            <div
-              class="settings-section-content"
-              id="game-modes-content"
-              role="region"
-              aria-labelledby="game-modes-toggle"
-              hidden
-            >
-              <fieldset
-                id="game-mode-toggle-container"
-                class="game-mode-toggle-container settings-form"
-                aria-label="Game Mode Selector"
-              >
-                <legend>Game Modes</legend>
-              </fieldset>
-            </div>
-          </div>
-          <div class="settings-section">
-            <button
-              type="button"
-              class="settings-section-toggle"
-              id="advanced-settings-toggle"
-              aria-expanded="false"
-              aria-controls="advanced-settings-content"
-            >
-              Advanced Settings
-            </button>
-            <div
-              class="settings-section-content"
-              id="advanced-settings-content"
-              role="region"
-              aria-labelledby="advanced-settings-toggle"
-              hidden
-            >
-              <fieldset
-                id="feature-flags-container"
-                class="game-mode-toggle-container settings-form"
-              >
-                <legend>Feature Flags</legend>
-                <!-- Flag toggles are inserted here dynamically -->
-              </fieldset>
-            </div>
-          </div>
+          <fieldset
+            id="game-mode-toggle-container"
+            class="game-mode-toggle-container settings-form"
+            aria-label="Game Mode Selector"
+          >
+            <legend>Game Modes</legend>
+          </fieldset>
+          <fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">
+            <legend>Advanced Settings</legend>
+            <!-- Flag toggles are inserted here dynamically -->
+          </fieldset>
           <fieldset id="links-container" class="settings-form">
             <legend>Links</legend>
             <ul class="settings-links-list settings-links-grid">
