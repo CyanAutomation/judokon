@@ -104,9 +104,7 @@ describe("scheduleNextRound early click", () => {
     expect(machine.getState()).toBe("cooldown");
 
     battleMod.scheduleNextRound({ matchEnded: false });
-    document
-      .getElementById("next-button")
-      .dispatchEvent(new MouseEvent("click"));
+    document.getElementById("next-button").dispatchEvent(new MouseEvent("click"));
     await vi.runAllTimersAsync();
 
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
