@@ -10,7 +10,6 @@ import {
   updateRoundCounter,
   clearRoundCounter
 } from "../components/InfoBar.js";
-import { onDomReady } from "./domReady.js";
 
 /**
  * Locate the page header and initialize info bar element references.
@@ -24,10 +23,8 @@ function setupBattleInfoBar() {
   if (!header) return;
   initInfoBar(header);
 }
-
-onDomReady(setupBattleInfoBar);
-
 export {
+  setupBattleInfoBar,
   showMessage,
   updateScore,
   startCountdown,

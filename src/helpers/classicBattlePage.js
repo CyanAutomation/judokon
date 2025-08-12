@@ -2,7 +2,7 @@
  * Page wrapper for Classic Battle mode.
  *
  * @pseudocode
- * 1. Import battle helpers and DOM ready utility.
+ * 1. Import battle helpers, info bar setup, and DOM ready utility.
  * 2. Create a shared `battleStore` and expose it on `window`.
  * 3. Define `initStatButtons(store)` which wires stat buttons and returns an
  *    enable/disable API.
@@ -12,23 +12,25 @@
  *    c. Waits for the Mystery card to render using `waitForComputerCard` then
  *       re-enables stat buttons.
  * 5. Define `setupClassicBattlePage` to:
- *    a. Load feature flags, apply them to `#battle-area` and react to changes.
- *    b. Initialize stat buttons, attach listeners, and display a snackbar with
+ *    a. Initialize the battle info bar.
+ *    b. Load feature flags, apply them to `#battle-area` and react to changes.
+ *    c. Initialize stat buttons, attach listeners, and display a snackbar with
  *       the chosen stat.
- *    c. Set `window.startRoundOverride` to `startRoundWrapper` so the battle
+ *    d. Set `window.startRoundOverride` to `startRoundWrapper` so the battle
  *       module uses it for subsequent rounds.
- *    d. Toggle the debug panel.
- *    e. Show a round selection modal that sets points-to-win and starts the first round.
- *    f. Initialize tooltips and show the stat help tooltip once for new users.
- *    g. Watch for orientation changes and update the battle header's
+ *    e. Toggle the debug panel.
+ *    f. Show a round selection modal that sets points-to-win and starts the first round.
+ *    g. Initialize tooltips and show the stat help tooltip once for new users.
+ *    h. Watch for orientation changes and update the battle header's
  *       `data-orientation` attribute.
- *    h. Listen for `storage` events and update the Test Mode banner and
+ *    i. Listen for `storage` events and update the Test Mode banner and
  *       `data-test-mode` attribute when settings change.
  * 6. Execute `setupClassicBattlePage` with `onDomReady`.
  */
 import { createBattleStore, startRound } from "./classicBattle/roundManager.js";
 import { handleStatSelection } from "./classicBattle/selectionHandler.js";
 import { onDomReady } from "./domReady.js";
+import { setupBattleInfoBar } from "./setupBattleInfoBar.js";
 import { waitForComputerCard } from "./battleJudokaPage.js";
 import { initTooltips } from "./tooltip.js";
 import { setTestMode } from "./testModeUtils.js";
@@ -137,6 +139,7 @@ function watchBattleOrientation() {
 }
 
 export async function setupClassicBattlePage() {
+  setupBattleInfoBar();
   // Apply orientation ASAP so tests observing the header don't block
   // behind async initialization (flags, data fetches, tooltips, etc.).
   watchBattleOrientation();
