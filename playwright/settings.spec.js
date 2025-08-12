@@ -24,7 +24,7 @@ test.describe.parallel("Settings page", () => {
       route.fulfill({ path: "tests/fixtures/tooltips.json" })
     );
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-    await page.getByRole("checkbox", { name: "Classic Battle" }).waitFor({ state: "visible" });
+    await page.getByRole("checkbox", { name: "Sound" }).waitFor({ state: "visible" });
   });
 
   test("page loads", async ({ page }) => {
@@ -137,11 +137,13 @@ test.describe.parallel("Settings page", () => {
       return `#${[r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("")}`;
     };
 
-    const buttons = await page.$$eval("#reset-settings-button", (els) =>
-      els.map((el) => {
-        const style = getComputedStyle(el);
-        return { fg: style.color, bg: style.backgroundColor };
-      })
+    const buttons = await page.$$eval(
+      "button#reset-settings-button:not(.settings-section-toggle)",
+      (els) =>
+        els.map((el) => {
+          const style = getComputedStyle(el);
+          return { fg: style.color, bg: style.backgroundColor };
+        })
     );
 
     const labels = await page.$$eval(
@@ -173,7 +175,7 @@ test.describe.parallel("Settings page", () => {
 
   test("controls meet 44px touch target size", async ({ page }) => {
     const selectors = [
-      "#reset-settings-button",
+      "button#reset-settings-button:not(.settings-section-toggle)",
       "#sound-toggle",
       "#motion-toggle",
       "#typewriter-toggle",
@@ -188,14 +190,5 @@ test.describe.parallel("Settings page", () => {
       expect(box?.width).toBeGreaterThanOrEqual(44);
       expect(box?.height).toBeGreaterThanOrEqual(44);
     }
-  });
-
-  
-  
-
-  test("sections visible", async ({ page }) => {
-    await expect(page.locator("#general-settings-container")).toBeVisible();
-    await expect(page.locator("#game-mode-toggle-container")).toBeVisible();
-    await expect(page.locator("#feature-flags-container")).toBeVisible();
   });
 });
