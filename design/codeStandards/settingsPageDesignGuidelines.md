@@ -31,6 +31,9 @@ To ensure the **Settings** page remains consistent, visually appealing, and acce
 - **Navigation and Tab Order**
   Place controls in top-down, left-to-right order in the HTML to preserve logical keyboard navigation.
 
+- **Simultaneous Sections**
+  Display all settings sections at once to simplify UI testing; avoid collapsible containers.
+
 ### Settings Item Structure
 
 Each toggle or control should display a label followed by a short description.
@@ -157,63 +160,6 @@ Reuse the following markup for general settings, game modes, and feature flags:
 
 ---
 
-## Collapsible Settings Sections (Recommended Pattern)
-
-To improve organization and reduce visual clutter, each major settings area (e.g., General Settings, Game Modes) should be collapsed by default and expandable via click or keyboard toggle. This pattern enhances accessibility and scalability as more settings are added.
-
-### Markup Example
-
-```html
-<div class="settings-section">
-  <button
-    type="button"
-    class="settings-section-toggle"
-    aria-expanded="false"
-    aria-controls="general-settings-content"
-    id="general-settings-toggle"
-  >
-    General Settings
-  </button>
-  <div
-    class="settings-section-content"
-    id="general-settings-content"
-    role="region"
-    aria-labelledby="general-settings-toggle"
-    hidden
-  >
-    <fieldset>...settings controls...</fieldset>
-  </div>
-</div>
-```
-
-- Repeat for each section (e.g., Game Modes).
-- The toggle button must be keyboard-focusable and operable (Enter/Space).
-- Toggle buttons must use `type="button"` to avoid submitting the form.
-- Use `aria-expanded`, `aria-controls`, and `aria-labelledby` for accessibility.
-- The content div should be hidden by default (`hidden` attribute or `display: none;`).
-
-### Interaction & Accessibility
-
-- Clicking or pressing Enter/Space on the toggle expands/collapses the section and updates `aria-expanded`.
-- Only one or multiple sections may be open at a time (choose per UX needs).
-- All controls inside the section remain tabbable and accessible when expanded.
-- Use CSS transitions for smooth expand/collapse if desired.
-
-### Styling
-
-- Use `.settings-section`, `.settings-section-toggle`, and `.settings-section-content` classes for structure and styling.
-- Ensure toggle buttons and content meet touch target and contrast requirements.
-
-### Testing Checklist (add to existing)
-
-- [ ] Section toggles are keyboard and screen reader accessible
-- [ ] Collapsed sections hide content from screen readers and tab order
-- [ ] Expanding a section reveals its controls in tab order
-
----
-
----
-
 ## Feature Flags & Agent Observability
 
 To support AI-assisted testing, variant gameplay modes, and scalable development, JU-DO-KON! uses a **feature flag system** exposed via the `settings.html` page. Feature flags allow agents and users to toggle experimental or optional features without altering code. Components should also expose their internal state in the DOM for real-time observability. For player-facing instructions see the [README section on Settings & Feature Flags](../../README.md#settings--feature-flags).
@@ -240,32 +186,12 @@ To support AI-assisted testing, variant gameplay modes, and scalable development
   - UI must reflect the saved state on load and provide immediate visual feedback on toggle
 
 - **Grouping**
-  - Place all feature flags in a dedicated `<fieldset>` titled `Feature Flags`
-  - For advanced/experimental features, nest under `Advanced Settings` with appropriate section toggling
+  - Place all feature flags in a dedicated `<fieldset>` titled `Feature Flags`.
   - Markup example:
     ```html
-    <div class="settings-section">
-      <button
-        type="button"
-        class="settings-section-toggle"
-        id="advanced-settings-toggle"
-        aria-expanded="false"
-        aria-controls="advanced-settings-content"
-      >
-        Advanced Settings
-      </button>
-      <div
-        class="settings-section-content"
-        id="advanced-settings-content"
-        role="region"
-        aria-labelledby="advanced-settings-toggle"
-        hidden
-      >
-        <fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">
-          ...
-        </fieldset>
-      </div>
-    </div>
+    <fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">
+      ...
+    </fieldset>
     ```
   - When a flag changes, display a short confirmation using `showSnackbar()` to inform the user of the new state.
 
