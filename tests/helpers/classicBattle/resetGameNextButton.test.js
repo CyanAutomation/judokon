@@ -25,11 +25,11 @@ describe("resetGame reattaches Next button handler", () => {
 
     const cloned = document.getElementById("next-button");
     expect(cloned).not.toBe(btn); // ensure it was replaced
-    expect(cloned.classList.contains("disabled")).toBe(true);
+    expect(cloned.disabled).toBe(true);
     expect(cloned.dataset.nextReady).toBeUndefined();
 
     // Clicking should invoke the reattached handler
-    cloned.click();
+    cloned.dispatchEvent(new MouseEvent("click"));
     expect(timerSvc.onNextButtonClick).toHaveBeenCalledTimes(1);
   });
 });

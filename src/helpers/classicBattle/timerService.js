@@ -15,7 +15,7 @@ export async function onNextButtonClick() {
 
   // If the next round is ready, start it immediately.
   if (btn.dataset.nextReady === "true") {
-    btn.classList.add("disabled");
+    btn.disabled = true;
     delete btn.dataset.nextReady;
     try {
       const { dispatchBattleEvent } = await import("./orchestrator.js");
@@ -35,7 +35,7 @@ export async function onNextButtonClick() {
   // and then start automatically (covers early clicks before cooldown begins).
   const maybeStart = async () => {
     if (btn.dataset.nextReady === "true") {
-      btn.classList.add("disabled");
+      btn.disabled = true;
       delete btn.dataset.nextReady;
       try {
         const { dispatchBattleEvent } = await import("./orchestrator.js");
@@ -54,7 +54,7 @@ export async function onNextButtonClick() {
       obs.disconnect();
     }
   });
-  obs.observe(btn, { attributes: true, attributeFilter: ["data-next-ready", "class"] });
+  obs.observe(btn, { attributes: true, attributeFilter: ["data-next-ready", "disabled"] });
 
   // Safety timeout to avoid leaking the observer if nothing happens.
   setTimeout(() => obs.disconnect(), 10000);
@@ -156,7 +156,7 @@ export function handleStatSelectionTimeout(store, onSelect) {
  *    and display `"Next round in: <n>s"` using one snackbar that updates each tick.
  * 4. Register a skip handler that stops the timer and invokes the expiration logic.
  * 5. When expired, clear the `#next-round-timer` element, set `data-next-ready="true"`,
- *    remove the disabled styling, and clear the handler.
+ *    enable the Next Round button, and clear the handler.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
  */
@@ -196,7 +196,7 @@ export function scheduleNextRound(result) {
       timerEl.textContent = "";
     }
     btn.dataset.nextReady = "true";
-    btn.classList.remove("disabled");
+    btn.disabled = false;
     updateDebugPanel();
   };
 

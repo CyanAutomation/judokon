@@ -40,7 +40,7 @@ describe("classicBattle button handlers", () => {
     const header = createBattleHeader();
     const nextBtn = document.createElement("button");
     nextBtn.id = "next-button";
-    nextBtn.className = "disabled";
+    nextBtn.disabled = true;
     const quitBtn = document.createElement("button");
     quitBtn.id = "quit-match-button";
     document.body.append(playerCard, computerCard, header, nextBtn, quitBtn);
@@ -67,10 +67,10 @@ describe("classicBattle button handlers", () => {
     );
     disableNextRoundButton();
     const btn = document.getElementById("next-button");
-    expect(btn.classList.contains("disabled")).toBe(true);
+    expect(btn.disabled).toBe(true);
     expect(btn.dataset.nextReady).toBeUndefined();
     enableNextRoundButton();
-    expect(btn.classList.contains("disabled")).toBe(false);
+    expect(btn.disabled).toBe(false);
     expect(btn.dataset.nextReady).toBe("true");
   });
 

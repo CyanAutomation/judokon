@@ -98,7 +98,7 @@ export async function startRound(store) {
  * @pseudocode
  * 1. Locate `#next-button` and exit if missing.
  * 2. Replace it with a cloned element to drop event listeners.
- * 3. Remove `data-next-ready` and add the `disabled` class on the clone.
+ * 3. Remove `data-next-ready` and set the `disabled` attribute on the clone.
  *
  * @returns {void}
  */
@@ -106,7 +106,7 @@ export function resetGame() {
   const nextBtn = document.getElementById("next-button");
   if (nextBtn) {
     const clone = nextBtn.cloneNode(true);
-    clone.classList.add("disabled");
+    clone.disabled = true;
     delete clone.dataset.nextReady;
     // Reattach click handler lost due to cloning
     clone.addEventListener("click", onNextButtonClick);
