@@ -4,19 +4,20 @@
  * @pseudocode
  * 1. Import battle helpers and DOM ready utility.
  * 2. Create a shared `battleStore` and expose it on `window`.
- * 3. Define `enableStatButtons` to toggle disabled state on all stat buttons.
+ * 3. Define `initStatButtons(store)` which wires stat buttons and returns an
+ *    enable/disable API.
  * 4. Define `startRoundWrapper` that:
  *    a. Disables stat buttons.
  *    b. Calls `startRound` from `classicBattle.js`.
  *    c. Waits for the Mystery card to render using `waitForComputerCard` then
  *       re-enables stat buttons.
  * 5. Define `setupClassicBattlePage` to:
- *    a. Load feature flags and set `data-*` attributes on `#battle-area`.
- *    b. Attach click and keyboard listeners on stat buttons that call
- *       `handleStatSelection` and display a snackbar with the chosen stat.
+ *    a. Load feature flags, apply them to `#battle-area` and react to changes.
+ *    b. Initialize stat buttons, attach listeners, and display a snackbar with
+ *       the chosen stat.
  *    c. Set `window.startRoundOverride` to `startRoundWrapper` so the battle
  *       module uses it for subsequent rounds.
- *    d. Toggle the debug panel and viewport simulation flags.
+ *    d. Toggle the debug panel.
  *    e. Show a round selection modal that sets points-to-win and starts the first round.
  *    f. Initialize tooltips and show the stat help tooltip once for new users.
  *    g. Watch for orientation changes and update the battle header's
@@ -43,23 +44,16 @@ import {
 import { skipCurrentPhase, onNextButtonClick } from "./classicBattle/timerService.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
 
-function enableStatButtons(enable = true) {
-  document.querySelectorAll("#stat-buttons button").forEach((btn) => {
-    btn.disabled = !enable;
-    btn.tabIndex = enable ? 0 : -1;
-    btn.classList.toggle("disabled", !enable);
-  });
-}
-
 const battleStore = createBattleStore();
 window.battleStore = battleStore;
 window.skipBattlePhase = skipCurrentPhase;
 export const getBattleStore = () => battleStore;
+let statButtonControls;
 async function startRoundWrapper() {
-  enableStatButtons(false);
+  statButtonControls.disable();
   await startRound(battleStore);
   await waitForComputerCard();
-  enableStatButtons(true);
+  statButtonControls.enable();
 }
 
 function setupNextButton() {
@@ -109,21 +103,13 @@ function watchBattleOrientation() {
 export async function setupClassicBattlePage() {
   await initFeatureFlags();
   await applyStatLabels();
-  const statButtons = document.querySelectorAll("#stat-buttons button");
   setupNextButton();
 
-  toggleInspectorPanels(isEnabled("enableCardInspector"));
-  wireStatButtons(statButtons);
+  statButtonControls = initStatButtons(battleStore);
 
   const battleArea = document.getElementById("battle-area");
-  updateBattleAreaDataset(battleArea);
-
-  toggleViewportSimulation(isEnabled("viewportSimulation"));
-  setTestMode(isEnabled("enableTestMode"));
-
   const banner = document.getElementById("test-mode-banner");
-  if (banner) banner.classList.toggle("hidden", !isEnabled("enableTestMode"));
-  applyFeatureFlagListeners(battleArea, banner);
+  applyBattleFeatureFlags(battleArea, banner);
 
   initDebugPanel();
 
@@ -134,45 +120,61 @@ export async function setupClassicBattlePage() {
   maybeShowStatHint();
 }
 
-function wireStatButtons(statButtons) {
+function initStatButtons(store) {
+  const statButtons = document.querySelectorAll("#stat-buttons button");
+
+  function setEnabled(enable = true) {
+    statButtons.forEach((btn) => {
+      btn.disabled = !enable;
+      btn.tabIndex = enable ? 0 : -1;
+      btn.classList.toggle("disabled", !enable);
+    });
+  }
+
   statButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       if (!btn.disabled) {
-        enableStatButtons(false);
+        setEnabled(false);
         btn.classList.add("selected");
         showSnackbar(`You Picked: ${btn.textContent}`);
-        // Inform state machine that the player acted
         dispatchBattleEvent("statSelected");
-        handleStatSelection(battleStore, btn.dataset.stat);
+        handleStatSelection(store, btn.dataset.stat);
       }
     });
     btn.addEventListener("keydown", (e) => {
       if ((e.key === "Enter" || e.key === " ") && !btn.disabled) {
         e.preventDefault();
-        enableStatButtons(false);
+        setEnabled(false);
         btn.classList.add("selected");
         showSnackbar(`You Picked: ${btn.textContent}`);
         dispatchBattleEvent("statSelected");
-        handleStatSelection(battleStore, btn.dataset.stat);
+        handleStatSelection(store, btn.dataset.stat);
       }
     });
   });
+
+  return {
+    enable: () => setEnabled(true),
+    disable: () => setEnabled(false)
+  };
 }
 
-function updateBattleAreaDataset(battleArea) {
-  if (!battleArea) return;
-  battleArea.dataset.mode = "classic";
-  battleArea.dataset.randomStat = String(isEnabled("randomStatMode"));
-  battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
-}
+function applyBattleFeatureFlags(battleArea, banner) {
+  if (battleArea) {
+    battleArea.dataset.mode = "classic";
+    battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
+  }
+  if (banner) banner.classList.toggle("hidden", !isEnabled("enableTestMode"));
+  setTestMode(isEnabled("enableTestMode"));
+  toggleInspectorPanels(isEnabled("enableCardInspector"));
+  toggleViewportSimulation(isEnabled("viewportSimulation"));
+  setDebugPanelEnabled(isEnabled("battleDebugPanel"));
 
-function applyFeatureFlagListeners(battleArea, banner) {
   featureFlagsEmitter.addEventListener("change", () => {
     if (battleArea) battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
     if (banner) banner.classList.toggle("hidden", !isEnabled("enableTestMode"));
     setTestMode(isEnabled("enableTestMode"));
     toggleInspectorPanels(isEnabled("enableCardInspector"));
-    // React to additional flags in real-time
     toggleViewportSimulation(isEnabled("viewportSimulation"));
     setDebugPanelEnabled(isEnabled("battleDebugPanel"));
   });

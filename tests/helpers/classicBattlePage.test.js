@@ -11,15 +11,13 @@ beforeEach(() => {
   }));
 });
 
-describe("classicBattlePage keyboard navigation", () => {
-  it("activates stat buttons with Enter and Space", async () => {
+describe("classicBattlePage stat button interactions", () => {
+  it("activates stat buttons via click and keyboard", async () => {
     const startRound = vi.fn();
     const waitForComputerCard = vi.fn();
     const handleStatSelection = vi.fn();
     const store = {};
-    const loadSettings = vi.fn().mockResolvedValue({
-      featureFlags: { randomStatMode: { enabled: true } }
-    });
+    const loadSettings = vi.fn().mockResolvedValue({ featureFlags: {} });
     const initTooltips = vi.fn().mockResolvedValue();
     const setTestMode = vi.fn();
     const showSnackbar = vi.fn();
@@ -37,12 +35,12 @@ describe("classicBattlePage keyboard navigation", () => {
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
     vi.doMock("../../src/helpers/stats.js", () => ({
-      loadStatNames: async () => [{ name: "Power" }, { name: "Speed" }]
+      loadStatNames: async () => [{ name: "Power" }, { name: "Speed" }, { name: "Technique" }]
     }));
 
     const container = document.createElement("div");
     container.id = "stat-buttons";
-    ["power", "speed"].forEach((stat) => {
+    ["power", "speed", "technique"].forEach((stat) => {
       const b = document.createElement("button");
       b.dataset.stat = stat;
       container.appendChild(b);
@@ -52,12 +50,12 @@ describe("classicBattlePage keyboard navigation", () => {
     const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
     await setupClassicBattlePage();
 
-    const [first, second] = container.querySelectorAll("button");
-    first.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    const [first, second, third] = container.querySelectorAll("button");
+
+    first.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(handleStatSelection).toHaveBeenCalledWith(store, "power");
     expect(showSnackbar).toHaveBeenCalledWith("You Picked: Power");
 
-    // re-enable buttons for second key simulation
     container.querySelectorAll("button").forEach((b) => {
       b.disabled = false;
       b.tabIndex = 0;
@@ -65,9 +63,20 @@ describe("classicBattlePage keyboard navigation", () => {
     handleStatSelection.mockClear();
     showSnackbar.mockClear();
 
-    second.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+    second.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     expect(handleStatSelection).toHaveBeenCalledWith(store, "speed");
     expect(showSnackbar).toHaveBeenCalledWith("You Picked: Speed");
+
+    container.querySelectorAll("button").forEach((b) => {
+      b.disabled = false;
+      b.tabIndex = 0;
+    });
+    handleStatSelection.mockClear();
+    showSnackbar.mockClear();
+
+    third.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+    expect(handleStatSelection).toHaveBeenCalledWith(store, "technique");
+    expect(showSnackbar).toHaveBeenCalledWith("You Picked: Technique");
   });
 
   it("navigates to Next Round and Quit buttons", async () => {
@@ -75,9 +84,7 @@ describe("classicBattlePage keyboard navigation", () => {
     const waitForComputerCard = vi.fn();
     const handleStatSelection = vi.fn();
     const store = {};
-    const loadSettings = vi.fn().mockResolvedValue({
-      featureFlags: { randomStatMode: { enabled: true } }
-    });
+    const loadSettings = vi.fn().mockResolvedValue({ featureFlags: {} });
     const initTooltips = vi.fn().mockResolvedValue();
     const setTestMode = vi.fn();
 
@@ -136,9 +143,7 @@ describe("classicBattlePage stat help tooltip", () => {
     vi.useFakeTimers();
     const startRound = vi.fn();
     const waitForComputerCard = vi.fn();
-    const loadSettings = vi.fn().mockResolvedValue({
-      featureFlags: { randomStatMode: { enabled: true } }
-    });
+    const loadSettings = vi.fn().mockResolvedValue({ featureFlags: {} });
     const initTooltips = vi.fn().mockResolvedValue();
     const setTestMode = vi.fn();
 
@@ -183,7 +188,6 @@ describe("classicBattlePage test mode flag", () => {
     const waitForComputerCard = vi.fn();
     const loadSettings = vi.fn().mockResolvedValue({
       featureFlags: {
-        randomStatMode: { enabled: true },
         enableTestMode: {
           enabled: true,
           label: "Test Mode",
@@ -223,15 +227,17 @@ describe("classicBattlePage test mode flag", () => {
     expect(setTestMode).toHaveBeenCalledWith(true);
   });
 
-  it("storage event updates banner and data attribute", async () => {
+  it("feature flag changes update banner and data attribute", async () => {
     const startRound = vi.fn();
     const waitForComputerCard = vi.fn();
     const loadSettings = vi.fn().mockResolvedValue({
       featureFlags: {
-        randomStatMode: { enabled: true },
         enableTestMode: { enabled: false }
       }
     });
+    const updateSetting = vi
+      .fn()
+      .mockResolvedValue({ featureFlags: { enableTestMode: { enabled: true } } });
     const initTooltips = vi.fn().mockResolvedValue();
     const setTestMode = vi.fn();
 
@@ -244,7 +250,7 @@ describe("classicBattlePage test mode flag", () => {
       handleStatSelection: vi.fn()
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
-    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings, updateSetting }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
     vi.doMock("../../src/helpers/stats.js", () => ({ loadStatNames: async () => [] }));
@@ -257,17 +263,13 @@ describe("classicBattlePage test mode flag", () => {
     document.body.append(battleArea, banner);
 
     const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
+    const { setFlag } = await import("../../src/helpers/featureFlags.js");
     await setupClassicBattlePage();
 
     expect(battleArea.dataset.testMode).toBe("false");
     expect(banner.classList.contains("hidden")).toBe(true);
 
-    window.dispatchEvent(
-      new StorageEvent("storage", {
-        key: "settings",
-        newValue: JSON.stringify({ featureFlags: { enableTestMode: { enabled: true } } })
-      })
-    );
+    await setFlag("enableTestMode", true);
 
     expect(battleArea.dataset.testMode).toBe("true");
     expect(banner.classList.contains("hidden")).toBe(false);
