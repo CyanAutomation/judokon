@@ -1,6 +1,7 @@
 import { STATS, stopTimer } from "../battleEngineFacade.js";
 import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
 import * as infoBar from "../setupBattleInfoBar.js";
+import { showSnackbar } from "../showSnackbar.js";
 import { getStatValue, resetStatButtons, showResult } from "../battle/index.js";
 import { revealComputerCard } from "./uiHelpers.js";
 import { scheduleNextRound } from "./timerService.js";
@@ -63,9 +64,9 @@ export function evaluateRound(store, stat) {
  *
  * @pseudocode
  * 1. Pause the round timer and clear any pending timeouts.
- * 2. Clear the countdown and show "Opponent is choosing…" in the info bar.
- *    When `delayOpponentMessage` is true, delay the message by 500ms and
- *    cancel it if the round resolves before it displays.
+ * 2. Clear the countdown and schedule a transient snackbar hint
+ *    "Opponent is choosing…" after 500ms; cancel it if the round resolves
+ *    before it displays to avoid occupying the result region.
  * 3. After a short delay, reveal the opponent card and evaluate the round.
  * 4. If the match ended, clear the round counter.
  * 5. Reset stat buttons and schedule the next round.
@@ -87,15 +88,17 @@ export async function handleStatSelection(store, stat, options = {}) {
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   infoBar.clearTimer();
+  // Prefer transient feedback for the opponent-thinking phase to avoid
+  // occupying the result message region used by tests and screen readers.
+  // Show it after a brief delay and cancel if the round resolves first.
   let opponentMsgId = 0;
-  if (options.delayOpponentMessage) {
-    opponentMsgId = setTimeout(() => infoBar.showMessage("Opponent is choosing…"), 500);
-  } else {
-    infoBar.showMessage("Opponent is choosing…");
-  }
+  const showOpponentThinking = () => showSnackbar("Opponent is choosing…");
+  const delayMs = 500;
+  opponentMsgId = setTimeout(showOpponentThinking, delayMs);
   const delay = 300 + Math.floor(Math.random() * 401);
   return new Promise((resolve) => {
     setTimeout(async () => {
+      // Ensure any pending opponent-thinking hint does not fire after the outcome
       clearTimeout(opponentMsgId);
       await revealComputerCard();
       const result = evaluateRound(store, stat);
@@ -108,7 +111,7 @@ export async function handleStatSelection(store, stat, options = {}) {
         infoBar.clearRoundCounter();
       }
       resetStatButtons();
-      // Ensure the outcome message always replaces any pending "Opponent is choosing…"
+      // Ensure the outcome message always replaces any transient hints.
       // If no message is provided (unexpected), clear the message area.
       infoBar.showMessage(result.message || "");
       // From roundOver, either continue to cooldown or decide match
