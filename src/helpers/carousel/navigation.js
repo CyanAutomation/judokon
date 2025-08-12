@@ -4,8 +4,9 @@ import { createScrollButton, updateScrollButtonState } from "./scroll.js";
  * Sets up keyboard navigation for the carousel container.
  *
  * @pseudocode
- * 1. Make the container focusable by setting `tabIndex` to 0.
- * 2. Add a `keydown` event listener to the container.
+ * 1. Disable smooth scrolling by setting `scrollBehavior` to "auto".
+ * 2. Make the container focusable by setting `tabIndex` to 0.
+ * 3. Add a `keydown` event listener to the container.
  *    - Ignore events that do not originate from the container or are not
  *      "ArrowLeft"/"ArrowRight".
  *    - When "ArrowLeft" is pressed:
@@ -18,10 +19,12 @@ import { createScrollButton, updateScrollButtonState } from "./scroll.js";
  * @param {HTMLElement} container - The carousel container element.
  */
 export function setupKeyboardNavigation(container) {
+  container.style.scrollBehavior = "auto";
   container.tabIndex = 0;
   container.addEventListener("keydown", (event) => {
-    // Respond to arrow keys even if a child element has focus.
-    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    // Respond to arrow keys only when the container has focus.
+    if (event.target !== container || (event.key !== "ArrowLeft" && event.key !== "ArrowRight"))
+      return;
     event.preventDefault();
     const gap = parseFloat(getComputedStyle(container).columnGap) || 0;
     const scrollAmount = container.clientWidth + gap;
