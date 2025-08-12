@@ -1,6 +1,6 @@
 import { setupFocusHandlers } from "./focus.js";
-import { setupKeyboardNavigation, setupSwipeNavigation } from "./navigation.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
+import { CarouselController } from "./controller.js";
 
 const MIN_TOUCH_TARGET_SIZE = 48;
 
@@ -57,9 +57,12 @@ export { ensureTouchTargetSize };
  * @param {HTMLElement} wrapper - Carousel wrapper element.
  */
 export function initAccessibility(container, wrapper) {
+  // Ensure a unified controller exists for consistent navigation behavior.
+  if (wrapper && !wrapper._carouselController) {
+    // Instantiate with default threshold; builder may already have created one.
+    wrapper._carouselController = new CarouselController(container, wrapper, {});
+  }
   setupFocusHandlers(container);
-  setupKeyboardNavigation(container);
-  setupSwipeNavigation(container);
   applyAccessibilityImprovements(wrapper);
   setupLazyPortraits(container);
 }

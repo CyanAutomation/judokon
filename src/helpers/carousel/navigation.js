@@ -1,5 +1,6 @@
 import { CAROUSEL_SWIPE_THRESHOLD } from "../constants.js";
 import { createScrollButton, updateScrollButtonState } from "./scroll.js";
+import { CarouselController } from "./controller.js";
 /**
  * Sets up keyboard navigation for the carousel container.
  *
@@ -19,19 +20,8 @@ import { createScrollButton, updateScrollButtonState } from "./scroll.js";
  * @param {HTMLElement} container - The carousel container element.
  */
 export function setupKeyboardNavigation(container) {
-  container.style.scrollBehavior = "auto";
-  container.tabIndex = 0;
-  container.addEventListener("keydown", (event) => {
-    // Respond to arrow keys only when the container has focus.
-    if (event.target !== container || (event.key !== "ArrowLeft" && event.key !== "ArrowRight"))
-      return;
-    event.preventDefault();
-    const gap = parseFloat(getComputedStyle(container).columnGap) || 0;
-    const scrollAmount = container.clientWidth + gap;
-    const delta = event.key === "ArrowLeft" ? -scrollAmount : scrollAmount;
-    // Use instantaneous scroll updates so rapid key presses advance reliably.
-    container.scrollLeft += delta;
-  });
+  // Deprecated: Handled by CarouselController.
+  // Kept as a thin no-op to prevent double-binding in legacy call sites.
 }
 
 /**
@@ -46,52 +36,8 @@ export function setupKeyboardNavigation(container) {
  * @param {HTMLElement} container - The carousel container element.
  */
 export function setupSwipeNavigation(container) {
-  let touchStartX = 0;
-  let pointerStartX = 0;
-
-  const scrollFromDelta = (delta) => {
-    // Keep swipe step aligned with one "page" width used by markers
-    const gap = parseFloat(getComputedStyle(container).columnGap) || 0;
-    const step = container.clientWidth + gap;
-    let left = container.scrollLeft;
-    if (delta > CAROUSEL_SWIPE_THRESHOLD) {
-      left -= step;
-    } else if (delta < -CAROUSEL_SWIPE_THRESHOLD) {
-      left += step;
-    } else {
-      return;
-    }
-
-    const maxScroll = container.scrollWidth - container.clientWidth;
-    left = Math.max(0, Math.min(left, maxScroll));
-    // Use instantaneous scroll to ensure rapid successive swipes advance reliably.
-    // Smooth scrolling can queue animations and cause missed page advances in tests and UX.
-    container.scrollTo({ left, behavior: "auto" });
-  };
-
-  container.addEventListener("touchstart", (event) => {
-    touchStartX = event.touches[0].clientX;
-  });
-
-  container.addEventListener("touchend", (event) => {
-    const touchEndX = event.changedTouches[0].clientX;
-    const swipeDistance = touchEndX - touchStartX;
-    scrollFromDelta(swipeDistance);
-  });
-
-  container.addEventListener("pointerdown", (event) => {
-    if (event.pointerType !== "touch") {
-      pointerStartX = event.clientX;
-    }
-  });
-
-  container.addEventListener("pointerup", (event) => {
-    if (event.pointerType !== "touch") {
-      const pointerEndX = event.clientX;
-      const swipeDistance = pointerEndX - pointerStartX;
-      scrollFromDelta(swipeDistance);
-    }
-  });
+  // Deprecated: Handled by CarouselController.
+  // Kept as a thin no-op to prevent double-binding in legacy call sites.
 }
 
 /**
@@ -109,23 +55,14 @@ export function setupSwipeNavigation(container) {
  * @param {HTMLElement} wrapper - Wrapper element to hold buttons and container.
  */
 export function wireCarouselNavigation(container, wrapper) {
-  const buttons = {
-    left: createScrollButton("left", container),
-    right: createScrollButton("right", container)
-  };
-
-  wrapper.append(buttons.left, container, buttons.right);
-
-  const updateButtons = () => updateScrollButtonState(container, buttons.left, buttons.right);
-
-  let scrollTimeout;
-  const handleScroll = () => {
-    updateButtons();
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(updateButtons, 100);
-  };
-
-  updateButtons();
-  container.addEventListener("scroll", handleScroll);
-  window.addEventListener("resize", updateButtons);
+  // Thin wrapper to maintain API while delegating to the unified controller.
+  const parent = wrapper || container.parentElement;
+  if (!parent) return;
+  if (!parent._carouselController) {
+    parent._carouselController = new CarouselController(container, parent, {
+      threshold: CAROUSEL_SWIPE_THRESHOLD
+    });
+  } else {
+    parent._carouselController.update();
+  }
 }
