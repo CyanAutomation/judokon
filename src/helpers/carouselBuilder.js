@@ -56,9 +56,11 @@ function addScrollMarkers(container, wrapper) {
   wrapper.appendChild(markers);
 
   container.addEventListener("scroll", () => {
-    const scrollLeft = container.scrollLeft;
-    const activeCardIndex = cardWidth ? Math.round(scrollLeft / cardWidth) : 0;
-    const currentPage = Math.min(pageCount - 1, Math.floor(activeCardIndex / cardsPerPage));
+    const gapPx = parseFloat(getComputedStyle(container).columnGap) || 0;
+    const pageWidth = container.clientWidth + gapPx;
+    const currentPage = pageWidth
+      ? Math.min(pageCount - 1, Math.round(container.scrollLeft / pageWidth))
+      : 0;
 
     markers.querySelectorAll(".scroll-marker").forEach((marker, index) => {
       marker.classList.toggle("active", index === currentPage);
