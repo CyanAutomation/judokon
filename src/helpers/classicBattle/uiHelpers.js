@@ -76,14 +76,14 @@ export async function revealComputerCard() {
 export function enableNextRoundButton() {
   const btn = document.getElementById("next-button");
   if (!btn) return;
-  btn.classList.remove("disabled");
+  btn.disabled = false;
   btn.dataset.nextReady = "true";
 }
 
 export function disableNextRoundButton() {
   const btn = document.getElementById("next-button");
   if (!btn) return;
-  btn.classList.add("disabled");
+  btn.disabled = true;
   delete btn.dataset.nextReady;
 }
 

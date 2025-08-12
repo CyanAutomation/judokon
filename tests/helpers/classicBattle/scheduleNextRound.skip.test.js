@@ -39,7 +39,7 @@ describe("scheduleNextRound early click", () => {
     const header = createBattleHeader();
     const btn = document.createElement("button");
     btn.id = "next-button";
-    btn.className = "disabled";
+    btn.disabled = true;
     document.body.append(playerCard, computerCard, header, btn);
     timerSpy = vi.useFakeTimers();
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -104,7 +104,9 @@ describe("scheduleNextRound early click", () => {
     expect(machine.getState()).toBe("cooldown");
 
     battleMod.scheduleNextRound({ matchEnded: false });
-    document.getElementById("next-button").click();
+    document
+      .getElementById("next-button")
+      .dispatchEvent(new MouseEvent("click"));
     await vi.runAllTimersAsync();
 
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
