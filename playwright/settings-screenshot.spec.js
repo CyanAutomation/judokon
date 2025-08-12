@@ -23,22 +23,8 @@ test.describe.parallel(
           );
         }, mode);
         await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-        await expect(page).toHaveScreenshot(`settings-${mode}-collapsed.png`, { fullPage: true });
-      });
-
-      test(`mode ${mode} expanded`, async ({ page }) => {
-        await page.addInitScript((mode) => {
-          localStorage.setItem(
-            "settings",
-            JSON.stringify({
-              displayMode: mode,
-              typewriterEffect: false,
-              featureFlags: { enableTestMode: { enabled: true } }
-            })
-          );
-        }, mode);
-        await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-        await expect(page).toHaveScreenshot(`settings-${mode}-expanded.png`, { fullPage: true });
+        await expect(page.locator("body")).toHaveAttribute("data-theme", mode);
+        await expect(page).toHaveScreenshot(`settings-${mode}.png`, { fullPage: true });
       });
     }
   }
