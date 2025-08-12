@@ -192,13 +192,15 @@ describe("classicBattle match flow", () => {
     );
   });
 
-  it("scheduleNextRound waits for cooldown then enables button", async () => {
+  it("scheduleNextRound runs cooldown and marks Next ready after expiry", async () => {
     document.body.innerHTML += '<button id="next-button" disabled></button>';
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     battleMod.scheduleNextRound({ matchEnded: false });
     const btn = document.getElementById("next-button");
-    expect(btn.disabled).toBe(true);
-    timerSpy.advanceTimersByTime(2000);
+    // Next acts as skip control during cooldown: enabled but not ready
+    expect(btn.disabled).toBe(false);
+    expect(btn.dataset.nextReady).toBeUndefined();
+    // After configured cooldown (3s), it becomes ready
     timerSpy.advanceTimersByTime(3000);
     await Promise.resolve();
     expect(btn.disabled).toBe(false);
