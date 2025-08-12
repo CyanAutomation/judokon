@@ -34,7 +34,13 @@ export const test = base.extend({
     page.on("requestfailed", (req) => {
       try {
         const f = req.failure();
-        console.log(`[requestfailed] ${req.method()} ${req.url()} ${f?.errorText || ""}`);
+        const url = req.url();
+        const err = f?.errorText || "";
+        // Ignore benign aborts and static assets to keep logs useful
+        const isAborted = err.includes("ERR_ABORTED");
+        const isStatic = /\.(png|jpg|jpeg|svg|ico|woff2?|css)$/i.test(url);
+        if (isAborted || isStatic) return;
+        console.log(`[requestfailed] ${req.method()} ${url} ${err}`);
       } catch {}
     });
 
