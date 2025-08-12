@@ -16,7 +16,9 @@ describe("setupSwipeNavigation", () => {
     const container = document.createElement("div");
     Object.defineProperty(container, "clientWidth", { value: 300, configurable: true });
     Object.defineProperty(container, "scrollWidth", { value: 900, configurable: true });
-    container.scrollTo = vi.fn();
+    container.scrollTo = vi.fn(({ left }) => {
+      container.scrollLeft = left;
+    });
 
     setupSwipeNavigation(container);
 
