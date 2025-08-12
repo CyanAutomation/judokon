@@ -27,14 +27,14 @@ test.describe.parallel("Settings page", () => {
     await page.locator("#general-settings-toggle").click();
     await page.locator("#game-modes-toggle").click();
     await page.getByRole("checkbox", { name: "Classic Battle" }).waitFor({ state: "visible" });
-    if (await page.locator("#general-settings-content").getAttribute("hidden")) {
+    if ((await page.locator("#general-settings-content").getAttribute("hidden")) !== null) {
       await page.locator("#general-settings-toggle").click();
     }
-    if (await page.locator("#game-modes-content").getAttribute("hidden")) {
+    if ((await page.locator("#game-modes-content").getAttribute("hidden")) !== null) {
       await page.locator("#game-modes-toggle").click();
     }
     const advancedContent = page.locator("#advanced-settings-content");
-    if (await advancedContent.getAttribute("hidden")) {
+    if ((await advancedContent.getAttribute("hidden")) !== null) {
       await page.locator("#advanced-settings-toggle").click();
     }
   });
