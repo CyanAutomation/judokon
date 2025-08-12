@@ -135,6 +135,34 @@
           </ul>
         </nav>
       </footer>
+      <script>
+        // Minimal early orientation hook to avoid delays from module loading in tests
+        (function () {
+          var header = document.querySelector('.battle-header');
+          if (!header) return;
+          function getOrientation() {
+            try {
+              var portrait = window.innerHeight >= window.innerWidth;
+              if (window.matchMedia) {
+                var mm = window.matchMedia('(orientation: portrait)');
+                if (typeof mm.matches === 'boolean' && mm.matches !== portrait) {
+                  return portrait ? 'portrait' : 'landscape';
+                }
+                return mm.matches ? 'portrait' : 'landscape';
+              }
+              return portrait ? 'portrait' : 'landscape';
+            } catch (e) {
+              return window.innerHeight >= window.innerWidth ? 'portrait' : 'landscape';
+            }
+          }
+          function apply() {
+            header.dataset.orientation = getOrientation();
+          }
+          apply();
+          window.addEventListener('resize', apply);
+          window.addEventListener('orientationchange', apply);
+        })();
+      </script>
       <script type="module" src="../helpers/setupBottomNavbar.js"></script>
       <script type="module" src="../helpers/setupDisplaySettings.js"></script>
 
