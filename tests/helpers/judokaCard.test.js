@@ -56,4 +56,16 @@ describe("JudokaCard", () => {
     toggleInspectorPanels(false);
     expect(card.querySelector(".debug-panel")).toBeNull();
   });
+
+  it("toggleInspectorPanels warns and skips on invalid JSON", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const card = await new JudokaCard(judoka, gokyoLookup).render();
+    document.body.appendChild(card);
+    card.dataset.cardJson = "{invalid";
+    toggleInspectorPanels(true);
+    expect(card.querySelector(".debug-panel")).toBeNull();
+    expect(warn).toHaveBeenCalled();
+    card.remove();
+    warn.mockRestore();
+  });
 });
