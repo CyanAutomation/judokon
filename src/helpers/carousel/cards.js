@@ -10,7 +10,7 @@ import { getMissingJudokaFields, hasRequiredJudokaFields } from "../judokaValida
  *    a. Validate required fields and log errors for missing data.
  *    b. Generate a card or fall back to a default judoka.
  *    c. Apply accessibility attributes and append to the container.
- *    d. Replace cards with the fallback judoka when the portrait fails to load.
+ *    d. On portrait load error, swap the image to the silhouette placeholder (no card rebuild).
  *
  * @param {HTMLElement} container - Carousel container element.
  * @param {Judoka[]} judokaList - Array of judoka objects.
@@ -35,20 +35,15 @@ export async function appendCards(container, judokaList, gokyoLookup) {
     if (card) {
       const img = card.querySelector("img");
       if (img) {
-        img.addEventListener("error", async () => {
-          const fallback = await getFallbackJudoka();
-          const temp = document.createElement("div");
-          const replacement = await generateJudokaCard(fallback, gokyoLookup, temp);
-          if (replacement) {
-            replacement.tabIndex = 0;
-            replacement.setAttribute("role", "listitem");
-            replacement.setAttribute(
-              "aria-label",
-              replacement.getAttribute("data-judoka-name") || "Judoka card"
-            );
-            container.replaceChild(replacement, card);
-          }
-        });
+        // Be resilient: if a portrait 404s, fall back to the silhouette image
+        // without reconstructing the entire card to avoid layout/DOM churn.
+        const onError = () => {
+          // Clear handler to avoid loops and set placeholder directly.
+          img.onerror = null;
+          img.removeAttribute("data-portrait-src");
+          img.src = "../assets/judokaPortraits/judokaPortrait-0.png";
+        };
+        img.addEventListener("error", onError, { once: true });
       }
       card.tabIndex = 0;
       card.setAttribute("role", "listitem");
