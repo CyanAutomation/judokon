@@ -97,16 +97,30 @@
             </div>
 
             <p id="round-result" aria-live="polite" aria-atomic="true"></p>
-            <button id="next-button" class="disabled" data-tooltip-id="ui.next">Next</button>
-            <button
-              id="stat-help"
-              class="info-button"
-              aria-label="Stat selection help"
-              data-tooltip-id="ui.selectStat"
-            >
-              ?
-            </button>
-            <button id="quit-match-button" data-tooltip-id="ui.quitMatch">Quit Match</button>
+            <div class="action-buttons">
+              <button
+                id="next-button"
+                class="disabled battle-control-button"
+                data-tooltip-id="ui.next"
+              >
+                Next
+              </button>
+              <button
+                id="stat-help"
+                class="battle-control-button"
+                aria-label="Stat selection help"
+                data-tooltip-id="ui.selectStat"
+              >
+                ?
+              </button>
+              <button
+                id="quit-match-button"
+                class="battle-control-button"
+                data-tooltip-id="ui.quitMatch"
+              >
+                Quit Match
+              </button>
+            </div>
             <div id="debug-panel" class="debug-panel hidden">
               <pre id="debug-output" role="status" aria-live="polite"></pre>
             </div>
