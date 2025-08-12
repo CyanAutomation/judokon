@@ -7,6 +7,7 @@ vi.mock("../../../src/helpers/motionUtils.js", () => ({
 let showMessage;
 let clearMessage;
 let clearTimer;
+let showSnackbar;
 let scheduleNextRound;
 let revealComputerCard;
 let resetStatButtons;
@@ -30,6 +31,11 @@ beforeEach(() => {
     updateScore: vi.fn(),
     startCountdown: vi.fn(),
     showAutoSelect: vi.fn()
+  }));
+
+  vi.mock("../../../src/helpers/showSnackbar.js", () => ({
+    showSnackbar: (...args) => showSnackbar(...args),
+    updateSnackbar: vi.fn()
   }));
 
   vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
@@ -62,19 +68,23 @@ beforeEach(() => {
 });
 
 describe("classicBattle opponent delay", () => {
-  it("shows waiting message during delay and clears after timeout", async () => {
+  it("shows snackbar during opponent delay and clears before outcome", async () => {
     const timer = vi.useFakeTimers();
     const mod = await import("../../../src/helpers/classicBattle.js");
     vi.spyOn(mod, "simulateOpponentStat").mockReturnValue("power");
     vi.spyOn(mod, "evaluateRound").mockReturnValue({ matchEnded: false });
     const store = mod.createBattleStore();
 
+    showSnackbar = vi.fn();
+
     const promise = mod.handleStatSelection(store, mod.simulateOpponentStat());
 
-    expect(showMessage).toHaveBeenCalledWith("Opponent is choosing…");
+    // Snackbar is delayed ~500ms; ensure it hasn't shown too early
+    await vi.advanceTimersByTimeAsync(499);
+    expect(showSnackbar).not.toHaveBeenCalled();
 
-    await vi.advanceTimersByTimeAsync(299);
-    expect(scheduleNextRound).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(2);
+    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
 
     await vi.advanceTimersByTimeAsync(402);
     await promise;

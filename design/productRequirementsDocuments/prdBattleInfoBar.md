@@ -48,7 +48,6 @@ The round message, timer, and score now sit directly inside the page header rath
 
 - Match score is updated within **800ms** after round ends. <!-- Implemented: see updateScore in InfoBar.js and battleEngine.js -->
 - Win/loss message is shown within **1s** of round end and remains visible for **2s**. <!-- Implemented: see showResult in battleUI.js -->
-- Countdown snackbar begins only after the 2s result message fades out, aligned with server round start delay, and persists while updating its text. <!-- Implemented: see startCoolDown in battleEngine.js -->
 - Action prompt appears via snackbar during user input phases and disappears after interaction. <!-- Implemented: see showMessage and stat selection logic -->
 - **Stat selection timer (30s) is displayed during stat selection phase; if timer expires, a random stat is auto-selected. Timer stops immediately once a stat is picked and pauses/resumes on tab inactivity.** <!-- Implemented: see startRound in battleEngine.js and [Classic Battle PRD](prdClassicBattle.md) -->
 - Auto-select messages are only shown if no stat was chosen before the timer runs out.
