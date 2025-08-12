@@ -45,4 +45,19 @@ describe("createCountdownTimer", () => {
     expect(onExpired).toHaveBeenCalled();
     vi.useRealTimers();
   });
+
+  it.each([0, -1])("expires immediately for non-positive duration %i", (dur) => {
+    vi.useFakeTimers();
+    const onTick = vi.fn();
+    const onExpired = vi.fn();
+    const timer = createCountdownTimer(dur, { onTick, onExpired });
+    timer.start();
+    expect(onTick).toHaveBeenCalledOnce();
+    expect(onTick).toHaveBeenCalledWith(0);
+    expect(onExpired).toHaveBeenCalledOnce();
+    expect(vi.getTimerCount()).toBe(0);
+    vi.advanceTimersByTime(1000);
+    expect(onTick).toHaveBeenCalledOnce();
+    vi.useRealTimers();
+  });
 });

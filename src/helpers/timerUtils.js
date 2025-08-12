@@ -38,8 +38,11 @@ export function _resetForTest() {
  *
  * @pseudocode
  * 1. Store the initial duration and callbacks.
- * 2. `start()` resets the remaining time and begins a 1s interval.
- *    - Invoke `onTick` immediately with the starting value.
+ * 2. `start()` resets the remaining time and handles immediate expiration.
+ *    - If the duration is non-positive, invoke `onTick(0)` and `onExpired`
+ *      without starting an interval.
+ *    - Otherwise, begin a 1s interval and invoke `onTick` immediately with
+ *      the starting value.
  *    - On each tick, decrement `remaining` and call `onTick`.
  *    - When the value reaches 0, stop the interval and call `onExpired`.
  *    - When `pauseOnHidden` is true, attach a `visibilitychange` listener that
@@ -82,6 +85,11 @@ export function createCountdownTimer(duration, { onTick, onExpired, pauseOnHidde
     stop();
     remaining = duration;
     paused = false;
+    if (remaining <= 0) {
+      if (typeof onTick === "function") onTick(0);
+      if (typeof onExpired === "function") onExpired();
+      return;
+    }
     if (typeof onTick === "function") onTick(remaining);
     intervalId = setInterval(async () => {
       try {
