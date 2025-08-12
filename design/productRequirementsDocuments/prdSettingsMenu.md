@@ -187,7 +187,7 @@ Pages should query `featureFlags.isEnabled` rather than reading
 
 ### Advanced Settings & Feature Flag Info
 
-- Experimental and debug flags are grouped under a collapsible **Advanced Settings** section.
+  - Experimental and debug flags are grouped under an **Advanced Settings** section that remains visible to simplify testing.
 - When a flag is toggled, a snackbar appears with text from `tooltips.json` keyed by `settings.<flagName>`.
 - The snackbar confirms the change and hides itself after a short delay.
 - Debug-focused flags remain tucked away so younger players do not accidentally enable them.
@@ -211,32 +211,6 @@ Pages should query `featureFlags.isEnabled` rather than reading
 - AC-8.3 Color contrast of text and controls meets WCAG 2.1 minimum (4.5:1) in all display modes.
 - AC-8.4 Touch targets meet or exceed a 44px minimum size (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 - AC-8.5 All settings, including feature flags, show a label and brief description using the same markup as the Advanced Settings section (see [Settings Item Structure](../codeStandards/settingsPageDesignGuidelines.md#settings-item-structure)).
-
----
-
-## Collapsible Settings Sections
-
-To improve organization and reduce visual clutter, the Settings Menu should present each major area (e.g., General Settings, Game Modes) as a collapsible section. By default, all sections are collapsed; users can expand a section by clicking or using the keyboard. This approach supports accessibility, scalability, and a cleaner user experience as more settings are added.
-
-### Functional Requirement
-
-- Each settings area is collapsed by default and can be expanded/collapsed by the user.
-- Section headers are keyboard-focusable and operable (Enter/Space).
-- ARIA attributes (`aria-expanded`, `aria-controls`, `aria-labelledby`) are used for accessibility.
-- Only expanded sections are included in the tab order.
-- The implementation must meet all accessibility and performance requirements outlined elsewhere in this PRD.
-
-### Acceptance Criteria
-
-- AC-9.1 All settings areas are collapsed by default on page load.
-- AC-9.2 Clicking or pressing Enter/Space on a section header toggles its expanded/collapsed state and updates `aria-expanded`.
-- AC-9.3 When collapsed, section content is hidden from both view and tab order.
-- AC-9.4 When expanded, section content is visible and all controls are accessible via keyboard and screen reader.
-- AC-9.5 Section toggles and content meet touch target and color contrast requirements.
-
-### Rationale
-
-This pattern keeps the settings page organized and accessible, especially as more options are added. It also aligns with modern accessibility and responsive design standards.
 
 ---
 
@@ -268,6 +242,7 @@ This pattern keeps the settings page organized and accessible, especially as mor
   - Tab order should proceed top-to-bottom: **display mode → sound → motion → game mode toggles**.
   - Users can navigate and activate each control without needing a mouse.
   - **Section layout:** The page begins with an `h1` heading followed by two `fieldset` sections—**General Settings** and **Game Modes**—each using the `.game-mode-toggle-container` grid. The second fieldset keeps `id="game-mode-toggle-container"` so scripts can find it.
+  - To simplify UI testing, all settings sections are displayed simultaneously.
 
   | **Settings Menu Mockup 1**                                         | **Settings Menu Mockup 2**                                         | **Settings Menu Mockup 2**                                         |
   | ------------------------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------ |
@@ -363,9 +338,9 @@ The page begins with an `h1` heading labeled "Settings". Two `fieldset` sections
   - [ ] 11.1 Run Pa11y or equivalent accessibility audit on the settings page and resolve any issues.
   - [ ] 11.2 Verify all color contrast ratios meet WCAG 2.1 (4.5:1) in all display modes.
   - [ ] 11.3 Verify all touch targets are ≥44px and add Playwright tests if needed.
-  - [ ] 11.4 Add Playwright UI tests for keyboard navigation, ARIA attributes, and section collapse/expand accessibility.
+  - [ ] 11.4 Add Playwright UI tests for keyboard navigation and ARIA attributes.
 - [ ] 12.0 Visual Regression
-  - [ ] 12.1 Add Playwright screenshot tests for the settings page in all display modes and collapsed/expanded states.
+  - [ ] 12.1 Add Playwright screenshot tests for the settings page in all display modes.
 
 ---
 
