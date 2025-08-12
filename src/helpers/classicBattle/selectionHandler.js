@@ -9,6 +9,7 @@ import { handleReplay } from "./roundManager.js";
 import { shouldReduceMotionSync } from "../motionUtils.js";
 import { syncScoreDisplay } from "./uiService.js";
 import { updateDebugPanel } from "./uiHelpers.js";
+import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
 
 /**
  * Determine the opponent's stat choice based on difficulty.
@@ -143,7 +144,7 @@ export async function handleStatSelection(store, stat, options = {}) {
  * 1. Locate `#round-result` and exit if missing.
  * 2. Extract previous values from its text when present.
  * 3. Increment both player and opponent values toward targets using
- *    `requestAnimationFrame` unless motion is reduced.
+ *    the shared scheduler unless motion is reduced.
  * 4. Update the element text on each frame as "Stat – You: x Opponent: y".
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
@@ -154,7 +155,7 @@ export async function handleStatSelection(store, stat, options = {}) {
 export function showStatComparison(store, stat, playerVal, compVal) {
   const el = document.getElementById("round-result");
   if (!el) return;
-  cancelAnimationFrame(store.compareRaf);
+  cancelFrame(store.compareRaf);
   const label = stat.charAt(0).toUpperCase() + stat.slice(1);
   const match = el.textContent.match(/You: (\d+).*Opponent: (\d+)/);
   const startPlayer = match ? Number(match[1]) : 0;
@@ -171,8 +172,8 @@ export function showStatComparison(store, stat, playerVal, compVal) {
     const c = Math.round(startComp + (compVal - startComp) * progress);
     el.textContent = `${label} – You: ${p} Opponent: ${c}`;
     if (progress < 1) {
-      store.compareRaf = requestAnimationFrame(step);
+      store.compareRaf = scheduleFrame(step);
     }
   };
-  store.compareRaf = requestAnimationFrame(step);
+  store.compareRaf = scheduleFrame(step);
 }

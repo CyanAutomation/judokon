@@ -9,6 +9,8 @@
  *  - `showResult` -> display result text and fade it out after a delay.
  */
 
+import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
+
 /**
  * Query all stat buttons.
  *
@@ -35,7 +37,7 @@ export function getRoundMessageEl() {
  * 2. Remove the `selected` class and any inline background color.
  * 3. Disable the button to clear active/tap highlight.
  * 4. Force reflow so Safari clears the overlay.
- * 5. In the next animation frame re-enable, clear styles, and blur.
+ * 5. In the next frame via the shared scheduler re-enable, clear styles, and blur.
  */
 export function resetStatButtons() {
   getStatButtons().forEach((btn) => {
@@ -48,12 +50,8 @@ export function resetStatButtons() {
       btn.style.backgroundColor = "";
       btn.blur();
     };
-    if (typeof requestAnimationFrame === "function") {
-      requestAnimationFrame(enable);
-    } else {
-      setTimeout(enable, 0);
-    }
-    // Fallback to ensure re-enable even if RAF is throttled under fake timers
+    scheduleFrame(enable);
+    // Fallback to ensure re-enable even if scheduler is inactive under fake timers
     setTimeout(() => {
       if (btn.disabled) enable();
     }, 0);
@@ -68,7 +66,7 @@ export function resetStatButtons() {
  * 2. Exit early if the element is missing.
  * 3. Cancel any in-progress fade and clear styles.
  * 4. Add `fade-transition`, set the text content, and ensure it's visible.
- * 5. If `message` is non-empty, reduce opacity to 0 over 2s using `requestAnimationFrame`.
+ * 5. If `message` is non-empty, reduce opacity to 0 over 2s using the shared scheduler.
  * 6. When complete, add the `fading` class and remove inline opacity.
  *
  * @param {string} message - Result text to show.
@@ -96,7 +94,7 @@ export function showResult(message) {
     const progress = Math.min((now - start) / 2000, 1);
     el.style.opacity = 1 - progress;
     if (progress < 1) {
-      frame = requestAnimationFrame(step);
+      frame = scheduleFrame(step);
     } else {
       el.classList.add("fading");
       el.style.removeProperty("opacity");
@@ -105,12 +103,12 @@ export function showResult(message) {
   }
 
   function cancel() {
-    cancelAnimationFrame(frame);
+    cancelFrame(frame);
     el.classList.remove("fading");
     el.style.removeProperty("opacity");
     cancelFade = undefined;
   }
 
   cancelFade = cancel;
-  frame = requestAnimationFrame(step);
+  frame = scheduleFrame(step);
 }

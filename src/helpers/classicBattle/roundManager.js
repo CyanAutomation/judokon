@@ -9,6 +9,7 @@ import { syncScoreDisplay } from "./uiService.js";
 import { CLASSIC_BATTLE_MAX_ROUNDS } from "../constants.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import { quitMatch } from "./quitModal.js";
+import { cancel as cancelFrame } from "../../utils/scheduler.js";
 
 /**
  * Create a new battle state store and attach button handlers.
@@ -130,7 +131,7 @@ export function _resetForTest(store) {
   store.statTimeoutId = null;
   store.autoSelectId = null;
   store.selectionMade = false;
-  cancelAnimationFrame(store.compareRaf);
+  cancelFrame(store.compareRaf);
   store.compareRaf = 0;
   const timerEl = document.getElementById("next-round-timer");
   if (timerEl) timerEl.textContent = "";

@@ -10,6 +10,7 @@
  * @param {string} message - Text content to display in the snackbar.
  */
 import { SNACKBAR_FADE_MS, SNACKBAR_REMOVE_MS } from "./constants.js";
+import { onFrame as scheduleFrame } from "../utils/scheduler.js";
 
 let bar;
 let fadeId;
@@ -38,7 +39,7 @@ export function showSnackbar(message) {
   bar.setAttribute("role", "status");
   bar.setAttribute("aria-live", "polite");
   document.body.appendChild(bar);
-  requestAnimationFrame(() => bar?.classList.add("show"));
+  scheduleFrame(() => bar?.classList.add("show"));
   resetTimers();
 }
 

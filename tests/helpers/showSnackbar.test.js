@@ -1,4 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+vi.mock("../../src/utils/scheduler.js", () => ({
+  onFrame: (cb) => cb(),
+  cancel: () => {}
+}));
 import { showSnackbar, updateSnackbar } from "../../src/helpers/showSnackbar.js";
 import { SNACKBAR_FADE_MS, SNACKBAR_REMOVE_MS } from "../../src/helpers/constants.js";
 
@@ -9,7 +13,6 @@ beforeEach(() => {
 describe("showSnackbar", () => {
   it("updates text and resets timers", () => {
     vi.useFakeTimers();
-    vi.stubGlobal("requestAnimationFrame", (cb) => cb());
 
     showSnackbar("Hello");
     updateSnackbar("World");
