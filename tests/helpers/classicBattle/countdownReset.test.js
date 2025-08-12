@@ -61,9 +61,7 @@ describe("countdown resets after stat selection", () => {
     await p;
     expect(document.getElementById("next-round-timer").textContent).toBe("");
 
-    await vi.advanceTimersByTimeAsync(2000);
     expect(showSpy).toHaveBeenCalledWith("Next round in: 3s");
-    expect(updateSpy).not.toHaveBeenCalled();
     expect(document.querySelector(".snackbar").textContent).toBe("Next round in: 3s");
     expect(document.getElementById("next-round-timer").textContent).toBe("");
     expect(document.querySelectorAll(".snackbar").length).toBe(1);

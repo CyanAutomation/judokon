@@ -172,11 +172,6 @@ export function scheduleNextRound(result) {
 
   // Track snackbar lifecycle and whether the cooldown actually started.
   let snackbarStarted = false;
-  let cooldownStarted = false;
-  let startTimeoutId = null;
-  // When we pre-show the initial countdown message, suppress updating it
-  // with the same value on the first onTick call (remaining === 3).
-  let suppressFirstUpdate = false;
 
   const onTick = (remaining) => {
     if (remaining <= 0) {
@@ -188,10 +183,6 @@ export function scheduleNextRound(result) {
       showSnackbar(text);
       snackbarStarted = true;
     } else {
-      if (suppressFirstUpdate && remaining === 3) {
-        suppressFirstUpdate = false;
-        return;
-      }
       updateSnackbar(text);
     }
   };
@@ -208,12 +199,8 @@ export function scheduleNextRound(result) {
   };
 
   // Allow immediate skipping, even before cooldown starts. If the cooldown
-  // hasn't begun yet (during the initial delay), cancel the pending start.
+  // hasn't begun yet, simply stop and expire.
   setSkipHandler(() => {
-    if (!cooldownStarted && startTimeoutId) {
-      clearTimeout(startTimeoutId);
-      startTimeoutId = null;
-    }
     stopTimer();
     onExpired();
   });
@@ -223,22 +210,8 @@ export function scheduleNextRound(result) {
   }
 
   const run = runTimerWithDrift(startCoolDown);
-
-  // Proactively surface the upcoming cooldown to replace any earlier prompt
-  // snackbar (e.g., "Select your move") while we wait to start the timer.
-  // This ensures tests can observe the cooldown message promptly and avoids
-  // confusion if the cooldown is skipped quickly.
-  if (!snackbarStarted) {
-    showSnackbar("Next round in: 3s");
-    snackbarStarted = true;
-    suppressFirstUpdate = true;
-  }
-
-  startTimeoutId = setTimeout(() => {
-    cooldownStarted = true;
-    run(3, onTick, onExpired, () => {
-      infoBar.showMessage("Timer error. Enabling next round.");
-      onExpired();
-    });
-  }, 2000);
+  run(3, onTick, onExpired, () => {
+    infoBar.showMessage("Timer error. Enabling next round.");
+    onExpired();
+  });
 }
