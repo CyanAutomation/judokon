@@ -37,13 +37,12 @@ export async function appendCards(container, judokaList, gokyoLookup) {
       if (img) {
         // Be resilient: if a portrait 404s, fall back to the silhouette image
         // without reconstructing the entire card to avoid layout/DOM churn.
-        const onError = () => {
+        img.onerror = () => {
           // Clear handler to avoid loops and set placeholder directly.
           img.onerror = null;
           img.removeAttribute("data-portrait-src");
           img.src = "../assets/judokaPortraits/judokaPortrait-0.png";
         };
-        img.addEventListener("error", onError, { once: true });
       }
       card.tabIndex = 0;
       card.setAttribute("role", "listitem");
