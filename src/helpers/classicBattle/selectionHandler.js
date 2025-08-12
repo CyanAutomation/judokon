@@ -2,6 +2,7 @@ import { STATS, stopTimer } from "../battleEngineFacade.js";
 import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
 import * as infoBar from "../setupBattleInfoBar.js";
 import { getStatValue, resetStatButtons, showResult } from "../battle/index.js";
+import { showSnackbar } from "../showSnackbar.js";
 import { revealComputerCard } from "./uiHelpers.js";
 import { scheduleNextRound } from "./timerService.js";
 import { showMatchSummaryModal } from "./uiService.js";
