@@ -94,7 +94,7 @@ export function bindNavigation({
   prevButtons.forEach((btn) => btn.addEventListener("click", showPrev));
   window.addEventListener("popstate", (e) => {
     const i = e.state && typeof e.state.index === "number" ? e.state.index : null;
-    if (i !== null) selectDoc(i, false);
+    if (i !== null) selectDocSync(i, false);
   });
   document.addEventListener("keydown", (e) => {
     if (document.activeElement !== container) return;
@@ -261,8 +261,9 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   let index = startIndex;
 
   // Create sidebar immediately so keyboard traversal is available early.
-  const { listSelect } = createSidebarList(labels, listPlaceholder, async (i, _el, opts = {}) => {
-    await selectDoc(i, true, true, !opts.fromListNav);
+  const { listSelect } = createSidebarList(labels, listPlaceholder, (i, _el, opts = {}) => {
+    // Use sync-first selection on list interactions for immediate updates.
+    selectDocSync(i, true, true, !opts.fromListNav);
   });
 
   // Ensure the initially visible document is reflected in the sidebar
@@ -284,6 +285,56 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     initTooltips();
   }
 
+  // Attempt to fill a document synchronously when possible (docsMap or cached).
+  function ensureDocSync(i) {
+    if (documents[i]) return true;
+    const name = files[i];
+    if (docsMap && docsMap[name]) {
+      const md = docsMap[name];
+      const escapeHtml = (str) =>
+        str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const parseWithWarning = (mdText) => {
+        try {
+          return parserFn(mdText);
+        } catch {
+          const escaped = escapeHtml(mdText);
+          return (
+            '<div class="markdown-warning" role="alert" aria-label="Content could not be fully rendered" title="Content could not be fully rendered">⚠️ Partial content</div>' +
+            `<pre>${escaped}</pre>`
+          );
+        }
+      };
+      documents[i] = parseWithWarning(md);
+      taskStats[i] = getPrdTaskStats(md);
+      const m = md.match(/^#\s*(.+)/m);
+      titles[i] = m ? m[1].trim() : "";
+      return true;
+    }
+    return false;
+  }
+
+  // Synchronous-first selector for immediate UI updates during user input.
+  function selectDocSync(i, updateHistory = true, skipList = false, focusContent = true) {
+    index = ((i % files.length) + files.length) % files.length;
+    if (!skipList) listSelect(index);
+    const hadDoc = ensureDocSync(index);
+    if (hadDoc) {
+      renderDoc(index);
+      if (focusContent) container.focus();
+    } else {
+      // Kick off async fetch and update when ready without blocking the click handler.
+      fetchOne(index).then(() => {
+        renderDoc(index);
+        if (focusContent) container.focus();
+      });
+    }
+    if (updateHistory) {
+      const url = new URL(window.location);
+      url.searchParams.set("doc", baseNames[index]);
+      history.pushState({ index }, "", url.pathname + url.search);
+    }
+  }
+
   async function selectDoc(i, updateHistory = true, skipList = false, focusContent = true) {
     index = ((i % files.length) + files.length) % files.length;
     if (!skipList) listSelect(index);
@@ -297,8 +348,8 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     }
   }
 
-  const showNext = () => selectDoc(index + 1);
-  const showPrev = () => selectDoc(index - 1);
+  const showNext = () => selectDocSync(index + 1);
+  const showPrev = () => selectDocSync(index - 1);
 
   bindNavigation({
     container,
@@ -315,7 +366,10 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   history.replaceState({ index: startIndex }, "", url.toString());
 
   if (spinner) spinner.style.display = "block";
-  await fetchOne(startIndex);
+  // Load the initial doc synchronously if possible for snappy first paint.
+  if (!ensureDocSync(startIndex)) {
+    await fetchOne(startIndex);
+  }
   renderDoc(startIndex);
   container.focus();
   if (spinner) spinner.style.display = "none";
