@@ -5,17 +5,19 @@ import {
   getStatButtons,
   getRoundMessageEl
 } from "../../src/helpers/battle/battleUI.js";
+import * as scheduler from "../../src/utils/scheduler.js";
 
 describe("battleUI helpers", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
+    vi.restoreAllMocks();
   });
 
   it("resetStatButtons clears selection and re-enables buttons", () => {
     document.body.innerHTML =
       '<div id="stat-buttons" data-tooltip-id="ui.selectStat"><button class="selected" style="background-color:red"></button><button class="selected"></button></div>';
     vi.useFakeTimers();
-    vi.stubGlobal("requestAnimationFrame", (cb) => setTimeout(cb, 0));
+    vi.spyOn(scheduler, "onFrame").mockImplementation((cb) => setTimeout(cb, 0));
     const buttons = getStatButtons();
     resetStatButtons();
     buttons.forEach((btn) => {
@@ -32,8 +34,10 @@ describe("battleUI helpers", () => {
   it("showResult updates text and fades after delay", () => {
     document.body.innerHTML = '<p id="round-message" class="fading"></p>';
     vi.useFakeTimers();
-    vi.stubGlobal("requestAnimationFrame", (cb) => setTimeout(() => cb(performance.now()), 16));
-    vi.stubGlobal("cancelAnimationFrame", (id) => clearTimeout(id));
+    vi.spyOn(scheduler, "onFrame").mockImplementation((cb) =>
+      setTimeout(() => cb(performance.now()), 16)
+    );
+    vi.spyOn(scheduler, "cancel").mockImplementation((id) => clearTimeout(id));
     showResult("You win!");
     const el = getRoundMessageEl();
     expect(el.textContent).toBe("You win!");
@@ -46,8 +50,10 @@ describe("battleUI helpers", () => {
   it("showResult cancels previous fade when new text appears", () => {
     document.body.innerHTML = '<p id="round-message" class="fading"></p>';
     vi.useFakeTimers();
-    vi.stubGlobal("requestAnimationFrame", (cb) => setTimeout(() => cb(performance.now()), 16));
-    vi.stubGlobal("cancelAnimationFrame", (id) => clearTimeout(id));
+    vi.spyOn(scheduler, "onFrame").mockImplementation((cb) =>
+      setTimeout(() => cb(performance.now()), 16)
+    );
+    vi.spyOn(scheduler, "cancel").mockImplementation((id) => clearTimeout(id));
     showResult("First");
     vi.advanceTimersByTime(1000);
     showResult("Second");

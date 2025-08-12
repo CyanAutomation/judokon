@@ -10,6 +10,7 @@
  *    - After `SETTINGS_REMOVE_MS`, remove the popup element.
  */
 import { SETTINGS_FADE_MS, SETTINGS_REMOVE_MS } from "./constants.js";
+import { onFrame as scheduleFrame } from "../utils/scheduler.js";
 
 export function showSettingsError() {
   const existing = document.querySelector(".settings-error-popup");
@@ -20,7 +21,7 @@ export function showSettingsError() {
   popup.setAttribute("aria-live", "assertive");
   popup.textContent = "Failed to update settings.";
   document.body.appendChild(popup);
-  requestAnimationFrame(() => popup.classList.add("show"));
+  scheduleFrame(() => popup.classList.add("show"));
   setTimeout(() => {
     popup.classList.remove("show");
   }, SETTINGS_FADE_MS);

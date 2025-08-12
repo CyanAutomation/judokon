@@ -1,4 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+vi.mock("../../src/utils/scheduler.js", () => ({
+  onFrame: (cb) => cb(),
+  cancel: () => {}
+}));
 import { showSettingsError } from "../../src/helpers/showSettingsError.js";
 import { SETTINGS_FADE_MS, SETTINGS_REMOVE_MS } from "../../src/helpers/constants.js";
 
@@ -9,7 +13,6 @@ beforeEach(() => {
 describe("showSettingsError", () => {
   it("shows and then removes the error popup", () => {
     vi.useFakeTimers();
-    vi.stubGlobal("requestAnimationFrame", (cb) => cb());
 
     showSettingsError();
     let popup = document.querySelector(".settings-error-popup");
