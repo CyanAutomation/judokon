@@ -94,7 +94,7 @@ describe("populateCountryList", () => {
     });
   });
 
-  it("lazy loads additional countries on scroll", async () => {
+  it("lazy loads country batches on scroll", async () => {
     const judoka = Array.from({ length: 60 }, (_, i) => ({
       id: i,
       firstname: "A",
@@ -182,7 +182,7 @@ describe("populateCountryList", () => {
     expect(names).toEqual(["All", "Japan"]);
   });
 
-  it("shows a message if no countries are found", async () => {
+  it("renders 'No countries available.' when no active countries exist", async () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue([])
     }));
