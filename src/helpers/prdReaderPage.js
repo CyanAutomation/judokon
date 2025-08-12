@@ -184,8 +184,10 @@ export async function fetchAndRenderDoc(files, docsMap, parserFn, dir) {
  * @pseudocode
  * 1. Load filenames and sidebar labels.
  * 2. Determine starting document from URL.
- * 3. Create sidebar, fetch docs, and render selected doc.
- * 4. Bind navigation (buttons, history, keys, swipe).
+ * 3. Create sidebar immediately so keyboard traversal works early.
+ * 4. Fetch and render only the starting doc first; focus content and seed history.
+ * 5. Lazy-load remaining docs in the background and fetch-on-demand when selected.
+ * 6. Bind navigation (buttons, history, keys, swipe).
  *
  * @param {Record<string, string>} [docsMap]
  * @param {Function} [parserFn=markdownToHtml]
@@ -194,6 +196,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   const { files, baseNames, labels, dir } = await loadPrdFileList(docsMap);
   const docParam = new URLSearchParams(window.location.search).get("doc");
   let startIndex = Math.max(0, docParam ? baseNames.indexOf(docParam.replace(/\.md$/, "")) : 0);
+
   const container = document.getElementById("prd-content");
   const listPlaceholder = document.getElementById("prd-list");
   const nextButtons = document.querySelectorAll('[data-nav="next"]');
@@ -202,14 +205,68 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   const summaryEl = document.getElementById("task-summary");
   const spinner = document.getElementById("prd-spinner");
   if (!container || !listPlaceholder || !files.length) return;
-  if (spinner) spinner.style.display = "block";
-  const { documents, taskStats, titles } = await fetchAndRenderDoc(files, docsMap, parserFn, dir);
+
+  // Prepare arrays for lazy population and a small cache of in-flight fetches.
+  const documents = Array(files.length);
+  const taskStats = Array(files.length);
+  const titles = Array(files.length);
+  const pending = Array(files.length);
+
+  // Helper: fetch a single doc and fill arrays.
+  const fetchOne = async (i) => {
+    if (documents[i]) return;
+    if (pending[i]) return pending[i];
+    pending[i] = (async () => {
+      // Reuse internal helpers from fetchAndRenderDoc scope
+      const escapeHtml = (str) =>
+        str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const parseWithWarning = (md) => {
+        try {
+          return parserFn(md);
+        } catch {
+          const escaped = escapeHtml(md);
+          return (
+            '<div class="markdown-warning" role="alert" aria-label="Content could not be fully rendered" title="Content could not be fully rendered">⚠️ Partial content</div>' +
+            `<pre>${escaped}</pre>`
+          );
+        }
+      };
+      try {
+        let md;
+        const name = files[i];
+        if (docsMap && docsMap[name]) {
+          md = docsMap[name];
+        } else {
+          const res = await fetch(`${dir}${name}`);
+          if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} for ${name}`);
+          md = await res.text();
+        }
+        documents[i] = parseWithWarning(md);
+        taskStats[i] = getPrdTaskStats(md);
+        const m = md.match(/^#\s*(.+)/m);
+        titles[i] = m ? m[1].trim() : "";
+      } catch (err) {
+        console.error(`Failed to load PRD ${files[i]}`, err);
+        documents[i] =
+          '<div class="warning" role="alert" aria-live="polite">Content unavailable</div>';
+        taskStats[i] = { total: 0, completed: 0 };
+        titles[i] = "";
+      } finally {
+        pending[i] = null;
+      }
+    })();
+    return pending[i];
+  };
+
   let index = startIndex;
-  const { listSelect } = createSidebarList(labels, listPlaceholder, (i, _el, opts = {}) =>
-    selectDoc(i, true, true, !opts.fromListNav)
-  );
+
+  // Create sidebar immediately so keyboard traversal is available early.
+  const { listSelect } = createSidebarList(labels, listPlaceholder, async (i, _el, opts = {}) => {
+    await selectDoc(i, true, true, !opts.fromListNav);
+  });
+
   function renderDoc(i) {
-    container.innerHTML = documents[i];
+    container.innerHTML = documents[i] || "";
     container.classList.remove("fade-in");
     void container.offsetWidth;
     container.classList.add("fade-in");
@@ -221,9 +278,11 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     }
     initTooltips();
   }
-  function selectDoc(i, updateHistory = true, skipList = false, focusContent = true) {
-    index = (i + documents.length) % documents.length;
+
+  async function selectDoc(i, updateHistory = true, skipList = false, focusContent = true) {
+    index = ((i % files.length) + files.length) % files.length;
     if (!skipList) listSelect(index);
+    await fetchOne(index);
     renderDoc(index);
     if (focusContent) container.focus();
     if (updateHistory) {
@@ -232,8 +291,10 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
       history.pushState({ index }, "", url.pathname + url.search);
     }
   }
+
   const showNext = () => selectDoc(index + 1);
   const showPrev = () => selectDoc(index - 1);
+
   bindNavigation({
     container,
     nextButtons,
@@ -242,11 +303,27 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     showPrev,
     selectDoc
   });
+
+  // Seed initial history and render the starting doc as soon as it is fetched.
   const url = new URL(window.location);
   url.searchParams.set("doc", baseNames[startIndex]);
   history.replaceState({ index: startIndex }, "", url.toString());
-  selectDoc(startIndex, false);
+
+  if (spinner) spinner.style.display = "block";
+  await fetchOne(startIndex);
+  renderDoc(startIndex);
+  container.focus();
   if (spinner) spinner.style.display = "none";
+
+  // Opportunistically fetch remaining docs in the background to speed up later navigation.
+  // Avoid blocking UI; fire-and-forget.
+  Promise.resolve().then(async () => {
+    for (let i = 0; i < files.length; i++) {
+      if (i === startIndex) continue;
+      // Intentionally do not await to keep UI responsive.
+      fetchOne(i);
+    }
+  });
 }
 
 if (!window.SKIP_PRD_AUTO_INIT) {
