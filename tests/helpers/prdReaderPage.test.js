@@ -4,6 +4,17 @@ describe("prdReaderPage", () => {
   afterEach(() => {
     history.replaceState(null, "", "/");
   });
+
+  it("loads and sorts file list", async () => {
+    globalThis.SKIP_PRD_AUTO_INIT = true;
+    const { loadPrdFileList } = await import("../../src/helpers/prdReaderPage.js");
+    const { files, baseNames } = await loadPrdFileList({
+      "b.md": "",
+      "a.md": ""
+    });
+    expect(files).toEqual(["a.md", "b.md"]);
+    expect(baseNames).toEqual(["a", "b"]);
+  });
   it("navigates documents with wrap-around", async () => {
     const docs = {
       "b.md": "# Second doc",
@@ -282,5 +293,39 @@ describe("prdReaderPage", () => {
     expect(container.innerHTML).toContain("Second doc");
     expect(items[1].getAttribute("aria-current")).toBe("page");
     expect(document.activeElement).toBe(items[1]);
+  });
+
+  it("navigates via swipe gestures", async () => {
+    const docs = {
+      "b.md": "# B",
+      "a.md": "# A"
+    };
+    const parser = (md) => `<h1>${md}</h1>`;
+    document.body.innerHTML = `
+      <div id="prd-title"></div>
+      <div id="task-summary"></div>
+      <ul id="prd-list"></ul>
+      <div id="prd-content" tabindex="-1"></div>
+      <button data-nav="prev">Prev</button>
+      <button data-nav="next">Next</button>
+    `;
+    if (typeof TouchEvent === "undefined") {
+      globalThis.TouchEvent = class extends Event {
+        constructor(type, opts = {}) {
+          super(type, opts);
+          this.touches = opts.touches || [];
+          this.changedTouches = opts.changedTouches || [];
+        }
+      };
+    }
+    globalThis.SKIP_PRD_AUTO_INIT = true;
+    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+    await setupPrdReaderPage(docs, parser);
+    const container = document.getElementById("prd-content");
+    const list = document.getElementById("prd-list");
+    container.dispatchEvent(new TouchEvent("touchstart", { touches: [{ clientX: 100 }] }));
+    container.dispatchEvent(new TouchEvent("touchend", { changedTouches: [{ clientX: 0 }] }));
+    expect(container.innerHTML).toContain("B");
+    expect(list.children[1].getAttribute("aria-current")).toBe("page");
   });
 });
