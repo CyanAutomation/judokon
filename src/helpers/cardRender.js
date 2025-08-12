@@ -1,5 +1,6 @@
 // Constants
 const PLACEHOLDER_ID = 0;
+const GENERIC_PLACEHOLDER_ID = 1;
 
 import { escapeHTML, decodeHTML } from "./utils.js";
 import { createStatsPanel } from "../components/StatsPanel.js";
@@ -18,10 +19,10 @@ import { createStatsPanel } from "../components/StatsPanel.js";
  * 3. Construct the portrait HTML:
  *    - Create a `<div>` element with the class `card-portrait` (maintains 2:3 aspect ratio).
  *    - Add an `<img>` element:
- *      a. Set the `src` attribute to a generic placeholder portrait (id=1) for initial load.
+ *      a. Set the `src` attribute to the generic placeholder portrait (`GENERIC_PLACEHOLDER_ID`) for initial load.
  *      b. Store the real portrait URL in a `data-portrait-src` attribute for lazy loading.
  *      c. Set the `alt` attribute to include the escaped name for accessibility (see PRD: alt text required).
- *      d. Add an `onerror` handler to fallback to the silhouette placeholder (PLACEHOLDER_ID) if the image fails to load (see PRD: missing portrait fallback).
+ *      d. Add an `onerror` handler to fall back to the silhouette placeholder (`PLACEHOLDER_ID`) if the image fails to load (see PRD: missing portrait fallback).
  *
  * 4. Return the constructed HTML string.
  *
@@ -53,7 +54,7 @@ export function generateCardPortrait(card) {
   const realSrc = `../assets/judokaPortraits/judokaPortrait-${id}.png`;
   return `
     <div class="card-portrait">
-      <img src="../assets/judokaPortraits/judokaPortrait-${PLACEHOLDER_ID}.png" data-portrait-src="${realSrc}" alt="${escapedFirstname} ${escapedSurname}" loading="lazy" onerror="this.onerror=null; this.src='../assets/judokaPortraits/judokaPortrait-${PLACEHOLDER_ID}.png'">
+      <img src="../assets/judokaPortraits/judokaPortrait-${GENERIC_PLACEHOLDER_ID}.png" data-portrait-src="${realSrc}" alt="${escapedFirstname} ${escapedSurname}" loading="lazy" onerror="this.onerror=null; this.src='../assets/judokaPortraits/judokaPortrait-${PLACEHOLDER_ID}.png'">
     </div>
   `;
 }
