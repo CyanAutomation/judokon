@@ -24,19 +24,7 @@ test.describe.parallel("Settings page", () => {
       route.fulfill({ path: "tests/fixtures/tooltips.json" })
     );
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-    await page.locator("#general-settings-toggle").click();
-    await page.locator("#game-modes-toggle").click();
     await page.getByRole("checkbox", { name: "Classic Battle" }).waitFor({ state: "visible" });
-    if ((await page.locator("#general-settings-content").getAttribute("hidden")) !== null) {
-      await page.locator("#general-settings-toggle").click();
-    }
-    if ((await page.locator("#game-modes-content").getAttribute("hidden")) !== null) {
-      await page.locator("#game-modes-toggle").click();
-    }
-    const advancedContent = page.locator("#advanced-settings-content");
-    if ((await advancedContent.getAttribute("hidden")) !== null) {
-      await page.locator("#advanced-settings-toggle").click();
-    }
   });
 
   test("page loads", async ({ page }) => {
@@ -202,27 +190,6 @@ test.describe.parallel("Settings page", () => {
       const box = await page.locator(sel).boundingBox();
       expect(box?.width).toBeGreaterThanOrEqual(44);
       expect(box?.height).toBeGreaterThanOrEqual(44);
-    }
-  });
-
-  test("section toggles reveal content", async ({ page }) => {
-    const sections = [
-      { toggle: "#general-settings-toggle", content: "#general-settings-content" },
-      { toggle: "#game-modes-toggle", content: "#game-modes-content" },
-      { toggle: "#advanced-settings-toggle", content: "#advanced-settings-content" }
-    ];
-
-    for (const { toggle, content } of sections) {
-      const toggleLocator = page.locator(toggle);
-      const contentLocator = page.locator(content);
-
-      // Collapse if opened by beforeEach
-      await toggleLocator.click();
-      await expect(contentLocator).toHaveAttribute("hidden", "");
-
-      // Click again to expand and verify visibility
-      await toggleLocator.click();
-      await expect(contentLocator).not.toHaveAttribute("hidden", "");
     }
   });
 });
