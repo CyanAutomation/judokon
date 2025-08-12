@@ -20,24 +20,14 @@ import { createScrollButton, updateScrollButtonState } from "./scroll.js";
 export function setupKeyboardNavigation(container) {
   container.tabIndex = 0;
   container.addEventListener("keydown", (event) => {
-    if (event.target !== event.currentTarget) return;
+    // Respond to arrow keys even if a child element has focus.
     if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
     event.preventDefault();
     const gap = parseFloat(getComputedStyle(container).columnGap) || 0;
     const scrollAmount = container.clientWidth + gap;
-    if (event.key === "ArrowLeft") {
-      if (typeof container.scrollBy === "function") {
-        container.scrollBy({ left: -scrollAmount });
-      } else {
-        container.scrollLeft -= scrollAmount;
-      }
-    } else if (event.key === "ArrowRight") {
-      if (typeof container.scrollBy === "function") {
-        container.scrollBy({ left: scrollAmount });
-      } else {
-        container.scrollLeft += scrollAmount;
-      }
-    }
+    const delta = event.key === "ArrowLeft" ? -scrollAmount : scrollAmount;
+    // Use instantaneous scroll updates so rapid key presses advance reliably.
+    container.scrollLeft += delta;
   });
 }
 
@@ -58,7 +48,9 @@ export function setupSwipeNavigation(container) {
   let targetLeft = container.scrollLeft;
 
   const scrollFromDelta = (delta) => {
-    const step = container.clientWidth;
+    // Keep swipe step aligned with one "page" width used by markers
+    const gap = parseFloat(getComputedStyle(container).columnGap) || 0;
+    const step = container.clientWidth + gap;
     if (delta > CAROUSEL_SWIPE_THRESHOLD) {
       targetLeft -= step;
     } else if (delta < -CAROUSEL_SWIPE_THRESHOLD) {
