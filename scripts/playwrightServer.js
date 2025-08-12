@@ -35,7 +35,8 @@ function getContentType(filePath) {
 }
 
 const server = http.createServer((req, res) => {
-  const requestPath = req.url.replace(/^\/+/, "");
+  const { pathname } = new URL(req.url, `http://${req.headers.host}`);
+  const requestPath = decodeURIComponent(pathname).replace(/^\/+/, "");
   let filePath = path.resolve(rootDir, requestPath === "" ? "index.html" : requestPath);
   if (path.relative(rootDir, filePath).startsWith("..")) {
     res.statusCode = 403;
