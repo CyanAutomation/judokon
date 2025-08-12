@@ -1,5 +1,4 @@
 import { CAROUSEL_SWIPE_THRESHOLD } from "../constants.js";
-import { createScrollButton, updateScrollButtonState } from "./scroll.js";
 import { CarouselController } from "./controller.js";
 /**
  * Sets up keyboard navigation for the carousel container.
@@ -109,15 +108,5 @@ export function setupSwipeNavigation(container) {
  * @param {HTMLElement} container - Carousel container element.
  * @param {HTMLElement} wrapper - Wrapper element to hold buttons and container.
  */
-export function wireCarouselNavigation(container, wrapper) {
-  // Thin wrapper to maintain API while delegating to the unified controller.
-  const parent = wrapper || container.parentElement;
-  if (!parent) return;
-  if (!parent._carouselController) {
-    parent._carouselController = new CarouselController(container, parent, {
-      threshold: CAROUSEL_SWIPE_THRESHOLD
-    });
-  } else {
-    parent._carouselController.update();
-  }
-}
+// wireCarouselNavigation has been superseded by CarouselController.
+// Intentionally removed to avoid duplicate button/marker mounting.
