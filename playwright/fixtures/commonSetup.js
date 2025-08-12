@@ -19,11 +19,15 @@ export const test = base.extend({
     // Surface browser-side warnings and errors in test output for debugging
     page.on("console", (msg) => {
       const type = msg.type();
-      if (type === "warning" || type === "error") {
-        try {
-          console.log(`[browser:${type}]`, msg.text());
-        } catch {}
-      }
+      if (type !== "warning" && type !== "error") return;
+      // Filter out known noisy, low-signal messages to keep CI logs readable.
+      const text = msg.text();
+      const isNoisyResource404 = /Failed to load resource: the server responded with a status of 404/i.test(text);
+      const isBenignCountryMapping = /countryCodeMapping\.json/i.test(text);
+      if (isNoisyResource404 || isBenignCountryMapping) return;
+      try {
+        console.log(`[browser:${type}]`, text);
+      } catch {}
     });
     page.on("pageerror", (err) => {
       try {

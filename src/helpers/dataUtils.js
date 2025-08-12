@@ -5,6 +5,7 @@ const dataCache = new Map();
 let ajvInstance;
 
 import { getMissingJudokaFields } from "./judokaValidation.js";
+import { debugLog } from "./debug.js";
 
 /**
  * Determine if the code is running in a Node environment.
@@ -229,7 +230,8 @@ export async function fetchJson(url, schema) {
     return await validateAndCache(url, data, schema);
   } catch (error) {
     dataCache.delete(url);
-    console.error(`Error fetching ${url}:`, error);
+    // Reduce noisy console errors during tests/CI; still throw for callers to handle
+    debugLog(`Error fetching ${url}:`, error);
     throw error;
   }
 }

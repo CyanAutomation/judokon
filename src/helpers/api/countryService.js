@@ -36,7 +36,12 @@ export async function loadCountryMapping() {
         setItem(STORAGE_KEY, data);
         return data;
       } catch (err) {
-        console.warn("Failed to fetch countryCodeMapping.json", err);
+        // Reduce noise in tests/CI: prefer debug logging over warnings
+        // and fall back to local module import.
+        // eslint-disable-next-line no-console
+        if (typeof window !== "undefined" && window.DEBUG_LOGGING) {
+          console.log("Failed to fetch countryCodeMapping.json", err);
+        }
         const data = await importJsonModule("../../data/countryCodeMapping.json");
         setItem(STORAGE_KEY, data);
         return data;
