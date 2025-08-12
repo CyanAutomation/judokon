@@ -203,4 +203,3 @@ export class CarouselController {
     if (counter) counter.textContent = `Page ${this.currentPage + 1} of ${pageCount}`;
   }
 }
-

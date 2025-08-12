@@ -212,6 +212,8 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   const controller = new CarouselController(container, wrapper, {
     threshold: CAROUSEL_SWIPE_THRESHOLD
   });
+  // Expose for debugging/tests if needed
+  wrapper._carouselController = controller;
 
   // Apply non-navigation accessibility helpers
   setupFocusHandlers(container);

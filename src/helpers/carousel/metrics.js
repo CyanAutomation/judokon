@@ -28,4 +28,3 @@ export function getPageMetrics(container) {
 
   return { gap, pageWidth, cardsPerPage, pageCount };
 }
-
