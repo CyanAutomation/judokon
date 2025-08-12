@@ -11,6 +11,19 @@ export async function registerCommonRoutes(page) {
     page.route("**/src/data/judoka.json", (route) =>
       route.fulfill({ path: "tests/fixtures/judoka.json" })
     ),
+    // Serve local assets directly to avoid flakey fetches during fast navigations
+    page.route("**/src/assets/judokaPortraits/*", (route) => {
+      const file = route.request().url().split("/src/assets/judokaPortraits/")[1];
+      route.fulfill({ path: `src/assets/judokaPortraits/${file}` });
+    }),
+    page.route("**/src/assets/images/*", (route) => {
+      const file = route.request().url().split("/src/assets/images/")[1];
+      route.fulfill({ path: `src/assets/images/${file}` });
+    }),
+    page.route("**/src/assets/fonts/*", (route) => {
+      const file = route.request().url().split("/src/assets/fonts/")[1];
+      route.fulfill({ path: `src/assets/fonts/${file}` });
+    }),
     page.route("**/src/data/gokyo.json", (route) =>
       route.fulfill({ path: "tests/fixtures/gokyo.json" })
     ),

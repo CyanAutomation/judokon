@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const hideCard = document.getElementById("hideCard");
 
   if (!showRandom || !gameArea) {
-    console.error("Required DOM elements are missing.");
+    // Page does not expose game UI controls; skip wiring silently
     return;
   }
 
