@@ -1,5 +1,6 @@
 import { expect, afterEach, beforeEach } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
+import { muteConsole, restoreConsole } from "./utils/console.js";
 
 const originalMatchMedia = global.matchMedia;
 let originalPushState;
@@ -36,11 +37,15 @@ afterEach(() => {
     if (originalReplaceState) history.replaceState = originalReplaceState;
   }
   resetDom();
+  // Restore console to originals after each test
+  restoreConsole(["warn", "error"]);
 });
 
 // Prevent JSDOM navigation errors when tests assign to window.location.href.
 // Simulate URL changes by updating history without performing a real navigation.
 beforeEach(() => {
+  // Mute noisy console methods by default; tests can opt-in to logging
+  muteConsole(["warn", "error"]);
   try {
     const currentHref = String(window.location.href || "http://localhost/");
     const state = { href: currentHref };
