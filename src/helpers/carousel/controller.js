@@ -40,6 +40,10 @@ export class CarouselController {
 
     // Initial sync
     this.update();
+
+    // If constructed while detached, recompute metrics after connection.
+    // Ensures correct pageCount/markers once real layout is known.
+    this._afterConnectedInit();
   }
 
   destroy() {
@@ -48,6 +52,22 @@ export class CarouselController {
     this.leftBtn?.remove();
     this.rightBtn?.remove();
     this.markersRoot?.remove();
+  }
+
+  _afterConnectedInit() {
+    if (this.container.isConnected) {
+      const oldCount = this.metrics.pageCount;
+      this.metrics = getPageMetrics(this.container);
+      if (this.metrics.pageCount !== oldCount) {
+        this.markersRoot?.remove();
+        this.markersRoot = this._buildMarkers();
+        this.wrapper.append(this.markersRoot);
+      }
+      this.setPage(this.currentPage);
+    } else {
+      // Poll once per frame until connected to the document
+      requestAnimationFrame(() => this._afterConnectedInit());
+    }
   }
 
   next() {
