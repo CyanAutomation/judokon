@@ -152,7 +152,10 @@ export async function resolveUrl(url) {
     return new URL(urlStr, pathToFileURL(process.cwd() + "/").href);
   }
   // In browsers, prefer the current origin to preserve the active port.
-  const base = typeof window !== "undefined" && window.location?.origin ? window.location.origin : "http://localhost";
+  const base =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : "http://localhost";
   return new URL(urlStr, base);
 }
 
