@@ -10,7 +10,7 @@ import { getMissingJudokaFields, hasRequiredJudokaFields } from "../judokaValida
  *    a. Validate required fields and log errors for missing data.
  *    b. Generate a card or fall back to a default judoka.
  *    c. Apply accessibility attributes and append to the container.
- *    d. On portrait load error, swap the image to the silhouette placeholder (no card rebuild).
+ *    d. On portrait load error, rebuild the card using fallback judoka and replace the broken card.
  *
  * @param {HTMLElement} container - Carousel container element.
  * @param {Judoka[]} judokaList - Array of judoka objects.
@@ -35,15 +35,29 @@ export async function appendCards(container, judokaList, gokyoLookup) {
     if (card) {
       const img = card.querySelector("img");
       if (img) {
-        // Be resilient: if a portrait 404s, fall back to the silhouette image
-        // without reconstructing the entire card to avoid layout/DOM churn.
-        const onError = () => {
-          // Clear handler to avoid loops and set placeholder directly.
-          img.onerror = null;
-          img.removeAttribute("data-portrait-src");
-          img.src = "../assets/judokaPortraits/judokaPortrait-0.png";
-        };
-        img.addEventListener("error", onError, { once: true });
+        // If a portrait fails to load, rebuild the card with fallback judoka
+        // and replace the broken element to maintain consistent content.
+        img.addEventListener(
+          "error",
+          async () => {
+            try {
+              const fallback = await getFallbackJudoka();
+              // Build a replacement card without auto-appending to container.
+              const fallbackCard = await generateJudokaCard(fallback, gokyoLookup);
+              if (fallbackCard) {
+                const parent = container || card.parentElement;
+                if (parent && parent.contains(card)) {
+                  parent.replaceChild(fallbackCard, card);
+                } else if (parent) {
+                  parent.appendChild(fallbackCard);
+                }
+              }
+            } catch (err) {
+              console.error("Failed to swap to fallback card", err);
+            }
+          },
+          { once: true }
+        );
       }
       card.tabIndex = 0;
       card.setAttribute("role", "listitem");
