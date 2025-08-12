@@ -216,6 +216,16 @@ export function scheduleNextRound(result) {
   }
 
   const run = runTimerWithDrift(startCoolDown);
+
+  // Proactively surface the upcoming cooldown to replace any earlier prompt
+  // snackbar (e.g., "Select your move") while we wait to start the timer.
+  // This ensures tests can observe the cooldown message promptly and avoids
+  // confusion if the cooldown is skipped quickly.
+  if (!snackbarStarted) {
+    showSnackbar("Next round in: 3s");
+    snackbarStarted = true;
+  }
+
   startTimeoutId = setTimeout(() => {
     cooldownStarted = true;
     run(3, onTick, onExpired, () => {
