@@ -2,6 +2,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const originalReadyState = Object.getOwnPropertyDescriptor(document, "readyState");
 const originalClipboard = navigator.clipboard;
+const originalScrollIntoView = Element.prototype.scrollIntoView;
+const originalHash = location.hash;
+
+async function flush() {
+  await Promise.resolve();
+  await Promise.resolve();
+}
 
 beforeEach(() => {
   vi.resetModules();
@@ -21,6 +28,9 @@ afterEach(() => {
     Object.defineProperty(document, "readyState", originalReadyState);
   }
   navigator.clipboard = originalClipboard;
+  Element.prototype.scrollIntoView = originalScrollIntoView;
+  location.hash = originalHash;
+  vi.useRealTimers();
 });
 
 describe("setupTooltipViewerPage", () => {
@@ -36,7 +46,7 @@ describe("setupTooltipViewerPage", () => {
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
-    await Promise.resolve();
+    await flush();
 
     const item = document.querySelector("#tooltip-list li");
     expect(item).toBeTruthy();
@@ -59,7 +69,7 @@ describe("setupTooltipViewerPage", () => {
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
-    await Promise.resolve();
+    await flush();
 
     const invalid = document.querySelector('#tooltip-list li[data-key="ui.bad"]');
     expect(invalid).toBeTruthy();
@@ -83,7 +93,7 @@ describe("setupTooltipViewerPage", () => {
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
-    await Promise.resolve();
+    await flush();
 
     const malformed = document.querySelector('#tooltip-list li[data-key="ui.warn"]');
     expect(malformed).toBeTruthy();
@@ -107,7 +117,7 @@ describe("setupTooltipViewerPage", () => {
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
-    await Promise.resolve();
+    await flush();
 
     const item = document.querySelector("#tooltip-list li");
     item.click();
@@ -129,7 +139,7 @@ describe("setupTooltipViewerPage", () => {
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
-    await Promise.resolve();
+    await flush();
 
     const preview = document.getElementById("tooltip-preview");
     Object.defineProperty(preview, "scrollHeight", { value: 400, configurable: true });
@@ -160,11 +170,12 @@ describe("setupTooltipViewerPage", () => {
     const showSnackbar = vi.fn();
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
 
+    vi.useFakeTimers();
     await import("../../src/helpers/tooltipViewerPage.js");
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
-    await Promise.resolve();
+    await flush();
 
     const item = document.querySelector("#tooltip-list li");
     item.click();
@@ -177,6 +188,9 @@ describe("setupTooltipViewerPage", () => {
     expect(writeText).toHaveBeenCalledWith("ui.tip");
     expect(showSnackbar).toHaveBeenCalledWith("Copied");
     expect(btn.classList.contains("copied")).toBe(true);
+
+    vi.runAllTimers();
+    expect(btn.classList.contains("copied")).toBe(false);
   });
 
   it("copies body text when body copy button is clicked", async () => {
@@ -197,7 +211,7 @@ describe("setupTooltipViewerPage", () => {
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
-    await Promise.resolve();
+    await flush();
 
     const item = document.querySelector("#tooltip-list li");
     item.click();
@@ -210,6 +224,28 @@ describe("setupTooltipViewerPage", () => {
     expect(writeText).toHaveBeenCalledWith("body text");
     expect(showSnackbar).toHaveBeenCalledWith("Copied");
     expect(btn.classList.contains("copied")).toBe(true);
+  });
+
+  it("selects tooltip from URL hash on load", async () => {
+    Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ "ui.tip": "text", "ui.other": "x" }),
+      importJsonModule: vi.fn().mockResolvedValue({})
+    }));
+
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    location.hash = "#ui.tip";
+
+    await import("../../src/helpers/tooltipViewerPage.js");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+
+    await flush();
+
+    expect(document.getElementById("tooltip-preview").innerHTML).toBe("text");
+    expect(scrollIntoView).toHaveBeenCalled();
   });
 
   it("shows 'File not found' when tooltips.json is missing", async () => {
@@ -227,7 +263,7 @@ describe("setupTooltipViewerPage", () => {
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
-    await Promise.resolve();
+    await flush();
 
     expect(document.getElementById("tooltip-preview").textContent).toBe("File not found");
 
@@ -249,7 +285,7 @@ describe("setupTooltipViewerPage", () => {
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
-    await Promise.resolve();
+    await flush();
 
     expect(document.getElementById("tooltip-preview").textContent).toBe("Line 3, Column 15");
 
@@ -268,7 +304,7 @@ describe("setupTooltipViewerPage", () => {
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
-    await Promise.resolve();
+    await flush();
 
     const invalid = document.querySelector('#tooltip-list li[data-key="badkey"]');
     expect(invalid).toBeTruthy();
