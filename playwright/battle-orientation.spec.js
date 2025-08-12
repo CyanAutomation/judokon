@@ -1,6 +1,13 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import os from "os";
 
+function getOsSuffix() {
+  const p = os.platform();
+  if (p === "linux") return "-linux";
+  if (p === "darwin") return "-darwin";
+  return "-win32";
+}
+
 const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
 
 test.describe.parallel("Battle orientation behavior", () => {
@@ -49,12 +56,30 @@ test.describe.parallel(
     });
 
     test("captures portrait and landscape headers", async ({ page }) => {
-      const osSuffix = (() => {
-        const p = os.platform();
-        if (p === "linux") return "-linux";
-        if (p === "darwin") return "-darwin";
-        return "-win32";
-      })();
+      // Helper to ensure the header stops mutating before taking a snapshot.
+      // We consider it stable when its innerText stays unchanged for 300ms.
+      const waitForHeaderStability = async () => {
+        await page.evaluate(() => {
+          const el = document.querySelector(".battle-header");
+          if (!el) return true;
+          return new Promise((resolve) => {
+            let last = el.innerText;
+            let stableSince = performance.now();
+            const id = setInterval(() => {
+              const nowText = el.innerText;
+              if (nowText !== last) {
+                last = nowText;
+                stableSince = performance.now();
+              }
+              if (performance.now() - stableSince >= 300) {
+                clearInterval(id);
+                resolve(true);
+              }
+            }, 50);
+          });
+        });
+      };
+      const osSuffix = getOsSuffix();
       await page.goto("/src/pages/battleJudoka.html");
       await page.waitForSelector("#score-display span", { state: "attached" });
       await page.evaluate(() => window.skipBattlePhase?.());
@@ -84,6 +109,7 @@ test.describe.parallel(
         () => document.querySelector("#round-message")?.textContent.trim().length > 0
       );
       await expect(page.locator(".battle-header")).toBeVisible();
+      await waitForHeaderStability();
       await expect(page.locator(".battle-header")).toHaveScreenshot(
         `battle-header-portrait${osSuffix}.png`
       );
@@ -109,12 +135,14 @@ test.describe.parallel(
         () => document.querySelector("#round-message")?.textContent.trim().length > 0
       );
       await expect(page.locator(".battle-header")).toBeVisible();
+      await waitForHeaderStability();
       await expect(page.locator(".battle-header")).toHaveScreenshot(
         `battle-header-landscape${osSuffix}.png`
       );
     });
 
     test("captures extra-narrow header", async ({ page }) => {
+      const osSuffix = getOsSuffix();
       await page.goto("/src/pages/battleJudoka.html");
       await page.waitForSelector("#score-display span", { state: "attached" });
       await page.evaluate(() => window.skipBattlePhase?.());
@@ -146,7 +174,27 @@ test.describe.parallel(
       await page.waitForFunction(
         () => document.querySelector("#round-message")?.textContent.trim().length > 0
       );
+      // Reuse the same stability guard as the main screenshot test
       await expect(page.locator(".battle-header")).toBeVisible();
+      await page.evaluate(() => {
+        const el = document.querySelector(".battle-header");
+        if (!el) return true;
+        return new Promise((resolve) => {
+          let last = el.innerText;
+          let stableSince = performance.now();
+          const id = setInterval(() => {
+            const nowText = el.innerText;
+            if (nowText !== last) {
+              last = nowText;
+              stableSince = performance.now();
+            }
+            if (performance.now() - stableSince >= 300) {
+              clearInterval(id);
+              resolve(true);
+            }
+          }, 50);
+        });
+      });
       await expect(page.locator(".battle-header")).toHaveScreenshot(
         `battle-header-300${osSuffix}.png`
       );
