@@ -52,7 +52,7 @@ describe("data files conform to schemas", () => {
       items.map(async (item) => {
         const valid = validate(item);
         if (!valid) {
-          console.error(validate.errors);
+          // Avoid raw console noise; surface details via thrown error
           throw new Error(ajv.errorsText(validate.errors) || JSON.stringify(validate.errors));
         }
         expect(valid).toBe(true);
