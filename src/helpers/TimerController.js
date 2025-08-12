@@ -1,4 +1,5 @@
 import { getDefaultTimer, createCountdownTimer } from "./timerUtils.js";
+import { onSecondTick as scheduleSecond, cancel as cancelSchedule } from "../utils/scheduler.js";
 
 const FALLBACKS = {
   roundTimer: 30,
@@ -20,12 +21,14 @@ const FALLBACKS = {
  * 5. `getState` returns `{ remaining, paused }`.
  */
 export class TimerController {
-  constructor() {
+  constructor({ onSecondTick = scheduleSecond, cancel = cancelSchedule } = {}) {
     this.currentTimer = null;
     this.remaining = 0;
     this.paused = false;
     this.onTickCb = null;
     this.onExpiredCb = null;
+    this.onSecondTick = onSecondTick;
+    this.cancel = cancel;
   }
 
   async #start(category, onTick, onExpired, duration, pauseOnHidden) {
@@ -50,7 +53,9 @@ export class TimerController {
       onExpired: async () => {
         if (this.onExpiredCb) await this.onExpiredCb();
       },
-      pauseOnHidden
+      pauseOnHidden,
+      onSecondTick: this.onSecondTick,
+      cancel: this.cancel
     });
     this.currentTimer.start();
   }

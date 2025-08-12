@@ -1,38 +1,48 @@
 import { describe, it, expect, vi } from "vitest";
+const callbacks = [];
+vi.mock("../../src/utils/scheduler.js", () => ({
+  onSecondTick: (cb) => {
+    callbacks.push(cb);
+    return callbacks.length - 1;
+  },
+  cancel: (id) => {
+    delete callbacks[id];
+  }
+}));
 import { createCountdownTimer } from "../../src/helpers/timerUtils.js";
+
+function tick() {
+  callbacks.slice().forEach((cb) => cb());
+}
 
 describe("createCountdownTimer", () => {
   it("counts down and calls expired", () => {
-    vi.useFakeTimers();
     const onTick = vi.fn();
     const onExpired = vi.fn();
     const timer = createCountdownTimer(2, { onTick, onExpired });
     timer.start();
     expect(onTick).toHaveBeenCalledWith(2);
-    vi.advanceTimersByTime(1000);
+    tick();
     expect(onTick).toHaveBeenCalledWith(1);
-    vi.advanceTimersByTime(1000);
+    tick();
     expect(onExpired).toHaveBeenCalled();
-    vi.useRealTimers();
   });
 
   it("pauses and resumes", () => {
-    vi.useFakeTimers();
     const onExpired = vi.fn();
     const timer = createCountdownTimer(2, { onExpired });
     timer.start();
-    vi.advanceTimersByTime(1000);
+    tick();
     timer.pause();
-    vi.advanceTimersByTime(2000);
+    tick();
+    tick();
     expect(onExpired).not.toHaveBeenCalled();
     timer.resume();
-    vi.advanceTimersByTime(1000);
+    tick();
     expect(onExpired).toHaveBeenCalled();
-    vi.useRealTimers();
   });
 
   it("auto pauses when hidden", () => {
-    vi.useFakeTimers();
     const onExpired = vi.fn();
     const timer = createCountdownTimer(2, { onExpired, pauseOnHidden: true });
     timer.start();
@@ -41,16 +51,17 @@ describe("createCountdownTimer", () => {
       get: () => true
     });
     document.dispatchEvent(new Event("visibilitychange"));
-    vi.advanceTimersByTime(2000);
+    tick();
+    tick();
     expect(onExpired).not.toHaveBeenCalled();
     Object.defineProperty(document, "hidden", {
       configurable: true,
       get: () => false
     });
     document.dispatchEvent(new Event("visibilitychange"));
-    vi.advanceTimersByTime(2000);
+    tick();
+    tick();
     expect(onExpired).toHaveBeenCalled();
     delete document.hidden;
-    vi.useRealTimers();
   });
 });

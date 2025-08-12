@@ -1,6 +1,23 @@
 // @vitest-environment node
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+const callbacks = [];
+let now = 0;
+vi.mock("../../src/utils/scheduler.js", () => ({
+  onSecondTick: (cb) => {
+    callbacks.push(cb);
+    return callbacks.length - 1;
+  },
+  cancel: (id) => {
+    delete callbacks[id];
+  }
+}));
+vi.spyOn(Date, "now").mockImplementation(() => now);
 import { compareStats, createDriftWatcher } from "../../src/helpers/BattleEngine.js";
+
+function tick(ms = 1000) {
+  now += ms;
+  callbacks.slice().forEach((cb) => cb());
+}
 
 describe("compareStats", () => {
   it("detects player win", () => {
@@ -17,12 +34,15 @@ describe("compareStats", () => {
 });
 
 describe("createDriftWatcher", () => {
+  beforeEach(() => {
+    callbacks.length = 0;
+    now = 0;
+  });
   afterEach(() => {
-    vi.useRealTimers();
+    callbacks.length = 0;
   });
 
   it("invokes callback when drift exceeds threshold", () => {
-    vi.useFakeTimers();
     const timer = {
       hasActiveTimer: vi.fn().mockReturnValue(true),
       getState: vi.fn().mockReturnValue({ remaining: 13, paused: false })
@@ -30,12 +50,11 @@ describe("createDriftWatcher", () => {
     const onDrift = vi.fn();
     const watch = createDriftWatcher(timer);
     watch(10, onDrift);
-    vi.advanceTimersByTime(1000);
+    tick();
     expect(onDrift).toHaveBeenCalledWith(13);
   });
 
   it("ignores time spent paused when checking for drift", () => {
-    vi.useFakeTimers();
     let remaining = 10;
     let paused = false;
     const timer = {
@@ -48,20 +67,20 @@ describe("createDriftWatcher", () => {
 
     // run for 3 seconds
     remaining = 9;
-    vi.advanceTimersByTime(1000);
+    tick();
     remaining = 8;
-    vi.advanceTimersByTime(1000);
+    tick();
     remaining = 7;
-    vi.advanceTimersByTime(1000);
+    tick();
 
     // pause for 5 seconds
     paused = true;
-    vi.advanceTimersByTime(5000);
+    tick(5000);
 
     // resume and run one more second
     paused = false;
     remaining = 6;
-    vi.advanceTimersByTime(1000);
+    tick();
 
     expect(onDrift).not.toHaveBeenCalled();
   });

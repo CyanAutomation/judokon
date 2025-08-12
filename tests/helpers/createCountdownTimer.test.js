@@ -1,6 +1,20 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
+const callbacks = [];
+vi.mock("../../src/utils/scheduler.js", () => ({
+  onSecondTick: (cb) => {
+    callbacks.push(cb);
+    return callbacks.length - 1;
+  },
+  cancel: (id) => {
+    delete callbacks[id];
+  }
+}));
 import { createCountdownTimer } from "../../src/helpers/timerUtils.js";
+
+function tick() {
+  callbacks.slice().forEach((cb) => cb());
+}
 
 /**
  * These tests cover the small countdown timer utility used by the battle engine
@@ -10,44 +24,39 @@ import { createCountdownTimer } from "../../src/helpers/timerUtils.js";
 
 describe("createCountdownTimer", () => {
   it("updates remaining time on each tick", () => {
-    vi.useFakeTimers();
     const onTick = vi.fn();
     const timer = createCountdownTimer(3, { onTick });
     timer.start();
     expect(onTick).toHaveBeenCalledWith(3);
-    vi.advanceTimersByTime(1000);
+    tick();
     expect(onTick).toHaveBeenCalledWith(2);
-    vi.advanceTimersByTime(1000);
+    tick();
     expect(onTick).toHaveBeenCalledWith(1);
-    vi.useRealTimers();
   });
 
   it("handles pause and resume", () => {
-    vi.useFakeTimers();
     const onExpired = vi.fn();
     const timer = createCountdownTimer(2, { onExpired });
     timer.start();
     timer.pause();
-    vi.advanceTimersByTime(2000);
+    tick();
+    tick();
     expect(onExpired).not.toHaveBeenCalled();
     timer.resume();
-    vi.advanceTimersByTime(2000);
+    tick();
+    tick();
     expect(onExpired).toHaveBeenCalled();
-    vi.useRealTimers();
   });
 
   it("calls expiration callback", () => {
-    vi.useFakeTimers();
     const onExpired = vi.fn();
     const timer = createCountdownTimer(1, { onExpired });
     timer.start();
-    vi.advanceTimersByTime(1000);
+    tick();
     expect(onExpired).toHaveBeenCalled();
-    vi.useRealTimers();
   });
 
   it.each([0, -1])("expires immediately for non-positive duration %i", (dur) => {
-    vi.useFakeTimers();
     const onTick = vi.fn();
     const onExpired = vi.fn();
     const timer = createCountdownTimer(dur, { onTick, onExpired });
@@ -55,9 +64,7 @@ describe("createCountdownTimer", () => {
     expect(onTick).toHaveBeenCalledOnce();
     expect(onTick).toHaveBeenCalledWith(0);
     expect(onExpired).toHaveBeenCalledOnce();
-    expect(vi.getTimerCount()).toBe(0);
-    vi.advanceTimersByTime(1000);
+    tick();
     expect(onTick).toHaveBeenCalledOnce();
-    vi.useRealTimers();
   });
 });
