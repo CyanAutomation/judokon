@@ -137,14 +137,20 @@ function watchBattleOrientation() {
     });
   }
 
+  let rafPending = false;
   const onChange = () => {
-    const header = document.querySelector(".battle-header");
-    if (header) {
-      const next = getOrientation();
-      if (header.dataset.orientation !== next) {
-        header.dataset.orientation = next;
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(() => {
+      rafPending = false;
+      const header = document.querySelector(".battle-header");
+      if (header) {
+        const next = getOrientation();
+        if (header.dataset.orientation !== next) {
+          header.dataset.orientation = next;
+        }
       }
-    }
+    });
   };
   window.addEventListener("orientationchange", onChange);
   window.addEventListener("resize", onChange);

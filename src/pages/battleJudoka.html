@@ -177,8 +177,17 @@
             }
           }
           apply();
-          window.addEventListener("resize", apply);
-          window.addEventListener("orientationchange", apply);
+          var pending = false;
+          function onChange() {
+            if (pending) return;
+            pending = true;
+            requestAnimationFrame(function () {
+              pending = false;
+              apply();
+            });
+          }
+          window.addEventListener("resize", onChange);
+          window.addEventListener("orientationchange", onChange);
         })();
       </script>
       <script type="module" src="../helpers/setupBottomNavbar.js"></script>
