@@ -5,7 +5,7 @@ import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { prepareSearchUi, getSelectedTags } from "./vectorSearchPage/queryUi.js";
 import { renderResults } from "./vectorSearchPage/renderResults.js";
-import { selectMatches, getExtractor, SIMILARITY_THRESHOLD } from "./api/vectorSearchPage.js";
+import { getExtractor, SIMILARITY_THRESHOLD } from "./api/vectorSearchPage.js";
 
 let spinner;
 
@@ -37,6 +37,58 @@ async function loadResultContext(el) {
 }
 
 /**
+ * Expand the query and generate its vector representation.
+ *
+ * @pseudocode
+ * 1. Split the original query into lowercase terms.
+ * 2. Expand the query with domain-specific synonyms.
+ * 3. Obtain the feature extractor and convert the expanded query into a vector.
+ * 4. Return the original terms along with the resulting vector.
+ *
+ * @param {string} query - Raw query string from the user.
+ * @returns {Promise<{terms: string[], vector: number[]}>} Processed query data.
+ */
+async function buildQueryVector(query) {
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const expanded = await vectorSearch.expandQueryWithSynonyms(query);
+  const model = await getExtractor();
+  const result = await model(expanded, { pooling: "mean" });
+  const vector = Array.from(result.data ?? result);
+  return { terms, vector };
+}
+
+/**
+ * Select the matches to display and expose strong matches for messaging.
+ *
+ * @pseudocode
+ * 1. Divide matches into strong and weak groups by `SIMILARITY_THRESHOLD`.
+ * 2. If multiple strong matches exist and the score gap between the top two
+ *    exceeds `DROP_OFF_THRESHOLD`, keep only the top match.
+ * 3. If no strong matches, return the top three weak ones.
+ * 4. Return both the strong list and the final selection.
+ *
+ * @param {Array<{score:number}>} matches - All matches sorted by score.
+ * @returns {{strongMatches: Array, toRender: Array}} Partitioned selections.
+ */
+function selectTopMatches(matches) {
+  const DROP_OFF_THRESHOLD = 0.4;
+  const strongMatches = matches.filter((m) => m.score >= SIMILARITY_THRESHOLD);
+  const weakMatches = matches.filter((m) => m.score < SIMILARITY_THRESHOLD);
+  let toRender;
+  if (
+    strongMatches.length > 1 &&
+    strongMatches[0].score - strongMatches[1].score > DROP_OFF_THRESHOLD
+  ) {
+    toRender = [strongMatches[0]];
+  } else if (strongMatches.length > 0) {
+    toRender = strongMatches;
+  } else {
+    toRender = weakMatches.slice(0, 3);
+  }
+  return { strongMatches, toRender };
+}
+
+/**
  * Handle the vector search form submission.
  *
  * @pseudocode
@@ -64,23 +116,21 @@ export async function handleSearch(event) {
   event.preventDefault();
   const { query, tbody, messageEl } = prepareSearchUi();
   if (!query) return;
-  const queryTerms = query.toLowerCase().split(/\s+/).filter(Boolean);
-  const expandedQuery = await vectorSearch.expandQueryWithSynonyms(query);
   const selected = getSelectedTags();
   showSearching(messageEl);
   try {
-    const vector = await getQueryVector(expandedQuery);
-    const matches = await vectorSearch.findMatches(vector, 5, selected, expandedQuery);
+    const { terms, vector } = await buildQueryVector(query);
+    const matches = await vectorSearch.findMatches(vector, 5, selected, query);
     finalizeSearchUi(messageEl);
     if (handleNoMatches(matches, messageEl)) return;
 
-    const { strongMatches, toRender } = partitionAndSelect(matches);
+    const { strongMatches, toRender } = selectTopMatches(matches);
     if (strongMatches.length === 0 && messageEl) {
       messageEl.textContent =
         "\u26A0\uFE0F No strong matches found, but here are the closest matches based on similarity.";
       messageEl.classList.add("search-result-empty");
     }
-    renderResults(tbody, toRender, queryTerms, loadResultContext);
+    renderResults(tbody, toRender, terms, loadResultContext);
   } catch (err) {
     console.error("Search failed", err);
     spinner.style.display = "none";
@@ -94,18 +144,6 @@ function showSearching(messageEl) {
     messageEl.textContent = "Searching...";
     messageEl.classList.remove("search-result-empty");
   }
-}
-
-function partitionAndSelect(matches) {
-  const strongMatches = matches.filter((m) => m.score >= SIMILARITY_THRESHOLD);
-  const weakMatches = matches.filter((m) => m.score < SIMILARITY_THRESHOLD);
-  return { strongMatches, toRender: selectMatches(strongMatches, weakMatches) };
-}
-
-async function getQueryVector(expandedQuery) {
-  const model = await getExtractor();
-  const result = await model(expandedQuery, { pooling: "mean" });
-  return Array.from(result.data ?? result);
 }
 
 function finalizeSearchUi(messageEl) {
