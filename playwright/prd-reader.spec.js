@@ -39,6 +39,7 @@ test.describe.parallel("PRD Reader page", () => {
   test("tab and arrow key traversal", async ({ page }) => {
     const items = page.locator(".sidebar-list li");
     const container = page.locator("#prd-content");
+    await expect(container).not.toHaveText("");
     const initial = await container.innerHTML();
     const isFirstFocused = async () =>
       await items.first().evaluate((el) => el === document.activeElement);
