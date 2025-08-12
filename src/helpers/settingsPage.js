@@ -172,7 +172,14 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
   return function renderSwitches(gameModes, tooltipMap) {
     // Apply current settings once toggles are available.
     const current = getCurrentSettings();
-    applyInitialControlValues(controls, current, tooltipMap);
+    const radio = document.querySelector('input[name="display-mode"]:checked');
+    let next = current;
+    if (radio && radio.value !== current.displayMode) {
+      withViewTransition(() => applyDisplayMode(radio.value));
+      handleUpdate("displayMode", radio.value, () => {});
+      next = { ...current, displayMode: radio.value };
+    }
+    applyInitialControlValues(controls, next, tooltipMap);
     const modesContainerEl = document.getElementById("game-mode-toggle-container");
     if (modesContainerEl && Array.isArray(gameModes)) {
       clearToggles(modesContainerEl);
