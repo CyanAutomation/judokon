@@ -1,12 +1,11 @@
 import { createGokyoLookup } from "./utils.js";
-import {
-  createCarouselStructure,
-  wireCarouselNavigation,
-  initAccessibility,
-  setupResponsiveSizing,
-  appendCards
-} from "./carousel/index.js";
+import { createCarouselStructure, setupResponsiveSizing, appendCards } from "./carousel/index.js";
+import { CarouselController } from "./carousel/controller.js";
+import { applyAccessibilityImprovements } from "./carousel/accessibility.js";
+import { setupFocusHandlers } from "./carousel/focus.js";
+import { setupLazyPortraits } from "./lazyPortrait.js";
 import { SPINNER_DELAY_MS } from "./constants.js";
+import { CAROUSEL_SWIPE_THRESHOLD } from "./constants.js";
 
 /**
  * Adds scroll markers to indicate the user's position in the carousel.
@@ -28,8 +27,9 @@ import { SPINNER_DELAY_MS } from "./constants.js";
  */
 function addScrollMarkers(container, wrapper) {
   if (!container || !wrapper) return;
+  // If a controller already created markers, leave them in place.
   const existing = wrapper.querySelector(".scroll-markers");
-  if (existing) existing.remove();
+  if (existing) return;
   const markers = document.createElement("div");
   markers.className = "scroll-markers";
 
@@ -208,8 +208,15 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   clearTimeout(timeoutId);
   spinner.style.display = "none";
 
-  wireCarouselNavigation(container, wrapper);
-  initAccessibility(container, wrapper);
+  // Initialize unified controller (buttons, keyboard, swipe, markers, counter)
+  const controller = new CarouselController(container, wrapper, {
+    threshold: CAROUSEL_SWIPE_THRESHOLD
+  });
+
+  // Apply non-navigation accessibility helpers
+  setupFocusHandlers(container);
+  applyAccessibilityImprovements(wrapper);
+  setupLazyPortraits(container);
 
   return wrapper;
 }
