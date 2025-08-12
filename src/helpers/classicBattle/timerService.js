@@ -173,6 +173,12 @@ export function scheduleNextRound(result) {
   // Track snackbar lifecycle and whether the cooldown actually started.
   let snackbarStarted = false;
 
+  // Make the Next button act as a skip control during cooldown: keep it enabled
+  // but mark it as not-ready until the cooldown expires. The click handler will
+  // request a skip when not ready.
+  btn.disabled = false;
+  delete btn.dataset.nextReady;
+
   const onTick = (remaining) => {
     if (remaining <= 0) {
       infoBar.clearTimer();
