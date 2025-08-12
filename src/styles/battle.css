@@ -34,6 +34,8 @@
    even before text is populated. */
 .battle-header #next-round-timer {
   min-height: 1em;
+  display: block;
+  visibility: visible;
 }
 
 .battle-header #score-display {
