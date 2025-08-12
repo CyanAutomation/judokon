@@ -11,24 +11,114 @@ const FILE_NOT_FOUND_MSG = "File not found";
 const LOAD_ERROR_MSG = "Error loading tooltips.";
 
 /**
+ * Load and flatten `tooltips.json`, displaying errors in the preview element.
+ *
+ * @pseudocode
+ * 1. Attempt to fetch and flatten the tooltip JSON.
+ * 2. When the file is missing, show "File not found".
+ * 3. For JSON parse errors, extract and display line/column details.
+ * 4. On other failures, show a generic loading error.
+ * 5. Return the flattened data or `null` when loading fails.
+ *
+ * @param {HTMLElement} previewEl - Element used to display error messages.
+ * @returns {Promise<Record<string,string>|null>}
+ */
+export async function loadTooltipData(previewEl) {
+  try {
+    const json = await fetchJson(`${DATA_DIR}tooltips.json`);
+    return flattenTooltips(json);
+  } catch (err) {
+    console.error("Failed to load tooltips", err);
+    const status = err?.status ?? err?.response?.status;
+    if (err?.code === "ENOENT" || status === 404) {
+      previewEl.textContent = FILE_NOT_FOUND_MSG;
+    } else if (err instanceof SyntaxError) {
+      const pos = extractLineAndColumn(err);
+      previewEl.textContent = pos ? `Line ${pos.line}, Column ${pos.column}` : LOAD_ERROR_MSG;
+    } else {
+      previewEl.textContent = LOAD_ERROR_MSG;
+    }
+    return null;
+  }
+}
+
+/**
+ * Initialize debounced search filtering on the tooltip list.
+ *
+ * @pseudocode
+ * 1. On each input event, clear the previous debounce timer.
+ * 2. Set a new timer to update the list after 300ms.
+ *
+ * @param {HTMLInputElement} searchInput - Search box element.
+ * @param {(filter: string) => void} updateList - Callback to refresh the list.
+ */
+export function initSearchFilter(searchInput, updateList) {
+  let timer;
+  searchInput.addEventListener("input", () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => updateList(searchInput.value), 300);
+  });
+}
+
+/**
+ * Attach copy-to-clipboard behavior to the key and body buttons.
+ *
+ * @pseudocode
+ * 1. When a button is clicked, write its `data-copy` text to the clipboard.
+ * 2. Show a "Copied" snackbar and add a temporary `copied` class for feedback.
+ *
+ * @param {HTMLButtonElement} keyCopyBtn - Button for copying the key.
+ * @param {HTMLButtonElement} bodyCopyBtn - Button for copying the body.
+ */
+export function bindCopyButtons(keyCopyBtn, bodyCopyBtn) {
+  function copy(btn) {
+    const text = btn.dataset.copy || "";
+    if (navigator.clipboard) {
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          showSnackbar("Copied");
+          btn.classList.add("copied");
+          setTimeout(() => btn.classList.remove("copied"), 600);
+        })
+        .catch(() => {});
+    }
+  }
+  keyCopyBtn.addEventListener("click", () => copy(keyCopyBtn));
+  bodyCopyBtn.addEventListener("click", () => copy(bodyCopyBtn));
+}
+
+/**
+ * Select and scroll to the list item referenced by `location.hash`.
+ *
+ * @pseudocode
+ * 1. Read and decode the URL hash.
+ * 2. Find the matching list item and invoke `select`.
+ * 3. Scroll the element into view when found.
+ *
+ * @param {HTMLElement} listPlaceholder - List element containing tooltip items.
+ * @param {(key: string) => void} select - Selection callback.
+ */
+export function applyHashSelection(listPlaceholder, select) {
+  if (location.hash) {
+    const key = decodeURIComponent(location.hash.slice(1));
+    const el = listPlaceholder.querySelector(`[data-key="${key}"]`);
+    if (el) {
+      select(key);
+      el.scrollIntoView({ block: "center" });
+    }
+  }
+}
+
+/**
  * Initialize the Tooltip Viewer page.
  *
  * @pseudocode
- * 1. Load and flatten `tooltips.json` using `fetchJson` and `flattenTooltips`.
- *    When the file is missing, show "File not found"; on parse errors display
- *    "Line X, Column Y"; otherwise show a generic loading error.
- * 2. Render a clickable list of keys filtered by the search box (300ms debounce),
- *    tagging items with a class based on their prefix (e.g. `stat`, `ui`) and
- *    flagging empty bodies, malformed markup, or invalid key names with a warning icon.
- * 3. Wrap the preview in a 300px-high container with a toggle button to expand
- *    or collapse long content.
- * 4. When a key is selected, display its parsed HTML and raw text in the
- *    preview, and show a warning when the markup is unbalanced.
- * 5. Provide copy buttons for the key and body using `navigator.clipboard` and
- *    show feedback with a snackbar and button animation.
- * 6. On page load, select the key from the URL hash when present and scroll to
- *    it.
- * 7. Call `initTooltips()` so help icons inside the page gain tooltips.
+ * 1. Grab DOM references and instantiate `PreviewToggle`.
+ * 2. Load tooltip data with {@link loadTooltipData}; exit on failure.
+ * 3. Render and filter the list, updating the preview on selection.
+ * 4. Bind copy buttons and search filtering.
+ * 5. Apply URL hash selection, then initialize help tooltips.
  */
 export async function setupTooltipViewerPage() {
   const searchInput = document.getElementById("tooltip-search");
@@ -40,30 +130,10 @@ export async function setupTooltipViewerPage() {
   const bodyCopyBtn = document.getElementById("copy-body-btn");
   const previewToggle = new PreviewToggle(previewEl);
 
-  let data;
-  try {
-    const json = await fetchJson(`${DATA_DIR}tooltips.json`);
-    data = flattenTooltips(json);
-  } catch (err) {
-    console.error("Failed to load tooltips", err);
-    const status = err?.status ?? err?.response?.status;
-    if (err?.code === "ENOENT" || status === 404) {
-      previewEl.textContent = FILE_NOT_FOUND_MSG;
-    } else if (err instanceof SyntaxError) {
-      const pos = extractLineAndColumn(err);
-      if (pos) {
-        previewEl.textContent = `Line ${pos.line}, Column ${pos.column}`;
-      } else {
-        previewEl.textContent = LOAD_ERROR_MSG;
-      }
-    } else {
-      previewEl.textContent = LOAD_ERROR_MSG;
-    }
-    return;
-  }
+  const data = await loadTooltipData(previewEl);
+  if (!data) return;
 
   let listSelect;
-
   function updateList(filter = "") {
     const { element, listSelect: selectFn } = renderList(data, filter, select, listPlaceholder);
     listPlaceholder = element;
@@ -98,39 +168,11 @@ export async function setupTooltipViewerPage() {
     previewToggle.update();
   }
 
-  function copy(btn) {
-    const text = btn.dataset.copy || "";
-    if (navigator.clipboard) {
-      navigator.clipboard
-        .writeText(text)
-        .then(() => {
-          showSnackbar("Copied");
-          btn.classList.add("copied");
-          setTimeout(() => btn.classList.remove("copied"), 600);
-        })
-        .catch(() => {});
-    }
-  }
-
-  keyCopyBtn.addEventListener("click", () => copy(keyCopyBtn));
-  bodyCopyBtn.addEventListener("click", () => copy(bodyCopyBtn));
-
-  let timer;
-  searchInput.addEventListener("input", () => {
-    clearTimeout(timer);
-    timer = setTimeout(() => updateList(searchInput.value), 300);
-  });
+  bindCopyButtons(keyCopyBtn, bodyCopyBtn);
+  initSearchFilter(searchInput, updateList);
 
   updateList();
-  if (location.hash) {
-    const key = decodeURIComponent(location.hash.slice(1));
-    const el = listPlaceholder.querySelector(`[data-key="${key}"]`);
-    if (el) {
-      select(key);
-      el.scrollIntoView({ block: "center" });
-    }
-  }
-
+  applyHashSelection(listPlaceholder, select);
   initTooltips();
 }
 
