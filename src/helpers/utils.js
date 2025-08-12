@@ -155,7 +155,9 @@ export function createGokyoLookup(gokyoData) {
   }
 
   const lookup = gokyoData.reduce((acc, move) => {
-    if (!move.id || !move.name) {
+    const hasValidId = typeof move.id === "number" && !Number.isNaN(move.id);
+    const hasName = typeof move.name === "string" && move.name.length > 0;
+    if (!hasValidId || !hasName) {
       console.warn("Invalid GokyoEntry:", move);
       return acc;
     }

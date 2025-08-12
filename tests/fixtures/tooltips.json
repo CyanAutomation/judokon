@@ -1,5 +1,39 @@
 {
   "info": "**Helpful** tip",
+  "ui": {
+    "countryFilter": "**Country filter**\nToggle the panel to pick flags and narrow the roster.",
+    "clearFilter": "**Clear filter**\nShow all judoka.",
+    "toggleLayout": "**Toggle layout**\nSwitch between grid and carousel.",
+    "selectStat": "**Select a stat**\nThe higher value wins the round!",
+    "next": "**Next**\nStart the next round or skip the current phase.",
+    "quitMatch": "**Quit match**\nReturn to the menu.",
+    "languageToggle": "**Language toggle**\nSwitch quote language between English and pseudo-Japanese.",
+    "signatureBar": "**Signature move**\nThis bar shows the judoka’s special technique."
+  },
+  "stat": {
+    "power": "**Power** represents a judoka's raw physical strength.",
+    "kumikata": "_Kumi-kata_ means **grip fighting**.",
+    "speed": "**Speed** affects how quickly a judoka can act.",
+    "technique": "**Technique** measures mastery of throws and transitions.",
+    "newaza": "_Ne-waza_ means **ground grappling**."
+  },
+  "mode": {
+    "classicBattle": "**Classic Battle Mode** pits you against an opponent.",
+    "randomJudoka": "**Random Judoka** picks a random card.",
+    "meditation": "**Meditation** compare cards at your pace.",
+    "browseJudoka": "**Browse Judoka** open the full roster."
+  },
+  "nav": {
+    "classicBattle": "**Classic Battle**\nBegin a head-to-head match.",
+    "randomJudoka": "**Random Judoka**\nShow a random judoka card.",
+    "browseJudoka": "**Browse Judoka**\nBrowse every judoka card.",
+    "meditation": "**Meditation**\nCompare cards at your own pace.",
+    "settings": "**Settings**\nAdjust game options."
+  },
+  "card": {
+    "flag": "**Country flag**\nRepresents the judoka’s nation.",
+    "weightClass": "**Weight class**\nCompetition weight category."
+  },
   "settings": {
     "sound": {
       "label": "Sound",
