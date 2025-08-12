@@ -23,6 +23,10 @@ export async function registerCommonRoutes(page) {
     page.route("**/src/data/navigationItems.json", (route) =>
       route.fulfill({ path: "tests/fixtures/navigationItems.json" })
     ),
+    // Ensure country code mapping is always available and not aborted by navigation
+    page.route("**/src/data/countryCodeMapping.json", (route) =>
+      route.fulfill({ path: "src/data/countryCodeMapping.json" })
+    ),
     page.route("**/src/data/*.json", (route) => {
       const file = route.request().url().split("/").pop();
       const fixturePath = `tests/fixtures/${file}`;

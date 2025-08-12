@@ -53,7 +53,7 @@ export function generateCardPortrait(card) {
   const realSrc = `../assets/judokaPortraits/judokaPortrait-${id}.png`;
   return `
     <div class="card-portrait">
-      <img src="../assets/judokaPortraits/judokaPortrait-1.png" data-portrait-src="${realSrc}" alt="${escapedFirstname} ${escapedSurname}" loading="lazy" onerror="this.onerror=null; this.src='../assets/judokaPortraits/judokaPortrait-${PLACEHOLDER_ID}.png'">
+      <img src="../assets/judokaPortraits/judokaPortrait-${PLACEHOLDER_ID}.png" data-portrait-src="${realSrc}" alt="${escapedFirstname} ${escapedSurname}" loading="lazy" onerror="this.onerror=null; this.src='../assets/judokaPortraits/judokaPortrait-${PLACEHOLDER_ID}.png'">
     </div>
   `;
 }

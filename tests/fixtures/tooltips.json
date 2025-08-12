@@ -8,7 +8,8 @@
     "next": "**Next**\nStart the next round or skip the current phase.",
     "quitMatch": "**Quit match**\nReturn to the menu.",
     "languageToggle": "**Language toggle**\nSwitch quote language between English and pseudo-Japanese.",
-    "signatureBar": "**Signature move**\nThis bar shows the judoka’s special technique."
+    "signatureBar": "**Signature move**\nThis bar shows the judoka’s special technique.",
+    "drawCard": "**Draw card**\nGet a new random judoka card."
   },
   "stat": {
     "power": "**Power** represents a judoka's raw physical strength.",

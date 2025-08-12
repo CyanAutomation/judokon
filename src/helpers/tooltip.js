@@ -136,7 +136,11 @@ export async function initTooltips(root = document) {
 
   function show(e) {
     const id = e.currentTarget.dataset.tooltipId;
-    const text = data[id];
+    let text = data[id];
+    // Fallback for parent IDs like `settings.foo` by trying common leaf keys
+    if (!text && id && typeof id === "string") {
+      text = data[`${id}.label`] || data[`${id}.description`];
+    }
     if (!text) {
       if (!loggedMissing.has(id)) {
         console.warn(`Unknown tooltip id: ${id}`);
