@@ -41,7 +41,8 @@ import {
   initClassicBattleOrchestrator,
   dispatchBattleEvent
 } from "./classicBattle/orchestrator.js";
-import { skipCurrentPhase, onNextButtonClick } from "./classicBattle/timerService.js";
+import { onNextButtonClick } from "./classicBattle/timerService.js";
+import { skipCurrentPhase } from "./classicBattle/skipHandler.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
 
 const battleStore = createBattleStore();
