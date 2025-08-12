@@ -54,6 +54,50 @@ describe("setupCarouselToggle", () => {
     expect(buildCardCarousel).toHaveBeenCalledTimes(1);
   });
 
+  it("skips invalid judoka entries and still builds carousel", async () => {
+    const button = document.createElement("button");
+    const container = document.createElement("div");
+    container.classList.add("hidden");
+    document.body.append(button, container);
+
+    const valid = { id: 1 };
+    const invalid = { id: 2, invalid: true };
+
+    const fetchJson = vi.fn().mockResolvedValueOnce([valid, invalid]).mockResolvedValueOnce([]);
+
+    const validateData = vi.fn((data, type) => {
+      if (type === "judoka" && data.invalid) {
+        throw new Error("bad");
+      }
+    });
+
+    const buildCardCarousel = vi.fn().mockResolvedValue(createCarousel());
+    const initScrollMarkers = vi.fn();
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    vi.doMock("../../src/helpers/dataUtils.js", async () => {
+      const actual = await vi.importActual("../../src/helpers/dataUtils.js");
+      return { ...actual, fetchJson, validateData };
+    });
+    vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
+      buildCardCarousel,
+      initScrollMarkers
+    }));
+
+    const { setupCarouselToggle } = await import("../../src/game.js");
+
+    setupCarouselToggle(button, container);
+
+    button.dispatchEvent(new Event("click"));
+    await flush();
+
+    expect(buildCardCarousel).toHaveBeenCalledWith([valid], []);
+    expect(container.classList.contains("hidden")).toBe(false);
+    expect(consoleError).toHaveBeenCalledTimes(1);
+
+    consoleError.mockRestore();
+  });
+
   it("does not mark built when container is missing", async () => {
     const button = document.createElement("button");
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});

@@ -19,10 +19,11 @@ let inspectorEnabled = false;
  * 3. On click:
  *    a. If the carousel is built, simply reveal `container`.
  *    b. If `container` is missing, log an error.
- *    c. Otherwise fetch and validate judoka and gokyo data.
- *    d. Build the carousel, append it to `container`, and initialize scroll markers.
- *    e. Reveal `container` and mark the carousel as built.
- *    f. Log any errors that occur.
+ *    c. Otherwise fetch judoka and gokyo data.
+ *    d. Validate each judoka entry individually, logging and skipping invalid data.
+ *    e. Validate `gokyo` data and build the carousel with the valid judoka.
+ *    f. Append the carousel to `container`, initialize scroll markers, and reveal it.
+ *    g. Log any errors that occur.
  *
  * @param {HTMLElement} button - Button to show the carousel.
  * @param {HTMLElement} container - Container for the carousel.
@@ -49,10 +50,23 @@ export function setupCarouselToggle(button, container) {
       const judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
       const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
 
-      validateData(judokaData, "judoka");
+      const validJudoka = [];
+      if (Array.isArray(judokaData)) {
+        for (const judoka of judokaData) {
+          try {
+            validateData(judoka, "judoka");
+            validJudoka.push(judoka);
+          } catch (error) {
+            console.error("Invalid judoka entry skipped:", error);
+          }
+        }
+      } else {
+        console.error("Judoka data is not an array.");
+      }
+
       validateData(gokyoData, "gokyo");
 
-      const carousel = await buildCardCarousel(judokaData, gokyoData);
+      const carousel = await buildCardCarousel(validJudoka, gokyoData);
       container.appendChild(carousel);
       container.classList.remove("hidden");
 
