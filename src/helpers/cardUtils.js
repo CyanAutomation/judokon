@@ -102,6 +102,23 @@ export async function displayJudokaCard(judoka, gokyo, gameArea) {
   }
 }
 
+/**
+ * Toggles inspector panels for judoka cards.
+ *
+ * @pseudocode
+ * 1. For each `.card-container` on the page:
+ *    - Locate an existing `.debug-panel` within the container.
+ * 2. When `enable` is true and no panel exists:
+ *    - Read the `data-card-json` attribute and `.judoka-card` element.
+ *    - If either is missing, skip this container.
+ *    - Attempt to parse the JSON safely.
+ *      - On parse failure, log a warning and skip panel creation.
+ *    - Create and append the inspector panel using the parsed data.
+ * 3. When `enable` is false and a panel exists:
+ *    - Remove the panel and clear the `data-inspector` attribute.
+ *
+ * @param {boolean} enable - Whether to show inspector panels.
+ */
 export function toggleInspectorPanels(enable) {
   document.querySelectorAll(".card-container").forEach((container) => {
     const existing = container.querySelector(".debug-panel");
@@ -110,7 +127,14 @@ export function toggleInspectorPanels(enable) {
         const json = container.dataset.cardJson;
         const card = container.querySelector(".judoka-card");
         if (!json || !card) return;
-        const panel = createInspectorPanel(container, JSON.parse(json));
+        let data;
+        try {
+          data = JSON.parse(json);
+        } catch (error) {
+          console.warn("Invalid card JSON:", error);
+          return;
+        }
+        const panel = createInspectorPanel(container, data);
         container.appendChild(panel);
       }
     } else if (existing) {
