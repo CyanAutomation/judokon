@@ -101,8 +101,10 @@ function watchBattleOrientation() {
 }
 
 export async function setupClassicBattlePage() {
+  // Apply orientation ASAP so tests observing the header don't block
+  // behind async initialization (flags, data fetches, tooltips, etc.).
+  watchBattleOrientation();
   await initFeatureFlags();
-  await applyStatLabels();
   setupNextButton();
 
   statButtonControls = initStatButtons(battleStore);
@@ -115,8 +117,10 @@ export async function setupClassicBattlePage() {
 
   window.startRoundOverride = () => startRoundWrapper();
   await initClassicBattleOrchestrator(battleStore, startRoundWrapper);
+  // Non-critical UI enhancements can load after the orchestrator begins
+  // to reduce time-to-first-round in tests.
+  applyStatLabels().catch(() => {});
   await initTooltips();
-  watchBattleOrientation();
   maybeShowStatHint();
 }
 

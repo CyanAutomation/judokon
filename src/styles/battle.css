@@ -30,6 +30,12 @@
   color: var(--color-text);
 }
 
+/* Ensure countdown region has a non-zero box so tests can detect visibility
+   even before text is populated. */
+.battle-header #next-round-timer {
+  min-height: 1em;
+}
+
 .battle-header #score-display {
   text-align: right;
 }
