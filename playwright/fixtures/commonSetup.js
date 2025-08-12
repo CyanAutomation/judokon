@@ -22,7 +22,8 @@ export const test = base.extend({
       if (type !== "warning" && type !== "error") return;
       // Filter out known noisy, low-signal messages to keep CI logs readable.
       const text = msg.text();
-      const isNoisyResource404 = /Failed to load resource: the server responded with a status of 404/i.test(text);
+      const isNoisyResource404 =
+        /Failed to load resource: the server responded with a status of 404/i.test(text);
       const isBenignCountryMapping = /countryCodeMapping\.json/i.test(text);
       if (isNoisyResource404 || isBenignCountryMapping) return;
       try {

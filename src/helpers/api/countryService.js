@@ -38,7 +38,7 @@ export async function loadCountryMapping() {
       } catch (err) {
         // Reduce noise in tests/CI: prefer debug logging over warnings
         // and fall back to local module import.
-        // eslint-disable-next-line no-console
+
         if (typeof window !== "undefined" && window.DEBUG_LOGGING) {
           console.log("Failed to fetch countryCodeMapping.json", err);
         }
