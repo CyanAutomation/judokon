@@ -52,13 +52,13 @@ export function getRandomJudoka(data) {
  * Displays a judoka card in the specified game area.
  *
  * @pseudocode
- * 1. Validate the `judoka` object:
- *    - Ensure `judoka` contains all required fields.
- *    - If invalid, log an error and display a fallback message in the `gameArea`.
- *
- * 2. Validate the `gameArea` element:
+ * 1. Validate the `gameArea` element:
  *    - Ensure `gameArea` is not `null` or `undefined`.
  *    - If invalid, log an error and exit the function.
+ *
+ * 2. Validate the `judoka` object:
+ *    - Ensure `judoka` contains all required fields.
+ *    - If invalid, log an error and display a fallback message in the `gameArea`.
  *
  * 3. Clear the `gameArea`:
  *    - Set its `innerHTML` to an empty string to remove existing content.
@@ -78,16 +78,15 @@ export function getRandomJudoka(data) {
  */
 export async function displayJudokaCard(judoka, gokyo, gameArea) {
   debugLog("Judoka passed to displayJudokaCard:", judoka);
+  if (!gameArea) {
+    console.error("Game area is not available.");
+    return;
+  }
 
   if (!hasRequiredJudokaFields(judoka)) {
     console.error("Invalid judoka object:", judoka);
     const missing = getMissingJudokaFields(judoka).join(", ");
     gameArea.innerHTML = `<p>⚠️ Invalid judoka data. Missing fields: ${missing}</p>`;
-    return;
-  }
-
-  if (!gameArea) {
-    console.error("Game area is not available.");
     return;
   }
 
