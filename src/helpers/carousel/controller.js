@@ -123,6 +123,9 @@ export class CarouselController {
 
   _wireScrollSync() {
     this._onScroll = () => {
+      if (this.metrics.pageWidth <= 0) {
+        this.metrics = getPageMetrics(this.container);
+      }
       // Immediate sync for tests and snappy UI
       const { pageWidth, pageCount } = this.metrics;
       if (pageWidth > 0) {
@@ -133,6 +136,9 @@ export class CarouselController {
       // Follow-up rAF sync to catch any late layout
       if (this._rafId) cancelAnimationFrame(this._rafId);
       this._rafId = requestAnimationFrame(() => {
+        if (this.metrics.pageWidth <= 0) {
+          this.metrics = getPageMetrics(this.container);
+        }
         const { pageWidth: pw, pageCount: pc } = this.metrics;
         if (pw <= 0) return;
         const p2 = Math.round(this.container.scrollLeft / pw);
