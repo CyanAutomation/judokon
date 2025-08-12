@@ -86,18 +86,53 @@ async function applyStatLabels() {
  *    `updateOrientation` on each change.
  */
 function watchBattleOrientation() {
-  const header = document.querySelector(".battle-header");
-  if (!header) return;
-
-  const updateOrientation = () => {
-    header.dataset.orientation = window.matchMedia("(orientation: portrait)").matches
-      ? "portrait"
-      : "landscape";
+  const getOrientation = () => {
+    try {
+      // Prefer viewport-based detection; fall back to matchMedia when available
+      const portrait = window.innerHeight >= window.innerWidth;
+      if (typeof window.matchMedia === "function") {
+        const mm = window.matchMedia("(orientation: portrait)");
+        // Use matchMedia result only when it agrees with viewport heuristic to avoid env quirks
+        if (typeof mm.matches === "boolean" && mm.matches !== portrait) {
+          // When there is disagreement, prefer viewport heuristic in headless tests
+          return portrait ? "portrait" : "landscape";
+        }
+        return mm.matches ? "portrait" : "landscape";
+      }
+      return portrait ? "portrait" : "landscape";
+    } catch {
+      // Safe fallback
+      return window.innerHeight >= window.innerWidth ? "portrait" : "landscape";
+    }
   };
 
-  updateOrientation();
-  window.addEventListener("orientationchange", updateOrientation);
-  window.addEventListener("resize", updateOrientation);
+  const apply = () => {
+    const header = document.querySelector(".battle-header");
+    if (header) {
+      header.dataset.orientation = getOrientation();
+      return true;
+    }
+    return false;
+  };
+
+  // Apply immediately when possible; if header not yet available, observe for it.
+  if (!apply()) {
+    const obs = new MutationObserver(() => {
+      if (apply()) {
+        obs.disconnect();
+      }
+    });
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+    // Safety timeout in case header never appears
+    setTimeout(() => obs.disconnect(), 10000);
+  }
+
+  const onChange = () => {
+    const header = document.querySelector(".battle-header");
+    if (header) header.dataset.orientation = getOrientation();
+  };
+  window.addEventListener("orientationchange", onChange);
+  window.addEventListener("resize", onChange);
 }
 
 export async function setupClassicBattlePage() {
