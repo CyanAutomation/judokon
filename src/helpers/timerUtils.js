@@ -1,5 +1,6 @@
 import { fetchJson, importJsonModule } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
+import { onSecondTick as scheduleSecond, cancel as cancelSchedule } from "../utils/scheduler.js";
 
 let timersPromise;
 let cachedTimers;
@@ -41,14 +42,16 @@ export function _resetForTest() {
  * 2. `start()` resets the remaining time and handles immediate expiration.
  *    - If the duration is non-positive, invoke `onTick(0)` and `onExpired`
  *      without starting an interval.
- *    - Otherwise, begin a 1s interval and invoke `onTick` immediately with
- *      the starting value.
+ *    - Otherwise, subscribe to the shared scheduler via `scheduler.onSecondTick`
+ *      and invoke `onTick` immediately with the starting value.
  *    - On each tick, decrement `remaining` and call `onTick`.
- *    - When the value reaches 0, stop the interval and call `onExpired`.
+ *    - When the value reaches 0, cancel the scheduler subscription and call
+ *      `onExpired`.
  *    - When `pauseOnHidden` is true, attach a `visibilitychange` listener that
  *      pauses when the page is hidden and resumes when visible.
- * 3. `pause()` and `resume()` toggle a flag checked on each interval tick.
- * 4. `stop()` clears the interval and removes the visibility listener.
+ * 3. `pause()` and `resume()` toggle a flag checked on each tick.
+ * 4. `stop()` cancels the scheduler subscription and removes the visibility
+ *    listener.
  *
  * @param {number} duration - Countdown duration in seconds.
  * @param {object} [options]
@@ -58,9 +61,12 @@ export function _resetForTest() {
  * @returns {{ start: Function, stop: Function, pause: Function, resume: Function }}
  *          Timer control methods.
  */
-export function createCountdownTimer(duration, { onTick, onExpired, pauseOnHidden } = {}) {
+export function createCountdownTimer(
+  duration,
+  { onTick, onExpired, pauseOnHidden, onSecondTick = scheduleSecond, cancel = cancelSchedule } = {}
+) {
   let remaining = duration;
-  let intervalId = null;
+  let subId = null;
   let paused = false;
 
   async function tick() {
@@ -91,22 +97,22 @@ export function createCountdownTimer(duration, { onTick, onExpired, pauseOnHidde
       return;
     }
     if (typeof onTick === "function") onTick(remaining);
-    intervalId = setInterval(async () => {
+    subId = onSecondTick(async () => {
       try {
         await tick();
       } catch (err) {
         console.error("Error in countdown timer tick:", err);
       }
-    }, 1000);
+    });
     if (pauseOnHidden && typeof document !== "undefined") {
       document.addEventListener("visibilitychange", handleVisibility);
     }
   }
 
   function stop() {
-    if (intervalId) {
-      clearInterval(intervalId);
-      intervalId = null;
+    if (subId !== null) {
+      cancel(subId);
+      subId = null;
     }
     if (pauseOnHidden && typeof document !== "undefined") {
       document.removeEventListener("visibilitychange", handleVisibility);

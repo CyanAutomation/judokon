@@ -7,6 +7,7 @@
 
 import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
 import { TimerController } from "./TimerController.js";
+import { onSecondTick as scheduleSecond, cancel as cancelSchedule } from "../utils/scheduler.js";
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 const DRIFT_THRESHOLD = 2;
@@ -58,26 +59,32 @@ const DELTA_OUTCOME = {
  * @pseudocode
  * 1. Record `start = Date.now()` and `pausedAt = null; pausedMs = 0`.
  * 2. Every second:
- *    a. If `timer.hasActiveTimer()` is false, clear the interval.
+ *    a. If `timer.hasActiveTimer()` is false, cancel the scheduler subscription.
  *    b. Read `{remaining, paused}` from `timer.getState()`.
  *    c. If `paused` and `pausedAt` is null, set `pausedAt = Date.now()` and continue.
  *    d. If not `paused` and `pausedAt` exists, add `Date.now() - pausedAt` to `pausedMs` and clear `pausedAt`.
  *    e. Compute `elapsed = (Date.now() - start - pausedMs) / 1000`.
  *    f. Set `expected = duration - floor(elapsed)`.
- *    g. If `remaining - expected` exceeds `DRIFT_THRESHOLD`, clear interval and call `onDrift(remaining)`.
- * 3. Return a function that clears the interval.
+ *    g. If `remaining - expected` exceeds `DRIFT_THRESHOLD`, cancel the subscription and call `onDrift(remaining)`.
+ * 3. Return a function that cancels the subscription.
  *
  * @param {TimerController} timer - Timer to monitor.
+ * @param {object} [opts]
+ * @param {function(function): number} [opts.onSecondTick]
+ * @param {function(number): void} [opts.cancel]
  * @returns {(duration: number, onDrift: function(number): void) => function(): void}
  */
-export function createDriftWatcher(timer) {
+export function createDriftWatcher(
+  timer,
+  { onSecondTick = scheduleSecond, cancel = cancelSchedule } = {}
+) {
   return (duration, onDrift) => {
     const start = Date.now();
     let pausedAt = null;
     let pausedMs = 0;
-    const interval = setInterval(() => {
+    const id = onSecondTick(() => {
       if (!timer.hasActiveTimer()) {
-        clearInterval(interval);
+        cancel(id);
         return;
       }
       const { remaining, paused } = timer.getState();
@@ -92,11 +99,11 @@ export function createDriftWatcher(timer) {
       const elapsed = Math.floor((Date.now() - start - pausedMs) / 1000);
       const expected = duration - elapsed;
       if (remaining - expected > DRIFT_THRESHOLD) {
-        clearInterval(interval);
+        cancel(id);
         if (typeof onDrift === "function") onDrift(remaining);
       }
-    }, 1000);
-    return () => clearInterval(interval);
+    });
+    return () => cancel(id);
   };
 }
 
@@ -316,8 +323,8 @@ export class BattleEngine {
    * @param {function(number): void} onDrift - Callback invoked when drift detected.
    * @returns {function(): void} Function to stop monitoring.
    */
-  watchForDrift(duration, onDrift) {
-    const watch = createDriftWatcher(this.timer);
+  watchForDrift(duration, onDrift, opts) {
+    const watch = createDriftWatcher(this.timer, opts);
     return watch(duration, onDrift);
   }
 

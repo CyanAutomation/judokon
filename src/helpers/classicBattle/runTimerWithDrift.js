@@ -1,5 +1,6 @@
 import { watchForDrift } from "../battleEngineFacade.js";
 import * as infoBar from "../setupBattleInfoBar.js";
+import { onSecondTick as scheduleSecond, cancel as cancelSchedule } from "../../utils/scheduler.js";
 
 /**
  * Create a timer runner that monitors for drift and retries when detected.
@@ -16,7 +17,10 @@ import * as infoBar from "../setupBattleInfoBar.js";
  * @returns {function(number, function, function, function): Promise<void>}
  * - Function to run the timer with drift handling.
  */
-export function runTimerWithDrift(startFn) {
+export function runTimerWithDrift(
+  startFn,
+  { onSecondTick = scheduleSecond, cancel = cancelSchedule } = {}
+) {
   return async function (duration, onTick, onExpired, onDriftGiveUp) {
     const MAX_DRIFT_RETRIES = 3;
     let retries = 0;
@@ -30,7 +34,7 @@ export function runTimerWithDrift(startFn) {
     const run = async (dur) => {
       const maybePromise = startFn(onTick, expired, dur);
       if (stopWatch) stopWatch();
-      stopWatch = watchForDrift(dur, handleDrift);
+      stopWatch = watchForDrift(dur, handleDrift, { onSecondTick, cancel });
       if (maybePromise && typeof maybePromise.then === "function") {
         await maybePromise;
       }
