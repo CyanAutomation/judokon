@@ -88,18 +88,9 @@ export async function handleStatSelection(store, stat, options = {}) {
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   infoBar.clearTimer();
-  // Prefer transient feedback via snackbar for the opponent-thinking phase to
-  // avoid occupying the result message region used by tests and screen readers.
-  // Show it after a brief delay and cancel if the round resolves first.
-  let opponentMsgId = 0;
-  const showOpponentThinking = () => showSnackbar("Opponent is choosing…");
-  const delayMs = 500;
-  opponentMsgId = setTimeout(showOpponentThinking, delayMs);
   const delay = 300 + Math.floor(Math.random() * 401);
   return new Promise((resolve) => {
     setTimeout(async () => {
-      // Ensure any pending opponent-thinking hint does not fire after the outcome
-      clearTimeout(opponentMsgId);
       await revealComputerCard();
       const result = evaluateRound(store, stat);
       // Move to decision and then roundOver in the state machine
