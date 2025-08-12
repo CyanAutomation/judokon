@@ -87,23 +87,6 @@ export function createSettingsDom() {
   featureFlagsContainer.id = "feature-flags-container";
   featureFlagsContainer.className = "game-mode-toggle-container settings-form";
 
-  const advancedSection = document.createElement("div");
-  advancedSection.className = "settings-section";
-  const advToggle = document.createElement("button");
-  advToggle.type = "button";
-  advToggle.className = "settings-section-toggle";
-  advToggle.id = "advanced-settings-toggle";
-  advToggle.setAttribute("aria-expanded", "false");
-  advToggle.setAttribute("aria-controls", "advanced-settings-content");
-  advToggle.textContent = "Advanced Settings";
-  const advContent = document.createElement("div");
-  advContent.className = "settings-section-content";
-  advContent.id = "advanced-settings-content";
-  advContent.setAttribute("role", "region");
-  advContent.setAttribute("aria-labelledby", "advanced-settings-toggle");
-  advContent.hidden = true;
-  advContent.appendChild(featureFlagsContainer);
-  advancedSection.append(advToggle, advContent);
   const resetButton = document.createElement("button");
   resetButton.id = "reset-settings-button";
   fragment.append(
@@ -117,7 +100,7 @@ export function createSettingsDom() {
     displayDark,
     displayHighContrast,
     gameModeToggleContainer,
-    advancedSection,
+    featureFlagsContainer,
     resetButton
   );
   return fragment;

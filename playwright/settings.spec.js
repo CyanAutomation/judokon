@@ -99,7 +99,7 @@ test.describe.parallel("Settings page", () => {
       .locator("#feature-flags-container input[type=checkbox]")
       .count();
 
-    const tabStopCount = expectedLabels.length + (renderedFlagCount - flagLabels.length) + 3; // section toggles: general, game modes, advanced
+    const tabStopCount = expectedLabels.length + (renderedFlagCount - flagLabels.length);
 
     await page.focus("#display-mode-light");
 
@@ -137,7 +137,7 @@ test.describe.parallel("Settings page", () => {
       return `#${[r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("")}`;
     };
 
-    const buttons = await page.$$eval(".settings-section-toggle, #reset-settings-button", (els) =>
+    const buttons = await page.$$eval("#reset-settings-button", (els) =>
       els.map((el) => {
         const style = getComputedStyle(el);
         return { fg: style.color, bg: style.backgroundColor };
@@ -173,9 +173,6 @@ test.describe.parallel("Settings page", () => {
 
   test("controls meet 44px touch target size", async ({ page }) => {
     const selectors = [
-      "#general-settings-toggle",
-      "#game-modes-toggle",
-      "#advanced-settings-toggle",
       "#reset-settings-button",
       "#sound-toggle",
       "#motion-toggle",
@@ -191,5 +188,14 @@ test.describe.parallel("Settings page", () => {
       expect(box?.width).toBeGreaterThanOrEqual(44);
       expect(box?.height).toBeGreaterThanOrEqual(44);
     }
+  });
+
+  
+  
+
+  test("sections visible", async ({ page }) => {
+    await expect(page.locator("#general-settings-container")).toBeVisible();
+    await expect(page.locator("#game-mode-toggle-container")).toBeVisible();
+    await expect(page.locator("#feature-flags-container")).toBeVisible();
   });
 });
