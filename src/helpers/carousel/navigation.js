@@ -20,8 +20,20 @@ import { CarouselController } from "./controller.js";
  * @param {HTMLElement} container - The carousel container element.
  */
 export function setupKeyboardNavigation(container) {
-  // Deprecated: Handled by CarouselController.
-  // Kept as a thin no-op to prevent double-binding in legacy call sites.
+  // Thin wrapper: if a controller exists, it already wires keyboard events.
+  const wrapper = container.parentElement;
+  if (wrapper && wrapper._carouselController) return;
+  container.style.scrollBehavior = "auto";
+  container.tabIndex = 0;
+  container.addEventListener("keydown", (event) => {
+    if (event.target !== container || (event.key !== "ArrowLeft" && event.key !== "ArrowRight"))
+      return;
+    event.preventDefault();
+    const gap = parseFloat(getComputedStyle(container).columnGap) || 0;
+    const scrollAmount = container.clientWidth + gap;
+    const delta = event.key === "ArrowLeft" ? -scrollAmount : scrollAmount;
+    container.scrollLeft += delta;
+  });
 }
 
 /**
@@ -36,8 +48,51 @@ export function setupKeyboardNavigation(container) {
  * @param {HTMLElement} container - The carousel container element.
  */
 export function setupSwipeNavigation(container) {
-  // Deprecated: Handled by CarouselController.
-  // Kept as a thin no-op to prevent double-binding in legacy call sites.
+  // Thin wrapper: if a controller exists, it already wires swipe/pointer events.
+  const wrapper = container.parentElement;
+  if (wrapper && wrapper._carouselController) return;
+
+  let touchStartX = 0;
+  let pointerStartX = 0;
+
+  const scrollFromDelta = (delta) => {
+    const gap = parseFloat(getComputedStyle(container).columnGap) || 0;
+    const step = container.clientWidth + gap;
+    let left = container.scrollLeft;
+    if (delta > CAROUSEL_SWIPE_THRESHOLD) {
+      left -= step;
+    } else if (delta < -CAROUSEL_SWIPE_THRESHOLD) {
+      left += step;
+    } else {
+      return;
+    }
+
+    const maxScroll = container.scrollWidth - container.clientWidth;
+    left = Math.max(0, Math.min(left, maxScroll));
+    container.scrollTo({ left, behavior: "smooth" });
+  };
+
+  container.addEventListener("touchstart", (event) => {
+    touchStartX = event.touches[0].clientX;
+  });
+  container.addEventListener("touchend", (event) => {
+    const touchEndX = event.changedTouches[0].clientX;
+    const swipeDistance = touchEndX - touchStartX;
+    scrollFromDelta(swipeDistance);
+  });
+
+  container.addEventListener("pointerdown", (event) => {
+    if (event.pointerType !== "touch") {
+      pointerStartX = event.clientX;
+    }
+  });
+  container.addEventListener("pointerup", (event) => {
+    if (event.pointerType !== "touch") {
+      const pointerEndX = event.clientX;
+      const swipeDistance = pointerEndX - pointerStartX;
+      scrollFromDelta(swipeDistance);
+    }
+  });
 }
 
 /**

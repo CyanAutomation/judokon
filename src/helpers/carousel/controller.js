@@ -123,12 +123,20 @@ export class CarouselController {
 
   _wireScrollSync() {
     this._onScroll = () => {
-      if (this._rafId) cancelAnimationFrame(this._rafId);
-      this._rafId = requestAnimationFrame(() => {
-        const { pageWidth, pageCount } = this.metrics;
-        if (pageWidth <= 0) return;
+      // Immediate sync for tests and snappy UI
+      const { pageWidth, pageCount } = this.metrics;
+      if (pageWidth > 0) {
         const page = Math.round(this.container.scrollLeft / pageWidth);
         this.currentPage = Math.max(0, Math.min(page, pageCount - 1));
+        this.update();
+      }
+      // Follow-up rAF sync to catch any late layout
+      if (this._rafId) cancelAnimationFrame(this._rafId);
+      this._rafId = requestAnimationFrame(() => {
+        const { pageWidth: pw, pageCount: pc } = this.metrics;
+        if (pw <= 0) return;
+        const p2 = Math.round(this.container.scrollLeft / pw);
+        this.currentPage = Math.max(0, Math.min(p2, pc - 1));
         this.update();
       });
     };
