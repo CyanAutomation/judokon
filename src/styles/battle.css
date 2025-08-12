@@ -8,6 +8,8 @@
 
 .battle-header {
   --logo-max-height: min(12dvh, 64px);
+  /* Isolate layout/paint to avoid cross-page reflow affecting screenshot stability */
+  contain: layout paint;
 }
 
 .battle-header .info-left {
