@@ -1,7 +1,8 @@
+import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
+
 const XOR_KEY = 37;
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // 32 readable characters
 const CARD_CODE_VERSION = "v1";
-import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidation.js";
 
 /**
  * Encodes a string using XOR encryption.
