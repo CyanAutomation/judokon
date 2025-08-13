@@ -94,8 +94,10 @@ async function applyStatLabels() {
  *    using `getOrientation`, and returns `true` if the header exists.
  * 3. Run `apply` immediately; if it returns `false`, poll with
  *    `scheduler.onFrame` until `apply` succeeds, then cancel the polling task.
- * 4. Listen for `orientationchange` and `resize` events to update the header in
- *    real time.
+ * 4. Listen for `orientationchange` and `resize` events. Call `apply`
+ *    immediately, then throttle further updates with `requestAnimationFrame`.
+ *    If `apply` fails because the header is missing, poll with
+ *    `scheduler.onFrame` until it appears.
  */
 function watchBattleOrientation() {
   const getOrientation = () => {
@@ -131,28 +133,28 @@ function watchBattleOrientation() {
   };
 
   // Apply immediately; if header not yet available, poll using the scheduler.
-  if (!apply()) {
-    let id;
-    id = scheduleFrame(() => {
-      if (apply()) cancelFrame(id);
-    });
-  }
-
-  let rafPending = false;
-  const onChange = () => {
-    if (rafPending) return;
-    rafPending = true;
-    requestAnimationFrame(() => {
-      rafPending = false;
-      const header = document.querySelector(".battle-header");
-      if (header) {
-        const next = getOrientation();
-        if (header.dataset.orientation !== next) {
-          header.dataset.orientation = next;
-        }
+  let pollId;
+  const pollIfMissing = () => {
+    if (pollId) return;
+    pollId = scheduleFrame(() => {
+      if (apply()) {
+        cancelFrame(pollId);
+        pollId = 0;
       }
     });
   };
+  if (!apply()) pollIfMissing();
+
+  let rafId;
+  const onChange = () => {
+    if (!apply()) pollIfMissing();
+    if (rafId) return;
+    rafId = requestAnimationFrame(() => {
+      rafId = 0;
+      if (!apply()) pollIfMissing();
+    });
+  };
+
   window.addEventListener("orientationchange", onChange);
   window.addEventListener("resize", onChange);
 }
