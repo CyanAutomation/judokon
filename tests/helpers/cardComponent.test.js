@@ -6,7 +6,12 @@ describe("createCard", () => {
     const card = createCard("Hello");
     expect(card).toBeInstanceOf(HTMLDivElement);
     expect(card.classList.contains("card")).toBe(true);
-    expect(card.innerHTML).toBe("Hello");
+    expect(card.textContent).toBe("Hello");
+  });
+
+  it("inserts HTML when the html flag is true", () => {
+    const card = createCard("<em>hi</em>", { html: true });
+    expect(card.innerHTML).toBe("<em>hi</em>");
   });
 
   it("creates an anchor card when href provided", () => {
