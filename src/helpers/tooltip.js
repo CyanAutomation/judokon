@@ -19,6 +19,10 @@ let tooltipEl;
  * @returns {Record<string, string>} Flattened tooltip map.
  */
 export function flattenTooltips(obj, prefix = "") {
+  // Gracefully handle null/undefined or non-object inputs
+  if (obj === null || obj === undefined || typeof obj !== "object") {
+    return {};
+  }
   return Object.entries(obj).reduce((acc, [key, value]) => {
     const id = prefix ? `${prefix}.${key}` : key;
     if (value && typeof value === "object" && !Array.isArray(value)) {
@@ -56,7 +60,7 @@ async function loadTooltips() {
     })();
   }
   const data = await tooltipDataPromise;
-  cachedData = flattenTooltips(data);
+  cachedData = flattenTooltips(data || {});
   return cachedData;
 }
 
