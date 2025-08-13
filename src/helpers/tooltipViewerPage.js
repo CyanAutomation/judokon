@@ -1,4 +1,5 @@
 import { parseTooltipText, flattenTooltips, initTooltips } from "./tooltip.js";
+import { fetchJson } from "../../src/helpers/dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { onDomReady } from "./domReady.js";
 // Align specifier with tests for consistent mocking
@@ -25,7 +26,6 @@ const LOAD_ERROR_MSG = "Error loading tooltips.";
  */
 export async function loadTooltipData(previewEl) {
   try {
-    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
     const json = await fetchJson(`${DATA_DIR}tooltips.json`);
     return flattenTooltips(json);
   } catch (err) {
@@ -130,7 +130,8 @@ export function applyHashSelection(listPlaceholder, select) {
  * 5. Apply URL hash selection, then initialize help tooltips.
  */
 export async function setupTooltipViewerPage() {
-  const DOMPurify = await getSanitizer();
+  // Overlap sanitizer loading with data fetch to reduce latency in tests
+  const sanitizerPromise = getSanitizer();
   const searchInput = document.getElementById("tooltip-search");
   let listPlaceholder = document.getElementById("tooltip-list");
   const previewEl = document.getElementById("tooltip-preview");
@@ -154,6 +155,7 @@ export async function setupTooltipViewerPage() {
 
   const data = await loadTooltipData(previewEl);
   if (!data) return;
+  const DOMPurify = await sanitizerPromise;
 
   let listSelect;
   function updateList(filter = "") {
