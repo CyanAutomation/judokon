@@ -4,6 +4,7 @@ const GENERIC_PLACEHOLDER_ID = 1;
 
 import { escapeHTML, decodeHTML } from "./utils.js";
 import { createStatsPanel } from "../components/StatsPanel.js";
+import { debugLog } from "./debug.js";
 
 /**
  * Generates the portrait HTML for a judoka card.
@@ -134,8 +135,6 @@ export async function generateCardStats(card, cardType = "common") {
  * @param {string} cardType - The type of card (e.g., "common", "rare").
  * @returns {string} The HTML string for the signature move.
  */
-import { debugLog } from "./debug.js";
-
 function resolveTechnique(judoka, gokyoLookup) {
   const safeJudoka = judoka ?? {};
   const id = Number(safeJudoka.signatureMoveId ?? PLACEHOLDER_ID);
