@@ -1,6 +1,7 @@
 import { seededRandom } from "../testModeUtils.js";
 import { STATS } from "../battleEngineFacade.js";
-import * as infoBar from "../setupBattleInfoBar.js";
+// Avoid writing to the header message area during auto-select; tests expect
+// the outcome message to occupy that region immediately after selection.
 // Intentionally avoid showing a snackbar here to prevent racing with
 // the cooldown countdown snackbar. The auto-select announcement is
 // surfaced via the Info Bar message area instead.
@@ -18,10 +19,7 @@ export async function autoSelectStat(onSelect) {
   const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
   const btn = document.querySelector(`#stat-buttons button[data-stat="${randomStat}"]`);
   const label = btn?.textContent || randomStat;
-  if (btn) {
-    btn.classList.add("selected");
-  }
-  infoBar.showAutoSelect(label);
+  if (btn) btn.classList.add("selected");
   await new Promise((resolve) => setTimeout(resolve, AUTO_SELECT_FEEDBACK_MS));
   await onSelect(randomStat, { delayOpponentMessage: true });
 }
