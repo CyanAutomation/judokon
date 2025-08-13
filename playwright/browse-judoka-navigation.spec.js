@@ -78,20 +78,16 @@ test.describe.parallel("Browse Judoka navigation", () => {
         { from, to, y }
       );
 
-    await swipe(startX, startX - 600);
-    await swipe(startX, startX - 600);
-    await swipe(startX, startX - 600);
-    await swipe(startX, startX - 600);
-    await swipe(startX, startX - 600);
-    await expect(counter).toHaveText("Page 6 of 6");
+    for (let page = 2; page <= 6; page++) {
+      await swipe(startX, startX - 600);
+      await expect(counter).toHaveText(`Page ${page} of 6`);
+    }
     await expect(right).toBeDisabled();
 
-    await swipe(endX, endX + 600);
-    await swipe(endX, endX + 600);
-    await swipe(endX, endX + 600);
-    await swipe(endX, endX + 600);
-    await swipe(endX, endX + 600);
-    await expect(counter).toHaveText("Page 1 of 6");
+    for (let page = 5; page >= 1; page--) {
+      await swipe(endX, endX + 600);
+      await expect(counter).toHaveText(`Page ${page} of 6`);
+    }
     await expect(left).toBeDisabled();
   });
 });
