@@ -176,6 +176,13 @@ export async function setupClassicBattlePage() {
 
   window.startRoundOverride = () => startRoundWrapper();
   await initClassicBattleOrchestrator(battleStore, startRoundWrapper);
+  // In Test Mode, auto-start the match to avoid blocking on the round select modal
+  try {
+    if (isEnabled("enableTestMode")) {
+      const { dispatchBattleEvent } = await import("./classicBattle/orchestrator.js");
+      await dispatchBattleEvent("startClicked");
+    }
+  } catch {}
   // Non-critical UI enhancements can load after the orchestrator begins
   // to reduce time-to-first-round in tests.
   applyStatLabels().catch(() => {});
