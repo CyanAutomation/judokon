@@ -76,7 +76,7 @@ describe("classicBattle opponent delay", () => {
     const store = mod.createBattleStore();
 
     showSnackbar = vi.fn();
-
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(1);
     const promise = mod.handleStatSelection(store, mod.simulateOpponentStat());
 
     // Snackbar is delayed ~500ms; ensure it hasn't shown too early
@@ -90,5 +90,6 @@ describe("classicBattle opponent delay", () => {
     await promise;
     expect(scheduleNextRound).toHaveBeenCalled();
     timer.clearAllTimers();
+    randomSpy.mockRestore();
   });
 });
