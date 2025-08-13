@@ -8,6 +8,7 @@ test.describe.parallel("Classic battle flow", () => {
     await countdown.waitFor();
     await expect(countdown).toHaveText(/\d+/);
     await page.evaluate(() => window.skipBattlePhase?.());
+    await page.evaluate(() => window.freezeBattleHeader?.());
     const result = page.locator("header #round-message");
     await expect(result).not.toHaveText("", { timeout: 15000 });
     const snackbar = page.locator(".snackbar");
@@ -17,6 +18,7 @@ test.describe.parallel("Classic battle flow", () => {
   test("tie message appears on equal stats", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
     await page.evaluate(() => window.skipBattlePhase?.());
+    await page.evaluate(() => window.freezeBattleHeader?.());
     const timer = page.locator("header #next-round-timer");
     await timer.waitFor();
     await page.evaluate(async () => {

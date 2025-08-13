@@ -36,6 +36,7 @@ import { waitForComputerCard } from "./battleJudokaPage.js";
 import { initTooltips } from "./tooltip.js";
 import { setTestMode } from "./testModeUtils.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
+import { pauseTimer, resumeTimer } from "./battleEngineFacade.js";
 import { loadStatNames } from "./stats.js";
 import { STATS } from "./battleEngineFacade.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
@@ -180,6 +181,16 @@ export async function setupClassicBattlePage() {
   applyStatLabels().catch(() => {});
   await initTooltips();
   maybeShowStatHint();
+
+  // Expose small helpers for Playwright to freeze/resume header updates
+  try {
+    window.freezeBattleHeader = () => {
+      try { pauseTimer(); } catch {}
+    };
+    window.resumeBattleHeader = () => {
+      try { resumeTimer(); } catch {}
+    };
+  } catch {}
 }
 
 function initStatButtons(store) {

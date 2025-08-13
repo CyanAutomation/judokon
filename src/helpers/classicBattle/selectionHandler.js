@@ -91,6 +91,16 @@ export async function handleStatSelection(store, stat, options = {}) {
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   infoBar.clearTimer();
+  // Make Next button clickable immediately so tests can skip without waiting
+  // for the cooldown scheduler to initialize. It will act as a skip control
+  // until `scheduleNextRound` marks it ready.
+  try {
+    const nextBtn = document.getElementById("next-button");
+    if (nextBtn) {
+      nextBtn.disabled = false;
+      delete nextBtn.dataset.nextReady;
+    }
+  } catch {}
   // Start a delayed snackbar hint so the result area stays free for outcomes.
   const opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), 500);
   const delay = 300 + Math.floor(Math.random() * 401);

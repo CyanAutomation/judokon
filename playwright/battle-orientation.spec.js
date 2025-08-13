@@ -109,6 +109,7 @@ test.describe.parallel(
         () => document.querySelector("#round-message")?.textContent.trim().length > 0
       );
       await expect(page.locator(".battle-header")).toBeVisible();
+      await page.evaluate(() => window.freezeBattleHeader?.());
       await waitForHeaderStability();
       await expect(page.locator(".battle-header")).toHaveScreenshot(
         `battle-header-portrait${osSuffix}.png`
@@ -135,6 +136,7 @@ test.describe.parallel(
         () => document.querySelector("#round-message")?.textContent.trim().length > 0
       );
       await expect(page.locator(".battle-header")).toBeVisible();
+      await page.evaluate(() => window.freezeBattleHeader?.());
       await waitForHeaderStability();
       await expect(page.locator(".battle-header")).toHaveScreenshot(
         `battle-header-landscape${osSuffix}.png`
