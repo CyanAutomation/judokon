@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { displayJudokaCard } from "../../src/helpers/cardUtils.js";
+import * as validation from "../../src/helpers/judokaValidation.js";
 
 const validJudoka = {
   firstname: "A",
@@ -29,5 +30,19 @@ describe("displayJudokaCard", () => {
     await expect(displayJudokaCard({}, {}, null)).resolves.toBeUndefined();
     expect(errorSpy).toHaveBeenCalledTimes(1);
     expect(errorSpy).toHaveBeenCalledWith("Game area is not available.");
+  });
+
+  it("escapes missing fields before inserting HTML", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(validation, "hasRequiredJudokaFields").mockReturnValue(false);
+    vi.spyOn(validation, "getMissingJudokaFields").mockReturnValue([
+      "<img src=x onerror=alert('xss')>"
+    ]);
+    const gameArea = document.createElement("div");
+    await displayJudokaCard({}, {}, gameArea);
+    expect(gameArea.innerHTML).toBe(
+      "<p>⚠️ Invalid judoka data. Missing fields: &lt;img src=x onerror=alert('xss')&gt;</p>"
+    );
+    expect(gameArea.querySelector("img")).toBeNull();
   });
 });
