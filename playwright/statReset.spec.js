@@ -27,7 +27,9 @@ test.describe.parallel("Classic battle button reset", () => {
     await page.locator("#next-button").click();
     await page.evaluate(() => window.skipBattlePhase?.());
     // Wait until the state machine reports the new round is awaiting input
-    await page.locator("#machine-state", { hasText: "waitingForPlayerAction" }).waitFor();
+    await page
+      .locator("#machine-state", { hasText: "waitingForPlayerAction" })
+      .waitFor({ state: "attached" });
     // Also wait for the selection prompt that signifies the next round started
     await page.locator(".snackbar").filter({ hasText: "Select your move" }).waitFor();
     // Wait for stat buttons to be fully re-enabled for the new round
