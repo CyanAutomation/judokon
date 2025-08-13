@@ -43,3 +43,19 @@ export function skipCurrentPhase() {
     pendingSkip = true;
   }
 }
+
+/**
+ * Reset the skip handler state and notify listeners that no handler is active.
+ *
+ * @pseudocode
+ * 1. Set the internal handler reference to `null`.
+ * 2. Clear any pending skip request.
+ * 3. Dispatch `skip-handler-change` with `active: false`.
+ *
+ * @returns {void}
+ */
+export function resetSkipState() {
+  skipHandler = null;
+  pendingSkip = false;
+  window.dispatchEvent(new CustomEvent("skip-handler-change", { detail: { active: false } }));
+}

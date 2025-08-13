@@ -10,6 +10,7 @@ import { CLASSIC_BATTLE_MAX_ROUNDS } from "../constants.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import { quitMatch } from "./quitModal.js";
 import { cancel as cancelFrame } from "../../utils/scheduler.js";
+import { resetSkipState } from "./skipHandler.js";
 
 /**
  * Create a new battle state store and attach button handlers.
@@ -121,6 +122,7 @@ export function resetGame() {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
 export function _resetForTest(store) {
+  resetSkipState();
   resetSelection();
   battleEngine._resetForTest();
   if (typeof window !== "undefined") {
