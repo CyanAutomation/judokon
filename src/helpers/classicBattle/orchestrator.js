@@ -89,6 +89,25 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
   };
 
   machine = await BattleStateMachine.create(onEnter, { store }, onTransition);
+  // Expose a tiny polling helper for tests to await a specific state
+  try {
+    if (typeof window !== "undefined") {
+      window.waitForBattleState = (stateName, timeoutMs = 10000) =>
+        new Promise((resolve, reject) => {
+          const deadline = Date.now() + timeoutMs;
+          const tick = () => {
+            try {
+              if (window.__classicBattleState === stateName) return resolve(true);
+              if (Date.now() > deadline) return reject(new Error("waitForBattleState timeout"));
+              setTimeout(tick, 50);
+            } catch {
+              setTimeout(tick, 50);
+            }
+          };
+          tick();
+        });
+    }
+  } catch {}
   return machine;
 }
 
