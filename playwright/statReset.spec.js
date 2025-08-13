@@ -30,7 +30,8 @@ test.describe.parallel("Classic battle button reset", () => {
     await page.locator(".snackbar").filter({ hasText: "Select your move" }).waitFor();
     // Re-query the button to avoid any stale handle if DOM updated
     const btn = page.locator("#stat-buttons button[data-stat='power']");
-    await btn.waitFor();
+    // After round reset, ensure the element is attached before style reads
+    await btn.waitFor({ state: "attached" });
     await expect(btn).toBeEnabled();
     // Read the computed WebKit tap highlight in a robust way across engines
     const highlight = await btn.evaluate((el) =>
