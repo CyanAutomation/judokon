@@ -6,7 +6,7 @@ import { showSnackbar } from "./showSnackbar.js";
 import { PreviewToggle } from "../components/PreviewToggle.js";
 import { extractLineAndColumn } from "./tooltipViewer/extractLineAndColumn.js";
 import { renderList, MALFORMED_TOOLTIP_MSG } from "./tooltipViewer/renderList.js";
-import DOMPurify from "/node_modules/dompurify/dist/purify.es.js";
+import { getSanitizer } from "./sanitizeHtml.js";
 
 const FILE_NOT_FOUND_MSG = "File not found";
 const LOAD_ERROR_MSG = "Error loading tooltips.";
@@ -122,6 +122,7 @@ export function applyHashSelection(listPlaceholder, select) {
  * 5. Apply URL hash selection, then initialize help tooltips.
  */
 export async function setupTooltipViewerPage() {
+  const DOMPurify = await getSanitizer();
   const searchInput = document.getElementById("tooltip-search");
   let listPlaceholder = document.getElementById("tooltip-list");
   const previewEl = document.getElementById("tooltip-preview");

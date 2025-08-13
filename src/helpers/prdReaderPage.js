@@ -3,7 +3,7 @@ import { markdownToHtml } from "./markdownToHtml.js";
 import { initTooltips } from "./tooltip.js";
 import { SidebarList } from "../components/SidebarList.js";
 import { getPrdTaskStats } from "./prdTaskStats.js";
-import DOMPurify from "/node_modules/dompurify/dist/purify.es.js";
+import { getSanitizer } from "./sanitizeHtml.js";
 
 /**
  * Load PRD filenames and related metadata.
@@ -120,6 +120,7 @@ export function bindNavigation({ container, nextButtons, prevButtons, showNext, 
  * @returns {Promise<{documents:string[], taskStats:object[], titles:string[]}>}
  */
 export async function fetchAndRenderDoc(files, docsMap, parserFn, dir) {
+  const DOMPurify = await getSanitizer();
   function escapeHtml(str) {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
@@ -186,6 +187,7 @@ export async function fetchAndRenderDoc(files, docsMap, parserFn, dir) {
  * @param {Function} [parserFn=markdownToHtml]
  */
 export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
+  const DOMPurify = await getSanitizer();
   const { files, baseNames, labels, dir } = await loadPrdFileList(docsMap);
   const docParam = new URLSearchParams(window.location.search).get("doc");
   let startIndex = Math.max(0, docParam ? baseNames.indexOf(docParam.replace(/\.md$/, "")) : 0);

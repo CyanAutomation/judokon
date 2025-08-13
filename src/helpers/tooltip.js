@@ -3,7 +3,7 @@ import { DATA_DIR } from "./constants.js";
 import { escapeHTML } from "./utils.js";
 import { loadSettings } from "./settingsStorage.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
-import DOMPurify from "/node_modules/dompurify/dist/purify.es.js";
+import { getSanitizer } from "./sanitizeHtml.js";
 
 let tooltipDataPromise;
 let cachedData;
@@ -130,6 +130,7 @@ export async function initTooltips(root = document) {
     // ignore settings errors and assume enabled
   }
   toggleTooltipOverlayDebug(overlay);
+  const DOMPurify = await getSanitizer();
   const data = await loadTooltips();
   const elements = root.querySelectorAll?.("[data-tooltip-id]") || [];
   if (elements.length === 0) return;
