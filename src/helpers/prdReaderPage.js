@@ -3,6 +3,7 @@ import { markdownToHtml } from "./markdownToHtml.js";
 import { initTooltips } from "./tooltip.js";
 import { SidebarList } from "../components/SidebarList.js";
 import { getPrdTaskStats } from "./prdTaskStats.js";
+import DOMPurify from "dompurify";
 
 /**
  * Load PRD filenames and related metadata.
@@ -116,7 +117,7 @@ export function bindNavigation({
  *
  * @pseudocode
  * 1. For each file, read from `docsMap` or fetch from `dir`.
- * 2. Parse markdown with `parserFn`; on failure, show warning with escaped text.
+ * 2. Parse markdown with `parserFn`, sanitize the HTML; on failure, show warning with escaped text.
  * 3. Derive task stats and top-level title.
  * 4. Return arrays of HTML documents, task stats, and titles.
  *
@@ -132,7 +133,7 @@ export async function fetchAndRenderDoc(files, docsMap, parserFn, dir) {
   }
   function parseWithWarning(md) {
     try {
-      return parserFn(md);
+      return DOMPurify.sanitize(parserFn(md));
     } catch {
       const escaped = escapeHtml(md);
       return (
@@ -185,7 +186,7 @@ export async function fetchAndRenderDoc(files, docsMap, parserFn, dir) {
  * 1. Load filenames and sidebar labels.
  * 2. Determine starting document from URL.
  * 3. Create sidebar immediately so keyboard traversal works early.
- * 4. Fetch and render only the starting doc first; focus content and seed history.
+ * 4. Fetch and render only the starting doc first, sanitizing the HTML; focus content and seed history.
  * 5. Lazy-load remaining docs in the background and fetch-on-demand when selected.
  * 6. Bind navigation (buttons, history, keys, swipe).
  *
@@ -222,7 +223,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
         str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       const parseWithWarning = (md) => {
         try {
-          return parserFn(md);
+          return DOMPurify.sanitize(parserFn(md));
         } catch {
           const escaped = escapeHtml(md);
           return (
@@ -272,7 +273,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   listSelect(startIndex);
 
   function renderDoc(i) {
-    container.innerHTML = documents[i] || "";
+    container.innerHTML = DOMPurify.sanitize(documents[i] || "");
     container.classList.remove("fade-in");
     void container.offsetWidth;
     container.classList.add("fade-in");
@@ -295,7 +296,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
         str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       const parseWithWarning = (mdText) => {
         try {
-          return parserFn(mdText);
+          return DOMPurify.sanitize(parserFn(mdText));
         } catch {
           const escaped = escapeHtml(mdText);
           return (
