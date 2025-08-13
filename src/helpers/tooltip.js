@@ -3,6 +3,7 @@ import { DATA_DIR } from "./constants.js";
 import { escapeHTML } from "./utils.js";
 import { loadSettings } from "./settingsStorage.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
+import DOMPurify from "dompurify";
 
 let tooltipDataPromise;
 let cachedData;
@@ -109,7 +110,7 @@ function ensureTooltipElement() {
  * 2. Load tooltip data with `loadTooltips()`.
  * 3. Select all elements matching `[data-tooltip-id]` within `root`.
  * 4. For each element, attach hover and focus listeners.
- *    - `show` looks up the tooltip text and positions the element.
+ *    - `show` looks up the tooltip text, sanitizes it with DOMPurify, and positions the element.
  *    - `hide` hides the tooltip element.
  * 5. When an ID is missing, log a warning only once and skip display.
  *
@@ -149,7 +150,7 @@ export async function initTooltips(root = document) {
       return;
     }
     const { html, warning } = parseTooltipText(text);
-    tip.innerHTML = html;
+    tip.innerHTML = DOMPurify.sanitize(html);
     if (warning && !loggedUnbalanced.has(id)) {
       console.warn(`Unbalanced markup in tooltip id: ${id}`);
       loggedUnbalanced.add(id);
