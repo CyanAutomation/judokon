@@ -184,6 +184,10 @@ export function scheduleNextRound(result) {
 
   // Track snackbar lifecycle and whether the cooldown actually started.
   let snackbarStarted = false;
+  // Track last rendered remaining to avoid duplicate updates when we
+  // pre-render the initial state and the timer immediately echoes the
+  // same remaining value on its first tick.
+  let lastRenderedRemaining = -1;
 
   // Make the Next button act as a skip control during cooldown: keep it enabled
   // but mark it as not-ready until the cooldown expires. The click handler will
@@ -196,6 +200,7 @@ export function scheduleNextRound(result) {
       infoBar.clearTimer();
       return;
     }
+    if (remaining === lastRenderedRemaining) return;
     const text = `Next round in: ${remaining}s`;
     if (!snackbarStarted) {
       showSnackbar(text);
@@ -203,6 +208,7 @@ export function scheduleNextRound(result) {
     } else {
       updateSnackbar(text);
     }
+    lastRenderedRemaining = remaining;
   };
 
   const onExpired = () => {
