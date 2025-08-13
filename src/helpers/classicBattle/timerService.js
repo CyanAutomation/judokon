@@ -228,6 +228,10 @@ export function scheduleNextRound(result) {
   }
 
   const run = runTimerWithDrift(startCoolDown);
+  // Ensure the initial cooldown message is visible immediately, even if
+  // the underlying timer is paused or a skip is pending. The timer will
+  // update/replace this text on the first scheduled tick.
+  onTick(3);
   run(3, onTick, onExpired, () => {
     infoBar.showMessage("Timer error. Enabling next round.");
     onExpired();
