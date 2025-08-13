@@ -1,10 +1,7 @@
-// Use the same specifier used by tests to ensure Vitest mocking applies
-import { fetchJson } from "../../src/helpers/dataUtils.js";
 import { parseTooltipText, flattenTooltips, initTooltips } from "./tooltip.js";
 import { DATA_DIR } from "./constants.js";
 import { onDomReady } from "./domReady.js";
 // Align specifier with tests for consistent mocking
-import { showSnackbar } from "../../src/helpers/showSnackbar.js";
 import { PreviewToggle } from "../components/PreviewToggle.js";
 import { extractLineAndColumn } from "./tooltipViewer/extractLineAndColumn.js";
 import { renderList, MALFORMED_TOOLTIP_MSG } from "./tooltipViewer/renderList.js";
