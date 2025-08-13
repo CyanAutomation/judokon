@@ -56,6 +56,7 @@ describe("countdown resets after stat selection", () => {
     const timer = vi.useFakeTimers();
     const showSpy = vi.spyOn(snackbar, "showSnackbar");
     const updateSpy = vi.spyOn(snackbar, "updateSnackbar");
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
     const p = battleMod.handleStatSelection(store, "power");
     await vi.advanceTimersByTimeAsync(1000);
     await p;
@@ -76,6 +77,7 @@ describe("countdown resets after stat selection", () => {
     expect(document.querySelectorAll(".snackbar").length).toBe(1);
 
     timer.clearAllTimers();
+    randomSpy.mockRestore();
     showSpy.mockRestore();
     updateSpy.mockRestore();
   });
