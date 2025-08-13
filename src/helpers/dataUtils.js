@@ -1,11 +1,11 @@
+import { getMissingJudokaFields } from "./judokaValidation.js";
+import { debugLog } from "./debug.js";
+
 // In-memory cache for data fetched from URLs
 const dataCache = new Map();
 
 // Lazily instantiated Ajv singleton
 let ajvInstance;
-
-import { getMissingJudokaFields } from "./judokaValidation.js";
-import { debugLog } from "./debug.js";
 
 /**
  * Determine if the code is running in a Node environment.
