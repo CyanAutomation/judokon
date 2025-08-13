@@ -22,6 +22,7 @@
  */
 import { DATA_DIR } from "./constants.js";
 import { seededRandom } from "./testModeUtils.js";
+import { escapeHTML } from "./utils.js";
 
 /**
  * @typedef {Object} QuoteLoadState
@@ -102,9 +103,10 @@ function renderQuote(fable) {
   if (!quoteDiv) {
     return;
   }
-  const formattedStory = formatFableStory(fable.story);
+  const formattedStory = formatFableStory(escapeHTML(fable.story));
+  const safeTitle = escapeHTML(fable.title);
   quoteDiv.innerHTML = `
-      <div class="quote-heading" id="quote-heading">${fable.title}</div>
+      <div class="quote-heading" id="quote-heading">${safeTitle}</div>
       <div class="quote-content long-form" id="quote-content">${formattedStory}</div>
     `;
 }
