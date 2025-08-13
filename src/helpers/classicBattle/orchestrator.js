@@ -83,6 +83,11 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
         if (from) el.dataset.prev = from;
         if (event) el.dataset.event = event;
         el.dataset.ts = String(entry.ts);
+        // Update visible state badge when present (feature-flagged)
+        try {
+          const badge = document.getElementById("battle-state-badge");
+          if (badge) badge.textContent = `State: ${to}`;
+        } catch {}
       }
     } catch {}
     updateDebugPanel();

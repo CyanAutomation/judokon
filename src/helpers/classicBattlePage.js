@@ -159,6 +159,31 @@ function watchBattleOrientation() {
   window.addEventListener("resize", onChange);
 }
 
+function setBattleStateBadgeEnabled(enable) {
+  let badge = document.getElementById("battle-state-badge");
+  if (!enable) {
+    if (badge) badge.remove();
+    return;
+  }
+  if (!badge) {
+    const headerRight = document.getElementById("info-bar-right") || document.querySelector(".battle-header .info-right");
+    badge = document.createElement("p");
+    badge.id = "battle-state-badge";
+    badge.dataset.flag = "battleStateBadge";
+    badge.setAttribute("data-tooltip-id", "settings.battleStateBadge");
+    badge.setAttribute("aria-live", "polite");
+    badge.setAttribute("aria-atomic", "true");
+    if (headerRight) headerRight.appendChild(badge);
+    else document.querySelector("header")?.appendChild(badge);
+  }
+  try {
+    const current = typeof window !== "undefined" ? window.__classicBattleState : null;
+    badge.textContent = current ? `State: ${current}` : "State: —";
+  } catch {
+    badge.textContent = "State: —";
+  }
+}
+
 export async function setupClassicBattlePage() {
   if (!(typeof process !== "undefined" && process.env.VITEST)) startScheduler();
   setupBattleInfoBar();
@@ -167,6 +192,11 @@ export async function setupClassicBattlePage() {
   watchBattleOrientation();
   await initFeatureFlags();
   setupNextButton();
+  // Toggle a visible state badge for testing when enabled
+  setBattleStateBadgeEnabled(isEnabled("battleStateBadge"));
+  featureFlagsEmitter.addEventListener("change", () => {
+    setBattleStateBadgeEnabled(isEnabled("battleStateBadge"));
+  });
 
   statButtonControls = initStatButtons(battleStore);
 
