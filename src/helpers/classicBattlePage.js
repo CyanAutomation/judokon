@@ -256,7 +256,8 @@ function applyBattleFeatureFlags(battleArea, banner) {
   setTestMode(isEnabled("enableTestMode"));
   toggleInspectorPanels(isEnabled("enableCardInspector"));
   toggleViewportSimulation(isEnabled("viewportSimulation"));
-  setDebugPanelEnabled(isEnabled("battleDebugPanel"));
+  // In Test Mode, always surface the debug panel to visualize state
+  setDebugPanelEnabled(isEnabled("battleDebugPanel") || isEnabled("enableTestMode"));
 
   featureFlagsEmitter.addEventListener("change", () => {
     if (battleArea) battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
@@ -264,7 +265,7 @@ function applyBattleFeatureFlags(battleArea, banner) {
     setTestMode(isEnabled("enableTestMode"));
     toggleInspectorPanels(isEnabled("enableCardInspector"));
     toggleViewportSimulation(isEnabled("viewportSimulation"));
-    setDebugPanelEnabled(isEnabled("battleDebugPanel"));
+    setDebugPanelEnabled(isEnabled("battleDebugPanel") || isEnabled("enableTestMode"));
   });
 }
 

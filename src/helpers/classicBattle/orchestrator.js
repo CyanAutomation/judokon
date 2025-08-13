@@ -62,6 +62,27 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
         window.__classicBattleState = to;
         if (from) window.__classicBattlePrevState = from;
         if (event) window.__classicBattleLastEvent = event;
+        // Maintain a short ring buffer of recent transitions for debugging
+        const entry = { from: from || null, to, event: event || null, ts: Date.now() };
+        const log = Array.isArray(window.__classicBattleStateLog)
+          ? window.__classicBattleStateLog
+          : [];
+        log.push(entry);
+        while (log.length > 20) log.shift();
+        window.__classicBattleStateLog = log;
+        // Update or create a lightweight DOM mirror for tests/diagnostics
+        let el = document.getElementById("machine-state");
+        if (!el) {
+          el = document.createElement("div");
+          el.id = "machine-state";
+          // Hidden by default; tests can still read text/attributes
+          el.style.display = "none";
+          document.body.appendChild(el);
+        }
+        el.textContent = to;
+        if (from) el.dataset.prev = from;
+        if (event) el.dataset.event = event;
+        el.dataset.ts = String(entry.ts);
       }
     } catch {}
     updateDebugPanel();
