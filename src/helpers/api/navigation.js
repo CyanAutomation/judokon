@@ -22,6 +22,25 @@ export function navTooltipKey(name) {
 }
 
 /**
+ * Escape special HTML characters to prevent injection.
+ *
+ * @pseudocode
+ * 1. Convert the input to a string.
+ * 2. Replace `&`, `<`, `>`, `"`, and `'` with their HTML entity equivalents.
+ *
+ * @param {unknown} value - The value to escape.
+ * @returns {string} Escaped string safe for HTML insertion.
+ */
+export function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/**
  * Base path for navigation links derived from the current module location.
  */
 export const BASE_PATH = (() => {
@@ -105,26 +124,26 @@ export function buildMenu(gameModes, { orientation }) {
   const template = isLandscape
     ? (mode) =>
         `<a
-          href="${BASE_PATH}${mode.url}"
-          aria-label="${mode.name}"
+          href="${BASE_PATH}${escapeHtml(mode.url)}"
+          aria-label="${escapeHtml(mode.name)}"
           data-tooltip-id="nav.${navTooltipKey(mode.name)}"
           data-testid="nav-${mode.id}"
           style="order: ${mode.order}"
           class="map-tile${mode.isHidden ? " hidden" : ""}"
         >
-          <img src="${mode.image}" alt="${mode.name}" loading="lazy">
-          ${mode.name}
+          <img src="${escapeHtml(mode.image)}" alt="${escapeHtml(mode.name)}" loading="lazy">
+          ${escapeHtml(mode.name)}
         </a>`
     : (mode) =>
         `<a
-          href="${BASE_PATH}${mode.url}"
-          aria-label="${mode.name}"
+          href="${BASE_PATH}${escapeHtml(mode.url)}"
+          aria-label="${escapeHtml(mode.name)}"
           data-tooltip-id="nav.${navTooltipKey(mode.name)}"
           data-testid="nav-${mode.id}"
           style="order: ${mode.order}"
           class="text-menu-item${mode.isHidden ? " hidden" : ""}"
         >
-          ${mode.name}
+          ${escapeHtml(mode.name)}
         </a>`;
   menu.innerHTML = validModes.map(template).join("");
 
