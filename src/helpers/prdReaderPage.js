@@ -81,16 +81,8 @@ export function createSidebarList(labels, placeholder, onSelect) {
  * @param {NodeListOf<HTMLElement>} opts.prevButtons
  * @param {Function} opts.showNext
  * @param {Function} opts.showPrev
- * @param {(i:number, updateHistory?:boolean)=>void} opts.selectDoc
  */
-export function bindNavigation({
-  container,
-  nextButtons,
-  prevButtons,
-  showNext,
-  showPrev,
-  selectDoc
-}) {
+export function bindNavigation({ container, nextButtons, prevButtons, showNext, showPrev }) {
   nextButtons.forEach((btn) => btn.addEventListener("click", showNext));
   prevButtons.forEach((btn) => btn.addEventListener("click", showPrev));
   window.addEventListener("popstate", (e) => {
@@ -336,19 +328,6 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     }
   }
 
-  async function selectDoc(i, updateHistory = true, skipList = false, focusContent = true) {
-    index = ((i % files.length) + files.length) % files.length;
-    if (!skipList) listSelect(index);
-    await fetchOne(index);
-    renderDoc(index);
-    if (focusContent) container.focus();
-    if (updateHistory) {
-      const url = new URL(window.location);
-      url.searchParams.set("doc", baseNames[index]);
-      history.pushState({ index }, "", url.pathname + url.search);
-    }
-  }
-
   const showNext = () => selectDocSync(index + 1);
   const showPrev = () => selectDocSync(index - 1);
 
@@ -357,8 +336,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     nextButtons,
     prevButtons,
     showNext,
-    showPrev,
-    selectDoc
+    showPrev
   });
 
   // Seed initial history and render the starting doc as soon as it is fetched.

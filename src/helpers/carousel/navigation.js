@@ -1,5 +1,4 @@
 import { CAROUSEL_SWIPE_THRESHOLD } from "../constants.js";
-import { CarouselController } from "./controller.js";
 /**
  * Sets up keyboard navigation for the carousel container.
  *

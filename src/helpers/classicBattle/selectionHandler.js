@@ -83,6 +83,8 @@ export async function handleStatSelection(store, stat, options = {}) {
   if (store.selectionMade) {
     return { matchEnded: false };
   }
+  // Reserved for future options; referenced to satisfy lint without affecting behavior
+  void options;
   store.selectionMade = true;
   // Stop the countdown timer to prevent further ticks
   stopTimer();
