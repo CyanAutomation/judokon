@@ -166,7 +166,9 @@ function setBattleStateBadgeEnabled(enable) {
     return;
   }
   if (!badge) {
-    const headerRight = document.getElementById("info-bar-right") || document.querySelector(".battle-header .info-right");
+    const headerRight =
+      document.getElementById("info-bar-right") ||
+      document.querySelector(".battle-header .info-right");
     badge = document.createElement("p");
     badge.id = "battle-state-badge";
     badge.dataset.flag = "battleStateBadge";
