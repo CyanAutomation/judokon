@@ -97,10 +97,10 @@ export async function registerCommonRoutes(page) {
       } else {
         route.fulfill({ path: "src/assets/fonts/OpenSansRegular.woff2" });
       }
-    })
-  ]);
-}
+    }),
     // Ensure stat names are always served promptly to avoid flaky fetches
     page.route("**/src/data/statNames.json", (route) =>
       route.fulfill({ path: "src/data/statNames.json" })
-    ),
+    )
+  ]);
+}
