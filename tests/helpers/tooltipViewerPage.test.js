@@ -144,9 +144,8 @@ describe("setupTooltipViewerPage", () => {
 
     const mod = await import("../../src/helpers/tooltipViewerPage.js");
     mod.setTooltipDataLoader(async () => ({ "ui.tip": "text" }));
-
     const showSnackbar = vi.fn();
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
+    mod.setTooltipSnackbar(showSnackbar);
 
     vi.useFakeTimers();
     document.dispatchEvent(new Event("DOMContentLoaded"));
@@ -177,9 +176,8 @@ describe("setupTooltipViewerPage", () => {
 
     const mod = await import("../../src/helpers/tooltipViewerPage.js");
     mod.setTooltipDataLoader(async () => ({ "ui.tip": "body text" }));
-
     const showSnackbar = vi.fn();
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
+    mod.setTooltipSnackbar(showSnackbar);
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 

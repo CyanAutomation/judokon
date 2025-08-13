@@ -8,6 +8,11 @@ import { getSanitizer } from "./sanitizeHtml.js";
 
 const FILE_NOT_FOUND_MSG = "File not found";
 const LOAD_ERROR_MSG = "Error loading tooltips.";
+// Test hooks for dependency injection
+let snackbarFnOverride = null;
+export function setTooltipSnackbar(fn) {
+  snackbarFnOverride = typeof fn === "function" ? fn : null;
+}
 
 // Optional injection hook used by tests to bypass module resolution quirks
 /** @type {null | ((url: string) => Promise<Record<string, any>>)} */
@@ -97,9 +102,15 @@ export function bindCopyButtons(keyCopyBtn, bodyCopyBtn) {
       navigator.clipboard
         .writeText(text)
         .then(() => {
-          getSnackbar()
-            .then(({ showSnackbar }) => showSnackbar("Copied"))
-            .catch(() => {});
+          if (snackbarFnOverride) {
+            try {
+              snackbarFnOverride("Copied");
+            } catch {}
+          } else {
+            getSnackbar()
+              .then(({ showSnackbar }) => showSnackbar("Copied"))
+              .catch(() => {});
+          }
           btn.classList.add("copied");
           setTimeout(() => btn.classList.remove("copied"), 600);
         })
