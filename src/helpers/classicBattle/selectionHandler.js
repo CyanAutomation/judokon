@@ -87,8 +87,7 @@ export async function handleStatSelection(store, stat, options = {}) {
   if (store.selectionMade) {
     return { matchEnded: false };
   }
-  // Reserved for future options; referenced to satisfy lint without affecting behavior
-  void options;
+  const delayOpponentMessage = Boolean(options && options.delayOpponentMessage);
   store.selectionMade = true;
   // Stop the countdown timer to prevent further ticks
   stopTimer();
@@ -106,7 +105,10 @@ export async function handleStatSelection(store, stat, options = {}) {
     }
   } catch {}
   // Start a delayed snackbar hint so the result area stays free for outcomes.
-  const opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), 500);
+  // Skip this hint when auto-select path requests immediate resolution.
+  const opponentSnackbarId = delayOpponentMessage
+    ? 0
+    : setTimeout(() => showSnackbar("Opponent is choosing…"), 500);
   // For testing stability and clearer UX, pre-compute a tie indication when
   // both visible values are equal. This mirrors the engine's tie message and
   // ensures the header shows a result promptly even before reveal/animations.
@@ -119,11 +121,11 @@ export async function handleStatSelection(store, stat, options = {}) {
       infoBar.showMessage("Tie – no score!");
     }
   } catch {}
-  const delay = 300 + Math.floor(Math.random() * 401);
+  const delay = delayOpponentMessage ? 0 : 300 + Math.floor(Math.random() * 401);
   return new Promise((resolve) => {
     setTimeout(async () => {
       // Cancel the hint once the round is ready to resolve.
-      clearTimeout(opponentSnackbarId);
+      if (opponentSnackbarId) clearTimeout(opponentSnackbarId);
       await revealComputerCard();
       const result = evaluateRound(store, stat);
       // Move to decision and then roundOver in the state machine
