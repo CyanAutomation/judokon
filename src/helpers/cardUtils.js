@@ -6,6 +6,25 @@ import { setupLazyPortraits } from "./lazyPortrait.js";
 import { JudokaCard } from "../components/JudokaCard.js";
 
 /**
+ * Escape special HTML characters to prevent injection.
+ *
+ * @pseudocode
+ * 1. Convert `value` to a string.
+ * 2. Replace `&`, `<`, `>`, `"`, and `'` with their HTML entity equivalents.
+ *
+ * @param {unknown} value - The value to escape.
+ * @returns {string} The escaped string.
+ */
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/**
  * Selects a random judoka from the provided data array.
  *
  * @pseudocode
@@ -85,7 +104,7 @@ export async function displayJudokaCard(judoka, gokyo, gameArea) {
 
   if (!hasRequiredJudokaFields(judoka)) {
     console.error("Invalid judoka object:", judoka);
-    const missing = getMissingJudokaFields(judoka).join(", ");
+    const missing = escapeHtml(getMissingJudokaFields(judoka).join(", "));
     gameArea.innerHTML = `<p>⚠️ Invalid judoka data. Missing fields: ${missing}</p>`;
     return;
   }
