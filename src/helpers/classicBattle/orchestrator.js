@@ -106,6 +106,21 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
           };
           tick();
         });
+      // Provide a snapshot getter for tests/diagnostics
+      window.getBattleStateSnapshot = () => {
+        try {
+          return {
+            state: window.__classicBattleState || null,
+            prev: window.__classicBattlePrevState || null,
+            event: window.__classicBattleLastEvent || null,
+            log: Array.isArray(window.__classicBattleStateLog)
+              ? window.__classicBattleStateLog.slice()
+              : []
+          };
+        } catch {
+          return { state: null, prev: null, event: null, log: [] };
+        }
+      };
     }
   } catch {}
   return machine;

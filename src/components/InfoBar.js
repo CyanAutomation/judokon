@@ -128,9 +128,11 @@ function animateScore(startPlayer, startComputer, playerTarget, computerTarget) 
  * @returns {void}
  */
 export function showMessage(text) {
-  ensureRefs();
-  if (messageEl) {
-    messageEl.textContent = text;
+  // Prefer a fresh lookup to avoid stale references in dynamic tests
+  const el = document.getElementById("round-message") || messageEl;
+  if (el) {
+    el.textContent = text;
+    messageEl = el;
   }
 }
 
@@ -143,9 +145,10 @@ export function showMessage(text) {
  * @returns {void}
  */
 export function clearMessage() {
-  ensureRefs();
-  if (messageEl) {
-    messageEl.textContent = "";
+  const el = document.getElementById("round-message") || messageEl;
+  if (el) {
+    el.textContent = "";
+    messageEl = el;
   }
 }
 
