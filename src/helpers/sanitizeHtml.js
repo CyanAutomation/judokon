@@ -38,7 +38,9 @@ export async function getSanitizer() {
   function sanitizeBasic(input) {
     const str = String(input ?? "");
     // Remove script/style blocks completely
-    let out = str.replace(/<\/(?:script|style)>/gi, "").replace(/<(?:script|style)[^>]*>.*?/gis, "");
+    let out = str
+      .replace(/<\/(?:script|style)>/gi, "")
+      .replace(/<(?:script|style)[^>]*>.*?/gis, "");
     // Drop inline event handlers
     out = out.replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, "").replace(/\son[a-z]+\s*=\s*'[^']*'/gi, "");
     // Allow only a small set of tags and strip attributes
@@ -56,4 +58,3 @@ export async function getSanitizer() {
   cached = { sanitize: sanitizeBasic };
   return cached;
 }
-
