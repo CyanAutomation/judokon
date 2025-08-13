@@ -56,6 +56,11 @@ export async function onNextButtonClick() {
   });
   obs.observe(btn, { attributes: true, attributeFilter: ["data-next-ready", "disabled"] });
 
+  if (await maybeStart()) {
+    obs.disconnect();
+    return;
+  }
+
   // Safety timeout to avoid leaking the observer if nothing happens.
   setTimeout(() => obs.disconnect(), 10000);
 }
