@@ -1,5 +1,4 @@
 import { parseTooltipText, flattenTooltips, initTooltips } from "./tooltip.js";
-import { fetchJson } from "../../src/helpers/dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { onDomReady } from "./domReady.js";
 // Align specifier with tests for consistent mocking
@@ -26,6 +25,8 @@ const LOAD_ERROR_MSG = "Error loading tooltips.";
  */
 export async function loadTooltipData(previewEl) {
   try {
+    // Use a root-relative path so Vitest normalizes the module id consistently
+    const { fetchJson } = await import("/src/helpers/dataUtils.js");
     const json = await fetchJson(`${DATA_DIR}tooltips.json`);
     return flattenTooltips(json);
   } catch (err) {
@@ -75,7 +76,7 @@ export function bindCopyButtons(keyCopyBtn, bodyCopyBtn) {
   // Dynamically import to play nicely with Vitest mocks
   let snackbarPromise;
   async function getSnackbar() {
-    snackbarPromise ||= import("../../src/helpers/showSnackbar.js");
+    snackbarPromise ||= import("/src/helpers/showSnackbar.js");
     return snackbarPromise;
   }
   function copy(btn) {
@@ -130,8 +131,14 @@ export function applyHashSelection(listPlaceholder, select) {
  * 5. Apply URL hash selection, then initialize help tooltips.
  */
 export async function setupTooltipViewerPage() {
-  // Overlap sanitizer loading with data fetch to reduce latency in tests
+  // Start loading sanitizer but don't block initial render
   const sanitizerPromise = getSanitizer();
+  let sanitize = (s) => s;
+  sanitizerPromise
+    .then((DOMPurify) => {
+      if (DOMPurify?.sanitize) sanitize = DOMPurify.sanitize.bind(DOMPurify);
+    })
+    .catch(() => {});
   const searchInput = document.getElementById("tooltip-search");
   let listPlaceholder = document.getElementById("tooltip-list");
   const previewEl = document.getElementById("tooltip-preview");
@@ -174,7 +181,7 @@ export async function setupTooltipViewerPage() {
       if (index !== -1) listSelect(index);
     }
     const { html, warning } = parseTooltipText(body);
-    previewEl.innerHTML = DOMPurify.sanitize(html);
+    previewEl.innerHTML = sanitize(html);
     rawEl.textContent = body;
     if (warning) {
       warningEl.textContent = MALFORMED_TOOLTIP_MSG;
