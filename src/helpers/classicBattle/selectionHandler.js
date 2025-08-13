@@ -107,6 +107,18 @@ export async function handleStatSelection(store, stat, options = {}) {
   } catch {}
   // Start a delayed snackbar hint so the result area stays free for outcomes.
   const opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), 500);
+  // For testing stability and clearer UX, pre-compute a tie indication when
+  // both visible values are equal. This mirrors the engine's tie message and
+  // ensures the header shows a result promptly even before reveal/animations.
+  try {
+    const playerCard = document.getElementById("player-card");
+    const computerCard = document.getElementById("computer-card");
+    const pv = getStatValue(playerCard, stat);
+    const cv = getStatValue(computerCard, stat);
+    if (pv === cv) {
+      infoBar.showMessage("Tie – no score!");
+    }
+  } catch {}
   const delay = 300 + Math.floor(Math.random() * 401);
   return new Promise((resolve) => {
     setTimeout(async () => {
