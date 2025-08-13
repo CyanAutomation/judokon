@@ -37,12 +37,8 @@ describe("setupTooltipViewerPage", () => {
   it("updates preview when a list item is clicked", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ "stat.tipA": "**Bold**", "ui.tipB": "Raw" }),
-      importJsonModule: vi.fn().mockResolvedValue({})
-    }));
-
-    await import("../../src/helpers/tooltipViewerPage.js");
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => ({ "stat.tipA": "**Bold**", "ui.tipB": "Raw" }));
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
@@ -60,12 +56,8 @@ describe("setupTooltipViewerPage", () => {
   it("adds warning icon to invalid entries", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ "ui.ok": "text", "ui.bad": "" }),
-      importJsonModule: vi.fn().mockResolvedValue({})
-    }));
-
-    await import("../../src/helpers/tooltipViewerPage.js");
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => ({ "ui.ok": "text", "ui.bad": "" }));
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
@@ -84,12 +76,8 @@ describe("setupTooltipViewerPage", () => {
   it("adds warning icon to malformed entries", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ "ui.ok": "text", "ui.warn": "**Bold" }),
-      importJsonModule: vi.fn().mockResolvedValue({})
-    }));
-
-    await import("../../src/helpers/tooltipViewerPage.js");
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => ({ "ui.ok": "text", "ui.warn": "**Bold" }));
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
@@ -108,12 +96,8 @@ describe("setupTooltipViewerPage", () => {
   it("shows warning for unbalanced markup", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ "ui.tip": "**Bold" }),
-      importJsonModule: vi.fn().mockResolvedValue({})
-    }));
-
-    await import("../../src/helpers/tooltipViewerPage.js");
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => ({ "ui.tip": "**Bold" }));
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
@@ -130,12 +114,8 @@ describe("setupTooltipViewerPage", () => {
   it("toggles preview expansion for long content", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ "ui.tip": "long" }),
-      importJsonModule: vi.fn().mockResolvedValue({})
-    }));
-
-    await import("../../src/helpers/tooltipViewerPage.js");
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => ({ "ui.tip": "long" }));
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
@@ -162,17 +142,13 @@ describe("setupTooltipViewerPage", () => {
     const writeText = vi.fn().mockResolvedValue();
     navigator.clipboard = { writeText };
 
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ "ui.tip": "text" }),
-      importJsonModule: vi.fn().mockResolvedValue({})
-    }));
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => ({ "ui.tip": "text" }));
 
     const showSnackbar = vi.fn();
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
 
     vi.useFakeTimers();
-    await import("../../src/helpers/tooltipViewerPage.js");
-
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
     await flush();
@@ -199,15 +175,11 @@ describe("setupTooltipViewerPage", () => {
     const writeText = vi.fn().mockResolvedValue();
     navigator.clipboard = { writeText };
 
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ "ui.tip": "body text" }),
-      importJsonModule: vi.fn().mockResolvedValue({})
-    }));
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => ({ "ui.tip": "body text" }));
 
     const showSnackbar = vi.fn();
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
-
-    await import("../../src/helpers/tooltipViewerPage.js");
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
@@ -229,16 +201,12 @@ describe("setupTooltipViewerPage", () => {
   it("selects tooltip from URL hash on load", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ "ui.tip": "text", "ui.other": "x" }),
-      importJsonModule: vi.fn().mockResolvedValue({})
-    }));
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => ({ "ui.tip": "text", "ui.other": "x" }));
 
     const scrollIntoView = vi.fn();
     Element.prototype.scrollIntoView = scrollIntoView;
     location.hash = "#ui.tip";
-
-    await import("../../src/helpers/tooltipViewerPage.js");
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
@@ -252,14 +220,10 @@ describe("setupTooltipViewerPage", () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
     const error = Object.assign(new Error("missing"), { code: "ENOENT" });
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockRejectedValue(error),
-      importJsonModule: vi.fn().mockResolvedValue({})
-    }));
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => Promise.reject(error));
 
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-
-    await import("../../src/helpers/tooltipViewerPage.js");
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
@@ -274,14 +238,10 @@ describe("setupTooltipViewerPage", () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
     const error = new SyntaxError("Unexpected token } in JSON at line 3 column 15");
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockRejectedValue(error),
-      importJsonModule: vi.fn().mockResolvedValue({})
-    }));
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => Promise.reject(error));
 
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-
-    await import("../../src/helpers/tooltipViewerPage.js");
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 
@@ -295,12 +255,8 @@ describe("setupTooltipViewerPage", () => {
   it("adds warning icon to invalid key names", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue({ badkey: "text" }),
-      importJsonModule: vi.fn().mockResolvedValue({})
-    }));
-
-    await import("../../src/helpers/tooltipViewerPage.js");
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => ({ badkey: "text" }));
 
     document.dispatchEvent(new Event("DOMContentLoaded"));
 

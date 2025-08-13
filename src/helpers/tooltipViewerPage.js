@@ -5,10 +5,16 @@ import { PreviewToggle } from "../components/PreviewToggle.js";
 import { extractLineAndColumn } from "./tooltipViewer/extractLineAndColumn.js";
 import { renderList, MALFORMED_TOOLTIP_MSG } from "./tooltipViewer/renderList.js";
 import { getSanitizer } from "./sanitizeHtml.js";
-import { showSnackbar } from "./showSnackbar.js";
 
 const FILE_NOT_FOUND_MSG = "File not found";
 const LOAD_ERROR_MSG = "Error loading tooltips.";
+
+// Optional injection hook used by tests to bypass module resolution quirks
+/** @type {null | ((url: string) => Promise<Record<string, any>>)} */
+let tooltipDataLoader = null;
+export function setTooltipDataLoader(fn) {
+  tooltipDataLoader = typeof fn === "function" ? fn : null;
+}
 
 /**
  * Load and flatten `tooltips.json`, displaying errors in the preview element.
@@ -25,9 +31,15 @@ const LOAD_ERROR_MSG = "Error loading tooltips.";
  */
 export async function loadTooltipData(previewEl) {
   try {
-    // Load via dynamic import so Vitest's doMock for this specifier applies reliably
-    const { fetchJson } = await import("./dataUtils.js");
-    const json = await fetchJson(`${DATA_DIR}tooltips.json`);
+    const url = `${DATA_DIR}tooltips.json`;
+    let json;
+    if (tooltipDataLoader) {
+      json = await tooltipDataLoader(url);
+    } else {
+      // Load via dynamic import so Vitest mocks apply when present
+      const { fetchJson } = await import("./dataUtils.js");
+      json = await fetchJson(url);
+    }
     return flattenTooltips(json);
   } catch (err) {
     console.error("Failed to load tooltips", err);
@@ -73,13 +85,21 @@ export function initSearchFilter(searchInput, updateList) {
  * @param {HTMLButtonElement} bodyCopyBtn - Button for copying the body.
  */
 export function bindCopyButtons(keyCopyBtn, bodyCopyBtn) {
+  // Use dynamic import so tests can vi.doMock this module after initial import
+  let snackbarPromise;
+  const getSnackbar = () => {
+    snackbarPromise ||= import("./showSnackbar.js");
+    return snackbarPromise;
+  };
   function copy(btn) {
     const text = btn.dataset.copy || "";
     if (navigator.clipboard) {
       navigator.clipboard
         .writeText(text)
         .then(() => {
-          showSnackbar("Copied");
+          getSnackbar()
+            .then(({ showSnackbar }) => showSnackbar("Copied"))
+            .catch(() => {});
           btn.classList.add("copied");
           setTimeout(() => btn.classList.remove("copied"), 600);
         })
@@ -154,7 +174,6 @@ export async function setupTooltipViewerPage() {
 
   const data = await loadTooltipData(previewEl);
   if (!data) return;
-  const DOMPurify = await sanitizerPromise;
 
   let listSelect;
   function updateList(filter = "") {
