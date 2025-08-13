@@ -45,10 +45,15 @@ export function flattenTooltips(obj, prefix = "") {
 async function loadTooltips() {
   if (cachedData) return cachedData;
   if (!tooltipDataPromise) {
-    tooltipDataPromise = fetchJson(`${DATA_DIR}tooltips.json`).catch(async (err) => {
-      console.error("Failed to load tooltips:", err);
-      return importJsonModule("../data/tooltips.json");
-    });
+    // Use try/catch instead of chaining .catch in case a mock returns undefined
+    tooltipDataPromise = (async () => {
+      try {
+        return await fetchJson(`${DATA_DIR}tooltips.json`);
+      } catch (err) {
+        console.error("Failed to load tooltips:", err);
+        return importJsonModule("../data/tooltips.json");
+      }
+    })();
   }
   const data = await tooltipDataPromise;
   cachedData = flattenTooltips(data);

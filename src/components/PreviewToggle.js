@@ -12,11 +12,14 @@ export class PreviewToggle {
    * @param {HTMLElement} previewEl - Element containing preview content.
    */
   constructor(previewEl) {
-    this.previewEl = previewEl;
+    this.previewEl = previewEl || document.createElement("div");
     this.container = document.createElement("div");
     this.container.className = "preview-container";
-    previewEl.parentNode?.insertBefore(this.container, previewEl);
-    this.container.appendChild(previewEl);
+    // Gracefully handle cases where the preview element is missing or detached
+    if (previewEl && previewEl.parentNode) {
+      previewEl.parentNode.insertBefore(this.container, previewEl);
+      this.container.appendChild(previewEl);
+    }
 
     this.button = document.createElement("button");
     this.button.id = "toggle-preview-btn";
@@ -24,7 +27,10 @@ export class PreviewToggle {
     this.button.type = "button";
     this.button.textContent = "Expand";
     this.button.setAttribute("aria-expanded", "false");
-    this.container.after(this.button);
+    // Only attach the button when we successfully wrapped an existing preview element
+    if (this.container.parentNode) {
+      this.container.after(this.button);
+    }
 
     this.expanded = false;
     this.button.addEventListener("click", () => this.toggle());
@@ -39,7 +45,7 @@ export class PreviewToggle {
   }
 
   update() {
-    const needsToggle = this.previewEl.scrollHeight > 300;
+    const needsToggle = this.previewEl && this.previewEl.scrollHeight > 300;
     this.button.hidden = !needsToggle;
     if (!needsToggle) this.reset();
   }
