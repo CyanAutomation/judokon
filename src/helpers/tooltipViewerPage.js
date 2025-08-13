@@ -6,6 +6,7 @@ import { showSnackbar } from "./showSnackbar.js";
 import { PreviewToggle } from "../components/PreviewToggle.js";
 import { extractLineAndColumn } from "./tooltipViewer/extractLineAndColumn.js";
 import { renderList, MALFORMED_TOOLTIP_MSG } from "./tooltipViewer/renderList.js";
+import DOMPurify from "dompurify";
 
 const FILE_NOT_FOUND_MSG = "File not found";
 const LOAD_ERROR_MSG = "Error loading tooltips.";
@@ -150,7 +151,7 @@ export async function setupTooltipViewerPage() {
       if (index !== -1) listSelect(index);
     }
     const { html, warning } = parseTooltipText(body);
-    previewEl.innerHTML = html;
+    previewEl.innerHTML = DOMPurify.sanitize(html);
     rawEl.textContent = body;
     if (warning) {
       warningEl.textContent = MALFORMED_TOOLTIP_MSG;
