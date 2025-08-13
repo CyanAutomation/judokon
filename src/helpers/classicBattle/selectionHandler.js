@@ -49,9 +49,13 @@ export function evaluateRound(store, stat) {
   const computerVal = getStatValue(computerCard, stat);
   const result = evaluateRoundApi(playerVal, computerVal);
   syncScoreDisplay();
-  if (result.message) {
-    showResult(result.message);
-  }
+  // Ensure the header message updates immediately so tests (and users)
+  // can observe the outcome without depending on later timers.
+  // Write both via the battle UI helper (with fade) and the info bar
+  // facade to keep the header text in sync.
+  const msg = result.message || "";
+  showResult(msg);
+  infoBar.showMessage(msg);
   showStatComparison(store, stat, playerVal, computerVal);
   updateDebugPanel();
   const outcome =
@@ -119,9 +123,8 @@ export async function handleStatSelection(store, stat, options = {}) {
         infoBar.clearRoundCounter();
       }
       resetStatButtons();
-      // Ensure the outcome message always replaces any transient hints.
-      // If no message is provided (unexpected), clear the message area.
-      infoBar.showMessage(result.message || "");
+      // Outcome message was already written synchronously in evaluateRound;
+      // avoid writing it again here to reduce flicker.
       // From roundOver, either continue to cooldown or decide match
       try {
         const { dispatchBattleEvent } = await import("./orchestrator.js");
