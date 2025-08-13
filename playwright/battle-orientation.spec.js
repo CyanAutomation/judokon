@@ -114,6 +114,7 @@ test.describe.parallel(
       await expect(page.locator(".battle-header")).toHaveScreenshot(
         `battle-header-portrait${osSuffix}.png`
       );
+      await page.evaluate(() => window.resumeBattleHeader?.());
 
       await page.setViewportSize({ width: 480, height: 320 });
       await page.waitForFunction(
