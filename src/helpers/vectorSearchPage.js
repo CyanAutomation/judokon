@@ -240,6 +240,28 @@ function hasMetaMismatch(meta) {
   return false;
 }
 
+/**
+ * Escape HTML special characters in a string.
+ *
+ * @pseudocode
+ * 1. Define a mapping for `&`, `<`, `>`, `"`, and `'` to their HTML entities.
+ * 2. Replace occurrences of those characters using the mapping.
+ * 3. Return the escaped string.
+ *
+ * @param {string} str - Raw input string.
+ * @returns {string} Escaped string safe for HTML contexts.
+ */
+function escapeHtml(str) {
+  const map = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  };
+  return str.replace(/[&<>"']/g, (ch) => map[ch]);
+}
+
 function populateTagFilter(embeddings) {
   const tagSelect = document.getElementById("tag-filter");
   if (!tagSelect || !Array.isArray(embeddings)) return;
@@ -251,7 +273,10 @@ function populateTagFilter(embeddings) {
     '<option value="all">All</option>' +
     [...tags]
       .sort()
-      .map((t) => `<option value="${t}">${t}</option>`)
+      .map((t) => {
+        const esc = escapeHtml(t);
+        return `<option value="${esc}">${esc}</option>`;
+      })
       .join("");
 }
 
