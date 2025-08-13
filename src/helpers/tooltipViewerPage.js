@@ -25,6 +25,7 @@ const LOAD_ERROR_MSG = "Error loading tooltips.";
  */
 export async function loadTooltipData(previewEl) {
   try {
+    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
     const json = await fetchJson(`${DATA_DIR}tooltips.json`);
     return flattenTooltips(json);
   } catch (err) {
@@ -71,13 +72,21 @@ export function initSearchFilter(searchInput, updateList) {
  * @param {HTMLButtonElement} bodyCopyBtn - Button for copying the body.
  */
 export function bindCopyButtons(keyCopyBtn, bodyCopyBtn) {
+  // Dynamically import to play nicely with Vitest mocks
+  let snackbarPromise;
+  async function getSnackbar() {
+    snackbarPromise ||= import("../../src/helpers/showSnackbar.js");
+    return snackbarPromise;
+  }
   function copy(btn) {
     const text = btn.dataset.copy || "";
     if (navigator.clipboard) {
       navigator.clipboard
         .writeText(text)
         .then(() => {
-          showSnackbar("Copied");
+          getSnackbar()
+            .then(({ showSnackbar }) => showSnackbar("Copied"))
+            .catch(() => {});
           btn.classList.add("copied");
           setTimeout(() => btn.classList.remove("copied"), 600);
         })
