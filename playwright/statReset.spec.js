@@ -21,12 +21,21 @@ test.describe.parallel("Classic battle button reset", () => {
     await page.locator(".snackbar").filter({ hasText: "Select your move" }).waitFor();
     const timer = page.locator("header #next-round-timer");
     await timer.waitFor();
-    const btn = page.locator("#stat-buttons button[data-stat='power']");
-    await btn.click();
+    // Select a stat, then advance to the next round
+    const initialBtn = page.locator("#stat-buttons button[data-stat='power']");
+    await initialBtn.click();
     await page.locator("#next-button").click();
     await page.evaluate(() => window.skipBattlePhase?.());
+    // Wait for the selection prompt that signifies the next round started
     await page.locator(".snackbar").filter({ hasText: "Select your move" }).waitFor();
-    const highlight = await btn.evaluate((el) => getComputedStyle(el).webkitTapHighlightColor);
+    // Re-query the button to avoid any stale handle if DOM updated
+    const btn = page.locator("#stat-buttons button[data-stat='power']");
+    await btn.waitFor();
+    await expect(btn).toBeEnabled();
+    // Read the computed WebKit tap highlight in a robust way across engines
+    const highlight = await btn.evaluate((el) =>
+      getComputedStyle(el).getPropertyValue("-webkit-tap-highlight-color")
+    );
     expect(highlight).toBe("rgba(0, 0, 0, 0)");
   });
 });
