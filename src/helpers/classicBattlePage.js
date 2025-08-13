@@ -206,6 +206,7 @@ export async function setupClassicBattlePage() {
 
 function initStatButtons(store) {
   const statButtons = document.querySelectorAll("#stat-buttons button");
+  const statContainer = document.getElementById("stat-buttons");
 
   function setEnabled(enable = true) {
     statButtons.forEach((btn) => {
@@ -213,6 +214,9 @@ function initStatButtons(store) {
       btn.tabIndex = enable ? 0 : -1;
       btn.classList.toggle("disabled", !enable);
     });
+    if (statContainer) {
+      statContainer.dataset.buttonsReady = String(enable);
+    }
   }
 
   statButtons.forEach((btn) => {
