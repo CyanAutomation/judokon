@@ -3,7 +3,7 @@ import { markdownToHtml } from "./markdownToHtml.js";
 import { initTooltips } from "./tooltip.js";
 import { SidebarList } from "../components/SidebarList.js";
 import { getPrdTaskStats } from "./prdTaskStats.js";
-import DOMPurify from "dompurify";
+import DOMPurify from "/node_modules/dompurify/dist/purify.es.js";
 
 /**
  * Load PRD filenames and related metadata.

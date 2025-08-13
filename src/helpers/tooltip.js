@@ -3,7 +3,7 @@ import { DATA_DIR } from "./constants.js";
 import { escapeHTML } from "./utils.js";
 import { loadSettings } from "./settingsStorage.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
-import DOMPurify from "dompurify";
+import DOMPurify from "/node_modules/dompurify/dist/purify.es.js";
 
 let tooltipDataPromise;
 let cachedData;
