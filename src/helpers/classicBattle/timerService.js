@@ -82,17 +82,6 @@ export async function startTimer(onExpiredSelect) {
   const timerEl = document.getElementById("next-round-timer");
   let duration = 30;
   let synced = true;
-  try {
-    const val = await getDefaultTimer("roundTimer");
-    if (typeof val === "number") {
-      duration = val;
-    } else {
-      synced = false;
-    }
-  } catch {
-    synced = false;
-  }
-  const restore = !synced ? infoBar.showTemporaryMessage("Waiting…") : () => {};
 
   const onTick = (remaining) => {
     if (!timerEl) return;
@@ -112,6 +101,24 @@ export async function startTimer(onExpiredSelect) {
     } catch {}
     await autoSelectStat(onExpiredSelect);
   };
+
+  // Register skip handler immediately so early calls to `skipBattlePhase` take effect
+  setSkipHandler(async () => {
+    stopTimer();
+    await onExpired();
+  });
+
+  try {
+    const val = await getDefaultTimer("roundTimer");
+    if (typeof val === "number") {
+      duration = val;
+    } else {
+      synced = false;
+    }
+  } catch {
+    synced = false;
+  }
+  const restore = !synced ? infoBar.showTemporaryMessage("Waiting…") : () => {};
 
   setSkipHandler(async () => {
     stopTimer();

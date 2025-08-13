@@ -43,7 +43,7 @@ export const DATA_DIR = new URL("../data/", HELPERS_DIR).href;
  *
  * @constant {number}
  */
-export const CAROUSEL_SWIPE_THRESHOLD = 50;
+export const CAROUSEL_SWIPE_THRESHOLD = 40;
 
 /**
  * Delay in milliseconds before showing the loading spinner in the
