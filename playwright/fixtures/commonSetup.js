@@ -25,7 +25,11 @@ export const test = base.extend({
       const isNoisyResource404 =
         /Failed to load resource: the server responded with a status of 404/i.test(text);
       const isBenignCountryMapping = /countryCodeMapping\.json/i.test(text);
-      if (isNoisyResource404 || isBenignCountryMapping) return;
+      // These appear when fetches are aborted or mocked and the app falls back to import()
+      const isBenignNavFallback = /Failed to fetch (navigation items|game modes), falling back to import/i.test(
+        text
+      );
+      if (isNoisyResource404 || isBenignCountryMapping || isBenignNavFallback) return;
       try {
         console.log(`[browser:${type}]`, text);
       } catch {}
