@@ -131,7 +131,15 @@ export async function setupTooltipViewerPage() {
   const keyCopyBtn = document.getElementById("copy-key-btn");
   const bodyCopyBtn = document.getElementById("copy-body-btn");
   // If essential elements are missing (e.g., during unrelated pages/tests), bail out early.
-  if (!searchInput || !listPlaceholder || !previewEl || !rawEl || !warningEl || !keyCopyBtn || !bodyCopyBtn) {
+  if (
+    !searchInput ||
+    !listPlaceholder ||
+    !previewEl ||
+    !rawEl ||
+    !warningEl ||
+    !keyCopyBtn ||
+    !bodyCopyBtn
+  ) {
     return;
   }
   const previewToggle = new PreviewToggle(previewEl);
