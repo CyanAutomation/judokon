@@ -1,11 +1,11 @@
 import { parseTooltipText, flattenTooltips, initTooltips } from "./tooltip.js";
 import { DATA_DIR } from "./constants.js";
 import { onDomReady } from "./domReady.js";
-// Align specifier with tests for consistent mocking
 import { PreviewToggle } from "../components/PreviewToggle.js";
 import { extractLineAndColumn } from "./tooltipViewer/extractLineAndColumn.js";
 import { renderList, MALFORMED_TOOLTIP_MSG } from "./tooltipViewer/renderList.js";
 import { getSanitizer } from "./sanitizeHtml.js";
+import { showSnackbar } from "./showSnackbar.js";
 
 const FILE_NOT_FOUND_MSG = "File not found";
 const LOAD_ERROR_MSG = "Error loading tooltips.";
@@ -25,8 +25,8 @@ const LOAD_ERROR_MSG = "Error loading tooltips.";
  */
 export async function loadTooltipData(previewEl) {
   try {
-    // Use a root-relative path so Vitest normalizes the module id consistently
-    const { fetchJson } = await import("/src/helpers/dataUtils.js");
+    // Load via dynamic import so Vitest's doMock for this specifier applies reliably
+    const { fetchJson } = await import("./dataUtils.js");
     const json = await fetchJson(`${DATA_DIR}tooltips.json`);
     return flattenTooltips(json);
   } catch (err) {
@@ -73,21 +73,13 @@ export function initSearchFilter(searchInput, updateList) {
  * @param {HTMLButtonElement} bodyCopyBtn - Button for copying the body.
  */
 export function bindCopyButtons(keyCopyBtn, bodyCopyBtn) {
-  // Dynamically import to play nicely with Vitest mocks
-  let snackbarPromise;
-  async function getSnackbar() {
-    snackbarPromise ||= import("/src/helpers/showSnackbar.js");
-    return snackbarPromise;
-  }
   function copy(btn) {
     const text = btn.dataset.copy || "";
     if (navigator.clipboard) {
       navigator.clipboard
         .writeText(text)
         .then(() => {
-          getSnackbar()
-            .then(({ showSnackbar }) => showSnackbar("Copied"))
-            .catch(() => {});
+          showSnackbar("Copied");
           btn.classList.add("copied");
           setTimeout(() => btn.classList.remove("copied"), 600);
         })
