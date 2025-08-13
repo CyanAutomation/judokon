@@ -185,10 +185,14 @@ export async function setupClassicBattlePage() {
   // Expose small helpers for Playwright to freeze/resume header updates
   try {
     window.freezeBattleHeader = () => {
-      try { pauseTimer(); } catch {}
+      try {
+        pauseTimer();
+      } catch {}
     };
     window.resumeBattleHeader = () => {
-      try { resumeTimer(); } catch {}
+      try {
+        resumeTimer();
+      } catch {}
     };
   } catch {}
 }
