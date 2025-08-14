@@ -9,7 +9,6 @@ import { showMessage, showTemporaryMessage } from "../setupBattleInfoBar.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
-import { hasRequiredJudokaFields } from "../judokaValidation.js";
 import { getFallbackJudoka } from "../judokaUtils.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
 
