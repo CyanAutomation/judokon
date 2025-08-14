@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import classicBattleStates from "../../../src/data/classicBattleStates.json";
+
+const coreStateIds = classicBattleStates.filter((s) => s.id < 90).map((s) => String(s.id));
 
 vi.mock("../../../src/utils/scheduler.js", () => ({
   start: vi.fn(),
@@ -38,7 +41,8 @@ describe("battleStateBadge displays state transitions", () => {
     }));
     vi.doMock("../../../src/helpers/classicBattle/roundManager.js", () => ({
       createBattleStore: () => store,
-      startRound: vi.fn()
+      startRound: vi.fn(),
+      resetGame: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/selectionHandler.js", () => ({
       handleStatSelection: vi.fn()
@@ -68,7 +72,9 @@ describe("battleStateBadge displays state transitions", () => {
     const btn = document.createElement("button");
     btn.dataset.stat = "power";
     stats.appendChild(btn);
-    document.body.append(header, battleArea, stats);
+    const progressEl = document.createElement("ul");
+    progressEl.id = "battle-state-progress";
+    document.body.append(header, battleArea, stats, progressEl);
 
     const { setupClassicBattlePage } = await import("../../../src/helpers/classicBattlePage.js");
     await setupClassicBattlePage();
@@ -77,6 +83,9 @@ describe("battleStateBadge displays state transitions", () => {
     expect(badge).toBeTruthy();
 
     const progressList = document.getElementById("battle-state-progress");
+    expect(progressList).toBeTruthy();
+    const items = Array.from(progressList.querySelectorAll("li")).map((li) => li.textContent);
+    expect(items.slice(0, coreStateIds.length)).toEqual(coreStateIds);
 
     const badgeStates = [badge.textContent];
     const badgeObserver = new MutationObserver(() => {
@@ -84,21 +93,18 @@ describe("battleStateBadge displays state transitions", () => {
     });
     badgeObserver.observe(badge, { childList: true });
 
-    let progressStates = [];
-    let progressObserver;
-    if (progressList) {
-      const record = () => {
-        const active = progressList.querySelector(
-          ".active, [aria-current='true'], [aria-current='step']"
-        );
-        if (active) {
-          progressStates.push(active.dataset.state || active.textContent);
-        }
-      };
-      record();
-      progressObserver = new MutationObserver(record);
-      progressObserver.observe(progressList, { subtree: true, attributes: true });
-    }
+    const progressStates = [];
+    const record = () => {
+      const active = progressList.querySelector(
+        ".active, [aria-current='true'], [aria-current='step']"
+      );
+      if (active) {
+        progressStates.push(active.dataset.state || active.textContent);
+      }
+    };
+    record();
+    const progressObserver = new MutationObserver(record);
+    progressObserver.observe(progressList, { subtree: true, attributes: true });
 
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
@@ -107,7 +113,7 @@ describe("battleStateBadge displays state transitions", () => {
     await window.waitForBattleState("waitingForPlayerAction");
 
     badgeObserver.disconnect();
-    progressObserver?.disconnect();
+    progressObserver.disconnect();
 
     expect(badgeStates).toEqual([
       "State: waitingForMatchStart",
@@ -119,14 +125,11 @@ describe("battleStateBadge displays state transitions", () => {
     expect(window.__classicBattleState).toBe("waitingForPlayerAction");
     expect(badge.textContent).toBe("State: waitingForPlayerAction");
 
-    if (progressList) {
-      expect(progressStates).toEqual([
-        "waitingForMatchStart",
-        "matchStart",
-        "cooldown",
-        "roundStart",
-        "waitingForPlayerAction"
-      ]);
-    }
+    expect(progressStates).toEqual([
+      "waitingForMatchStart",
+      "cooldown",
+      "roundStart",
+      "waitingForPlayerAction"
+    ]);
   });
 });
