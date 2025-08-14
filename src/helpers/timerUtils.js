@@ -1,6 +1,10 @@
 import { fetchJson, importJsonModule } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
-import { onSecondTick as scheduleSecond, cancel as cancelSchedule } from "../utils/scheduler.js";
+import {
+  onSecondTick as scheduleSecond,
+  cancel as cancelSchedule,
+  stop as stopScheduler
+} from "../utils/scheduler.js";
 
 let timersPromise;
 let cachedTimers;
@@ -32,6 +36,7 @@ export async function getDefaultTimer(category) {
 export function _resetForTest() {
   timersPromise = undefined;
   cachedTimers = undefined;
+  stopScheduler();
 }
 
 /**

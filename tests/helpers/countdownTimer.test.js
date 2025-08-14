@@ -7,7 +7,8 @@ vi.mock("../../src/utils/scheduler.js", () => ({
   },
   cancel: (id) => {
     delete callbacks[id];
-  }
+  },
+  stop: vi.fn()
 }));
 import { createCountdownTimer } from "../../src/helpers/timerUtils.js";
 

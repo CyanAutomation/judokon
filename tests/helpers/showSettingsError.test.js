@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 vi.mock("../../src/utils/scheduler.js", () => ({
   onFrame: (cb) => cb(),
-  cancel: () => {}
+  cancel: () => {},
+  stop: vi.fn()
 }));
 import { showSettingsError } from "../../src/helpers/showSettingsError.js";
 import { SETTINGS_FADE_MS, SETTINGS_REMOVE_MS } from "../../src/helpers/constants.js";

@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+vi.mock("../../src/utils/scheduler.js", () => ({
+  start: vi.fn(),
+  stop: vi.fn(),
+  onFrame: vi.fn(),
+  cancel: vi.fn(),
+  onSecondTick: vi.fn()
+}));
+
 describe("classicBattlePage feature flag updates", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
