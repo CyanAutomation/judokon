@@ -113,6 +113,12 @@ grep -r "kumi-kata" . --exclude-dir=node_modules --exclude=client_embeddings.jso
 
 Even if you’re not directly searching client_embeddings.json, tools like grep -r . may include it by default. This results in output overflow and abrupt session termination. Always exclude this file unless explicitly working with it.
 
+### 🎞️ Animation Scheduler
+
+- Use `requestAnimationFrame` for one-shot UI updates (for example, toggling a CSS class on the next frame).
+- Avoid `scheduler.onFrame()` for one-off work — it registers a persistent callback; repeated use during timers can leak callbacks and stall the UI.
+- Reserve `scheduler.onFrame()` for continuous per-frame tasks and always cancel with `scheduler.cancel(id)` when done.
+
 ---
 
 ## 🔧 Module Loading Policy for Agents
