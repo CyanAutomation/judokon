@@ -60,8 +60,7 @@ export async function revealComputerCard() {
     if (judokaCard && typeof judokaCard.render === "function") {
       card = await judokaCard.render();
     } else {
-      // Keep test output clean: log at debug level only
-      console.debug("JudokaCard has no render() method; skipping reveal");
+      // Skip silently when mocks omit render in tests
       return;
     }
   } catch (err) {
