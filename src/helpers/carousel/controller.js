@@ -23,6 +23,11 @@ export class CarouselController {
     this.metrics = getPageMetrics(container);
     this._rafId = null;
     this._resizeTimer = null;
+    this._onKeydown = null;
+    this._onTouchStart = null;
+    this._onTouchEnd = null;
+    this._onPointerDown = null;
+    this._onPointerUp = null;
 
     // Build UI and wire events
     const { left, right } = this._buildButtons();
@@ -48,10 +53,21 @@ export class CarouselController {
 
   destroy() {
     this.container.removeEventListener("scroll", this._onScroll);
+    this.container.removeEventListener("keydown", this._onKeydown);
+    this.container.removeEventListener("touchstart", this._onTouchStart);
+    this.container.removeEventListener("touchend", this._onTouchEnd);
+    this.container.removeEventListener("pointerdown", this._onPointerDown);
+    this.container.removeEventListener("pointerup", this._onPointerUp);
     window.removeEventListener("resize", this._onResize);
     this.leftBtn?.remove();
     this.rightBtn?.remove();
     this.markersRoot?.remove();
+    this._onKeydown =
+      this._onTouchStart =
+      this._onTouchEnd =
+      this._onPointerDown =
+      this._onPointerUp =
+        null;
   }
 
   _afterConnectedInit() {
@@ -101,7 +117,7 @@ export class CarouselController {
   _wireKeyboard() {
     this.container.style.scrollBehavior = "auto";
     this.container.tabIndex = 0;
-    this.container.addEventListener("keydown", (event) => {
+    this._onKeydown = (event) => {
       if (event.target !== this.container) return;
       if (event.key === "ArrowLeft") {
         event.preventDefault();
@@ -110,7 +126,8 @@ export class CarouselController {
         event.preventDefault();
         this.next();
       }
-    });
+    };
+    this.container.addEventListener("keydown", this._onKeydown);
   }
 
   _wireSwipe() {
@@ -121,24 +138,28 @@ export class CarouselController {
       else if (delta < -this.threshold) this.next();
     };
 
-    this.container.addEventListener("touchstart", (e) => {
+    this._onTouchStart = (e) => {
       startX = e.touches[0].clientX;
-    });
-    this.container.addEventListener("touchend", (e) => {
+    };
+    this._onTouchEnd = (e) => {
       onEnd(e.changedTouches[0].clientX);
-    });
+    };
+    this.container.addEventListener("touchstart", this._onTouchStart);
+    this.container.addEventListener("touchend", this._onTouchEnd);
 
     // Pointer events for mouse swipe-like interactions
     let pointerDown = false;
-    this.container.addEventListener("pointerdown", (e) => {
+    this._onPointerDown = (e) => {
       pointerDown = true;
       startX = e.clientX;
-    });
-    this.container.addEventListener("pointerup", (e) => {
+    };
+    this._onPointerUp = (e) => {
       if (!pointerDown) return;
       pointerDown = false;
       onEnd(e.clientX);
-    });
+    };
+    this.container.addEventListener("pointerdown", this._onPointerDown);
+    this.container.addEventListener("pointerup", this._onPointerUp);
   }
 
   _wireScrollSync() {
