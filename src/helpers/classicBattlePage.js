@@ -48,6 +48,7 @@ import {
 import { onNextButtonClick } from "./classicBattle/timerService.js";
 import { skipCurrentPhase } from "./classicBattle/skipHandler.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
+import { initBattleStateProgress } from "./battleStateProgress.js";
 import {
   start as startScheduler,
   stop as stopScheduler,
@@ -214,6 +215,7 @@ export async function setupClassicBattlePage() {
 
   window.startRoundOverride = () => startRoundWrapper();
   await initClassicBattleOrchestrator(battleStore, startRoundWrapper);
+  await initBattleStateProgress();
   // In Test Mode, auto-start the match to avoid blocking on the round select modal
   try {
     if (isEnabled("enableTestMode")) {
