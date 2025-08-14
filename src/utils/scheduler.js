@@ -9,6 +9,7 @@
  *    c. When a new second is detected, executes second callbacks.
  * 3. `onFrame(cb)` and `onSecondTick(cb)` register callbacks and return ids.
  * 4. `cancel(id)` removes callbacks by id.
+ * 5. `stop()` cancels the RAF loop and clears pending callbacks.
  */
 let nextId = 0;
 const frameCallbacks = new Map();
@@ -16,6 +17,7 @@ const secondCallbacks = new Map();
 let running = false;
 let lastSecond;
 let currentTime = 0;
+let rafId = 0;
 
 /**
  * Begin the animation loop.
@@ -52,9 +54,9 @@ export function start() {
         }
       });
     }
-    requestAnimationFrame(loop);
+    rafId = requestAnimationFrame(loop);
   };
-  requestAnimationFrame(loop);
+  rafId = requestAnimationFrame(loop);
 }
 
 /**
@@ -103,4 +105,23 @@ export function onSecondTick(cb) {
 export function cancel(id) {
   frameCallbacks.delete(id);
   secondCallbacks.delete(id);
+}
+
+/**
+ * Halt the animation loop and clear all callbacks.
+ *
+ * @pseudocode
+ * 1. If not running, do nothing.
+ * 2. Set `running` to false and cancel the scheduled frame via `cancelAnimationFrame`.
+ * 3. Clear both callback maps and reset timing state.
+ */
+export function stop() {
+  if (!running) return;
+  running = false;
+  cancelAnimationFrame(rafId);
+  rafId = 0;
+  frameCallbacks.clear();
+  secondCallbacks.clear();
+  lastSecond = undefined;
+  currentTime = 0;
 }

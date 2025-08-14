@@ -9,7 +9,7 @@ import { syncScoreDisplay } from "./uiService.js";
 import { CLASSIC_BATTLE_MAX_ROUNDS } from "../constants.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import { quitMatch } from "./quitModal.js";
-import { cancel as cancelFrame } from "../../utils/scheduler.js";
+import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
 import { resetSkipState } from "./skipHandler.js";
 
 /**
@@ -125,6 +125,7 @@ export function _resetForTest(store) {
   resetSkipState();
   resetSelection();
   battleEngine._resetForTest();
+  stopScheduler();
   if (typeof window !== "undefined") {
     delete window.startRoundOverride;
   }

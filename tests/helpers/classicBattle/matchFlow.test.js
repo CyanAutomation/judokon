@@ -17,7 +17,8 @@ vi.mock("../../../src/utils/scheduler.js", () => ({
     clearTimeout(id);
     clearInterval(id);
   },
-  start: vi.fn()
+  start: vi.fn(),
+  stop: vi.fn()
 }));
 
 let generateRandomCardMock;

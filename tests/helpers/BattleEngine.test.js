@@ -9,7 +9,8 @@ vi.mock("../../src/utils/scheduler.js", () => ({
   },
   cancel: (id) => {
     delete callbacks[id];
-  }
+  },
+  stop: vi.fn()
 }));
 vi.spyOn(Date, "now").mockImplementation(() => now);
 import { compareStats, createDriftWatcher } from "../../src/helpers/BattleEngine.js";

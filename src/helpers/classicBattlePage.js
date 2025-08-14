@@ -50,6 +50,7 @@ import { skipCurrentPhase } from "./classicBattle/skipHandler.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
 import {
   start as startScheduler,
+  stop as stopScheduler,
   onFrame as scheduleFrame,
   cancel as cancelFrame
 } from "../utils/scheduler.js";
@@ -187,7 +188,10 @@ function setBattleStateBadgeEnabled(enable) {
 }
 
 export async function setupClassicBattlePage() {
-  if (!(typeof process !== "undefined" && process.env.VITEST)) startScheduler();
+  if (!(typeof process !== "undefined" && process.env.VITEST)) {
+    startScheduler();
+    window.addEventListener("pagehide", stopScheduler, { once: true });
+  }
   setupBattleInfoBar();
   // Apply orientation ASAP so tests observing the header don't block
   // behind async initialization (flags, data fetches, tooltips, etc.).

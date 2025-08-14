@@ -7,7 +7,11 @@
 
 import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
 import { TimerController } from "./TimerController.js";
-import { onSecondTick as scheduleSecond, cancel as cancelSchedule } from "../utils/scheduler.js";
+import {
+  onSecondTick as scheduleSecond,
+  cancel as cancelSchedule,
+  stop as stopScheduler
+} from "../utils/scheduler.js";
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 const DRIFT_THRESHOLD = 2;
@@ -329,6 +333,7 @@ export class BattleEngine {
   }
 
   _resetForTest() {
+    stopScheduler();
     this.pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN;
     this.playerScore = 0;
     this.computerScore = 0;
