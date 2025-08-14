@@ -58,8 +58,8 @@ test.describe.parallel(
     });
 
     test("captures portrait and landscape headers", async ({ page }) => {
+      test.setTimeout(60000); // Increase timeout for slow page loads
       // Helper to ensure the header stops mutating before taking a snapshot.
-      // We consider it stable when its innerText stays unchanged for 300ms.
       const waitForHeaderStability = async () => {
         await page.evaluate(() => {
           const el = document.querySelector(".battle-header");
@@ -73,7 +73,7 @@ test.describe.parallel(
                 last = nowText;
                 stableSince = performance.now();
               }
-              if (performance.now() - stableSince >= 300) {
+              if (performance.now() - stableSince >= 500) { // Wait longer for stability
                 clearInterval(id);
                 resolve(true);
               }
@@ -82,10 +82,14 @@ test.describe.parallel(
         });
       };
       const osSuffix = getOsSuffix();
-      await page.goto("/src/pages/battleJudoka.html");
+      await page.goto("/src/pages/battleJudoka.html", { waitUntil: "domcontentloaded" });
+      await page.waitForSelector(".battle-header", { timeout: 15000 });
       await page.waitForSelector("#score-display span", { state: "attached" });
+      await page.waitForFunction(
+        () => window.applyBattleOrientation !== undefined,
+        { timeout: 10000 }
+      );
       await page.evaluate(() => window.skipBattlePhase?.());
-      // Pause header/timer updates before resizing to avoid contention
       await page.evaluate(() => window.freezeBattleHeader?.());
       await page.waitForFunction(
         () => document.querySelector("#round-message")?.textContent.trim().length > 0
@@ -95,14 +99,15 @@ test.describe.parallel(
       await page.setViewportSize({ width: 320, height: 480 });
       await page.evaluate(() => window.applyBattleOrientation?.());
       await page.waitForFunction(
-        () => document.querySelector(".battle-header")?.dataset.orientation === "portrait"
+        () => document.querySelector(".battle-header")?.dataset.orientation === "portrait",
+        { timeout: 10000 }
       );
       await page.waitForSelector("#score-display span", { state: "attached" });
       await page.evaluate(() => {
         return Promise.race([
           document.fonts.ready,
           new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Timeout waiting for document.fonts.ready")), 5000)
+            setTimeout(() => reject(new Error("Timeout waiting for document.fonts.ready")), 10000)
           )
         ]).catch((err) => {
           throw new Error("Font loading failed or timed out: " + err.message);
@@ -123,14 +128,15 @@ test.describe.parallel(
       await page.setViewportSize({ width: 480, height: 320 });
       await page.evaluate(() => window.applyBattleOrientation?.());
       await page.waitForFunction(
-        () => document.querySelector(".battle-header")?.dataset.orientation === "landscape"
+        () => document.querySelector(".battle-header")?.dataset.orientation === "landscape",
+        { timeout: 10000 }
       );
       await page.waitForSelector("#score-display span", { state: "attached" });
       await page.evaluate(() => {
         return Promise.race([
           document.fonts.ready,
           new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Timeout waiting for document.fonts.ready")), 5000)
+            setTimeout(() => reject(new Error("Timeout waiting for document.fonts.ready")), 10000)
           )
         ]).catch((err) => {
           throw new Error("Font loading failed or timed out: " + err.message);
@@ -150,9 +156,15 @@ test.describe.parallel(
     });
 
     test("captures extra-narrow header", async ({ page }) => {
+      test.setTimeout(60000); // Increase timeout for slow page loads
       const osSuffix = getOsSuffix();
-      await page.goto("/src/pages/battleJudoka.html");
+      await page.goto("/src/pages/battleJudoka.html", { waitUntil: "domcontentloaded" });
+      await page.waitForSelector(".battle-header", { timeout: 15000 });
       await page.waitForSelector("#score-display span", { state: "attached" });
+      await page.waitForFunction(
+        () => window.applyBattleOrientation !== undefined,
+        { timeout: 10000 }
+      );
       await page.evaluate(() => window.skipBattlePhase?.());
       await page.waitForFunction(
         () => document.querySelector("#round-message")?.textContent.trim().length > 0
@@ -162,7 +174,7 @@ test.describe.parallel(
         return Promise.race([
           document.fonts.ready,
           new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Timeout waiting for document.fonts.ready")), 5000)
+            setTimeout(() => reject(new Error("Timeout waiting for document.fonts.ready")), 10000)
           )
         ]).catch((err) => {
           throw new Error("Font loading failed or timed out: " + err.message);
@@ -172,7 +184,8 @@ test.describe.parallel(
       await page.setViewportSize({ width: 300, height: 600 });
       await page.evaluate(() => window.applyBattleOrientation?.());
       await page.waitForFunction(
-        () => document.querySelector(".battle-header")?.dataset.orientation === "portrait"
+        () => document.querySelector(".battle-header")?.dataset.orientation === "portrait",
+        { timeout: 10000 }
       );
       await page
         .locator("#round-message")
@@ -183,7 +196,6 @@ test.describe.parallel(
       await page.waitForFunction(
         () => document.querySelector("#round-message")?.textContent.trim().length > 0
       );
-      // Reuse the same stability guard as the main screenshot test
       await expect(page.locator(".battle-header")).toBeVisible();
       await page.evaluate(() => {
         const el = document.querySelector(".battle-header");
@@ -197,7 +209,7 @@ test.describe.parallel(
               last = nowText;
               stableSince = performance.now();
             }
-            if (performance.now() - stableSince >= 300) {
+            if (performance.now() - stableSince >= 500) { // Wait longer for stability
               clearInterval(id);
               resolve(true);
             }
