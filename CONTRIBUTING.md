@@ -111,6 +111,32 @@ To keep CI and local runs readable, **no test should emit unsilenced `console.wa
 
 ---
 
+## 🧭 Static vs Dynamic Import Checklist
+
+When contributing code, especially in gameplay or input-related areas, follow these rules for module loading:
+
+### ✅ Use Static Imports When:
+- Code runs on a **hot path**:
+  - Stat selection handlers
+  - Round decision logic
+  - Event dispatchers / orchestrators
+  - Per-frame animation or rendering in battle
+- Code is **always required** in a normal play session.
+- Breakage should be detected at build/startup (fail fast).
+
+### ✅ Use Dynamic Imports (with Preload) When:
+- The module is **optional** or **infrequently used** (e.g., Settings, Tooltip Viewer, Credits).
+- The module is **heavy** or behind a **feature flag** (e.g., canvas/WebGL renderer, debug panels, markdown/HL libs).
+- You can **preload** it during idle/cooldown to hide latency.
+
+### 🚫 Anti-Patterns to Avoid:
+- ❌ `await import()` inside click/input handlers for core gameplay.
+- ❌ Variable import paths without bundler hints.
+- ❌ Removing feature flag checks during refactor.
+- ❌ Adding heavy optional modules to the initial bundle without justification.
+
+---
+
 ## 📎 Related AI Agent Docs
 
 - `AGENTS.md` – Tasks, prompts, and expectations for agents
