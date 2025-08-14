@@ -6,6 +6,7 @@ import { runTimerWithDrift } from "./runTimerWithDrift.js";
 import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
 import { setSkipHandler, skipCurrentPhase } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
+import { dispatchBattleEvent } from "./orchestrator.js";
 
 // Skip handler utilities moved to skipHandler.js
 
@@ -17,10 +18,7 @@ export async function onNextButtonClick() {
   if (btn.dataset.nextReady === "true") {
     btn.disabled = true;
     delete btn.dataset.nextReady;
-    try {
-      const { dispatchBattleEvent } = await import("./orchestrator.js");
-      await dispatchBattleEvent("ready");
-    } catch {}
+    await dispatchBattleEvent("ready");
     setSkipHandler(null);
     return;
   }
@@ -37,10 +35,7 @@ export async function onNextButtonClick() {
     if (btn.dataset.nextReady === "true") {
       btn.disabled = true;
       delete btn.dataset.nextReady;
-      try {
-        const { dispatchBattleEvent } = await import("./orchestrator.js");
-        await dispatchBattleEvent("ready");
-      } catch {}
+      await dispatchBattleEvent("ready");
       setSkipHandler(null);
       return true;
     }
@@ -100,10 +95,7 @@ export async function startTimer(onExpiredSelect) {
   const onExpired = async () => {
     setSkipHandler(null);
     infoBar.clearTimer();
-    try {
-      const { dispatchBattleEvent } = await import("./orchestrator.js");
-      await dispatchBattleEvent("timeout");
-    } catch {}
+    await dispatchBattleEvent("timeout");
     await autoSelectStat(onExpiredSelect);
   };
 
