@@ -28,6 +28,9 @@ function resetTimers() {
 }
 
 export function showSnackbar(message) {
+  try {
+    if (typeof window !== "undefined" && window.__disableSnackbars) return;
+  } catch {}
   bar?.remove();
   clearTimeout(fadeId);
   clearTimeout(removeId);
@@ -55,6 +58,9 @@ export function showSnackbar(message) {
  * @param {string} message - New text for the snackbar.
  */
 export function updateSnackbar(message) {
+  try {
+    if (typeof window !== "undefined" && window.__disableSnackbars) return;
+  } catch {}
   if (!bar) {
     showSnackbar(message);
     return;

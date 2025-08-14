@@ -85,6 +85,8 @@ test.describe.parallel(
       await page.goto("/src/pages/battleJudoka.html");
       await page.waitForSelector("#score-display span", { state: "attached" });
       await page.evaluate(() => window.skipBattlePhase?.());
+      // Pause header/timer updates before resizing to avoid contention
+      await page.evaluate(() => window.freezeBattleHeader?.());
       await page.waitForFunction(
         () => document.querySelector("#round-message")?.textContent.trim().length > 0
       );
@@ -112,7 +114,6 @@ test.describe.parallel(
         () => document.querySelector("#round-message")?.textContent.trim().length > 0
       );
       await expect(page.locator(".battle-header")).toBeVisible();
-      await page.evaluate(() => window.freezeBattleHeader?.());
       await waitForHeaderStability();
       await expect(page.locator(".battle-header")).toHaveScreenshot(
         `battle-header-portrait${osSuffix}.png`

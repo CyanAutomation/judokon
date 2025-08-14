@@ -217,6 +217,12 @@ export async function setupClassicBattlePage() {
   // behind async initialization (flags, data fetches, tooltips, etc.).
   watchBattleOrientation();
   await initFeatureFlags();
+  // In Test Mode, reduce noisy UI to keep E2E runs stable
+  try {
+    if (isEnabled("enableTestMode")) {
+      window.__disableSnackbars = true;
+    }
+  } catch {}
   setupNextButton();
   // Toggle a visible state badge for testing when enabled
   setBattleStateBadgeEnabled(isEnabled("battleStateBadge"));
