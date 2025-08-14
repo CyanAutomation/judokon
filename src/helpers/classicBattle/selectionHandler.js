@@ -11,6 +11,7 @@ import { shouldReduceMotionSync } from "../motionUtils.js";
 import { syncScoreDisplay } from "./uiService.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
+import { dispatchBattleEvent } from "./orchestrator.js";
 
 /**
  * Determine the opponent's stat choice based on difficulty.
@@ -129,10 +130,7 @@ export async function handleStatSelection(store, stat, options = {}) {
       await revealComputerCard();
       const result = evaluateRound(store, stat);
       // Move to decision and then roundOver in the state machine
-      try {
-        const { dispatchBattleEvent } = await import("./orchestrator.js");
-        await dispatchBattleEvent("outcome=" + result.outcome);
-      } catch {}
+      await dispatchBattleEvent("outcome=" + result.outcome);
       if (result.matchEnded) {
         infoBar.clearRoundCounter();
       }
@@ -140,23 +138,17 @@ export async function handleStatSelection(store, stat, options = {}) {
       // Outcome message was already written synchronously in evaluateRound;
       // avoid writing it again here to reduce flicker.
       // From roundOver, either continue to cooldown or decide match
-      try {
-        const { dispatchBattleEvent } = await import("./orchestrator.js");
-        if (result.matchEnded) {
-          await dispatchBattleEvent("matchPointReached");
-        } else {
-          await dispatchBattleEvent("continue");
-        }
-      } catch {}
+      if (result.matchEnded) {
+        await dispatchBattleEvent("matchPointReached");
+      } else {
+        await dispatchBattleEvent("continue");
+      }
       scheduleNextRound(result);
       if (result.matchEnded) {
         showMatchSummaryModal(result, async () => {
-          try {
-            const { dispatchBattleEvent } = await import("./orchestrator.js");
-            await dispatchBattleEvent("finalize");
-            await dispatchBattleEvent("rematch");
-            await dispatchBattleEvent("startClicked");
-          } catch {}
+          await dispatchBattleEvent("finalize");
+          await dispatchBattleEvent("rematch");
+          await dispatchBattleEvent("startClicked");
           handleReplay(store);
         });
       }
