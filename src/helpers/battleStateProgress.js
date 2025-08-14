@@ -4,10 +4,11 @@
  * @pseudocode
  * 1. Fetch `classicBattleStates.json` using `fetchJson`.
  * 2. Filter for core states (IDs below 90).
- * 3. Render each state as an `<li>` with `data-state` and its numeric ID as text inside `#battle-state-progress`.
- * 4. Define `updateActive(state)` to toggle the `active` class on matching items.
- * 5. Observe `#machine-state` for text changes; on each change call `updateActive`.
- * 6. If `#machine-state` is missing, poll `window.__classicBattleState` via `requestAnimationFrame`.
+ * 3. Sort core states by `id` in ascending order.
+ * 4. Render each state as an `<li>` with `data-state` and its numeric ID inside `#battle-state-progress`.
+ * 5. Define `updateActive(state)` to toggle the `active` class on matching items.
+ * 6. Observe `#machine-state` for text changes; on each change call `updateActive`.
+ * 7. If `#machine-state` is missing, poll `window.__classicBattleState` via `requestAnimationFrame`.
  *
  * @returns {Promise<void>} Resolves when the list is initialized.
  */
@@ -25,7 +26,9 @@ export async function initBattleStateProgress() {
     // ignore fetch errors; list remains empty
   }
 
-  const core = Array.isArray(states) ? states.filter((s) => s.id < 90) : [];
+  const core = Array.isArray(states)
+    ? states.filter((s) => s.id < 90).sort((a, b) => a.id - b.id)
+    : [];
   const frag = document.createDocumentFragment();
   core.forEach((s) => {
     const li = document.createElement("li");

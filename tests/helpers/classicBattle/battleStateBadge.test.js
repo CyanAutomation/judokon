@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import classicBattleStates from "../../../src/data/classicBattleStates.json";
 
-const coreStateIds = classicBattleStates.filter((s) => s.id < 90).map((s) => String(s.id));
+const coreStateIds = classicBattleStates
+  .filter((s) => s.id < 90)
+  .sort((a, b) => a.id - b.id)
+  .map((s) => String(s.id));
 
 vi.mock("../../../src/utils/scheduler.js", () => ({
   start: vi.fn(),

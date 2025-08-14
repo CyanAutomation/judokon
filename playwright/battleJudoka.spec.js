@@ -47,7 +47,10 @@ test.describe.parallel("Battle Judoka page", () => {
     const ariaLiveCount = await page.locator('[role="status"][aria-live]').count();
     expect(ariaLiveCount).toBeGreaterThan(0);
 
-    const expectedIds = classicBattleStates.filter((s) => s.id < 90).map((s) => String(s.id));
+    const expectedIds = classicBattleStates
+      .filter((s) => s.id < 90)
+      .sort((a, b) => a.id - b.id)
+      .map((s) => String(s.id));
     const ids = await page.$$eval("#battle-state-progress li", (lis) =>
       lis.map((li) => li.textContent.trim())
     );
