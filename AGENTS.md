@@ -120,18 +120,21 @@ Even if you’re not directly searching client_embeddings.json, tools like grep 
 When reviewing or modifying imports, agents must apply the JU-DO-KON! static vs dynamic policy to ensure gameplay remains smooth and errors surface early.
 
 ### Decision Checklist
+
 - **Hot path or always-used?** → **Static import**
 - **Optional, heavy, or feature-flagged?** → **Dynamic import with preload**
 - **Failure should surface at build/start?** → **Static import**
 - **Risk of input-time hitch?** → **Static import**
 
 ### Definition of Hot Path (JU-DO-KON!)
+
 - Stat selection handlers
 - Round decision logic
 - Event dispatchers / orchestrators
 - Per-frame animation or rendering in battle
 
 ### Agent Requirements
+
 - No `await import()` inside stat selection, round decision, event dispatch, or render loops.
 - Keep optional modules dynamic, but **preload** them during idle/cooldown to avoid UI stalls.
 - Preserve existing feature flag logic when changing imports.
@@ -139,12 +142,14 @@ When reviewing or modifying imports, agents must apply the JU-DO-KON! static vs 
 - Update or add tests to verify static imports for core gameplay and preload behavior for optional modules.
 
 ### Anti-Patterns to Avoid
+
 - ❌ Dynamic import inside click handlers for core gameplay
 - ❌ Variable dynamic import paths without bundler hints
 - ❌ Removing feature flag guards during refactor
 - ❌ Adding heavy optional modules to the initial bundle without justification
 
 ### PR Deliverables for Import Changes
+
 1. Summary of files changed and reason for static/dynamic decision.
 2. Before/after bundle size metrics.
 3. Test updates reflecting the new loading behavior.
