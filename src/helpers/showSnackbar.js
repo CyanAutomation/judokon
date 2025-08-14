@@ -10,7 +10,6 @@
  * @param {string} message - Text content to display in the snackbar.
  */
 import { SNACKBAR_FADE_MS, SNACKBAR_REMOVE_MS } from "./constants.js";
-import { onFrame as scheduleFrame } from "../utils/scheduler.js";
 
 let bar;
 let fadeId;
@@ -39,7 +38,9 @@ export function showSnackbar(message) {
   bar.setAttribute("role", "status");
   bar.setAttribute("aria-live", "polite");
   document.body.appendChild(bar);
-  scheduleFrame(() => bar?.classList.add("show"));
+  // Use a one-shot animation frame to toggle the class without
+  // registering a persistent scheduler callback.
+  requestAnimationFrame(() => bar?.classList.add("show"));
   resetTimers();
 }
 
