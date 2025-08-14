@@ -9,6 +9,8 @@ import { showMessage } from "../setupBattleInfoBar.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
+import { hasRequiredJudokaFields } from "../judokaValidation.js";
+import { getFallbackJudoka } from "../judokaUtils.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
 
 let judokaData = null;
@@ -105,11 +107,24 @@ function pickOpponent(available, playerJudoka) {
 
 async function renderComputerPlaceholder(container, placeholder, enableInspector) {
   if (!container) return;
-  const judokaCard = new JudokaCard(placeholder, gokyoLookup, {
-    useObscuredStats: true,
-    enableInspector
-  });
+
+  // Ensure we have a valid judoka object; fall back to the built-in
+  // placeholder when data failed to load or is empty.
+  let target = placeholder;
+  if (!target || !hasRequiredJudokaFields(target)) {
+    try {
+      target = await getFallbackJudoka();
+    } catch {
+      // If even the fallback cannot be retrieved, bail silently.
+      return;
+    }
+  }
+
   try {
+    const judokaCard = new JudokaCard(target, gokyoLookup, {
+      useObscuredStats: true,
+      enableInspector
+    });
     if (typeof judokaCard.render === "function") {
       const card = await judokaCard.render();
       if (!(card && typeof card === "object" && card.nodeType === 1)) {
@@ -126,7 +141,9 @@ async function renderComputerPlaceholder(container, placeholder, enableInspector
       }
     }
   } catch (error) {
-    console.debug("Error rendering JudokaCard:", error);
+    // Swallow constructor/render errors to avoid breaking round start; the
+    // timer and selection can proceed even if the placeholder fails.
+    console.debug("Error rendering JudokaCard placeholder:", error);
   }
 }
 
