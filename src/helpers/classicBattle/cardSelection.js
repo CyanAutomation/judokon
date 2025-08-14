@@ -176,10 +176,35 @@ export async function drawCards() {
     { enableInspector }
   );
 
-  const compJudoka = pickOpponent(available, playerJudoka);
+  // Pick an opponent safely; fall back to the built-in judoka when selection fails
+  let compJudoka;
+  try {
+    compJudoka = pickOpponent(available, playerJudoka);
+  } catch {
+    try {
+      compJudoka = await getFallbackJudoka();
+    } catch {
+      compJudoka = null;
+    }
+  }
+  if (!compJudoka || !hasRequiredJudokaFields(compJudoka)) {
+    try {
+      compJudoka = await getFallbackJudoka();
+    } catch {
+      compJudoka = null;
+    }
+  }
   computerJudoka = compJudoka;
 
-  const placeholder = allJudoka.find((j) => j.id === 1) || compJudoka;
+  // Choose a placeholder that is guaranteed valid
+  let placeholder = allJudoka.find((j) => j.id === 1) || compJudoka;
+  if (!placeholder || !hasRequiredJudokaFields(placeholder)) {
+    try {
+      placeholder = await getFallbackJudoka();
+    } catch {
+      placeholder = null;
+    }
+  }
   await renderComputerPlaceholder(computerContainer, placeholder, enableInspector);
 
   return { playerJudoka, computerJudoka };
