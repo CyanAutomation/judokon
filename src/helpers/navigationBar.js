@@ -30,6 +30,7 @@ export function highlightActiveLink() {
  * 3. Remove the ripple effect after the animation completes.
  */
 function addTouchFeedback() {
+  if (typeof document === "undefined") return;
   const links = document.querySelectorAll(".bottom-navbar a");
   links.forEach((link) => {
     link.addEventListener("mousedown", (event) => {
