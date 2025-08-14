@@ -26,7 +26,7 @@ The round message, timer, and score now sit directly inside the page header rath
 3. Ensure all messages are clearly readable, positioned responsively, and maintain usability across devices.
 4. Display fallback messages within 500ms of sync failure.
 5. Surface a round counter and a field showing the player's selected stat for the current round.
-6. **Complement header messaging with a numbered progress bar** beneath the battle area that displays the current state ID for clear, accessible progress tracking.
+6. **Complement header messaging with a numbered progress bar** beneath the battle area that displays the current state ID in ascending order for clear, accessible progress tracking.
 
 ---
 
