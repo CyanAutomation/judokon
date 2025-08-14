@@ -259,10 +259,18 @@ export async function setupClassicBattlePage() {
     window.freezeBattleHeader = () => {
       try {
         pauseTimer();
+        // Stop the shared scheduler to minimize UI churn during E2E screenshots
+        try {
+          stopScheduler();
+        } catch {}
       } catch {}
     };
     window.resumeBattleHeader = () => {
       try {
+        // Restart scheduler and resume timers
+        try {
+          startScheduler();
+        } catch {}
         resumeTimer();
       } catch {}
     };
