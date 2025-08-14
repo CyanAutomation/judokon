@@ -201,7 +201,9 @@ export async function drawCards() {
       compJudoka = null;
     }
   }
-  if (!compJudoka || !hasRequiredJudokaFields(compJudoka)) {
+  // Keep the selected opponent even if it is a minimal object.
+  // Only fall back when opponent selection failed entirely.
+  if (!compJudoka) {
     try {
       compJudoka = await getFallbackJudoka();
       qaInfo("Using fallback judoka for opponent");
