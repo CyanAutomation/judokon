@@ -143,3 +143,23 @@
   flex: 1;
   text-align: center;
 }
+
+.battle-state-progress {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-sm);
+  list-style: none;
+  padding: 0;
+  margin-top: var(--space-lg);
+}
+
+.battle-state-progress li {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--color-primary) 40%, white);
+}
+
+.battle-state-progress li.active {
+  background-color: var(--color-primary);
+}
