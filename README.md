@@ -99,6 +99,24 @@ const embeddings = await vectorSearch.loadEmbeddings();
 const expanded = await vectorSearch.expandQueryWithSynonyms("grip fighting");
 const results = await vectorSearch.findMatches([0, 1, 0], 5, ["prd"], expanded);
 ```
+## ⚡ Module Loading Policy: Static vs Dynamic Imports
+
+JU-DO-KON! favors **deterministic gameplay and snappy input handling**. Use **static imports** for core gameplay; reserve **dynamic imports** (`import('…')`) for optional screens and heavy tools.
+
+**Use static imports when the code:**
+- Runs on a **hot path** (stat selection, round decision, event dispatch, per-frame animation).
+- Is **always required** in a typical play session.
+- Should **fail at build/startup** if broken (orchestrators, rules, event bus).
+
+**Use dynamic imports (with preload) when the code:**
+- Powers **optional** or **infrequent** screens (Settings, Tooltip Viewer, Credits, docs).
+- Is **heavy** or behind a **feature flag** (canvas/WebGL renderer, debug panels, markdown/HL libs).
+- Can be **preloaded** during idle/cooldown to hide latency.
+
+**Hot path (for this project) =**
+- Stat selection handlers → round outcome
+- Rules engine / orchestrators / event dispatchers
+- Animation tick or per-frame rendering used during battle
 
 ## 🧪 Testing
 
