@@ -150,7 +150,7 @@ export function applyHashSelection(listPlaceholder, select) {
  * 1. Grab DOM references and instantiate `PreviewToggle`.
  * 2. Load tooltip data with {@link loadTooltipData}; exit on failure.
  * 3. Render and filter the list, updating the preview on selection.
- * 4. Bind copy buttons and search filtering.
+ * 4. Bind copy buttons, warm the snackbar module, and search filtering.
  * 5. Apply URL hash selection, then initialize help tooltips.
  */
 export async function setupTooltipViewerPage() {
@@ -222,6 +222,9 @@ export async function setupTooltipViewerPage() {
   }
 
   bindCopyButtons(keyCopyBtn, bodyCopyBtn);
+  if (typeof requestIdleCallback === "function") {
+    requestIdleCallback(() => import("./showSnackbar.js").catch(() => {}));
+  }
   initSearchFilter(searchInput, updateList);
 
   updateList();
