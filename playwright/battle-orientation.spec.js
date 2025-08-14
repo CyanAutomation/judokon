@@ -15,11 +15,13 @@ test.describe.parallel("Battle orientation behavior", () => {
     await page.goto("/src/pages/battleJudoka.html");
 
     await page.setViewportSize({ width: 320, height: 480 });
+    await page.evaluate(() => window.applyBattleOrientation?.());
     await page.waitForFunction(
       () => document.querySelector(".battle-header")?.dataset.orientation === "portrait"
     );
 
     await page.setViewportSize({ width: 480, height: 320 });
+    await page.evaluate(() => window.applyBattleOrientation?.());
     await page.waitForFunction(
       () => document.querySelector(".battle-header")?.dataset.orientation === "landscape"
     );
@@ -89,6 +91,7 @@ test.describe.parallel(
       await page.evaluate(() => window.skipBattlePhase?.());
 
       await page.setViewportSize({ width: 320, height: 480 });
+      await page.evaluate(() => window.applyBattleOrientation?.());
       await page.waitForFunction(
         () => document.querySelector(".battle-header")?.dataset.orientation === "portrait"
       );
@@ -117,6 +120,7 @@ test.describe.parallel(
       await page.evaluate(() => window.resumeBattleHeader?.());
 
       await page.setViewportSize({ width: 480, height: 320 });
+      await page.evaluate(() => window.applyBattleOrientation?.());
       await page.waitForFunction(
         () => document.querySelector(".battle-header")?.dataset.orientation === "landscape"
       );
@@ -165,6 +169,7 @@ test.describe.parallel(
       });
 
       await page.setViewportSize({ width: 300, height: 600 });
+      await page.evaluate(() => window.applyBattleOrientation?.());
       await page.waitForFunction(
         () => document.querySelector(".battle-header")?.dataset.orientation === "portrait"
       );

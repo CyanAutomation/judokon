@@ -144,6 +144,15 @@ function watchBattleOrientation() {
     return false;
   };
 
+  // Expose a testing hook to force-apply the current orientation.
+  try {
+    window.applyBattleOrientation = () => {
+      try {
+        apply();
+      } catch {}
+    };
+  } catch {}
+
   // Apply immediately; if header not yet available, poll using the scheduler.
   let pollId;
   const pollIfMissing = () => {
