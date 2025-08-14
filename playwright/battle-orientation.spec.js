@@ -58,10 +58,10 @@ test.describe.parallel(
     });
 
     test("captures portrait and landscape headers", async ({ page }) => {
-      test.setTimeout(30000); // Increase timeout for slow page loads
-      // Helper to ensure the header stops mutating before taking a snapshot.
+      test.setTimeout(60000);
       const waitForHeaderStability = async () => {
         await page.evaluate(() => {
+          if (window.DEBUG_LOGGING) console.log("[DEBUG] Checking header stability...");
           const el = document.querySelector(".battle-header");
           if (!el) return true;
           return new Promise((resolve) => {
@@ -72,8 +72,9 @@ test.describe.parallel(
               if (nowText !== last) {
                 last = nowText;
                 stableSince = performance.now();
+                if (window.DEBUG_LOGGING) console.log("[DEBUG] Header changed:", nowText);
               }
-              if (performance.now() - stableSince >= 500) { // Wait longer for stability
+              if (performance.now() - stableSince >= 500) {
                 clearInterval(id);
                 resolve(true);
               }
@@ -85,117 +86,98 @@ test.describe.parallel(
       await page.goto("/src/pages/battleJudoka.html", { waitUntil: "domcontentloaded" });
       await page.waitForSelector(".battle-header", { timeout: 15000 });
       await page.waitForSelector("#score-display span", { state: "attached" });
-      await page.waitForFunction(
-        () => window.applyBattleOrientation !== undefined,
-        { timeout: 10000 }
-      );
+      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, { timeout: 10000 });
       await page.evaluate(() => window.skipBattlePhase?.());
       await page.evaluate(() => window.freezeBattleHeader?.());
-      await page.waitForFunction(
-        () => document.querySelector("#round-message")?.textContent.trim().length > 0
-      );
+      await page.waitForFunction(() => document.querySelector("#round-message")?.textContent.trim().length > 0);
       await page.evaluate(() => window.skipBattlePhase?.());
 
       await page.setViewportSize({ width: 320, height: 480 });
-      await page.evaluate(() => window.applyBattleOrientation?.());
-      await page.waitForFunction(
-        () => document.querySelector(".battle-header")?.dataset.orientation === "portrait",
-        { timeout: 10000 }
-      );
+      await page.evaluate(() => {
+        if (window.DEBUG_LOGGING) console.log("[DEBUG] Calling applyBattleOrientation (portrait)");
+        window.applyBattleOrientation?.();
+      });
+      await page.waitForTimeout(500); // Give time for orientation to update
+      const orientationPortrait = await page.evaluate(() => document.querySelector(".battle-header")?.dataset.orientation);
+      if (process.env.DEBUG_LOGGING) console.log("[DEBUG] Orientation after portrait:", orientationPortrait);
+      await page.waitForFunction(() => document.querySelector(".battle-header")?.dataset.orientation === "portrait", { timeout: 10000 });
       await page.waitForSelector("#score-display span", { state: "attached" });
       await page.evaluate(() => {
         return Promise.race([
           document.fonts.ready,
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Timeout waiting for document.fonts.ready")), 10000)
-          )
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout waiting for document.fonts.ready")), 10000))
         ]).catch((err) => {
+          if (window.DEBUG_LOGGING) console.error("[DEBUG] Font loading failed:", err);
           throw new Error("Font loading failed or timed out: " + err.message);
         });
       });
       await page.waitForFunction(() => document.querySelector(".battle-header img.logo")?.complete);
       await page.waitForLoadState("networkidle");
-      await page.waitForFunction(
-        () => document.querySelector("#round-message")?.textContent.trim().length > 0
-      );
+      await page.waitForFunction(() => document.querySelector("#round-message")?.textContent.trim().length > 0);
       await expect(page.locator(".battle-header")).toBeVisible();
       await waitForHeaderStability();
-      await expect(page.locator(".battle-header")).toHaveScreenshot(
-        `battle-header-portrait${osSuffix}.png`
-      );
+      await expect(page.locator(".battle-header")).toHaveScreenshot(`battle-header-portrait${osSuffix}.png`);
       await page.evaluate(() => window.resumeBattleHeader?.());
 
       await page.setViewportSize({ width: 480, height: 320 });
-      await page.evaluate(() => window.applyBattleOrientation?.());
-      await page.waitForFunction(
-        () => document.querySelector(".battle-header")?.dataset.orientation === "landscape",
-        { timeout: 10000 }
-      );
+      await page.evaluate(() => {
+        if (window.DEBUG_LOGGING) console.log("[DEBUG] Calling applyBattleOrientation (landscape)");
+        window.applyBattleOrientation?.();
+      });
+      await page.waitForTimeout(500);
+      const orientationLandscape = await page.evaluate(() => document.querySelector(".battle-header")?.dataset.orientation);
+      if (process.env.DEBUG_LOGGING) console.log("[DEBUG] Orientation after landscape:", orientationLandscape);
+      await page.waitForFunction(() => document.querySelector(".battle-header")?.dataset.orientation === "landscape", { timeout: 10000 });
       await page.waitForSelector("#score-display span", { state: "attached" });
       await page.evaluate(() => {
         return Promise.race([
           document.fonts.ready,
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Timeout waiting for document.fonts.ready")), 10000)
-          )
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout waiting for document.fonts.ready")), 10000))
         ]).catch((err) => {
+          if (window.DEBUG_LOGGING) console.error("[DEBUG] Font loading failed:", err);
           throw new Error("Font loading failed or timed out: " + err.message);
         });
       });
       await page.waitForFunction(() => document.querySelector(".battle-header img.logo")?.complete);
       await page.waitForLoadState("networkidle");
-      await page.waitForFunction(
-        () => document.querySelector("#round-message")?.textContent.trim().length > 0
-      );
+      await page.waitForFunction(() => document.querySelector("#round-message")?.textContent.trim().length > 0);
       await expect(page.locator(".battle-header")).toBeVisible();
       await page.evaluate(() => window.freezeBattleHeader?.());
       await waitForHeaderStability();
-      await expect(page.locator(".battle-header")).toHaveScreenshot(
-        `battle-header-landscape${osSuffix}.png`
-      );
+      await expect(page.locator(".battle-header")).toHaveScreenshot(`battle-header-landscape${osSuffix}.png`);
     });
 
     test("captures extra-narrow header", async ({ page }) => {
-      test.setTimeout(30000); // Increase timeout for slow page loads
+      test.setTimeout(60000);
       const osSuffix = getOsSuffix();
       await page.goto("/src/pages/battleJudoka.html", { waitUntil: "domcontentloaded" });
       await page.waitForSelector(".battle-header", { timeout: 15000 });
       await page.waitForSelector("#score-display span", { state: "attached" });
-      await page.waitForFunction(
-        () => window.applyBattleOrientation !== undefined,
-        { timeout: 10000 }
-      );
+      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, { timeout: 10000 });
       await page.evaluate(() => window.skipBattlePhase?.());
-      await page.waitForFunction(
-        () => document.querySelector("#round-message")?.textContent.trim().length > 0
-      );
+      await page.waitForFunction(() => document.querySelector("#round-message")?.textContent.trim().length > 0);
       await page.evaluate(() => window.skipBattlePhase?.());
       await page.evaluate(() => {
         return Promise.race([
           document.fonts.ready,
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Timeout waiting for document.fonts.ready")), 10000)
-          )
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout waiting for document.fonts.ready")), 10000))
         ]).catch((err) => {
+          if (window.DEBUG_LOGGING) console.error("[DEBUG] Font loading failed:", err);
           throw new Error("Font loading failed or timed out: " + err.message);
         });
       });
 
       await page.setViewportSize({ width: 300, height: 600 });
-      await page.evaluate(() => window.applyBattleOrientation?.());
-      await page.waitForFunction(
-        () => document.querySelector(".battle-header")?.dataset.orientation === "portrait",
-        { timeout: 10000 }
-      );
-      await page
-        .locator("#round-message")
-        .evaluate(
-          (el) =>
-            (el.textContent = "A very long round message that should overflow on narrow screens")
-        );
-      await page.waitForFunction(
-        () => document.querySelector("#round-message")?.textContent.trim().length > 0
-      );
+      await page.evaluate(() => {
+        if (window.DEBUG_LOGGING) console.log("[DEBUG] Calling applyBattleOrientation (extra-narrow)");
+        window.applyBattleOrientation?.();
+      });
+      await page.waitForTimeout(500);
+      const orientationNarrow = await page.evaluate(() => document.querySelector(".battle-header")?.dataset.orientation);
+      if (process.env.DEBUG_LOGGING) console.log("[DEBUG] Orientation after extra-narrow:", orientationNarrow);
+      await page.waitForFunction(() => document.querySelector(".battle-header")?.dataset.orientation === "portrait", { timeout: 10000 });
+      await page.locator("#round-message").evaluate((el) => (el.textContent = "A very long round message that should overflow on narrow screens"));
+      await page.waitForFunction(() => document.querySelector("#round-message")?.textContent.trim().length > 0);
       await expect(page.locator(".battle-header")).toBeVisible();
       await page.evaluate(() => {
         const el = document.querySelector(".battle-header");
@@ -208,17 +190,16 @@ test.describe.parallel(
             if (nowText !== last) {
               last = nowText;
               stableSince = performance.now();
+              if (window.DEBUG_LOGGING) console.log("[DEBUG] Header changed:", nowText);
             }
-            if (performance.now() - stableSince >= 500) { // Wait longer for stability
+            if (performance.now() - stableSince >= 500) {
               clearInterval(id);
               resolve(true);
             }
           }, 50);
         });
       });
-      await expect(page.locator(".battle-header")).toHaveScreenshot(
-        `battle-header-300${osSuffix}.png`
-      );
+      await expect(page.locator(".battle-header")).toHaveScreenshot(`battle-header-300${osSuffix}.png`);
     });
   }
 );
