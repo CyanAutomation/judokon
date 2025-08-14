@@ -5,7 +5,7 @@ import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { prepareSearchUi, getSelectedTags } from "./vectorSearchPage/queryUi.js";
 import { renderResults } from "./vectorSearchPage/renderResults.js";
-import { getExtractor, SIMILARITY_THRESHOLD } from "./api/vectorSearchPage.js";
+import { getExtractor, SIMILARITY_THRESHOLD, preloadExtractor } from "./api/vectorSearchPage.js";
 
 let spinner;
 
@@ -175,13 +175,15 @@ function handleNoMatches(matches, messageEl) {
  * Initialize event handlers for the Vector Search page.
  *
  * @pseudocode
- * 1. Cache the spinner element and hide it if present.
- * 2. Locate the search form element.
- * 3. Load embeddings and populate the tag filter dropdown with unique tags.
- * 4. Fetch meta stats and display the embedding count in the header.
- * 5. Attach `handleSearch` to the form and intercept Enter key submissions.
+ * 1. Begin preloading the feature extractor.
+ * 2. Cache the spinner element and hide it if present.
+ * 3. Locate the search form element.
+ * 4. Load embeddings and populate the tag filter dropdown with unique tags.
+ * 5. Fetch meta stats and display the embedding count in the header.
+ * 6. Attach `handleSearch` to the form and intercept Enter key submissions.
  */
 export async function init() {
+  preloadExtractor();
   spinner = document.getElementById("search-spinner");
   if (spinner) spinner.style.display = "none";
   const form = document.getElementById("vector-search-form");
