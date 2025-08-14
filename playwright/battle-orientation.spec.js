@@ -58,7 +58,7 @@ test.describe.parallel(
     });
 
     test("captures portrait and landscape headers", async ({ page }) => {
-      test.setTimeout(60000); // Increase timeout for slow page loads
+      test.setTimeout(30000); // Increase timeout for slow page loads
       // Helper to ensure the header stops mutating before taking a snapshot.
       const waitForHeaderStability = async () => {
         await page.evaluate(() => {
@@ -156,7 +156,7 @@ test.describe.parallel(
     });
 
     test("captures extra-narrow header", async ({ page }) => {
-      test.setTimeout(60000); // Increase timeout for slow page loads
+      test.setTimeout(30000); // Increase timeout for slow page loads
       const osSuffix = getOsSuffix();
       await page.goto("/src/pages/battleJudoka.html", { waitUntil: "domcontentloaded" });
       await page.waitForSelector(".battle-header", { timeout: 15000 });
