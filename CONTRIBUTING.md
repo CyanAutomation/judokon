@@ -21,6 +21,12 @@ npx playwright test # run Playwright UI tests
 - Use `src/helpers/storage.js` for persistent data access instead of direct `localStorage` calls.
 - Use the shared scheduler (`src/utils/scheduler.js`) for all timing-sensitive work instead of standalone timers.
 
+### Animation Scheduler Guidelines
+
+- Use `requestAnimationFrame` for one‑shot UI updates (e.g., toggling a class on the next frame).
+- Avoid `scheduler.onFrame()` for one‑off work — it registers a persistent callback; repeated use during timers can leak callbacks and stall the UI.
+- Reserve `scheduler.onFrame()` for continuous per‑frame tasks and always cancel with `scheduler.cancel(id)` when done.
+
 **For UI-related changes (styles, components, layout):**
 
 - Confirm responsiveness and visual correctness in desktop and simulated mobile viewport.
