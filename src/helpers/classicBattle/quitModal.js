@@ -2,6 +2,7 @@ import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import { showResult } from "../battle/index.js";
+import { navigateToHome } from "../navUtils.js";
 
 function createQuitConfirmation(store, onConfirm) {
   const title = document.createElement("h2");
@@ -37,17 +38,8 @@ function createQuitConfirmation(store, onConfirm) {
         dispatchBattleEvent("finalize");
       });
     } catch {}
-    // In browsers, navigate to home; in jsdom, history.replaceState avoids Not Implemented errors
-    try {
-      window.location.href = "../../index.html";
-    } catch {
-      try {
-        const target = new URL("../../index.html", window.location.href).href;
-        if (typeof history !== "undefined" && typeof history.replaceState === "function") {
-          history.replaceState(null, "", target);
-        }
-      } catch {}
-    }
+    // Navigate to home (robust to varying base paths like GH Pages)
+    navigateToHome();
   });
   document.body.appendChild(modal.element);
   return modal;

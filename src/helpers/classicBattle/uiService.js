@@ -2,6 +2,7 @@ import { getScores } from "../battleEngineFacade.js";
 import * as infoBar from "../setupBattleInfoBar.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
+import { navigateToHome } from "../navUtils.js";
 
 /**
  * Update the info bar with current scores.
@@ -56,7 +57,8 @@ export function showMatchSummaryModal(result, onNext) {
 
   quit.addEventListener("click", () => {
     modal.close();
-    window.location.href = "../../index.html";
+    // Navigate to home (robust base path handling)
+    navigateToHome();
   });
 
   next.addEventListener("click", () => {
