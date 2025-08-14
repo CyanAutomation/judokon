@@ -4,6 +4,11 @@ import {
   NAV_RANDOM_JUDOKA,
   NAV_CLASSIC_BATTLE
 } from "./fixtures/navigationChecks.js";
+import { readFileSync } from "node:fs";
+
+const classicBattleStates = JSON.parse(
+  readFileSync(new URL("../src/data/classicBattleStates.json", import.meta.url))
+);
 
 test.describe.parallel("Battle Judoka page", () => {
   test.beforeEach(async ({ page }) => {
@@ -42,6 +47,14 @@ test.describe.parallel("Battle Judoka page", () => {
     const ariaLiveCount = await page.locator('[role="status"][aria-live]').count();
     expect(ariaLiveCount).toBeGreaterThan(0);
 
-    await expect(page).toHaveScreenshot("battleJudoka-narrow.png");
+    const expectedIds = classicBattleStates.filter((s) => s.id < 90).map((s) => String(s.id));
+    const ids = await page.$$eval("#battle-state-progress li", (lis) =>
+      lis.map((li) => li.textContent.trim())
+    );
+    expect(ids).toEqual(expectedIds);
+
+    await expect(page).toHaveScreenshot("battleJudoka-narrow.png", {
+      mask: [page.locator("#battle-state-progress")]
+    });
   });
 });
