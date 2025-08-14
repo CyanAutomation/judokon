@@ -50,6 +50,29 @@ vi.mock("../../../src/helpers/utils.js", () => ({
   createGokyoLookup: () => ({})
 }));
 
+const stateLog = [];
+vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => {
+  let state = "roundDecision";
+  return {
+    dispatchBattleEvent: vi.fn(async (event) => {
+      if (event.startsWith("outcome=")) state = "roundOver";
+      else if (event === "continue") state = "cooldown";
+      else if (event === "matchPointReached") state = "matchDecision";
+      stateLog.push(state);
+    }),
+    __reset: () => {
+      state = "roundDecision";
+      stateLog.length = 0;
+    },
+    __getStateLog: () => stateLog
+  };
+});
+
+vi.mock("../../../src/helpers/classicBattle/uiService.js", async () => {
+  const actual = await vi.importActual("../../../src/helpers/classicBattle/uiService.js");
+  return { syncScoreDisplay: actual.syncScoreDisplay, showMatchSummaryModal: vi.fn() };
+});
+
 function expectDeselected(button) {
   expect(button.classList.contains("selected")).toBe(false);
 }
@@ -94,6 +117,8 @@ describe("classicBattle stat selection", () => {
     ));
     store = createBattleStore();
     _resetForTest(store);
+    const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    orchestrator.__reset();
     selectStat = async (stat) => {
       const p = handleStatSelection(store, stat);
       await vi.runAllTimersAsync();
@@ -151,7 +176,8 @@ describe("classicBattle stat selection", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     const result = evaluateRound(store, "power");
     expect(result.message).toMatch(/win/);
-    expect(document.querySelector("header #score-display").textContent).toBe("You: 1\nOpponent: 0");
+    expect(result.playerScore).toBe(1);
+    expect(result.computerScore).toBe(0);
   });
 
   it("shows stat comparison after selection", async () => {
@@ -161,6 +187,33 @@ describe("classicBattle stat selection", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     await selectStat("power");
     expect(document.getElementById("round-result").textContent).toBe("Power – You: 5 Opponent: 3");
+  });
+
+  it("advances machine to cooldown after stat selection", async () => {
+    const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    document.getElementById("player-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
+    document.getElementById("computer-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+    await selectStat("power");
+    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "outcome=winPlayer");
+    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "continue");
+    expect(orchestrator.__getStateLog()).toEqual(["roundOver", "cooldown"]);
+  });
+
+  it("dispatches matchPointReached when match ends", async () => {
+    const { setPointsToWin } = await import("../../../src/helpers/battleEngineFacade.js");
+    const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    setPointsToWin(1);
+    orchestrator.__reset();
+    document.getElementById("player-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
+    document.getElementById("computer-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+    await selectStat("power");
+    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "outcome=winPlayer");
+    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "matchPointReached");
+    expect(orchestrator.__getStateLog()).toEqual(["roundOver", "matchDecision"]);
   });
 
   it("simulateOpponentStat returns a valid stat", () => {
