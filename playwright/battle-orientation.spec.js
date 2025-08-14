@@ -98,7 +98,9 @@ test.describe.parallel(
 
       await page.setViewportSize({ width: 320, height: 480 });
       await page.waitForTimeout(1000); // Increased wait for orientation update
-      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, { timeout: 20000 });
+      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, {
+        timeout: 20000
+      });
       await page.evaluate(() => {
         if (window.DEBUG_LOGGING) console.log("[DEBUG] Calling applyBattleOrientation (portrait)");
         window.applyBattleOrientation?.();
@@ -139,7 +141,9 @@ test.describe.parallel(
 
       await page.setViewportSize({ width: 480, height: 320 });
       await page.waitForTimeout(1000); // Increased wait for orientation update
-      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, { timeout: 20000 });
+      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, {
+        timeout: 20000
+      });
       await page.evaluate(() => {
         if (window.DEBUG_LOGGING) console.log("[DEBUG] Calling applyBattleOrientation (landscape)");
         window.applyBattleOrientation?.();
@@ -207,7 +211,9 @@ test.describe.parallel(
 
       await page.setViewportSize({ width: 300, height: 600 });
       await page.waitForTimeout(1000); // Increased wait for orientation update
-      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, { timeout: 20000 });
+      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, {
+        timeout: 20000
+      });
       await page.evaluate(() => {
         if (window.DEBUG_LOGGING)
           console.log("[DEBUG] Calling applyBattleOrientation (extra-narrow)");
