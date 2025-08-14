@@ -6,6 +6,10 @@ beforeEach(() => {
   localStorage.clear();
   vi.resetModules();
   vi.doUnmock("../../src/helpers/settingsStorage.js");
+  vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
+    initClassicBattleOrchestrator: vi.fn(),
+    dispatchBattleEvent: vi.fn().mockResolvedValue()
+  }));
   vi.doMock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
     initRoundSelectModal: (cb) => cb()
   }));
@@ -53,6 +57,7 @@ describe("classicBattlePage stat button interactions", () => {
     const [first, second, third] = container.querySelectorAll("button");
 
     first.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await Promise.resolve();
     expect(handleStatSelection).toHaveBeenCalledWith(store, "power");
     expect(showSnackbar).toHaveBeenCalledWith("You Picked: Power");
 
@@ -64,6 +69,7 @@ describe("classicBattlePage stat button interactions", () => {
     showSnackbar.mockClear();
 
     second.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    await Promise.resolve();
     expect(handleStatSelection).toHaveBeenCalledWith(store, "speed");
     expect(showSnackbar).toHaveBeenCalledWith("You Picked: Speed");
 
@@ -75,6 +81,7 @@ describe("classicBattlePage stat button interactions", () => {
     showSnackbar.mockClear();
 
     third.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+    await Promise.resolve();
     expect(handleStatSelection).toHaveBeenCalledWith(store, "technique");
     expect(showSnackbar).toHaveBeenCalledWith("You Picked: Technique");
   });
