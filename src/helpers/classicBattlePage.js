@@ -63,7 +63,7 @@ window.skipBattlePhase = skipCurrentPhase;
 export const getBattleStore = () => battleStore;
 let statButtonControls;
 async function startRoundWrapper() {
-  statButtonControls.disable();
+  statButtonControls?.disable();
   try {
     await startRound(battleStore);
     await waitForComputerCard(5000);
@@ -74,7 +74,7 @@ async function startRoundWrapper() {
     } catch {}
     await dispatchBattleEvent("interrupt");
   } finally {
-    statButtonControls.enable();
+    statButtonControls?.enable();
   }
 }
 

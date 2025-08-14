@@ -104,6 +104,7 @@ function pickOpponent(available, playerJudoka) {
 }
 
 async function renderComputerPlaceholder(container, placeholder, enableInspector) {
+  if (!container) return;
   const judokaCard = new JudokaCard(placeholder, gokyoLookup, {
     useObscuredStats: true,
     enableInspector
