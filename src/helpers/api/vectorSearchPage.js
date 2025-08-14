@@ -70,6 +70,17 @@ export async function getExtractor() {
 }
 
 /**
+ * Preload the feature extractor without awaiting its result.
+ *
+ * @pseudocode
+ * 1. Call `getExtractor()` to trigger the model download.
+ * 2. Ignore any errors to avoid blocking page initialization.
+ */
+export function preloadExtractor() {
+  getExtractor().catch(() => {});
+}
+
+/**
  * Format a file path string for display in the Source column.
  * Each path segment appears on a new line.
  *
