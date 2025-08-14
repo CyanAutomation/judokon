@@ -71,8 +71,10 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ## Match Flow
 
-The Classic Battle match follows a fixed sequence of states and transitions, as illustrated in the diagram below.  
+The Classic Battle match follows a fixed sequence of states and transitions, as illustrated in the diagram below.
 Each state describes what the game is doing, what events trigger a change, and where it transitions next.
+
+- A numbered progress bar beneath the battle area shows the current state ID, giving players a clear, accessible sense of match progression.
 
 ---
 
