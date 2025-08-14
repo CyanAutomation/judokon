@@ -10,7 +10,7 @@
  *    a. Disables stat buttons.
  *    b. Calls `startRound` and waits for the Mystery card via
  *       `waitForComputerCard` with a timeout.
- *    c. Logs and surfaces an error, dispatching `interrupt` on failure.
+ *    c. Logs and surfaces an error, showing a retry modal on failure.
  *    d. Re-enables stat buttons in a `finally` block.
  * 5. Define `setupClassicBattlePage` to:
  *    a. Start the shared scheduler.
@@ -56,6 +56,7 @@ import {
   onFrame as scheduleFrame,
   cancel as cancelFrame
 } from "../utils/scheduler.js";
+import { createModal, createButton } from "../components/Modal.js";
 
 const battleStore = createBattleStore();
 window.battleStore = battleStore;
@@ -70,12 +71,42 @@ async function startRoundWrapper() {
   } catch (error) {
     console.error("Error starting round:", error);
     try {
-      showMessage("Round start error. Returning to lobby.");
+      showMessage("Round start error. Please retry.");
+      showRetryModal();
     } catch {}
-    await dispatchBattleEvent("interrupt");
   } finally {
     statButtonControls?.enable();
   }
+}
+
+/**
+ * Show a modal with a retry button when round start fails.
+ *
+ * @pseudocode
+ * 1. Create a modal dialog with an error message and a Retry button.
+ * 2. When Retry is clicked, close the modal and call startRoundWrapper again.
+ * 3. If modal is already open, do not create another.
+ */
+function showRetryModal() {
+  if (document.getElementById("round-retry-modal")) return;
+  const title = document.createElement("h2");
+  title.textContent = "Round Start Error";
+  const msg = document.createElement("p");
+  msg.textContent = "Unable to start the round. Please check your connection or try again.";
+  const retryBtn = createButton("Retry", { id: "retry-round-btn", className: "primary-button" });
+  const actions = document.createElement("div");
+  actions.className = "modal-actions";
+  actions.appendChild(retryBtn);
+  const frag = document.createDocumentFragment();
+  frag.append(title, msg, actions);
+  const modal = createModal(frag, { labelledBy: title });
+  modal.element.id = "round-retry-modal";
+  retryBtn.addEventListener("click", async () => {
+    modal.close();
+    await startRoundWrapper();
+  });
+  document.body.appendChild(modal.element);
+  modal.open();
 }
 
 function setupNextButton() {
