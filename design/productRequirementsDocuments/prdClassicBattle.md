@@ -322,7 +322,7 @@ flowchart TD
 - After round results, a 3s countdown is displayed via snackbar (`Next round in: Xs`). The **Next** button becomes active once the countdown ends or when skipped. Reference [timerService.js](../../src/helpers/classicBattle/timerService.js) for exact durations to keep design and code aligned.
 - After the match ends, a modal appears showing the final result and score with **Quit Match** and **Next Match** buttons; **Quit Match** exits to the main menu and **Next Match** starts a new match.
 - Player can quit mid-match; confirmation prompt appears; if confirmed, match ends with player loss recorded.
-- After confirming the quit action, the player is returned to the main menu (index.html).
+- After confirming the quit action, return the player to the main menu (index.html) using a path that works in local and deployed builds.
 - If AI difficulty affects stat selection, AI uses correct logic per difficulty setting.
 - Animation flow: transitions between card reveal, stat selection, and result screens complete smoothly without stalling.
 - Stat buttons reset between rounds so no previous selection remains highlighted. The `battle.css` rule `#stat-buttons button { -webkit-tap-highlight-color: transparent; }` combined with a reflow ensures Safari clears the red touch overlay.

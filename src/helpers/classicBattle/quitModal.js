@@ -37,12 +37,15 @@ function createQuitConfirmation(store, onConfirm) {
         dispatchBattleEvent("finalize");
       });
     } catch {}
-    // In browsers, navigate to home; in jsdom, history.replaceState avoids Not Implemented errors
+    // Navigate back to the main menu. Compute the target so it works from
+    // both local `src/pages/` paths and deployed root builds.
+    const target =
+      window.location.origin +
+      window.location.pathname.replace(/\/(?:src\/pages\/)?[^/]*$/, "/index.html");
     try {
-      window.location.href = "../../index.html";
+      window.location.assign(target);
     } catch {
       try {
-        const target = new URL("../../index.html", window.location.href).href;
         if (typeof history !== "undefined" && typeof history.replaceState === "function") {
           history.replaceState(null, "", target);
         }
