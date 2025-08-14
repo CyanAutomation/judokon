@@ -4,7 +4,7 @@
  * @pseudocode
  * 1. Fetch `classicBattleStates.json` using `fetchJson`.
  * 2. Filter for core states (IDs below 90).
- * 3. Render each state as an `<li>` with `data-state` inside `#battle-state-progress`.
+ * 3. Render each state as an `<li>` with `data-state` and its numeric ID as text inside `#battle-state-progress`.
  * 4. Define `updateActive(state)` to toggle the `active` class on matching items.
  * 5. Observe `#machine-state` for text changes; on each change call `updateActive`.
  * 6. If `#machine-state` is missing, poll `window.__classicBattleState` via `requestAnimationFrame`.
@@ -30,6 +30,7 @@ export async function initBattleStateProgress() {
   core.forEach((s) => {
     const li = document.createElement("li");
     li.dataset.state = s.name;
+    li.textContent = String(s.id);
     frag.appendChild(li);
   });
   list.appendChild(frag);
