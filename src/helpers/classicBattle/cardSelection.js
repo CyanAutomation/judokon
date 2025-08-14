@@ -5,7 +5,7 @@ import { isEnabled } from "../featureFlags.js";
 import { fetchJson } from "../dataUtils.js";
 import { createGokyoLookup } from "../utils.js";
 import { DATA_DIR } from "../constants.js";
-import { showMessage } from "../setupBattleInfoBar.js";
+import { showMessage, showTemporaryMessage } from "../setupBattleInfoBar.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
@@ -17,6 +17,16 @@ let judokaData = null;
 let gokyoLookup = null;
 let computerJudoka = null;
 let loadErrorModal = null;
+
+function qaInfo(text) {
+  try {
+    if (isEnabled("enableTestMode")) {
+      const restore = showTemporaryMessage(`[QA] ${text}`);
+      // Clear quickly so we don't interfere with round messages
+      setTimeout(restore, 1200);
+    }
+  } catch {}
+}
 
 function showLoadError(error) {
   const msg = error?.message || "Unable to load data.";
@@ -114,6 +124,7 @@ async function renderComputerPlaceholder(container, placeholder, enableInspector
   if (!target || !hasRequiredJudokaFields(target)) {
     try {
       target = await getFallbackJudoka();
+      qaInfo("Using fallback judoka for computer placeholder");
     } catch {
       // If even the fallback cannot be retrieved, bail silently.
       return;
@@ -183,6 +194,7 @@ export async function drawCards() {
   } catch {
     try {
       compJudoka = await getFallbackJudoka();
+      qaInfo("Using fallback judoka for opponent");
     } catch {
       compJudoka = null;
     }
@@ -190,6 +202,7 @@ export async function drawCards() {
   if (!compJudoka || !hasRequiredJudokaFields(compJudoka)) {
     try {
       compJudoka = await getFallbackJudoka();
+      qaInfo("Using fallback judoka for opponent");
     } catch {
       compJudoka = null;
     }
@@ -201,6 +214,7 @@ export async function drawCards() {
   if (!placeholder || !hasRequiredJudokaFields(placeholder)) {
     try {
       placeholder = await getFallbackJudoka();
+      qaInfo("Using fallback judoka for computer placeholder");
     } catch {
       placeholder = null;
     }
