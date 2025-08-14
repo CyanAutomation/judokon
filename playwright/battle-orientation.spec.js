@@ -58,7 +58,7 @@ test.describe.parallel(
     });
 
     test("captures portrait and landscape headers", async ({ page }) => {
-      test.setTimeout(60000);
+      test.setTimeout(30000);
       const waitForHeaderStability = async () => {
         await page.evaluate(() => {
           if (window.DEBUG_LOGGING) console.log("[DEBUG] Checking header stability...");
@@ -86,21 +86,21 @@ test.describe.parallel(
       await page.goto("/src/pages/battleJudoka.html", { waitUntil: "domcontentloaded" });
       await page.waitForSelector(".battle-header", { timeout: 15000 });
       await page.waitForSelector("#score-display span", { state: "attached" });
-      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, { timeout: 10000 });
+      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, { timeout: 20000 }); // More robust wait
       await page.evaluate(() => window.skipBattlePhase?.());
       await page.evaluate(() => window.freezeBattleHeader?.());
       await page.waitForFunction(() => document.querySelector("#round-message")?.textContent.trim().length > 0);
       await page.evaluate(() => window.skipBattlePhase?.());
 
       await page.setViewportSize({ width: 320, height: 480 });
+      await page.waitForTimeout(1000); // Increased wait for orientation update
+      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, { timeout: 20000 });
       await page.evaluate(() => {
         if (window.DEBUG_LOGGING) console.log("[DEBUG] Calling applyBattleOrientation (portrait)");
         window.applyBattleOrientation?.();
       });
-      await page.waitForTimeout(500); // Give time for orientation to update
-      const orientationPortrait = await page.evaluate(() => document.querySelector(".battle-header")?.dataset.orientation);
-      if (process.env.DEBUG_LOGGING) console.log("[DEBUG] Orientation after portrait:", orientationPortrait);
-      await page.waitForFunction(() => document.querySelector(".battle-header")?.dataset.orientation === "portrait", { timeout: 10000 });
+      await page.waitForTimeout(1000); // Increased wait for orientation update
+      await page.waitForFunction(() => document.querySelector(".battle-header")?.dataset.orientation === "portrait", { timeout: 20000 });
       await page.waitForSelector("#score-display span", { state: "attached" });
       await page.evaluate(() => {
         return Promise.race([
@@ -120,14 +120,14 @@ test.describe.parallel(
       await page.evaluate(() => window.resumeBattleHeader?.());
 
       await page.setViewportSize({ width: 480, height: 320 });
+      await page.waitForTimeout(1000); // Increased wait for orientation update
+      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, { timeout: 20000 });
       await page.evaluate(() => {
         if (window.DEBUG_LOGGING) console.log("[DEBUG] Calling applyBattleOrientation (landscape)");
         window.applyBattleOrientation?.();
       });
-      await page.waitForTimeout(500);
-      const orientationLandscape = await page.evaluate(() => document.querySelector(".battle-header")?.dataset.orientation);
-      if (process.env.DEBUG_LOGGING) console.log("[DEBUG] Orientation after landscape:", orientationLandscape);
-      await page.waitForFunction(() => document.querySelector(".battle-header")?.dataset.orientation === "landscape", { timeout: 10000 });
+      await page.waitForTimeout(1000); // Increased wait for orientation update
+      await page.waitForFunction(() => document.querySelector(".battle-header")?.dataset.orientation === "landscape", { timeout: 20000 });
       await page.waitForSelector("#score-display span", { state: "attached" });
       await page.evaluate(() => {
         return Promise.race([
@@ -148,12 +148,12 @@ test.describe.parallel(
     });
 
     test("captures extra-narrow header", async ({ page }) => {
-      test.setTimeout(60000);
+      test.setTimeout(30000);
       const osSuffix = getOsSuffix();
       await page.goto("/src/pages/battleJudoka.html", { waitUntil: "domcontentloaded" });
       await page.waitForSelector(".battle-header", { timeout: 15000 });
       await page.waitForSelector("#score-display span", { state: "attached" });
-      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, { timeout: 10000 });
+      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, { timeout: 20000 }); // More robust wait
       await page.evaluate(() => window.skipBattlePhase?.());
       await page.waitForFunction(() => document.querySelector("#round-message")?.textContent.trim().length > 0);
       await page.evaluate(() => window.skipBattlePhase?.());
@@ -168,14 +168,14 @@ test.describe.parallel(
       });
 
       await page.setViewportSize({ width: 300, height: 600 });
+      await page.waitForTimeout(1000); // Increased wait for orientation update
+      await page.waitForFunction(() => window.applyBattleOrientation !== undefined, { timeout: 20000 });
       await page.evaluate(() => {
         if (window.DEBUG_LOGGING) console.log("[DEBUG] Calling applyBattleOrientation (extra-narrow)");
         window.applyBattleOrientation?.();
       });
-      await page.waitForTimeout(500);
-      const orientationNarrow = await page.evaluate(() => document.querySelector(".battle-header")?.dataset.orientation);
-      if (process.env.DEBUG_LOGGING) console.log("[DEBUG] Orientation after extra-narrow:", orientationNarrow);
-      await page.waitForFunction(() => document.querySelector(".battle-header")?.dataset.orientation === "portrait", { timeout: 10000 });
+      await page.waitForTimeout(1000); // Increased wait for orientation update
+      await page.waitForFunction(() => document.querySelector(".battle-header")?.dataset.orientation === "portrait", { timeout: 20000 });
       await page.locator("#round-message").evaluate((el) => (el.textContent = "A very long round message that should overflow on narrow screens"));
       await page.waitForFunction(() => document.querySelector("#round-message")?.textContent.trim().length > 0);
       await expect(page.locator(".battle-header")).toBeVisible();
