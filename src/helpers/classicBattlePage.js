@@ -270,23 +270,23 @@ function initStatButtons(store) {
   }
 
   statButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       if (!btn.disabled) {
         setEnabled(false);
         btn.classList.add("selected");
         showSnackbar(`You Picked: ${btn.textContent}`);
-        dispatchBattleEvent("statSelected");
-        handleStatSelection(store, btn.dataset.stat);
+        await dispatchBattleEvent("statSelected");
+        await handleStatSelection(store, btn.dataset.stat);
       }
     });
-    btn.addEventListener("keydown", (e) => {
+    btn.addEventListener("keydown", async (e) => {
       if ((e.key === "Enter" || e.key === " ") && !btn.disabled) {
         e.preventDefault();
         setEnabled(false);
         btn.classList.add("selected");
         showSnackbar(`You Picked: ${btn.textContent}`);
-        dispatchBattleEvent("statSelected");
-        handleStatSelection(store, btn.dataset.stat);
+        await dispatchBattleEvent("statSelected");
+        await handleStatSelection(store, btn.dataset.stat);
       }
     });
   });
