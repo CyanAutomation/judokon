@@ -8,6 +8,10 @@
  * @param {() => void} fn - Function to run when the DOM is ready.
  */
 export function onDomReady(fn) {
+  if (typeof document === "undefined") {
+    // In non-browser environments, do nothing.
+    return;
+  }
   if (document.readyState !== "loading") {
     fn();
   } else {
