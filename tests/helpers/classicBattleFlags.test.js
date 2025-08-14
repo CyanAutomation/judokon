@@ -51,7 +51,8 @@ describe("classicBattlePage feature flag updates", () => {
     }));
     vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
       createBattleStore: () => ({}),
-      startRound: vi.fn()
+      startRound: vi.fn(),
+      resetGame: vi.fn()
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard: vi.fn() }));
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn() }));
