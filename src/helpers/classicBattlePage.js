@@ -8,9 +8,10 @@
  *    enable/disable API.
  * 4. Define `startRoundWrapper` that:
  *    a. Disables stat buttons.
- *    b. Calls `startRound` from `classicBattle.js`.
- *    c. Waits for the Mystery card to render using `waitForComputerCard` then
- *       re-enables stat buttons.
+ *    b. Calls `startRound` and waits for the Mystery card via
+ *       `waitForComputerCard` with a timeout.
+ *    c. Logs and surfaces an error, dispatching `interrupt` on failure.
+ *    d. Re-enables stat buttons in a `finally` block.
  * 5. Define `setupClassicBattlePage` to:
  *    a. Start the shared scheduler.
  *    b. Initialize the battle info bar.
@@ -31,7 +32,7 @@
 import { createBattleStore, startRound } from "./classicBattle/roundManager.js";
 import { handleStatSelection } from "./classicBattle/selectionHandler.js";
 import { onDomReady } from "./domReady.js";
-import { setupBattleInfoBar } from "./setupBattleInfoBar.js";
+import { setupBattleInfoBar, showMessage } from "./setupBattleInfoBar.js";
 import { waitForComputerCard } from "./battleJudokaPage.js";
 import { initTooltips } from "./tooltip.js";
 import { setTestMode } from "./testModeUtils.js";
@@ -63,9 +64,18 @@ export const getBattleStore = () => battleStore;
 let statButtonControls;
 async function startRoundWrapper() {
   statButtonControls.disable();
-  await startRound(battleStore);
-  await waitForComputerCard();
-  statButtonControls.enable();
+  try {
+    await startRound(battleStore);
+    await waitForComputerCard(5000);
+  } catch (error) {
+    console.error("Error starting round:", error);
+    try {
+      showMessage("Round start error. Returning to lobby.");
+    } catch {}
+    await dispatchBattleEvent("interrupt");
+  } finally {
+    statButtonControls.enable();
+  }
 }
 
 function setupNextButton() {

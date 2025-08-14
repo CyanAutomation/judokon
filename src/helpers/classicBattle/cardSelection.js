@@ -87,7 +87,7 @@ async function ensureGokyoLookup() {
     return gokyoLookup;
   } catch (error) {
     showLoadError(error);
-    return null;
+    return createGokyoLookup([]);
   }
 }
 
@@ -182,7 +182,7 @@ export function getGokyoLookup() {
 /**
  * Ensure the gokyo lookup is available, loading it if missing.
  * Primarily used by tests or code paths that call `revealComputerCard` directly.
- * @returns {Promise<ReturnType<typeof createGokyoLookup> | null>} Lookup or null on failure.
+ * @returns {Promise<ReturnType<typeof createGokyoLookup>>} Lookup (empty on failure).
  */
 export async function getOrLoadGokyoLookup() {
   return await ensureGokyoLookup();
