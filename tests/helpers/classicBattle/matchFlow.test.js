@@ -65,6 +65,11 @@ describe("classicBattle match flow", () => {
     const { playerCard, computerCard } = createBattleCardContainers();
     const header = createBattleHeader();
     document.body.append(playerCard, computerCard, header);
+    const container = document.createElement("div");
+    container.id = "snackbar-container";
+    container.setAttribute("role", "status");
+    container.setAttribute("aria-live", "polite");
+    document.body.append(container);
     timerSpy = vi.useFakeTimers();
     fetchJsonMock = vi.fn(async (url) => {
       if (String(url).includes("gameTimers.json")) {

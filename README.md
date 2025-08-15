@@ -69,6 +69,16 @@ AI agents should begin by reading:
 - ✅ Validate stat blocks against rarity rules
 - ✅ Generate or evaluate PRDs for new features
 
+### Snackbar Container
+
+Pages that display snackbars must include a persistent container near the end of `<body>`:
+
+```html
+<div id="snackbar-container" role="status" aria-live="polite"></div>
+```
+
+`showSnackbar` and `updateSnackbar` reuse this element for notifications.
+
 ## Settings API
 
 Settings are loaded once and cached for synchronous use. Helpers in

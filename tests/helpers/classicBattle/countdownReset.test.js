@@ -42,6 +42,11 @@ describe("countdown resets after stat selection", () => {
     nextBtn.id = "next-button";
     document.body.append(playerCard, computerCard, header, roundResult, nextBtn);
     document.body.innerHTML += '<div id="stat-buttons"><button data-stat="power"></button></div>';
+    const container = document.createElement("div");
+    container.id = "snackbar-container";
+    container.setAttribute("role", "status");
+    container.setAttribute("aria-live", "polite");
+    document.body.append(container);
     battleMod = await import("../../../src/helpers/classicBattle.js");
     store = battleMod.createBattleStore();
     battleMod._resetForTest(store);

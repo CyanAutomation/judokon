@@ -2,9 +2,9 @@
  * Display a temporary snackbar message near the bottom of the screen.
  *
  * @pseudocode
- * 1. Remove any existing `.snackbar` element and clear its timers.
- * 2. Create a new div with that class containing the provided message.
- * 3. Append the element to `document.body` and trigger the show animation.
+ * 1. Clear existing timers for any visible snackbar.
+ * 2. Create a new div with class `.snackbar` containing the message.
+ * 3. Replace `#snackbar-container` children with this element and trigger the show animation.
  * 4. Schedule fade and removal timers.
  *
  * @param {string} message - Text content to display in the snackbar.
@@ -31,16 +31,16 @@ export function showSnackbar(message) {
   try {
     if (typeof window !== "undefined" && window.__disableSnackbars) return;
   } catch {}
-  bar?.remove();
+  const container = document.getElementById("snackbar-container");
+  if (!container) return;
+
   clearTimeout(fadeId);
   clearTimeout(removeId);
 
   bar = document.createElement("div");
   bar.className = "snackbar";
   bar.textContent = message;
-  bar.setAttribute("role", "status");
-  bar.setAttribute("aria-live", "polite");
-  document.body.appendChild(bar);
+  container.replaceChildren(bar);
   // Use a one-shot animation frame to toggle the class without
   // registering a persistent scheduler callback.
   requestAnimationFrame(() => bar?.classList.add("show"));
