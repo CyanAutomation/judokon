@@ -15,7 +15,10 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
   const onEnter = {
     async waitingForMatchStart(m) {
       // Prevent duplicate badge state updates on redundant transitions
-      if (window.__classicBattleState === "waitingForMatchStart" && window.__classicBattlePrevState === "waitingForMatchStart") {
+      if (
+        window.__classicBattleState === "waitingForMatchStart" &&
+        window.__classicBattlePrevState === "waitingForMatchStart"
+      ) {
         return;
       }
       // Reset transient UI and open lobby (round selection)
