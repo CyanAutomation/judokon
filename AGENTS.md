@@ -64,7 +64,7 @@ Before submitting or completing a task, verify that your work:
 | Debug + Observability targets | Components with data-_, like data-tooltip-id, data-flag, data-feature-_ |
 | UI test entry points          | playwright/_.spec.js, tests/\*\*/_.test.js                              |
 | Component factories           | src/components/\*.js                                                    |
-| Battle logic and UI           | classicBattle.js, setupBattleScoreboard.js, Scoreboard.js               |
+| Battle logic and UI           | classicBattle.js, setupScoreboard.js, Scoreboard.js                     |
 
 ---
 
