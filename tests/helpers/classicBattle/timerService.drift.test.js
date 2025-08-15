@@ -109,7 +109,49 @@ describe("timerService drift handling", () => {
     await vi.waitFor(() => {
       expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
     });
-    expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
+    expect(dispatchBattleEvent).toHaveBeenCalledTimes(2);
     expect(btn.dataset.nextReady).toBeUndefined();
+  });
+
+  it("auto-dispatches ready when cooldown finishes", async () => {
+    vi.resetModules();
+    document.body.innerHTML = "";
+    vi.doMock("../../../src/helpers/setupBattleInfoBar.js", () => ({
+      showMessage: vi.fn(),
+      showTemporaryMessage: () => () => {},
+      showAutoSelect: vi.fn(),
+      clearTimer: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
+      enableNextRoundButton: vi.fn(),
+      disableNextRoundButton: vi.fn(),
+      updateDebugPanel: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
+      startCoolDown: vi.fn(),
+      stopTimer: vi.fn(),
+      STATS: []
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/runTimerWithDrift.js", () => ({
+      runTimerWithDrift: () => async (_d, _t, onExpired) => {
+        await onExpired();
+      }
+    }));
+    const dispatchBattleEvent = vi.fn();
+    vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
+      dispatchBattleEvent
+    }));
+    const mod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const btn = document.createElement("button");
+    btn.id = "next-button";
+    document.body.appendChild(btn);
+    const timerNode = document.createElement("p");
+    timerNode.id = "next-round-timer";
+    document.body.appendChild(timerNode);
+    mod.scheduleNextRound({ matchEnded: false });
+    await vi.waitFor(() => {
+      expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
+    });
+    expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
   });
 });
