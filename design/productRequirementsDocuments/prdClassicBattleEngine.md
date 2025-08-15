@@ -283,44 +283,49 @@ Match interrupted from setup or critical error.
 
 ```mermaid
 flowchart TD
-  %% Global direction
-  %% TD for overall flow; LR inside round loop for readability
+  A([waitingForMatchStart]) -->|startClicked| B[matchStart]
+  A -->|navigateHome / interrupt| A
 
-  A([Waiting for match start]) -->|Match length selected| B[Match start]
-  A -->|Abort match| I([Match over])
-
-  subgraph Inmatch
+  subgraph InMatch
     direction LR
 
-    B --> C[Cooldown]
-    C -->|Ready| D[Round start]
-    D -->|Card revealed| E[Waiting for player action]
+    B -->|ready| C[cooldown]
+    B -->|interrupt / error| M[interruptMatch]
 
-    %% Decision: player acts or times out
-    E --> F{Stat selected?}
-    F -->|Yes| G[Round decision]
-    F -->|No, Timeout statAutoSelect| G
+    C -->|ready| D[roundStart]
+    C -->|interrupt| L[interruptRound]
 
-    %% Decision: who won & what next
-    G --> |Reveal Round Outcome| H[Round over]
+    D -->|cardsRevealed| E[waitingForPlayerAction]
+    D -->|interrupt| L
 
-    H --> J{Match point reached?}
-    J -->|Yes| K[Match decision]
-    J -->|No, Next round| C
+    E -->|statSelected| F[roundDecision]
+    E -->|timeout & FF_AUTO_SELECT| F
+    E -->|timeout & !FF_AUTO_SELECT| L
+    E -->|interrupt| L
 
-    %% Interrupts within match
-    E -->|Interrupt| L[Round interrupted]
-    G -->|Interrupt| L
-    L -->|Round Modify Flag| N[Round Modification]
-    N -->|Modify Round Decision| G
-    K -->|Interrupt| M[Match interrupted]
+    F -->|winP1 / winP2 / draw| G[roundOver]
+    F -->|interrupt| L
+
+    G -->|matchPointReached| H[matchDecision]
+    G -->|continue| C
+    G -->|interrupt| L
+
+    H -->|finalize| I([matchOver])
+    H -->|interrupt| M
+
+    L -->|restartRound| C
+    L -->|resumeLobby| A
+    L -->|abortMatch| I
+    L -->|roundModifyFlag & FF_ROUND_MODIFY| N[roundModification]
+    N -->|modifyRoundDecision| F
+    N -->|cancelModification| L
+
+    M -->|restartMatch| B
+    M -->|toLobby| A
   end
 
-  %% Post‑match transitions
-  K -->|Outcome declared| I
-  L -->|Restart Round| C
-  M -->|Restart Match| B
-  I -->|Rematch| A
+  I -->|rematch| A
+  I -->|home| A
 
   %% Optional: color the interrupt rails
   linkStyle 10,11,12 stroke:#a33,stroke-width:2px
