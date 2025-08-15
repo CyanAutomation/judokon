@@ -1,4 +1,5 @@
 import { loadSettings, updateSetting } from "./settingsStorage.js";
+import { DEFAULT_SETTINGS } from "./settingsSchema.js";
 
 /**
  * Event emitter broadcasting feature flag changes.
@@ -7,14 +8,15 @@ import { loadSettings, updateSetting } from "./settingsStorage.js";
  */
 export const featureFlagsEmitter = new EventTarget();
 
-let cachedFlags = {};
+// Initialize with defaults so flags have expected values before loading settings.
+let cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };
 
 /**
  * Initialize feature flags from persisted settings.
  *
  * @pseudocode
  * 1. Call `loadSettings()` to retrieve current settings.
- * 2. Set `cachedFlags` to `settings.featureFlags` or `{}`.
+ * 2. Set `cachedFlags` to `settings.featureFlags` or default feature flags.
  * 3. Dispatch a `change` event with `flag: null`.
  * 4. Return the loaded `settings`.
  *
@@ -24,10 +26,10 @@ export async function initFeatureFlags() {
   let settings;
   try {
     settings = await loadSettings();
-    cachedFlags = settings.featureFlags || {};
+    cachedFlags = settings.featureFlags || { ...DEFAULT_SETTINGS.featureFlags };
   } catch {
-    settings = { featureFlags: {} };
-    cachedFlags = {};
+    settings = { featureFlags: { ...DEFAULT_SETTINGS.featureFlags } };
+    cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };
   }
   featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
   return settings;
