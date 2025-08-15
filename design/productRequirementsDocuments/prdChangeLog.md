@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-The Recent Judoka Updates Log provides players and developers with a fast, accessible way to view the 20 most recently updated Judoka cards. This feature increases transparency around balance changes and supports both QA and player engagement by surfacing recent modifications directly in the UI. The log is accessible from the Settings menu and displays a responsive, simplified table sourced from `judoka.json`.
+This PRD describes the Recent Judoka Updates Log feature—a UI component that lets players and developers view the 20 most recently updated Judoka cards. It is not an actual changelog of the product, but a feature designed to increase transparency around balance changes and support QA/player engagement. The log is accessible from the Settings menu and displays a responsive, simplified table sourced from `judoka.json`.
 
 ---
 
@@ -12,11 +12,12 @@ Players and developers currently lack a simple, in-game method to see which Judo
 
 ---
 
-## Goals / Success Metrics
+## Goals
 
-- Allow players and developers to view the 20 most recently updated Judoka cards.
-- Improve visibility into Judoka rebalances without requiring developer tools or card-by-card comparisons.
-- Maintain global UI consistency: header, footer, fonts, and background style.
+- Provide a fast, accessible way to view the 20 most recently updated Judoka cards in-game
+- Improve transparency for balance changes and Judoka edits
+- Support QA and player engagement by surfacing recent modifications directly in the UI
+- Maintain global UI consistency: header, footer, fonts, and background style
 
 ---
 
@@ -44,15 +45,15 @@ Players and developers currently lack a simple, in-game method to see which Judo
 
 ## Acceptance Criteria
 
-- The list displays exactly 20 entries from `judoka.json`. (**P1: Sort and Display Entries**)
-- Entries are sorted by `lastUpdated` (descending), then `name` (ascending) if dates match. (**P1: Sort and Display Entries**)
-- Each row includes: Judoka ID, Portrait, Judoka Name, Card Code, Last Modified Date. (**P1: Load and Parse Data**)
-- Global header and footer are present and match the main game theme. (**P2: UI Consistency**)
-- If `judoka.json` is missing or empty, display: "No Judoka data found." (**P3: Error/Fallback Handling**)
-- If a portrait image is missing, show the default placeholder portrait. (**P2: Portrait Display**)
-- Alt text is present for all portraits (e.g., "Portrait of Judoka Kano"). (**P2: Portrait Display**)
-- The page is navigable by keyboard and screen-reader compatible. (**P4: Accessibility Support**)
-- If loading takes longer than 3 seconds, show a loading spinner; if still no data, show fallback message. (**P3: Error/Fallback Handling**)
+- The log displays exactly 20 entries from `judoka.json`, sorted by `lastUpdated` (descending), then `name` (ascending) if dates match
+- Each row includes: Judoka ID, Portrait (with alt text), Judoka Name, Card Code, Last Modified Date
+- Portraits use a fallback image if missing, with appropriate alt text
+- The log is accessible from the Settings menu and supports proper back navigation
+- Global header and footer are present and match the main game theme
+- The page is keyboard navigable and screen-reader compatible
+- If `judoka.json` is missing or empty, display: "No Judoka data found."
+- If loading takes longer than 3 seconds, show a loading spinner; if still no data, show fallback message
+- Responsive layout: stacks columns below 600px width; all touchable areas ≥44px
 
 ---
 

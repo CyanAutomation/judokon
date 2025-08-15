@@ -1,5 +1,17 @@
 # Card Inspector PRD
 
+## Problem Statement
+
+Developers, QA testers, and advanced users need a fast, reliable way to inspect the raw JSON data behind each judoka card in JU-DO-KON! for debugging, validation, and troubleshooting. The current process of using browser dev tools is slow and error-prone, especially as card content and logic rapidly evolve. An in-game inspector panel will accelerate iteration, improve QA coverage, and reduce development friction.
+
+## Goals
+
+- Provide a toggleable inspector panel for all visible judoka cards
+- Ensure inspector panel is non-intrusive and does not overlap gameplay elements
+- Support real-time inspection of card data with minimal latency
+- Enable advanced inspector functions (zoom, rotate card) for thorough data and UI validation
+- Default inspector panel to OFF for all users
+
 ## Overview (TL;DR)
 
 The **Card Inspector** is a developer/debugging utility in JU-DO-KON! that lets users view the raw JSON data behind each judoka card, directly within the game UI. It’s exposed via the `enableCardInspector` feature flag on the Settings page and is meant for QA, developers, and advanced users to inspect card data in real time.
@@ -64,14 +76,16 @@ This problem is pressing because:
 
 ## Acceptance Criteria
 
-- The toggle switch appears in Settings, labeled “Card Inspector”, with the default state set to OFF.
-- Toggle state persists between sessions and updates the UI without a full reload.
-- Enabling the flag injects a `<details>` element labeled “Card Inspector” under each visible judoka card.
-- JSON panel appears collapsed by default and pretty-prints only the card’s JSON (markup preview removed).
-- Opening the panel sets `data-inspector="true"` on the card container; closing removes the attribute.
-- Disclosure control is keyboard-accessible and screen-reader-friendly.
-- The panel never overlaps gameplay UI elements or interferes with interactions.
-- In cases of errors (e.g., invalid JSON, null card), a fallback message (“Invalid card data”) is shown.
+- Inspector toggle appears in Settings, labeled "Card Inspector", default OFF
+- Enabling the toggle injects a collapsible JSON panel under each visible judoka card
+- JSON panel is collapsed by default, pretty-prints card JSON, and supports syntax highlighting
+- Inspector panel supports zoom and rotate card functions, accessible via UI controls
+- Opening the panel sets `data-inspector="true"` on the card container; closing removes the attribute
+- Inspector controls are keyboard-accessible and screen-reader-friendly
+- Inspector panel never overlaps gameplay UI or interferes with card interactions
+- Toggle state persists between sessions and updates UI without reload
+- Error cases (invalid JSON, null card) show fallback message "Invalid card data"
+- All inspector functions (expand/collapse, zoom, rotate) are covered by unit and Playwright tests
 
 ---
 

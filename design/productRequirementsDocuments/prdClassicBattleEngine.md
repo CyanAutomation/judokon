@@ -100,6 +100,16 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
    - Roll back the match to the last completed round when the player navigates away.
    - Roll back the match and display an error message when an unexpected error occurs.
 
+6. **Random Seed Reproducibility**
+   - **Given** a match is started with a specific seed value
+   - **When** the engine runs the match
+   - **Then** all random draws and stat selections are reproducible for that seed, verified by automated tests.
+
+7. **Performance**
+   - **Given** a match with 15 rounds
+   - **When** the engine processes state transitions and scoring
+   - **Then** all transitions and updates complete within 50ms per state on reference hardware (Node 18+, Chrome 120+).
+
 ---
 
 ## Edge Cases / Failure States
@@ -131,10 +141,11 @@ When a player quits in the middle of a match, the engine follows a defined seque
 
 ## Match Flow
 
-The Classic Battle match follows a fixed sequence of states and transitions, as illustrated in the diagram below.  
-Each state describes what the game is doing, what events trigger a change, and where it transitions next.  
+The Classic Battle Engine PRD focuses on technical implementation details for state management, timer logic, and deterministic randomization. Gameplay rules and user-facing logic are described in the Classic Battle PRD; this document covers how the engine orchestrates those rules programmatically.
 
-- A numbered progress bar beneath the battle area shows the current state ID in ascending order, giving players a clear, accessible sense of match progression.
+- State transitions, timer management, and scoring are implemented as pure functions and exposed via orchestrator hooks for UI and test automation.
+- Random card draws use a seedable PRNG to ensure reproducibility for test and debug scenarios. The engine exposes a method to set and retrieve the current seed.
+- The progress bar and UI hooks are updated via engine events, not direct UI logic.
 
 ---
 
