@@ -119,6 +119,10 @@ export class BattleEngine {
     this.timer = new TimerController();
     this.matchEnded = false;
     this.roundsPlayed = 0;
+    this.roundInterrupted = false;
+    this.lastInterruptReason = "";
+    this.lastError = "";
+    this.lastModification = null;
   }
 
   /**
@@ -292,6 +296,111 @@ export class BattleEngine {
     };
   }
 
+  /**
+   * Interrupt the current round (admin/test/error/quit).
+   *
+   * @pseudocode
+   * 1. Stop the timer and set a round interrupted flag.
+   * 2. Optionally log or store the reason.
+   * 3. Return an interrupt message and current scores.
+   *
+   * @param {string} [reason] - Reason for interruption.
+   * @returns {{message: string, playerScore: number, computerScore: number}}
+   */
+  interruptRound(reason) {
+    this.stopTimer();
+    this.roundInterrupted = true;
+    this.lastInterruptReason = reason || "";
+    return {
+      message: `Round interrupted${reason ? ": " + reason : ""}`,
+      playerScore: this.playerScore,
+      computerScore: this.computerScore
+    };
+  }
+
+  /**
+   * Interrupt the entire match (admin/test/error/quit).
+   *
+   * @pseudocode
+   * 1. Stop the timer and set matchEnded to true.
+   * 2. Optionally log or store the reason.
+   * 3. Return an interrupt message and current scores.
+   *
+   * @param {string} [reason] - Reason for interruption.
+   * @returns {{message: string, playerScore: number, computerScore: number}}
+   */
+  interruptMatch(reason) {
+    this.stopTimer();
+    this.matchEnded = true;
+    this.lastInterruptReason = reason || "";
+    return {
+      message: `Match interrupted${reason ? ": " + reason : ""}`,
+      playerScore: this.playerScore,
+      computerScore: this.computerScore
+    };
+  }
+
+  /**
+   * Admin/test branch for modifying round state.
+   *
+   * @pseudocode
+   * 1. Accept a modification object and apply changes to round state.
+   * 2. Optionally log the modification.
+   * 3. Return a modification message and current scores.
+   *
+   * @param {object} modification - Object describing the round modification.
+   * @returns {{message: string, playerScore: number, computerScore: number}}
+   */
+  roundModification(modification) {
+    // Example: allow score override, round reset, etc.
+    if (modification?.playerScore !== undefined) this.playerScore = modification.playerScore;
+    if (modification?.computerScore !== undefined) this.computerScore = modification.computerScore;
+    if (modification?.roundsPlayed !== undefined) this.roundsPlayed = modification.roundsPlayed;
+    if (modification?.resetRound) {
+      this.stopTimer();
+      this.roundInterrupted = false;
+    }
+    this.lastModification = modification;
+    return {
+      message: `Round modified${modification ? ": " + JSON.stringify(modification) : ""}`,
+      playerScore: this.playerScore,
+      computerScore: this.computerScore
+    };
+  }
+
+  /**
+   * Error recovery branch for match or round errors.
+   *
+   * @pseudocode
+   * 1. Stop timer, set error flag, and log error.
+   * 2. Return error message and scores.
+   *
+   * @param {string} errorMsg - Error message.
+   * @returns {{message: string, playerScore: number, computerScore: number}}
+   */
+  handleError(errorMsg) {
+    this.stopTimer();
+    this.lastError = errorMsg;
+    return {
+      message: `Error: ${errorMsg}`,
+      playerScore: this.playerScore,
+      computerScore: this.computerScore
+    };
+  }
+
+  /**
+   * Reset round interruption and error flags (for admin/test recovery).
+   *
+   * @pseudocode
+   * 1. Clear interruption and error flags.
+   * 2. Optionally reset timer.
+   */
+  resetInterrupts() {
+    this.roundInterrupted = false;
+    this.lastInterruptReason = "";
+    this.lastError = "";
+  }
+
   getScores() {
     return { playerScore: this.playerScore, computerScore: this.computerScore };
   }
@@ -339,6 +448,10 @@ export class BattleEngine {
     this.computerScore = 0;
     this.matchEnded = false;
     this.roundsPlayed = 0;
+    this.roundInterrupted = false;
+    this.lastInterruptReason = "";
+    this.lastError = "";
+    this.lastModification = null;
     this.timer = new TimerController();
   }
 }
