@@ -110,7 +110,7 @@ export function createCountdownTimer(
         console.error("Error in countdown timer tick:", err);
       }
     });
-    if (typeof subId !== "number") {
+    if (subId === undefined || subId === null) {
       const intervalId = setInterval(async () => {
         try {
           await tick();
