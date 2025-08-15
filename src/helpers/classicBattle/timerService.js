@@ -160,7 +160,8 @@ export function handleStatSelectionTimeout(store, onSelect) {
  *    and display `"Next round in: <n>s"` using one snackbar that updates each tick.
  * 4. Register a skip handler that stops the timer and invokes the expiration logic.
  * 5. When expired, clear the `#next-round-timer` element, set `data-next-ready="true"`,
- *    enable the Next Round button, and clear the handler.
+ *    enable the Next Round button, dispatch `"ready"` to auto-advance the state machine,
+ *    and clear the handler.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
  */
@@ -203,7 +204,7 @@ export function scheduleNextRound(result) {
     lastRenderedRemaining = remaining;
   };
 
-  const onExpired = () => {
+  const onExpired = async () => {
     setSkipHandler(null);
     infoBar.clearTimer();
     if (timerEl) {
@@ -211,6 +212,7 @@ export function scheduleNextRound(result) {
     }
     btn.dataset.nextReady = "true";
     btn.disabled = false;
+    await dispatchBattleEvent("ready");
     updateDebugPanel();
   };
 

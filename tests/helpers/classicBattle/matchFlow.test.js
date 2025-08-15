@@ -193,19 +193,63 @@ describe("classicBattle match flow", () => {
     );
   });
 
-  it("scheduleNextRound runs cooldown and marks Next ready after expiry", async () => {
-    document.body.innerHTML += '<button id="next-button" disabled></button>';
+  it("scheduleNextRound auto-dispatches ready after cooldown", async () => {
+    const nextBtn = document.createElement("button");
+    nextBtn.id = "next-button";
+    nextBtn.disabled = true;
+    document.body.appendChild(nextBtn);
+
+    // Provide required state data for orchestrator
+    fetchJsonMock.mockImplementation(async (url) => {
+      if (String(url).includes("gameTimers.json")) {
+        return [{ id: 1, value: 30, default: true, category: "roundTimer" }];
+      }
+      if (String(url).includes("classicBattleStates.json")) {
+        return [
+          {
+            name: "roundOver",
+            type: "initial",
+            triggers: [{ on: "continue", target: "cooldown" }]
+          },
+          { name: "cooldown", triggers: [{ on: "ready", target: "roundStart" }] },
+          {
+            name: "roundStart",
+            triggers: [{ on: "cardsRevealed", target: "waitingForPlayerAction" }]
+          },
+          { name: "waitingForPlayerAction", triggers: [] }
+        ];
+      }
+      if (String(url).includes("judoka.json")) return [{ id: 1 }, { id: 2 }];
+      if (String(url).includes("gokyo.json")) return [];
+      return [];
+    });
+
+    const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    const dispatchSpy = vi.spyOn(orchestrator, "dispatchBattleEvent");
     const battleMod = await import("../../../src/helpers/classicBattle.js");
+    const store = battleMod.createBattleStore();
+    battleMod._resetForTest(store);
+    const startRoundWrapper = vi.fn(async () => {
+      await battleMod.startRound(store);
+    });
+    await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
+    const machine = orchestrator.getBattleStateMachine();
+
+    // Start first round to wire Next button
+    await battleMod.startRound(store);
+
+    machine.current = "roundOver";
+    await orchestrator.dispatchBattleEvent("continue");
+    expect(machine.getState()).toBe("cooldown");
+
     battleMod.scheduleNextRound({ matchEnded: false });
-    const btn = document.getElementById("next-button");
-    // Next acts as skip control during cooldown: enabled but not ready
-    expect(btn.disabled).toBe(false);
-    expect(btn.dataset.nextReady).toBeUndefined();
-    // After configured cooldown (3s), it becomes ready
+
     timerSpy.advanceTimersByTime(3000);
-    await Promise.resolve();
-    expect(btn.disabled).toBe(false);
-    expect(btn.dataset.nextReady).toBe("true");
+    await vi.runAllTimersAsync();
+
+    expect(dispatchSpy).toHaveBeenCalledWith("ready");
+    expect(startRoundWrapper).toHaveBeenCalledTimes(1);
+    expect(machine.getState()).toBe("waitingForPlayerAction");
   });
 
   it("shows selection prompt until a stat is chosen", async () => {
