@@ -11,6 +11,14 @@ describe("timerService", () => {
     vi.useRealTimers();
   });
 
+  it("invokes skip handler registered after a pending skip", async () => {
+    const mod = await import("../../src/helpers/classicBattle/skipHandler.js");
+    const handler = vi.fn();
+    mod.skipCurrentPhase();
+    mod.setSkipHandler(handler);
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
   it("enables next round when skipped before cooldown starts", async () => {
     const btn = document.createElement("button");
     btn.id = "next-button";
