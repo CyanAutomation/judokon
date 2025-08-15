@@ -3,6 +3,7 @@ import { createButton } from "../../components/Button.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import { showResult } from "../battle/index.js";
 import { navigateToHome } from "../navUtils.js";
+import { dispatchBattleEvent } from "./orchestrator.js";
 
 function createQuitConfirmation(store, onConfirm) {
   const title = document.createElement("h2");
@@ -31,13 +32,9 @@ function createQuitConfirmation(store, onConfirm) {
   quit.addEventListener("click", () => {
     onConfirm();
     modal.close();
-    try {
-      // Drive state machine to interruption path
-      import("./orchestrator.js").then(({ dispatchBattleEvent }) => {
-        dispatchBattleEvent("interrupt");
-        dispatchBattleEvent("finalize");
-      });
-    } catch {}
+    // Drive state machine to interruption path
+    dispatchBattleEvent("interrupt");
+    dispatchBattleEvent("finalize");
     // Navigate to home (robust to varying base paths like GH Pages)
     navigateToHome();
   });
