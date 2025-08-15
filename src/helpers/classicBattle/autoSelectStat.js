@@ -5,7 +5,7 @@ import { dispatchBattleEvent } from "./orchestrator.js";
 // the outcome message to occupy that region immediately after selection.
 // Intentionally avoid showing a snackbar here to prevent racing with
 // the cooldown countdown snackbar. The auto-select announcement is
-// surfaced via the Info Bar message area instead.
+// surfaced via the Scoreboard message area instead.
 
 const AUTO_SELECT_FEEDBACK_MS = 500;
 
