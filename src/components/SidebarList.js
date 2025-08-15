@@ -3,20 +3,21 @@
  *
  * @pseudocode
  * 1. Build a `<ul>` element with class `sidebar-list`.
- * 2. For each item create an `<li>` with text and optional dataset or
+ * 2. If no items are provided, return early with an empty list.
+ * 3. For each item create an `<li>` with text and optional dataset or
  *    className values. Make it tabbable and update the current index
  *    on focus.
- * 3. Attach click and keyboard handlers so Enter/Space trigger
+ * 4. Attach click and keyboard handlers so Enter/Space trigger
  *    `select(index)`.
- * 4. On the list element handle Arrow Up/Down to move the selection
+ * 5. On the list element handle Arrow Up/Down to move the selection
  *    relative to the current item using `select(next, {fromListNav})`.
- * 5. Add `odd`/`even` classes for zebra striping starting with `odd`
+ * 6. Add `odd`/`even` classes for zebra striping starting with `odd`
  *    for the first item and toggle the `selected` class inside
  *    `select()`.
- * 6. Inside `select()` update the highlight, trigger a brief pulse
+ * 7. Inside `select()` update the highlight, trigger a brief pulse
  *    animation on the newly selected element (unless the user prefers
  *    reduced motion), focus it, and call `onSelect` with any options.
- * 7. Store the list element on `this.element` and expose `select()`
+ * 8. Store the list element on `this.element` and expose `select()`
  *    as a public method.
  */
 export class SidebarList {
@@ -24,10 +25,14 @@ export class SidebarList {
    * @param {Array<string|object>} items - Labels or config objects.
    * @param {Function} [onSelect=() => {}] - Callback invoked with the new index.
    */
-  constructor(items, onSelect = () => {}) {
+  constructor(items = [], onSelect = () => {}) {
     this.onSelect = onSelect;
     this.element = document.createElement("ul");
     this.element.className = "sidebar-list";
+    this.elements = [];
+    this.current = -1;
+
+    if (!items.length) return;
 
     this.elements = items.map((item, i) => {
       const li = document.createElement("li");
@@ -58,8 +63,6 @@ export class SidebarList {
       return li;
     });
 
-    this.current = -1;
-
     this.element.addEventListener("keydown", (e) => {
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
@@ -79,6 +82,8 @@ export class SidebarList {
    * @returns {void}
    */
   select(index, opts = {}) {
+    if (!this.elements.length) return;
+
     this.current = ((index % this.elements.length) + this.elements.length) % this.elements.length;
     this.elements.forEach((el, idx) => {
       const isCurrent = idx === this.current;
