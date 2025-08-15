@@ -459,6 +459,63 @@ export class BattleEngine {
     return { timer, transitions };
   }
 
+  /**
+   * Handle tab inactivity by pausing the timer and marking state.
+   *
+   * @pseudocode
+   * 1. Pause the timer if active.
+   * 2. Set a flag to indicate tab is inactive.
+   */
+  handleTabInactive() {
+    this.pauseTimer();
+    this.tabInactive = true;
+  }
+
+  /**
+   * Handle tab re-activation by resuming the timer if paused.
+   *
+   * @pseudocode
+   * 1. Resume the timer if previously paused due to inactivity.
+   * 2. Clear the tab inactive flag.
+   */
+  handleTabActive() {
+    if (this.tabInactive) {
+      this.resumeTimer();
+      this.tabInactive = false;
+    }
+  }
+
+  /**
+   * Respond to timer drift by resetting the timer and logging the event.
+   *
+   * @pseudocode
+   * 1. Stop the timer and optionally restart it.
+   * 2. Log the drift amount for diagnostics.
+   * 3. Optionally notify UI or test harness.
+   *
+   * @param {number} driftAmount - Amount of drift detected in seconds.
+   */
+  handleTimerDrift(driftAmount) {
+    this.stopTimer();
+    this.lastTimerDrift = driftAmount;
+    // Optionally restart timer or notify UI
+  }
+
+  /**
+   * Inject an error for testing error handling scenarios.
+   *
+   * @pseudocode
+   * 1. Set error flag and log the error message.
+   * 2. Optionally trigger error recovery logic.
+   *
+   * @param {string} errorMsg - Error message to inject.
+   */
+  injectError(errorMsg) {
+    this.lastError = errorMsg;
+    // Optionally trigger error recovery
+    this.handleError(errorMsg);
+  }
+
   _resetForTest() {
     stopScheduler();
     this.pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN;

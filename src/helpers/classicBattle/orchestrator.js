@@ -159,6 +159,39 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
   };
 
   machine = await BattleStateMachine.create(onEnter, { store }, onTransition);
+
+  // Tab inactivity: pause/resume timer on visibility change
+  if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", () => {
+      if (machine?.context?.engine) {
+        if (document.hidden) {
+          machine.context.engine.handleTabInactive();
+        } else {
+          machine.context.engine.handleTabActive();
+        }
+      }
+    });
+  }
+
+  // Timer drift: listen for drift events and handle them
+  if (machine?.context?.engine) {
+    machine.context.engine.onTimerDrift = (driftAmount) => {
+      scoreboard.showMessage(`Timer drift detected: ${driftAmount}s. Timer reset.`);
+      updateDebugPanel();
+      machine.context.engine.handleTimerDrift(driftAmount);
+    };
+  }
+
+  // Error injection for testing
+  if (typeof window !== "undefined" && machine?.context?.engine) {
+    window.injectClassicBattleError = (errorMsg) => {
+      machine.context.engine.injectError(errorMsg);
+      scoreboard.showMessage(`Injected error: ${errorMsg}`);
+      updateDebugPanel();
+      machine.dispatch("interruptMatch", { reason: errorMsg });
+    };
+  }
+
   // Expose a tiny polling helper for tests to await a specific state
   try {
     if (typeof window !== "undefined") {
