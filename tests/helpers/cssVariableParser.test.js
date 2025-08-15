@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { parseCssVariables } from "../../src/helpers/cssVariableParser.js";
 
 describe("parseCssVariables", () => {
@@ -124,9 +124,13 @@ describe("parseCssVariables", () => {
   it("should return empty object for invalid CSS", () => {
     const css = "invalid css content {{{";
 
+    const debugSpy = vi.spyOn(console, "debug").mockImplementation(() => {});
+
     const vars = parseCssVariables(css);
 
     expect(vars).toEqual({});
+
+    debugSpy.mockRestore();
   });
 
   it("should return empty object for CSS without :root", () => {
