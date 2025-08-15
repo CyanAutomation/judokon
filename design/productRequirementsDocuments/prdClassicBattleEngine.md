@@ -8,7 +8,9 @@
 
 ## TL;DR
 
-The Classic Battle Engine defines the core mechanics, state transitions, and round logic for JU-DO-KON!'s Classic Battle mode. It manages match setup, round progression, stat selection, scoring, timers, and end conditions, ensuring a smooth, accessible, and testable game flow. This PRD details the state machine, round logic, and technical requirements for the engine and orchestrator modules.
+The Classic Battle Engine defines the core mechanics, state transitions, and round logic for JU-DO-KON!'s Classic Battle mode.  
+It manages match setup, round progression, stat selection, scoring, timers, and end conditions, ensuring a smooth, accessible, and testable game flow.  
+This PRD details the state machine, round logic, and technical requirements for the engine and orchestrator modules.
 
 ---
 
@@ -37,8 +39,8 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 
 ## Defaults (Developer Configurable)
 
-- **Stat Selection Timer:** 30 seconds  
-- **Win Target:** First to 5 round wins (or highest score when deck is exhausted)  
+- **Stat Selection Timer:** 30 seconds, or another value
+- **Win Target:** User-selected at match start (5, 10, or 15 round wins)  
 
 ---
 
@@ -58,8 +60,8 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 | **P1**   | State Machine                | Implements all match states and transitions as defined in `classicBattleStates.json`. Exposes current state to UI and tests.       |
 | **P1**   | Round Logic                  | Handles round start, stat selection, comparison, scoring, and round end.                                                          |
 | **P1**   | Stat Selection Timer         | 30s timer for stat selection, with pause/resume and auto-select fallback (if `FF_AUTO_SELECT` enabled).                           |
-| **P1**   | Scoring                      | Updates player and opponent scores after each round, including tie handling.                                                      |
-| **P1**   | Match End Condition          | Ends match when win target or max rounds reached; exposes final result and score.                                                 |
+| **P1**   | Scoring                      | Updates player and opponent scores after each round.                                                                               |
+| **P1**   | Match End Condition          | Ends match when user-selected win target is reached; exposes final result and score.                                               |
 | **P2**   | Interrupt Handling           | Supports early quit, navigation, or error interrupts; rolls back or ends match as appropriate.                                    |
 | **P2**   | Accessibility Hooks          | Ensures all state and timer feedback meets WCAG AA guidelines.                                                                    |
 | **P3**   | Debug/Test Hooks             | Exposes state, transitions, and logs for automated tests and debugging.                                                           |
@@ -125,22 +127,22 @@ Each state describes what the game is doing, what events trigger a change, and w
 ---
 
 ### 1. `waitingForMatchStart`
-The game is idle before a match begins. The UI displays a “Start Match” button.
+The game is idle before a match begins. The UI displays a “Start Match” button and allows the user to select the win target (5, 10, or 15 wins).
 
 - **Triggers:**  
   - `startClicked` → **`matchStart`**  
   - `navigateHome` or `interrupt` → **`waitingForMatchStart`** (no match context yet, stays in lobby)  
-- **Notes:** No cards are in play yet.
+- **Notes:** No round data is active yet.
 
 ---
 
 ### 2. `matchStart`
-The match setup phase — decks are shuffled, RNG is seeded, starting player is set.
+The match setup phase — win target is stored, scores reset, and the user is set as the first player.
 
 - **Triggers:**  
   - `ready` → **`cooldown`**  
   - `interrupt / error` → **`interruptMatch`**  
-- **Notes:** Pre-match animations and loading occur here.
+- **Notes:** No shuffling occurs; random draw will happen at each round start.
 
 ---
 
@@ -155,12 +157,12 @@ A short pacing pause between match start or rounds.
 ---
 
 ### 4. `roundStart`
-A new round begins — cards are drawn and prepared face-down.
+A new round begins — both the user and opponent are assigned random judoka via the random draw function.
 
 - **Triggers:**  
   - `cardsRevealed` → **`waitingForPlayerAction`**  
   - `interrupt` → **`interruptRound`**  
-- **Notes:** Reveal happens only after the `cardsRevealed` event.
+- **Notes:** Cards are revealed immediately after draw for the current round.
 
 ---
 
@@ -172,7 +174,7 @@ The game waits for a stat selection.
   - `timeout` (if `FF_AUTO_SELECT` enabled) → **`roundDecision`**  
   - `timeout` (if `FF_AUTO_SELECT` disabled) → **`interruptRound`**  
   - `interrupt` → **`interruptRound`**  
-- **Notes:** Scoreboard shows timer and prompt; highlights selectable stats.
+- **Notes:** The user always chooses first; AI only selects if it is the AI’s turn in other modes.
 
 ---
 
@@ -182,15 +184,15 @@ Compares selected stat values and determines the round winner.
 - **Triggers:**  
   - `outcome=winP1 / outcome=winP2 / outcome=draw` → **`roundOver`**  
   - `interrupt` → **`interruptRound`**  
-- **Notes:** Scoreboard shows result and reveals stats.
+- **Notes:** Scoreboard shows result and reveals chosen stats.
 
 ---
 
 ### 7. `roundOver`
-Updates scores, executes card transfers, and sets next starting player.
+Updates scores.
 
 - **Triggers:**  
-  - `matchPointReached` (guard: winnerHasPointsToWin OR noCardsLeft) → **`matchDecision`**  
+  - `matchPointReached` (guard: `scoreP1 >= winTarget` OR `scoreP2 >= winTarget`) → **`matchDecision`**  
   - `continue` → **`cooldown`**  
   - `interrupt` → **`interruptRound`**
 
@@ -209,7 +211,7 @@ Determines the overall match winner.
 Match complete; final scoreboard displayed.
 
 - **Triggers:**  
-  - `rematch` → **`waitingForMatchStart`** (lobby path chosen)  
+  - `rematch` → **`waitingForMatchStart`**  
   - `home` → **`waitingForMatchStart`**
 
 ---
@@ -247,21 +249,21 @@ Match interrupted from setup or critical error.
 
 | State | Trigger | Guard (if any) | Next State | Notes |
 |---|---|---|---|---|
-| **waitingForMatchStart** | startClicked | – | matchStart | Begin match init. |
+| **waitingForMatchStart** | startClicked | – | matchStart | User selects win target, match begins. |
 | waitingForMatchStart | navigateHome / interrupt | – | waitingForMatchStart | No match to abort; remain in lobby. |
 | **matchStart** | ready | – | cooldown | Init complete, enter pacing pause. |
 | matchStart | interrupt / error | – | interruptMatch | Critical abort path. |
 | **cooldown** | ready | – | roundStart | Enter new round. |
 | cooldown | interrupt | – | interruptRound | Round-level abort rail. |
-| **roundStart** | cardsRevealed | – | waitingForPlayerAction | Reveal active cards. |
+| **roundStart** | cardsRevealed | – | waitingForPlayerAction | Random draw and reveal of judoka. |
 | roundStart | interrupt | – | interruptRound | Round-level abort rail. |
-| **waitingForPlayerAction** | statSelected | – | roundDecision | Choice made. |
+| **waitingForPlayerAction** | statSelected | – | roundDecision | User made a choice. |
 | waitingForPlayerAction | timeout | autoSelectEnabled | roundDecision | Auto-pick stat. |
 | waitingForPlayerAction | timeout | !autoSelectEnabled | interruptRound | No auto-pick; treat as interrupt or grace. |
 | waitingForPlayerAction | interrupt | – | interruptRound | Round-level abort rail. |
 | **roundDecision** | outcome=winP1 / winP2 / draw | – | roundOver | Deterministic outcome. |
 | roundDecision | interrupt | – | interruptRound | Round-level abort rail. |
-| **roundOver** | matchPointReached | winnerHasPointsToWin OR noCardsLeft | matchDecision | Win target met or decks empty. |
+| **roundOver** | matchPointReached | scoreP1 >= winTarget OR scoreP2 >= winTarget | matchDecision | Win target met. |
 | roundOver | continue | – | cooldown | Next round pacing. |
 | roundOver | interrupt | – | interruptRound | Round-level abort rail. |
 | **matchDecision** | finalize | – | matchOver | Declare winner. |
@@ -279,11 +281,11 @@ Match interrupted from setup or critical error.
 
 ---
 
-## Mermaid Diagram of Game States
+## Mermaid Diagram
 
 ```mermaid
 flowchart TD
-  A([waitingForMatchStart]) -->|startClicked| B[matchStart]
+  A([waitingForMatchStart]) -->|startClicked (select win target)| B[matchStart]
   A -->|navigateHome / interrupt| A
 
   subgraph InMatch
@@ -326,9 +328,6 @@ flowchart TD
 
   I -->|rematch| A
   I -->|home| A
-
-  %% Optional: color the interrupt rails
-  linkStyle 10,11,12 stroke:#a33,stroke-width:2px
 ```
 
 ---
