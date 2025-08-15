@@ -1,4 +1,4 @@
-# Battle Info Bar PRD
+# Battle Scoreboard PRD
 
 ## TL;DR
 
@@ -10,7 +10,7 @@ Displays round messages, stat selection timer, and live match score in the page 
 
 In battle game modes (e.g. Classic Battle), players have a real need to receive clear visual feedback between or after rounds. Without this info, it will leave users uncertain about match state, leading to confusion, reduced immersion, and increased risk of game abandonment. Players could feel "lost" due to a lack of timely updates about round outcomes, next steps, or overall progress.
 
-The round message, timer, and score now sit directly inside the page header rather than in a separate bar. The Info Bar also displays the stat selection timer (30 seconds by default), and triggers auto-selection if the timer expires, as specified in [Classic Battle PRD](prdClassicBattle.md) and [Random Stat Mode PRD](prdRandomStatMode.md). The timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see [Classic Battle PRD](prdClassicBattle.md)).
+The round message, timer, and score now sit directly inside the page header rather than in a separate bar. The Scoreboard also displays the stat selection timer (30 seconds by default), and triggers auto-selection if the timer expires, as specified in [Classic Battle PRD](prdClassicBattle.md) and [Random Stat Mode PRD](prdRandomStatMode.md). The timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see [Classic Battle PRD](prdClassicBattle.md)).
 
 ---
 
@@ -52,7 +52,7 @@ The round message, timer, and score now sit directly inside the page header rath
 - Action prompt appears via snackbar during user input phases and disappears after interaction. <!-- Implemented: see showMessage and stat selection logic -->
 - **Stat selection timer (30s) is displayed during stat selection phase; if timer expires, a random stat is auto-selected. Timer stops immediately once a stat is picked and pauses/resumes on tab inactivity.** <!-- Implemented: see startRound in battleEngine.js and [Classic Battle PRD](prdClassicBattle.md) -->
 - Auto-select messages are only shown if no stat was chosen before the timer runs out.
-- After the player selects a stat, the Info Bar shows "Opponent is choosing..." until the opponent's stat is revealed.
+- After the player selects a stat, the Scoreboard shows "Opponent is choosing..." until the opponent's stat is revealed.
 - Top bar content adapts responsively to different screen sizes and orientations. <!-- Partially implemented: stacking/truncation CSS present, but some edge cases pending -->
 - All messages meet minimum contrast ratio of **4.5:1** and are screen reader compatible. Run `npm run check:contrast` to audit these colors. <!-- Implemented: screen reader labels via `aria-live` and `role="status"`; contrast via CSS variables -->
 - **All interactive elements, including stat, Next, and Quit buttons, meet minimum touch target size (≥44px) and support keyboard navigation with Enter or Space. The Next button doubles as the timer skip and round progression control.** <!-- Implemented: see CSS min-width/min-height and stat button logic -->
@@ -120,7 +120,7 @@ The round message, timer, and score now sit directly inside the page header rath
   - [ ] 3.2 Truncate or stack content if resolution causes display issues (edge cases, pending)
   - [x] 3.3 Adaptive font sizing for all states (partially via clamp(), may need review) <!-- Implemented: font-size clamp() in battle.css -->
   - [x] 3.4 Handle orientation changes and reflow layout accordingly <!-- Implemented: orientation watcher in classicBattlePage.js -->
-  - [x] 3.5 Validate Info Bar on ultra-narrow screens (<320px) <!-- Implemented: narrow viewport test in playwright/battleJudoka.spec.js -->
+  - [x] 3.5 Validate Scoreboard on ultra-narrow screens (<320px) <!-- Implemented: narrow viewport test in playwright/battleJudoka.spec.js -->
 
 - [ ] 4.0 Implement Accessibility Features
 
@@ -129,7 +129,7 @@ The round message, timer, and score now sit directly inside the page header rath
   - [x] 4.3 Ensure all interactive elements have minimum 44px touch targets (CSS min-width/min-height present)
   - [x] 4.4 Ensure all interactive elements support keyboard navigation; tests cover stat, Next, and Quit controls
   - [x] 4.5 Announce score and timer updates via `aria-live` for screen readers (see [Classic Battle PRD](prdClassicBattle.md)) <!-- Implemented: aria-live regions in battleJudoka.html -->
-  - [x] 4.6 Provide high-contrast theme for Info Bar elements <!-- Implemented: `[data-theme="high-contrast"]` in base.css -->
+  - [x] 4.6 Provide high-contrast theme for Scoreboard elements <!-- Implemented: `[data-theme="high-contrast"]` in base.css -->
 
 - [ ] 5.0 Edge Case Handling and Fallbacks
 
@@ -141,7 +141,7 @@ The round message, timer, and score now sit directly inside the page header rath
 - [ ] 6.0 Testing and Validation
 
 - [ ] 6.1 Add/expand unit tests for timer pause/resume, auto-select, and fallback logic
-- [ ] 6.2 Add/expand Playwright UI tests for info bar responsiveness, accessibility, and edge cases
+- [ ] 6.2 Add/expand Playwright UI tests for scoreboard responsiveness, accessibility, and edge cases
 
 ---
 
