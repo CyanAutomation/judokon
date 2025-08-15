@@ -441,6 +441,24 @@ export class BattleEngine {
     return watch(duration, onDrift);
   }
 
+  /**
+   * Get a snapshot of the timer state and recent transitions for test harnesses.
+   *
+   * @pseudocode
+   * 1. Return timer state (remaining, paused, etc.) and transition log if available.
+   * 2. Used by Playwright and unit tests for diagnostics.
+   *
+   * @returns {{timer: object, transitions?: Array<object>}}
+   */
+  getTimerStateSnapshot() {
+    const timer = this.getTimerState();
+    let transitions = [];
+    if (typeof window !== "undefined" && Array.isArray(window.__classicBattleStateLog)) {
+      transitions = window.__classicBattleStateLog.slice();
+    }
+    return { timer, transitions };
+  }
+
   _resetForTest() {
     stopScheduler();
     this.pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN;

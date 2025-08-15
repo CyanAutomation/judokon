@@ -137,6 +137,22 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
           const badge = document.getElementById("battle-state-badge");
           if (badge) badge.textContent = `State: ${to}`;
         } catch {}
+        // Expose timer state for Playwright and unit tests
+        if (typeof window !== "undefined" && machine?.context?.engine) {
+          const timerState = machine.context.engine.getTimerState();
+          window.__classicBattleTimerState = timerState;
+          // Update or create a lightweight DOM mirror for timer state
+          let timerEl = document.getElementById("machine-timer");
+          if (!timerEl) {
+            timerEl = document.createElement("div");
+            timerEl.id = "machine-timer";
+            timerEl.style.display = "none";
+            document.body.appendChild(timerEl);
+          }
+          timerEl.textContent = JSON.stringify(timerState);
+          timerEl.dataset.remaining = timerState.remaining;
+          timerEl.dataset.paused = timerState.paused;
+        }
       }
     } catch {}
     updateDebugPanel();
