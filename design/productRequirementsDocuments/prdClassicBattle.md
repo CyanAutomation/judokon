@@ -125,6 +125,8 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Stat buttons reset between rounds so no previous selection remains highlighted. The `battle.css` rule `#stat-buttons button { -webkit-tap-highlight-color: transparent; }` combined with a reflow ensures Safari clears the red touch overlay.
 - If the Judoka dataset fails to load, an error message appears with option to reload.
 - **All Scoreboard content (messages, timer, score) must meet accessibility and responsiveness requirements as described in prdBattleScoreboard.md.**
+- Roll back the match to the last completed round when the player navigates away mid-match.
+- Roll back the match to the last completed round and display an error message when an unexpected error occurs.
 
 ---
 
@@ -133,6 +135,8 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - **Judoka or Gokyo dataset fails to load:** error message surfaces in the Scoreboard and an error dialog offers a "Retry" button to reload data or the page.
 - **Player does not make a stat selection within 30 seconds:** system randomly selects a stat automatically. **Scoreboard updates the timer, and the snackbar prompt informs the player.**
 - **AI fails to select a stat (if difficulty logic implemented):** fallback to random stat selection.
+- **Player navigates away mid-match:** roll back to the last completed round when the player returns.
+- **Unexpected error occurs:** roll back to the last completed round and surface an error message.
 
 ---
 
