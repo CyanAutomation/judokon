@@ -2,6 +2,15 @@ import { test, expect } from "./fixtures/commonSetup.js";
 // selectors use header as the container for battle info
 
 test.describe.parallel("Classic battle flow", () => {
+  test("shows countdown before first round", async ({ page }) => {
+    await page.goto("/src/pages/battleJudoka.html");
+    const snackbar = page.locator(".snackbar");
+    await expect(snackbar).toHaveText(/Next round in: \d+s/);
+    await page.evaluate(() => window.freezeBattleHeader?.());
+    const playerCard = page.locator("#player-card");
+    await expect(playerCard).toBeEmpty();
+  });
+
   test("timer auto-selects when expired", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
     const countdown = page.locator("header #next-round-timer");

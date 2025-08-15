@@ -139,20 +139,22 @@ The game is idle before a match begins. The UI displays a “Start Match” butt
 ### 2. `matchStart`
 The match setup phase — win target is stored, scores reset, and the user is set as the first player.
 
-- **Triggers:**  
-  - `ready` → **`cooldown`**  
-  - `interrupt / error` → **`interruptMatch`**  
-- **Notes:** No shuffling occurs; random draw will happen at each round start.
+- **Triggers:**
+  - `ready` → **`cooldown`**
+  - `interrupt / error` → **`interruptMatch`**
+- **Notes:** No shuffling occurs; random draw will happen at each round start. After setup the engine enters a brief
+  cooldown that runs a `matchStartTimer` (default 3s) before the first round begins.
 
 ---
 
 ### 3. `cooldown`
 A short pacing pause between match start or rounds.
 
-- **Triggers:**  
-  - `ready` → **`roundStart`**  
-  - `interrupt` → **`interruptRound`**  
-- **Notes:** Scoreboard and snackbar show countdown to round.
+- **Triggers:**
+  - `ready` → **`roundStart`**
+  - `interrupt` → **`interruptRound`**
+- **Notes:** Scoreboard and snackbar show countdown to round. The initial entry uses the `matchStartTimer` to pace the
+  start of the match before any cards are revealed.
 
 ---
 

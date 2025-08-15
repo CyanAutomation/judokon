@@ -2,6 +2,7 @@ import { BattleStateMachine } from "./stateMachine.js";
 import { initRoundSelectModal } from "./roundSelectModal.js";
 import { resetGame, startRound } from "./roundManager.js";
 import * as scoreboard from "../setupScoreboard.js";
+import { getDefaultTimer } from "../timerUtils.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 
 let machine = null;
@@ -20,15 +21,24 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
       await initRoundSelectModal(() => m.dispatch("startClicked"));
     },
     async matchStart(m) {
-      // Context already initialized via modal; proceed to first round immediately
-      // Skip the initial cooldown and go straight to the first round
-      // by dispatching "ready" twice: matchStart -> cooldown -> roundStart.
-      await m.dispatch("ready");
-      await m.dispatch("ready");
+      // Context already initialized via modal; transition to initial cooldown
+      // and let the cooldown handler trigger the first round.
+      await m.dispatch("ready", { initial: true });
     },
-    async cooldown() {
-      // Cooldown between rounds is driven by scheduleNextRound and next-button UX.
-      // No-op here; transition to roundStart occurs from the Next button handler.
+    async cooldown(m, payload) {
+      // The initial cooldown shows a short countdown before the first round.
+      // Subsequent cooldowns are handled by scheduleNextRound and the Next button.
+      if (payload?.initial) {
+        let duration = 3;
+        try {
+          const val = await getDefaultTimer("matchStartTimer");
+          if (typeof val === "number") duration = val;
+        } catch {}
+        scoreboard.startCountdown(duration, () => {
+          m.dispatch("ready");
+        });
+      }
+      // Cooldown between later rounds is driven by scheduleNextRound and next-button UX.
     },
     async roundStart(m) {
       // Render player card, opponent remains hidden; start selection timer
