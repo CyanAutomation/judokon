@@ -9,6 +9,14 @@ import { getExtractor, SIMILARITY_THRESHOLD, preloadExtractor } from "./api/vect
 
 let spinner;
 
+function setSpinnerDisplay(display) {
+  if (spinner) {
+    spinner.style.display = display;
+  } else {
+    console.warn("Search spinner element not found; skipping style update.");
+  }
+}
+
 /**
  * Load surrounding context for a search result element.
  *
@@ -95,7 +103,7 @@ function selectTopMatches(matches) {
  * 1. Prevent the default form submission behavior.
  * 2. Read and trim the query from the input element; clear previous results.
  *    - Exit early if the query is empty.
- * 3. Show the spinner and a searching message.
+ * 3. Show the spinner (when available) and a searching message.
  * 4. Obtain the extractor and generate the query vector using mean pooling,
  *    converting the result to a plain array.
  * 5. Read selected tags from the filter dropdown and
@@ -103,7 +111,7 @@ function selectTopMatches(matches) {
  * 6. Split matches by `SIMILARITY_THRESHOLD` into strong and weak groups.
  *    - When multiple strong matches exist, compare the top two scores and keep
  *      only the first when the difference exceeds the drop-off threshold.
- * 7. Hide the spinner and handle empty or missing embeddings cases.
+ * 7. Hide the spinner (if present) and handle empty or missing embeddings cases.
  * 8. Build a results table, highlighting query terms in each snippet.
  *    - Add a `top-match` class to the first row and color-code the Score cell.
  *    - When no strong matches exist, show a warning and display up to three weak matches.
@@ -133,13 +141,13 @@ export async function handleSearch(event) {
     renderResults(tbody, toRender, terms, loadResultContext);
   } catch (err) {
     console.error("Search failed", err);
-    spinner.style.display = "none";
+    setSpinnerDisplay("none");
     if (messageEl) messageEl.textContent = "An error occurred while searching.";
   }
 }
 
 function showSearching(messageEl) {
-  spinner.style.display = "block";
+  setSpinnerDisplay("block");
   if (messageEl) {
     messageEl.textContent = "Searching...";
     messageEl.classList.remove("search-result-empty");
@@ -151,7 +159,7 @@ function finalizeSearchUi(messageEl) {
     messageEl.textContent = "";
     messageEl.classList.remove("search-result-empty");
   }
-  spinner.style.display = "none";
+  setSpinnerDisplay("none");
 }
 
 function handleNoMatches(matches, messageEl) {
@@ -185,7 +193,7 @@ function handleNoMatches(matches, messageEl) {
 export async function init() {
   preloadExtractor();
   spinner = document.getElementById("search-spinner");
-  if (spinner) spinner.style.display = "none";
+  setSpinnerDisplay("none");
   const form = document.getElementById("vector-search-form");
   const messageEl = document.getElementById("search-results-message");
 
