@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
+import { withMutedConsole } from "../utils/console.js";
 
 const sampleJudoka = [
   {
@@ -68,7 +69,10 @@ vi.mock("fs", () => ({
 
 describe("updateCodes script", () => {
   it("assigns card codes and falls back for invalid entries", async () => {
-    await import("../../updateCodes.mjs");
+    await withMutedConsole(
+      () => import("../../updateCodes.mjs"),
+      ["log", "debug", "error", "warn"]
+    );
     const updated = JSON.parse(writtenData);
 
     expect(updated).toHaveLength(sampleJudoka.length);

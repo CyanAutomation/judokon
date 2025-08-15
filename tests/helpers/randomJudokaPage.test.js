@@ -4,6 +4,7 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 import { parseCssVariables } from "../../src/helpers/cssVariableParser.js";
 import { hex } from "wcag-contrast";
+import { withMutedConsole } from "../utils/console.js";
 
 const baseSettings = {
   motionEffects: true,
@@ -312,7 +313,6 @@ describe("randomJudokaPage module", () => {
       if (opts.id) btn.id = opts.id;
       return btn;
     });
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard: vi.fn() }));
     vi.doMock("../../src/components/Button.js", () => ({ createButton }));
@@ -326,9 +326,11 @@ describe("randomJudokaPage module", () => {
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);
 
-    await import("../../src/helpers/randomJudokaPage.js");
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await vi.runAllTimersAsync();
+    await withMutedConsole(async () => {
+      await import("../../src/helpers/randomJudokaPage.js");
+      document.dispatchEvent(new Event("DOMContentLoaded"));
+      await vi.runAllTimersAsync();
+    });
 
     const button = document.getElementById("draw-card-btn");
     expect(button.disabled).toBe(true);
@@ -336,7 +338,6 @@ describe("randomJudokaPage module", () => {
     const errorEl = document.getElementById("draw-error-message");
     expect(errorEl?.textContent).toMatch(/Unable to load judoka data/);
     fetchSpy.mockRestore();
-    consoleError.mockRestore();
   });
 
   it("storage event toggles card inspector", async () => {
