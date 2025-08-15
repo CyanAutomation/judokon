@@ -74,6 +74,21 @@ describe("classicBattle button handlers", () => {
     expect(btn.dataset.nextReady).toBe("true");
   });
 
+  it("resetGame replaces Next button and reattaches click handler", async () => {
+    const { resetGame } = await import("../../../src/helpers/classicBattle/roundManager.js");
+    const timerSvc = await import("../../../src/helpers/classicBattle/timerService.js");
+    const btn = document.getElementById("next-button");
+    btn.dataset.nextReady = "true";
+    const clickSpy = vi.spyOn(timerSvc, "onNextButtonClick").mockImplementation(() => {});
+    resetGame();
+    const cloned = document.getElementById("next-button");
+    expect(cloned).not.toBe(btn);
+    expect(cloned.disabled).toBe(true);
+    expect(cloned.dataset.nextReady).toBeUndefined();
+    cloned.dispatchEvent(new MouseEvent("click"));
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+  });
+
   it("quit button invokes quitMatch", async () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     window.battleStore = battleMod.createBattleStore();
