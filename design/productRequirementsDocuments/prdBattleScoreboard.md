@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Displays round messages, stat selection timer, and live match score in the page header so players always know the current battle status. The selection prompt and the countdown between rounds are surfaced via a single snackbar that updates its text each second.
+Displays round messages, stat selection timer, and live match score in the page header so players always know the current battle status. The Scoreboard is responsible only for persistent match and round information: overall score, round number, and state changes (e.g., "Player has selected", "Opponent has won."). It does not display contextual or transient feedback; such messages are handled by the Snackbar (see prdSnackbar.md).
 
 ---
 
@@ -12,6 +12,8 @@ In battle game modes (e.g. Classic Battle), players have a real need to receive 
 
 The round message, timer, and score now sit directly inside the page header rather than in a separate bar. The Scoreboard also displays the stat selection timer (30 seconds by default), and triggers auto-selection if the timer expires, as specified in [Classic Battle PRD](prdClassicBattle.md) and [Random Stat Mode PRD](prdRandomStatMode.md). The timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see [Classic Battle PRD](prdClassicBattle.md)).
 
+**Note:** The Scoreboard does not display contextual feedback such as stat selection confirmation, countdowns to next round, or error messages. These are surfaced via the Snackbar component (see prdSnackbar.md).
+
 ---
 
 ## Goals
@@ -19,8 +21,8 @@ The round message, timer, and score now sit directly inside the page header rath
 1. **Display match score (player vs opponent)** on the **right side of the top bar**, updated at the **end of each round**, within **800ms** of score finalization.
 2. **Display round-specific messaging** on the **left side of the top bar**, depending on match state:
    - If a round ends: show **win/loss/result** message briefly.
-   - If awaiting action: show a **selection prompt** via snackbar until a decision is made.
-   - If waiting for next round: show a **snackbar countdown** that begins at round end and updates its text each second.
+   - If awaiting action: show a **selection prompt** via Scoreboard until a decision is made.
+   - If waiting for next round: show a **countdown timer** that begins at round end and updates its text each second.
    - If in stat selection phase: show **a countdown timer** and prompt; if timer expires, auto-select a stat (see [Classic Battle PRD](prdClassicBattle.md)).
    - After the player picks a stat: show **"Opponent is choosing..."** until the opponent's choice is revealed.
 3. Ensure all messages are clearly readable, positioned responsively, and maintain usability across devices.
@@ -49,7 +51,7 @@ The round message, timer, and score now sit directly inside the page header rath
 
 - Match score is updated quicklyafter round ends. <!-- Implemented: see updateScore in Scoreboard.js and battleEngine.js -->
 - Win/loss message is shown at round end and remains briefly visible. <!-- Implemented: see showResult in battleUI.js -->
-- Action prompt appears via snackbar during user input phases and disappears after interaction. <!-- Implemented: see showMessage and stat selection logic -->
+- Action prompt appears via Scoreboard during user input phases and disappears after interaction. <!-- Implemented: see showMessage and stat selection logic -->
 - **Stat selection timer is displayed during stat selection phase; if timer expires, a random stat is auto-selected. Timer stops immediately once a stat is picked and pauses/resumes on tab inactivity.** <!-- Implemented: see startRound in battleEngine.js and [Classic Battle PRD](prdClassicBattle.md) -->
 - Auto-select messages are only shown if no stat was chosen before the timer runs out.
 - After the player selects a stat, the Scoreboard shows "Opponent is choosing..." until the opponent's stat is revealed.
@@ -74,7 +76,7 @@ The round message, timer, and score now sit directly inside the page header rath
 - **Layout**
   - Right side: score display (`Player: X – Opponent: Y`)
   - Two-line score format appears on narrow screens via stacked `<span>` elements (`<span>You: X</span> <span>Opponent: Y</span>`)
-  - Left side: rotating status messages (e.g., "You won!", **"Time left: 29s"**, "Opponent is choosing..."). Selection prompts and the countdown to the next round appear in snackbars whose text update each second.
+  - Left side: rotating status messages (e.g., "You won!", **"Time left: 29s"**, "Opponent is choosing..."). Selection prompts and the countdown to the next round appear in Scoreboard only if they relate to persistent match/round state. Contextual feedback (e.g., stat selection confirmation, countdowns, error messages) is handled by the Snackbar.
   - Center: round counter (`Round 3`) and field showing the player's selected stat (`Selected: Power`).
 - **Visuals**
   - Font size: `clamp(16px, 4vw, 24px)`; on narrow screens (<375px) `clamp(14px, 5vw, 20px)`.
@@ -109,7 +111,7 @@ The round message, timer, and score now sit directly inside the page header rath
 - [x] 2.0 Implement Round Info Messages
 
   - [x] 2.1 Display win/loss messages briefly
-  - [x] 2.2 Start countdown snackbar after message disappears
+  - [x] 2.2 Start countdown timer after message disappears
   - [x] 2.3 Display selection prompt when input is needed
   - [x] 2.4 Display stat selection timer and auto-select if expired (see [Classic Battle PRD](prdClassicBattle.md))
   - [x] 2.5 Pause/resume stat selection timer on tab inactivity (see battleEngine.js)
