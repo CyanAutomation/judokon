@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
+import { withMutedConsole } from "../../utils/console.js";
 import { CLASSIC_BATTLE_POINTS_TO_WIN } from "../../../src/helpers/constants.js";
 vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
@@ -55,6 +56,24 @@ vi.mock("../../../src/helpers/featureFlags.js", () => ({
   featureFlagsEmitter: new EventTarget(),
   initFeatureFlags: vi.fn().mockResolvedValue({ featureFlags: currentFlags }),
   isEnabled: (flag) => currentFlags[flag]?.enabled ?? false
+}));
+
+vi.mock("../../../src/components/Modal.js", () => ({
+  createModal: (content) => {
+    const el = document.createElement("div");
+    if (content) el.append(content);
+    return { element: el, open: vi.fn(), close: vi.fn() };
+  },
+  createButton: (text, opts = {}) => {
+    const btn = document.createElement("button");
+    btn.textContent = text;
+    Object.assign(btn, opts);
+    return btn;
+  }
+}));
+
+vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
+  initRoundSelectModal: vi.fn()
 }));
 
 describe("classicBattle match flow", () => {
@@ -242,6 +261,97 @@ describe("classicBattle match flow", () => {
     expect(document.querySelector("header #score-display").textContent).toBe(
       `You: 0\nOpponent: ${CLASSIC_BATTLE_POINTS_TO_WIN}`
     );
+  });
+
+  it("interrupts match on navigation away", async () => {
+    const battleMod = await import("../../../src/helpers/classicBattle.js");
+    const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    const { battleEngine } = await import("../../../src/helpers/battleEngineFacade.js");
+    const { initInterruptHandlers } = await import(
+      "../../../src/helpers/classicBattle/interruptHandlers.js"
+    );
+    const store = battleMod.createBattleStore();
+    battleMod._resetForTest(store);
+    fetchJsonMock.mockImplementation(async (url) => {
+      if (String(url).includes("gameTimers.json")) {
+        return [{ id: 1, value: 30, default: true, category: "roundTimer" }];
+      }
+      if (String(url).includes("classicBattleStates.json")) {
+        return [
+          {
+            name: "matchStart",
+            type: "initial",
+            triggers: [{ on: "interrupt", target: "interruptMatch" }]
+          },
+          { name: "interruptMatch", triggers: [{ on: "matchOver", target: "matchOver" }] },
+          { name: "matchOver", triggers: [] }
+        ];
+      }
+      return [];
+    });
+    await orchestrator.initClassicBattleOrchestrator(store);
+    const machine = orchestrator.getBattleStateMachine();
+    const interruptSpy = vi.spyOn(battleEngine, "interruptMatch");
+    const dispatchSpy = vi.spyOn(orchestrator, "dispatchBattleEvent");
+    const addSpy = vi.spyOn(window, "addEventListener");
+    initInterruptHandlers(store);
+    const handlers = Object.fromEntries(addSpy.mock.calls.map(([e, fn]) => [e, fn]));
+    addSpy.mockRestore();
+    await withMutedConsole(async () => {
+      window.dispatchEvent(new Event("pagehide"));
+      await vi.runAllTimersAsync();
+    });
+    await dispatchSpy.mock.results[0].value;
+    expect(interruptSpy).toHaveBeenCalledWith("navigation");
+    expect(machine.getState()).toBe("matchOver");
+    Object.entries(handlers).forEach(([e, fn]) => window.removeEventListener(e, fn));
+  });
+
+  it("interrupts match on global error and shows message", async () => {
+    const battleMod = await import("../../../src/helpers/classicBattle.js");
+    const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    const { battleEngine } = await import("../../../src/helpers/battleEngineFacade.js");
+    const { initInterruptHandlers } = await import(
+      "../../../src/helpers/classicBattle/interruptHandlers.js"
+    );
+    const store = battleMod.createBattleStore();
+    battleMod._resetForTest(store);
+    fetchJsonMock.mockImplementation(async (url) => {
+      if (String(url).includes("gameTimers.json")) {
+        return [{ id: 1, value: 30, default: true, category: "roundTimer" }];
+      }
+      if (String(url).includes("classicBattleStates.json")) {
+        return [
+          {
+            name: "matchStart",
+            type: "initial",
+            triggers: [{ on: "interrupt", target: "interruptMatch" }]
+          },
+          { name: "interruptMatch", triggers: [{ on: "matchOver", target: "matchOver" }] },
+          { name: "matchOver", triggers: [] }
+        ];
+      }
+      return [];
+    });
+    await orchestrator.initClassicBattleOrchestrator(store);
+    const machine = orchestrator.getBattleStateMachine();
+    const interruptSpy = vi.spyOn(battleEngine, "interruptMatch");
+    const dispatchSpy = vi.spyOn(orchestrator, "dispatchBattleEvent");
+    const addSpy = vi.spyOn(window, "addEventListener");
+    initInterruptHandlers(store);
+    const handlers = Object.fromEntries(addSpy.mock.calls.map(([e, fn]) => [e, fn]));
+    addSpy.mockRestore();
+    await withMutedConsole(async () => {
+      window.dispatchEvent(new ErrorEvent("error", { message: "boom" }));
+      await vi.runAllTimersAsync();
+    });
+    await dispatchSpy.mock.results[0].value;
+    expect(interruptSpy).toHaveBeenCalledWith("error");
+    expect(document.querySelector("header #round-message").textContent).toMatch(
+      /Match interrupted: boom/
+    );
+    expect(machine.getState()).toBe("matchOver");
+    Object.entries(handlers).forEach(([e, fn]) => window.removeEventListener(e, fn));
   });
 
   it("scheduleNextRound auto-dispatches ready after cooldown", async () => {

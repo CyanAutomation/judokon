@@ -58,4 +58,16 @@ test.describe.parallel("Classic battle flow", () => {
     await confirmButton.click();
     await expect(page).toHaveURL(/index.html/);
   });
+
+  test("clears match when navigating away and back", async ({ page }) => {
+    await page.goto("/src/pages/battleJudoka.html");
+    const timer = page.locator("header #next-round-timer");
+    await timer.waitFor();
+    await page.locator("[data-testid='nav-13']").click();
+    await expect(page).toHaveURL(/settings.html/);
+    await page.goBack();
+    await expect(page).toHaveURL(/battleJudoka.html/);
+    await page.waitForFunction(() => window.__classicBattleState === "matchOver");
+    await expect(page.locator("header #next-round-timer")).toHaveText("");
+  });
 });
