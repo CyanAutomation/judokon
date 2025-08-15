@@ -105,6 +105,15 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 - **Tab Inactivity / App Backgrounding:** Timers pause; state resumes accurately on return.  
 - **Error Injection (Testing):** Engine must recover from simulated logic or UI hook errors without corrupting match state.
 
+## Interrupt Workflow
+
+When a player quits in the middle of a match, the engine follows a defined sequence to safely unwind state:
+
+1. `interrupt` transitions the machine into `interruptRound` or `interruptMatch`.
+2. From `interruptRound`, `abortMatch` advances to `matchOver`, allowing rollback hooks to run.
+3. From `interruptMatch`, `toLobby` returns to `waitingForMatchStart` without reaching `matchOver`.
+4. Navigation away from the battle screen occurs only after the above transitions complete.
+
 ---
 
 ## Dependencies
