@@ -121,3 +121,28 @@ describe("BattleEngine robustness scenarios", () => {
     expect(engine.handleError).toHaveBeenCalledWith("Injected error");
   });
 });
+
+describe("BattleEngine timer pause/resume and drift correction", () => {
+  let engine;
+  beforeEach(() => {
+    const { BattleEngine } = require("../../src/helpers/BattleEngine.js");
+    engine = new BattleEngine();
+    engine._resetForTest();
+  });
+
+  it("pauses and resumes the timer", () => {
+    engine.timer.pause = vi.fn();
+    engine.timer.resume = vi.fn();
+    engine.pauseTimer();
+    expect(engine.timer.pause).toHaveBeenCalled();
+    engine.resumeTimer();
+    expect(engine.timer.resume).toHaveBeenCalled();
+  });
+
+  it("detects and handles timer drift", () => {
+    engine.stopTimer = vi.fn();
+    engine.handleTimerDrift(3);
+    expect(engine.lastTimerDrift).toBe(3);
+    expect(engine.stopTimer).toHaveBeenCalled();
+  });
+});
