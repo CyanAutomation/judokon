@@ -1,4 +1,4 @@
-# PRD: Mystery Judoka Card (JU-DO-KON!)
+# PRD: Mystery Judoka Card
 
 ---
 
@@ -36,22 +36,26 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 
 ---
 
+## Functional Requirements
+
+| Priority | Feature                     | Description                                                                                                               |
+| :------: | :-------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+|  **P1**  | Placeholder Mystery Card    | Show `judokaId=1` card with silhouette and "?" stats at start of each opponent round. Signature move is also shown as "?" |
+|  **P1**  | Stat Redaction on Render    | Replace all visible stat values with "?" regardless of real values. Signature move is always shown as "?"                 |
+|  **P1**  | Card Swap on Stat Selection | Reveal opponent card via animated swap within 400ms, no layout shift                                                      |
+|  **P2**  | Consistent Styling          | Apply proper rarity border, portrait container, and stat layout                                                           |
+|  **P3**  | Accessibility Compliance    | Ensure all question marks and names are screen-reader friendly                                                            |
+
+---
+
 ## Acceptance Criteria
 
-- **Given** a round starts in any battle mode against an opponent,
-  **When** the opponent card is shown,  
-  **Then** the “Mystery Judoka” card (`judokaId=1`) is displayed with **the provided SVG icon** and question marks in all stat fields.
-- **Given** the player selects a stat,  
-  **When** the opponent’s real card is revealed,  
-  **Then** it _replaces_ the Mystery Judoka card via slide or flip animation within **400ms**.
-- **Given** the Mystery Judoka card appears,  
-  **Then** its name should be displayed as “Mystery Judoka” and stats as "?", regardless of real underlying values.
-- **Given** the Mystery Judoka card is displayed,  
-  **Then** it should retain correct rarity styling, weight class, and flag as defined in `judoka.json`.
-- **Given** the Mystery Judoka card is displayed,  
-  **Then** the portrait area must show the SVG icon (see Technical Considerations) instead of any image.
-- **Given** the reveal animation starts,  
-  **Then** the full transition should complete cleanly without layout shift or UI jump.
+- Mystery Judoka card (`judokaId=1`) displays with the provided SVG icon and question marks in all stat fields at the start of each opponent round.
+- Opponent card is revealed via slide or flip animation within 400ms after player selects a stat, replacing the Mystery Judoka card.
+- Mystery Judoka card displays the name "Mystery Judoka" and stats as "?", regardless of real values.
+- Mystery Judoka card retains correct rarity styling, weight class, and flag as defined in `judoka.json`.
+- Portrait area shows the SVG icon instead of any image.
+- Reveal animation completes cleanly without layout shift or UI jump.
 
 ---
 
@@ -104,18 +108,6 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 - Real portrait, name, stats, flag, signature move fade in.
 - All question marks are replaced with real values.
 - No layout shift or scroll jump should occur.
-
----
-
-## Prioritized Functional Requirements
-
-| Priority | Feature                     | Description                                                                                                               |
-| :------: | :-------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
-|  **P1**  | Placeholder Mystery Card    | Show `judokaId=1` card with silhouette and "?" stats at start of each opponent round. Signature move is also shown as "?" |
-|  **P1**  | Stat Redaction on Render    | Replace all visible stat values with "?" regardless of real values. Signature move is always shown as "?"                 |
-|  **P1**  | Card Swap on Stat Selection | Reveal opponent card via animated swap within **400ms**, no layout shift                                                  |
-|  **P2**  | Consistent Styling          | Apply proper rarity border, portrait container, and stat layout                                                           |
-|  **P3**  | Accessibility Compliance    | Ensure all question marks and names are screen-reader friendly                                                            |
 
 ---
 

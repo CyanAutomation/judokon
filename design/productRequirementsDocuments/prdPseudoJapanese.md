@@ -74,6 +74,16 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 
 ---
 
+## Non-Functional Requirements
+
+- Achieve ≥90% conversion accuracy compared to API validation in test cases.
+- Toggle response time is prompt for all conversions.
+- Local conversion for up to 999 characters completes without noticeable delay.
+- Fallback mechanism activates instantly if local mapping or API fails.
+- No degradation of performance or UI responsiveness on slow devices or large input.
+
+---
+
 ## Edge Cases / Failure States
 
 - **Empty/Null Input:** Fall back to the predefined static Japanese text.

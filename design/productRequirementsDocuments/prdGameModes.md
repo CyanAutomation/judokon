@@ -31,13 +31,6 @@ Improving session variety directly supports retention and encourages more person
 
 ## Goals
 
-### KPI Targets
-
-- Increase returning player average session length by **20%**.
-- At least **80%** of users who begin a Team Battle complete the match.
-- **70%** of new players use Judoka Creation within their first week.
-- **60%** of all players trigger Meditation mode at least once weekly.
-
 ### Player Experience Goals _(qualitative)_
 
 - Players experience diverse ways to interact with their judoka.

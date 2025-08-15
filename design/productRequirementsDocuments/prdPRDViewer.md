@@ -1,4 +1,4 @@
-# PRD: PRD Viewer
+# PRD: Viewer Tool
 
 ## TL;DR
 
@@ -184,6 +184,13 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
   - [x] 8.1 Show fade-in animation when switching documents
   - [x] 8.2 Show loading spinner or status message while fetching files
   - [x] 8.3 Show warning badge for malformed markdown
+
+---
+
+## Glossary
+
+- **Player**: A user who plays JU-DO-KON! and interacts with the game features.
+- **Contributor**: A project member who develops, designs, or manages JU-DO-KON! and its documentation.
 
 ---
 

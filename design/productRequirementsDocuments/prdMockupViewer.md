@@ -1,10 +1,10 @@
-# Mockup Viewer PRD
+# PRD: Mockup Viewer
 
 ## TL;DR
 
 The Mockup Viewer provides a simple, accessible interface for browsing JU-DO-KON! design mockup images. It allows team members and stakeholders to preview all UI mockups in a carousel format, supporting mouse and keyboard navigation. The tool ensures visual consistency and improves design review workflows by centralizing access to UI mockups.
 
-## Problem Statement / Why It Matters
+## Problem Statement
 
 Designers and developers previously relied on scattered folder structures to find and compare UI mockups. This fragmentation led to wasted time, difficulty in referencing filenames during discussions, and inconsistent visual evaluations. By aggregating mockups into a single interactive viewer, we reduce this friction and improve team velocity, accuracy, and accessibility in design reviews.
 

@@ -25,9 +25,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 ## Goals
 
-- Give players quick inspiration for new team ideas (**random card ≤300 ms**)
-- Play sessions average 2 minutes shorter when pre-selecting cards; aim to close this gap
-- Reduce time-to-inspiration by 50% compared to manual team-building (reduce average team-building time from 30 seconds to ≤15 seconds)
+- Give players quick inspiration for new team ideas (**random card appears in ≤300 ms in ≥95% of sessions, matching Game Modes PRD metric**)
 
 ---
 
@@ -54,7 +52,7 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 | Priority | Feature                         | Description                                                                            |
 | :------: | :------------------------------ | :------------------------------------------------------------------------------------- |
 |  **P1**  | Draw Random Judoka              | Automatically display a random judoka on page load and when the Draw button is tapped. |
-|  **P1**  | Animation Timing                | Card reveal animation completes within 500ms and respects Reduced Motion settings.     |
+|  **P1**  | Animation Timing                | Card reveal animation completes promptly and respects Reduced Motion settings.     |
 |  **P2**  | Fallback Card                   | If the judoka list is empty or fails to load, show a default placeholder card.         |
 |  **P2**  | Disable Interaction During Draw | Prevent repeated taps while a new card is loading.                                     |
 
@@ -62,10 +60,10 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 
 ## Acceptance Criteria
 
-- A random judoka is displayed on each visit.
-- Each random judoka is displayed in at least 95% of cases (matches performance goal wording).
+- A random judoka is displayed on each visit (≥95% of sessions).
+- Each random judoka is displayed in ≥95% of cases (matches Game Modes PRD metric).
 - Draw button reliably refreshes card on tap (≥99% tap success).
-- Show fallback card if judoka list is empty (displays in 99% of cases).
+- Show fallback card if judoka list is empty (displays in ≥99% of cases).
 - Respect OS-level Reduced Motion settings (disable animations when active).
 
 ---
@@ -73,7 +71,12 @@ Players currently experience predictable, repetitive gameplay when they pre-sele
 ## Dependencies
 
 - Access to the full judoka list
-- Uses `generateRandomCard` as described in [prdDrawRandomCard.md](prdDrawRandomCard.md)
+- Uses `generateRandomCard` (see [prdDrawRandomCard.md](prdDrawRandomCard.md)), which:
+  - Selects a random judoka from the active set, skipping hidden/inactive cards
+  - Guarantees fallback to a default card if the list is empty or an error occurs
+  - Honors Reduced Motion and sound settings for accessibility
+  - Disables repeated draws during animation/loading
+  - Ensures fast, fair, and accessible random selection logic for all game modes
 - Reads global sound and motion preferences from `settings.html`
 
 ---
