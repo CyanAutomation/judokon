@@ -89,8 +89,8 @@ describe("createDriftWatcher", () => {
 
 describe("BattleEngine robustness scenarios", () => {
   let engine;
-  beforeEach(() => {
-    const { BattleEngine } = require("../../src/helpers/BattleEngine.js");
+  beforeEach(async () => {
+    const { BattleEngine } = await import("../../src/helpers/BattleEngine.js");
     engine = new BattleEngine();
     engine._resetForTest();
   });
@@ -124,8 +124,8 @@ describe("BattleEngine robustness scenarios", () => {
 
 describe("BattleEngine timer pause/resume and drift correction", () => {
   let engine;
-  beforeEach(() => {
-    const { BattleEngine } = require("../../src/helpers/BattleEngine.js");
+  beforeEach(async () => {
+    const { BattleEngine } = await import("../../src/helpers/BattleEngine.js");
     engine = new BattleEngine();
     engine._resetForTest();
   });
