@@ -17,14 +17,16 @@ describe("Scoreboard integration without explicit init", () => {
     const header = document.createElement("header");
     header.className = "header battle-header";
     const left = document.createElement("div");
-    left.className = "info-left";
+    left.className = "scoreboard-left";
+    left.id = "scoreboard-left";
     left.innerHTML = `
       <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
       <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
       <p id="round-counter" aria-live="polite" aria-atomic="true"></p>
     `;
     const right = document.createElement("div");
-    right.className = "info-right";
+    right.className = "scoreboard-right";
+    right.id = "scoreboard-right";
     right.innerHTML = `
       <p id="score-display" aria-live="polite" aria-atomic="true">
         <span>You: 0</span>
