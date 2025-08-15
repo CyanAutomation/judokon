@@ -4,10 +4,10 @@ vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
 
-// We intentionally DO NOT call setupBattleInfoBar's onDomReady init here.
-// The goal is to verify InfoBar functions work without explicit initialization.
+// We intentionally DO NOT call setupScoreboard's onDomReady init here.
+// The goal is to verify Scoreboard functions work without explicit initialization.
 
-describe("InfoBar integration without explicit init", () => {
+describe("Scoreboard integration without explicit init", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.resetModules();
@@ -80,17 +80,17 @@ describe("InfoBar integration without explicit init", () => {
   });
 
   it("renders messages, score, round counter, and round timer without init", async () => {
-    const info = await import("../../src/helpers/setupBattleInfoBar.js");
+    const scoreboard = await import("../../src/helpers/setupScoreboard.js");
     // Messages
-    info.showMessage("Ready to fight!");
+    scoreboard.showMessage("Ready to fight!");
     expect(document.getElementById("round-message").textContent).toBe("Ready to fight!");
 
     // Round counter
-    info.updateRoundCounter(1, 25);
+    scoreboard.updateRoundCounter(1, 25);
     expect(document.getElementById("round-counter").textContent).toBe("Round 1 of 25");
 
     // Score
-    info.updateScore(2, 1);
+    scoreboard.updateScore(2, 1);
     const scoreText = document
       .getElementById("score-display")
       .textContent.replace(/\s+/g, " ")
@@ -117,7 +117,7 @@ describe("InfoBar integration without explicit init", () => {
   });
 
   it("renders cooldown countdown via snackbar without touching timer element", async () => {
-    const info = await import("../../src/helpers/setupBattleInfoBar.js");
+    const scoreboard = await import("../../src/helpers/setupScoreboard.js");
     const snackbar = await import("../../src/helpers/showSnackbar.js");
 
     // Ensure the timer area is empty to begin with
@@ -125,7 +125,7 @@ describe("InfoBar integration without explicit init", () => {
     expect(timerEl.textContent).toBe("");
 
     const onFinish = vi.fn();
-    info.startCountdown(3, onFinish);
+    scoreboard.startCountdown(3, onFinish);
 
     // First tick triggers showSnackbar with 3s
     await vi.advanceTimersByTimeAsync(0);

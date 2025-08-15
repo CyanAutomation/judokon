@@ -2,7 +2,7 @@
  * Page wrapper for Classic Battle mode.
  *
  * @pseudocode
- * 1. Import battle helpers, info bar setup, and DOM ready utility.
+ * 1. Import battle helpers, scoreboard setup, and DOM ready utility.
  * 2. Create a shared `battleStore` and expose it on `window`.
  * 3. Define `initStatButtons(store)` which wires stat buttons and returns an
  *    enable/disable API.
@@ -14,7 +14,7 @@
  *    d. Re-enables stat buttons in a `finally` block.
  * 5. Define `setupClassicBattlePage` to:
  *    a. Start the shared scheduler.
- *    b. Initialize the battle info bar.
+ *    b. Initialize the battle scoreboard.
  *    c. Load feature flags, apply them to `#battle-area` and react to changes.
  *    d. Initialize stat buttons, attach listeners, and display a snackbar with
  *       the chosen stat.
@@ -32,7 +32,7 @@
 import { createBattleStore, startRound } from "./classicBattle/roundManager.js";
 import { handleStatSelection } from "./classicBattle/selectionHandler.js";
 import { onDomReady } from "./domReady.js";
-import { setupBattleInfoBar, showMessage } from "./setupBattleInfoBar.js";
+import { setupScoreboard, showMessage } from "./setupScoreboard.js";
 import { waitForComputerCard } from "./battleJudokaPage.js";
 import { initTooltips } from "./tooltip.js";
 import { setTestMode } from "./testModeUtils.js";
@@ -243,7 +243,7 @@ export async function setupClassicBattlePage() {
     startScheduler();
     window.addEventListener("pagehide", stopScheduler, { once: true });
   }
-  setupBattleInfoBar();
+  setupScoreboard();
   // Apply orientation ASAP so tests observing the header don't block
   // behind async initialization (flags, data fetches, tooltips, etc.).
   watchBattleOrientation();

@@ -5,7 +5,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const judokaFixture = JSON.parse(readFileSync(path.join(__dirname, "../fixtures/judoka.json")));
 const gokyoFixture = JSON.parse(readFileSync(path.join(__dirname, "../fixtures/gokyo.json")));
 
-export function createInfoBarHeader() {
+export function createScoreboardHeader() {
   const header = document.createElement("header");
   header.innerHTML = `
     <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>

@@ -1,5 +1,5 @@
 import { watchForDrift } from "../battleEngineFacade.js";
-import * as infoBar from "../setupBattleInfoBar.js";
+import * as scoreboard from "../setupScoreboard.js";
 import { onSecondTick as scheduleSecond, cancel as cancelSchedule } from "../../utils/scheduler.js";
 
 /**
@@ -47,7 +47,7 @@ export function runTimerWithDrift(
         await onDriftGiveUp();
         return;
       }
-      infoBar.showMessage("Waiting…");
+      scoreboard.showMessage("Waiting…");
       await run(remaining);
     };
 

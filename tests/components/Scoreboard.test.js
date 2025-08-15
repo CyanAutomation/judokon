@@ -23,26 +23,26 @@ vi.mock("../../src/utils/scheduler.js", () => ({
   stop: vi.fn()
 }));
 import {
-  createInfoBar,
-  initInfoBar,
+  createScoreboard,
+  initScoreboard,
   showMessage,
   clearMessage,
   showTemporaryMessage,
   startCountdown,
   updateScore
-} from "../../src/components/InfoBar.js";
+} from "../../src/components/Scoreboard.js";
 import { showSnackbar, updateSnackbar } from "../../src/helpers/showSnackbar.js";
 import * as battleEngine from "../../src/helpers/battleEngineFacade.js";
-import { createInfoBarHeader } from "../utils/testUtils.js";
+import { createScoreboardHeader } from "../utils/testUtils.js";
 
-describe("InfoBar component", () => {
+describe("Scoreboard component", () => {
   let header;
 
   beforeEach(() => {
     showSnackbar.mockClear();
     updateSnackbar.mockClear();
     header = document.createElement("header");
-    createInfoBar(header);
+    createScoreboard(header);
     document.body.appendChild(header);
   });
 
@@ -127,9 +127,9 @@ describe("InfoBar component", () => {
   it("initializes from existing DOM", () => {
     const timer = vi.useFakeTimers();
     document.body.innerHTML = "";
-    const existing = createInfoBarHeader();
+    const existing = createScoreboardHeader();
     document.body.appendChild(existing);
-    initInfoBar(existing);
+    initScoreboard(existing);
     showMessage("Hi");
     expect(document.getElementById("round-message").textContent).toBe("Hi");
     updateScore(2, 3);

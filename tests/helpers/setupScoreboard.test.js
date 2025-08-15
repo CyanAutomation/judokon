@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { createInfoBarHeader } from "../utils/testUtils.js";
+import { createScoreboardHeader } from "../utils/testUtils.js";
 vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
@@ -12,7 +12,7 @@ const originalReadyState = Object.getOwnPropertyDescriptor(document, "readyState
 
 beforeEach(() => {
   vi.resetModules();
-  document.body.appendChild(createInfoBarHeader());
+  document.body.appendChild(createScoreboardHeader());
 });
 
 afterEach(() => {
@@ -21,12 +21,12 @@ afterEach(() => {
   }
 });
 
-describe("setupBattleInfoBar", () => {
+describe("setupScoreboard", () => {
   it("initializes on DOMContentLoaded and proxies methods", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
     vi.useFakeTimers();
 
-    const mod = await import("../../src/helpers/setupBattleInfoBar.js");
+    const mod = await import("../../src/helpers/setupScoreboard.js");
     const { showSnackbar, updateSnackbar } = await import("../../src/helpers/showSnackbar.js");
     showSnackbar.mockClear();
     updateSnackbar.mockClear();
@@ -58,7 +58,7 @@ describe("setupBattleInfoBar", () => {
   it("initializes immediately when DOM already loaded", async () => {
     Object.defineProperty(document, "readyState", { value: "complete", configurable: true });
 
-    await import("../../src/helpers/setupBattleInfoBar.js");
+    await import("../../src/helpers/setupScoreboard.js");
 
     expect(document.getElementById("score-display")).toBeTruthy();
   });
@@ -69,8 +69,8 @@ describe("setupBattleInfoBar", () => {
       configurable: true
     });
     document.body.innerHTML = "";
-    document.body.appendChild(createInfoBarHeader());
-    const mod = await import("../../src/helpers/setupBattleInfoBar.js");
+    document.body.appendChild(createScoreboardHeader());
+    const mod = await import("../../src/helpers/setupScoreboard.js");
     const { showSnackbar, updateSnackbar } = await import("../../src/helpers/showSnackbar.js");
     showSnackbar.mockClear();
     updateSnackbar.mockClear();

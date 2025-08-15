@@ -1,7 +1,7 @@
 import { BattleStateMachine } from "./stateMachine.js";
 import { initRoundSelectModal } from "./roundSelectModal.js";
 import { resetGame, startRound } from "./roundManager.js";
-import * as infoBar from "../setupBattleInfoBar.js";
+import * as scoreboard from "../setupScoreboard.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 
 let machine = null;
@@ -15,7 +15,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
     async waitingForMatchStart(m) {
       // Reset transient UI and open lobby (round selection)
       resetGame();
-      infoBar.clearMessage();
+      scoreboard.clearMessage();
       updateDebugPanel();
       await initRoundSelectModal(() => m.dispatch("startClicked"));
     },

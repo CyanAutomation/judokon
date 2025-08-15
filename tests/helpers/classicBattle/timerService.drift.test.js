@@ -5,7 +5,7 @@ describe("timerService drift handling", () => {
   it("startTimer shows fallback on drift", async () => {
     vi.resetModules();
     const showMessage = vi.fn();
-    vi.doMock("../../../src/helpers/setupBattleInfoBar.js", () => ({
+    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
       showMessage,
       showTemporaryMessage: () => () => {},
       showAutoSelect: vi.fn()
@@ -34,7 +34,7 @@ describe("timerService drift handling", () => {
   it("scheduleNextRound shows fallback on drift", async () => {
     vi.resetModules();
     const showMessage = vi.fn();
-    vi.doMock("../../../src/helpers/setupBattleInfoBar.js", () => ({
+    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
       showMessage,
       showTemporaryMessage: () => () => {},
       showAutoSelect: vi.fn()
@@ -74,7 +74,7 @@ describe("timerService drift handling", () => {
   it("clicking Next during cooldown skips current phase", async () => {
     vi.resetModules();
     document.body.innerHTML = "";
-    vi.doMock("../../../src/helpers/setupBattleInfoBar.js", () => ({
+    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
       showMessage: vi.fn(),
       showTemporaryMessage: () => () => {},
       showAutoSelect: vi.fn(),
@@ -117,7 +117,7 @@ describe("timerService drift handling", () => {
   it("auto-dispatches ready when cooldown finishes", async () => {
     vi.resetModules();
     document.body.innerHTML = "";
-    vi.doMock("../../../src/helpers/setupBattleInfoBar.js", () => ({
+    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
       showMessage: vi.fn(),
       showTemporaryMessage: () => () => {},
       showAutoSelect: vi.fn(),
@@ -195,7 +195,7 @@ describe("scheduleNextRound early click", () => {
     vi.doMock("../../../src/helpers/battleEngineFacade.js", async (importOriginal) => {
       return await importOriginal();
     });
-    vi.doMock("../../../src/helpers/setupBattleInfoBar.js", async (importOriginal) => {
+    vi.doMock("../../../src/helpers/setupScoreboard.js", async (importOriginal) => {
       return await importOriginal();
     });
     vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", async (importOriginal) => {

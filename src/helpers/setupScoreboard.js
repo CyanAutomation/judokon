@@ -1,5 +1,5 @@
 import {
-  initInfoBar,
+  initScoreboard,
   showMessage,
   updateScore,
   startCountdown,
@@ -9,22 +9,22 @@ import {
   showAutoSelect,
   updateRoundCounter,
   clearRoundCounter
-} from "../components/InfoBar.js";
+} from "../components/Scoreboard.js";
 
 /**
- * Locate the page header and initialize info bar element references.
+ * Locate the page header and initialize scoreboard element references.
  *
  * @pseudocode
  * 1. Locate the `<header>` element.
- * 2. Pass the header to `initInfoBar()` so the module can query its children.
+ * 2. Pass the header to `initScoreboard()` so the module can query its children.
  */
-function setupBattleInfoBar() {
+function setupScoreboard() {
   const header = document.querySelector("header");
   if (!header) return;
-  initInfoBar(header);
+  initScoreboard(header);
 }
 export {
-  setupBattleInfoBar,
+  setupScoreboard,
   showMessage,
   updateScore,
   startCountdown,

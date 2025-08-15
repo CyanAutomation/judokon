@@ -1,6 +1,6 @@
 import { getDefaultTimer } from "../timerUtils.js";
 import { startRound as engineStartRound, startCoolDown, stopTimer } from "../battleEngineFacade.js";
-import * as infoBar from "../setupBattleInfoBar.js";
+import * as scoreboard from "../setupScoreboard.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 import { runTimerWithDrift } from "./runTimerWithDrift.js";
 import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
@@ -86,7 +86,7 @@ export async function startTimer(onExpiredSelect) {
   const onTick = (remaining) => {
     if (!timerEl) return;
     if (remaining <= 0) {
-      infoBar.clearTimer();
+      scoreboard.clearTimer();
       return;
     }
     timerEl.textContent = `Time Left: ${remaining}s`;
@@ -94,7 +94,7 @@ export async function startTimer(onExpiredSelect) {
 
   const onExpired = async () => {
     setSkipHandler(null);
-    infoBar.clearTimer();
+    scoreboard.clearTimer();
     await dispatchBattleEvent("timeout");
     await autoSelectStat(onExpiredSelect);
   };
@@ -115,7 +115,7 @@ export async function startTimer(onExpiredSelect) {
   } catch {
     synced = false;
   }
-  const restore = !synced ? infoBar.showTemporaryMessage("Waiting…") : () => {};
+  const restore = !synced ? scoreboard.showTemporaryMessage("Waiting…") : () => {};
 
   setSkipHandler(async () => {
     stopTimer();
@@ -124,7 +124,7 @@ export async function startTimer(onExpiredSelect) {
 
   const run = runTimerWithDrift(engineStartRound);
   await run(duration, onTick, onExpired, async () => {
-    infoBar.showMessage("Timer error. Auto-selecting stat.");
+    scoreboard.showMessage("Timer error. Auto-selecting stat.");
     await onExpired();
   });
   restore();
@@ -135,7 +135,7 @@ export async function startTimer(onExpiredSelect) {
  * random stat.
  *
  * @pseudocode
- * 1. Display "Stat selection stalled" via `infoBar.showMessage`.
+ * 1. Display "Stat selection stalled" via `scoreboard.showMessage`.
  * 2. After 5 seconds call `autoSelectStat(onSelect)`.
  *
  * @param {{autoSelectId: ReturnType<typeof setTimeout> | null}} store
@@ -144,7 +144,7 @@ export async function startTimer(onExpiredSelect) {
  * - Callback to handle stat selection.
  */
 export function handleStatSelectionTimeout(store, onSelect) {
-  infoBar.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
+  scoreboard.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
   store.autoSelectId = setTimeout(() => {
     autoSelectStat(onSelect);
   }, 5000);
@@ -190,7 +190,7 @@ export function scheduleNextRound(result) {
 
   const onTick = (remaining) => {
     if (remaining <= 0) {
-      infoBar.clearTimer();
+      scoreboard.clearTimer();
       return;
     }
     if (remaining === lastRenderedRemaining) return;
@@ -206,7 +206,7 @@ export function scheduleNextRound(result) {
 
   const onExpired = async () => {
     setSkipHandler(null);
-    infoBar.clearTimer();
+    scoreboard.clearTimer();
     if (timerEl) {
       timerEl.textContent = "";
     }
@@ -233,7 +233,7 @@ export function scheduleNextRound(result) {
   // update/replace this text on the first scheduled tick.
   onTick(3);
   run(3, onTick, onExpired, () => {
-    infoBar.showMessage("Timer error. Enabling next round.");
+    scoreboard.showMessage("Timer error. Enabling next round.");
     onExpired();
   });
 }
