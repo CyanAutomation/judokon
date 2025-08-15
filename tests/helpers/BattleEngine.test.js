@@ -86,3 +86,38 @@ describe("createDriftWatcher", () => {
     expect(onDrift).not.toHaveBeenCalled();
   });
 });
+
+describe("BattleEngine robustness scenarios", () => {
+  let engine;
+  beforeEach(() => {
+    const { BattleEngine } = require("../../src/helpers/BattleEngine.js");
+    engine = new BattleEngine();
+    engine._resetForTest();
+  });
+
+  it("pauses and resumes timer on tab inactivity", () => {
+    engine.timer.startRound = vi.fn();
+    engine.pauseTimer = vi.fn();
+    engine.resumeTimer = vi.fn();
+    engine.handleTabInactive();
+    expect(engine.tabInactive).toBe(true);
+    expect(engine.pauseTimer).toHaveBeenCalled();
+    engine.handleTabActive();
+    expect(engine.tabInactive).toBe(false);
+    expect(engine.resumeTimer).toHaveBeenCalled();
+  });
+
+  it("handles timer drift", () => {
+    engine.stopTimer = vi.fn();
+    engine.handleTimerDrift(5);
+    expect(engine.lastTimerDrift).toBe(5);
+    expect(engine.stopTimer).toHaveBeenCalled();
+  });
+
+  it("handles error injection", () => {
+    engine.handleError = vi.fn();
+    engine.injectError("Injected error");
+    expect(engine.lastError).toBe("Injected error");
+    expect(engine.handleError).toHaveBeenCalledWith("Injected error");
+  });
+});
