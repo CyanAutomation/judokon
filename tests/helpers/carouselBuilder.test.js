@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { withMutedConsole } from "../utils/console.js";
 
 vi.mock("../../src/helpers/carousel/index.js", async () => {
   const actual = await vi.importActual("../../src/helpers/carousel/index.js");
@@ -19,18 +20,14 @@ import { buildCardCarousel } from "../../src/helpers/carouselBuilder.js";
 
 describe("buildCardCarousel", () => {
   it("returns message when judoka list is empty", async () => {
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const wrapper = await buildCardCarousel([], []);
-    errorSpy.mockRestore();
+    const wrapper = await withMutedConsole(() => buildCardCarousel([], []));
     expect(wrapper.textContent).toContain("No cards available.");
   });
 
   it("updates scroll button state on scroll", async () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const wrapper = await buildCardCarousel([{ id: 1 }, { id: 2 }, { id: 3 }], []);
-    warnSpy.mockRestore();
-    errorSpy.mockRestore();
+    const wrapper = await withMutedConsole(() =>
+      buildCardCarousel([{ id: 1 }, { id: 2 }, { id: 3 }], [])
+    );
 
     const container = wrapper.querySelector(".card-carousel");
     const [leftBtn, rightBtn] = wrapper.querySelectorAll(".scroll-button");
