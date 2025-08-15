@@ -7,6 +7,7 @@ import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
 import { setSkipHandler, skipCurrentPhase } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
+import { isEnabled } from "../featureFlags.js";
 
 // Skip handler utilities moved to skipHandler.js
 
@@ -61,7 +62,8 @@ export async function onNextButtonClick() {
 }
 
 /**
- * Start the round timer and auto-select a random stat when time expires.
+ * Start the round timer and, on expiration, either auto-select a random stat
+ * or interrupt the round based on Random Stat Mode.
  *
  * @pseudocode
  * 1. Determine timer duration using `getDefaultTimer('roundTimer')`.
@@ -70,9 +72,10 @@ export async function onNextButtonClick() {
  *    and monitor for drift.
  *    - On drift show "Waiting…" and restart, giving up after several retries.
  * 3. Register a skip handler that stops the timer and triggers `onExpired`.
- * 4. When expired, delegate stat auto-selection to `autoSelectStat`, which
- *    highlights the chosen stat, shows UI feedback, invokes `onExpiredSelect`
- *    with `delayOpponentMessage`, and clears the handler.
+ * 4. When expired, dispatch `"timeout"` and then:
+ *    a. If `isEnabled('randomStatMode')`, call `autoSelectStat` to pick a stat
+ *       and invoke `onExpiredSelect` with `delayOpponentMessage`.
+ *    b. Otherwise dispatch `"interrupt"` to follow the interruption path.
  *
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>} onExpiredSelect
  * - Callback to handle stat auto-selection.
@@ -96,7 +99,11 @@ export async function startTimer(onExpiredSelect) {
     setSkipHandler(null);
     scoreboard.clearTimer();
     await dispatchBattleEvent("timeout");
-    await autoSelectStat(onExpiredSelect);
+    if (isEnabled("randomStatMode")) {
+      await autoSelectStat(onExpiredSelect);
+    } else {
+      await dispatchBattleEvent("interrupt");
+    }
   };
 
   // Register skip handler immediately so early calls to `skipBattlePhase` take effect

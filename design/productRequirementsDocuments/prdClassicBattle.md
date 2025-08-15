@@ -73,7 +73,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 - Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
 - Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices.
-- Stat selection timer (30s) must be displayed in the Scoreboard; if timer expires, a random stat is auto-selected. Timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleScoreboard.md).
+- Stat selection timer (30s) must be displayed in the Scoreboard; if timer expires, a random stat is auto-selected. This auto-select behavior is controlled by Random Stat Mode (`FF_AUTO_SELECT`), enabled by default. Timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleScoreboard.md).
 - Stat selection timer halts immediately once the player picks a stat.
 - Detect timer drift by comparing engine state with real time; if drift exceeds 2s, display "Waiting…" and restart the countdown.
 - Opponent stat selection runs entirely on the client. After the player picks a stat (or the timer auto-chooses), the opponent's choice is revealed after a short artificial delay to mimic turn-taking.
@@ -88,7 +88,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 | Priority | Feature                 | Description                                                                                                                                                                      |
 | -------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **P1**   | Random Card Draw        | Draw one random card per player each round; the opponent card must differ from the player's.                                                                                     |
-| **P1**   | Stat Selection Timer    | Player selects stat within 30 seconds; otherwise, random stat is chosen. Default timer is fixed at 30s. Timer is displayed in the Scoreboard and pauses/resumes on tab inactivity. |
+| **P1**   | Stat Selection Timer    | Player selects stat within 30 seconds; otherwise, random stat is chosen. Auto-select is controlled by Random Stat Mode (`FF_AUTO_SELECT`), enabled by default. Timer is displayed in the Scoreboard and pauses/resumes on tab inactivity. |
 | **P1**   | Scoring                 | Increase score by one for each round win.                                                                                                                                        |
 | **P1**   | Match End Condition     | End match when either player reaches a user-selected win target of 5, 10, or 15 points (default 10) or after 25 rounds.                                                                                                                                       |
 | **P2**   | Tie Handling            | Show tie message; round ends without score change; continue to next round.                                                                                                       |
