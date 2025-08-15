@@ -49,9 +49,9 @@ export function _resetForTest() {
  *      without starting an interval.
  *    - Otherwise, subscribe to the shared scheduler via `scheduler.onSecondTick`
  *      and invoke `onTick` immediately with the starting value.
+ *    - When no subscription id is returned, fall back to `setInterval`.
  *    - On each tick, decrement `remaining` and call `onTick`.
- *    - When the value reaches 0, cancel the scheduler subscription and call
- *      `onExpired`.
+ *    - When the value reaches 0, cancel the active timer and call `onExpired`.
  *    - When `pauseOnHidden` is true, attach a `visibilitychange` listener that
  *      pauses when the page is hidden and resumes when visible.
  * 3. `pause()` and `resume()` toggle a flag checked on each tick.
@@ -72,6 +72,7 @@ export function createCountdownTimer(
 ) {
   let remaining = duration;
   let subId = null;
+  let cancelFn = cancel;
   let paused = false;
 
   async function tick() {
@@ -109,6 +110,19 @@ export function createCountdownTimer(
         console.error("Error in countdown timer tick:", err);
       }
     });
+    if (typeof subId !== "number") {
+      const intervalId = setInterval(async () => {
+        try {
+          await tick();
+        } catch (err) {
+          console.error("Error in countdown timer tick:", err);
+        }
+      }, 1000);
+      subId = intervalId;
+      cancelFn = (id) => clearInterval(id);
+    } else {
+      cancelFn = cancel;
+    }
     if (pauseOnHidden && typeof document !== "undefined") {
       document.addEventListener("visibilitychange", handleVisibility);
     }
@@ -116,7 +130,7 @@ export function createCountdownTimer(
 
   function stop() {
     if (subId !== null) {
-      cancel(subId);
+      cancelFn(subId);
       subId = null;
     }
     if (pauseOnHidden && typeof document !== "undefined") {
