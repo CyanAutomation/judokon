@@ -3,22 +3,22 @@
     "id": 1,
     "name": "waitingForMatchStart",
     "type": "initial",
-    "description": "Idle state before the match begins. UI shows Start/Ready and match length selection.",
-    "onEnter": ["render:matchLobby", "reset:scoreAndDecksPreview"],
+    "description": "Idle state before the match begins. UI shows Start/Ready and win target selection (5, 10, or 15).",
+    "onEnter": ["render:matchLobby", "reset:scoresAndUI"],
     "triggers": [
       { "on": "startClicked", "target": "matchStart" },
       {
         "on": "interrupt",
-        "target": "matchOver",
-        "note": "Abort from lobby goes directly to Match over per diagram."
+        "target": "waitingForMatchStart",
+        "note": "No active match to abort; remain in lobby."
       }
     ]
   },
   {
     "id": 2,
     "name": "matchStart",
-    "description": "Initialises match data, shuffles and deals 25 cards to each player, sets first player.",
-    "onEnter": ["init:matchContext", "shuffleAndDeal:decks", "determine:firstPlayer"],
+    "description": "Initialises match context. Stores selected win target, resets scores, and fixes user as first player for all rounds.",
+    "onEnter": ["init:matchContext", "store:winTargetSelection", "reset:scores", "set:firstPlayerUser"],
     "triggers": [
       { "on": "ready", "target": "cooldown" },
       { "on": "interrupt", "target": "interruptMatch" },
@@ -28,8 +28,8 @@
   {
     "id": 7,
     "name": "cooldown",
-    "description": "Short pacing pause between rounds; allows animations and readability.",
-    "onEnter": ["delay:short", "animate:roundWrap"],
+    "description": "Short pacing pause before the first round and between rounds; allows animations and readability.",
+    "onEnter": ["timer:startShortCountdown", "announce:nextRoundInUI"],
     "triggers": [
       { "on": "ready", "target": "roundStart" },
       { "on": "interrupt", "target": "interruptRound" }
@@ -38,8 +38,8 @@
   {
     "id": 3,
     "name": "roundStart",
-    "description": "Begins a new round. Reveals player's top card, sets users as the active player for this round.",
-    "onEnter": ["reveal:topCards", "set:activePlayer"],
+    "description": "Begins a new round. Randomly draws judoka for user and opponent, reveals both, user is the active chooser.",
+    "onEnter": ["draw:randomJudokaBothSides", "reveal:roundCards", "set:activePlayerUser"],
     "triggers": [
       { "on": "cardsRevealed", "target": "waitingForPlayerAction" },
       { "on": "interrupt", "target": "interruptRound" }
@@ -48,15 +48,21 @@
   {
     "id": 4,
     "name": "waitingForPlayerAction",
-    "description": "Awaiting the stat choice. If no player action, auto-select a stat after the round timer.",
-    "onEnter": ["prompt:chooseStat", "schedule:statAutoSelect"],
+    "description": "Awaiting the user's stat choice. If no action within the round timer, optional auto-select may fire.",
+    "onEnter": ["prompt:chooseStat", "timer:startStatSelection", "a11y:exposeTimerStatus"],
     "triggers": [
       { "on": "statSelected", "target": "roundDecision" },
       {
         "on": "timeout",
         "target": "roundDecision",
-        "guard": "statAutoSelect",
-        "note": "Timeout => statAutoSelect path."
+        "guard": "autoSelectEnabled",
+        "note": "If FF_AUTO_SELECT is ON, engine auto-picks a stat on timeout."
+      },
+      {
+        "on": "timeout",
+        "target": "interruptRound",
+        "guard": "!autoSelectEnabled",
+        "note": "If FF_AUTO_SELECT is OFF, treat timeout as an interrupt path."
       },
       { "on": "interrupt", "target": "interruptRound" }
     ]
@@ -64,11 +70,11 @@
   {
     "id": 5,
     "name": "roundDecision",
-    "description": "Compares selected stat, and determines winner/draw.",
-    "onEnter": ["compare:selectedStat", "compute:roundOutcome"],
+    "description": "Compares the selected stat and determines the round outcome.",
+    "onEnter": ["compare:selectedStat", "compute:roundOutcome", "announce:roundOutcome"],
     "triggers": [
-      { "on": "outcome=winPlayer", "target": "roundOver" },
-      { "on": "outcome=winOpponent", "target": "roundOver" },
+      { "on": "outcome=winP1", "target": "roundOver" },
+      { "on": "outcome=winP2", "target": "roundOver" },
       { "on": "outcome=draw", "target": "roundOver" },
       { "on": "interrupt", "target": "interruptRound" }
     ]
@@ -76,14 +82,14 @@
   {
     "id": 6,
     "name": "roundOver",
-    "description": "Declares winner, updates score, sets next starter.",
+    "description": "Updates scores and presents a brief summary. No card transfers occur.",
     "onEnter": ["update:score", "update:UIRoundSummary"],
     "triggers": [
       {
         "on": "matchPointReached",
         "target": "matchDecision",
-        "guard": "winnerHasPointsToWin || noCardsLeft",
-        "note": "Guard compares current score against BattleEngine.pointsToWin or checks deck exhaustion."
+        "guard": "scoreP1 >= winTarget || scoreP2 >= winTarget",
+        "note": "Checks the user-selected win target (5/10/15)."
       },
       { "on": "continue", "target": "cooldown" },
       { "on": "interrupt", "target": "interruptRound" }
@@ -92,7 +98,7 @@
   {
     "id": 8,
     "name": "matchDecision",
-    "description": "Determines overall winner based on score or exhaustion of cards.",
+    "description": "Determines the overall winner once a player reaches the selected win target.",
     "onEnter": ["compute:matchOutcome", "render:matchSummary"],
     "triggers": [
       { "on": "finalize", "target": "matchOver" },
@@ -103,7 +109,7 @@
     "id": 9,
     "name": "matchOver",
     "type": "final",
-    "description": "Match completed. Offer Rematch or Home.",
+    "description": "Match completed. Offer Rematch or Home. Final score remains visible.",
     "onEnter": ["show:matchResultScreen"],
     "triggers": [
       { "on": "rematch", "target": "waitingForMatchStart" },
@@ -113,10 +119,10 @@
   {
     "id": 98,
     "name": "interruptRound",
-    "description": "Round interrupted (quit, navigation, or error). Safe rollback with options to modify round, restart round, exit.",
-    "onEnter": ["rollback:roundContextIfNeeded", "log:analyticsInterruptRound"],
+    "description": "Round-level interruption (quit, navigation, or error). Performs safe rollback and offers options.",
+    "onEnter": ["timer:clearIfRunning", "rollback:roundContextIfNeeded", "log:analyticsInterruptRound"],
     "triggers": [
-      { "on": "roundModifyFlag", "target": "roundModification" },
+      { "on": "roundModifyFlag", "target": "roundModification", "guard": "FF_ROUND_MODIFY" },
       { "on": "restartRound", "target": "cooldown" },
       { "on": "resumeLobby", "target": "waitingForMatchStart" },
       { "on": "abortMatch", "target": "matchOver" }
@@ -125,7 +131,7 @@
   {
     "id": 97,
     "name": "roundModification",
-    "description": "Optional branch to adjust round decision parameters (e.g., admin/test tooling) before re-evaluating.",
+    "description": "Admin/test-only branch to adjust round decision parameters before re-evaluating.",
     "onEnter": ["open:roundModificationPanel"],
     "triggers": [
       { "on": "modifyRoundDecision", "target": "roundDecision" },
@@ -135,8 +141,8 @@
   {
     "id": 99,
     "name": "interruptMatch",
-    "description": "Match interrupted (quit from lobby or critical error). Cleanly tears down match.",
-    "onEnter": ["teardown:matchContext", "log:analyticsInterruptMatch"],
+    "description": "Match-level interruption from setup or critical error. Cleans up context and returns to lobby on request.",
+    "onEnter": ["timer:clearIfRunning", "teardown:matchContext", "log:analyticsInterruptMatch"],
     "triggers": [
       { "on": "restartMatch", "target": "matchStart" },
       { "on": "toLobby", "target": "waitingForMatchStart" }
