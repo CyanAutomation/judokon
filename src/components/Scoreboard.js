@@ -203,16 +203,15 @@ export function clearTimer() {
  *
  * @pseudocode
  * 1. When the round counter element exists, set its text content to
- *    `"Round <current> of <total>"`.
+ *    `"Round <current>"`.
  *
  * @param {number} current - Current round number.
- * @param {number} total - Total number of rounds.
  * @returns {void}
  */
-export function updateRoundCounter(current, total) {
+export function updateRoundCounter(current) {
   ensureRefs();
   if (roundCounterEl) {
-    roundCounterEl.textContent = `Round ${current} of ${total}`;
+    roundCounterEl.textContent = `Round ${current}`;
   }
 }
 

@@ -6,7 +6,6 @@ import * as battleEngine from "../battleEngineFacade.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { resetStatButtons } from "../battle/index.js";
 import { syncScoreDisplay } from "./uiService.js";
-import { CLASSIC_BATTLE_MAX_ROUNDS } from "../constants.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import { quitMatch } from "./quitModal.js";
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
@@ -68,8 +67,7 @@ export async function handleReplay(store) {
  * 1. Reset buttons and disable the Next Round button.
  * 2. Draw player and opponent cards.
  * 3. Sync the score display and show the selection prompt.
- * 4. Update the round counter using `battleEngine.getRoundsPlayed() + 1` and
- *    `CLASSIC_BATTLE_MAX_ROUNDS`.
+ * 4. Update the round counter using `battleEngine.getRoundsPlayed() + 1`.
  * 5. Start the round timer and stall timeout.
  * 6. Update the debug panel.
  *
@@ -84,7 +82,7 @@ export async function startRound(store) {
   await drawCards();
   syncScoreDisplay();
   const currentRound = battleEngine.getRoundsPlayed() + 1;
-  scoreboard.updateRoundCounter(currentRound, CLASSIC_BATTLE_MAX_ROUNDS);
+  scoreboard.updateRoundCounter(currentRound);
   showSelectionPrompt();
   await startTimer((stat, opts) => handleStatSelection(store, stat, opts));
   store.statTimeoutId = setTimeout(

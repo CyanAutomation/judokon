@@ -88,8 +88,8 @@ describe("Scoreboard integration without explicit init", () => {
     expect(document.getElementById("round-message").textContent).toBe("Ready to fight!");
 
     // Round counter
-    scoreboard.updateRoundCounter(1, 25);
-    expect(document.getElementById("round-counter").textContent).toBe("Round 1 of 25");
+    scoreboard.updateRoundCounter(1);
+    expect(document.getElementById("round-counter").textContent).toBe("Round 1");
 
     // Score
     scoreboard.updateScore(2, 1);
