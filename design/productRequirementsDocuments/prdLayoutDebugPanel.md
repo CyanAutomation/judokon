@@ -1,5 +1,8 @@
 # PRD: Layout Debug Panel
 
+## TL;DR
+This PRD describes the Layout Debug Panel, an internal developer tool for visually outlining all visible elements on the page. It is toggled via the Settings page and is only accessible in development mode or for authorized roles. The feature accelerates UI debugging and accessibility checks, and is not exposed to regular players.
+
 ## Overview
 
 The Layout Debug Panel is a developer-facing feature that visually outlines all visible elements on the page. It is toggled via a switch in the Settings page and is intended to assist with UI layout debugging and accessibility checks during development.
@@ -18,8 +21,9 @@ Developers and designers frequently face challenges when diagnosing layout misal
 
 ## User Stories
 
-- As a developer, I want to toggle a layout debug mode so that I can see the outlines of all visible elements for easier UI debugging.
-- As a designer, I want to verify that all containers and components are aligned and sized as intended.
+- As a developer, I want to toggle a layout debug mode so I can quickly see outlines on all visible elements for UI debugging.
+- As a designer, I want to verify alignment and sizing of containers and components without using browser dev tools.
+- As a QA engineer, I want to check accessibility and layout consistency during test runs.
 
 ## Prioritized Functional Requirements
 
@@ -44,11 +48,13 @@ Developers and designers frequently face challenges when diagnosing layout misal
 ## Acceptance Criteria
 
 - Toggling the switch in Settings immediately adds or removes outlines on all visible elements.
-- Outlines are only visible when the debug panel is enabled.
+- Outlines are only visible when the debug panel is enabled and for authorized users.
 - No outlines remain after disabling the panel.
 - The feature does not affect normal gameplay or user experience when off.
-- (P2) If custom selectors are provided, only those elements are outlined.
+- If custom selectors are provided, only those elements are outlined; invalid selectors are ignored with a warning.
 - Selector input validates for correct syntax and ignores invalid selectors without crashing.
+- The debug panel UI and outlines do not persist across user sessions.
+- No performance degradation or UI alteration when the debug panel is disabled.
 
 ## Player Settings
 

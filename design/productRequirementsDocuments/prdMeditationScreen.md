@@ -177,7 +177,7 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 
 ---
 
-## Technical Considerations
+## Non-Functional Requirements
 
 - Fetch quotes asynchronously with graceful error handling.
 - Reuse existing HTML template and component structure.
@@ -231,5 +231,8 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
   - [ ] 6.3 Announce language toggle with aria-live and shift focus when it becomes visible.
 
 ---
+
+**See also:**
+- [PRD: Pseudo-Japanese Text Conversion Function](prdPseudoJapanese.md)
 
 [Back to Game Modes Overview](prdGameModes.md)

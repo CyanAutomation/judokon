@@ -3,6 +3,7 @@
 ---
 
 ## TL;DR
+This PRD describes the Judoka Card UI component for JU-DO-KON! It defines the structure, layout, and interactive features of a judoka card item, including how stats, portraits, rarity, and accessibility are presented. The scope covers the card's visual design, user interaction, and technical requirements for consistent gameplay and collection experiences.
 
 Judoka cards are interactive virtual cards representing elite fighters in JU-DO-KON! They deepen player immersion through ownership, mastery, and strategic gameplay, with responsive animations, rarity systems, and accessible design — ensuring all players can engage with and feel connected to their judoka roster.
 
@@ -20,37 +21,29 @@ Players currently lack a tangible sense of progression and connection to elite j
 
 ## Goals
 
-- Increase average match duration by **15%** through deeper strategic card use.
-- Ensure card stat balance leads to **<5% match outcome variance attributed to chance**.
-- Enable deeper strategic choices when selecting judoka for matches.
+- Provide a visually engaging, interactive card component that deepens player immersion and ownership.
+- Ensure all card elements (stats, portrait, rarity, flag, signature move) are clear and accessible.
+- Support strategic gameplay and collection features through consistent card design.
+- Maintain accessibility and responsive design for all users and devices.
 
 ---
 
 ## User Stories
 
-- As a player who loves browsing cards, I want judoka cards that look unique and reflect rarity.
-- As a competitive player, I want to view stats easily so I can select the right stat in a match.
+- As a player, I want judoka cards to look unique and reflect rarity so I feel excited to collect and use them.
+- As a competitive player, I want to view stats easily so I can make strategic choices in matches.
 - As a player with visual impairments, I want high-contrast text and alt text on portraits so I can understand card details.
+- As a keyboard user, I want to navigate and interact with card elements using keyboard controls.
 
 ---
 
 ## Acceptance Criteria
 
-- **Given** a player draws a card, or browses the JU-DO-KON! collection,  
-  **When** they view a judoka card,  
-  **Then** the card displays the correct portrait, stats, nationality flag, and signature move.
-- **Given** a judoka portrait is missing,  
-  **When** the card loads,  
-  **Then** a placeholder silhouette (judoka id=0) is displayed.
-- **Given** a player taps the draw button,  
-  **When** the card reveal (slide) animation starts,  
-  **Then** it completes within **400ms** using ease-out cubic-bezier timing.
-- **Given** the card displays text,  
-  **When** viewed on any device,  
-  **Then** text contrast ratio must meet **WCAG 2.1 AA (≥4.5:1)**.
-- **Given** the card’s interactive elements (e.g., carousel arrows),  
-  **When** a player uses keyboard or touch input,  
-  **Then** all elements are fully operable with proper focus states.
+- Given a player draws or browses a judoka card, when the card is displayed, then it shows the correct portrait, stats, nationality flag, rarity border, and signature move.
+- Given a missing portrait, when the card loads, then a placeholder silhouette (judoka id=0) is shown.
+- Given a player interacts with the card, when the slide/reveal animation starts, then it completes within 400ms using ease-out cubic-bezier timing.
+- Given the card displays text, when viewed on any device, then text contrast ratio meets WCAG 2.1 AA (≥4.5:1).
+- Given interactive elements (e.g., carousel arrows), when a player uses keyboard or touch input, then all elements are fully operable with proper focus states.
 
 ---
 
