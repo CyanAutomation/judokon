@@ -40,7 +40,8 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 ## Defaults (Developer Configurable)
 
 - **Stat Selection Timer:** 30 seconds, or another value
-- **Win Target:** User-selected at match start (5, 10, or 15 round wins)  
+- **Win Target:** User-selected at match start (5, 10, or 15 round wins)
+- **Random Stat Mode (`FF_AUTO_SELECT`):** Enabled by default
 
 ---
 
@@ -59,7 +60,7 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 |----------|------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
 | **P1**   | State Machine                | Implements all match states and transitions as defined in `classicBattleStates.json`. Exposes current state to UI and tests.       |
 | **P1**   | Round Logic                  | Handles round start, stat selection, comparison, scoring, and round end.                                                          |
-| **P1**   | Stat Selection Timer         | 30s timer for stat selection, with pause/resume and auto-select fallback (if `FF_AUTO_SELECT` enabled).                           |
+| **P1**   | Stat Selection Timer         | 30s timer for stat selection, with pause/resume and auto-select fallback (Random Stat Mode, `FF_AUTO_SELECT`, enabled by default). |
 | **P1**   | Scoring                      | Updates player and opponent scores after each round.                                                                               |
 | **P1**   | Match End Condition          | Ends match when user-selected win target is reached; exposes final result and score.                                               |
 | **P2**   | Interrupt Handling           | Supports early quit, navigation, or error interrupts; rolls back or ends match as appropriate.                                    |
@@ -79,8 +80,8 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
    - **Given** the player is in `waitingForPlayerAction`  
    - **When** the timer reaches zero  
    - **Then**  
-     - If `FF_AUTO_SELECT` is enabled → system auto-selects the highest stat allowed by rules, and match proceeds to `roundDecision`.  
-     - If `FF_AUTO_SELECT` is disabled → match proceeds to `interruptRound` or a defined grace extension.
+    - If `FF_AUTO_SELECT` (Random Stat Mode) is enabled → system auto-selects the highest stat allowed by rules, and match proceeds to `roundDecision`.
+    - If `FF_AUTO_SELECT` is disabled → match proceeds to `interruptRound` or a defined grace extension.
 
 3. **Timer Drift Handling**  
    - **Given** the tab is inactive or device clock drifts by >200ms  
@@ -101,7 +102,7 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 
 ## Edge Cases / Failure States
 
-- **Timeout Auto-Select:** If enabled via `FF_AUTO_SELECT`, the engine auto-selects highest stat by ruleset; otherwise follow fallback path.  
+- **Timeout Auto-Select:** If enabled via `FF_AUTO_SELECT` (Random Stat Mode), the engine auto-selects highest stat by ruleset; otherwise follow fallback path.
 - **Tab Inactivity / App Backgrounding:** Timers pause; state resumes accurately on return.  
 - **Error Injection (Testing):** Engine must recover from simulated logic or UI hook errors without corrupting match state.
 
