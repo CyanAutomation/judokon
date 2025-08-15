@@ -20,6 +20,12 @@ Developers and testers need a way to observe internal game state (e.g., scores, 
 - As a tester, I want to enable a debug overlay from Settings so I can observe state changes while running manual or automated tests.
 - As a player, I never see the debug panel unless I opt in via Settings (or a debug flag is set).
 
+## Terminology / Definitions
+
+- **Debug Panel Toggle**: A switch in the Settings page that enables or disables the debug panel overlay.
+- **Debug Panel Flag**: A configuration value (e.g., `DEBUG_LOGGING=true`) that forces the panel to be visible for development or testing purposes.
+- **Test Mode Seed**: A value used to initialize the game state for reproducible test scenarios.
+
 ## Prioritized Functional Requirements
 
 | Priority | Feature                       | Description                                                                                 |

@@ -6,13 +6,9 @@ Displays round messages, stat selection timer, and live match score in the page 
 
 ---
 
-## Description
+## Problem Statement
 
 In battle game modes (e.g. Classic Battle), players have a real need to receive clear visual feedback between or after rounds. Without this info, it will leave users uncertain about match state, leading to confusion, reduced immersion, and increased risk of game abandonment. Players could feel "lost" due to a lack of timely updates about round outcomes, next steps, or overall progress.
-
-The round message, timer, and score now sit directly inside the page header rather than in a separate bar. The Scoreboard also displays the stat selection timer (30 seconds by default), and triggers auto-selection if the timer expires, as specified in [Classic Battle PRD](prdClassicBattle.md) and [Random Stat Mode PRD](prdRandomStatMode.md). The timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see [Classic Battle PRD](prdClassicBattle.md)).
-
-**Note:** The Scoreboard does not display contextual feedback such as stat selection confirmation, countdowns to next round, or error messages. These are surfaced via the Snackbar component (see prdSnackbar.md).
 
 ---
 
@@ -29,6 +25,24 @@ The round message, timer, and score now sit directly inside the page header rath
 4. Display fallback messages within 500ms of sync failure.
 5. Surface a round counter, but not the total number of rounds.
 6. **Complement header messaging with a numbered progress bar** beneath the battle area that displays the current state ID in ascending order for clear, accessible progress tracking.
+
+---
+
+## User Stories
+
+- As a player, I want to see my score and my opponent's score updated immediately after each round so I always know the match status.
+- As a player, I want to see clear round messages and prompts so I understand what action is needed or what just happened.
+- As a player, I want a visible timer during stat selection and round transitions so I know how much time I have left.
+- As a player, I want fallback messages if the game loses sync so I am not left confused.
+- As a player, I want the Scoreboard to be readable and accessible on any device.
+
+---
+
+## Description
+
+The round message, timer, and score now sit directly inside the page header rather than in a separate bar. The Scoreboard also displays the stat selection timer (30 seconds by default), and triggers auto-selection if the timer expires, as specified in [Classic Battle PRD](prdClassicBattle.md) and [Random Stat Mode PRD](prdRandomStatMode.md). The timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see [Classic Battle PRD](prdClassicBattle.md)).
+
+**Note:** The Scoreboard does not display contextual feedback such as stat selection confirmation, countdowns to next round, or error messages. These are surfaced via the Snackbar component (see prdSnackbar.md).
 
 ---
 
@@ -49,15 +63,15 @@ The round message, timer, and score now sit directly inside the page header rath
 
 ## Acceptance Criteria
 
-- Match score is updated quicklyafter round ends. <!-- Implemented: see updateScore in Scoreboard.js and battleEngine.js -->
-- Win/loss message is shown at round end and remains briefly visible. <!-- Implemented: see showResult in battleUI.js -->
-- Action prompt appears via Scoreboard during user input phases and disappears after interaction. <!-- Implemented: see showMessage and stat selection logic -->
-- **Stat selection timer is displayed during stat selection phase; if timer expires, a random stat is auto-selected. Timer stops immediately once a stat is picked and pauses/resumes on tab inactivity.** <!-- Implemented: see startRound in battleEngine.js and [Classic Battle PRD](prdClassicBattle.md) -->
-- Auto-select messages are only shown if no stat was chosen before the timer runs out.
-- After the player selects a stat, the Scoreboard shows "Opponent is choosing..." until the opponent's stat is revealed.
-- Top bar content adapts responsively to different screen sizes and orientations. <!-- Partially implemented: stacking/truncation CSS present, but some edge cases pending -->
-- All messages meet minimum contrast ratio of **4.5:1** and are screen reader compatible. Run `npm run check:contrast` to audit these colors. <!-- Implemented: screen reader labels via `aria-live` and `role="status"`; contrast via CSS variables -->
-- **All interactive elements, including stat, Next, and Quit buttons, meet minimum touch target size (≥44px) and support keyboard navigation with Enter or Space. The Next button doubles as the timer skip and round progression control.** <!-- Implemented: see CSS min-width/min-height and stat button logic -->
+- The Scoreboard always displays the current match score (player vs opponent) on the right side of the top bar, updated within 800ms after round ends.
+- The Scoreboard displays round-specific messages (win/loss/result) on the left side of the top bar, visible for at least 1s after round end.
+- During stat selection, the Scoreboard shows a 30s countdown timer and prompt; if timer expires, a random stat is auto-selected and a message is shown.
+- The timer pauses if the tab is inactive or device sleeps, and resumes on focus.
+- After stat selection, the Scoreboard shows "Opponent is choosing..." until the opponent's choice is revealed.
+- Fallback messages (e.g., "Waiting…") are displayed within 500ms if backend sync fails or timer mismatches server start.
+- The Scoreboard adapts responsively to screen size and orientation, stacking or truncating content as needed.
+- All Scoreboard messages and controls meet accessibility standards: minimum contrast ratio 4.5:1, screen reader compatibility (`aria-live`, `role="status"`), minimum 44px touch targets, and keyboard navigation.
+- The progress bar beneath the battle area displays the current state ID in ascending order for accessible progress tracking.
 
 ---
 
@@ -87,16 +101,6 @@ The round message, timer, and score now sit directly inside the page header rath
 - **Accessibility**
   - All text meets **WCAG 2.1 AA** standards. <!-- Contrast: mostly via CSS, but not programmatically checked -->
   - Screen reader labels for dynamic messages using `aria-live="polite"` and `role="status"`.
-
----
-
-**Implementation status summary:**
-
-- **Score, round messages, timers, stat selection auto-select, pause/resume, screen-reader attributes, and fallback "Waiting..." logic are implemented.**
-- **Recovery logic for stalled stat selection shows a message and auto-selects after a short delay, and keyboard navigation for interactive controls is covered by tests.**
-- **Responsive stacking/truncation and minimum touch target size are implemented in CSS, but some edge cases and explicit contrast checks are not yet fully implemented.**
-- **Orientation watcher, `aria-live` announcements, high-contrast theme, and narrow-view tests exist in classicBattlePage.js, battleJudoka.html, base.css, and `playwright/battleJudoka.spec.js`.**
-- **See Scoreboard.js, battleEngine.js, battleUI.js, and battle.css for current logic.**
 
 ---
 

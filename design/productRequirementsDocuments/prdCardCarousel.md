@@ -10,6 +10,8 @@ This PRD defines a responsive, interactive carousel for browsing Judoka cards in
 
 ## Problem Statement
 
+The Judoka Card Carousel is a sub-component of the Browse Judoka feature. It provides an efficient, interactive way for players to browse and select judoka cards within the larger context of team building and roster management. Without a performant carousel, the Browse Judoka experience would be slow and frustrating, impacting overall gameplay and user satisfaction.
+
 As part of the game, several screens require an intuitive and interactive way to present judoka cards. With more than 100 cards in the game (ultimate goal), it would be cumbersome and frustrating for players to browse through all cards manually without an efficient navigation system capable of loading cards quickly.
 
 > Emi wants to create her ultimate Japanese Judoka team. She opens the carousel and quickly swipes through beautifully animated cards, instantly comparing stats. She feels in control, excited, and invested in building the perfect team — that’s the experience this carousel delivers.
@@ -125,31 +127,12 @@ generated carousel so each card's real portrait loads once it becomes visible.
 
 ## Design and UX: Considerations
 
-### Visuals
-
-- Carousel will have a darker background to allow the bright, colorful judoka cards to stand out.
-- Snap scrolling for smooth, natural-feeling navigation.
-- Centered active card scales to **1.1** for emphasis; other cards scale to **1.05** on hover.
-
-### Responsiveness
-
-- Layout will adapt to mobile (one to two cards visible) and desktop (three to five cards visible).
-- Card size will automatically adjust to screen size.
-- Each card maintains a minimum width of **200px** using CSS `clamp` to ensure
-  portraits and stats remain legible on narrow screens.
-
-### Interaction
-
-- **Touch gestures**: Swipe left/right on mobile devices.
-- **Mouse hover**: Scale card to **1.05** when hovered.
-- **Keyboard navigation**: Support arrow keys for users with accessibility needs.
-
-### Accessibility
-
-- Maintain high contrast between card and background.
-- Ensure buttons and interactive elements have touch targets of at least 44px.
-- Page marker changes should announce the new page via `aria-live` to aid screen reader users.
-- Text on cards will maintain a minimum contrast ratio of 4.5:1.
+| Feature                | Description                                                                                       |
+|-----------------------|---------------------------------------------------------------------------------------------------|
+| Visuals               | Carousel has a darker background; snap scrolling for smooth navigation; center card scales to 1.1. |
+| Responsiveness        | Adapts to mobile (1-2 cards visible) and desktop (3-5 cards); card size adjusts to screen size.    |
+| Interaction           | Touch gestures (swipe left/right), mouse hover (scale to 1.05), keyboard navigation (arrow keys).  |
+| Accessibility         | High contrast; 44px minimum touch targets; page marker changes announced via aria-live; 4.5:1 text contrast. |
 
 ---
 
