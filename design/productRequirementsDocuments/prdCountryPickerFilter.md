@@ -1,10 +1,10 @@
-# PRD: Country Flag Picker Filter
+# PRD: Country Picker Filter
 
 ---
 
 ## TL;DR
 
-This PRD defines a Country Flag Picker Filter for Ju-Do-Kon! that lets players filter Judoka cards by country using an intuitive, accessible flag selector. The goal is to improve user engagement by enabling fast, pride-driven exploration of favorite countries’ athletes, with a performant, responsive, and accessible UI. The picker integrates directly with the Browse Judoka screen and card carousel, supporting both mouse/touch and keyboard navigation.
+This PRD defines a Country Picker Filter for Ju-Do-Kon! that lets players filter Judoka cards by country using an intuitive, accessible flag selector. The goal is to improve user engagement by enabling fast, pride-driven exploration of favorite countries’ athletes, with a performant, responsive, and accessible UI. The picker integrates directly with the Browse Judoka screen and card carousel, supporting both mouse/touch and keyboard navigation.
 
 > Jamal logs into Ju-Do-Kon! after seeing a clip of his country’s top Judoka. He taps the country picker, slides open the panel, and spots his flag among dozens. One tap later, the screen fills with fierce fighters from his homeland. He feels proud — and motivated to start collecting more.
 
@@ -12,11 +12,7 @@ This PRD defines a Country Flag Picker Filter for Ju-Do-Kon! that lets players f
 
 ## Problem Statement
 
-Each judoka and judoka card is affiliated with a country (e.g., a judoka might be part of the Spanish team). Currently, there is no way for players to browse judoka by country, which frustrates players when searching for their favorite country’s athletes. The lack of an intuitive country filter diminishes user experience, leading to inefficient browsing and potential drop-off.
-
-> By including a country picker, we aim to increase session duration and card interaction rates — both critical, as longer, more engaged sessions correlate directly with higher player retention and in-game activity.
-
-This issue is timely as our player base is expanding internationally, and regional pride in athletes is becoming a key driver of engagement.
+Players want to easily find and collect Judoka from their favorite countries, but currently there is no way to filter the roster by country. This leads to frustration, inefficient browsing, and missed opportunities for national pride and engagement. As the player base grows internationally, a Country Picker is essential for supporting regional pride, increasing session duration, and boosting card interaction rates. By surfacing country-based filtering, we make the game more inclusive, engaging, and easier to navigate for all users.
 
 ---
 
@@ -102,32 +98,19 @@ On in-scope screens (e.g., the Browse Judoka screen), there should be an option 
 
 ## Acceptance Criteria
 
-### Interaction
-
-- On screens where multiple cards are shown, users are presented with the country selector toggle.
-- Clicking or pressing Enter/Space on a country flag:
-  - Filters the card carousel to only show cards from that country.
-  - The selected country flag is visually highlighted.
-- A clear filter icon resets the card carousel to show all cards.
+- The Country Picker toggle is visible on all screens where multiple Judoka cards are shown.
+- Selecting a country in the Country Picker filters the visible Judoka list to only those from the selected country.
+- The selected country is visually highlighted in the Country Picker.
+- A clear filter icon resets the filter and shows all Judoka cards.
 - Keyboard navigation is supported for all flag buttons and the clear filter icon.
-- The panel can be closed with Escape.
-
-### Performance
-
-- The filtering operation completes quickly.
-- The selector appears quickly when toggled open.
-- The country selector must:
-  - Support at least 100 countries without exceeding additional load time.
-
-### Accessibility
-
-- Provide alt-text for all country flags.
-- Each flag button has an `aria-label` (e.g., "Filter by {country}").
-- Country flags must be displayed in alphabetical order.
-- Provide clear feedback if no judoka exist for a selected country (empty state messaging).
-- Handle missing flag assets gracefully with a fallback icon.
-- Tap target size must be at least 44x44px (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
-- Color contrast ratios must meet WCAG 2.1 AA standards.
+- The Country Picker panel can be closed with Escape.
+- Filtering completes within 1 second for 90% of sessions.
+- All country flags have alt-text and aria-labels for accessibility.
+- Flags are displayed in alphabetical order.
+- If no Judoka exist for a selected country, an empty state message is shown.
+- If a flag asset fails to load, a generic fallback flag icon is displayed.
+- Tap target size for flags is at least 44x44px.
+- Color contrast ratios meet WCAG 2.1 AA standards.
 - Keyboard navigation and focus outlines are visible and accessible.
 
 ---

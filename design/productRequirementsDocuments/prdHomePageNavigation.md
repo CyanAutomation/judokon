@@ -24,6 +24,12 @@ The tile links are pre-seeded. `navigationItems.json` references each mode by `i
 
 ---
 
+## Problem Statement
+
+New and returning players often feel confused or overwhelmed when first launching JU-DO-KON!, unsure how to access core game modes or features. Without a clear, fast, and accessible navigation menu, users may struggle to find their desired mode, leading to frustration, early churn, and reduced engagement. A well-structured home navigation and map interface are essential to orient players instantly, reduce confusion, and support a frictionless onboarding experience.
+
+---
+
 ## Goals
 
 - Navigation menu loads within 2 seconds.
@@ -55,7 +61,7 @@ The tile links are pre-seeded. `navigationItems.json` references each mode by `i
 
 ## Functional Requirements
 
-### Features
+### Home Navigation Menu
 
 | Priority | Feature                     | Description                                                                                                                                                    |
 | -------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -67,7 +73,16 @@ The tile links are pre-seeded. `navigationItems.json` references each mode by `i
 | P3       | SVG Optimization            | Icons must be <50KB and optimized for fast loading.                                                                                                            |
 | P3       | Accessibility Compliance    | Text contrast ≥4.5:1 and screen-reader friendly (aria-labels, alt text).                                                                                       |
 
-- Navigation tiles must follow [Navigation Bar](prdNavigationBar.md) hover and active state guidelines.
+### Map Interface (if present)
+
+| Priority | Feature                     | Description                                                                                                             |
+| -------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| P1       | Map Overview                | Displays a visual map or overview of available game modes and features.                                                 |
+| P2       | Interactive Map Elements    | Map elements (e.g., locations, icons) are clickable and navigate to corresponding pages.                                |
+| P2       | Responsive Design           | Map interface adapts to different screen sizes and orientations.                                                        |
+| P3       | Accessibility Compliance    | All map elements are keyboard navigable and have descriptive labels for screen readers.                                 |
+| P3       | Fallback Behavior           | If map fails to load, default to the standard navigation menu.                                                          |
+
 ---
 
 ### Navigation Menu Layout

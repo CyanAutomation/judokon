@@ -33,6 +33,7 @@ Without this feature, players would be forced to pre-select cards, leading to pr
 - As a player who loves surprises, I want each card draw to feel random so battles stay exciting.
 - As a player sensitive to motion, I want animations to respect my settings so I can play comfortably.
 - As a parent watching my child play, I want the draw button to be large and responsive so they can use it easily.
+- As a developer, I want the random card draw logic to be consistent across all features that use it.
 
 ---
 
@@ -100,13 +101,10 @@ instantly without movement.
 
 ## Goals
 
-| Goal             | Metric                                                                                    |
-| ---------------- | ----------------------------------------------------------------------------------------- |
-| Fast Response    | Card draw completes quickly.                                                              |
-| Smooth Animation | Reveal animation plays with no visual glitches.                                           |
-| Fair Randomness  | Random selection passes chi-square testing for uniformity, 95% confidence over 100 draws. |
-| Low Failure Rate | No more than 1% draw failures.                                                            |
-| Accessibility    | Automatically disable animations if system Reduced Motion is active.                      |
+- Provide a fast, fair, and accessible way to select a random Judoka card during matches.
+- Ensure the function is reusable across all game modes and screens that require random card draws.
+- Maintain consistent logic and behavior with the Random Judoka feature (see cross-reference below).
+- Support smooth, engaging animations and accessibility compliance.
 
 ### User Goals
 
@@ -259,5 +257,8 @@ instantly without movement.
   - [ ] 5.2 Provide visual or ARIA feedback for loading state. **[Only button disables, no spinner/text]**
 
 ---
+
+**Note:**
+This PRD covers the technical implementation of the random card draw helper function. For UI details and user-facing flows, see [PRD: Random Judoka](prdRandomJudoka.md). Both documents reference the same logic and should remain consistent.
 
 [Back to Game Modes Overview](prdGameModes.md)
