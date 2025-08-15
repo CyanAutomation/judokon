@@ -84,14 +84,14 @@ This inconsistency led to confusion, missed information, and reduced trust in th
 
 ## Tasks
 
-- [ ] 1.0 Implement Snackbar Component
-  - [ ] 1.1 Create HTML container for snackbar at bottom center of viewport
-  - [ ] 1.2 Add ARIA live region and `role="status"` attributes
-  - [ ] 1.3 Apply responsive CSS for desktop and mobile layouts
-- [ ] 2.0 Implement Snackbar Animation
-  - [ ] 2.1 Define fade-in and fade-out animations in CSS with duration and easing
+- [x] 1.0 Implement Snackbar Component
+  - [x] 1.1 Create HTML container for snackbar at bottom center of viewport
+  - [x] 1.2 Add ARIA live region and `role="status"` attributes
+  - [x] 1.3 Apply responsive CSS for desktop and mobile layouts
+- [x] 2.0 Implement Snackbar Animation
+  - [x] 2.1 Define fade-in and fade-out animations in CSS with duration and easing
   - [ ] 2.2 Ensure animation fallback for browsers without animation API
-  - [ ] 2.3 Test for non-overlapping UI and safe zone positioning
+  - [x] 2.3 Test for non-overlapping UI and safe zone positioning
 - [ ] 3.0 Implement Snackbar API
   - [ ] 3.1 Create `showSnackbar(message)` function
   - [ ] 3.2 Create `updateSnackbar(message)` function
