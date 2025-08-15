@@ -219,8 +219,8 @@ function setBattleStateBadgeEnabled(enable) {
   }
   if (!badge) {
     const headerRight =
-      document.getElementById("info-bar-right") ||
-      document.querySelector(".battle-header .info-right");
+      document.getElementById("scoreboard-right") ||
+      document.querySelector(".battle-header .scoreboard-right");
     badge = document.createElement("p");
     badge.id = "battle-state-badge";
     badge.dataset.flag = "battleStateBadge";

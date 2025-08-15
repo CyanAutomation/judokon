@@ -66,7 +66,7 @@ describe("battleStateBadge displays state transitions", () => {
       <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
       <p id="round-counter" aria-live="polite" aria-atomic="true"></p>
       <p id="score-display" aria-live="polite" aria-atomic="true"></p>
-      <div id="info-bar-right"></div>
+      <div class="scoreboard-right" id="scoreboard-right"></div>
     `;
     const battleArea = document.createElement("div");
     battleArea.id = "battle-area";

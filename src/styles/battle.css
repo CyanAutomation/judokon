@@ -1,6 +1,6 @@
 /* Battle header info elements */
-.battle-header .info-left,
-.battle-header .info-right {
+.battle-header .scoreboard-left,
+.battle-header .scoreboard-right {
   display: flex;
   flex-direction: column;
   padding: 1vh 1.5rem;
@@ -12,12 +12,12 @@
   contain: layout paint;
 }
 
-.battle-header .info-left {
+.battle-header .scoreboard-left {
   grid-column: 1;
   align-items: flex-start;
 }
 
-.battle-header .info-right {
+.battle-header .scoreboard-right {
   grid-column: 3;
   justify-self: end;
   align-items: flex-end;
@@ -54,7 +54,7 @@
   text-align: center;
 }
 
-.battle-header[data-orientation="portrait"] .info-left {
+.battle-header[data-orientation="portrait"] .scoreboard-left {
   grid-row: 1;
   align-items: center;
 }
@@ -63,7 +63,7 @@
   grid-row: 2;
 }
 
-.battle-header[data-orientation="portrait"] .info-right {
+.battle-header[data-orientation="portrait"] .scoreboard-right {
   grid-row: 3;
   justify-self: center;
   align-items: center;
