@@ -336,9 +336,14 @@ describe("synonym expansion", () => {
         }
       };
     });
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue(synonyms)
-    }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => {
+      const fetchJson = vi.fn(async (path) => {
+        if (path.endsWith("synonyms.json")) return synonyms;
+        if (path.endsWith("client_embeddings.meta.json")) return { count: 0, version: 1 };
+        return null;
+      });
+      return { fetchJson };
+    });
     vi.doMock("../../src/helpers/constants.js", () => ({
       DATA_DIR: "./"
     }));
