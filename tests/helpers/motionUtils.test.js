@@ -44,7 +44,9 @@ describe("motionUtils", () => {
   it("handles invalid stored settings gracefully", async () => {
     window.matchMedia = matchMediaMock(true);
     localStorage.setItem("settings", "not json");
+    const debugSpy = vi.spyOn(console, "debug").mockImplementation(() => {});
     await loadSettings();
+    debugSpy.mockRestore();
     expect(shouldReduceMotionSync()).toBe(true);
   });
 
