@@ -50,6 +50,7 @@ import { onNextButtonClick } from "./classicBattle/timerService.js";
 import { skipCurrentPhase } from "./classicBattle/skipHandler.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
 import { initBattleStateProgress } from "./battleStateProgress.js";
+import { initInterruptHandlers } from "./classicBattle/interruptHandlers.js";
 import {
   start as startScheduler,
   stop as stopScheduler,
@@ -244,6 +245,7 @@ export async function setupClassicBattlePage() {
     window.addEventListener("pagehide", stopScheduler, { once: true });
   }
   setupScoreboard();
+  initInterruptHandlers(battleStore);
   // Apply orientation ASAP so tests observing the header don't block
   // behind async initialization (flags, data fetches, tooltips, etc.).
   watchBattleOrientation();

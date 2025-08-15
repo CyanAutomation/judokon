@@ -63,7 +63,7 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 | **P1**   | Stat Selection Timer         | 30s timer for stat selection, with pause/resume and auto-select fallback (Random Stat Mode, `FF_AUTO_SELECT`, enabled by default). |
 | **P1**   | Scoring                      | Updates player and opponent scores after each round.                                                                               |
 | **P1**   | Match End Condition          | Ends match when user-selected win target is reached; exposes final result and score.                                               |
-| **P2**   | Interrupt Handling           | Supports early quit, navigation, or error interrupts; rolls back or ends match as appropriate.                                    |
+| **P2**   | Interrupt Handling           | Supports early quit, navigation, or error interrupts. Navigation away pauses play and rolls back to the last completed round. Unexpected errors revert to the last stable state, surface an error message, and return to the lobby. |
 | **P2**   | Accessibility Hooks          | Ensures all state and timer feedback meets WCAG AA guidelines.                                                                    |
 | **P3**   | Debug/Test Hooks             | Exposes state, transitions, and logs for automated tests and debugging.                                                           |
 
@@ -93,10 +93,12 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
    - **When** the result is revealed  
    - **Then** the scoreboard updates both player and opponent scores promptly (p50 ≤250ms, p95 ≤500ms on reference hardware).
 
-5. **Interrupt Stability**  
-   - **Given** the player quits, navigates away, or triggers an error  
-   - **When** the interrupt is handled  
+5. **Interrupt Stability**
+   - **Given** the player quits, navigates away, or triggers an error
+   - **When** the interrupt is handled
    - **Then** the UI remains stable, the state is rolled back or ended appropriately, and no desync occurs.
+   - Roll back the match to the last completed round when the player navigates away.
+   - Roll back the match and display an error message when an unexpected error occurs.
 
 ---
 
@@ -376,9 +378,9 @@ flowchart TD
   - [ ] 3.1 Create 30s stat selection timer with pause/resume
   - [ ] 3.2 Detect and correct drift; fire auto-select on expiry
   - [ ] 3.3 Surface timer state for UI and accessibility
-- [ ] 4.0 Handle Interrupts
-  - [ ] 4.1 Implement quit, error, and navigation interrupts
-  - [ ] 4.2 Define rollback or match termination logic
+- [-] 4.0 Handle Interrupts
+  - [-] 4.1 Implement quit, navigation, and error interrupts
+  - [x] 4.2 Define rollback or match termination logic
 - [ ] 5.0 Testing & Debugging
   - [ ] 5.1 Add Playwright hooks for automated state validation
   - [ ] 5.2 Add logging for all state transitions
