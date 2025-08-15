@@ -47,7 +47,7 @@ The round message, timer, and score now sit directly inside the page header rath
 
 ## Acceptance Criteria
 
-- Match score is updated within **800ms** after round ends. <!-- Implemented: see updateScore in InfoBar.js and battleEngine.js -->
+- Match score is updated within **800ms** after round ends. <!-- Implemented: see updateScore in Scoreboard.js and battleEngine.js -->
 - Win/loss message is shown within **1s** of round end and remains visible for **2s**. <!-- Implemented: see showResult in battleUI.js -->
 - Action prompt appears via snackbar during user input phases and disappears after interaction. <!-- Implemented: see showMessage and stat selection logic -->
 - **Stat selection timer (30s) is displayed during stat selection phase; if timer expires, a random stat is auto-selected. Timer stops immediately once a stat is picked and pauses/resumes on tab inactivity.** <!-- Implemented: see startRound in battleEngine.js and [Classic Battle PRD](prdClassicBattle.md) -->
@@ -61,8 +61,8 @@ The round message, timer, and score now sit directly inside the page header rath
 
 ## Edge Cases / Failure States
 
-- **Score desync between UI and backend** → Fallback to **“Waiting…”** label if backend sync fails. <!-- Implemented: see InfoBar.js -->
-- **Timer mismatch with server start** → Display **“Waiting…”** until match is confirmed to start. <!-- Implemented: see InfoBar.js -->
+- **Score desync between UI and backend** → Fallback to **“Waiting…”** label if backend sync fails. <!-- Implemented: see Scoreboard.js -->
+- **Timer mismatch with server start** → Display **“Waiting…”** until match is confirmed to start. <!-- Implemented: see Scoreboard.js -->
 - **Bar display issues due to screen resolution** → Collapse content into a stacked layout or truncate non-critical info with ellipsis. <!-- Partially implemented: CSS @media queries for stacking/truncation, but some edge cases pending -->
 - **Player does not select a stat within 30s** → Auto-select a random stat and display appropriate message (see [Classic Battle PRD](prdClassicBattle.md)). <!-- Implemented: see startRound in battleEngine.js -->
 - **Stat selection appears stalled** → Show "Stat selection stalled" message; auto-select a random stat after 5s if no input. <!-- Implemented: see classicBattle.js -->
@@ -94,7 +94,7 @@ The round message, timer, and score now sit directly inside the page header rath
 - **Recovery logic for stalled stat selection shows a message and auto-selects after a short delay, and keyboard navigation for interactive controls is covered by tests.**
 - **Responsive stacking/truncation and minimum touch target size are implemented in CSS, but some edge cases and explicit contrast checks are not yet fully implemented.**
 - **Orientation watcher, `aria-live` announcements, high-contrast theme, and narrow-view tests exist in classicBattlePage.js, battleJudoka.html, base.css, and `playwright/battleJudoka.spec.js`.**
-- **See InfoBar.js, battleEngine.js, battleUI.js, and battle.css for current logic.**
+- **See Scoreboard.js, battleEngine.js, battleUI.js, and battle.css for current logic.**
 
 ---
 

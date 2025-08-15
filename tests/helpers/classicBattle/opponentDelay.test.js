@@ -24,7 +24,7 @@ beforeEach(() => {
   resetStatButtons = vi.fn();
   updateDebugPanel = vi.fn();
 
-  vi.mock("../../../src/helpers/setupBattleInfoBar.js", () => ({
+  vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
     showMessage,
     clearMessage,
     clearTimer,

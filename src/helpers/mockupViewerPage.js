@@ -30,8 +30,8 @@ export function setupMockupViewerPage() {
   const basePath = new URL("/design/mockups/", document.baseURI).href;
 
   const files = [
-    "mockupBattleInfoBar1.png",
-    "mockupBattleInfoBar2.png",
+    "mockupBattleScoreboard1.png",
+    "mockupBattleScoreboard2.png",
     "mockupBattleScreen1.jpg",
     "mockupBattleScreen2.png",
     "mockupBottomNavigation2.png",

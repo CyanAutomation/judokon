@@ -1,6 +1,6 @@
 import { STATS, stopTimer } from "../battleEngineFacade.js";
 import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
-import * as infoBar from "../setupBattleInfoBar.js";
+import * as scoreboard from "../setupScoreboard.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { getStatValue, resetStatButtons, showResult } from "../battle/index.js";
 import { revealComputerCard } from "./uiHelpers.js";
@@ -52,11 +52,11 @@ export function evaluateRound(store, stat) {
   syncScoreDisplay();
   // Ensure the header message updates immediately so tests (and users)
   // can observe the outcome without depending on later timers.
-  // Write both via the battle UI helper (with fade) and the info bar
+  // Write both via the battle UI helper (with fade) and the scoreboard
   // facade to keep the header text in sync.
   const msg = result.message || "";
   showResult(msg);
-  infoBar.showMessage(msg);
+  scoreboard.showMessage(msg);
   showStatComparison(store, stat, playerVal, computerVal);
   updateDebugPanel();
   const outcome =
@@ -94,7 +94,7 @@ export async function handleStatSelection(store, stat, options = {}) {
   stopTimer();
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
-  infoBar.clearTimer();
+  scoreboard.clearTimer();
   // Make Next button clickable immediately so tests can skip without waiting
   // for the cooldown scheduler to initialize. It will act as a skip control
   // until `scheduleNextRound` marks it ready.
@@ -119,7 +119,7 @@ export async function handleStatSelection(store, stat, options = {}) {
     const pv = getStatValue(playerCard, stat);
     const cv = getStatValue(computerCard, stat);
     if (pv === cv) {
-      infoBar.showMessage("Tie – no score!");
+      scoreboard.showMessage("Tie – no score!");
     }
   } catch {}
   const delay = delayOpponentMessage ? 0 : 300 + Math.floor(Math.random() * 401);
@@ -132,7 +132,7 @@ export async function handleStatSelection(store, stat, options = {}) {
       // Move to decision and then roundOver in the state machine
       await dispatchBattleEvent("outcome=" + result.outcome);
       if (result.matchEnded) {
-        infoBar.clearRoundCounter();
+        scoreboard.clearRoundCounter();
       }
       resetStatButtons();
       // Outcome message was already written synchronously in evaluateRound;

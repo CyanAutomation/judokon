@@ -28,7 +28,7 @@ vi.mock("../../src/helpers/showSnackbar.js", () => ({
   updateSnackbar: () => {}
 }));
 
-vi.mock("../../src/helpers/setupBattleInfoBar.js", () => ({
+vi.mock("../../src/helpers/setupScoreboard.js", () => ({
   clearTimer: () => {},
   showMessage: () => {},
   showAutoSelect: () => {},

@@ -74,7 +74,7 @@ describe("classicBattle timer pause", () => {
     });
 
     showMessage = vi.fn();
-    vi.doMock("../../../src/helpers/setupBattleInfoBar.js", () => ({
+    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
       showMessage,
       showTemporaryMessage: () => () => {},
       clearTimer: vi.fn(),

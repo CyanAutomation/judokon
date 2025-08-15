@@ -5,7 +5,7 @@ import { isEnabled } from "../featureFlags.js";
 import { fetchJson } from "../dataUtils.js";
 import { createGokyoLookup } from "../utils.js";
 import { DATA_DIR } from "../constants.js";
-import { showMessage, showTemporaryMessage } from "../setupBattleInfoBar.js";
+import { showMessage, showTemporaryMessage } from "../setupScoreboard.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { JudokaCard } from "../../components/JudokaCard.js";

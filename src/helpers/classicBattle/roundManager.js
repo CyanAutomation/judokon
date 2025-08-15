@@ -3,7 +3,7 @@ import { startTimer, handleStatSelectionTimeout, onNextButtonClick } from "./tim
 import { showSelectionPrompt, disableNextRoundButton, updateDebugPanel } from "./uiHelpers.js";
 import { _resetForTest as resetEngineForTest } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
-import * as infoBar from "../setupBattleInfoBar.js";
+import * as scoreboard from "../setupScoreboard.js";
 import { resetStatButtons } from "../battle/index.js";
 import { syncScoreDisplay } from "./uiService.js";
 import { CLASSIC_BATTLE_MAX_ROUNDS } from "../constants.js";
@@ -46,7 +46,7 @@ function getStartRound(store) {
  *
  * @pseudocode
  * 1. Reset engine scores and flags.
- * 2. Close any open modals and clear the last round message.
+ * 2. Close any open modals and clear the scoreboard message.
  * 3. Call the start round function to begin a new match.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
@@ -56,7 +56,7 @@ export async function handleReplay(store) {
   document.querySelectorAll(".modal-backdrop").forEach((m) => {
     if (typeof m.remove === "function") m.remove();
   });
-  infoBar.clearMessage();
+  scoreboard.clearMessage();
   const startRoundFn = getStartRound(store);
   await startRoundFn();
 }
@@ -84,7 +84,7 @@ export async function startRound(store) {
   await drawCards();
   syncScoreDisplay();
   const currentRound = battleEngine.getRoundsPlayed() + 1;
-  infoBar.updateRoundCounter(currentRound, CLASSIC_BATTLE_MAX_ROUNDS);
+  scoreboard.updateRoundCounter(currentRound, CLASSIC_BATTLE_MAX_ROUNDS);
   showSelectionPrompt();
   await startTimer((stat, opts) => handleStatSelection(store, stat, opts));
   store.statTimeoutId = setTimeout(
@@ -138,7 +138,7 @@ export function _resetForTest(store) {
   store.compareRaf = 0;
   const timerEl = document.getElementById("next-round-timer");
   if (timerEl) timerEl.textContent = "";
-  infoBar.clearMessage();
+  scoreboard.clearMessage();
   const roundResultEl = document.getElementById("round-result");
   if (roundResultEl) roundResultEl.textContent = "";
   resetGame();

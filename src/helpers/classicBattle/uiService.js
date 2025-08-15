@@ -1,19 +1,19 @@
 import { getScores } from "../battleEngineFacade.js";
-import * as infoBar from "../setupBattleInfoBar.js";
+import * as scoreboard from "../setupScoreboard.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { navigateToHome } from "../navUtils.js";
 
 /**
- * Update the info bar with current scores.
+ * Update the scoreboard with current scores.
  *
  * @pseudocode
  * 1. Read scores via `getScores()`.
- * 2. Forward the values to `infoBar.updateScore`.
+ * 2. Forward the values to `scoreboard.updateScore`.
  */
 export function syncScoreDisplay() {
   const { playerScore, computerScore } = getScores();
-  infoBar.updateScore(playerScore, computerScore);
+  scoreboard.updateScore(playerScore, computerScore);
 }
 
 /**

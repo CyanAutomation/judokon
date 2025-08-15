@@ -1,5 +1,5 @@
 /**
- * Create a battle info bar showing round messages, round counter, countdown timer and score.
+ * Create a battle scoreboard showing round messages, round counter, countdown timer and score.
  *
  * @pseudocode
  * 1. Create four `<p>` elements:
@@ -11,7 +11,7 @@
  * 3. Store references to these elements for later updates.
  * 4. Return the container element.
  *
- * @returns {HTMLDivElement} The info bar element.
+ * @returns {HTMLDivElement} The scoreboard element.
  */
 import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
 import { startCoolDown, watchForDrift } from "../helpers/battleEngineFacade.js";
@@ -25,7 +25,7 @@ let scoreRafId = 0;
 let currentPlayer = 0;
 let currentComputer = 0;
 
-export function createInfoBar(container = document.createElement("div")) {
+export function createScoreboard(container = document.createElement("div")) {
   messageEl = document.createElement("p");
   messageEl.id = "round-message";
   messageEl.setAttribute("aria-live", "polite");
@@ -61,10 +61,10 @@ export function createInfoBar(container = document.createElement("div")) {
  * 1. Locate child elements within `container` by their IDs.
  * 2. Store these nodes in module-scoped variables for later updates.
  *
- * @param {HTMLElement} container - Header element containing the info nodes.
+ * @param {HTMLElement} container - Header element containing the scoreboard nodes.
  * @returns {void}
  */
-export function initInfoBar(container) {
+export function initScoreboard(container) {
   if (!container) return;
   messageEl = container.querySelector("#round-message");
   timerEl = container.querySelector("#next-round-timer");
