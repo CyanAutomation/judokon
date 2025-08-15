@@ -1,16 +1,16 @@
-# PRD: Random Stat Mode
+# PRD: Random Stat Auto-Select
 
 ## Overview (TL;DR)
 
-Random Stat Mode is an optional game mode in JU-DO-KON! where, if the player does not select a stat within a set time limit, the system automatically selects a random stat for the round. This feature adds urgency and unpredictability to matches and can be toggled via the Settings page.
+Random Stat Auto-Select is an optional game mode in JU-DO-KON! where, if the player does not select a stat within a set time limit, the system automatically selects a random stat for the round. This feature adds urgency and unpredictability to matches and can be toggled via the Settings page.
 
-## Problem Statement / Why It Matters
+## Problem Statement
 
-Some players hesitate or overthink stat choices, slowing down the pace of matches. This creates friction for more fast-paced players and extends wait times, especially in casual play. Internal observation shows that ~18% of turns take longer than 25 seconds to resolve due to indecision. Random Stat Mode helps maintain game flow, reduces downtime, and introduces an element of surprise for increased engagement.
+Players sometimes want stats auto-chosen to speed play and reduce decision stress. Random Stat Auto-Select (feature flag: FF_AUTO_SELECT) enables automatic stat selection when the timer expires, keeping matches fast-paced and accessible for all play styles.
 
 ## Goals / Success Metrics
 
-- Reduce average round stat selection time by **30%** among players who enable Random Stat Mode, measured over a 14-day window.
+- Reduce average round stat selection time by **30%** among players who enable Random Stat Auto-Select, measured over a 14-day window.
 - Increase **casual match completion rate by 15%** for players with the feature enabled.
 - Ensure at least **95% of users can locate and toggle the feature** in Settings during usability tests.
 - Maintain **feature toggle persistence across sessions** with 0% error rate in toggle state loss.
@@ -18,7 +18,7 @@ Some players hesitate or overthink stat choices, slowing down the pace of matche
 ## User Stories
 
 - As a new player, I want the game to pick a stat for me if I don't decide quickly, so I can keep playing without stress.
-- As a returning player, I want to enable Random Stat Mode for a more dynamic and fast-paced experience.
+- As a returning player, I want to enable Random Stat Auto-Select for a more dynamic and fast-paced experience.
 - As a player, I want to toggle this feature in Settings so I can control my preferred play style.
 
 ## Prioritized Functional Requirements
@@ -27,7 +27,7 @@ Some players hesitate or overthink stat choices, slowing down the pace of matche
 | -------- | --------------------------- | ------------------------------------------------------------------------------- |
 | P1       | Stat Selection Timer        | Start a countdown timer each round for stat selection (default: 30s).           |
 | P1       | Auto-Select Random Stat     | If timer expires, automatically select a random stat and apply it to the round. |
-| P1       | Settings Toggle             | Allow players to enable/disable Random Stat Mode via the Settings page.         |
+| P1       | Settings Toggle             | Allow players to enable/disable Random Stat Auto-Select via the Settings page.  |
 | P2       | Visual Timer Feedback       | Display remaining time to the player during stat selection.                     |
 | P2       | Info Message on Auto-Select | Show a message indicating which stat was auto-selected when time runs out.      |
 | P3       | Accessibility Compliance    | Ensure timer and messages are accessible (e.g., ARIA live regions, contrast).   |
@@ -35,23 +35,11 @@ Some players hesitate or overthink stat choices, slowing down the pace of matche
 ## Acceptance Criteria
 
 - A visible countdown timer appears during stat selection, starting at 30s (or fallback default if config fails).
-- If the player does not select a stat before the timer expires, the system:
-  - Randomly selects a valid stat.
-  - Displays a message (e.g., "Time's up! Auto-selecting technique").
-  - Applies that stat to the round without error.
-- When Random Stat Mode is enabled:
-  - Timer and auto-select are active.
-- When disabled:
-  - Timer does not appear.
-  - Player can take unlimited time.
-- Players can toggle the feature in the Settings page.
-- The toggle:
-  - Is clearly labeled.
-  - Persists across sessions.
-  - Is testable across supported browsers/devices.
-- Timer and messages are:
-  - Readable by screen readers (ARIA live).
-  - High-contrast and non-obstructive.
+- When Random Stat Auto-Select (FF_AUTO_SELECT) is ON and the timer expires, a valid stat is auto-picked and applied to the round.
+- When Random Stat Auto-Select is OFF, the timer does not appear and the player can take unlimited time.
+- Players can toggle the feature in the Settings page; the toggle is clearly labeled and persists across sessions.
+- The auto-select message is displayed to the player when a stat is chosen automatically.
+- Timer and messages are accessible (ARIA live, high-contrast, non-obstructive).
 - If timer configuration fails, system uses a 30s fallback and shows a loading message.
 
 ## Edge Cases / Failure States

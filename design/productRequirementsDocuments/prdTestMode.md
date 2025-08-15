@@ -1,3 +1,6 @@
+## TL;DR
+Test Mode is an internal, developer-facing mode for JU-DO-KON! that enables safe, deterministic testing of game features. It is not intended for regular players and is accessible only via a feature flag in the Settings menu. When enabled, Test Mode bypasses normal progression restrictions and ensures all randomization is reproducible for debugging and automated tests.
+
 ## Test Mode PRD
 
 ### Overview
@@ -6,7 +9,7 @@ Test Mode is a deterministic mode for JU-DO-KON! that enables predictable, repea
 
 ### Problem Statement
 
-Developers and testers need a way to reproduce game scenarios reliably, especially for debugging, automated testing, and visual regression checks. Without deterministic behavior, it is difficult to verify that changes do not introduce regressions or to reproduce specific bugs.
+Test Mode is an internal mode for developers and QA engineers to safely test features, debug issues, and validate game logic. It is not exposed to regular players and is only accessible via a feature flag. Without Test Mode, it is difficult to reproduce bugs, verify fixes, or run automated tests without interference from normal progression or randomization.
 
 ### Goals / Success Metrics
 
@@ -33,10 +36,11 @@ Developers and testers need a way to reproduce game scenarios reliably, especial
 
 ### Acceptance Criteria
 
-- Test Mode can be enabled/disabled via the Settings page toggle.
+- Test Mode can be enabled/disabled via the Settings page toggle (feature flag only).
 - When enabled, all randomization in Classic Battle uses the seeded generator.
 - A visible banner or indicator appears when Test Mode is active.
-- The Test Mode state persists across page reloads and updates in real time if changed in another tab.
+- Test Mode bypasses normal progression restrictions (e.g., unlocks all cards, disables win/loss gating, allows direct access to all game modes for testing).
+- Test Mode state persists across page reloads and updates in real time if changed in another tab.
 - (P2) The current seed value can be queried by helpers or displayed in the UI.
 - Disabling Test Mode restores normal randomization.
 

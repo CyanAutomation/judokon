@@ -1,22 +1,10 @@
 # PRD: Tooltip Viewer
 
 ## TL;DR
+The Tooltip Viewer is a standalone UI tool for JU-DO-KON! contributors to browse, preview, and validate all tooltip entries from `tooltips.json` in one screen. It is separate from the Tooltip System (which renders tooltips in-game) and is designed for editorial, QA, and development workflows, not for players.
 
-The **Tooltip Viewer** is a standalone HTML page that enables team members — including content editors, developers, and QA testers — to browse and inspect all tooltip entries from `tooltips.json`. It features a left-hand list of tooltip keys (e.g., `stat.power`, `ui.selectStat`) and a right-hand preview panel displaying tooltip content with both rendered formatting and raw text. This viewer facilitates faster editing cycles, more consistent copy, and easier QA workflows across the JU-DO-KON! project.
-
----
-
-## Problem Statement / Why It Matters
-
-The JU-DO-KON! tooltip system relies on `tooltips.json`, but there’s currently no way to preview or validate tooltips outside live gameplay. This creates pain points in several workflows:
-
-- **Content editors** struggle to review copy or ensure tone consistency without touching code or UI.
-- **QA testers** must navigate multiple screens to find tooltip render errors or omissions.
-- **Developers** need to verify correct key usage and markdown output, often through time-consuming builds.
-
-During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of preview tools. As the tooltip set grows (>500 entries), copy drift and formatting bugs become more likely and harder to detect.
-
----
+## Problem Statement
+JU-DO-KON! relies on a centralized tooltip system for in-game guidance, but there is no way to preview or validate all tooltips outside live gameplay. The Tooltip Viewer solves this by providing a dedicated UI for contributors to inspect, search, and review every tooltip entry, ensuring copy quality and reducing QA errors. This tool is distinct from the Tooltip System, which handles runtime rendering of tooltips in the game UI.
 
 ## Goals / Success Metrics
 
@@ -102,28 +90,23 @@ During v0.7, a typo in `stat.focus` persisted through 3 releases due to lack of 
 
 ## Acceptance Criteria
 
-- JSON loads successfully from `src/data/tooltips.json`.
-- Sidebar renders a full list of keys; keys are clickable and selectable.
-- Clicking a key updates preview with:
-  - Markdown-rendered body (`**bold**`, `_italic_`, line breaks)
-  - Raw string body for debug
-- Visual indicators for empty, malformed, or invalid entries.
-- Search filters keys live.
-- Viewer accepts URL hash (`#key`) and selects/scrolls accordingly.
-- Copy buttons work for both key and body text.
-- Layout adapts responsively to screen size.
-- Sidebar scrolls independently from the preview so the list remains visible while browsing.
-- Elements expose `data-key`, `data-body`, and `data-valid` for QA.
+- Loads and displays all tooltip entries from `tooltips.json` in a searchable, scrollable list.
+- Clicking a key shows both rendered markdown and raw text in the preview panel.
+- Visual indicators flag empty, malformed, or invalid entries.
+- Search/filter input updates the list live.
+- Copy-to-clipboard buttons work for both key and body text, with feedback.
 - Viewer operates offline as a static HTML file.
-- When `tooltips.json` is missing, the preview panel displays "File not found".
-- When `tooltips.json` contains invalid JSON, the preview shows `Line X, Column Y`.
-- Styling matches JU-DO-KON! brand (typography, colors, spacing).
-- **Sidebar supports keyboard navigation and category highlighting**
-- **Visual indicators (icon/tooltip) for invalid/empty/malformed entries are present**
-- **Preview panel displays warning for malformed markdown**
-- **Long tooltip values are truncated with a “Show more” toggle**
-- **Copy-to-clipboard buttons provide feedback on success**
-- **ARIA attributes and roles are present for accessibility**
+- Keyboard navigation and ARIA attributes are present for accessibility.
+- Layout adapts responsively to desktop, tablet, and mobile screens.
+- Distinct warning or error message shown if `tooltips.json` is missing or invalid.
+
+## Non-Functional Requirements
+- Viewer loads and parses `tooltips.json` asynchronously without blocking UI.
+- All fonts and colors meet WCAG AA contrast standards.
+- Sidebar and preview panel scroll independently and remain usable on all screen sizes.
+- Copy and search actions complete in ≤150ms.
+- Viewer does not modify or save tooltip data (read-only).
+- Viewer is compatible with static hosting (e.g., GitHub Pages).
 
 ---
 

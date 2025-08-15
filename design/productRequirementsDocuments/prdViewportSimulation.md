@@ -4,9 +4,9 @@
 
 Viewport Simulation allows users and testers to preview the JU-DO-KON! interface as it would appear on a mobile device by toggling a simulated viewport width. This is primarily used for UI testing, visual regression, and accessibility validation.
 
-## Problem Statement / Why It Matters
+## Problem Statement
 
-Developers and testers need a reliable, efficient way to verify the game's layout and behavior on mobile-sized screens without resizing the browser window or relying on external tools. Manual resizing is error-prone and inconsistent, often leading to undetected UI bugs, misaligned components, or inaccessible layouts. This impacts the reliability of visual and accessibility testing across devices and screen sizes.
+Viewport Simulation is a developer and tester tool designed to catch UI issues across different screen sizes by simulating mobile and tablet viewports. Without this feature, manual resizing is error-prone and inconsistent, leading to undetected bugs, misaligned components, and inaccessible layouts. The simulation ensures that the UI is validated against real device breakpoints, improving reliability and accessibility across all supported devices.
 
 ## Goals / Success Metrics
 
@@ -34,6 +34,7 @@ Developers and testers need a reliable, efficient way to verify the game's layou
 - Toggling the switch in Settings immediately applies or removes the simulated viewport (375px wide, centered).
 - The `<body>` element receives the `.simulate-viewport` class when simulation is enabled, and it is removed when disabled.
 - The UI is visually constrained and centered when simulation is active.
+- Simulated viewport sizes reflect actual device breakpoints with 100% accuracy.
 - No errors occur if the toggle is used before the DOM is fully loaded (e.g., via `DOMContentLoaded` check).
 - (Optional) The simulation state is saved to and restored from persistent storage after reload.
 - The toggle is accessible via keyboard and announced correctly by screen readers.

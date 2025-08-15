@@ -10,7 +10,7 @@ This PRD defines the Settings Menu for Ju-Do-Kon!, enabling players to control s
 
 ## Problem Statement
 
-As a user of the game _Ju-Do-Kon!_, I want to be able to change settings such as display mode, navigation map, motion effects, and sound, to tailor my experience and reduce frustration — especially for players sensitive to motion or needing visual adjustments. Playtesting shows **35% of users quit early when unable to adjust motion effects**, indicating the need for accessible, customizable gameplay.
+Players need to easily adjust game settings to personalize their experience, improve accessibility, and reduce frustration. Settings such as sound, motion effects, display mode, navigation map, and feature toggles exist to empower users to tailor the game to their needs, accommodate diverse preferences, and ensure the game is welcoming for all. Without a clear, responsive settings menu, players may struggle to find comfort, leading to early churn and reduced engagement.
 
 > Kazuki, a player who’s prone to motion sickness, launches Ju-Do-Kon! for the first time. The opening animations make him dizzy, but he quickly finds the Settings Menu on the Judo Training Village Map. Within seconds, he toggles Motion Effects off — the UI instantly calms, and Kazuki can now enjoy battles without discomfort. By empowering players like Kazuki to control their experience, Ju-Do-Kon! becomes welcoming and inclusive.
 
@@ -130,87 +130,102 @@ Pages should query `featureFlags.isEnabled` rather than reading
 
 ### Sound Toggle
 
-- AC-1.1 When the sound toggle is switched ON/OFF, the change is immediately reflected in `settings.json` within 50ms.
-- AC-1.2 Toggling sound updates the UI indicator (toggle visually reflects ON/OFF state).
-- AC-1.3 Toggling sound causes no console errors or JS exceptions.
+- When the sound toggle is switched ON/OFF, the change is immediately reflected in `settings.json` within 50ms.
+- Toggling sound updates the UI indicator (toggle visually reflects ON/OFF state).
+- Toggling sound causes no console errors or JS exceptions.
+- Sound setting persists across page refreshes and sessions.
+
+### Show Card of the Day Toggle
+
+- When the "Show Card of the Day" toggle is switched ON/OFF, the change is immediately reflected in `settings.json` within 50ms.
+- Toggling updates the UI indicator and the Card of the Day display instantly.
+- Setting persists across page refreshes and sessions.
 
 ### Full Navigation Map Setting
 
-- AC-2.1 Enabling or disabling the setting updates `settings.json` within 50ms.
-- AC-2.2 The toggle correctly reflects the current setting state in the UI.
-- AC-2.3 The navigation map is available only when the setting is enabled.
+- Enabling or disabling the setting updates `settings.json` within 50ms.
+- The toggle correctly reflects the current setting state in the UI.
+- The navigation map is available only when the setting is enabled.
+- Setting persists across page refreshes and sessions.
 
 ### Test Mode Feature Flag
 
-- AC-2.4 Enabling the flag displays a "Test Mode Active" banner on battle pages.
-- AC-2.5 Card draws and stat choices become deterministic for repeat tests.
-- AC-2.6 `data-test-mode="true"` appears on the battle area while active.
+- Enabling the flag displays a "Test Mode Active" banner on battle pages.
+- Card draws and stat choices become deterministic for repeat tests.
+- `data-test-mode="true"` appears on the battle area while active.
+- Setting persists across page refreshes and sessions.
 
 ### Battle Debug Panel Feature Flag
 
-- AC-2.7 Enabling the flag shows a collapsible debug panel on battle pages.
-- AC-2.8 The panel displays real-time match state inside a `<pre>` element.
-- AC-2.9 The panel is keyboard accessible and hidden by default.
-- AC-2.10 The panel appears beside the opponent's card rather than at the page bottom.
+- Enabling the flag shows a collapsible debug panel on battle pages.
+- The panel displays real-time match state inside a `<pre>` element.
+- The panel is keyboard accessible and hidden by default.
+- The panel appears beside the opponent's card rather than at the page bottom.
 - The panel stays visible for the whole match once enabled.
+- Setting persists across page refreshes and sessions.
 
 ### Card Inspector Feature Flag
 
-- AC-2.11 Enabling the flag adds a collapsible panel on each card with its raw JSON.
-- AC-2.12 Opening the panel sets `data-inspector="true"` on the card.
-- AC-2.13 The inspector panel can be toggled via keyboard and is hidden initially.
+- Enabling the flag adds a collapsible panel on each card with its raw JSON.
+- Opening the panel sets `data-inspector="true"` on the card.
+- The inspector panel can be toggled via keyboard and is hidden initially.
+- Setting persists across page refreshes and sessions.
 
 ### Motion Effects Toggle
 
-- AC-3.1 Switching motion ON/OFF updates `settings.json` live within 50ms.
-- AC-3.2 Motion effects on UI start or stop instantly (e.g., animations stop when OFF).
-- AC-3.3 UI toggle reflects the current motion setting accurately on page load.
+- Switching motion ON/OFF updates `settings.json` live within 50ms.
+- Motion effects on UI start or stop instantly (e.g., animations stop when OFF).
+- UI toggle reflects the current motion setting accurately on page load.
+- Setting persists across page refreshes and sessions.
 
 ### Typewriter Effect Toggle
 
-- AC-4.1 Toggle enables or disables the quote typewriter animation where implemented.
-- AC-4.2 Setting is stored in `settings.json` within 50ms of change.
+- Toggle enables or disables the quote typewriter animation where implemented.
+- Setting is stored in `settings.json` within 50ms of change.
+- Setting persists across page refreshes and sessions.
 
 ### Display Mode Switch
 
-- AC-5.1 Selecting a new display mode (light/dark/high-contrast) applies changes instantly across all relevant UI components.
-- AC-4.2 Selected mode persists through a page refresh within the same session.
-- AC-4.3 Current display mode is correctly pulled from `settings.json` on page load.
-- AC-4.4 Transition to new display mode completes without visible flickering or rendering artifacts.
+- Selecting a new display mode (light/dark/high-contrast) applies changes instantly across all relevant UI components.
+- Selected mode persists through a page refresh within the same session.
+- Current display mode is correctly pulled from `settings.json` on page load.
+- Transition to new display mode completes without visible flickering or rendering artifacts.
 - Implementation uses the `applyDisplayMode` helper which sets a `data-theme` attribute on `<body>` so `base.css` variables can switch values per theme. Transitions use the View Transitions API, falling back to immediate changes if unsupported.
 
 ### Game Modes Toggles
 
-- AC-5.1 Toggling any game mode ON/OFF updates the IsHidden field in `settings.json` within 50ms.
-- AC-5.2 Each game mode toggle accurately reflects its state on page reload.
-- AC-5.3 If `navigationItems.json` is missing or invalid, the game modes list does not render, and an error message appears in the settings UI.
+- Toggling any game mode ON/OFF updates the IsHidden field in `settings.json` within 50ms.
+- Each game mode toggle accurately reflects its state on page reload.
+- If `navigationItems.json` is missing or invalid, the game modes list does not render, and an error message appears in the settings UI.
+- Setting persists across page refreshes and sessions.
 
 ### Advanced Settings & Feature Flag Info
 
-  - Experimental and debug flags are grouped under an **Advanced Settings** section that remains visible to simplify testing.
+- Experimental and debug flags are grouped under an **Advanced Settings** section that remains visible to simplify testing.
 - When a flag is toggled, a snackbar appears with text from `tooltips.json` keyed by `settings.<flagName>`.
 - The snackbar confirms the change and hides itself after a short delay.
 - Debug-focused flags remain tucked away so younger players do not accidentally enable them.
+- Setting persists across page refreshes and sessions.
 
 ### Data Persistence & Refresh
 
-- AC-6.1 All settings changes persist through page refresh within the same session.
-- AC-6.2 Reopening `settings.html` shows the most up-to-date settings state from `settings.json`.
+- All settings changes persist through page refresh within the same session.
+- Reopening `settings.html` shows the most up-to-date settings state from `settings.json`.
 
 ### Error Handling & Feedback
 
-- AC-7.1 If reading `settings.json` fails, a CSS popup error message appears within 200ms.
-- AC-7.2 If writing to `settings.json` fails, a CSS popup error message appears within 200ms, and the toggle/selector reverts to its previous state.
-- AC-7.3 The settings screen remains stable and usable if an error occurs (no frozen or unresponsive UI).
-- AC-7.4 Successful changes display a snackbar confirmation within 3 seconds.
+- If reading `settings.json` fails, a CSS popup error message appears within 200ms.
+- If writing to `settings.json` fails, a CSS popup error message appears within 200ms, and the toggle/selector reverts to its previous state.
+- The settings screen remains stable and usable if an error occurs (no frozen or unresponsive UI).
+- Successful changes display a snackbar confirmation within 3 seconds.
 
 ### Accessibility & UX
 
-- AC-8.1 All toggles/selectors have keyboard focus indicators.
-- AC-8.2 Users can tab through all interactive elements in a logical order.
-- AC-8.3 Color contrast of text and controls meets WCAG 2.1 minimum (4.5:1) in all display modes.
-- AC-8.4 Touch targets meet or exceed a 44px minimum size (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
-- AC-8.5 All settings, including feature flags, show a label and brief description using the same markup as the Advanced Settings section (see [Settings Item Structure](../codeStandards/settingsPageDesignGuidelines.md#settings-item-structure)).
+- All toggles/selectors have keyboard focus indicators.
+- Users can tab through all interactive elements in a logical order.
+- Color contrast of text and controls meets WCAG 2.1 minimum (4.5:1) in all display modes.
+- Touch targets meet or exceed a 44px minimum size (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
+- All settings, including feature flags, show a label and brief description using the same markup as the Advanced Settings section (see [Settings Item Structure](../codeStandards/settingsPageDesignGuidelines.md#settings-item-structure)).
 
 ---
 

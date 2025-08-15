@@ -2,9 +2,14 @@
 
 ## TL;DR
 
-This PRD defines the implementation of a lightweight vector database for semantic search across JU-DO-KON! assets such as PRDs, tooltips, and game rules. This system supports AI agent workflows (e.g. QA, card generation, bug reproduction, test case creation) by enabling agents to search project data semantically.
+This PRD defines the implementation of a lightweight vector database for semantic search across JU-DO-KON! assets such as PRDs, tooltips, and game rules. **RAG (Retrieval-Augmented Generation)** is an AI technique that combines semantic search with generative models, allowing agents to fetch relevant context from a database and use it to generate more accurate answers or suggestions. This system supports AI agent workflows (e.g. QA, card generation, bug reproduction, test case creation) by enabling agents to search project data semantically and provide context-aware responses. The feature integrates with AI chatbots, agent tools, and developer utilities for content search, hint generation, and automated reasoning.
 
-By enabling faster and more accurate AI tooling, this feature indirectly enhances game quality and speed of delivery — leading to more balanced cards, faster bug fixes, and smoother releases for JU-DO-KON! players.
+---
+
+## Glossary
+- **RAG (Retrieval-Augmented Generation):** An AI technique that retrieves relevant information from a database and augments generative model outputs with that context, improving accuracy and relevance.
+- **Vector Database:** A database that stores text or data as high-dimensional vectors (embeddings) for fast semantic similarity search.
+- **Embedding:** A numerical representation of text or data used for similarity comparison in AI workflows.
 
 ---
 
@@ -79,19 +84,15 @@ than an entire file.
 
 ## Acceptance Criteria
 
-- `client_embeddings.json` contains ≥6 fields per entry: `id`, `text`, optional `qaContext`, `embedding`, `source`, and optional `tags`
-- `client_embeddings.json` stores the intent tag (`what`, `how`, or `why`) for each chunk
-- Vector similarity function returns top 5 matches
-- Search works offline in a local browser with no server backend
-- At least 30 unique content entries from across the PRDs/tooltips are indexed in the demo build
-- Each returned result includes both the match score and a reference to the original source
-- Agent prompt templates are provided with guidance on embedding format and retrieval usage
-- Agents can request adjacent chunks or the full document by passing the result `id` to `fetchContextById`
-- Search function accepts optional tag filters so agents can restrict matches to specific categories
-- Vector search UI displays how many embeddings are loaded using the meta file
-- Malformed or missing embeddings are ignored during search and a warning is logged for each skipped record
-- The `client_embeddings.json` file stays under the 6.8MB threshold to ensure quick page load and GitHub Pages compatibility
-- Match text longer than 200 characters is truncated in the UI with a "Show more" toggle to reveal the full snippet (**Note:** Truncation logic and button are present in CSS and JS, but UI toggle implementation may need review for full compliance.)
+- The vector database stores all indexed entries as embeddings with metadata, tags, and source references.
+- Agents and tools can query the database and receive the top 5 most relevant matches within ≤200ms.
+- At least 90% of PRDs/tooltips are indexed and available for semantic search.
+- The system supports offline search in the browser with no server backend required.
+- Each result includes match score, source, and tags, and can be traced back to the original content.
+- The vector database file size remains under 6.8MB for fast client-side loading.
+- Malformed or missing embeddings are ignored during search and a warning is logged for each skipped record.
+- The system provides helpers for fetching adjacent context or full documents by entry id.
+- The UI demo displays the number of loaded embeddings and supports keyboard navigation and accessibility standards.
 
 ---
 

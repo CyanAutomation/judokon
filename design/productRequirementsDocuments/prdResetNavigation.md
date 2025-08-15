@@ -1,5 +1,8 @@
 # PRD: Reset Navigation Cache
 
+## TL;DR
+The Reset Navigation Cache feature adds a button to the Settings page (when enabled by feature flag) that lets users manually clear cached navigation data and immediately refresh the navigation bar. This helps testers and advanced users resolve issues where navigation items are outdated or incorrect, without needing to clear all browser storage or wait for cache expiration.
+
 ## Overview
 
 The "Reset Navigation Cache" feature allows users to manually clear cached navigation data (navigationItems) using the `navigationCache.reset()` API and refresh the navigation bar from the Settings page. This is useful for troubleshooting, ensuring up-to-date navigation, and supporting advanced users or testers.
@@ -11,8 +14,9 @@ Users and testers may encounter issues where the navigation bar does not reflect
 ## Goals
 
 - Allow users to clear cached navigation data without leaving the app or using browser tools
-- Ensure the navigation bar is refreshed immediately after cache reset
+- Ensure the navigation bar is refreshed immediately after cache reset, preventing confusion with outdated navigation items or navigation map
 - Make the feature discoverable only when the relevant feature flag is enabled
+- Support troubleshooting and QA by providing a manual reset option for navigation data
 
 ## User Stories
 
