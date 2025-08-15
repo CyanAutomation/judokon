@@ -27,7 +27,7 @@ The round message, timer, and score now sit directly inside the page header rath
    - After the player picks a stat: show **"Opponent is choosing..."** until the opponent's choice is revealed.
 3. Ensure all messages are clearly readable, positioned responsively, and maintain usability across devices.
 4. Display fallback messages within 500ms of sync failure.
-5. Surface a round counter and a field showing the player's selected stat for the current round.
+5. Surface a round counter, but not the total number of rounds.
 6. **Complement header messaging with a numbered progress bar** beneath the battle area that displays the current state ID in ascending order for clear, accessible progress tracking.
 
 ---
@@ -76,8 +76,8 @@ The round message, timer, and score now sit directly inside the page header rath
 - **Layout**
   - Right side: score display (`Player: X – Opponent: Y`)
   - Two-line score format appears on narrow screens via stacked `<span>` elements (`<span>You: X</span> <span>Opponent: Y</span>`)
-  - Left side: rotating status messages (e.g., "You won!", **"Time left: 29s"**, "Opponent is choosing..."). Selection prompts and the countdown to the next round appear in Scoreboard only if they relate to persistent match/round state. Contextual feedback (e.g., stat selection confirmation, countdowns, error messages) is handled by the Snackbar.
-  - Center: round counter (`Round 3`) and field showing the player's selected stat (`Selected: Power`).
+  - Left side: rotating status messages (e.g., "You won!", **"Time left: 29s"**, "Opponent is choosing..."). Selection prompts and the countdown to the next round appear in Scoreboard only if they relate to persistent match/round state. Plus round counter (`Round 3`), but not total rounds. 
+  - Contextual feedback (e.g., stat selection confirmation, countdowns, error messages) is handled by the Snackbar.
 - **Visuals**
   - Font size: `clamp(16px, 4vw, 24px)`; on narrow screens (<375px) `clamp(14px, 5vw, 20px)`.
   - Color coding: green (win), red (loss), neutral grey (countdown).
