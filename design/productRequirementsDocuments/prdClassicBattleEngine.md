@@ -16,8 +16,12 @@ The Classic Battle Engine defines the core mechanics, state transitions, and rou
 
 Classic Battle requires a **robust, deterministic engine** to manage match flow, scoring, and state transitions.  
 In recent internal tests, **12–18% of matches** experienced timing inconsistencies or incorrect state transitions due to incomplete timer drift handling and unclear interrupt recovery logic.  
+
+**From a player’s perspective:**  
+> “The timer froze for me and then skipped my turn. I didn’t even get to pick my stat — that felt unfair.”  
+
 Without a clear state machine and timer system, matches risk becoming **unpredictable**, **less accessible**, and **hard to test at scale**.  
-A well-defined engine will enable consistent gameplay, predictable UI updates that diaply promptly, and full edge case handling for all device and connection scenarios.
+A well-defined engine will enable consistent gameplay, predictable UI updates that **display** promptly, and full edge case handling for all device and connection scenarios.
 
 ---
 
@@ -28,6 +32,13 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 3. **Accessibility Compliance** — Meet WCAG 2.1 AA contrast, focus, and readability guidelines for all state and timer displays.
 4. **Test Coverage** — Achieve **≥95% automated test pass rate** for match state and timer scenarios in Playwright and unit tests.
 5. **Interrupt Recovery** — Handle 100% of quit, navigation, and error interrupts without corrupting match state or causing UI desync.
+
+---
+
+## Defaults (Developer Configurable)
+
+- **Stat Selection Timer:** 30 seconds  
+- **Win Target:** First to 5 round wins (or highest score when deck is exhausted)  
 
 ---
 
@@ -50,41 +61,55 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 | **P1**   | Scoring                      | Updates player and opponent scores after each round, including tie handling.                                                       |
 | **P1**   | Match End Condition          | Ends match when win target or max rounds reached; exposes final result and score.                                                  |
 | **P2**   | Interrupt Handling           | Supports early quit, navigation, or error interrupts; rolls back or ends match as appropriate.                                     |
-| **P2**   | State Progress UI Hook       | Exposes current state for progress bar and accessibility feedback (see `battleStateProgress.js`).                                  |
+| **P2**   | Accessibility Hooks          | Ensures all state and timer feedback meets WCAG AA guidelines.                                                                     |
 | **P3**   | Debug/Test Hooks             | Exposes state, transitions, and logs for automated tests and debugging.                                                            |
 
 ---
 
-## Acceptance Criteria
+## Acceptance Criteria (Given/When/Then Format)
 
-- The engine **must expose** the current match state and transitions via window and DOM hooks for UI and tests.
-- All match states and transitions **must exactly match** `classicBattleStates.json` definitions; no undocumented states are allowed.
-- Round logic **must** handle stat selection, timer, auto-select fallback, scoring, and tie handling per Classic Battle PRD rules.
-- **Timer Requirements:**
-  - Pauses/resumes on tab inactivity.
-  - Detects drift >200ms and corrects in real time.
-  - Auto-select triggers exactly at expiry.
-- **Score Update Speed:** Player and opponent scores update prmoptly throughout.
-- **Interrupt Handling:** All interrupts must leave the UI in a stable, test-passing state, with rollback or end sequence triggered promptly.
-- **Debug Hooks:** Playwright and unit tests can poll state, transitions, and logs without timing out under normal network latency.
+1. **State Machine Accuracy**  
+   - **Given** a match is running  
+   - **When** a state transition occurs  
+   - **Then** the new state must match the definition in `classicBattleStates.json` exactly.
 
----
+2. **Timer Behavior**  
+   - **Given** the player is in `waitingForPlayerAction`  
+   - **When** the timer reaches zero  
+   - **Then** the system auto-selects the highest stat allowed by rules (if Feature Flag is enabled), and the match proceeds to `roundDecision`.
 
-## Non-Functional Requirements / Design Considerations
+3. **Timer Drift Handling**  
+   - **Given** the tab is inactive or device clock drifts by >200ms  
+   - **When** the player returns or drift is detected  
+   - **Then** the timer adjusts to the correct remaining time without skipping or repeating.
 
-- All state and timer feedback must meet accessibility and responsiveness requirements (see prdBattleScoreboard.md).
-- State machine and engine logic must be modular, testable, and separated from UI concerns.
-- Timer drift is detected and handled; UI displays fallback message if drift exceeds threshold.
-- All public engine methods include JSDoc and pseudocode blocks for maintainability.
-- State and timer changes are surfaced via DOM and window for automated UI tests.
+4. **Score Update Speed**  
+   - **Given** a round outcome is determined  
+   - **When** the result is revealed  
+   - **Then** the scoreboard updates both player and opponent scores promptly.
+
+5. **Interrupt Stability**  
+   - **Given** the player quits, navigates away, or triggers an error  
+   - **When** the interrupt is handled  
+   - **Then** the UI remains stable, the state is rolled back or ended appropriately, and no desync occurs.
 
 ---
 
 ## Edge Cases / Failure States
 
-- **Timeout Auto-Select:** If the player does not choose a stat within a set time, system auto-selects highest stat by ruleset, if enabled by Feature Flag.
+- **Timeout Auto-Select:** If the player does not choose a stat within a set time, system auto-selects highest stat by ruleset.
 - **Tab Inactivity / App Backgrounding:** Timers pause; state resumes accurately on return.
 - **Error Injection (Testing):** Engine must recover from simulated logic or UI hook errors without corrupting match state.
+
+---
+
+## Dependencies
+
+- `classicBattleStates.json` defines all match states and transitions.
+- `BattleEngine.js` implements round logic, scoring, timer, and match end conditions.
+- `orchestrator.js` manages state machine, transitions, and exposes hooks for UI and tests.
+- `battleStateProgress.js` renders state progress bar and syncs active state.
+- Scoreboard UI and accessibility requirements as described in `prdBattleScoreboard.md`.
 
 ---
 
@@ -288,16 +313,6 @@ flowchart TD
   %% Optional: color the interrupt rails
   linkStyle 10,11,12 stroke:#a33,stroke-width:2px
 ```
-
----
-
-## Dependencies
-
-- `classicBattleStates.json` defines all match states and transitions.
-- `BattleEngine.js` implements round logic, scoring, timer, and match end conditions.
-- `orchestrator.js` manages state machine, transitions, and exposes hooks for UI and tests.
-- `battleStateProgress.js` renders state progress bar and syncs active state.
-- Scoreboard UI and accessibility requirements as described in prdBattleScoreboard.md.
 
 ---
 
