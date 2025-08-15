@@ -63,6 +63,45 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
     },
     async matchOver() {
       // Waiting for Next Match (rematch) or Home via summary or Quit modal
+    },
+    async interruptRound(m, payload) {
+      // Handle round interruption (e.g., quit, error, admin/test)
+      scoreboard.clearMessage();
+      updateDebugPanel();
+      // Optionally show modal or log reason
+      if (payload?.reason) {
+        scoreboard.showMessage(`Round interrupted: ${payload.reason}`);
+      }
+      // Transition to roundModification or cooldown as needed
+      if (payload?.adminTest) {
+        await m.dispatch("roundModification", payload);
+      } else {
+        await m.dispatch("cooldown");
+      }
+    },
+    async interruptMatch(m, payload) {
+      // Handle match interruption (e.g., quit, navigation, error)
+      scoreboard.clearMessage();
+      updateDebugPanel();
+      if (payload?.reason) {
+        scoreboard.showMessage(`Match interrupted: ${payload.reason}`);
+      }
+      // End match and transition to matchOver
+      await m.dispatch("matchOver", payload);
+    },
+    async roundModification(m, payload) {
+      // Admin/test branch for modifying round state
+      scoreboard.clearMessage();
+      updateDebugPanel();
+      if (payload?.modification) {
+        scoreboard.showMessage(`Round modified: ${payload.modification}`);
+      }
+      // After modification, resume round or go to cooldown
+      if (payload?.resumeRound) {
+        await m.dispatch("roundStart");
+      } else {
+        await m.dispatch("cooldown");
+      }
     }
   };
 
