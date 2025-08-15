@@ -18,7 +18,12 @@
     "id": 2,
     "name": "matchStart",
     "description": "Initialises match context. Stores selected win target, resets scores, and fixes user as first player for all rounds.",
-    "onEnter": ["init:matchContext", "store:winTargetSelection", "reset:scores", "set:firstPlayerUser"],
+    "onEnter": [
+      "init:matchContext",
+      "store:winTargetSelection",
+      "reset:scores",
+      "set:firstPlayerUser"
+    ],
     "triggers": [
       { "on": "ready", "target": "cooldown" },
       { "on": "interrupt", "target": "interruptMatch" },
@@ -120,7 +125,11 @@
     "id": 98,
     "name": "interruptRound",
     "description": "Round-level interruption (quit, navigation, or error). Performs safe rollback and offers options.",
-    "onEnter": ["timer:clearIfRunning", "rollback:roundContextIfNeeded", "log:analyticsInterruptRound"],
+    "onEnter": [
+      "timer:clearIfRunning",
+      "rollback:roundContextIfNeeded",
+      "log:analyticsInterruptRound"
+    ],
     "triggers": [
       { "on": "roundModifyFlag", "target": "roundModification", "guard": "FF_ROUND_MODIFY" },
       { "on": "restartRound", "target": "cooldown" },
