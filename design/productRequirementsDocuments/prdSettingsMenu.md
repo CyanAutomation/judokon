@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-This PRD defines the Settings Menu for Ju-Do-Kon!, enabling players to control sound, motion effects, navigation map, display mode, and the visibility of certain game modes. These options improve accessibility, personalization, and retention by empowering users to tailor the game to their needs.
+This PRD defines the Settings Menu for Ju-Do-Kon!, enabling players to control sound, motion effects, navigation map, display mode, and the visibility of certain game modes. Game mode toggles rely on `navigationItems.json`, with a bundled list ready if the file can't be fetched. These options improve accessibility, personalization, and retention by empowering users to tailor the game to their needs.
 
 ---
 
@@ -53,7 +53,7 @@ Players need to easily adjust game settings to personalize their experience, imp
 | P1       | Typewriter Effect Toggle            | Enable or disable quote animation where supported (not used on the meditation screen).                 |
 | P1       | Tooltips Toggle                     | Globally enable or disable UI tooltips.                                                                |
 | P1       | Display Mode Switch                 | Three-option switch applying mode instantly across UI.                                                 |
-| P2       | Game Modes Toggles                  | Binary toggles controlling pre-seeded links via `navigationItems.json`.                      |
+| P2       | Game Modes Toggles                  | Binary toggles controlling pre-seeded links via `navigationItems.json`; if the file cannot be loaded, a bundled fallback list is used. |
 | P3       | Settings Menu Integration           | Ensure settings appear as a game mode in `navigationItems.json`.                                       |
 | P3       | View Change Log Link                | Link to `changeLog.html` for viewing recent judoka updates.                                            |
 | P3       | View PRD Documents Link             | Link to `prdViewer.html` for browsing product requirement documents.                                   |
@@ -98,7 +98,7 @@ On load, the Settings page must pre-populate each control with values from
 - **Typewriter effect (binary):** ON/OFF (default: ON, not currently used on the meditation screen) – Toggle the quote typing animation.
 - **Tooltips (binary):** ON/OFF (default: ON) – Show or hide helpful tooltips.
 - **Display mode (three options):** Light, Dark, High Contrast (default: Light)
-- **Game modes list:** Pre-seeded entries cross-referenced with `navigationItems.json` to determine order and visibility via CSS; each mode has a binary toggle.
+- **Game modes list:** Pre-seeded entries cross-referenced with `navigationItems.json` to determine order and visibility via CSS; each mode has a binary toggle. If `navigationItems.json` can't be fetched, a bundled default list ensures the toggles still render.
 - **View Change Log:** Link opens `changeLog.html` with the latest 20 judoka updates.
 - **View PRD Documents:** Link opens `prdViewer.html` for browsing product documents.
 - **View Design Mockups:** Link opens `mockupViewer.html` for viewing design mockups.
@@ -122,10 +122,10 @@ On load, the Settings page must pre-populate each control with values from
 
 - The Settings page **must pull current states** from data sources (`settings.json`, `gameModes.json`, and `navigationItems.json`) on load, using the `navigationCache` helper for navigation persistence, and pre-populate all controls with those values.
 - Default feature flag values live in `settings.json`, while their labels and descriptions come from `tooltips.json`.
-- `gameModes.json` defines all available modes, while `navigationItems.json` references each by `id` to control order and visibility via CSS.
+- `gameModes.json` defines all available modes, while `navigationItems.json` references each by `id` to control order and visibility via CSS; if `navigationItems.json` isn't reachable, a bundled fallback provides default ordering.
 - Changes should trigger **immediate data writes** without requiring a “Save Changes” button.
 - All live updates must persist across page refreshes within the same session.
-- If `navigationItems.json` fails to load, the game modes section should **disable gracefully** and show an error message.
+- If `navigationItems.json` fails to load, load a bundled fallback list and show an error message.
 
 ---
 
@@ -199,7 +199,7 @@ On load, the Settings page must pre-populate each control with values from
 
 - Toggling any game mode ON/OFF updates the IsHidden field in `settings.json` within 50ms.
 - Each game mode toggle accurately reflects its state on page reload.
-- If `navigationItems.json` is missing or invalid, the game modes list does not render, and an error message appears in the settings UI.
+- If `navigationItems.json` is missing or invalid, a fallback list renders instead; only if fallback fails should the game modes section hide and show an error in the settings UI.
 - Setting persists across page refreshes and sessions.
 
 ### Advanced Settings & Feature Flag Info
@@ -340,7 +340,7 @@ The page begins with an `h1` heading labeled "Settings". Two `fieldset` sections
 - [ ] 4.0 List Game Modes
 
     - [x] 4.1 Ensure game mode toggles map to pre-seeded links defined in `navigationItems.json`.
-  - [x] 4.2 Display error message if loading fails.
+  - [x] 4.2 On fetch failure, load bundled fallback navigation items and display an error message.
 
 - [ ] 6.0 Add Change Log Link
   - [x] 6.1 Link to `changeLog.html` from the Settings menu.
