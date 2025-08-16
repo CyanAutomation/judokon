@@ -186,9 +186,11 @@ function handleNoMatches(matches, messageEl) {
  * 1. Begin preloading the feature extractor.
  * 2. Cache the spinner element and hide it if present.
  * 3. Locate the search form element.
- * 4. Load embeddings and populate the tag filter dropdown with unique tags.
- * 5. Fetch meta stats and display the embedding count in the header.
- * 6. Attach `handleSearch` to the form and intercept Enter key submissions.
+ * 4. Attempt to load embeddings and metadata together.
+ *    - On failure, hide the spinner, show an error message, attach form handlers, and exit early.
+ * 5. Populate the tag filter dropdown with unique tags.
+ * 6. Display the embedding count in the header.
+ * 7. Attach `handleSearch` to the form and intercept Enter key submissions.
  */
 export async function init() {
   preloadExtractor();
@@ -197,10 +199,22 @@ export async function init() {
   const form = document.getElementById("vector-search-form");
   const messageEl = document.getElementById("search-results-message");
 
-  const [embeddings, meta] = await Promise.all([
-    vectorSearch.loadEmbeddings(),
-    fetchJson(`${DATA_DIR}client_embeddings.meta.json`).catch(() => null)
-  ]);
+  let embeddings;
+  let meta;
+  try {
+    [embeddings, meta] = await Promise.all([
+      vectorSearch.loadEmbeddings(),
+      fetchJson(`${DATA_DIR}client_embeddings.meta.json`).catch(() => null)
+    ]);
+  } catch (err) {
+    console.error("Embedding load failed", err);
+    setSpinnerDisplay("none");
+    if (messageEl) {
+      messageEl.textContent = "Failed to load search data. Please try again later.";
+    }
+    attachFormHandlers(form);
+    return;
+  }
 
   maybeWarnVersionMismatch(embeddings, meta, messageEl);
   populateTagFilter(embeddings);
