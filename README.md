@@ -96,6 +96,8 @@ Call `loadSettings()` during startup to populate the cache before using
 these helpers. Pages should rely on `featureFlags.isEnabled` rather than
 accessing `settings.featureFlags` directly.
 
+> `navigationItems.json` and `gameModes.json` must be served or bundled; otherwise, the game loads built-in fallback data.
+
 ## Vector Search Helpers
 
 Utilities for working with the embedding database are centralized in
