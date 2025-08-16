@@ -8,9 +8,10 @@
  * 4. Render each state as an `<li>` with `data-state` and its numeric ID inside `#battle-state-progress`.
  * 5. Define `updateActive(state)` to toggle the `active` class on matching items.
  * 6. Observe `#machine-state` for text changes; on each change call `updateActive`.
- * 7. If `#machine-state` is missing, poll `window.__classicBattleState` via `requestAnimationFrame`.
+ * 7. If `#machine-state` is missing, poll `window.__classicBattleState` via `requestAnimationFrame` and store the ID.
+ * 8. Return a cleanup function that disconnects the observer or cancels the animation frame loop.
  *
- * @returns {Promise<void>} Resolves when the list is initialized.
+ * @returns {Promise<(() => void) | undefined>} Resolves with a cleanup function.
  */
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
@@ -59,17 +60,20 @@ export async function initBattleStateProgress() {
     });
     observer.observe(machine, { childList: true, characterData: true, subtree: true });
     updateActive(machine.textContent.trim());
-    return;
+    return () => observer.disconnect();
   }
 
   let prev;
+  let id = 0;
   const tick = () => {
     const state = window.__classicBattleState;
     if (state !== prev) {
       prev = state;
       updateActive(state);
     }
-    requestAnimationFrame(tick);
+    id = requestAnimationFrame(tick);
+    return id;
   };
-  tick();
+  id = tick();
+  return () => cancelAnimationFrame(id);
 }
