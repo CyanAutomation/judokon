@@ -2,13 +2,14 @@ import { ToggleSwitch } from "../../components/ToggleSwitch.js";
 import { updateNavigationItemHidden } from "../gameModeUtils.js";
 import { showSettingsError } from "../showSettingsError.js";
 import { showSnackbar } from "../showSnackbar.js";
+import { navTooltipKey } from "../api/navigation.js";
 
 /**
  * Render game mode toggle switches within the settings page.
  *
  * @pseudocode
  * 1. If `container` is missing or `gameModes` is not an array, warn and exit.
- * 2. Sort `gameModes` by `order`, warn on missing `name`, skip malformed entries, create a toggle for each, and attach debug data attributes.
+ * 2. Sort `gameModes` by `order`, warn on missing `name`, skip malformed entries, create a toggle for each with a tooltip id, and attach debug data attributes.
  * 3. When toggled, update navigation visibility via `updateNavigationItemHidden`.
  * 4. Persist the updated `gameModes` setting using `handleUpdate`.
  * 5. Show a snackbar confirming the new mode state.
@@ -40,10 +41,12 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
       }
       label = mode.id;
     }
+    const tooltipId = `nav.${navTooltipKey(label)}`;
     const toggle = new ToggleSwitch(label, {
       id: `mode-${mode.id}`,
       name: mode.id,
-      checked: isChecked
+      checked: isChecked,
+      tooltipId
     });
     const { element: wrapper, input } = toggle;
     if (mode.category) wrapper.dataset.category = mode.category;

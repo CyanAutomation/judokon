@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { renderGameModeSwitches } from "../../src/helpers/settings/gameModeSwitches.js";
 import { renderFeatureFlagSwitches } from "../../src/helpers/settings/featureFlagSwitches.js";
+import { navTooltipKey } from "../../src/helpers/api/navigation.js";
 
 describe("formUtils ARIA", () => {
   it("adds aria-describedby for game mode descriptions", () => {
@@ -33,5 +34,18 @@ describe("formUtils ARIA", () => {
     const desc = container.querySelector("#feature-test-flag-desc");
     expect(desc).toBeTruthy();
     expect(input).toHaveAttribute("aria-describedby", "feature-test-flag-desc");
+  });
+
+  it("adds data-tooltip-id for game mode switches", () => {
+    const container = document.createElement("div");
+    const modes = [{ id: "classicBattle", name: "Classic Battle", order: 1 }];
+    renderGameModeSwitches(
+      container,
+      modes,
+      () => ({ gameModes: {} }),
+      () => {}
+    );
+    const input = container.querySelector("#mode-classicBattle");
+    expect(input).toHaveAttribute("data-tooltip-id", `nav.${navTooltipKey(modes[0].name)}`);
   });
 });
