@@ -78,6 +78,8 @@ export function evaluateRound(store, stat) {
  * 5. Reset stat buttons and schedule the next round.
  * 6. If the match ended, show the summary panel.
  * 7. Update the debug panel.
+ * 8. Always dispatch an outcome event, even if an error occurs, to prevent
+ *    the state machine from stalling.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -125,35 +127,46 @@ export async function handleStatSelection(store, stat, options = {}) {
   const delay = delayOpponentMessage ? 0 : 300 + Math.floor(Math.random() * 401);
   return new Promise((resolve) => {
     setTimeout(async () => {
-      // Cancel the hint once the round is ready to resolve.
-      if (opponentSnackbarId) clearTimeout(opponentSnackbarId);
-      await revealComputerCard();
-      const result = evaluateRound(store, stat);
-      // Move to decision and then roundOver in the state machine
-      await dispatchBattleEvent("outcome=" + result.outcome);
-      if (result.matchEnded) {
-        scoreboard.clearRoundCounter();
-      }
-      resetStatButtons();
-      // Outcome message was already written synchronously in evaluateRound;
-      // avoid writing it again here to reduce flicker.
-      // From roundOver, either continue to cooldown or decide match
-      if (result.matchEnded) {
-        await dispatchBattleEvent("matchPointReached");
-      } else {
+      let result;
+      let outcomeEvent = "outcome=draw";
+      try {
+        // Cancel the hint once the round is ready to resolve.
+        if (opponentSnackbarId) clearTimeout(opponentSnackbarId);
+        await revealComputerCard();
+        result = evaluateRound(store, stat);
+        outcomeEvent = "outcome=" + result.outcome;
+        await dispatchBattleEvent(outcomeEvent);
+        if (result.matchEnded) {
+          scoreboard.clearRoundCounter();
+        }
+        resetStatButtons();
+        // Outcome message was already written synchronously in evaluateRound;
+        // avoid writing it again here to reduce flicker.
+        // From roundOver, either continue to cooldown or decide match
+        if (result.matchEnded) {
+          await dispatchBattleEvent("matchPointReached");
+        } else {
+          await dispatchBattleEvent("continue");
+        }
+        scheduleNextRound(result);
+        if (result.matchEnded) {
+          showMatchSummaryModal(result, async () => {
+            await dispatchBattleEvent("finalize");
+            await dispatchBattleEvent("rematch");
+            await dispatchBattleEvent("startClicked");
+            handleReplay(store);
+          });
+        }
+        updateDebugPanel();
+        resolve(result);
+      } catch (err) {
+        // Always dispatch a fallback outcome event to prevent state machine stall
+        await dispatchBattleEvent(outcomeEvent);
         await dispatchBattleEvent("continue");
+        scheduleNextRound({ matchEnded: false, outcome: "draw" });
+        updateDebugPanel();
+        resolve({ matchEnded: false, outcome: "draw", error: err });
       }
-      scheduleNextRound(result);
-      if (result.matchEnded) {
-        showMatchSummaryModal(result, async () => {
-          await dispatchBattleEvent("finalize");
-          await dispatchBattleEvent("rematch");
-          await dispatchBattleEvent("startClicked");
-          handleReplay(store);
-        });
-      }
-      updateDebugPanel();
-      resolve(result);
     }, delay);
   });
 }
