@@ -1,7 +1,9 @@
 # Contributing to JU-DO-KON!
 
-This document summarizes the key steps and rules for submitting pull requests.  
+This document summarizes the key steps and rules for submitting pull requests.
 It consolidates the instructions from `AGENTS.md` and the design documents so contributors can quickly confirm the required checks and documentation standards.
+
+The project ships directly as static ES modules without a build step.
 
 ---
 
@@ -140,7 +142,6 @@ When contributing code, especially in gameplay or input-related areas, follow th
 ### 🚫 Anti-Patterns to Avoid:
 
 - ❌ `await import()` inside click/input handlers for core gameplay.
-- ❌ Variable import paths without bundler hints.
 - ❌ Removing feature flag checks during refactor.
 - ❌ Adding heavy optional modules to the initial bundle without justification.
 
