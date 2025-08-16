@@ -82,6 +82,12 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - The cooldown timer between rounds begins only after round results are shown in the Scoreboard and is displayed using one persistent snackbar that updates its text each second.
 - The debug panel is available when the `battleDebugPanel` feature flag is enabled and appears beside the opponent's card.
 
+### Round Data Fallback
+
+- If `battleRounds.json` fails to load, the game falls back to default round settings and surfaces an error message in the Scoreboard.
+- **QA:** Temporarily block `battleRounds.json` to confirm default rounds appear and the error message is displayed.
+
+
 ---
 
 ## Prioritized Functional Requirements Table
