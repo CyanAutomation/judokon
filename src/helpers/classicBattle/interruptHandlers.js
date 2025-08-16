@@ -3,7 +3,8 @@ import { dispatchBattleEvent } from "./orchestrator.js";
 import { showMessage, clearTimer } from "../setupScoreboard.js";
 import { stop as stopScheduler, cancel as cancelFrame } from "../../utils/scheduler.js";
 import { resetSkipState } from "./skipHandler.js";
-import { createModal, createButton } from "../../components/Modal.js";
+import { createModal } from "../../components/Modal.js";
+import { createButton } from "../../components/Button.js";
 
 let errorModal;
 
