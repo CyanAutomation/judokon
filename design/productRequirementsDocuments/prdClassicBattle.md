@@ -72,6 +72,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 ## Technical Considerations
 
 - Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
+- Round selection modal must use shared `Modal` and `Button` components for consistent accessibility.
 - Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices.
 - Stat selection timer (30s) must be displayed in the Scoreboard; if timer expires, a random stat is auto-selected. This auto-select behavior is controlled by Random Stat Mode (`FF_AUTO_SELECT`), enabled by default. Timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleScoreboard.md).
 - Stat selection timer halts immediately once the player picks a stat.
