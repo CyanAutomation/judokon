@@ -72,8 +72,6 @@ vi.mock("../../../src/components/Modal.js", () => ({
   }
 }));
 
-
-
 describe("classicBattle match flow", () => {
   let timerSpy;
   beforeEach(() => {
