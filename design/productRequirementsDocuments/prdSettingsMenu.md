@@ -32,7 +32,7 @@ Players need to easily adjust game settings to personalize their experience, imp
 - The settings screen loads fully within 200ms on mid-tier devices (e.g., 2GB RAM smartphones), avoiding delays that could frustrate players.
 - Allow players to personalize visual and audio experience to match their comfort.
 - Provide immediate and persistent feedback when changing settings.
-- Successful changes display a brief snackbar confirming the new state.
+- Successful changes, including restoring defaults, display a brief snackbar confirming the new state.
 
 ---
 
@@ -80,6 +80,9 @@ direct `localStorage` reads throughout the app by using `src/helpers/storage.js`
 Pages should query `featureFlags.isEnabled` rather than reading
 `settings.featureFlags` directly.
 
+On load, the Settings page must pre-populate each control with values from
+`settings.json` so players immediately see their saved preferences.
+
 ## Settings Features
 
 - **Sound (binary):** ON/OFF (default: ON) – Enable or mute game audio.
@@ -102,7 +105,7 @@ Pages should query `featureFlags.isEnabled` rather than reading
 - **View Tooltip Descriptions:** Link opens `tooltipViewer.html` for exploring tooltip text.
 - **Vector Search for RAG:** Link opens `vectorSearch.html` to explore the vector database.
 - Links in this fieldset are arranged in a responsive three-column grid, collapsing to a single column below 768px.
-- **Restore Defaults:** Button opens a confirmation modal to clear stored settings, reset feature flags, reapply defaults, and display a snackbar confirmation.
+- **Restore Defaults:** Button opens a confirmation modal to reload `DEFAULT_SETTINGS`, reinitialize feature flags, apply the defaults across the UI, and display a snackbar confirmation.
 
 ---
 
@@ -117,7 +120,7 @@ Pages should query `featureFlags.isEnabled` rather than reading
 
 ## Data & Persistence
 
-- The Settings page **must pull current states** from data sources (`settings.json`, `gameModes.json`, and `navigationItems.json`) on load, using the `navigationCache` helper for navigation persistence.
+- The Settings page **must pull current states** from data sources (`settings.json`, `gameModes.json`, and `navigationItems.json`) on load, using the `navigationCache` helper for navigation persistence, and pre-populate all controls with those values.
 - Default feature flag values live in `settings.json`, while their labels and descriptions come from `tooltips.json`.
 - `gameModes.json` defines all available modes, while `navigationItems.json` references each by `id` to control order and visibility via CSS.
 - Changes should trigger **immediate data writes** without requiring a “Save Changes” button.
