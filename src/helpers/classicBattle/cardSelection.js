@@ -28,7 +28,10 @@ function qaInfo(text) {
 }
 
 function showLoadError(error) {
-  const msg = error?.message || "Unable to load data.";
+  let msg = error?.message || "Unable to load data.";
+  if (msg.includes("Cannot access uninitialized variable")) {
+    msg = "A critical error occurred during data loading. Please try again.";
+  }
   showMessage(msg);
   if (!loadErrorModal) {
     const title = document.createElement("h2");
