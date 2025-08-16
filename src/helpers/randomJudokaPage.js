@@ -125,6 +125,10 @@ function showError(msg) {
     errorEl.style.marginTop = "12px";
     errorEl.style.fontSize = "1.1rem";
     const cardSection = document.querySelector(".card-section");
+    if (!cardSection) {
+      console.warn("showError: .card-section element not found; skipping error display.");
+      return;
+    }
     cardSection.appendChild(errorEl);
   }
   errorEl.textContent = msg;
