@@ -20,9 +20,6 @@ test.describe.parallel("Settings page", () => {
     await page.route("**/src/data/gameModes.json", (route) =>
       route.fulfill({ path: "tests/fixtures/gameModes.json" })
     );
-    await page.route("**/src/data/tooltips.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/tooltips.json" })
-    );
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
     await page.getByRole("checkbox", { name: "Sound" }).waitFor({ state: "visible" });
   });
