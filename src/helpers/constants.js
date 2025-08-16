@@ -15,10 +15,9 @@
 /**
  * Absolute URL to the helpers directory.
  *
- * The `@vite-ignore` directive is used here to prevent Vite from analyzing
- * or transforming the path as a static asset import. Without this directive,
- * Vite may attempt to bundle or process the directory, which is not desired
- * for runtime directory resolution.
+ * The `@vite-ignore` directive prevents Vitest's Vite-based loader from
+ * rewriting this path during tests; production serving uses the original URL
+ * and is unaffected.
  *
  * @constant {URL}
  */
