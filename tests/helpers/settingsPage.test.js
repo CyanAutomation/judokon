@@ -180,4 +180,25 @@ describe("renderSettingsControls", () => {
     expect(populateNavbar).toHaveBeenCalled();
     expect(showSnackbar).toHaveBeenCalledWith("Navigation cache cleared");
   });
+
+  it("restores defaults when confirmed", async () => {
+    const resetSettings = vi.fn().mockReturnValue(baseSettings);
+    const initFeatureFlags = vi.fn().mockResolvedValue(baseSettings);
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({
+      updateSetting: vi.fn(),
+      loadSettings: vi.fn(),
+      resetSettings
+    }));
+    vi.doMock("../../src/helpers/featureFlags.js", () => ({
+      isEnabled: vi.fn().mockReturnValue(false),
+      initFeatureFlags
+    }));
+    const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
+    renderSettingsControls(baseSettings, [], tooltipMap);
+    document.getElementById("reset-settings-button").dispatchEvent(new Event("click"));
+    document.getElementById("confirm-reset-button").dispatchEvent(new Event("click"));
+    await Promise.resolve();
+    expect(resetSettings).toHaveBeenCalled();
+    expect(initFeatureFlags).toHaveBeenCalled();
+  });
 });

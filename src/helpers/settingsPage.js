@@ -82,7 +82,8 @@ function createResetConfirmation(onConfirm) {
  * 1. Store a mutable copy of `settings` for updates.
  * 2. Query DOM elements for each control and container.
  * 3. Provide helpers to read/persist settings and show errors.
- * 4. Attach listeners for existing controls.
+ * 4. Attach listeners for existing controls and the Restore Defaults button.
+ *    - Reset confirms with a modal, reloads feature flags, reapplies defaults, and rerenders switches.
  * 5. Return `renderSwitches` to inject game-mode/feature-flag toggles and apply initial values later.
  *
  * @param {Settings} settings - Current settings object.
@@ -107,8 +108,9 @@ function initializeControls(settings) {
 
   const renderSwitches = makeRenderSwitches(controls, () => currentSettings, handleUpdate);
 
-  const resetModal = createResetConfirmation(() => {
+  const resetModal = createResetConfirmation(async () => {
     currentSettings = resetSettings();
+    await initFeatureFlags();
     withViewTransition(() => {
       applyDisplayMode(currentSettings.displayMode);
     });
