@@ -4,7 +4,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 const pageContent = `<!DOCTYPE html>
 <html>
   <body>
-    <button id="tip-btn" data-tooltip-id="info">Info</button>
+    <button id="tip-btn" data-tooltip-id="stat.power">Power</button>
     <script type="module">
       import { initTooltips } from 'http://localhost:5000/src/helpers/tooltip.js';
       initTooltips().then(() => { window.initDone = true; });
@@ -20,12 +20,6 @@ test.describe.parallel("Tooltip behavior", () => {
         path: "src/helpers/tooltip.js"
       })
     );
-    await page.route("**/src/data/tooltips.json", (route) =>
-      route.fulfill({
-        contentType: "application/json",
-        path: "tests/fixtures/tooltips.json"
-      })
-    );
     await page.goto("/");
     await page.setContent(pageContent, { baseURL: "http://localhost:5000" });
     await page.waitForFunction(() => window.initDone === true);
@@ -36,7 +30,7 @@ test.describe.parallel("Tooltip behavior", () => {
     await button.hover();
     const tooltip = page.locator(".tooltip");
     await expect(tooltip).toBeVisible();
-    await expect(tooltip).toContainText("Helpful tip");
+    await expect(tooltip).toContainText("raw physical strength");
 
     await page.dispatchEvent("#tip-btn", "mouseleave");
     await expect(tooltip).toBeHidden();
