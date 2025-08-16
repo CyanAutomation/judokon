@@ -46,13 +46,9 @@ npm run test:screenshot              # run visual regression tests
 npx playwright test --update-snapshots  # update baseline screenshots when needed
 ```
 
-Playwright uses multiple browser projects. The screenshot suite runs separately
-for each project and stores snapshots under their respective folders.
+Playwright uses multiple browser projects. The screenshot suite runs separately for each project and stores snapshots under their respective folders.
 
-- **Do not commit files under `playwright/*-snapshots`.** Baseline screenshots
-  are updated automatically by `.github/workflows/playwright-baseline.yml`.
-  If Playwright tests fail because visuals changed, note the failure in the pull
-  request description but avoid committing new snapshot images.
+- **Do not commit files under `playwright/*-snapshots`.** Baseline screenshots are updated automatically by `.github/workflows/playwright-baseline.yml`. If Playwright tests fail because visuals changed, note the failure in the pull request description but avoid committing new snapshot images.
 
 Screenshot tests are optional for minor changes but strongly encouraged when UI layout or style updates occur.
 
@@ -81,3 +77,39 @@ After cloning, run `npm install` and `npm run prepare` to enable Husky pre-commi
   - `Add carousel component to homepage`
   - `Fix failing date formatter tests`
   - `Update Battle Mode layout`
+
+## Agent-Specific Guidelines
+
+- Maintain modular, single-purpose logic
+- Validate all modified JSON files with `npm run validate:data`
+- Use `data-flag`, `data-tooltip-id`, and `data-feature-*` for all toggles and testable features
+- Refactor large functions into smaller helpers (~50 lines max)
+- Use `createButton`, `createCard`, `createModal` factories when building UI
+- No placeholder text or speculative content
+- No duplicate stat labels or tooltip keys
+- No unsilenced `console.warn` or `console.error` in tests; stub or mute as needed
+- Use static imports for hot paths (stat selection, round decision, event dispatch, per-frame animation)
+- Use dynamic imports (with preload) for optional, heavy, or feature-flagged modules
+- Provide bundle size deltas in PRs if changing import strategy
+- Update or add tests to verify static imports for core gameplay and preload for optional modules
+
+## Testing Discipline
+
+- Keep Vitest output clean; wrap intentional logs with `withMutedConsole(fn)` or spy on `console.error`/`console.warn`
+- Playwright tests clear localStorage at startup; ensure the dev server is running for manual validation
+
+## PR Deliverables for Import Changes
+
+1. Summary of files changed and reason for static/dynamic decision
+2. Before/after bundle size metrics
+3. Test updates reflecting the new loading behavior
+4. Notes on any preloading strategy implemented for optional modules
+
+## Related Docs
+
+- `README.md` – Project overview and setup
+- `AGENTS.md` – Agent playbooks, task types, audit checklists
+- `CONTRIBUTING.md` – Commit etiquette and agent rules
+- `architecture.md` – System layout and entry points
+- `design/codeStandards/codeJSDocStandards.md` – JSDoc requirements
+- `design/codeStandards/codePseudocodeStandards.md` – Pseudocode requirements
