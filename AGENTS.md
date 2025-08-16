@@ -123,6 +123,8 @@ Even if you’re not directly searching client_embeddings.json, tools like grep 
 
 ## 🔧 Module Loading Policy for Agents
 
+> JU-DO-KON! runs unbundled on GitHub Pages, relying on native ES modules.
+
 When reviewing or modifying imports, agents must apply the JU-DO-KON! static vs dynamic policy to ensure gameplay remains smooth and errors surface early.
 
 ### Decision Checklist
@@ -144,22 +146,20 @@ When reviewing or modifying imports, agents must apply the JU-DO-KON! static vs 
 - No `await import()` inside stat selection, round decision, event dispatch, or render loops.
 - Keep optional modules dynamic, but **preload** them during idle/cooldown to avoid UI stalls.
 - Preserve existing feature flag logic when changing imports.
-- Provide **bundle size deltas** in the PR description if converting to static (initial + largest async chunk).
 - Update or add tests to verify static imports for core gameplay and preload behavior for optional modules.
 
 ### Anti-Patterns to Avoid
 
 - ❌ Dynamic import inside click handlers for core gameplay
-- ❌ Variable dynamic import paths without bundler hints
+- ❌ Variable dynamic import paths that obscure module resolution
 - ❌ Removing feature flag guards during refactor
-- ❌ Adding heavy optional modules to the initial bundle without justification
+- ❌ Eagerly importing heavy optional modules on page load without justification
 
 ### PR Deliverables for Import Changes
 
 1. Summary of files changed and reason for static/dynamic decision.
-2. Before/after bundle size metrics.
-3. Test updates reflecting the new loading behavior.
-4. Notes on any preloading strategy implemented for optional modules.
+2. Test updates reflecting the new loading behavior.
+3. Notes on any preloading strategy implemented for optional modules.
 
 ---
 
