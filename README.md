@@ -17,7 +17,7 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 
 ## 📖 About the Game
 
-JU-DO-KON! is a strategic digital card game inspired by Top Trumps, featuring judo athletes from around the world. Each card is assigned attributes like **Power**, **Technique**, **Spirit**, and more—allowing players to battle judoka in quick, decisive rounds. The game is built using modern **HTML/CSS/JavaScript** and hosted via GitHub Pages.
+JU-DO-KON! is a strategic digital card game inspired by Top Trumps, featuring judo athletes from around the world. Each card is assigned attributes like **Power**, **Technique**, **Spirit**, and more—allowing players to battle judoka in quick, decisive rounds. The game is built using modern **HTML/CSS/JavaScript** and runs as a static site on GitHub Pages without any bundler.
 
 ---
 
@@ -96,7 +96,7 @@ Call `loadSettings()` during startup to populate the cache before using
 these helpers. Pages should rely on `featureFlags.isEnabled` rather than
 accessing `settings.featureFlags` directly.
 
-> `navigationItems.json` and `gameModes.json` must be served or bundled; otherwise, the game loads built-in fallback data.
+> `navigationItems.json` and `gameModes.json` must be present on the server; otherwise, the game loads built-in fallback data.
 
 ## Vector Search Helpers
 
