@@ -14,14 +14,16 @@ export function getBattleStateMachine() {
 export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
   const onEnter = {
     async waitingForMatchStart(m) {
-      // Prevent duplicate badge state updates on redundant transitions
+      // Prevent duplicate badge state updates and redundant lobby resets
+      // Only run if previous state was NOT waitingForMatchStart
       if (
         window.__classicBattleState === "waitingForMatchStart" &&
         window.__classicBattlePrevState === "waitingForMatchStart"
       ) {
+        // If this is a true duplicate transition, skip all lobby logic
         return;
       }
-      // Reset transient UI and open lobby (round selection)
+      // If transitioning from matchOver, interruptMatch, or any other state, proceed
       resetGame();
       scoreboard.clearMessage();
       updateDebugPanel();
