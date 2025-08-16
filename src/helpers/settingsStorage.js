@@ -87,27 +87,37 @@ export async function loadSettings() {
  * Update a single setting and persist the result.
  *
  * @pseudocode
- * 1. Ensure the settings schema is loaded.
- * 2. Retrieve current settings from `localStorage` when available; otherwise use the cache.
- * 3. Merge `key`/`value` into the settings object.
- * 4. Validate with the schema.
- * 5. Persist using `localStorage` when available.
- * 6. Update the cache and return the updated settings.
+ * 1. Queue the update to ensure previous writes finish first.
+ * 2. Load the settings schema.
+ * 3. Read the latest cached settings, refreshing from `localStorage` when available.
+ * 4. Merge `key`/`value` into the settings object.
+ * 5. Validate against the schema.
+ * 6. Write to `localStorage` when available and update the cache.
+ * 7. Return the updated settings.
  *
  * @param {string} key - Name of the setting to update.
  * @param {*} value - Value to assign to the setting.
  * @returns {Promise<import("./settingsSchema.js").Settings>} Updated settings object.
  */
-export async function updateSetting(key, value) {
-  await getSettingsSchema();
-  const current = typeof localStorage !== "undefined" ? await loadSettings() : getCachedSettings();
-  const updated = { ...current, [key]: value };
-  await validateWithSchema(updated, await getSettingsSchema());
-  if (typeof localStorage !== "undefined") {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
-  }
-  setCachedSettings(updated);
-  return updated;
+let updateQueue = Promise.resolve();
+
+export function updateSetting(key, value) {
+  const task = async () => {
+    await getSettingsSchema();
+    const current =
+      typeof localStorage !== "undefined" ? await loadSettings() : getCachedSettings();
+    const updated = { ...current, [key]: value };
+    await validateWithSchema(updated, await getSettingsSchema());
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
+    }
+    setCachedSettings(updated);
+    return updated;
+  };
+
+  const run = updateQueue.then(task);
+  updateQueue = run.catch(() => {});
+  return run;
 }
 
 /**
