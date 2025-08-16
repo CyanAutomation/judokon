@@ -283,16 +283,16 @@ function showSectionError(containerId, message) {
  *
  * @pseudocode
  * 1. Await `loadSettingsData` for required data.
- * 2. Pass data to `renderSettingsControls`.
- * 3. On error, show a fallback message to the user.
+ * 2. If `gameModes` resolves to an empty array, show an error in the Game Modes section.
+ * 3. Pass data to `renderSettingsControls`.
+ * 4. On failure to load data, show a page-level error and skip rendering controls.
  *
  * @returns {Promise<void>}
  */
 async function initializeSettingsPage() {
   try {
     const [settings, gameModes, tooltipMap] = await loadSettingsData();
-    // If gameModes is missing or not an array, show error in Game Modes section
-    if (!Array.isArray(gameModes) || gameModes.length === 0) {
+    if (Array.isArray(gameModes) && gameModes.length === 0) {
       showSectionError(
         "game-mode-toggle-container",
         "Game Modes could not be loaded. Please check your connection or try again later."
@@ -309,14 +309,6 @@ async function initializeSettingsPage() {
   } catch (error) {
     console.error("Error loading settings page:", error);
     showLoadSettingsError();
-    showSectionError(
-      "game-mode-toggle-container",
-      "Game Modes could not be loaded. Please check your connection or try again later."
-    );
-    showSectionError(
-      "feature-flags-container",
-      "Advanced Settings could not be loaded. Please check your connection or try again later."
-    );
   }
 }
 
