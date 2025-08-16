@@ -2,6 +2,7 @@ import { fetchJson, validateWithSchema, importJsonModule } from "./dataUtils.js"
 import { DATA_DIR } from "./constants.js";
 import { load as loadNavCache, save as saveNavCache } from "./navigationCache.js";
 import { getItem, setItem, removeItem } from "./storage.js";
+import navFallback from "../data/navigationItems.json";
 
 /**
  * The game modes JSON schema is loaded on demand. This avoids fetching the
@@ -67,13 +68,13 @@ export async function loadGameModes() {
  * Load navigation items merged with game mode data, with robust error handling and fallback.
  *
  * @pseudocode
- * 1. Try to load navigation items and game modes from cache and JSON files.
- * 2. If either fails, log a specific error and attempt to load fallback data via dynamic import.
- * 3. If fallback also fails, return an empty array and log the error.
- * 4. Always return an array (may be empty) to avoid crashing the UI.
- * 5. Surface error details for debugging and UI display.
+ * 1. Attempt to load navigation items from cache via `loadNavCache()`.
+ * 2. On failure, dynamically import `navigationItems.json`; if that also fails, use statically imported `navFallback`.
+ * 3. Load game modes with `loadGameModes()` and fall back to a dynamic import of `gameModes.json` on failure.
+ * 4. If either data set cannot be recovered, throw an error so callers can surface a global failure.
+ * 5. Merge navigation items with corresponding game mode data and return the result.
  *
- * @returns {Promise<Array>} Array of merged navigation and game mode objects, or empty array on failure.
+ * @returns {Promise<Array>} Array of merged navigation and game mode objects.
  */
 export async function loadNavigationItems() {
   let navItems, modes;
@@ -85,7 +86,7 @@ export async function loadNavigationItems() {
       navItems = await importJsonModule("../data/navigationItems.json");
     } catch (fallbackErr) {
       console.error("Fallback navigationItems import failed:", fallbackErr);
-      navItems = [];
+      navItems = navFallback;
     }
   }
   try {
@@ -96,12 +97,11 @@ export async function loadNavigationItems() {
       modes = await importJsonModule("../data/gameModes.json");
     } catch (fallbackErr) {
       console.error("Fallback gameModes import failed:", fallbackErr);
-      modes = [];
+      modes = null;
     }
   }
   if (!Array.isArray(navItems) || !Array.isArray(modes)) {
-    console.error("Navigation or game mode data is not an array. Returning empty list.");
-    return [];
+    throw new Error("Navigation or game mode data is unavailable");
   }
   return navItems.map((item) => {
     const mode = modes.find((m) => m.id === Number(item.gameModeId)) || {};
