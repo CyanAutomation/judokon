@@ -1,28 +1,53 @@
 import { DEFAULT_SETTINGS } from "./settingsSchema.js";
 
+/**
+ * Clone a settings object, duplicating nested structures to avoid mutations.
+ *
+ * @pseudocode
+ * 1. Shallow copy `settings`.
+ * 2. Clone nested objects: `tooltipIds`, `gameModes`, and `featureFlags`.
+ * 3. Return the cloned object.
+ *
+ * @param {import("./settingsSchema.js").Settings} settings - Settings to clone.
+ * @returns {import("./settingsSchema.js").Settings} Cloned settings.
+ */
+function cloneSettings(settings) {
+  return {
+    ...settings,
+    tooltipIds: settings.tooltipIds ? { ...settings.tooltipIds } : undefined,
+    gameModes: settings.gameModes ? { ...settings.gameModes } : undefined,
+    featureFlags: settings.featureFlags
+      ? Object.fromEntries(
+          Object.entries(settings.featureFlags).map(([name, flag]) => [name, { ...flag }])
+        )
+      : undefined
+  };
+}
+
 // Cached settings object for synchronous access
-let cachedSettings = { ...DEFAULT_SETTINGS };
+let cachedSettings = cloneSettings(DEFAULT_SETTINGS);
 
 /**
  * Replace the cached settings object.
  *
  * @pseudocode
- * 1. Assign `settings` to `cachedSettings`.
+ * 1. Clone `settings` to prevent external mutations.
+ * 2. Assign the clone to `cachedSettings`.
  *
  * @param {import("./settingsSchema.js").Settings} settings - New settings object.
  */
 export function setCachedSettings(settings) {
-  cachedSettings = settings;
+  cachedSettings = cloneSettings(settings);
 }
 
 /**
  * Reset the cache to the default settings.
  *
  * @pseudocode
- * 1. Set `cachedSettings` to a shallow copy of `DEFAULT_SETTINGS`.
+ * 1. Set `cachedSettings` to a cloned copy of `DEFAULT_SETTINGS`.
  */
 export function resetCache() {
-  cachedSettings = { ...DEFAULT_SETTINGS };
+  cachedSettings = cloneSettings(DEFAULT_SETTINGS);
 }
 
 /**
