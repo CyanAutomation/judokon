@@ -15,16 +15,17 @@ const debouncedSave = debounce((settings) => {
 
 /**
  * Persist settings to localStorage using a debounce.
+ * Rapid successive saves will cancel prior promises.
  *
  * @pseudocode
  * 1. Invoke `debouncedSave` with `settings`.
- * 2. Return the resulting promise.
+ * 2. Ignore any rejection from `debouncedSave` and return its promise.
  *
  * @param {import("./settingsSchema.js").Settings} settings - Settings object to save.
  * @returns {Promise<void>} Resolves when the write completes.
  */
 export function saveSettings(settings) {
-  return debouncedSave(settings);
+  return debouncedSave(settings).catch(() => {});
 }
 
 /**
