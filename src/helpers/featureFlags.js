@@ -55,11 +55,12 @@ export function isEnabled(flag) {
  *
  * @pseudocode
  * 1. Call `loadSettings()` to retrieve current settings.
- * 2. Merge `flag`/`value` into `settings.featureFlags`.
- * 3. Persist the merged object with `updateSetting('featureFlags', merged)`.
- * 4. Update `cachedFlags` with the saved flags.
- * 5. Dispatch a `change` event on `featureFlagsEmitter`.
- * 6. Return the updated settings object.
+ * 2. Optionally warn if `flag` is not in `DEFAULT_SETTINGS.featureFlags`.
+ * 3. Merge existing flag data with `{ enabled: value }` into `settings.featureFlags`.
+ * 4. Persist the merged object with `updateSetting('featureFlags', merged)`.
+ * 5. Update `cachedFlags` with the saved flags.
+ * 6. Dispatch a `change` event on `featureFlagsEmitter`.
+ * 7. Return the updated settings object.
  *
  * @param {string} flag - Feature flag to update.
  * @param {boolean} value - Desired enabled state.
@@ -67,12 +68,12 @@ export function isEnabled(flag) {
  */
 export async function setFlag(flag, value) {
   const settings = await loadSettings();
+  if (!Object.hasOwn(DEFAULT_SETTINGS.featureFlags, flag)) {
+    console.warn(`Unknown feature flag: ${flag}`);
+  }
   const updatedFlags = {
     ...settings.featureFlags,
-    [flag]: {
-      ...settings.featureFlags[flag],
-      enabled: value
-    }
+    [flag]: { ...(settings.featureFlags[flag] || {}), enabled: value }
   };
   const updated = await updateSetting("featureFlags", updatedFlags);
   cachedFlags = updated.featureFlags || {};
