@@ -170,7 +170,10 @@ export class CarouselController {
       // Immediate sync for tests and snappy UI
       const { pageWidth, pageCount } = this.metrics;
       if (pageWidth > 0) {
-        const page = Math.round(this.container.scrollLeft / pageWidth);
+        const maxScroll = this.container.scrollWidth - this.container.clientWidth;
+        const remaining = maxScroll - this.container.scrollLeft;
+        const page =
+          remaining <= 1 ? pageCount - 1 : Math.round(this.container.scrollLeft / pageWidth);
         this.currentPage = Math.max(0, Math.min(page, pageCount - 1));
         this.update();
       }
@@ -182,8 +185,10 @@ export class CarouselController {
         }
         const { pageWidth: pw, pageCount: pc } = this.metrics;
         if (pw <= 0) return;
-        const p2 = Math.round(this.container.scrollLeft / pw);
-        this.currentPage = Math.max(0, Math.min(p2, pc - 1));
+        const maxScroll = this.container.scrollWidth - this.container.clientWidth;
+        const remaining = maxScroll - this.container.scrollLeft;
+        const page = remaining <= 1 ? pc - 1 : Math.round(this.container.scrollLeft / pw);
+        this.currentPage = Math.max(0, Math.min(page, pc - 1));
         this.update();
       });
     };
