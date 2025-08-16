@@ -1,5 +1,9 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 // selectors use header as the container for battle info
+
+const rounds = JSON.parse(readFileSync(resolve("src/data/battleRounds.json"), "utf8"));
 
 test.describe.parallel("Classic battle flow", () => {
   test("shows countdown before first round", async ({ page }) => {
@@ -12,7 +16,7 @@ test.describe.parallel("Classic battle flow", () => {
     await page.goto("/src/pages/battleJudoka.html");
     const roundOptions = page.locator(".round-select-buttons button");
     await roundOptions.first().waitFor();
-    await expect(roundOptions).toHaveText([/5/, /10/, /15/]);
+    await expect(roundOptions).toHaveText(rounds.map((r) => r.label));
     await roundOptions.first().click();
     await expect(page.locator(".modal-backdrop:not([hidden])")).toHaveCount(0);
     const snackbar = page.locator(".snackbar");
