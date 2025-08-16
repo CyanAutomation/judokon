@@ -315,6 +315,19 @@ export async function setupClassicBattlePage() {
       } catch {}
     };
   } catch {}
+
+  // Wire up Quit Match button to show confirmation modal
+  const quitBtn = document.getElementById("quit-match-button");
+  if (quitBtn) {
+    quitBtn.addEventListener("click", async () => {
+      // Show quit confirmation modal
+      if (window.battleStore) {
+        const { quitMatch } = await import("./classicBattle/quitModal.js");
+        quitMatch(window.battleStore, quitBtn);
+        window.homeLinkReady = true; // For Playwright test sync
+      }
+    });
+  }
 }
 
 function initStatButtons(store) {
