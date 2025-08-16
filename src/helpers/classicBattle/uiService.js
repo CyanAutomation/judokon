@@ -23,7 +23,9 @@ export function syncScoreDisplay() {
  * 1. Build title and score elements.
  * 2. Create Quit and Next buttons using `createButton`.
  * 3. Assemble the modal via `createModal` and append it to the DOM.
- * 4. Quit navigates to `index.html`; Next closes the modal and runs `onNext`.
+ * 4. Both buttons close and destroy the modal:
+ *    - Quit navigates to `index.html`.
+ *    - Next runs `onNext`.
  *
  * @param {{message: string, playerScore: number, computerScore: number}} result
  * @param {Function} onNext Callback invoked when starting the next match.
@@ -57,12 +59,14 @@ export function showMatchSummaryModal(result, onNext) {
 
   quit.addEventListener("click", () => {
     modal.close();
+    modal.destroy();
     // Navigate to home (robust base path handling)
     navigateToHome();
   });
 
   next.addEventListener("click", () => {
     modal.close();
+    modal.destroy();
     if (typeof onNext === "function") onNext();
   });
 

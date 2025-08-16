@@ -52,6 +52,10 @@ function getStartRound(store) {
  */
 export async function handleReplay(store) {
   resetEngineForTest();
+  if (store.quitModal) {
+    store.quitModal.destroy();
+    store.quitModal = null;
+  }
   document.querySelectorAll(".modal-backdrop").forEach((m) => {
     if (typeof m.remove === "function") m.remove();
   });
@@ -145,7 +149,7 @@ export function _resetForTest(store) {
     quitBtn.replaceWith(quitBtn.cloneNode(true));
   }
   if (store.quitModal) {
-    store.quitModal.element.remove();
+    store.quitModal.destroy();
     store.quitModal = null;
   }
   syncScoreDisplay();
