@@ -66,18 +66,35 @@ async function loadResultContext(el) {
  * @pseudocode
  * 1. Split the original query into lowercase terms.
  * 2. Expand the query with domain-specific synonyms.
- * 3. Obtain the feature extractor and convert the expanded query into a vector.
+ * 3. Obtain the feature extractor and generate a mean-pooled embedding.
+ *    - Ensure the result or its `data` property is iterable before conversion.
  * 4. Return the original terms along with the resulting vector.
  *
  * @param {string} query - Raw query string from the user.
  * @returns {Promise<{terms: string[], vector: number[]}>} Processed query data.
  */
+function isIterable(value) {
+  return value !== null && value !== undefined && typeof value[Symbol.iterator] === "function";
+}
+
 async function buildQueryVector(query) {
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
   const expanded = await vectorSearch.expandQueryWithSynonyms(query);
   const model = await getExtractor();
   const result = await model(expanded, { pooling: "mean" });
-  const vector = Array.from(result.data ?? result);
+  let source;
+  if (result && typeof result === "object" && "data" in result) {
+    if (!isIterable(result.data)) {
+      throw new TypeError("Extractor result.data is not iterable");
+    }
+    source = result.data;
+  } else {
+    if (!isIterable(result)) {
+      throw new TypeError("Extractor result is not iterable");
+    }
+    source = result;
+  }
+  const vector = Array.from(source);
   return { terms, vector };
 }
 
