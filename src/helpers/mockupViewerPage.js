@@ -11,8 +11,9 @@ import { SidebarList } from "../components/SidebarList.js";
  * 2. Define an array of mockup filenames and set a base path.
  * 3. Build sidebar list items that call `showImage(index)` when activated.
  * 4. Implement `showImage(index)` to update the image, alt text, filename, and sidebar highlight.
- * 5. Attach click handlers and keyboard events to cycle images with wraparound.
+ * 5. Define event handlers; remove existing listeners and attach click and keydown handlers to cycle images with wraparound.
  * 6. Show the first image and apply button ripple effects.
+ * 7. Return a teardown function that removes event listeners.
  *
  * @returns {void}
  */
@@ -86,17 +87,36 @@ export function setupMockupViewerPage() {
     listSelect(currentIndex);
   }
 
-  prevBtn.addEventListener("click", () => showImage(currentIndex - 1));
-  nextBtn.addEventListener("click", () => showImage(currentIndex + 1));
+  function handlePrevClick() {
+    showImage(currentIndex - 1);
+  }
 
-  document.addEventListener("keydown", (e) => {
+  function handleNextClick() {
+    showImage(currentIndex + 1);
+  }
+
+  function handleKeydown(e) {
     if (e.key === "ArrowLeft") showImage(currentIndex - 1);
     if (e.key === "ArrowRight") showImage(currentIndex + 1);
-  });
+  }
+
+  prevBtn.removeEventListener("click", handlePrevClick);
+  nextBtn.removeEventListener("click", handleNextClick);
+  document.removeEventListener("keydown", handleKeydown);
+
+  prevBtn.addEventListener("click", handlePrevClick);
+  nextBtn.addEventListener("click", handleNextClick);
+  document.addEventListener("keydown", handleKeydown);
 
   showImage(0);
   setupButtonEffects();
   initTooltips();
+
+  return () => {
+    prevBtn.removeEventListener("click", handlePrevClick);
+    nextBtn.removeEventListener("click", handleNextClick);
+    document.removeEventListener("keydown", handleKeydown);
+  };
 }
 
 if (!window.SKIP_MOCKUP_AUTO_INIT) {
