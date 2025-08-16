@@ -11,13 +11,15 @@ let ajvInstance;
  * Determine if the code is running in a Node environment.
  *
  * @pseudocode
- * 1. Check if `process.versions.node` exists using optional chaining.
- * 2. Return `true` when it exists; otherwise, return `false`.
+ * 1. Check that `process.versions.node` exists and `typeof window === "undefined"`.
+ * 2. Return `true` when both conditions hold; otherwise, return `false`.
  *
  * @returns {boolean} `true` if running under Node.
  */
 export function isNodeEnvironment() {
-  return Boolean(typeof process !== "undefined" && process?.versions?.node);
+  return Boolean(
+    typeof process !== "undefined" && process?.versions?.node && typeof window === "undefined"
+  );
 }
 /**
  * Lazily instantiate and return a singleton Ajv instance with format support.
