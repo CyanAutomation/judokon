@@ -71,4 +71,22 @@ describe("initRoundSelectModal", () => {
     expect(onStart).toHaveBeenCalled();
     consoleErr.mockRestore();
   });
+
+  it("falls back to defaults when rounds fail to load", async () => {
+    const onStart = vi.fn();
+    const error = new Error("load fail");
+    mocks.fetchJson.mockRejectedValue(error);
+    const consoleErr = vi.spyOn(console, "error").mockImplementation(() => {});
+    await initRoundSelectModal(onStart);
+    expect(consoleErr).toHaveBeenCalledWith("Failed to load battle rounds:", error);
+    const note = document.getElementById("round-select-error");
+    expect(note).not.toBeNull();
+    expect(note.textContent).toContain("Failed to load match options");
+    const buttons = document.querySelectorAll(".round-select-buttons button");
+    expect([...buttons].map((b) => b.textContent)).toEqual(["Quick", "Medium", "Long"]);
+    buttons[0].click();
+    expect(mocks.setPointsToWin).toHaveBeenCalledWith(5);
+    expect(onStart).toHaveBeenCalled();
+    consoleErr.mockRestore();
+  });
 });

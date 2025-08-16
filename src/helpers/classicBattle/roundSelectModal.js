@@ -13,9 +13,10 @@ import { isTestModeEnabled } from "../testModeUtils.js";
  * 1. If test mode is enabled:
  *    a. Set `pointsToWin` to the default value.
  *    b. Invoke `onStart` and return early.
- * 2. Fetch `battleRounds.json` using `fetchJson`.
+ * 2. Attempt to fetch `battleRounds.json` using `fetchJson`.
+ *    a. On failure, log the error, fall back to default rounds, and note the load error.
  * 3. Create buttons for each option with `createButton` and assign tooltip ids.
- * 4. Assemble a modal via `createModal` and append it to the document.
+ * 4. Assemble a modal via `createModal`, append an error note if needed, and attach to the document.
  * 5. Attempt to initialize tooltips for the modal; log errors but continue.
  * 6. Open the modal.
  * 7. When a button is clicked:
@@ -33,12 +34,17 @@ export async function initRoundSelectModal(onStart) {
   }
 
   let rounds;
+  let loadError = false;
   try {
     rounds = await fetchJson(`${DATA_DIR}battleRounds.json`);
   } catch (err) {
     console.error("Failed to load battle rounds:", err);
-    if (typeof onStart === "function") onStart();
-    return;
+    loadError = true;
+    rounds = [
+      { id: 1, label: "Quick", value: 5 },
+      { id: 2, label: "Medium", value: 10 },
+      { id: 3, label: "Long", value: 15 }
+    ];
   }
 
   const title = document.createElement("h2");
@@ -49,6 +55,12 @@ export async function initRoundSelectModal(onStart) {
   btnWrap.className = "round-select-buttons";
 
   const frag = document.createDocumentFragment();
+  if (loadError) {
+    const note = document.createElement("p");
+    note.id = "round-select-error";
+    note.textContent = "Failed to load match options. Using defaults.";
+    frag.append(note);
+  }
   frag.append(title, btnWrap);
 
   const modal = createModal(frag, { labelledBy: title });
