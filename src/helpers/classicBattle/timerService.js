@@ -62,6 +62,28 @@ export async function onNextButtonClick() {
 }
 
 /**
+ * Helper to force auto-select and dispatch outcome on timer error or drift.
+ *
+ * @pseudocode
+ * 1. Show error message via scoreboard.
+ * 2. Call autoSelectStat with the provided callback.
+ * 3. Ensure the outcome event is dispatched so the state machine progresses.
+ *
+ * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>} onExpiredSelect
+ * - Callback to handle stat auto-selection.
+ * @returns {Promise<void>}
+ */
+async function forceAutoSelectAndDispatch(onExpiredSelect) {
+  scoreboard.showMessage("Timer error. Auto-selecting stat.");
+  try {
+    await autoSelectStat(onExpiredSelect);
+  } catch {
+    // If auto-select fails, dispatch interrupt to avoid stalling
+    await dispatchBattleEvent("interrupt");
+  }
+}
+
+/**
  * Start the round timer and, on expiration, either auto-select a random stat
  * or interrupt the round based on Random Stat Mode.
  *
@@ -70,7 +92,7 @@ export async function onNextButtonClick() {
  *    - On error, temporarily show "Waiting…" and fallback to 30 seconds.
  * 2. Use `runTimerWithDrift(engineStartRound)` to update the countdown each second
  *    and monitor for drift.
- *    - On drift show "Waiting…" and restart, giving up after several retries.
+ *    - On drift trigger auto-select logic and dispatch the outcome event.
  * 3. Register a skip handler that stops the timer and triggers `onExpired`.
  * 4. When expired, dispatch `"timeout"` and then:
  *    a. If `isEnabled('randomStatMode')`, call `autoSelectStat` to pick a stat
@@ -131,8 +153,7 @@ export async function startTimer(onExpiredSelect) {
 
   const run = runTimerWithDrift(engineStartRound);
   await run(duration, onTick, onExpired, async () => {
-    scoreboard.showMessage("Timer error. Auto-selecting stat.");
-    await onExpired();
+    await forceAutoSelectAndDispatch(onExpiredSelect);
   });
   restore();
 }
