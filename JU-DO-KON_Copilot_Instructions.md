@@ -14,6 +14,7 @@ This file guides GitHub Copilot agents contributing to the JU-DO-KON! repository
 
 ## Coding Standards
 
+- The project is deployed as static ES modules on GitHub Pages and uses no bundler; Vite is present only for Vitest.
 - Use ES modules and modern JavaScript (Node 18+ expected)
 - Format code with Prettier and lint with ESLint (`eslint.config.mjs`)
 - **Preserve all JSDoc comments and `@pseudocode` blocks**; update them when the code changes
