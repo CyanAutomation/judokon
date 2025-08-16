@@ -72,9 +72,7 @@ vi.mock("../../../src/components/Modal.js", () => ({
   }
 }));
 
-vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-  initRoundSelectModal: vi.fn()
-}));
+
 
 describe("classicBattle match flow", () => {
   let timerSpy;
