@@ -282,7 +282,13 @@ export function renderSettingsControls(settings, gameModes, tooltipMap) {
 function showSectionError(containerId, message) {
   const container = document.getElementById(containerId);
   if (container) {
-    container.innerHTML = `<div class="settings-section-error" role="alert" aria-live="assertive">${message}</div>`;
+    container.textContent = "";
+    const errorEl = document.createElement("div");
+    errorEl.className = "settings-section-error";
+    errorEl.setAttribute("role", "alert");
+    errorEl.setAttribute("aria-live", "assertive");
+    errorEl.textContent = message;
+    container.append(errorEl);
   }
 }
 
