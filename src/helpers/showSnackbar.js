@@ -5,7 +5,7 @@
  * 1. Clear existing timers for any visible snackbar.
  * 2. Create a new div with class `.snackbar` containing the message.
  * 3. Replace `#snackbar-container` children with this element and trigger the show animation.
- * 4. Schedule fade and removal timers.
+ * 4. Verify the container still exists and schedule fade and removal timers.
  *
  * @param {string} message - Text content to display in the snackbar.
  */
@@ -15,15 +15,34 @@ let bar;
 let fadeId;
 let removeId;
 
+function resetState() {
+  bar = null;
+  fadeId = undefined;
+  removeId = undefined;
+}
+
 function resetTimers() {
   clearTimeout(fadeId);
   clearTimeout(removeId);
+  const container = document.getElementById("snackbar-container");
+  if (!container) {
+    resetState();
+    return;
+  }
   fadeId = setTimeout(() => {
+    if (!document.getElementById("snackbar-container")) {
+      resetState();
+      return;
+    }
     bar?.classList.remove("show");
   }, SNACKBAR_FADE_MS);
   removeId = setTimeout(() => {
+    if (!document.getElementById("snackbar-container")) {
+      resetState();
+      return;
+    }
     bar?.remove();
-    bar = null;
+    resetState();
   }, SNACKBAR_REMOVE_MS);
 }
 
@@ -31,12 +50,13 @@ export function showSnackbar(message) {
   try {
     if (typeof window !== "undefined" && window.__disableSnackbars) return;
   } catch {}
-  const container = document.getElementById("snackbar-container");
-  if (!container) return;
-
   clearTimeout(fadeId);
   clearTimeout(removeId);
-
+  const container = document.getElementById("snackbar-container");
+  if (!container) {
+    resetState();
+    return;
+  }
   bar = document.createElement("div");
   bar.className = "snackbar";
   bar.textContent = message;
@@ -61,6 +81,13 @@ export function updateSnackbar(message) {
   try {
     if (typeof window !== "undefined" && window.__disableSnackbars) return;
   } catch {}
+  const container = document.getElementById("snackbar-container");
+  if (!container) {
+    clearTimeout(fadeId);
+    clearTimeout(removeId);
+    resetState();
+    return;
+  }
   if (!bar) {
     showSnackbar(message);
     return;
