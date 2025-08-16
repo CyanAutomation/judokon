@@ -25,7 +25,7 @@ export async function getSanitizer() {
     return null;
   }
 
-  // Prefer bare specifier (works in Vite/Vitest and modern bundlers)
+  // Prefer bare specifier (compatible with Vitest; production static servers use native module resolution)
   const viaBare = await tryLoad("dompurify");
   if (viaBare) return (cached = viaBare);
 
