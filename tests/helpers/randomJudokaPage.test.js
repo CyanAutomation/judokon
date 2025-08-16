@@ -22,6 +22,53 @@ const baseSettings = {
 };
 
 describe("randomJudokaPage module", () => {
+  it("falls back to defaults when matchMedia is unavailable", async () => {
+    const originalMatchMedia = window.matchMedia;
+    // Ensure matchMedia is unavailable
+    delete window.matchMedia;
+
+    const initFeatureFlags = vi.fn().mockResolvedValue({
+      motionEffects: true,
+      featureFlags: {
+        viewportSimulation: { enabled: false },
+        enableCardInspector: { enabled: false },
+        tooltipOverlayDebug: { enabled: false }
+      }
+    });
+    const applyMotionPreference = vi.fn();
+    const toggleViewportSimulation = vi.fn();
+    const toggleInspectorPanels = vi.fn();
+    const toggleTooltipOverlayDebug = vi.fn();
+    const setTestMode = vi.fn();
+
+    vi.doMock("../../src/helpers/featureFlags.js", () => ({
+      initFeatureFlags,
+      isEnabled: vi.fn().mockReturnValue(false),
+      featureFlagsEmitter: new EventTarget()
+    }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
+    vi.doMock("../../src/helpers/cardUtils.js", () => ({ toggleInspectorPanels }));
+    vi.doMock("../../src/helpers/viewportDebug.js", () => ({ toggleViewportSimulation }));
+    vi.doMock("../../src/helpers/tooltipOverlayDebug.js", () => ({ toggleTooltipOverlayDebug }));
+    vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
+    vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady: vi.fn() }));
+
+    const { initFeatureFlagState } = await import("../../src/helpers/randomJudokaPage.js");
+    const state = await initFeatureFlagState();
+    expect(state.prefersReducedMotion).toBe(false);
+    expect(applyMotionPreference).toHaveBeenCalledWith(true);
+
+    // restore
+    window.matchMedia = originalMatchMedia;
+    vi.resetModules();
+    vi.doUnmock("../../src/helpers/featureFlags.js");
+    vi.doUnmock("../../src/helpers/motionUtils.js");
+    vi.doUnmock("../../src/helpers/cardUtils.js");
+    vi.doUnmock("../../src/helpers/viewportDebug.js");
+    vi.doUnmock("../../src/helpers/tooltipOverlayDebug.js");
+    vi.doUnmock("../../src/helpers/testModeUtils.js");
+    vi.doUnmock("../../src/helpers/domReady.js");
+  });
   it("renders card text with sufficient color contrast", async () => {
     vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
