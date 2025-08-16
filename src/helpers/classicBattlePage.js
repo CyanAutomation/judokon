@@ -280,16 +280,10 @@ export async function setupClassicBattlePage() {
   initBattleStateProgress(battleStore);
   // Show round selection modal immediately after orchestrator initializes
   await initRoundSelectModal(async (rounds) => {
-    // Store selected rounds in battleStore or context as needed
     battleStore.winTarget = rounds;
     await dispatchBattleEvent("startClicked");
   });
-  // In Test Mode, auto-start the match to avoid blocking on the round select modal
-  if (isEnabled("enableTestMode")) {
-    await dispatchBattleEvent("startClicked");
-  }
   // Non-critical UI enhancements can load after the orchestrator begins
-  // to reduce time-to-first-round in tests.
   applyStatLabels().catch(() => {});
   await initTooltips();
   maybeShowStatHint();
