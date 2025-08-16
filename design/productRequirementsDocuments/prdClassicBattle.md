@@ -135,6 +135,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - **Judoka or Gokyo dataset fails to load:** error message surfaces in the Scoreboard and an error dialog offers a "Retry" button to reload data or the page.
 - **Player does not make a stat selection within 30 seconds:** system randomly selects a stat automatically. **Scoreboard updates the timer, and the snackbar prompt informs the player.**
 - **AI fails to select a stat (if difficulty logic implemented):** fallback to random stat selection.
+- **Round selection tooltips fail to initialize:** modal opens without tooltips and the match proceeds; error is logged.
 - **Player navigates away mid-match:** roll back to the last completed round when the player returns.
 - **Unexpected error occurs:** roll back to the last completed round and surface an error message.
 

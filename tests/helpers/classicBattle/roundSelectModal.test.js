@@ -7,7 +7,8 @@ const rounds = JSON.parse(readFileSync(resolve("src/data/battleRounds.json"), "u
 const mocks = vi.hoisted(() => ({
   fetchJson: vi.fn(),
   setPointsToWin: vi.fn(),
-  initTooltips: vi.fn()
+  initTooltips: vi.fn(),
+  modal: { open: vi.fn(), close: vi.fn() }
 }));
 
 vi.mock("../../../src/helpers/dataUtils.js", () => ({ fetchJson: mocks.fetchJson }));
@@ -23,7 +24,7 @@ vi.mock("../../../src/components/Modal.js", () => ({
   createModal: (content) => {
     const element = document.createElement("div");
     element.appendChild(content);
-    return { element, open: vi.fn(), close: vi.fn() };
+    return { element, open: mocks.modal.open, close: mocks.modal.close };
   }
 }));
 vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
@@ -55,5 +56,19 @@ describe("initRoundSelectModal", () => {
     first.click();
     expect(mocks.setPointsToWin).toHaveBeenCalledWith(rounds[0].value);
     expect(onStart).toHaveBeenCalled();
+  });
+
+  it("opens modal and starts match even if tooltip init fails", async () => {
+    const onStart = vi.fn();
+    const error = new Error("tooltip fail");
+    mocks.initTooltips.mockRejectedValue(error);
+    const consoleErr = vi.spyOn(console, "error").mockImplementation(() => {});
+    await initRoundSelectModal(onStart);
+    expect(mocks.modal.open).toHaveBeenCalled();
+    expect(consoleErr).toHaveBeenCalledWith("Failed to initialize tooltips:", error);
+    const first = document.querySelector(".round-select-buttons button");
+    first.click();
+    expect(onStart).toHaveBeenCalled();
+    consoleErr.mockRestore();
   });
 });
