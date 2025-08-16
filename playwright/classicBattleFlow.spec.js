@@ -3,7 +3,17 @@ import { test, expect } from "./fixtures/commonSetup.js";
 
 test.describe.parallel("Classic battle flow", () => {
   test("shows countdown before first round", async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        "settings",
+        JSON.stringify({ featureFlags: { enableTestMode: { enabled: false } } })
+      );
+    });
     await page.goto("/src/pages/battleJudoka.html");
+    const roundOptions = page.locator(".round-select-buttons button");
+    await roundOptions.first().waitFor();
+    await expect(roundOptions).toHaveText([/5/, /10/, /15/]);
+    await roundOptions.first().click();
     const snackbar = page.locator(".snackbar");
     await expect(snackbar).toHaveText(/Next round in: \d+s/);
     await page.evaluate(() => window.freezeBattleHeader?.());
