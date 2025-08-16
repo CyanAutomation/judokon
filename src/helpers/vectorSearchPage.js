@@ -6,6 +6,7 @@ import { DATA_DIR } from "./constants.js";
 import { prepareSearchUi, getSelectedTags } from "./vectorSearchPage/queryUi.js";
 import { renderResults } from "./vectorSearchPage/renderResults.js";
 import { getExtractor, SIMILARITY_THRESHOLD, preloadExtractor } from "./api/vectorSearchPage.js";
+import { getSanitizer } from "./sanitizeHtml.js";
 
 let spinner;
 
@@ -24,10 +25,11 @@ function setSpinnerDisplay(display) {
  * 1. Ignore the request when context has already loaded.
  * 2. Retrieve the result id from the element's dataset.
  * 3. Find the child live region and announce loading.
- * 4. Fetch neighboring context using `fetchContextById`.
- * 5. Convert `chunks.join("\n\n")` from Markdown to HTML and insert it
- *    into the live region, or show a fallback message when empty.
- * 6. Mark the element as expanded when complete.
+ * 4. Fetch neighboring context using `fetchContextById` inside a try block.
+ * 5. Verify `chunks` is an array; join to Markdown and sanitize the HTML.
+ *    When `chunks` is missing or empty, show a fallback message.
+ * 6. On failure, log the error and show a safe fallback message.
+ * 7. Mark the element as expanded when complete.
  *
  * @param {HTMLElement} el - The result list item.
  */
@@ -37,11 +39,25 @@ async function loadResultContext(el) {
   const live = el.querySelector(".result-context");
   if (!live) return;
   live.textContent = "Loading context...";
-  const chunks = await vectorSearch.fetchContextById(id, 1);
-  const markdown = chunks.join("\n\n");
-  live.innerHTML = markdown.length > 0 ? markdownToHtml(markdown) : "No additional context found.";
-  el.dataset.loaded = "true";
-  el.setAttribute("aria-expanded", "true");
+  try {
+    const chunks = await vectorSearch.fetchContextById(id, 1);
+    if (Array.isArray(chunks)) {
+      const markdown = chunks.join("\n\n");
+      if (markdown.length > 0) {
+        const DOMPurify = await getSanitizer();
+        live.innerHTML = DOMPurify.sanitize(markdownToHtml(markdown));
+      } else {
+        live.textContent = "No additional context found.";
+      }
+    } else {
+      live.textContent = "No additional context found.";
+    }
+    el.dataset.loaded = "true";
+    el.setAttribute("aria-expanded", "true");
+  } catch (err) {
+    console.error("Failed to load context", err);
+    live.textContent = "Context could not be loaded.";
+  }
 }
 
 /**
