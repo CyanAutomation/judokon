@@ -115,18 +115,20 @@ function ensureTooltipElement() {
  * Initialize tooltips for elements with `[data-tooltip-id]`.
  *
  * @pseudocode
- * 1. Read the current settings and exit early if tooltips are disabled.
- * 2. Load tooltip data with `loadTooltips()`.
- * 3. Select all elements matching `[data-tooltip-id]` within `root`.
- * 4. For each element, attach hover and focus listeners.
+ * 1. Exit early when `root` (or `document`) is unavailable.
+ * 2. Read the current settings and exit early if tooltips are disabled.
+ * 3. Load tooltip data with `loadTooltips()`.
+ * 4. Select all elements matching `[data-tooltip-id]` within `root`.
+ * 5. For each element, attach hover and focus listeners.
  *    - `show` looks up the tooltip text, sanitizes it with DOMPurify, and positions the element.
  *    - `hide` hides the tooltip element.
- * 5. When an ID is missing, log a warning only once and skip display.
+ * 6. When an ID is missing, log a warning only once and skip display.
  *
- * @param {ParentNode} [root=document] - Scope to search for tooltip targets.
+ * @param {ParentNode} [root=globalThis.document] - Scope to search for tooltip targets.
  * @returns {Promise<void>} Resolves when listeners are attached.
  */
-export async function initTooltips(root = document) {
+export async function initTooltips(root = globalThis.document) {
+  if (!root) return;
   let overlay = false;
   try {
     const settings = await loadSettings();
@@ -141,7 +143,7 @@ export async function initTooltips(root = document) {
   toggleTooltipOverlayDebug(overlay);
   const DOMPurify = await getSanitizer();
   const data = await loadTooltips();
-  const elements = root.querySelectorAll?.("[data-tooltip-id]") || [];
+  const elements = root?.querySelectorAll?.("[data-tooltip-id]") || [];
   if (elements.length === 0) return;
   const tip = ensureTooltipElement();
 
