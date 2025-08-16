@@ -31,6 +31,22 @@ describe("resolveUrl and readData", () => {
     expect(result).toEqual(data);
     expect(fetchMock).toHaveBeenCalled();
   });
+
+  it("falls back to window.location.href when origin is unavailable", async () => {
+    const originalWindow = global.window;
+    const originalProcess = global.process;
+    vi.resetModules();
+    global.window = { location: { href: "https://example.com/subdir/page.html" } };
+    // Simulate non-Node environment
+    // @ts-ignore
+    delete global.process;
+    const { resolveUrl } = await import("../../src/helpers/dataUtils.js");
+    const parsed = await resolveUrl("data/file.json");
+    expect(parsed.href).toBe("https://example.com/subdir/data/file.json");
+    global.window = originalWindow;
+    global.process = originalProcess;
+    vi.resetModules();
+  });
 });
 
 describe("fetchJson", () => {

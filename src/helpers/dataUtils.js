@@ -138,8 +138,9 @@ const schemaCache = new WeakMap();
  *
  * @pseudocode
  * 1. When running in Node and given a relative path, convert `process.cwd()` to a `file:` URL and use as the base.
- * 2. Otherwise, use `http://localhost` as the base.
- * 3. Return a new `URL` object combining `url` with the base.
+ * 2. Otherwise, resolve against `document.baseURI`, falling back to `window.location.href`,
+ *    then `window.location.origin`, and finally `http://localhost` when none are available.
+ * 3. Return a new `URL` object combining `url` with the chosen base.
  *
  * @param {string|URL} url - Resource location.
  * @returns {Promise<URL>} Resolved URL instance.
@@ -151,10 +152,13 @@ export async function resolveUrl(url) {
     const { pathToFileURL } = await import("node:url");
     return new URL(urlStr, pathToFileURL(process.cwd() + "/").href);
   }
-  // In browsers, prefer the current origin to preserve the active port.
+  // In browsers, fall back to the most specific location information available.
   const base =
-    typeof window !== "undefined" && window.location?.origin
-      ? window.location.origin
+    typeof window !== "undefined"
+      ? (typeof document !== "undefined" && document.baseURI) ||
+        window.location?.href ||
+        window.location?.origin ||
+        "http://localhost"
       : "http://localhost";
   return new URL(urlStr, base);
 }
