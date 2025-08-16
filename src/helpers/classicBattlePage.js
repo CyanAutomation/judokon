@@ -59,6 +59,7 @@ import {
 } from "../utils/scheduler.js";
 import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
+import { initRoundSelectModal } from "./classicBattle/roundSelectModal.js";
 
 const battleStore = createBattleStore();
 window.battleStore = battleStore;
@@ -275,6 +276,12 @@ export async function setupClassicBattlePage() {
   window.startRoundOverride = () => startRoundWrapper();
   await initClassicBattleOrchestrator(battleStore, startRoundWrapper);
   await initBattleStateProgress();
+  // Show round selection modal immediately after orchestrator initializes
+  await initRoundSelectModal(async (rounds) => {
+    // Store selected rounds in battleStore or context as needed
+    battleStore.winTarget = rounds;
+    await dispatchBattleEvent("startClicked");
+  });
   // In Test Mode, auto-start the match to avoid blocking on the round select modal
   if (isEnabled("enableTestMode")) {
     await dispatchBattleEvent("startClicked");
