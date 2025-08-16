@@ -19,7 +19,8 @@ describe("tooltips.json", () => {
       "card.flag",
       "ui.roundQuick",
       "ui.roundMedium",
-      "ui.roundLong"
+      "ui.roundLong",
+      "ui.toggleLayout"
     ];
     for (const key of keys) {
       expect(get(tooltips, key)).toBeDefined();
