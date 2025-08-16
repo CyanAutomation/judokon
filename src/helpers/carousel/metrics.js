@@ -4,7 +4,8 @@
  * @pseudocode
  * 1. Read gap from computed styles (prefer columnGap, fallback to gap).
  * 2. Measure first card width to estimate cards per page; ensure at least 1.
- * 3. Derive pageWidth as container width plus gap and compute pageCount.
+ * 3. Compute pageCount and derive pageWidth from card widths when available,
+ *    otherwise fallback to container width plus gap.
  * 4. Return { gap, pageWidth, cardsPerPage, pageCount }.
  *
  * @param {HTMLElement} container
@@ -24,7 +25,7 @@ export function getPageMetrics(container) {
     : 1;
 
   const pageCount = Math.max(1, Math.ceil(cards.length / cardsPerPage));
-  const pageWidth = containerWidth + gap;
+  const pageWidth = cardWidth ? cardsPerPage * (cardWidth + gap) : containerWidth + gap;
 
   return { gap, pageWidth, cardsPerPage, pageCount };
 }
