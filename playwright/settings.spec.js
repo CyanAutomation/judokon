@@ -191,4 +191,15 @@ test.describe.parallel("Settings page", () => {
       expect(box?.height).toBeGreaterThanOrEqual(44);
     }
   });
+
+  test("restore defaults resets settings", async ({ page }) => {
+    const sound = page.getByRole("checkbox", { name: "Sound" });
+    await sound.click();
+    await expect(sound).not.toBeChecked();
+    await page.getByRole("button", { name: "Restore Defaults" }).click();
+    await page.getByRole("button", { name: "Yes" }).click();
+    await expect(sound).toBeChecked();
+    const stored = await page.evaluate(() => localStorage.getItem("settings"));
+    expect(JSON.parse(stored).sound).toBe(true);
+  });
 });

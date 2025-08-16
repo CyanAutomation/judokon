@@ -182,8 +182,9 @@ describe("renderSettingsControls", () => {
   });
 
   it("restores defaults when confirmed", async () => {
-    const resetSettings = vi.fn().mockReturnValue(baseSettings);
+    const resetSettings = vi.fn();
     const initFeatureFlags = vi.fn().mockResolvedValue(baseSettings);
+    const showSnackbar = vi.fn();
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       updateSetting: vi.fn(),
       loadSettings: vi.fn(),
@@ -193,6 +194,7 @@ describe("renderSettingsControls", () => {
       isEnabled: vi.fn().mockReturnValue(false),
       initFeatureFlags
     }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
     const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
     renderSettingsControls(baseSettings, [], tooltipMap);
     document.getElementById("reset-settings-button").dispatchEvent(new Event("click"));
@@ -200,5 +202,6 @@ describe("renderSettingsControls", () => {
     await Promise.resolve();
     expect(resetSettings).toHaveBeenCalled();
     expect(initFeatureFlags).toHaveBeenCalled();
+    expect(showSnackbar).toHaveBeenCalledWith("Settings restored to defaults");
   });
 });

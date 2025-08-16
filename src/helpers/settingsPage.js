@@ -20,6 +20,7 @@ import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { initFeatureFlags, isEnabled } from "./featureFlags.js";
+import { showSnackbar } from "./showSnackbar.js";
 
 import { applyInitialControlValues } from "./settings/applyInitialValues.js";
 import { attachToggleListeners } from "./settings/listenerUtils.js";
@@ -109,8 +110,8 @@ function initializeControls(settings) {
   const renderSwitches = makeRenderSwitches(controls, () => currentSettings, handleUpdate);
 
   const resetModal = createResetConfirmation(async () => {
-    currentSettings = resetSettings();
-    await initFeatureFlags();
+    resetSettings();
+    currentSettings = await initFeatureFlags();
     withViewTransition(() => {
       applyDisplayMode(currentSettings.displayMode);
     });
@@ -120,6 +121,7 @@ function initializeControls(settings) {
     toggleLayoutDebugPanel(isEnabled("layoutDebugPanel"));
     renderSwitches(latestGameModes, latestTooltipMap);
     expandAllSections();
+    showSnackbar("Settings restored to defaults");
   });
 
   resetButton?.addEventListener("click", () => {

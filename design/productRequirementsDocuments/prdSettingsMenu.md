@@ -102,7 +102,7 @@ Pages should query `featureFlags.isEnabled` rather than reading
 - **View Tooltip Descriptions:** Link opens `tooltipViewer.html` for exploring tooltip text.
 - **Vector Search for RAG:** Link opens `vectorSearch.html` to explore the vector database.
 - Links in this fieldset are arranged in a responsive three-column grid, collapsing to a single column below 768px.
-- **Restore Defaults:** Button opens a confirmation modal to clear stored settings, reset feature flags, and reapply defaults.
+- **Restore Defaults:** Button opens a confirmation modal to clear stored settings, reset feature flags, reapply defaults, and display a snackbar confirmation.
 
 ---
 
