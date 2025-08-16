@@ -59,7 +59,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ## Gameplay Basics
 
-- On first visit to `battleJudoka.html`, a modal prompts the player to select a win target of **5, 10, or 15 points** (default 10).
+ - On first visit to `battleJudoka.html`, a modal prompts the player to select a win target of **5, 10, or 15 points** (default 10). After a choice is made, the modal closes and the match begins.
 - The standard deck contains **99 unique cards**.
 - Each match begins with both sides receiving **25 random cards**.
 - At the start of each round, both players draw their top card.

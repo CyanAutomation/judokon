@@ -10,9 +10,6 @@ beforeEach(() => {
     initClassicBattleOrchestrator: vi.fn(),
     dispatchBattleEvent: vi.fn().mockResolvedValue()
   }));
-  vi.doMock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-    initRoundSelectModal: (cb) => cb()
-  }));
 });
 
 describe("classicBattlePage stat button interactions", () => {
@@ -142,6 +139,16 @@ describe("classicBattlePage stat button interactions", () => {
     expect(document.activeElement).toBe(next);
     tab();
     expect(document.activeElement).toBe(quit);
+  });
+
+  it("does not invoke round select modal directly", async () => {
+    const initRoundSelectModal = vi.fn();
+    vi.doMock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
+      initRoundSelectModal
+    }));
+    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
+    await setupClassicBattlePage();
+    expect(initRoundSelectModal).not.toHaveBeenCalled();
   });
 });
 

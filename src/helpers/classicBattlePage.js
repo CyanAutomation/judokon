@@ -21,7 +21,9 @@
  *    e. Set `window.startRoundOverride` to `startRoundWrapper` so the battle
  *       module uses it for subsequent rounds.
  *    f. Toggle the debug panel.
- *    g. Show a round selection modal that sets points-to-win and starts the first round.
+ *    g. Initialize the battle state progress list, then let the orchestrator
+ *       present the round selection modal to set points-to-win and start the
+ *       first round.
  *    h. Initialize tooltips and show the stat help tooltip once for new users.
  *    i. Watch for orientation changes and update the battle header's
  *       `data-orientation` attribute.
@@ -49,7 +51,6 @@ import {
 import { onNextButtonClick } from "./classicBattle/timerService.js";
 import { skipCurrentPhase } from "./classicBattle/skipHandler.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
-// Removed unused import for initBattleStateProgress
 import { initInterruptHandlers } from "./classicBattle/interruptHandlers.js";
 import {
   start as startScheduler,
@@ -59,7 +60,6 @@ import {
 } from "../utils/scheduler.js";
 import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
-import { initRoundSelectModal } from "./classicBattle/roundSelectModal.js";
 import { initBattleStateProgress } from "./battleStateProgress.js";
 
 const battleStore = createBattleStore();
@@ -275,14 +275,8 @@ export async function setupClassicBattlePage() {
   initDebugPanel();
 
   window.startRoundOverride = () => startRoundWrapper();
+  initBattleStateProgress();
   await initClassicBattleOrchestrator(battleStore, startRoundWrapper);
-  // Initialize battle state progress list before round select modal
-  initBattleStateProgress(battleStore);
-  // Show round selection modal immediately after orchestrator initializes
-  await initRoundSelectModal(async (rounds) => {
-    battleStore.winTarget = rounds;
-    await dispatchBattleEvent("startClicked");
-  });
   // Non-critical UI enhancements can load after the orchestrator begins
   applyStatLabels().catch(() => {});
   await initTooltips();

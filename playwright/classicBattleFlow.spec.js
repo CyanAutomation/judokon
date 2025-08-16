@@ -14,6 +14,7 @@ test.describe.parallel("Classic battle flow", () => {
     await roundOptions.first().waitFor();
     await expect(roundOptions).toHaveText([/5/, /10/, /15/]);
     await roundOptions.first().click();
+    await expect(page.locator(".modal-backdrop:not([hidden])")).toHaveCount(0);
     const snackbar = page.locator(".snackbar");
     await expect(snackbar).toHaveText(/Next round in: \d+s/);
     await page.evaluate(() => window.freezeBattleHeader?.());
