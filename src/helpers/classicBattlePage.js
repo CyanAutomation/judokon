@@ -57,7 +57,8 @@ import {
   onFrame as scheduleFrame,
   cancel as cancelFrame
 } from "../utils/scheduler.js";
-import { createModal, createButton } from "../components/Modal.js";
+import { createModal } from "../components/Modal.js";
+import { createButton } from "../components/Button.js";
 
 const battleStore = createBattleStore();
 window.battleStore = battleStore;
