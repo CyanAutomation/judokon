@@ -15,8 +15,10 @@ import { isTestModeEnabled } from "../testModeUtils.js";
  *    b. Invoke `onStart` and return early.
  * 2. Fetch `battleRounds.json` using `fetchJson`.
  * 3. Create buttons for each option with `createButton` and assign tooltip ids.
- * 4. Assemble and open a modal via `createModal`.
- * 5. When a button is clicked:
+ * 4. Assemble a modal via `createModal` and append it to the document.
+ * 5. Attempt to initialize tooltips for the modal; log errors but continue.
+ * 6. Open the modal.
+ * 7. When a button is clicked:
  *    a. Call `setPointsToWin` with the round value.
  *    b. Close the modal and invoke the provided start callback.
  *
@@ -62,6 +64,10 @@ export async function initRoundSelectModal(onStart) {
   });
 
   document.body.appendChild(modal.element);
-  await initTooltips(modal.element);
+  try {
+    await initTooltips(modal.element);
+  } catch (err) {
+    console.error("Failed to initialize tooltips:", err);
+  }
   modal.open();
 }
