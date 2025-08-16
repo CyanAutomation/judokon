@@ -46,7 +46,7 @@ export function renderFeatureFlagSwitches(
       name: flag,
       checked: Boolean(getCurrentSettings().featureFlags[flag]?.enabled),
       ariaLabel: label,
-      tooltipId: info.tooltipId
+      tooltipId: tipId
     });
     const { element: wrapper, input } = toggle;
     if (input) input.dataset.flag = flag;

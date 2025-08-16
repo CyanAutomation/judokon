@@ -49,3 +49,23 @@ describe("formUtils ARIA", () => {
     expect(input).toHaveAttribute("data-tooltip-id", `nav.${navTooltipKey(modes[0].name)}`);
   });
 });
+
+describe("renderFeatureFlagSwitches", () => {
+  it("uses default tooltip id when none provided", () => {
+    const container = document.createElement("div");
+    const flags = {
+      firstFlag: { enabled: true },
+      secondFlag: { enabled: true, tooltipId: "custom.tip" }
+    };
+    renderFeatureFlagSwitches(
+      container,
+      flags,
+      () => ({ featureFlags: {} }),
+      () => {}
+    );
+    const first = container.querySelector("#feature-first-flag");
+    const second = container.querySelector("#feature-second-flag");
+    expect(first).toHaveAttribute("data-tooltip-id", "settings.firstFlag");
+    expect(second).toHaveAttribute("data-tooltip-id", "custom.tip");
+  });
+});
