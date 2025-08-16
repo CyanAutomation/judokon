@@ -266,6 +266,19 @@ export function renderSettingsControls(settings, gameModes, tooltipMap) {
 }
 
 /**
+ * Show an error message in a specific settings section.
+ *
+ * @param {string} containerId - The ID of the container to show the error in.
+ * @param {string} message - The error message to display.
+ */
+function showSectionError(containerId, message) {
+  const container = document.getElementById(containerId);
+  if (container) {
+    container.innerHTML = `<div class="settings-section-error" role="alert" aria-live="assertive">${message}</div>`;
+  }
+}
+
+/**
  * Load data then render Settings controls.
  *
  * @pseudocode
@@ -278,10 +291,20 @@ export function renderSettingsControls(settings, gameModes, tooltipMap) {
 async function initializeSettingsPage() {
   try {
     const [settings, gameModes, tooltipMap] = await loadSettingsData();
+    // If gameModes is missing or not an array, show error in Game Modes section
+    if (!Array.isArray(gameModes) || gameModes.length === 0) {
+      showSectionError("game-mode-toggle-container", "Game Modes could not be loaded. Please check your connection or try again later.");
+    }
+    // If feature flags are missing, show error in Advanced Settings section
+    if (!settings || !settings.featureFlags) {
+      showSectionError("feature-flags-container", "Advanced Settings could not be loaded. Please check your connection or try again later.");
+    }
     renderSettingsControls(settings, gameModes, tooltipMap);
   } catch (error) {
     console.error("Error loading settings page:", error);
     showLoadSettingsError();
+    showSectionError("game-mode-toggle-container", "Game Modes could not be loaded. Please check your connection or try again later.");
+    showSectionError("feature-flags-container", "Advanced Settings could not be loaded. Please check your connection or try again later.");
   }
 }
 
