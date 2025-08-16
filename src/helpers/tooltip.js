@@ -122,7 +122,7 @@ function ensureTooltipElement() {
  * 5. For each element, attach hover and focus listeners.
  *    - `show` looks up the tooltip text, sanitizes it with DOMPurify, and positions the element.
  *    - `hide` hides the tooltip element.
- * 6. When an ID is missing, log a warning only once and skip display.
+ * 6. When an ID is missing, log a warning only once and show the fallback text "More info coming…".
  *
  * @param {ParentNode} [root=globalThis.document] - Scope to search for tooltip targets.
  * @returns {Promise<void>} Resolves when listeners are attached.
@@ -159,7 +159,7 @@ export async function initTooltips(root = globalThis.document) {
         console.warn(`Unknown tooltip id: ${id}`);
         loggedMissing.add(id);
       }
-      return;
+      text = "More info coming…";
     }
     const { html, warning } = parseTooltipText(text);
     tip.innerHTML = DOMPurify.sanitize(html);

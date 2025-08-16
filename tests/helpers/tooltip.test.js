@@ -34,7 +34,7 @@ describe("initTooltips", () => {
     expect(tip.style.display).toBe("none");
   });
 
-  it("warns once for unknown ids", async () => {
+  it("shows fallback text and warns once for unknown ids", async () => {
     const fetchJson = vi.fn().mockResolvedValue({});
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -48,6 +48,8 @@ describe("initTooltips", () => {
     await initTooltips();
 
     el.dispatchEvent(new Event("mouseenter"));
+    const tip = document.querySelector(".tooltip");
+    expect(tip.textContent).toBe("More info coming…");
     el.dispatchEvent(new Event("mouseleave"));
     el.dispatchEvent(new Event("mouseenter"));
 
