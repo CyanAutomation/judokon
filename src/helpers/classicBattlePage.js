@@ -275,7 +275,10 @@ export async function setupClassicBattlePage() {
   initDebugPanel();
 
   window.startRoundOverride = () => startRoundWrapper();
-  initBattleStateProgress();
+  const cleanupBattleStateProgress = await initBattleStateProgress();
+  if (cleanupBattleStateProgress) {
+    window.addEventListener("pagehide", cleanupBattleStateProgress, { once: true });
+  }
   await initClassicBattleOrchestrator(battleStore, startRoundWrapper);
   // Non-critical UI enhancements can load after the orchestrator begins
   applyStatLabels().catch(() => {});
