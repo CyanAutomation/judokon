@@ -2,7 +2,7 @@ import { fetchJson, validateWithSchema, importJsonModule } from "./dataUtils.js"
 import { DATA_DIR } from "./constants.js";
 import { load as loadNavCache, save as saveNavCache } from "./navigationCache.js";
 import { getItem, setItem, removeItem } from "./storage.js";
-import navFallback from "../data/navigationItems.json";
+import navFallback from "../data/navigationItems.json" with { type: "json" };
 
 /**
  * The game modes JSON schema is loaded on demand. This avoids fetching the
