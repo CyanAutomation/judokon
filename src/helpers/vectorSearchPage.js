@@ -156,7 +156,10 @@ function selectTopMatches(matches) {
 export async function handleSearch(event) {
   event.preventDefault();
   const { query, tbody, messageEl } = prepareSearchUi();
-  if (!query) return;
+  if (!query) {
+    finalizeSearchUi(messageEl);
+    return;
+  }
   const selected = getSelectedTags();
   showSearching(messageEl);
   try {
