@@ -88,7 +88,7 @@ async function startRoundWrapper() {
  *
  * @pseudocode
  * 1. Create a modal dialog with an error message and a Retry button.
- * 2. When Retry is clicked, close the modal and call startRoundWrapper again.
+ * 2. When Retry is clicked, close and destroy the modal then call `startRoundWrapper` again.
  * 3. If modal is already open, do not create another.
  */
 function showRetryModal() {
@@ -107,6 +107,7 @@ function showRetryModal() {
   modal.element.id = "round-retry-modal";
   retryBtn.addEventListener("click", async () => {
     modal.close();
+    modal.destroy();
     await startRoundWrapper();
   });
   document.body.appendChild(modal.element);

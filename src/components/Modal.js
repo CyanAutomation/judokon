@@ -11,6 +11,7 @@
  *    manage focus and `aria-expanded` on the trigger.
  * 6. Clicking the backdrop or pressing Escape closes the modal.
  * 7. While open, trap focus inside the modal container.
+ * 8. Provide `destroy()` to remove listeners and detach the element.
  *
  * @param {HTMLElement|DocumentFragment} content - Dialog contents.
  * @param {object} [options] - Optional configuration.
@@ -111,6 +112,16 @@ export class Modal {
       this.returnFocus.setAttribute("aria-expanded", "false");
       this.returnFocus.focus();
     }
+  }
+
+  /**
+   * Remove event listeners and detach the modal element.
+   * @returns {void}
+   */
+  destroy() {
+    this.element.removeEventListener("click", this.handleBackdropClick);
+    document.removeEventListener("keydown", this.handleEscape);
+    this.element.remove();
   }
 }
 

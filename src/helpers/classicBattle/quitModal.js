@@ -41,6 +41,8 @@ function createQuitConfirmation(store, onConfirm) {
       await dispatchBattleEvent("abortMatch");
     }
     // Navigate to home (robust to varying base paths like GH Pages)
+    modal.destroy();
+    store.quitModal = null;
     navigateToHome();
   });
   document.body.appendChild(modal.element);

@@ -11,7 +11,7 @@ vi.mock("../../../src/components/Modal.js", () => ({
     const element = document.createElement("div");
     element.className = "modal-backdrop";
     element.appendChild(content);
-    return { element, open: vi.fn(), close: vi.fn() };
+    return { element, open: vi.fn(), close: vi.fn(), destroy: vi.fn() };
   }
 }));
 vi.mock("../../../src/components/Button.js", () => ({

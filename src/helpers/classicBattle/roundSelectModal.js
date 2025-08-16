@@ -21,7 +21,7 @@ import { isTestModeEnabled } from "../testModeUtils.js";
  * 6. Open the modal.
  * 7. When a button is clicked:
  *    a. Call `setPointsToWin` with the round value.
- *    b. Close the modal and invoke the provided start callback.
+ *    b. Close and destroy the modal, then invoke the provided start callback.
  *
  * @param {Function} onStart - Callback to invoke after selecting rounds.
  * @returns {Promise<void>} Resolves when modal is initialized.
@@ -71,6 +71,7 @@ export async function initRoundSelectModal(onStart) {
       setPointsToWin(r.value);
       modal.close();
       if (typeof onStart === "function") onStart();
+      modal.destroy();
     });
     btnWrap.appendChild(btn);
   });

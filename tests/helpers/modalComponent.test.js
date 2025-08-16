@@ -18,31 +18,34 @@ describe("createModal", () => {
     trigger.id = "trigger";
     document.body.appendChild(trigger);
 
-    const { element, open, close } = createModal(buildContent());
-    document.body.appendChild(element);
+    const modal = createModal(buildContent());
+    document.body.appendChild(modal.element);
 
-    open(trigger);
-    expect(element.hasAttribute("hidden")).toBe(false);
+    modal.open(trigger);
+    expect(modal.element.hasAttribute("hidden")).toBe(false);
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     expect(document.activeElement.id).toBe("cancel-btn");
 
-    close();
-    expect(element.hasAttribute("hidden")).toBe(true);
+    modal.close();
+    expect(modal.element.hasAttribute("hidden")).toBe(true);
     expect(trigger).toHaveAttribute("aria-expanded", "false");
     expect(document.activeElement).toBe(trigger);
+
+    modal.destroy();
   });
 
   it("applies aria labels from options", () => {
     const heading = document.createElement("h2");
     heading.id = "modal-title";
-    const { element } = createModal(buildContent(), {
+    const modal = createModal(buildContent(), {
       labelledBy: heading,
       describedBy: "modal-desc"
     });
-    document.body.appendChild(element);
-    const dialog = element.querySelector(".modal");
+    document.body.appendChild(modal.element);
+    const dialog = modal.element.querySelector(".modal");
     expect(dialog).toHaveAttribute("aria-labelledby", "modal-title");
     expect(dialog).toHaveAttribute("aria-describedby", "modal-desc");
+    modal.destroy();
   });
 });
 
@@ -56,5 +59,13 @@ describe("Modal class", () => {
     expect(modal.element.hasAttribute("hidden")).toBe(false);
     modal.close();
     expect(modal.element.hasAttribute("hidden")).toBe(true);
+    modal.destroy();
+  });
+
+  it("removes element on destroy", () => {
+    const modal = createModal(buildContent());
+    document.body.appendChild(modal.element);
+    modal.destroy();
+    expect(document.body.contains(modal.element)).toBe(false);
   });
 });

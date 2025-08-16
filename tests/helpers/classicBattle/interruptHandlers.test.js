@@ -25,7 +25,7 @@ vi.mock("../../../src/components/Modal.js", () => ({
     modalOpenMock = vi.fn();
     modalElement = document.createElement("div");
     modalElement.append(content);
-    return { element: modalElement, open: modalOpenMock };
+    return { element: modalElement, open: modalOpenMock, close: vi.fn(), destroy: vi.fn() };
   },
   createButton: (label, { id } = {}) => {
     const btn = document.createElement("button");

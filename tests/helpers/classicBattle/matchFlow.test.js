@@ -62,7 +62,7 @@ vi.mock("../../../src/components/Modal.js", () => ({
   createModal: (content) => {
     const el = document.createElement("div");
     if (content) el.append(content);
-    return { element: el, open: vi.fn(), close: vi.fn() };
+    return { element: el, open: vi.fn(), close: vi.fn(), destroy: vi.fn() };
   },
   createButton: (text, opts = {}) => {
     const btn = document.createElement("button");

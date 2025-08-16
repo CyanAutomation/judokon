@@ -409,7 +409,7 @@ describe("startRoundWrapper failures", () => {
       createModal: (content) => {
         const element = document.createElement("div");
         element.appendChild(content);
-        return { element, open, close: vi.fn() };
+        return { element, open, close: vi.fn(), destroy: vi.fn() };
       },
       createButton: (label, opts = {}) => {
         const btn = document.createElement("button");
@@ -466,7 +466,7 @@ describe("syncScoreDisplay", () => {
         const element = document.createElement("div");
         element.className = "modal-backdrop";
         element.appendChild(content);
-        return { element, open: vi.fn(), close: vi.fn() };
+        return { element, open: vi.fn(), close: vi.fn(), destroy: vi.fn() };
       }
     }));
 
