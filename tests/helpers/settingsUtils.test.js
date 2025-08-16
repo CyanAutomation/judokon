@@ -92,7 +92,7 @@ describe("settings utils", () => {
     // Simulate localStorage being undefined
     Object.defineProperty(global, "localStorage", { value: undefined, configurable: true });
     const { saveSettings, loadSettings } = await import("../../src/helpers/settingsStorage.js");
-    await expect(saveSettings({ sound: true })).rejects.toThrow();
+    await expect(saveSettings({ sound: true })).resolves.toBeUndefined();
     await expect(loadSettings()).rejects.toThrow();
     Object.defineProperty(global, "localStorage", { value: original, configurable: true });
   });
@@ -133,9 +133,9 @@ describe("settings utils", () => {
   });
 
   /**
-   * Should reject if localStorage.setItem throws.
+   * Should swallow errors when localStorage.setItem throws.
    */
-  it("rejects when localStorage.setItem throws", async () => {
+  it("swallows errors when localStorage.setItem throws", async () => {
     Storage.prototype.setItem = vi.fn(() => {
       throw new Error("fail");
     });
@@ -156,7 +156,7 @@ describe("settings utils", () => {
           enableCardInspector: { enabled: false }
         }
       })
-    ).rejects.toThrow("fail");
+    ).resolves.toBeUndefined();
     Storage.prototype.setItem = originalSetItem;
   });
 
@@ -180,6 +180,7 @@ describe("settings utils", () => {
    */
   it("debounces multiple saveSettings calls", async () => {
     vi.useFakeTimers();
+    const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
     const { saveSettings } = await import("../../src/helpers/settingsStorage.js");
     const data1 = {
       sound: true,
@@ -213,10 +214,12 @@ describe("settings utils", () => {
     };
     const first = saveSettings(data1);
     const second = saveSettings(data2);
-    await expect(first).rejects.toThrow("Debounced");
+    await expect(first).resolves.toBeUndefined();
     await vi.advanceTimersByTimeAsync(110);
     await expect(second).resolves.toBeUndefined();
+    expect(setItemSpy).toHaveBeenCalledTimes(1);
     expect(JSON.parse(localStorage.getItem("settings"))).toEqual(data2);
+    setItemSpy.mockRestore();
   });
 
   it("resets settings to defaults", async () => {
