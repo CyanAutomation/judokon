@@ -1,4 +1,5 @@
 import { loadSettings, updateSetting } from "./settingsStorage.js";
+import { setCachedSettings } from "./settingsCache.js";
 import { DEFAULT_SETTINGS } from "./settingsSchema.js";
 
 /**
@@ -16,7 +17,7 @@ let cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };
  *
  * @pseudocode
  * 1. Call `loadSettings()` to retrieve current settings.
- * 2. Set `cachedFlags` to `settings.featureFlags` or default feature flags.
+ * 2. Set `cachedFlags` and the global settings cache to `settings.featureFlags` or defaults.
  * 3. Dispatch a `change` event with `flag: null`.
  * 4. Return the loaded `settings`.
  *
@@ -28,8 +29,9 @@ export async function initFeatureFlags() {
     settings = await loadSettings();
     cachedFlags = settings.featureFlags || { ...DEFAULT_SETTINGS.featureFlags };
   } catch {
-    settings = { featureFlags: { ...DEFAULT_SETTINGS.featureFlags } };
+    settings = { ...DEFAULT_SETTINGS };
     cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };
+    setCachedSettings(settings);
   }
   featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
   return settings;
