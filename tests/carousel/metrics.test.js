@@ -28,7 +28,7 @@ describe("getPageMetrics", () => {
     const m = getPageMetrics(container);
     expect(m.cardsPerPage).toBe(1);
     expect(m.pageCount).toBe(6);
-    expect(m.pageWidth).toBe(336); // container + gap
+    expect(m.pageWidth).toBe(216); // 1 * (card + gap)
   });
 
   it("computes 2 cards per page on medium container", () => {
@@ -39,6 +39,6 @@ describe("getPageMetrics", () => {
     const m = getPageMetrics(container);
     expect(m.cardsPerPage).toBe(2);
     expect(m.pageCount).toBe(3);
-    expect(m.pageWidth).toBe(520);
+    expect(m.pageWidth).toBe(480); // 2 * (card + gap)
   });
 });
