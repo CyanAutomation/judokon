@@ -49,7 +49,7 @@ import {
 import { onNextButtonClick } from "./classicBattle/timerService.js";
 import { skipCurrentPhase } from "./classicBattle/skipHandler.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
-import { initBattleStateProgress } from "./battleStateProgress.js";
+// Removed unused import for initBattleStateProgress
 import { initInterruptHandlers } from "./classicBattle/interruptHandlers.js";
 import {
   start as startScheduler,
@@ -60,6 +60,7 @@ import {
 import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
 import { initRoundSelectModal } from "./classicBattle/roundSelectModal.js";
+import { initBattleStateProgress } from "./battleStateProgress.js";
 
 const battleStore = createBattleStore();
 window.battleStore = battleStore;
@@ -275,7 +276,8 @@ export async function setupClassicBattlePage() {
 
   window.startRoundOverride = () => startRoundWrapper();
   await initClassicBattleOrchestrator(battleStore, startRoundWrapper);
-  await initBattleStateProgress();
+  // Initialize battle state progress list before round select modal
+  initBattleStateProgress(battleStore);
   // Show round selection modal immediately after orchestrator initializes
   await initRoundSelectModal(async (rounds) => {
     // Store selected rounds in battleStore or context as needed
