@@ -6,13 +6,16 @@ import { resolve } from "path";
 const rounds = JSON.parse(readFileSync(resolve("src/data/battleRounds.json"), "utf8"));
 
 test.describe.parallel("Classic battle flow", () => {
-  test("shows countdown before first round", async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem(
         "settings",
         JSON.stringify({ featureFlags: { enableTestMode: { enabled: false } } })
       );
     });
+  });
+
+  test("shows countdown before first round", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
     const roundOptions = page.locator(".round-select-buttons button");
     await roundOptions.first().waitFor();
