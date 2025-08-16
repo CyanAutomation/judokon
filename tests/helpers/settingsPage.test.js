@@ -205,3 +205,105 @@ describe("renderSettingsControls", () => {
     expect(showSnackbar).toHaveBeenCalledWith("Settings restored to defaults");
   });
 });
+
+describe("initializeSettingsPage", () => {
+  it("shows error and skips toggles when navigation items fail", async () => {
+    vi.resetModules();
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const showSettingsError = vi.fn();
+    vi.doMock("../../src/helpers/showSettingsError.js", () => ({
+      showSettingsError
+    }));
+    vi.doMock("../../src/helpers/featureFlags.js", () => ({
+      initFeatureFlags: vi.fn().mockResolvedValue(baseSettings),
+      isEnabled: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems: vi.fn().mockRejectedValueOnce(new Error("nav fail"))
+    }));
+    const onDomReady = vi.fn();
+    vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady }));
+    document.body.appendChild(
+      Object.assign(document.createElement("div"), { id: "settings-error-popup" })
+    );
+    await import("../../src/helpers/settingsPage.js");
+    const init = onDomReady.mock.calls[0][0];
+    await init();
+    const popup = document.getElementById("settings-error-popup");
+    expect(popup.style.display).toBe("block");
+    expect(showSettingsError).toHaveBeenCalled();
+    expect(document.querySelectorAll("#game-mode-toggle-container input")).toHaveLength(0);
+    consoleError.mockRestore();
+  });
+
+  it("renders game mode toggles when cache load fails", async () => {
+    vi.resetModules();
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const navItems = [
+      {
+        id: 1,
+        url: "classic.html",
+        category: "mainMenu",
+        order: 10,
+        isHidden: false,
+        gameModeId: 1
+      }
+    ];
+    const modes = [{ id: 1, name: "Classic", category: "mainMenu" }];
+    vi.doMock("../../src/helpers/navigationCache.js", () => ({
+      load: vi.fn().mockRejectedValue(new Error("cache error")),
+      save: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue(modes),
+      validateWithSchema: vi.fn(),
+      importJsonModule: vi.fn(async (path) => {
+        if (path.includes("navigationItems.json")) return navItems;
+        if (path.includes("gameModes.json")) return modes;
+        return {};
+      })
+    }));
+    vi.doMock("../../src/helpers/storage.js", () => ({
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/featureFlags.js", () => ({
+      initFeatureFlags: vi.fn().mockResolvedValue(baseSettings),
+      isEnabled: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      initTooltips: vi.fn(),
+      getTooltips: vi.fn().mockResolvedValue({})
+    }));
+    vi.doMock("../../src/helpers/displayMode.js", () => ({
+      applyDisplayMode: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/motionUtils.js", () => ({
+      applyMotionPreference: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/viewportDebug.js", () => ({
+      toggleViewportSimulation: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/tooltipOverlayDebug.js", () => ({
+      toggleTooltipOverlayDebug: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/layoutDebugPanel.js", () => ({
+      toggleLayoutDebugPanel: vi.fn()
+    }));
+    vi.doMock(
+      "../../src/helpers/gameModeUtils.js",
+      async () => await vi.importActual("../../src/helpers/gameModeUtils.js")
+    );
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) });
+    const onDomReady = vi.fn();
+    vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady }));
+    await import("../../src/helpers/settingsPage.js");
+    const init = onDomReady.mock.calls[0][0];
+    await init();
+    const checkboxes = document.querySelectorAll("#game-mode-toggle-container input");
+    expect(checkboxes).toHaveLength(1);
+    expect(document.getElementById("mode-1")).toBeTruthy();
+    consoleError.mockRestore();
+  });
+});
