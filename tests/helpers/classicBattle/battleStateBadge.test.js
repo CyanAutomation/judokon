@@ -59,6 +59,14 @@ describe("battleStateBadge displays state transitions", () => {
     vi.doMock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
       initRoundSelectModal: vi.fn()
     }));
+    vi.doMock("../../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn(async (path) => {
+        if (path.includes("classicBattleStates.json")) return classicBattleStates;
+        if (path.includes("battleRounds.json")) return [];
+        return {};
+      }),
+      importJsonModule: vi.fn(async () => ({}))
+    }));
 
     const header = document.createElement("header");
     header.innerHTML = `
