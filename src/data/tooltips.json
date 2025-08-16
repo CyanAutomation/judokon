@@ -21,7 +21,8 @@
     "roundQuick": "**Quick**\\nFirst to 5 points wins.",
     "roundMedium": "**Medium**\\nFirst to 10 points wins.",
     "roundLong": "**Long**\\nFirst to 15 points wins.",
-    "next": "**Next**\nStart the next round or skip the current phase."
+    "next": "**Next**\nStart the next round or skip the current phase.",
+    "toggleLayout": "**Toggle layout**\nSwitch between grid and carousel."
   },
   "mode": {
     "classicBattle": "**Classic Battle Mode** pits you against an opponent.\nFirst to 10 round‑wins becomes the champion.",
