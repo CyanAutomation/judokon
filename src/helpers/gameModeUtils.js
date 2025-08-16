@@ -64,23 +64,44 @@ export async function loadGameModes() {
 }
 
 /**
- * Load navigation items merged with game mode data.
+ * Load navigation items merged with game mode data, with robust error handling and fallback.
  *
  * @pseudocode
- * 1. Retrieve raw navigation items via `navigationCache.load()`.
- * 2. Retrieve game modes via `loadGameModes()`.
- * 3. Ensure both results are arrays; throw if validation fails.
- * 4. Merge each navigation item with its corresponding game mode by `gameModeId`,
- *    with navigation item properties taking precedence.
- * 5. Return the merged array.
+ * 1. Try to load navigation items and game modes from cache and JSON files.
+ * 2. If either fails, log a specific error and attempt to load fallback data via dynamic import.
+ * 3. If fallback also fails, return an empty array and log the error.
+ * 4. Always return an array (may be empty) to avoid crashing the UI.
+ * 5. Surface error details for debugging and UI display.
  *
- * @returns {Promise<Array>} Array of merged navigation and game mode objects.
+ * @returns {Promise<Array>} Array of merged navigation and game mode objects, or empty array on failure.
  */
 export async function loadNavigationItems() {
-  const navItems = await loadNavCache();
-  const modes = await loadGameModes();
+  let navItems, modes;
+  try {
+    navItems = await loadNavCache();
+  } catch (err) {
+    console.error("Failed to load navigationItems from cache or JSON:", err);
+    try {
+      navItems = await importJsonModule("../data/navigationItems.json");
+    } catch (fallbackErr) {
+      console.error("Fallback navigationItems import failed:", fallbackErr);
+      navItems = [];
+    }
+  }
+  try {
+    modes = await loadGameModes();
+  } catch (err) {
+    console.error("Failed to load gameModes from cache or JSON:", err);
+    try {
+      modes = await importJsonModule("../data/gameModes.json");
+    } catch (fallbackErr) {
+      console.error("Fallback gameModes import failed:", fallbackErr);
+      modes = [];
+    }
+  }
   if (!Array.isArray(navItems) || !Array.isArray(modes)) {
-    throw new Error("Invalid navigation or game mode data");
+    console.error("Navigation or game mode data is not an array. Returning empty list.");
+    return [];
   }
   return navItems.map((item) => {
     const mode = modes.find((m) => m.id === Number(item.gameModeId)) || {};
