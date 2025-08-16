@@ -4,6 +4,11 @@ import { resetGame, startRound } from "./roundManager.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { getDefaultTimer } from "../timerUtils.js";
 import { updateDebugPanel } from "./uiHelpers.js";
+import { setupScoreboard } from "../setupScoreboard.js";
+
+if (typeof process === "undefined" || !process.env.VITEST) {
+  setupScoreboard();
+}
 
 let machine = null;
 

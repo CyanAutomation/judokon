@@ -14,6 +14,11 @@
  */
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
+import { setupScoreboard } from "./setupScoreboard.js";
+
+if (typeof process === "undefined" || !process.env.VITEST) {
+  setupScoreboard();
+}
 
 export async function initBattleStateProgress() {
   if (typeof document === "undefined") return;
