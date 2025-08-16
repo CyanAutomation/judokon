@@ -50,6 +50,7 @@ describe("initTooltips", () => {
     const tip = document.querySelector(".tooltip");
 
     el.dispatchEvent(new Event("mouseenter"));
+    const tip = document.querySelector(".tooltip");
     expect(tip.textContent).toBe("More info coming…");
     el.dispatchEvent(new Event("mouseleave"));
     el.dispatchEvent(new Event("mouseenter"));
