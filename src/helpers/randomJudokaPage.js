@@ -10,8 +10,9 @@
  * 4. Toggle the `.simulate-viewport` class based on the stored feature flag.
  * 5. Create a hidden slide-out history panel and a toggle button.
  * 6. Define `displayCard` that disables the Draw button, updates its text and `aria-busy` state while loading, verifies the
- *    card container exists, calls `generateRandomCard` with the loaded data and the user's motion preference, updates the
- *    history list, then restores the button once the animation completes (or immediately when motion is disabled).
+ *    card container exists, calls `generateRandomCard` with the loaded data and the user's motion preference, handles any
+ *    errors by logging and showing a message, updates the history list, then restores the button once the animation completes
+ *    (or immediately when motion is disabled).
  * 7. Render a placeholder card in the card container.
  * 8. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and attach its event listener.
  * 9. If data fails to load, disable the Draw button and show an error message or fallback card.
@@ -199,14 +200,21 @@ async function displayCard({
     enableButton();
     return;
   }
-  await generateRandomCard(
-    cachedJudokaData,
-    cachedGokyoData,
-    cardContainer,
-    prefersReducedMotion,
-    onSelect,
-    { enableInspector: isEnabled("enableCardInspector") }
-  );
+  try {
+    await generateRandomCard(
+      cachedJudokaData,
+      cachedGokyoData,
+      cardContainer,
+      prefersReducedMotion,
+      onSelect,
+      { enableInspector: isEnabled("enableCardInspector") }
+    );
+  } catch (err) {
+    showError("Unable to draw card. Please try again later.");
+    console.error("Error generating card:", err);
+    enableButton();
+    return;
+  }
   if (prefersReducedMotion) {
     enableButton();
   } else {
