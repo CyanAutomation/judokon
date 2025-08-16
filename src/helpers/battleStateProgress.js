@@ -16,6 +16,8 @@ import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 
 export async function initBattleStateProgress() {
+  if (typeof document === "undefined") return;
+
   const list = document.getElementById("battle-state-progress");
   if (!list) return;
 
