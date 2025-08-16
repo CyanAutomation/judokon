@@ -201,9 +201,13 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
       );
     }
     queueMicrotask(addNavResetButton);
-    document.getElementById("feature-nav-cache-reset-button")?.addEventListener("change", () => {
-      setTimeout(addNavResetButton);
-    });
+    const navCacheToggle = document.getElementById("feature-nav-cache-reset-button");
+    if (navCacheToggle && !navCacheToggle.dataset.listenerBound) {
+      navCacheToggle.addEventListener("change", () => {
+        setTimeout(addNavResetButton);
+      });
+      navCacheToggle.dataset.listenerBound = "true";
+    }
     initTooltips();
   };
 }
