@@ -20,7 +20,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
         window.__classicBattleState === "waitingForMatchStart" &&
         window.__classicBattlePrevState === "waitingForMatchStart"
       ) {
-        // If this is a true duplicate transition, skip all lobby logic
+        // If this is a true duplicate transition, skip all lobby logic and badge update
         return;
       }
       // If transitioning from matchOver, interruptMatch, or any other state, proceed
