@@ -83,6 +83,39 @@ describe("vector search page integration", () => {
     ).map((o) => o.value);
     expect(options).toEqual(["all", "alpha", "beta"]);
   });
+
+  it("shows a message when embedding load fails", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.doMock("../../src/helpers/vectorSearch/index.js", () => ({
+      default: {
+        findMatches: vi.fn(),
+        fetchContextById: vi.fn(),
+        loadEmbeddings: vi.fn().mockRejectedValue(new Error("boom")),
+        expandQueryWithSynonyms: vi.fn((q) => q),
+        CURRENT_EMBEDDING_VERSION: 1
+      }
+    }));
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ count: 0, version: 1 })
+    }));
+    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "./" }));
+
+    const { init } = await import("../../src/helpers/vectorSearchPage.js");
+
+    document.body.innerHTML = `
+      <div id="search-spinner" style="display:block"></div>
+      <form id="vector-search-form"></form>
+      <p id="search-results-message"></p>
+    `;
+
+    await init();
+
+    const msg = document.getElementById("search-results-message");
+    expect(msg.textContent).toContain("Failed to load search data");
+    expect(document.getElementById("search-spinner").style.display).toBe("none");
+
+    consoleError.mockRestore();
+  });
 });
 
 describe("search result message styling", () => {
