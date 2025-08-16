@@ -34,4 +34,13 @@ describe("updateSetting", () => {
       configurable: true
     });
   });
+
+  it("serializes concurrent updates", async () => {
+    const update1 = updateSetting("sound", false);
+    const update2 = updateSetting("motionEffects", false);
+    await Promise.all([update1, update2]);
+    const stored = JSON.parse(localStorage.getItem("settings"));
+    expect(stored.sound).toBe(false);
+    expect(stored.motionEffects).toBe(false);
+  });
 });
