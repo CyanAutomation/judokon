@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import classicBattleStates from "../../../src/data/classicBattleStates.json";
+import classicBattleStates from "../../../src/data/classicBattleStates.json" with { type: "json" };
 import { BattleStateMachine } from "../../../src/helpers/classicBattle/stateMachine.js";
 
 const statesByName = new Map(classicBattleStates.map((s) => [s.name, s]));

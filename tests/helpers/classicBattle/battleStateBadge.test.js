@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import classicBattleStates from "../../../src/data/classicBattleStates.json";
+import classicBattleStates from "../../../src/data/classicBattleStates.json" with { type: "json" };
 
 const coreStateIds = classicBattleStates
   .filter((s) => s.id < 90)
