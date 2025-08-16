@@ -37,7 +37,7 @@ import { addNavResetButton } from "./settings/addNavResetButton.js";
  * 2. Create Cancel and Yes buttons via `createButton`.
  * 3. Assemble modal with `createModal` and wire button handlers.
  *    - Cancel closes the modal.
- *    - Yes calls `onConfirm` then closes.
+ *    - Yes awaits `onConfirm`; on failure shows an error, otherwise closes.
  * 4. Append the modal element to `document.body`.
  * 5. Return the modal API.
  *
@@ -68,9 +68,13 @@ function createResetConfirmation(onConfirm) {
 
   const modal = createModal(frag, { labelledBy: title, describedBy: desc });
   cancel.addEventListener("click", () => modal.close());
-  yes.addEventListener("click", () => {
-    onConfirm();
-    modal.close();
+  yes.addEventListener("click", async () => {
+    try {
+      await onConfirm();
+      modal.close();
+    } catch {
+      showSnackbar("Failed to restore default settings");
+    }
   });
   document.body.appendChild(modal.element);
   return modal;
