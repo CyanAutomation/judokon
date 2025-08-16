@@ -10,7 +10,7 @@ import {
   mockShowSnackbar,
   mockTooltips,
   mockTestModeUtils,
-  mockRoundSelectModal,
+  mockRoundSelectModal
 } from "./mocks.js";
 import classicBattleStates from "../../../src/data/classicBattleStates.json" with { type: "json" };
 
@@ -65,11 +65,8 @@ describe("battleStateBadge displays state transitions", () => {
     progressEl.id = "battle-state-progress";
     document.body.append(header, battleArea, stats, progressEl);
 
-    const { setupClassicBattlePage } = await import(
-      "../../../src/helpers/classicBattlePage.js"
-    );
+    const { setupClassicBattlePage } = await import("../../../src/helpers/classicBattlePage.js");
     await setupClassicBattlePage();
-
 
     const badge = document.getElementById("battle-state-badge");
     expect(badge).toBeTruthy();

@@ -7,84 +7,84 @@ export function mockScheduler() {
     stop: vi.fn(),
     onFrame: vi.fn(),
     cancel: vi.fn(),
-    onSecondTick: vi.fn(),
+    onSecondTick: vi.fn()
   }));
 }
 
 export function mockFeatureFlags(initialFlags = {}) {
-    const defaultFlags = {
-        battleStateBadge: { enabled: true },
-        randomStatMode: { enabled: true },
-        ...initialFlags
-    };
+  const defaultFlags = {
+    battleStateBadge: { enabled: true },
+    randomStatMode: { enabled: true },
+    ...initialFlags
+  };
 
-    vi.doMock("../../../src/helpers/featureFlags.js", () => ({
-        featureFlagsEmitter: new EventTarget(),
-        isEnabled: (flag) => defaultFlags[flag]?.enabled ?? false,
-        initFeatureFlags: vi.fn().mockResolvedValue({ featureFlags: defaultFlags }),
-    }));
+  vi.doMock("../../../src/helpers/featureFlags.js", () => ({
+    featureFlagsEmitter: new EventTarget(),
+    isEnabled: (flag) => defaultFlags[flag]?.enabled ?? false,
+    initFeatureFlags: vi.fn().mockResolvedValue({ featureFlags: defaultFlags })
+  }));
 }
 
 export function mockDataUtils(fetchImplementation) {
-    const defaultFetch = async (path) => {
-        if (path.includes("classicBattleStates.json")) return classicBattleStates;
-        if (path.includes("battleRounds.json")) return [];
-        return {};
-    };
+  const defaultFetch = async (path) => {
+    if (path.includes("classicBattleStates.json")) return classicBattleStates;
+    if (path.includes("battleRounds.json")) return [];
+    return {};
+  };
 
-    vi.doMock("../../../src/helpers/dataUtils.js", () => ({
-        fetchJson: vi.fn(fetchImplementation || defaultFetch),
-        importJsonModule: vi.fn(async () => ({})),
-    }));
+  vi.doMock("../../../src/helpers/dataUtils.js", () => ({
+    fetchJson: vi.fn(fetchImplementation || defaultFetch),
+    importJsonModule: vi.fn(async () => ({}))
+  }));
 }
 
 export function mockStats() {
-    vi.doMock("../../../src/helpers/stats.js", () => ({
-        loadStatNames: async () => [{ name: "Power" }],
-    }));
+  vi.doMock("../../../src/helpers/stats.js", () => ({
+    loadStatNames: async () => [{ name: "Power" }]
+  }));
 }
 
 export function mockRoundManager() {
-    const store = {};
-    vi.doMock("../../../src/helpers/classicBattle/roundManager.js", () => ({
-        createBattleStore: () => store,
-        startRound: vi.fn(),
-        resetGame: vi.fn(),
-    }));
+  const store = {};
+  vi.doMock("../../../src/helpers/classicBattle/roundManager.js", () => ({
+    createBattleStore: () => store,
+    startRound: vi.fn(),
+    resetGame: vi.fn()
+  }));
 }
 
 export function mockSelectionHandler() {
-    vi.doMock("../../../src/helpers/classicBattle/selectionHandler.js", () => ({
-        handleStatSelection: vi.fn(),
-    }));
+  vi.doMock("../../../src/helpers/classicBattle/selectionHandler.js", () => ({
+    handleStatSelection: vi.fn()
+  }));
 }
 
 export function mockBattleJudokaPage() {
-    vi.doMock("../../../src/helpers/battleJudokaPage.js", () => ({
-        waitForComputerCard: vi.fn(),
-    }));
+  vi.doMock("../../../src/helpers/battleJudokaPage.js", () => ({
+    waitForComputerCard: vi.fn()
+  }));
 }
 
 export function mockShowSnackbar() {
-    vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
-        showSnackbar: vi.fn(),
-    }));
+  vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
+    showSnackbar: vi.fn()
+  }));
 }
 
 export function mockTooltips() {
-    vi.doMock("../../../src/helpers/tooltip.js", () => ({
-        initTooltips: vi.fn(),
-    }));
+  vi.doMock("../../../src/helpers/tooltip.js", () => ({
+    initTooltips: vi.fn()
+  }));
 }
 
 export function mockTestModeUtils() {
-    vi.doMock("../../../src/helpers/testModeUtils.js", () => ({
-        setTestMode: vi.fn(),
-    }));
+  vi.doMock("../../../src/helpers/testModeUtils.js", () => ({
+    setTestMode: vi.fn()
+  }));
 }
 
 export function mockRoundSelectModal() {
-    vi.doMock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-        initRoundSelectModal: vi.fn(),
-    }));
+  vi.doMock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
+    initRoundSelectModal: vi.fn()
+  }));
 }
