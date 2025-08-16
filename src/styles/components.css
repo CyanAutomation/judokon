@@ -46,3 +46,7 @@
   align-items: center;
   gap: 0.25rem; /* reduce gap between radio and label */
 }
+
+.switch .slider.round {
+  pointer-events: none;
+}

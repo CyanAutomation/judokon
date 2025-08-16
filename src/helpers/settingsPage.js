@@ -293,18 +293,30 @@ async function initializeSettingsPage() {
     const [settings, gameModes, tooltipMap] = await loadSettingsData();
     // If gameModes is missing or not an array, show error in Game Modes section
     if (!Array.isArray(gameModes) || gameModes.length === 0) {
-      showSectionError("game-mode-toggle-container", "Game Modes could not be loaded. Please check your connection or try again later.");
+      showSectionError(
+        "game-mode-toggle-container",
+        "Game Modes could not be loaded. Please check your connection or try again later."
+      );
     }
     // If feature flags are missing, show error in Advanced Settings section
     if (!settings || !settings.featureFlags) {
-      showSectionError("feature-flags-container", "Advanced Settings could not be loaded. Please check your connection or try again later.");
+      showSectionError(
+        "feature-flags-container",
+        "Advanced Settings could not be loaded. Please check your connection or try again later."
+      );
     }
     renderSettingsControls(settings, gameModes, tooltipMap);
   } catch (error) {
     console.error("Error loading settings page:", error);
     showLoadSettingsError();
-    showSectionError("game-mode-toggle-container", "Game Modes could not be loaded. Please check your connection or try again later.");
-    showSectionError("feature-flags-container", "Advanced Settings could not be loaded. Please check your connection or try again later.");
+    showSectionError(
+      "game-mode-toggle-container",
+      "Game Modes could not be loaded. Please check your connection or try again later."
+    );
+    showSectionError(
+      "feature-flags-container",
+      "Advanced Settings could not be loaded. Please check your connection or try again later."
+    );
   }
 }
 
