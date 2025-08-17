@@ -29,6 +29,8 @@ import { renderFeatureFlagSwitches } from "./settings/featureFlagSwitches.js";
 import { makeHandleUpdate } from "./settings/makeHandleUpdate.js";
 import { addNavResetButton } from "./settings/addNavResetButton.js";
 
+let errorPopupTimeoutId;
+
 /**
  * Build a confirmation modal for restoring default settings.
  *
@@ -164,9 +166,11 @@ function makeErrorPopupHandler(errorPopup) {
     if (errorPopup) {
       errorPopup.textContent = "Failed to update settings. Please try again.";
       errorPopup.style.display = "block";
-      setTimeout(() => {
+      if (errorPopupTimeoutId) clearTimeout(errorPopupTimeoutId);
+      errorPopupTimeoutId = setTimeout(() => {
         errorPopup.style.display = "none";
         errorPopup.textContent = "";
+        errorPopupTimeoutId = undefined;
       }, 3000);
     }
   };
