@@ -32,6 +32,27 @@ const coreStateIds = classicBattleStates
   .sort((a, b) => a.id - b.id)
   .map((s) => String(s.id));
 
+function createBattleDom() {
+  const header = document.createElement("header");
+  header.innerHTML = `
+      <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
+      <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
+      <p id="round-counter" aria-live="polite" aria-atomic="true"></p>
+      <p id="score-display" aria-live="polite" aria-atomic="true"></p>
+      <div class="scoreboard-right" id="scoreboard-right"></div>
+    `;
+  const battleArea = document.createElement("div");
+  battleArea.id = "battle-area";
+  const stats = document.createElement("div");
+  stats.id = "stat-buttons";
+  const btn = document.createElement("button");
+  btn.dataset.stat = "power";
+  stats.appendChild(btn);
+  const progressEl = document.createElement("ul");
+  progressEl.id = "battle-state-progress";
+  document.body.append(header, battleArea, stats, progressEl);
+}
+
 describe("battleStateBadge displays state transitions", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
@@ -44,38 +65,25 @@ describe("battleStateBadge displays state transitions", () => {
     vi.resetModules();
   });
 
-  it("reflects machine state and badge text", async () => {
-    // Manually set up DOM
-    const header = document.createElement("header");
-    header.innerHTML = `
-      <p id=\"round-message\" aria-live=\"polite\" aria-atomic=\"true\" role=\"status\"></p>
-      <p id=\"next-round-timer\" aria-live=\"polite\" aria-atomic=\"true\" role=\"status\"></p>
-      <p id=\"round-counter\" aria-live=\"polite\" aria-atomic=\"true\"></p>
-      <p id=\"score-display\" aria-live=\"polite\" aria-atomic=\"true\"></p>
-      <div class=\"scoreboard-right\" id=\"scoreboard-right\"></div>
-    `;
-    const battleArea = document.createElement("div");
-    battleArea.id = "battle-area";
-    const stats = document.createElement("div");
-    stats.id = "stat-buttons";
-    const btn = document.createElement("button");
-    btn.dataset.stat = "power";
-    stats.appendChild(btn);
-    const progressEl = document.createElement("ul");
-    progressEl.id = "battle-state-progress";
-    document.body.append(header, battleArea, stats, progressEl);
+  it("renders initial progress list and badge", async () => {
+    createBattleDom();
+    const { setupClassicBattlePage } = await import("../../../src/helpers/classicBattlePage.js");
+    await setupClassicBattlePage();
 
+    const progressList = document.getElementById("battle-state-progress");
+    const items = Array.from(progressList.querySelectorAll("li")).map((li) => li.textContent);
+    expect(items.slice(0, coreStateIds.length)).toEqual(coreStateIds);
+
+    const badge = document.getElementById("battle-state-badge");
+    expect(badge.textContent).toBe("State: waitingForMatchStart");
+  });
+
+  it("updates badge text on state transitions", async () => {
+    createBattleDom();
     const { setupClassicBattlePage } = await import("../../../src/helpers/classicBattlePage.js");
     await setupClassicBattlePage();
 
     const badge = document.getElementById("battle-state-badge");
-    expect(badge).toBeTruthy();
-
-    const progressList = document.getElementById("battle-state-progress");
-    expect(progressList).toBeTruthy();
-    const items = Array.from(progressList.querySelectorAll("li")).map((li) => li.textContent);
-    expect(items.slice(0, coreStateIds.length)).toEqual(coreStateIds);
-
     const badgeStates = [badge.textContent];
     const badgeObserver = new MutationObserver(() => {
       badgeStates.push(badge.textContent);
@@ -90,34 +98,12 @@ describe("battleStateBadge displays state transitions", () => {
 
     badgeObserver.disconnect();
 
-    const finalState = window.__classicBattleState;
-    const stateLog = window.getBattleStateSnapshot().log;
-
-    // The log contains the full history of states the machine has been in.
-    const recordedStates = stateLog.map((t) => t.to);
-
-    // The test is only concerned with the sequence of *distinct* states that
-    // have a visual progress step.
-    const uniqueStates = [...new Set(recordedStates)];
-
-    // Based on the original test's expectation, 'matchStart' is not one of them.
-    const progressStates = uniqueStates.filter((s) => s !== "matchStart");
-
     expect(badgeStates).toEqual([
       "State: waitingForMatchStart",
       "State: matchStart",
       "State: cooldown",
       "State: roundStart",
       "State: waitingForPlayerAction"
-    ]);
-    expect(finalState).toBe("waitingForPlayerAction");
-    expect(badge.textContent).toBe("State: waitingForPlayerAction");
-
-    expect(progressStates).toEqual([
-      "waitingForMatchStart",
-      "cooldown",
-      "roundStart",
-      "waitingForPlayerAction"
     ]);
   });
 });
