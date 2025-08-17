@@ -66,7 +66,7 @@ export async function createCardForJudoka(judoka, gokyoLookup, containerEl, pref
  *    with the chosen judoka when provided.
  * 4. Generate and display the card with `createCardForJudoka`.
  * 5. On any error, log the issue and load the fallback judoka using
- *    `getFallbackJudoka()` before displaying its card.
+ *    `getFallbackJudoka()`, then display its card and log any display error.
  *
  * @param {Judoka[]} [activeCards] - Preloaded judoka data.
  * @param {GokyoEntry[]} [gokyoData] - Preloaded gokyo data.
@@ -128,10 +128,10 @@ export async function generateRandomCard(
     if (typeof onSelect === "function") {
       onSelect(fallbackJudoka);
     }
-    await createCardForJudoka(fallbackJudoka, gokyoLookup, containerEl, prefersReducedMotion).catch(
-      (fallbackError) => {
-        console.error("Error displaying fallback card:", fallbackError);
-      }
-    );
+    try {
+      await createCardForJudoka(fallbackJudoka, gokyoLookup, containerEl, prefersReducedMotion);
+    } catch (fallbackError) {
+      console.error("Error displaying fallback card:", fallbackError);
+    }
   }
 }
