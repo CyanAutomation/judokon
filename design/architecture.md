@@ -47,7 +47,7 @@ import { buildMenu, setupHamburger } from "../helpers/api/navigation.js";
 ```
 
 - `buildMenu(gameModes, { orientation })` returns the created menu element.
-- `setupHamburger(breakpoint?)` inserts a toggle button and returns `{button, list}`.
+- `setupHamburger(breakpoint?)` inserts a toggle button and returns a cleanup function for the resize listener.
 
 ### helpers/vector search
 
