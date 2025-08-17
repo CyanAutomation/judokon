@@ -64,6 +64,7 @@ export async function initRoundSelectModal(onStart) {
   frag.append(title, btnWrap);
 
   const modal = createModal(frag, { labelledBy: title });
+  let cleanupTooltips = () => {};
   rounds.forEach((r) => {
     const btn = createButton(r.label, { id: `round-select-${r.id}` });
     btn.dataset.tooltipId = `ui.round${r.label}`;
@@ -71,6 +72,7 @@ export async function initRoundSelectModal(onStart) {
       setPointsToWin(r.value);
       modal.close();
       if (typeof onStart === "function") onStart();
+      cleanupTooltips();
       modal.destroy();
     });
     btnWrap.appendChild(btn);
@@ -78,7 +80,7 @@ export async function initRoundSelectModal(onStart) {
 
   document.body.appendChild(modal.element);
   try {
-    await initTooltips(modal.element);
+    cleanupTooltips = await initTooltips(modal.element);
   } catch (err) {
     console.error("Failed to initialize tooltips:", err);
   }

@@ -13,11 +13,11 @@ import { SidebarList } from "../components/SidebarList.js";
  * 4. Implement `showImage(index)` to update the image, alt text, filename, and sidebar highlight.
  * 5. Define event handlers; remove existing listeners and attach click and keydown handlers to cycle images with wraparound.
  * 6. Show the first image and apply button ripple effects.
- * 7. Return a teardown function that removes event listeners.
+ * 7. Return a teardown function that removes event listeners and tooltip listeners.
  *
- * @returns {void}
+ * @returns {Promise<() => void>} Teardown function.
  */
-export function setupMockupViewerPage() {
+export async function setupMockupViewerPage() {
   const imgEl = document.getElementById("mockup-image");
   const filenameEl = document.getElementById("mockup-filename");
   const prevBtn = document.getElementById("prev-btn");
@@ -110,12 +110,13 @@ export function setupMockupViewerPage() {
 
   showImage(0);
   setupButtonEffects();
-  initTooltips();
+  const cleanupTooltips = await initTooltips();
 
   return () => {
     prevBtn.removeEventListener("click", handlePrevClick);
     nextBtn.removeEventListener("click", handleNextClick);
     document.removeEventListener("keydown", handleKeydown);
+    cleanupTooltips();
   };
 }
 

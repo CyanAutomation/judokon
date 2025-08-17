@@ -162,7 +162,9 @@ describe("browseJudokaPage helpers", () => {
       createLoadingSpinner
     }));
     vi.doMock("../../src/helpers/buttonEffects.js", () => ({ setupButtonEffects: vi.fn() }));
-    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips: vi.fn() }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      initTooltips: vi.fn().mockResolvedValue(() => {})
+    }));
     const toggleCountryPanel = vi.fn();
     const toggleCountryPanelMode = vi.fn();
     vi.doMock("../../src/helpers/countryPanel.js", () => ({
@@ -239,7 +241,9 @@ describe("browseJudokaPage helpers", () => {
       createLoadingSpinner: () => ({ spinner: document.createElement("div"), timeoutId: 0 })
     }));
     vi.doMock("../../src/helpers/buttonEffects.js", () => ({ setupButtonEffects: vi.fn() }));
-    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips: vi.fn() }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      initTooltips: vi.fn().mockResolvedValue(() => {})
+    }));
     const toggleCountryPanel = vi.fn();
     const toggleCountryPanelMode = vi.fn();
     vi.doMock("../../src/helpers/countryPanel.js", () => ({

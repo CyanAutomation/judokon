@@ -13,7 +13,7 @@ describe("mockupViewerPage", () => {
     globalThis.SKIP_MOCKUP_AUTO_INIT = true;
     const { setupMockupViewerPage } = await import("../../src/helpers/mockupViewerPage.js");
 
-    setupMockupViewerPage();
+    await setupMockupViewerPage();
 
     const list = document.getElementById("mockup-list");
     const img = document.getElementById("mockup-image");
@@ -38,7 +38,7 @@ describe("mockupViewerPage", () => {
     globalThis.SKIP_MOCKUP_AUTO_INIT = true;
     const { setupMockupViewerPage } = await import("../../src/helpers/mockupViewerPage.js");
 
-    setupMockupViewerPage();
+    await setupMockupViewerPage();
 
     const list = document.getElementById("mockup-list");
     const img = document.getElementById("mockup-image");
