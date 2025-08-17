@@ -16,11 +16,7 @@ export function getBattleStateMachine() {
   return machine;
 }
 
-export async function initClassicBattleOrchestrator(
-  store,
-  startRoundWrapper,
-  opts = {}
-) {
+export async function initClassicBattleOrchestrator(store, startRoundWrapper, opts = {}) {
   const { resetGame: resetGameOpt, startRound: startRoundOpt } = opts;
   const doResetGame = typeof resetGameOpt === "function" ? resetGameOpt : resetGameLocal;
   const doStartRound = typeof startRoundOpt === "function" ? startRoundOpt : startRoundLocal;

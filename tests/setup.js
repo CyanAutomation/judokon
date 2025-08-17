@@ -1,4 +1,3 @@
-
 import { expect, afterEach, beforeEach } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 import { muteConsole, restoreConsole } from "./utils/console.js";
