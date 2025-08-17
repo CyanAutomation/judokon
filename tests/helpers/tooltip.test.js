@@ -9,10 +9,10 @@ beforeEach(() => {
 });
 
 describe("initTooltips", () => {
-  it("shows tooltip on hover and parses markdown", async () => {
+  it("shows tooltip on hover and parses nested markdown", async () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue({
-        stat: { test: "**Bold**\n_italic_" }
+        stat: { test: "**Bold _italic_**\nplain" }
       })
     }));
 
@@ -27,11 +27,30 @@ describe("initTooltips", () => {
     el.dispatchEvent(new Event("mouseenter"));
 
     const tip = document.querySelector(".tooltip");
-    expect(tip.innerHTML.replace(/\n/g, "")).toBe("<strong>Bold</strong><br><em>italic</em>");
+    expect(tip.innerHTML.replace(/\n/g, "")).toBe("<strong>Bold <em>italic</em></strong><br>plain");
     expect(tip.style.display).toBe("block");
 
     el.dispatchEvent(new Event("mouseleave"));
     expect(tip.style.display).toBe("none");
+  });
+
+  it("warns on unbalanced markdown", async () => {
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ stat: { test: "**Bold** _oops" } })
+    }));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+
+    const el = document.createElement("button");
+    el.dataset.tooltipId = "stat.test";
+    document.body.appendChild(el);
+
+    await initTooltips();
+
+    el.dispatchEvent(new Event("mouseenter"));
+    expect(warn).toHaveBeenCalledWith("Unbalanced markup in tooltip id: stat.test");
+    warn.mockRestore();
   });
 
   it("shows fallback text and warns once for unknown ids", async () => {

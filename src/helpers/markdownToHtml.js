@@ -16,3 +16,25 @@ export function markdownToHtml(text) {
   if (!text) return "";
   return marked.parse(text);
 }
+
+/**
+ * Convert Markdown to inline HTML without wrapping paragraphs.
+ *
+ * @pseudocode
+ * 1. If `text` is empty, return an empty string.
+ * 2. Split `text` on newline characters.
+ * 3. For each line:
+ *    - Parse with `marked.parse`.
+ *    - Remove surrounding `<p>` tags.
+ * 4. Join the lines with `<br>` and return the result.
+ *
+ * @param {string} [text] - Markdown content to convert.
+ * @returns {string} Inline HTML string.
+ */
+export function markdownToInlineHtml(text) {
+  if (!text) return "";
+  return text
+    .split("\n")
+    .map((line) => marked.parse(line).replace(/^<p>|<\/p>$/g, ""))
+    .join("<br>");
+}
