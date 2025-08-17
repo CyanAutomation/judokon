@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { debounce } from "../../src/utils/debounce.js";
+import { debounce, DebounceError } from "../../src/utils/debounce.js";
 
 describe("debounce", () => {
   it("resolves with latest call after delay", async () => {
@@ -13,13 +13,32 @@ describe("debounce", () => {
     vi.useRealTimers();
   });
 
-  it("rejects previous promise when a new call is made", async () => {
+  it("rejects previous promise with DebounceError by default", async () => {
     vi.useFakeTimers();
     const fn = vi.fn();
     const debounced = debounce(fn, 100);
     const first = debounced("a");
     const second = debounced("b");
-    await expect(first).rejects.toThrow("Debounced");
+    await expect(first).rejects.toBeInstanceOf(DebounceError);
+    vi.advanceTimersByTime(100);
+    await expect(second).resolves.toBeUndefined();
+    expect(fn).toHaveBeenCalledTimes(1);
+    expect(fn).toHaveBeenCalledWith("b");
+    vi.useRealTimers();
+  });
+
+  it("suppresses rejection and calls onCancel when configured", async () => {
+    vi.useFakeTimers();
+    const fn = vi.fn();
+    const onCancel = vi.fn();
+    const debounced = debounce(fn, 100, {
+      suppressRejection: true,
+      onCancel
+    });
+    const first = debounced("a");
+    const second = debounced("b");
+    await expect(first).resolves.toBeUndefined();
+    expect(onCancel).toHaveBeenCalledWith(expect.any(DebounceError));
     vi.advanceTimersByTime(100);
     await expect(second).resolves.toBeUndefined();
     expect(fn).toHaveBeenCalledTimes(1);
