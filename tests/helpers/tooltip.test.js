@@ -47,14 +47,36 @@ describe("initTooltips", () => {
 
     await initTooltips();
 
-    el.dispatchEvent(new Event("mouseenter"));
     const tip = document.querySelector(".tooltip");
+
+    el.dispatchEvent(new Event("mouseenter"));
     expect(tip.textContent).toBe("More info coming…");
     el.dispatchEvent(new Event("mouseleave"));
     el.dispatchEvent(new Event("mouseenter"));
 
     expect(warn).toHaveBeenCalledTimes(1);
     warn.mockRestore();
+  });
+
+  it("falls back to leaf keys for parent ids", async () => {
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({
+        settings: { theme: { description: "Theme description" } }
+      })
+    }));
+
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+
+    const el = document.createElement("div");
+    el.dataset.tooltipId = "settings.theme";
+    document.body.appendChild(el);
+
+    await initTooltips();
+
+    const tip = document.querySelector(".tooltip");
+    el.dispatchEvent(new Event("mouseenter"));
+
+    expect(tip.textContent).toBe("Theme description");
   });
 
   it("positions tooltip within viewport for zero-size targets", async () => {
