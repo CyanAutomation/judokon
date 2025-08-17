@@ -33,9 +33,11 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
       handleUpdate("sound", soundToggle.checked, () => {
         soundToggle.checked = prev;
       })
-    ).then(() => {
-      showSnackbar(`Sound ${soundToggle.checked ? "enabled" : "disabled"}`);
-    });
+    )
+      .then(() => {
+        showSnackbar(`Sound ${soundToggle.checked ? "enabled" : "disabled"}`);
+      })
+      .catch(() => {});
   });
   motionToggle?.addEventListener("change", () => {
     const prev = !motionToggle.checked;
@@ -45,9 +47,11 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
         motionToggle.checked = prev;
         applyMotionPreference(prev);
       })
-    ).then(() => {
-      showSnackbar(`Motion effects ${motionToggle.checked ? "enabled" : "disabled"}`);
-    });
+    )
+      .then(() => {
+        showSnackbar(`Motion effects ${motionToggle.checked ? "enabled" : "disabled"}`);
+      })
+      .catch(() => {});
   });
   if (displayRadios) {
     displayRadios.forEach((radio) => {
@@ -72,10 +76,12 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
               applyDisplayMode(previous);
             });
           })
-        ).then(() => {
-          const label = mode.charAt(0).toUpperCase() + mode.slice(1);
-          showSnackbar(`${label} mode enabled`);
-        });
+        )
+          .then(() => {
+            const label = mode.charAt(0).toUpperCase() + mode.slice(1);
+            showSnackbar(`${label} mode enabled`);
+          })
+          .catch(() => {});
       });
     });
   }
@@ -85,9 +91,11 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
       handleUpdate("typewriterEffect", typewriterToggle.checked, () => {
         typewriterToggle.checked = prev;
       })
-    ).then(() => {
-      showSnackbar(`Typewriter effect ${typewriterToggle.checked ? "enabled" : "disabled"}`);
-    });
+    )
+      .then(() => {
+        showSnackbar(`Typewriter effect ${typewriterToggle.checked ? "enabled" : "disabled"}`);
+      })
+      .catch(() => {});
   });
   tooltipsToggle?.addEventListener("change", () => {
     const prev = !tooltipsToggle.checked;
@@ -95,9 +103,11 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
       handleUpdate("tooltips", tooltipsToggle.checked, () => {
         tooltipsToggle.checked = prev;
       })
-    ).then(() => {
-      showSnackbar(`Tooltips ${tooltipsToggle.checked ? "enabled" : "disabled"}`);
-    });
+    )
+      .then(() => {
+        showSnackbar(`Tooltips ${tooltipsToggle.checked ? "enabled" : "disabled"}`);
+      })
+      .catch(() => {});
   });
   cardOfTheDayToggle?.addEventListener("change", () => {
     const prev = !cardOfTheDayToggle.checked;
@@ -105,9 +115,11 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
       handleUpdate("showCardOfTheDay", cardOfTheDayToggle.checked, () => {
         cardOfTheDayToggle.checked = prev;
       })
-    ).then(() => {
-      showSnackbar(`Card of the Day ${cardOfTheDayToggle.checked ? "enabled" : "disabled"}`);
-    });
+    )
+      .then(() => {
+        showSnackbar(`Card of the Day ${cardOfTheDayToggle.checked ? "enabled" : "disabled"}`);
+      })
+      .catch(() => {});
   });
   fullNavigationMapToggle?.addEventListener("change", () => {
     const prev = !fullNavigationMapToggle.checked;
@@ -115,10 +127,12 @@ export function attachToggleListeners(controls, getCurrentSettings, handleUpdate
       handleUpdate("fullNavigationMap", fullNavigationMapToggle.checked, () => {
         fullNavigationMapToggle.checked = prev;
       })
-    ).then(() => {
-      showSnackbar(
-        `Full navigation map ${fullNavigationMapToggle.checked ? "enabled" : "disabled"}`
-      );
-    });
+    )
+      .then(() => {
+        showSnackbar(
+          `Full navigation map ${fullNavigationMapToggle.checked ? "enabled" : "disabled"}`
+        );
+      })
+      .catch(() => {});
   });
 }

@@ -192,7 +192,7 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
     let next = current;
     if (radio && radio.value !== current.displayMode) {
       withViewTransition(() => applyDisplayMode(radio.value));
-      handleUpdate("displayMode", radio.value, () => {});
+      handleUpdate("displayMode", radio.value, () => {}).catch(() => {});
       next = { ...current, displayMode: radio.value };
     }
     applyInitialControlValues(controls, next, tooltipMap);

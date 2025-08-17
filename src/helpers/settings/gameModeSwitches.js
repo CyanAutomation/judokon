@@ -71,9 +71,11 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
         handleUpdate("gameModes", updated, () => {
           input.checked = prev;
         })
-      ).then(() => {
-        showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);
-      });
+      )
+        .then(() => {
+          showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);
+        })
+        .catch(() => {});
       updateNavigationItemHidden(mode.id, !input.checked).catch((err) => {
         console.error("Failed to update navigation item", err);
         input.checked = prev;
