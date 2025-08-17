@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { loadQuote } from "../../src/helpers/quoteBuilder.js";
+import { loadQuote, formatFableStory } from "../../src/helpers/quoteBuilder.js";
 
 const originalFetch = global.fetch;
 
@@ -97,5 +97,12 @@ describe("loadQuote", () => {
     await loadQuote();
     await vi.runAllTimersAsync();
     // Should not throw even if #quote, #quote-loader, or #language-toggle are missing
+  });
+});
+
+describe("formatFableStory", () => {
+  it("returns empty string for null or undefined", () => {
+    expect(formatFableStory(null)).toBe("");
+    expect(formatFableStory(undefined)).toBe("");
   });
 });

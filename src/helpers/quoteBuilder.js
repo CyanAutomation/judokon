@@ -62,27 +62,29 @@ async function fetchFables() {
  * Formats a fable's story by replacing newline characters with HTML tags for proper rendering.
  *
  * @pseudocode
- * 1. Normalize newline characters:
+ * 1. Coerce the story to a string.
+ *
+ * 2. Normalize newline characters:
  *    - Replace escaped newline characters (`\\n`) with actual newline characters (`\n`).
  *
- * 2. Split the story into paragraphs:
+ * 3. Split the story into paragraphs:
  *    - Use `.split(/\n{2,}/)` to divide the story into paragraphs based on double or more consecutive newlines.
  *    - Trim each paragraph and filter out empty paragraphs.
  *
- * 3. Format each paragraph:
+ * 4. Format each paragraph:
  *    - Wrap each paragraph in `<p>` tags.
  *    - Replace single newline characters (`\n`) within paragraphs with `<br>` tags for line breaks.
  *
- * 4. Combine formatted paragraphs:
+ * 5. Combine formatted paragraphs:
  *    - Join the paragraphs into a single HTML string.
  *
- * 5. Return the formatted story.
+ * 6. Return the formatted story.
  *
  * @param {string} story - The fable's story text to format.
  * @returns {string} The formatted story with HTML tags for rendering.
  */
-function formatFableStory(story) {
-  story = story.replace(/\\n/g, "\n");
+export function formatFableStory(story) {
+  story = String(story ?? "").replace(/\\n/g, "\n");
 
   return story
     .trim()
