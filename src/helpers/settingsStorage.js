@@ -1,6 +1,6 @@
 import { validateWithSchema } from "./dataUtils.js";
 import { getSettingsSchema, defaultSettingsPromise, DEFAULT_SETTINGS } from "./settingsSchema.js";
-import { setCachedSettings, resetCache, getCachedSettings } from "./settingsCache.js";
+import { setCachedSettings, getCachedSettings } from "./settingsCache.js";
 import { debounce } from "../utils/debounce.js";
 
 const SETTINGS_KEY = "settings";
