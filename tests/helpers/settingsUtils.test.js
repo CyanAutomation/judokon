@@ -87,12 +87,12 @@ describe("settings utils", () => {
     expect(JSON.parse(localStorage.getItem("settings"))).toEqual(data);
   });
 
-  it("does not throw if localStorage is unavailable", async () => {
+  it("rejects if localStorage is unavailable", async () => {
     const original = global.localStorage;
     // Simulate localStorage being undefined
     Object.defineProperty(global, "localStorage", { value: undefined, configurable: true });
     const { saveSettings, loadSettings } = await import("../../src/helpers/settingsStorage.js");
-    await expect(saveSettings({ sound: true })).resolves.toBeUndefined();
+    await expect(saveSettings({ sound: true })).rejects.toThrow("localStorage unavailable");
     await expect(loadSettings()).rejects.toThrow();
     Object.defineProperty(global, "localStorage", { value: original, configurable: true });
   });
@@ -133,9 +133,9 @@ describe("settings utils", () => {
   });
 
   /**
-   * Should swallow errors when localStorage.setItem throws.
+   * Should reject when localStorage.setItem throws.
    */
-  it("swallows errors when localStorage.setItem throws", async () => {
+  it("rejects when localStorage.setItem throws", async () => {
     Storage.prototype.setItem = vi.fn(() => {
       throw new Error("fail");
     });
@@ -156,7 +156,7 @@ describe("settings utils", () => {
           enableCardInspector: { enabled: false }
         }
       })
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow("fail");
     Storage.prototype.setItem = originalSetItem;
   });
 
@@ -214,7 +214,7 @@ describe("settings utils", () => {
     };
     const first = saveSettings(data1);
     const second = saveSettings(data2);
-    await expect(first).resolves.toBeUndefined();
+    await expect(first).rejects.toThrow("Debounced");
     await vi.advanceTimersByTimeAsync(110);
     await expect(second).resolves.toBeUndefined();
     expect(setItemSpy).toHaveBeenCalledTimes(1);

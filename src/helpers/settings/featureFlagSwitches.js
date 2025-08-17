@@ -78,18 +78,20 @@ export function renderFeatureFlagSwitches(
         handleUpdate("featureFlags", updated, () => {
           input.checked = prev;
         })
-      ).then(() => {
-        showSnackbar(`${currentLabel} ${input.checked ? "enabled" : "disabled"}`);
-        if (flag === "viewportSimulation") {
-          toggleViewportSimulation(input.checked);
-        }
-        if (flag === "tooltipOverlayDebug") {
-          toggleTooltipOverlayDebug(input.checked);
-        }
-        if (flag === "layoutDebugPanel") {
-          toggleLayoutDebugPanel(input.checked);
-        }
-      });
+      )
+        .then(() => {
+          showSnackbar(`${currentLabel} ${input.checked ? "enabled" : "disabled"}`);
+          if (flag === "viewportSimulation") {
+            toggleViewportSimulation(input.checked);
+          }
+          if (flag === "tooltipOverlayDebug") {
+            toggleTooltipOverlayDebug(input.checked);
+          }
+          if (flag === "layoutDebugPanel") {
+            toggleLayoutDebugPanel(input.checked);
+          }
+        })
+        .catch(() => {});
     });
   });
 }

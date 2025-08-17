@@ -19,13 +19,13 @@ const debouncedSave = debounce((settings) => {
  *
  * @pseudocode
  * 1. Invoke `debouncedSave` with `settings`.
- * 2. Ignore any rejection from `debouncedSave` and return its promise.
+ * 2. Return the resulting promise so callers can handle failures.
  *
  * @param {import("./settingsSchema.js").Settings} settings - Settings object to save.
  * @returns {Promise<void>} Resolves when the write completes.
  */
 export function saveSettings(settings) {
-  return debouncedSave(settings).catch(() => {});
+  return debouncedSave(settings);
 }
 
 /**
