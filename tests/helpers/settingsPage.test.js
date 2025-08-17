@@ -204,6 +204,16 @@ describe("renderSettingsControls", () => {
     expect(initFeatureFlags).toHaveBeenCalled();
     expect(showSnackbar).toHaveBeenCalledWith("Settings restored to defaults");
   });
+
+  it("does not duplicate reset listener on reinit", async () => {
+    const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
+    renderSettingsControls(baseSettings, [], tooltipMap);
+    const resetButton = document.getElementById("reset-settings-button");
+    const addSpy = vi.spyOn(resetButton, "addEventListener");
+    renderSettingsControls(baseSettings, [], tooltipMap);
+    expect(addSpy).not.toHaveBeenCalled();
+    addSpy.mockRestore();
+  });
 });
 
 describe("initializeSettingsPage", () => {
