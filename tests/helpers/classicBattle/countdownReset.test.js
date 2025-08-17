@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
+import { createRoundMessage, createSnackbarContainer, createTimerNodes } from "./domUtils.js";
 import * as snackbar from "../../../src/helpers/showSnackbar.js";
 vi.mock("../../../src/utils/scheduler.js", () => ({
   onFrame: (cb) => {
@@ -36,17 +37,12 @@ describe("countdown resets after stat selection", () => {
     document.body.innerHTML = "";
     const { playerCard, computerCard } = createBattleCardContainers();
     const header = createBattleHeader();
-    const roundResult = document.createElement("p");
-    roundResult.id = "round-result";
-    const nextBtn = document.createElement("button");
-    nextBtn.id = "next-button";
-    document.body.append(playerCard, computerCard, header, roundResult, nextBtn);
+    header.querySelector("#next-round-timer")?.remove();
+    document.body.append(playerCard, computerCard, header);
+    createRoundMessage("round-result");
+    createTimerNodes();
     document.body.innerHTML += '<div id="stat-buttons"><button data-stat="power"></button></div>';
-    const container = document.createElement("div");
-    container.id = "snackbar-container";
-    container.setAttribute("role", "status");
-    container.setAttribute("aria-live", "polite");
-    document.body.append(container);
+    createSnackbarContainer();
     battleMod = await import("../../../src/helpers/classicBattle.js");
     store = battleMod.createBattleStore();
     battleMod._resetForTest(store);

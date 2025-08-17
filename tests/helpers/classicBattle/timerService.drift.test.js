@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { createNextButton, createNextRoundTimer } from "./utils.js";
+import { createTimerNodes } from "./domUtils.js";
 
 describe("timerService drift handling", () => {
   it("startTimer shows fallback on drift", async () => {
@@ -58,8 +58,7 @@ describe("timerService drift handling", () => {
     });
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
     const timer = vi.useFakeTimers();
-    createNextButton();
-    createNextRoundTimer();
+    createTimerNodes();
     mod.scheduleNextRound({ matchEnded: false });
     timer.advanceTimersByTime(2000);
     onDrift(1);

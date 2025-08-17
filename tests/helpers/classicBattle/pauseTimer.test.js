@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
+import { createRoundMessage } from "./domUtils.js";
 import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
 
 vi.mock("../../../src/helpers/motionUtils.js", () => ({
@@ -44,10 +45,7 @@ describe("classicBattle timer pause", () => {
     document.body.innerHTML = "";
     const { playerCard, computerCard } = createBattleCardContainers();
     const header = createBattleHeader();
-    const roundResult = document.createElement("p");
-    roundResult.id = "round-result";
-    roundResult.setAttribute("aria-live", "polite");
-    roundResult.setAttribute("aria-atomic", "true");
+    const roundResult = createRoundMessage("round-result");
     const statButtons = document.createElement("div");
     statButtons.id = "stat-buttons";
     statButtons.dataset.tooltipId = "ui.selectStat";
