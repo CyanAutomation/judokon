@@ -91,6 +91,7 @@ function createResetConfirmation(onConfirm) {
  * 3. Provide helpers to read/persist settings and show errors.
  * 4. Attach listeners for existing controls and the Restore Defaults button.
  *    - Reset confirms with a modal, reloads feature flags, reapplies defaults, and rerenders switches.
+ *    - Guard against duplicate reset listeners when controls reinitialize.
  * 5. Return `renderSwitches` to inject game-mode/feature-flag toggles and apply initial values later.
  *
  * @param {Settings} settings - Current settings object.
@@ -130,9 +131,12 @@ function initializeControls(settings) {
     showSnackbar("Settings restored to defaults");
   });
 
-  resetButton?.addEventListener("click", () => {
-    resetModal.open(resetButton);
-  });
+  if (resetButton && !resetButton.dataset.resetListenerAttached) {
+    resetButton.addEventListener("click", () => {
+      resetModal.open(resetButton);
+    });
+    resetButton.dataset.resetListenerAttached = "true";
+  }
 
   return {
     renderSwitches: (gameModes, tooltipMap) => {
