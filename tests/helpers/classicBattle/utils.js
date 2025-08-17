@@ -41,3 +41,17 @@ export function setupClassicBattleDom() {
     currentFlags
   };
 }
+
+export function createNextButton() {
+  const btn = document.createElement("button");
+  btn.id = "next-button";
+  document.body.appendChild(btn);
+  return btn;
+}
+
+export function createNextRoundTimer() {
+  const timerNode = document.createElement("p");
+  timerNode.id = "next-round-timer";
+  document.body.appendChild(timerNode);
+  return timerNode;
+}
