@@ -61,6 +61,7 @@ export async function createCardForJudoka(judoka, gokyoLookup, containerEl, pref
  * 2. Ensure gokyo data is available:
  *    - Use the provided `gokyoData` or fetch `gokyo.json`.
  *    - Create a lookup object with `createGokyoLookup`.
+ *    - On failure, build a minimal lookup and notify the user.
  * 3. Select a random judoka using `getRandomJudoka` and invoke `onSelect`
  *    with the chosen judoka when provided.
  * 4. Generate and display the card with `createCardForJudoka`.
@@ -90,6 +91,13 @@ export async function generateRandomCard(
     gokyoLookup = createGokyoLookup(gokyo);
   } catch (gokyoError) {
     console.error("Error loading gokyo data:", gokyoError);
+    gokyoLookup = createGokyoLookup([{ id: 0, name: "Jigoku-guruma" }]);
+    try {
+      const { showSnackbar } = await import("./showSnackbar.js");
+      showSnackbar("Move list unavailable; using fallback data");
+    } catch (notifyError) {
+      console.warn("Unable to notify about missing gokyo data:", notifyError);
+    }
   }
 
   try {
