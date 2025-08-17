@@ -35,10 +35,10 @@ export function togglePortraitTextMenu(gameModes) {
  *
  * @pseudocode
  * 1. Delegate to {@link setupHamburger} with the provided breakpoint.
- * 2. Return the DOM hooks from the API.
+ * 2. Return the cleanup function from the API.
  *
  * @param {number} [breakpoint=480] - Maximum width to show the hamburger menu.
- * @returns {{button: HTMLButtonElement|null, list: HTMLUListElement|null}} DOM hooks.
+ * @returns {() => void} Cleanup function to remove the `resize` listener.
  */
 export function setupHamburgerMenu(breakpoint = 480) {
   return setupHamburger(breakpoint);
