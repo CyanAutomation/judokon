@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSettingsDom, resetDom } from "../utils/testUtils.js";
+import defaultSettings from "../../src/data/settings.json" with { type: "json" };
 
 const baseSettings = {
   sound: true,
@@ -270,7 +271,7 @@ describe("initializeSettingsPage", () => {
       importJsonModule: vi.fn(async (path) => {
         if (path.includes("navigationItems.json")) return navItems;
         if (path.includes("gameModes.json")) return modes;
-        return {};
+        return defaultSettings;
       })
     }));
     vi.doMock("../../src/helpers/storage.js", () => ({

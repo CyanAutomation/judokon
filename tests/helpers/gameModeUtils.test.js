@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import defaultSettings from "../../src/data/settings.json" with { type: "json" };
 
 describe("loadNavigationItems", () => {
   it("returns static fallback when cache and import fail", async () => {
@@ -12,7 +13,7 @@ describe("loadNavigationItems", () => {
       validateWithSchema: vi.fn(),
       importJsonModule: vi.fn(async (path) => {
         if (path.includes("navigationItems.json")) throw new Error("import fail");
-        return [];
+        return defaultSettings;
       })
     }));
     vi.doMock("../../src/helpers/storage.js", () => ({

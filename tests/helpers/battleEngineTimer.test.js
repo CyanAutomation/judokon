@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import defaultSettings from "../../src/data/settings.json" with { type: "json" };
 
 const mockTimers = [{ id: 1, value: 42, default: true, category: "roundTimer" }];
 
@@ -7,7 +8,7 @@ beforeEach(() => {
   vi.resetModules();
   vi.doMock("../../src/helpers/dataUtils.js", () => ({
     fetchJson: vi.fn().mockResolvedValue(mockTimers),
-    importJsonModule: vi.fn()
+    importJsonModule: vi.fn().mockResolvedValue(defaultSettings)
   }));
 });
 

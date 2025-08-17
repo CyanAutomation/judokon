@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { setupClassicBattleDom } from "./utils.js";
 import { CLASSIC_BATTLE_POINTS_TO_WIN } from "../../../src/helpers/constants.js";
+import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
 
 vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
@@ -42,7 +43,7 @@ vi.mock("../../../src/components/JudokaCard.js", () => {
 let fetchJsonMock;
 vi.mock("../../../src/helpers/dataUtils.js", () => ({
   fetchJson: (...args) => fetchJsonMock(...args),
-  importJsonModule: vi.fn()
+  importJsonModule: vi.fn().mockResolvedValue(defaultSettings)
 }));
 
 vi.mock("../../../src/helpers/utils.js", () => ({

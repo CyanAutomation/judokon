@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createBattleHeader, createBattleCardContainers, resetDom } from "../../utils/testUtils.js";
+import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
 vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
@@ -26,7 +27,7 @@ vi.mock("../../../src/components/JudokaCard.js", () => {
 let fetchJsonMock;
 vi.mock("../../../src/helpers/dataUtils.js", () => ({
   fetchJson: (...args) => fetchJsonMock(...args),
-  importJsonModule: vi.fn()
+  importJsonModule: vi.fn().mockResolvedValue(defaultSettings)
 }));
 
 vi.mock("../../../src/helpers/utils.js", () => ({
