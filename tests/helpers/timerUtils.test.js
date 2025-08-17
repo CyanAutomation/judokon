@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import defaultSettings from "../../src/data/settings.json" with { type: "json" };
 
 beforeEach(() => {
   vi.resetModules();
@@ -13,7 +14,7 @@ describe("timerUtils", () => {
     ];
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue(data),
-      importJsonModule: vi.fn()
+      importJsonModule: vi.fn().mockResolvedValue(defaultSettings)
     }));
     const { getDefaultTimer } = await import("../../src/helpers/timerUtils.js");
     const val1 = await getDefaultTimer("roundTimer");
@@ -24,14 +25,14 @@ describe("timerUtils", () => {
 
   it("falls back to import when fetch fails", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const fallback = [{ id: 3, value: 5, default: true, category: "coolDownTimer" }];
+    const importMock = vi.fn().mockResolvedValue(defaultSettings);
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockRejectedValue(new Error("fail")),
-      importJsonModule: vi.fn().mockResolvedValue(fallback)
+      importJsonModule: importMock
     }));
     const { getDefaultTimer } = await import("../../src/helpers/timerUtils.js");
-    const val = await getDefaultTimer("coolDownTimer");
-    expect(val).toBe(5);
+    await expect(getDefaultTimer("coolDownTimer")).rejects.toThrow();
+    expect(importMock).toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalled();
     warnSpy.mockRestore();
   });

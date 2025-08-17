@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createNextButton, createNextRoundTimer } from "./utils.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
+import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
 
 describe("timerService next round handling", () => {
   it("clicking Next during cooldown skips current phase", async () => {
@@ -101,7 +102,7 @@ vi.mock("../../../src/components/JudokaCard.js", () => {
 let fetchJsonMock;
 vi.mock("../../../src/helpers/dataUtils.js", () => ({
   fetchJson: (...args) => fetchJsonMock(...args),
-  importJsonModule: vi.fn()
+  importJsonModule: vi.fn().mockResolvedValue(defaultSettings)
 }));
 
 vi.mock("../../../src/helpers/motionUtils.js", () => ({

@@ -1,5 +1,6 @@
 import { vi } from "vitest";
 import classicBattleStates from "../../../src/data/classicBattleStates.json" with { type: "json" };
+import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
 
 export function mockScheduler() {
   vi.mock("../../../src/utils/scheduler.js", () => ({
@@ -34,7 +35,7 @@ export function mockDataUtils(fetchImplementation) {
 
   vi.doMock("../../../src/helpers/dataUtils.js", () => ({
     fetchJson: vi.fn(fetchImplementation || defaultFetch),
-    importJsonModule: vi.fn(async () => ({}))
+    importJsonModule: vi.fn(async () => defaultSettings)
   }));
 }
 
