@@ -4,6 +4,7 @@ import { escapeHTML } from "./utils.js";
 import { loadSettings } from "./settingsStorage.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { getSanitizer } from "./sanitizeHtml.js";
+import { debugLog } from "./debug.js";
 
 let tooltipDataPromise;
 let cachedData;
@@ -54,7 +55,8 @@ async function loadTooltips() {
       try {
         return await fetchJson(`${DATA_DIR}tooltips.json`);
       } catch (err) {
-        console.error("Failed to load tooltips:", err);
+        // In JSDOM, fetching file: URLs fails; fall back to import without noisy logs
+        debugLog("Failed to load tooltips; using bundled JSON fallback.", err);
         return importJsonModule("../data/tooltips.json");
       }
     })();

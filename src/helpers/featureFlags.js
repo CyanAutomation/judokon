@@ -1,6 +1,6 @@
 import { loadSettings, updateSetting } from "./settingsStorage.js";
 import { setCachedSettings } from "./settingsCache.js";
-import { DEFAULT_SETTINGS } from "./settingsSchema.js";
+import { defaultSettingsPromise } from "./settingsSchema.js";
 
 /**
  * Event emitter broadcasting feature flag changes.
@@ -9,8 +9,11 @@ import { DEFAULT_SETTINGS } from "./settingsSchema.js";
  */
 export const featureFlagsEmitter = new EventTarget();
 
-// Initialize with defaults so flags have expected values before loading settings.
-let cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };
+let cachedFlags = {};
+
+defaultSettingsPromise.then((settings) => {
+  cachedFlags = { ...settings.featureFlags };
+});
 
 /**
  * Initialize feature flags from persisted settings.
@@ -27,10 +30,10 @@ export async function initFeatureFlags() {
   let settings;
   try {
     settings = await loadSettings();
-    cachedFlags = settings.featureFlags || { ...DEFAULT_SETTINGS.featureFlags };
+    cachedFlags = settings.featureFlags || { ...(await defaultSettingsPromise).featureFlags };
   } catch {
-    settings = { ...DEFAULT_SETTINGS };
-    cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };
+    settings = { ...(await defaultSettingsPromise) };
+    cachedFlags = { ...(await defaultSettingsPromise).featureFlags };
     setCachedSettings(settings);
   }
   featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
@@ -55,7 +58,7 @@ export function isEnabled(flag) {
  *
  * @pseudocode
  * 1. Call `loadSettings()` to retrieve current settings.
- * 2. Optionally warn if `flag` is not in `DEFAULT_SETTINGS.featureFlags`.
+ * 2. Optionally warn if `flag` is not in `(await defaultSettingsPromise).featureFlags`.
  * 3. Merge existing flag data with `{ enabled: value }` into `settings.featureFlags`.
  * 4. Persist the merged object with `updateSetting('featureFlags', merged)`.
  * 5. Update `cachedFlags` with the saved flags.
@@ -68,7 +71,7 @@ export function isEnabled(flag) {
  */
 export async function setFlag(flag, value) {
   const settings = await loadSettings();
-  if (!Object.hasOwn(DEFAULT_SETTINGS.featureFlags, flag)) {
+  if (!Object.hasOwn((await defaultSettingsPromise).featureFlags, flag)) {
     console.warn(`Unknown feature flag: ${flag}`);
   }
   const updatedFlags = {

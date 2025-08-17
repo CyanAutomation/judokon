@@ -3,7 +3,7 @@ import { createButton } from "../../components/Button.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import { showResult } from "../battle/index.js";
 import { navigateToHome } from "../navUtils.js";
-import { dispatchBattleEvent, getBattleStateMachine } from "./orchestrator.js";
+import { dispatchBattleEvent, getBattleState } from "./eventBus.js";
 
 function createQuitConfirmation(store, onConfirm) {
   const title = document.createElement("h2");
@@ -34,7 +34,7 @@ function createQuitConfirmation(store, onConfirm) {
     modal.close();
     // Drive state machine to interruption path
     await dispatchBattleEvent("interrupt");
-    const state = getBattleStateMachine()?.getState();
+    const state = getBattleState();
     if (state === "interruptMatch") {
       await dispatchBattleEvent("toLobby");
     } else if (state === "interruptRound") {

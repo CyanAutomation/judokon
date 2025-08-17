@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS } from "./settingsSchema.js";
+import { defaultSettingsPromise } from "./settingsSchema.js";
 
 /**
  * Clone a settings object, duplicating nested structures to avoid mutations.
@@ -24,8 +24,11 @@ function cloneSettings(settings) {
   };
 }
 
-// Cached settings object for synchronous access
-let cachedSettings = cloneSettings(DEFAULT_SETTINGS);
+let cachedSettings;
+
+defaultSettingsPromise.then((settings) => {
+  cachedSettings = cloneSettings(settings);
+});
 
 /**
  * Replace the cached settings object.
@@ -46,8 +49,8 @@ export function setCachedSettings(settings) {
  * @pseudocode
  * 1. Set `cachedSettings` to a cloned copy of `DEFAULT_SETTINGS`.
  */
-export function resetCache() {
-  cachedSettings = cloneSettings(DEFAULT_SETTINGS);
+export async function resetCache() {
+  cachedSettings = cloneSettings(await defaultSettingsPromise);
 }
 
 /**

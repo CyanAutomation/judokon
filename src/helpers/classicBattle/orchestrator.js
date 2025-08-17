@@ -1,6 +1,6 @@
 import { BattleStateMachine } from "./stateMachine.js";
 import { initRoundSelectModal } from "./roundSelectModal.js";
-import { resetGame, startRound } from "./roundManager.js";
+import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { getDefaultTimer } from "../timerUtils.js";
 import { updateDebugPanel } from "./uiHelpers.js";
@@ -16,7 +16,14 @@ export function getBattleStateMachine() {
   return machine;
 }
 
-export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
+export async function initClassicBattleOrchestrator(
+  store,
+  startRoundWrapper,
+  opts = {}
+) {
+  const { resetGame: resetGameOpt, startRound: startRoundOpt } = opts;
+  const doResetGame = typeof resetGameOpt === "function" ? resetGameOpt : resetGameLocal;
+  const doStartRound = typeof startRoundOpt === "function" ? startRoundOpt : startRoundLocal;
   const onEnter = {
     async waitingForMatchStart(m) {
       // Prevent duplicate badge state updates and redundant lobby resets
@@ -29,7 +36,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
         return;
       }
       // If transitioning from matchOver, interruptMatch, or any other state, proceed
-      resetGame();
+      if (typeof doResetGame === "function") doResetGame();
       scoreboard.clearMessage();
       updateDebugPanel();
       await initRoundSelectModal(() => m.dispatch("startClicked"));
@@ -56,11 +63,8 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper) {
     },
     async roundStart(m) {
       // Render player card, opponent remains hidden; start selection timer
-      if (typeof startRoundWrapper === "function") {
-        await startRoundWrapper();
-      } else {
-        await startRound(store);
-      }
+      if (typeof startRoundWrapper === "function") await startRoundWrapper();
+      else if (typeof doStartRound === "function") await doStartRound(store);
       await m.dispatch("cardsRevealed");
     },
     async waitingForPlayerAction() {

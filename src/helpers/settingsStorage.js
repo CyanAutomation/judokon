@@ -1,5 +1,5 @@
 import { validateWithSchema } from "./dataUtils.js";
-import { getSettingsSchema, DEFAULT_SETTINGS } from "./settingsSchema.js";
+import { getSettingsSchema, defaultSettingsPromise, DEFAULT_SETTINGS } from "./settingsSchema.js";
 import { setCachedSettings, resetCache, getCachedSettings } from "./settingsCache.js";
 import { debounce } from "../utils/debounce.js";
 
@@ -49,25 +49,25 @@ export async function loadSettings() {
   }
   const raw = localStorage.getItem(SETTINGS_KEY);
   if (!raw) {
-    const copy = { ...DEFAULT_SETTINGS };
+    const copy = { ...(await defaultSettingsPromise) };
     setCachedSettings(copy);
     return copy;
   }
   try {
     const parsed = JSON.parse(raw);
     const merged = {
-      ...DEFAULT_SETTINGS,
+      ...(await defaultSettingsPromise),
       ...parsed,
       featureFlags: {
-        ...DEFAULT_SETTINGS.featureFlags,
+        ...(await defaultSettingsPromise).featureFlags,
         ...parsed.featureFlags
       },
       gameModes: {
-        ...DEFAULT_SETTINGS.gameModes,
+        ...(await defaultSettingsPromise).gameModes,
         ...parsed.gameModes
       },
       tooltipIds: {
-        ...DEFAULT_SETTINGS.tooltipIds,
+        ...(await defaultSettingsPromise).tooltipIds,
         ...parsed.tooltipIds
       }
     };
@@ -77,7 +77,7 @@ export async function loadSettings() {
   } catch (error) {
     console.debug("Invalid stored settings, resetting to defaults", error);
     localStorage.removeItem(SETTINGS_KEY);
-    const copy = { ...DEFAULT_SETTINGS };
+    const copy = { ...(await defaultSettingsPromise) };
     setCachedSettings(copy);
     return copy;
   }
@@ -139,6 +139,7 @@ export function resetSettings() {
     // For PRD: error popup handled in UI
     console.error("Failed to reset settings", err);
   }
-  resetCache();
+  // Update in-memory cache synchronously
+  setCachedSettings(DEFAULT_SETTINGS);
   return getCachedSettings();
 }

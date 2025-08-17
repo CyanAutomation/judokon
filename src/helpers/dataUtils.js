@@ -178,7 +178,12 @@ export async function resolveUrl(url) {
  * @returns {Promise<any>} Parsed JSON data.
  */
 export async function readData(parsedUrl, originalUrl) {
-  if (isNodeEnvironment() && parsedUrl.protocol === "file:") {
+  // In Node (including JSDOM test envs), prefer fs for file: URLs
+  if (
+    parsedUrl.protocol === "file:" &&
+    typeof process !== "undefined" &&
+    process?.versions?.node
+  ) {
     const { readFile } = await import("fs/promises");
     const { fileURLToPath } = await import("node:url");
     const filePath = fileURLToPath(parsedUrl.href);

@@ -1,21 +1,11 @@
 import { importJsonModule } from "./dataUtils.js";
 
-/**
- * The settings JSON schema is loaded only when required to validate data.
- * This keeps module initialization lightweight in all environments.
- */
+// Lazily cached promises
 let settingsSchemaPromise;
 
 /**
  * Lazily load the settings JSON schema.
- *
- * @pseudocode
- * 1. When `settingsSchemaPromise` is undefined, create a promise that
- *    attempts to fetch `settings.schema.json` relative to this module.
- * 2. On network failure, fall back to `importJsonModule`.
- * 3. Cache and return the promise.
- *
- * @returns {Promise<object>} Resolved JSON schema object.
+ * @returns {Promise<object>}
  */
 export async function getSettingsSchema() {
   if (!settingsSchemaPromise) {
@@ -24,11 +14,7 @@ export async function getSettingsSchema() {
       try {
         const url = new URL("../schemas/settings.schema.json", base);
         const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch settings schema: ${response.status} ${response.statusText}`
-          );
-        }
+        if (!response.ok) throw new Error("Failed to fetch settings schema");
         return await response.json();
       } catch {
         return importJsonModule("../schemas/settings.schema.json");
@@ -38,48 +24,40 @@ export async function getSettingsSchema() {
   return settingsSchemaPromise;
 }
 
-let defaultSettingsPromise;
+/**
+ * Load default settings once and reuse them.
+ * @returns {Promise<Settings>}
+ */
+const promiseSymbol = Symbol.for("defaultSettingsPromise");
+
+if (!globalThis[promiseSymbol]) {
+  globalThis[promiseSymbol] = (async () => {
+    const base = typeof import.meta.url === "string" ? import.meta.url : undefined;
+    try {
+      const url = new URL("../data/settings.json", base);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Failed to fetch default settings");
+      return await response.json();
+    } catch {
+      return importJsonModule("../data/settings.json");
+    }
+  })();
+}
+
+export const defaultSettingsPromise = globalThis[promiseSymbol];
+
+// Synchronous default settings value via top-level await for tests and consumers
+// that need an eagerly available object for comparisons.
+export const DEFAULT_SETTINGS = await defaultSettingsPromise;
 
 /**
- * Load the default settings from disk.
- *
- * @pseudocode
- * 1. When `defaultSettingsPromise` is undefined, fetch `settings.json`.
- * 2. On failure, fall back to `importJsonModule`.
- * 3. Cache the loaded object and return a copy.
- *
- * @returns {Promise<Settings>} Resolved default settings object.
+ * Return a cloned copy of default settings.
+ * @returns {Promise<Settings>}
  */
 export async function loadDefaultSettings() {
-  if (!defaultSettingsPromise) {
-    defaultSettingsPromise = (async () => {
-      const base = typeof import.meta.url === "string" ? import.meta.url : import.meta.url?.href;
-      try {
-        const url = new URL("../data/settings.json", base);
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch default settings: ${response.status} ${response.statusText}`
-          );
-        }
-        return await response.json();
-      } catch {
-        return importJsonModule("../data/settings.json");
-      }
-    })();
-  }
   const data = await defaultSettingsPromise;
   return { ...data };
 }
-
-/**
- * Default settings object preloaded during module initialization.
- *
- * Ready for immediate use after import.
- *
- * @type {Settings}
- */
-export const DEFAULT_SETTINGS = await loadDefaultSettings();
 
 /**
  * @typedef {Object} Settings
