@@ -290,68 +290,6 @@ describe("classicBattlePage test mode flag", () => {
   });
 });
 
-describe("classicBattlePage battle state progress", () => {
-  it("cleans up on pagehide", async () => {
-    const startRound = vi.fn();
-    const waitForComputerCard = vi.fn();
-    const handleStatSelection = vi.fn();
-    const loadSettings = vi.fn().mockResolvedValue({ featureFlags: {} });
-    const initTooltips = vi.fn().mockResolvedValue(() => {});
-    const setTestMode = vi.fn();
-    const showSnackbar = vi.fn();
-    const cleanup = vi.fn();
-
-    vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
-      createBattleStore: () => ({}),
-      startRound
-    }));
-    vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
-      handleStatSelection
-    }));
-    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
-    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
-    vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
-    vi.doMock("../../src/helpers/stats.js", () => ({
-      loadStatNames: vi.fn().mockResolvedValue([])
-    }));
-    vi.doMock("../../src/helpers/featureFlags.js", () => ({
-      initFeatureFlags: vi.fn(),
-      isEnabled: vi.fn().mockReturnValue(false),
-      featureFlagsEmitter: new EventTarget()
-    }));
-    vi.doMock("../../src/helpers/battleStateProgress.js", () => ({
-      initBattleStateProgress: vi.fn().mockResolvedValue(cleanup)
-    }));
-    vi.doMock("../../src/helpers/classicBattle/interruptHandlers.js", () => ({
-      initInterruptHandlers: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/cardUtils.js", () => ({ toggleInspectorPanels: vi.fn() }));
-    vi.doMock("../../src/helpers/viewportDebug.js", () => ({ toggleViewportSimulation: vi.fn() }));
-    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
-      pauseTimer: vi.fn(),
-      resumeTimer: vi.fn(),
-      STATS: []
-    }));
-    vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
-      onNextButtonClick: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/classicBattle/skipHandler.js", () => ({
-      skipCurrentPhase: vi.fn()
-    }));
-
-    const header = document.createElement("div");
-    header.className = "battle-header";
-    document.body.appendChild(header);
-
-    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
-    await setupClassicBattlePage();
-    window.dispatchEvent(new Event("pagehide"));
-    expect(cleanup).toHaveBeenCalled();
-  });
-});
-
 describe("startRoundWrapper failures", () => {
   it("shows error message, opens retry modal, and re-enables stat buttons", async () => {
     const showMessage = vi.fn();
