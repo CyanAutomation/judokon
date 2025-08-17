@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { createRoundMessage, createTimerNodes } from "./domUtils.js";
 
 vi.mock("../../../src/helpers/classicBattle/quitModal.js", () => ({
   quitMatch: () => {
@@ -10,12 +11,14 @@ vi.mock("../../../src/helpers/classicBattle/quitModal.js", () => ({
 
 describe("classicBattle match controls", () => {
   beforeEach(() => {
-    document.body.innerHTML = `
-      <div id="round-message"></div>
-      <button id="next-button" disabled></button>
-      <button id="quit-match-button"></button>
-      <header></header>
-    `;
+    document.body.innerHTML = "";
+    createRoundMessage();
+    const { nextButton } = createTimerNodes();
+    nextButton.disabled = true;
+    const quitBtn = document.createElement("button");
+    quitBtn.id = "quit-match-button";
+    const header = document.createElement("header");
+    document.body.append(quitBtn, header);
     window.location.href = "http://localhost/src/pages/battleJudoka.html";
     vi.resetModules();
   });

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createNextButton, createNextRoundTimer } from "./utils.js";
+import { createTimerNodes } from "./domUtils.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
 
@@ -31,16 +31,15 @@ describe("timerService next round handling", () => {
       dispatchBattleEvent
     }));
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
-    const btn = createNextButton();
-    btn.addEventListener("click", mod.onNextButtonClick);
-    createNextRoundTimer();
+    const { nextButton } = createTimerNodes();
+    nextButton.addEventListener("click", mod.onNextButtonClick);
     mod.scheduleNextRound({ matchEnded: false });
-    btn.click();
+    nextButton.click();
     await vi.waitFor(() => {
       expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
     });
     expect(dispatchBattleEvent).toHaveBeenCalledTimes(2);
-    expect(btn.dataset.nextReady).toBeUndefined();
+    expect(nextButton.dataset.nextReady).toBeUndefined();
   });
 
   it("auto-dispatches ready when cooldown finishes", async () => {
@@ -72,8 +71,7 @@ describe("timerService next round handling", () => {
       dispatchBattleEvent
     }));
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
-    createNextButton();
-    createNextRoundTimer();
+    createTimerNodes();
     mod.scheduleNextRound({ matchEnded: false });
     await vi.waitFor(() => {
       expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
@@ -138,10 +136,10 @@ describe("scheduleNextRound early click", () => {
     document.body.innerHTML = "";
     const { playerCard, computerCard } = createBattleCardContainers();
     const header = createBattleHeader();
+    header.querySelector("#next-round-timer")?.remove();
     document.body.append(playerCard, computerCard, header);
-    const btn = createNextButton();
-    btn.disabled = true;
-    createNextRoundTimer();
+    const { nextButton } = createTimerNodes();
+    nextButton.disabled = true;
     timerSpy = vi.useFakeTimers();
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});

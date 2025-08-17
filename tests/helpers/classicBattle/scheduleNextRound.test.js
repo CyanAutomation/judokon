@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { setupClassicBattleDom } from "./utils.js";
+import { createTimerNodes } from "./domUtils.js";
 import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
 
 vi.mock("../../../src/helpers/motionUtils.js", () => ({
@@ -76,10 +77,9 @@ afterEach(() => {
 
 describe("classicBattle scheduleNextRound", () => {
   it("auto-dispatches ready after cooldown", async () => {
-    const nextBtn = document.createElement("button");
-    nextBtn.id = "next-button";
-    nextBtn.disabled = true;
-    document.body.appendChild(nextBtn);
+    document.getElementById("next-round-timer")?.remove();
+    const { nextButton } = createTimerNodes();
+    nextButton.disabled = true;
 
     fetchJsonMock.mockImplementation(async (url) => {
       if (String(url).includes("gameTimers.json")) {
