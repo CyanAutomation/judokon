@@ -38,7 +38,9 @@ describe("changeLogPage", () => {
       fetchJson: vi.fn().mockResolvedValue([sample[0]])
     }));
     vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
-    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips: vi.fn() }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      initTooltips: vi.fn().mockResolvedValue(() => {})
+    }));
 
     const { setupChangeLogPage } = await import("../../src/helpers/changeLogPage.js");
 

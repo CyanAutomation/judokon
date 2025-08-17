@@ -56,7 +56,9 @@ describe("classicBattlePage feature flag updates", () => {
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard: vi.fn() }));
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn() }));
-    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips: vi.fn() }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      initTooltips: vi.fn().mockResolvedValue(() => {})
+    }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({
       setTestMode: vi.fn(),
       isTestModeEnabled: () => currentFlags.enableTestMode?.enabled ?? false

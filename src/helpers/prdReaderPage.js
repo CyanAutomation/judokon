@@ -261,12 +261,13 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     selectDocSync(i, true, true, !opts.fromListNav);
   });
 
+  let cleanupTooltips = () => {};
   // Ensure the initially visible document is reflected in the sidebar
   // selection and accessibility state before any navigation.
   // This keeps aria-current/selected in sync with the rendered content.
   listSelect(startIndex);
-
   function renderDoc(i) {
+    cleanupTooltips();
     container.innerHTML = DOMPurify.sanitize(documents[i] || "");
     container.classList.remove("fade-in");
     void container.offsetWidth;
@@ -277,7 +278,9 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
       const percent = total ? Math.round((completed / total) * 100) : 0;
       summaryEl.textContent = `Tasks: ${completed}/${total} (${percent}%)`;
     }
-    initTooltips();
+    initTooltips(container).then((fn) => {
+      cleanupTooltips = fn;
+    });
   }
 
   // Attempt to fill a document synchronously when possible (docsMap or cached).

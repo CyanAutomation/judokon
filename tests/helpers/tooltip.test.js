@@ -148,6 +148,31 @@ describe("initTooltips", () => {
     await initTooltips();
     expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
   });
+
+  it("returns cleanup function that removes listeners", async () => {
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ stat: { test: "text" } })
+    }));
+
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+
+    const el = document.createElement("div");
+    el.dataset.tooltipId = "stat.test";
+    document.body.appendChild(el);
+
+    const cleanup = await initTooltips();
+
+    const tip = document.querySelector(".tooltip");
+    el.dispatchEvent(new Event("mouseenter"));
+    expect(tip.style.display).toBe("block");
+    el.dispatchEvent(new Event("mouseleave"));
+    expect(tip.style.display).toBe("none");
+
+    cleanup();
+
+    el.dispatchEvent(new Event("mouseenter"));
+    expect(tip.style.display).toBe("none");
+  });
 });
 
 describe("flattenTooltips", () => {

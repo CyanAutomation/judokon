@@ -39,7 +39,8 @@ describe("initRoundSelectModal", () => {
     document.body.innerHTML = "";
     vi.clearAllMocks();
     mocks.fetchJson.mockResolvedValue(rounds);
-    mocks.initTooltips.mockResolvedValue();
+    mocks.cleanup = vi.fn();
+    mocks.initTooltips.mockResolvedValue(mocks.cleanup);
   });
 
   it("renders three options from battleRounds.json", async () => {
@@ -56,6 +57,7 @@ describe("initRoundSelectModal", () => {
     first.click();
     expect(mocks.setPointsToWin).toHaveBeenCalledWith(rounds[0].value);
     expect(onStart).toHaveBeenCalled();
+    expect(mocks.cleanup).toHaveBeenCalled();
   });
 
   it("opens modal and starts match even if tooltip init fails", async () => {

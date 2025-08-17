@@ -55,7 +55,7 @@ beforeEach(() => {
   resetDom();
   document.body.appendChild(createSettingsDom());
   vi.doMock("../../src/helpers/tooltip.js", () => ({
-    initTooltips: vi.fn(),
+    initTooltips: vi.fn().mockResolvedValue(() => {}),
     getTooltips: vi.fn()
   }));
   vi.doMock("../../src/helpers/displayMode.js", () => ({ applyDisplayMode: vi.fn() }));
@@ -83,7 +83,7 @@ describe("loadSettingsData", () => {
     }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({
       getTooltips: vi.fn().mockResolvedValue({}),
-      initTooltips: vi.fn()
+      initTooltips: vi.fn().mockResolvedValue(() => {})
     }));
     vi.doMock("../../src/helpers/featureFlags.js", () => ({
       initFeatureFlags: vi.fn().mockRejectedValue(new Error("fail")),
@@ -283,7 +283,7 @@ describe("initializeSettingsPage", () => {
       isEnabled: vi.fn()
     }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({
-      initTooltips: vi.fn(),
+      initTooltips: vi.fn().mockResolvedValue(() => {}),
       getTooltips: vi.fn().mockResolvedValue({})
     }));
     vi.doMock("../../src/helpers/displayMode.js", () => ({

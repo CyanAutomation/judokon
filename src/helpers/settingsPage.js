@@ -185,7 +185,12 @@ function clearToggles(container) {
 }
 
 function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
+  let cleanupTooltips;
   return function renderSwitches(gameModes, tooltipMap) {
+    if (cleanupTooltips) {
+      cleanupTooltips();
+      cleanupTooltips = undefined;
+    }
     // Apply current settings once toggles are available.
     const current = getCurrentSettings();
     const radio = document.querySelector('input[name="display-mode"]:checked');
@@ -220,7 +225,9 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
       });
       navCacheToggle.dataset.listenerBound = "true";
     }
-    initTooltips();
+    initTooltips().then((fn) => {
+      cleanupTooltips = fn;
+    });
   };
 }
 

@@ -19,7 +19,7 @@ describe("classicBattlePage stat button interactions", () => {
     const handleStatSelection = vi.fn();
     const store = {};
     const loadSettings = vi.fn().mockResolvedValue({ featureFlags: {} });
-    const initTooltips = vi.fn().mockResolvedValue();
+    const initTooltips = vi.fn().mockResolvedValue(() => {});
     const setTestMode = vi.fn();
     const showSnackbar = vi.fn();
 
@@ -89,7 +89,7 @@ describe("classicBattlePage stat button interactions", () => {
     const handleStatSelection = vi.fn();
     const store = {};
     const loadSettings = vi.fn().mockResolvedValue({ featureFlags: {} });
-    const initTooltips = vi.fn().mockResolvedValue();
+    const initTooltips = vi.fn().mockResolvedValue(() => {});
     const setTestMode = vi.fn();
 
     vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
@@ -158,7 +158,7 @@ describe("classicBattlePage stat help tooltip", () => {
     const startRound = vi.fn();
     const waitForComputerCard = vi.fn();
     const loadSettings = vi.fn().mockResolvedValue({ featureFlags: {} });
-    const initTooltips = vi.fn().mockResolvedValue();
+    const initTooltips = vi.fn().mockResolvedValue(() => {});
     const setTestMode = vi.fn();
 
     const store = {};
@@ -209,7 +209,7 @@ describe("classicBattlePage test mode flag", () => {
         }
       }
     });
-    const initTooltips = vi.fn().mockResolvedValue();
+    const initTooltips = vi.fn().mockResolvedValue(() => {});
     const setTestMode = vi.fn();
 
     const store = {};
@@ -252,7 +252,7 @@ describe("classicBattlePage test mode flag", () => {
     const updateSetting = vi
       .fn()
       .mockResolvedValue({ featureFlags: { enableTestMode: { enabled: true } } });
-    const initTooltips = vi.fn().mockResolvedValue();
+    const initTooltips = vi.fn().mockResolvedValue(() => {});
     const setTestMode = vi.fn();
 
     const store = {};
@@ -296,7 +296,7 @@ describe("classicBattlePage battle state progress", () => {
     const waitForComputerCard = vi.fn();
     const handleStatSelection = vi.fn();
     const loadSettings = vi.fn().mockResolvedValue({ featureFlags: {} });
-    const initTooltips = vi.fn().mockResolvedValue();
+    const initTooltips = vi.fn().mockResolvedValue(() => {});
     const setTestMode = vi.fn();
     const showSnackbar = vi.fn();
     const cleanup = vi.fn();
@@ -372,7 +372,7 @@ describe("startRoundWrapper failures", () => {
       showMessage
     }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({
-      initTooltips: vi.fn().mockResolvedValue()
+      initTooltips: vi.fn().mockResolvedValue(() => {})
     }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode: vi.fn() }));
     vi.doMock("../../src/helpers/stats.js", () => ({

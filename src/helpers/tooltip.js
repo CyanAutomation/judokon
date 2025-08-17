@@ -123,19 +123,20 @@ function ensureTooltipElement() {
  *    - `show` looks up the tooltip text, sanitizes it with DOMPurify, and positions the element.
  *    - `hide` hides the tooltip element.
  * 6. When an ID is missing, log a warning only once and show the fallback text "More info coming…".
+ * 7. Return a cleanup function that removes the hover and focus listeners.
  *
  * @param {ParentNode} [root=globalThis.document] - Scope to search for tooltip targets.
- * @returns {Promise<void>} Resolves when listeners are attached.
+ * @returns {Promise<() => void>} Resolves with a cleanup function.
  */
 export async function initTooltips(root = globalThis.document) {
-  if (!root) return;
+  if (!root) return () => {};
   let overlay = false;
   try {
     const settings = await loadSettings();
     overlay = Boolean(settings.featureFlags?.tooltipOverlayDebug?.enabled);
     if (!settings.tooltips) {
       toggleTooltipOverlayDebug(false);
-      return;
+      return () => {};
     }
   } catch {
     // ignore settings errors and assume enabled
@@ -144,7 +145,7 @@ export async function initTooltips(root = globalThis.document) {
   const DOMPurify = await getSanitizer();
   const data = await loadTooltips();
   const elements = root?.querySelectorAll?.("[data-tooltip-id]") || [];
-  if (elements.length === 0) return;
+  if (elements.length === 0) return () => {};
   const tip = ensureTooltipElement();
 
   function show(e) {
@@ -192,4 +193,13 @@ export async function initTooltips(root = globalThis.document) {
     el.addEventListener("mouseleave", hide);
     el.addEventListener("blur", hide);
   });
+
+  return () => {
+    elements.forEach((el) => {
+      el.removeEventListener("mouseenter", show);
+      el.removeEventListener("focus", show);
+      el.removeEventListener("mouseleave", hide);
+      el.removeEventListener("blur", hide);
+    });
+  };
 }
