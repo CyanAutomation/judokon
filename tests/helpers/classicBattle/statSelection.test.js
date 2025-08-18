@@ -225,4 +225,3 @@ describe("classicBattle stat selection", () => {
     expect(STATS.includes(stat)).toBe(true);
   });
 });
-
