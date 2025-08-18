@@ -58,6 +58,30 @@ describe("initTooltips", () => {
     warn.mockRestore();
   });
 
+  it("shows fallback text and warns once when id is missing", async () => {
+    const fetchJson = vi.fn().mockResolvedValue({});
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+
+    const el = document.createElement("div");
+    el.setAttribute("data-tooltip-id", "");
+    document.body.appendChild(el);
+
+    await initTooltips();
+
+    const tip = document.querySelector(".tooltip");
+
+    el.dispatchEvent(new Event("mouseenter"));
+    expect(tip.textContent).toBe("More info coming…");
+    el.dispatchEvent(new Event("mouseleave"));
+    el.dispatchEvent(new Event("mouseenter"));
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+  });
+
   it("falls back to leaf keys for parent ids", async () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue({
