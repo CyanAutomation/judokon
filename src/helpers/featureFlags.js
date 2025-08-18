@@ -1,4 +1,5 @@
-import { loadSettings, updateSetting } from "./settingsStorage.js";
+import { loadSettings } from "../config/loadSettings.js";
+import { updateSetting } from "./settingsStorage.js";
 import { setCachedSettings } from "./settingsCache.js";
 import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 
@@ -27,6 +28,7 @@ export async function initFeatureFlags() {
   try {
     settings = await loadSettings();
     cachedFlags = settings.featureFlags || { ...DEFAULT_SETTINGS.featureFlags };
+    setCachedSettings(settings);
   } catch {
     settings = { ...DEFAULT_SETTINGS };
     cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };

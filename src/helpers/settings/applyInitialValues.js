@@ -1,3 +1,6 @@
+import { DEFAULT_SETTINGS } from "../../config/settingsDefaults.js";
+import { loadSettings } from "../../config/loadSettings.js";
+
 /**
  * Apply a value to an input or checkbox element.
  *
@@ -28,7 +31,7 @@ export function applyInputState(element, value) {
  * @param {import("../../config/settingsDefaults.js").Settings} settings - Current settings.
  * @param {Record<string, string>} [tooltipMap] - Flattened tooltip lookup.
  */
-export function applyInitialControlValues(controls, settings, tooltipMap = {}) {
+export function applyInitialControlValues(controls, settings = DEFAULT_SETTINGS, tooltipMap = {}) {
   applyInputState(controls.soundToggle, settings.sound);
   if (controls.soundToggle && settings.tooltipIds?.sound) {
     controls.soundToggle.dataset.tooltipId = settings.tooltipIds.sound;
@@ -96,4 +99,17 @@ export function applyInitialControlValues(controls, settings, tooltipMap = {}) {
   const mapDescEl = document.getElementById("full-navigation-map-desc");
   if (mapLabel && mapLabelEl) mapLabelEl.textContent = mapLabel;
   if (mapDesc && mapDescEl) mapDescEl.textContent = mapDesc;
+}
+
+/**
+ * Load settings and apply them to controls.
+ *
+ * @param {Object} controls - Collection of form elements.
+ * @param {Record<string, string>} [tooltipMap] - Flattened tooltip lookup.
+ * @returns {Promise<import("../../config/settingsDefaults.js").Settings>} Resolved settings.
+ */
+export async function applyInitialValues(controls, tooltipMap = {}) {
+  const settings = await loadSettings().catch(() => DEFAULT_SETTINGS);
+  applyInitialControlValues(controls, settings, tooltipMap);
+  return settings;
 }
