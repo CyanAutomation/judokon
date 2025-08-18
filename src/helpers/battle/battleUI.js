@@ -45,16 +45,12 @@ export function resetStatButtons() {
     btn.style.removeProperty("background-color");
     btn.disabled = true;
     void btn.offsetWidth;
-    const enable = () => {
+    const frameId = scheduleFrame(() => {
       btn.disabled = false;
       btn.style.backgroundColor = "";
       btn.blur();
-    };
-    scheduleFrame(enable);
-    // Fallback to ensure re-enable even if scheduler is inactive under fake timers
-    setTimeout(() => {
-      if (btn.disabled) enable();
-    }, 0);
+      cancelFrame(frameId);
+    });
   });
 }
 

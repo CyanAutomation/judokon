@@ -120,7 +120,6 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   };
 
   const onTransition = async ({ from, to, event }) => {
-    console.log(`State transition: from=${from}, to=${to}, event=${event}`);
     try {
       if (typeof window !== "undefined") {
         window.__classicBattleState = to;
