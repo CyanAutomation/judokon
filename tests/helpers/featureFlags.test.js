@@ -10,8 +10,10 @@ import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
 describe("initFeatureFlags", () => {
   it("falls back to defaults and emits change on load failure", async () => {
     vi.resetModules();
+    vi.doMock("../../src/config/loadSettings.js", () => ({
+      loadSettings: vi.fn().mockRejectedValue(new Error("fail"))
+    }));
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({
-      loadSettings: vi.fn().mockRejectedValue(new Error("fail")),
       updateSetting: vi.fn()
     }));
     const { initFeatureFlags, featureFlagsEmitter, isEnabled } = await import(

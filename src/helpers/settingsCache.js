@@ -1,4 +1,5 @@
 import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
+import { loadSettings } from "../config/loadSettings.js";
 
 /**
  * Clone a settings object, duplicating nested structures to avoid mutations.
@@ -25,6 +26,21 @@ function cloneSettings(settings) {
 }
 
 let cachedSettings = cloneSettings(DEFAULT_SETTINGS);
+
+/**
+ * Initialize the settings cache from persisted data.
+ *
+ * @returns {Promise<import("../config/settingsDefaults.js").Settings>} Loaded settings.
+ */
+export async function initSettingsCache() {
+  try {
+    const settings = await loadSettings();
+    setCachedSettings(settings);
+    return settings;
+  } catch {
+    return cachedSettings;
+  }
+}
 
 /**
  * Replace the cached settings object.

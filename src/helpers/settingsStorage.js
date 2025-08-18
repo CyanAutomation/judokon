@@ -1,5 +1,6 @@
-import { validateWithSchema, importJsonModule } from "./dataUtils.js";
+import { validateWithSchema } from "./dataUtils.js";
 import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
+import { loadSettings as baseLoadSettings } from "../config/loadSettings.js";
 import { setCachedSettings, getCachedSettings } from "./settingsCache.js";
 import { debounce } from "../utils/debounce.js";
 
@@ -29,7 +30,8 @@ export async function getSettingsSchema() {
         if (!response.ok) throw new Error("Failed to fetch settings schema");
         return await response.json();
       } catch {
-        return importJsonModule("../schemas/settings.schema.json");
+        return (await import("../schemas/settings.schema.json", { with: { type: "json" } }))
+          .default;
       }
     })();
   }
@@ -66,29 +68,19 @@ export function saveSettings(settings) {
  * @returns {Promise<import("../config/settingsDefaults.js").Settings>} Resolved settings object.
  */
 export async function loadSettings() {
-  await getSettingsSchema();
   if (typeof localStorage === "undefined") {
     throw new Error("localStorage unavailable");
   }
-  const raw = localStorage.getItem(SETTINGS_KEY);
-  if (!raw) {
-    const copy = structuredClone(DEFAULT_SETTINGS);
-    setCachedSettings(copy);
-    return copy;
-  }
+  await getSettingsSchema();
   try {
-    const parsed = JSON.parse(raw);
-    const base = structuredClone(DEFAULT_SETTINGS);
-    const merged = {
-      ...base,
-      ...parsed,
-      featureFlags: { ...base.featureFlags, ...parsed.featureFlags },
-      gameModes: { ...base.gameModes, ...parsed.gameModes },
-      tooltipIds: { ...base.tooltipIds, ...parsed.tooltipIds }
-    };
-    await validateWithSchema(merged, await getSettingsSchema());
-    setCachedSettings(merged);
-    return merged;
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) {
+      JSON.parse(raw);
+    }
+    const settings = await baseLoadSettings();
+    await validateWithSchema(settings, await getSettingsSchema());
+    setCachedSettings(settings);
+    return settings;
   } catch (error) {
     console.debug("Invalid stored settings, resetting to defaults", error);
     localStorage.removeItem(SETTINGS_KEY);
