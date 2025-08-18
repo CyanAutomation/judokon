@@ -59,7 +59,7 @@ Before submitting or completing a task, verify that your work:
 | ----------------------------- | ----------------------------------------------------------------------- |
 | Tooltip content               | src/data/tooltips.json                                                  |
 | Game stats and player data    | src/data/judoka.json, src/data/statNames.json                           |
-| Feature flags & settings      | src/pages/settings.html, src/data/settings.json                         |
+| Feature flags & settings      | src/pages/settings.html, src/config/settingsDefaults.js                 |
 | Tooltip viewer                | src/pages/tooltipViewer.html                                            |
 | Debug + Observability targets | Components with data-_, like data-tooltip-id, data-flag, data-feature-_ |
 | UI test entry points          | playwright/_.spec.js, tests/\*\*/_.test.js                              |

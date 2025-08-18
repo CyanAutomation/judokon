@@ -121,7 +121,7 @@ On load, the Settings page must pre-populate each control with values from
 ## Data & Persistence
 
 - The Settings page **must pull current states** from data sources (`settings.json`, `gameModes.json`, and `navigationItems.json`) on load, using the `navigationCache` helper for navigation persistence, and pre-populate all controls with those values.
-- Default feature flag values live in `settings.json`, while their labels and descriptions come from `tooltips.json`.
+- Default settings originate from `DEFAULT_SETTINGS` in `src/config/settingsDefaults.js`, while their labels and descriptions come from `tooltips.json`.
 - `gameModes.json` defines all available modes, while `navigationItems.json` references each by `id` to control order and visibility via CSS; if `navigationItems.json` isn't reachable, a bundled fallback provides default ordering.
 - Changes should trigger **immediate data writes** without requiring a “Save Changes” button.
 - All live updates must persist across page refreshes within the same session.

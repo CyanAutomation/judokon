@@ -59,6 +59,7 @@ AI agents should begin by reading:
 ### 🔑 Entry Points
 
 - `/src/pages/settings.html` – UI for toggling feature flags
+- `/src/config/settingsDefaults.js` – `DEFAULT_SETTINGS` source of truth for defaults
 - `/data/tooltips.json` – Tooltip content (auditable by agents)
 - `/data/judoka.json` – Card data for stat logic
 - `/components/` – Frontend logic with `data-*` hooks for observability
@@ -81,8 +82,10 @@ Pages that display snackbars must include a persistent container near the end of
 
 ## Settings API
 
-Settings are loaded once and cached for synchronous use. Helpers in
-`src/helpers/settingsUtils.js` provide safe access:
+Settings are loaded once and cached for synchronous use. Default values come
+from `DEFAULT_SETTINGS` in `src/config/settingsDefaults.js` and are overlaid
+with any persisted values. Helpers in `src/helpers/settingsUtils.js` provide
+safe access:
 
 - `getSetting(key)` – read a setting value from the cache.
 
