@@ -87,7 +87,9 @@ export function evaluateRound(store, stat) {
  * @returns {Promise<{matchEnded: boolean}>}
  */
 export async function handleStatSelection(store, stat, options = {}) {
+  console.log(`handleStatSelection called with stat: ${stat}`);
   if (store.selectionMade) {
+    console.log("selectionMade is true, returning");
     return { matchEnded: false };
   }
   const delayOpponentMessage = Boolean(options && options.delayOpponentMessage);
@@ -125,17 +127,23 @@ export async function handleStatSelection(store, stat, options = {}) {
     }
   } catch {}
   const delay = delayOpponentMessage ? 0 : 300 + Math.floor(Math.random() * 401);
+  console.log(`handleStatSelection delay: ${delay}`);
   return new Promise((resolve) => {
     setTimeout(async () => {
+      console.log("handleStatSelection setTimeout callback");
       let result;
       let outcomeEvent = "outcome=draw";
       try {
         // Cancel the hint once the round is ready to resolve.
         if (opponentSnackbarId) clearTimeout(opponentSnackbarId);
         await revealComputerCard();
+        console.log("revealComputerCard finished");
+        await dispatchBattleEvent("evaluate");
         result = evaluateRound(store, stat);
+        console.log("evaluateRound finished, result:", result);
         outcomeEvent = "outcome=" + result.outcome;
         await dispatchBattleEvent(outcomeEvent);
+        console.log(`dispatched event: ${outcomeEvent}`);
         if (result.matchEnded) {
           scoreboard.clearRoundCounter();
         }
@@ -145,8 +153,10 @@ export async function handleStatSelection(store, stat, options = {}) {
         // From roundOver, either continue to cooldown or decide match
         if (result.matchEnded) {
           await dispatchBattleEvent("matchPointReached");
+          console.log("dispatched event: matchPointReached");
         } else {
           await dispatchBattleEvent("continue");
+          console.log("dispatched event: continue");
         }
         scheduleNextRound(result);
         if (result.matchEnded) {
@@ -160,6 +170,7 @@ export async function handleStatSelection(store, stat, options = {}) {
         updateDebugPanel();
         resolve(result);
       } catch (err) {
+        console.error("Error in handleStatSelection setTimeout:", err);
         // Always dispatch a fallback outcome event to prevent state machine stall
         await dispatchBattleEvent(outcomeEvent);
         await dispatchBattleEvent("continue");

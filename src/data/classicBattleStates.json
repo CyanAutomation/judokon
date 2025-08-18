@@ -78,6 +78,16 @@
     "description": "Compares the selected stat and determines the round outcome.",
     "onEnter": ["compare:selectedStat", "compute:roundOutcome", "announce:roundOutcome"],
     "triggers": [
+      { "on": "evaluate", "target": "processingRound" },
+      { "on": "interrupt", "target": "interruptRound" }
+    ]
+  },
+  {
+    "id": 100,
+    "name": "processingRound",
+    "description": "Processes the round outcome and transitions to the round over state.",
+    "onEnter": [],
+    "triggers": [
       { "on": "outcome=winP1", "target": "roundOver" },
       { "on": "outcome=winP2", "target": "roundOver" },
       { "on": "outcome=draw", "target": "roundOver" },

@@ -53,9 +53,11 @@ vi.mock("../../../src/helpers/utils.js", () => ({
 const stateLog = [];
 vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => {
   let state = "roundDecision";
+  const stateLog = [];
   return {
     dispatchBattleEvent: vi.fn(async (event) => {
-      if (event.startsWith("outcome=")) state = "roundOver";
+      if (event === "evaluate") state = "processingRound";
+      else if (event.startsWith("outcome=")) state = "roundOver";
       else if (event === "continue") state = "cooldown";
       else if (event === "matchPointReached") state = "matchDecision";
       stateLog.push(state);
@@ -196,9 +198,10 @@ describe("classicBattle stat selection", () => {
     document.getElementById("computer-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     await selectStat("power");
-    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "outcome=winPlayer");
-    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "continue");
-    expect(orchestrator.__getStateLog()).toEqual(["roundOver", "cooldown"]);
+    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "evaluate");
+    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "outcome=winPlayer");
+    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(3, "continue");
+    expect(orchestrator.__getStateLog()).toEqual(["processingRound", "roundOver", "cooldown"]);
   });
 
   it("dispatches matchPointReached when match ends", async () => {
@@ -211,9 +214,10 @@ describe("classicBattle stat selection", () => {
     document.getElementById("computer-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     await selectStat("power");
-    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "outcome=winPlayer");
-    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "matchPointReached");
-    expect(orchestrator.__getStateLog()).toEqual(["roundOver", "matchDecision"]);
+    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "evaluate");
+    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "outcome=winPlayer");
+    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(3, "matchPointReached");
+    expect(orchestrator.__getStateLog()).toEqual(["processingRound", "roundOver", "matchDecision"]);
   });
 
   it("simulateOpponentStat returns a valid stat", async () => {
