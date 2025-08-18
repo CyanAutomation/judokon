@@ -1,16 +1,17 @@
+function renderInline(text) {
+  return text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/_(.+?)_/g, "<em>$1</em>");
+}
+
 export const marked = {
   /**
-   * Very small markdown parser supporting headings, bold text paragraphs, lists,
-   * tables and horizontal rules (each rule followed by a line break for spacing).
+   * Very small markdown parser supporting headings, bold and italic text,
+   * paragraphs, lists, tables and horizontal rules (each rule followed by a
+   * line break for spacing).
    *
    * @param {string} md - Markdown string.
    * @returns {string} HTML string.
    */
   parse(md) {
-    function renderInline(text) {
-      return text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-    }
-
     function renderList(lines) {
       let html = "";
       const stack = [];
@@ -109,5 +110,14 @@ export const marked = {
         return `<p>${renderInline(block.trim())}</p>`;
       })
       .join("");
+  },
+  /**
+   * Parse inline markdown (no block handling).
+   *
+   * @param {string} md - Markdown string.
+   * @returns {string} HTML string.
+   */
+  parseInline(md) {
+    return renderInline(md);
   }
 };
