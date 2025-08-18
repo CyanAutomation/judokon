@@ -1,5 +1,5 @@
-import { validateWithSchema } from "./dataUtils.js";
-import { getSettingsSchema, defaultSettingsPromise, DEFAULT_SETTINGS } from "./settingsSchema.js";
+import { validateWithSchema, importJsonModule } from "./dataUtils.js";
+import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 import { setCachedSettings, getCachedSettings } from "./settingsCache.js";
 import { debounce } from "../utils/debounce.js";
 
@@ -13,6 +13,29 @@ const debouncedSave = debounce((settings) => {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }, SAVE_DELAY_MS);
 
+let settingsSchemaPromise;
+
+/**
+ * Lazily load the settings JSON schema.
+ * @returns {Promise<object>}
+ */
+export async function getSettingsSchema() {
+  if (!settingsSchemaPromise) {
+    settingsSchemaPromise = (async () => {
+      const base = typeof import.meta.url === "string" ? import.meta.url : undefined;
+      try {
+        const url = new URL("../schemas/settings.schema.json", base);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Failed to fetch settings schema");
+        return await response.json();
+      } catch {
+        return importJsonModule("../schemas/settings.schema.json");
+      }
+    })();
+  }
+  return settingsSchemaPromise;
+}
+
 /**
  * Persist settings to localStorage using a debounce.
  * Rapid successive saves will cancel prior promises.
@@ -21,7 +44,7 @@ const debouncedSave = debounce((settings) => {
  * 1. Invoke `debouncedSave` with `settings`.
  * 2. Return the resulting promise so callers can handle failures.
  *
- * @param {import("./settingsSchema.js").Settings} settings - Settings object to save.
+ * @param {import("../config/settingsDefaults.js").Settings} settings - Settings object to save.
  * @returns {Promise<void>} Resolves when the write completes.
  */
 export function saveSettings(settings) {
@@ -40,7 +63,7 @@ export function saveSettings(settings) {
  * 6. Validate with the schema. On failure, reset storage and cache to defaults.
  * 7. Return the merged settings.
  *
- * @returns {Promise<import("./settingsSchema.js").Settings>} Resolved settings object.
+ * @returns {Promise<import("../config/settingsDefaults.js").Settings>} Resolved settings object.
  */
 export async function loadSettings() {
   await getSettingsSchema();
@@ -49,27 +72,19 @@ export async function loadSettings() {
   }
   const raw = localStorage.getItem(SETTINGS_KEY);
   if (!raw) {
-    const copy = { ...(await defaultSettingsPromise) };
+    const copy = structuredClone(DEFAULT_SETTINGS);
     setCachedSettings(copy);
     return copy;
   }
   try {
     const parsed = JSON.parse(raw);
+    const base = structuredClone(DEFAULT_SETTINGS);
     const merged = {
-      ...(await defaultSettingsPromise),
+      ...base,
       ...parsed,
-      featureFlags: {
-        ...(await defaultSettingsPromise).featureFlags,
-        ...parsed.featureFlags
-      },
-      gameModes: {
-        ...(await defaultSettingsPromise).gameModes,
-        ...parsed.gameModes
-      },
-      tooltipIds: {
-        ...(await defaultSettingsPromise).tooltipIds,
-        ...parsed.tooltipIds
-      }
+      featureFlags: { ...base.featureFlags, ...parsed.featureFlags },
+      gameModes: { ...base.gameModes, ...parsed.gameModes },
+      tooltipIds: { ...base.tooltipIds, ...parsed.tooltipIds }
     };
     await validateWithSchema(merged, await getSettingsSchema());
     setCachedSettings(merged);
@@ -77,7 +92,7 @@ export async function loadSettings() {
   } catch (error) {
     console.debug("Invalid stored settings, resetting to defaults", error);
     localStorage.removeItem(SETTINGS_KEY);
-    const copy = { ...(await defaultSettingsPromise) };
+    const copy = structuredClone(DEFAULT_SETTINGS);
     setCachedSettings(copy);
     return copy;
   }
@@ -97,7 +112,7 @@ export async function loadSettings() {
  *
  * @param {string} key - Name of the setting to update.
  * @param {*} value - Value to assign to the setting.
- * @returns {Promise<import("./settingsSchema.js").Settings>} Updated settings object.
+ * @returns {Promise<import("../config/settingsDefaults.js").Settings>} Updated settings object.
  */
 let updateQueue = Promise.resolve();
 
@@ -128,7 +143,7 @@ export function updateSetting(key, value) {
  * 2. Ignore errors if `localStorage` is unavailable or write fails.
  * 3. Reset the cache and return the defaults.
  *
- * @returns {import("./settingsSchema.js").Settings} The default settings object.
+ * @returns {import("../config/settingsDefaults.js").Settings} The default settings object.
  */
 export function resetSettings() {
   try {

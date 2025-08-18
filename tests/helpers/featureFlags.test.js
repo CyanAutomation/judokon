@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { DEFAULT_SETTINGS } from "../../src/helpers/settingsSchema.js";
+import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
 
 /**
  * @fileoverview

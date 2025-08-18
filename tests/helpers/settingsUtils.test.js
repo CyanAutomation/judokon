@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { DEFAULT_SETTINGS } from "../../src/helpers/settingsSchema.js";
+import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
 import { resetSettings } from "../../src/helpers/settingsStorage.js";
 
 /**

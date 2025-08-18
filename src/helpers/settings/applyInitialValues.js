@@ -25,7 +25,7 @@ export function applyInputState(element, value) {
  * 1. Call `applyInputState` for each setting-related control.
  *
  * @param {Object} controls - Collection of form elements.
- * @param {import("../settingsSchema.js").Settings} settings - Current settings.
+ * @param {import("../../config/settingsDefaults.js").Settings} settings - Current settings.
  * @param {Record<string, string>} [tooltipMap] - Flattened tooltip lookup.
  */
 export function applyInitialControlValues(controls, settings, tooltipMap = {}) {
