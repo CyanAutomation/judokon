@@ -1,6 +1,7 @@
 import { fetchJson, importJsonModule } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { escapeHTML } from "./utils.js";
+import { marked } from "../vendor/marked.esm.js";
 import { loadSettings } from "./settingsStorage.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { getSanitizer } from "./sanitizeHtml.js";
@@ -81,10 +82,9 @@ export function getTooltips() {
  * @pseudocode
  * 1. Escape HTML in `text` using `escapeHTML`.
  * 2. Count occurrences of `**` and `_` to detect unbalanced markers.
- * 3. Replace newline characters with `<br>`.
- * 4. Replace `**bold**` with `<strong>` elements.
- * 5. Replace `_italic_` with `<em>` elements.
- * 6. Return an object with `html` and a `warning` flag when markers are unbalanced.
+ * 3. Parse the markdown with `marked.parseInline`.
+ * 4. Replace newline characters with `<br>`.
+ * 5. Return an object with `html` and a `warning` flag when markers are unbalanced.
  *
  * @param {string} text - Raw tooltip text to parse.
  * @returns {{ html: string, warning: boolean }} Parsed HTML and warning flag.
@@ -95,10 +95,7 @@ export function parseTooltipText(text) {
   const italicPairMatches = safe.match(/_(.*?)_/g) || [];
   const totalUnderscores = (safe.match(/_/g) || []).length;
   const warning = boldCount % 2 !== 0 || totalUnderscores !== italicPairMatches.length * 2;
-  const html = safe
-    .replace(/\n/g, "<br>")
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/_(.*?)_/g, "<em>$1</em>");
+  const html = marked.parseInline(safe).replace(/\n/g, "<br>");
   return { html, warning };
 }
 

@@ -24,4 +24,16 @@ describe("parseTooltipText", () => {
     const { warning } = parseTooltipText("**Bold");
     expect(warning).toBe(true);
   });
+
+  it("renders nested markup", () => {
+    const { html, warning } = parseTooltipText("**bold _italic_**");
+    expect(html).toBe("<strong>bold <em>italic</em></strong>");
+    expect(warning).toBe(false);
+  });
+
+  it("warns on edge-case markup", () => {
+    const { html, warning } = parseTooltipText("**bold _italic**");
+    expect(html).toBe("<strong>bold _italic</strong>");
+    expect(warning).toBe(true);
+  });
 });
