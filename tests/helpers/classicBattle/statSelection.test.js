@@ -214,9 +214,11 @@ describe("classicBattle stat selection", () => {
     document.getElementById("computer-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     await selectStat("power");
-    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "outcome=winPlayer");
-    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "matchPointReached");
-    expect(orchestrator.__getStateLog()).toEqual(["roundOver", "matchDecision"]);
+    await selectStat("power");
+    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "evaluate");
+    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "outcome=winPlayer");
+    expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(3, "matchPointReached");
+    expect(orchestrator.__getStateLog()).toEqual(["processingRound", "roundOver", "matchDecision"]);
   });
 
   it("simulateOpponentStat returns a valid stat", async () => {

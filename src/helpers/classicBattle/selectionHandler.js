@@ -72,13 +72,14 @@ export function evaluateRound(store, stat) {
  * 2. Clear the countdown and schedule a transient snackbar hint
  *    "Opponent is choosing…" after 500ms; cancel it if the round resolves
  *    before it displays to avoid occupying the result region.
- * 3. After a short delay, clear the hint and reveal the opponent card then
- *    evaluate the round.
- * 4. If the match ended, clear the round counter.
- * 5. Reset stat buttons and schedule the next round.
- * 6. If the match ended, show the summary panel.
- * 7. Update the debug panel.
- * 8. Always dispatch an outcome event, even if an error occurs, to prevent
+ * 3. After a short delay, dispatch 'evaluate' to move the state machine into
+ *    processing, then clear the hint and reveal the opponent card.
+ * 4. Evaluate the round and write the immediate result.
+ * 5. If the match ended, clear the round counter.
+ * 6. Reset stat buttons and schedule the next round.
+ * 7. If the match ended, show the summary panel.
+ * 8. Update the debug panel.
+ * 9. Always dispatch an outcome event, even if an error occurs, to prevent
  *    the state machine from stalling.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
@@ -130,6 +131,8 @@ export async function handleStatSelection(store, stat, options = {}) {
       let result;
       let outcomeEvent = "outcome=draw";
       try {
+        // Signal evaluation start so the state machine enters processingRound
+        await dispatchBattleEvent("evaluate");
         // Cancel the hint once the round is ready to resolve.
         if (opponentSnackbarId) clearTimeout(opponentSnackbarId);
         await revealComputerCard();
