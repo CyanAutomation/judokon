@@ -3,7 +3,7 @@ import {
   getCachedSettings,
   resetCache
 } from "../../src/helpers/settingsCache.js";
-import { DEFAULT_SETTINGS } from "../../src/helpers/settingsSchema.js";
+import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
 
 describe("settingsCache", () => {
   afterEach(() => {

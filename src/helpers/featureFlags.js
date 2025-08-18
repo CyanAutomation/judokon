@@ -1,6 +1,6 @@
 import { loadSettings, updateSetting } from "./settingsStorage.js";
 import { setCachedSettings } from "./settingsCache.js";
-import { defaultSettingsPromise } from "./settingsSchema.js";
+import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 
 /**
  * Event emitter broadcasting feature flag changes.
@@ -9,11 +9,7 @@ import { defaultSettingsPromise } from "./settingsSchema.js";
  */
 export const featureFlagsEmitter = new EventTarget();
 
-let cachedFlags = {};
-
-defaultSettingsPromise.then((settings) => {
-  cachedFlags = { ...settings.featureFlags };
-});
+let cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };
 
 /**
  * Initialize feature flags from persisted settings.
@@ -24,16 +20,16 @@ defaultSettingsPromise.then((settings) => {
  * 3. Dispatch a `change` event with `flag: null`.
  * 4. Return the loaded `settings`.
  *
- * @returns {Promise<import("./settingsSchema.js").Settings>} Loaded settings.
+ * @returns {Promise<import("../config/settingsDefaults.js").Settings>} Loaded settings.
  */
 export async function initFeatureFlags() {
   let settings;
   try {
     settings = await loadSettings();
-    cachedFlags = settings.featureFlags || { ...(await defaultSettingsPromise).featureFlags };
+    cachedFlags = settings.featureFlags || { ...DEFAULT_SETTINGS.featureFlags };
   } catch {
-    settings = { ...(await defaultSettingsPromise) };
-    cachedFlags = { ...(await defaultSettingsPromise).featureFlags };
+    settings = { ...DEFAULT_SETTINGS };
+    cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };
     setCachedSettings(settings);
   }
   featureFlagsEmitter.dispatchEvent(new CustomEvent("change", { detail: { flag: null } }));
@@ -58,7 +54,7 @@ export function isEnabled(flag) {
  *
  * @pseudocode
  * 1. Call `loadSettings()` to retrieve current settings.
- * 2. Optionally warn if `flag` is not in `(await defaultSettingsPromise).featureFlags`.
+ * 2. Optionally warn if `flag` is not in `DEFAULT_SETTINGS.featureFlags`.
  * 3. Merge existing flag data with `{ enabled: value }` into `settings.featureFlags`.
  * 4. Persist the merged object with `updateSetting('featureFlags', merged)`.
  * 5. Update `cachedFlags` with the saved flags.
@@ -67,11 +63,11 @@ export function isEnabled(flag) {
  *
  * @param {string} flag - Feature flag to update.
  * @param {boolean} value - Desired enabled state.
- * @returns {Promise<import("./settingsSchema.js").Settings>} Updated settings.
+ * @returns {Promise<import("../config/settingsDefaults.js").Settings>} Updated settings.
  */
 export async function setFlag(flag, value) {
   const settings = await loadSettings();
-  if (!Object.hasOwn((await defaultSettingsPromise).featureFlags, flag)) {
+  if (!Object.hasOwn(DEFAULT_SETTINGS.featureFlags, flag)) {
     console.warn(`Unknown feature flag: ${flag}`);
   }
   const updatedFlags = {
@@ -84,7 +80,6 @@ export async function setFlag(flag, value) {
   return updated;
 }
 
-// Sync changes across tabs by relaying storage events.
 // Sync changes across tabs by relaying storage events.
 if (typeof window !== "undefined") {
   window.addEventListener("storage", async (e) => {

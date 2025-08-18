@@ -1,4 +1,4 @@
-import { defaultSettingsPromise } from "./settingsSchema.js";
+import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 
 /**
  * Clone a settings object, duplicating nested structures to avoid mutations.
@@ -8,8 +8,8 @@ import { defaultSettingsPromise } from "./settingsSchema.js";
  * 2. Clone nested objects: `tooltipIds`, `gameModes`, and `featureFlags`.
  * 3. Return the cloned object.
  *
- * @param {import("./settingsSchema.js").Settings} settings - Settings to clone.
- * @returns {import("./settingsSchema.js").Settings} Cloned settings.
+ * @param {import("../config/settingsDefaults.js").Settings} settings - Settings to clone.
+ * @returns {import("../config/settingsDefaults.js").Settings} Cloned settings.
  */
 function cloneSettings(settings) {
   return {
@@ -24,11 +24,7 @@ function cloneSettings(settings) {
   };
 }
 
-let cachedSettings;
-
-defaultSettingsPromise.then((settings) => {
-  cachedSettings = cloneSettings(settings);
-});
+let cachedSettings = cloneSettings(DEFAULT_SETTINGS);
 
 /**
  * Replace the cached settings object.
@@ -37,7 +33,7 @@ defaultSettingsPromise.then((settings) => {
  * 1. Clone `settings` to prevent external mutations.
  * 2. Assign the clone to `cachedSettings`.
  *
- * @param {import("./settingsSchema.js").Settings} settings - New settings object.
+ * @param {import("../config/settingsDefaults.js").Settings} settings - New settings object.
  */
 export function setCachedSettings(settings) {
   cachedSettings = cloneSettings(settings);
@@ -49,8 +45,8 @@ export function setCachedSettings(settings) {
  * @pseudocode
  * 1. Set `cachedSettings` to a cloned copy of `DEFAULT_SETTINGS`.
  */
-export async function resetCache() {
-  cachedSettings = cloneSettings(await defaultSettingsPromise);
+export function resetCache() {
+  cachedSettings = cloneSettings(DEFAULT_SETTINGS);
 }
 
 /**
@@ -59,7 +55,7 @@ export async function resetCache() {
  * @pseudocode
  * 1. Return `cachedSettings[key]`.
  *
- * @param {keyof import("./settingsSchema.js").Settings} key - The setting key to read.
+ * @param {keyof import("../config/settingsDefaults.js").Settings} key - The setting key to read.
  * @returns {*} Setting value.
  */
 export function getSetting(key) {
@@ -83,7 +79,7 @@ export function getFeatureFlag(flagName) {
 /**
  * Access the entire cached settings object.
  *
- * @returns {import("./settingsSchema.js").Settings} Cached settings.
+ * @returns {import("../config/settingsDefaults.js").Settings} Cached settings.
  */
 export function getCachedSettings() {
   return cachedSettings;
