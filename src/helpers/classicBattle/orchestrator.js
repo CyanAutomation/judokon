@@ -243,6 +243,18 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   return machine;
 }
 
+// Normalize event names coming from selectionHandler to match JSON triggers.
+// Tests mock this module and assert on the original event names (e.g. winPlayer),
+// so normalization only affects the real runtime state machine.
+function normalizeEventName(eventName) {
+  if (typeof eventName !== "string") return eventName;
+  if (eventName === "outcome=winPlayer") return "outcome=winP1";
+  if (eventName === "outcome=winOpponent") return "outcome=winP2";
+  return eventName;
+}
+
 export async function dispatchBattleEvent(eventName, payload) {
-  if (machine) await machine.dispatch(eventName, payload);
+  if (!machine) return;
+  const mapped = normalizeEventName(eventName);
+  await machine.dispatch(mapped, payload);
 }
