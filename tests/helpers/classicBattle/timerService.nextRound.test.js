@@ -24,7 +24,7 @@ describe("timerService next round handling", () => {
       STATS: []
     }));
     vi.doMock("../../../src/helpers/classicBattle/runTimerWithDrift.js", () => ({
-      runTimerWithDrift: () => async () => {}
+      runTimerWithDrift: () => ({ run: async () => {}, cancel: () => {} })
     }));
     const dispatchBattleEvent = vi.fn();
     vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
@@ -62,9 +62,12 @@ describe("timerService next round handling", () => {
       STATS: []
     }));
     vi.doMock("../../../src/helpers/classicBattle/runTimerWithDrift.js", () => ({
-      runTimerWithDrift: () => async (_d, _t, onExpired) => {
-        await onExpired();
-      }
+      runTimerWithDrift: () => ({
+        run: async (_d, _t, onExpired) => {
+          await onExpired();
+        },
+        cancel: () => {}
+      })
     }));
     const dispatchBattleEvent = vi.fn();
     vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
