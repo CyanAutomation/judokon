@@ -18,7 +18,6 @@ vi.mock("../../src/helpers/battleEngineFacade.js", () => {
     startRound: makeTimer,
     startCoolDown: makeTimer,
     stopTimer: () => clearInterval(timerId),
-    watchForDrift: () => () => {},
     STATS: ["a", "b"]
   };
 });

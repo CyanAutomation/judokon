@@ -5,6 +5,7 @@ const FALLBACKS = {
   roundTimer: 30,
   coolDownTimer: 3
 };
+const DRIFT_THRESHOLD = 2;
 
 /**
  * Control countdown timers for battle phases.
@@ -16,6 +17,8 @@ const FALLBACKS = {
  *    b. Stops any existing timer and resets state.
  *    c. Creates a countdown timer with `createCountdownTimer`.
  *    d. Updates `remaining` on each tick and invokes provided callbacks.
+ *    e. Compares expected vs. actual elapsed time and triggers `onDrift` when
+ *       the difference exceeds a threshold.
  * 3. `pause` and `resume` update the `paused` flag and forward to the timer.
  * 4. `stop` halts the active timer and clears it.
  * 5. `getState` returns `{ remaining, paused }`.
@@ -29,9 +32,10 @@ export class TimerController {
     this.onExpiredCb = null;
     this.onSecondTick = onSecondTick;
     this.cancel = cancel;
+    this.driftId = null;
   }
 
-  async #start(category, onTick, onExpired, duration, pauseOnHidden) {
+  async #start(category, onTick, onExpired, duration, pauseOnHidden, onDrift) {
     if (duration === undefined) {
       try {
         duration = await getDefaultTimer(category);
@@ -45,6 +49,10 @@ export class TimerController {
     this.paused = false;
     this.onTickCb = onTick;
     this.onExpiredCb = onExpired;
+    const start = Date.now();
+    let pausedAt = null;
+    let pausedMs = 0;
+
     this.currentTimer = createCountdownTimer(duration, {
       onTick: (r) => {
         this.remaining = r;
@@ -58,14 +66,38 @@ export class TimerController {
       cancel: this.cancel
     });
     this.currentTimer.start();
+
+    if (this.driftId !== null) this.cancel(this.driftId);
+    this.driftId = this.onSecondTick(() => {
+      if (!this.currentTimer) {
+        this.cancel(this.driftId);
+        this.driftId = null;
+        return;
+      }
+      if (this.paused) {
+        if (pausedAt === null) pausedAt = Date.now();
+        return;
+      }
+      if (pausedAt !== null) {
+        pausedMs += Date.now() - pausedAt;
+        pausedAt = null;
+      }
+      const elapsed = Math.floor((Date.now() - start - pausedMs) / 1000);
+      const expected = duration - elapsed;
+      if (this.remaining - expected > DRIFT_THRESHOLD) {
+        this.cancel(this.driftId);
+        this.driftId = null;
+        if (typeof onDrift === "function") onDrift(this.remaining);
+      }
+    });
   }
 
-  startRound(onTick, onExpired, duration) {
-    return this.#start("roundTimer", onTick, onExpired, duration, true);
+  startRound(onTick, onExpired, duration, onDrift) {
+    return this.#start("roundTimer", onTick, onExpired, duration, true, onDrift);
   }
 
-  startCoolDown(onTick, onExpired, duration) {
-    return this.#start("coolDownTimer", onTick, onExpired, duration, false);
+  startCoolDown(onTick, onExpired, duration, onDrift) {
+    return this.#start("coolDownTimer", onTick, onExpired, duration, false, onDrift);
   }
 
   pause() {
@@ -82,6 +114,10 @@ export class TimerController {
     if (this.currentTimer) {
       this.currentTimer.stop();
       this.currentTimer = null;
+    }
+    if (this.driftId !== null) {
+      this.cancel(this.driftId);
+      this.driftId = null;
     }
   }
 

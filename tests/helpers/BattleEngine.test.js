@@ -1,24 +1,6 @@
 // @vitest-environment node
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-const callbacks = [];
-let now = 0;
-vi.mock("../../src/utils/scheduler.js", () => ({
-  onSecondTick: (cb) => {
-    callbacks.push(cb);
-    return callbacks.length - 1;
-  },
-  cancel: (id) => {
-    delete callbacks[id];
-  },
-  stop: vi.fn()
-}));
-vi.spyOn(Date, "now").mockImplementation(() => now);
-import { compareStats, createDriftWatcher } from "../../src/helpers/BattleEngine.js";
-
-function tick(ms = 1000) {
-  now += ms;
-  callbacks.slice().forEach((cb) => cb());
-}
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { compareStats } from "../../src/helpers/BattleEngine.js";
 
 describe("compareStats", () => {
   it("detects player win", () => {
@@ -31,59 +13,6 @@ describe("compareStats", () => {
 
   it("detects tie", () => {
     expect(compareStats(4, 4)).toEqual({ delta: 0, winner: "tie" });
-  });
-});
-
-describe("createDriftWatcher", () => {
-  beforeEach(() => {
-    callbacks.length = 0;
-    now = 0;
-  });
-  afterEach(() => {
-    callbacks.length = 0;
-  });
-
-  it("invokes callback when drift exceeds threshold", () => {
-    const timer = {
-      hasActiveTimer: vi.fn().mockReturnValue(true),
-      getState: vi.fn().mockReturnValue({ remaining: 13, paused: false })
-    };
-    const onDrift = vi.fn();
-    const watch = createDriftWatcher(timer);
-    watch(10, onDrift);
-    tick();
-    expect(onDrift).toHaveBeenCalledWith(13);
-  });
-
-  it("ignores time spent paused when checking for drift", () => {
-    let remaining = 10;
-    let paused = false;
-    const timer = {
-      hasActiveTimer: vi.fn().mockReturnValue(true),
-      getState: vi.fn(() => ({ remaining, paused }))
-    };
-    const onDrift = vi.fn();
-    const watch = createDriftWatcher(timer);
-    watch(10, onDrift);
-
-    // run for 3 seconds
-    remaining = 9;
-    tick();
-    remaining = 8;
-    tick();
-    remaining = 7;
-    tick();
-
-    // pause for 5 seconds
-    paused = true;
-    tick(5000);
-
-    // resume and run one more second
-    paused = false;
-    remaining = 6;
-    tick();
-
-    expect(onDrift).not.toHaveBeenCalled();
   });
 });
 

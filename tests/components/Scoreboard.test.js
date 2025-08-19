@@ -96,22 +96,21 @@ describe("Scoreboard component", () => {
 
   it("startCountdown displays fallback on drift", () => {
     const timer = vi.useFakeTimers();
-    const watchSpy = vi.spyOn(battleEngine, "watchForDrift");
+    const coolSpy = vi.spyOn(battleEngine, "startCoolDown");
     startCountdown(2);
-    const [, onDrift] = watchSpy.mock.calls[0];
+    const onDrift = coolSpy.mock.calls[0][3];
     onDrift(1);
     expect(document.getElementById("round-message").textContent).toBe("Waiting…");
     timer.clearAllTimers();
-    watchSpy.mockRestore();
+    coolSpy.mockRestore();
   });
 
   it("drift handler restarts only up to the retry limit", () => {
     const timer = vi.useFakeTimers();
     const coolSpy = vi.spyOn(battleEngine, "startCoolDown");
-    const watchSpy = vi.spyOn(battleEngine, "watchForDrift");
     const onFinish = vi.fn();
     startCountdown(5, onFinish);
-    const [, onDrift] = watchSpy.mock.calls[0];
+    const onDrift = coolSpy.mock.calls[0][3];
     onDrift(4);
     onDrift(4);
     onDrift(4);
@@ -121,7 +120,6 @@ describe("Scoreboard component", () => {
     expect(coolSpy).toHaveBeenCalledTimes(4);
     timer.clearAllTimers();
     coolSpy.mockRestore();
-    watchSpy.mockRestore();
   });
 
   it("initializes from existing DOM", () => {

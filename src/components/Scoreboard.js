@@ -14,7 +14,7 @@
  * @returns {HTMLDivElement} The scoreboard element.
  */
 import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
-import { startCoolDown, watchForDrift } from "../helpers/battleEngineFacade.js";
+import { startCoolDown } from "../helpers/battleEngineFacade.js";
 import { showSnackbar, updateSnackbar } from "../helpers/showSnackbar.js";
 
 let messageEl;
@@ -253,10 +253,11 @@ export function startCountdown(seconds, onFinish) {
 
   const state = createCountdownState();
   const onTick = createTickRenderer(state);
-  const onExpired = createExpirationHandler(state, onFinish);
-  setupDriftRestart(state, onTick, onExpired);
+  const onExpired = createExpirationHandler(onFinish);
+  const restart = (rem) => runCountdown(rem, onTick, onExpired, state.handleDrift);
+  state.handleDrift = createDriftHandler(restart, onExpired);
 
-  state.stopWatch = runCountdown(seconds, onTick, onExpired, state.handleDrift, state.stopWatch);
+  runCountdown(seconds, onTick, onExpired, state.handleDrift);
 }
 
 /**
@@ -285,10 +286,8 @@ export function updateScore(playerScore, computerScore) {
   animateScore(startPlayer, startComputer, playerScore, computerScore);
 }
 
-function runCountdown(duration, onTick, onExpired, handleDrift, prevStopWatch) {
-  startCoolDown(onTick, onExpired, duration);
-  if (prevStopWatch) prevStopWatch();
-  return watchForDrift(duration, handleDrift);
+function runCountdown(duration, onTick, onExpired, handleDrift) {
+  startCoolDown(onTick, onExpired, duration, handleDrift);
 }
 
 function createDriftHandler(restartFn, onGiveUp) {
@@ -306,7 +305,7 @@ function createDriftHandler(restartFn, onGiveUp) {
 }
 
 function createCountdownState() {
-  return { started: false, stopWatch: undefined, handleDrift: undefined };
+  return { started: false, handleDrift: undefined };
 }
 
 function createTickRenderer(state) {
@@ -325,17 +324,9 @@ function createTickRenderer(state) {
   };
 }
 
-function createExpirationHandler(state, onFinish) {
+function createExpirationHandler(onFinish) {
   return () => {
-    if (state.stopWatch) state.stopWatch();
     clearTimer();
     if (typeof onFinish === "function") onFinish();
   };
-}
-
-function setupDriftRestart(state, onTick, onExpired) {
-  const restart = (rem) => {
-    state.stopWatch = runCountdown(rem, onTick, onExpired, state.handleDrift, state.stopWatch);
-  };
-  state.handleDrift = createDriftHandler(restart, onExpired);
 }
