@@ -93,7 +93,8 @@ async function forceAutoSelectAndDispatch(onExpiredSelect) {
  * 2. Use `runTimerWithDrift(engineStartRound)` to update the countdown each second
  *    and monitor for drift.
  *    - On drift trigger auto-select logic and dispatch the outcome event.
- * 3. Register a skip handler that stops the timer and triggers `onExpired`.
+ * 3. Register a skip handler that cancels the drift watcher, stops the timer
+ *    and triggers `onExpired`.
  * 4. When expired, dispatch `"timeout"` and then:
  *    a. If `isEnabled('randomStatMode')`, call `autoSelectStat` to pick a stat
  *       and invoke `onExpiredSelect` with `delayOpponentMessage`.
@@ -128,8 +129,11 @@ export async function startTimer(onExpiredSelect) {
     }
   };
 
+  const { run, cancel } = runTimerWithDrift(engineStartRound);
+
   // Register skip handler immediately so early calls to `skipBattlePhase` take effect
   setSkipHandler(async () => {
+    cancel();
     stopTimer();
     await onExpired();
   });
@@ -147,11 +151,11 @@ export async function startTimer(onExpiredSelect) {
   const restore = !synced ? scoreboard.showTemporaryMessage("Waiting…") : () => {};
 
   setSkipHandler(async () => {
+    cancel();
     stopTimer();
     await onExpired();
   });
 
-  const run = runTimerWithDrift(engineStartRound);
   await run(duration, onTick, onExpired, async () => {
     await forceAutoSelectAndDispatch(onExpiredSelect);
   });
@@ -186,7 +190,8 @@ export function handleStatSelectionTimeout(store, onSelect) {
  * 2. Locate `#next-button` and `#next-round-timer`; exit if the button is missing.
  * 3. After a short delay, run a 3 second cooldown via `runTimerWithDrift(startCoolDown)`
  *    and display `"Next round in: <n>s"` using one snackbar that updates each tick.
- * 4. Register a skip handler that stops the timer and invokes the expiration logic.
+ * 4. Register a skip handler that cancels the drift watcher, stops the timer
+ *    and invokes the expiration logic.
  * 5. When expired, clear the `#next-round-timer` element, set `data-next-ready="true"`,
  *    enable the Next Round button, dispatch `"ready"` to auto-advance the state machine,
  *    and clear the handler.
@@ -243,10 +248,12 @@ export function scheduleNextRound(result) {
     await dispatchBattleEvent("ready");
     updateDebugPanel();
   };
+  const { run, cancel } = runTimerWithDrift(startCoolDown);
 
   // Allow immediate skipping, even before cooldown starts. If the cooldown
   // hasn't begun yet, simply stop and expire.
   setSkipHandler(() => {
+    cancel();
     stopTimer();
     onExpired();
   });
@@ -255,7 +262,6 @@ export function scheduleNextRound(result) {
     return;
   }
 
-  const run = runTimerWithDrift(startCoolDown);
   // Ensure the initial cooldown message is visible immediately, even if
   // the underlying timer is paused or a skip is pending. The timer will
   // update/replace this text on the first scheduled tick.
