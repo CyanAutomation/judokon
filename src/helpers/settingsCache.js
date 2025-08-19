@@ -28,11 +28,18 @@ function cloneSettings(settings) {
 let cachedSettings = cloneSettings(DEFAULT_SETTINGS);
 
 /**
- * Initialize the settings cache from persisted data.
+ * Load settings into the in-memory cache, falling back to defaults on error.
  *
- * @returns {Promise<import("../config/settingsDefaults.js").Settings>} Loaded settings.
+ * @pseudocode
+ * 1. Attempt to load settings via `loadSettings()`.
+ *    - `loadSettings` may fetch JSON and fall back to `importJsonModule` internally.
+ * 2. On success, cache a cloned copy with `setCachedSettings`.
+ * 3. Return the cached settings.
+ * 4. If any step fails, return the existing `cachedSettings` defaults.
+ *
+ * @returns {Promise<import("../config/settingsDefaults.js").Settings>} Cached settings.
  */
-export async function initSettingsCache() {
+export async function loadDefaultSettings() {
   try {
     const settings = await loadSettings();
     setCachedSettings(settings);
