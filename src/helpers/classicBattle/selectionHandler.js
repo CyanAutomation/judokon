@@ -143,8 +143,8 @@ export async function handleStatSelection(store, stat, options = {}) {
           result.outcome === "winPlayer"
             ? "outcome=winPlayer"
             : result.outcome === "winOpponent"
-            ? "outcome=winOpponent"
-            : "outcome=draw";
+              ? "outcome=winOpponent"
+              : "outcome=draw";
         await dispatchBattleEvent(outcomeEvent);
         if (result.matchEnded) {
           scoreboard.clearRoundCounter();
