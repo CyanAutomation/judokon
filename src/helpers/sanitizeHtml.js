@@ -33,6 +33,10 @@ export async function getSanitizer() {
   const viaPath = await tryLoad("/node_modules/dompurify/dist/purify.es.js");
   if (viaPath) return (cached = viaPath);
 
+  // CDN fallback for GitHub Pages (no node_modules on server)
+  const viaCDN = await tryLoad("https://esm.sh/dompurify@3.2.6");
+  if (viaCDN) return (cached = viaCDN);
+
   // Final fallback: minimal allowlist sanitizer good enough for tests
   const ALLOW = new Set(["br", "strong", "em"]);
   function sanitizeBasic(input) {
