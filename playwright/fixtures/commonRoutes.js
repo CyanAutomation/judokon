@@ -3,6 +3,13 @@ import fs from "fs";
 /**
  * Register routes to serve fixture data for core JSON files and flag images.
  *
+ * @pseudocode
+ * 1. Register fixture JSON for key data files.
+ * 2. Proxy portraits and other static assets from local directories.
+ * 3. Serve fonts and vendor scripts from local copies.
+ * 4. Fulfill additional JSON requests with fixtures when available.
+ * 5. Provide placeholder responses for external assets such as flags.
+ *
  * @param {import('@playwright/test').Page} page - The Playwright page.
  * @returns {Promise<void>} Promise resolving when all routes have been registered in parallel.
  */
