@@ -1,6 +1,20 @@
 import { vi } from "vitest";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 
+/**
+ * @pseudocode
+ * reset environment
+ *   - reset Vitest modules
+ *   - clear document body
+ * build DOM nodes
+ *   - create player/computer cards and battle header
+ *   - append nodes and snackbar container to body
+ * mock APIs
+ *   - use fake timers
+ *   - mock fetchJson, generateRandomCard, getRandomJudoka, render
+ * return configured spies/mocks
+ *   - expose timerSpy, mocks, and currentFlags
+ */
 export function setupClassicBattleDom() {
   vi.resetModules();
   document.body.innerHTML = "";
