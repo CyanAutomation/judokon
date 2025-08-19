@@ -1,6 +1,39 @@
 import { DEFAULT_SETTINGS } from "./settingsDefaults.js";
+import { importJsonModule } from "../helpers/dataUtils.js";
 
 const SETTINGS_KEY = "settings";
+
+let defaultSettingsPromise;
+
+/**
+ * Load the base settings JSON with caching and cloning.
+ *
+ * @pseudocode
+ * 1. If `defaultSettingsPromise` exists, return a cloned result.
+ * 2. Otherwise:
+ *    a. Attempt to `fetch` `../data/settings.json`.
+ *    b. On failure, fall back to `importJsonModule`.
+ *    c. Cache the resulting promise in `defaultSettingsPromise`.
+ * 3. Return a structured clone of the resolved settings.
+ *
+ * @returns {Promise<import("./settingsDefaults.js").Settings>} Cloned default settings.
+ */
+export async function loadDefaultSettings() {
+  if (!defaultSettingsPromise) {
+    defaultSettingsPromise = (async () => {
+      const base = typeof import.meta.url === "string" ? import.meta.url : undefined;
+      try {
+        const url = new URL("../data/settings.json", base);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Failed to fetch default settings");
+        return await response.json();
+      } catch {
+        return importJsonModule("../data/settings.json");
+      }
+    })();
+  }
+  return structuredClone(await defaultSettingsPromise);
+}
 
 /**
  * Deeply merge two objects without mutating them, dropping unknown keys.
@@ -50,7 +83,7 @@ function mergeKnown(base, override, defaults, path = []) {
  * 3. Local storage overrides
  *
  * @pseudocode
- * 1. Clone `DEFAULT_SETTINGS` into `settings`.
+ * 1. Call `loadDefaultSettings()` to retrieve a cloned base configuration.
  * 2. Attempt to `fetch` runtime settings JSON and merge.
  * 3. Parse `localStorage` overrides and merge.
  * 4. Return merged `settings`.
@@ -58,7 +91,7 @@ function mergeKnown(base, override, defaults, path = []) {
  * @returns {Promise<import("./settingsDefaults.js").Settings>} Resolved settings object.
  */
 export async function loadSettings() {
-  let settings = structuredClone(DEFAULT_SETTINGS);
+  let settings = await loadDefaultSettings();
 
   try {
     const base = typeof import.meta.url === "string" ? import.meta.url : undefined;

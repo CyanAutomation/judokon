@@ -6,4 +6,4 @@ export {
 } from "./settingsStorage.js";
 export { getSetting, getFeatureFlag } from "./settingsCache.js";
 export { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
-export { loadSettings } from "../config/loadSettings.js";
+export { loadSettings, loadDefaultSettings } from "../config/loadSettings.js";

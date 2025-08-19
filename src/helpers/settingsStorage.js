@@ -18,7 +18,16 @@ let settingsSchemaPromise;
 
 /**
  * Lazily load the settings JSON schema.
- * @returns {Promise<object>}
+ *
+ * @pseudocode
+ * 1. If `settingsSchemaPromise` exists, return it (cached).
+ * 2. Otherwise:
+ *    a. Create a promise that attempts to `fetch` the schema JSON.
+ *    b. If the fetch fails, dynamically import the JSON module as a fallback.
+ *    c. Store this promise in `settingsSchemaPromise`.
+ * 3. Await and return the resolved schema (no cloning; treat as read-only).
+ *
+ * @returns {Promise<object>} Parsed schema object.
  */
 export async function getSettingsSchema() {
   if (!settingsSchemaPromise) {
