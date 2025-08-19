@@ -5,6 +5,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const judokaFixture = JSON.parse(readFileSync(path.join(__dirname, "../fixtures/judoka.json")));
 const gokyoFixture = JSON.parse(readFileSync(path.join(__dirname, "../fixtures/gokyo.json")));
 
+/**
+ * Creates a header element for scoreboard-related tests.
+ *
+ * @pseudocode
+ * 1. Create a <header> element.
+ * 2. Inject paragraphs for round message, next round timer, and score display.
+ * 3. Return the populated header element.
+ */
 export function createScoreboardHeader() {
   const header = document.createElement("header");
   header.innerHTML = `
@@ -15,6 +23,14 @@ export function createScoreboardHeader() {
   return header;
 }
 
+/**
+ * Creates a header element for battle-related tests.
+ *
+ * @pseudocode
+ * 1. Create a <header> element.
+ * 2. Populate it with round message, next round timer, and score display paragraphs.
+ * 3. Return the header element.
+ */
 export function createBattleHeader() {
   const header = document.createElement("header");
   header.innerHTML = `
@@ -25,6 +41,16 @@ export function createBattleHeader() {
   return header;
 }
 
+/**
+ * Builds DOM elements for the random card feature.
+ *
+ * @pseudocode
+ * 1. Create a section div with class "card-section".
+ * 2. Create a card container div with id "card-container".
+ * 3. Create a template element with id "card-placeholder-template".
+ * 4. Set the template's innerHTML to placeholder card markup.
+ * 5. Return an object containing section, container, and placeholderTemplate.
+ */
 export function createRandomCardDom() {
   const section = document.createElement("div");
   section.className = "card-section";
@@ -37,6 +63,14 @@ export function createRandomCardDom() {
   return { section, container, placeholderTemplate };
 }
 
+/**
+ * Creates card containers for player and computer cards.
+ *
+ * @pseudocode
+ * 1. Create a div for the player card and assign id "player-card".
+ * 2. Create a div for the computer card and assign id "computer-card".
+ * 3. Return an object with playerCard and computerCard.
+ */
 export function createBattleCardContainers() {
   const playerCard = document.createElement("div");
   playerCard.id = "player-card";
@@ -45,6 +79,18 @@ export function createBattleCardContainers() {
   return { playerCard, computerCard };
 }
 
+/**
+ * Constructs a settings fragment containing toggles and display options.
+ *
+ * @pseudocode
+ * 1. Create a document fragment to hold UI elements.
+ * 2. Create checkbox inputs for sound, motion, typewriter, tooltips, card of the day, and full navigation map.
+ * 3. Create radio inputs for light, dark, and high-contrast display modes.
+ * 4. Create section containers for game mode toggles and feature flags.
+ * 5. Create a reset button.
+ * 6. Append all created elements to the fragment.
+ * 7. Return the fragment.
+ */
 export function createSettingsDom() {
   const fragment = document.createDocumentFragment();
   const soundToggle = document.createElement("input");
@@ -106,6 +152,16 @@ export function createSettingsDom() {
   return fragment;
 }
 
+/**
+ * Resets DOM and test environment state.
+ *
+ * @pseudocode
+ * 1. If a document body exists, clear its innerHTML.
+ * 2. If localStorage exists, clear its contents.
+ * 3. Restore all Vitest mocks.
+ * 4. Switch timers back to real timers.
+ * 5. Reset imported modules.
+ */
 export function resetDom() {
   if (typeof document !== "undefined" && document.body) {
     document.body.innerHTML = "";
@@ -118,10 +174,24 @@ export function resetDom() {
   vi.resetModules();
 }
 
+/**
+ * Returns a copy of the judoka fixture data.
+ *
+ * @pseudocode
+ * 1. Clone the loaded judoka fixture object.
+ * 2. Return the cloned data.
+ */
 export function getJudokaFixture() {
   return structuredClone(judokaFixture);
 }
 
+/**
+ * Returns a copy of the gokyo fixture data.
+ *
+ * @pseudocode
+ * 1. Clone the loaded gokyo fixture object.
+ * 2. Return the cloned data.
+ */
 export function getGokyoFixture() {
   return structuredClone(gokyoFixture);
 }
