@@ -20,7 +20,6 @@ import { BattleEngine } from "./BattleEngine.js";
  *  - `getRoundsPlayed()` -> `battleEngine.getRoundsPlayed()`
  *  - `isMatchEnded()` -> `battleEngine.isMatchEnded()`
  *  - `getTimerState()` -> `battleEngine.getTimerState()`
- *  - `watchForDrift(...args)` -> `battleEngine.watchForDrift(...args)`
  *  - `_resetForTest()` -> `battleEngine._resetForTest()`
  */
 export { BattleEngine, STATS } from "./BattleEngine.js";
@@ -42,5 +41,4 @@ export const getScores = () => battleEngine.getScores();
 export const getRoundsPlayed = () => battleEngine.getRoundsPlayed();
 export const isMatchEnded = () => battleEngine.isMatchEnded();
 export const getTimerState = () => battleEngine.getTimerState();
-export const watchForDrift = (...args) => battleEngine.watchForDrift(...args);
 export const _resetForTest = () => battleEngine._resetForTest();

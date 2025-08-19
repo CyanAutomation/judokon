@@ -7,14 +7,9 @@
 
 import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
 import { TimerController } from "./TimerController.js";
-import {
-  onSecondTick as scheduleSecond,
-  cancel as cancelSchedule,
-  stop as stopScheduler
-} from "../utils/scheduler.js";
+import { stop as stopScheduler } from "../utils/scheduler.js";
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
-const DRIFT_THRESHOLD = 2;
 
 /**
  * Compare two stat values and report the winner.
@@ -56,60 +51,6 @@ const DELTA_OUTCOME = {
     }
   }
 };
-
-/**
- * Create a drift watcher for a timer controller.
- *
- * @pseudocode
- * 1. Record `start = Date.now()` and `pausedAt = null; pausedMs = 0`.
- * 2. Every second:
- *    a. If `timer.hasActiveTimer()` is false, cancel the scheduler subscription.
- *    b. Read `{remaining, paused}` from `timer.getState()`.
- *    c. If `paused` and `pausedAt` is null, set `pausedAt = Date.now()` and continue.
- *    d. If not `paused` and `pausedAt` exists, add `Date.now() - pausedAt` to `pausedMs` and clear `pausedAt`.
- *    e. Compute `elapsed = (Date.now() - start - pausedMs) / 1000`.
- *    f. Set `expected = duration - floor(elapsed)`.
- *    g. If `remaining - expected` exceeds `DRIFT_THRESHOLD`, cancel the subscription and call `onDrift(remaining)`.
- * 3. Return a function that cancels the subscription.
- *
- * @param {TimerController} timer - Timer to monitor.
- * @param {object} [opts]
- * @param {function(function): number} [opts.onSecondTick]
- * @param {function(number): void} [opts.cancel]
- * @returns {(duration: number, onDrift: function(number): void) => function(): void}
- */
-export function createDriftWatcher(
-  timer,
-  { onSecondTick = scheduleSecond, cancel = cancelSchedule } = {}
-) {
-  return (duration, onDrift) => {
-    const start = Date.now();
-    let pausedAt = null;
-    let pausedMs = 0;
-    const id = onSecondTick(() => {
-      if (!timer.hasActiveTimer()) {
-        cancel(id);
-        return;
-      }
-      const { remaining, paused } = timer.getState();
-      if (paused) {
-        if (pausedAt === null) pausedAt = Date.now();
-        return;
-      }
-      if (pausedAt !== null) {
-        pausedMs += Date.now() - pausedAt;
-        pausedAt = null;
-      }
-      const elapsed = Math.floor((Date.now() - start - pausedMs) / 1000);
-      const expected = duration - elapsed;
-      if (remaining - expected > DRIFT_THRESHOLD) {
-        cancel(id);
-        if (typeof onDrift === "function") onDrift(remaining);
-      }
-    });
-    return () => cancel(id);
-  };
-}
 
 export class BattleEngine {
   constructor() {
@@ -182,15 +123,17 @@ export class BattleEngine {
    * @param {function} onTick - Callback each second with remaining time.
    * @param {function(): Promise<void>} onExpired - Callback when timer expires (auto-select logic).
    * @param {number} [duration] - Timer duration in seconds.
+   * @param {function(number): void} [onDrift] - Drift handler invoked with remaining time.
    * @returns {Promise<void>} Resolves when the timer starts.
    */
-  startRound(onTick, onExpired, duration) {
+  startRound(onTick, onExpired, duration, onDrift) {
     return this.timer.startRound(
       onTick,
       async () => {
         if (!this.matchEnded) await onExpired();
       },
-      duration
+      duration,
+      onDrift
     );
   }
 
@@ -204,15 +147,17 @@ export class BattleEngine {
    * @param {function} onTick - Callback each second with remaining time.
    * @param {function(): (void|Promise<void>)} onExpired - Callback when timer expires.
    * @param {number} [duration] - Cooldown duration in seconds.
+   * @param {function(number): void} [onDrift] - Drift handler invoked with remaining time.
    * @returns {Promise<void>} Resolves when the timer starts.
    */
-  startCoolDown(onTick, onExpired, duration) {
+  startCoolDown(onTick, onExpired, duration, onDrift) {
     return this.timer.startCoolDown(
       onTick,
       async () => {
         if (!this.matchEnded) await onExpired();
       },
-      duration
+      duration,
+      onDrift
     );
   }
 
@@ -423,22 +368,6 @@ export class BattleEngine {
 
   getTimerState() {
     return this.timer.getState();
-  }
-
-  /**
-   * Monitor the active timer for drift and invoke a callback when detected.
-   *
-   * @pseudocode
-   * 1. Delegate to `createDriftWatcher` with the internal timer.
-   * 2. Return the stopper function from the created watcher.
-   *
-   * @param {number} duration - Duration originally passed to the timer.
-   * @param {function(number): void} onDrift - Callback invoked when drift detected.
-   * @returns {function(): void} Function to stop monitoring.
-   */
-  watchForDrift(duration, onDrift, opts) {
-    const watch = createDriftWatcher(this.timer, opts);
-    return watch(duration, onDrift);
   }
 
   /**

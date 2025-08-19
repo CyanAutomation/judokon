@@ -41,7 +41,7 @@ describe("Scoreboard integration without explicit init", () => {
       _resetForTest: vi.fn()
     }));
 
-    // Provide engine timers and drift watcher used by runTimerWithDrift/startTimer
+    // Provide engine timers used by startTimer
     vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
       // Round selection timer: tick down each second and expire
       startRound: (onTick, onExpired, duration) => {
@@ -68,7 +68,6 @@ describe("Scoreboard integration without explicit init", () => {
           }
         }, 1000);
       },
-      watchForDrift: () => () => {},
       stopTimer: vi.fn(),
       STATS: ["power"]
       // the rest are not needed in this test

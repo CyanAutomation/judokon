@@ -34,10 +34,20 @@ describe("BattleEngine timer interactions", () => {
     } = await import("../../src/helpers/battleEngineFacade.js");
 
     await start(vi.fn(), vi.fn(), 10);
-    expect(startRound).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), 10);
+    expect(startRound).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.any(Function),
+      10,
+      undefined
+    );
 
     await cool(vi.fn(), vi.fn(), 5);
-    expect(startCoolDown).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), 5);
+    expect(startCoolDown).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.any(Function),
+      5,
+      undefined
+    );
 
     pauseTimer();
     expect(pause).toHaveBeenCalled();

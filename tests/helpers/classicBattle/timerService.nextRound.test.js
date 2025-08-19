@@ -23,9 +23,6 @@ describe("timerService next round handling", () => {
       stopTimer: vi.fn(),
       STATS: []
     }));
-    vi.doMock("../../../src/helpers/classicBattle/runTimerWithDrift.js", () => ({
-      runTimerWithDrift: () => ({ run: async () => {}, cancel: () => {} })
-    }));
     const dispatchBattleEvent = vi.fn();
     vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
       dispatchBattleEvent
@@ -57,17 +54,11 @@ describe("timerService next round handling", () => {
       updateDebugPanel: vi.fn()
     }));
     vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
-      startCoolDown: vi.fn(),
+      startCoolDown: (_t, onExpired) => {
+        onExpired();
+      },
       stopTimer: vi.fn(),
       STATS: []
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/runTimerWithDrift.js", () => ({
-      runTimerWithDrift: () => ({
-        run: async (_d, _t, onExpired) => {
-          await onExpired();
-        },
-        cancel: () => {}
-      })
     }));
     const dispatchBattleEvent = vi.fn();
     vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
@@ -128,9 +119,7 @@ describe("scheduleNextRound early click", () => {
     vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", async (importOriginal) => {
       return await importOriginal();
     });
-    vi.doMock("../../../src/helpers/classicBattle/runTimerWithDrift.js", async (importOriginal) => {
-      return await importOriginal();
-    });
+    // runTimerWithDrift removed; no mock needed
     vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", async (importOriginal) => {
       return await importOriginal();
     });
