@@ -127,12 +127,29 @@ export async function handleStatSelection(store, stat, options = {}) {
   } catch {}
   const delay = delayOpponentMessage ? 0 : 300 + Math.floor(Math.random() * 401);
   return new Promise((resolve) => {
+    let completed = false;
+    // Watchdog: ensure we never stall in roundDecision
+    const watchdog = setTimeout(async () => {
+      if (completed) return;
+      try {
+        await dispatchBattleEvent("outcome=draw");
+        await dispatchBattleEvent("continue");
+        scheduleNextRound({ matchEnded: false, outcome: "draw" });
+        updateDebugPanel();
+      } finally {
+        completed = true;
+        resolve({ matchEnded: false, outcome: "draw", watchdog: true });
+      }
+    }, 2000);
+
     setTimeout(async () => {
       let result;
       let outcomeEvent = "outcome=draw";
       try {
-        // Signal evaluation start so the state machine enters processingRound
-        await dispatchBattleEvent("evaluate");
+        // Signal evaluation start (ignored by machine if unmapped)
+        try {
+          dispatchBattleEvent("evaluate");
+        } catch {}
         // Cancel the hint once the round is ready to resolve.
         if (opponentSnackbarId) clearTimeout(opponentSnackbarId);
         await revealComputerCard();
@@ -143,16 +160,13 @@ export async function handleStatSelection(store, stat, options = {}) {
           result.outcome === "winPlayer"
             ? "outcome=winPlayer"
             : result.outcome === "winOpponent"
-              ? "outcome=winOpponent"
-              : "outcome=draw";
+            ? "outcome=winOpponent"
+            : "outcome=draw";
         await dispatchBattleEvent(outcomeEvent);
         if (result.matchEnded) {
           scoreboard.clearRoundCounter();
         }
         resetStatButtons();
-        // Outcome message was already written synchronously in evaluateRound;
-        // avoid writing it again here to reduce flicker.
-        // From roundOver, either continue to cooldown or decide match
         if (result.matchEnded) {
           await dispatchBattleEvent("matchPointReached");
         } else {
@@ -168,14 +182,20 @@ export async function handleStatSelection(store, stat, options = {}) {
           });
         }
         updateDebugPanel();
+        completed = true;
+        clearTimeout(watchdog);
         resolve(result);
       } catch (err) {
-        // Always dispatch a fallback outcome event to prevent state machine stall
-        await dispatchBattleEvent(outcomeEvent);
-        await dispatchBattleEvent("continue");
-        scheduleNextRound({ matchEnded: false, outcome: "draw" });
-        updateDebugPanel();
-        resolve({ matchEnded: false, outcome: "draw", error: err });
+        try {
+          await dispatchBattleEvent(outcomeEvent);
+          await dispatchBattleEvent("continue");
+          scheduleNextRound({ matchEnded: false, outcome: "draw" });
+          updateDebugPanel();
+        } finally {
+          completed = true;
+          clearTimeout(watchdog);
+          resolve({ matchEnded: false, outcome: "draw", error: err });
+        }
       }
     }, delay);
   });
