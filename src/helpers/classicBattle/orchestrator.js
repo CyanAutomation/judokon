@@ -15,7 +15,7 @@ let machine = null;
  * Retrieve the current battle state machine instance.
  *
  * @pseudocode
- * 1. Return the `machine` reference.
+ * 1. Return the singleton `machine` reference or `null` if uninitialized.
  *
  * @returns {import('./stateMachine.js').BattleStateMachine|null} Current instance.
  */
@@ -27,12 +27,11 @@ export function getBattleStateMachine() {
  * Initialize the classic battle orchestrator.
  *
  * @pseudocode
- * 1. Derive `resetGame` and `startRound` handlers from `opts` or defaults.
- * 2. Define `onEnter` callbacks for each battle state to manage UI and flow.
- * 3. Define `onTransition` to mirror state changes to globals and update debug info.
- * 4. Create the state machine via `BattleStateMachine.create` with the handlers.
- * 5. Attach a visibility listener to pause or resume timers on tab changes.
- * 6. Wire timer drift and error-injection hooks when an engine is present.
+ * 1. Prepare `doResetGame` and `doStartRound` from defaults or overrides.
+ * 2. Build `onEnter` = { stateName: async handler } for all battle states.
+ * 3. Build `onTransition` logger to mirror state, keep a ring buffer, and update DOM mirrors.
+ * 4. Create `machine` via `BattleStateMachine.create(onEnter, { store }, onTransition)`.
+ * 5. Attach tab visibility, timer drift, and error-injection hooks to the machine's engine.
  *
  * @param {object} store - Shared battle store.
  * @param {Function} startRoundWrapper - Optional wrapper for starting a round.
