@@ -9,11 +9,12 @@ let stateGetter = () => null;
 
 /**
  * Register the event dispatcher used for battle state transitions.
- * @param {(eventName: string, payload?: any) => Promise<void>|void} fn
  *
  * @pseudocode
- * 1. Verify that `fn` is a function.
- * 2. When valid, assign it to `dispatcher`.
+ * 1. If `fn` is a function, store it in `dispatcher`.
+ * 2. `dispatchBattleEvent` will later invoke this stored dispatcher.
+ *
+ * @param {(eventName: string, payload?: any) => Promise<void>|void} fn
  */
 export function setBattleDispatcher(fn) {
   if (typeof fn === "function") dispatcher = fn;
@@ -21,11 +22,12 @@ export function setBattleDispatcher(fn) {
 
 /**
  * Register a getter that returns the current battle state name.
- * @param {() => string|null} fn
  *
  * @pseudocode
- * 1. Check that `fn` is a function.
- * 2. When valid, assign it to `stateGetter`.
+ * 1. If `fn` is a function, store it in `stateGetter`.
+ * 2. `getBattleState` will later use this stored getter.
+ *
+ * @param {() => string|null} fn
  */
 export function setBattleStateGetter(fn) {
   if (typeof fn === "function") stateGetter = fn;
@@ -33,31 +35,36 @@ export function setBattleStateGetter(fn) {
 
 /**
  * Dispatch a battle event through the registered dispatcher.
- * @param {string} eventName
- * @param {any} [payload]
  *
  * @pseudocode
- * 1. Call the stored `dispatcher` with `eventName` and `payload`.
- * 2. Swallow any errors from the dispatcher.
+ * 1. Invoke the stored `dispatcher` with `eventName` and `payload`.
+ * 2. If the dispatcher throws, swallow the error.
+ *
+ * @param {string} eventName
+ * @param {any} [payload]
  */
 export async function dispatchBattleEvent(eventName, payload) {
   try {
     await dispatcher(eventName, payload);
-  } catch {}
+  } catch {
+    // Swallow dispatcher errors to keep battle flow
+  }
 }
 
 /**
  * Get the current battle state (string) if available.
- * @returns {string|null}
  *
  * @pseudocode
- * 1. Invoke the stored `stateGetter` and return its value.
- * 2. On error, return `null`.
+ * 1. Invoke the stored `stateGetter`.
+ * 2. If invocation throws, swallow the error and return `null`.
+ *
+ * @returns {string|null}
  */
 export function getBattleState() {
   try {
     return stateGetter();
   } catch {
+    // Swallow getter errors; state is unknown
     return null;
   }
 }
