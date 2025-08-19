@@ -392,8 +392,33 @@ function initDebugPanel() {
   if (!debugPanel) return;
   const computerSlot = document.getElementById("computer-card");
   if (isEnabled("battleDebugPanel") && computerSlot) {
-    computerSlot.prepend(debugPanel);
-    debugPanel.classList.remove("hidden");
+    // Ensure the panel is a <details> element for native collapsing.
+    if (debugPanel.tagName !== "DETAILS") {
+      const details = document.createElement("details");
+      details.id = "debug-panel";
+      details.className = debugPanel.className;
+      const summary = document.createElement("summary");
+      summary.textContent = "Battle Debug";
+      const pre = debugPanel.querySelector("#debug-output") || document.createElement("pre");
+      pre.id = "debug-output";
+      pre.setAttribute("role", "status");
+      pre.setAttribute("aria-live", "polite");
+      details.append(summary, pre);
+      debugPanel.replaceWith(details);
+    }
+    const panel = document.getElementById("debug-panel");
+    try {
+      // Restore persisted open state (default open)
+      const saved = localStorage.getItem("battleDebugOpen");
+      panel.open = saved ? saved === "true" : true;
+      panel.addEventListener("toggle", () => {
+        try {
+          localStorage.setItem("battleDebugOpen", String(panel.open));
+        } catch {}
+      });
+    } catch {}
+    computerSlot.prepend(panel);
+    panel.classList.remove("hidden");
   } else {
     debugPanel.remove();
   }
@@ -405,15 +430,39 @@ function setDebugPanelEnabled(enabled) {
   let panel = document.getElementById("debug-panel");
   if (enabled) {
     if (!panel) {
-      panel = document.createElement("div");
+      panel = document.createElement("details");
       panel.id = "debug-panel";
       panel.className = "debug-panel";
+      const summary = document.createElement("summary");
+      summary.textContent = "Battle Debug";
       const pre = document.createElement("pre");
       pre.id = "debug-output";
       pre.setAttribute("role", "status");
       pre.setAttribute("aria-live", "polite");
-      panel.appendChild(pre);
+      panel.append(summary, pre);
+    } else if (panel.tagName !== "DETAILS") {
+      const details = document.createElement("details");
+      details.id = panel.id;
+      details.className = panel.className;
+      const summary = document.createElement("summary");
+      summary.textContent = "Battle Debug";
+      const pre = panel.querySelector("#debug-output") || document.createElement("pre");
+      pre.id = "debug-output";
+      pre.setAttribute("role", "status");
+      pre.setAttribute("aria-live", "polite");
+      details.append(summary, pre);
+      panel.replaceWith(details);
+      panel = details;
     }
+    try {
+      const saved = localStorage.getItem("battleDebugOpen");
+      panel.open = saved ? saved === "true" : true;
+      panel.addEventListener("toggle", () => {
+        try {
+          localStorage.setItem("battleDebugOpen", String(panel.open));
+        } catch {}
+      });
+    } catch {}
     panel.classList.remove("hidden");
     if (computerSlot && panel.parentElement !== computerSlot) {
       computerSlot.prepend(panel);

@@ -29,6 +29,23 @@
   width: 100%;
 }
 
+/* Header for collapsible Battle Debug panel */
+.debug-panel summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  padding: 0.25rem 0;
+}
+
+.debug-panel pre {
+  margin: 0.5rem 0 0;
+  white-space: pre-wrap;
+}
+
 .layout-debug-outline {
   outline: 2px dashed red;
 }
