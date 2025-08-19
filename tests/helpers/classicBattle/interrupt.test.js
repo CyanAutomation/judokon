@@ -42,7 +42,8 @@ vi.mock("../../../src/components/JudokaCard.js", () => {
 let fetchJsonMock;
 vi.mock("../../../src/helpers/dataUtils.js", () => ({
   fetchJson: (...args) => fetchJsonMock(...args),
-  importJsonModule: vi.fn().mockResolvedValue(defaultSettings)
+  importJsonModule: vi.fn().mockResolvedValue(defaultSettings),
+  validateWithSchema: vi.fn().mockResolvedValue(undefined)
 }));
 
 vi.mock("../../../src/helpers/utils.js", () => ({

@@ -2,7 +2,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 vi.mock("../../src/helpers/dataUtils.js", () => ({
-  fetchJson: vi.fn()
+  fetchJson: vi.fn(),
+  validateWithSchema: vi.fn().mockResolvedValue(undefined)
 }));
 
 let fetchJsonMock;

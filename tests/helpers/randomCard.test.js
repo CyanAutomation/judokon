@@ -26,7 +26,8 @@ vi.mock("../../src/helpers/utils.js", () => ({
 }));
 
 vi.mock("../../src/helpers/dataUtils.js", () => ({
-  fetchJson: vi.fn()
+  fetchJson: vi.fn(),
+  validateWithSchema: vi.fn().mockResolvedValue(undefined)
 }));
 
 describe("generateRandomCard", () => {
