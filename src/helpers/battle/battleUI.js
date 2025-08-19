@@ -84,19 +84,23 @@ export function showResult(message) {
   if (!message) return;
 
   const start = performance.now();
-  let frame;
+  let frame = 0;
 
-  function step(now) {
+  const step = (now) => {
     const progress = Math.min((now - start) / 2000, 1);
     el.style.opacity = 1 - progress;
-    if (progress < 1) {
-      frame = scheduleFrame(step);
-    } else {
+    if (progress >= 1) {
       el.classList.add("fading");
       el.style.removeProperty("opacity");
       cancelFade = undefined;
+      cancelFrame(frame);
+      return;
     }
-  }
+    const next = scheduleFrame(step);
+    // Ensure only one active subscription exists
+    cancelFrame(frame);
+    frame = next;
+  };
 
   function cancel() {
     cancelFrame(frame);

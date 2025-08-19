@@ -11,7 +11,10 @@ const mocks = vi.hoisted(() => ({
   modal: { open: vi.fn(), close: vi.fn() }
 }));
 
-vi.mock("../../../src/helpers/dataUtils.js", () => ({ fetchJson: mocks.fetchJson, validateWithSchema: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("../../../src/helpers/dataUtils.js", () => ({
+  fetchJson: mocks.fetchJson,
+  validateWithSchema: vi.fn().mockResolvedValue(undefined)
+}));
 vi.mock("../../../src/components/Button.js", () => ({
   createButton: (label, { id } = {}) => {
     const btn = document.createElement("button");

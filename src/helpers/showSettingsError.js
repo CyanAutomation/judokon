@@ -10,7 +10,7 @@
  *    - After `SETTINGS_REMOVE_MS`, remove the popup element.
  */
 import { SETTINGS_FADE_MS, SETTINGS_REMOVE_MS } from "./constants.js";
-import { onFrame as scheduleFrame } from "../utils/scheduler.js";
+import { onFrame as scheduleFrame, cancel as cancelFrame } from "../utils/scheduler.js";
 
 export function showSettingsError() {
   const existing = document.querySelector(".settings-error-popup");
@@ -21,7 +21,13 @@ export function showSettingsError() {
   popup.setAttribute("aria-live", "assertive");
   popup.textContent = "Failed to update settings.";
   document.body.appendChild(popup);
-  scheduleFrame(() => popup.classList.add("show"));
+  // One-shot next-frame style application using shared scheduler, then cancel
+  let token;
+  const run = () => {
+    popup.classList.add("show");
+    if (token != null) cancelFrame(token);
+  };
+  token = scheduleFrame(run);
   setTimeout(() => {
     popup.classList.remove("show");
   }, SETTINGS_FADE_MS);

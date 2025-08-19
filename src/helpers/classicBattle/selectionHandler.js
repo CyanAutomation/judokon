@@ -202,14 +202,22 @@ export function showStatComparison(store, stat, playerVal, compVal) {
   }
   const startTime = performance.now();
   const duration = 500;
+  let id = 0;
   const step = (now) => {
     const progress = Math.min((now - startTime) / duration, 1);
     const p = Math.round(startPlayer + (playerVal - startPlayer) * progress);
     const c = Math.round(startComp + (compVal - startComp) * progress);
     el.textContent = `${label} – You: ${p} Opponent: ${c}`;
-    if (progress < 1) {
-      store.compareRaf = scheduleFrame(step);
+    if (progress >= 1) {
+      cancelFrame(id);
+      store.compareRaf = 0;
+      return;
     }
+    const next = scheduleFrame(step);
+    cancelFrame(id);
+    id = next;
+    store.compareRaf = id;
   };
-  store.compareRaf = scheduleFrame(step);
+  id = scheduleFrame(step);
+  store.compareRaf = id;
 }
