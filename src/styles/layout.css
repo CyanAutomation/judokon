@@ -225,6 +225,20 @@ body {
   align-items: center;
 }
 
+/* Stack the opponent slot content vertically so the Battle Debug panel
+   sits above the opponent card without being covered. */
+#battle-area #computer-card {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-sm);
+}
+
+#battle-area #computer-card .debug-panel {
+  order: -1; /* ensure it appears before the card content */
+  position: relative;
+  z-index: 5;
+}
+
 #battle-area #controls {
   grid-column: 2;
   text-align: center;
