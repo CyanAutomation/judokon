@@ -41,6 +41,27 @@
   padding: 0.25rem 0;
 }
 
+/* Hide native marker and add a rotating chevron */
+.debug-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.debug-panel summary::before {
+  content: "";
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  margin-right: 0.25rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg); /* pointing right */
+  transition: transform var(--transition-fast);
+}
+
+.debug-panel[open] summary::before {
+  transform: rotate(45deg); /* pointing down */
+}
+
 .debug-panel pre {
   margin: 0.5rem 0 0;
   white-space: pre-wrap;
