@@ -132,9 +132,11 @@ export async function handleStatSelection(store, stat, options = {}) {
     const watchdog = setTimeout(async () => {
       if (completed) return;
       try {
+        const restore = scoreboard.showTemporaryMessage("Recovering…");
         await dispatchBattleEvent("outcome=draw");
         await dispatchBattleEvent("continue");
         scheduleNextRound({ matchEnded: false, outcome: "draw" });
+        try { restore(); } catch {}
         updateDebugPanel();
       } finally {
         completed = true;
