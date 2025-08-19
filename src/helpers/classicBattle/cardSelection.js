@@ -120,6 +120,9 @@ function pickOpponent(available, playerJudoka) {
 async function renderComputerPlaceholder(container, placeholder, enableInspector) {
   if (!container) return;
 
+  // Preserve the debug panel across placeholder re-renders
+  const debugPanel = container.querySelector("#debug-panel");
+
   // Ensure we have a valid judoka object; fall back to the built-in
   // placeholder when data failed to load or is empty.
   let target = placeholder;
@@ -147,6 +150,7 @@ async function renderComputerPlaceholder(container, placeholder, enableInspector
         return;
       }
       container.innerHTML = "";
+      if (debugPanel) container.appendChild(debugPanel);
       container.appendChild(card);
       // Defer lazy portrait setup when unsupported (e.g., JSDOM)
       if (typeof IntersectionObserver !== "undefined") {

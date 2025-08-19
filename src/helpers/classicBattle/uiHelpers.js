@@ -43,6 +43,8 @@ export async function revealComputerCard() {
   const judoka = getComputerJudoka();
   if (!judoka) return;
   const container = document.getElementById("computer-card");
+  // Preserve the debug panel across card re-renders
+  const debugPanel = container ? container.querySelector("#debug-panel") : null;
   try {
     await loadSettings();
   } catch {}
@@ -68,6 +70,7 @@ export async function revealComputerCard() {
   }
   if (card && typeof card === "object" && card.nodeType === 1) {
     container.innerHTML = "";
+    if (debugPanel) container.appendChild(debugPanel);
     container.appendChild(card);
     if (typeof IntersectionObserver !== "undefined") {
       try {
