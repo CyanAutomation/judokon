@@ -6,6 +6,32 @@ import { DATA_DIR } from "../constants.js";
  *
  * Loads states from JSON, tracks current state, and runs onEnter handlers.
  * Transitions are matched by the `on` field value in each state's `triggers`.
+ *
+ * @pseudocode
+ * ```text
+ * async create(onEnterMap, context, onTransition):
+ *   try states = fetchJson(DATA_DIR + 'classicBattleStates.json')
+ *   catch -> states = []           # JSON loading fallback
+ *   for each state in states:
+ *     byName[state.name] = state
+ *     if state.type is 'initial' or initial unset -> initial = state.name
+ *   initName = initial or 'waitingForMatchStart'
+ *   machine = new BattleStateMachine(byName, initName, onEnterMap, context, onTransition)
+ *   if onTransition -> await onTransition({from:null, to:initName, event:'init'})
+ *   await machine.#runOnEnter(initName)
+ *
+ * dispatch(event, payload):
+ *   state = statesByName[current]
+ *   trigger = state.triggers.find(t.on == event)
+ *   if trigger and statesByName has trigger.target:
+ *     from = current; current = trigger.target
+ *     if onTransition -> await onTransition({from, to:current, event})
+ *     await #runOnEnter(current, payload)
+ *
+ * #runOnEnter(name, payload):
+ *   fn = onEnterMap[name]
+ *   if fn -> await fn(machine, payload) catching errors
+ * ```
  */
 export class BattleStateMachine {
   constructor(statesByName, initialName, onEnterMap, context = {}, onTransition) {
