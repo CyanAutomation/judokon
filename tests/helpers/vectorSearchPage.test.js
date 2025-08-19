@@ -18,6 +18,15 @@ describe("vector search page integration", () => {
       }
     }));
 
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn(async (path) => {
+        if (path.endsWith("client_embeddings.meta.json")) {
+          return { count: 1, version: 1 }; // Mock the meta.json with a version
+        }
+        return {}; // Default for other fetchJson calls
+      })
+    }));
+
     const { handleSearch, init } = await import("../../src/helpers/vectorSearchPage.js");
     const { __setExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
 
