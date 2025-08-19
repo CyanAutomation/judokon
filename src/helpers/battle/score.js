@@ -15,7 +15,9 @@ import { STATS } from "../battleEngineFacade.js";
 function getStatValue(container, stat) {
   const index = STATS.indexOf(stat) + 1;
   const span = container.querySelector(`li.stat:nth-child(${index}) span`);
-  return span ? parseInt(span.textContent, 10) : 0;
+  if (!span) return 0;
+  const val = parseInt(span.textContent, 10);
+  return Number.isFinite(val) ? val : 0;
 }
 
 export { getStatValue };

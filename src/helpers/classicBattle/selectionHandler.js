@@ -137,7 +137,14 @@ export async function handleStatSelection(store, stat, options = {}) {
         if (opponentSnackbarId) clearTimeout(opponentSnackbarId);
         await revealComputerCard();
         result = evaluateRound(store, stat);
-        outcomeEvent = "outcome=" + result.outcome;
+        // Emit original outcome labels for tests/mocks; orchestrator
+        // normalizes these to state JSON at runtime.
+        outcomeEvent =
+          result.outcome === "winPlayer"
+            ? "outcome=winPlayer"
+            : result.outcome === "winOpponent"
+            ? "outcome=winOpponent"
+            : "outcome=draw";
         await dispatchBattleEvent(outcomeEvent);
         if (result.matchEnded) {
           scoreboard.clearRoundCounter();
