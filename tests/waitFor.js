@@ -7,6 +7,12 @@ import { expect } from "vitest";
  * delays. The returned promise rejects if the predicate never returns `true`
  * within the timeout.
  *
+ * @pseudocode
+ * initialize polling via `expect.poll`
+ * repeatedly evaluate predicate
+ * resolve on success
+ * reject after timeout
+ *
  * @param {() => boolean} predicate - Condition to repeatedly evaluate.
  * @param {object} [options] - Configuration options.
  * @param {number} [options.timeout=500] - Maximum time to wait in milliseconds.
