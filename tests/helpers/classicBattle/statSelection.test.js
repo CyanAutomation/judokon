@@ -51,7 +51,6 @@ vi.mock("../../../src/helpers/utils.js", () => ({
   createGokyoLookup: () => ({})
 }));
 
-const stateLog = [];
 vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => {
   let state = "roundDecision";
   const stateLog = [];

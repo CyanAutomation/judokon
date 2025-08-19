@@ -25,7 +25,7 @@ export function showSettingsError() {
   let token;
   const run = () => {
     popup.classList.add("show");
-    if (token != null) cancelFrame(token);
+    if (token !== null && token !== undefined) cancelFrame(token);
   };
   token = scheduleFrame(run);
   setTimeout(() => {
