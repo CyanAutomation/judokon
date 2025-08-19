@@ -1,12 +1,14 @@
 /**
- * Navigation utilities.
+ * Build an absolute URL to the app's home page.
  *
  * @pseudocode
- * - resolveHomeHref: Build an absolute URL to the app's home (index.html)
- *   that preserves the repository base path (e.g., /judokon) across
- *   environments like local dev (/src/pages/...) or GH Pages (/pages/...).
- * - navigateToHome: Set window.location to the resolved home URL; fall back
- *   to history.replaceState when direct assignment is not available.
+ * 1. Read `window.location` to obtain the current origin and pathname.
+ * 2. Extract any base path preceding `/src/pages/` or `/pages/`.
+ * 3. Ensure the base path ends with a trailing `/`.
+ * 4. Return the origin combined with the normalized base and `index.html`.
+ * 5. On error, return a relative `../../index.html` fallback.
+ *
+ * @returns {string} Absolute URL of the home page.
  */
 export function resolveHomeHref() {
   try {
@@ -22,6 +24,15 @@ export function resolveHomeHref() {
   }
 }
 
+/**
+ * Navigate to the resolved home URL.
+ *
+ * @pseudocode
+ * 1. Attempt to assign `window.location.href` to the home URL.
+ * 2. If that fails, build an absolute URL relative to the current location.
+ * 3. When `history.replaceState` is available, use it to change the address.
+ * 4. Swallow any remaining errors silently.
+ */
 export function navigateToHome() {
   try {
     window.location.href = resolveHomeHref();

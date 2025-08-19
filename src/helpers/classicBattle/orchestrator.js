@@ -11,11 +11,36 @@ if (typeof process === "undefined" || !process.env.VITEST) {
 }
 
 let machine = null;
-
+/**
+ * Retrieve the current battle state machine instance.
+ *
+ * @pseudocode
+ * 1. Return the `machine` reference.
+ *
+ * @returns {import('./stateMachine.js').BattleStateMachine|null} Current instance.
+ */
 export function getBattleStateMachine() {
   return machine;
 }
 
+/**
+ * Initialize the classic battle orchestrator.
+ *
+ * @pseudocode
+ * 1. Derive `resetGame` and `startRound` handlers from `opts` or defaults.
+ * 2. Define `onEnter` callbacks for each battle state to manage UI and flow.
+ * 3. Define `onTransition` to mirror state changes to globals and update debug info.
+ * 4. Create the state machine via `BattleStateMachine.create` with the handlers.
+ * 5. Attach a visibility listener to pause or resume timers on tab changes.
+ * 6. Wire timer drift and error-injection hooks when an engine is present.
+ *
+ * @param {object} store - Shared battle store.
+ * @param {Function} startRoundWrapper - Optional wrapper for starting a round.
+ * @param {object} [opts] - Optional overrides.
+ * @param {Function} [opts.resetGame] - Custom reset handler.
+ * @param {Function} [opts.startRound] - Custom round start handler.
+ * @returns {Promise<void>} Resolves when setup completes.
+ */
 export async function initClassicBattleOrchestrator(store, startRoundWrapper, opts = {}) {
   const { resetGame: resetGameOpt, startRound: startRoundOpt } = opts;
   const doResetGame = typeof resetGameOpt === "function" ? resetGameOpt : resetGameLocal;
