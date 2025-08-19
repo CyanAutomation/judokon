@@ -128,6 +128,10 @@ export class Modal {
 /**
  * Compatibility helper returning a `Modal` instance.
  *
+ * @pseudocode
+ * 1. Instantiate a `Modal` with the supplied `content` and `options`.
+ * 2. Return the newly created instance.
+ *
  * @param {HTMLElement|DocumentFragment} content
  * @param {object} [options]
  * @returns {Modal}
