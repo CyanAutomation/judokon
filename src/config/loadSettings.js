@@ -16,7 +16,8 @@ function mergeKnown(base, override, defaults, path = []) {
   if (!override || typeof override !== "object") return result;
 
   for (const [key, value] of Object.entries(override)) {
-    if (!(key in defaults)) {
+    // Only strip unknown keys at the top level; allow nested keys
+    if (path.length === 0 && !(key in defaults)) {
       console.warn(`Unknown setting "${[...path, key].join(".")}" ignored`);
       continue;
     }
