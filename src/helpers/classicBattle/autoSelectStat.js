@@ -11,6 +11,14 @@ const AUTO_SELECT_FEEDBACK_MS = 500;
 
 /**
  * Automatically select a random stat and provide UI feedback.
+ * Avoids snackbar to prevent race conditions with the cooldown countdown.
+ *
+ * @pseudocode
+ * pick random stat from STATS
+ * mark corresponding button as selected
+ * wait AUTO_SELECT_FEEDBACK_MS
+ * dispatch "statSelected" battle event
+ * invoke onSelect with random stat and delayOpponentMessage true
  *
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>|void} onSelect
  * - Callback to handle the chosen stat.
