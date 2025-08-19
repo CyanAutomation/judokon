@@ -551,20 +551,17 @@ svg {
   outline-offset: 4px;
 }
 
-/* Animate debug panel disclosure */
-details,
-.debug-panel {
+/* Animate debug panel disclosure (details-based inspector only) */
+details {
   overflow: hidden;
   transition: opacity var(--transition-fast);
 }
 
-details[open],
-.debug-panel[open] {
+details[open] {
   opacity: 1;
 }
 
-details:not([open]),
-.debug-panel:not([open]) {
+details:not([open]) {
   opacity: 0;
 }
 
