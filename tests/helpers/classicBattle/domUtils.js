@@ -1,3 +1,16 @@
+/**
+ * Create a container element for snackbar messages.
+ *
+ * @pseudocode
+ * 1. Create a `div` element named `container`.
+ * 2. Set its `id` to "snackbar-container".
+ * 3. Set the `role` attribute to "status".
+ * 4. Set the `aria-live` attribute to "polite".
+ * 5. Append `container` to `document.body`.
+ * 6. Return `container`.
+ *
+ * @returns {HTMLDivElement} The snackbar container element.
+ */
 export function createSnackbarContainer() {
   const container = document.createElement("div");
   container.id = "snackbar-container";
@@ -7,6 +20,21 @@ export function createSnackbarContainer() {
   return container;
 }
 
+/**
+ * Create a paragraph element for round messages.
+ *
+ * @pseudocode
+ * 1. Create a `p` element named `el`.
+ * 2. Set its `id` to the provided `id`.
+ * 3. Set the `aria-live` attribute to "polite".
+ * 4. Set the `aria-atomic` attribute to "true".
+ * 5. Set the `role` attribute to "status".
+ * 6. Append `el` to `document.body`.
+ * 7. Return `el`.
+ *
+ * @param {string} [id="round-message"] - ID to assign to the element.
+ * @returns {HTMLParagraphElement} The round message element.
+ */
 export function createRoundMessage(id = "round-message") {
   const el = document.createElement("p");
   el.id = id;
@@ -17,6 +45,23 @@ export function createRoundMessage(id = "round-message") {
   return el;
 }
 
+/**
+ * Create button and timer elements for advancing rounds.
+ *
+ * @pseudocode
+ * 1. Create a `button` element named `nextButton`.
+ * 2. Set its `id` to "next-button".
+ * 3. Create a `p` element named `nextRoundTimer`.
+ * 4. Set its `id` to "next-round-timer".
+ * 5. Set the `aria-live` attribute of `nextRoundTimer` to "polite".
+ * 6. Set the `aria-atomic` attribute of `nextRoundTimer` to "true".
+ * 7. Set the `role` attribute of `nextRoundTimer` to "status".
+ * 8. Append `nextButton` and `nextRoundTimer` to `document.body`.
+ * 9. Return an object containing both nodes.
+ *
+ * @returns {{nextButton: HTMLButtonElement, nextRoundTimer: HTMLParagraphElement}}
+ *   Nodes for controlling the next round timer.
+ */
 export function createTimerNodes() {
   const nextButton = document.createElement("button");
   nextButton.id = "next-button";
