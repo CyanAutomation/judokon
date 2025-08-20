@@ -136,7 +136,9 @@ export async function handleStatSelection(store, stat, options = {}) {
         await dispatchBattleEvent("outcome=draw");
         await dispatchBattleEvent("continue");
         scheduleNextRound({ matchEnded: false, outcome: "draw" });
-        try { restore(); } catch {}
+        try {
+          restore();
+        } catch {}
         updateDebugPanel();
       } finally {
         completed = true;
@@ -162,8 +164,8 @@ export async function handleStatSelection(store, stat, options = {}) {
           result.outcome === "winPlayer"
             ? "outcome=winPlayer"
             : result.outcome === "winOpponent"
-            ? "outcome=winOpponent"
-            : "outcome=draw";
+              ? "outcome=winOpponent"
+              : "outcome=draw";
         await dispatchBattleEvent(outcomeEvent);
         if (result.matchEnded) {
           scoreboard.clearRoundCounter();
