@@ -64,13 +64,11 @@ export function saveSettings(settings) {
  * Load persisted settings from localStorage.
  *
  * @pseudocode
- * 1. Ensure the schema is loaded via `getSettingsSchema`.
- * 2. Throw if `localStorage` is unavailable.
- * 3. Read JSON from `SETTINGS_KEY`.
- * 4. When absent, copy `DEFAULT_SETTINGS` and update the cache.
- * 5. Merge parsed data with defaults for nested objects.
- * 6. Validate with the schema. On failure, reset storage and cache to defaults.
- * 7. Return the merged settings.
+ * 1. Throw if `localStorage` is unavailable and load the settings schema.
+ * 2. Read JSON from `SETTINGS_KEY` and ensure it's a plain object.
+ * 3. Load and merge settings via `baseLoadSettings`.
+ * 4. Validate against the schema; on failure, reset storage and cache to defaults.
+ * 5. Cache and return the merged settings.
  *
  * @returns {Promise<import("../config/settingsDefaults.js").Settings>} Resolved settings object.
  */
@@ -82,7 +80,13 @@ export async function loadSettings() {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (raw) {
-      JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      // Ensure stored data is a plain object; otherwise treat as invalid.
+      // Parsing here proactively detects corrupt JSON so we can reset storage,
+      // whereas `baseLoadSettings` would silently ignore it.
+      if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+        throw new Error("Invalid stored settings");
+      }
     }
     const settings = await baseLoadSettings();
     await validateWithSchema(settings, await getSettingsSchema());
