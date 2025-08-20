@@ -91,7 +91,7 @@ function preserveLogoAndWire(navBar, logo, menu, animations) {
  * Build a navigation menu for a given orientation.
  *
  * @pseudocode
- * 1. Determine if the current viewport matches the provided orientation.
+ * 1. Determine if the current viewport matches the provided orientation when `window` is available; otherwise assume landscape.
  * 2. Select the navbar and logo; exit if either is missing.
  * 3. Validate game modes and build a menu container with orientation class.
  * 4. Populate the container using the appropriate template per mode.
@@ -104,11 +104,13 @@ function preserveLogoAndWire(navBar, logo, menu, animations) {
  */
 export function buildMenu(gameModes, { orientation }) {
   const matches =
-    typeof window.matchMedia === "function"
-      ? window.matchMedia(`(orientation: ${orientation})`).matches
-      : orientation === "landscape"
-        ? window.innerWidth > window.innerHeight
-        : window.innerHeight >= window.innerWidth;
+    typeof window !== "undefined"
+      ? typeof window.matchMedia === "function"
+        ? window.matchMedia(`(orientation: ${orientation})`).matches
+        : orientation === "landscape"
+          ? window.innerWidth > window.innerHeight
+          : window.innerHeight >= window.innerWidth
+      : orientation === "landscape";
   if (!matches) return null;
 
   const navBar = document.querySelector(".bottom-navbar");
