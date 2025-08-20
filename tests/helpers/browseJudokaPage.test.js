@@ -147,15 +147,19 @@ describe("browseJudokaPage helpers", () => {
       return wrapper;
     });
 
+    let show;
+    let remove;
     const createSpinner = (wrapper) => {
       const element = document.createElement("div");
       element.className = "loading-spinner";
       wrapper.appendChild(element);
+      show = vi.fn();
+      remove = vi.fn(() => element.remove());
       return {
         element,
-        show: vi.fn(),
+        show,
         hide: vi.fn(),
-        remove: () => element.remove()
+        remove
       };
     };
 
@@ -198,12 +202,14 @@ describe("browseJudokaPage helpers", () => {
     await Promise.resolve();
 
     expect(carousel.querySelector(".loading-spinner")).not.toBeNull();
+    expect(show).toHaveBeenCalled();
 
     fetchResolvers[0]([{ id: 1, country: "JP" }]);
     fetchResolvers[1]([]);
     await pagePromise;
 
     expect(carousel.querySelector(".loading-spinner")).toBeNull();
+    expect(remove).toHaveBeenCalled();
     expect(toggleCountryPanelMode).toHaveBeenCalledWith(panel, false);
   });
 
