@@ -8,6 +8,7 @@
 @import "./battle.css";
 @import "./tooltip.css";
 @import "./snackbar.css";
+@import "./spinner.css";
 
 .debug-panel {
   background-color: #f9f9f9;
