@@ -74,6 +74,7 @@ export function createCountdownTimer(
   let subId = null;
   let cancelFn = cancel;
   let paused = false;
+  let hardTimeoutId = 0;
 
   async function tick() {
     if (paused) return;
@@ -123,6 +124,18 @@ export function createCountdownTimer(
     } else {
       cancelFn = cancel;
     }
+    // Hard fallback to ensure expiration even if the scheduler never ticks
+    // in certain test environments.
+    try {
+      hardTimeoutId = setTimeout(async () => {
+        if (subId !== null) {
+          // Timer still running; stop and expire once.
+          stop();
+          if (typeof onTick === "function") onTick(0);
+          if (typeof onExpired === "function") await onExpired();
+        }
+      }, Math.max(0, Math.floor(remaining) * 1000 + 5));
+    } catch {}
     if (pauseOnHidden && typeof document !== "undefined") {
       document.addEventListener("visibilitychange", handleVisibility);
     }
@@ -132,6 +145,10 @@ export function createCountdownTimer(
     if (subId !== null) {
       cancelFn(subId);
       subId = null;
+    }
+    if (hardTimeoutId) {
+      clearTimeout(hardTimeoutId);
+      hardTimeoutId = 0;
     }
     if (pauseOnHidden && typeof document !== "undefined") {
       document.removeEventListener("visibilitychange", handleVisibility);

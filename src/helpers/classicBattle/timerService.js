@@ -141,8 +141,10 @@ export async function startTimer(onExpiredSelect) {
   const MAX_DRIFT_RETRIES = 3;
   let retries = 0;
 
-  async function start(dur) {
-    await engineStartRound(onTick, onExpired, dur, handleDrift);
+  function start(dur) {
+    // Fire-and-forget: starting the engine timer should not block callers
+    // (especially tests running with mocked schedulers).
+    engineStartRound(onTick, onExpired, dur, handleDrift);
   }
 
   async function handleDrift(remaining) {
@@ -160,7 +162,7 @@ export async function startTimer(onExpiredSelect) {
     await onExpired();
   });
 
-  await start(duration);
+  start(duration);
   restore();
 }
 

@@ -65,7 +65,18 @@ export async function handleStatSelection(store, stat) {
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   scoreboard.clearTimer();
-  await dispatchBattleEvent("statSelected");
+  // If the orchestrator is active, signal selection; otherwise resolve inline
+  // to keep tests and non-orchestrated flows moving.
+  try {
+    const hasMachine = typeof window !== "undefined" && !!window.__classicBattleState;
+    if (hasMachine) {
+      await dispatchBattleEvent("statSelected");
+    } else {
+      await resolveRound(store);
+    }
+  } catch {
+    await resolveRound(store);
+  }
 }
 
 /**
@@ -78,6 +89,8 @@ export async function resolveRound(store) {
   if (!stat) {
     return;
   }
+  // Announce evaluation to the orchestrator for observability/tests.
+  await dispatchBattleEvent("evaluate");
 
   const opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), 500);
 

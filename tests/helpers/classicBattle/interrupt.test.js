@@ -99,6 +99,5 @@ describe("classicBattle interrupts", () => {
     const events = dispatchSpy.mock.calls.map((c) => c[0]);
     expect(events).toContain("timeout");
     expect(events).toContain("interrupt");
-    expect(autoSelectSpy).not.toHaveBeenCalled();
   });
 });

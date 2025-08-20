@@ -88,7 +88,8 @@ export async function startRound(store) {
   const currentRound = battleEngine.getRoundsPlayed() + 1;
   scoreboard.updateRoundCounter(currentRound);
   showSelectionPrompt();
-  await startTimer((stat, opts) => handleStatSelection(store, stat, opts));
+  // Fire-and-forget; timer startup should not block round start.
+  startTimer((stat, opts) => handleStatSelection(store, stat, opts));
   store.statTimeoutId = setTimeout(
     () => handleStatSelectionTimeout(store, (s, opts) => handleStatSelection(store, s, opts)),
     35000
