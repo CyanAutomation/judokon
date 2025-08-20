@@ -178,7 +178,8 @@ test.describe.parallel("Browse Judoka screen", () => {
     await page.reload();
 
     const spinner = page.locator(".loading-spinner");
-    await spinner.waitFor({ state: "visible" });
+    await spinner.waitFor({ state: "attached" });
+    await expect(spinner).toBeVisible();
     await page.waitForSelector(".card-carousel .judoka-card");
     await expect(spinner).toBeHidden();
   });
