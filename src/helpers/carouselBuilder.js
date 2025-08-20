@@ -171,7 +171,7 @@ export function createLoadingSpinner(wrapper) {
  * @pseudocode
  * 1. Validate input parameters and handle empty or failed data loads with error messages and retry support.
  * 2. Create a carousel container with scroll-snap and responsive card sizing (1–2 cards on mobile, 3–5 on desktop).
- * 3. Add a loading spinner if loading exceeds 2 seconds.
+ * 3. Add a loading spinner if loading exceeds 2 seconds and remove it once loading completes.
  * 4. For each judoka:
  *    a. Validate fields; use fallback card if invalid.
  *    b. Generate card, handle broken images, and make focusable.
@@ -207,6 +207,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   clearTimeout(timeoutId);
   spinner.style.display = "none";
+  spinner.remove();
 
   // Initialize unified controller (buttons, keyboard, swipe, markers, counter)
   const controller = new CarouselController(container, wrapper, {
