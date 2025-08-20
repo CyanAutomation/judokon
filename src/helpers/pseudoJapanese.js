@@ -82,16 +82,19 @@ export async function convertToPseudoJapanese(input) {
  * preserving the original HTML structure.
  *
  * @pseudocode
- * 1. Traverse the element with a `TreeWalker` to collect all text nodes.
- * 2. For each text node, asynchronously convert its value using
+ * 1. If `element` is `null` or `undefined`, return immediately.
+ * 2. Traverse the element with a `TreeWalker` to collect all text nodes.
+ * 3. For each text node, asynchronously convert its value using
  *    `convertToPseudoJapanese`.
- * 3. Wait for all conversions to finish.
- * 4. Replace each text node's value with the corresponding converted text.
+ * 4. Wait for all conversions to finish.
+ * 5. Replace each text node's value with the corresponding converted text.
  *
  * @param {HTMLElement} element - The element containing text to convert.
  * @returns {Promise<void>} Resolves when conversion is complete.
  */
 export async function convertElementToPseudoJapanese(element) {
+  if (!element) return;
+
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
   const nodes = [];
   while (walker.nextNode()) {
