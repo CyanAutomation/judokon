@@ -125,7 +125,7 @@ export function bindCopyButtons(keyCopyBtn, bodyCopyBtn) {
  * Select and scroll to the list item referenced by `location.hash`.
  *
  * @pseudocode
- * 1. Read and decode the URL hash.
+ * 1. Read and decode the URL hash; exit if decoding fails.
  * 2. Find the matching list item and invoke `select`.
  * 3. Scroll the element into view when found.
  *
@@ -134,7 +134,12 @@ export function bindCopyButtons(keyCopyBtn, bodyCopyBtn) {
  */
 export function applyHashSelection(listPlaceholder, select) {
   if (location.hash) {
-    const key = decodeURIComponent(location.hash.slice(1));
+    let key;
+    try {
+      key = decodeURIComponent(location.hash.slice(1));
+    } catch {
+      return;
+    }
     const el = listPlaceholder.querySelector(`[data-key="${key}"]`);
     if (el) {
       select(key);
