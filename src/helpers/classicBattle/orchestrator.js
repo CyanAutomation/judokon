@@ -223,15 +223,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   return machine;
 }
 
-function normalizeEventName(eventName) {
-  if (typeof eventName !== "string") return eventName;
-  if (eventName === "outcome=winPlayer") return "outcome=winP1";
-  if (eventName === "outcome=winOpponent") return "outcome=winP2";
-  return eventName;
-}
-
 export async function dispatchBattleEvent(eventName, payload) {
   if (!machine) return;
-  const mapped = normalizeEventName(eventName);
-  await machine.dispatch(mapped, payload);
+  await machine.dispatch(eventName, payload);
 }
