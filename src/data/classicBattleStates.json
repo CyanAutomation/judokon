@@ -78,8 +78,8 @@
     "description": "Compares the selected stat and determines the round outcome.",
     "onEnter": ["compare:selectedStat", "compute:roundOutcome", "announce:roundOutcome"],
     "triggers": [
-      { "on": "outcome=winP1", "target": "roundOver" },
-      { "on": "outcome=winP2", "target": "roundOver" },
+      { "on": "outcome=winPlayer", "target": "roundOver" },
+      { "on": "outcome=winOpponent", "target": "roundOver" },
       { "on": "outcome=draw", "target": "roundOver" },
       { "on": "interrupt", "target": "interruptRound" }
     ]
@@ -93,7 +93,7 @@
       {
         "on": "matchPointReached",
         "target": "matchDecision",
-        "guard": "scoreP1 >= winTarget || scoreP2 >= winTarget",
+        "guard": "playerScore >= winTarget || opponentScore >= winTarget",
         "note": "Checks the user-selected win target (5/10/15)."
       },
       { "on": "continue", "target": "cooldown" },

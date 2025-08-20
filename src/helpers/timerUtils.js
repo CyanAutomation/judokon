@@ -127,14 +127,17 @@ export function createCountdownTimer(
     // Hard fallback to ensure expiration even if the scheduler never ticks
     // in certain test environments.
     try {
-      hardTimeoutId = setTimeout(async () => {
-        if (subId !== null) {
-          // Timer still running; stop and expire once.
-          stop();
-          if (typeof onTick === "function") onTick(0);
-          if (typeof onExpired === "function") await onExpired();
-        }
-      }, Math.max(0, Math.floor(remaining) * 1000 + 5));
+      hardTimeoutId = setTimeout(
+        async () => {
+          if (subId !== null) {
+            // Timer still running; stop and expire once.
+            stop();
+            if (typeof onTick === "function") onTick(0);
+            if (typeof onExpired === "function") await onExpired();
+          }
+        },
+        Math.max(0, Math.floor(remaining) * 1000 + 5)
+      );
     } catch {}
     if (pauseOnHidden && typeof document !== "undefined") {
       document.addEventListener("visibilitychange", handleVisibility);

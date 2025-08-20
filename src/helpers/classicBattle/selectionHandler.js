@@ -95,7 +95,7 @@ export async function resolveRound(store) {
   const opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), 500);
 
   const delay = 300 + Math.floor(Math.random() * 401);
-  await new Promise(resolve => setTimeout(resolve, delay));
+  await new Promise((resolve) => setTimeout(resolve, delay));
 
   clearTimeout(opponentSnackbarId);
   await revealComputerCard();
