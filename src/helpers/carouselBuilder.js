@@ -4,8 +4,8 @@ import { CarouselController } from "./carousel/controller.js";
 import { applyAccessibilityImprovements } from "./carousel/accessibility.js";
 import { setupFocusHandlers } from "./carousel/focus.js";
 import { setupLazyPortraits } from "./lazyPortrait.js";
-import { SPINNER_DELAY_MS } from "./constants.js";
 import { CAROUSEL_SWIPE_THRESHOLD } from "./constants.js";
+import { createSpinner } from "../components/Spinner.js";
 
 /**
  * Adds scroll markers to indicate the user's position in the carousel.
@@ -142,18 +142,6 @@ function validateGokyoData(gokyoData) {
  * @param {HTMLElement} wrapper - The wrapper element to append the spinner to.
  * @returns {Object} An object containing the spinner element and timeout ID.
  */
-export function createLoadingSpinner(wrapper) {
-  const spinner = document.createElement("div");
-  spinner.className = "loading-spinner";
-  wrapper.appendChild(spinner);
-
-  const timeoutId = setTimeout(() => {
-    spinner.style.display = "block";
-  }, SPINNER_DELAY_MS);
-
-  return { spinner, timeoutId };
-}
-
 /**
  * Handles broken images in a card by setting a fallback image.
  *
@@ -200,13 +188,12 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   const gokyoLookup = validateGokyoData(gokyoData);
 
-  const { spinner, timeoutId } = createLoadingSpinner(wrapper);
+  const spinner = createSpinner(wrapper);
+  spinner.show();
 
   await appendCards(container, judokaList, gokyoLookup);
   setupResponsiveSizing(container);
 
-  clearTimeout(timeoutId);
-  spinner.style.display = "none";
   spinner.remove();
 
   // Initialize unified controller (buttons, keyboard, swipe, markers, counter)

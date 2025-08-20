@@ -147,20 +147,25 @@ describe("browseJudokaPage helpers", () => {
       return wrapper;
     });
 
-    const createLoadingSpinner = (wrapper) => {
-      const spinner = document.createElement("div");
-      spinner.className = "loading-spinner";
-      wrapper.appendChild(spinner);
-      return { spinner, timeoutId: 0 };
+    const createSpinner = (wrapper) => {
+      const element = document.createElement("div");
+      element.className = "loading-spinner";
+      wrapper.appendChild(element);
+      return {
+        element,
+        show: vi.fn(),
+        hide: vi.fn(),
+        remove: () => element.remove()
+      };
     };
 
     vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady: vi.fn() }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
     vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
       buildCardCarousel,
-      initScrollMarkers: vi.fn(),
-      createLoadingSpinner
+      initScrollMarkers: vi.fn()
     }));
+    vi.doMock("../../src/components/Spinner.js", () => ({ createSpinner }));
     vi.doMock("../../src/helpers/buttonEffects.js", () => ({ setupButtonEffects: vi.fn() }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({
       initTooltips: vi.fn().mockResolvedValue(() => {})
@@ -237,8 +242,15 @@ describe("browseJudokaPage helpers", () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
     vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
       buildCardCarousel,
-      initScrollMarkers: vi.fn(),
-      createLoadingSpinner: () => ({ spinner: document.createElement("div"), timeoutId: 0 })
+      initScrollMarkers: vi.fn()
+    }));
+    vi.doMock("../../src/components/Spinner.js", () => ({
+      createSpinner: () => ({
+        element: document.createElement("div"),
+        show: vi.fn(),
+        hide: vi.fn(),
+        remove: vi.fn()
+      })
     }));
     vi.doMock("../../src/helpers/buttonEffects.js", () => ({ setupButtonEffects: vi.fn() }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({

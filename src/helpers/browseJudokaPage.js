@@ -1,4 +1,5 @@
-import { buildCardCarousel, initScrollMarkers, createLoadingSpinner } from "./carouselBuilder.js";
+import { buildCardCarousel, initScrollMarkers } from "./carouselBuilder.js";
+import { createSpinner } from "../components/Spinner.js";
 import { toggleCountryPanelMode } from "./countryPanel.js";
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
@@ -75,19 +76,15 @@ export async function setupBrowseJudokaPage() {
    *
    * @pseudocode
    * 1. Use `buildCardCarousel` to create carousel markup.
-   * 2. Remove the loading spinner and clear the existing container.
-   * 3. Append the carousel to the container and initialize scroll markers.
+   * 2. Clear the existing container and append the carousel.
+   * 3. Initialize scroll markers on the carousel container.
    * 4. Apply button ripple effects.
    *
    * @param {Judoka[]} list - Judoka to display.
    * @returns {Promise<void>} Resolves when rendering completes.
    */
-  async function renderCarousel(list, gokyoData, spinnerInfo) {
+  async function renderCarousel(list, gokyoData) {
     const carousel = await buildCardCarousel(list, gokyoData);
-    if (spinnerInfo) {
-      clearTimeout(spinnerInfo.timeoutId);
-      spinnerInfo.spinner.remove();
-    }
     carouselContainer.innerHTML = "";
     carouselContainer.appendChild(carousel);
 
@@ -100,11 +97,13 @@ export async function setupBrowseJudokaPage() {
   }
 
   async function init() {
-    const spinnerInfo = createLoadingSpinner(carouselContainer);
+    const spinner = createSpinner(carouselContainer);
+    spinner.show();
     try {
       const { allJudoka, gokyoData } = await loadData();
       const render = (list) => renderCarousel(list, gokyoData);
-      await renderCarousel(allJudoka, gokyoData, spinnerInfo);
+      await renderCarousel(allJudoka, gokyoData);
+      spinner.remove();
       if (allJudoka.length === 0) {
         const noResultsMessage = document.createElement("div");
         noResultsMessage.className = "no-results-message";
@@ -129,8 +128,7 @@ export async function setupBrowseJudokaPage() {
         ariaLive
       );
     } catch (error) {
-      clearTimeout(spinnerInfo.timeoutId);
-      spinnerInfo.spinner.remove();
+      spinner.remove();
       console.error("Error building the carousel:", error);
 
       const fallback = await getFallbackJudoka();
@@ -156,7 +154,7 @@ export async function setupBrowseJudokaPage() {
         } catch (err) {
           console.error("Error during retry:", err);
           const fallbackRetry = await getFallbackJudoka();
-          await renderCarousel([fallbackRetry], [], undefined);
+          await renderCarousel([fallbackRetry], []);
         } finally {
           retryButton.disabled = false;
         }

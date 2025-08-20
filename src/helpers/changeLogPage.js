@@ -3,6 +3,7 @@ import { DATA_DIR } from "./constants.js";
 import { escapeHTML, formatDate } from "./utils.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
+import { createSpinner } from "../components/Spinner.js";
 
 /**
  * Sort judoka entries by lastUpdated descending, then by full name ascending.
@@ -80,6 +81,12 @@ export async function setupChangeLogPage() {
   const table = document.getElementById("changelog-table");
   const tbody = table?.querySelector("tbody");
   const loading = document.getElementById("loading-container");
+  let spinner;
+  if (loading) {
+    loading.innerHTML = "";
+    spinner = createSpinner(loading);
+    spinner.show();
+  }
   if (!table || !tbody) return;
 
   try {
@@ -94,7 +101,8 @@ export async function setupChangeLogPage() {
     console.error("Failed to load judoka:", err);
     table.insertAdjacentHTML("afterend", "<p>No Judoka data found</p>");
   } finally {
-    if (loading) loading.remove();
+    spinner?.remove();
+    loading?.remove();
   }
 
   initTooltips();

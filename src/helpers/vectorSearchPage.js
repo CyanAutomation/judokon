@@ -7,16 +7,9 @@ import { prepareSearchUi, getSelectedTags } from "./vectorSearchPage/queryUi.js"
 import { renderResults } from "./vectorSearchPage/renderResults.js";
 import { getExtractor, SIMILARITY_THRESHOLD, preloadExtractor } from "./api/vectorSearchPage.js";
 import { getSanitizer } from "./sanitizeHtml.js";
+import { createSpinner } from "../components/Spinner.js";
 
 let spinner;
-
-function setSpinnerDisplay(display) {
-  if (spinner) {
-    spinner.style.display = display;
-  } else {
-    console.warn("Search spinner element not found; skipping style update.");
-  }
-}
 
 /**
  * Load surrounding context for a search result element.
@@ -177,13 +170,13 @@ export async function handleSearch(event) {
     renderResults(tbody, toRender, terms, loadResultContext);
   } catch (err) {
     console.error("Search failed", err);
-    setSpinnerDisplay("none");
+    spinner.hide();
     if (messageEl) messageEl.textContent = "An error occurred while searching.";
   }
 }
 
 function showSearching(messageEl) {
-  setSpinnerDisplay("block");
+  spinner.show();
   if (messageEl) {
     messageEl.textContent = "Searching...";
     messageEl.classList.remove("search-result-empty");
@@ -195,7 +188,7 @@ function finalizeSearchUi(messageEl) {
     messageEl.textContent = "";
     messageEl.classList.remove("search-result-empty");
   }
-  setSpinnerDisplay("none");
+  spinner.hide();
 }
 
 function handleNoMatches(matches, messageEl) {
@@ -220,7 +213,7 @@ function handleNoMatches(matches, messageEl) {
  *
  * @pseudocode
  * 1. Begin preloading the feature extractor.
- * 2. Cache the spinner element and hide it if present.
+ * 2. Create a spinner and hide it initially.
  * 3. Locate the search form element.
  * 4. Attempt to load embeddings and metadata together.
  *    - On failure, hide the spinner, show an error message, attach form handlers, and exit early.
@@ -230,8 +223,8 @@ function handleNoMatches(matches, messageEl) {
  */
 export async function init() {
   preloadExtractor();
-  spinner = document.getElementById("search-spinner");
-  setSpinnerDisplay("none");
+  const container = document.querySelector(".vector-search-container") || document.body;
+  spinner = createSpinner(container);
   const form = document.getElementById("vector-search-form");
   const messageEl = document.getElementById("search-results-message");
 
@@ -244,7 +237,7 @@ export async function init() {
     ]);
   } catch (err) {
     console.error("Embedding load failed", err);
-    setSpinnerDisplay("none");
+    spinner.hide();
     if (messageEl) {
       messageEl.textContent = "Failed to load search data. Please try again later.";
     }
