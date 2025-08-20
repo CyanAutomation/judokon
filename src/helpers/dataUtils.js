@@ -197,7 +197,7 @@ export async function readData(parsedUrl, originalUrl) {
  *
  * @pseudocode
  * 1. When a `schema` is provided, ensure it is an object and validate `data` using `validateWithSchema`.
- * 2. Store `data` in the in-memory cache under `url`.
+ * 2. Store `data` in the in-memory cache under `String(url)`.
  * 3. Return the cached data.
  *
  * @template T
@@ -213,7 +213,7 @@ export async function validateAndCache(url, data, schema) {
     }
     await validateWithSchema(data, schema);
   }
-  dataCache.set(url, data);
+  dataCache.set(String(url), data);
   return data;
 }
 
@@ -221,11 +221,12 @@ export async function validateAndCache(url, data, schema) {
  * Fetch JSON data with caching and optional schema validation.
  *
  * @pseudocode
- * 1. Return cached data when available.
- * 2. Resolve the URL with `resolveUrl`.
- * 3. Read the data via `readData`.
- * 4. Validate and cache the result using `validateAndCache`.
- * 5. On error, remove any stale cache entry, log, and rethrow.
+ * 1. Normalize `url` into a string key.
+ * 2. Return cached data when available.
+ * 3. Resolve the URL with `resolveUrl`.
+ * 4. Read the data via `readData`.
+ * 5. Validate and cache the result using `validateAndCache`.
+ * 6. On error, remove any stale cache entry, log, and rethrow.
  *
  * @template T
  * @param {string|URL} url - Resource location.
@@ -234,17 +235,18 @@ export async function validateAndCache(url, data, schema) {
  * @throws {Error} If the fetch request fails, validation fails, or JSON parsing fails.
  */
 export async function fetchJson(url, schema) {
+  const key = String(url);
   try {
-    if (dataCache.has(url)) {
-      return dataCache.get(url);
+    if (dataCache.has(key)) {
+      return dataCache.get(key);
     }
     const parsedUrl = await resolveUrl(url);
-    const data = await readData(parsedUrl, String(url));
-    return await validateAndCache(url, data, schema);
+    const data = await readData(parsedUrl, key);
+    return await validateAndCache(key, data, schema);
   } catch (error) {
-    dataCache.delete(url);
+    dataCache.delete(key);
     // Reduce noisy console errors during tests/CI; still throw for callers to handle
-    debugLog(`Error fetching ${url}:`, error);
+    debugLog(`Error fetching ${key}:`, error);
     throw error;
   }
 }
