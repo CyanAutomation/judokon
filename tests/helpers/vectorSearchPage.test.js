@@ -4,6 +4,14 @@ import { describe, it, expect, vi } from "vitest";
 vi.doMock("../../src/helpers/domReady.js", () => ({
   onDomReady: vi.fn()
 }));
+vi.doMock("../../src/components/Spinner.js", () => ({
+  createSpinner: () => ({
+    element: document.createElement("div"),
+    show: vi.fn(),
+    hide: vi.fn(),
+    remove: vi.fn()
+  })
+}));
 
 describe("vector search page integration", () => {
   it("passes selected tag to findMatches", async () => {
@@ -33,7 +41,6 @@ describe("vector search page integration", () => {
     __setExtractor(async () => ({ data: [0, 0, 0] }));
 
     document.body.innerHTML = `
-      <div id="search-spinner"></div>
       <form id="vector-search-form">
         <input id="vector-search-input" />
         <select id="tag-filter"><option value="foo">foo</option></select>
@@ -78,7 +85,6 @@ describe("vector search page integration", () => {
 
     document.body.innerHTML = `
       <select id="tag-filter"></select>
-      <div id="search-spinner"></div>
       <form id="vector-search-form"></form>
       <p id="embedding-stats"></p>
     `;
@@ -112,7 +118,6 @@ describe("vector search page integration", () => {
     const { init } = await import("../../src/helpers/vectorSearchPage.js");
 
     document.body.innerHTML = `
-      <div id="search-spinner" style="display:block"></div>
       <form id="vector-search-form"></form>
       <p id="search-results-message"></p>
     `;
@@ -121,7 +126,6 @@ describe("vector search page integration", () => {
 
     const msg = document.getElementById("search-results-message");
     expect(msg.textContent).toContain("Failed to load search data");
-    expect(document.getElementById("search-spinner").style.display).toBe("none");
 
     consoleError.mockRestore();
   });
@@ -152,7 +156,6 @@ describe("search result message styling", () => {
     __setExtractor(async () => ({ data: [0, 0, 0] }));
 
     document.body.innerHTML = `
-      <div id="search-spinner"></div>
       <form id="vector-search-form">
         <input id="vector-search-input" />
         <select id="tag-filter"><option value="all">all</option></select>
@@ -202,7 +205,6 @@ describe("search result message styling", () => {
     __setExtractor(async () => ({ data: [0, 0, 0] }));
 
     document.body.innerHTML = `
-      <div id="search-spinner"></div>
       <form id="vector-search-form">
         <input id="vector-search-input" />
         <select id="tag-filter"><option value="all">all</option></select>
@@ -252,7 +254,6 @@ describe("search result message styling", () => {
     __setExtractor(async () => ({ data: [0, 0, 0] }));
 
     document.body.innerHTML = `
-      <div id="search-spinner"></div>
       <form id="vector-search-form">
         <input id="vector-search-input" />
         <select id="tag-filter"><option value="all">all</option></select>
@@ -317,7 +318,6 @@ describe("snippet highlighting", () => {
     __setExtractor(async () => ({ data: [0, 0, 0] }));
 
     document.body.innerHTML = `
-      <div id="search-spinner"></div>
       <form id="vector-search-form">
         <input id="vector-search-input" />
         <select id="tag-filter"><option value="all">all</option></select>
@@ -400,7 +400,6 @@ describe("synonym expansion", () => {
     });
 
     document.body.innerHTML = `
-      <div id="search-spinner"></div>
       <form id="vector-search-form">
         <input id="vector-search-input" />
         <select id="tag-filter"><option value="all">all</option></select>
@@ -447,7 +446,6 @@ describe("search results", () => {
     const { __setExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
     __setExtractor(async () => ({ data: [0, 0, 0] }));
     document.body.innerHTML = `
-      <div id="search-spinner"></div>
       <form id="vector-search-form">
         <input id="vector-search-input" />
         <select id="tag-filter"><option value="all">all</option></select>
@@ -498,7 +496,6 @@ describe("search results", () => {
     const { __setExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
     __setExtractor(async () => ({ data: [0, 0, 0] }));
     document.body.innerHTML = `
-      <div id="search-spinner"></div>
       <form id="vector-search-form">
         <input id="vector-search-input" />
         <select id="tag-filter"><option value="all">all</option></select>
@@ -543,7 +540,6 @@ describe("search results", () => {
     const { __setExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
     __setExtractor(async () => ({ data: [0, 0, 0] }));
     document.body.innerHTML = `
-      <div id="search-spinner"></div>
       <form id="vector-search-form">
         <input id="vector-search-input" />
         <select id="tag-filter"><option value="all">all</option></select>
@@ -578,7 +574,6 @@ describe("search results", () => {
     const { __setExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
     __setExtractor(async () => ({ data: [0, 0, 0] }));
     document.body.innerHTML = `
-      <div id="search-spinner"></div>
       <form id="vector-search-form">
         <input id="vector-search-input" />
         <select id="tag-filter"><option value="all">all</option></select>

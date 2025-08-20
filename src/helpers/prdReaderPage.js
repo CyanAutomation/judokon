@@ -4,6 +4,7 @@ import { initTooltips } from "./tooltip.js";
 import { SidebarList } from "../components/SidebarList.js";
 import { getPrdTaskStats } from "./prdTaskStats.js";
 import { getSanitizer } from "./sanitizeHtml.js";
+import { createSpinner } from "../components/Spinner.js";
 
 /**
  * Load PRD filenames and related metadata.
@@ -198,8 +199,8 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   const prevButtons = document.querySelectorAll('[data-nav="prev"]');
   const titleEl = document.getElementById("prd-title");
   const summaryEl = document.getElementById("task-summary");
-  const spinner = document.getElementById("prd-spinner");
   if (!container || !listPlaceholder || !files.length) return;
+  const spinner = createSpinner(container.parentElement);
 
   // Prepare arrays for lazy population and a small cache of in-flight fetches.
   const documents = Array(files.length);
@@ -349,14 +350,14 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   url.searchParams.set("doc", baseNames[startIndex]);
   history.replaceState({ index: startIndex }, "", url.toString());
 
-  if (spinner) spinner.style.display = "block";
+  spinner.show();
   // Load the initial doc synchronously if possible for snappy first paint.
   if (!ensureDocSync(startIndex)) {
     await fetchOne(startIndex);
   }
   renderDoc(startIndex);
   container.focus();
-  if (spinner) spinner.style.display = "none";
+  spinner.remove();
 
   // Opportunistically fetch remaining docs in the background to speed up later navigation.
   // Avoid blocking UI; fire-and-forget.
