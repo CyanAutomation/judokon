@@ -5,17 +5,16 @@ import * as scoreboard from "../setupScoreboard.js";
 import { getDefaultTimer } from "../timerUtils.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 import { setupScoreboard } from "../setupScoreboard.js";
+import { resolveRound } from "./selectionHandler.js";
 
 if (typeof process === "undefined" || !process.env.VITEST) {
   setupScoreboard();
 }
 
 let machine = null;
+
 /**
  * Retrieve the current battle state machine instance.
- *
- * @pseudocode
- * 1. Return the singleton `machine` reference or `null` if uninitialized.
  *
  * @returns {import('./stateMachine.js').BattleStateMachine|null} Current instance.
  */
@@ -25,13 +24,6 @@ export function getBattleStateMachine() {
 
 /**
  * Initialize the classic battle orchestrator.
- *
- * @pseudocode
- * 1. Prepare `doResetGame` and `doStartRound` from defaults or overrides.
- * 2. Build `onEnter` = { stateName: async handler } for all battle states.
- * 3. Build `onTransition` logger to mirror state, keep a ring buffer, and update DOM mirrors.
- * 4. Create `machine` via `BattleStateMachine.create(onEnter, { store }, onTransition)`.
- * 5. Attach tab visibility, timer drift, and error-injection hooks to the machine's engine.
  *
  * @param {object} store - Shared battle store.
  * @param {Function} startRoundWrapper - Optional wrapper for starting a round.
@@ -46,29 +38,21 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   const doStartRound = typeof startRoundOpt === "function" ? startRoundOpt : startRoundLocal;
   const onEnter = {
     async waitingForMatchStart(m) {
-      // Prevent duplicate badge state updates and redundant lobby resets
-      // Only run if previous state was NOT waitingForMatchStart
       if (
         window.__classicBattleState === "waitingForMatchStart" &&
         window.__classicBattlePrevState === "waitingForMatchStart"
       ) {
-        // If this is a true duplicate transition, skip all lobby logic and badge update
         return;
       }
-      // If transitioning from matchOver, interruptMatch, or any other state, proceed
       if (typeof doResetGame === "function") doResetGame();
       scoreboard.clearMessage();
       updateDebugPanel();
       await initRoundSelectModal(() => m.dispatch("startClicked"));
     },
     async matchStart(m) {
-      // Context already initialized via modal; transition to initial cooldown
-      // and let the cooldown handler trigger the first round.
       await m.dispatch("ready", { initial: true });
     },
     async cooldown(m, payload) {
-      // The initial cooldown shows a short countdown before the first round.
-      // Subsequent cooldowns are handled by scheduleNextRound and the Next button.
       if (payload?.initial) {
         let duration = 3;
         try {
@@ -79,38 +63,25 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
           m.dispatch("ready");
         });
       }
-      // Cooldown between later rounds is driven by scheduleNextRound and next-button UX.
     },
     async roundStart(m) {
-      // Render player card, opponent remains hidden; start selection timer
       if (typeof startRoundWrapper === "function") await startRoundWrapper();
       else if (typeof doStartRound === "function") await doStartRound(store);
       await m.dispatch("cardsRevealed");
     },
-    async waitingForPlayerAction() {
-      // Prompt and timer are managed inside startRound; no additional work here
-    },
+    async waitingForPlayerAction() {},
     async roundDecision() {
-      // SelectionHandler drives reveal + evaluate; on completion it will drive transitions
+      await resolveRound(store);
     },
-    async roundOver() {
-      // scheduleNextRound handles cooldown + next button enabling
-    },
-    async matchDecision() {
-      // Summary is rendered from selectionHandler; we keep state in sync only
-    },
-    async matchOver() {
-      // Waiting for Next Match (rematch) or Home via summary or Quit modal
-    },
+    async roundOver() {},
+    async matchDecision() {},
+    async matchOver() {},
     async interruptRound(m, payload) {
-      // Handle round interruption (e.g., quit, error, admin/test)
       scoreboard.clearMessage();
       updateDebugPanel();
-      // Optionally show modal or log reason
       if (payload?.reason) {
         scoreboard.showMessage(`Round interrupted: ${payload.reason}`);
       }
-      // Transition to roundModification or cooldown as needed
       if (payload?.adminTest) {
         await m.dispatch("roundModification", payload);
       } else {
@@ -118,23 +89,19 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
       }
     },
     async interruptMatch(m, payload) {
-      // Handle match interruption (e.g., quit, navigation, error)
       scoreboard.clearMessage();
       updateDebugPanel();
       if (payload?.reason) {
         scoreboard.showMessage(`Match interrupted: ${payload.reason}`);
       }
-      // End match and transition to matchOver
       await m.dispatch("matchOver", payload);
     },
     async roundModification(m, payload) {
-      // Admin/test branch for modifying round state
       scoreboard.clearMessage();
       updateDebugPanel();
       if (payload?.modification) {
         scoreboard.showMessage(`Round modified: ${payload.modification}`);
       }
-      // After modification, resume round or go to cooldown
       if (payload?.resumeRound) {
         await m.dispatch("roundStart");
       } else {
@@ -149,7 +116,6 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
         window.__classicBattleState = to;
         if (from) window.__classicBattlePrevState = from;
         if (event) window.__classicBattleLastEvent = event;
-        // Maintain a short ring buffer of recent transitions for debugging
         const entry = { from: from || null, to, event: event || null, ts: Date.now() };
         const log = Array.isArray(window.__classicBattleStateLog)
           ? window.__classicBattleStateLog
@@ -157,12 +123,10 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
         log.push(entry);
         while (log.length > 20) log.shift();
         window.__classicBattleStateLog = log;
-        // Update or create a lightweight DOM mirror for tests/diagnostics
         let el = document.getElementById("machine-state");
         if (!el) {
           el = document.createElement("div");
           el.id = "machine-state";
-          // Hidden by default; tests can still read text/attributes
           el.style.display = "none";
           document.body.appendChild(el);
         }
@@ -170,16 +134,13 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
         if (from) el.dataset.prev = from;
         if (event) el.dataset.event = event;
         el.dataset.ts = String(entry.ts);
-        // Update visible state badge when present (feature-flagged)
         try {
           const badge = document.getElementById("battle-state-badge");
           if (badge) badge.textContent = `State: ${to}`;
         } catch {}
-        // Expose timer state for Playwright and unit tests
         if (typeof window !== "undefined" && machine?.context?.engine) {
           const timerState = machine.context.engine.getTimerState();
           window.__classicBattleTimerState = timerState;
-          // Update or create a lightweight DOM mirror for timer state
           let timerEl = document.getElementById("machine-timer");
           if (!timerEl) {
             timerEl = document.createElement("div");
@@ -198,7 +159,6 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
 
   machine = await BattleStateMachine.create(onEnter, { store }, onTransition);
 
-  // Tab inactivity: pause/resume timer on visibility change
   if (typeof document !== "undefined") {
     document.addEventListener("visibilitychange", () => {
       if (machine?.context?.engine) {
@@ -211,7 +171,6 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     });
   }
 
-  // Timer drift: listen for drift events and handle them
   if (machine?.context?.engine) {
     machine.context.engine.onTimerDrift = (driftAmount) => {
       scoreboard.showMessage(`Timer drift detected: ${driftAmount}s. Timer reset.`);
@@ -220,7 +179,6 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     };
   }
 
-  // Error injection for testing
   if (typeof window !== "undefined" && machine?.context?.engine) {
     window.injectClassicBattleError = (errorMsg) => {
       machine.context.engine.injectError(errorMsg);
@@ -230,7 +188,6 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     };
   }
 
-  // Expose a tiny polling helper for tests to await a specific state
   try {
     if (typeof window !== "undefined") {
       window.waitForBattleState = (stateName, timeoutMs = 10000) =>
@@ -247,7 +204,6 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
           };
           tick();
         });
-      // Provide a snapshot getter for tests/diagnostics
       window.getBattleStateSnapshot = () => {
         try {
           return {
@@ -267,9 +223,6 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   return machine;
 }
 
-// Normalize event names coming from selectionHandler to match JSON triggers.
-// Tests mock this module and assert on the original event names (e.g. winPlayer),
-// so normalization only affects the real runtime state machine.
 function normalizeEventName(eventName) {
   if (typeof eventName !== "string") return eventName;
   if (eventName === "outcome=winPlayer") return "outcome=winP1";

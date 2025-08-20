@@ -1,35 +1,5 @@
 /**
  * Page wrapper for Classic Battle mode.
- *
- * @pseudocode
- * 1. Import battle helpers, scoreboard setup, and DOM ready utility.
- * 2. Create a shared `battleStore` and expose it on `window`.
- * 3. Define `initStatButtons(store)` which wires stat buttons and returns an
- *    enable/disable API.
- * 4. Define `startRoundWrapper` that:
- *    a. Disables stat buttons.
- *    b. Calls `startRound` and waits for the Mystery card via
- *       `waitForComputerCard` with a timeout.
- *    c. Logs and surfaces an error, showing a retry modal on failure.
- *    d. Re-enables stat buttons in a `finally` block.
- * 5. Define `setupClassicBattlePage` to:
- *    a. Start the shared scheduler.
- *    b. Initialize the battle scoreboard.
- *    c. Load feature flags, apply them to `#battle-area` and react to changes.
- *    d. Initialize stat buttons, attach listeners, and display a snackbar with
- *       the chosen stat.
- *    e. Set `window.startRoundOverride` to `startRoundWrapper` so the battle
- *       module uses it for subsequent rounds.
- *    f. Toggle the debug panel.
- *    g. Initialize the battle state progress list, then let the orchestrator
- *       present the round selection modal to set points-to-win and start the
- *       first round.
- *    h. Initialize tooltips and show the stat help tooltip once for new users.
- *    i. Watch for orientation changes and update the battle header's
- *       `data-orientation` attribute.
- *    j. Listen for `storage` events and update the Test Mode banner and
- *       `data-test-mode` attribute when settings change.
- * 6. Execute `setupClassicBattlePage` with `onDomReady`.
  */
 import { createBattleStore, startRound } from "./classicBattle/roundManager.js";
 import { handleStatSelection } from "./classicBattle/selectionHandler.js";
@@ -44,10 +14,7 @@ import { loadStatNames } from "./stats.js";
 import { STATS } from "./battleEngineFacade.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
-import {
-  initClassicBattleOrchestrator,
-  dispatchBattleEvent
-} from "./classicBattle/orchestrator.js";
+import { initClassicBattleOrchestrator } from "./classicBattle/orchestrator.js";
 import { onNextButtonClick } from "./classicBattle/timerService.js";
 import { skipCurrentPhase } from "./classicBattle/skipHandler.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
@@ -67,6 +34,7 @@ window.battleStore = battleStore;
 window.skipBattlePhase = skipCurrentPhase;
 export const getBattleStore = () => battleStore;
 let statButtonControls;
+
 async function startRoundWrapper() {
   statButtonControls?.disable();
   try {
@@ -83,14 +51,6 @@ async function startRoundWrapper() {
   }
 }
 
-/**
- * Show a modal with a retry button when round start fails.
- *
- * @pseudocode
- * 1. Create a modal dialog with an error message and a Retry button.
- * 2. When Retry is clicked, close and destroy the modal then call `startRoundWrapper` again.
- * 3. If modal is already open, do not create another.
- */
 function showRetryModal() {
   if (document.getElementById("round-retry-modal")) return;
   const title = document.createElement("h2");
@@ -132,38 +92,19 @@ async function applyStatLabels() {
   });
 }
 
-/**
- * Apply orientation data attribute on the battle header and watch for changes.
- *
- * @pseudocode
- * 1. Define `getOrientation` to compute `portrait` or `landscape` using
- *    viewport size and `matchMedia`.
- * 2. Define `apply` that selects `.battle-header`, sets `data-orientation`
- *    using `getOrientation`, and returns `true` if the header exists.
- * 3. Run `apply` immediately; if it returns `false`, poll with
- *    `scheduler.onFrame` until `apply` succeeds, then cancel the polling task.
- * 4. Listen for `orientationchange` and `resize` events. Call `apply`
- *    immediately, then throttle further updates with `requestAnimationFrame`.
- *    If `apply` fails because the header is missing, poll with
- *    `scheduler.onFrame` until it appears.
- */
 function watchBattleOrientation() {
   const getOrientation = () => {
     try {
-      // Prefer viewport-based detection; fall back to matchMedia when available
       const portrait = window.innerHeight >= window.innerWidth;
       if (typeof window.matchMedia === "function") {
         const mm = window.matchMedia("(orientation: portrait)");
-        // Use matchMedia result only when it agrees with viewport heuristic to avoid env quirks
         if (typeof mm.matches === "boolean" && mm.matches !== portrait) {
-          // When there is disagreement, prefer viewport heuristic in headless tests
           return portrait ? "portrait" : "landscape";
         }
         return mm.matches ? "portrait" : "landscape";
       }
       return portrait ? "portrait" : "landscape";
     } catch {
-      // Safe fallback
       return window.innerHeight >= window.innerWidth ? "portrait" : "landscape";
     }
   };
@@ -180,7 +121,6 @@ function watchBattleOrientation() {
     return false;
   };
 
-  // Expose a testing hook to force-apply the current orientation.
   try {
     window.applyBattleOrientation = () => {
       try {
@@ -189,7 +129,6 @@ function watchBattleOrientation() {
     };
   } catch {}
 
-  // Apply immediately; if header not yet available, poll using the scheduler.
   let pollId;
   const pollIfMissing = () => {
     if (pollId) return;
@@ -250,18 +189,14 @@ export async function setupClassicBattlePage() {
   }
   setupScoreboard();
   initInterruptHandlers(battleStore);
-  // Apply orientation ASAP so tests observing the header don't block
-  // behind async initialization (flags, data fetches, tooltips, etc.).
   watchBattleOrientation();
   await initFeatureFlags();
-  // In Test Mode, reduce noisy UI to keep E2E runs stable
   try {
     if (isEnabled("enableTestMode")) {
       window.__disableSnackbars = true;
     }
   } catch {}
   setupNextButton();
-  // Toggle a visible state badge for testing when enabled
   setBattleStateBadgeEnabled(isEnabled("battleStateBadge"));
   featureFlagsEmitter.addEventListener("change", () => {
     setBattleStateBadgeEnabled(isEnabled("battleStateBadge"));
@@ -281,17 +216,14 @@ export async function setupClassicBattlePage() {
     window.addEventListener("pagehide", cleanupBattleStateProgress, { once: true });
   }
   await initClassicBattleOrchestrator(battleStore, startRoundWrapper);
-  // Non-critical UI enhancements can load after the orchestrator begins
   applyStatLabels().catch(() => {});
   await initTooltips();
   maybeShowStatHint();
 
-  // Expose small helpers for Playwright to freeze/resume header updates
   try {
     window.freezeBattleHeader = () => {
       try {
         pauseTimer();
-        // Stop the shared scheduler to minimize UI churn during E2E screenshots
         try {
           stopScheduler();
         } catch {}
@@ -299,7 +231,6 @@ export async function setupClassicBattlePage() {
     };
     window.resumeBattleHeader = () => {
       try {
-        // Restart scheduler and resume timers
         try {
           startScheduler();
         } catch {}
@@ -308,15 +239,13 @@ export async function setupClassicBattlePage() {
     };
   } catch {}
 
-  // Wire up Quit Match button to show confirmation modal
   const quitBtn = document.getElementById("quit-match-button");
   if (quitBtn) {
     quitBtn.addEventListener("click", async () => {
-      // Show quit confirmation modal
       if (window.battleStore) {
         const { quitMatch } = await import("./classicBattle/quitModal.js");
         quitMatch(window.battleStore, quitBtn);
-        window.homeLinkReady = true; // For Playwright test sync
+        window.homeLinkReady = true;
       }
     });
   }
@@ -338,23 +267,19 @@ function initStatButtons(store) {
   }
 
   statButtons.forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      if (!btn.disabled) {
-        setEnabled(false);
-        btn.classList.add("selected");
-        showSnackbar(`You Picked: ${btn.textContent}`);
-        await dispatchBattleEvent("statSelected");
-        await handleStatSelection(store, btn.dataset.stat);
-      }
-    });
+    const statName = btn.dataset.stat;
+    const clickHandler = async () => {
+      if (btn.disabled) return;
+      setEnabled(false);
+      btn.classList.add("selected");
+      showSnackbar(`You Picked: ${btn.textContent}`);
+      await handleStatSelection(store, statName);
+    };
+    btn.addEventListener("click", clickHandler);
     btn.addEventListener("keydown", async (e) => {
-      if ((e.key === "Enter" || e.key === " ") && !btn.disabled) {
+      if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        setEnabled(false);
-        btn.classList.add("selected");
-        showSnackbar(`You Picked: ${btn.textContent}`);
-        await dispatchBattleEvent("statSelected");
-        await handleStatSelection(store, btn.dataset.stat);
+        await clickHandler();
       }
     });
   });
@@ -374,7 +299,6 @@ function applyBattleFeatureFlags(battleArea, banner) {
   setTestMode(isEnabled("enableTestMode"));
   toggleInspectorPanels(isEnabled("enableCardInspector"));
   toggleViewportSimulation(isEnabled("viewportSimulation"));
-  // In Test Mode, always surface the debug panel to visualize state
   setDebugPanelEnabled(isEnabled("battleDebugPanel") || isEnabled("enableTestMode"));
 
   featureFlagsEmitter.addEventListener("change", () => {
@@ -392,7 +316,6 @@ function initDebugPanel() {
   if (!debugPanel) return;
   const computerSlot = document.getElementById("computer-card");
   if (isEnabled("battleDebugPanel") && computerSlot) {
-    // Ensure the panel is a <details> element for native collapsing.
     if (debugPanel.tagName !== "DETAILS") {
       const details = document.createElement("details");
       details.id = "debug-panel";
@@ -408,7 +331,6 @@ function initDebugPanel() {
     }
     const panel = document.getElementById("debug-panel");
     try {
-      // Restore persisted open state (default open)
       const saved = localStorage.getItem("battleDebugOpen");
       panel.open = saved ? saved === "true" : true;
       panel.addEventListener("toggle", () => {
@@ -424,7 +346,6 @@ function initDebugPanel() {
   }
 }
 
-// Ensure a debug panel exists and is attached/visible when enabled; remove when disabled
 function setDebugPanelEnabled(enabled) {
   const computerSlot = document.getElementById("computer-card");
   let panel = document.getElementById("debug-panel");
@@ -484,9 +405,7 @@ function maybeShowStatHint() {
       help?.dispatchEvent(new Event("mouseleave"));
     }, 3000);
     localStorage.setItem("statHintShown", "true");
-  } catch {
-    // ignore localStorage errors
-  }
+  } catch {}
 }
 
 if (typeof process === "undefined" || process.env.NODE_ENV !== "test") {
