@@ -15,7 +15,7 @@ beforeEach(() => {
 describe("classicBattlePage stat button interactions", () => {
   it("activates stat buttons via click and keyboard", async () => {
     const startRound = vi.fn();
-    const waitForComputerCard = vi.fn();
+    const waitForOpponentCard = vi.fn();
     const handleStatSelection = vi.fn();
     const store = {};
     const loadSettings = vi.fn().mockResolvedValue({ featureFlags: {} });
@@ -30,7 +30,7 @@ describe("classicBattlePage stat button interactions", () => {
     vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
       handleStatSelection
     }));
-    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
+    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForOpponentCard }));
     vi.doMock("../../src/config/loadSettings.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
@@ -85,7 +85,7 @@ describe("classicBattlePage stat button interactions", () => {
 
   it("navigates to Next Round and Quit buttons", async () => {
     const startRound = vi.fn();
-    const waitForComputerCard = vi.fn();
+    const waitForOpponentCard = vi.fn();
     const handleStatSelection = vi.fn();
     const store = {};
     const loadSettings = vi.fn().mockResolvedValue({ featureFlags: {} });
@@ -99,7 +99,7 @@ describe("classicBattlePage stat button interactions", () => {
     vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
       handleStatSelection
     }));
-    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
+    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForOpponentCard }));
     vi.doMock("../../src/config/loadSettings.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
@@ -156,7 +156,7 @@ describe("classicBattlePage stat help tooltip", () => {
   it("shows tooltip only once", async () => {
     vi.useFakeTimers();
     const startRound = vi.fn();
-    const waitForComputerCard = vi.fn();
+    const waitForOpponentCard = vi.fn();
     const loadSettings = vi.fn().mockResolvedValue({ featureFlags: {} });
     const initTooltips = vi.fn().mockResolvedValue(() => {});
     const setTestMode = vi.fn();
@@ -169,7 +169,7 @@ describe("classicBattlePage stat help tooltip", () => {
     vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
       handleStatSelection: vi.fn()
     }));
-    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
+    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForOpponentCard }));
     vi.doMock("../../src/config/loadSettings.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
@@ -199,7 +199,7 @@ describe("classicBattlePage stat help tooltip", () => {
 describe("classicBattlePage test mode flag", () => {
   it("applies data attribute and banner visibility when enabled", async () => {
     const startRound = vi.fn();
-    const waitForComputerCard = vi.fn();
+    const waitForOpponentCard = vi.fn();
     const loadSettings = vi.fn().mockResolvedValue({
       featureFlags: {
         enableTestMode: {
@@ -220,7 +220,7 @@ describe("classicBattlePage test mode flag", () => {
     vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
       handleStatSelection: vi.fn()
     }));
-    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
+    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForOpponentCard }));
     vi.doMock("../../src/config/loadSettings.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
@@ -243,7 +243,7 @@ describe("classicBattlePage test mode flag", () => {
 
   it("feature flag changes update banner and data attribute", async () => {
     const startRound = vi.fn();
-    const waitForComputerCard = vi.fn();
+    const waitForOpponentCard = vi.fn();
     const loadSettings = vi.fn().mockResolvedValue({
       featureFlags: {
         enableTestMode: { enabled: false }
@@ -263,7 +263,7 @@ describe("classicBattlePage test mode flag", () => {
     vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
       handleStatSelection: vi.fn()
     }));
-    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
+    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForOpponentCard }));
     vi.doMock("../../src/config/loadSettings.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({ updateSetting }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
@@ -295,14 +295,14 @@ describe("startRoundWrapper failures", () => {
   it("shows error message, opens retry modal, and re-enables stat buttons", async () => {
     const showMessage = vi.fn();
     const startRound = vi.fn().mockRejectedValue(new Error("fail"));
-    const waitForComputerCard = vi.fn().mockResolvedValue();
+    const waitForOpponentCard = vi.fn().mockResolvedValue();
 
     vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady: () => {} }));
     vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
       createBattleStore: () => ({}),
       startRound
     }));
-    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard }));
+    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForOpponentCard }));
     vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
       handleStatSelection: vi.fn()
     }));
@@ -389,8 +389,8 @@ describe("syncScoreDisplay", () => {
 
     const getScores = vi
       .fn()
-      .mockReturnValueOnce({ playerScore: 1, computerScore: 2 })
-      .mockReturnValueOnce({ playerScore: 3, computerScore: 4 });
+      .mockReturnValueOnce({ playerScore: 1, opponentScore: 2 })
+      .mockReturnValueOnce({ playerScore: 3, opponentScore: 4 });
     vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({ getScores }));
     vi.doMock("../../src/components/Button.js", () => ({
       createButton: (label, { id } = {}) => {
@@ -421,7 +421,7 @@ describe("syncScoreDisplay", () => {
 
     syncScoreDisplay();
     const handleReplay = vi.fn();
-    showMatchSummaryModal({ message: "", playerScore: 1, computerScore: 2 }, handleReplay);
+    showMatchSummaryModal({ message: "", playerScore: 1, opponentScore: 2 }, handleReplay);
     let board = document.getElementById("score-display").textContent;
     let summary = document.querySelector(".modal-backdrop #match-summary-score").textContent;
     let match = board.match(/You: (\d+)\nOpponent: (\d+)/);
@@ -432,7 +432,7 @@ describe("syncScoreDisplay", () => {
     document.querySelectorAll(".modal-backdrop").forEach((el) => el.remove());
 
     syncScoreDisplay();
-    showMatchSummaryModal({ message: "", playerScore: 3, computerScore: 4 }, vi.fn());
+    showMatchSummaryModal({ message: "", playerScore: 3, opponentScore: 4 }, vi.fn());
     board = document.getElementById("score-display").textContent;
     summary = document.querySelector(".modal-backdrop #match-summary-score").textContent;
     match = board.match(/You: (\d+)\nOpponent: (\d+)/);

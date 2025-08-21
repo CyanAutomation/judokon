@@ -14,7 +14,7 @@ import { setupLazyPortraits } from "../lazyPortrait.js";
 
 let judokaData = null;
 let gokyoLookup = null;
-let computerJudoka = null;
+let opponentJudoka = null;
 let loadErrorModal = null;
 
 function qaInfo(text) {
@@ -70,17 +70,17 @@ function showLoadError(error) {
 }
 
 /**
- * Draw battle cards for the player and computer.
+ * Draw battle cards for the player and opponent.
  *
  * @pseudocode
  * 1. Load judoka and gokyo data when not cached.
  * 2. Filter out judoka marked `isHidden`.
  * 3. Render a random player card using `generateRandomCard` and store the result.
  * 4. Choose a random opponent judoka avoiding duplicates.
- * 5. If `JudokaCard.render` returns an HTMLElement, render a placeholder card for the computer with obscured stats; otherwise log an error.
+ * 5. If `JudokaCard.render` returns an HTMLElement, render a placeholder card for the opponent with obscured stats; otherwise log an error.
  * 6. Return the selected judoka objects.
  *
- * @returns {Promise<{playerJudoka: object|null, computerJudoka: object|null}>}
+ * @returns {Promise<{playerJudoka: object|null, opponentJudoka: object|null}>}
  */
 async function ensureJudokaData() {
   if (judokaData) return Array.isArray(judokaData) ? judokaData : [];
@@ -117,7 +117,7 @@ function pickOpponent(available, playerJudoka) {
   return compJudoka;
 }
 
-async function renderComputerPlaceholder(container, placeholder, enableInspector) {
+async function renderOpponentPlaceholder(container, placeholder, enableInspector) {
   if (!container) return;
 
   // Preserve the debug panel across placeholder re-renders
@@ -131,7 +131,7 @@ async function renderComputerPlaceholder(container, placeholder, enableInspector
   if (!target) {
     try {
       target = await getFallbackJudoka();
-      qaInfo("Using fallback judoka for computer placeholder");
+      qaInfo("Using fallback judoka for opponent placeholder");
     } catch {
       // If even the fallback cannot be retrieved, bail silently.
       return;
@@ -173,10 +173,10 @@ export async function drawCards() {
 
   const lookup = await ensureGokyoLookup();
   // If lookup failed completely, bail out; judoka may be empty but we can still proceed.
-  if (!lookup) return { playerJudoka: null, computerJudoka: null };
+  if (!lookup) return { playerJudoka: null, opponentJudoka: null };
 
   const playerContainer = document.getElementById("player-card");
-  const computerContainer = document.getElementById("computer-card");
+  const opponentContainer = document.getElementById("opponent-card");
 
   try {
     await loadSettings();
@@ -217,7 +217,7 @@ export async function drawCards() {
       compJudoka = null;
     }
   }
-  computerJudoka = compJudoka;
+  opponentJudoka = compJudoka;
 
   // Choose a placeholder based on a stable ID (1) or the opponent.
   // Do not validate here to allow minimal objects during tests.
@@ -225,22 +225,22 @@ export async function drawCards() {
   if (!placeholder) {
     try {
       placeholder = await getFallbackJudoka();
-      qaInfo("Using fallback judoka for computer placeholder");
+      qaInfo("Using fallback judoka for opponent placeholder");
     } catch {
       placeholder = null;
     }
   }
-  await renderComputerPlaceholder(computerContainer, placeholder, enableInspector);
+  await renderOpponentPlaceholder(opponentContainer, placeholder, enableInspector);
 
-  return { playerJudoka, computerJudoka };
+  return { playerJudoka, opponentJudoka };
 }
 
-export function getComputerJudoka() {
-  return computerJudoka;
+export function getOpponentJudoka() {
+  return opponentJudoka;
 }
 
-export function clearComputerJudoka() {
-  computerJudoka = null;
+export function clearOpponentJudoka() {
+  opponentJudoka = null;
 }
 
 export function getGokyoLookup() {
@@ -249,7 +249,7 @@ export function getGokyoLookup() {
 
 /**
  * Ensure the gokyo lookup is available, loading it if missing.
- * Primarily used by tests or code paths that call `revealComputerCard` directly.
+ * Primarily used by tests or code paths that call `revealOpponentCard` directly.
  * @returns {Promise<ReturnType<typeof createGokyoLookup>>} Lookup (empty on failure).
  */
 export async function getOrLoadGokyoLookup() {
@@ -259,6 +259,6 @@ export async function getOrLoadGokyoLookup() {
 export function _resetForTest() {
   judokaData = null;
   gokyoLookup = null;
-  computerJudoka = null;
+  opponentJudoka = null;
   loadErrorModal = null;
 }

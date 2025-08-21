@@ -10,9 +10,9 @@ describe("simulateOpponentStat difficulty", () => {
 
   beforeEach(async () => {
     document.body.innerHTML = "";
-    const { computerCard } = createBattleCardContainers();
-    document.body.appendChild(computerCard);
-    computerCard.innerHTML = `
+    const { opponentCard } = createBattleCardContainers();
+    document.body.appendChild(opponentCard);
+    opponentCard.innerHTML = `
       <ul>
         <li class="stat"><strong>power</strong> <span>1</span></li>
         <li class="stat"><strong>speed</strong> <span>2</span></li>

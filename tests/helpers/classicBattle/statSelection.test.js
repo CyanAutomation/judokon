@@ -90,13 +90,13 @@ describe("classicBattle stat selection", () => {
 
   beforeEach(() => {
     document.body.innerHTML = "";
-    const { playerCard, computerCard } = createBattleCardContainers();
+    const { playerCard, opponentCard } = createBattleCardContainers();
     const header = createBattleHeader();
     const roundResult = document.createElement("p");
     roundResult.id = "round-result";
     roundResult.setAttribute("aria-live", "polite");
     roundResult.setAttribute("aria-atomic", "true");
-    document.body.append(playerCard, computerCard, header, roundResult);
+    document.body.append(playerCard, opponentCard, header, roundResult);
     timerSpy = vi.useFakeTimers();
     fetchJsonMock = vi.fn(async () => []);
     generateRandomCardMock = vi.fn(async (_data, _g, container, _pm, cb) => {
@@ -159,7 +159,7 @@ describe("classicBattle stat selection", () => {
   it("shows tie message when values are equal", async () => {
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    document.getElementById("computer-card").innerHTML =
+    document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     await selectStat("power");
     expect(document.querySelector("header #round-message").textContent).toMatch(/Tie/);
@@ -174,18 +174,18 @@ describe("classicBattle stat selection", () => {
     _resetForTest(store);
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-    document.getElementById("computer-card").innerHTML =
+    document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     const result = evaluateRound(store, "power");
     expect(result.message).toMatch(/win/);
     expect(result.playerScore).toBe(1);
-    expect(result.computerScore).toBe(0);
+    expect(result.opponentScore).toBe(0);
   });
 
   it("shows stat comparison after selection", async () => {
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-    document.getElementById("computer-card").innerHTML =
+    document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     await selectStat("power");
     expect(document.getElementById("round-result").textContent).toBe("Power – You: 5 Opponent: 3");
@@ -195,7 +195,7 @@ describe("classicBattle stat selection", () => {
     const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-    document.getElementById("computer-card").innerHTML =
+    document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     await selectStat("power");
     expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "evaluate");
@@ -211,7 +211,7 @@ describe("classicBattle stat selection", () => {
     orchestrator.__reset();
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-    document.getElementById("computer-card").innerHTML =
+    document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     await selectStat("power");
     await selectStat("power");

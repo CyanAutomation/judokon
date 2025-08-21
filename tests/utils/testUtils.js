@@ -64,19 +64,19 @@ export function createRandomCardDom() {
 }
 
 /**
- * Creates card containers for player and computer cards.
+ * Creates card containers for player and opponent cards.
  *
  * @pseudocode
  * 1. Create a div for the player card and assign id "player-card".
- * 2. Create a div for the computer card and assign id "computer-card".
- * 3. Return an object with playerCard and computerCard.
+ * 2. Create a div for the opponent card and assign id "opponent-card".
+ * 3. Return an object with playerCard and opponentCard.
  */
 export function createBattleCardContainers() {
   const playerCard = document.createElement("div");
   playerCard.id = "player-card";
-  const computerCard = document.createElement("div");
-  computerCard.id = "computer-card";
-  return { playerCard, computerCard };
+  const opponentCard = document.createElement("div");
+  opponentCard.id = "opponent-card";
+  return { playerCard, opponentCard };
 }
 
 /**

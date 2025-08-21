@@ -18,14 +18,14 @@ describe("classicBattlePage feature flag updates", () => {
     // Minimal DOM
     const battleArea = document.createElement("div");
     battleArea.id = "battle-area";
-    const computer = document.createElement("div");
-    computer.id = "computer-card";
+    const opponent = document.createElement("div");
+    opponent.id = "opponent-card";
     const stats = document.createElement("div");
     stats.id = "stat-buttons";
     const btn = document.createElement("button");
     btn.dataset.stat = "power";
     stats.appendChild(btn);
-    document.body.append(battleArea, stats, computer);
+    document.body.append(battleArea, stats, opponent);
 
     const currentFlags = {
       viewportSimulation: { enabled: false },
@@ -54,7 +54,7 @@ describe("classicBattlePage feature flag updates", () => {
       startRound: vi.fn(),
       resetGame: vi.fn()
     }));
-    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForComputerCard: vi.fn() }));
+    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForOpponentCard: vi.fn() }));
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn() }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({
       initTooltips: vi.fn().mockResolvedValue(() => {})
@@ -76,7 +76,7 @@ describe("classicBattlePage feature flag updates", () => {
     const panel = document.getElementById("debug-panel");
     expect(panel).toBeTruthy();
     expect(panel.classList.contains("hidden")).toBe(false);
-    expect(panel.parentElement).toBe(computer);
+    expect(panel.parentElement).toBe(opponent);
 
     // Disable battleDebugPanel
     currentFlags.battleDebugPanel.enabled = false;

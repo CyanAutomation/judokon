@@ -3,7 +3,7 @@ import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "../api/ba
 import * as scoreboard from "../setupScoreboard.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { getStatValue, resetStatButtons, showResult } from "../battle/index.js";
-import { revealComputerCard } from "./uiHelpers.js";
+import { revealOpponentCard } from "./uiHelpers.js";
 import { scheduleNextRound } from "./timerService.js";
 import { showMatchSummaryModal } from "./uiService.js";
 import { handleReplay } from "./roundManager.js";
@@ -20,7 +20,7 @@ import { dispatchBattleEvent } from "./orchestrator.js";
  * @returns {string} One of the values from `STATS`.
  */
 export function simulateOpponentStat(difficulty = "easy") {
-  const card = document.getElementById("computer-card");
+  const card = document.getElementById("opponent-card");
   const values = card ? STATS.map((stat) => ({ stat, value: getStatValue(card, stat) })) : [];
   return chooseOpponentStat(values, difficulty);
 }
@@ -34,19 +34,19 @@ export function simulateOpponentStat(difficulty = "easy") {
  */
 export function evaluateRound(store, stat) {
   const playerCard = document.getElementById("player-card");
-  const computerCard = document.getElementById("computer-card");
+  const opponentCard = document.getElementById("opponent-card");
   const playerVal = getStatValue(playerCard, stat);
-  const computerVal = getStatValue(computerCard, stat);
-  const result = evaluateRoundApi(playerVal, computerVal);
+  const opponentVal = getStatValue(opponentCard, stat);
+  const result = evaluateRoundApi(playerVal, opponentVal);
   syncScoreDisplay();
   const msg = result.message || "";
   showResult(msg);
   scoreboard.showMessage(msg);
-  showStatComparison(store, stat, playerVal, computerVal);
+  showStatComparison(store, stat, playerVal, opponentVal);
   updateDebugPanel();
   const outcome =
-    playerVal > computerVal ? "winPlayer" : playerVal < computerVal ? "winOpponent" : "draw";
-  return { ...result, outcome, playerVal, computerVal };
+    playerVal > opponentVal ? "winPlayer" : playerVal < opponentVal ? "winOpponent" : "draw";
+  return { ...result, outcome, playerVal, opponentVal };
 }
 
 /**
@@ -98,7 +98,7 @@ export async function resolveRound(store) {
   await new Promise((resolve) => setTimeout(resolve, delay));
 
   clearTimeout(opponentSnackbarId);
-  await revealComputerCard();
+  await revealOpponentCard();
   const result = evaluateRound(store, stat);
 
   const outcomeEvent =

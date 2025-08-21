@@ -39,7 +39,7 @@ describe("BattleEngine interrupts", () => {
       5
     );
     engine.playerScore = 1;
-    engine.computerScore = 2;
+    engine.opponentScore = 2;
 
     const result = engine.interruptRound("referee");
 
@@ -50,7 +50,7 @@ describe("BattleEngine interrupts", () => {
     expect(result).toEqual({
       message: "Round interrupted: referee",
       playerScore: 1,
-      computerScore: 2
+      opponentScore: 2
     });
   });
 
@@ -64,7 +64,7 @@ describe("BattleEngine interrupts", () => {
       5
     );
     engine.playerScore = 3;
-    engine.computerScore = 4;
+    engine.opponentScore = 4;
 
     const result = engine.interruptMatch("injury");
 
@@ -75,7 +75,7 @@ describe("BattleEngine interrupts", () => {
     expect(result).toEqual({
       message: "Match interrupted: injury",
       playerScore: 3,
-      computerScore: 4
+      opponentScore: 4
     });
   });
 
@@ -92,7 +92,7 @@ describe("BattleEngine interrupts", () => {
 
     const modification = {
       playerScore: 5,
-      computerScore: 1,
+      opponentScore: 1,
       roundsPlayed: 2,
       resetRound: true
     };
@@ -101,13 +101,13 @@ describe("BattleEngine interrupts", () => {
 
     expect(timerApi.stop).toHaveBeenCalled();
     expect(engine.playerScore).toBe(5);
-    expect(engine.computerScore).toBe(1);
+    expect(engine.opponentScore).toBe(1);
     expect(engine.roundsPlayed).toBe(2);
     expect(engine.roundInterrupted).toBe(false);
     expect(result).toEqual({
       message: `Round modified: ${JSON.stringify(modification)}`,
       playerScore: 5,
-      computerScore: 1
+      opponentScore: 1
     });
   });
 

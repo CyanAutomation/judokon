@@ -56,7 +56,7 @@ test.describe.parallel("Classic battle flow", () => {
       document.querySelector("#next-round-timer").textContent = "Time Left: 3s";
       document.querySelector("#player-card").innerHTML =
         `<ul><li class='stat'><strong>Power</strong> <span>3</span></li></ul>`;
-      document.querySelector("#computer-card").innerHTML =
+      document.querySelector("#opponent-card").innerHTML =
         `<ul><li class='stat'><strong>Power</strong> <span>3</span></li></ul>`;
     });
     await page.locator("button[data-stat='power']").click();

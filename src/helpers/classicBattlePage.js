@@ -5,7 +5,7 @@ import { createBattleStore, startRound } from "./classicBattle/roundManager.js";
 import { handleStatSelection } from "./classicBattle/selectionHandler.js";
 import { onDomReady } from "./domReady.js";
 import { setupScoreboard, showMessage } from "./setupScoreboard.js";
-import { waitForComputerCard } from "./battleJudokaPage.js";
+import { waitForOpponentCard } from "./battleJudokaPage.js";
 import { initTooltips } from "./tooltip.js";
 import { setTestMode } from "./testModeUtils.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
@@ -39,7 +39,7 @@ async function startRoundWrapper() {
   statButtonControls?.disable();
   try {
     await startRound(battleStore);
-    await waitForComputerCard(5000);
+    await waitForOpponentCard(5000);
   } catch (error) {
     console.error("Error starting round:", error);
     try {
@@ -314,8 +314,8 @@ function applyBattleFeatureFlags(battleArea, banner) {
 function initDebugPanel() {
   const debugPanel = document.getElementById("debug-panel");
   if (!debugPanel) return;
-  const computerSlot = document.getElementById("computer-card");
-  if (isEnabled("battleDebugPanel") && computerSlot) {
+  const opponentSlot = document.getElementById("opponent-card");
+  if (isEnabled("battleDebugPanel") && opponentSlot) {
     if (debugPanel.tagName !== "DETAILS") {
       const details = document.createElement("details");
       details.id = "debug-panel";
@@ -339,7 +339,7 @@ function initDebugPanel() {
         } catch {}
       });
     } catch {}
-    computerSlot.prepend(panel);
+    opponentSlot.prepend(panel);
     panel.classList.remove("hidden");
   } else {
     debugPanel.remove();
@@ -347,7 +347,7 @@ function initDebugPanel() {
 }
 
 function setDebugPanelEnabled(enabled) {
-  const computerSlot = document.getElementById("computer-card");
+  const opponentSlot = document.getElementById("opponent-card");
   let panel = document.getElementById("debug-panel");
   if (enabled) {
     if (!panel) {
@@ -385,8 +385,8 @@ function setDebugPanelEnabled(enabled) {
       });
     } catch {}
     panel.classList.remove("hidden");
-    if (computerSlot && panel.parentElement !== computerSlot) {
-      computerSlot.prepend(panel);
+    if (opponentSlot && panel.parentElement !== opponentSlot) {
+      opponentSlot.prepend(panel);
     }
   } else if (panel) {
     panel.classList.add("hidden");

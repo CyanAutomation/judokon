@@ -24,7 +24,7 @@ vi.mock("../../../src/helpers/motionUtils.js", () => ({
 }));
 
 vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
-  revealComputerCard: vi.fn(),
+  revealOpponentCard: vi.fn(),
   disableNextRoundButton: vi.fn(),
   enableNextRoundButton: vi.fn(),
   updateDebugPanel: vi.fn()
@@ -35,10 +35,10 @@ describe("countdown resets after stat selection", () => {
   let store;
   beforeEach(async () => {
     document.body.innerHTML = "";
-    const { playerCard, computerCard } = createBattleCardContainers();
+    const { playerCard, opponentCard } = createBattleCardContainers();
     const header = createBattleHeader();
     header.querySelector("#next-round-timer")?.remove();
-    document.body.append(playerCard, computerCard, header);
+    document.body.append(playerCard, opponentCard, header);
     createRoundMessage("round-result");
     createTimerNodes();
     document.body.innerHTML += '<div id="stat-buttons"><button data-stat="power"></button></div>';
@@ -52,7 +52,7 @@ describe("countdown resets after stat selection", () => {
     document.getElementById("next-round-timer").textContent = "Time Left: 10s";
     document.getElementById("player-card").innerHTML =
       '<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>';
-    document.getElementById("computer-card").innerHTML =
+    document.getElementById("opponent-card").innerHTML =
       '<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>';
 
     const timer = vi.useFakeTimers();

@@ -44,14 +44,14 @@ describe("classicBattle timer pause", () => {
   beforeEach(async () => {
     vi.resetModules();
     document.body.innerHTML = "";
-    const { playerCard, computerCard } = createBattleCardContainers();
+    const { playerCard, opponentCard } = createBattleCardContainers();
     const header = createBattleHeader();
     const roundResult = createRoundMessage("round-result");
     const statButtons = document.createElement("div");
     statButtons.id = "stat-buttons";
     statButtons.dataset.tooltipId = "ui.selectStat";
     statButtons.innerHTML = '<button data-stat="power"></button>';
-    document.body.append(playerCard, computerCard, header, roundResult, statButtons);
+    document.body.append(playerCard, opponentCard, header, roundResult, statButtons);
 
     timer = vi.useFakeTimers();
 
@@ -102,7 +102,7 @@ describe("classicBattle timer pause", () => {
     // timer ticks in this unit test.
     document.getElementById("player-card").innerHTML =
       '<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>';
-    document.getElementById("computer-card").innerHTML =
+    document.getElementById("opponent-card").innerHTML =
       '<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>';
     // eslint-disable-next-line no-console
     console.log("pauseTimer: BEFORE handleStatSelection");

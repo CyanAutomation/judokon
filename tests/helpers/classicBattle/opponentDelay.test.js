@@ -9,7 +9,7 @@ let clearMessage;
 let clearTimer;
 let showSnackbar;
 let scheduleNextRound;
-let revealComputerCard;
+let revealOpponentCard;
 let resetStatButtons;
 let updateDebugPanel;
 
@@ -20,7 +20,7 @@ beforeEach(() => {
   clearMessage = vi.fn();
   clearTimer = vi.fn();
   scheduleNextRound = vi.fn();
-  revealComputerCard = vi.fn();
+  revealOpponentCard = vi.fn();
   resetStatButtons = vi.fn();
   updateDebugPanel = vi.fn();
 
@@ -39,7 +39,7 @@ beforeEach(() => {
   }));
 
   vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
-    revealComputerCard,
+    revealOpponentCard,
     updateDebugPanel,
     showSelectionPrompt: vi.fn(),
     disableNextRoundButton: vi.fn()
@@ -61,7 +61,7 @@ beforeEach(() => {
     quitMatch: vi.fn(),
     pauseTimer: vi.fn(),
     stopTimer: vi.fn(),
-    getScores: vi.fn().mockReturnValue({ playerScore: 0, computerScore: 0 }),
+    getScores: vi.fn().mockReturnValue({ playerScore: 0, opponentScore: 0 }),
     _resetForTest: vi.fn(),
     STATS: ["power"]
   }));

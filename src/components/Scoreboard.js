@@ -23,7 +23,7 @@ let scoreEl;
 let roundCounterEl;
 let scoreRafId = 0;
 let currentPlayer = 0;
-let currentComputer = 0;
+let currentOpponent = 0;
 
 export function createScoreboard(container = document.createElement("div")) {
   messageEl = document.createElement("p");
@@ -88,7 +88,7 @@ function ensureRefs() {
   }
 }
 
-function setScoreText(player, computer) {
+function setScoreText(player, opponent) {
   if (!scoreEl) return;
   let playerSpan = scoreEl.firstElementChild;
   let opponentSpan = scoreEl.lastElementChild;
@@ -98,10 +98,10 @@ function setScoreText(player, computer) {
     scoreEl.append(playerSpan, opponentSpan);
   }
   playerSpan.textContent = `You: ${player}`;
-  opponentSpan.textContent = `\nOpponent: ${computer}`;
+  opponentSpan.textContent = `\nOpponent: ${opponent}`;
 }
 
-function animateScore(startPlayer, startComputer, playerTarget, computerTarget) {
+function animateScore(startPlayer, startOpponent, playerTarget, opponentTarget) {
   cancelAnimationFrame(scoreRafId);
   if (shouldReduceMotionSync()) return;
   const startTime = performance.now();
@@ -109,8 +109,8 @@ function animateScore(startPlayer, startComputer, playerTarget, computerTarget) 
   const step = (now) => {
     const progress = Math.min((now - startTime) / duration, 1);
     const playerVal = Math.round(startPlayer + (playerTarget - startPlayer) * progress);
-    const computerVal = Math.round(startComputer + (computerTarget - startComputer) * progress);
-    setScoreText(playerVal, computerVal);
+    const opponentVal = Math.round(startOpponent + (opponentTarget - startOpponent) * progress);
+    setScoreText(playerVal, opponentVal);
     if (progress < 1) {
       scoreRafId = requestAnimationFrame(step);
     }
@@ -272,18 +272,18 @@ export function startCountdown(seconds, onFinish) {
  *    targets using `requestAnimationFrame`.
  *
  * @param {number} playerScore - Player's score.
- * @param {number} computerScore - Opponent's score.
+ * @param {number} opponentScore - Opponent's score.
  * @returns {void}
  */
-export function updateScore(playerScore, computerScore) {
+export function updateScore(playerScore, opponentScore) {
   ensureRefs();
   if (!scoreEl) return;
-  setScoreText(playerScore, computerScore);
+  setScoreText(playerScore, opponentScore);
   const startPlayer = currentPlayer;
-  const startComputer = currentComputer;
+  const startOpponent = currentOpponent;
   currentPlayer = playerScore;
-  currentComputer = computerScore;
-  animateScore(startPlayer, startComputer, playerScore, computerScore);
+  currentOpponent = opponentScore;
+  animateScore(startPlayer, startOpponent, playerScore, opponentScore);
 }
 
 function runCountdown(duration, onTick, onExpired, handleDrift) {

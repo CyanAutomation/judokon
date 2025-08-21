@@ -87,7 +87,7 @@ describe("classicBattle selection prompt", () => {
     expect(document.querySelector("header #round-message").textContent).toBe("");
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-    document.getElementById("computer-card").innerHTML =
+    document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     {
       const p = battleMod.handleStatSelection(store, "power");
