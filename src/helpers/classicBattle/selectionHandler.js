@@ -11,7 +11,37 @@ import { shouldReduceMotionSync } from "../motionUtils.js";
 import { syncScoreDisplay } from "./uiService.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
-import { dispatchBattleEvent } from "./orchestrator.js";
+
+// Local dispatcher to avoid circular import with orchestrator.
+// Uses a window-exposed getter set by the orchestrator at runtime.
+async function dispatchBattleEvent(eventName, payload) {
+  // Primary path: dispatch via the live machine exposed by the orchestrator.
+  try {
+    if (typeof window !== "undefined") {
+      const getMachine = window.__getClassicBattleMachine;
+      const machine = typeof getMachine === "function" ? getMachine() : null;
+      if (machine && typeof machine.dispatch === "function") {
+        return await machine.dispatch(eventName, payload);
+      }
+    }
+  } catch {}
+  // Fallback for tests or non-orchestrated flows: call the exported
+  // orchestrator function (mockable by Vitest) via dynamic import to
+  // avoid a static cycle in production bundles.
+  try {
+    // Only attempt this in browser-like environments where window exists.
+    // In Node test environments (no window), importing the real orchestrator
+    // can hang due to DOM/state machine setup.
+    if (typeof window === "undefined") return;
+    const orchestrator = await import("./orchestrator.js");
+    if (orchestrator && typeof orchestrator.dispatchBattleEvent === "function") {
+      if (payload === undefined) {
+        return await orchestrator.dispatchBattleEvent(eventName);
+      }
+      return await orchestrator.dispatchBattleEvent(eventName, payload);
+    }
+  } catch {}
+}
 
 /**
  * Determine the opponent's stat choice based on difficulty.
@@ -89,10 +119,10 @@ export async function resolveRound(store) {
   if (!stat) {
     return;
   }
+  // Show delayed opponent-choosing hint, then announce evaluation to the orchestrator.
+  const opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), 500);
   // Announce evaluation to the orchestrator for observability/tests.
   await dispatchBattleEvent("evaluate");
-
-  const opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), 500);
 
   const delay = 300 + Math.floor(Math.random() * 401);
   await new Promise((resolve) => setTimeout(resolve, delay));

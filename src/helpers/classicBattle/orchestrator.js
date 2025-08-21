@@ -159,6 +159,14 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
 
   machine = await BattleStateMachine.create(onEnter, { store }, onTransition);
 
+  // Expose a safe getter for the running machine to avoid import cycles
+  // in hot-path modules (e.g., selection handling).
+  try {
+    if (typeof window !== "undefined") {
+      window.__getClassicBattleMachine = () => machine;
+    }
+  } catch {}
+
   if (typeof document !== "undefined") {
     document.addEventListener("visibilitychange", () => {
       if (machine?.context?.engine) {
