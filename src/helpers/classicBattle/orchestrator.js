@@ -77,6 +77,23 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
         }
       } catch {}
       updateDebugPanel();
+      // If no selection yet (e.g., timeout occurred and auto-select is pending),
+      // wait briefly for selection to land to avoid a stall in this state.
+      let waited = 0;
+      const maxWait = 1500;
+      while (!store.playerChoice && waited < maxWait) {
+        await new Promise((r) => setTimeout(r, 50));
+        waited += 50;
+      }
+      if (!store.playerChoice) {
+        // Still no selection; follow the interrupt rail to recover.
+        try {
+          scoreboard.showMessage("No selection detected. Interrupting round.");
+        } catch {}
+        updateDebugPanel();
+        await m.dispatch("interrupt", { reason: "noSelection" });
+        return;
+      }
       try {
         await resolveRound(store);
       } catch (err) {
