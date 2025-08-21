@@ -285,5 +285,7 @@ export function scheduleNextRound(result) {
   // the underlying timer is paused or a skip is pending. The timer will
   // update/replace this text on the first scheduled tick.
   onTick(3);
-  start(3);
+  // Defer starting the underlying timer to the next task to avoid racing the
+  // initial snackbar render in tests and slow environments.
+  setTimeout(() => start(3), 0);
 }

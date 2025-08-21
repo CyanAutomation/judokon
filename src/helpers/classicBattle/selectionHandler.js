@@ -166,7 +166,10 @@ export async function resolveRound(store) {
   } catch {}
   updateDebugPanel();
 
-  // Proceed immediately; run opponent reveal asynchronously to avoid any UI stall.
+  // Introduce a small, natural delay to simulate opponent thinking.
+  const delay = 300 + Math.floor(Math.random() * 401);
+  await new Promise((resolve) => setTimeout(resolve, delay));
+  // Proceed; run opponent reveal asynchronously to avoid any UI stall.
   clearTimeout(opponentSnackbarId);
   try {
     if (typeof window !== "undefined") {
