@@ -128,6 +128,22 @@ export async function handleStatSelection(store, stat) {
     const hasMachine = typeof window !== "undefined" && !!window.__classicBattleState;
     if (hasMachine) {
       await dispatchBattleEvent("statSelected");
+      // Failsafe: if the orchestrator onEnter(roundDecision) does not resolve
+      // the round promptly, kick off a local resolution after a short delay.
+      try {
+        setTimeout(() => {
+          // Only run if still awaiting resolution and selection remains.
+          try {
+            if (
+              typeof window !== "undefined" &&
+              window.__classicBattleState === "roundDecision" &&
+              store.playerChoice
+            ) {
+              resolveRound(store).catch(() => {});
+            }
+          } catch {}
+        }, 600);
+      } catch {}
     } else {
       await resolveRound(store);
     }
