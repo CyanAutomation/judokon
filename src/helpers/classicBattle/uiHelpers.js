@@ -115,6 +115,19 @@ export function updateDebugPanel() {
         state.machineLog = window.__classicBattleStateLog.slice();
       }
       if (window.__roundDecisionEnter) state.roundDecisionEnter = window.__roundDecisionEnter;
+      // Machine diagnostics
+      try {
+        const getMachine = window.__getClassicBattleMachine;
+        const machine = typeof getMachine === "function" ? getMachine() : null;
+        state.machineReady = !!(machine && typeof machine.getState === "function");
+        if (state.machineReady) {
+          const current = machine.getState();
+          const def = machine.statesByName?.get ? machine.statesByName.get(current) : null;
+          if (def && Array.isArray(def.triggers)) {
+            state.machineTriggers = def.triggers.map((t) => t.on);
+          }
+        }
+      } catch {}
     }
   } catch {}
   // Include store snapshot when available
