@@ -5,7 +5,8 @@ import * as scoreboard from "../setupScoreboard.js";
 import { getDefaultTimer } from "../timerUtils.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 import { setupScoreboard } from "../setupScoreboard.js";
-import { resolveRound } from "./selectionHandler.js";
+import { resolveRound, evaluateRound } from "./selectionHandler.js";
+import { scheduleNextRound } from "./timerService.js";
 
 if (typeof process === "undefined" || !process.env.VITEST) {
   setupScoreboard();
@@ -94,10 +95,30 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
               const rd = window.__roundDebug;
               const resolved = rd && typeof rd.resolvedAt === "number";
               if (resolved) return;
-              if (store.playerChoice) {
-                await resolveRound(store);
-              } else {
+              if (!store.playerChoice) {
                 await m.dispatch("interrupt", { reason: "stalledNoSelection" });
+                return;
+              }
+              // Fallback: compute outcome directly and dispatch events to avoid UI stalls
+              let result;
+              try {
+                result = evaluateRound(store, store.playerChoice);
+              } catch {}
+              const outcomeEvent = result
+                ? result.outcome === "winPlayer"
+                  ? "outcome=winPlayer"
+                  : result.outcome === "winOpponent"
+                    ? "outcome=winOpponent"
+                    : "outcome=draw"
+                : null;
+              if (outcomeEvent) {
+                await m.dispatch(outcomeEvent);
+                if (result?.matchEnded) {
+                  await m.dispatch("matchPointReached");
+                } else {
+                  await m.dispatch("continue");
+                }
+                scheduleNextRound(result || { matchEnded: false });
               }
             } catch {}
           }, 2000);
