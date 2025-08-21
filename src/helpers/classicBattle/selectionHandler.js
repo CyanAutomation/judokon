@@ -128,7 +128,12 @@ export async function resolveRound(store) {
   await new Promise((resolve) => setTimeout(resolve, delay));
 
   clearTimeout(opponentSnackbarId);
-  await revealOpponentCard();
+  // Do not let opponent reveal block round resolution indefinitely.
+  // Proceed if reveal takes too long (e.g., asset/network hiccups).
+  try {
+    const timeout = new Promise((resolve) => setTimeout(resolve, 1000));
+    await Promise.race([revealOpponentCard(), timeout]);
+  } catch {}
   const result = evaluateRound(store, stat);
 
   const outcomeEvent =
