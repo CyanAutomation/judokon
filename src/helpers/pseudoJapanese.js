@@ -125,6 +125,8 @@ export async function convertElementToPseudoJapanese(element) {
  *    - Swap between the cached original HTML and the generated
  *      pseudo-Japanese HTML while toggling a Japanese font class.
  *    - Remove the `fading` class so the element fades back in.
+ *    - If an error occurs, log it and remove the `fading` class to
+ *      reset the UI.
  * 3. Return the button so callers can further manipulate it if needed.
  *
  * @param {HTMLElement} element - The element whose text will be toggled.
@@ -147,21 +149,26 @@ export function setupLanguageToggle(element) {
   button.addEventListener("click", () => {
     element.classList.add("fading");
     setTimeout(async () => {
-      if (showingPseudo) {
-        element.innerHTML = originalHTML;
-      } else {
-        if (!pseudoLoaded) {
-          originalHTML = element.innerHTML;
-          const clone = element.cloneNode(true);
-          await convertElementToPseudoJapanese(clone);
-          pseudoHTML = clone.innerHTML;
-          pseudoLoaded = true;
+      try {
+        if (showingPseudo) {
+          element.innerHTML = originalHTML;
+        } else {
+          if (!pseudoLoaded) {
+            originalHTML = element.innerHTML;
+            const clone = element.cloneNode(true);
+            await convertElementToPseudoJapanese(clone);
+            pseudoHTML = clone.innerHTML;
+            pseudoLoaded = true;
+          }
+          element.innerHTML = pseudoHTML;
         }
-        element.innerHTML = pseudoHTML;
+        element.classList.toggle("jp-font", !showingPseudo);
+        element.classList.remove("fading");
+        showingPseudo = !showingPseudo;
+      } catch (error) {
+        console.error(error);
+        element.classList.remove("fading");
       }
-      element.classList.toggle("jp-font", !showingPseudo);
-      element.classList.remove("fading");
-      showingPseudo = !showingPseudo;
     }, 200);
   });
 
