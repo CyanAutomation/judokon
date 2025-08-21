@@ -180,7 +180,9 @@ export async function resolveRound(store) {
   } catch {}
   try {
     // Fire-and-forget opponent reveal. Errors are swallowed.
-    Promise.resolve().then(() => revealOpponentCard()).catch(() => {});
+    Promise.resolve()
+      .then(() => revealOpponentCard())
+      .catch(() => {});
   } catch {}
   updateDebugPanel();
   let result;
