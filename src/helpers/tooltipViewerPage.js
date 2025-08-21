@@ -83,8 +83,10 @@ export function initSearchFilter(searchInput, updateList) {
  * Attach copy-to-clipboard behavior to the key and body buttons.
  *
  * @pseudocode
- * 1. When a button is clicked, write its `data-copy` text to the clipboard.
- * 2. Show a "Copied" snackbar and add a temporary `copied` class for feedback.
+ * 1. Detect clipboard support; when absent and no fallback exists, disable the buttons and notify the user.
+ * 2. On click, copy the `data-copy` text using `navigator.clipboard` or a temporary `textarea` fallback.
+ * 3. If copying succeeds, show "Copied" and add a temporary `copied` class for feedback.
+ * 4. When copying fails, inform the user that copying isn't supported.
  *
  * @param {HTMLButtonElement} keyCopyBtn - Button for copying the key.
  * @param {HTMLButtonElement} bodyCopyBtn - Button for copying the body.
@@ -96,29 +98,73 @@ export function bindCopyButtons(keyCopyBtn, bodyCopyBtn) {
     snackbarPromise ||= import("./showSnackbar.js");
     return snackbarPromise;
   };
-  function copy(btn) {
-    const text = btn.dataset.copy || "";
-    if (navigator.clipboard) {
-      navigator.clipboard
-        .writeText(text)
-        .then(() => {
-          if (snackbarFnOverride) {
-            try {
-              snackbarFnOverride("Copied");
-            } catch {}
-          } else {
-            getSnackbar()
-              .then(({ showSnackbar }) => showSnackbar("Copied"))
-              .catch(() => {});
-          }
-          btn.classList.add("copied");
-          setTimeout(() => btn.classList.remove("copied"), 600);
-        })
+  const supportsClipboard = typeof navigator !== "undefined" && !!navigator.clipboard?.writeText;
+  const supportsExecCommand =
+    typeof document !== "undefined" &&
+    typeof document.execCommand === "function" &&
+    (!document.queryCommandSupported || document.queryCommandSupported("copy"));
+
+  function showMessage(message) {
+    if (snackbarFnOverride) {
+      try {
+        snackbarFnOverride(message);
+      } catch {}
+    } else {
+      getSnackbar()
+        .then(({ showSnackbar }) => showSnackbar(message))
         .catch(() => {});
     }
   }
-  keyCopyBtn.addEventListener("click", () => copy(keyCopyBtn));
-  bodyCopyBtn.addEventListener("click", () => copy(bodyCopyBtn));
+
+  function fallbackCopy(text) {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "absolute";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.select();
+    let ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch {
+      ok = false;
+    }
+    textarea.remove();
+    return ok;
+  }
+
+  if (!supportsClipboard && !supportsExecCommand) {
+    keyCopyBtn.disabled = true;
+    bodyCopyBtn.disabled = true;
+    showMessage("Copying not supported");
+    return;
+  }
+
+  async function copy(btn) {
+    const text = btn.dataset.copy || "";
+    let success = false;
+    if (supportsClipboard) {
+      try {
+        await navigator.clipboard.writeText(text);
+        success = true;
+      } catch {
+        success = false;
+      }
+    } else if (supportsExecCommand) {
+      success = fallbackCopy(text);
+    }
+    if (success) {
+      showMessage("Copied");
+      btn.classList.add("copied");
+      setTimeout(() => btn.classList.remove("copied"), 600);
+    } else {
+      showMessage("Copying not supported");
+    }
+  }
+
+  keyCopyBtn.addEventListener("click", () => void copy(keyCopyBtn));
+  bodyCopyBtn.addEventListener("click", () => void copy(bodyCopyBtn));
 }
 
 /**
