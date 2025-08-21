@@ -96,7 +96,7 @@ describe("classicBattle timer pause", () => {
 
   it.skip("does not show auto-select message when stat picked before timer expires", async () => {
     // debug markers to diagnose potential timeouts in CI
-    // eslint-disable-next-line no-console
+
     console.log("pauseTimer: START test");
     // Pre-fill cards and trigger selection directly to avoid depending on
     // timer ticks in this unit test.
@@ -104,10 +104,10 @@ describe("classicBattle timer pause", () => {
       '<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>';
     document.getElementById("computer-card").innerHTML =
       '<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>';
-    // eslint-disable-next-line no-console
+
     console.log("pauseTimer: BEFORE handleStatSelection");
     await battleMod.handleStatSelection(store, "power");
-    // eslint-disable-next-line no-console
+
     console.log("pauseTimer: AFTER handleStatSelection");
     timer.advanceTimersByTime(1000);
     const messages = showMessage.mock.calls.map((c) => c[0]);
