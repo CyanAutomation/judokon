@@ -6,6 +6,8 @@ import { getDefaultTimer } from "../timerUtils.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 import { setupScoreboard } from "../setupScoreboard.js";
 import { resolveRound, evaluateRound } from "./selectionHandler.js";
+import { getOpponentJudoka } from "./cardSelection.js";
+import { getStatValue } from "../battle/index.js";
 import { scheduleNextRound } from "./timerService.js";
 
 if (typeof process === "undefined" || !process.env.VITEST) {
@@ -100,31 +102,39 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
                 return;
               }
               // Fallback: compute outcome directly and dispatch events to avoid UI stalls
-              let result;
+              let outcomeEvent = null;
               try {
-                result = evaluateRound(store, store.playerChoice);
-              } catch {}
-              const outcomeEvent = result
-                ? result.outcome === "winPlayer"
-                  ? "outcome=winPlayer"
-                  : result.outcome === "winOpponent"
-                    ? "outcome=winOpponent"
-                    : "outcome=draw"
-                : null;
-              if (outcomeEvent) {
+                // Prefer a minimal manual outcome computation to avoid UI dependencies
+                const stat = store.playerChoice;
+                const pCard = document.getElementById("player-card");
+                const oCard = document.getElementById("opponent-card");
+                const playerVal = getStatValue(pCard, stat);
+                let opponentVal = 0;
                 try {
-                  window.__guardFiredAt = Date.now();
-                  window.__guardOutcomeEvent = outcomeEvent;
-                } catch {}
-                await m.dispatch(outcomeEvent);
-                if (result?.matchEnded) {
-                  await m.dispatch("matchPointReached");
-                } else {
-                  await m.dispatch("continue");
+                  const opp = getOpponentJudoka();
+                  const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
+                  opponentVal = Number.isFinite(raw) ? raw : getStatValue(oCard, stat);
+                } catch {
+                  opponentVal = getStatValue(oCard, stat);
                 }
-                scheduleNextRound(result || { matchEnded: false });
-                updateDebugPanel();
+                if (Number.isFinite(playerVal) && Number.isFinite(opponentVal)) {
+                  if (playerVal > opponentVal) outcomeEvent = "outcome=winPlayer";
+                  else if (playerVal < opponentVal) outcomeEvent = "outcome=winOpponent";
+                  else outcomeEvent = "outcome=draw";
+                }
+              } catch {}
+              try {
+                window.__guardFiredAt = Date.now();
+                window.__guardOutcomeEvent = outcomeEvent || "none";
+              } catch {}
+              if (outcomeEvent) {
+                await m.dispatch(outcomeEvent);
+                await m.dispatch("continue");
+                scheduleNextRound({ matchEnded: false });
+              } else {
+                await m.dispatch("interrupt", { reason: "guardNoOutcome" });
               }
+              updateDebugPanel();
             } catch {}
           }, 1200);
           // Track guard id for potential future cancellation if needed.
