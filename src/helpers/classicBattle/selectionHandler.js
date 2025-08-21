@@ -119,10 +119,23 @@ export async function resolveRound(store) {
   if (!stat) {
     return;
   }
+  // Record round debug info
+  try {
+    if (typeof window !== "undefined") {
+      window.__roundDebug = { playerChoice: stat, startedAt: Date.now() };
+    }
+  } catch {}
   // Show delayed opponent-choosing hint, then announce evaluation to the orchestrator.
   const opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), 500);
   // Announce evaluation to the orchestrator for observability/tests.
   await dispatchBattleEvent("evaluate");
+  try {
+    if (typeof window !== "undefined") {
+      const rd = window.__roundDebug || {};
+      rd.evaluateAt = Date.now();
+      window.__roundDebug = rd;
+    }
+  } catch {}
 
   const delay = 300 + Math.floor(Math.random() * 401);
   await new Promise((resolve) => setTimeout(resolve, delay));
@@ -131,8 +144,16 @@ export async function resolveRound(store) {
   // Do not let opponent reveal block round resolution indefinitely.
   // Proceed if reveal takes too long (e.g., asset/network hiccups).
   try {
-    const timeout = new Promise((resolve) => setTimeout(resolve, 1000));
-    await Promise.race([revealOpponentCard(), timeout]);
+    const SLOW = Symbol("slow");
+    const timeout = new Promise((resolve) => setTimeout(() => resolve(SLOW), 1000));
+    const status = await Promise.race([revealOpponentCard().then(() => "revealed"), timeout]);
+    try {
+      if (typeof window !== "undefined") {
+        const rd = window.__roundDebug || {};
+        rd.reveal = status === SLOW ? "timeout" : status;
+        window.__roundDebug = rd;
+      }
+    } catch {}
   } catch {}
   const result = evaluateRound(store, stat);
 
@@ -143,6 +164,14 @@ export async function resolveRound(store) {
         ? "outcome=winOpponent"
         : "outcome=draw";
 
+  try {
+    if (typeof window !== "undefined") {
+      const rd = window.__roundDebug || {};
+      rd.outcomeEvent = outcomeEvent;
+      rd.resolvedAt = Date.now();
+      window.__roundDebug = rd;
+    }
+  } catch {}
   await dispatchBattleEvent(outcomeEvent);
 
   if (result.matchEnded) {

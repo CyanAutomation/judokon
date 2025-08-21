@@ -111,6 +111,31 @@ export function updateDebugPanel() {
       state.machineState = window.__classicBattleState;
       if (window.__classicBattlePrevState) state.machinePrevState = window.__classicBattlePrevState;
       if (window.__classicBattleLastEvent) state.machineLastEvent = window.__classicBattleLastEvent;
+      if (Array.isArray(window.__classicBattleStateLog)) {
+        state.machineLog = window.__classicBattleStateLog.slice();
+      }
+    }
+  } catch {}
+  // Include store snapshot when available
+  try {
+    const store = typeof window !== "undefined" ? window.battleStore : null;
+    if (store) {
+      state.store = {
+        selectionMade: !!store.selectionMade,
+        playerChoice: store.playerChoice || null
+      };
+    }
+  } catch {}
+  // Include round debug and simple DOM status for troubleshooting
+  try {
+    if (typeof window !== "undefined" && window.__roundDebug) {
+      state.round = window.__roundDebug;
+    }
+    const opp = document.getElementById("opponent-card");
+    if (opp) {
+      state.dom = {
+        opponentChildren: opp.children ? opp.children.length : 0
+      };
     }
   } catch {}
   pre.textContent = JSON.stringify(state, null, 2);
