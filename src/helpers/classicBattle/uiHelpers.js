@@ -144,6 +144,9 @@ export function updateDebugPanel() {
   } catch {}
   // Include round debug and simple DOM status for troubleshooting
   try {
+    if (typeof window !== "undefined" && window.__buildTag) {
+      state.buildTag = window.__buildTag;
+    }
     if (typeof window !== "undefined" && window.__roundDebug) {
       state.round = window.__roundDebug;
     }

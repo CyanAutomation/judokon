@@ -183,6 +183,11 @@ function setBattleStateBadgeEnabled(enable) {
 }
 
 export async function setupClassicBattlePage() {
+  try {
+    if (typeof window !== "undefined") {
+      window.__buildTag = "classic-battle-guard-v1";
+    }
+  } catch {}
   if (!(typeof process !== "undefined" && process.env.VITEST)) {
     startScheduler();
     window.addEventListener("pagehide", stopScheduler, { once: true });
