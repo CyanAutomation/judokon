@@ -67,16 +67,23 @@ export async function loadTooltipData(previewEl) {
  * @pseudocode
  * 1. On each input event, clear the previous debounce timer.
  * 2. Set a new timer to update the list after 300ms.
+ * 3. Return a cleanup function to clear the timer and remove the listener.
  *
  * @param {HTMLInputElement} searchInput - Search box element.
  * @param {(filter: string) => void} updateList - Callback to refresh the list.
+ * @returns {() => void} Cleanup function.
  */
 export function initSearchFilter(searchInput, updateList) {
   let timer;
-  searchInput.addEventListener("input", () => {
+  const handler = () => {
     clearTimeout(timer);
     timer = setTimeout(() => updateList(searchInput.value), 300);
-  });
+  };
+  searchInput.addEventListener("input", handler);
+  return () => {
+    clearTimeout(timer);
+    searchInput.removeEventListener("input", handler);
+  };
 }
 
 /**
@@ -201,8 +208,9 @@ export function applyHashSelection(listPlaceholder, select) {
  * 1. Grab DOM references and instantiate `PreviewToggle`.
  * 2. Load tooltip data with {@link loadTooltipData}; exit on failure.
  * 3. Render and filter the list, updating the preview on selection.
- * 4. Bind copy buttons, warm the snackbar module, and search filtering.
+ * 4. Bind copy buttons, warm the snackbar module, and set up search filtering.
  * 5. Apply URL hash selection, then initialize help tooltips.
+ * 6. Clean up search filtering on `pagehide`.
  */
 export async function setupTooltipViewerPage() {
   // Start loading sanitizer but don't block initial render
@@ -276,7 +284,8 @@ export async function setupTooltipViewerPage() {
   if (typeof requestIdleCallback === "function") {
     requestIdleCallback(() => import("./showSnackbar.js").catch(() => {}));
   }
-  initSearchFilter(searchInput, updateList);
+  const cleanupSearch = initSearchFilter(searchInput, updateList);
+  window.addEventListener("pagehide", cleanupSearch, { once: true });
 
   updateList();
   applyHashSelection(listPlaceholder, select);
