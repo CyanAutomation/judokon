@@ -70,8 +70,16 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
       await m.dispatch("cardsRevealed");
     },
     async waitingForPlayerAction() {},
-    async roundDecision() {
-      await resolveRound(store);
+    async roundDecision(m) {
+      try {
+        await resolveRound(store);
+      } catch (err) {
+        try {
+          scoreboard.showMessage("Round error. Recovering…");
+          updateDebugPanel();
+          await m.dispatch("interrupt", { reason: "roundResolutionError" });
+        } catch {}
+      }
     },
     async roundOver() {},
     async matchDecision() {},
