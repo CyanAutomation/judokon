@@ -142,6 +142,7 @@ export async function resolveRound(store) {
       window.__roundDebug = { playerChoice: stat, startedAt: Date.now() };
     }
   } catch {}
+  updateDebugPanel();
   // Show delayed opponent-choosing hint, then announce evaluation to the orchestrator.
   const opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), 500);
   // Announce evaluation to the orchestrator for observability/tests.
@@ -153,6 +154,7 @@ export async function resolveRound(store) {
       window.__roundDebug = rd;
     }
   } catch {}
+  updateDebugPanel();
 
   const delay = 300 + Math.floor(Math.random() * 401);
   await new Promise((resolve) => setTimeout(resolve, delay));
@@ -172,7 +174,23 @@ export async function resolveRound(store) {
       }
     } catch {}
   } catch {}
-  const result = evaluateRound(store, stat);
+  updateDebugPanel();
+  let result;
+  try {
+    result = evaluateRound(store, stat);
+  } catch (err) {
+    try {
+      if (typeof window !== "undefined") {
+        const rd = window.__roundDebug || {};
+        rd.error = String(err?.message || err);
+        window.__roundDebug = rd;
+      }
+    } catch {}
+    // Attempt to recover by interrupting the round
+    await dispatchBattleEvent("interrupt");
+    updateDebugPanel();
+    return;
+  }
 
   const outcomeEvent =
     result.outcome === "winPlayer"
@@ -190,6 +208,7 @@ export async function resolveRound(store) {
     }
   } catch {}
   await dispatchBattleEvent(outcomeEvent);
+  updateDebugPanel();
 
   if (result.matchEnded) {
     scoreboard.clearRoundCounter();
