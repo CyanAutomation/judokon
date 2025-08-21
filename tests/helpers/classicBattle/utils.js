@@ -7,7 +7,7 @@ import { createBattleHeader, createBattleCardContainers } from "../../utils/test
  *   - reset Vitest modules
  *   - clear document body
  * build DOM nodes
- *   - create player/computer cards and battle header
+ *   - create player/opponent cards and battle header
  *   - append nodes and snackbar container to body
  * mock APIs
  *   - use fake timers
@@ -18,9 +18,9 @@ import { createBattleHeader, createBattleCardContainers } from "../../utils/test
 export function setupClassicBattleDom() {
   vi.resetModules();
   document.body.innerHTML = "";
-  const { playerCard, computerCard } = createBattleCardContainers();
+  const { playerCard, opponentCard } = createBattleCardContainers();
   const header = createBattleHeader();
-  document.body.append(playerCard, computerCard, header);
+  document.body.append(playerCard, opponentCard, header);
   const container = document.createElement("div");
   container.id = "snackbar-container";
   container.setAttribute("role", "status");

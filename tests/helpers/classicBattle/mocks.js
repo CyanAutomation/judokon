@@ -62,7 +62,7 @@ export function mockSelectionHandler() {
 
 export function mockBattleJudokaPage() {
   vi.doMock("../../../src/helpers/battleJudokaPage.js", () => ({
-    waitForComputerCard: vi.fn()
+    waitForOpponentCard: vi.fn()
   }));
 }
 

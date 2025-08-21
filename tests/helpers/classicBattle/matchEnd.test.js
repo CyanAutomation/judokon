@@ -127,7 +127,7 @@ describe("classicBattle match end", () => {
     for (let i = 0; i < CLASSIC_BATTLE_POINTS_TO_WIN; i++) {
       document.getElementById("player-card").innerHTML =
         `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-      document.getElementById("computer-card").innerHTML =
+      document.getElementById("opponent-card").innerHTML =
         `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
       await selectStat();
     }
@@ -138,7 +138,7 @@ describe("classicBattle match end", () => {
 
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-    document.getElementById("computer-card").innerHTML =
+    document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     {
       const p = battleMod.handleStatSelection(store, "power");
@@ -164,7 +164,7 @@ describe("classicBattle match end", () => {
     for (let i = 0; i < CLASSIC_BATTLE_POINTS_TO_WIN; i++) {
       document.getElementById("player-card").innerHTML =
         `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-      document.getElementById("computer-card").innerHTML =
+      document.getElementById("opponent-card").innerHTML =
         `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
       await selectStat();
     }
@@ -177,7 +177,7 @@ describe("classicBattle match end", () => {
 
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    document.getElementById("computer-card").innerHTML =
+    document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
     {
       const p = battleMod.handleStatSelection(store, "power");

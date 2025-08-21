@@ -46,9 +46,9 @@ describe("classicBattle stalled stat selection recovery", () => {
   let timerSpy;
   beforeEach(() => {
     document.body.innerHTML = "";
-    const { playerCard, computerCard } = createBattleCardContainers();
+    const { playerCard, opponentCard } = createBattleCardContainers();
     const header = createBattleHeader();
-    document.body.append(playerCard, computerCard, header);
+    document.body.append(playerCard, opponentCard, header);
     timerSpy = vi.useFakeTimers();
     fetchJsonMock = vi.fn(async () => []);
     generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {

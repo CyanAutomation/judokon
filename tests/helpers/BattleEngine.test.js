@@ -7,8 +7,8 @@ describe("compareStats", () => {
     expect(compareStats(5, 3)).toEqual({ delta: 2, winner: "player" });
   });
 
-  it("detects computer win", () => {
-    expect(compareStats(3, 5)).toEqual({ delta: -2, winner: "computer" });
+  it("detects opponent win", () => {
+    expect(compareStats(3, 5)).toEqual({ delta: -2, winner: "opponent" });
   });
 
   it("detects tie", () => {

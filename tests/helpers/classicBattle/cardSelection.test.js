@@ -39,9 +39,9 @@ describe.sequential("classicBattle card selection", () => {
   let timerSpy;
   beforeEach(() => {
     document.body.innerHTML = "";
-    const { playerCard, computerCard } = createBattleCardContainers();
+    const { playerCard, opponentCard } = createBattleCardContainers();
     const header = createBattleHeader();
-    document.body.append(playerCard, computerCard, header);
+    document.body.append(playerCard, opponentCard, header);
     timerSpy = vi.useFakeTimers();
     fetchJsonMock = vi.fn(async () => []);
     generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {
@@ -58,7 +58,7 @@ describe.sequential("classicBattle card selection", () => {
     resetDom();
   });
 
-  it("draws a different card for the computer", async () => {
+  it("draws a different card for the opponent", async () => {
     fetchJsonMock.mockImplementation(async (p) => {
       if (p.includes("judoka")) {
         return [{ id: 1 }];
@@ -80,13 +80,13 @@ describe.sequential("classicBattle card selection", () => {
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await battleMod.startRound(store);
-    const { getComputerJudoka } = battleMod;
+    const { getOpponentJudoka } = battleMod;
     expect(JudokaCardMock).toHaveBeenCalledWith(
       expect.objectContaining({ id: 1 }),
       expect.anything(),
       { useObscuredStats: true, enableInspector: false }
     );
-    expect(getComputerJudoka()).toEqual(expect.objectContaining({ id: 2 }));
+    expect(getOpponentJudoka()).toEqual(expect.objectContaining({ id: 2 }));
   });
 
   it("excludes hidden judoka from selection", async () => {
@@ -199,7 +199,7 @@ describe.sequential("classicBattle card selection", () => {
     _resetForTest();
     await drawCards();
     expect(consoleSpy).toHaveBeenCalledWith("JudokaCard did not render an HTMLElement");
-    const container = document.getElementById("computer-card");
+    const container = document.getElementById("opponent-card");
     expect(container.innerHTML).toBe("");
     consoleSpy.mockRestore();
   });

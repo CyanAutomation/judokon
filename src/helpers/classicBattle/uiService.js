@@ -12,9 +12,9 @@ import { navigateToHome } from "../navUtils.js";
  * 2. Forward the values to `scoreboard.updateScore`.
  */
 export function syncScoreDisplay() {
-  const { playerScore, computerScore } = getScores();
+  const { playerScore, opponentScore } = getScores();
   if (typeof scoreboard.updateScore === "function") {
-    scoreboard.updateScore(playerScore, computerScore);
+    scoreboard.updateScore(playerScore, opponentScore);
     return;
   }
   // Fallback for tests that partially mock setupScoreboard without updateScore
@@ -28,7 +28,7 @@ export function syncScoreDisplay() {
       el.append(playerSpan, opponentSpan);
     }
     playerSpan.textContent = `You: ${playerScore}`;
-    opponentSpan.textContent = `\nOpponent: ${computerScore}`;
+    opponentSpan.textContent = `\nOpponent: ${opponentScore}`;
   }
 }
 
@@ -43,7 +43,7 @@ export function syncScoreDisplay() {
  *    - Quit navigates to `index.html`.
  *    - Next runs `onNext`.
  *
- * @param {{message: string, playerScore: number, computerScore: number}} result
+ * @param {{message: string, playerScore: number, opponentScore: number}} result
  * @param {Function} onNext Callback invoked when starting the next match.
  * @returns {ReturnType<typeof createModal>} Created modal instance.
  */
@@ -54,7 +54,7 @@ export function showMatchSummaryModal(result, onNext) {
 
   const scoreEl = document.createElement("p");
   scoreEl.id = "match-summary-score";
-  scoreEl.textContent = `Final Score – You: ${result.playerScore} Opponent: ${result.computerScore}`;
+  scoreEl.textContent = `Final Score – You: ${result.playerScore} Opponent: ${result.opponentScore}`;
 
   const actions = document.createElement("div");
   actions.className = "modal-actions";

@@ -127,10 +127,10 @@ describe("scheduleNextRound early click", () => {
       return await importOriginal();
     });
     document.body.innerHTML = "";
-    const { playerCard, computerCard } = createBattleCardContainers();
+    const { playerCard, opponentCard } = createBattleCardContainers();
     const header = createBattleHeader();
     header.querySelector("#next-round-timer")?.remove();
-    document.body.append(playerCard, computerCard, header);
+    document.body.append(playerCard, opponentCard, header);
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
     timerSpy = vi.useFakeTimers();

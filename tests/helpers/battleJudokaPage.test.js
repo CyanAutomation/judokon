@@ -4,15 +4,15 @@ vi.doMock("../../src/helpers/domReady.js", () => ({
   onDomReady: vi.fn()
 }));
 
-describe("waitForComputerCard", () => {
+describe("waitForOpponentCard", () => {
   it("resolves when the judoka card is inserted", async () => {
-    const { waitForComputerCard } = await import("../../src/helpers/battleJudokaPage.js");
+    const { waitForOpponentCard } = await import("../../src/helpers/battleJudokaPage.js");
 
     const container = document.createElement("div");
-    container.id = "computer-card";
+    container.id = "opponent-card";
     document.body.append(container);
 
-    const promise = waitForComputerCard();
+    const promise = waitForOpponentCard();
 
     await Promise.resolve();
     const card = document.createElement("div");
@@ -23,15 +23,15 @@ describe("waitForComputerCard", () => {
   });
 
   it("resolves immediately if card already present", async () => {
-    const { waitForComputerCard } = await import("../../src/helpers/battleJudokaPage.js");
+    const { waitForOpponentCard } = await import("../../src/helpers/battleJudokaPage.js");
 
     const container = document.createElement("div");
-    container.id = "computer-card";
+    container.id = "opponent-card";
     const card = document.createElement("div");
     card.className = "judoka-card";
     container.appendChild(card);
     document.body.append(container);
 
-    await expect(waitForComputerCard()).resolves.toBeUndefined();
+    await expect(waitForOpponentCard()).resolves.toBeUndefined();
   });
 });

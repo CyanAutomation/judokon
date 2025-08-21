@@ -25,7 +25,7 @@
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 }
 
-#computer-card .debug-panel {
+#opponent-card .debug-panel {
   margin: 0;
   max-width: none;
   width: 100%;

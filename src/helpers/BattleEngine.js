@@ -15,21 +15,21 @@ export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
  * Compare two stat values and report the winner.
  *
  * @pseudocode
- * 1. Compute `delta = playerVal - computerVal`.
+ * 1. Compute `delta = playerVal - opponentVal`.
  * 2. If `delta > 0` winner is `"player"`.
- * 3. Else if `delta < 0` winner is `"computer"`.
+ * 3. Else if `delta < 0` winner is `"opponent"`.
  * 4. Otherwise winner is `"tie"`.
  * 5. Return `{ delta, winner }`.
  *
  * @param {number} playerVal - Player's stat value.
- * @param {number} computerVal - Opponent's stat value.
- * @returns {{delta: number, winner: "player"|"computer"|"tie"}}
+ * @param {number} opponentVal - Opponent's stat value.
+ * @returns {{delta: number, winner: "player"|"opponent"|"tie"}}
  */
-export function compareStats(playerVal, computerVal) {
-  const delta = playerVal - computerVal;
+export function compareStats(playerVal, opponentVal) {
+  const delta = playerVal - opponentVal;
   let winner = "tie";
   if (delta > 0) winner = "player";
-  else if (delta < 0) winner = "computer";
+  else if (delta < 0) winner = "opponent";
   return { delta, winner };
 }
 
@@ -47,7 +47,7 @@ const DELTA_OUTCOME = {
   [-1]: {
     message: "Opponent wins the round!",
     update(engine) {
-      engine.computerScore += 1;
+      engine.opponentScore += 1;
     }
   }
 };
@@ -56,7 +56,7 @@ export class BattleEngine {
   constructor() {
     this.pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN;
     this.playerScore = 0;
-    this.computerScore = 0;
+    this.opponentScore = 0;
     this.timer = new TimerController();
     this.matchEnded = false;
     this.roundsPlayed = 0;
@@ -98,14 +98,14 @@ export class BattleEngine {
   #endMatchIfNeeded() {
     if (
       this.playerScore >= this.pointsToWin ||
-      this.computerScore >= this.pointsToWin ||
+      this.opponentScore >= this.pointsToWin ||
       this.roundsPlayed >= CLASSIC_BATTLE_MAX_ROUNDS
     ) {
       this.matchEnded = true;
-      if (this.playerScore > this.computerScore) {
+      if (this.playerScore > this.opponentScore) {
         return "You win the match!";
       }
-      if (this.playerScore < this.computerScore) {
+      if (this.playerScore < this.opponentScore) {
         return "Opponent wins the match!";
       }
       return "Match ends in a tie!";
@@ -184,7 +184,7 @@ export class BattleEngine {
   }
 
   /**
-   * Compare player and computer stat values to update scores.
+   * Compare player and opponent stat values to update scores.
    *
    * @pseudocode
    * 1. If the match has already ended, return current scores and `matchEnded`.
@@ -196,20 +196,20 @@ export class BattleEngine {
    * 7. Return the round message, `matchEnded`, and current scores.
    *
    * @param {number} playerVal - Value selected by the player.
-   * @param {number} computerVal - Value selected by the computer.
-   * @returns {{message: string, matchEnded: boolean, playerScore: number, computerScore: number}}
+   * @param {number} opponentVal - Value selected by the opponent.
+   * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number}}
    */
-  handleStatSelection(playerVal, computerVal) {
+  handleStatSelection(playerVal, opponentVal) {
     if (this.matchEnded) {
       return {
         message: "",
         matchEnded: this.matchEnded,
         playerScore: this.playerScore,
-        computerScore: this.computerScore
+        opponentScore: this.opponentScore
       };
     }
     this.stopTimer();
-    const { delta } = compareStats(playerVal, computerVal);
+    const { delta } = compareStats(playerVal, opponentVal);
     const outcome = DELTA_OUTCOME[Math.sign(delta)];
     outcome.update(this);
     this.roundsPlayed += 1;
@@ -218,7 +218,7 @@ export class BattleEngine {
       message: endMsg || outcome.message,
       matchEnded: this.matchEnded,
       playerScore: this.playerScore,
-      computerScore: this.computerScore
+      opponentScore: this.opponentScore
     };
   }
 
@@ -227,9 +227,9 @@ export class BattleEngine {
    *
    * @pseudocode
    * 1. Set `matchEnded` to true and stop any running timer.
-   * 2. Return a quit message along with `playerScore` and `computerScore`.
+   * 2. Return a quit message along with `playerScore` and `opponentScore`.
    *
-   * @returns {{message: string, playerScore: number, computerScore: number}}
+   * @returns {{message: string, playerScore: number, opponentScore: number}}
    */
   quitMatch() {
     this.matchEnded = true;
@@ -237,7 +237,7 @@ export class BattleEngine {
     return {
       message: "You quit the match. You lose!",
       playerScore: this.playerScore,
-      computerScore: this.computerScore
+      opponentScore: this.opponentScore
     };
   }
 
@@ -250,7 +250,7 @@ export class BattleEngine {
    * 3. Return an interrupt message and current scores.
    *
    * @param {string} [reason] - Reason for interruption.
-   * @returns {{message: string, playerScore: number, computerScore: number}}
+   * @returns {{message: string, playerScore: number, opponentScore: number}}
    */
   interruptRound(reason) {
     this.stopTimer();
@@ -259,7 +259,7 @@ export class BattleEngine {
     return {
       message: `Round interrupted${reason ? ": " + reason : ""}`,
       playerScore: this.playerScore,
-      computerScore: this.computerScore
+      opponentScore: this.opponentScore
     };
   }
 
@@ -272,7 +272,7 @@ export class BattleEngine {
    * 3. Return an interrupt message and current scores.
    *
    * @param {string} [reason] - Reason for interruption.
-   * @returns {{message: string, playerScore: number, computerScore: number}}
+   * @returns {{message: string, playerScore: number, opponentScore: number}}
    */
   interruptMatch(reason) {
     this.stopTimer();
@@ -281,7 +281,7 @@ export class BattleEngine {
     return {
       message: `Match interrupted${reason ? ": " + reason : ""}`,
       playerScore: this.playerScore,
-      computerScore: this.computerScore
+      opponentScore: this.opponentScore
     };
   }
 
@@ -294,12 +294,12 @@ export class BattleEngine {
    * 3. Return a modification message and current scores.
    *
    * @param {object} modification - Object describing the round modification.
-   * @returns {{message: string, playerScore: number, computerScore: number}}
+   * @returns {{message: string, playerScore: number, opponentScore: number}}
    */
   roundModification(modification) {
     // Example: allow score override, round reset, etc.
     if (modification?.playerScore !== undefined) this.playerScore = modification.playerScore;
-    if (modification?.computerScore !== undefined) this.computerScore = modification.computerScore;
+    if (modification?.opponentScore !== undefined) this.opponentScore = modification.opponentScore;
     if (modification?.roundsPlayed !== undefined) this.roundsPlayed = modification.roundsPlayed;
     if (modification?.resetRound) {
       this.stopTimer();
@@ -309,7 +309,7 @@ export class BattleEngine {
     return {
       message: `Round modified${modification ? ": " + JSON.stringify(modification) : ""}`,
       playerScore: this.playerScore,
-      computerScore: this.computerScore
+      opponentScore: this.opponentScore
     };
   }
 
@@ -321,7 +321,7 @@ export class BattleEngine {
    * 2. Return error message and scores.
    *
    * @param {string} errorMsg - Error message.
-   * @returns {{message: string, playerScore: number, computerScore: number}}
+   * @returns {{message: string, playerScore: number, opponentScore: number}}
    */
   handleError(errorMsg) {
     this.stopTimer();
@@ -329,7 +329,7 @@ export class BattleEngine {
     return {
       message: `Error: ${errorMsg}`,
       playerScore: this.playerScore,
-      computerScore: this.computerScore
+      opponentScore: this.opponentScore
     };
   }
 
@@ -347,7 +347,7 @@ export class BattleEngine {
   }
 
   getScores() {
-    return { playerScore: this.playerScore, computerScore: this.computerScore };
+    return { playerScore: this.playerScore, opponentScore: this.opponentScore };
   }
 
   /**
@@ -449,7 +449,7 @@ export class BattleEngine {
     stopScheduler();
     this.pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN;
     this.playerScore = 0;
-    this.computerScore = 0;
+    this.opponentScore = 0;
     this.matchEnded = false;
     this.roundsPlayed = 0;
     this.roundInterrupted = false;

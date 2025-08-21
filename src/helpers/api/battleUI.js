@@ -42,7 +42,7 @@ export function chooseOpponentStat(values, difficulty = "easy") {
  *
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
- * @returns {{message: string, matchEnded: boolean, playerScore: number, computerScore: number}}
+ * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number}}
  */
 export function evaluateRound(playerVal, opponentVal) {
   return handleStatSelection(playerVal, opponentVal);

@@ -1,7 +1,7 @@
 import {
-  getComputerJudoka,
+  getOpponentJudoka,
   getGokyoLookup,
-  clearComputerJudoka,
+  clearOpponentJudoka,
   getOrLoadGokyoLookup
 } from "./cardSelection.js";
 import { loadSettings } from "../settingsStorage.js";
@@ -32,17 +32,17 @@ export function showSelectionPrompt() {
 }
 
 /**
- * Reveal the computer's hidden card.
+ * Reveal the opponent's hidden card.
  *
  * @pseudocode
  * 1. Exit early if no stored judoka exists.
- * 2. Render `computerJudoka` into the computer card container.
+ * 2. Render `opponentJudoka` into the opponent card container.
  * 3. Clear the stored judoka after rendering.
  */
-export async function revealComputerCard() {
-  const judoka = getComputerJudoka();
+export async function revealOpponentCard() {
+  const judoka = getOpponentJudoka();
   if (!judoka) return;
-  const container = document.getElementById("computer-card");
+  const container = document.getElementById("opponent-card");
   // Preserve the debug panel across card re-renders
   const debugPanel = container ? container.querySelector("#debug-panel") : null;
   try {
@@ -78,7 +78,7 @@ export async function revealComputerCard() {
       } catch {}
     }
   }
-  clearComputerJudoka();
+  clearOpponentJudoka();
 }
 
 export function enableNextRoundButton() {

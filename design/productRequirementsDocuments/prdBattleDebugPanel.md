@@ -31,7 +31,7 @@ Developers and testers need a way to observe internal game state (e.g., scores, 
 | Priority | Feature                       | Description                                                                                 |
 | -------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
 | P1       | Debug Panel Toggle            | Add a toggle in Settings to enable/disable the debug panel overlay in battle mode           |
-| P1       | Real-Time State Display       | Show current player/computer scores, timer state, match end status, and (if test mode) seed |
+| P1       | Real-Time State Display       | Show current player/opponent scores, timer state, match end status, and (if test mode) seed |
 | P1       | Persistent Panel Placement    | Panel appears in the battle UI, does not overlap controls, and remains visible when enabled |
 | P2       | Accessibility Compliance      | Panel uses semantic markup (e.g., <pre>, aria-live) for screen reader compatibility         |
 | P3       | Hide in Production by Default | Panel is hidden unless explicitly enabled (or DEBUG_LOGGING=true)                           |
@@ -40,7 +40,7 @@ Developers and testers need a way to observe internal game state (e.g., scores, 
 
 - Debug panel is hidden by default for all users
 - Enabling the toggle in Settings immediately shows the debug panel in Classic Battle
-- Panel displays a JSON-formatted object with: playerScore, computerScore, timer, matchEnded, and seed (if test mode)
+- Panel displays a JSON-formatted object with: playerScore, opponentScore, timer, matchEnded, and seed (if test mode)
 - Panel updates in real time after each round, stat selection, and timer event
 - Panel uses <pre> and aria-live attributes for accessibility
 - Disabling the toggle hides the panel immediately
