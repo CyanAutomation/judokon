@@ -1,9 +1,6 @@
 import { describe, it, expect } from "vitest";
-import {
-  selectMatches,
-  formatSourcePath,
-  formatTags
-} from "../../src/helpers/api/vectorSearchPage.js";
+import { selectMatches } from "../../src/helpers/api/vectorSearchPage.js";
+import { formatSourcePath, formatTags } from "../../src/helpers/vectorSearchPage/renderUtils.js";
 
 /**
  * Unit tests for vector search helper utilities.
