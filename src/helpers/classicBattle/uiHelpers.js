@@ -115,6 +115,8 @@ export function updateDebugPanel() {
         state.machineLog = window.__classicBattleStateLog.slice();
       }
       if (window.__roundDecisionEnter) state.roundDecisionEnter = window.__roundDecisionEnter;
+      if (window.__guardFiredAt) state.guardFiredAt = window.__guardFiredAt;
+      if (window.__guardOutcomeEvent) state.guardOutcomeEvent = window.__guardOutcomeEvent;
       // Machine diagnostics
       try {
         const getMachine = window.__getClassicBattleMachine;

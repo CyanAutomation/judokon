@@ -112,6 +112,10 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
                     : "outcome=draw"
                 : null;
               if (outcomeEvent) {
+                try {
+                  window.__guardFiredAt = Date.now();
+                  window.__guardOutcomeEvent = outcomeEvent;
+                } catch {}
                 await m.dispatch(outcomeEvent);
                 if (result?.matchEnded) {
                   await m.dispatch("matchPointReached");
@@ -119,9 +123,10 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
                   await m.dispatch("continue");
                 }
                 scheduleNextRound(result || { matchEnded: false });
+                updateDebugPanel();
               }
             } catch {}
-          }, 2000);
+          }, 1200);
           // Track guard id for potential future cancellation if needed.
           window.__roundDecisionGuard = guardId;
         }
