@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { loadQuote, formatFableStory } from "../../src/helpers/quoteBuilder.js";
+import { loadQuote } from "../../src/helpers/quoteBuilder.js";
+import { formatFableStory } from "../../src/helpers/quotes/quoteRenderer.js";
 
 const originalFetch = global.fetch;
 
