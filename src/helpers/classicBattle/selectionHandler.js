@@ -4,6 +4,7 @@ import * as scoreboard from "../setupScoreboard.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { getStatValue, resetStatButtons, showResult } from "../battle/index.js";
 import { revealOpponentCard } from "./uiHelpers.js";
+import { getOpponentJudoka } from "./cardSelection.js";
 import { scheduleNextRound } from "./timerService.js";
 import { showMatchSummaryModal } from "./uiService.js";
 import { handleReplay } from "./roundManager.js";
@@ -83,7 +84,16 @@ export function evaluateRound(store, stat) {
   const playerCard = document.getElementById("player-card");
   const opponentCard = document.getElementById("opponent-card");
   const playerVal = getStatValue(playerCard, stat);
-  const opponentVal = getStatValue(opponentCard, stat);
+  // Prefer underlying opponent judoka data if available to avoid depending on
+  // DOM reveal timing. Fallback to DOM when data is missing.
+  let opponentVal = 0;
+  try {
+    const opp = getOpponentJudoka();
+    const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
+    opponentVal = Number.isFinite(raw) ? raw : getStatValue(opponentCard, stat);
+  } catch {
+    opponentVal = getStatValue(opponentCard, stat);
+  }
   const result = evaluateRoundApi(playerVal, opponentVal);
   syncScoreDisplay();
   const msg = result.message || "";
@@ -156,23 +166,18 @@ export async function resolveRound(store) {
   } catch {}
   updateDebugPanel();
 
-  const delay = 300 + Math.floor(Math.random() * 401);
-  await new Promise((resolve) => setTimeout(resolve, delay));
-
+  // Proceed immediately; run opponent reveal asynchronously to avoid any UI stall.
   clearTimeout(opponentSnackbarId);
-  // Do not let opponent reveal block round resolution indefinitely.
-  // Proceed if reveal takes too long (e.g., asset/network hiccups).
   try {
-    const SLOW = Symbol("slow");
-    const timeout = new Promise((resolve) => setTimeout(() => resolve(SLOW), 1000));
-    const status = await Promise.race([revealOpponentCard().then(() => "revealed"), timeout]);
-    try {
-      if (typeof window !== "undefined") {
-        const rd = window.__roundDebug || {};
-        rd.reveal = status === SLOW ? "timeout" : status;
-        window.__roundDebug = rd;
-      }
-    } catch {}
+    if (typeof window !== "undefined") {
+      const rd = window.__roundDebug || {};
+      rd.reveal = "deferred";
+      window.__roundDebug = rd;
+    }
+  } catch {}
+  try {
+    // Fire-and-forget opponent reveal. Errors are swallowed.
+    Promise.resolve().then(() => revealOpponentCard()).catch(() => {});
   } catch {}
   updateDebugPanel();
   let result;
