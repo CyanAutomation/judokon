@@ -72,6 +72,12 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     async waitingForPlayerAction() {},
     async roundDecision(m) {
       try {
+        if (typeof window !== "undefined") {
+          window.__roundDecisionEnter = Date.now();
+        }
+      } catch {}
+      updateDebugPanel();
+      try {
         await resolveRound(store);
       } catch (err) {
         try {

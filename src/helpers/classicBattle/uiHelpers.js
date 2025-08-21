@@ -114,6 +114,7 @@ export function updateDebugPanel() {
       if (Array.isArray(window.__classicBattleStateLog)) {
         state.machineLog = window.__classicBattleStateLog.slice();
       }
+      if (window.__roundDecisionEnter) state.roundDecisionEnter = window.__roundDecisionEnter;
     }
   } catch {}
   // Include store snapshot when available
