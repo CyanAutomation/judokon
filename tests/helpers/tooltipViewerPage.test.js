@@ -270,4 +270,33 @@ describe("setupTooltipViewerPage", () => {
     expect(sr).toBeTruthy();
     expect(sr.textContent).toBe("Invalid key format (prefix.name)");
   });
+
+  it("cleans up search filter on pagehide", async () => {
+    Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
+
+    vi.useFakeTimers();
+    const mod = await import("../../src/helpers/tooltipViewerPage.js");
+    mod.setTooltipDataLoader(async () => ({ "ui.tip": "text" }));
+
+    const searchInput = document.getElementById("tooltip-search");
+    const removeSpy = vi.spyOn(searchInput, "removeEventListener");
+    const setSpy = vi.spyOn(globalThis, "setTimeout");
+    const clearSpy = vi.spyOn(globalThis, "clearTimeout");
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await flush();
+
+    const before = setSpy.mock.calls.length;
+    searchInput.value = "a";
+    searchInput.dispatchEvent(new Event("input"));
+    const timerId = setSpy.mock.results[before].value;
+
+    window.dispatchEvent(new Event("pagehide"));
+    expect(clearSpy).toHaveBeenCalledWith(timerId);
+    expect(removeSpy).toHaveBeenCalledWith("input", expect.any(Function));
+
+    setSpy.mockRestore();
+    clearSpy.mockRestore();
+    removeSpy.mockRestore();
+  });
 });
