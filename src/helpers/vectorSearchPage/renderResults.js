@@ -1,5 +1,5 @@
 import { createSnippetElement } from "../snippetFormatter.js";
-import { formatSourcePath, formatTags } from "../api/vectorSearchPage.js";
+import { formatSourcePath, formatTags } from "./renderUtils.js";
 
 export const RESULT_TABLE_CONFIG = {
   scoreClasses: [
