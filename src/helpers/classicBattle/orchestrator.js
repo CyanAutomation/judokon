@@ -85,6 +85,26 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
         await new Promise((r) => setTimeout(r, 50));
         waited += 50;
       }
+      // Schedule a failsafe in case resolution does not progress due to a UI stall.
+      try {
+        if (typeof window !== "undefined") {
+          const guardId = setTimeout(async () => {
+            try {
+              if (window.__classicBattleState !== "roundDecision") return;
+              const rd = window.__roundDebug;
+              const resolved = rd && typeof rd.resolvedAt === "number";
+              if (resolved) return;
+              if (store.playerChoice) {
+                await resolveRound(store);
+              } else {
+                await m.dispatch("interrupt", { reason: "stalledNoSelection" });
+              }
+            } catch {}
+          }, 2000);
+          // Track guard id for potential future cancellation if needed.
+          window.__roundDecisionGuard = guardId;
+        }
+      } catch {}
       if (!store.playerChoice) {
         // Still no selection; follow the interrupt rail to recover.
         try {
