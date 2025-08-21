@@ -17,7 +17,9 @@ describe("convertToPseudoJapanese", () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => mapping });
     vi.spyOn(Math, "random").mockReturnValue(0);
 
-    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+    const { convertToPseudoJapanese } = await import(
+      "../../src/helpers/pseudoJapanese/converter.js"
+    );
 
     const cases = [
       ["short", "abc", "アバカ"],
@@ -35,7 +37,9 @@ describe("convertToPseudoJapanese", () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => mapping });
     vi.spyOn(Math, "random").mockReturnValue(0);
 
-    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+    const { convertToPseudoJapanese } = await import(
+      "../../src/helpers/pseudoJapanese/converter.js"
+    );
 
     const result = await convertToPseudoJapanese("a1!b2?c3.");
     expect(result).toBe("アアバアカア");
@@ -45,7 +49,9 @@ describe("convertToPseudoJapanese", () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => mapping });
     vi.spyOn(Math, "random").mockReturnValue(0);
 
-    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+    const { convertToPseudoJapanese } = await import(
+      "../../src/helpers/pseudoJapanese/converter.js"
+    );
 
     const result = await convertToPseudoJapanese("one\ntwo");
     expect(result).toBe("アアエ\nアアア");
@@ -56,7 +62,9 @@ describe("convertToPseudoJapanese", () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
     vi.useFakeTimers();
 
-    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+    const { convertToPseudoJapanese } = await import(
+      "../../src/helpers/pseudoJapanese/converter.js"
+    );
 
     const input = "a".repeat(999);
 
@@ -70,7 +78,9 @@ describe("convertToPseudoJapanese", () => {
   it("returns static fallback when the mapping fails to load", async () => {
     global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
 
-    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+    const { convertToPseudoJapanese } = await import(
+      "../../src/helpers/pseudoJapanese/converter.js"
+    );
     const result = await convertToPseudoJapanese("anything");
     expect(result).toBe("\u65e5\u672c\u8a9e\u98a8\u30c6\u30ad\u30b9\u30c8");
   });
@@ -78,7 +88,9 @@ describe("convertToPseudoJapanese", () => {
   it("handles empty string and null/undefined input", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => mapping });
     vi.spyOn(Math, "random").mockReturnValue(0);
-    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+    const { convertToPseudoJapanese } = await import(
+      "../../src/helpers/pseudoJapanese/converter.js"
+    );
     expect(await convertToPseudoJapanese("")).toBe("");
     expect(await convertToPseudoJapanese(null)).toBe("");
     expect(await convertToPseudoJapanese(undefined)).toBe("");
@@ -87,13 +99,17 @@ describe("convertToPseudoJapanese", () => {
   it("handles input with only unsupported characters", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => mapping });
     vi.spyOn(Math, "random").mockReturnValue(0);
-    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+    const { convertToPseudoJapanese } = await import(
+      "../../src/helpers/pseudoJapanese/converter.js"
+    );
     expect(await convertToPseudoJapanese("123!@#")).toBe("");
   });
 
   it("returns fallback if mapping is missing 'letters' property", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => ({}) });
-    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+    const { convertToPseudoJapanese } = await import(
+      "../../src/helpers/pseudoJapanese/converter.js"
+    );
     const result = await convertToPseudoJapanese("abc");
     expect(result).toBe("\u65e5\u672c\u8a9e\u98a8\u30c6\u30ad\u30b9\u30c8");
   });
@@ -107,7 +123,9 @@ describe("convertToPseudoJapanese", () => {
     });
     // Use Math.random to always pick the second option
     vi.spyOn(Math, "random").mockReturnValue(0.99);
-    const { convertToPseudoJapanese } = await import("../../src/helpers/pseudoJapanese.js");
+    const { convertToPseudoJapanese } = await import(
+      "../../src/helpers/pseudoJapanese/converter.js"
+    );
     expect(await convertToPseudoJapanese("ab")).toBe("ァビ");
   });
 });
