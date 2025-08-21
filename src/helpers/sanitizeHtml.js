@@ -29,13 +29,13 @@ export async function getSanitizer() {
   const viaBare = await tryLoad("dompurify");
   if (viaBare) return (cached = viaBare);
 
-  // Fallback for raw static servers used in Playwright
-  const viaPath = await tryLoad("/node_modules/dompurify/dist/purify.es.js");
-  if (viaPath) return (cached = viaPath);
-
-  // CDN fallback for GitHub Pages (no node_modules on server)
+  // Prefer CDN for GitHub Pages (no node_modules on server)
   const viaCDN = await tryLoad("https://esm.sh/dompurify@3.2.6");
   if (viaCDN) return (cached = viaCDN);
+
+  // Fallback for raw static servers used in Playwright dev servers
+  const viaPath = await tryLoad("/node_modules/dompurify/dist/purify.es.js");
+  if (viaPath) return (cached = viaPath);
 
   // Final fallback: minimal allowlist sanitizer good enough for tests
   const ALLOW = new Set(["br", "strong", "em"]);
