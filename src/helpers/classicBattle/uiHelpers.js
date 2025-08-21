@@ -132,6 +132,9 @@ export function updateDebugPanel() {
     if (typeof window !== "undefined" && window.__roundDebug) {
       state.round = window.__roundDebug;
     }
+    if (typeof window !== "undefined" && Array.isArray(window.__eventDebug)) {
+      state.eventDebug = window.__eventDebug.slice();
+    }
     const opp = document.getElementById("opponent-card");
     if (opp) {
       state.dom = {

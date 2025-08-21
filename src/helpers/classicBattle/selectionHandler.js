@@ -15,13 +15,25 @@ import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/sch
 // Local dispatcher to avoid circular import with orchestrator.
 // Uses a window-exposed getter set by the orchestrator at runtime.
 async function dispatchBattleEvent(eventName, payload) {
+  const record = (via, ok) => {
+    try {
+      if (typeof window !== "undefined") {
+        const log = Array.isArray(window.__eventDebug) ? window.__eventDebug : [];
+        log.push({ event: eventName, via, ok, ts: Date.now() });
+        while (log.length > 50) log.shift();
+        window.__eventDebug = log;
+      }
+    } catch {}
+  };
   // Primary path: dispatch via the live machine exposed by the orchestrator.
   try {
     if (typeof window !== "undefined") {
       const getMachine = window.__getClassicBattleMachine;
       const machine = typeof getMachine === "function" ? getMachine() : null;
       if (machine && typeof machine.dispatch === "function") {
-        return await machine.dispatch(eventName, payload);
+        const res = await machine.dispatch(eventName, payload);
+        record("machine", true);
+        return res;
       }
     }
   } catch {}
@@ -36,11 +48,16 @@ async function dispatchBattleEvent(eventName, payload) {
     const orchestrator = await import("./orchestrator.js");
     if (orchestrator && typeof orchestrator.dispatchBattleEvent === "function") {
       if (payload === undefined) {
-        return await orchestrator.dispatchBattleEvent(eventName);
+        const res = await orchestrator.dispatchBattleEvent(eventName);
+        record("orchestratorImport", true);
+        return res;
       }
-      return await orchestrator.dispatchBattleEvent(eventName, payload);
+      const res = await orchestrator.dispatchBattleEvent(eventName, payload);
+      record("orchestratorImport", true);
+      return res;
     }
   } catch {}
+  record("none", false);
 }
 
 /**
