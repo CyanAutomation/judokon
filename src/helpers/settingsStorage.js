@@ -64,10 +64,11 @@ export function saveSettings(settings) {
  * Load persisted settings from localStorage.
  *
  * @pseudocode
- * 1. Throw if `localStorage` is unavailable.
- * 2. Load and merge settings via `baseLoadSettings`.
- * 3. Validate against the schema; on failure, reset storage and cache to defaults.
- * 4. Cache and return the merged settings.
+ * 1. Throw if `localStorage` is unavailable and load the settings schema.
+ * 2. Read and parse JSON from `SETTINGS_KEY` to proactively catch errors.
+ * 3. Load and merge settings via `baseLoadSettings`.
+ * 4. Validate against the schema; on failure, reset storage and cache to defaults.
+ * 5. Cache and return the merged settings.
  *
  * @returns {Promise<import("../config/settingsDefaults.js").Settings>} Resolved settings object.
  */
@@ -75,10 +76,16 @@ export async function loadSettings() {
   if (typeof localStorage === "undefined") {
     throw new Error("localStorage unavailable");
   }
+  await getSettingsSchema();
   try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) {
+      // Proactively parse to catch syntax errors.
+      // The result isn't used here because baseLoadSettings handles merging.
+      JSON.parse(raw);
+    }
     const settings = await baseLoadSettings();
-    const schema = await getSettingsSchema();
-    await validateWithSchema(settings, schema);
+    await validateWithSchema(settings, await getSettingsSchema());
     setCachedSettings(settings);
     return settings;
   } catch (error) {

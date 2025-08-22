@@ -73,12 +73,16 @@ export async function loadSettings() {
     // Ignore fetch failures or invalid JSON
   }
 
-  if (typeof localStorage !== "undefined") {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      settings = mergeKnown(settings, parsed, DEFAULT_SETTINGS);
+  try {
+    if (typeof localStorage !== "undefined") {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        settings = mergeKnown(settings, parsed, DEFAULT_SETTINGS);
+      }
     }
+  } catch {
+    // Ignore localStorage unavailability or JSON errors
   }
 
   return settings;
