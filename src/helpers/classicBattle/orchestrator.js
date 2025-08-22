@@ -1,13 +1,12 @@
 import { BattleStateMachine } from "./stateMachine.js";
 import { initRoundSelectModal } from "./roundSelectModal.js";
 import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
-import * as scoreboard from "../setupScoreboard.js";
 import { getDefaultTimer } from "../timerUtils.js";
-import { updateDebugPanel } from "./uiHelpers.js";
 import { resolveRound } from "./selectionHandler.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { getStatValue } from "../battle/index.js";
 import { scheduleNextRound } from "./timerService.js";
+import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 
 let machine = null;
 
@@ -43,8 +42,8 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
         return;
       }
       if (typeof doResetGame === "function") doResetGame();
-      scoreboard.clearMessage();
-      updateDebugPanel();
+      emitBattleEvent("scoreboardClearMessage");
+      emitBattleEvent("debugPanelUpdate");
       await initRoundSelectModal(() => m.dispatch("startClicked"));
     },
     async matchStart(m) {
@@ -57,9 +56,12 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
           const val = await getDefaultTimer("matchStartTimer");
           if (typeof val === "number") duration = val;
         } catch {}
-        scoreboard.startCountdown(duration, () => {
+        const onFinished = () => {
+          offBattleEvent("countdownFinished", onFinished);
           m.dispatch("ready");
-        });
+        };
+        onBattleEvent("countdownFinished", onFinished);
+        emitBattleEvent("countdownStart", { duration });
       }
     },
     async roundStart(m) {
@@ -74,7 +76,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
           window.__roundDecisionEnter = Date.now();
         }
       } catch {}
-      updateDebugPanel();
+      emitBattleEvent("debugPanelUpdate");
       // If no selection yet (e.g., timeout occurred and auto-select is pending),
       // wait briefly for selection to land to avoid a stall in this state.
       let waited = 0;
@@ -129,7 +131,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
               } else {
                 await m.dispatch("interrupt", { reason: "guardNoOutcome" });
               }
-              updateDebugPanel();
+              emitBattleEvent("debugPanelUpdate");
             } catch {}
           }, 1200);
           // Track guard id for potential future cancellation if needed.
@@ -139,9 +141,9 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
       if (!store.playerChoice) {
         // Still no selection; follow the interrupt rail to recover.
         try {
-          scoreboard.showMessage("No selection detected. Interrupting round.");
+          emitBattleEvent("scoreboardShowMessage", "No selection detected. Interrupting round.");
         } catch {}
-        updateDebugPanel();
+        emitBattleEvent("debugPanelUpdate");
         await m.dispatch("interrupt", { reason: "noSelection" });
         return;
       }
@@ -149,8 +151,8 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
         await resolveRound(store);
       } catch {
         try {
-          scoreboard.showMessage("Round error. Recovering…");
-          updateDebugPanel();
+          emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
+          emitBattleEvent("debugPanelUpdate");
           await m.dispatch("interrupt", { reason: "roundResolutionError" });
         } catch {}
       }
@@ -159,10 +161,10 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     async matchDecision() {},
     async matchOver() {},
     async interruptRound(m, payload) {
-      scoreboard.clearMessage();
-      updateDebugPanel();
+      emitBattleEvent("scoreboardClearMessage");
+      emitBattleEvent("debugPanelUpdate");
       if (payload?.reason) {
-        scoreboard.showMessage(`Round interrupted: ${payload.reason}`);
+        emitBattleEvent("scoreboardShowMessage", `Round interrupted: ${payload.reason}`);
       }
       if (payload?.adminTest) {
         await m.dispatch("roundModification", payload);
@@ -171,18 +173,18 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
       }
     },
     async interruptMatch(m, payload) {
-      scoreboard.clearMessage();
-      updateDebugPanel();
+      emitBattleEvent("scoreboardClearMessage");
+      emitBattleEvent("debugPanelUpdate");
       if (payload?.reason) {
-        scoreboard.showMessage(`Match interrupted: ${payload.reason}`);
+        emitBattleEvent("scoreboardShowMessage", `Match interrupted: ${payload.reason}`);
       }
       await m.dispatch("matchOver", payload);
     },
     async roundModification(m, payload) {
-      scoreboard.clearMessage();
-      updateDebugPanel();
+      emitBattleEvent("scoreboardClearMessage");
+      emitBattleEvent("debugPanelUpdate");
       if (payload?.modification) {
-        scoreboard.showMessage(`Round modified: ${payload.modification}`);
+        emitBattleEvent("scoreboardShowMessage", `Round modified: ${payload.modification}`);
       }
       if (payload?.resumeRound) {
         await m.dispatch("roundStart");
@@ -236,7 +238,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
         }
       }
     } catch {}
-    updateDebugPanel();
+    emitBattleEvent("debugPanelUpdate");
   };
 
   machine = await BattleStateMachine.create(onEnter, { store }, onTransition);
@@ -263,8 +265,11 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
 
   if (machine?.context?.engine) {
     machine.context.engine.onTimerDrift = (driftAmount) => {
-      scoreboard.showMessage(`Timer drift detected: ${driftAmount}s. Timer reset.`);
-      updateDebugPanel();
+      emitBattleEvent(
+        "scoreboardShowMessage",
+        `Timer drift detected: ${driftAmount}s. Timer reset.`
+      );
+      emitBattleEvent("debugPanelUpdate");
       machine.context.engine.handleTimerDrift(driftAmount);
     };
   }
@@ -272,8 +277,8 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   if (typeof window !== "undefined" && machine?.context?.engine) {
     window.injectClassicBattleError = (errorMsg) => {
       machine.context.engine.injectError(errorMsg);
-      scoreboard.showMessage(`Injected error: ${errorMsg}`);
-      updateDebugPanel();
+      emitBattleEvent("scoreboardShowMessage", `Injected error: ${errorMsg}`);
+      emitBattleEvent("debugPanelUpdate");
       machine.dispatch("interruptMatch", { reason: errorMsg });
     };
   }
