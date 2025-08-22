@@ -114,7 +114,9 @@ onBattleEvent("scoreboardShowMessage", (e) => {
 onBattleEvent("debugPanelUpdate", () => {
   try {
     updateDebugPanel();
-  } catch {}
+  } catch (err) {
+    console.error("Error updating debug panel:", err);
+  }
 });
 
 onBattleEvent("countdownStart", (e) => {
