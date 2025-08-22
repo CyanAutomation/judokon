@@ -101,14 +101,15 @@ export async function setupClassicBattlePage() {
   watchBattleOrientation(applyBattleOrientation);
   await initFeatureFlags();
   try {
-    if (isEnabled("enableTestMode")) {
-      window.__disableSnackbars = true;
-    }
+    window.__disableSnackbars = isEnabled("enableTestMode");
   } catch {}
   setupNextButton();
   setBattleStateBadgeEnabled(isEnabled("battleStateBadge"));
   featureFlagsEmitter.addEventListener("change", () => {
     setBattleStateBadgeEnabled(isEnabled("battleStateBadge"));
+    try {
+      window.__disableSnackbars = isEnabled("enableTestMode");
+    } catch {}
   });
 
   statButtonControls = initStatButtons(battleStore);

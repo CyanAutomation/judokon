@@ -289,6 +289,50 @@ describe("classicBattlePage test mode flag", () => {
     expect(battleArea.dataset.testMode).toBe("true");
     expect(banner.classList.contains("hidden")).toBe(false);
   });
+
+  it("toggles snackbar availability when test mode is toggled", async () => {
+    const startRound = vi.fn();
+    const waitForOpponentCard = vi.fn();
+    const loadSettings = vi.fn().mockResolvedValue({
+      featureFlags: {
+        enableTestMode: { enabled: false }
+      }
+    });
+    const updateSetting = vi
+      .fn()
+      .mockResolvedValue({ featureFlags: { enableTestMode: { enabled: true } } });
+    const initTooltips = vi.fn().mockResolvedValue(() => {});
+    const setTestMode = vi.fn();
+
+    const store = {};
+    vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
+      createBattleStore: () => store,
+      startRound
+    }));
+    vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
+      handleStatSelection: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForOpponentCard }));
+    vi.doMock("../../src/config/loadSettings.js", () => ({ loadSettings }));
+    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ updateSetting }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
+    vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
+    vi.doMock("../../src/helpers/stats.js", () => ({ loadStatNames: async () => [] }));
+
+    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
+    const { setFlag } = await import("../../src/helpers/featureFlags.js");
+    await setupClassicBattlePage();
+
+    expect(window.__disableSnackbars).toBe(false);
+
+    await setFlag("enableTestMode", true);
+
+    expect(window.__disableSnackbars).toBe(true);
+
+    await setFlag("enableTestMode", false);
+
+    expect(window.__disableSnackbars).toBe(false);
+  });
 });
 
 describe("startRoundWrapper failures", () => {
