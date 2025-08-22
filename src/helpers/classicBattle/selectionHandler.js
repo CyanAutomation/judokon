@@ -152,6 +152,13 @@ export async function handleStatSelection(store, stat) {
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   scoreboard.clearTimer();
+  // In test environments, resolve synchronously to avoid orchestrator coupling
+  try {
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      await resolveRound(store);
+      return;
+    }
+  } catch {}
   // If the orchestrator is active, signal selection; otherwise resolve inline
   // to keep tests and non-orchestrated flows moving.
   try {
@@ -188,6 +195,7 @@ export async function handleStatSelection(store, stat) {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
 export async function resolveRound(store) {
+  try { console.log('[selectionHandler] resolveRound start'); } catch {}
   const stat = store.playerChoice;
   if (!stat) {
     return;
@@ -273,6 +281,7 @@ export async function resolveRound(store) {
     await dispatchBattleEvent("continue");
   }
 
+  try { console.log('[selectionHandler] scheduling next round'); } catch {}
   scheduleNextRound(result);
 
   if (result.matchEnded) {

@@ -5,10 +5,32 @@ import { updateDebugPanel } from "./uiHelpers.js";
 import * as snackbar from "../showSnackbar.js";
 import { setSkipHandler, skipCurrentPhase } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
-import { dispatchBattleEvent } from "./orchestrator.js";
 import { isEnabled } from "../featureFlags.js";
 
 // Skip handler utilities moved to skipHandler.js
+
+// Local dispatcher that prefers calling the orchestrator export (so tests can spy),
+// and falls back to dispatching directly on the running machine when available.
+async function dispatchBattleEventLocal(eventName, payload) {
+  // Prefer orchestrator export when it can be loaded (satisfies test spies)
+  try {
+    const orchestrator = await import("./orchestrator.js");
+    if (orchestrator && typeof orchestrator.dispatchBattleEvent === "function") {
+      if (payload === undefined) return await orchestrator.dispatchBattleEvent(eventName);
+      return await orchestrator.dispatchBattleEvent(eventName, payload);
+    }
+  } catch {}
+  // Fallback to the live machine when present
+  try {
+    if (typeof window !== "undefined") {
+      const getMachine = window.__getClassicBattleMachine;
+      const machine = typeof getMachine === "function" ? getMachine() : null;
+      if (machine && typeof machine.dispatch === "function") {
+        return await machine.dispatch(eventName, payload);
+      }
+    }
+  } catch {}
+}
 
 export async function onNextButtonClick() {
   const btn = document.getElementById("next-button");
@@ -18,7 +40,7 @@ export async function onNextButtonClick() {
   if (btn.dataset.nextReady === "true") {
     btn.disabled = true;
     delete btn.dataset.nextReady;
-    await dispatchBattleEvent("ready");
+    await dispatchBattleEventLocal("ready");
     setSkipHandler(null);
     return;
   }
@@ -35,7 +57,7 @@ export async function onNextButtonClick() {
     if (btn.dataset.nextReady === "true") {
       btn.disabled = true;
       delete btn.dataset.nextReady;
-      await dispatchBattleEvent("ready");
+      await dispatchBattleEventLocal("ready");
       setSkipHandler(null);
       return true;
     }
@@ -78,7 +100,7 @@ async function forceAutoSelectAndDispatch(onExpiredSelect) {
     await autoSelectStat(onExpiredSelect);
   } catch {
     // If auto-select fails, dispatch interrupt to avoid stalling
-    await dispatchBattleEvent("interrupt");
+    await dispatchBattleEventLocal("interrupt");
   }
 }
 
@@ -118,11 +140,11 @@ export async function startTimer(onExpiredSelect) {
   const onExpired = async () => {
     setSkipHandler(null);
     scoreboard.clearTimer();
-    await dispatchBattleEvent("timeout");
+    await dispatchBattleEventLocal("timeout");
     if (isEnabled("randomStatMode")) {
       await autoSelectStat(onExpiredSelect);
     } else {
-      await dispatchBattleEvent("interrupt");
+      await dispatchBattleEventLocal("interrupt");
     }
   };
 
@@ -202,6 +224,7 @@ export function handleStatSelectionTimeout(store, onSelect) {
  * @param {{matchEnded: boolean}} result - Result from a completed round.
  */
 export function scheduleNextRound(result) {
+  try { console.log('[timerService] scheduleNextRound called', result && result.matchEnded); } catch {}
   if (result.matchEnded) {
     setSkipHandler(null);
     return;
@@ -226,6 +249,7 @@ export function scheduleNextRound(result) {
   }
 
   const onTick = (remaining) => {
+    try { console.log('[timerService] onTick', remaining); } catch {}
     if (remaining <= 0) {
       scoreboard.clearTimer();
       return;
@@ -251,7 +275,7 @@ export function scheduleNextRound(result) {
       btn.dataset.nextReady = "true";
       btn.disabled = false;
     }
-    await dispatchBattleEvent("ready");
+    await dispatchBattleEventLocal("ready");
     updateDebugPanel();
   };
 
