@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 
 import tooltips from "../../src/data/tooltips.json" with { type: "json" };
 import gameModes from "../../src/data/gameModes.json" with { type: "json" };
-import { navTooltipKey } from "../../src/helpers/api/navigation.js";
+import { navTooltipKey } from "../../src/helpers/navigation/navigationService.js";
 
 describe("navigation tooltips coverage", () => {
   it("provides nav.* entries for every game mode name", () => {

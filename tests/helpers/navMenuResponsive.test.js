@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { setupHamburger } from "../../src/helpers/api/navigation.js";
+import { setupHamburger } from "../../src/helpers/navigation/navigationUI.js";
 
 describe("setupHamburger", () => {
   let cleanup;
