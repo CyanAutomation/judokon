@@ -10,7 +10,6 @@ This directory contains unit tests for Classic Battle helpers.
 - `classicBattlePage.import.test.js`: verifies `classicBattlePage.js` exports.
 - `countdownReset.test.js`: clears the round timer after a stat is chosen.
 - `difficulty.test.js`: chooses opponent stats based on difficulty.
-- `interrupt.test.js`: dispatches interrupt events when random stat mode is off.
 - `interruptFlow.test.js`: exercises interrupt paths in the state machine.
 - `interruptHandlers.test.js`: handles browser event interrupts (`pagehide`, `error`, `unhandledrejection`).
 - `matchControls.test.js`: toggles Next/quit controls and home link behavior.

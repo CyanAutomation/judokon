@@ -65,10 +65,6 @@
       "label": "Tooltips",
       "description": "Show helpful pop-up hints when hovering controls."
     },
-    "randomStatMode": {
-      "label": "Random Stat Mode",
-      "description": "Auto-selects a random stat when timer expires"
-    },
     "battleDebugPanel": {
       "label": "Battle Debug Panel",
       "description": "Show a panel with live match data for debugging."

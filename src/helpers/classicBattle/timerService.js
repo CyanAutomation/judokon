@@ -3,9 +3,10 @@ import { startRound as engineStartRound, startCoolDown, stopTimer } from "../bat
 import * as scoreboard from "../setupScoreboard.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 import * as snackbar from "../showSnackbar.js";
-import { setSkipHandler, skipCurrentPhase } from "./skipHandler.js";
+import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
-import { isEnabled } from "../featureFlags.js";
+
+let nextRoundTimer = null;
 
 // Skip handler utilities moved to skipHandler.js
 
@@ -36,7 +37,6 @@ export async function onNextButtonClick() {
   const btn = document.getElementById("next-button");
   if (!btn) return;
 
-  // If the next round is ready, start it immediately.
   if (btn.dataset.nextReady === "true") {
     btn.disabled = true;
     delete btn.dataset.nextReady;
@@ -45,41 +45,9 @@ export async function onNextButtonClick() {
     return;
   }
 
-  // Otherwise, request skipping the current cooldown phase.
-  // If no skip handler is active yet, this marks the skip as pending and
-  // it will trigger as soon as the handler is registered.
-  skipCurrentPhase();
-
-  // If skipping completed synchronously and the next round became ready,
-  // start it right away. Otherwise, observe the button until it becomes ready
-  // and then start automatically (covers early clicks before cooldown begins).
-  const maybeStart = async () => {
-    if (btn.dataset.nextReady === "true") {
-      btn.disabled = true;
-      delete btn.dataset.nextReady;
-      await dispatchBattleEventLocal("ready");
-      setSkipHandler(null);
-      return true;
-    }
-    return false;
-  };
-
-  if (await maybeStart()) return;
-
-  const obs = new MutationObserver(async () => {
-    if (await maybeStart()) {
-      obs.disconnect();
-    }
-  });
-  obs.observe(btn, { attributes: true, attributeFilter: ["data-next-ready", "disabled"] });
-
-  if (await maybeStart()) {
-    obs.disconnect();
-    return;
+  if (nextRoundTimer) {
+    nextRoundTimer.stop();
   }
-
-  // Safety timeout to avoid leaking the observer if nothing happens.
-  setTimeout(() => obs.disconnect(), 10000);
 }
 
 /**
@@ -105,8 +73,7 @@ async function forceAutoSelectAndDispatch(onExpiredSelect) {
 }
 
 /**
- * Start the round timer and, on expiration, either auto-select a random stat
- * or interrupt the round based on Random Stat Mode.
+ * Start the round timer and auto-select a random stat on expiration.
  *
  * @pseudocode
  * 1. Determine timer duration using `getDefaultTimer('roundTimer')`.
@@ -114,10 +81,8 @@ async function forceAutoSelectAndDispatch(onExpiredSelect) {
  * 2. Start the timer via `engineStartRound` and monitor for drift.
  *    - On drift trigger auto-select logic and dispatch the outcome event.
  * 3. Register a skip handler that stops the timer and triggers `onExpired`.
- * 4. When expired, dispatch `"timeout"` and then:
- *    a. If `isEnabled('randomStatMode')`, call `autoSelectStat` to pick a stat
- *       and invoke `onExpiredSelect` with `delayOpponentMessage`.
- *    b. Otherwise dispatch `"interrupt"` to follow the interruption path.
+ * 4. When expired, dispatch "timeout" and call `autoSelectStat` to pick a stat
+ *    and invoke `onExpiredSelect` with `delayOpponentMessage`.
  *
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>} onExpiredSelect
  * - Callback to handle stat auto-selection.
@@ -141,11 +106,7 @@ export async function startTimer(onExpiredSelect) {
     setSkipHandler(null);
     scoreboard.clearTimer();
     await dispatchBattleEventLocal("timeout");
-    if (isEnabled("randomStatMode")) {
-      await autoSelectStat(onExpiredSelect);
-    } else {
-      await dispatchBattleEventLocal("interrupt");
-    }
+    await autoSelectStat(onExpiredSelect);
   };
 
   try {
@@ -208,6 +169,41 @@ export function handleStatSelectionTimeout(store, onSelect) {
   }, 5000);
 }
 
+export function createRoundTimer(onTick, onExpired) {
+  const MAX_DRIFT_RETRIES = 3;
+  let retries = 0;
+
+  function start(dur) {
+    startCoolDown(onTick, onExpiredInternal, dur, handleDrift);
+  }
+
+  async function onExpiredInternal() {
+    await onExpired();
+  }
+
+  function handleDrift(remaining) {
+    retries += 1;
+    if (retries > MAX_DRIFT_RETRIES) {
+      onExpiredInternal();
+      return;
+    }
+    const msgEl = document.getElementById("round-message");
+    if (msgEl && msgEl.textContent) {
+      snackbar.showSnackbar("Waiting…");
+    } else {
+      scoreboard.showMessage("Waiting…");
+    }
+    start(remaining);
+  }
+
+  function stop() {
+    stopTimer();
+    onExpiredInternal();
+  }
+
+  return { start, stop };
+}
+
 /**
  * Enable the Next Round button after a cooldown period.
  *
@@ -232,16 +228,9 @@ export function scheduleNextRound(result) {
   const btn = document.getElementById("next-button");
   const timerEl = document.getElementById("next-round-timer");
 
-  // Track snackbar lifecycle and whether the cooldown actually started.
   let snackbarStarted = false;
-  // Track last rendered remaining to avoid duplicate updates when we
-  // pre-render the initial state and the timer immediately echoes the
-  // same remaining value on its first tick.
   let lastRenderedRemaining = -1;
 
-  // Make the Next button act as a skip control during cooldown: keep it enabled
-  // but mark it as not-ready until the cooldown expires. The click handler will
-  // request a skip when not ready.
   if (btn) {
     btn.disabled = false;
     delete btn.dataset.nextReady;
@@ -277,46 +266,13 @@ export function scheduleNextRound(result) {
     updateDebugPanel();
   };
 
-  const MAX_DRIFT_RETRIES = 3;
-  let retries = 0;
-
-  function start(dur) {
-    startCoolDown(onTick, onExpired, dur, handleDrift);
-  }
-
-  function handleDrift(remaining) {
-    retries += 1;
-    if (retries > MAX_DRIFT_RETRIES) {
-      // Give up gracefully without overriding the round result message.
-      onExpired();
-      return;
-    }
-    // Prefer not to overwrite the round result message if present.
-    const msgEl = document.getElementById("round-message");
-    if (msgEl && msgEl.textContent) {
-      snackbar.showSnackbar("Waiting…");
-    } else {
-      scoreboard.showMessage("Waiting…");
-    }
-    start(remaining);
-  }
-
-  // Allow immediate skipping, even before cooldown starts. If the cooldown
-  // hasn't begun yet, simply stop and expire.
-  setSkipHandler(() => {
-    stopTimer();
-    onExpired();
-  });
+  nextRoundTimer = createRoundTimer(onTick, onExpired);
+  setSkipHandler(() => nextRoundTimer.stop());
 
   if (btn && btn.dataset.nextReady === "true") {
     return;
   }
 
-  // Ensure the initial cooldown message is visible immediately, even if
-  // the underlying timer is paused or a skip is pending. The timer will
-  // update/replace this text on the first scheduled tick.
   onTick(3);
-  // Defer starting the underlying timer to the next task to avoid racing the
-  // initial snackbar render in tests and slow environments.
-  setTimeout(() => start(3), 0);
+  setTimeout(() => nextRoundTimer.start(3), 0);
 }

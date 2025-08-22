@@ -90,8 +90,6 @@ test.describe.parallel("Settings page", () => {
       }
     }
 
-    await page.getByRole("checkbox", { name: "Random Stat Mode" }).waitFor({ state: "visible" });
-
     const renderedFlagCount = await page
       .locator("#feature-flags-container input[type=checkbox]")
       .count();
