@@ -81,14 +81,27 @@ export function _resetForTest(store) {
   if (typeof window !== "undefined") {
     delete window.startRoundOverride;
   }
-  clearTimeout(store.statTimeoutId);
-  clearTimeout(store.autoSelectId);
-  store.statTimeoutId = null;
-  store.autoSelectId = null;
-  store.selectionMade = false;
-  cancelFrame(store.compareRaf);
-  store.compareRaf = 0;
-  window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } }));
+  if (store && typeof store === "object") {
+    try {
+      clearTimeout(store.statTimeoutId);
+      clearTimeout(store.autoSelectId);
+    } catch {}
+    store.statTimeoutId = null;
+    store.autoSelectId = null;
+    store.selectionMade = false;
+    try {
+      cancelFrame(store.compareRaf);
+    } catch {}
+    store.compareRaf = 0;
+    try {
+      window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } }));
+    } catch {}
+  } else {
+    // Best-effort notify UI without a concrete store instance
+    try {
+      window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store: null } }));
+    } catch {}
+  }
 }
 
 /**

@@ -9,6 +9,9 @@ const updateDebugPanel = vi.fn();
 describe("classic battle orchestrator UI events", () => {
   beforeEach(() => {
     vi.resetModules();
+    // Clear any persisted state between tests influencing guard logic
+    delete window.__classicBattleState;
+    delete window.__classicBattlePrevState;
     clearMessage.mockClear();
     showMessage.mockClear();
     startCountdown.mockClear();
