@@ -2,16 +2,17 @@ import { STATS, stopTimer } from "../battleEngineFacade.js";
 import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showSnackbar } from "../showSnackbar.js";
-import { getStatValue, resetStatButtons, showResult } from "../battle/index.js";
-import { revealOpponentCard } from "./uiHelpers.js";
+import { getStatValue, resetStatButtons } from "../battle/index.js";
+import {
+  revealOpponentCard,
+  updateDebugPanel,
+  showStatComparison,
+  showRoundOutcome
+} from "./uiHelpers.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { scheduleNextRound } from "./timerService.js";
-import { showMatchSummaryModal } from "./uiService.js";
+import { showMatchSummaryModal, syncScoreDisplay } from "./uiService.js";
 import { handleReplay } from "./roundManager.js";
-import { shouldReduceMotionSync } from "../motionUtils.js";
-import { syncScoreDisplay } from "./uiService.js";
-import { updateDebugPanel } from "./uiHelpers.js";
-import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
 
 // Local dispatcher to avoid circular import with orchestrator.
 // Uses a window-exposed getter set by the orchestrator at runtime.
@@ -64,13 +65,44 @@ async function dispatchBattleEvent(eventName, payload) {
 /**
  * Determine the opponent's stat choice based on difficulty.
  *
+ * @pseudocode
+ * 1. Retrieve the opponent judoka via `getOpponentJudoka`.
+ * 2. Build an array of `{stat, value}` pairs from its stats.
+ * 3. Pass the array to `chooseOpponentStat` with the provided difficulty.
+ * 4. Return the chosen stat key.
+ *
  * @param {"easy"|"medium"|"hard"} [difficulty="easy"] Difficulty setting.
  * @returns {string} One of the values from `STATS`.
  */
 export function simulateOpponentStat(difficulty = "easy") {
-  const card = document.getElementById("opponent-card");
-  const values = card ? STATS.map((stat) => ({ stat, value: getStatValue(card, stat) })) : [];
+  const opp = getOpponentJudoka();
+  let values = [];
+  if (opp && opp.stats) {
+    values = STATS.map((stat) => ({ stat, value: Number(opp.stats[stat]) || 0 }));
+  } else {
+    const card = document.getElementById("opponent-card");
+    values = card ? STATS.map((stat) => ({ stat, value: getStatValue(card, stat) })) : [];
+  }
   return chooseOpponentStat(values, difficulty);
+}
+
+/**
+ * Evaluate round data without side effects.
+ *
+ * @pseudocode
+ * 1. Call `evaluateRoundApi` with the provided values.
+ * 2. Determine outcome by comparing `playerVal` and `opponentVal`.
+ * 3. Return the API result augmented with outcome and the input values.
+ *
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number, outcome: string, playerVal: number, opponentVal: number}}
+ */
+export function evaluateRoundData(playerVal, opponentVal) {
+  const base = evaluateRoundApi(playerVal, opponentVal);
+  const outcome =
+    playerVal > opponentVal ? "winPlayer" : playerVal < opponentVal ? "winOpponent" : "draw";
+  return { ...base, outcome, playerVal, opponentVal };
 }
 
 /**
@@ -84,8 +116,6 @@ export function evaluateRound(store, stat) {
   const playerCard = document.getElementById("player-card");
   const opponentCard = document.getElementById("opponent-card");
   const playerVal = getStatValue(playerCard, stat);
-  // Prefer underlying opponent judoka data if available to avoid depending on
-  // DOM reveal timing. Fallback to DOM when data is missing.
   let opponentVal = 0;
   try {
     const opp = getOpponentJudoka();
@@ -94,16 +124,16 @@ export function evaluateRound(store, stat) {
   } catch {
     opponentVal = getStatValue(opponentCard, stat);
   }
-  const result = evaluateRoundApi(playerVal, opponentVal);
+  const result = evaluateRoundData(playerVal, opponentVal);
   syncScoreDisplay();
-  const msg = result.message || "";
-  showResult(msg);
-  scoreboard.showMessage(msg);
-  showStatComparison(store, stat, playerVal, opponentVal);
+  if (typeof showRoundOutcome === "function") {
+    showRoundOutcome(result.message || "");
+  }
+  if (typeof showStatComparison === "function") {
+    showStatComparison(store, stat, playerVal, opponentVal);
+  }
   updateDebugPanel();
-  const outcome =
-    playerVal > opponentVal ? "winPlayer" : playerVal < opponentVal ? "winOpponent" : "draw";
-  return { ...result, outcome, playerVal, opponentVal };
+  return result;
 }
 
 /**
@@ -256,46 +286,4 @@ export async function resolveRound(store) {
 
   updateDebugPanel();
   resetStatButtons();
-}
-
-/**
- * Show animated stat comparison for the last round.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @param {string} stat - Stat key selected for the round.
- * @param {number} playerVal - Player's stat value.
- * @param {number} compVal - Opponent's stat value.
- */
-export function showStatComparison(store, stat, playerVal, compVal) {
-  const el = document.getElementById("round-result");
-  if (!el) return;
-  cancelFrame(store.compareRaf);
-  const label = stat.charAt(0).toUpperCase() + stat.slice(1);
-  const match = el.textContent.match(/You: (\d+).*Opponent: (\d+)/);
-  const startPlayer = match ? Number(match[1]) : 0;
-  const startComp = match ? Number(match[2]) : 0;
-  if (shouldReduceMotionSync()) {
-    el.textContent = `${label} – You: ${playerVal} Opponent: ${compVal}`;
-    return;
-  }
-  const startTime = performance.now();
-  const duration = 500;
-  let id = 0;
-  const step = (now) => {
-    const progress = Math.min((now - startTime) / duration, 1);
-    const p = Math.round(startPlayer + (playerVal - startPlayer) * progress);
-    const c = Math.round(startComp + (compVal - startComp) * progress);
-    el.textContent = `${label} – You: ${p} Opponent: ${c}`;
-    if (progress >= 1) {
-      cancelFrame(id);
-      store.compareRaf = 0;
-      return;
-    }
-    const next = scheduleFrame(step);
-    cancelFrame(id);
-    id = next;
-    store.compareRaf = id;
-  };
-  id = scheduleFrame(step);
-  store.compareRaf = id;
 }

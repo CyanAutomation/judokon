@@ -11,6 +11,10 @@ import { isTestModeEnabled, getCurrentSeed } from "../testModeUtils.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
 import { showSnackbar } from "../showSnackbar.js";
+import * as scoreboard from "../setupScoreboard.js";
+import { showResult } from "../battle/index.js";
+import { shouldReduceMotionSync } from "../motionUtils.js";
+import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
 
 function getDebugOutputEl() {
   return document.getElementById("debug-output");
@@ -161,4 +165,69 @@ export function updateDebugPanel() {
     }
   } catch {}
   pre.textContent = JSON.stringify(state, null, 2);
+}
+
+/**
+ * Show the round outcome across UI elements.
+ *
+ * @pseudocode
+ * 1. Display `message` via `showResult`.
+ * 2. Forward the message to `scoreboard.showMessage`.
+ * 3. Show the same message in a snackbar.
+ *
+ * @param {string} message - Outcome text to display.
+ */
+export function showRoundOutcome(message) {
+  showResult(message);
+  scoreboard.showMessage(message);
+  showSnackbar(message);
+}
+
+/**
+ * Show animated stat comparison for the last round.
+ *
+ * @pseudocode
+ * 1. Obtain `#round-result` element; exit if missing.
+ * 2. Cancel any previous animation frame stored in `store.compareRaf`.
+ * 3. If reduced motion is preferred, update text immediately and exit.
+ * 4. Otherwise animate values from current to target over 500ms using scheduler frames.
+ * 5. Store the new frame id on `store.compareRaf`.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Stat key selected for the round.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} compVal - Opponent's stat value.
+ */
+export function showStatComparison(store, stat, playerVal, compVal) {
+  const el = document.getElementById("round-result");
+  if (!el) return;
+  cancelFrame(store.compareRaf);
+  const label = stat.charAt(0).toUpperCase() + stat.slice(1);
+  const match = el.textContent.match(/You: (\d+).*Opponent: (\d+)/);
+  const startPlayer = match ? Number(match[1]) : 0;
+  const startComp = match ? Number(match[2]) : 0;
+  if (shouldReduceMotionSync()) {
+    el.textContent = `${label} – You: ${playerVal} Opponent: ${compVal}`;
+    return;
+  }
+  const startTime = performance.now();
+  const duration = 500;
+  let id = 0;
+  const step = (now) => {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const p = Math.round(startPlayer + (playerVal - startPlayer) * progress);
+    const c = Math.round(startComp + (compVal - startComp) * progress);
+    el.textContent = `${label} – You: ${p} Opponent: ${c}`;
+    if (progress >= 1) {
+      cancelFrame(id);
+      store.compareRaf = 0;
+      return;
+    }
+    const next = scheduleFrame(step);
+    cancelFrame(id);
+    id = next;
+    store.compareRaf = id;
+  };
+  id = scheduleFrame(step);
+  store.compareRaf = id;
 }
