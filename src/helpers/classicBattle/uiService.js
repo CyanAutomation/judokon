@@ -106,7 +106,9 @@ onBattleEvent("scoreboardClearMessage", () => {
 onBattleEvent("scoreboardShowMessage", (e) => {
   try {
     scoreboard.showMessage(e.detail);
-  } catch {}
+  } catch (err) {
+    console.error("Error in scoreboard.showMessage:", err);
+  }
 });
 
 onBattleEvent("debugPanelUpdate", () => {
