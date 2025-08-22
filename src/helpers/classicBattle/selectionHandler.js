@@ -3,6 +3,7 @@ import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "../api/ba
 import { getStatValue } from "../battle/index.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { emitBattleEvent } from "./battleEvents.js";
+import { isStateTransition } from "./orchestratorHandlers.js";
 
 // Local dispatcher to avoid circular import with orchestrator.
 // Uses a window-exposed getter set by the orchestrator at runtime.
@@ -156,11 +157,7 @@ export async function handleStatSelection(store, stat) {
         setTimeout(() => {
           // Only run if still awaiting resolution and selection remains.
           try {
-            if (
-              typeof window !== "undefined" &&
-              window.__classicBattleState === "roundDecision" &&
-              store.playerChoice
-            ) {
+            if (isStateTransition(null, "roundDecision") && store.playerChoice) {
               resolveRound(store, stat, playerVal, opponentVal).catch(() => {});
             }
           } catch {}
