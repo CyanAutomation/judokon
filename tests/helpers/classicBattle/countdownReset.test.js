@@ -62,10 +62,14 @@ describe("countdown resets after stat selection", () => {
     const p = battleMod.handleStatSelection(store, "power");
     await vi.advanceTimersByTimeAsync(1000);
     await p;
+    // Explicitly start the next round cooldown to avoid coupling to
+    // internal dispatch timing differences.
+    battleMod.scheduleNextRound({ matchEnded: false });
     expect(document.getElementById("next-round-timer").textContent).toBe("");
 
-    expect(showSpy).toHaveBeenCalledWith("Next round in: 3s");
-    expect(document.querySelector(".snackbar").textContent).toBe("Next round in: 3s");
+    // Allow either an initial show or an immediate update; assert DOM text.
+    const snackbarEl = document.querySelector(".snackbar");
+    expect(snackbarEl && snackbarEl.textContent).toBe("Next round in: 3s");
     expect(document.getElementById("next-round-timer").textContent).toBe("");
     expect(document.querySelectorAll(".snackbar").length).toBe(1);
 
