@@ -1,3 +1,11 @@
+if (typeof CustomEvent === 'undefined') {
+  global.CustomEvent = class CustomEvent extends Event {
+    constructor(type, eventInitDict) {
+      super(type, eventInitDict);
+      this.detail = eventInitDict?.detail;
+    }
+  };
+}
 import { expect, afterEach, beforeEach } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 import { muteConsole, restoreConsole } from "./utils/console.js";
