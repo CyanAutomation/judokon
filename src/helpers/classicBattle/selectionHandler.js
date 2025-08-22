@@ -131,7 +131,9 @@ export function evaluateRound(store, stat) {
   }
   if (typeof showStatComparison === "function") {
     showStatComparison(store, stat, playerVal, opponentVal);
-  }
+  showRoundOutcome(result.message || "");
+
+  showStatComparison(store, stat, playerVal, opponentVal);
   updateDebugPanel();
   return result;
 }
