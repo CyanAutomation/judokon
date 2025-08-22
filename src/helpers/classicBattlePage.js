@@ -16,6 +16,7 @@ import { STATS } from "./battleEngineFacade.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
 import { showSnackbar } from "./showSnackbar.js";
 import { initClassicBattleOrchestrator } from "./classicBattle/orchestrator.js";
+import { initQuitButton } from "./classicBattle/quitButton.js";
 import { onNextButtonClick } from "./classicBattle/timerService.js";
 import { skipCurrentPhase } from "./classicBattle/skipHandler.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
@@ -195,6 +196,7 @@ export async function setupClassicBattlePage() {
     window.addEventListener("pagehide", stopScheduler, { once: true });
   }
   setupScoreboard();
+  initQuitButton(battleStore);
   initInterruptHandlers(battleStore);
   watchBattleOrientation();
   await initFeatureFlags();
@@ -245,17 +247,6 @@ export async function setupClassicBattlePage() {
       } catch {}
     };
   } catch {}
-
-  const quitBtn = document.getElementById("quit-match-button");
-  if (quitBtn) {
-    quitBtn.addEventListener("click", async () => {
-      if (window.battleStore) {
-        const { quitMatch } = await import("./classicBattle/quitModal.js");
-        quitMatch(window.battleStore, quitBtn);
-        window.homeLinkReady = true;
-      }
-    });
-  }
 }
 
 function initStatButtons(store) {
