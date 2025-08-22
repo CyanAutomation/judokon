@@ -31,8 +31,7 @@ describe("classicBattlePage feature flag updates", () => {
       viewportSimulation: { enabled: false },
       battleDebugPanel: { enabled: false },
       enableCardInspector: { enabled: false },
-      enableTestMode: { enabled: false },
-      randomStatMode: { enabled: true }
+      enableTestMode: { enabled: false }
     };
 
     const featureFlagsEmitter = new EventTarget();

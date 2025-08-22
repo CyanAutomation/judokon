@@ -15,7 +15,6 @@ export function mockScheduler() {
 export function mockFeatureFlags(initialFlags = {}) {
   const defaultFlags = {
     battleStateBadge: { enabled: true },
-    randomStatMode: { enabled: true },
     ...initialFlags
   };
 

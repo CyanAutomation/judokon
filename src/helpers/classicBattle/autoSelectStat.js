@@ -1,6 +1,5 @@
 import { seededRandom } from "../testModeUtils.js";
 import { STATS } from "../battleEngineFacade.js";
-import { isEnabled } from "../featureFlags.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
 // Avoid writing to the header message area during auto-select; tests expect
 // the outcome message to occupy that region immediately after selection.
@@ -26,13 +25,6 @@ const AUTO_SELECT_FEEDBACK_MS = 500;
  * @returns {Promise<void>} Resolves after feedback completes.
  */
 export async function autoSelectStat(onSelect) {
-  // If Random Stat Mode is disabled, signal interrupt and exit.
-  try {
-    if (!isEnabled("randomStatMode")) {
-      await dispatchBattleEvent("interrupt");
-      return;
-    }
-  } catch {}
   const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
   const btn = document.querySelector(`#stat-buttons button[data-stat="${randomStat}"]`);
   if (btn) btn.classList.add("selected");

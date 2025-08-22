@@ -12,7 +12,6 @@ const baseSettings = {
   fullNavigationMap: true,
   gameModes: {},
   featureFlags: {
-    randomStatMode: { enabled: true },
     battleDebugPanel: { enabled: false },
     enableTestMode: { enabled: false },
     enableCardInspector: { enabled: false },
@@ -24,8 +23,6 @@ const baseSettings = {
 };
 
 const tooltipMap = {
-  "settings.randomStatMode.label": "Random Stat Mode",
-  "settings.randomStatMode.description": "Auto-selects a random stat when timer expires",
   "settings.battleDebugPanel.label": "Battle Debug Panel",
   "settings.battleDebugPanel.description": "Adds a collapsible debug panel",
   "settings.fullNavigationMap.label": "Full Navigation Map",
@@ -107,7 +104,7 @@ describe("renderSettingsControls", () => {
     const container = document.getElementById("game-mode-toggle-container");
     const checkboxes = container.querySelectorAll("input[type='checkbox']");
     expect(checkboxes).toHaveLength(3);
-    expect(document.getElementById("feature-random-stat-mode")).toBeTruthy();
+    expect(document.getElementById("feature-battle-debug-panel")).toBeTruthy();
   });
 
   it("updates navigation hidden state when a mode is toggled", async () => {
@@ -144,14 +141,14 @@ describe("renderSettingsControls", () => {
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn() }));
     const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
     renderSettingsControls(baseSettings, [], tooltipMap);
-    const input = document.querySelector("#feature-random-stat-mode");
-    input.checked = false;
+    const input = document.querySelector("#feature-battle-debug-panel");
+    input.checked = true;
     input.dispatchEvent(new Event("change"));
     await Promise.resolve();
     await Promise.resolve();
     expect(updateSetting).toHaveBeenCalledWith("featureFlags", {
       ...baseSettings.featureFlags,
-      randomStatMode: { enabled: false }
+      battleDebugPanel: { enabled: true }
     });
   });
 

@@ -76,7 +76,7 @@ afterEach(() => {
 });
 
 describe("classicBattle auto select", () => {
-  it("auto-selects a stat when timer expires and Random Stat Mode is enabled", async () => {
+  it("auto-selects a stat when timer expires", async () => {
     let dispatchSpy;
     vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", async () => {
       const actual = await vi.importActual("../../../src/helpers/classicBattle/orchestrator.js");
@@ -99,30 +99,5 @@ describe("classicBattle auto select", () => {
     expect(score).toBe("You: 1\nOpponent: 0");
     // Ensure we surfaced the win message; cooldown drift hints must not overwrite it
     expect(msg).toMatch(/win the round/i);
-  });
-
-  it("dispatches interrupt when Random Stat Mode is disabled", async () => {
-    currentFlags.randomStatMode.enabled = false;
-    let dispatchSpy;
-    vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", async () => {
-      const actual = await vi.importActual("../../../src/helpers/classicBattle/orchestrator.js");
-      dispatchSpy = vi.fn(actual.dispatchBattleEvent);
-      return { ...actual, dispatchBattleEvent: dispatchSpy };
-    });
-    let autoSelectSpy;
-    vi.doMock("../../../src/helpers/classicBattle/autoSelectStat.js", async () => {
-      const actual = await vi.importActual("../../../src/helpers/classicBattle/autoSelectStat.js");
-      autoSelectSpy = vi.fn(actual.autoSelectStat);
-      return { autoSelectStat: autoSelectSpy };
-    });
-    const battleMod = await import("../../../src/helpers/classicBattle.js");
-    const store = battleMod.createBattleStore();
-    battleMod._resetForTest(store);
-    await battleMod.startRound(store);
-    timerSpy.advanceTimersByTime(31000);
-    await vi.runOnlyPendingTimersAsync();
-    const events = dispatchSpy.mock.calls.map((c) => c[0]);
-    expect(events).toContain("timeout");
-    expect(events).toContain("interrupt");
   });
 });
