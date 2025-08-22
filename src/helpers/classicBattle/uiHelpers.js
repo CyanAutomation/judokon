@@ -5,9 +5,9 @@ import {
   getOrLoadGokyoLookup
 } from "./cardSelection.js";
 import { loadSettings } from "../settingsStorage.js";
-import { isEnabled } from "../featureFlags.js";
-import { getScores, getTimerState, isMatchEnded } from "../battleEngineFacade.js";
-import { isTestModeEnabled, getCurrentSeed } from "../testModeUtils.js";
+import { isEnabled, featureFlagsEmitter } from "../featureFlags.js";
+import { getScores, getTimerState, isMatchEnded, STATS } from "../battleEngineFacade.js";
+import { isTestModeEnabled, getCurrentSeed, setTestMode } from "../testModeUtils.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
 import * as snackbar from "../showSnackbar.js";
@@ -15,6 +15,13 @@ import * as scoreboard from "../setupScoreboard.js";
 import { showResult } from "../battle/index.js";
 import { shouldReduceMotionSync } from "../motionUtils.js";
 import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
+import { handleStatSelection } from "./selectionHandler.js";
+import { onNextButtonClick } from "./timerService.js";
+import { loadStatNames } from "../stats.js";
+import { toggleViewportSimulation } from "../viewportDebug.js";
+import { toggleInspectorPanels } from "../cardUtils.js";
+import { createModal } from "../../components/Modal.js";
+import { createButton } from "../../components/Button.js";
 
 function getDebugOutputEl() {
   return document.getElementById("debug-output");
@@ -230,4 +237,404 @@ export function showStatComparison(store, stat, playerVal, compVal) {
   };
   id = scheduleFrame(step);
   store.compareRaf = id;
+}
+
+/**
+ * Watch for orientation changes and update the battle header.
+ *
+ * @pseudocode
+ * 1. Determine current orientation via `matchMedia` when possible.
+ * 2. Apply orientation to `.battle-header[data-orientation]` when changed.
+ * 3. Expose `window.applyBattleOrientation` for manual updates.
+ * 4. If the header is missing, poll via `scheduleFrame` until applied.
+ * 5. On resize/orientation change, throttle updates with `requestAnimationFrame`.
+ */
+export function watchBattleOrientation() {
+  const getOrientation = () => {
+    try {
+      const portrait = window.innerHeight >= window.innerWidth;
+      if (typeof window.matchMedia === "function") {
+        const mm = window.matchMedia("(orientation: portrait)");
+        if (typeof mm.matches === "boolean" && mm.matches !== portrait) {
+          return portrait ? "portrait" : "landscape";
+        }
+        return mm.matches ? "portrait" : "landscape";
+      }
+      return portrait ? "portrait" : "landscape";
+    } catch {
+      return window.innerHeight >= window.innerWidth ? "portrait" : "landscape";
+    }
+  };
+
+  const apply = () => {
+    const header = document.querySelector(".battle-header");
+    if (header) {
+      const next = getOrientation();
+      if (header.dataset.orientation !== next) {
+        header.dataset.orientation = next;
+      }
+      return true;
+    }
+    return false;
+  };
+
+  try {
+    window.applyBattleOrientation = () => {
+      try {
+        apply();
+      } catch {}
+    };
+  } catch {}
+
+  let pollId;
+  const pollIfMissing = () => {
+    if (pollId) return;
+    pollId = scheduleFrame(() => {
+      if (apply()) {
+        cancelFrame(pollId);
+        pollId = 0;
+      }
+    });
+  };
+  if (!apply()) pollIfMissing();
+
+  let rafId;
+  const onChange = () => {
+    if (!apply()) pollIfMissing();
+    if (rafId) return;
+    rafId = requestAnimationFrame(() => {
+      rafId = 0;
+      if (!apply()) pollIfMissing();
+    });
+  };
+
+  window.addEventListener("orientationchange", onChange);
+  window.addEventListener("resize", onChange);
+}
+
+/**
+ * Create and display a retry modal when round start fails.
+ *
+ * @pseudocode
+ * 1. Skip if `#round-retry-modal` already exists.
+ * 2. Build modal elements and attach a Retry button.
+ * 3. On click, close modal and invoke `retryFn`.
+ * 4. Append modal to `document.body` and open it.
+ *
+ * @param {() => Promise<void>} retryFn - Function to retry round start.
+ */
+function showRetryModal(retryFn) {
+  if (document.getElementById("round-retry-modal")) return;
+  const title = document.createElement("h2");
+  title.textContent = "Round Start Error";
+  const msg = document.createElement("p");
+  msg.textContent = "Unable to start the round. Please check your connection or try again.";
+  const retryBtn = createButton("Retry", { id: "retry-round-btn", className: "primary-button" });
+  const actions = document.createElement("div");
+  actions.className = "modal-actions";
+  actions.appendChild(retryBtn);
+  const frag = document.createDocumentFragment();
+  frag.append(title, msg, actions);
+  const modal = createModal(frag, { labelledBy: title });
+  modal.element.id = "round-retry-modal";
+  retryBtn.addEventListener("click", async () => {
+    modal.close();
+    modal.destroy();
+    try {
+      await retryFn();
+    } catch {}
+  });
+  document.body.appendChild(modal.element);
+  modal.open();
+}
+
+/**
+ * Register handler to surface round start errors via UI.
+ *
+ * @pseudocode
+ * 1. Define `onError` to show a message and retry modal.
+ * 2. Listen for `round-start-error` on `document`.
+ * 3. Return cleanup function to remove the listener.
+ *
+ * @param {() => Promise<void>} retryFn - Function invoked when retrying.
+ * @returns {() => void} Cleanup function.
+ */
+export function registerRoundStartErrorHandler(retryFn) {
+  const onError = () => {
+    scoreboard.showMessage("Round start error. Please retry.");
+    showRetryModal(retryFn);
+  };
+  document.addEventListener("round-start-error", onError);
+  return () => document.removeEventListener("round-start-error", onError);
+}
+
+/**
+ * Attach click handler to the Next button.
+ *
+ * @pseudocode
+ * 1. Locate `#next-button`; exit if missing.
+ * 2. Add `onNextButtonClick` listener for `click` events.
+ */
+export function setupNextButton() {
+  const btn = document.getElementById("next-button");
+  if (!btn) return;
+  btn.addEventListener("click", onNextButtonClick);
+}
+
+/**
+ * Initialize stat selection buttons.
+ *
+ * @pseudocode
+ * 1. Gather all stat buttons inside `#stat-buttons`.
+ * 2. Define `setEnabled` to toggle disabled state and tabindex.
+ * 3. On click or Enter/Space, disable all buttons and handle selection.
+ * 4. Return controls to enable/disable the group.
+ *
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle store.
+ */
+export function initStatButtons(store) {
+  const statButtons = document.querySelectorAll("#stat-buttons button");
+  const statContainer = document.getElementById("stat-buttons");
+
+  function setEnabled(enable = true) {
+    statButtons.forEach((btn) => {
+      btn.disabled = !enable;
+      btn.tabIndex = enable ? 0 : -1;
+      btn.classList.toggle("disabled", !enable);
+    });
+    if (statContainer) {
+      statContainer.dataset.buttonsReady = String(enable);
+    }
+  }
+
+  statButtons.forEach((btn) => {
+    const statName = btn.dataset.stat;
+    const clickHandler = async () => {
+      if (btn.disabled) return;
+      setEnabled(false);
+      btn.classList.add("selected");
+      snackbar.showSnackbar(`You Picked: ${btn.textContent}`);
+      await handleStatSelection(store, statName);
+    };
+    btn.addEventListener("click", clickHandler);
+    btn.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        await clickHandler();
+      }
+    });
+  });
+
+  return {
+    enable: () => setEnabled(true),
+    disable: () => setEnabled(false)
+  };
+}
+
+/**
+ * Apply localized stat labels to selection buttons.
+ *
+ * @pseudocode
+ * 1. Load stat names via `loadStatNames`.
+ * 2. Map each name to the corresponding button's text and aria-label.
+ */
+export async function applyStatLabels() {
+  const names = await loadStatNames();
+  names.forEach((n, i) => {
+    const key = STATS[i];
+    const btn = document.querySelector(`#stat-buttons button[data-stat="${key}"]`);
+    if (btn) {
+      btn.textContent = n.name;
+      btn.setAttribute("aria-label", `Select ${n.name}`);
+    }
+  });
+}
+
+/**
+ * Toggle visibility of the battle state badge based on feature flag.
+ *
+ * @pseudocode
+ * 1. If disabled, remove existing badge and exit.
+ * 2. Ensure badge element exists under scoreboard or header.
+ * 3. Update text content with current state when available.
+ */
+export function setBattleStateBadgeEnabled(enable) {
+  let badge = document.getElementById("battle-state-badge");
+  if (!enable) {
+    if (badge) badge.remove();
+    return;
+  }
+  if (!badge) {
+    const headerRight =
+      document.getElementById("scoreboard-right") ||
+      document.querySelector(".battle-header .scoreboard-right");
+    badge = document.createElement("p");
+    badge.id = "battle-state-badge";
+    badge.dataset.flag = "battleStateBadge";
+    badge.setAttribute("data-tooltip-id", "settings.battleStateBadge");
+    badge.setAttribute("aria-live", "polite");
+    badge.setAttribute("aria-atomic", "true");
+    if (headerRight) headerRight.appendChild(badge);
+    else document.querySelector("header")?.appendChild(badge);
+  }
+  try {
+    const current = typeof window !== "undefined" ? window.__classicBattleState : null;
+    badge.textContent = current ? `State: ${current}` : "State: —";
+  } catch {
+    badge.textContent = "State: —";
+  }
+}
+
+/**
+ * Apply battle-related feature flags to the page.
+ *
+ * @pseudocode
+ * 1. Set mode/test-mode data attributes on `battleArea`.
+ * 2. Toggle test banner visibility and various debug features.
+ * 3. Reapply flags when `featureFlagsEmitter` emits changes.
+ *
+ * @param {HTMLElement|null} battleArea
+ * @param {HTMLElement|null} banner
+ */
+export function applyBattleFeatureFlags(battleArea, banner) {
+  if (battleArea) {
+    battleArea.dataset.mode = "classic";
+    battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
+  }
+  if (banner) banner.classList.toggle("hidden", !isEnabled("enableTestMode"));
+  setTestMode(isEnabled("enableTestMode"));
+  toggleInspectorPanels(isEnabled("enableCardInspector"));
+  toggleViewportSimulation(isEnabled("viewportSimulation"));
+  setDebugPanelEnabled(isEnabled("battleDebugPanel") || isEnabled("enableTestMode"));
+
+  featureFlagsEmitter.addEventListener("change", () => {
+    if (battleArea) battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
+    if (banner) banner.classList.toggle("hidden", !isEnabled("enableTestMode"));
+    setTestMode(isEnabled("enableTestMode"));
+    toggleInspectorPanels(isEnabled("enableCardInspector"));
+    toggleViewportSimulation(isEnabled("viewportSimulation"));
+    setDebugPanelEnabled(isEnabled("battleDebugPanel") || isEnabled("enableTestMode"));
+  });
+}
+
+/**
+ * Initialize the optional debug panel.
+ *
+ * @pseudocode
+ * 1. Locate `#debug-panel`; exit if missing.
+ * 2. If enabled and opponent slot exists, ensure panel is a `<details>` element.
+ * 3. Restore open state from localStorage and prepend to opponent slot.
+ * 4. Otherwise remove the panel.
+ */
+export function initDebugPanel() {
+  const debugPanel = document.getElementById("debug-panel");
+  if (!debugPanel) return;
+  const opponentSlot = document.getElementById("opponent-card");
+  if (isEnabled("battleDebugPanel") && opponentSlot) {
+    if (debugPanel.tagName !== "DETAILS") {
+      const details = document.createElement("details");
+      details.id = "debug-panel";
+      details.className = debugPanel.className;
+      const summary = document.createElement("summary");
+      summary.textContent = "Battle Debug";
+      const pre = debugPanel.querySelector("#debug-output") || document.createElement("pre");
+      pre.id = "debug-output";
+      pre.setAttribute("role", "status");
+      pre.setAttribute("aria-live", "polite");
+      details.append(summary, pre);
+      debugPanel.replaceWith(details);
+    }
+    const panel = document.getElementById("debug-panel");
+    try {
+      const saved = localStorage.getItem("battleDebugOpen");
+      panel.open = saved ? saved === "true" : true;
+      panel.addEventListener("toggle", () => {
+        try {
+          localStorage.setItem("battleDebugOpen", String(panel.open));
+        } catch {}
+      });
+    } catch {}
+    opponentSlot.prepend(panel);
+    panel.classList.remove("hidden");
+  } else {
+    debugPanel.remove();
+  }
+}
+
+/**
+ * Enable or disable the debug panel dynamically.
+ *
+ * @pseudocode
+ * 1. If enabling, ensure a `<details>` panel exists and prepend to opponent slot.
+ * 2. Persist open state to localStorage on toggle.
+ * 3. If disabling, hide and remove the panel.
+ */
+export function setDebugPanelEnabled(enabled) {
+  const opponentSlot = document.getElementById("opponent-card");
+  let panel = document.getElementById("debug-panel");
+  if (enabled) {
+    if (!panel) {
+      panel = document.createElement("details");
+      panel.id = "debug-panel";
+      panel.className = "debug-panel";
+      const summary = document.createElement("summary");
+      summary.textContent = "Battle Debug";
+      const pre = document.createElement("pre");
+      pre.id = "debug-output";
+      pre.setAttribute("role", "status");
+      pre.setAttribute("aria-live", "polite");
+      panel.append(summary, pre);
+    } else if (panel.tagName !== "DETAILS") {
+      const details = document.createElement("details");
+      details.id = panel.id;
+      details.className = panel.className;
+      const summary = document.createElement("summary");
+      summary.textContent = "Battle Debug";
+      const pre = panel.querySelector("#debug-output") || document.createElement("pre");
+      pre.id = "debug-output";
+      pre.setAttribute("role", "status");
+      pre.setAttribute("aria-live", "polite");
+      details.append(summary, pre);
+      panel.replaceWith(details);
+      panel = details;
+    }
+    try {
+      const saved = localStorage.getItem("battleDebugOpen");
+      panel.open = saved ? saved === "true" : true;
+      panel.addEventListener("toggle", () => {
+        try {
+          localStorage.setItem("battleDebugOpen", String(panel.open));
+        } catch {}
+      });
+    } catch {}
+    panel.classList.remove("hidden");
+    if (opponentSlot && panel.parentElement !== opponentSlot) {
+      opponentSlot.prepend(panel);
+    }
+  } else if (panel) {
+    panel.classList.add("hidden");
+    panel.remove();
+  }
+}
+
+/**
+ * Show a temporary hint for stat buttons.
+ *
+ * @pseudocode
+ * 1. Skip if `localStorage.statHintShown` is set or unavailable.
+ * 2. Trigger hover events on `#stat-help` for 3 seconds.
+ * 3. Record that the hint has been shown.
+ */
+export function maybeShowStatHint() {
+  try {
+    if (typeof localStorage === "undefined") return;
+    const hintShown = localStorage.getItem("statHintShown");
+    if (hintShown) return;
+    const help = document.getElementById("stat-help");
+    help?.dispatchEvent(new Event("mouseenter"));
+    setTimeout(() => {
+      help?.dispatchEvent(new Event("mouseleave"));
+    }, 3000);
+    localStorage.setItem("statHintShown", "true");
+  } catch {}
 }

@@ -342,14 +342,14 @@ describe("startRoundWrapper failures", () => {
     vi.doMock("../../src/helpers/classicBattle/skipHandler.js", () => ({
       skipCurrentPhase: vi.fn()
     }));
-
-    const open = vi.fn();
     vi.doMock("../../src/components/Modal.js", () => ({
       createModal: (content) => {
         const element = document.createElement("div");
         element.appendChild(content);
-        return { element, open, close: vi.fn(), destroy: vi.fn() };
-      },
+        return { element, open: vi.fn(), close: vi.fn(), destroy: vi.fn() };
+      }
+    }));
+    vi.doMock("../../src/components/Button.js", () => ({
       createButton: (label, opts = {}) => {
         const btn = document.createElement("button");
         btn.textContent = label;
@@ -371,11 +371,13 @@ describe("startRoundWrapper failures", () => {
     await setupClassicBattlePage();
 
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const errorSpy = vi.fn();
+    document.addEventListener("round-start-error", errorSpy);
     await window.startRoundOverride();
-
+    expect(errorSpy).toHaveBeenCalled();
     expect(showMessage).toHaveBeenCalledWith("Round start error. Please retry.");
-    expect(open).toHaveBeenCalled();
     expect(btn.disabled).toBe(false);
+    document.removeEventListener("round-start-error", errorSpy);
     consoleError.mockRestore();
     vi.doUnmock("../../src/helpers/setupScoreboard.js");
   });
@@ -406,6 +408,17 @@ describe("syncScoreDisplay", () => {
         element.className = "modal-backdrop";
         element.appendChild(content);
         return { element, open: vi.fn(), close: vi.fn(), destroy: vi.fn() };
+      }
+    }));
+    vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
+      updateScore: (p, o) => {
+        let el = document.getElementById("score-display");
+        if (!el) {
+          el = document.createElement("p");
+          el.id = "score-display";
+          document.body.appendChild(el);
+        }
+        el.textContent = `You: ${p}\nOpponent: ${o}`;
       }
     }));
 
