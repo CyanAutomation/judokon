@@ -50,7 +50,9 @@ export function mockRoundManager() {
   vi.doMock("../../../src/helpers/classicBattle/roundManager.js", () => ({
     createBattleStore: () => store,
     startRound: vi.fn(),
-    resetGame: vi.fn()
+    resetGame: vi.fn(),
+    // Legacy export kept for modules that import directly
+    _resetForTest: vi.fn()
   }));
 }
 

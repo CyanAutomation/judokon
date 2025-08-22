@@ -19,6 +19,10 @@ Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io
 
 JU-DO-KON! is a strategic digital card game inspired by Top Trumps, featuring judo athletes from around the world. Each card is assigned attributes like **Power**, **Technique**, **Speed**, and more—allowing players to battle judoka in quick, decisive rounds. The game is built using modern **HTML/CSS/JavaScript** and runs as a static site on GitHub Pages without any bundler.
 
+### Classic Battle Start
+
+When you open `src/pages/battleJudoka.html`, a modal prompts you to choose the match length (win target) before the first round. Options are sourced from `src/data/battleRounds.json` (fallbacks provided if loading fails). Selecting an option sets the engine’s points-to-win and starts the pre-round countdown.
+
 ---
 
 ## 🚧 Development Status
@@ -170,5 +174,4 @@ This project is licensed under the GNU General Public License v3.0. See [LICENSE
 ## 🙌 Thanks for Exploring JU-DO-KON!
 
 Whether you're a contributor, player, tester, or agent—thank you for helping build something fun, strategic, and kid-friendly. We’re excited to have you on the tatami!
-
 

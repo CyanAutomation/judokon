@@ -90,3 +90,13 @@ export function _resetForTest(store) {
   store.compareRaf = 0;
   window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } }));
 }
+
+/**
+ * Reset the Classic Battle match state and UI.
+ *
+ * Alias of `_resetForTest` for production use. Clears timers, engine state,
+ * store timeouts, and emits a `game:reset-ui` event to allow the UI to
+ * teardown/reinitialize. Used by the classic battle orchestrator when
+ * entering the lobby (`waitingForMatchStart`).
+ */
+export const resetGame = _resetForTest;

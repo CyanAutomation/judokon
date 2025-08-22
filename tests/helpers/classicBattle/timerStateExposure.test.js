@@ -6,7 +6,8 @@ vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
 }));
 vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
   resetGame: vi.fn(),
-  startRound: vi.fn()
+  startRound: vi.fn(),
+  _resetForTest: vi.fn()
 }));
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
   clearMessage: vi.fn(),
