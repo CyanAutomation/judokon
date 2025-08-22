@@ -16,12 +16,7 @@
  */
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
-import { setupScoreboard } from "./setupScoreboard.js";
 import { updateBattleStateBadge } from "./classicBattle/uiHelpers.js";
-
-if (typeof process === "undefined" || !process.env.VITEST) {
-  setupScoreboard();
-}
 
 export async function initBattleStateProgress() {
   if (typeof document === "undefined") return;
@@ -32,13 +27,20 @@ export async function initBattleStateProgress() {
   let states = [];
   try {
     states = await fetchJson(`${DATA_DIR}classicBattleStates.json`);
-  } catch {
-    // ignore fetch errors; list remains empty
+  } catch (error) {
+    console.warn("Failed to load battle state progress data:", error);
+    list.innerHTML = "<li>Error loading states</li>";
+    return;
   }
 
   const core = Array.isArray(states)
     ? states.filter((s) => s.id < 90).sort((a, b) => a.id - b.id)
     : [];
+
+  if (core.length === 0) {
+    list.innerHTML = "<li>No states found</li>";
+    return;
+  }
 
   if (list.children.length !== core.length) {
     list.textContent = "";
