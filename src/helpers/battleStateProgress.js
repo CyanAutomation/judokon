@@ -5,7 +5,7 @@
  * 1. Fetch `classicBattleStates.json` using `fetchJson`.
  * 2. Filter for core states (IDs below 90).
  * 3. Sort core states by `id` in ascending order.
- * 4. If `#battle-state-progress` already has the same number of items, skip rendering.
+ * 4. If `#battle-state-progress` already matches state IDs and names, skip rendering.
  * 5. Otherwise, clear the list and render each state as an `<li>` with `data-state` and its numeric ID.
  * 6. Define `updateActive(state)` to query list items and toggle the `active` class on the match.
  * 7. Observe `#machine-state` for text changes; on each change call `updateActive`.
@@ -42,7 +42,14 @@ export async function initBattleStateProgress() {
     return;
   }
 
-  if (list.children.length !== core.length) {
+  const items = Array.from(list.querySelectorAll("li"));
+  const needsRender =
+    items.length !== core.length ||
+    items.some(
+      (li, i) => li.dataset.state !== core[i].name || Number(li.textContent.trim()) !== core[i].id
+    );
+
+  if (needsRender) {
     list.textContent = "";
     const frag = document.createDocumentFragment();
     core.forEach((s) => {
