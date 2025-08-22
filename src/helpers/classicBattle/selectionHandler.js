@@ -2,17 +2,8 @@ import { STATS, stopTimer } from "../battleEngineFacade.js";
 import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showSnackbar } from "../showSnackbar.js";
-import { getStatValue, resetStatButtons } from "../battle/index.js";
-import {
-  revealOpponentCard,
-  updateDebugPanel,
-  showStatComparison,
-  showRoundOutcome
-} from "./uiHelpers.js";
+import { getStatValue } from "../battle/index.js";
 import { getOpponentJudoka } from "./cardSelection.js";
-import { scheduleNextRound } from "./timerService.js";
-import { showMatchSummaryModal, syncScoreDisplay } from "./uiService.js";
-import { handleReplay } from "./roundManager.js";
 
 // Local dispatcher to avoid circular import with orchestrator.
 // Uses a window-exposed getter set by the orchestrator at runtime.
@@ -66,23 +57,16 @@ async function dispatchBattleEvent(eventName, payload) {
  * Determine the opponent's stat choice based on difficulty.
  *
  * @pseudocode
- * 1. Retrieve the opponent judoka via `getOpponentJudoka`.
- * 2. Build an array of `{stat, value}` pairs from its stats.
- * 3. Pass the array to `chooseOpponentStat` with the provided difficulty.
- * 4. Return the chosen stat key.
+ * 1. Map the provided stats object into `{stat, value}` pairs.
+ * 2. Pass the array to `chooseOpponentStat` with the provided difficulty.
+ * 3. Return the chosen stat key.
  *
+ * @param {Record<string, number>} stats - Opponent stat values.
  * @param {"easy"|"medium"|"hard"} [difficulty="easy"] Difficulty setting.
  * @returns {string} One of the values from `STATS`.
  */
-export function simulateOpponentStat(difficulty = "easy") {
-  const opp = getOpponentJudoka();
-  let values = [];
-  if (opp && opp.stats) {
-    values = STATS.map((stat) => ({ stat, value: Number(opp.stats[stat]) || 0 }));
-  } else {
-    const card = document.getElementById("opponent-card");
-    values = card ? STATS.map((stat) => ({ stat, value: getStatValue(card, stat) })) : [];
-  }
+export function simulateOpponentStat(stats, difficulty = "easy") {
+  const values = STATS.map((stat) => ({ stat, value: Number(stats?.[stat]) || 0 }));
   return chooseOpponentStat(values, difficulty);
 }
 
@@ -106,33 +90,23 @@ export function evaluateRoundData(playerVal, opponentVal) {
 }
 
 /**
- * Evaluate a selected stat and update the UI.
+ * Evaluate a selected stat and emit the outcome.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
- * @returns {{message?: string, matchEnded: boolean}}
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number, outcome: string, playerVal: number, opponentVal: number}}
  */
-export function evaluateRound(store, stat) {
-  const playerCard = document.getElementById("player-card");
-  const opponentCard = document.getElementById("opponent-card");
-  const playerVal = getStatValue(playerCard, stat);
-  let opponentVal = 0;
-  try {
-    const opp = getOpponentJudoka();
-    const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
-    opponentVal = Number.isFinite(raw) ? raw : getStatValue(opponentCard, stat);
-  } catch {
-    opponentVal = getStatValue(opponentCard, stat);
-  }
+export function evaluateRound(store, stat, playerVal, opponentVal) {
   const result = evaluateRoundData(playerVal, opponentVal);
-  syncScoreDisplay();
-  if (typeof showRoundOutcome === "function") {
-    showRoundOutcome(result.message || "");
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent("round:evaluated", {
+        detail: { store, stat, playerVal, opponentVal, result }
+      })
+    );
   }
-  if (typeof showStatComparison === "function") {
-    showStatComparison(store, stat, playerVal, opponentVal);
-  }
-  updateDebugPanel();
   return result;
 }
 
@@ -148,6 +122,17 @@ export async function handleStatSelection(store, stat) {
   }
   store.selectionMade = true;
   store.playerChoice = stat;
+  const playerCard = document.getElementById("player-card");
+  const opponentCard = document.getElementById("opponent-card");
+  const playerVal = getStatValue(playerCard, stat);
+  let opponentVal = 0;
+  try {
+    const opp = getOpponentJudoka();
+    const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
+    opponentVal = Number.isFinite(raw) ? raw : getStatValue(opponentCard, stat);
+  } catch {
+    opponentVal = getStatValue(opponentCard, stat);
+  }
   stopTimer();
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
@@ -155,7 +140,7 @@ export async function handleStatSelection(store, stat) {
   // In test environments, resolve synchronously to avoid orchestrator coupling
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      await resolveRound(store);
+      await resolveRound(store, stat, playerVal, opponentVal);
       return;
     }
   } catch {}
@@ -176,16 +161,16 @@ export async function handleStatSelection(store, stat) {
               window.__classicBattleState === "roundDecision" &&
               store.playerChoice
             ) {
-              resolveRound(store).catch(() => {});
+              resolveRound(store, stat, playerVal, opponentVal).catch(() => {});
             }
           } catch {}
         }, 600);
       } catch {}
     } else {
-      await resolveRound(store);
+      await resolveRound(store, stat, playerVal, opponentVal);
     }
   } catch {
-    await resolveRound(store);
+    await resolveRound(store, stat, playerVal, opponentVal);
   }
 }
 
@@ -193,104 +178,36 @@ export async function handleStatSelection(store, stat) {
  * Resolves the round after a stat has been selected.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ * @returns {Promise<ReturnType<typeof evaluateRound>>}
  */
-export async function resolveRound(store) {
-  const stat = store.playerChoice;
-  if (!stat) {
-    return;
-  }
-  // Record round debug info
-  try {
-    if (typeof window !== "undefined") {
-      window.__roundDebug = { playerChoice: stat, startedAt: Date.now() };
-    }
-  } catch {}
-  updateDebugPanel();
-  // Show delayed opponent-choosing hint, then announce evaluation to the orchestrator.
+export async function resolveRound(store, stat, playerVal, opponentVal) {
+  if (!stat) return;
   const opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), 500);
-  // Announce evaluation to the orchestrator for observability/tests.
   await dispatchBattleEvent("evaluate");
-  try {
-    if (typeof window !== "undefined") {
-      const rd = window.__roundDebug || {};
-      rd.evaluateAt = Date.now();
-      window.__roundDebug = rd;
-    }
-  } catch {}
-  updateDebugPanel();
-
-  // Introduce a small, natural delay to simulate opponent thinking.
   const delay = 300 + Math.floor(Math.random() * 401);
   await new Promise((resolve) => setTimeout(resolve, delay));
-  // Proceed; run opponent reveal asynchronously to avoid any UI stall.
   clearTimeout(opponentSnackbarId);
-  try {
-    if (typeof window !== "undefined") {
-      const rd = window.__roundDebug || {};
-      rd.reveal = "deferred";
-      window.__roundDebug = rd;
-    }
-  } catch {}
-  try {
-    // Fire-and-forget opponent reveal. Errors are swallowed.
-    Promise.resolve()
-      .then(() => revealOpponentCard())
-      .catch(() => {});
-  } catch {}
-  updateDebugPanel();
-  let result;
-  try {
-    result = evaluateRound(store, stat);
-  } catch (err) {
-    try {
-      if (typeof window !== "undefined") {
-        const rd = window.__roundDebug || {};
-        rd.error = String(err?.message || err);
-        window.__roundDebug = rd;
-      }
-    } catch {}
-    // Attempt to recover by interrupting the round
-    await dispatchBattleEvent("interrupt");
-    updateDebugPanel();
-    return;
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("opponent:reveal"));
   }
-
+  const result = evaluateRound(store, stat, playerVal, opponentVal);
   const outcomeEvent =
     result.outcome === "winPlayer"
       ? "outcome=winPlayer"
       : result.outcome === "winOpponent"
         ? "outcome=winOpponent"
         : "outcome=draw";
-
-  try {
-    if (typeof window !== "undefined") {
-      const rd = window.__roundDebug || {};
-      rd.outcomeEvent = outcomeEvent;
-      rd.resolvedAt = Date.now();
-      window.__roundDebug = rd;
-    }
-  } catch {}
   await dispatchBattleEvent(outcomeEvent);
-  updateDebugPanel();
-
   if (result.matchEnded) {
-    scoreboard.clearRoundCounter();
     await dispatchBattleEvent("matchPointReached");
   } else {
     await dispatchBattleEvent("continue");
   }
-
-  scheduleNextRound(result);
-
-  if (result.matchEnded) {
-    showMatchSummaryModal(result, async () => {
-      await dispatchBattleEvent("finalize");
-      await dispatchBattleEvent("rematch");
-      await dispatchBattleEvent("startClicked");
-      handleReplay(store);
-    });
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("round:resolved", { detail: { store, stat, result } }));
   }
-
-  updateDebugPanel();
-  resetStatButtons();
+  return result;
 }

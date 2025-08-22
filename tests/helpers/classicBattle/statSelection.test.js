@@ -172,11 +172,7 @@ describe("classicBattle stat selection", () => {
     );
     const store = createBattleStore();
     _resetForTest(store);
-    document.getElementById("player-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-    document.getElementById("opponent-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    const result = evaluateRound(store, "power");
+    const result = evaluateRound(store, "power", 5, 3);
     expect(result.message).toMatch(/win/);
     expect(result.playerScore).toBe(1);
     expect(result.opponentScore).toBe(0);
@@ -224,7 +220,7 @@ describe("classicBattle stat selection", () => {
 
   it("simulateOpponentStat returns a valid stat", async () => {
     const { STATS } = await import("../../../src/helpers/battleEngineFacade.js");
-    const stat = simulateOpponentStat();
+    const stat = simulateOpponentStat({ power: 1, speed: 1, technique: 1, kumikata: 1, newaza: 1 });
     expect(STATS.includes(stat)).toBe(true);
   });
 });

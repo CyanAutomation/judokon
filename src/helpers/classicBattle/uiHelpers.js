@@ -22,6 +22,7 @@ import { toggleViewportSimulation } from "../viewportDebug.js";
 import { toggleInspectorPanels } from "../cardUtils.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
+import { syncScoreDisplay } from "./uiService.js";
 
 function getDebugOutputEl() {
   return document.getElementById("debug-output");
@@ -637,4 +638,87 @@ export function maybeShowStatHint() {
     }, 3000);
     localStorage.setItem("statHintShown", "true");
   } catch {}
+}
+
+/**
+ * Reset battle UI elements to their initial state.
+ *
+ * @pseudocode
+ * 1. Remove any active modal backdrops and destroy `store.quitModal`.
+ * 2. Replace the Next Round and Quit buttons with fresh clones.
+ * 3. Clear scoreboard messages and disable the Next Round button.
+ *
+ * @param {ReturnType<import("./roundManager.js").createBattleStore>} [store]
+ * - Optional battle state store used to tear down the quit modal.
+ */
+export function resetBattleUI(store) {
+  try {
+    document.querySelectorAll?.(".modal-backdrop").forEach((m) => {
+      if (typeof m.remove === "function") m.remove();
+    });
+  } catch {}
+  if (store?.quitModal) {
+    try {
+      store.quitModal.destroy();
+    } catch {}
+    store.quitModal = null;
+  }
+
+  let nextBtn;
+  try {
+    nextBtn = document.getElementById ? document.getElementById("next-button") : null;
+  } catch {}
+  if (nextBtn) {
+    const clone = nextBtn.cloneNode(true);
+    clone.disabled = true;
+    delete clone.dataset.nextReady;
+    clone.addEventListener("click", onNextButtonClick);
+    nextBtn.replaceWith(clone);
+  }
+
+  let quitBtn;
+  try {
+    quitBtn = document.getElementById ? document.getElementById("quit-match-button") : null;
+  } catch {}
+  if (quitBtn) {
+    quitBtn.replaceWith(quitBtn.cloneNode(true));
+  }
+
+  try {
+    scoreboard.clearMessage();
+  } catch {}
+  let timerEl;
+  try {
+    timerEl = document.getElementById ? document.getElementById("next-round-timer") : null;
+  } catch {}
+  if (timerEl) timerEl.textContent = "";
+  let roundResultEl;
+  try {
+    roundResultEl = document.getElementById ? document.getElementById("round-result") : null;
+  } catch {}
+  if (roundResultEl) roundResultEl.textContent = "";
+  try {
+    syncScoreDisplay();
+  } catch {}
+  updateDebugPanel();
+}
+
+// --- Event bindings ---
+
+if (typeof window !== "undefined") {
+  window.addEventListener("game:reset-ui", (e) => {
+    resetBattleUI(e.detail?.store);
+  });
+
+  window.addEventListener("opponent:reveal", () => {
+    revealOpponentCard().catch(() => {});
+  });
+
+  window.addEventListener("round:evaluated", (e) => {
+    const { store, stat, playerVal, opponentVal, result } = e.detail || {};
+    if (!result) return;
+    showRoundOutcome(result.message || "");
+    showStatComparison(store, stat, playerVal, opponentVal);
+    updateDebugPanel();
+  });
 }

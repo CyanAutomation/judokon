@@ -85,8 +85,7 @@ describe("classicBattle opponent delay", () => {
 
     await vi.advanceTimersByTimeAsync(2);
     expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
-
-    await vi.advanceTimersByTimeAsync(402);
+    await vi.runAllTimersAsync();
     await promise;
     // In the current flow, scheduleNextRound may be triggered by the
     // orchestrator path or directly from resolveRound. We only assert the
