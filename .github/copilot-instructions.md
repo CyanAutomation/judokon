@@ -1,115 +1,206 @@
-# JU-DO-KON! Copilot Instructions
+# 🤖 JU-DO-KON! Agent Guide
 
-This file guides GitHub Copilot agents contributing to the JU-DO-KON! repository. It consolidates the contributor notes from `AGENTS.md` and `CONTRIBUTING.md`.
+This document exists to help AI agents (and human collaborators) make effective, accurate, and consistent contributions to the JU-DO-KON! codebase. Agents should treat this guide as both a checklist and a playbook.
 
-## Key Directories
+---
 
-- `index.html` – landing page
-- `game.js` – main browser logic
-- `helpers/` – modular utilities with extensive JSDoc `@pseudocode` blocks
-- `data/` – JSON files for judoka, gokyo techniques, and game configuration
-- `tests/` – Vitest unit tests using the `jsdom` environment
-- `playwright/` – Playwright UI tests, including screenshot tests
-- `design/` – code standards and other docs. Review `design/codeStandards/codeJSDocStandards.md` and `design/codeStandards/codePseudocodeStandards.md`
+## 🎯 Mission Statement
 
-## Coding Standards
+AI agents play a vital role in maintaining quality, clarity, and scalability across JU-DO-KON!. This guide ensures:
 
-- Use ES modules and modern JavaScript (Node 18+ expected)
-- Format code with Prettier and lint with ESLint (`eslint.config.mjs`)
-- **Preserve all JSDoc comments and `@pseudocode` blocks**; update them when the code changes
-- Public functions require JSDoc following the design docs
-- Always refactor complex logic into smaller helpers and keep modules focused on a single responsibility.
+- Consistent logic and style across contributions
+- Awareness of available tooling and data
+- Efficient collaboration with human reviewers
+- A bias toward clarity, simplicity, and modularity
 
-## Required Programmatic Checks
+A successful agent contribution is **concise**, **compliant with code standards**, and **adds lasting value** without introducing regressions or complexity.
 
-Run these commands from the repository root before committing. Resolve issues and rerun until they succeed:
+---
 
-```bash
-npx prettier . --check       # verify formatting
-npx eslint .                 # lint the codebase
-npm run check:contrast       # Pa11y accessibility audit (dev server must run)
-npx vitest run               # unit tests
-npx playwright test          # Playwright UI tests
+## 🧪 Prompt Templates
+
+Use these prompt formats when engaging with AI or testing tools:
+
+### 📝 Evaluate a PRD
+
+```markdown
+You are a PRD reviewer for the JU-DO-KON! game project. Evaluate the following Product Requirements Document for clarity, completeness, and testability. Identify any gaps or ambiguities and suggest improvements.
 ```
 
-Useful fixes:
+### 🧮 Audit a JSON File for Duplication
 
-```bash
-npx eslint . --fix    # auto-fix lint errors
-npx prettier . --write # reformat files
-```
+Scan `src/data/<filename>.json` for duplicate stat names, redundant fields, or overlapping values. Recommend deduplication or structural improvements. Include reasoning.
 
-Screenshot tests:
+### 🧷 Check Tooltip Coverage
 
-```bash
-npm run test:screenshot              # run visual regression tests
-npx playwright test --update-snapshots  # update baseline screenshots when needed
-```
+Review `src/data/tooltips.json` and match entries against UI elements using `data-tooltip-id`. Identify missing tooltips or unused keys. Suggest where to add or remove entries.
 
-Playwright uses multiple browser projects. The screenshot suite runs separately for each project and stores snapshots under their respective folders.
+### 🔘 Validate Feature Flag Functionality
 
-- **Do not commit files under `playwright/*-snapshots`.** Baseline screenshots are updated automatically by `.github/workflows/playwright-baseline.yml`. If Playwright tests fail because visuals changed, note the failure in the pull request description but avoid committing new snapshot images.
+Inspect `src/pages/settings.html` and corresponding helpers. Confirm that all feature flags expose `data-flag` and `data-tooltip-id`. Check toggle persistence and observability.
 
-Screenshot tests are optional for minor changes but strongly encouraged when UI layout or style updates occur.
+---
 
-## Git Hooks
+## ✅ Evaluation Criteria for Agent Contributions
 
-After cloning, run `npm install` and `npm run prepare` to enable Husky pre-commit hooks. The hook automatically runs `npm run lint` and `npm test`.
+Before submitting or completing a task, verify that your work:
 
-## Pseudocode and Documentation Rules
+- Maintains modular, single-purpose logic
+- Includes or updates appropriate @pseudocode in JSDoc
+- Passes all programmatic checks (format, lint, test, contrast)
+- Improves clarity, reusability, or structure
+- Avoids duplication or placeholder text
 
-- Begin each pseudocode block with `@pseudocode`
-- Write numbered, step‑by‑step explanations describing **why** the code acts as it does
-- Keep language concise and avoid repeating the code line by line
-- Update pseudocode whenever logic changes
-- Do not remove existing `@pseudocode` blocks without discussion
+---
 
-## Additional Notes
+## 📚 Key Files for AI Agents
 
-- Set `DEBUG_LOGGING=true` to enable debug logging
-- Ensure new functionality includes unit tests and Playwright validation when relevant
+| Purpose                       | File(s)                                                                 |
+| ----------------------------- | ----------------------------------------------------------------------- |
+| Tooltip content               | src/data/tooltips.json                                                  |
+| Game stats and player data    | src/data/judoka.json, src/data/statNames.json                           |
+| Feature flags & settings      | src/pages/settings.html, src/config/settingsDefaults.js                 |
+| Tooltip viewer                | src/pages/tooltipViewer.html                                            |
+| Debug + Observability targets | Components with data-_, like data-tooltip-id, data-flag, data-feature-_ |
+| UI test entry points          | playwright/_.spec.js, tests/\*\*/_.test.js                              |
+| Component factories           | src/components/\*.js                                                    |
+| Battle logic and UI           | classicBattle.js, setupScoreboard.js, Scoreboard.js                     |
 
-## Commit Messages
+---
 
-- Keep commit messages short and in the imperative mood
-- Reference related issues when applicable
-- Examples:
-  - `Add carousel component to homepage`
-  - `Fix failing date formatter tests`
-  - `Update Battle Mode layout`
+## ✅ DOs and ❌ DON’Ts
 
-## Agent-Specific Guidelines
+### ✅ DO
 
-- Maintain modular, single-purpose logic
-- Validate all modified JSON files with `npm run validate:data`
-- Use `data-flag`, `data-tooltip-id`, and `data-feature-*` for all toggles and testable features
+- Use data-flag, data-tooltip-id, and data-feature-\* for all toggles and testable features
 - Refactor large functions into smaller helpers (~50 lines max)
-- Use `createButton`, `createCard`, `createModal` factories when building UI
-- No placeholder text or speculative content
-- No duplicate stat labels or tooltip keys
-- No unsilenced `console.warn` or `console.error` in tests; stub or mute as needed
-- Use static imports for hot paths (stat selection, round decision, event dispatch, per-frame animation)
-- Use dynamic imports (with preload) for optional, heavy, or feature-flagged modules
-- Provide bundle size deltas in PRs if changing import strategy
-- Update or add tests to verify static imports for core gameplay and preload for optional modules
+- Write and maintain clear @pseudocode for public functions
+- Validate all modified JSON files with `npm run validate:data`
+- Use createButton, createCard, createModal factories when building UI
 
-## Testing Discipline
+### ❌ DON’T
 
-- Keep Vitest output clean; wrap intentional logs with `withMutedConsole(fn)` or spy on `console.error`/`console.warn`
-- Playwright tests clear localStorage at startup; ensure the dev server is running for manual validation
+- Don’t commit baseline screenshots (playwright/\*-snapshots)
+- Don’t introduce placeholder text in tooltips or stats
+- Don’t skip pseudocode updates when changing logic
+- Don’t duplicate stat labels or tooltip keys
+- Don’t forget to run the full test suite before committing
 
-## PR Deliverables for Import Changes
+---
 
-1. Summary of files changed and reason for static/dynamic decision
-2. Before/after bundle size metrics
-3. Test updates reflecting the new loading behavior
-4. Notes on any preloading strategy implemented for optional modules
+## 🧯 Runtime Safeguards
 
-## Related Docs
+### 🚫 Avoid Output Errors in Terminal
+
+To prevent session crashes in the terminal:
+
+> **Always exclude `client_embeddings.json` from terminal searches.**  
+> It contains very long lines that can exceed the 4096-byte output limit and terminate the shell.
+
+#### ✅ Use safe search patterns:
+
+```bash
+grep "kumi-kata" . --exclude=client_embeddings.json
+```
+
+Or recursively:
+
+```bash
+grep -r "kumi-kata" . --exclude-dir=node_modules --exclude=client_embeddings.json
+```
+
+🔍 Why it matters
+
+Even if you’re not directly searching client_embeddings.json, tools like grep -r . may include it by default. This results in output overflow and abrupt session termination. Always exclude this file unless explicitly working with it.
+
+### 🎞️ Animation Scheduler
+
+- Use `requestAnimationFrame` for one-shot UI updates (for example, toggling a CSS class on the next frame).
+- Avoid `scheduler.onFrame()` for one-off work — it registers a persistent callback; repeated use during timers can leak callbacks and stall the UI.
+- Reserve `scheduler.onFrame()` for continuous per-frame tasks and always cancel with `scheduler.cancel(id)` when done.
+
+---
+
+## 🔧 Module Loading Policy for Agents
+
+> JU-DO-KON! runs unbundled on GitHub Pages, relying on native ES modules.
+
+When reviewing or modifying imports, agents must apply the JU-DO-KON! static vs dynamic policy to ensure gameplay remains smooth and errors surface early.
+
+### Decision Checklist
+
+- **Hot path or always-used?** → **Static import**
+- **Optional, heavy, or feature-flagged?** → **Dynamic import with preload**
+- **Failure should surface at build/start?** → **Static import**
+- **Risk of input-time hitch?** → **Static import**
+
+### Definition of Hot Path (JU-DO-KON!)
+
+- Stat selection handlers
+- Round decision logic
+- Event dispatchers / orchestrators
+- Per-frame animation or rendering in battle
+
+### Agent Requirements
+
+- No `await import()` inside stat selection, round decision, event dispatch, or render loops.
+- Keep optional modules dynamic, but **preload** them during idle/cooldown to avoid UI stalls.
+- Preserve existing feature flag logic when changing imports.
+- Update or add tests to verify static imports for core gameplay and preload behavior for optional modules.
+
+### Anti-Patterns to Avoid
+
+- ❌ Dynamic import inside click handlers for core gameplay
+- ❌ Variable dynamic import paths that obscure module resolution
+- ❌ Removing feature flag guards during refactor
+- ❌ Eagerly importing heavy optional modules on page load without justification
+
+### PR Deliverables for Import Changes
+
+1. Summary of files changed and reason for static/dynamic decision.
+2. Test updates reflecting the new loading behavior.
+3. Notes on any preloading strategy implemented for optional modules.
+
+---
+
+## 🛠 Programmatic Checks Before Commit
+
+Run these from the repo root:
+
+```bash
+npx prettier . --check
+npx eslint .
+npx vitest run
+npx playwright test
+npm run check:contrast
+```
+
+**Common fixes:**
+
+```bash
+npx prettier . --write
+npx eslint . --fix
+```
+
+---
+
+## Testing Discipline: Keep Vitest Output Clean (console.warn / console.error)
+
+To keep CI and local runs readable, **no test should emit unsilenced `console.warn` or `console.error`**. Expected logs must be **stubbed, spied, or muted**.
+
+### Agent / Developer Checklist
+
+- Wrap code paths that intentionally log with **`withMutedConsole(fn)`** (see helper below), or
+- Use `vi.spyOn(console, 'error').mockImplementation(() => {})` (same for `warn`) for the narrowest scope possible.
+- If a test _must_ allow logs, wrap the specific execution in `withAllowedConsole(fn)`.
+- Never leave raw `console.warn/error` in production code. Prefer domain-specific loggers or error channels.
+
+---
+
+## 🔗 Related Docs
 
 - `README.md` – Project overview and setup
-- `AGENTS.md` – Agent playbooks, task types, audit checklists
-- `CONTRIBUTING.md` – Commit etiquette and agent rules
 - `architecture.md` – System layout and entry points
-- `design/codeStandards/codeJSDocStandards.md` – JSDoc requirements
-- `design/codeStandards/codePseudocodeStandards.md` – Pseudocode requirements
+- `CONTRIBUTING.md` – Commit etiquette and agent rules
+
+---

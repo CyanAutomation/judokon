@@ -17,7 +17,8 @@
     "validate:data": "node scripts/validateData.js",
     "generate:embeddings": "node --max-old-space-size=8192 scripts/generateEmbeddings.js",
     "pretest": "node scripts/generatePrdIndex.js",
-    "update:codes": "node updateCodes.mjs"
+    "update:codes": "node updateCodes.mjs",
+    "sync:agents": "node scripts/syncAgentDocs.mjs"
   },
   "keywords": [],
   "author": "",
