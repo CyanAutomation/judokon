@@ -1,5 +1,6 @@
 import { getMissingJudokaFields } from "./judokaValidation.js";
 import { debugLog } from "./debug.js";
+import { isNodeEnvironment, isBrowserEnvironment, getBaseUrl } from "./env.js";
 
 // In-memory cache for data fetched from URLs
 const dataCache = new Map();
@@ -7,20 +8,6 @@ const dataCache = new Map();
 // Lazily instantiated Ajv singleton
 let ajvInstance;
 
-/**
- * Determine if the code is running in a Node environment.
- *
- * @pseudocode
- * 1. Check that `process.versions.node` exists and `typeof window === "undefined"`.
- * 2. Return `true` when both conditions hold; otherwise, return `false`.
- *
- * @returns {boolean} `true` if running under Node.
- */
-export function isNodeEnvironment() {
-  return Boolean(
-    typeof process !== "undefined" && process?.versions?.node && typeof window === "undefined"
-  );
-}
 /**
  * Lazily instantiate and return a singleton Ajv instance with format support.
  *
@@ -121,7 +108,7 @@ export async function getAjv() {
   try {
     if (isNodeEnvironment()) {
       ajvInstance = await nodeAjvLoader.load();
-    } else if (typeof window !== "undefined") {
+    } else if (isBrowserEnvironment()) {
       ajvInstance = await browserAjvLoader.load();
     } else {
       ajvInstance = await nodeAjvLoader.load();
@@ -140,29 +127,22 @@ const schemaCache = new WeakMap();
  *
  * @pseudocode
  * 1. When running in Node and given a relative path, convert `process.cwd()` to a `file:` URL and use as the base.
- * 2. Otherwise, resolve against `document.baseURI`, falling back to `window.location.href`,
- *    then `window.location.origin`, and finally `http://localhost` when none are available.
+ * 2. Otherwise, resolve against the provided `base`, falling back to `getBaseUrl()` when none is supplied.
  * 3. Return a new `URL` object combining `url` with the chosen base.
  *
  * @param {string|URL} url - Resource location.
+ * @param {string} [base] - Optional base URL for relative paths.
  * @returns {Promise<URL>} Resolved URL instance.
  */
-export async function resolveUrl(url) {
+export async function resolveUrl(url, base) {
   const urlStr = url.toString();
   // In Node with a relative path, resolve against CWD as a file URL.
   if (isNodeEnvironment() && !/^[a-zA-Z]+:/.test(urlStr) && !urlStr.startsWith("/")) {
     const { pathToFileURL } = await import("node:url");
     return new URL(urlStr, pathToFileURL(process.cwd() + "/").href);
   }
-  // In browsers, fall back to the most specific location information available.
-  const base =
-    typeof window !== "undefined"
-      ? (typeof document !== "undefined" && document.baseURI) ||
-        window.location?.href ||
-        window.location?.origin ||
-        "http://localhost"
-      : "http://localhost";
-  return new URL(urlStr, base);
+  const resolvedBase = base ?? getBaseUrl();
+  return new URL(urlStr, resolvedBase);
 }
 
 /**
@@ -240,7 +220,7 @@ export async function fetchJson(url, schema) {
     if (dataCache.has(key)) {
       return dataCache.get(key);
     }
-    const parsedUrl = await resolveUrl(url);
+    const parsedUrl = await resolveUrl(url, getBaseUrl());
     const data = await readData(parsedUrl, key);
     return await validateAndCache(key, data, schema);
   } catch (error) {
@@ -328,3 +308,14 @@ export async function importJsonModule(spec) {
     return (await import(spec, { assert: { type: "json" } })).default;
   }
 }
+
+export default {
+  resolveUrl,
+  readData,
+  validateAndCache,
+  fetchJson,
+  validateData,
+  validateWithSchema,
+  importJsonModule,
+  getAjv
+};
