@@ -90,6 +90,8 @@ export function evaluateRoundData(playerVal, opponentVal) {
 
 /**
  * Evaluate a selected stat and return the outcome data.
+ * This function only evaluates and returns outcome data; it does not emit any events.
+ * Event emission is handled elsewhere (e.g., in handleStatSelection).
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
