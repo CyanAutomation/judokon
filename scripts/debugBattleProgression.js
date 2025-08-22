@@ -5,7 +5,7 @@ import { chromium } from 'playwright';
   const page = await browser.newPage();
   page.on('console', (m) => console.log('PAGE LOG>', m.type(), m.text()));
   try {
-  await page.goto('http://localhost:5000/src/pages/battleJudoka.html');
+  await page.goto('http://localhost:5000/src/pages/battleJudoka.html?autostart=1');
     console.log('TITLE', await page.title());
 
     // Wait for machine to initialize

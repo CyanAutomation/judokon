@@ -27,6 +27,20 @@ import { isTestModeEnabled } from "../testModeUtils.js";
  * @returns {Promise<void>} Resolves when modal is initialized.
  */
 export async function initRoundSelectModal(onStart) {
+  // Allow automated test harnesses or debugging to bypass the modal by
+  // supplying `?autostart=1` in the page URL. This is a deliberate, low-risk
+  // convenience that mirrors existing `isTestModeEnabled()` behaviour.
+  try {
+    if (typeof window !== "undefined") {
+      const params = new URL(window.location.href).searchParams;
+      if (params.get("autostart") === "1") {
+        setPointsToWin(CLASSIC_BATTLE_POINTS_TO_WIN);
+        if (typeof onStart === "function") await onStart();
+        return;
+      }
+    }
+  } catch {}
+
   if (isTestModeEnabled()) {
     setPointsToWin(CLASSIC_BATTLE_POINTS_TO_WIN);
     if (typeof onStart === "function") await onStart();
