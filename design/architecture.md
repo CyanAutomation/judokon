@@ -40,10 +40,10 @@ Core battle logic lives in `helpers/battleEngine.js` with no DOM access. UI scri
 
 ### helpers/navigation
 
-Use `helpers/api/navigation.js` to build orientation-specific menus and responsive hamburger toggles. Pages should import only this API.
+Use `helpers/navigation/navigationService.js` for validation and URL helpers and `helpers/navigation/navigationUI.js` to build orientation-specific menus and responsive hamburger toggles.
 
 ```js
-import { buildMenu, setupHamburger } from "../helpers/api/navigation.js";
+import { buildMenu, setupHamburger } from "../helpers/navigation/navigationUI.js";
 ```
 
 - `buildMenu(gameModes, { orientation })` returns the created menu element.

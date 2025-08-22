@@ -6,8 +6,8 @@ vi.mock("../../src/helpers/navigation/navData.js", () => ({
   loadMenuModes: vi.fn().mockResolvedValue([])
 }));
 
-vi.mock("../../src/helpers/api/navigation.js", async () => {
-  const actual = await vi.importActual("../../src/helpers/api/navigation.js");
+vi.mock("../../src/helpers/navigation/navigationUI.js", async () => {
+  const actual = await vi.importActual("../../src/helpers/navigation/navigationUI.js");
   return {
     ...actual,
     buildMenu: vi.fn()

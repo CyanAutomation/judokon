@@ -2,7 +2,7 @@ import { ToggleSwitch } from "../../components/ToggleSwitch.js";
 import { updateNavigationItemHidden } from "../gameModeUtils.js";
 import { showSettingsError } from "../showSettingsError.js";
 import { showSnackbar } from "../showSnackbar.js";
-import { navTooltipKey } from "../api/navigation.js";
+import { navTooltipKey } from "../navigation/navigationService.js";
 
 /**
  * Render game mode toggle switches within the settings page.

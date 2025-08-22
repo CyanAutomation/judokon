@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildMenu } from "../../src/helpers/api/navigation.js";
+import { buildMenu } from "../../src/helpers/navigation/navigationUI.js";
 
 const modes = [
   {

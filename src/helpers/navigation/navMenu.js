@@ -1,4 +1,5 @@
-import { buildMenu, setupHamburger, navTooltipKey, BASE_PATH } from "../api/navigation.js";
+import { buildMenu, setupHamburger } from "./navigationUI.js";
+import { navTooltipKey, BASE_PATH } from "./navigationService.js";
 
 export { navTooltipKey, BASE_PATH };
 
