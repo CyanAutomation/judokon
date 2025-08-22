@@ -36,6 +36,42 @@ window.skipBattlePhase = skipCurrentPhase;
 export const getBattleStore = () => battleStore;
 let statButtonControls;
 
+/**
+ * Returns the current device orientation.
+ * @returns {"portrait"|"landscape"} The current orientation.
+ */
+function getOrientation() {
+  try {
+    const portrait = window.innerHeight >= window.innerWidth;
+    if (typeof window.matchMedia === "function") {
+      const mm = window.matchMedia("(orientation: portrait)");
+      if (typeof mm.matches === "boolean" && mm.matches !== portrait) {
+        return portrait ? "portrait" : "landscape";
+      }
+      return mm.matches ? "portrait" : "landscape";
+    }
+    return portrait ? "portrait" : "landscape";
+  } catch {
+    return window.innerHeight >= window.innerWidth ? "portrait" : "landscape";
+  }
+}
+
+/**
+ * Applies the current orientation to the battle header.
+ * @returns {boolean} True if the header was found and updated, false otherwise.
+ */
+function applyBattleOrientation() {
+  const header = document.querySelector(".battle-header");
+  if (header) {
+    const next = getOrientation();
+    if (header.dataset.orientation !== next) {
+      header.dataset.orientation = next;
+    }
+    return true;
+  }
+  return false;
+}
+
 async function startRoundWrapper() {
   statButtonControls?.disable();
   try {
@@ -62,7 +98,7 @@ export async function setupClassicBattlePage() {
   setupScoreboard();
   initQuitButton(battleStore);
   initInterruptHandlers(battleStore);
-  watchBattleOrientation();
+  watchBattleOrientation(applyBattleOrientation);
   await initFeatureFlags();
   try {
     if (isEnabled("enableTestMode")) {

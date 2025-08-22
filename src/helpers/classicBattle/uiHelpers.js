@@ -251,62 +251,37 @@ export function showStatComparison(store, stat, playerVal, compVal) {
  * 4. If the header is missing, poll via `scheduleFrame` until applied.
  * 5. On resize/orientation change, throttle updates with `requestAnimationFrame`.
  */
-export function watchBattleOrientation() {
-  const getOrientation = () => {
-    try {
-      const portrait = window.innerHeight >= window.innerWidth;
-      if (typeof window.matchMedia === "function") {
-        const mm = window.matchMedia("(orientation: portrait)");
-        if (typeof mm.matches === "boolean" && mm.matches !== portrait) {
-          return portrait ? "portrait" : "landscape";
-        }
-        return mm.matches ? "portrait" : "landscape";
-      }
-      return portrait ? "portrait" : "landscape";
-    } catch {
-      return window.innerHeight >= window.innerWidth ? "portrait" : "landscape";
-    }
-  };
-
-  const apply = () => {
-    const header = document.querySelector(".battle-header");
-    if (header) {
-      const next = getOrientation();
-      if (header.dataset.orientation !== next) {
-        header.dataset.orientation = next;
-      }
-      return true;
-    }
-    return false;
-  };
-
-  try {
-    window.applyBattleOrientation = () => {
-      try {
-        apply();
-      } catch {}
-    };
-  } catch {}
+export function watchBattleOrientation(callback) {
+  if (typeof callback !== "function") {
+    return;
+  }
 
   let pollId;
   const pollIfMissing = () => {
     if (pollId) return;
     pollId = scheduleFrame(() => {
-      if (apply()) {
+      if (callback()) {
         cancelFrame(pollId);
         pollId = 0;
       }
     });
   };
-  if (!apply()) pollIfMissing();
+
+  if (!callback()) {
+    pollIfMissing();
+  }
 
   let rafId;
   const onChange = () => {
-    if (!apply()) pollIfMissing();
+    if (!callback()) {
+      pollIfMissing();
+    }
     if (rafId) return;
     rafId = requestAnimationFrame(() => {
       rafId = 0;
-      if (!apply()) pollIfMissing();
+      if (!callback()) {
+        pollIfMissing();
+      }
     });
   };
 
