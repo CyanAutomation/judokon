@@ -58,8 +58,12 @@ export async function roundStartEnter(machine) {
 }
 export async function roundStartExit() {}
 
-export async function waitingForPlayerActionEnter() {}
-export async function waitingForPlayerActionExit() {}
+export async function waitingForPlayerActionEnter() {
+  emitBattleEvent("statButtons:enable");
+}
+export async function waitingForPlayerActionExit() {
+  emitBattleEvent("statButtons:disable");
+}
 
 export async function roundDecisionEnter(machine) {
   const { store } = machine.context;

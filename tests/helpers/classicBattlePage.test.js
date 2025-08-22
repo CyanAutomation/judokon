@@ -53,6 +53,11 @@ describe("classicBattlePage stat button interactions", () => {
 
     const [first, second, third] = container.querySelectorAll("button");
 
+    container.querySelectorAll("button").forEach((b) => {
+      b.disabled = false;
+      b.tabIndex = 0;
+    });
+
     first.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     await Promise.resolve();
     expect(handleStatSelection).toHaveBeenCalledWith(store, "power");

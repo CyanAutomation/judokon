@@ -194,12 +194,12 @@ A new round begins — both the user and opponent are assigned random judoka via
 ### 5. `waitingForPlayerAction`
 The game waits for a stat selection.
 
-- **Triggers:**  
-  - `statSelected` → **`roundDecision`**  
-  - `timeout` (if `FF_AUTO_SELECT` enabled) → **`roundDecision`**  
-  - `timeout` (if `FF_AUTO_SELECT` disabled) → **`interruptRound`**  
-  - `interrupt` → **`interruptRound`**  
-- **Notes:** The user always chooses first; AI only selects if it is the AI’s turn in other modes.
+- **Triggers:**
+  - `statSelected` → **`roundDecision`**
+  - `timeout` (if `FF_AUTO_SELECT` enabled) → **`roundDecision`**
+  - `timeout` (if `FF_AUTO_SELECT` disabled) → **`interruptRound`**
+  - `interrupt` → **`interruptRound`**
+- **Notes:** The user always chooses first; AI only selects if it is the AI’s turn in other modes. Stat buttons remain disabled until this state is entered and are disabled again when leaving it.
 
 ---
 

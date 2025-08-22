@@ -14,6 +14,7 @@ import {
   initDebugPanel,
   maybeShowStatHint
 } from "./uiHelpers.js";
+import { onBattleEvent } from "./battleEvents.js";
 import { initBattleStateProgress } from "../battleStateProgress.js";
 import { initTooltips } from "../tooltip.js";
 import { start as startScheduler, stop as stopScheduler } from "../../utils/scheduler.js";
@@ -73,6 +74,8 @@ export class ClassicBattleView {
 
     setupNextButton();
     this.statButtonControls = initStatButtons(store);
+    onBattleEvent("statButtons:enable", () => this.statButtonControls?.enable());
+    onBattleEvent("statButtons:disable", () => this.statButtonControls?.disable());
 
     initDebugPanel();
     registerRoundStartErrorHandler(() => this.startRound());
