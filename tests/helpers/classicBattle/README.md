@@ -21,6 +21,7 @@ This directory contains unit tests for Classic Battle helpers.
 - `scheduleNextRound.test.js`: schedules and auto-dispatches the next round.
 - `selectionPrompt.test.js`: displays the selection prompt until a stat is chosen.
 - `stallRecovery.test.js`: recovers when stat selection stalls.
+- `statButtons.state.test.js`: toggles stat buttons based on battle state.
 - `statSelection.test.js`: resolves round outcomes after stat selection.
 - `stateTransitions.test.js`: validates `classicBattleStates.json` transitions.
 - `timerService.drift.test.js`: falls back to messaging when timers drift.

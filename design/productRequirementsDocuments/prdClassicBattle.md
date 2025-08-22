@@ -64,6 +64,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Each match begins with both sides receiving **25 random cards**.
 - At the start of each round, both players draw their top card.
 - The player selects one stat (Power, Speed, Technique, etc.).
+- Stat buttons stay disabled until the selection phase and turn off after a choice is made.
 - The higher value wins the round and scores **1 point**; used cards are discarded.
 - The match ends when a player reaches a **user-selected win target of 5, 10, or 15 points** (default 10) or after **25 rounds** (draw).
 

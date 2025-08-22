@@ -366,6 +366,9 @@ export function initStatButtons(store) {
     }
   }
 
+  // Start disabled until the game enters the player action state
+  setEnabled(false);
+
   statButtons.forEach((btn) => {
     const statName = btn.dataset.stat;
     const clickHandler = async () => {
