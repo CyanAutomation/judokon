@@ -2,7 +2,7 @@ import { getDefaultTimer } from "../timerUtils.js";
 import { startRound as engineStartRound, startCoolDown, stopTimer } from "../battleEngineFacade.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { updateDebugPanel } from "./uiHelpers.js";
-import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
+import * as snackbar from "../showSnackbar.js";
 import { setSkipHandler, skipCurrentPhase } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
@@ -233,10 +233,10 @@ export function scheduleNextRound(result) {
     if (remaining === lastRenderedRemaining) return;
     const text = `Next round in: ${remaining}s`;
     if (!snackbarStarted) {
-      showSnackbar(text);
+      snackbar.showSnackbar(text);
       snackbarStarted = true;
     } else {
-      updateSnackbar(text);
+      snackbar.updateSnackbar(text);
     }
     lastRenderedRemaining = remaining;
   };

@@ -10,7 +10,7 @@ import { getScores, getTimerState, isMatchEnded } from "../battleEngineFacade.js
 import { isTestModeEnabled, getCurrentSeed } from "../testModeUtils.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
-import { showSnackbar } from "../showSnackbar.js";
+import * as snackbar from "../showSnackbar.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showResult } from "../battle/index.js";
 import { shouldReduceMotionSync } from "../motionUtils.js";
@@ -32,7 +32,7 @@ export function showSelectionPrompt() {
   if (el) {
     el.textContent = "";
   }
-  showSnackbar("Select your move");
+  snackbar.showSnackbar("Select your move");
 }
 
 /**
@@ -180,7 +180,7 @@ export function updateDebugPanel() {
 export function showRoundOutcome(message) {
   showResult(message);
   scoreboard.showMessage(message);
-  showSnackbar(message);
+  snackbar.showSnackbar(message);
 }
 
 /**
