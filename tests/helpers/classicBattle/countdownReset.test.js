@@ -27,12 +27,16 @@ vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", async () => {
   const actual = await vi.importActual("../../../src/helpers/classicBattle/uiHelpers.js");
   return {
     ...actual,
-    revealOpponentCard: vi.fn(),
+    renderOpponentCard: vi.fn(),
     disableNextRoundButton: vi.fn(),
     enableNextRoundButton: vi.fn(),
     updateDebugPanel: vi.fn()
   };
 });
+
+vi.mock("../../../src/helpers/classicBattle/opponentController.js", () => ({
+  getOpponentCardData: vi.fn().mockResolvedValue(null)
+}));
 
 describe("countdown resets after stat selection", () => {
   let battleMod;

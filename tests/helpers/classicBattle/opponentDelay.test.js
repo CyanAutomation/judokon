@@ -9,7 +9,7 @@ let clearMessage;
 let clearTimer;
 let showSnackbar;
 let scheduleNextRound;
-let revealOpponentCard;
+let renderOpponentCard;
 let resetStatButtons;
 let updateDebugPanel;
 
@@ -20,7 +20,7 @@ beforeEach(() => {
   clearMessage = vi.fn();
   clearTimer = vi.fn();
   scheduleNextRound = vi.fn();
-  revealOpponentCard = vi.fn();
+  renderOpponentCard = vi.fn();
   resetStatButtons = vi.fn();
   updateDebugPanel = vi.fn();
 
@@ -42,12 +42,16 @@ beforeEach(() => {
     const actual = await vi.importActual("../../../src/helpers/classicBattle/uiHelpers.js");
     return {
       ...actual,
-      revealOpponentCard,
+      renderOpponentCard,
       updateDebugPanel,
       showSelectionPrompt: vi.fn(),
       disableNextRoundButton: vi.fn()
     };
   });
+
+  vi.mock("../../../src/helpers/classicBattle/opponentController.js", () => ({
+    getOpponentCardData: vi.fn().mockResolvedValue(null)
+  }));
 
   vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
     scheduleNextRound,

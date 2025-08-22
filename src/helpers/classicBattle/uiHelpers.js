@@ -1,10 +1,4 @@
-import {
-  getOpponentJudoka,
-  getGokyoLookup,
-  clearOpponentJudoka,
-  getOrLoadGokyoLookup
-} from "./cardSelection.js";
-import { loadSettings } from "../settingsStorage.js";
+import { getOpponentCardData } from "./opponentController.js";
 import { isEnabled, featureFlagsEmitter } from "../featureFlags.js";
 import { getScores, getTimerState, isMatchEnded, STATS } from "../battleEngineFacade.js";
 import { isTestModeEnabled, getCurrentSeed, setTestMode } from "../testModeUtils.js";
@@ -45,53 +39,41 @@ export function showSelectionPrompt() {
 }
 
 /**
- * Reveal the opponent's hidden card.
+ * Render the opponent card inside a container element.
  *
  * @pseudocode
- * 1. Exit early if no stored judoka exists.
- * 2. Render `opponentJudoka` into the opponent card container.
- * 3. Clear the stored judoka after rendering.
+ * 1. Extract lookup and inspector flag from `judoka`.
+ * 2. Create a `JudokaCard` instance and render it to a DOM node.
+ * 3. Clear and update the container, preserving the debug panel.
+ * 4. Initialize lazy portrait loading when supported.
+ *
+ * @param {{lookup: object, enableInspector?: boolean}} judoka Judoka data plus render deps.
+ * @param {HTMLElement | null} container Target container for the card.
  */
-export async function revealOpponentCard() {
-  const judoka = getOpponentJudoka();
-  if (!judoka) return;
-  const container = document.getElementById("opponent-card");
-  // Preserve the debug panel across card re-renders
-  const debugPanel = container ? container.querySelector("#debug-panel") : null;
-  try {
-    await loadSettings();
-  } catch {}
-  const enableInspector = isEnabled("enableCardInspector");
+export async function renderOpponentCard(judoka, container) {
+  if (!judoka || !container) return;
+  const { lookup, enableInspector, ...data } = judoka;
   let card;
   try {
-    let lookup = getGokyoLookup();
-    if (!lookup) {
-      // Attempt to load lookup if not yet available (e.g., test env)
-      lookup = await getOrLoadGokyoLookup();
-    }
-    if (!lookup) return; // Skip rendering silently if still unavailable
-    const judokaCard = new JudokaCard(judoka, lookup, { enableInspector });
-    // Be defensive: mocked modules may not expose render during tests
+    const judokaCard = new JudokaCard(data, lookup, { enableInspector });
     if (judokaCard && typeof judokaCard.render === "function") {
       card = await judokaCard.render();
     } else {
-      // Skip silently when mocks omit render in tests
       return;
     }
   } catch (err) {
     console.debug("Error rendering JudokaCard:", err);
+    return;
   }
-  if (card && typeof card === "object" && card.nodeType === 1) {
-    container.innerHTML = "";
-    if (debugPanel) container.appendChild(debugPanel);
-    container.appendChild(card);
-    if (typeof IntersectionObserver !== "undefined") {
-      try {
-        setupLazyPortraits(card);
-      } catch {}
-    }
+  const debugPanel = container.querySelector("#debug-panel");
+  container.innerHTML = "";
+  if (debugPanel) container.appendChild(debugPanel);
+  container.appendChild(card);
+  if (typeof IntersectionObserver !== "undefined") {
+    try {
+      setupLazyPortraits(card);
+    } catch {}
   }
-  clearOpponentJudoka();
 }
 
 export function enableNextRoundButton() {
@@ -700,7 +682,10 @@ if (typeof window !== "undefined") {
 let opponentSnackbarId = 0;
 
 onBattleEvent("opponentReveal", () => {
-  revealOpponentCard().catch(() => {});
+  const container = document.getElementById("opponent-card");
+  getOpponentCardData()
+    .then((j) => j && renderOpponentCard(j, container))
+    .catch(() => {});
 });
 
 onBattleEvent("statSelected", () => {
