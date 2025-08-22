@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 
+import { CLASSIC_BATTLE_POINTS_TO_WIN } from "../../../src/helpers/constants.js";
+
 const rounds = JSON.parse(readFileSync(resolve("src/data/battleRounds.json"), "utf8"));
 
 const mocks = vi.hoisted(() => ({
@@ -44,6 +46,7 @@ describe("initRoundSelectModal", () => {
     mocks.fetchJson.mockResolvedValue(rounds);
     mocks.cleanup = vi.fn();
     mocks.initTooltips.mockResolvedValue(mocks.cleanup);
+    window.history.replaceState({}, "", "/");
   });
 
   it("renders three options from battleRounds.json", async () => {
@@ -93,5 +96,15 @@ describe("initRoundSelectModal", () => {
     expect(mocks.setPointsToWin).toHaveBeenCalledWith(5);
     expect(onStart).toHaveBeenCalled();
     consoleErr.mockRestore();
+  });
+
+  it("auto-starts a default match when ?autostart=1 is present", async () => {
+    const onStart = vi.fn();
+    window.history.replaceState({}, "", "?autostart=1");
+    await initRoundSelectModal(onStart);
+    expect(mocks.setPointsToWin).toHaveBeenCalledWith(CLASSIC_BATTLE_POINTS_TO_WIN);
+    expect(onStart).toHaveBeenCalled();
+    expect(mocks.fetchJson).not.toHaveBeenCalled();
+    expect(document.querySelector(".round-select-buttons")).toBeNull();
   });
 });
