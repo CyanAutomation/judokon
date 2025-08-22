@@ -40,13 +40,13 @@ describe("classicBattle match controls", () => {
     expect(btn.dataset.nextReady).toBe("true");
   });
 
-  it("resetGame replaces Next button and reattaches click handler", async () => {
-    const { resetGame } = await import("../../../src/helpers/classicBattle/roundManager.js");
+  it("resetBattleUI replaces Next button and reattaches click handler", async () => {
+    const { resetBattleUI } = await import("../../../src/helpers/classicBattle/uiHelpers.js");
     const timerSvc = await import("../../../src/helpers/classicBattle/timerService.js");
     const btn = document.getElementById("next-button");
     btn.dataset.nextReady = "true";
     const spy = vi.spyOn(timerSvc, "onNextButtonClick").mockImplementation(() => {});
-    resetGame();
+    resetBattleUI();
     const cloned = document.getElementById("next-button");
     expect(cloned).not.toBe(btn);
     expect(cloned.disabled).toBe(true);

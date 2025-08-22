@@ -1,10 +1,6 @@
 import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
-import { onNextButtonClick } from "./timerService.js";
-import { updateDebugPanel } from "./uiHelpers.js";
 import { _resetForTest as resetEngineForTest } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
-import * as scoreboard from "../setupScoreboard.js";
-import { syncScoreDisplay } from "./uiService.js";
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
 import { resetSkipState } from "./skipHandler.js";
 
@@ -46,16 +42,9 @@ function getStartRound(store) {
  */
 export async function handleReplay(store) {
   resetEngineForTest();
-  if (store.quitModal) {
-    store.quitModal.destroy();
-    store.quitModal = null;
-  }
-  document.querySelectorAll(".modal-backdrop").forEach((m) => {
-    if (typeof m.remove === "function") m.remove();
-  });
-  scoreboard.clearMessage();
+  window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } }));
   const startRoundFn = getStartRound(store);
-  await startRoundFn();
+  return startRoundFn();
 }
 
 /**
@@ -74,28 +63,6 @@ export async function startRound(store) {
   const cards = await drawCards();
   const roundNumber = battleEngine.getRoundsPlayed() + 1;
   return { ...cards, roundNumber };
-}
-
-/**
- * Reset the Next Round button to its initial disabled state.
- *
- * @pseudocode
- * 1. Locate `#next-button` and exit if missing.
- * 2. Replace it with a cloned element to drop event listeners.
- * 3. Remove `data-next-ready` and set the `disabled` attribute on the clone.
- *
- * @returns {void}
- */
-export function resetGame() {
-  const nextBtn = document.getElementById("next-button");
-  if (nextBtn) {
-    const clone = nextBtn.cloneNode(true);
-    clone.disabled = true;
-    delete clone.dataset.nextReady;
-    // Reattach click handler lost due to cloning
-    clone.addEventListener("click", onNextButtonClick);
-    nextBtn.replaceWith(clone);
-  }
 }
 
 /**
@@ -118,20 +85,5 @@ export function _resetForTest(store) {
   store.selectionMade = false;
   cancelFrame(store.compareRaf);
   store.compareRaf = 0;
-  const timerEl = document.getElementById("next-round-timer");
-  if (timerEl) timerEl.textContent = "";
-  scoreboard.clearMessage();
-  const roundResultEl = document.getElementById("round-result");
-  if (roundResultEl) roundResultEl.textContent = "";
-  resetGame();
-  const quitBtn = document.getElementById("quit-match-button");
-  if (quitBtn) {
-    quitBtn.replaceWith(quitBtn.cloneNode(true));
-  }
-  if (store.quitModal) {
-    store.quitModal.destroy();
-    store.quitModal = null;
-  }
-  syncScoreDisplay();
-  updateDebugPanel();
+  window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } }));
 }
