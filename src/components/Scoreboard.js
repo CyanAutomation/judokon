@@ -298,6 +298,8 @@ export function updateScore(playerScore, opponentScore) {
 function runCountdown(duration, onTick, onExpired, handleDrift) {
   if (timerControls && typeof timerControls.startCoolDown === "function") {
     timerControls.startCoolDown(onTick, onExpired, duration, handleDrift);
+  } else {
+    console.warn("timerControls.startCoolDown is not callable. Countdown will not start.");
   }
 }
 
