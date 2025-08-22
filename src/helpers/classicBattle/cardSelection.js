@@ -249,7 +249,7 @@ export function getGokyoLookup() {
 
 /**
  * Ensure the gokyo lookup is available, loading it if missing.
- * Primarily used by tests or code paths that call `revealOpponentCard` directly.
+ * Primarily used by tests or code paths that render the opponent card directly.
  * @returns {Promise<ReturnType<typeof createGokyoLookup>>} Lookup (empty on failure).
  */
 export async function getOrLoadGokyoLookup() {
