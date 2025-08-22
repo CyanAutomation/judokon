@@ -17,6 +17,7 @@
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { setupScoreboard } from "./setupScoreboard.js";
+import { updateBattleStateBadge } from "./classicBattle/uiHelpers.js";
 
 if (typeof process === "undefined" || !process.env.VITEST) {
   setupScoreboard();
@@ -55,29 +56,36 @@ export async function initBattleStateProgress() {
     list.querySelectorAll("li").forEach((li) => {
       li.classList.toggle("active", li.dataset.state === state);
     });
+    updateBattleStateBadge(state);
   };
 
   const machine = document.getElementById("machine-state");
   if (machine && typeof MutationObserver !== "undefined") {
+    let prevState = null;
     const observer = new MutationObserver(() => {
-      updateActive(machine.textContent.trim());
+      const state = machine.textContent.trim();
+      if (state !== prevState) {
+        prevState = state;
+        updateActive(state);
+      }
     });
     observer.observe(machine, { childList: true, characterData: true, subtree: true });
-    updateActive(machine.textContent.trim());
+    const initialState = machine.textContent.trim();
+    prevState = initialState;
+    updateActive(initialState);
     return () => observer.disconnect();
   }
 
   let prev;
-  let id = 0;
+  let rafId = 0;
   const tick = () => {
     const state = window.__classicBattleState;
     if (state !== prev) {
       prev = state;
       updateActive(state);
     }
-    id = requestAnimationFrame(tick);
-    return id;
+    rafId = requestAnimationFrame(tick);
   };
-  id = tick();
-  return () => cancelAnimationFrame(id);
+  rafId = requestAnimationFrame(tick);
+  return () => cancelAnimationFrame(rafId);
 }

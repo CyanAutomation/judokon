@@ -428,6 +428,21 @@ export async function applyStatLabels() {
 }
 
 /**
+ * Update the text content of the battle state badge.
+ *
+ * @param {string | null} state The current battle state.
+ */
+export function updateBattleStateBadge(state) {
+  const badge = document.getElementById("battle-state-badge");
+  if (!badge) return;
+  try {
+    badge.textContent = state ? `State: ${state}` : "State: —";
+  } catch {
+    badge.textContent = "State: —";
+  }
+}
+
+/**
  * Toggle visibility of the battle state badge based on feature flag.
  *
  * @pseudocode
@@ -454,12 +469,7 @@ export function setBattleStateBadgeEnabled(enable) {
     if (headerRight) headerRight.appendChild(badge);
     else document.querySelector("header")?.appendChild(badge);
   }
-  try {
-    const current = typeof window !== "undefined" ? window.__classicBattleState : null;
-    badge.textContent = current ? `State: ${current}` : "State: —";
-  } catch {
-    badge.textContent = "State: —";
-  }
+  updateBattleStateBadge(typeof window !== "undefined" ? window.__classicBattleState : null);
 }
 
 /**
