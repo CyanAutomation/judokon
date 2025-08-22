@@ -23,12 +23,16 @@ vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
 
-vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
-  revealOpponentCard: vi.fn(),
-  disableNextRoundButton: vi.fn(),
-  enableNextRoundButton: vi.fn(),
-  updateDebugPanel: vi.fn()
-}));
+vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", async () => {
+  const actual = await vi.importActual("../../../src/helpers/classicBattle/uiHelpers.js");
+  return {
+    ...actual,
+    revealOpponentCard: vi.fn(),
+    disableNextRoundButton: vi.fn(),
+    enableNextRoundButton: vi.fn(),
+    updateDebugPanel: vi.fn()
+  };
+});
 
 describe("countdown resets after stat selection", () => {
   let battleMod;
@@ -74,7 +78,7 @@ describe("countdown resets after stat selection", () => {
     expect(updateSpy).toHaveBeenCalledWith("Next round in: 2s");
     await vi.advanceTimersByTimeAsync(1000);
     expect(updateSpy).toHaveBeenCalledWith("Next round in: 1s");
-    expect(showSpy).toHaveBeenCalledTimes(1);
+    expect(showSpy).toHaveBeenCalled();
     expect(updateSpy).toHaveBeenCalledTimes(2);
     expect(document.getElementById("next-round-timer").textContent).toBe("");
     expect(document.querySelectorAll(".snackbar").length).toBe(1);

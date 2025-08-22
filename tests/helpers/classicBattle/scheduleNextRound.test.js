@@ -112,14 +112,12 @@ describe("classicBattle scheduleNextRound", () => {
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     const startRoundWrapper = vi.fn(async () => {
-      const { roundNumber } = await battleMod.startRound(store);
-      battleMod.applyRoundUI(store, roundNumber);
+      await battleMod.startRound(store);
     });
     await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
     const machine = orchestrator.getBattleStateMachine();
 
-    const { roundNumber } = await battleMod.startRound(store);
-    battleMod.applyRoundUI(store, roundNumber);
+    await battleMod.startRound(store);
 
     machine.current = "roundOver";
     await orchestrator.dispatchBattleEvent("continue");

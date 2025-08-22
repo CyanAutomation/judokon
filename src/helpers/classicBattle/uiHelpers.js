@@ -23,6 +23,7 @@ import { toggleInspectorPanels } from "../cardUtils.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { syncScoreDisplay } from "./uiService.js";
+import { onBattleEvent } from "./battleEvents.js";
 
 function getDebugOutputEl() {
   return document.getElementById("debug-output");
@@ -709,16 +710,24 @@ if (typeof window !== "undefined") {
   window.addEventListener("game:reset-ui", (e) => {
     resetBattleUI(e.detail?.store);
   });
-
-  window.addEventListener("opponent:reveal", () => {
-    revealOpponentCard().catch(() => {});
-  });
-
-  window.addEventListener("round:evaluated", (e) => {
-    const { store, stat, playerVal, opponentVal, result } = e.detail || {};
-    if (!result) return;
-    showRoundOutcome(result.message || "");
-    showStatComparison(store, stat, playerVal, opponentVal);
-    updateDebugPanel();
-  });
 }
+
+let opponentSnackbarId = 0;
+
+onBattleEvent("opponentReveal", () => {
+  revealOpponentCard().catch(() => {});
+});
+
+onBattleEvent("statSelected", () => {
+  scoreboard.clearTimer();
+  opponentSnackbarId = setTimeout(() => snackbar.showSnackbar("Opponent is choosing…"), 500);
+});
+
+onBattleEvent("roundResolved", (e) => {
+  clearTimeout(opponentSnackbarId);
+  const { store, stat, playerVal, opponentVal, result } = e.detail || {};
+  if (!result) return;
+  showRoundOutcome(result.message || "");
+  showStatComparison(store, stat, playerVal, opponentVal);
+  updateDebugPanel();
+});

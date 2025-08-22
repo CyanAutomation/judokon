@@ -1,9 +1,8 @@
 import { STATS, stopTimer } from "../battleEngineFacade.js";
 import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
-import * as scoreboard from "../setupScoreboard.js";
-import { showSnackbar } from "../showSnackbar.js";
 import { getStatValue } from "../battle/index.js";
 import { getOpponentJudoka } from "./cardSelection.js";
+import { emitBattleEvent } from "./battleEvents.js";
 
 // Local dispatcher to avoid circular import with orchestrator.
 // Uses a window-exposed getter set by the orchestrator at runtime.
@@ -90,7 +89,9 @@ export function evaluateRoundData(playerVal, opponentVal) {
 }
 
 /**
- * Evaluate a selected stat and emit the outcome.
+ * Evaluate a selected stat and return the outcome data.
+ * This function only evaluates and returns outcome data; it does not emit any events.
+ * Event emission is handled elsewhere (e.g., in handleStatSelection).
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -99,19 +100,18 @@ export function evaluateRoundData(playerVal, opponentVal) {
  * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number, outcome: string, playerVal: number, opponentVal: number}}
  */
 export function evaluateRound(store, stat, playerVal, opponentVal) {
-  const result = evaluateRoundData(playerVal, opponentVal);
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(
-      new CustomEvent("round:evaluated", {
-        detail: { store, stat, playerVal, opponentVal, result }
-      })
-    );
-  }
-  return result;
+  return evaluateRoundData(playerVal, opponentVal);
 }
 
 /**
  * Handles the player's stat selection.
+ *
+ * @pseudocode
+ * 1. Ignore if a selection was already made.
+ * 2. Record the chosen stat and fetch both stat values from the DOM.
+ * 3. Stop running timers and clear pending timeouts on the store.
+ * 4. Emit a `statSelected` event with the stat and values.
+ * 5. Resolve the round either via the state machine or directly.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -136,7 +136,7 @@ export async function handleStatSelection(store, stat) {
   stopTimer();
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
-  scoreboard.clearTimer();
+  emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal });
   // In test environments, resolve synchronously to avoid orchestrator coupling
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
@@ -185,14 +185,10 @@ export async function handleStatSelection(store, stat) {
  */
 export async function resolveRound(store, stat, playerVal, opponentVal) {
   if (!stat) return;
-  const opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), 500);
   await dispatchBattleEvent("evaluate");
   const delay = 300 + Math.floor(Math.random() * 401);
   await new Promise((resolve) => setTimeout(resolve, delay));
-  clearTimeout(opponentSnackbarId);
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event("opponent:reveal"));
-  }
+  emitBattleEvent("opponentReveal");
   const result = evaluateRound(store, stat, playerVal, opponentVal);
   const outcomeEvent =
     result.outcome === "winPlayer"
@@ -206,8 +202,12 @@ export async function resolveRound(store, stat, playerVal, opponentVal) {
   } else {
     await dispatchBattleEvent("continue");
   }
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("round:resolved", { detail: { store, stat, result } }));
-  }
+  emitBattleEvent("roundResolved", {
+    store,
+    stat,
+    playerVal,
+    opponentVal,
+    result
+  });
   return result;
 }

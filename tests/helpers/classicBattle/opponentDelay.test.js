@@ -38,12 +38,16 @@ beforeEach(() => {
     updateSnackbar: vi.fn()
   }));
 
-  vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
-    revealOpponentCard,
-    updateDebugPanel,
-    showSelectionPrompt: vi.fn(),
-    disableNextRoundButton: vi.fn()
-  }));
+  vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", async () => {
+    const actual = await vi.importActual("../../../src/helpers/classicBattle/uiHelpers.js");
+    return {
+      ...actual,
+      revealOpponentCard,
+      updateDebugPanel,
+      showSelectionPrompt: vi.fn(),
+      disableNextRoundButton: vi.fn()
+    };
+  });
 
   vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
     scheduleNextRound,

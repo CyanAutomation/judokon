@@ -93,8 +93,7 @@ describe("classicBattle interrupts", () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
-    const { roundNumber } = await battleMod.startRound(store);
-    battleMod.applyRoundUI(store, roundNumber);
+    await battleMod.startRound(store);
     timerSpy.advanceTimersByTime(31000);
     await vi.runOnlyPendingTimersAsync();
     const events = dispatchSpy.mock.calls.map((c) => c[0]);
