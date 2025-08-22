@@ -3,6 +3,7 @@
  */
 import { createBattleStore, startRound } from "./classicBattle/roundManager.js";
 import { handleStatSelection } from "./classicBattle/selectionHandler.js";
+import { applyRoundUI } from "./classicBattle/roundUI.js";
 import { onDomReady } from "./domReady.js";
 import { setupScoreboard, showMessage } from "./setupScoreboard.js";
 import { waitForOpponentCard } from "./battleJudokaPage.js";
@@ -38,7 +39,8 @@ let statButtonControls;
 async function startRoundWrapper() {
   statButtonControls?.disable();
   try {
-    await startRound(battleStore);
+    const { roundNumber } = await startRound(battleStore);
+    applyRoundUI(battleStore, roundNumber);
     await waitForOpponentCard(5000);
   } catch (error) {
     console.error("Error starting round:", error);

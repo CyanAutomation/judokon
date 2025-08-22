@@ -183,12 +183,14 @@ describe("scheduleNextRound early click", () => {
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     const startRoundWrapper = vi.fn(async () => {
-      await battleMod.startRound(store);
+      const { roundNumber } = await battleMod.startRound(store);
+      battleMod.applyRoundUI(store, roundNumber);
     });
     await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
     const machine = orchestrator.getBattleStateMachine();
 
-    await battleMod.startRound(store);
+    const { roundNumber } = await battleMod.startRound(store);
+    battleMod.applyRoundUI(store, roundNumber);
     expect(generateRandomCardMock).toHaveBeenCalledTimes(1);
 
     machine.current = "roundOver";

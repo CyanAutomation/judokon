@@ -1,12 +1,10 @@
 import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
-import { startTimer, handleStatSelectionTimeout, onNextButtonClick } from "./timerService.js";
-import { showSelectionPrompt, disableNextRoundButton, updateDebugPanel } from "./uiHelpers.js";
+import { onNextButtonClick } from "./timerService.js";
+import { updateDebugPanel } from "./uiHelpers.js";
 import { _resetForTest as resetEngineForTest } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import * as scoreboard from "../setupScoreboard.js";
-import { resetStatButtons } from "../battle/index.js";
 import { syncScoreDisplay } from "./uiService.js";
-import { handleStatSelection } from "./selectionHandler.js";
 import { quitMatch } from "./quitModal.js";
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
 import { resetSkipState } from "./skipHandler.js";
@@ -68,33 +66,18 @@ export async function handleReplay(store) {
  * Start a new round by drawing cards and starting timers.
  *
  * @pseudocode
- * 1. Reset buttons and disable the Next Round button.
+ * 1. Reset selection flags on the store.
  * 2. Draw player and opponent cards.
- * 3. Sync the score display and show the selection prompt.
- * 4. Update the round counter using `battleEngine.getRoundsPlayed() + 1`.
- * 5. Start the round timer and stall timeout.
- * 6. Update the debug panel.
+ * 3. Compute the current round number via `battleEngine.getRoundsPlayed() + 1`.
+ * 4. Return the drawn cards and round number.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
 export async function startRound(store) {
   store.selectionMade = false;
-  resetStatButtons();
-  disableNextRoundButton();
-  const roundResultEl = document.getElementById("round-result");
-  if (roundResultEl) roundResultEl.textContent = "";
-  await drawCards();
-  syncScoreDisplay();
-  const currentRound = battleEngine.getRoundsPlayed() + 1;
-  scoreboard.updateRoundCounter(currentRound);
-  showSelectionPrompt();
-  // Fire-and-forget; timer startup should not block round start.
-  startTimer((stat, opts) => handleStatSelection(store, stat, opts));
-  store.statTimeoutId = setTimeout(
-    () => handleStatSelectionTimeout(store, (s, opts) => handleStatSelection(store, s, opts)),
-    35000
-  );
-  updateDebugPanel();
+  const cards = await drawCards();
+  const roundNumber = battleEngine.getRoundsPlayed() + 1;
+  return { ...cards, roundNumber };
 }
 
 /**

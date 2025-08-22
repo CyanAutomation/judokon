@@ -9,3 +9,4 @@ export {
 } from "./classicBattle/uiHelpers.js";
 export { getOpponentJudoka } from "./classicBattle/cardSelection.js";
 export { scheduleNextRound } from "./classicBattle/timerService.js";
+export { applyRoundUI } from "./classicBattle/roundUI.js";
