@@ -287,11 +287,17 @@ export function scheduleNextRound(result) {
   function handleDrift(remaining) {
     retries += 1;
     if (retries > MAX_DRIFT_RETRIES) {
-      scoreboard.showMessage("Timer error. Enabling next round.");
+      // Give up gracefully without overriding the round result message.
       onExpired();
       return;
     }
-    scoreboard.showMessage("Waiting…");
+    // Prefer not to overwrite the round result message if present.
+    const msgEl = document.getElementById("round-message");
+    if (msgEl && msgEl.textContent) {
+      snackbar.showSnackbar("Waiting…");
+    } else {
+      scoreboard.showMessage("Waiting…");
+    }
     start(remaining);
   }
 

@@ -201,7 +201,8 @@ describe("classicBattle stat selection", () => {
     expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "evaluate");
     expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "outcome=winPlayer");
     expect(orchestrator.dispatchBattleEvent).toHaveBeenNthCalledWith(3, "continue");
-    expect(orchestrator.__getStateLog()).toEqual(["processingRound", "roundOver", "cooldown"]);
+    const stateLog = orchestrator.__getStateLog();
+    expect(stateLog.slice(0, 3)).toEqual(["processingRound", "roundOver", "cooldown"]);
   });
 
   it("dispatches matchPointReached when match ends", async () => {

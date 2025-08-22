@@ -97,6 +97,7 @@ describe("classicBattle auto select", () => {
     const score = document.querySelector("header #score-display").textContent;
     const msg = document.querySelector("header #round-message").textContent;
     expect(score).toBe("You: 1\nOpponent: 0");
+    // Ensure we surfaced the win message; cooldown drift hints must not overwrite it
     expect(msg).toMatch(/win the round/i);
   });
 
