@@ -8,4 +8,3 @@
  * - Export it for callers expecting `src/helpers/classicBattlePage.js`
  */
 export { setupClassicBattlePage } from "./classicBattle/bootstrap.js";
-
