@@ -16,7 +16,7 @@ import {
 } from "./uiHelpers.js";
 import { initBattleStateProgress } from "../battleStateProgress.js";
 import { initTooltips } from "../tooltip.js";
-import { start as startScheduler, stop as stopScheduler } from "../utils/scheduler.js";
+import { start as startScheduler, stop as stopScheduler } from "../../utils/scheduler.js";
 import { pauseTimer, resumeTimer } from "../battleEngineFacade.js";
 import "../setupBottomNavbar.js";
 import "../setupDisplaySettings.js";
