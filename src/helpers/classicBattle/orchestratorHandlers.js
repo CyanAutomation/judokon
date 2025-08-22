@@ -52,9 +52,18 @@ export async function cooldownExit() {}
 
 export async function roundStartEnter(machine) {
   const { startRoundWrapper, doStartRound, store } = machine.context;
-  if (typeof startRoundWrapper === "function") await startRoundWrapper();
-  else if (typeof doStartRound === "function") await doStartRound(store);
-  await machine.dispatch("cardsRevealed");
+  try {
+    if (typeof startRoundWrapper === "function") await startRoundWrapper();
+    else if (typeof doStartRound === "function") await doStartRound(store);
+  } catch {
+    try {
+      emitBattleEvent("scoreboardShowMessage", "Round start error. Recovering…");
+      emitBattleEvent("debugPanelUpdate");
+      await machine.dispatch("interrupt", { reason: "roundStartError" });
+    } catch {}
+  } finally {
+    await machine.dispatch("cardsRevealed");
+  }
 }
 export async function roundStartExit() {}
 
