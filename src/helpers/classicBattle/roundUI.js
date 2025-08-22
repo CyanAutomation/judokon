@@ -6,6 +6,7 @@ import * as scoreboard from "../setupScoreboard.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import { showMatchSummaryModal } from "./uiService.js";
 import { handleReplay } from "./roundManager.js";
+import { onBattleEvent } from "./battleEvents.js";
 
 /**
  * Apply UI updates for a newly started round.
@@ -38,19 +39,24 @@ export function applyRoundUI(store, roundNumber) {
 
 // --- Event bindings ---
 
-if (typeof window !== "undefined") {
-  window.addEventListener("round:resolved", (e) => {
-    const { store, result } = e.detail || {};
-    if (!result) return;
-    syncScoreDisplay();
-    scheduleNextRound(result);
-    if (result.matchEnded) {
-      scoreboard.clearRoundCounter();
-      showMatchSummaryModal(result, async () => {
-        await handleReplay(store);
-      });
-    }
-    resetStatButtons();
-    updateDebugPanel();
-  });
-}
+onBattleEvent("roundStarted", (e) => {
+  const { store, roundNumber } = e.detail || {};
+  if (store && typeof roundNumber === "number") {
+    applyRoundUI(store, roundNumber);
+  }
+});
+
+onBattleEvent("roundResolved", (e) => {
+  const { store, result } = e.detail || {};
+  if (!result) return;
+  syncScoreDisplay();
+  scheduleNextRound(result);
+  if (result.matchEnded) {
+    scoreboard.clearRoundCounter();
+    showMatchSummaryModal(result, async () => {
+      await handleReplay(store);
+    });
+  }
+  resetStatButtons();
+  updateDebugPanel();
+});

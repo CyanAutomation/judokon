@@ -2,7 +2,6 @@
  * Page wrapper for Classic Battle mode.
  */
 import { createBattleStore, startRound } from "./classicBattle/roundManager.js";
-import { applyRoundUI } from "./classicBattle/roundUI.js";
 import { onDomReady } from "./domReady.js";
 import { setupScoreboard } from "./setupScoreboard.js";
 import { waitForOpponentCard } from "./battleJudokaPage.js";
@@ -40,8 +39,7 @@ let statButtonControls;
 async function startRoundWrapper() {
   statButtonControls?.disable();
   try {
-    const { roundNumber } = await startRound(battleStore);
-    applyRoundUI(battleStore, roundNumber);
+    await startRound(battleStore);
     await waitForOpponentCard(5000);
   } catch (error) {
     console.error("Error starting round:", error);

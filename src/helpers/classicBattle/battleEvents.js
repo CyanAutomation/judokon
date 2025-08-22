@@ -1,0 +1,40 @@
+/**
+ * Lightweight event bus for Classic Battle interactions.
+ *
+ * @pseudocode
+ * 1. Create a shared `EventTarget` instance.
+ * 2. Expose helper functions to subscribe, unsubscribe, and emit events.
+ */
+const target = new EventTarget();
+
+/**
+ * Subscribe to a battle event.
+ *
+ * @param {string} type - Event name.
+ * @param {(e: CustomEvent) => void} handler - Listener callback.
+ */
+export function onBattleEvent(type, handler) {
+  target.addEventListener(type, handler);
+}
+
+/**
+ * Unsubscribe from a battle event.
+ *
+ * @param {string} type - Event name.
+ * @param {(e: CustomEvent) => void} handler - Listener callback.
+ */
+export function offBattleEvent(type, handler) {
+  target.removeEventListener(type, handler);
+}
+
+/**
+ * Emit a battle event with optional detail payload.
+ *
+ * @param {string} type - Event name.
+ * @param {any} [detail] - Optional data to pass to listeners.
+ */
+export function emitBattleEvent(type, detail) {
+  target.dispatchEvent(new CustomEvent(type, { detail }));
+}
+
+export default target;

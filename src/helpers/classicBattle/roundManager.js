@@ -3,6 +3,7 @@ import { _resetForTest as resetEngineForTest } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
 import { resetSkipState } from "./skipHandler.js";
+import { emitBattleEvent } from "./battleEvents.js";
 
 /**
  * Create a new battle state store.
@@ -54,7 +55,8 @@ export async function handleReplay(store) {
  * 1. Reset selection flags on the store.
  * 2. Draw player and opponent cards.
  * 3. Compute the current round number via `battleEngine.getRoundsPlayed() + 1`.
- * 4. Return the drawn cards and round number.
+ * 4. Dispatch a `roundStarted` event with the store and round number.
+ * 5. Return the drawn cards and round number.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
@@ -62,6 +64,7 @@ export async function startRound(store) {
   store.selectionMade = false;
   const cards = await drawCards();
   const roundNumber = battleEngine.getRoundsPlayed() + 1;
+  emitBattleEvent("roundStarted", { store, roundNumber });
   return { ...cards, roundNumber };
 }
 
