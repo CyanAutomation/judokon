@@ -58,8 +58,12 @@ export async function roundStartEnter(machine) {
 }
 export async function roundStartExit() {}
 
-export async function waitingForPlayerActionEnter() {
+export async function waitingForPlayerActionEnter(machine) {
   emitBattleEvent("statButtons:enable");
+  const store = machine?.context?.store;
+  if (store?.playerChoice) {
+    await machine.dispatch("statSelected");
+  }
 }
 export async function waitingForPlayerActionExit() {
   emitBattleEvent("statButtons:disable");
@@ -67,12 +71,43 @@ export async function waitingForPlayerActionExit() {
 
 export async function roundDecisionEnter(machine) {
   const { store } = machine.context;
+
+  const resolveImmediate = async () => {
+    const stat = store.playerChoice;
+    const pCard = document.getElementById("player-card");
+    const oCard = document.getElementById("opponent-card");
+    const playerVal = getStatValue(pCard, stat);
+    let opponentVal = 0;
+    try {
+      const opp = getOpponentJudoka();
+      const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
+      opponentVal = Number.isFinite(raw) ? raw : getStatValue(oCard, stat);
+    } catch {
+      opponentVal = getStatValue(oCard, stat);
+    }
+    await resolveRound(store, stat, playerVal, opponentVal);
+  };
+
   try {
     if (typeof window !== "undefined") {
       window.__roundDecisionEnter = Date.now();
     }
   } catch {}
   emitBattleEvent("debugPanelUpdate");
+
+  if (store.playerChoice) {
+    try {
+      await resolveImmediate();
+    } catch {
+      try {
+        emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
+        emitBattleEvent("debugPanelUpdate");
+        await machine.dispatch("interrupt", { reason: "roundResolutionError" });
+      } catch {}
+    }
+    return;
+  }
+
   let waited = 0;
   const maxWait = 1500;
   while (!store.playerChoice && waited < maxWait) {
@@ -137,7 +172,7 @@ export async function roundDecisionEnter(machine) {
     return;
   }
   try {
-    await resolveRound(store);
+    await resolveImmediate();
   } catch {
     try {
       emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
