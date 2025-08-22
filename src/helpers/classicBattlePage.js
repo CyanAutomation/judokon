@@ -21,12 +21,12 @@ import { onNextButtonClick } from "./classicBattle/timerService.js";
 import { skipCurrentPhase } from "./classicBattle/skipHandler.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "./featureFlags.js";
 import { initInterruptHandlers } from "./classicBattle/interruptHandlers.js";
-import {
-  start as startScheduler,
-  stop as stopScheduler,
-  onFrame as scheduleFrame,
-  cancel as cancelFrame
-} from "../utils/scheduler.js";
+import { start as startScheduler, stop as stopScheduler } from "../utils/scheduler.js";
+import { watchBattleOrientation } from "./orientationWatcher.js";
+import "./setupBottomNavbar.js";
+import "./setupDisplaySettings.js";
+import "./setupSvgFallback.js";
+import "./setupClassicBattleHomeLink.js";
 import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
 import { initBattleStateProgress } from "./battleStateProgress.js";
@@ -93,69 +93,6 @@ async function applyStatLabels() {
       btn.setAttribute("aria-label", `Select ${n.name}`);
     }
   });
-}
-
-function watchBattleOrientation() {
-  const getOrientation = () => {
-    try {
-      const portrait = window.innerHeight >= window.innerWidth;
-      if (typeof window.matchMedia === "function") {
-        const mm = window.matchMedia("(orientation: portrait)");
-        if (typeof mm.matches === "boolean" && mm.matches !== portrait) {
-          return portrait ? "portrait" : "landscape";
-        }
-        return mm.matches ? "portrait" : "landscape";
-      }
-      return portrait ? "portrait" : "landscape";
-    } catch {
-      return window.innerHeight >= window.innerWidth ? "portrait" : "landscape";
-    }
-  };
-
-  const apply = () => {
-    const header = document.querySelector(".battle-header");
-    if (header) {
-      const next = getOrientation();
-      if (header.dataset.orientation !== next) {
-        header.dataset.orientation = next;
-      }
-      return true;
-    }
-    return false;
-  };
-
-  try {
-    window.applyBattleOrientation = () => {
-      try {
-        apply();
-      } catch {}
-    };
-  } catch {}
-
-  let pollId;
-  const pollIfMissing = () => {
-    if (pollId) return;
-    pollId = scheduleFrame(() => {
-      if (apply()) {
-        cancelFrame(pollId);
-        pollId = 0;
-      }
-    });
-  };
-  if (!apply()) pollIfMissing();
-
-  let rafId;
-  const onChange = () => {
-    if (!apply()) pollIfMissing();
-    if (rafId) return;
-    rafId = requestAnimationFrame(() => {
-      rafId = 0;
-      if (!apply()) pollIfMissing();
-    });
-  };
-
-  window.addEventListener("orientationchange", onChange);
-  window.addEventListener("resize", onChange);
 }
 
 function setBattleStateBadgeEnabled(enable) {
