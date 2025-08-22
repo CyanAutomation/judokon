@@ -1,12 +1,21 @@
 import { BattleStateMachine } from "./stateMachine.js";
-import { initRoundSelectModal } from "./roundSelectModal.js";
+import {
+  waitingForMatchStartEnter,
+  matchStartEnter,
+  cooldownEnter,
+  roundStartEnter,
+  waitingForPlayerActionEnter,
+  roundDecisionEnter,
+  roundOverEnter,
+  matchDecisionEnter,
+  matchOverEnter,
+  interruptRoundEnter,
+  interruptMatchEnter,
+  roundModificationEnter,
+  isStateTransition
+} from "./orchestratorHandlers.js";
 import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
-import { getDefaultTimer } from "../timerUtils.js";
-import { resolveRound } from "./selectionHandler.js";
-import { getOpponentJudoka } from "./cardSelection.js";
-import { getStatValue } from "../battle/index.js";
-import { scheduleNextRound } from "./timerService.js";
-import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
+import { emitBattleEvent } from "./battleEvents.js";
 
 let machine = null;
 
@@ -33,165 +42,20 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   const { resetGame: resetGameOpt, startRound: startRoundOpt } = opts;
   const doResetGame = typeof resetGameOpt === "function" ? resetGameOpt : resetGameLocal;
   const doStartRound = typeof startRoundOpt === "function" ? startRoundOpt : startRoundLocal;
+  const context = { store, doResetGame, doStartRound, startRoundWrapper };
   const onEnter = {
-    async waitingForMatchStart(m) {
-      if (
-        window.__classicBattleState === "waitingForMatchStart" &&
-        window.__classicBattlePrevState === "waitingForMatchStart"
-      ) {
-        return;
-      }
-      if (typeof doResetGame === "function") doResetGame();
-      emitBattleEvent("scoreboardClearMessage");
-      emitBattleEvent("debugPanelUpdate");
-      await initRoundSelectModal(() => m.dispatch("startClicked"));
-    },
-    async matchStart(m) {
-      await m.dispatch("ready", { initial: true });
-    },
-    async cooldown(m, payload) {
-      if (payload?.initial) {
-        let duration = 3;
-        try {
-          const val = await getDefaultTimer("matchStartTimer");
-          if (typeof val === "number") duration = val;
-        } catch {}
-        const onFinished = () => {
-          offBattleEvent("countdownFinished", onFinished);
-          m.dispatch("ready");
-        };
-        onBattleEvent("countdownFinished", onFinished);
-        emitBattleEvent("countdownStart", { duration });
-      }
-    },
-    async roundStart(m) {
-      if (typeof startRoundWrapper === "function") await startRoundWrapper();
-      else if (typeof doStartRound === "function") await doStartRound(store);
-      await m.dispatch("cardsRevealed");
-    },
-    async waitingForPlayerAction() {},
-    async roundDecision(m) {
-      try {
-        if (typeof window !== "undefined") {
-          window.__roundDecisionEnter = Date.now();
-        }
-      } catch {}
-      emitBattleEvent("debugPanelUpdate");
-      // If no selection yet (e.g., timeout occurred and auto-select is pending),
-      // wait briefly for selection to land to avoid a stall in this state.
-      let waited = 0;
-      const maxWait = 1500;
-      while (!store.playerChoice && waited < maxWait) {
-        await new Promise((r) => setTimeout(r, 50));
-        waited += 50;
-      }
-      // Schedule a failsafe in case resolution does not progress due to a UI stall.
-      try {
-        if (typeof window !== "undefined") {
-          const guardId = setTimeout(async () => {
-            try {
-              if (window.__classicBattleState !== "roundDecision") return;
-              const rd = window.__roundDebug;
-              const resolved = rd && typeof rd.resolvedAt === "number";
-              if (resolved) return;
-              if (!store.playerChoice) {
-                await m.dispatch("interrupt", { reason: "stalledNoSelection" });
-                return;
-              }
-              // Fallback: compute outcome directly and dispatch events to avoid UI stalls
-              let outcomeEvent = null;
-              try {
-                // Prefer a minimal manual outcome computation to avoid UI dependencies
-                const stat = store.playerChoice;
-                const pCard = document.getElementById("player-card");
-                const oCard = document.getElementById("opponent-card");
-                const playerVal = getStatValue(pCard, stat);
-                let opponentVal = 0;
-                try {
-                  const opp = getOpponentJudoka();
-                  const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
-                  opponentVal = Number.isFinite(raw) ? raw : getStatValue(oCard, stat);
-                } catch {
-                  opponentVal = getStatValue(oCard, stat);
-                }
-                if (Number.isFinite(playerVal) && Number.isFinite(opponentVal)) {
-                  if (playerVal > opponentVal) outcomeEvent = "outcome=winPlayer";
-                  else if (playerVal < opponentVal) outcomeEvent = "outcome=winOpponent";
-                  else outcomeEvent = "outcome=draw";
-                }
-              } catch {}
-              try {
-                window.__guardFiredAt = Date.now();
-                window.__guardOutcomeEvent = outcomeEvent || "none";
-              } catch {}
-              if (outcomeEvent) {
-                await m.dispatch(outcomeEvent);
-                await m.dispatch("continue");
-                scheduleNextRound({ matchEnded: false });
-              } else {
-                await m.dispatch("interrupt", { reason: "guardNoOutcome" });
-              }
-              emitBattleEvent("debugPanelUpdate");
-            } catch {}
-          }, 1200);
-          // Track guard id for potential future cancellation if needed.
-          window.__roundDecisionGuard = guardId;
-        }
-      } catch {}
-      if (!store.playerChoice) {
-        // Still no selection; follow the interrupt rail to recover.
-        try {
-          emitBattleEvent("scoreboardShowMessage", "No selection detected. Interrupting round.");
-        } catch {}
-        emitBattleEvent("debugPanelUpdate");
-        await m.dispatch("interrupt", { reason: "noSelection" });
-        return;
-      }
-      try {
-        await resolveRound(store);
-      } catch {
-        try {
-          emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
-          emitBattleEvent("debugPanelUpdate");
-          await m.dispatch("interrupt", { reason: "roundResolutionError" });
-        } catch {}
-      }
-    },
-    async roundOver() {},
-    async matchDecision() {},
-    async matchOver() {},
-    async interruptRound(m, payload) {
-      emitBattleEvent("scoreboardClearMessage");
-      emitBattleEvent("debugPanelUpdate");
-      if (payload?.reason) {
-        emitBattleEvent("scoreboardShowMessage", `Round interrupted: ${payload.reason}`);
-      }
-      if (payload?.adminTest) {
-        await m.dispatch("roundModification", payload);
-      } else {
-        await m.dispatch("cooldown");
-      }
-    },
-    async interruptMatch(m, payload) {
-      emitBattleEvent("scoreboardClearMessage");
-      emitBattleEvent("debugPanelUpdate");
-      if (payload?.reason) {
-        emitBattleEvent("scoreboardShowMessage", `Match interrupted: ${payload.reason}`);
-      }
-      await m.dispatch("matchOver", payload);
-    },
-    async roundModification(m, payload) {
-      emitBattleEvent("scoreboardClearMessage");
-      emitBattleEvent("debugPanelUpdate");
-      if (payload?.modification) {
-        emitBattleEvent("scoreboardShowMessage", `Round modified: ${payload.modification}`);
-      }
-      if (payload?.resumeRound) {
-        await m.dispatch("roundStart");
-      } else {
-        await m.dispatch("cooldown");
-      }
-    }
+    waitingForMatchStart: waitingForMatchStartEnter,
+    matchStart: matchStartEnter,
+    cooldown: cooldownEnter,
+    roundStart: roundStartEnter,
+    waitingForPlayerAction: waitingForPlayerActionEnter,
+    roundDecision: roundDecisionEnter,
+    roundOver: roundOverEnter,
+    matchDecision: matchDecisionEnter,
+    matchOver: matchOverEnter,
+    interruptRound: interruptRoundEnter,
+    interruptMatch: interruptMatchEnter,
+    roundModification: roundModificationEnter
   };
 
   const onTransition = async ({ from, to, event }) => {
@@ -241,7 +105,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     emitBattleEvent("debugPanelUpdate");
   };
 
-  machine = await BattleStateMachine.create(onEnter, { store }, onTransition);
+  machine = await BattleStateMachine.create(onEnter, context, onTransition);
 
   // Expose a safe getter for the running machine to avoid import cycles
   // in hot-path modules (e.g., selection handling).
@@ -290,7 +154,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
           const deadline = Date.now() + timeoutMs;
           const tick = () => {
             try {
-              if (window.__classicBattleState === stateName) return resolve(true);
+              if (isStateTransition(null, stateName)) return resolve(true);
               if (Date.now() > deadline) return reject(new Error("waitForBattleState timeout"));
               setTimeout(tick, 50);
             } catch {
