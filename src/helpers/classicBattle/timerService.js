@@ -224,7 +224,6 @@ export function handleStatSelectionTimeout(store, onSelect) {
  * @param {{matchEnded: boolean}} result - Result from a completed round.
  */
 export function scheduleNextRound(result) {
-  try { console.log('[timerService] scheduleNextRound called', result && result.matchEnded); } catch {}
   if (result.matchEnded) {
     setSkipHandler(null);
     return;
@@ -249,7 +248,6 @@ export function scheduleNextRound(result) {
   }
 
   const onTick = (remaining) => {
-    try { console.log('[timerService] onTick', remaining); } catch {}
     if (remaining <= 0) {
       scoreboard.clearTimer();
       return;

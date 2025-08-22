@@ -195,7 +195,6 @@ export async function handleStatSelection(store, stat) {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
 export async function resolveRound(store) {
-  try { console.log('[selectionHandler] resolveRound start'); } catch {}
   const stat = store.playerChoice;
   if (!stat) {
     return;
@@ -281,7 +280,6 @@ export async function resolveRound(store) {
     await dispatchBattleEvent("continue");
   }
 
-  try { console.log('[selectionHandler] scheduling next round'); } catch {}
   scheduleNextRound(result);
 
   if (result.matchEnded) {

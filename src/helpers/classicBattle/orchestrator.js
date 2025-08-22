@@ -5,7 +5,7 @@ import * as scoreboard from "../setupScoreboard.js";
 import { getDefaultTimer } from "../timerUtils.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 import { setupScoreboard } from "../setupScoreboard.js";
-import { resolveRound, evaluateRound } from "./selectionHandler.js";
+import { resolveRound } from "./selectionHandler.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { getStatValue } from "../battle/index.js";
 import { scheduleNextRound } from "./timerService.js";
@@ -152,7 +152,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
       }
       try {
         await resolveRound(store);
-      } catch (err) {
+      } catch {
         try {
           scoreboard.showMessage("Round error. Recovering…");
           updateDebugPanel();
