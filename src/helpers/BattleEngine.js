@@ -33,24 +33,53 @@ export function compareStats(playerVal, opponentVal) {
   return { delta, winner };
 }
 
-const DELTA_OUTCOME = {
-  1: {
-    message: "You win the round!",
-    update(engine) {
-      engine.playerScore += 1;
-    }
-  },
-  0: {
-    message: "Tie – no score!",
-    update() {}
-  },
-  [-1]: {
-    message: "Opponent wins the round!",
-    update(engine) {
-      engine.opponentScore += 1;
-    }
-  }
+/**
+ * Determine the round outcome using raw stat values.
+ *
+ * @pseudocode
+ * 1. Compute `delta = playerVal - opponentVal`.
+ * 2. If `delta > 0` outcome is `"winPlayer"`.
+ * 3. Else if `delta < 0` outcome is `"winOpponent"`.
+ * 4. Otherwise outcome is `"draw"`.
+ * 5. Return `{ delta, outcome }`.
+ *
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ * @returns {{delta: number, outcome: "winPlayer"|"winOpponent"|"draw"}}
+ */
+export function determineOutcome(playerVal, opponentVal) {
+  const delta = playerVal - opponentVal;
+  let outcome = "draw";
+  if (delta > 0) outcome = "winPlayer";
+  else if (delta < 0) outcome = "winOpponent";
+  return { delta, outcome };
+}
+
+const OUTCOME_MESSAGE = {
+  winPlayer: "You win the round!",
+  winOpponent: "Opponent wins the round!",
+  draw: "Tie – no score!"
 };
+
+/**
+ * Apply a round outcome to the engine scores.
+ *
+ * @pseudocode
+ * 1. If `outcome.outcome` is `"winPlayer"`, increment `playerScore`.
+ * 2. Else if `outcome.outcome` is `"winOpponent"`, increment `opponentScore`.
+ * 3. Otherwise, leave scores unchanged.
+ *
+ * @param {BattleEngine} engine - Battle engine instance.
+ * @param {{outcome: "winPlayer"|"winOpponent"|"draw"}} outcome - Outcome object.
+ * @returns {void}
+ */
+export function applyOutcome(engine, outcome) {
+  if (outcome.outcome === "winPlayer") {
+    engine.playerScore += 1;
+  } else if (outcome.outcome === "winOpponent") {
+    engine.opponentScore += 1;
+  }
+}
 
 export class BattleEngine {
   constructor() {
@@ -201,7 +230,9 @@ export class BattleEngine {
    */
   handleStatSelection(playerVal, opponentVal) {
     if (this.matchEnded) {
+      const already = determineOutcome(playerVal, opponentVal);
       return {
+        ...already,
         message: "",
         matchEnded: this.matchEnded,
         playerScore: this.playerScore,
@@ -209,13 +240,13 @@ export class BattleEngine {
       };
     }
     this.stopTimer();
-    const { delta } = compareStats(playerVal, opponentVal);
-    const outcome = DELTA_OUTCOME[Math.sign(delta)];
-    outcome.update(this);
+    const outcome = determineOutcome(playerVal, opponentVal);
+    applyOutcome(this, outcome);
     this.roundsPlayed += 1;
     const endMsg = this.#endMatchIfNeeded();
     return {
-      message: endMsg || outcome.message,
+      ...outcome,
+      message: endMsg || OUTCOME_MESSAGE[outcome.outcome],
       matchEnded: this.matchEnded,
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
