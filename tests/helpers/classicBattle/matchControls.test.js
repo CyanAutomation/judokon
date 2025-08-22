@@ -59,8 +59,11 @@ describe("classicBattle match controls", () => {
     const { createBattleStore } = await import(
       "../../../src/helpers/classicBattle/roundManager.js"
     );
+    const { initQuitButton } = await import("../../../src/helpers/classicBattle/quitButton.js");
     window.battleStore = createBattleStore();
+    initQuitButton(window.battleStore);
     document.getElementById("quit-match-button").click();
+    await new Promise((r) => setTimeout(r, 0));
     expect(document.getElementById("round-message").textContent).toBe("quit");
     expect(window.location.href).toBe("http://localhost/index.html");
   });

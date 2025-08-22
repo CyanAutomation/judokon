@@ -5,30 +5,26 @@ import { _resetForTest as resetEngineForTest } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { syncScoreDisplay } from "./uiService.js";
-import { quitMatch } from "./quitModal.js";
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
 import { resetSkipState } from "./skipHandler.js";
 
 /**
- * Create a new battle state store and attach button handlers.
+ * Create a new battle state store.
  *
- * @returns {{quitModal: ReturnType<typeof createModal>|null, statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number}}
+ * @pseudocode
+ * 1. Initialize battle state values.
+ * 2. Return the store.
+ *
+ * @returns {{quitModal: ReturnType<import("../../components/Modal.js").createModal>|null, statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number, selectionMade: boolean}}
  */
 export function createBattleStore() {
-  const store = {
+  return {
     quitModal: null,
     statTimeoutId: null,
     autoSelectId: null,
     compareRaf: 0,
     selectionMade: false
   };
-  const quitButton = document.getElementById("quit-match-button");
-  if (quitButton) {
-    quitButton.addEventListener("click", () => {
-      quitMatch(store);
-    });
-  }
-  return store;
 }
 
 function getStartRound(store) {
