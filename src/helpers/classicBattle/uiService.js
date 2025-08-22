@@ -126,5 +126,7 @@ onBattleEvent("countdownStart", (e) => {
     scoreboard.startCountdown(duration, () => {
       emitBattleEvent("countdownFinished");
     });
-  } catch {}
+  } catch (err) {
+    console.error("Error in countdownStart event handler:", err);
+  }
 });
