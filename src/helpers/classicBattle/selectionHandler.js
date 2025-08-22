@@ -75,18 +75,15 @@ export function simulateOpponentStat(stats, difficulty = "easy") {
  *
  * @pseudocode
  * 1. Call `evaluateRoundApi` with the provided values.
- * 2. Determine outcome by comparing `playerVal` and `opponentVal`.
- * 3. Return the API result augmented with outcome and the input values.
+ * 2. Return the API result augmented with the input values.
  *
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
- * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number, outcome: string, playerVal: number, opponentVal: number}}
+ * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number, outcome: string, delta: number, playerVal: number, opponentVal: number}}
  */
 export function evaluateRoundData(playerVal, opponentVal) {
   const base = evaluateRoundApi(playerVal, opponentVal);
-  const outcome =
-    playerVal > opponentVal ? "winPlayer" : playerVal < opponentVal ? "winOpponent" : "draw";
-  return { ...base, outcome, playerVal, opponentVal };
+  return { ...base, playerVal, opponentVal };
 }
 
 /**
@@ -138,11 +135,12 @@ export async function handleStatSelection(store, stat) {
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal });
+  let result;
   // In test environments, resolve synchronously to avoid orchestrator coupling
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      await resolveRound(store, stat, playerVal, opponentVal);
-      return;
+      result = await resolveRound(store, stat, playerVal, opponentVal);
+      return result;
     }
   } catch {}
   // If the orchestrator is active, signal selection; otherwise resolve inline
@@ -164,11 +162,12 @@ export async function handleStatSelection(store, stat) {
         }, 600);
       } catch {}
     } else {
-      await resolveRound(store, stat, playerVal, opponentVal);
+      result = await resolveRound(store, stat, playerVal, opponentVal);
     }
   } catch {
-    await resolveRound(store, stat, playerVal, opponentVal);
+    result = await resolveRound(store, stat, playerVal, opponentVal);
   }
+  return result;
 }
 
 /**
