@@ -98,7 +98,9 @@ export function showMatchSummaryModal(result, onNext) {
 onBattleEvent("scoreboardClearMessage", () => {
   try {
     scoreboard.clearMessage();
-  } catch {}
+  } catch (err) {
+    console.error("Error clearing scoreboard message:", err);
+  }
 });
 
 onBattleEvent("scoreboardShowMessage", (e) => {
