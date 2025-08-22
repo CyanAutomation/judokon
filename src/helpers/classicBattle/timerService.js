@@ -208,7 +208,6 @@ export function scheduleNextRound(result) {
   }
 
   const btn = document.getElementById("next-button");
-  if (!btn) return;
   const timerEl = document.getElementById("next-round-timer");
 
   // Track snackbar lifecycle and whether the cooldown actually started.
@@ -221,8 +220,10 @@ export function scheduleNextRound(result) {
   // Make the Next button act as a skip control during cooldown: keep it enabled
   // but mark it as not-ready until the cooldown expires. The click handler will
   // request a skip when not ready.
-  btn.disabled = false;
-  delete btn.dataset.nextReady;
+  if (btn) {
+    btn.disabled = false;
+    delete btn.dataset.nextReady;
+  }
 
   const onTick = (remaining) => {
     if (remaining <= 0) {
@@ -246,8 +247,10 @@ export function scheduleNextRound(result) {
     if (timerEl) {
       timerEl.textContent = "";
     }
-    btn.dataset.nextReady = "true";
-    btn.disabled = false;
+    if (btn) {
+      btn.dataset.nextReady = "true";
+      btn.disabled = false;
+    }
     await dispatchBattleEvent("ready");
     updateDebugPanel();
   };
@@ -277,7 +280,7 @@ export function scheduleNextRound(result) {
     onExpired();
   });
 
-  if (btn.dataset.nextReady === "true") {
+  if (btn && btn.dataset.nextReady === "true") {
     return;
   }
 
