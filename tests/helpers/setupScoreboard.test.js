@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createScoreboardHeader } from "../utils/testUtils.js";
 vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
@@ -8,30 +8,37 @@ vi.mock("../../src/helpers/showSnackbar.js", () => ({
   updateSnackbar: vi.fn()
 }));
 
-const originalReadyState = Object.getOwnPropertyDescriptor(document, "readyState");
-
 beforeEach(() => {
   vi.resetModules();
   document.body.appendChild(createScoreboardHeader());
 });
 
-afterEach(() => {
-  if (originalReadyState) {
-    Object.defineProperty(document, "readyState", originalReadyState);
-  }
-});
-
 describe("setupScoreboard", () => {
-  it("initializes on DOMContentLoaded and proxies methods", async () => {
-    Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
-    vi.useFakeTimers();
+  function createControls() {
+    return {
+      startCoolDown: (onTick, onExpired, duration) => {
+        onTick(duration);
+        const id = setInterval(() => {
+          duration -= 1;
+          onTick(duration);
+          if (duration <= 0) {
+            clearInterval(id);
+            onExpired();
+          }
+        }, 1000);
+      },
+      pauseTimer: vi.fn(),
+      resumeTimer: vi.fn()
+    };
+  }
 
+  it("initializes and proxies methods", async () => {
+    vi.useFakeTimers();
     const mod = await import("../../src/helpers/setupScoreboard.js");
     const { showSnackbar, updateSnackbar } = await import("../../src/helpers/showSnackbar.js");
     showSnackbar.mockClear();
     updateSnackbar.mockClear();
-
-    document.dispatchEvent(new Event("DOMContentLoaded"));
+    mod.setupScoreboard(createControls());
 
     mod.showMessage("Hi");
     expect(document.getElementById("round-message").textContent).toBe("Hi");
@@ -55,25 +62,20 @@ describe("setupScoreboard", () => {
     expect(showSnackbar).toHaveBeenCalledTimes(1);
   });
 
-  it("initializes immediately when DOM already loaded", async () => {
-    Object.defineProperty(document, "readyState", { value: "complete", configurable: true });
-
-    await import("../../src/helpers/setupScoreboard.js");
-
+  it("initializes when called after DOM load", async () => {
+    const mod = await import("../../src/helpers/setupScoreboard.js");
+    mod.setupScoreboard(createControls());
     expect(document.getElementById("score-display")).toBeTruthy();
   });
 
   it("attaches to pre-existing elements", async () => {
-    Object.defineProperty(document, "readyState", {
-      value: "complete",
-      configurable: true
-    });
     document.body.innerHTML = "";
     document.body.appendChild(createScoreboardHeader());
     const mod = await import("../../src/helpers/setupScoreboard.js");
     const { showSnackbar, updateSnackbar } = await import("../../src/helpers/showSnackbar.js");
     showSnackbar.mockClear();
     updateSnackbar.mockClear();
+    mod.setupScoreboard(createControls());
     mod.showMessage("Hello");
     expect(document.getElementById("round-message").textContent).toBe("Hello");
     mod.clearMessage();

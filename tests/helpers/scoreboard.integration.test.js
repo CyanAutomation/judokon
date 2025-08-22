@@ -4,11 +4,11 @@ vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
 
-// We intentionally DO NOT call setupScoreboard's onDomReady init here.
-// The goal is to verify Scoreboard functions work without explicit initialization.
+// We intentionally avoid calling setupScoreboard's DOM initializer here.
+// Timer controls are injected directly so functions work without explicit setup.
 
 describe("Scoreboard integration without explicit init", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.useFakeTimers();
     vi.resetModules();
     document.body.innerHTML = "";
@@ -69,6 +69,8 @@ describe("Scoreboard integration without explicit init", () => {
         }, 1000);
       },
       stopTimer: vi.fn(),
+      pauseTimer: vi.fn(),
+      resumeTimer: vi.fn(),
       STATS: ["power"]
       // the rest are not needed in this test
     }));
@@ -78,6 +80,14 @@ describe("Scoreboard integration without explicit init", () => {
       showSnackbar: vi.fn(),
       updateSnackbar: vi.fn()
     }));
+
+    const engine = await import("../../src/helpers/battleEngineFacade.js");
+    const { initScoreboard } = await import("../../src/components/Scoreboard.js");
+    initScoreboard(undefined, {
+      startCoolDown: engine.startCoolDown,
+      pauseTimer: engine.pauseTimer,
+      resumeTimer: engine.resumeTimer
+    });
   });
 
   it("renders messages, score, round counter, and round timer without init", async () => {

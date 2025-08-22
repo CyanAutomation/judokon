@@ -384,6 +384,7 @@ describe("startRoundWrapper failures", () => {
     vi.doMock("../../src/helpers/cardUtils.js", () => ({ toggleInspectorPanels: vi.fn() }));
     vi.doMock("../../src/helpers/viewportDebug.js", () => ({ toggleViewportSimulation: vi.fn() }));
     vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+      startCoolDown: vi.fn(),
       pauseTimer: vi.fn(),
       resumeTimer: vi.fn(),
       STATS: []
@@ -445,7 +446,12 @@ describe("syncScoreDisplay", () => {
       .fn()
       .mockReturnValueOnce({ playerScore: 1, opponentScore: 2 })
       .mockReturnValueOnce({ playerScore: 3, opponentScore: 4 });
-    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({ getScores }));
+    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+      getScores,
+      startCoolDown: vi.fn(),
+      pauseTimer: vi.fn(),
+      resumeTimer: vi.fn()
+    }));
     vi.doMock("../../src/components/Button.js", () => ({
       createButton: (label, { id } = {}) => {
         const btn = document.createElement("button");

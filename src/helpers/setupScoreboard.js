@@ -16,12 +16,17 @@ import {
  *
  * @pseudocode
  * 1. Locate the `<header>` element.
- * 2. Pass the header to `initScoreboard()` so the module can query its children.
+ * 2. Pass the header and timer controls to `initScoreboard()` so the module can query its children.
+ *
+ * @param {object} controls - Timer control callbacks.
  */
-function setupScoreboard() {
+function setupScoreboard(controls) {
   const header = document.querySelector("header");
-  if (!header) return;
-  initScoreboard(header);
+  if (!header) {
+    initScoreboard(null, controls);
+    return;
+  }
+  initScoreboard(header, controls);
 }
 export {
   setupScoreboard,
