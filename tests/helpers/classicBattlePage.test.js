@@ -293,14 +293,22 @@ describe("classicBattlePage test mode flag", () => {
   it("toggles snackbar availability when test mode is toggled", async () => {
     const startRound = vi.fn();
     const waitForOpponentCard = vi.fn();
-    const loadSettings = vi.fn().mockResolvedValue({
+
+    let currentSettings = {
       featureFlags: {
         enableTestMode: { enabled: false }
       }
+    };
+
+    const loadSettings = vi.fn().mockImplementation(async () => {
+      return JSON.parse(JSON.stringify(currentSettings));
     });
-    const updateSetting = vi
-      .fn()
-      .mockResolvedValue({ featureFlags: { enableTestMode: { enabled: true } } });
+
+    const updateSetting = vi.fn().mockImplementation(async (key, value) => {
+      currentSettings.featureFlags = value;
+      return JSON.parse(JSON.stringify(currentSettings));
+    });
+
     const initTooltips = vi.fn().mockResolvedValue(() => {});
     const setTestMode = vi.fn();
 
