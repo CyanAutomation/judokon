@@ -1,4 +1,4 @@
-if (typeof CustomEvent === 'undefined') {
+if (typeof CustomEvent === "undefined") {
   global.CustomEvent = class CustomEvent extends Event {
     constructor(type, eventInitDict) {
       super(type, eventInitDict);
