@@ -10,16 +10,19 @@ import { isTestModeEnabled } from "../testModeUtils.js";
  * Initialize round selection modal for Classic Battle.
  *
  * @pseudocode
- * 1. If test mode is enabled:
+ * 1. If the page URL includes `autostart=1`:
  *    a. Set `pointsToWin` to the default value.
  *    b. Invoke `onStart` and return early.
- * 2. Attempt to fetch `battleRounds.json` using `fetchJson`.
+ * 2. If test mode is enabled:
+ *    a. Set `pointsToWin` to the default value.
+ *    b. Invoke `onStart` and return early.
+ * 3. Attempt to fetch `battleRounds.json` using `fetchJson`.
  *    a. On failure, log the error, fall back to default rounds, and note the load error.
- * 3. Create buttons for each option with `createButton` and assign tooltip ids.
- * 4. Assemble a modal via `createModal`, append an error note if needed, and attach to the document.
- * 5. Attempt to initialize tooltips for the modal; log errors but continue.
- * 6. Open the modal.
- * 7. When a button is clicked:
+ * 4. Create buttons for each option with `createButton` and assign tooltip ids.
+ * 5. Assemble a modal via `createModal`, append an error note if needed, and attach to the document.
+ * 6. Attempt to initialize tooltips for the modal; log errors but continue.
+ * 7. Open the modal.
+ * 8. When a button is clicked:
  *    a. Call `setPointsToWin` with the round value.
  *    b. Close and destroy the modal, then invoke the provided start callback.
  *
@@ -31,8 +34,8 @@ export async function initRoundSelectModal(onStart) {
   // supplying `?autostart=1` in the page URL. This is a deliberate, low-risk
   // convenience that mirrors existing `isTestModeEnabled()` behaviour.
   try {
-    if (typeof window !== "undefined") {
-      const params = new URL(window.location.href).searchParams;
+    if (typeof location !== "undefined") {
+      const params = new URLSearchParams(location.search);
       if (params.get("autostart") === "1") {
         setPointsToWin(CLASSIC_BATTLE_POINTS_TO_WIN);
         if (typeof onStart === "function") await onStart();
