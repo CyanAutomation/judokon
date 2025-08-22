@@ -17,7 +17,6 @@ import {
 import { initBattleStateProgress } from "../battleStateProgress.js";
 import { initTooltips } from "../tooltip.js";
 import { start as startScheduler, stop as stopScheduler } from "../../utils/scheduler.js";
-import { pauseTimer, resumeTimer } from "../battleEngineFacade.js";
 import "../setupBottomNavbar.js";
 import "../setupDisplaySettings.js";
 import "../setupSvgFallback.js";
@@ -67,7 +66,7 @@ export class ClassicBattleView {
       window.addEventListener("pagehide", stopScheduler, { once: true });
     }
 
-    setupScoreboard();
+    setupScoreboard(this.controller.timerControls);
     initQuitButton(store);
     initInterruptHandlers(store);
     watchBattleOrientation(() => this.applyBattleOrientation());
@@ -93,14 +92,14 @@ export class ClassicBattleView {
       window.startRoundOverride = () => this.startRound();
       window.freezeBattleHeader = () => {
         try {
-          pauseTimer();
+          this.controller.timerControls.pauseTimer();
           stopScheduler();
         } catch {}
       };
       window.resumeBattleHeader = () => {
         try {
           startScheduler();
-          resumeTimer();
+          this.controller.timerControls.resumeTimer();
         } catch {}
       };
     } catch {}

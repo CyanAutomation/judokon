@@ -9,12 +9,14 @@
  *    - `#score-display` with `aria-live="polite"` and `aria-atomic="true"` for the match score.
  * 2. Append them to the provided container (typically the page header).
  * 3. Store references to these elements for later updates.
- * 4. Return the container element.
+ * 4. Save injected timer controls for countdown management.
+ * 5. Return the container element.
  *
+ * @param {HTMLDivElement} [container=document.createElement("div")] - Wrapper to populate.
+ * @param {object} [controls] - Timer control callbacks.
  * @returns {HTMLDivElement} The scoreboard element.
  */
 import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
-import { startCoolDown } from "../helpers/battleEngineFacade.js";
 import { showSnackbar, updateSnackbar } from "../helpers/showSnackbar.js";
 
 let messageEl;
@@ -24,8 +26,9 @@ let roundCounterEl;
 let scoreRafId = 0;
 let currentPlayer = 0;
 let currentOpponent = 0;
+let timerControls = {};
 
-export function createScoreboard(container = document.createElement("div")) {
+export function createScoreboard(container = document.createElement("div"), controls = {}) {
   messageEl = document.createElement("p");
   messageEl.id = "round-message";
   messageEl.setAttribute("aria-live", "polite");
@@ -50,6 +53,7 @@ export function createScoreboard(container = document.createElement("div")) {
   scoreEl.setAttribute("aria-atomic", "true");
 
   container.append(messageEl, timerEl, roundCounterEl, scoreEl);
+  timerControls = controls;
   return container;
 }
 
@@ -58,13 +62,18 @@ export function createScoreboard(container = document.createElement("div")) {
  * header.
  *
  * @pseudocode
- * 1. Locate child elements within `container` by their IDs.
- * 2. Store these nodes in module-scoped variables for later updates.
+ * 1. Capture provided timer-control callbacks.
+ * 2. Locate child elements within `container` by their IDs.
+ * 3. Store these nodes in module-scoped variables for later updates.
  *
  * @param {HTMLElement} container - Header element containing the scoreboard nodes.
+ * @param {object} [controls] - Timer control callbacks.
  * @returns {void}
  */
-export function initScoreboard(container) {
+export function initScoreboard(container, controls = {}) {
+  if (controls && typeof controls === "object") {
+    timerControls = controls;
+  }
   if (!container) return;
   messageEl = container.querySelector("#round-message");
   timerEl = container.querySelector("#next-round-timer");
@@ -287,7 +296,11 @@ export function updateScore(playerScore, opponentScore) {
 }
 
 function runCountdown(duration, onTick, onExpired, handleDrift) {
-  startCoolDown(onTick, onExpired, duration, handleDrift);
+  if (timerControls && typeof timerControls.startCoolDown === "function") {
+    timerControls.startCoolDown(onTick, onExpired, duration, handleDrift);
+  } else {
+    console.warn("timerControls.startCoolDown is not callable. Countdown will not start.");
+  }
 }
 
 function createDriftHandler(restartFn, onGiveUp) {

@@ -42,7 +42,11 @@ describe("Scoreboard component", () => {
     showSnackbar.mockClear();
     updateSnackbar.mockClear();
     header = document.createElement("header");
-    createScoreboard(header);
+    createScoreboard(header, {
+      startCoolDown: battleEngine.startCoolDown,
+      pauseTimer: battleEngine.pauseTimer,
+      resumeTimer: battleEngine.resumeTimer
+    });
     document.body.appendChild(header);
   });
 
@@ -97,6 +101,11 @@ describe("Scoreboard component", () => {
   it("startCountdown displays fallback on drift", () => {
     const timer = vi.useFakeTimers();
     const coolSpy = vi.spyOn(battleEngine, "startCoolDown");
+    initScoreboard(undefined, {
+      startCoolDown: coolSpy,
+      pauseTimer: battleEngine.pauseTimer,
+      resumeTimer: battleEngine.resumeTimer
+    });
     startCountdown(2);
     const onDrift = coolSpy.mock.calls[0][3];
     onDrift(1);
@@ -108,6 +117,11 @@ describe("Scoreboard component", () => {
   it("drift handler restarts only up to the retry limit", () => {
     const timer = vi.useFakeTimers();
     const coolSpy = vi.spyOn(battleEngine, "startCoolDown");
+    initScoreboard(undefined, {
+      startCoolDown: coolSpy,
+      pauseTimer: battleEngine.pauseTimer,
+      resumeTimer: battleEngine.resumeTimer
+    });
     const onFinish = vi.fn();
     startCountdown(5, onFinish);
     const onDrift = coolSpy.mock.calls[0][3];
@@ -127,7 +141,11 @@ describe("Scoreboard component", () => {
     document.body.innerHTML = "";
     const existing = createScoreboardHeader();
     document.body.appendChild(existing);
-    initScoreboard(existing);
+    initScoreboard(existing, {
+      startCoolDown: battleEngine.startCoolDown,
+      pauseTimer: battleEngine.pauseTimer,
+      resumeTimer: battleEngine.resumeTimer
+    });
     showMessage("Hi");
     expect(document.getElementById("round-message").textContent).toBe("Hi");
     updateScore(2, 3);

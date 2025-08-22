@@ -4,15 +4,10 @@ import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./ro
 import * as scoreboard from "../setupScoreboard.js";
 import { getDefaultTimer } from "../timerUtils.js";
 import { updateDebugPanel } from "./uiHelpers.js";
-import { setupScoreboard } from "../setupScoreboard.js";
 import { resolveRound } from "./selectionHandler.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { getStatValue } from "../battle/index.js";
 import { scheduleNextRound } from "./timerService.js";
-
-if (typeof process === "undefined" || !process.env.VITEST) {
-  setupScoreboard();
-}
 
 let machine = null;
 
