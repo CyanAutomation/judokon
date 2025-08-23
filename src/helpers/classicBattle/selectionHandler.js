@@ -1,10 +1,11 @@
 import { STATS, stopTimer } from "../battleEngineFacade.js";
-import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
+import { chooseOpponentStat } from "../api/battleUI.js";
 import { getStatValue } from "../battle/index.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { isStateTransition } from "./orchestratorHandlers.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
+import { resolveRound } from "./roundResolver.js";
 
 /**
  * Determine the opponent's stat choice based on difficulty.
