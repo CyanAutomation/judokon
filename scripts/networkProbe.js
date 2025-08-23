@@ -8,16 +8,25 @@ import { chromium } from "playwright";
   page.on("response", (res) => {
     try {
       const status = res.status();
+      const now = Date.now();
+      const entry = {
+        ts: now,
+        url: res.url(),
+        status,
+        type: res.request().resourceType(),
+        method: res.request().method()
+      };
+      console.log("RESPONSE", entry.status, entry.method, entry.type, entry.url);
       if (status === 404) {
-        notFounds.push({ url: res.url(), status });
-        console.log("404:", res.url());
+        notFounds.push(entry);
+        console.log(">>> 404 detected:", entry.url);
       }
     } catch {}
   });
 
   page.on("requestfailed", (req) => {
     try {
-      console.log("requestfailed", req.url(), req.failure()?.errorText || "");
+      console.log("REQUEST FAILED", req.url(), req.failure()?.errorText || "");
     } catch {}
   });
 
@@ -29,7 +38,7 @@ import { chromium } from "playwright";
     console.error("goto error", String(err));
   }
 
-  // wait a moment for late requests
+  // wait a bit for late requests to finish
   await page.waitForTimeout(1000);
 
   if (notFounds.length === 0) console.log("No 404s detected");
