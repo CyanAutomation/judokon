@@ -245,6 +245,12 @@ export async function matchOverExit() {}
 export async function interruptRoundEnter(machine, payload) {
   emitBattleEvent("scoreboardClearMessage");
   emitBattleEvent("debugPanelUpdate");
+  // Expose the last interrupt reason for diagnostics and tests
+  try {
+    if (typeof window !== "undefined") {
+      window.__classicBattleLastInterruptReason = payload?.reason || "";
+    }
+  } catch {}
   if (payload?.reason) {
     emitBattleEvent("scoreboardShowMessage", `Round interrupted: ${payload.reason}`);
   }

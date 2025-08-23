@@ -41,6 +41,22 @@ import { chromium } from "playwright";
     // Click the power button, but only after it's enabled. If it stays disabled, capture state and screenshot.
     const powerSelector = '#stat-buttons button[data-stat="power"]';
     const isDisabled = await page.$eval(powerSelector, (b) => b.disabled).catch(() => true);
+    // If the machine is in waitingForPlayerAction or roundDecision, try to simulate a player choice
+    // by setting the shared store value. This helps bypass headless guard paths that trigger interrupts.
+    try {
+      const curState = await page.evaluate(() => window.__classicBattleState || null);
+      if (curState === "waitingForPlayerAction" || curState === "roundDecision") {
+        console.log("Simulating player choice 'power' in battleStore to avoid guard interrupt");
+        await page.evaluate(() => {
+          try {
+            if (window.battleStore && !window.battleStore.playerChoice) {
+              window.battleStore.playerChoice = "power";
+              window.battleStore.selectionMade = true;
+            }
+          } catch {}
+        });
+      }
+    } catch {}
     if (isDisabled) {
       console.log("Power button is disabled — waiting up to 5s for it to become enabled");
       try {
