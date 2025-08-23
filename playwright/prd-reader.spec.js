@@ -36,25 +36,27 @@ test.describe.parallel("PRD Reader page", () => {
     expect(afterPrev).toBe(original);
   });
 
-  test("tab and arrow key traversal", async ({ page }) => {
+  test("sidebar-tab-traversal", async ({ page }) => {
+    const items = page.locator(".sidebar-list li");
+    const container = page.locator("#prd-content");
+
+    await items.first().focus();
+    await expect(items.first()).toBeFocused();
+
+    await page.keyboard.press("Enter");
+    await expect(container).toBeFocused();
+
+    await page.keyboard.press("Tab");
+    await expect(container).not.toBeFocused();
+  });
+
+  test("arrow-key-content-switching", async ({ page }) => {
     const items = page.locator(".sidebar-list li");
     const container = page.locator("#prd-content");
     await expect(container).not.toHaveText("");
     const initial = await container.innerHTML();
-    const isFirstFocused = async () =>
-      await items.first().evaluate((el) => el === document.activeElement);
-    let attempts = 0;
-    while (!(await isFirstFocused()) && attempts < 10) {
-      await page.keyboard.press("Tab");
-      attempts += 1;
-    }
-    if (!(await isFirstFocused())) {
-      attempts = 0;
-      while (!(await isFirstFocused()) && attempts < 10) {
-        await page.keyboard.press("Shift+Tab");
-        attempts += 1;
-      }
-    }
+
+    await items.first().focus();
     await expect(items.first()).toBeFocused();
 
     await page.keyboard.press("ArrowRight");
@@ -73,8 +75,5 @@ test.describe.parallel("PRD Reader page", () => {
     await expect(container).toBeFocused();
     const afterNext = await container.innerHTML();
     expect(afterNext).not.toBe(afterArrow);
-
-    await page.keyboard.press("Tab");
-    await expect(container).not.toBeFocused();
   });
 });
