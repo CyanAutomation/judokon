@@ -184,4 +184,27 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   return machine;
 }
 
+/**
+ * Dispatch an event to the currently running battle machine.
+ * This small proxy is exported for backwards compatibility: some modules
+ * import `dispatchBattleEvent` from this orchestrator file. Keep it
+ * minimal and safe — if the machine isn't ready the call is a no-op.
+ *
+ * @param {string} eventName
+ * @param {any} payload
+ */
+export async function dispatchBattleEvent(eventName, payload) {
+  if (!machine) return;
+  try {
+    return await machine.dispatch(eventName, payload);
+  } catch (err) {
+    // swallow to avoid cascading startup failures; higher-level code
+    // can still observe via emitted events or thrown errors if needed.
+    try {
+      // emit a debug event so UI debug panels can show the failure
+      emitBattleEvent('debugPanelUpdate');
+    } catch {}
+  }
+}
+
 
