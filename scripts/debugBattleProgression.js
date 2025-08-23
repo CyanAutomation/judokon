@@ -1,10 +1,13 @@
 import { chromium } from "playwright";
 
 (async function run() {
-  const browser = await chromium.launch({
-    executablePath: "/usr/bin/google-chrome",
-    headless: true
-  });
+  // Prefer an explicit chrome path via env var if provided (useful in CI or devcontainers).
+  // Otherwise, omit executablePath to let Playwright use its bundled browser.
+  const launchOptions = { headless: true };
+  if (process.env.GOOGLE_CHROME_PATH) {
+    launchOptions.executablePath = process.env.GOOGLE_CHROME_PATH;
+  }
+  const browser = await chromium.launch(launchOptions);
   const page = await browser.newPage();
   // Install an init script that wraps querySelector to catch non-string selectors early
   await page.addInitScript({
