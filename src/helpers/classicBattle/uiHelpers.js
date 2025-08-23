@@ -24,6 +24,38 @@ function getDebugOutputEl() {
 }
 
 /**
+ * Ensure the debug panel has a copy button that copies the panel text.
+ *
+ * @pseudocode
+ * 1. Exit if `panel` lacks a `<summary>` element.
+ * 2. Create a "Copy" button with id `debug-copy` when missing.
+ * 3. On click, copy `#debug-output` text via `navigator.clipboard.writeText`.
+ * 4. Prevent the click from toggling the `<details>` element.
+ * 5. Append the button to the summary.
+ *
+ * @param {HTMLElement | null} panel Debug panel element.
+ */
+function ensureDebugCopyButton(panel) {
+  if (!panel) return;
+  const summary = panel.querySelector("summary");
+  if (!summary) return;
+  let btn = summary.querySelector("#debug-copy");
+  if (!btn) {
+    btn = createButton("Copy", { id: "debug-copy" });
+    btn.dataset.tooltipId = "ui.copyDebug";
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const text = getDebugOutputEl()?.textContent ?? "";
+      try {
+        navigator?.clipboard?.writeText(text);
+      } catch {}
+    });
+    summary.appendChild(btn);
+  }
+}
+
+/**
  * Display a snackbar prompting the player to choose a stat.
  *
  * @pseudocode
@@ -529,8 +561,9 @@ export function applyBattleFeatureFlags(battleArea, banner) {
  * @pseudocode
  * 1. Locate `#debug-panel`; exit if missing.
  * 2. If enabled and the battle area exists, ensure the panel is a `<details>` element.
- * 3. Restore open state from localStorage and insert before the battle area.
- * 4. Otherwise remove the panel.
+ * 3. Insert a copy button into the summary.
+ * 4. Restore open state from localStorage and insert before the battle area.
+ * 5. Otherwise remove the panel.
  */
 export function initDebugPanel() {
   const debugPanel = document.getElementById("debug-panel");
@@ -551,6 +584,7 @@ export function initDebugPanel() {
       debugPanel.replaceWith(details);
     }
     const panel = document.getElementById("debug-panel");
+    ensureDebugCopyButton(panel);
     try {
       const saved = localStorage.getItem("battleDebugOpen");
       panel.open = saved ? saved === "true" : true;
@@ -572,8 +606,9 @@ export function initDebugPanel() {
  *
  * @pseudocode
  * 1. If enabling, ensure a `<details>` panel exists and insert before the battle area.
- * 2. Persist open state to localStorage on toggle.
- * 3. If disabling, hide and remove the panel.
+ * 2. Attach a copy button to the panel summary.
+ * 3. Persist open state to localStorage on toggle.
+ * 4. If disabling, hide and remove the panel.
  */
 export function setDebugPanelEnabled(enabled) {
   const battleArea = document.getElementById("battle-area");
@@ -604,6 +639,7 @@ export function setDebugPanelEnabled(enabled) {
       panel.replaceWith(details);
       panel = details;
     }
+    ensureDebugCopyButton(panel);
     try {
       const saved = localStorage.getItem("battleDebugOpen");
       panel.open = saved ? saved === "true" : true;
