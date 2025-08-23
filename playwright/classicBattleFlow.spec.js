@@ -1,6 +1,8 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { readFileSync } from "fs";
 import { resolve } from "path";
+// battleTestUtils resets engine state and manipulates timer for scenarios
+import { _resetForTest, setTieRound } from "../tests/helpers/battleTestUtils.js";
 // selectors use header as the container for battle info
 
 const rounds = JSON.parse(readFileSync(resolve("src/data/battleRounds.json"), "utf8"));
@@ -48,17 +50,8 @@ test.describe.parallel("Classic battle flow", () => {
     await page.evaluate(() => window.freezeBattleHeader?.());
     const timer = page.locator("header #next-round-timer");
     await timer.waitFor();
-    await page.evaluate(async () => {
-      const { _resetForTest } = await import(
-        new URL("/src/helpers/classicBattle.js", window.location.href)
-      );
-      _resetForTest(window.battleStore);
-      document.querySelector("#next-round-timer").textContent = "Time Left: 3s";
-      document.querySelector("#player-card").innerHTML =
-        `<ul><li class='stat'><strong>Power</strong> <span>3</span></li></ul>`;
-      document.querySelector("#opponent-card").innerHTML =
-        `<ul><li class='stat'><strong>Power</strong> <span>3</span></li></ul>`;
-    });
+    await page.evaluate(_resetForTest);
+    await page.evaluate(setTieRound);
     await page.locator("button[data-stat='power']").click();
     const snackbar = page.locator(".snackbar");
     await expect(snackbar).toHaveText("You Picked: Power");
