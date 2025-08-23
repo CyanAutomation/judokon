@@ -6,6 +6,33 @@ import { chromium } from "playwright";
     headless: true
   });
   const page = await browser.newPage();
+  // Install an init script that wraps querySelector to catch non-string selectors early
+  await page.addInitScript({
+    content: `(() => {
+      try {
+        const wrap = (orig, where) => function(sel) {
+          try {
+            if (typeof sel !== 'string') {
+              try {
+                window.__classicBattleQuerySelectorError = {
+                  selector: sel,
+                  where,
+                  stack: (new Error()).stack
+                };
+              } catch {}
+            }
+          } catch {}
+          return orig.call(this, sel);
+        };
+        if (Document && Document.prototype && Document.prototype.querySelector) {
+          Document.prototype.querySelector = wrap(Document.prototype.querySelector, 'Document.querySelector');
+        }
+        if (Element && Element.prototype && Element.prototype.querySelector) {
+          Element.prototype.querySelector = wrap(Element.prototype.querySelector, 'Element.querySelector');
+        }
+      } catch (e) {}
+    })();`
+  });
   page.on("console", (m) => console.log("PAGE LOG>", m.type(), m.text()));
   try {
     await page.goto("http://localhost:5000/src/pages/battleJudoka.html?autostart=1");
