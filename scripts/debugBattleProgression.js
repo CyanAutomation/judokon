@@ -105,8 +105,8 @@ import { chromium } from "playwright";
             const el = document.querySelector(sel);
             return el && !el.disabled;
           },
-          { timeout: 5000 },
-          powerSelector
+          powerSelector,
+          { timeout: 5000 }
         );
       } catch {
         console.log(
