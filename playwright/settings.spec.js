@@ -12,14 +12,39 @@ const NAV_ITEMS = JSON.parse(fs.readFileSync("tests/fixtures/navigationItems.jso
 const GAME_MODES = JSON.parse(fs.readFileSync("tests/fixtures/gameModes.json", "utf8"));
 const TOOLTIP_DATA = JSON.parse(fs.readFileSync("src/data/tooltips.json", "utf8"));
 
+/**
+ * Gather sorted game mode names, enabled feature flag labels, and the expected
+ * tab order labels for the settings page.
+ *
+ * @returns {{sortedNames: string[], flagLabels: string[], expectedLabels: string[]}}
+ */
+function getLabelData() {
+  const sortedNames = NAV_ITEMS.slice()
+    .sort((a, b) => a.order - b.order)
+    .map((item) => GAME_MODES.find((m) => m.id === item.gameModeId)?.name)
+    .filter(Boolean);
+
+  const flagLabels = Object.keys(DEFAULT_SETTINGS.featureFlags)
+    .filter((flag) => DEFAULT_SETTINGS.featureFlags[flag].enabled)
+    .map((flag) => TOOLTIP_DATA.settings?.[flag]?.label)
+    .filter(Boolean);
+
+  const expectedLabels = [
+    "Light",
+    "Sound",
+    "Motion Effects",
+    "Typewriter Effect",
+    "Tooltips",
+    "Card of the Day",
+    ...sortedNames,
+    ...flagLabels
+  ];
+
+  return { sortedNames, flagLabels, expectedLabels };
+}
+
 test.describe.parallel("Settings page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.route("**/src/data/navigationItems.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/navigationItems.json" })
-    );
-    await page.route("**/src/data/gameModes.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/gameModes.json" })
-    );
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
     await page.getByRole("checkbox", { name: "Sound" }).waitFor({ state: "visible" });
   });
@@ -42,28 +67,9 @@ test.describe.parallel("Settings page", () => {
     await expect(page.getByRole("radiogroup", { name: /display mode/i })).toBeVisible();
   });
 
-  test("controls expose correct labels and follow tab order", async ({ page }) => {
+  test("controls expose correct labels", async ({ page }) => {
     await page.getByRole("checkbox", { name: "Classic Battle" }).waitFor({ state: "attached" });
-    const sortedNames = NAV_ITEMS.slice()
-      .sort((a, b) => a.order - b.order)
-      .map((item) => GAME_MODES.find((m) => m.id === item.gameModeId)?.name)
-      .filter(Boolean);
-
-    const flagLabels = Object.keys(DEFAULT_SETTINGS.featureFlags)
-      .filter((flag) => DEFAULT_SETTINGS.featureFlags[flag].enabled)
-      .map((flag) => TOOLTIP_DATA.settings?.[flag]?.label)
-      .filter(Boolean);
-
-    const expectedLabels = [
-      "Light",
-      "Sound",
-      "Motion Effects",
-      "Typewriter Effect",
-      "Tooltips",
-      "Card of the Day",
-      ...sortedNames,
-      ...flagLabels
-    ];
+    const { sortedNames, flagLabels } = getLabelData();
 
     await expect(page.locator("#sound-toggle")).toHaveAttribute("aria-label", "Sound");
     await expect(page.locator("#motion-toggle")).toHaveAttribute("aria-label", "Motion Effects");
@@ -89,6 +95,11 @@ test.describe.parallel("Settings page", () => {
         await expect(locator).toHaveAttribute("aria-label", label);
       }
     }
+  });
+
+  test("tab order follows expected sequence", async ({ page }) => {
+    await page.getByRole("checkbox", { name: "Classic Battle" }).waitFor({ state: "attached" });
+    const { flagLabels, expectedLabels } = getLabelData();
 
     const renderedFlagCount = await page
       .locator("#feature-flags-container input[type=checkbox]")
