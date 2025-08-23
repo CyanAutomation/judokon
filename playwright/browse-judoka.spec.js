@@ -106,14 +106,23 @@ test.describe.parallel("Browse Judoka screen", () => {
     await container.focus();
     const markers = page.locator(".scroll-marker");
     const counter = page.locator(".page-counter");
+    const left = page.getByRole("button", { name: /prev\.?/i });
+    const right = page.getByRole("button", { name: /next/i });
     const pageCount = await markers.count();
     await expect(counter).toHaveText(`Page 1 of ${pageCount}`);
+    await expect(left).toBeDisabled();
 
-    for (let i = 1; i < pageCount; i++) {
+    for (let i = 2; i <= pageCount; i++) {
       await container.press("ArrowRight");
+      await expect(counter).toHaveText(`Page ${i} of ${pageCount}`);
     }
+    await expect(right).toBeDisabled();
 
-    await expect.poll(() => counter.textContent()).toBe(`Page ${pageCount} of ${pageCount}`);
+    for (let i = pageCount - 1; i >= 1; i--) {
+      await container.press("ArrowLeft");
+      await expect(counter).toHaveText(`Page ${i} of ${pageCount}`);
+    }
+    await expect(left).toBeDisabled();
   });
 
   test("carousel responds to swipe gestures", async ({ page }) => {
@@ -128,11 +137,15 @@ test.describe.parallel("Browse Judoka screen", () => {
 
     const markers = page.locator(".scroll-marker");
     const counter = page.locator(".page-counter");
+    const left = page.getByRole("button", { name: /prev\.?/i });
+    const right = page.getByRole("button", { name: /next/i });
     const pageCount = await markers.count();
     await expect(counter).toHaveText(`Page 1 of ${pageCount}`);
+    await expect(left).toBeDisabled();
 
     const box = await container.boundingBox();
     const startX = box.x + box.width * 0.9;
+    const endX = box.x + box.width * 0.1;
     const y = box.y + box.height / 2;
     const swipe = (from, to) =>
       page.evaluate(
@@ -156,12 +169,17 @@ test.describe.parallel("Browse Judoka screen", () => {
         { from, to, y }
       );
 
-    for (let i = 1; i < pageCount; i++) {
+    for (let i = 2; i <= pageCount; i++) {
       await swipe(startX, startX - box.width);
-      await expect.poll(() => counter.textContent()).toBe(`Page ${i + 1} of ${pageCount}`);
+      await expect(counter).toHaveText(`Page ${i} of ${pageCount}`);
     }
+    await expect(right).toBeDisabled();
 
-    await expect(counter).toHaveText(`Page ${pageCount} of ${pageCount}`);
+    for (let i = pageCount - 1; i >= 1; i--) {
+      await swipe(endX, endX + box.width);
+      await expect(counter).toHaveText(`Page ${i} of ${pageCount}`);
+    }
+    await expect(left).toBeDisabled();
   });
 
   test.skip("shows loading spinner on slow network", async ({ page }) => {
