@@ -199,6 +199,7 @@ test.describe.parallel("Settings page", () => {
   });
 
   test("restore defaults resets settings", async ({ page }) => {
+    await expect(page.getByRole("checkbox", { name: "Sound" })).toBeChecked();
     const sound = page.getByRole("checkbox", { name: "Sound" });
     await sound.click();
     await expect(sound).not.toBeChecked();
