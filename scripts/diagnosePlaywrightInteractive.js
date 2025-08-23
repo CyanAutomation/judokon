@@ -14,6 +14,27 @@ async function run() {
   console.log("navigating to", url);
   await page.goto(url, { waitUntil: "networkidle" });
 
+  // capture orchestrator debug signals exposed to window for diagnostics
+  const debugSnapshot = await page.evaluate(() => {
+    try {
+      return {
+        state: window.__classicBattleState || null,
+        prev: window.__classicBattlePrevState || null,
+        lastEvent: window.__classicBattleLastEvent || null,
+        stateLogLength: Array.isArray(window.__classicBattleStateLog)
+          ? window.__classicBattleStateLog.length
+          : 0,
+        hasMachineGetter: typeof window.__getClassicBattleMachine === "function",
+        roundSelectPresent: !!document.getElementById("round-select-title"),
+        opponentChildren: document.getElementById("opponent-card")?.children?.length || 0,
+        playerChildren: document.getElementById("player-card")?.children?.length || 0
+      };
+    } catch (e) {
+      return { error: String(e) };
+    }
+  });
+  console.log("orchestrator debug snapshot:", JSON.stringify(debugSnapshot, null, 2));
+
   // Wait for UI to initialize
   await page.waitForSelector("#stat-buttons", { timeout: 5000 });
 
