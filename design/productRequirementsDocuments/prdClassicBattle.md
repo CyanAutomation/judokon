@@ -81,7 +81,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Opponent stat selection runs entirely on the client. After the player picks a stat (or the timer auto-chooses), the opponent's choice is revealed after a short artificial delay to mimic turn-taking.
 - During this delay, the Scoreboard displays "Opponent is choosing..." to reinforce turn flow.
 - The cooldown timer between rounds begins only after round results are shown in the Scoreboard and is displayed using one persistent snackbar that updates its text each second.
-- The debug panel is available when the `battleDebugPanel` feature flag is enabled and appears beside the opponent's card.
+- The debug panel is available when the `battleDebugPanel` feature flag is enabled, appears above the player and opponent cards, and includes a copy button for exporting its text.
 
 ### Round Data Fallback
 

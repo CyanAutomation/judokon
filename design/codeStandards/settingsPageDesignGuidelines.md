@@ -210,6 +210,8 @@ To enable AI agents to test, monitor, and debug the impact of feature flags:
 
 - **Optional Debug Panels (For Agent Use Only)**
   - Add a visually hidden or collapsible debug panel using the `.debug-panel` class for verbose state outputs
+  - Panel should appear above the player and opponent cards without obscuring controls
+  - Panel should include a copy button that copies its text content
   - Panel should be toggleable with a keyboard-accessible button
   - Output should be readable by screen readers (e.g. wrapped in `<pre role="status" aria-live="polite">`)
 

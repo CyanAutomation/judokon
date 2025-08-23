@@ -2,7 +2,7 @@
 
 ## Overview (TL;DR)
 
-The Battle Debug Panel is a developer/tester-facing overlay in JU-DO-KON!'s Classic Battle mode. It displays real-time game state (scores, timer, match status, and test mode seed) to aid debugging, test automation, and QA. The panel is toggled via a switch in the Settings page and is hidden from regular players by default.
+The Battle Debug Panel is a developer/tester-facing overlay in JU-DO-KON!'s Classic Battle mode. It displays real-time game state (scores, timer, match status, and test mode seed) to aid debugging, test automation, and QA. The panel appears above the player and opponent cards, includes a copy button for exporting its text, is toggled via a switch in the Settings page, and is hidden from regular players by default.
 
 ## Problem Statement / Why It Matters
 
@@ -19,6 +19,7 @@ Developers and testers need a way to observe internal game state (e.g., scores, 
 - As a developer, I want to see the current scores, timer, and match state during a battle so I can verify logic and debug issues.
 - As a tester, I want to enable a debug overlay from Settings so I can observe state changes while running manual or automated tests.
 - As a player, I never see the debug panel unless I opt in via Settings (or a debug flag is set).
+- As a developer or tester, I want to copy the panel's contents so I can quickly share match state.
 
 ## Terminology / Definitions
 
@@ -27,22 +28,22 @@ Developers and testers need a way to observe internal game state (e.g., scores, 
 - **Test Mode Seed**: A value used to initialize the game state for reproducible test scenarios.
 
 ## Prioritized Functional Requirements
-
-| Priority | Feature                       | Description                                                                                 |
-| -------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
-| P1       | Debug Panel Toggle            | Add a toggle in Settings to enable/disable the debug panel overlay in battle mode           |
-| P1       | Real-Time State Display       | Show current player/opponent scores, timer state, match end status, and (if test mode) seed |
-| P1       | Persistent Panel Placement    | Panel appears in the battle UI, does not overlap controls, and remains visible when enabled |
-| P2       | Accessibility Compliance      | Panel uses semantic markup (e.g., <pre>, aria-live) for screen reader compatibility         |
-| P3       | Hide in Production by Default | Panel is hidden unless explicitly enabled (or DEBUG_LOGGING=true)                           |
-
+| Priority | Feature                    | Description |
+| -------- | -------------------------- | ----------- |
+| P1       | Debug Panel Toggle         | Toggle in Settings to enable/disable the battle debug panel |
+| P1       | Real-Time State Display    | Show scores, timer, match end status, and seed (if test mode) |
+| P1       | Persistent Panel Placement | Panel sits above the cards and stays visible when enabled |
+| P1       | Copy Button                | Button copies panel text to clipboard |
+| P2       | Accessibility Compliance   | Use <pre> and aria-live for screen readers |
+| P3       | Hide in Production by Default | Hidden unless explicitly enabled (or DEBUG_LOGGING=true) |
 ## Acceptance Criteria
 
 - Debug panel is hidden by default for all users
-- Enabling the toggle in Settings immediately shows the debug panel in Classic Battle
+- Enabling the toggle in Settings immediately shows the debug panel above the player and opponent cards in Classic Battle
 - Panel displays a JSON-formatted object with: playerScore, opponentScore, timer, matchEnded, and seed (if test mode)
 - Panel updates in real time after each round, stat selection, and timer event
 - Panel uses <pre> and aria-live attributes for accessibility
+- Panel includes a Copy button that copies its text to the clipboard
 - Disabling the toggle hides the panel immediately
 - Panel does not interfere with normal gameplay controls or layout
 

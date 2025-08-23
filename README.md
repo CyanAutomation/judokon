@@ -149,6 +149,11 @@ Run all Playwright tests with:
 npx playwright test
 ```
 
+### Battle Debug Panel
+
+Enable the `battleDebugPanel` feature flag to display a panel above the player and opponent cards with live match data. The panel includes a **Copy** button that copies all text for easy sharing.
+
+
 Screenshot suites store their baseline images in `playwright/*-snapshots/`. To skip running these comparison tests locally, set the `SKIP_SCREENSHOTS` environment variable:
 
 ```bash
