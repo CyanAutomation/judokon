@@ -6,6 +6,7 @@ import {
 } from "./fixtures/navigationChecks.js";
 
 test.describe.parallel("Homepage", () => {
+  // Navigation coverage: footer link visibility, ordering, and hamburger toggle.
   test.beforeEach(async ({ page }) => {
     await page.goto("/index.html");
   });
@@ -14,16 +15,19 @@ test.describe.parallel("Homepage", () => {
     await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);
   });
 
+  // Navigation: footer links are visible
   test("navigation links visible", async ({ page }) => {
     await page.waitForSelector("footer .bottom-navbar a");
     await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);
   });
 
+  // Navigation: ensure footer has at least one link
   test("footer navigation links present", async ({ page }) => {
     const footerLinks = page.locator("footer .bottom-navbar a");
     await expect(footerLinks).not.toHaveCount(0);
   });
 
+  // Navigation: links render in expected order
   test("navigation order and visibility", async ({ page }) => {
     await page.waitForSelector("footer .bottom-navbar a");
     const classic = page.getByTestId(NAV_CLASSIC_BATTLE);
@@ -41,7 +45,7 @@ test.describe.parallel("Homepage", () => {
     expect(classicOrder).toBeLessThan(updateOrder);
     expect(updateOrder).toBeLessThan(randomOrder);
   });
-
+  // Navigation: hamburger menu toggles on narrow screens
   test("hamburger menu toggles navigation on narrow screens", async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await page.reload();
@@ -55,6 +59,7 @@ test.describe.parallel("Homepage", () => {
     await expect(list).toHaveClass(/expanded/);
   });
 
+  // Navigation: Random Judoka tile routes to dedicated page
   test("view judoka link navigates", async ({ page }) => {
     await page.getByTestId(NAV_RANDOM_JUDOKA).click();
     await expect(page).toHaveURL(/randomJudoka\.html/);
