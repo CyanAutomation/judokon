@@ -46,8 +46,16 @@ async function run() {
   });
   console.log("orchestrator debug snapshot:", JSON.stringify(debugSnapshot, null, 2));
 
-  // Wait for UI to initialize
-  await page.waitForSelector("#stat-buttons", { timeout: 5000 });
+  // Wait for UI to initialize and for stat buttons to become enabled
+  await page.waitForSelector("#stat-buttons", { timeout: 10000 });
+  try {
+    await page.waitForFunction(
+      () => document.querySelector("#stat-buttons")?.dataset?.buttonsReady === "true",
+      { timeout: 10000 }
+    );
+  } catch {
+    // proceed anyway; click attempts will detect disabled buttons
+  }
 
   // helper to choose a stat button
   async function clickStat() {
