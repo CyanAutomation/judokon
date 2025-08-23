@@ -528,15 +528,15 @@ export function applyBattleFeatureFlags(battleArea, banner) {
  *
  * @pseudocode
  * 1. Locate `#debug-panel`; exit if missing.
- * 2. If enabled and opponent slot exists, ensure panel is a `<details>` element.
- * 3. Restore open state from localStorage and prepend to opponent slot.
+ * 2. If enabled and the battle area exists, ensure the panel is a `<details>` element.
+ * 3. Restore open state from localStorage and insert before the battle area.
  * 4. Otherwise remove the panel.
  */
 export function initDebugPanel() {
   const debugPanel = document.getElementById("debug-panel");
   if (!debugPanel) return;
-  const opponentSlot = document.getElementById("opponent-card");
-  if (isEnabled("battleDebugPanel") && opponentSlot) {
+  const battleArea = document.getElementById("battle-area");
+  if (isEnabled("battleDebugPanel") && battleArea) {
     if (debugPanel.tagName !== "DETAILS") {
       const details = document.createElement("details");
       details.id = "debug-panel";
@@ -560,7 +560,7 @@ export function initDebugPanel() {
         } catch {}
       });
     } catch {}
-    opponentSlot.prepend(panel);
+    battleArea.before(panel);
     panel.classList.remove("hidden");
   } else {
     debugPanel.remove();
@@ -571,12 +571,12 @@ export function initDebugPanel() {
  * Enable or disable the debug panel dynamically.
  *
  * @pseudocode
- * 1. If enabling, ensure a `<details>` panel exists and prepend to opponent slot.
+ * 1. If enabling, ensure a `<details>` panel exists and insert before the battle area.
  * 2. Persist open state to localStorage on toggle.
  * 3. If disabling, hide and remove the panel.
  */
 export function setDebugPanelEnabled(enabled) {
-  const opponentSlot = document.getElementById("opponent-card");
+  const battleArea = document.getElementById("battle-area");
   let panel = document.getElementById("debug-panel");
   if (enabled) {
     if (!panel) {
@@ -614,8 +614,8 @@ export function setDebugPanelEnabled(enabled) {
       });
     } catch {}
     panel.classList.remove("hidden");
-    if (opponentSlot && panel.parentElement !== opponentSlot) {
-      opponentSlot.prepend(panel);
+    if (battleArea && panel.nextElementSibling !== battleArea) {
+      battleArea.before(panel);
     }
   } else if (panel) {
     panel.classList.add("hidden");
