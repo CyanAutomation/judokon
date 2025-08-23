@@ -90,44 +90,38 @@ export function disableNextRoundButton() {
   delete btn.dataset.nextReady;
 }
 
-export function updateDebugPanel() {
-  const pre = getDebugOutputEl();
-  if (!pre) return;
+/**
+ * Gather scores, timer details, and machine diagnostics for the debug panel.
+ *
+ * @pseudocode
+ * 1. Initialize state with scores, timer, and match end flag.
+ * 2. Add test seed when test mode is active.
+ * 3. Merge machine state and diagnostics when available.
+ * 4. Append store snapshot, build info, and DOM status.
+ * 5. Return accumulated state.
+ */
+export function collectDebugState() {
   const state = {
     ...getScores(),
     timer: getTimerState(),
     matchEnded: isMatchEnded()
   };
-  if (isTestModeEnabled()) {
-    state.seed = getCurrentSeed();
-  }
+  if (isTestModeEnabled()) state.seed = getCurrentSeed();
+
   try {
-    if (typeof window !== "undefined" && window.__classicBattleState) {
-      state.machineState = window.__classicBattleState;
-      if (window.__classicBattlePrevState) state.machinePrevState = window.__classicBattlePrevState;
-      if (window.__classicBattleLastEvent) state.machineLastEvent = window.__classicBattleLastEvent;
-      if (Array.isArray(window.__classicBattleStateLog)) {
-        state.machineLog = window.__classicBattleStateLog.slice();
-      }
-      if (window.__roundDecisionEnter) state.roundDecisionEnter = window.__roundDecisionEnter;
-      if (window.__guardFiredAt) state.guardFiredAt = window.__guardFiredAt;
-      if (window.__guardOutcomeEvent) state.guardOutcomeEvent = window.__guardOutcomeEvent;
-      // Machine diagnostics
-      try {
-        const getMachine = window.__getClassicBattleMachine;
-        const machine = typeof getMachine === "function" ? getMachine() : null;
-        state.machineReady = !!(machine && typeof machine.getState === "function");
-        if (state.machineReady) {
-          const current = machine.getState();
-          const def = machine.statesByName?.get ? machine.statesByName.get(current) : null;
-          if (def && Array.isArray(def.triggers)) {
-            state.machineTriggers = def.triggers.map((t) => t.on);
-          }
-        }
-      } catch {}
-    }
+    const win = typeof window !== "undefined" ? window : null;
+    if (!win || !win.__classicBattleState) return state;
+    state.machineState = win.__classicBattleState;
+    if (win.__classicBattlePrevState) state.machinePrevState = win.__classicBattlePrevState;
+    if (win.__classicBattleLastEvent) state.machineLastEvent = win.__classicBattleLastEvent;
+    if (Array.isArray(win.__classicBattleStateLog))
+      state.machineLog = win.__classicBattleStateLog.slice();
+    if (win.__roundDecisionEnter) state.roundDecisionEnter = win.__roundDecisionEnter;
+    if (win.__guardFiredAt) state.guardFiredAt = win.__guardFiredAt;
+    if (win.__guardOutcomeEvent) state.guardOutcomeEvent = win.__guardOutcomeEvent;
+    addMachineDiagnostics(win, state);
   } catch {}
-  // Include store snapshot when available
+
   try {
     const store = typeof window !== "undefined" ? window.battleStore : null;
     if (store) {
@@ -137,17 +131,12 @@ export function updateDebugPanel() {
       };
     }
   } catch {}
-  // Include round debug and simple DOM status for troubleshooting
+
   try {
-    if (typeof window !== "undefined" && window.__buildTag) {
-      state.buildTag = window.__buildTag;
-    }
-    if (typeof window !== "undefined" && window.__roundDebug) {
-      state.round = window.__roundDebug;
-    }
-    if (typeof window !== "undefined" && Array.isArray(window.__eventDebug)) {
-      state.eventDebug = window.__eventDebug.slice();
-    }
+    const win = typeof window !== "undefined" ? window : null;
+    if (win?.__buildTag) state.buildTag = win.__buildTag;
+    if (win?.__roundDebug) state.round = win.__roundDebug;
+    if (Array.isArray(win?.__eventDebug)) state.eventDebug = win.__eventDebug.slice();
     const opp = document.getElementById("opponent-card");
     if (opp) {
       state.dom = {
@@ -155,7 +144,52 @@ export function updateDebugPanel() {
       };
     }
   } catch {}
+
+  return state;
+}
+
+function addMachineDiagnostics(win, state) {
+  try {
+    const getMachine = win.__getClassicBattleMachine;
+    const machine = typeof getMachine === "function" ? getMachine() : null;
+    state.machineReady = !!(machine && typeof machine.getState === "function");
+    if (!state.machineReady) return;
+    const current = machine.getState();
+    const def = machine.statesByName?.get ? machine.statesByName.get(current) : null;
+    if (!def || !Array.isArray(def.triggers)) return;
+    state.machineTriggers = def.triggers.map((t) => t.on);
+  } catch {}
+}
+
+/**
+ * Stringify debug state and write it to a DOM element.
+ *
+ * @pseudocode
+ * 1. Exit if `pre` is missing.
+ * 2. Stringify `state` with indentation.
+ * 3. Assign result to `pre.textContent`.
+ *
+ * @param {HTMLElement | null} pre Target element to update.
+ * @param {object} state Debug state object to render.
+ */
+export function renderDebugState(pre, state) {
+  if (!pre) return;
   pre.textContent = JSON.stringify(state, null, 2);
+}
+
+/**
+ * Update the debug panel with current game metrics and diagnostics.
+ *
+ * @pseudocode
+ * 1. Obtain `#debug-output` element; exit if absent.
+ * 2. Collect state via `collectDebugState`.
+ * 3. Render the state with `renderDebugState`.
+ */
+export function updateDebugPanel() {
+  const pre = getDebugOutputEl();
+  if (!pre) return;
+  const state = collectDebugState();
+  renderDebugState(pre, state);
 }
 
 /**
