@@ -6,6 +6,9 @@ import { getPrdTaskStats } from "./prdTaskStats.js";
 import { getSanitizer } from "./sanitizeHtml.js";
 import { createSpinner } from "../components/Spinner.js";
 
+let sidebarState;
+let cleanupTooltips = () => {};
+
 /**
  * Load PRD filenames and related metadata.
  *
@@ -82,13 +85,21 @@ export function createSidebarList(labels, placeholder, onSelect) {
  * @param {NodeListOf<HTMLElement>} opts.prevButtons
  * @param {Function} opts.showNext
  * @param {Function} opts.showPrev
+ * @param {(i:number, updateHistory?:boolean) => void} opts.selectDoc
  */
-export function bindNavigation({ container, nextButtons, prevButtons, showNext, showPrev }) {
+export function bindNavigation({
+  container,
+  nextButtons,
+  prevButtons,
+  showNext,
+  showPrev,
+  selectDoc
+}) {
   nextButtons.forEach((btn) => btn.addEventListener("click", showNext));
   prevButtons.forEach((btn) => btn.addEventListener("click", showPrev));
   window.addEventListener("popstate", (e) => {
     const i = e.state && typeof e.state.index === "number" ? e.state.index : null;
-    if (i !== null) selectDocSync(i, false);
+    if (i !== null) selectDoc(i, false);
   });
   document.addEventListener("keydown", (e) => {
     if (document.activeElement !== container) return;
@@ -174,59 +185,82 @@ export async function fetchAndRenderDoc(files, docsMap, parserFn, dir) {
 }
 
 /**
- * Initialize the Product Requirements Document reader page.
+ * Render the document at the provided index.
  *
  * @pseudocode
- * 1. Load filenames and sidebar labels.
- * 2. Determine starting document from URL.
- * 3. Create sidebar immediately so keyboard traversal works early.
- * 4. Fetch and render only the starting doc first, sanitizing the HTML; focus content and seed history.
- * 5. Lazy-load remaining docs in the background and fetch-on-demand when selected.
- * 6. Bind navigation (buttons, history, keys, swipe).
+ * 1. Replace content with sanitized HTML for the document.
+ * 2. Update title and task summary.
+ * 3. Initialize tooltips and play fade-in animation.
  *
- * @param {Record<string, string>} [docsMap]
- * @param {Function} [parserFn=markdownToHtml]
+ * @param {number} index
  */
-export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
+export function renderDocument(index) {
+  if (!sidebarState) return;
+  const { container, titles, taskStats, titleEl, summaryEl, documents, DOMPurify } = sidebarState;
+  cleanupTooltips();
+  container.innerHTML = DOMPurify.sanitize(documents[index] || "");
+  container.classList.remove("fade-in");
+  void container.offsetWidth;
+  container.classList.add("fade-in");
+  if (titleEl) titleEl.textContent = titles[index] || "";
+  if (summaryEl) {
+    const { total, completed } = taskStats[index] || { total: 0, completed: 0 };
+    const percent = total ? Math.round((completed / total) * 100) : 0;
+    summaryEl.textContent = `Tasks: ${completed}/${total} (${percent}%)`;
+  }
+  initTooltips(container).then((fn) => {
+    cleanupTooltips = fn;
+  });
+}
+
+/**
+ * Initialize sidebar and document caches.
+ *
+ * @pseudocode
+ * 1. Load filenames and determine starting index.
+ * 2. Build sidebar list and prepare document arrays.
+ * 3. Return state with helpers for selection and fetching.
+ *
+ * @param {Record<string,string>} [docsMap]
+ * @param {Function} [parserFn]
+ * @returns {Promise<object|null>}
+ */
+export async function initSidebar(docsMap, parserFn = markdownToHtml) {
   const DOMPurify = await getSanitizer();
   const { files, baseNames, labels, dir } = await loadPrdFileList(docsMap);
   const docParam = new URLSearchParams(window.location.search).get("doc");
-  let startIndex = Math.max(0, docParam ? baseNames.indexOf(docParam.replace(/\.md$/, "")) : 0);
+  const startIndex = Math.max(0, docParam ? baseNames.indexOf(docParam.replace(/\.md$/, "")) : 0);
 
   const container = document.getElementById("prd-content");
   const listPlaceholder = document.getElementById("prd-list");
-  const nextButtons = document.querySelectorAll('[data-nav="next"]');
-  const prevButtons = document.querySelectorAll('[data-nav="prev"]');
   const titleEl = document.getElementById("prd-title");
   const summaryEl = document.getElementById("task-summary");
-  if (!container || !listPlaceholder || !files.length) return;
+  if (!container || !listPlaceholder || !files.length) return null;
   const spinner = createSpinner(container.parentElement);
 
-  // Prepare arrays for lazy population and a small cache of in-flight fetches.
   const documents = Array(files.length);
   const taskStats = Array(files.length);
   const titles = Array(files.length);
   const pending = Array(files.length);
 
-  // Helper: fetch a single doc and fill arrays.
+  const escapeHtml = (str) =>
+    str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const parseWithWarning = (md) => {
+    try {
+      return DOMPurify.sanitize(parserFn(md));
+    } catch {
+      const escaped = escapeHtml(md);
+      return (
+        '<div class="markdown-warning" role="alert" aria-label="Content could not be fully rendered" title="Content could not be fully rendered">⚠️ Partial content</div>' +
+        `<pre>${escaped}</pre>`
+      );
+    }
+  };
+
   const fetchOne = async (i) => {
     if (documents[i]) return;
     if (pending[i]) return pending[i];
     pending[i] = (async () => {
-      // Reuse internal helpers from fetchAndRenderDoc scope
-      const escapeHtml = (str) =>
-        str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      const parseWithWarning = (md) => {
-        try {
-          return DOMPurify.sanitize(parserFn(md));
-        } catch {
-          const escaped = escapeHtml(md);
-          return (
-            '<div class="markdown-warning" role="alert" aria-label="Content could not be fully rendered" title="Content could not be fully rendered">⚠️ Partial content</div>' +
-            `<pre>${escaped}</pre>`
-          );
-        }
-      };
       try {
         let md;
         const name = files[i];
@@ -254,55 +288,11 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     return pending[i];
   };
 
-  let index = startIndex;
-
-  // Create sidebar immediately so keyboard traversal is available early.
-  const { listSelect } = createSidebarList(labels, listPlaceholder, (i, _el, opts = {}) => {
-    // Use sync-first selection on list interactions for immediate updates.
-    selectDocSync(i, true, true, !opts.fromListNav);
-  });
-
-  let cleanupTooltips = () => {};
-  // Ensure the initially visible document is reflected in the sidebar
-  // selection and accessibility state before any navigation.
-  // This keeps aria-current/selected in sync with the rendered content.
-  listSelect(startIndex);
-  function renderDoc(i) {
-    cleanupTooltips();
-    container.innerHTML = DOMPurify.sanitize(documents[i] || "");
-    container.classList.remove("fade-in");
-    void container.offsetWidth;
-    container.classList.add("fade-in");
-    if (titleEl) titleEl.textContent = titles[i] || "";
-    if (summaryEl) {
-      const { total, completed } = taskStats[i] || { total: 0, completed: 0 };
-      const percent = total ? Math.round((completed / total) * 100) : 0;
-      summaryEl.textContent = `Tasks: ${completed}/${total} (${percent}%)`;
-    }
-    initTooltips(container).then((fn) => {
-      cleanupTooltips = fn;
-    });
-  }
-
-  // Attempt to fill a document synchronously when possible (docsMap or cached).
-  function ensureDocSync(i) {
+  const ensureDocSync = (i) => {
     if (documents[i]) return true;
     const name = files[i];
     if (docsMap && docsMap[name]) {
       const md = docsMap[name];
-      const escapeHtml = (str) =>
-        str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      const parseWithWarning = (mdText) => {
-        try {
-          return DOMPurify.sanitize(parserFn(mdText));
-        } catch {
-          const escaped = escapeHtml(mdText);
-          return (
-            '<div class="markdown-warning" role="alert" aria-label="Content could not be fully rendered" title="Content could not be fully rendered">⚠️ Partial content</div>' +
-            `<pre>${escaped}</pre>`
-          );
-        }
-      };
       documents[i] = parseWithWarning(md);
       taskStats[i] = getPrdTaskStats(md);
       const m = md.match(/^#\s*(.+)/m);
@@ -310,62 +300,119 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
       return true;
     }
     return false;
-  }
+  };
 
-  // Synchronous-first selector for immediate UI updates during user input.
+  sidebarState = {
+    container,
+    titleEl,
+    summaryEl,
+    documents,
+    taskStats,
+    titles,
+    DOMPurify,
+    files,
+    baseNames,
+    dir,
+    docsMap,
+    parserFn,
+    pending,
+    listSelect: null,
+    selectDocSync: null,
+    fetchOne,
+    ensureDocSync,
+    spinner,
+    index: startIndex
+  };
+
+  let listSelect;
   function selectDocSync(i, updateHistory = true, skipList = false, focusContent = true) {
-    index = ((i % files.length) + files.length) % files.length;
-    if (!skipList) listSelect(index);
-    const hadDoc = ensureDocSync(index);
+    sidebarState.index = ((i % files.length) + files.length) % files.length;
+    if (!skipList && sidebarState.listSelect) sidebarState.listSelect(sidebarState.index);
+    const hadDoc = ensureDocSync(sidebarState.index);
     if (hadDoc) {
-      renderDoc(index);
+      renderDocument(sidebarState.index);
       if (focusContent) container.focus();
     } else {
-      // Kick off async fetch and update when ready without blocking the click handler.
-      fetchOne(index).then(() => {
-        renderDoc(index);
+      fetchOne(sidebarState.index).then(() => {
+        renderDocument(sidebarState.index);
         if (focusContent) container.focus();
       });
     }
     if (updateHistory) {
       const url = new URL(window.location);
-      url.searchParams.set("doc", baseNames[index]);
-      history.pushState({ index }, "", url.pathname + url.search);
+      url.searchParams.set("doc", baseNames[sidebarState.index]);
+      history.pushState({ index: sidebarState.index }, "", url.pathname + url.search);
     }
   }
 
-  const showNext = () => selectDocSync(index + 1);
-  const showPrev = () => selectDocSync(index - 1);
+  ({ listSelect } = createSidebarList(labels, listPlaceholder, (i, _el, opts = {}) => {
+    selectDocSync(i, true, true, !opts.fromListNav);
+  }));
+  sidebarState.listSelect = listSelect;
+  sidebarState.selectDocSync = selectDocSync;
+  listSelect(startIndex);
 
+  return sidebarState;
+}
+
+/**
+ * Wire up navigation handlers using sidebar state.
+ *
+ * @pseudocode
+ * 1. Resolve navigation buttons.
+ * 2. Bind click, popstate, key, and swipe handlers.
+ * 3. Delegate to sidebar selection logic.
+ *
+ * @param {object} sidebar
+ * @param {string[]} files
+ */
+export function initNavigationHandlers(sidebar, _files) {
+  void _files;
+  const nextButtons = document.querySelectorAll('[data-nav="next"]');
+  const prevButtons = document.querySelectorAll('[data-nav="prev"]');
+  const showNext = () => sidebar.selectDocSync(sidebar.index + 1);
+  const showPrev = () => sidebar.selectDocSync(sidebar.index - 1);
   bindNavigation({
-    container,
+    container: sidebar.container,
     nextButtons,
     prevButtons,
     showNext,
-    showPrev
+    showPrev,
+    selectDoc: (i, updateHistory) => sidebar.selectDocSync(i, updateHistory)
   });
+}
 
-  // Seed initial history and render the starting doc as soon as it is fetched.
+/**
+ * Initialize the Product Requirements Document reader page.
+ *
+ * @pseudocode
+ * 1. Initialize sidebar and navigation handlers.
+ * 2. Seed history and render the starting document.
+ * 3. Prefetch remaining documents in background.
+ *
+ * @param {Record<string, string>} [docsMap]
+ * @param {Function} [parserFn=markdownToHtml]
+ */
+export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
+  const sidebar = await initSidebar(docsMap, parserFn);
+  if (!sidebar) return;
+  initNavigationHandlers(sidebar, sidebar.files);
   const url = new URL(window.location);
-  url.searchParams.set("doc", baseNames[startIndex]);
-  history.replaceState({ index: startIndex }, "", url.toString());
+  url.searchParams.set("doc", sidebar.baseNames[sidebar.index]);
+  history.replaceState({ index: sidebar.index }, "", url.toString());
 
-  spinner.show();
-  // Load the initial doc synchronously if possible for snappy first paint.
-  if (!ensureDocSync(startIndex)) {
-    await fetchOne(startIndex);
+  sidebar.spinner.show();
+  if (!sidebar.ensureDocSync(sidebar.index)) {
+    await sidebar.fetchOne(sidebar.index);
   }
-  renderDoc(startIndex);
-  container.focus();
-  spinner.remove();
+  renderDocument(sidebar.index);
+  sidebar.container.focus();
+  sidebar.spinner.remove();
 
-  // Opportunistically fetch remaining docs in the background to speed up later navigation.
-  // Avoid blocking UI; fire-and-forget.
   Promise.resolve().then(async () => {
-    for (let i = 0; i < files.length; i++) {
-      if (i === startIndex) continue;
-      // Intentionally do not await to keep UI responsive.
-      fetchOne(i);
+    for (let i = 0; i < sidebar.files.length; i++) {
+      if (i === sidebar.index) continue;
+      sidebar.fetchOne(i);
     }
   });
 }
