@@ -40,6 +40,7 @@ describe("classicBattle timer pause", () => {
   let showMessage;
   let battleMod;
   let store;
+  let logSpy;
 
   beforeEach(async () => {
     vi.resetModules();
@@ -54,6 +55,7 @@ describe("classicBattle timer pause", () => {
     document.body.append(playerCard, opponentCard, header, roundResult, statButtons);
 
     timer = vi.useFakeTimers();
+    logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     fetchJsonMock = vi.fn(async (url) => {
       if (String(url).includes("gameTimers.json")) {
@@ -63,13 +65,13 @@ describe("classicBattle timer pause", () => {
     });
 
     generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {
-      container.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
+      container.innerHTML = `<ul><li class=\"stat\"><strong>Power</strong> <span>5</span></li></ul>`;
       if (cb) cb({ id: 1 });
     });
     getRandomJudokaMock = vi.fn(() => ({ id: 2 }));
     renderMock = vi.fn(async () => {
       const el = document.createElement("div");
-      el.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+      el.innerHTML = `<ul><li class=\"stat\"><strong>Power</strong> <span>3</span></li></ul>`;
       return el;
     });
 
@@ -92,12 +94,10 @@ describe("classicBattle timer pause", () => {
 
   afterEach(() => {
     timer.clearAllTimers();
+    logSpy.mockRestore();
   });
 
-  it.skip("does not show auto-select message when stat picked before timer expires", async () => {
-    // debug markers to diagnose potential timeouts in CI
-
-    console.log("pauseTimer: START test");
+  it("does not show auto-select message when stat picked before timer expires", async () => {
     // Pre-fill cards and trigger selection directly to avoid depending on
     // timer ticks in this unit test.
     document.getElementById("player-card").innerHTML =
@@ -105,11 +105,11 @@ describe("classicBattle timer pause", () => {
     document.getElementById("opponent-card").innerHTML =
       '<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>';
 
-    console.log("pauseTimer: BEFORE handleStatSelection");
-    await battleMod.handleStatSelection(store, "power");
-
-    console.log("pauseTimer: AFTER handleStatSelection");
+    const promise = battleMod.handleStatSelection(store, "power");
+    await timer.runAllTimersAsync();
+    await promise;
     timer.advanceTimersByTime(1000);
+    await timer.runAllTimersAsync();
     const messages = showMessage.mock.calls.map((c) => c[0]);
     expect(messages.some((m) => /Time's up! Auto-selecting/.test(m))).toBe(false);
   });

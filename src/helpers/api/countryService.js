@@ -1,6 +1,7 @@
 import { fetchJson, importJsonModule } from "../dataUtils.js";
 import { DATA_DIR } from "../constants.js";
 import { getItem, setItem } from "../storage.js";
+import { debugLog } from "../debug.js";
 
 const STORAGE_KEY = "countryCodeMapping";
 const DEFAULT_COUNTRY = "Vanuatu";
@@ -38,10 +39,7 @@ export async function loadCountryMapping() {
       } catch (err) {
         // Reduce noise in tests/CI: prefer debug logging over warnings
         // and fall back to local module import.
-
-        if (typeof window !== "undefined" && window.DEBUG_LOGGING) {
-          console.log("Failed to fetch countryCodeMapping.json", err);
-        }
+        debugLog("Failed to fetch countryCodeMapping.json", err);
         const data = await importJsonModule("../../data/countryCodeMapping.json");
         setItem(STORAGE_KEY, data);
         return data;
