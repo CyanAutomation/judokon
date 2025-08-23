@@ -17,17 +17,28 @@ async function run() {
   // capture orchestrator debug signals exposed to window for diagnostics
   const debugSnapshot = await page.evaluate(() => {
     try {
+      const log = Array.isArray(window.__classicBattleStateLog)
+        ? window.__classicBattleStateLog.slice(-20)
+        : [];
+      const statButtons = Array.from(document.querySelectorAll("#stat-buttons button")).map(
+        (b) => ({
+          text: b.textContent || "",
+          disabled: !!b.disabled,
+          tabIndex: b.tabIndex,
+          classes: b.className || "",
+          dataset: Object.assign({}, b.dataset)
+        })
+      );
       return {
         state: window.__classicBattleState || null,
         prev: window.__classicBattlePrevState || null,
         lastEvent: window.__classicBattleLastEvent || null,
-        stateLogLength: Array.isArray(window.__classicBattleStateLog)
-          ? window.__classicBattleStateLog.length
-          : 0,
+        stateLog: log,
         hasMachineGetter: typeof window.__getClassicBattleMachine === "function",
         roundSelectPresent: !!document.getElementById("round-select-title"),
         opponentChildren: document.getElementById("opponent-card")?.children?.length || 0,
-        playerChildren: document.getElementById("player-card")?.children?.length || 0
+        playerChildren: document.getElementById("player-card")?.children?.length || 0,
+        statButtons
       };
     } catch (e) {
       return { error: String(e) };
