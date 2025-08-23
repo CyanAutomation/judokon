@@ -30,7 +30,7 @@ test.describe.parallel("Battle Judoka page", () => {
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
 
-  test("narrow viewport screenshot and status aria attributes", async ({ page }) => {
+  test("status aria attributes and progress ids", async ({ page }) => {
     await page.setViewportSize({ width: 280, height: 800 });
 
     const axTree = await page.accessibility.snapshot({ interestingOnly: false });
@@ -55,7 +55,10 @@ test.describe.parallel("Battle Judoka page", () => {
       lis.map((li) => li.textContent.trim())
     );
     expect(ids).toEqual(expectedIds);
+  });
 
+  test("narrow viewport screenshot", async ({ page }) => {
+    await page.setViewportSize({ width: 280, height: 800 });
     await expect(page).toHaveScreenshot("battleJudoka-narrow.png", {
       mask: [page.locator("#battle-state-progress")]
     });
