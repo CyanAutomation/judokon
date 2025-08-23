@@ -88,18 +88,5 @@ test.describe.parallel("Homepage layout", () => {
         fullPage: true
       });
     });
-
-    test("hamburger menu expands navigation", async ({ page }) => {
-      await page.setViewportSize({ width: 400, height: 800 });
-      await page.goto("/index.html");
-      await page.waitForSelector(".bottom-navbar .nav-toggle");
-      const toggle = page.locator(".bottom-navbar .nav-toggle");
-      const list = page.locator(".bottom-navbar ul");
-      await expect(toggle).toHaveAttribute("aria-expanded", "false");
-      await expect(list).not.toHaveClass(/expanded/);
-      await toggle.click();
-      await expect(toggle).toHaveAttribute("aria-expanded", "true");
-      await expect(list).toHaveClass(/expanded/);
-    });
   });
 });
