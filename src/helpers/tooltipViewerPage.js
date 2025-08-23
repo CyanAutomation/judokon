@@ -193,7 +193,29 @@ export function applyHashSelection(listPlaceholder, select) {
     } catch {
       return;
     }
-    const el = listPlaceholder.querySelector(`[data-key="${key}"]`);
+    let el = null;
+    try {
+      if (typeof key !== "string") {
+        try {
+          if (typeof window !== "undefined")
+            window.__classicBattleQuerySelectorError = {
+              key,
+              where: "tooltipViewer.applyHashSelection"
+            };
+        } catch {}
+      } else {
+        el = listPlaceholder.querySelector(`[data-key="${key}"]`);
+      }
+    } catch (e) {
+      try {
+        if (typeof window !== "undefined")
+          window.__classicBattleQuerySelectorError = {
+            key,
+            where: "tooltipViewer.applyHashSelection",
+            err: String(e)
+          };
+      } catch {}
+    }
     if (el) {
       select(key);
       el.scrollIntoView({ block: "center" });

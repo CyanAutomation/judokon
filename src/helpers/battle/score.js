@@ -14,7 +14,28 @@ import { STATS } from "../battleEngineFacade.js";
  */
 function getStatValue(container, stat) {
   const index = STATS.indexOf(stat) + 1;
-  const span = container.querySelector(`li.stat:nth-child(${index}) span`);
+  // Defensive: ensure index is a finite number before using it in a selector
+  let span = null;
+  try {
+    if (!Number.isFinite(index) || index <= 0) {
+      try {
+        if (typeof window !== "undefined")
+          window.__classicBattleQuerySelectorError = { stat, index, where: "getStatValue" };
+      } catch {}
+    } else {
+      span = container.querySelector(`li.stat:nth-child(${index}) span`);
+    }
+  } catch (e) {
+    try {
+      if (typeof window !== "undefined")
+        window.__classicBattleQuerySelectorError = {
+          stat,
+          index,
+          where: "getStatValue",
+          err: String(e)
+        };
+    } catch {}
+  }
   if (!span) return 0;
   const val = parseInt(span.textContent, 10);
   return Number.isFinite(val) ? val : 0;

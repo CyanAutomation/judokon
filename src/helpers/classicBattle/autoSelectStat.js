@@ -26,7 +26,27 @@ const AUTO_SELECT_FEEDBACK_MS = 500;
  */
 export async function autoSelectStat(onSelect) {
   const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
-  const btn = document.querySelector(`#stat-buttons button[data-stat="${randomStat}"]`);
+  // Defensive: ensure randomStat is a string before using it in a selector
+  let btn = null;
+  try {
+    if (typeof randomStat !== "string") {
+      try {
+        if (typeof window !== "undefined")
+          window.__classicBattleQuerySelectorError = { randomStat, where: "autoSelectStat" };
+      } catch {}
+    } else {
+      btn = document.querySelector(`#stat-buttons button[data-stat="${randomStat}"]`);
+    }
+  } catch (e) {
+    try {
+      if (typeof window !== "undefined")
+        window.__classicBattleQuerySelectorError = {
+          randomStat,
+          where: "autoSelectStat",
+          err: String(e)
+        };
+    } catch {}
+  }
   if (btn) btn.classList.add("selected");
   await new Promise((resolve) => setTimeout(resolve, AUTO_SELECT_FEEDBACK_MS));
   // Ensure timeout event is observed even in environments where the

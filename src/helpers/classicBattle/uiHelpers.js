@@ -470,7 +470,27 @@ export async function applyStatLabels() {
   const names = await loadStatNames();
   names.forEach((n, i) => {
     const key = STATS[i];
-    const btn = document.querySelector(`#stat-buttons button[data-stat="${key}"]`);
+    // Defensive: ensure `key` is a string before building a selector. If not, record for diagnostics.
+    let btn = null;
+    try {
+      if (typeof key !== "string") {
+        try {
+          if (typeof window !== "undefined")
+            window.__classicBattleQuerySelectorError = { key, where: "uiHelpers.applyStatLabels" };
+        } catch {}
+      } else {
+        btn = document.querySelector(`#stat-buttons button[data-stat="${key}"]`);
+      }
+    } catch (e) {
+      try {
+        if (typeof window !== "undefined")
+          window.__classicBattleQuerySelectorError = {
+            key,
+            where: "uiHelpers.applyStatLabels",
+            err: String(e)
+          };
+      } catch {}
+    }
     if (btn) {
       btn.textContent = n.name;
       btn.setAttribute("aria-label", `Select ${n.name}`);
