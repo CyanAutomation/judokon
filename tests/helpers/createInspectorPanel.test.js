@@ -1,13 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { createInspectorPanel } from "../../src/helpers/inspector/createInspectorPanel.js";
+import { mountInspectorPanel } from "./mountInspectorPanel.js";
 
 const judoka = {};
 
 /** @test {createInspectorPanel} */
 describe("createInspectorPanel accessibility", () => {
   it("adds label, focus styles, and keyboard support", () => {
-    const container = document.createElement("div");
-    const panel = createInspectorPanel(container, judoka);
+    const panel = mountInspectorPanel(judoka);
     const summary = panel.querySelector("summary");
 
     expect(panel.getAttribute("aria-label")).toBe("Inspector panel");

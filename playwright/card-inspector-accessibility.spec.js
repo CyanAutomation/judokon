@@ -1,4 +1,6 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const JUDOKA = {
   id: 1,
@@ -13,23 +15,17 @@ const JUDOKA = {
   gender: "male"
 };
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const helperPath = path.resolve(__dirname, "../tests/helpers/mountInspectorPanel.js");
+
 test.describe.parallel("Card inspector accessibility", () => {
   test("summary keyboard support and ARIA state", async ({ page }) => {
     await page.setContent("<html><body></body></html>");
-    const { createInspectorPanel } = await import(
-      "../src/helpers/inspector/createInspectorPanel.js"
-    );
-    const func = createInspectorPanel.toString();
-    await page.evaluate(
-      ({ judoka, funcStr }) => {
-        const createInspectorPanel = eval(`(${funcStr})`);
-        const container = document.createElement("div");
-        const panel = createInspectorPanel(container, judoka);
-        container.appendChild(panel);
-        document.body.appendChild(container);
-      },
-      { judoka: JUDOKA, funcStr: func }
-    );
+    await page.addScriptTag({ path: helperPath, type: "module" });
+    await page.evaluate((judoka) => {
+      window.mountInspectorPanel(judoka);
+    }, JUDOKA);
 
     const panel = page.locator(".debug-panel");
     await expect(panel).toHaveAttribute("aria-label", "Inspector panel");
@@ -48,39 +44,29 @@ test.describe.parallel("Card inspector accessibility", () => {
 
   test("announces invalid card data on JSON failure", async ({ page }) => {
     await page.setContent("<html><body></body></html>");
-    const { createInspectorPanel } = await import(
-      "../src/helpers/inspector/createInspectorPanel.js"
-    );
-    const func = createInspectorPanel.toString();
-    await page.evaluate(
-      ({ funcStr }) => {
-        const createInspectorPanel = eval(`(${funcStr})`);
-        const container = document.createElement("div");
-        const badJudoka = {
-          id: 2,
-          firstname: "Bad",
-          surname: "Data",
-          country: "USA",
-          countryCode: "us",
-          stats: {
-            power: 1,
-            speed: 1,
-            technique: 1,
-            kumikata: 1,
-            newaza: 1
-          },
-          weightClass: "-100kg",
-          signatureMoveId: 1,
-          rarity: "common",
-          gender: "male",
-          extra: 1n
-        };
-        const result = createInspectorPanel(container, badJudoka);
-        container.appendChild(result);
-        document.body.appendChild(container);
-      },
-      { funcStr: func }
-    );
+    await page.addScriptTag({ path: helperPath, type: "module" });
+    await page.evaluate(() => {
+      const badJudoka = {
+        id: 2,
+        firstname: "Bad",
+        surname: "Data",
+        country: "USA",
+        countryCode: "us",
+        stats: {
+          power: 1,
+          speed: 1,
+          technique: 1,
+          kumikata: 1,
+          newaza: 1
+        },
+        weightClass: "-100kg",
+        signatureMoveId: 1,
+        rarity: "common",
+        gender: "male",
+        extra: 1n
+      };
+      window.mountInspectorPanel(badJudoka);
+    });
 
     await expect(page.getByText("Invalid card data")).toBeVisible();
   });
