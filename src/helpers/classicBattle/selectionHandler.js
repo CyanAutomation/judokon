@@ -4,54 +4,7 @@ import { getStatValue } from "../battle/index.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { isStateTransition } from "./orchestratorHandlers.js";
-
-// Local dispatcher to avoid circular import with orchestrator.
-// Uses a window-exposed getter set by the orchestrator at runtime.
-async function dispatchBattleEvent(eventName, payload) {
-  const record = (via, ok) => {
-    try {
-      if (typeof window !== "undefined") {
-        const log = Array.isArray(window.__eventDebug) ? window.__eventDebug : [];
-        log.push({ event: eventName, via, ok, ts: Date.now() });
-        while (log.length > 50) log.shift();
-        window.__eventDebug = log;
-      }
-    } catch {}
-  };
-  // Primary path: dispatch via the live machine exposed by the orchestrator.
-  try {
-    if (typeof window !== "undefined") {
-      const getMachine = window.__getClassicBattleMachine;
-      const machine = typeof getMachine === "function" ? getMachine() : null;
-      if (machine && typeof machine.dispatch === "function") {
-        const res = await machine.dispatch(eventName, payload);
-        record("machine", true);
-        return res;
-      }
-    }
-  } catch {}
-  // Fallback for tests or non-orchestrated flows: call the exported
-  // orchestrator function (mockable by Vitest) via dynamic import to
-  // avoid a static cycle in production bundles.
-  try {
-    // Only attempt this in browser-like environments where window exists.
-    // In Node test environments (no window), importing the real orchestrator
-    // can hang due to DOM/state machine setup.
-    if (typeof window === "undefined") return;
-    const orchestrator = await import("./orchestrator.js");
-    if (orchestrator && typeof orchestrator.dispatchBattleEvent === "function") {
-      if (payload === undefined) {
-        const res = await orchestrator.dispatchBattleEvent(eventName);
-        record("orchestratorImport", true);
-        return res;
-      }
-      const res = await orchestrator.dispatchBattleEvent(eventName, payload);
-      record("orchestratorImport", true);
-      return res;
-    }
-  } catch {}
-  record("none", false);
-}
+import { dispatchBattleEvent } from "./orchestrator.js";
 
 /**
  * Determine the opponent's stat choice based on difficulty.
