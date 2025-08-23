@@ -1,5 +1,5 @@
 import { STATS, stopTimer } from "../battleEngineFacade.js";
-import { chooseOpponentStat } from "../api/battleUI.js";
+import { chooseOpponentStat, evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
 import { getStatValue } from "../battle/index.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { emitBattleEvent } from "./battleEvents.js";
@@ -22,37 +22,6 @@ import { resolveRound } from "./roundResolver.js";
 export function simulateOpponentStat(stats, difficulty = "easy") {
   const values = STATS.map((stat) => ({ stat, value: Number(stats?.[stat]) || 0 }));
   return chooseOpponentStat(values, difficulty);
-}
-
-/**
- * Evaluate round data without side effects.
- *
- * @pseudocode
- * 1. Call `evaluateRoundApi` with the provided values.
- * 2. Return the API result augmented with the input values.
- *
- * @param {number} playerVal - Player's stat value.
- * @param {number} opponentVal - Opponent's stat value.
- * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number, outcome: string, delta: number, playerVal: number, opponentVal: number}}
- */
-export function evaluateRoundData(playerVal, opponentVal) {
-  const base = evaluateRoundApi(playerVal, opponentVal);
-  return { ...base, playerVal, opponentVal };
-}
-
-/**
- * Evaluate a selected stat and return the outcome data.
- * This function only evaluates and returns outcome data; it does not emit any events.
- * Event emission is handled elsewhere (e.g., in handleStatSelection).
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @param {string} stat - Chosen stat key.
- * @param {number} playerVal - Player's stat value.
- * @param {number} opponentVal - Opponent's stat value.
- * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number, outcome: string, playerVal: number, opponentVal: number}}
- */
-export function evaluateRound(store, stat, playerVal, opponentVal) {
-  return evaluateRoundData(playerVal, opponentVal);
 }
 
 /**
@@ -121,43 +90,5 @@ export async function handleStatSelection(store, stat) {
   } catch {
     result = await resolveRound(store, stat, playerVal, opponentVal);
   }
-  return result;
-}
-
-/**
- * Resolves the round after a stat has been selected.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @param {string} stat - Chosen stat key.
- * @param {number} playerVal - Player's stat value.
- * @param {number} opponentVal - Opponent's stat value.
- * @returns {Promise<ReturnType<typeof evaluateRound>>}
- */
-export async function resolveRound(store, stat, playerVal, opponentVal) {
-  if (!stat) return;
-  await dispatchBattleEvent("evaluate");
-  const delay = 300 + Math.floor(Math.random() * 401);
-  await new Promise((resolve) => setTimeout(resolve, delay));
-  emitBattleEvent("opponentReveal");
-  const result = evaluateRound(store, stat, playerVal, opponentVal);
-  const outcomeEvent =
-    result.outcome === "winPlayer"
-      ? "outcome=winPlayer"
-      : result.outcome === "winOpponent"
-        ? "outcome=winOpponent"
-        : "outcome=draw";
-  await dispatchBattleEvent(outcomeEvent);
-  if (result.matchEnded) {
-    await dispatchBattleEvent("matchPointReached");
-  } else {
-    await dispatchBattleEvent("continue");
-  }
-  emitBattleEvent("roundResolved", {
-    store,
-    stat,
-    playerVal,
-    opponentVal,
-    result
-  });
   return result;
 }
