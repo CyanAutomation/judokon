@@ -196,7 +196,11 @@ describe("classicBattle stat selection", () => {
     expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "evaluate");
     expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "outcome=winPlayer");
     expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(3, "matchPointReached");
-    expect(eventDispatcher.__getStateLog()).toEqual(["processingRound", "roundOver", "matchDecision"]);
+    expect(eventDispatcher.__getStateLog()).toEqual([
+      "processingRound",
+      "roundOver",
+      "matchDecision"
+    ]);
   });
 
   it("simulateOpponentStat returns a valid stat", async () => {
