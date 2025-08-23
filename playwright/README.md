@@ -12,3 +12,7 @@
 - Each test navigates to `/src/pages/settings.html` and asserts a single concern.
 - `controls expose correct labels` verifies accessible labels for toggles and feature flags.
 - `tab order follows expected sequence` ensures keyboard navigation visits controls in order.
+
+## Meditation screen
+
+The meditation screen intentionally omits navigation links to keep the user focused on the quote, so tests pass an empty array to `verifyPageBasics` when verifying page structure.
