@@ -90,6 +90,7 @@ import { chromium } from "playwright";
           prev: window.__classicBattlePrevState || null,
           lastEvent: window.__classicBattleLastEvent || null,
           lastInterruptReason: window.__classicBattleLastInterruptReason || null,
+          lastQuerySelectorError: window.__classicBattleQuerySelectorError || null,
           log: window.__classicBattleStateLog || []
         }));
         console.log("DISABLED_STATE", JSON.stringify(state, null, 2));
@@ -118,6 +119,7 @@ import { chromium } from "playwright";
       prev: window.__classicBattlePrevState || null,
       lastEvent: window.__classicBattleLastEvent || null,
       lastInterruptReason: window.__classicBattleLastInterruptReason || null,
+      lastQuerySelectorError: window.__classicBattleQuerySelectorError || null,
       log: window.__classicBattleStateLog || [],
       roundDebug: window.__roundDebug || null,
       guardFiredAt: window.__guardFiredAt || null,
