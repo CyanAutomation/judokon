@@ -27,6 +27,19 @@ import { chromium } from "playwright";
     );
     console.log("STAT BUTTONS", JSON.stringify(names));
 
+    // Try to pre-seed a playerChoice in the shared store so the guard won't interrupt
+    try {
+      await page.evaluate(() => {
+        try {
+          if (window.battleStore && !window.battleStore.playerChoice) {
+            window.battleStore.playerChoice = "power";
+            window.battleStore.selectionMade = true;
+          }
+        } catch {}
+      });
+      console.log('Pre-seeded playerChoice="power" in window.battleStore (if available)');
+    } catch {}
+
     // Improved console logging with location (if available)
     page.on("console", (m) => {
       const loc = typeof m.location === "function" ? m.location() : null;
@@ -76,6 +89,7 @@ import { chromium } from "playwright";
           state: window.__classicBattleState || null,
           prev: window.__classicBattlePrevState || null,
           lastEvent: window.__classicBattleLastEvent || null,
+          lastInterruptReason: window.__classicBattleLastInterruptReason || null,
           log: window.__classicBattleStateLog || []
         }));
         console.log("DISABLED_STATE", JSON.stringify(state, null, 2));
@@ -103,6 +117,7 @@ import { chromium } from "playwright";
       state: window.__classicBattleState || null,
       prev: window.__classicBattlePrevState || null,
       lastEvent: window.__classicBattleLastEvent || null,
+      lastInterruptReason: window.__classicBattleLastInterruptReason || null,
       log: window.__classicBattleStateLog || [],
       roundDebug: window.__roundDebug || null,
       guardFiredAt: window.__guardFiredAt || null,
