@@ -143,6 +143,24 @@ JU-DO-KON! favors **deterministic gameplay and snappy input handling**. Use **st
 
 The game includes a **Skip** button that bypasses the current round and cooldown timers. Use it to fast-forward through matches when debugging or running rapid gameplay tests.
 
+Run all Playwright tests with:
+
+```bash
+npx playwright test
+```
+
+Screenshot suites store their baseline images in `playwright/*-snapshots/`. To skip running these comparison tests locally, set the `SKIP_SCREENSHOTS` environment variable:
+
+```bash
+SKIP_SCREENSHOTS=true npx playwright test
+```
+
+When a UI change intentionally alters a screenshot, update the stored snapshots with:
+
+```bash
+npx playwright test --update-snapshots
+```
+
 ## 🔄 Updating Judoka Card Codes
 
 Run `npm run update:codes` whenever you add or edit judoka in `src/data/judoka.json`. The script regenerates the `cardCode` for each entry and falls back to the code from judoka `id=0` if generation fails.
