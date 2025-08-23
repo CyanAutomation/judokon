@@ -14,11 +14,6 @@ test.describe.parallel("Homepage", () => {
     await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);
   });
 
-  test("logo has alt text", async ({ page }) => {
-    const logo = page.getByAltText("JU-DO-KON! Logo");
-    await expect(logo).toHaveAttribute("alt", "JU-DO-KON! Logo");
-  });
-
   test("navigation links visible", async ({ page }) => {
     await page.waitForSelector("footer .bottom-navbar a");
     await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);

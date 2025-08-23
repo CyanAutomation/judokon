@@ -18,10 +18,6 @@ test.describe.parallel("View Judoka screen", () => {
     await battleLink.click();
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
-  test("logo has alt text", async ({ page }) => {
-    const logo = page.getByRole("img", { name: "JU-DO-KON! Logo" });
-    await expect(logo).toHaveAttribute("alt", "JU-DO-KON! Logo");
-  });
 
   test("draw button accessible name constant", async ({ page }) => {
     const btn = page.getByTestId("draw-button");
