@@ -26,7 +26,7 @@ let generateRandomCardMock;
 let getRandomJudokaMock;
 let renderMock;
 
-vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => {
+vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
   let state = "roundDecision";
   const stateLog = [];
   return {
