@@ -81,6 +81,7 @@
       { "on": "outcome=winPlayer", "target": "roundOver" },
       { "on": "outcome=winOpponent", "target": "roundOver" },
       { "on": "outcome=draw", "target": "roundOver" },
+      { "on": "evaluate", "target": "roundDecision" },
       { "on": "interrupt", "target": "interruptRound" }
     ]
   },
