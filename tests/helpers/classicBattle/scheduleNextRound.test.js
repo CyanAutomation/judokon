@@ -77,11 +77,7 @@ afterEach(() => {
 });
 
 describe("classicBattle scheduleNextRound", () => {
-  it("auto-dispatches ready after cooldown", async () => {
-    document.getElementById("next-round-timer")?.remove();
-    const { nextButton } = createTimerNodes();
-    nextButton.disabled = true;
-
+  function mockBattleData() {
     fetchJsonMock.mockImplementation(async (url) => {
       if (String(url).includes("gameTimers.json")) {
         return [{ id: 1, value: 30, default: true, category: "roundTimer" }];
@@ -105,6 +101,14 @@ describe("classicBattle scheduleNextRound", () => {
       if (String(url).includes("gokyo.json")) return [];
       return [];
     });
+  }
+
+  it("auto-dispatches ready after cooldown", async () => {
+    document.getElementById("next-round-timer")?.remove();
+    const { nextButton } = createTimerNodes();
+    nextButton.disabled = true;
+
+    mockBattleData();
 
     const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
     const dispatchSpy = vi.spyOn(orchestrator, "dispatchBattleEvent");
@@ -131,5 +135,41 @@ describe("classicBattle scheduleNextRound", () => {
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
     expect(machine.getState()).toBe("waitingForPlayerAction");
+  });
+
+  it("transitions roundOver → cooldown → roundStart without duplicates", async () => {
+    document.getElementById("next-round-timer")?.remove();
+    const { nextButton } = createTimerNodes();
+    nextButton.disabled = true;
+
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    mockBattleData();
+
+    const battleMod = await import("../../../src/helpers/classicBattle.js");
+    const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    const store = battleMod.createBattleStore();
+    battleMod._resetForTest(store);
+    const startRoundWrapper = vi.fn(async () => {
+      await battleMod.startRound(store);
+    });
+    await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
+    const machine = orchestrator.getBattleStateMachine();
+
+    await battleMod.startRound(store);
+    expect(generateRandomCardMock).toHaveBeenCalledTimes(1);
+
+    machine.current = "roundOver";
+    await orchestrator.dispatchBattleEvent("continue");
+    expect(machine.getState()).toBe("cooldown");
+
+    battleMod.scheduleNextRound({ matchEnded: false });
+    document.getElementById("next-button").dispatchEvent(new MouseEvent("click"));
+    await vi.runAllTimersAsync();
+
+    expect(startRoundWrapper).toHaveBeenCalledTimes(1);
+    expect(machine.getState()).toBe("waitingForPlayerAction");
+    expect(generateRandomCardMock).toHaveBeenCalledTimes(2);
   });
 });
