@@ -23,4 +23,19 @@ describe("error handling", () => {
     expect(msg.textContent).toContain("Failed to load search data");
     consoleError.mockRestore();
   });
+
+  it("shows a fallback message when query vector construction fails", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const findMatches = vi.fn();
+    mockVectorSearch({ findMatches });
+    mockDataUtils();
+    mockConstants();
+    const { handleSearch } = await setupPage(undefined, async () => ({ data: 123 }));
+    document.getElementById("vector-search-input").value = "test";
+    await handleSearch(new Event("submit"));
+    expect(findMatches).not.toHaveBeenCalled();
+    const msg = document.getElementById("search-results-message");
+    expect(msg.textContent).toContain("An error occurred while searching.");
+    consoleError.mockRestore();
+  });
 });
