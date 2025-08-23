@@ -88,7 +88,7 @@ On load, the Settings page must pre-populate each control with values from
 - **Sound (binary):** ON/OFF (default: ON) – Enable or mute game audio.
 - **Full navigation map (binary):** ON/OFF (default: ON) – Display an overlay map linking to every page.
 - **Test mode feature flag (binary):** ON/OFF (default: OFF) – Run deterministic matches for testing.
-- **Battle debug panel feature flag (binary):** ON/OFF (default: OFF) – Show a panel with live match data for debugging.
+- **Battle debug panel feature flag (binary):** ON/OFF (default: OFF) – Show a panel above the cards with live match data and a copy button for debugging.
 - **Card inspector feature flag (binary):** ON/OFF (default: OFF) – Reveal raw card JSON in a collapsible panel.
 - **Viewport simulation feature flag (binary):** ON/OFF (default: OFF) – Choose preset sizes to simulate different devices.
 - **Tooltip overlay debug feature flag (binary):** ON/OFF (default: OFF) – Outline tooltip targets to debug placement.
@@ -160,10 +160,10 @@ On load, the Settings page must pre-populate each control with values from
 
 ### Battle Debug Panel Feature Flag
 
-- Enabling the flag shows a collapsible debug panel on battle pages.
+- Enabling the flag shows a collapsible debug panel above the player and opponent cards with a copy button on battle pages.
 - The panel displays real-time match state inside a `<pre>` element.
 - The panel is keyboard accessible and hidden by default.
-- The panel appears beside the opponent's card rather than at the page bottom.
+  - The panel appears above the player and opponent cards rather than at the page bottom.
 - The panel stays visible for the whole match once enabled.
 - Setting persists across page refreshes and sessions.
 

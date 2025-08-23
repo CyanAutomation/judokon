@@ -93,7 +93,7 @@ Design principles include:
 
 - 🏷️ **State exposure**: Internal game state is mirrored using `data-*` attributes  
   e.g., `data-stat="power"` or `data-feature="debugMode"`
-- 🧪 **Toggleable debug panels**: Visual overlays for layout validation or test coverage
+- 🧪 **Toggleable debug panels**: Visual overlays for layout validation or test coverage; the battle debug panel sits above the cards and includes a copy button for easy state sharing
 - 🔗 **Stable ID/class naming**: Predictable DOM structure for reliable querying
 - 🧩 **Modular JS & HTML**: Encourages safe extension and reuse of logic
 - 🧭 **Observable hashes & query params**: Modes like `#mobile` or `?debug=true` can activate UI states
