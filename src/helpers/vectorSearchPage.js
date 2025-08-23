@@ -127,22 +127,13 @@ function selectTopMatches(matches) {
  *
  * @pseudocode
  * 1. Prevent the default form submission behavior.
- * 2. Read and trim the query from the input element; clear previous results.
- *    - Exit early if the query is empty.
- * 3. Show the spinner (when available) and a searching message.
- * 4. Obtain the extractor and generate the query vector using mean pooling,
- *    converting the result to a plain array.
- * 5. Read selected tags from the filter dropdown and
- *    pass them to `findMatches` when fetching results.
- * 6. Split matches by `SIMILARITY_THRESHOLD` into strong and weak groups.
- *    - When multiple strong matches exist, compare the top two scores and keep
- *      only the first when the difference exceeds the drop-off threshold.
- * 7. Hide the spinner (if present) and handle empty or missing embeddings cases.
- * 8. Build a results table, highlighting query terms in each snippet.
- *    - Add a `top-match` class to the first row and color-code the Score cell.
- *    - When no strong matches exist, show a warning and display up to three weak matches.
- * 9. Attach handlers to load surrounding context on result activation.
- * 10. On error, log the issue, hide the spinner, and display a fallback message.
+ * 2. Prepare the search UI and extract the trimmed query.
+ *    - Exit early when the query is empty.
+ * 3. Show the spinner and searching message.
+ * 4. Build the query vector via `buildQueryVector` and fetch matches.
+ * 5. Finalize the UI and exit early when matches are missing or empty.
+ * 6. Render the results table through `renderSearchResults`.
+ * 7. On error, log the issue, hide the spinner, and display a fallback message.
  *
  * @param {Event} event - The submit event from the form.
  */
@@ -160,19 +151,35 @@ export async function handleSearch(event) {
     const matches = await vectorSearch.findMatches(vector, 5, selected, query);
     finalizeSearchUi(messageEl);
     if (handleNoMatches(matches, messageEl)) return;
-
-    const { strongMatches, toRender } = selectTopMatches(matches);
-    if (strongMatches.length === 0 && messageEl) {
-      messageEl.textContent =
-        "\u26A0\uFE0F No strong matches found, but here are the closest matches based on similarity.";
-      messageEl.classList.add("search-result-empty");
-    }
-    renderResults(tbody, toRender, terms, loadResultContext);
+    renderSearchResults(tbody, messageEl, matches, terms);
   } catch (err) {
     console.error("Search failed", err);
     spinner.hide();
     if (messageEl) messageEl.textContent = "An error occurred while searching.";
   }
+}
+
+/**
+ * Render search results and display a warning when only weak matches exist.
+ *
+ * @pseudocode
+ * 1. Partition matches with `selectTopMatches`.
+ * 2. When no strong matches exist, show a warning message.
+ * 3. Render the selected matches and attach context loaders.
+ *
+ * @param {HTMLElement} tbody - Table body element.
+ * @param {HTMLElement} messageEl - Message display element.
+ * @param {Array} matches - Matches returned from the search engine.
+ * @param {string[]} terms - Tokenized query terms for highlighting.
+ */
+function renderSearchResults(tbody, messageEl, matches, terms) {
+  const { strongMatches, toRender } = selectTopMatches(matches);
+  if (strongMatches.length === 0 && messageEl) {
+    messageEl.textContent =
+      "\u26A0\uFE0F No strong matches found, but here are the closest matches based on similarity.";
+    messageEl.classList.add("search-result-empty");
+  }
+  renderResults(tbody, toRender, terms, loadResultContext);
 }
 
 function showSearching(messageEl) {
