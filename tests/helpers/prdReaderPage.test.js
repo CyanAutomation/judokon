@@ -328,4 +328,36 @@ describe("prdReaderPage", () => {
     expect(container.innerHTML).toContain("B");
     expect(list.children[1].getAttribute("aria-current")).toBe("page");
   });
+
+  it("keeps rendering in sync with navigation history", async () => {
+    const docs = {
+      "b.md": "# Second",
+      "a.md": "# First"
+    };
+    const parser = (md) => `<h1>${md}</h1>`;
+
+    document.body.innerHTML = `
+      <div id="prd-title"></div>
+      <div id="task-summary"></div>
+      <ul id="prd-list"></ul>
+      <div id="prd-content" tabindex="-1"></div>
+      <button data-nav="prev">Prev</button>
+      <button data-nav="next">Next</button>
+    `;
+
+    globalThis.SKIP_PRD_AUTO_INIT = true;
+    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+    await setupPrdReaderPage(docs, parser);
+
+    const container = document.getElementById("prd-content");
+    const list = document.getElementById("prd-list");
+    document.querySelector('[data-nav="next"]').click();
+    expect(history.state.index).toBe(1);
+    expect(container.innerHTML).toContain("Second");
+    history.replaceState({ index: 0 }, "", "?doc=a");
+    window.dispatchEvent(new PopStateEvent("popstate", { state: { index: 0 } }));
+    expect(history.state.index).toBe(0);
+    expect(container.innerHTML).toContain("First");
+    expect(list.children[0].getAttribute("aria-current")).toBe("page");
+  });
 });
