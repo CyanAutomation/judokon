@@ -143,12 +143,9 @@ describe.sequential("classicBattle card selection", () => {
     expect(document.getElementById("round-message").textContent).toBe("boom");
     const retry = document.getElementById("retry-draw-button");
     expect(retry).toBeTruthy();
-    await retry.click();
-    await Promise.resolve();
-    expect(fetchJsonMock).toHaveBeenCalledTimes(3);
   });
 
-  it("retries both judoka and gokyo loads after failure", async () => {
+  it("clicking Retry re-fetches data in order", async () => {
     const calls = [];
     fetchJsonMock.mockImplementation(async (p) => {
       calls.push(p);
