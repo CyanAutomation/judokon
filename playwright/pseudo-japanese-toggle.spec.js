@@ -31,23 +31,24 @@ test.describe.parallel("Pseudo-Japanese toggle", () => {
     await page.waitForSelector("#quote .quote-content");
   });
 
-  test("page basics", async ({ page }) => {
-    await verifyPageBasics(page, []); // Meditation screen has no nav links
-  });
-
   test("toggle updates quote text", async ({ page }) => {
+    await verifyPageBasics(page, []); // Meditation screen has no nav links
+
     const quote = page.locator("#quote");
     const toggle = page.getByTestId("language-toggle");
 
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
     const originalHTML = await quote.innerHTML();
 
     await toggle.click();
     await expect(quote).toHaveClass(/jp-font/);
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
     const toggledHTML = await quote.innerHTML();
     expect(toggledHTML).not.toBe(originalHTML);
 
     await toggle.click();
     await expect(quote).not.toHaveClass(/jp-font/);
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
     const revertedHTML = await quote.innerHTML();
     expect(revertedHTML).toBe(originalHTML);
   });

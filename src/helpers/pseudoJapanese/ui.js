@@ -40,13 +40,15 @@ export async function convertElementToPseudoJapanese(element) {
  * Create a button that toggles an element's text between English and pseudo-Japanese.
  *
  * @pseudocode
- * 1. Find the existing button with id `language-toggle`.
+ * 1. Find the existing button with id `language-toggle` and initialize
+ *    its `aria-pressed` attribute to `false`.
  * 2. Attach a click handler that adds a `fading` class to the element
  *    to fade it out, then:
  *    - On the first click, cache the element's HTML and convert all
  *      text nodes using `convertElementToPseudoJapanese`.
  *    - Swap between the cached original HTML and the generated
  *      pseudo-Japanese HTML while toggling a Japanese font class.
+ *    - Update `aria-pressed` to reflect the current language state.
  *    - Remove the `fading` class so the element fades back in.
  *    - If an error occurs, log it and remove the `fading` class to
  *      reset the UI.
@@ -62,6 +64,8 @@ export function setupLanguageToggle(element) {
   }
 
   element.classList.add("fade-transition");
+
+  button.setAttribute("aria-pressed", "false");
 
   let originalHTML = "";
   let pseudoHTML = "";
@@ -87,6 +91,7 @@ export function setupLanguageToggle(element) {
         element.classList.toggle("jp-font", !showingPseudo);
         element.classList.remove("fading");
         showingPseudo = !showingPseudo;
+        button.setAttribute("aria-pressed", String(showingPseudo));
       } catch (error) {
         console.error(error);
         element.classList.remove("fading");
