@@ -1,6 +1,6 @@
 import { seededRandom } from "../testModeUtils.js";
 import { STATS } from "../battleEngineFacade.js";
-import { dispatchBattleEvent } from "./orchestrator.js";
+import { dispatchBattleEvent } from "./eventDispatcher.js";
 // Avoid writing to the header message area during auto-select; tests expect
 // the outcome message to occupy that region immediately after selection.
 // Intentionally avoid showing a snackbar here to prevent racing with
