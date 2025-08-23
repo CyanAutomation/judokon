@@ -25,7 +25,9 @@ describe("classicBattlePage feature flag updates", () => {
     const btn = document.createElement("button");
     btn.dataset.stat = "power";
     stats.appendChild(btn);
-    document.body.append(battleArea, stats, opponent);
+    const container = document.createElement("div");
+    container.append(battleArea, stats, opponent);
+    document.body.append(container);
 
     const currentFlags = {
       viewportSimulation: { enabled: false },
@@ -77,12 +79,61 @@ describe("classicBattlePage feature flag updates", () => {
     const panel = document.getElementById("debug-panel");
     expect(panel).toBeTruthy();
     expect(panel.classList.contains("hidden")).toBe(false);
-    expect(panel.parentElement).toBe(document.body);
+    expect(panel.parentElement).toBe(battleArea.parentElement);
     expect(panel.nextElementSibling).toBe(battleArea);
 
     // Disable battleDebugPanel
     currentFlags.battleDebugPanel.enabled = false;
     featureFlagsEmitter.dispatchEvent(new CustomEvent("change"));
     expect(document.getElementById("debug-panel")).toBeFalsy();
+  });
+
+  it("copies debug output text to the clipboard", async () => {
+    const battleArea = document.createElement("div");
+    battleArea.id = "battle-area";
+    const container = document.createElement("div");
+    container.append(battleArea);
+    document.body.append(container);
+
+    const currentFlags = {
+      viewportSimulation: { enabled: false },
+      battleDebugPanel: { enabled: false },
+      enableCardInspector: { enabled: false },
+      enableTestMode: { enabled: false }
+    };
+
+    const featureFlagsEmitter = new EventTarget();
+    vi.doMock("../../src/helpers/featureFlags.js", () => ({
+      featureFlagsEmitter,
+      isEnabled: (flag) => currentFlags[flag]?.enabled ?? false,
+      initFeatureFlags: vi.fn().mockResolvedValue({ featureFlags: currentFlags })
+    }));
+    vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
+      createBattleStore: () => ({}),
+      startRound: vi.fn(),
+      resetGame: vi.fn(),
+      _resetForTest: vi.fn()
+    }));
+
+    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
+    await setupClassicBattlePage();
+
+    currentFlags.battleDebugPanel.enabled = true;
+    featureFlagsEmitter.dispatchEvent(new CustomEvent("change"));
+
+    const panel = document.getElementById("debug-panel");
+    const pre = document.getElementById("debug-output");
+    pre.textContent = "battle info";
+    const writeText = vi.fn();
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true
+    });
+
+    const copyBtn = document.getElementById("debug-copy");
+    copyBtn.dispatchEvent(new Event("click", { bubbles: true }));
+
+    expect(writeText).toHaveBeenCalledWith("battle info");
+    expect(copyBtn.closest("#debug-panel")).toBe(panel);
   });
 });
