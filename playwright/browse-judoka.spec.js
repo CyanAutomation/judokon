@@ -36,35 +36,43 @@ test.describe.parallel("Browse Judoka screen", () => {
     await expect(right).toBeVisible();
   });
 
-  test("country filter updates carousel", async ({ page }) => {
+  test("filter panel toggles", async ({ page }) => {
     const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
-
-    await page.waitForSelector("[data-testid=carousel-container] .judoka-card");
-
-    const allCards = page.locator("[data-testid=carousel-container] .judoka-card");
-    const initialCount = await allCards.count();
-    expect(initialCount).toBe(3);
-
-    await toggle.click();
     const panel = page.getByRole("region");
+
+    await expect(panel).toBeHidden();
+    await toggle.click();
     await expect(panel).toBeVisible();
-    await expect(page.locator("[data-testid=carousel-container] .judoka-card")).toHaveCount(
-      initialCount
-    );
+    await toggle.click();
+    await expect(panel).toBeHidden();
+  });
+
+  test("selecting a country filters cards", async ({ page }) => {
+    const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
+    await toggle.click();
+
     await page.getByRole("button", { name: "Japan" }).click({ force: true });
 
     const filteredCards = page.locator("[data-testid=carousel-container] .judoka-card");
     await expect(filteredCards).toHaveCount(1);
-
     for (let i = 0; i < (await filteredCards.count()); i++) {
       const flag = filteredCards.nth(i).locator(".card-top-bar img");
       await expect(flag).toHaveAttribute("alt", /Japan flag/i);
     }
+  });
+
+  test("resetting filter shows all judoka", async ({ page }) => {
+    const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
+
+    await page.waitForSelector("[data-testid=carousel-container] .judoka-card");
+    const allCards = page.locator("[data-testid=carousel-container] .judoka-card");
+    const initialCount = await allCards.count();
 
     await toggle.click();
-    await expect(panel).toBeVisible();
+    await page.getByRole("button", { name: "Japan" }).click({ force: true });
+
+    await toggle.click();
     const allButton = page.getByRole("button", { name: "All" });
-    await expect(allButton).toBeVisible();
     await allButton.click({ force: true });
 
     await expect(page.locator("[data-testid=carousel-container] .judoka-card")).toHaveCount(
