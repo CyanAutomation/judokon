@@ -129,9 +129,9 @@ function ensureTooltipElement() {
  * 2. Read the current settings and exit early if tooltips are disabled.
  * 3. Load tooltip data with `loadTooltips()`.
  * 4. Select all elements matching `[data-tooltip-id]` within `root`.
- * 5. For each element, attach hover and focus listeners.
+ * 5. For each element, attach hover (mouseenter/mouseover) and focus listeners.
  *    - `show` looks up the tooltip text, sanitizes it with DOMPurify, and positions the element.
- *    - `hide` hides the tooltip element.
+ *    - `hide` hides the tooltip element (mouseleave/mouseout and blur).
  * 6. When an ID is missing, log a warning only once and show the fallback text "More info coming…".
  * 7. Return a cleanup function that removes the hover and focus listeners.
  *
@@ -199,16 +199,20 @@ export async function initTooltips(root = globalThis.document) {
 
   elements.forEach((el) => {
     el.addEventListener("mouseenter", show);
+    el.addEventListener("mouseover", show);
     el.addEventListener("focus", show);
     el.addEventListener("mouseleave", hide);
+    el.addEventListener("mouseout", hide);
     el.addEventListener("blur", hide);
   });
 
   return () => {
     elements.forEach((el) => {
       el.removeEventListener("mouseenter", show);
+      el.removeEventListener("mouseover", show);
       el.removeEventListener("focus", show);
       el.removeEventListener("mouseleave", hide);
+      el.removeEventListener("mouseout", hide);
       el.removeEventListener("blur", hide);
     });
   };
