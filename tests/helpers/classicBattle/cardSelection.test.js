@@ -1,39 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createBattleHeader, createBattleCardContainers, resetDom } from "../../utils/testUtils.js";
-import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
+import { applyMockSetup, mocks } from "./mockSetup.js";
 vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
 
+let fetchJsonMock;
 let generateRandomCardMock;
-
-vi.mock("../../../src/helpers/randomCard.js", () => ({
-  generateRandomCard: (...args) => generateRandomCardMock(...args)
-}));
-
 let getRandomJudokaMock;
 let renderMock;
-let JudokaCardMock;
-
-vi.mock("../../../src/helpers/cardUtils.js", () => ({
-  getRandomJudoka: (...args) => getRandomJudokaMock(...args)
-}));
-vi.mock("../../../src/components/JudokaCard.js", () => {
-  renderMock = vi.fn();
-  JudokaCardMock = vi.fn().mockImplementation(() => ({ render: renderMock }));
-  return { JudokaCard: JudokaCardMock };
-});
-
-let fetchJsonMock;
-vi.mock("../../../src/helpers/dataUtils.js", () => ({
-  fetchJson: (...args) => fetchJsonMock(...args),
-  importJsonModule: vi.fn().mockResolvedValue(defaultSettings),
-  validateWithSchema: vi.fn().mockResolvedValue(undefined)
-}));
-
-vi.mock("../../../src/helpers/utils.js", () => ({
-  createGokyoLookup: () => ({})
-}));
 
 describe.sequential("classicBattle card selection", () => {
   let timerSpy;
@@ -50,6 +25,12 @@ describe.sequential("classicBattle card selection", () => {
     });
     getRandomJudokaMock = vi.fn(() => ({ id: 2 }));
     renderMock = vi.fn(async () => document.createElement("div"));
+    applyMockSetup({
+      fetchJsonMock,
+      generateRandomCardMock,
+      getRandomJudokaMock,
+      renderMock
+    });
   });
 
   afterEach(() => {
@@ -74,14 +55,19 @@ describe.sequential("classicBattle card selection", () => {
       callCount += 1;
       return callCount === 1 ? { id: 1 } : { id: 2 };
     });
-    const battleMod = await import("../../../src/helpers/classicBattle.js");
-    // Ensure the mocked JudokaCard.render returns an element after module mocks initialize
     renderMock = vi.fn(async () => document.createElement("div"));
+    applyMockSetup({
+      fetchJsonMock,
+      generateRandomCardMock,
+      getRandomJudokaMock,
+      renderMock
+    });
+    const battleMod = await import("../../../src/helpers/classicBattle.js");
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await battleMod.startRound(store);
     const { getOpponentJudoka } = battleMod;
-    expect(JudokaCardMock).toHaveBeenCalledWith(
+    expect(mocks.JudokaCardMock).toHaveBeenCalledWith(
       expect.objectContaining({ id: 1 }),
       expect.anything(),
       { useObscuredStats: true, enableInspector: false }
@@ -105,8 +91,13 @@ describe.sequential("classicBattle card selection", () => {
       if (cb) cb(d[0]);
     });
     getRandomJudokaMock = vi.fn(() => ({ id: 2 }));
+    applyMockSetup({
+      fetchJsonMock,
+      generateRandomCardMock,
+      getRandomJudokaMock,
+      renderMock
+    });
     const battleMod = await import("../../../src/helpers/classicBattle.js");
-    renderMock = vi.fn(async () => document.createElement("div"));
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await battleMod.startRound(store);

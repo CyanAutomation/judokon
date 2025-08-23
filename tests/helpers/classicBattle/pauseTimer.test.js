@@ -1,39 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { createRoundMessage } from "./domUtils.js";
-import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
+import { applyMockSetup } from "./mockSetup.js";
 
 vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
 
+let fetchJsonMock;
 let generateRandomCardMock;
-vi.mock("../../../src/helpers/randomCard.js", () => ({
-  generateRandomCard: (...args) => generateRandomCardMock(...args)
-}));
-
 let getRandomJudokaMock;
 let renderMock;
-let JudokaCardMock;
-vi.mock("../../../src/helpers/cardUtils.js", () => ({
-  getRandomJudoka: (...args) => getRandomJudokaMock(...args)
-}));
-vi.mock("../../../src/components/JudokaCard.js", () => {
-  renderMock = vi.fn();
-  JudokaCardMock = vi.fn().mockImplementation(() => ({ render: renderMock }));
-  return { JudokaCard: JudokaCardMock };
-});
-
-let fetchJsonMock;
-vi.mock("../../../src/helpers/dataUtils.js", () => ({
-  fetchJson: (...args) => fetchJsonMock(...args),
-  importJsonModule: vi.fn().mockResolvedValue(defaultSettings),
-  validateWithSchema: vi.fn().mockResolvedValue(undefined)
-}));
-
-vi.mock("../../../src/helpers/utils.js", () => ({
-  createGokyoLookup: () => ({})
-}));
 
 describe("classicBattle timer pause", () => {
   let timer;
@@ -73,6 +50,12 @@ describe("classicBattle timer pause", () => {
       const el = document.createElement("div");
       el.innerHTML = `<ul><li class=\"stat\"><strong>Power</strong> <span>3</span></li></ul>`;
       return el;
+    });
+    applyMockSetup({
+      fetchJsonMock,
+      generateRandomCardMock,
+      getRandomJudokaMock,
+      renderMock
     });
 
     showMessage = vi.fn();
