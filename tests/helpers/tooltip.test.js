@@ -24,13 +24,13 @@ describe("initTooltips", () => {
 
     await initTooltips();
 
-    el.dispatchEvent(new Event("mouseenter"));
+    el.dispatchEvent(new Event("mouseover"));
 
     const tip = document.querySelector(".tooltip");
     expect(tip.innerHTML.replace(/\n/g, "")).toBe("<strong>Bold</strong><br><em>italic</em>");
     expect(tip.style.display).toBe("block");
 
-    el.dispatchEvent(new Event("mouseleave"));
+    el.dispatchEvent(new Event("mouseout"));
     expect(tip.style.display).toBe("none");
   });
 
@@ -49,10 +49,10 @@ describe("initTooltips", () => {
 
     const tip = document.querySelector(".tooltip");
 
-    el.dispatchEvent(new Event("mouseenter"));
+    el.dispatchEvent(new Event("mouseover"));
     expect(tip.textContent).toBe("More info coming…");
-    el.dispatchEvent(new Event("mouseleave"));
-    el.dispatchEvent(new Event("mouseenter"));
+    el.dispatchEvent(new Event("mouseout"));
+    el.dispatchEvent(new Event("mouseover"));
 
     expect(warn).toHaveBeenCalledTimes(1);
     warn.mockRestore();
@@ -73,10 +73,10 @@ describe("initTooltips", () => {
 
     const tip = document.querySelector(".tooltip");
 
-    el.dispatchEvent(new Event("mouseenter"));
+    el.dispatchEvent(new Event("mouseover"));
     expect(tip.textContent).toBe("More info coming…");
-    el.dispatchEvent(new Event("mouseleave"));
-    el.dispatchEvent(new Event("mouseenter"));
+    el.dispatchEvent(new Event("mouseout"));
+    el.dispatchEvent(new Event("mouseover"));
 
     expect(warn).toHaveBeenCalledTimes(1);
     warn.mockRestore();
@@ -98,7 +98,7 @@ describe("initTooltips", () => {
     await initTooltips();
 
     const tip = document.querySelector(".tooltip");
-    el.dispatchEvent(new Event("mouseenter"));
+    el.dispatchEvent(new Event("mouseover"));
 
     expect(tip.textContent).toBe("Theme description");
   });
@@ -120,7 +120,7 @@ describe("initTooltips", () => {
     Object.defineProperty(tip, "offsetHeight", { value: 10 });
     el.getBoundingClientRect = () => ({ bottom: 0, left: 0, width: 0, height: 0 });
 
-    el.dispatchEvent(new Event("mouseenter"));
+    el.dispatchEvent(new Event("mouseover"));
 
     expect(tip.style.top).toBe(`${window.innerHeight - 10}px`);
     expect(tip.style.left).toBe("0px");
@@ -153,9 +153,9 @@ describe("initTooltips", () => {
 
     const tip = document.querySelector(".tooltip");
     els.forEach((el, i) => {
-      el.dispatchEvent(new Event("mouseenter"));
+      el.dispatchEvent(new Event("mouseover"));
       expect(tip.textContent).toBe(text[i]);
-      el.dispatchEvent(new Event("mouseleave"));
+      el.dispatchEvent(new Event("mouseout"));
     });
   });
 
@@ -209,14 +209,14 @@ describe("initTooltips", () => {
     const cleanup = await initTooltips();
 
     const tip = document.querySelector(".tooltip");
-    el.dispatchEvent(new Event("mouseenter"));
+    el.dispatchEvent(new Event("mouseover"));
     expect(tip.style.display).toBe("block");
-    el.dispatchEvent(new Event("mouseleave"));
+    el.dispatchEvent(new Event("mouseout"));
     expect(tip.style.display).toBe("none");
 
     cleanup();
 
-    el.dispatchEvent(new Event("mouseenter"));
+    el.dispatchEvent(new Event("mouseover"));
     expect(tip.style.display).toBe("none");
   });
 });

@@ -25,14 +25,14 @@ test.describe.parallel("Tooltip behavior", () => {
     await page.waitForFunction(() => window.initDone === true);
   });
 
-  test("tooltip appears on hover and hides on mouse leave", async ({ page }) => {
+  test("tooltip appears on hover and hides on mouse out", async ({ page }) => {
     const button = page.locator("#tip-btn");
     await button.hover();
     const tooltip = page.locator(".tooltip");
     await expect(tooltip).toBeVisible();
     await expect(tooltip).toContainText("raw physical strength");
 
-    await page.dispatchEvent("#tip-btn", "mouseleave");
+    await page.dispatchEvent("#tip-btn", "mouseout");
     await expect(tooltip).toBeHidden();
   });
 });
