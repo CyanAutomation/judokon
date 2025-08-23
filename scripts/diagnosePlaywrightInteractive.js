@@ -9,7 +9,8 @@ async function run() {
   page.on("console", (m) => logs.push({ type: m.type(), text: m.text() }));
   page.on("pageerror", (e) => logs.push({ type: "pageerror", text: String(e) }));
 
-  const url = "http://localhost:3000/src/pages/battleJudoka.html";
+  // use autostart=1 to bypass the round-select modal in automated tests
+  const url = "http://localhost:3000/src/pages/battleJudoka.html?autostart=1";
   console.log("navigating to", url);
   await page.goto(url, { waitUntil: "networkidle" });
 

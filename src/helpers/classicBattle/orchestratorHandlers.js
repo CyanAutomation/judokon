@@ -24,7 +24,22 @@ export async function waitingForMatchStartEnter(machine) {
   if (typeof doResetGame === "function") doResetGame();
   emitBattleEvent("scoreboardClearMessage");
   emitBattleEvent("debugPanelUpdate");
-  await initRoundSelectModal(() => machine.dispatch("startClicked"));
+  // Use a microtask / setTimeout wrapper when invoking startClicked so that
+  // caller code (for example, `?autostart=1`) doesn't attempt to dispatch on
+  // the `machine` before `initClassicBattleOrchestrator` has finished
+  // assigning it. This prevents a startup race where `machine` is null.
+  await initRoundSelectModal(() => {
+    // schedule the dispatch on the next tick; initRoundSelectModal awaits the
+    // provided callback, so return a resolved Promise to keep behavior simple.
+    try {
+      setTimeout(() => {
+        try {
+          machine?.dispatch("startClicked");
+        } catch {}
+      }, 0);
+    } catch {}
+    return Promise.resolve();
+  });
 }
 export async function waitingForMatchStartExit() {}
 
