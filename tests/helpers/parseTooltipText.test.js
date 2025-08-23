@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
 import { parseTooltipText } from "../../src/helpers/tooltip.js";
+import { marked } from "../../src/vendor/marked.esm.js";
 
 describe("parseTooltipText", () => {
   it("parses bold, italic and newlines", () => {
@@ -35,5 +36,15 @@ describe("parseTooltipText", () => {
     const { html, warning } = parseTooltipText("**bold _italic**");
     expect(html).toBe("<strong>bold _italic</strong>");
     expect(warning).toBe(true);
+  });
+
+  it("falls back to marked.parse when parseInline is missing", () => {
+    const orig = marked.parseInline;
+    // @ts-expect-error testing fallback when parseInline is absent
+    delete marked.parseInline;
+    const { html, warning } = parseTooltipText("**Bold**\ntext");
+    expect(html).toBe("<strong>Bold</strong><br>text");
+    expect(warning).toBe(false);
+    marked.parseInline = orig;
   });
 });

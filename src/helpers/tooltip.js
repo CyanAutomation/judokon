@@ -82,7 +82,8 @@ export function getTooltips() {
  * @pseudocode
  * 1. Escape HTML in `text` using `escapeHTML`.
  * 2. Count occurrences of `**` and `_` to detect unbalanced markers.
- * 3. Parse the markdown with `marked.parseInline`.
+ * 3. Parse the markdown with `marked.parseInline` when available; otherwise
+ *    fall back to `marked.parse` and strip wrapping `<p>` tags.
  * 4. Replace newline characters with `<br>`.
  * 5. Return an object with `html` and a `warning` flag when markers are unbalanced.
  *
@@ -95,7 +96,17 @@ export function parseTooltipText(text) {
   const italicPairMatches = safe.match(/_(.*?)_/g) || [];
   const totalUnderscores = (safe.match(/_/g) || []).length;
   const warning = boldCount % 2 !== 0 || totalUnderscores !== italicPairMatches.length * 2;
-  const html = marked.parseInline(safe).replace(/\n/g, "<br>");
+  let parsed = "";
+  try {
+    if (typeof marked.parseInline === "function") {
+      parsed = marked.parseInline(safe);
+    } else {
+      parsed = marked.parse(safe).replace(/^<p>|<\/p>$/g, "");
+    }
+  } catch {
+    parsed = safe;
+  }
+  const html = parsed.replace(/\n/g, "<br>");
   return { html, warning };
 }
 
