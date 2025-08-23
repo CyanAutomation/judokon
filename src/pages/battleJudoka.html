@@ -54,6 +54,10 @@
       </div>
 
       <main class="container" role="main">
+        <details id="debug-panel" class="debug-panel hidden" aria-label="Battle Debug Panel">
+          <summary>Battle Debug</summary>
+          <pre id="debug-output" role="status" aria-live="polite"></pre>
+        </details>
         <section id="battle-area">
           <div id="player-card" class="card-slot player-slot"></div>
           <div id="controls">
@@ -123,10 +127,6 @@
                 Quit Match
               </button>
             </div>
-            <details id="debug-panel" class="debug-panel hidden" aria-label="Battle Debug Panel">
-              <summary>Battle Debug</summary>
-              <pre id="debug-output" role="status" aria-live="polite"></pre>
-            </details>
           </div>
           <div
             id="opponent-card"

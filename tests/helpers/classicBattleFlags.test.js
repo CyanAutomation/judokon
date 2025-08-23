@@ -77,7 +77,8 @@ describe("classicBattlePage feature flag updates", () => {
     const panel = document.getElementById("debug-panel");
     expect(panel).toBeTruthy();
     expect(panel.classList.contains("hidden")).toBe(false);
-    expect(panel.parentElement).toBe(opponent);
+    expect(panel.parentElement).toBe(document.body);
+    expect(panel.nextElementSibling).toBe(battleArea);
 
     // Disable battleDebugPanel
     currentFlags.battleDebugPanel.enabled = false;
