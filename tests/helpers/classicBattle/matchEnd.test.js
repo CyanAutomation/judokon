@@ -90,6 +90,29 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+async function playRound(battleMod, store, playerValue, opponentValue) {
+  document.getElementById("player-card").innerHTML =
+    `<ul><li class="stat"><strong>Power</strong> <span>${playerValue}</span></li></ul>`;
+  document.getElementById("opponent-card").innerHTML =
+    `<ul><li class="stat"><strong>Power</strong> <span>${opponentValue}</span></li></ul>`;
+  store.selectionMade = false;
+  const p = battleMod.handleStatSelection(store, "power");
+  await vi.runAllTimersAsync();
+  await p;
+}
+
+async function playerWinsRounds(battleMod, store, count) {
+  for (let i = 0; i < count; i++) {
+    await playRound(battleMod, store, 5, 3);
+  }
+}
+
+async function opponentWinsRounds(battleMod, store, count) {
+  for (let i = 0; i < count; i++) {
+    await playRound(battleMod, store, 3, 5);
+  }
+}
+
 describe("classicBattle match end", () => {
   it("quits match after confirmation", async () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
@@ -118,75 +141,33 @@ describe("classicBattle match end", () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
-    const selectStat = async () => {
-      store.selectionMade = false;
-      const p = battleMod.handleStatSelection(store, "power");
-      await vi.runAllTimersAsync();
-      await p;
-    };
-    for (let i = 0; i < CLASSIC_BATTLE_POINTS_TO_WIN; i++) {
-      document.getElementById("player-card").innerHTML =
-        `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-      document.getElementById("opponent-card").innerHTML =
-        `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-      await selectStat();
-    }
+    await playerWinsRounds(battleMod, store, CLASSIC_BATTLE_POINTS_TO_WIN);
     expect(document.querySelector("header #score-display").textContent).toBe(
       `You: ${CLASSIC_BATTLE_POINTS_TO_WIN}\nOpponent: 0`
     );
     expect(document.querySelector("header #round-message").textContent).toMatch(/win the match/i);
-
-    document.getElementById("player-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-    document.getElementById("opponent-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    {
-      const p = battleMod.handleStatSelection(store, "power");
-      await vi.runAllTimersAsync();
-      await p;
-    }
-
-    expect(document.querySelector("header #score-display").textContent).toBe(
-      `You: ${CLASSIC_BATTLE_POINTS_TO_WIN}\nOpponent: 0`
-    );
   });
 
   it("ends the match when opponent reaches required wins", async () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
-    const selectStat = async () => {
-      store.selectionMade = false;
-      const p = battleMod.handleStatSelection(store, "power");
-      await vi.runAllTimersAsync();
-      await p;
-    };
-    for (let i = 0; i < CLASSIC_BATTLE_POINTS_TO_WIN; i++) {
-      document.getElementById("player-card").innerHTML =
-        `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-      document.getElementById("opponent-card").innerHTML =
-        `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-      await selectStat();
-    }
+    await opponentWinsRounds(battleMod, store, CLASSIC_BATTLE_POINTS_TO_WIN);
     expect(document.querySelector("header #score-display").textContent).toBe(
       `You: 0\nOpponent: ${CLASSIC_BATTLE_POINTS_TO_WIN}`
     );
     expect(document.querySelector("header #round-message").textContent).toMatch(
       /opponent wins the match/i
     );
+  });
 
-    document.getElementById("player-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    document.getElementById("opponent-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-    {
-      const p = battleMod.handleStatSelection(store, "power");
-      await vi.runAllTimersAsync();
-      await p;
-    }
-
-    expect(document.querySelector("header #score-display").textContent).toBe(
-      `You: 0\nOpponent: ${CLASSIC_BATTLE_POINTS_TO_WIN}`
-    );
+  it("additional stat selections after match end do not change the score", async () => {
+    const battleMod = await import("../../../src/helpers/classicBattle.js");
+    const store = battleMod.createBattleStore();
+    battleMod._resetForTest(store);
+    await playerWinsRounds(battleMod, store, CLASSIC_BATTLE_POINTS_TO_WIN);
+    const scoreBefore = document.querySelector("header #score-display").textContent;
+    await playRound(battleMod, store, 5, 3);
+    expect(document.querySelector("header #score-display").textContent).toBe(scoreBefore);
   });
 });
