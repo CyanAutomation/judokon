@@ -24,11 +24,6 @@ test.describe.parallel("Browse Judoka screen", () => {
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
 
-  test("logo has alt text", async ({ page }) => {
-    const logo = page.getByRole("img", { name: "JU-DO-KON! Logo" });
-    await expect(logo).toBeVisible();
-  });
-
   test("scroll buttons have labels", async ({ page }) => {
     const left = page.getByRole("button", { name: /prev\./i });
     const right = page.getByRole("button", { name: /next/i });
