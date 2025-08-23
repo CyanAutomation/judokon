@@ -27,9 +27,58 @@ import { chromium } from "playwright";
     );
     console.log("STAT BUTTONS", JSON.stringify(names));
 
-    // Click the power button
-    await page.click('#stat-buttons button[data-stat="power"]');
-    console.log("CLICKED POWER");
+    // Improved console logging with location (if available)
+    page.on("console", (m) => {
+      const loc = typeof m.location === "function" ? m.location() : null;
+      console.log(
+        "PAGE LOG>",
+        m.type(),
+        m.text(),
+        loc ? `${loc.url}:${loc.lineNumber}:${loc.columnNumber}` : ""
+      );
+    });
+
+    // Click the power button, but only after it's enabled. If it stays disabled, capture state and screenshot.
+    const powerSelector = '#stat-buttons button[data-stat="power"]';
+    const isDisabled = await page.$eval(powerSelector, (b) => b.disabled).catch(() => true);
+    if (isDisabled) {
+      console.log("Power button is disabled — waiting up to 5s for it to become enabled");
+      try {
+        await page.waitForFunction(
+          (sel) => {
+            const el = document.querySelector(sel);
+            return el && !el.disabled;
+          },
+          { timeout: 5000 },
+          powerSelector
+        );
+      } catch {
+        console.log(
+          "Power button still disabled after timeout — collecting debug state and screenshot"
+        );
+        const state = await page.evaluate(() => ({
+          state: window.__classicBattleState || null,
+          prev: window.__classicBattlePrevState || null,
+          lastEvent: window.__classicBattleLastEvent || null,
+          log: window.__classicBattleStateLog || []
+        }));
+        console.log("DISABLED_STATE", JSON.stringify(state, null, 2));
+        await page
+          .screenshot({
+            path: "/workspaces/judokon/playwright-battleProgression-disabled.png",
+            fullPage: true
+          })
+          .catch(() => {});
+      }
+    }
+
+    // Attempt click if enabled now
+    try {
+      await page.click(powerSelector);
+      console.log("CLICKED POWER");
+    } catch (err) {
+      console.error("CLICK FAILED", String(err));
+    }
 
     // Wait for orchestrator guard / resolution to run
     await page.waitForTimeout(1600);
