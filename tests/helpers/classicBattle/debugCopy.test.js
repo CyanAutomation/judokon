@@ -5,7 +5,7 @@ describe("debug copy button", () => {
   let writeText;
 
   beforeEach(() => {
-    document.body.innerHTML = '<div id="battle-area"></div>';
+    document.body.innerHTML = '<div id="wrapper"><div id="battle-area"></div></div>';
     writeText = vi.fn();
     Object.defineProperty(navigator, "clipboard", {
       value: { writeText },
@@ -15,6 +15,8 @@ describe("debug copy button", () => {
 
   it("copies debug output text to clipboard", () => {
     setDebugPanelEnabled(true);
+    const panel = document.getElementById("debug-panel");
+    expect(panel.parentElement).toBe(document.getElementById("wrapper"));
     const pre = document.getElementById("debug-output");
     pre.textContent = "debug info";
     const btn = document.getElementById("debug-copy");
