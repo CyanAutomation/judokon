@@ -39,6 +39,12 @@
   padding: 0.25rem 0;
 }
 
+.debug-panel summary #debug-copy {
+  margin-left: auto;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.25rem;
+}
+
 /* Hide native marker and add a rotating chevron */
 .debug-panel summary::-webkit-details-marker {
   display: none;
