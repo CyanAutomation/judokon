@@ -22,7 +22,7 @@
   text-align: left;
   width: 100%;
   max-height: 30vh;
-  margin: 0 0 1rem;
+  margin: var(--space-md) 0 var(--space-md);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 }
 
