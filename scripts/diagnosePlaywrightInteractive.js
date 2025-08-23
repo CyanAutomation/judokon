@@ -26,7 +26,7 @@ async function run() {
         if (disabled !== null) continue;
         await b.click({ timeout: 2000 });
         return true;
-      } catch (err) {
+      } catch {
         // ignore and try next
       }
     }
@@ -89,7 +89,10 @@ async function run() {
 
   console.log("final state:", { roundCounter, roundMessage, scoreboard, progress });
 
-  await page.screenshot({ path: "playwright-diagnose-battleJudoka-interactive.png", fullPage: true });
+  await page.screenshot({
+    path: "playwright-diagnose-battleJudoka-interactive.png",
+    fullPage: true
+  });
   await browser.close();
 
   // write logs and summary to console

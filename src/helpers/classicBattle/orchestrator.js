@@ -197,14 +197,12 @@ export async function dispatchBattleEvent(eventName, payload) {
   if (!machine) return;
   try {
     return await machine.dispatch(eventName, payload);
-  } catch (err) {
+  } catch {
     // swallow to avoid cascading startup failures; higher-level code
     // can still observe via emitted events or thrown errors if needed.
     try {
       // emit a debug event so UI debug panels can show the failure
-      emitBattleEvent('debugPanelUpdate');
+      emitBattleEvent("debugPanelUpdate");
     } catch {}
   }
 }
-
-
