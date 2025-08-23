@@ -55,8 +55,8 @@ afterEach(() => {
 describe("classicBattle auto select", () => {
   it("auto-selects a stat when timer expires", async () => {
     let dispatchSpy;
-    vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", async () => {
-      const actual = await vi.importActual("../../../src/helpers/classicBattle/orchestrator.js");
+    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", async () => {
+      const actual = await vi.importActual("../../../src/helpers/classicBattle/eventDispatcher.js");
       dispatchSpy = vi.fn(actual.dispatchBattleEvent);
       return { ...actual, dispatchBattleEvent: dispatchSpy };
     });
