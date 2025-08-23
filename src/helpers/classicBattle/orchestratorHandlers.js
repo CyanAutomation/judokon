@@ -56,11 +56,37 @@ export async function cooldownEnter(machine, payload) {
       if (typeof val === "number") duration = val;
     } catch {}
     const onFinished = () => {
-      offBattleEvent("countdownFinished", onFinished);
-      machine.dispatch("ready");
+      try {
+        offBattleEvent("countdownFinished", onFinished);
+      } catch {}
+      try {
+        if (fallbackTimer) clearTimeout(fallbackTimer);
+      } catch {}
+      try {
+        machine.dispatch("ready");
+      } catch {}
     };
     onBattleEvent("countdownFinished", onFinished);
+
+    // Emit countdown start for UI timers
     emitBattleEvent("countdownStart", { duration });
+
+    // Fallback: if no countdownFinished event arrives (headless/test environments),
+    // advance after duration+1 seconds to avoid stalling the state machine.
+    let fallbackTimer = null;
+    try {
+      fallbackTimer = setTimeout(
+        () => {
+          try {
+            offBattleEvent("countdownFinished", onFinished);
+          } catch {}
+          try {
+            machine.dispatch("ready");
+          } catch {}
+        },
+        (duration + 1) * 1000 + 200
+      );
+    } catch {}
   }
 }
 export async function cooldownExit() {}
