@@ -1,5 +1,6 @@
 export * from "./classicBattle/roundManager.js";
 export * from "./classicBattle/selectionHandler.js";
+export * from "./classicBattle/roundResolver.js";
 export * from "./classicBattle/quitModal.js";
 export {
   renderOpponentCard,

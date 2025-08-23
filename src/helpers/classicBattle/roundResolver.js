@@ -1,5 +1,5 @@
 import { evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
-import { dispatchBattleEvent } from "./orchestrator.js";
+import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { emitBattleEvent } from "./battleEvents.js";
 
 /**

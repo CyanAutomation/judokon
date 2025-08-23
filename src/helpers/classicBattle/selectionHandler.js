@@ -4,7 +4,7 @@ import { getStatValue } from "../battle/index.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { isStateTransition } from "./orchestratorHandlers.js";
-import { dispatchBattleEvent } from "./orchestrator.js";
+import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { resolveRound } from "./roundResolver.js";
 
 /**

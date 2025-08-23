@@ -16,6 +16,7 @@ import {
 } from "./orchestratorHandlers.js";
 import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
 import { emitBattleEvent } from "./battleEvents.js";
+import { setMachine } from "./eventDispatcher.js";
 
 let machine = null;
 
@@ -106,6 +107,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   };
 
   machine = await BattleStateMachine.create(onEnter, context, onTransition);
+  setMachine(machine);
 
   // Expose a safe getter for the running machine to avoid import cycles
   // in hot-path modules (e.g., selection handling).
@@ -182,7 +184,4 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   return machine;
 }
 
-export async function dispatchBattleEvent(eventName, payload) {
-  if (!machine) return;
-  await machine.dispatch(eventName, payload);
-}
+
