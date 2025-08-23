@@ -55,8 +55,13 @@ test.describe.parallel("Homepage layout", () => {
   test.describe.parallel("mobile", () => {
     test.use({ viewport: { width: 500, height: 800 } });
 
-    test("grid has one column", async ({ page }) => {
+    test.beforeEach(async ({ page }) => {
       await page.goto("/index.html");
+      await page.waitForSelector(".game-mode-grid");
+      await page.waitForSelector("footer .bottom-navbar a");
+    });
+
+    test("grid has one column", async ({ page }) => {
       const columnCount = await page.evaluate(() => {
         const style = getComputedStyle(document.querySelector(".game-mode-grid"));
         return style.gridTemplateColumns.split(/\s+/).filter(Boolean).length;
@@ -65,9 +70,6 @@ test.describe.parallel("Homepage layout", () => {
     });
 
     test("grid does not overlap footer", async ({ page }, testInfo) => {
-      await page.goto("/index.html");
-      await page.waitForSelector("footer .bottom-navbar a");
-
       const grid = page.locator(".game-mode-grid");
       const gridBox = await grid.boundingBox();
       const navBox = await page.locator(".bottom-navbar").boundingBox();

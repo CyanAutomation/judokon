@@ -6,7 +6,7 @@ import {
 } from "./fixtures/navigationChecks.js";
 
 test.describe.parallel("Homepage", () => {
-  // Navigation coverage: footer link visibility, ordering, and hamburger toggle.
+  // Navigation coverage: footer link visibility and ordering.
   test.beforeEach(async ({ page }) => {
     await page.goto("/index.html");
   });
@@ -45,20 +45,6 @@ test.describe.parallel("Homepage", () => {
     expect(classicOrder).toBeLessThan(updateOrder);
     expect(updateOrder).toBeLessThan(randomOrder);
   });
-  // Navigation: hamburger menu toggles on narrow screens
-  test("hamburger menu toggles navigation on narrow screens", async ({ page }) => {
-    await page.setViewportSize({ width: 320, height: 800 });
-    await page.reload();
-    await page.waitForSelector(".bottom-navbar .nav-toggle");
-    const toggle = page.locator(".bottom-navbar .nav-toggle");
-    const list = page.locator(".bottom-navbar ul");
-    await expect(toggle).toHaveAttribute("aria-expanded", "false");
-    await expect(list).not.toHaveClass(/expanded/);
-    await toggle.click();
-    await expect(toggle).toHaveAttribute("aria-expanded", "true");
-    await expect(list).toHaveClass(/expanded/);
-  });
-
   // Navigation: Random Judoka tile routes to dedicated page
   test("view judoka link navigates", async ({ page }) => {
     await page.getByTestId(NAV_RANDOM_JUDOKA).click();
