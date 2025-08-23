@@ -1,6 +1,6 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const JUDOKA = {
   id: 1,
@@ -18,11 +18,16 @@ const JUDOKA = {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const helperPath = path.resolve(__dirname, "../tests/helpers/mountInspectorPanel.js");
+const helperUrl = pathToFileURL(helperPath).href;
+const pageUrl = pathToFileURL(path.resolve(__dirname, "../index.html")).href;
 
 test.describe.parallel("Card inspector accessibility", () => {
   test("summary keyboard support and ARIA state", async ({ page }) => {
-    await page.setContent("<html><body></body></html>");
-    await page.addScriptTag({ path: helperPath, type: "module" });
+    await page.setContent("<html><body></body></html>", { url: pageUrl });
+    await page.evaluate(async (url) => {
+      const { mountInspectorPanel } = await import(url);
+      window.mountInspectorPanel = mountInspectorPanel;
+    }, helperUrl);
     await page.evaluate((judoka) => {
       window.mountInspectorPanel(judoka);
     }, JUDOKA);
@@ -43,8 +48,11 @@ test.describe.parallel("Card inspector accessibility", () => {
   });
 
   test("announces invalid card data on JSON failure", async ({ page }) => {
-    await page.setContent("<html><body></body></html>");
-    await page.addScriptTag({ path: helperPath, type: "module" });
+    await page.setContent("<html><body></body></html>", { url: pageUrl });
+    await page.evaluate(async (url) => {
+      const { mountInspectorPanel } = await import(url);
+      window.mountInspectorPanel = mountInspectorPanel;
+    }, helperUrl);
     await page.evaluate(() => {
       const badJudoka = {
         id: 2,
