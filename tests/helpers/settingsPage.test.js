@@ -73,7 +73,7 @@ beforeEach(() => {
   }));
 });
 
-describe("loadSettingsData", () => {
+describe("fetchSettingsData", () => {
   it("rejects on fetch failure", async () => {
     vi.resetModules();
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
@@ -87,8 +87,8 @@ describe("loadSettingsData", () => {
       initFeatureFlags: vi.fn().mockRejectedValue(new Error("fail")),
       isEnabled: vi.fn()
     }));
-    const { loadSettingsData } = await import("../../src/helpers/settingsPage.js");
-    await expect(loadSettingsData()).rejects.toThrow("fail");
+    const { fetchSettingsData } = await import("../../src/helpers/settingsPage.js");
+    await expect(fetchSettingsData()).rejects.toThrow("Failed to fetch settings data");
   });
 });
 
@@ -313,5 +313,32 @@ describe("initializeSettingsPage", () => {
     expect(checkboxes).toHaveLength(1);
     expect(document.getElementById("mode-1")).toBeTruthy();
     consoleError.mockRestore();
+  });
+});
+
+describe("renderWithFallbacks", () => {
+  it("shows error when game modes are missing", async () => {
+    const { renderWithFallbacks } = await import("../../src/helpers/settingsPage.js");
+    renderWithFallbacks({ settings: baseSettings, gameModes: [], tooltipMap: {} });
+    const errorEl = document.querySelector("#game-mode-toggle-container .settings-section-error");
+    expect(errorEl?.textContent).toBe(
+      "Game Modes could not be loaded. Please check your connection or try again later."
+    );
+  });
+
+  it("shows error when feature flags are missing", async () => {
+    const badSettings = { ...baseSettings };
+    // remove featureFlags to trigger error
+    delete badSettings.featureFlags;
+    const { renderWithFallbacks } = await import("../../src/helpers/settingsPage.js");
+    renderWithFallbacks({
+      settings: badSettings,
+      gameModes: [{ id: 1, name: "Classic", category: "mainMenu" }],
+      tooltipMap: {}
+    });
+    const errorEl = document.querySelector("#feature-flags-container .settings-section-error");
+    expect(errorEl?.textContent).toBe(
+      "Advanced Settings could not be loaded. Please check your connection or try again later."
+    );
   });
 });
