@@ -1,7 +1,6 @@
 import { createBattleStore, startRound } from "./roundManager.js";
 import { initClassicBattleOrchestrator } from "./orchestrator.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "../featureFlags.js";
-import { setupScoreboard } from "../setupScoreboard.js";
 import { startCoolDown, pauseTimer, resumeTimer } from "../battleEngineFacade.js";
 
 /**
@@ -10,9 +9,8 @@ import { startCoolDown, pauseTimer, resumeTimer } from "../battleEngineFacade.js
  * @pseudocode
  * 1. Create a battle store via `createBattleStore`.
  * 2. Initialize feature flags and re‑emit changes.
- * 3. Inject battle engine timer controls into the Scoreboard.
- * 4. Start the battle orchestrator.
- * 5. Expose `startRound` which waits for the opponent card via an injected callback.
+ * 3. Start the battle orchestrator.
+ * 4. Expose `startRound` which waits for the opponent card via an injected callback.
  */
 export class ClassicBattleController extends EventTarget {
   /**
@@ -38,7 +36,6 @@ export class ClassicBattleController extends EventTarget {
     await initFeatureFlags();
     this.#emitFeatureFlags();
     featureFlagsEmitter.addEventListener("change", () => this.#emitFeatureFlags());
-    setupScoreboard(this.timerControls);
     await initClassicBattleOrchestrator(this.store, () => this.startRound());
   }
 

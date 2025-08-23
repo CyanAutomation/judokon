@@ -58,6 +58,8 @@ describe("classicBattle stat button state", () => {
       startRound: vi.fn()
     };
     await view.init();
+    const { setupScoreboard } = await import("../../../src/helpers/setupScoreboard.js");
+    expect(setupScoreboard).toHaveBeenCalledWith(view.controller.timerControls);
 
     const btn = document.querySelector("#stat-buttons button");
     expect(btn.disabled).toBe(true);
