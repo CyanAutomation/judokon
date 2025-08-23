@@ -2,7 +2,7 @@
  * Set up the Settings page once the document is ready.
  *
  * @pseudocode
- * 1. Fetch feature flags, game modes, and tooltips via `loadSettingsData`.
+ * 1. Fetch feature flags, game modes, and tooltips via `fetchSettingsData`.
  * 2. Render page controls with `renderSettingsControls`.
  * 3. Show an error message if initialization fails.
  */
@@ -248,22 +248,27 @@ function expandAllSections() {
 }
 
 /**
- * Fetch settings, game modes, and tooltips in parallel.
+ * Fetch settings, game modes, and tooltips with unified error handling.
  *
  * @pseudocode
- * 1. Start requests for feature flags, navigation items, and tooltips.
- * 2. Await all requests with `Promise.all`.
- * 3. Return a tuple of `[settings, gameModes, tooltipMap]`.
+ * 1. Request feature flags, navigation items, and tooltips in parallel.
+ * 2. Await all requests; on failure throw a wrapped error.
+ * 3. Return an object `{ settings, gameModes, tooltipMap }`.
  *
- * @returns {Promise<[Settings, Array, object]>} Loaded data tuple.
+ * @returns {Promise<{settings: Settings, gameModes: Array, tooltipMap: object}>}
+ *   Loaded data object.
  */
-export async function loadSettingsData() {
-  const [settings, gameModes, tooltipMap] = await Promise.all([
-    initFeatureFlags(),
-    loadNavigationItems(),
-    getTooltips()
-  ]);
-  return [settings, gameModes, tooltipMap];
+export async function fetchSettingsData() {
+  try {
+    const [settings, gameModes, tooltipMap] = await Promise.all([
+      initFeatureFlags(),
+      loadNavigationItems(),
+      getTooltips()
+    ]);
+    return { settings, gameModes, tooltipMap };
+  } catch (error) {
+    throw new Error("Failed to fetch settings data", { cause: error });
+  }
 }
 
 /**
@@ -308,37 +313,53 @@ function showSectionError(containerId, message) {
 }
 
 /**
+ * Render settings with section-level fallbacks.
+ *
+ * @pseudocode
+ * 1. If `settings` is absent, return early.
+ * 2. When `gameModes` is empty, show an error in the Game Modes section.
+ * 3. When `settings.featureFlags` is missing, show an error in Advanced Settings.
+ * 4. Invoke `renderSettingsControls` with provided data.
+ *
+ * @param {{settings: Settings, gameModes: Array, tooltipMap: object}} data
+ *   Loaded settings data.
+ */
+export function renderWithFallbacks({ settings, gameModes, tooltipMap }) {
+  if (!settings) return;
+  if (!Array.isArray(gameModes) || gameModes.length === 0) {
+    showSectionError(
+      "game-mode-toggle-container",
+      "Game Modes could not be loaded. Please check your connection or try again later."
+    );
+  }
+  if (!settings.featureFlags) {
+    showSectionError(
+      "feature-flags-container",
+      "Advanced Settings could not be loaded. Please check your connection or try again later."
+    );
+  }
+  renderSettingsControls(settings, Array.isArray(gameModes) ? gameModes : [], tooltipMap);
+}
+
+/**
  * Load data then render Settings controls.
  *
  * @pseudocode
- * 1. Await `loadSettingsData` for required data.
- * 2. If `gameModes` resolves to an empty array, show an error in the Game Modes section.
- * 3. Pass data to `renderSettingsControls`.
- * 4. On failure to load data, show a page-level error and skip rendering controls.
+ * 1. Await `fetchSettingsData`; on failure show load error and return.
+ * 2. Pass the resolved data to `renderWithFallbacks`.
  *
  * @returns {Promise<void>}
  */
 async function initializeSettingsPage() {
+  let data;
   try {
-    const [settings, gameModes, tooltipMap] = await loadSettingsData();
-    if (Array.isArray(gameModes) && gameModes.length === 0) {
-      showSectionError(
-        "game-mode-toggle-container",
-        "Game Modes could not be loaded. Please check your connection or try again later."
-      );
-    }
-    // If feature flags are missing, show error in Advanced Settings section
-    if (!settings || !settings.featureFlags) {
-      showSectionError(
-        "feature-flags-container",
-        "Advanced Settings could not be loaded. Please check your connection or try again later."
-      );
-    }
-    renderSettingsControls(settings, gameModes, tooltipMap);
+    data = await fetchSettingsData();
   } catch (error) {
     console.error("Error loading settings page:", error);
     showLoadSettingsError();
+    return;
   }
+  renderWithFallbacks(data);
 }
 
 function applyInitialSettings(settings) {
