@@ -60,7 +60,28 @@ export class ClassicBattleView {
   async init() {
     const store = this.controller.battleStore;
     window.battleStore = store;
-    window.skipBattlePhase = skipCurrentPhase;
+    // Provide a robust skip helper: invoke the skip handler and return a
+    // Promise that resolves when either the next-round timer path completes
+    // or the next round prompts the player again. This makes tests deterministic
+    // and avoids racing the handler registration.
+    window.skipBattlePhase = () => {
+      try {
+        // Trigger skip (may be pending until a handler is set)
+        skipCurrentPhase();
+      } catch {}
+      try {
+        const p1 = typeof window !== "undefined" && window.nextRoundTimerReadyPromise
+          ? window.nextRoundTimerReadyPromise
+          : Promise.resolve();
+        const p2 = typeof window !== "undefined" && window.roundPromptPromise
+          ? window.roundPromptPromise
+          : Promise.resolve();
+        try { console.warn("[test] skipBattlePhase: awaiting timerReady or next round prompt"); } catch {}
+        return Promise.race([p1, p2]);
+      } catch {
+        return Promise.resolve();
+      }
+    };
 
     if (!(typeof process !== "undefined" && process.env.VITEST)) {
       startScheduler();

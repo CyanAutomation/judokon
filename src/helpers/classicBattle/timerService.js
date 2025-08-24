@@ -258,6 +258,10 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
     const cooldownSeconds = isTestModeEnabled()
       ? 0
       : Math.max(0, Math.round(overrideMs / 1000));
+    try {
+      if (isTestModeEnabled()) console.warn(`[test] scheduleNextRound: testMode=true cooldown=${cooldownSeconds}`);
+      else console.warn(`[test] scheduleNextRound: testMode=false cooldown=${cooldownSeconds}`);
+    } catch {}
 
     nextRoundReadyResolve = () => {
       emitBattleEvent("nextRoundTimerReady");
@@ -310,8 +314,38 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
       }
     };
 
+    // Fast-path: zero-second cooldown (e.g., test mode). Ensure the Next button
+    // appears enabled and ready, dispatch the transition, and resolve promptly
+    // without starting a timer.
+    if (cooldownSeconds === 0) {
+      if (btn) {
+        btn.dataset.nextReady = "true";
+        btn.disabled = false;
+      }
+      // Signal that the next-round control is ready but do not auto-advance;
+      // tests may click Next or call the page-level skip helper.
+      setSkipHandler(async () => {
+        try {
+          if (btn) btn.disabled = true;
+          await dispatchBattleEventLocal("ready");
+          updateDebugPanel();
+        } catch {}
+      });
+      try {
+        emitBattleEvent("nextRoundTimerReady");
+      } catch {}
+      if (typeof nextRoundReadyResolve === "function") {
+        try { nextRoundReadyResolve(); } catch {}
+        nextRoundReadyResolve = null;
+      }
+      return;
+    }
+
     nextRoundTimer = createRoundTimer(onTick, onExpired);
-    setSkipHandler(() => nextRoundTimer.stop());
+    setSkipHandler(() => {
+      try { console.warn("[test] skip: stop nextRoundTimer"); } catch {}
+      nextRoundTimer.stop();
+    });
 
     if (btn && btn.dataset.nextReady === "true") {
       nextRoundReadyResolve();

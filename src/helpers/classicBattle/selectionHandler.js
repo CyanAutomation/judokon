@@ -43,6 +43,7 @@ export async function handleStatSelection(store, stat) {
   }
   store.selectionMade = true;
   store.playerChoice = stat;
+  try { console.warn(`[test] handleStatSelection: stat=${stat}`); } catch {}
   const playerCard = document.getElementById("player-card");
   const opponentCard = document.getElementById("opponent-card");
   const playerVal = getStatValue(playerCard, stat);
@@ -54,6 +55,7 @@ export async function handleStatSelection(store, stat) {
   } catch {
     opponentVal = getStatValue(opponentCard, stat);
   }
+  try { console.warn(`[test] handleStatSelection: values p=${playerVal} o=${opponentVal}`); } catch {}
   stopTimer();
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
@@ -71,6 +73,7 @@ export async function handleStatSelection(store, stat) {
   try {
     const hasMachine = typeof window !== "undefined" && !!window.__classicBattleState;
     if (hasMachine) {
+      try { console.warn("[test] handleStatSelection: dispatch statSelected to machine"); } catch {}
       await dispatchBattleEvent("statSelected");
       // Failsafe: if the orchestrator onEnter(roundDecision) does not resolve
       // the round promptly, kick off a local resolution after a short delay.
@@ -78,16 +81,21 @@ export async function handleStatSelection(store, stat) {
         setTimeout(() => {
           // Only run if still awaiting resolution and selection remains.
           try {
-            if (isStateTransition(null, "roundDecision") && store.playerChoice) {
-              resolveRound(store, stat, playerVal, opponentVal).catch(() => {});
+            console.warn("[test] handleStatSelection: fallback resolve after 600ms");
+            if (store.playerChoice) {
+              resolveRound(store, stat, playerVal, opponentVal)
+                .then(() => console.warn("[test] handleStatSelection: fallback resolveRound done"))
+                .catch(() => {});
             }
           } catch {}
         }, 600);
       } catch {}
     } else {
+      try { console.warn("[test] handleStatSelection: no machine, resolving inline"); } catch {}
       result = await resolveRound(store, stat, playerVal, opponentVal);
     }
   } catch {
+    try { console.warn("[test] handleStatSelection: dispatch failed, resolving inline"); } catch {}
     result = await resolveRound(store, stat, playerVal, opponentVal);
   }
   return result;

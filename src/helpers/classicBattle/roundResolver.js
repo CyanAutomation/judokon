@@ -55,7 +55,18 @@ export async function resolveRound(
   } = {}
 ) {
   if (!stat) return;
-  await dispatchBattleEvent("evaluate");
+  // Avoid re-entrant dispatch loops: when called from the state machine's
+  // roundDecision onEnter, the machine is already in "roundDecision" and will
+  // run this resolver. Dispatching an additional "evaluate" event here would
+  // attempt to re-enter the same state and invoke this function again, causing
+  // a deadlock. Only dispatch "evaluate" when not already in that state.
+  try {
+    const inRoundDecision =
+      typeof window !== "undefined" && window.__classicBattleState === "roundDecision";
+    if (!inRoundDecision) {
+      await dispatchBattleEvent("evaluate");
+    }
+  } catch {}
   await sleep(delayMs);
   emitBattleEvent("opponentReveal");
   const result = evaluateRound(store, stat, playerVal, opponentVal);
