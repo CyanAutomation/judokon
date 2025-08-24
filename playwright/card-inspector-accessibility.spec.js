@@ -23,13 +23,13 @@ const helperUrl = pathToFileURL(helperPath).href;
 test.describe.parallel("Card inspector accessibility", () => {
   test("summary keyboard support and ARIA state", async ({ page }) => {
     await page.setContent("<html><body></body></html>");
-    await page.evaluate(
-      async ({ judoka, helperUrl }) => {
-        await import(helperUrl);
-        window.mountInspectorPanel(judoka);
-      },
-      { judoka: JUDOKA, helperUrl }
-    );
+    await page.evaluate(async (url) => {
+      const { mountInspectorPanel } = await import(url);
+      window.mountInspectorPanel = mountInspectorPanel;
+    }, helperUrl);
+    await page.evaluate((judoka) => {
+      window.mountInspectorPanel(judoka);
+    }, JUDOKA);
 
     const panel = page.locator(".debug-panel");
     await expect(panel).toHaveAttribute("aria-label", "Inspector panel");
@@ -48,32 +48,32 @@ test.describe.parallel("Card inspector accessibility", () => {
 
   test("announces invalid card data on JSON failure", async ({ page }) => {
     await page.setContent("<html><body></body></html>");
-    await page.evaluate(
-      async ({ helperUrl }) => {
-        await import(helperUrl);
-        const badJudoka = {
-          id: 2,
-          firstname: "Bad",
-          surname: "Data",
-          country: "USA",
-          countryCode: "us",
-          stats: {
-            power: 1,
-            speed: 1,
-            technique: 1,
-            kumikata: 1,
-            newaza: 1
-          },
-          weightClass: "-100kg",
-          signatureMoveId: 1,
-          rarity: "common",
-          gender: "male",
-          extra: 1n
-        };
-        window.mountInspectorPanel(badJudoka);
-      },
-      { helperUrl }
-    );
+    await page.evaluate(async (url) => {
+      const { mountInspectorPanel } = await import(url);
+      window.mountInspectorPanel = mountInspectorPanel;
+    }, helperUrl);
+    await page.evaluate(() => {
+      const badJudoka = {
+        id: 2,
+        firstname: "Bad",
+        surname: "Data",
+        country: "USA",
+        countryCode: "us",
+        stats: {
+          power: 1,
+          speed: 1,
+          technique: 1,
+          kumikata: 1,
+          newaza: 1
+        },
+        weightClass: "-100kg",
+        signatureMoveId: 1,
+        rarity: "common",
+        gender: "male",
+        extra: 1n
+      };
+      window.mountInspectorPanel(badJudoka);
+    });
 
     await expect(page.getByText("Invalid card data")).toBeVisible();
   });
