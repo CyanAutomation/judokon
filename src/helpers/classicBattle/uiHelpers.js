@@ -85,6 +85,9 @@ export function showSelectionPrompt() {
   }
   snackbar.showSnackbar("Select your move");
   emitBattleEvent("roundPrompt");
+  try {
+    if (isTestModeEnabled()) console.warn("[test] roundPrompt emitted");
+  } catch {}
 }
 
 /**
@@ -478,8 +481,14 @@ export function initStatButtons(store) {
       try {
         resolveReady?.();
       } catch {}
+      try {
+        if (isTestModeEnabled()) console.warn("[test] statButtonsReady=true");
+      } catch {}
     } else {
       resetReadyPromise();
+      try {
+        if (isTestModeEnabled()) console.warn("[test] statButtonsReady=false");
+      } catch {}
     }
   }
 
@@ -489,18 +498,26 @@ export function initStatButtons(store) {
 
   statButtons.forEach((btn) => {
     const statName = btn.dataset.stat;
-    const clickHandler = async () => {
+    const clickHandler = () => {
       if (btn.disabled) return;
-      setEnabled(false);
-      btn.classList.add("selected");
-      snackbar.showSnackbar(`You Picked: ${btn.textContent}`);
-      await handleStatSelection(store, statName);
+      // Defer disabling and UI changes to the next frame so the
+      // browser can complete the native click sequence without the
+      // element becoming disabled mid-dispatch (improves test stability).
+      requestAnimationFrame(() => {
+        setEnabled(false);
+        btn.classList.add("selected");
+        snackbar.showSnackbar(`You Picked: ${btn.textContent}`);
+        // Fire-and-forget to avoid blocking the UI thread.
+        try {
+          Promise.resolve(handleStatSelection(store, statName)).catch(() => {});
+        } catch {}
+      });
     };
     btn.addEventListener("click", clickHandler);
-    btn.addEventListener("keydown", async (e) => {
+    btn.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        await clickHandler();
+        clickHandler();
       }
     });
   });

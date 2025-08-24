@@ -2,6 +2,8 @@ import { onDomReady } from "../domReady.js";
 import ClassicBattleController from "./controller.js";
 import ClassicBattleView from "./view.js";
 import "./promises.js";
+// Ensure round UI event listeners are registered (roundStarted → showSelectionPrompt)
+import "./roundUI.js";
 
 /**
  * Bootstrap Classic Battle page by wiring controller and view.
