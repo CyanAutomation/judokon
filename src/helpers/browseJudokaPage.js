@@ -31,7 +31,7 @@ export function setupLayoutToggle(layoutBtn, panel) {
  *
  * @pseudocode
  * 1. Grab DOM elements for the carousel, layout toggle, and country filters.
- * 2. Show a loading spinner and load judoka and gokyo data from JSON files.
+ * 2. Show a loading spinner (immediately when `forceSpinner` flag is set) and load judoka and gokyo data from JSON files.
  * 3. Render the card carousel, display a message if there are no judoka, and hide the spinner.
  * 4. Attach event listeners for filtering, layout toggle, and panel controls.
  * 5. Handle errors by rendering a fallback card and showing a retry button when loading fails.
@@ -97,8 +97,16 @@ export async function setupBrowseJudokaPage() {
   }
 
   async function init() {
-    const spinner = createSpinner(carouselContainer);
+    const forceSpinner =
+      new URLSearchParams(globalThis.location?.search || "").has("forceSpinner") ||
+      globalThis.__forceSpinner__ === true;
+    const spinner = createSpinner(carouselContainer, {
+      delay: forceSpinner ? 0 : undefined
+    });
     spinner.show();
+    if (forceSpinner) {
+      spinner.element.style.display = "block";
+    }
     try {
       const { allJudoka, gokyoData } = await loadData();
       const render = (list) => renderCarousel(list, gokyoData);
