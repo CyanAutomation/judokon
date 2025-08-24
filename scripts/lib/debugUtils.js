@@ -58,19 +58,19 @@ export function attachLoggers(page, opts = {}) {
       location: loc ? `${loc.url}:${loc.lineNumber}:${loc.columnNumber}` : ""
     };
     if (logs) logs.push(entry);
-    // eslint-disable-next-line no-console
+
     console.log("PAGE LOG>", entry.type, entry.text, entry.location);
   });
   page.on("pageerror", (err) => {
     const entry = { channel: "pageerror", text: String(err) };
     if (logs) logs.push(entry);
-    // eslint-disable-next-line no-console
+
     console.error("PAGE ERROR>", entry.text);
   });
   page.on("requestfailed", (req) => {
     const entry = { channel: "requestfailed", url: req.url(), failure: req.failure()?.errorText };
     if (logs) logs.push(entry);
-    // eslint-disable-next-line no-console
+
     console.warn("REQ FAILED>", entry.url, entry.failure || "");
   });
   return logs;
@@ -112,6 +112,10 @@ export async function tryClickStat(page, stat, { force = false, timeout = 1000 }
   } catch (err) {
     if (!force) return { ok: false, method: "playwright", error: String(err) };
     try {
+      // Try a stronger fallback: use the element.click() method which triggers
+      // the same activation behavior as user clicks in many frameworks. If that
+      // fails, fall back to dispatching a MouseEvent. Return diagnostics from
+      // the page to help understand why clicks may be intercepted.
       const res = await page.evaluate((sel) => {
         try {
           const el = document.querySelector(sel);
@@ -125,8 +129,55 @@ export async function tryClickStat(page, stat, { force = false, timeout = 1000 }
           try {
             if (el.tabIndex === -1) el.tabIndex = 0;
           } catch {}
-          el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-          return { ok: true, reason: "dispatched" };
+
+          const rect = el.getBoundingClientRect();
+          const cx = Math.round(rect.left + rect.width / 2);
+          const cy = Math.round(rect.top + rect.height / 2);
+          const hit = document.elementFromPoint(cx, cy);
+          const hitDesc = hit
+            ? `${hit.tagName.toLowerCase()}#${hit.id || ""}.${hit.className || ""}`
+            : null;
+          const computed = window.getComputedStyle(el);
+          // Attempt el.click first
+          try {
+            el.click();
+            return {
+              ok: true,
+              reason: "el.click",
+              diagnostics: {
+                rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+                center: { x: cx, y: cy },
+                hit: hitDesc,
+                pointerEvents: computed.pointerEvents
+              }
+            };
+          } catch {
+            // fall back to dispatching a MouseEvent
+            try {
+              el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+              return {
+                ok: true,
+                reason: "dispatched",
+                diagnostics: {
+                  rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+                  center: { x: cx, y: cy },
+                  hit: hitDesc,
+                  pointerEvents: computed.pointerEvents
+                }
+              };
+            } catch (e2) {
+              return {
+                ok: false,
+                reason: String(e2),
+                diagnostics: {
+                  rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+                  center: { x: cx, y: cy },
+                  hit: hitDesc,
+                  pointerEvents: computed.pointerEvents
+                }
+              };
+            }
+          }
         } catch (e) {
           return { ok: false, reason: String(e) };
         }
@@ -136,6 +187,42 @@ export async function tryClickStat(page, stat, { force = false, timeout = 1000 }
       return { ok: false, method: "fallback", error: String(e) };
     }
   }
+}
+
+/*
+ * Diagnostic helper: given a selector and (optional) coordinates, return
+ * hit-test and style information to help understand why clicks may be
+ * intercepted or not reaching the target.
+ */
+export async function getClickDiagnostics(page, selector) {
+  return page
+    .evaluate((sel) => {
+      try {
+        const el = document.querySelector(sel);
+        if (!el) return { ok: false, reason: "no-element" };
+        const rect = el.getBoundingClientRect();
+        const cx = Math.round(rect.left + rect.width / 2);
+        const cy = Math.round(rect.top + rect.height / 2);
+        const hit = document.elementFromPoint(cx, cy);
+        const hitDesc = hit
+          ? `${hit.tagName.toLowerCase()}#${hit.id || ""}.${hit.className || ""}`
+          : null;
+        const computed = window.getComputedStyle(el);
+        return {
+          ok: true,
+          rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+          center: { x: cx, y: cy },
+          hit: hitDesc,
+          pointerEvents: computed.pointerEvents,
+          visibility: computed.visibility,
+          display: computed.display,
+          opacity: computed.opacity
+        };
+      } catch (e) {
+        return { ok: false, reason: String(e) };
+      }
+    }, selector)
+    .catch((e) => ({ ok: false, reason: String(e) }));
 }
 
 export async function getBattleSnapshot(page) {
@@ -200,10 +287,9 @@ export async function getBattleSnapshot(page) {
 export async function takeScreenshot(page, path) {
   try {
     await page.screenshot({ path, fullPage: true });
-    // eslint-disable-next-line no-console
+
     console.log("screenshot saved:", path);
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.warn("screenshot failed:", String(e));
   }
 }
