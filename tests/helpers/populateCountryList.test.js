@@ -121,7 +121,9 @@ describe("populateCountryList", () => {
     }
     loadCountryMapping.mockResolvedValue(mapping);
 
-    const { populateCountryList } = await import("../../src/helpers/country/list.js");
+    const { populateCountryList, loadNextCountryBatch } = await import(
+      "../../src/helpers/country/list.js"
+    );
 
     const track = document.createElement("div");
     const scrollContainer = document.createElement("div");
@@ -135,9 +137,7 @@ describe("populateCountryList", () => {
 
     expect(track.querySelectorAll(".slide").length).toBe(51);
 
-    scrollContainer.scrollTop = 200;
-    scrollContainer.dispatchEvent(new Event("scroll"));
-    await new Promise((r) => setTimeout(r, 0));
+    await loadNextCountryBatch(track);
 
     expect(track.querySelectorAll(".slide").length).toBe(61);
   });
