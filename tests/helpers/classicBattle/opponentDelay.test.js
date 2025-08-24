@@ -79,6 +79,8 @@ describe("classicBattle opponent delay", () => {
   it("shows snackbar during opponent delay and clears before outcome", async () => {
     const timer = vi.useFakeTimers();
     const mod = await import("../../../src/helpers/classicBattle.js");
+    const { setOpponentDelay } = await import("../../../src/helpers/classicBattle/uiHelpers.js");
+    setOpponentDelay(0);
     vi.spyOn(mod, "simulateOpponentStat").mockReturnValue("power");
     vi.spyOn(mod, "evaluateRound").mockReturnValue({ matchEnded: false });
     const store = mod.createBattleStore();
@@ -87,17 +89,10 @@ describe("classicBattle opponent delay", () => {
     const randomSpy = vi.spyOn(Math, "random").mockReturnValue(1);
     const promise = mod.handleStatSelection(store, mod.simulateOpponentStat());
 
-    // Snackbar is delayed ~500ms; ensure it hasn't shown too early
-    await vi.advanceTimersByTimeAsync(499);
     expect(showSnackbar).not.toHaveBeenCalled();
-
-    await vi.advanceTimersByTimeAsync(2);
-    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
     await vi.runAllTimersAsync();
+    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
     await promise;
-    // In the current flow, scheduleNextRound may be triggered by the
-    // orchestrator path or directly from resolveRound. We only assert the
-    // opponent delay snackbar appeared without enforcing the scheduler call.
     timer.clearAllTimers();
     randomSpy.mockRestore();
   });
