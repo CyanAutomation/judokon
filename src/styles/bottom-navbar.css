@@ -2,7 +2,8 @@
   position: fixed;
   bottom: 0;
   left: 0;
-  z-index: 100;
+  /* Ensure footer nav stays clickable above modals/backdrops */
+  z-index: 1101;
   min-height: max(var(--footer-height), 12px);
   /* Extra space for iOS home indicator */
   padding-bottom: constant(safe-area-inset-bottom);

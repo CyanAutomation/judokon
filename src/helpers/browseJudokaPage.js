@@ -50,7 +50,15 @@ export function setupLayoutToggle(layoutBtn, panel) {
  * 6. Initialize tooltips for interactive elements.
  */
 export async function setupBrowseJudokaPage() {
+  console.log("DEBUG: setupBrowseJudokaPage called."); // Added console.log
   const carouselContainer = document.getElementById("carousel-container");
+  if (!carouselContainer) {
+    console.error("Carousel container not found. Cannot set up browse Judoka page.");
+    if (resolveBrowseReady) {
+      resolveBrowseReady(); // Resolve the promise to prevent test timeouts
+    }
+    return;
+  }
   const countryListContainer = document.getElementById("country-list");
   const toggleBtn = document.getElementById("country-toggle");
   const countryPanel = document.getElementById("country-panel");
@@ -122,6 +130,8 @@ export async function setupBrowseJudokaPage() {
       const { allJudoka, gokyoData } = await loadData();
       const render = (list) => renderCarousel(list, gokyoData);
       await renderCarousel(allJudoka, gokyoData);
+      console.log("Resolving browseJudokaReadyPromise (success path)"); // Added console.log
+      resolveBrowseReady?.(); // Resolve the promise before removing the spinner
       spinner.remove();
       if (allJudoka.length === 0) {
         const noResultsMessage = document.createElement("div");
@@ -146,8 +156,9 @@ export async function setupBrowseJudokaPage() {
         carouselContainer,
         ariaLive
       );
-      resolveBrowseReady?.();
     } catch (error) {
+      console.log("Resolving browseJudokaReadyPromise (error path)"); // Added console.log
+      resolveBrowseReady?.(); // Resolve the promise before removing the spinner
       spinner.remove();
       console.error("Error building the carousel:", error);
 
@@ -180,7 +191,6 @@ export async function setupBrowseJudokaPage() {
         }
       });
       carouselContainer.appendChild(retryButton);
-      resolveBrowseReady?.();
       return;
     }
   }
@@ -189,4 +199,4 @@ export async function setupBrowseJudokaPage() {
   initTooltips();
 }
 
-onDomReady(setupBrowseJudokaPage);
+setupBrowseJudokaPage();

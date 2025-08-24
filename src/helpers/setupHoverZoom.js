@@ -16,7 +16,14 @@ export function addHoverZoomMarkers() {
     const reset = () => {
       delete card.dataset.zoomed;
     };
-    card.addEventListener("mouseenter", reset);
+    card.addEventListener("mouseenter", () => {
+      reset();
+      try {
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          card.dataset.zoomed = "true";
+        }
+      } catch {}
+    });
     card.addEventListener("mouseleave", reset);
     card.addEventListener("transitionend", (event) => {
       if (event.propertyName === "transform") {

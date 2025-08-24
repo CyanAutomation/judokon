@@ -6,7 +6,7 @@ const COUNTRY_TOGGLE_LOCATOR = "country-toggle";
 test.describe.parallel("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/browseJudoka.html");
-  });
+  // Ensure proper nesting of braces and remove any extra closing brace
 
   test("essential elements visible", async ({ page }) => {
     await expect(page.getByTestId(COUNTRY_TOGGLE_LOCATOR)).toBeVisible();
@@ -183,15 +183,123 @@ test.describe.parallel("Browse Judoka screen", () => {
   });
 
   test("shows loading spinner", async ({ page }) => {
-    const context = await page.context();
-    await context.route("**/src/data/judoka.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/judoka.json" })
-    );
-    await context.route("**/src/data/gokyo.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/gokyo.json" })
-    );
+    const context = page.context();
+    await context.route("**/src/data/judoka.json", async (route) =>
+      route.fulfill({ contentType: "application/json", body: JSON.stringify([
+        {
+          "id": 111,
+          "firstname": "Joana",
+          "surname": "Ramos",
+          "country": "Portugal",
+          "countryCode": "pt",
+          "weightClass": "-52",
+          "stats": {
+            "power": 6,
+            "speed": 7,
+            "technique": 8,
+            "kumikata": 7,
+            "newaza": 6
+          },
+          "signatureMoveId": 1,
+          "lastUpdated": "2025-04-22T10:00:00Z",
+          "profileUrl": "https://en.wikipedia.org/wiki/Joana_Ramos",
+          "bio": "More info to come...",
+          "gender": "female",
+          "isHidden": false,
+          "rarity": "Common",
+          "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT8C",
+          "matchesWon": 0,
+          "matchesLost": 0,
+          "matchesDrawn": 0
+        },
+        {
+          "id": 114,
+          "firstname": "Nina",
+          "surname": "Cutro-Kelly",
+          "country": "United States",
+          "countryCode": "us",
+          "weightClass": "+78",
+          "stats": {
+            "power": 9,
+            "speed": 6,
+            "technique": 7,
+            "kumikata": 7,
+            "newaza": 8
+          },
+          "signatureMoveId": 2,
+          "lastUpdated": "2025-04-20T15:30:00Z",
+          "profileUrl": "https://en.wikipedia.org/wiki/Nina_Cutro-Kelly",
+          "bio": "More info to come...",
+          "gender": "female",
+          "isHidden": false,
+          "rarity": "Common",
+          "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT8D",
+          "matchesWon": 0,
+          "matchesLost": 0,
+          "matchesDrawn": 0
+        },
+        {
+          "id": 776,
+          "firstname": "Shōzō",
+          "surname": "Fujii",
+          "country": "Japan",
+          "countryCode": "jp",
+          "weightClass": "-81",
+          "stats": {
+            "power": 8,
+            "speed": 8,
+            "technique": 8,
+            "kumikata": 7,
+            "newaza": 8
+          },
+          "signatureMoveId": 3,
+          "lastUpdated": "2025-04-28T15:30:00Z",
+          "profileUrl": "https://en.wikipedia.org/wiki/Shōzō_Fujii",
+          "bio": "More info to come...",
+          "gender": "male",
+          "isHidden": false,
+          "rarity": "Epic",
+          "cardCode": "WKZ3-H4NF-MXT2-LQ93-JT9D",
+          "matchesWon": 0,
+          "matchesLost": 0,
+          "matchesDrawn": 0
+        }
+        ])
+      });
+    page.context().route("**/src/data/gokyo.json", async (route) =>
+      route.fulfill({ contentType: "application/json", body: JSON.stringify([
+        {
+          "id": 0,
+          "name": "Jigoku-guruma",
+          "japanese": "内股",
+          "category": "Nage-waza",
+          "subCategory": "Koshi-waza",
+          "description": "A mysterious unknown move.",
+          "link": "https://en.wikipedia.org/wiki/judo"
+        },
+        {
+          "id": 1,
+          "name": "Uchi-mata",
+          "japanese": "内股",
+          "category": "Nage-waza",
+          "subCategory": "Koshi-waza",
+          "description": "A powerful inner thigh throw.",
+          "link": "https://en.wikipedia.org/wiki/Uchi_mata"
+        },
+        {
+          "id": 2,
+          "name": "O-soto-gari",
+          "japanese": "大外刈",
+          "category": "Nage-waza",
+          "subCategory": "Ashi-waza",
+          "description": "A major outer reap throw.",
+          "link": "https://en.wikipedia.org/wiki/O_soto_gari"
+        }
+          ]) });
+        });
+      });
 
-    await page.addInitScript(() => {
+    page.addInitScript(() => {
       window.__testHooks = window.__testHooks || {
         showSpinnerImmediately: () => {
           window.__showSpinnerImmediately__ = true;
@@ -199,7 +307,8 @@ test.describe.parallel("Browse Judoka screen", () => {
       };
       window.__testHooks.showSpinnerImmediately();
     });
-    await page.reload();
+    // Instead of reload, navigate directly to ensure routes are active
+    await page.goto("/src/pages/browseJudoka.html");
 
     const spinner = page.locator(".loading-spinner");
     await expect(spinner).toBeVisible();

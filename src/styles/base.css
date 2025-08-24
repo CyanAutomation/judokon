@@ -58,7 +58,8 @@
   /* Updated shadows and transitions */
   --shadow-base: 0 4px 12px rgba(0, 0, 0, 0.1); /* Elevation */
   --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.2);
-  --transition-fast: all 150ms ease; /* UI animations */
+  /* Fast easing without property token to compose correctly */
+  --transition-fast: 150ms ease; /* UI animations */
 
   /* Carousel */
   --scroll-marker-size: 10px;
