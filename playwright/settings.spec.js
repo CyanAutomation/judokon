@@ -46,7 +46,7 @@ function getLabelData() {
 test.describe.parallel("Settings page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-    await page.getByRole("checkbox", { name: "Sound" }).waitFor({ state: "visible" });
+    await page.waitForSelector("[data-settings-ready]");
   });
 
   test("page loads", async ({ page }) => {
@@ -55,7 +55,6 @@ test.describe.parallel("Settings page", () => {
 
   test("mode toggle visible", async ({ page }) => {
     const toggle = page.getByRole("checkbox", { name: "Classic Battle" });
-    await toggle.waitFor({ state: "attached" });
     await expect(toggle).toBeVisible();
   });
 
@@ -68,7 +67,6 @@ test.describe.parallel("Settings page", () => {
   });
 
   test("controls expose correct labels", async ({ page }) => {
-    await page.getByRole("checkbox", { name: "Classic Battle" }).waitFor({ state: "attached" });
     const { sortedNames, flagLabels } = getLabelData();
 
     await expect(page.locator("#sound-toggle")).toHaveAttribute("aria-label", "Sound");
@@ -98,7 +96,6 @@ test.describe.parallel("Settings page", () => {
   });
 
   test("tab order follows expected sequence", async ({ page }) => {
-    await page.getByRole("checkbox", { name: "Classic Battle" }).waitFor({ state: "attached" });
     const { flagLabels, expectedLabels } = getLabelData();
 
     const renderedFlagCount = await page

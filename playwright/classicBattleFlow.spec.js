@@ -80,6 +80,7 @@ test.describe.parallel("Classic battle flow", () => {
     await timer.waitFor();
     await page.locator("[data-testid='nav-13']").click();
     await expect(page).toHaveURL(/settings.html/);
+    await page.waitForSelector("[data-settings-ready]");
     await page.goBack();
     await expect(page).toHaveURL(/battleJudoka.html/);
     await page.waitForFunction(() => window.__classicBattleState === "matchOver");
