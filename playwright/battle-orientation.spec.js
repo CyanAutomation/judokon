@@ -5,16 +5,12 @@ test.describe.parallel("Battle orientation behavior", () => {
     await page.goto("/src/pages/battleJudoka.html");
 
     await page.setViewportSize({ width: 320, height: 480 });
-    await page.evaluate(() => window.applyBattleOrientation?.());
-    await page.waitForFunction(
-      () => document.querySelector(".battle-header")?.dataset.orientation === "portrait"
-    );
+    await page.evaluate(() => window.applyBattleOrientation());
+    await expect(page.locator(".battle-header")).toHaveAttribute("data-orientation", "portrait");
 
     await page.setViewportSize({ width: 480, height: 320 });
-    await page.evaluate(() => window.applyBattleOrientation?.());
-    await page.waitForFunction(
-      () => document.querySelector(".battle-header")?.dataset.orientation === "landscape"
-    );
+    await page.evaluate(() => window.applyBattleOrientation());
+    await expect(page.locator(".battle-header")).toHaveAttribute("data-orientation", "landscape");
   });
 
   test("truncates round message below 320px", async ({ page }) => {

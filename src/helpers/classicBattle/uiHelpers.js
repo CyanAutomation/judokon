@@ -304,32 +304,45 @@ export function watchBattleOrientation(callback) {
     return;
   }
 
+  const invoke = () => Promise.resolve(callback());
+  try {
+    window.applyBattleOrientation = invoke;
+  } catch {}
+
   let pollId;
   const pollIfMissing = () => {
     if (pollId) return;
     pollId = scheduleFrame(() => {
-      if (callback()) {
-        cancelFrame(pollId);
-        pollId = 0;
-      }
+      invoke().then((ok) => {
+        if (ok) {
+          cancelFrame(pollId);
+          pollId = 0;
+        }
+      });
     });
   };
 
-  if (!callback()) {
-    pollIfMissing();
-  }
+  invoke().then((ok) => {
+    if (!ok) {
+      pollIfMissing();
+    }
+  });
 
   let rafId;
   const onChange = () => {
-    if (!callback()) {
-      pollIfMissing();
-    }
+    invoke().then((ok) => {
+      if (!ok) {
+        pollIfMissing();
+      }
+    });
     if (rafId) return;
     rafId = requestAnimationFrame(() => {
       rafId = 0;
-      if (!callback()) {
-        pollIfMissing();
-      }
+      invoke().then((ok) => {
+        if (!ok) {
+          pollIfMissing();
+        }
+      });
     });
   };
 
