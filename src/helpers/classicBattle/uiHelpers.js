@@ -424,15 +424,22 @@ export function setupNextButton() {
  *
  * @pseudocode
  * 1. Gather all stat buttons inside `#stat-buttons`.
- * 2. Define `setEnabled` to toggle disabled state and tabindex.
- * 3. On click or Enter/Space, disable all buttons and handle selection.
- * 4. Return controls to enable/disable the group.
+ * 2. Define `setEnabled` to toggle disabled state, tabindex and `data-buttons-ready`.
+ * 3. Resolve `window.statButtonsReadyPromise` when buttons are enabled; reset when disabled.
+ * 4. On click or Enter/Space, disable all buttons and handle selection.
+ * 5. Return controls to enable/disable the group.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle store.
  */
 export function initStatButtons(store) {
   const statButtons = document.querySelectorAll("#stat-buttons button");
   const statContainer = document.getElementById("stat-buttons");
+  let resolveReady;
+  const resetReadyPromise = () => {
+    window.statButtonsReadyPromise = new Promise((r) => {
+      resolveReady = r;
+    });
+  };
 
   function setEnabled(enable = true) {
     statButtons.forEach((btn) => {
@@ -443,9 +450,15 @@ export function initStatButtons(store) {
     if (statContainer) {
       statContainer.dataset.buttonsReady = String(enable);
     }
+    if (enable) {
+      resolveReady?.();
+    } else {
+      resetReadyPromise();
+    }
   }
 
   // Start disabled until the game enters the player action state
+  resetReadyPromise();
   setEnabled(false);
 
   statButtons.forEach((btn) => {
