@@ -36,3 +36,18 @@ export async function waitForStatButtonsReady(page, timeout = 10000) {
   );
 }
 
+/**
+ * Wait for the Classic Battle machine to reach a specific state.
+ * Attempts to use in-page helper if available, otherwise polls __classicBattleState.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} stateName
+ * @param {number} [timeout=10000]
+ */
+export async function waitForBattleState(page, stateName, timeout = 10000) {
+  const hasHelper = await page.evaluate(() => typeof window.waitForBattleState === "function");
+  if (hasHelper) {
+    await page.evaluate((s, t) => window.waitForBattleState(s, t), stateName, timeout);
+    return;
+  }
+  await page.waitForFunction((s) => window.__classicBattleState === s, stateName, { timeout });
+}

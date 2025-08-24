@@ -1,4 +1,9 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import {
+  waitForBattleReady,
+  waitForBattleState,
+  waitForStatButtonsReady
+} from "./fixtures/waits.js";
 import { waitForBattleReady } from "./fixtures/waits.js";
 
 /**
@@ -26,11 +31,11 @@ test.describe.parallel("Classic battle button reset", () => {
     await page.locator("#next-button").click();
     await page.evaluate(() => window.skipBattlePhase?.());
     // Wait until the state machine reports the new round is awaiting input
-    await page.evaluate(() => window.waitForBattleState?.("waitingForPlayerAction", 15000));
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
     // Also wait for the selection prompt that signifies the next round started
     await page.locator(".snackbar").filter({ hasText: "Select your move" }).waitFor();
     // Wait for stat buttons to be fully re-enabled for the new round
-    await page.locator('#stat-buttons[data-buttons-ready="true"]').waitFor();
+    await waitForStatButtonsReady(page);
     // Re-query the button to avoid any stale handle if DOM updated
     const btn = page.locator("#stat-buttons button[data-stat='power']");
     // After round reset, ensure the element is attached before style reads
