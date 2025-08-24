@@ -23,6 +23,7 @@ export class CarouselController {
     this.metrics = getPageMetrics(container);
     this._rafId = null;
     this._resizeTimer = null;
+    this._suppressScrollSync = false;
     this._onKeydown = null;
     this._onTouchStart = null;
     this._onTouchEnd = null;
@@ -100,7 +101,14 @@ export class CarouselController {
     this.currentPage = clamped;
     const left = clamped * pageWidth;
     // Instant scroll prevents animation queues from causing drift.
+    // Suppress scroll event sync while performing programmatic scroll to
+    // avoid intermediary scroll calculations from overriding the target page.
+    this._suppressScrollSync = true;
     this.container.scrollTo({ left, behavior: "auto" });
+    // Re-enable scroll sync on next animation frame.
+    requestAnimationFrame(() => {
+      this._suppressScrollSync = false;
+    });
     this.update();
   }
 
@@ -121,9 +129,11 @@ export class CarouselController {
       if (event.target !== this.container) return;
       if (event.key === "ArrowLeft") {
         event.preventDefault();
+        if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
         this.prev();
       } else if (event.key === "ArrowRight") {
         event.preventDefault();
+        if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
         this.next();
       }
     };
@@ -164,6 +174,7 @@ export class CarouselController {
 
   _wireScrollSync() {
     this._onScroll = () => {
+      if (this._suppressScrollSync) return;
       if (this.metrics.pageWidth <= 0) {
         this.metrics = getPageMetrics(this.container);
       }
@@ -174,12 +185,23 @@ export class CarouselController {
         const remaining = maxScroll - this.container.scrollLeft;
         const page =
           remaining <= 1 ? pageCount - 1 : Math.round(this.container.scrollLeft / pageWidth);
+        // Debug: log scroll metrics to help diagnose flakey page jumps
+        try {
+          console.log("[CarouselController] onScroll immediate", {
+            scrollLeft: this.container.scrollLeft,
+            pageWidth,
+            page,
+            pageCount,
+            maxScroll
+          });
+        } catch {}
         this.currentPage = Math.max(0, Math.min(page, pageCount - 1));
         this.update();
       }
       // Follow-up rAF sync to catch any late layout
       if (this._rafId) cancelAnimationFrame(this._rafId);
       this._rafId = requestAnimationFrame(() => {
+        if (this._suppressScrollSync) return;
         if (this.metrics.pageWidth <= 0) {
           this.metrics = getPageMetrics(this.container);
         }
@@ -188,6 +210,15 @@ export class CarouselController {
         const maxScroll = this.container.scrollWidth - this.container.clientWidth;
         const remaining = maxScroll - this.container.scrollLeft;
         const page = remaining <= 1 ? pc - 1 : Math.round(this.container.scrollLeft / pw);
+        try {
+          console.log("[CarouselController] onScroll rAF", {
+            scrollLeft: this.container.scrollLeft,
+            pw,
+            page,
+            pc,
+            maxScroll
+          });
+        } catch {}
         this.currentPage = Math.max(0, Math.min(page, pc - 1));
         this.update();
       });

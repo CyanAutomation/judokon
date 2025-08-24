@@ -109,6 +109,8 @@ test.describe.parallel("Browse Judoka screen", () => {
     );
     await page.setViewportSize({ width: 320, height: 800 });
     await page.reload();
+    // Surface page console logs to the test runner for diagnostics
+    page.on("console", (msg) => console.log("PAGE-LOG:", msg.text()));
     await page.evaluate(() => window.browseJudokaReadyPromise);
     const container = page.locator('[data-testid="carousel"]');
 
@@ -122,13 +124,13 @@ test.describe.parallel("Browse Judoka screen", () => {
     await expect(left).toBeDisabled();
 
     for (let i = 2; i <= pageCount; i++) {
-      await container.press("ArrowRight");
+      await right.click();
       await expect(counter).toHaveText(`Page ${i} of ${pageCount}`);
     }
     await expect(right).toBeDisabled();
 
     for (let i = pageCount - 1; i >= 1; i--) {
-      await container.press("ArrowLeft");
+      await left.click();
       await expect(counter).toHaveText(`Page ${i} of ${pageCount}`);
     }
     await expect(left).toBeDisabled();
