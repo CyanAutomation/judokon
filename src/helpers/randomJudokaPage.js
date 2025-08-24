@@ -12,7 +12,8 @@
  * 6. Define `displayCard` that disables the Draw button, updates its text and `aria-busy` state while loading, verifies the
  *    card container exists, calls `generateRandomCard` with the loaded data and the user's motion preference, handles any
  *    errors by logging and showing a message, updates the history list, then restores the button once the animation completes
- *    (or immediately when motion is disabled) with a timeout fallback if the event never fires.
+ *    (or immediately when motion is disabled) with a timeout fallback if the event never fires, and returns a promise that
+ *    resolves when the button is re-enabled.
  * 7. Render a placeholder card in the card container.
  * 8. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and attach its event listener.
  * 9. If data fails to load, disable the Draw button and show an error message or fallback card.
@@ -171,77 +172,89 @@ async function displayCard({
   cachedJudokaData,
   cachedGokyoData,
   prefersReducedMotion,
-  onSelect
+  onSelect,
+  fallbackDelayMs = 2000
 }) {
-  if (!dataLoaded) {
-    showError("Unable to load judoka data. Please try again later.");
+  return new Promise(async (resolve) => {
+    let resolved = false;
+    const settle = () => {
+      if (!resolved) {
+        resolved = true;
+        resolve();
+      }
+    };
+    if (!dataLoaded) {
+      showError("Unable to load judoka data. Please try again later.");
+      drawButton.disabled = true;
+      drawButton.setAttribute("aria-disabled", "true");
+      settle();
+      return;
+    }
+    const label = drawButton.querySelector(".button-label");
     drawButton.disabled = true;
     drawButton.setAttribute("aria-disabled", "true");
-    return;
-  }
-  const label = drawButton.querySelector(".button-label");
-  drawButton.disabled = true;
-  drawButton.setAttribute("aria-disabled", "true");
-  drawButton.classList.add("is-loading");
-  if (label) {
-    label.textContent = "Drawing…";
-  } else {
-    drawButton.textContent = "Drawing…";
-  }
-  drawButton.setAttribute("aria-busy", "true");
-  const errorEl = document.getElementById("draw-error-message");
-  if (errorEl) errorEl.textContent = "";
-  const cardContainer = document.getElementById("card-container");
-  function enableButton() {
-    drawButton.disabled = false;
-    drawButton.removeAttribute("aria-disabled");
-    drawButton.classList.remove("is-loading");
+    drawButton.classList.add("is-loading");
     if (label) {
-      label.textContent = "Draw Card!";
+      label.textContent = "Drawing…";
     } else {
-      drawButton.textContent = "Draw Card!";
+      drawButton.textContent = "Drawing…";
     }
-    drawButton.removeAttribute("aria-busy");
-  }
-  if (!cardContainer) {
-    showError("Card area missing. Please refresh the page.");
-    enableButton();
-    return;
-  }
-  try {
-    await generateRandomCard(
-      cachedJudokaData,
-      cachedGokyoData,
-      cardContainer,
-      prefersReducedMotion,
-      onSelect,
-      { enableInspector: isEnabled("enableCardInspector") }
-    );
-  } catch (err) {
-    showError("Unable to draw card. Please try again later.");
-    console.error("Error generating card:", err);
-    enableButton();
-    return;
-  }
-  if (prefersReducedMotion) {
-    enableButton();
-  } else {
-    const cardEl = cardContainer.querySelector(".card-container");
-    if (!cardEl) {
-      requestAnimationFrame(enableButton);
+    drawButton.setAttribute("aria-busy", "true");
+    const errorEl = document.getElementById("draw-error-message");
+    if (errorEl) errorEl.textContent = "";
+    const cardContainer = document.getElementById("card-container");
+    function enableButton() {
+      drawButton.disabled = false;
+      drawButton.removeAttribute("aria-disabled");
+      drawButton.classList.remove("is-loading");
+      if (label) {
+        label.textContent = "Draw Card!";
+      } else {
+        drawButton.textContent = "Draw Card!";
+      }
+      drawButton.removeAttribute("aria-busy");
+      settle();
+    }
+    if (!cardContainer) {
+      showError("Card area missing. Please refresh the page.");
+      enableButton();
+      return;
+    }
+    try {
+      await generateRandomCard(
+        cachedJudokaData,
+        cachedGokyoData,
+        cardContainer,
+        prefersReducedMotion,
+        onSelect,
+        { enableInspector: isEnabled("enableCardInspector") }
+      );
+    } catch (err) {
+      showError("Unable to draw card. Please try again later.");
+      console.error("Error generating card:", err);
+      enableButton();
+      return;
+    }
+    if (prefersReducedMotion) {
+      enableButton();
     } else {
-      const onEnd = () => {
-        cardEl.removeEventListener("animationend", onEnd);
-        clearTimeout(fallbackId);
-        enableButton();
-      };
-      cardEl.addEventListener("animationend", onEnd);
-      const fallbackId = setTimeout(() => {
-        cardEl.removeEventListener("animationend", onEnd);
-        enableButton();
-      }, 2000);
+      const cardEl = cardContainer.querySelector(".card-container");
+      if (!cardEl) {
+        requestAnimationFrame(enableButton);
+      } else {
+        const onEnd = () => {
+          cardEl.removeEventListener("animationend", onEnd);
+          clearTimeout(fallbackId);
+          enableButton();
+        };
+        cardEl.addEventListener("animationend", onEnd);
+        const fallbackId = setTimeout(() => {
+          cardEl.removeEventListener("animationend", onEnd);
+          enableButton();
+        }, fallbackDelayMs);
+      }
     }
-  }
+  });
 }
 
 export async function setupRandomJudokaPage() {
@@ -264,16 +277,19 @@ export async function setupRandomJudokaPage() {
 
   const onSelect = (j) => addToHistory(historyManager, historyList, j);
 
-  drawButton.addEventListener("click", () =>
-    displayCard({
+  drawButton.addEventListener("click", () => {
+    const delay =
+      typeof drawButton.fallbackDelayMs === "number" ? drawButton.fallbackDelayMs : undefined;
+    drawButton.drawPromise = displayCard({
       dataLoaded,
       drawButton,
       cachedJudokaData: judokaData,
       cachedGokyoData: gokyoData,
       prefersReducedMotion,
-      onSelect
-    })
-  );
+      onSelect,
+      fallbackDelayMs: delay
+    });
+  });
 
   toggleHistoryBtn.addEventListener("click", () => toggleHistory(historyPanel, toggleHistoryBtn));
 
