@@ -39,14 +39,29 @@ import {
   const launchOptions = { headless };
   if (process.env.GOOGLE_CHROME_PATH) launchOptions.executablePath = process.env.GOOGLE_CHROME_PATH;
 
-  const browser = await chromium.launch(launchOptions);
+  // Prevent the whole script from hanging indefinitely. Adjustable via DEBUG_TIMEOUT_MS (ms).
+  const overallTimeout = parseInt(process.env.DEBUG_TIMEOUT_MS || "30000", 10);
+  let timeoutId = null;
+  let browser = null;
+  timeoutId = setTimeout(() => {
+    console.error(`ERROR: debugBattleProgression overall timeout after ${overallTimeout}ms`);
+    // Set a non-zero exit code to indicate timeout.
+    process.exitCode = 2;
+    if (browser && typeof browser.close === "function") {
+      // best-effort close; can't await here because this is inside a timer
+      browser.close().catch(() => {});
+    }
+  }, overallTimeout);
+
+  browser = await chromium.launch(launchOptions);
   const context = await browser.newContext();
   const page = await context.newPage();
   await installSelectorGuard(page);
   attachLoggers(page, { withLocations: true });
 
   try {
-    await page.goto(url, { waitUntil: "domcontentloaded" });
+    // Give navigation a finite timeout to avoid hanging on slow loads.
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 10000 });
 
     console.log("TITLE", await page.title());
 
@@ -135,6 +150,14 @@ import {
     console.error("ERROR", err);
     process.exitCode = 1;
   } finally {
-    await browser.close();
+    // Clear watchdog and close browser if still open.
+    if (timeoutId) clearTimeout(timeoutId);
+    if (browser && typeof browser.close === "function") {
+      try {
+        await browser.close();
+      } catch {
+        // swallow close errors; nothing else we can do
+      }
+    }
   }
 })();
