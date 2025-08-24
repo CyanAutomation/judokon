@@ -1,256 +1,139 @@
+/**
+ * Battle progression debugger: navigate, probe machine/store, click a stat, report snapshot.
+ *
+ * @pseudocode
+ * 1. Build URL from BASE_URL/PORT; parse env flags.
+ * 2. Launch Chromium with HEADLESS flag; attach loggers and selector guard.
+ * 3. Navigate to battle page with autostart.
+ * 4. Optionally wait for buttons ready and/or pre-seed store selection.
+ * 5. Try to click chosen STAT; optionally force DOM-dispatch if enabled.
+ * 6. Wait briefly for guard/outcome; collect a structured snapshot.
+ * 7. Save screenshot(s) and print summary; set exit code on fatal errors.
+ */
 import { chromium } from "playwright";
+import {
+  buildBaseUrl,
+  installSelectorGuard,
+  attachLoggers,
+  waitButtonsReady,
+  getStatButtons,
+  tryClickStat,
+  getBattleSnapshot,
+  takeScreenshot
+} from "./lib/debugUtils.js";
 
 (async function run() {
-  // Prefer an explicit chrome path via env var if provided (useful in CI or devcontainers).
-  // Otherwise, omit executablePath to let Playwright use its bundled browser.
-  const launchOptions = { headless: true };
-  if (process.env.GOOGLE_CHROME_PATH) {
-    launchOptions.executablePath = process.env.GOOGLE_CHROME_PATH;
-  }
+  const headless = process.env.HEADLESS !== "0";
+  const stat = process.env.STAT || "power";
+  const preseed = process.env.DEBUG_PRESEED_CHOICE === "1";
+  const forceClick = process.env.DEBUG_FORCE_CLICK === "1";
+  const waitReady = process.env.WAIT_BUTTONS_READY === "1";
+  const disabledShotPath =
+    process.env.SCREENSHOT_PATH_DISABLED ||
+    "/workspaces/judokon/playwright-battleProgression-disabled.png";
+  const shotPath =
+    process.env.SCREENSHOT_PATH || "/workspaces/judokon/playwright-battleProgression.png";
+  const base = buildBaseUrl();
+  const url = `${base}/src/pages/battleJudoka.html?autostart=1`;
+
+  const launchOptions = { headless };
+  if (process.env.GOOGLE_CHROME_PATH) launchOptions.executablePath = process.env.GOOGLE_CHROME_PATH;
+
   const browser = await chromium.launch(launchOptions);
-  const page = await browser.newPage();
-  // Install an init script that wraps querySelector to catch non-string selectors early
-  await page.addInitScript({
-    content: `(() => {
-      try {
-        const wrap = (orig, where) => function(sel) {
-          try {
-            if (typeof sel !== 'string') {
-              try {
-                window.__classicBattleQuerySelectorError = {
-                  selector: sel,
-                  where,
-                  stack: (new Error()).stack
-                };
-              } catch {}
-            }
-          } catch {}
-          return orig.call(this, sel);
-        };
-        if (Document && Document.prototype && Document.prototype.querySelector) {
-          Document.prototype.querySelector = wrap(Document.prototype.querySelector, 'Document.querySelector');
-        }
-        if (Element && Element.prototype && Element.prototype.querySelector) {
-          Element.prototype.querySelector = wrap(Element.prototype.querySelector, 'Element.querySelector');
-        }
-      } catch {}
-    })();`
-  });
-  page.on("console", (m) => console.log("PAGE LOG>", m.type(), m.text()));
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await installSelectorGuard(page);
+  attachLoggers(page, { withLocations: true });
+
   try {
-    await page.goto("http://localhost:5000/src/pages/battleJudoka.html?autostart=1");
+    await page.goto(url, { waitUntil: "domcontentloaded" });
+
     console.log("TITLE", await page.title());
 
-    // Prefer direct debug helpers when available so we don't need long waits.
-    const machineInfo = await page.evaluate(() => {
-      try {
-        // Common newly-added helpers (try them in order).
-        if (typeof window.__getBattleSnapshot === "function") {
-          return { helper: "__getBattleSnapshot", value: window.__getBattleSnapshot() };
-        }
-        if (typeof window.getBattleSnapshot === "function") {
-          return { helper: "getBattleSnapshot", value: window.getBattleSnapshot() };
-        }
-        // Fallback to reading the classic state object directly.
-        if (typeof window.__classicBattleState !== "undefined") {
-          return { helper: "__classicBattleState", value: window.__classicBattleState };
-        }
-      } catch {}
-      return null;
-    });
-    if (machineInfo) {
-      console.log("MACHINE INFO (immediate):", machineInfo.helper, machineInfo.value);
-    } else {
-      // Short fallback: wait briefly for initialization but avoid long blocking waits
-      try {
-        await page.waitForFunction(() => typeof window.__classicBattleState !== "undefined", {
-          timeout: 2000
-        });
-        console.log(
-          "MACHINE STATE (after short wait)",
-          await page.evaluate(() => window.__classicBattleState)
-        );
-      } catch {
-        console.log("MACHINE STATE not available immediately");
-      }
+    if (waitReady) {
+      await waitButtonsReady(page, { requireReadyFlag: true, timeout: 8000 });
     }
 
-    // Attempt to read stat buttons immediately; fall back to a short wait only if none found.
-    let names = await page
-      .$$eval("#stat-buttons button", (els) =>
-        els.map((b) => ({ text: b.textContent, stat: b.dataset.stat, disabled: b.disabled }))
-      )
-      .catch(() => []);
-    if (!names || names.length === 0) {
+    let names = await getStatButtons(page);
+    if (!names.length && !waitReady) {
       try {
-        await page.waitForSelector("#stat-buttons", { timeout: 1500 });
-        names = await page.$$eval("#stat-buttons button", (els) =>
-          els.map((b) => ({ text: b.textContent, stat: b.dataset.stat, disabled: b.disabled }))
-        );
-      } catch {
-        // give up quickly - we prefer immediate inspection flows
-        console.log("STAT BUTTONS not found quickly");
-        names = [];
-      }
+        await waitButtonsReady(page, { requireReadyFlag: false, timeout: 1500 });
+      } catch {}
+      names = await getStatButtons(page);
     }
+
     console.log("STAT BUTTONS", JSON.stringify(names));
 
-    // Try to pre-seed a playerChoice in the shared store so the guard won't interrupt
-    try {
-      await page.evaluate(() => {
-        try {
-          if (window.battleStore && !window.battleStore.playerChoice) {
-            window.battleStore.playerChoice = "power";
-            window.battleStore.selectionMade = true;
-          }
-        } catch {}
-      });
-      console.log('Pre-seeded playerChoice="power" in window.battleStore (if available)');
-    } catch {}
-
-    // Improved console logging with location (if available)
-    page.on("console", (m) => {
-      const loc = typeof m.location === "function" ? m.location() : null;
-      console.log(
-        "PAGE LOG>",
-        m.type(),
-        m.text(),
-        loc ? `${loc.url}:${loc.lineNumber}:${loc.columnNumber}` : ""
-      );
-    });
-
-    // Click the power button if present. Prefer immediate check rather than waiting for enablement.
-    const powerSelector = '#stat-buttons button[data-stat="power"]';
-    const isDisabled = await page
-      .$eval(powerSelector, (b) => b.disabled)
-      .catch(() => {
-        // If the button isn't present, treat as disabled and continue without long waits
-        return true;
-      });
-    // If the machine is in waitingForPlayerAction or roundDecision, try to simulate a player choice
-    // by setting the shared store value. This helps bypass headless guard paths that trigger interrupts.
-    try {
-      const curState = await page.evaluate(() => window.__classicBattleState || null);
-      if (curState === "waitingForPlayerAction" || curState === "roundDecision") {
-        console.log("Simulating player choice 'power' in battleStore to avoid guard interrupt");
-        await page.evaluate(() => {
+    if (preseed) {
+      try {
+        await page.evaluate((chosen) => {
           try {
             if (window.battleStore && !window.battleStore.playerChoice) {
-              window.battleStore.playerChoice = "power";
+              window.battleStore.playerChoice = chosen;
               window.battleStore.selectionMade = true;
             }
           } catch {}
-        });
+        }, stat);
+
+        console.log(`Pre-seeded playerChoice="${stat}" in window.battleStore`);
+      } catch {}
+    }
+
+    // Probe quick machine info
+    try {
+      const machineInfo = await page.evaluate(() => {
+        try {
+          if (typeof window.__getBattleSnapshot === "function") {
+            return { helper: "__getBattleSnapshot", value: window.__getBattleSnapshot() };
+          }
+          if (typeof window.getBattleSnapshot === "function") {
+            return { helper: "getBattleSnapshot", value: window.getBattleSnapshot() };
+          }
+          if (typeof window.__classicBattleState !== "undefined") {
+            return { helper: "__classicBattleState", value: window.__classicBattleState };
+          }
+        } catch {}
+        return null;
+      });
+      if (machineInfo) {
+        console.log("MACHINE INFO (immediate):", machineInfo.helper, machineInfo.value);
       }
     } catch {}
-    if (isDisabled) {
-      console.log(
-        "Power button is disabled or missing — skipping long waits and capturing quick snapshot"
-      );
-      const state = await page.evaluate(() => ({
-        state: window.__classicBattleState || null,
-        prev: window.__classicBattlePrevState || null,
-        lastEvent: window.__classicBattleLastEvent || null,
-        lastInterruptReason: window.__classicBattleLastInterruptReason || null,
-        lastQuerySelectorError: window.__classicBattleQuerySelectorError || null,
-        log: window.__classicBattleStateLog || []
-      }));
-      console.log("DISABLED_STATE", JSON.stringify(state, null, 2));
-      await page
-        .screenshot({
-          path: "/workspaces/judokon/playwright-battleProgression-disabled.png",
-          fullPage: true
-        })
-        .catch(() => {});
+
+    // Attempt to click chosen stat
+    const clickRes = await tryClickStat(page, stat, { force: forceClick, timeout: 1500 });
+
+    console.log("CLICK", stat, JSON.stringify(clickRes));
+
+    if (!clickRes.ok && !forceClick) {
+      const snap = await getBattleSnapshot(page);
+
+      console.log("DISABLED_STATE", JSON.stringify(snap, null, 2));
+      await takeScreenshot(page, disabledShotPath);
+      process.exitCode = 1;
+      return;
     }
 
-    // Attempt click if enabled now
+    // Short settle for immediate handlers/guard
     try {
-      await page.click(powerSelector);
-      console.log("CLICKED POWER");
-    } catch (err) {
-      console.error("CLICK FAILED", String(err));
-      // Fallback: attempt an in-page DOM click that bypasses Playwright's enabled/visible checks.
-      try {
-        const fallbackResult = await page.evaluate((sel) => {
-          try {
-            const el = document.querySelector(sel);
-            if (!el) return { ok: false, reason: "no-element" };
-            // Force-enable visually/semantically where reasonable for testing
-            try {
-              el.disabled = false;
-            } catch {}
-            try {
-              el.classList.remove && el.classList.remove("disabled");
-            } catch {}
-            try {
-              if (el.tabIndex === -1) el.tabIndex = 0;
-            } catch {}
-            // Dispatch a click event
-            el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-            return { ok: true, reason: "dispatched" };
-          } catch (e) {
-            return { ok: false, reason: String(e) };
-          }
-        }, powerSelector);
-        console.log("DOM click fallback result", fallbackResult);
-      } catch (e) {
-        console.error("DOM click fallback failed", String(e));
-      }
-    }
-
-    // Wait briefly for any orchestrator resolution, but prefer to read guard outcome helpers if present.
-    try {
-      const guardOutcome = await page.evaluate(() => {
-        if (typeof window.__getGuardOutcome === "function") return window.__getGuardOutcome();
-        return window.__guardOutcomeEvent || null;
-      });
-      if (!guardOutcome) {
-        // short sleep to let immediate handlers run; keep it tiny to avoid long tests
-        await page.waitForTimeout(200);
-      }
+      const guardOutcome = await page.evaluate(() => window.__guardOutcomeEvent || null);
+      if (!guardOutcome) await page.waitForTimeout(200);
     } catch {
       await page.waitForTimeout(200);
     }
 
-    const state = await page.evaluate(() => ({
-      state: window.__classicBattleState || null,
-      prev: window.__classicBattlePrevState || null,
-      lastEvent: window.__classicBattleLastEvent || null,
-      lastInterruptReason: window.__classicBattleLastInterruptReason || null,
-      lastQuerySelectorError: window.__classicBattleQuerySelectorError || null,
-      log: window.__classicBattleStateLog || [],
-      roundDebug: window.__roundDebug || null,
-      guardFiredAt: window.__guardFiredAt || null,
-      guardOutcome: window.__guardOutcomeEvent || null,
-      store: window.battleStore
-        ? {
-            selectionMade: window.battleStore.selectionMade,
-            playerChoice: window.battleStore.playerChoice
-          }
-        : null,
-      machineTimer: document.getElementById("machine-timer")
-        ? {
-            remaining: document.getElementById("machine-timer").dataset.remaining,
-            paused: document.getElementById("machine-timer").dataset.paused
-          }
-        : null,
-      machineStateEl: document.getElementById("machine-state")
-        ? document.getElementById("machine-state").textContent
-        : null
-    }));
-    console.log("AFTER CLICK", JSON.stringify(state, null, 2));
+    const snap = await getBattleSnapshot(page);
 
-    const debug = await page.$eval("#debug-output", (el) => el.textContent).catch(() => null);
-    console.log("DEBUG PANEL", debug);
+    console.log("AFTER CLICK", JSON.stringify(snap, null, 2));
 
-    await page.screenshot({
-      path: "/workspaces/judokon/playwright-battleProgression.png",
-      fullPage: true
-    });
-    console.log("screenshot saved");
+    const debugText = await page.$eval("#debug-output", (el) => el.textContent).catch(() => null);
+
+    console.log("DEBUG PANEL", debugText);
+
+    await takeScreenshot(page, shotPath);
   } catch (err) {
     console.error("ERROR", err);
+    process.exitCode = 1;
   } finally {
     await browser.close();
   }
