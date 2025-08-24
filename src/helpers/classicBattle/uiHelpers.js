@@ -83,7 +83,7 @@ export function showSelectionPrompt() {
   if (el) {
     el.textContent = "";
   }
-  snackbar.showSnackbar("Select your move");
+  showSnackbar("Select your move");
   emitBattleEvent("roundPrompt");
   try {
     if (isTestModeEnabled()) console.warn("[test] roundPrompt emitted");
@@ -257,7 +257,7 @@ export function updateDebugPanel() {
 export function showRoundOutcome(message) {
   showResult(message);
   scoreboard.showMessage(message);
-  snackbar.showSnackbar(message);
+  showSnackbar(message);
 }
 
 /**
@@ -875,10 +875,7 @@ onBattleEvent("opponentReveal", () => {
 
 onBattleEvent("statSelected", () => {
   scoreboard.clearTimer();
-  opponentSnackbarId = setTimeout(
-    () => snackbar.showSnackbar("Opponent is choosing…"),
-    opponentDelayMs
-  );
+  opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), opponentDelayMs);
 });
 
 onBattleEvent("roundResolved", (e) => {
