@@ -28,7 +28,7 @@ test.describe.parallel("Pseudo-Japanese toggle", () => {
       )
     );
     await page.goto("/src/pages/meditation.html");
-    await page.waitForSelector("#quote .quote-content");
+    await page.evaluate(() => window.quoteReadyPromise);
   });
 
   test("toggle updates quote text", async ({ page }) => {
