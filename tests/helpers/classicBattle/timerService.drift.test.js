@@ -1,6 +1,47 @@
 import { describe, it, expect, vi } from "vitest";
 import { createTimerNodes } from "./domUtils.js";
 
+function createScheduler() {
+  let now = 0;
+  const timers = new Set();
+  return {
+    setTimeout(fn, delay) {
+      const t = { due: now + delay, fn, repeat: false };
+      timers.add(t);
+      return t;
+    },
+    clearTimeout(id) {
+      timers.delete(id);
+    },
+    setInterval(fn, interval) {
+      const t = { due: now + interval, fn, repeat: true, interval };
+      timers.add(t);
+      return t;
+    },
+    clearInterval(id) {
+      timers.delete(id);
+    },
+    tick(ms) {
+      now += ms;
+      let fired;
+      do {
+        fired = false;
+        for (const t of Array.from(timers)) {
+          if (t.due <= now) {
+            t.fn();
+            if (t.repeat) {
+              t.due += t.interval;
+            } else {
+              timers.delete(t);
+            }
+            fired = true;
+          }
+        }
+      } while (fired);
+    }
+  };
+}
+
 describe("timerService drift handling", () => {
   it("startTimer shows fallback on drift", async () => {
     vi.resetModules();
@@ -51,10 +92,10 @@ describe("timerService drift handling", () => {
       return { ...actual, startCoolDown };
     });
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
-    const timer = vi.useFakeTimers();
+    const scheduler = createScheduler();
     createTimerNodes();
-    mod.scheduleNextRound({ matchEnded: false });
-    timer.advanceTimersByTime(2000);
+    mod.scheduleNextRound({ matchEnded: false }, scheduler);
+    scheduler.tick(0);
     onDrift(1);
     // Cooldown drift displays a non-intrusive fallback; may use snackbar
     // when a round result message is present. Accept scoreboard fallback too.
@@ -66,6 +107,5 @@ describe("timerService drift handling", () => {
     onDrift(1);
     const usedSnackbar = showSnack.mock.calls.some((c) => c[0] === "Waiting…");
     expect(usedScoreboard || usedSnackbar).toBe(true);
-    timer.clearAllTimers();
   });
 });

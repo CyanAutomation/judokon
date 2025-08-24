@@ -9,6 +9,11 @@ import { autoSelectStat } from "./autoSelectStat.js";
 let nextRoundTimer = null;
 let nextRoundReadyResolve = null;
 
+const realTimers = {
+  setTimeout: (fn, ms) => setTimeout(fn, ms),
+  clearTimeout: (id) => clearTimeout(id)
+};
+
 // Skip handler utilities moved to skipHandler.js
 
 // Local dispatcher that prefers calling the orchestrator export (so tests can spy),
@@ -167,10 +172,17 @@ export async function startTimer(onExpiredSelect) {
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => void} onSelect
  * - Callback to handle stat selection.
  * @param {number} [timeoutMs=5000] - Delay before auto-selecting.
+ * @param {{setTimeout: Function, clearTimeout: Function}} [scheduler=realTimers]
+ * - Timer utilities allowing tests to control time.
  */
-export function handleStatSelectionTimeout(store, onSelect, timeoutMs = 5000) {
+export function handleStatSelectionTimeout(
+  store,
+  onSelect,
+  timeoutMs = 5000,
+  scheduler = realTimers
+) {
   scoreboard.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
-  store.autoSelectId = setTimeout(() => {
+  store.autoSelectId = scheduler.setTimeout(() => {
     autoSelectStat(onSelect);
   }, timeoutMs);
 }
@@ -225,9 +237,11 @@ export function createRoundTimer(onTick, onExpired) {
  *    and resolve the returned promise.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
+ * @param {{setTimeout: Function, clearTimeout: Function}} [scheduler=realTimers]
+ * - Timer utilities allowing tests to control time.
  * @returns {Promise<void>} Resolves after dispatching "ready".
  */
-export function scheduleNextRound(result) {
+export function scheduleNextRound(result, scheduler = realTimers) {
   return new Promise((resolve) => {
     if (result.matchEnded) {
       setSkipHandler(null);
@@ -306,6 +320,6 @@ export function scheduleNextRound(result) {
     }
 
     onTick(cooldownSeconds);
-    setTimeout(() => nextRoundTimer.start(cooldownSeconds), 0);
+    scheduler.setTimeout(() => nextRoundTimer.start(cooldownSeconds), 0);
   });
 }

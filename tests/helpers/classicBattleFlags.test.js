@@ -58,7 +58,10 @@ describe("classicBattlePage feature flag updates", () => {
       _resetForTest: vi.fn()
     }));
     vi.doMock("../../src/helpers/battleJudokaPage.js", () => ({ waitForOpponentCard: vi.fn() }));
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn() }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar: vi.fn(),
+      updateSnackbar: vi.fn()
+    }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({
       initTooltips: vi.fn().mockResolvedValue(() => {})
     }));

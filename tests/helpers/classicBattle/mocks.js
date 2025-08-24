@@ -69,7 +69,8 @@ export function mockBattleJudokaPage() {
 
 export function mockShowSnackbar() {
   vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
-    showSnackbar: vi.fn()
+    showSnackbar: vi.fn(),
+    updateSnackbar: vi.fn()
   }));
 }
 
