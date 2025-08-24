@@ -66,18 +66,19 @@ export async function loadTooltipData(previewEl) {
  *
  * @pseudocode
  * 1. On each input event, clear the previous debounce timer.
- * 2. Set a new timer to update the list after 300ms.
+ * 2. Set a new timer to update the list after `debounceMs` (300ms default).
  * 3. Return a cleanup function to clear the timer and remove the listener.
  *
  * @param {HTMLInputElement} searchInput - Search box element.
  * @param {(filter: string) => void} updateList - Callback to refresh the list.
+ * @param {number} [debounceMs=300] - Delay in milliseconds before updating.
  * @returns {() => void} Cleanup function.
  */
-export function initSearchFilter(searchInput, updateList) {
+export function initSearchFilter(searchInput, updateList, debounceMs = 300) {
   let timer;
   const handler = () => {
     clearTimeout(timer);
-    timer = setTimeout(() => updateList(searchInput.value), 300);
+    timer = setTimeout(() => updateList(searchInput.value), debounceMs);
   };
   searchInput.addEventListener("input", handler);
   return () => {
@@ -93,12 +94,14 @@ export function initSearchFilter(searchInput, updateList) {
  * 1. Detect clipboard support; when absent and no fallback exists, disable the buttons and notify the user.
  * 2. On click, copy the `data-copy` text using `navigator.clipboard` or a temporary `textarea` fallback.
  * 3. If copying succeeds, show "Copied" and add a temporary `copied` class for feedback.
- * 4. When copying fails, inform the user that copying isn't supported.
+ * 4. Remove the `copied` class after `removeDelayMs` (600ms default).
+ * 5. When copying fails, inform the user that copying isn't supported.
  *
  * @param {HTMLButtonElement} keyCopyBtn - Button for copying the key.
  * @param {HTMLButtonElement} bodyCopyBtn - Button for copying the body.
+ * @param {number} [removeDelayMs=600] - Delay before removing the `copied` class.
  */
-export function bindCopyButtons(keyCopyBtn, bodyCopyBtn) {
+export function bindCopyButtons(keyCopyBtn, bodyCopyBtn, removeDelayMs = 600) {
   // Use dynamic import so tests can vi.doMock this module after initial import
   let snackbarPromise;
   const getSnackbar = () => {
@@ -164,7 +167,7 @@ export function bindCopyButtons(keyCopyBtn, bodyCopyBtn) {
     if (success) {
       showMessage("Copied");
       btn.classList.add("copied");
-      setTimeout(() => btn.classList.remove("copied"), 600);
+      setTimeout(() => btn.classList.remove("copied"), removeDelayMs);
     } else {
       showMessage("Copying not supported");
     }
@@ -234,7 +237,7 @@ export function applyHashSelection(listPlaceholder, select) {
  * 5. Apply URL hash selection, then initialize help tooltips.
  * 6. Clean up search filtering on `pagehide`.
  */
-export async function setupTooltipViewerPage() {
+export async function setupTooltipViewerPage({ debounceMs = 300, removeDelayMs = 600 } = {}) {
   // Start loading sanitizer but don't block initial render
   const sanitizerPromise = getSanitizer();
   let sanitize = (s) => s;
@@ -302,11 +305,11 @@ export async function setupTooltipViewerPage() {
     previewToggle.update();
   }
 
-  bindCopyButtons(keyCopyBtn, bodyCopyBtn);
+  bindCopyButtons(keyCopyBtn, bodyCopyBtn, removeDelayMs);
   if (typeof requestIdleCallback === "function") {
     requestIdleCallback(() => import("./showSnackbar.js").catch(() => {}));
   }
-  const cleanupSearch = initSearchFilter(searchInput, updateList);
+  const cleanupSearch = initSearchFilter(searchInput, updateList, debounceMs);
   window.addEventListener("pagehide", cleanupSearch, { once: true });
 
   updateList();
@@ -314,4 +317,22 @@ export async function setupTooltipViewerPage() {
   initTooltips();
 }
 
-onDomReady(setupTooltipViewerPage);
+let initPromise;
+/**
+ * Factory to initialize the Tooltip Viewer page and expose a ready promise.
+ *
+ * @pseudocode
+ * 1. If initialization hasn't started, call {@link setupTooltipViewerPage} with the provided options.
+ * 2. Store and return the resulting promise.
+ *
+ * @param {object} [options] - Options forwarded to {@link setupTooltipViewerPage}.
+ * @returns {Promise<void>} Resolves once initialization completes.
+ */
+export function initTooltipViewerPage(options) {
+  if (!initPromise) {
+    initPromise = setupTooltipViewerPage(options);
+  }
+  return initPromise;
+}
+
+onDomReady(initTooltipViewerPage);
