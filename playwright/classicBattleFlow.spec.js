@@ -34,21 +34,22 @@ test.describe.parallel("Classic battle flow", () => {
 
   test("timer auto-selects when expired", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
-    const countdown = page.locator("header #next-round-timer");
-    await expect(countdown).toHaveText(/\d+/);
+    // The visible pre-round countdown is rendered in the snackbar. The
+    // header timer may be empty before the first round starts, so assert
+    // against the snackbar which reports the countdown reliably.
+    const sn = page.locator(".snackbar");
+    await expect(sn).toHaveText(/Next round in: \d+s/);
     await page.evaluate(() => window.skipBattlePhase?.());
     await page.evaluate(() => window.freezeBattleHeader?.());
     const result = page.locator("header #round-message");
     await expect(result).not.toHaveText("");
-    const snackbar = page.locator(".snackbar");
-    await expect(snackbar).toHaveText(/Next round in: \d+s/);
+    await expect(sn).toHaveText(/Next round in: \d+s/);
   });
 
   test("tie message appears on equal stats", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
     await page.evaluate(() => window.skipBattlePhase?.());
     await page.evaluate(() => window.freezeBattleHeader?.());
-    const timer = page.locator("header #next-round-timer");
     await page.evaluate(_resetForTest);
     await page.evaluate(setTieRound);
     await page.locator("button[data-stat='power']").click();
