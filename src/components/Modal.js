@@ -56,11 +56,6 @@ export class Modal {
   }
 
   /**
-   * Trap focus within the given element.
-   * @param {HTMLElement} el
-   * @returns {() => void} Cleanup function.
-   */
-  /**
    * Traps focus within a given element, ensuring keyboard navigation stays within its boundaries.
    *
    * @pseudocode

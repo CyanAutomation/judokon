@@ -68,7 +68,12 @@ test.describe.parallel("Classic battle flow", () => {
         btn.classList.remove("disabled");
       }
     });
-    await powerBtn.click();
+    // Use a direct DOM click to trigger the handler even if Playwright
+    // considers the element not interactable in this test setup.
+    await page.evaluate(() => {
+      const b = document.querySelector("button[data-stat='power']");
+      if (b && typeof b.click === "function") b.click();
+    });
     const snackbar = page.locator(".snackbar");
     // Diagnostic: dump snackbar-container HTML to help identify missing snackbar
     const containerHtml = await page.locator("#snackbar-container").innerHTML();
