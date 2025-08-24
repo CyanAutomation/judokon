@@ -4,6 +4,9 @@ import { loadCountryMapping, getFlagUrl } from "../api/countryService.js";
 
 const SCROLL_THRESHOLD_PX = 50;
 
+// Track batch loading state by container element
+const batchState = new WeakMap();
+
 /**
  * Fetch and filter active countries from data files.
  *
@@ -114,6 +117,28 @@ async function renderCountryBatch(container, countries, nameToCode, imageObserve
 }
 
 /**
+ * Load the next batch of countries into the list for the given container.
+ *
+ * @pseudocode
+ * 1. Retrieve batching state for the container.
+ * 2. Slice the next batch of countries using `batchSize`.
+ * 3. Render the batch and update the rendered count.
+ *
+ * @param {HTMLElement} container - Track element that receives buttons.
+ * @returns {Promise<void>} Resolves when the batch is appended.
+ */
+export async function loadNextCountryBatch(container) {
+  const state = batchState.get(container);
+  if (!state) {
+    return;
+  }
+  const { activeCountries, nameToCode, batchSize, imageObserver } = state;
+  const batch = activeCountries.slice(state.rendered, state.rendered + batchSize);
+  await renderCountryBatch(container, batch, nameToCode, imageObserver);
+  state.rendered += batch.length;
+}
+
+/**
  * Populate a scrolling list of active countries with flag buttons.
  *
  * @pseudocode
@@ -142,25 +167,26 @@ export async function populateCountryList(container) {
 
     const scrollContainer = container.parentElement || container;
     const connection = typeof navigator !== "undefined" ? navigator.connection : undefined;
-    const BATCH_SIZE = determineBatchSize(connection);
+    const batchSize = determineBatchSize(connection);
     const imageObserver = initLazyFlagLoader(scrollContainer);
-    let rendered = 0;
-
-    const renderBatch = async () => {
-      const batch = activeCountries.slice(rendered, rendered + BATCH_SIZE);
-      await renderCountryBatch(container, batch, nameToCode, imageObserver);
-      rendered += batch.length;
+    const state = {
+      activeCountries,
+      nameToCode,
+      batchSize,
+      imageObserver,
+      rendered: 0
     };
+    batchState.set(container, state);
 
-    await renderBatch();
-    if (activeCountries.length > rendered) {
+    await loadNextCountryBatch(container);
+    if (activeCountries.length > state.rendered) {
       const handleScroll = async () => {
         if (
           scrollContainer.scrollTop + scrollContainer.clientHeight >=
           scrollContainer.scrollHeight - SCROLL_THRESHOLD_PX
         ) {
-          await renderBatch();
-          if (rendered >= activeCountries.length) {
+          await loadNextCountryBatch(container);
+          if (state.rendered >= activeCountries.length) {
             scrollContainer.removeEventListener("scroll", handleScroll);
           }
         }
