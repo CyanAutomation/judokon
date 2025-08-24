@@ -33,6 +33,9 @@ test.describe.parallel("Status aria attributes", () => {
   for (const url of pages) {
     test(`${url} has role=status and aria-live=polite`, async ({ page }) => {
       await page.goto(url, { waitUntil: "domcontentloaded" });
+      if (url.endsWith("/src/pages/settings.html")) {
+        await page.waitForSelector("[data-settings-ready]");
+      }
       const statuses = await page.$$('[role="status"]');
       expect(statuses.length).toBeGreaterThan(0);
       for (const el of statuses) {

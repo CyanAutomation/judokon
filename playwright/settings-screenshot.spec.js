@@ -23,6 +23,7 @@ test.describe.parallel(
           );
         }, mode);
         await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
+        await page.waitForSelector("[data-settings-ready]");
         await expect(page.locator("body")).toHaveAttribute("data-theme", mode);
         await expect(page).toHaveScreenshot(`settings-${mode}.png`, { fullPage: true });
       });
