@@ -68,6 +68,12 @@ test.describe.parallel("Classic battle flow", () => {
         btn.classList.remove("disabled");
       }
     });
+    // Ensure snackbars are not globally disabled (test feature-flag race)
+    await page.evaluate(() => {
+      try {
+        window.__disableSnackbars = false;
+      } catch {}
+    });
     // Use a direct DOM click to trigger the handler even if Playwright
     // considers the element not interactable in this test setup.
     await page.evaluate(() => {
