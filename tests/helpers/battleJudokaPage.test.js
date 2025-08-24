@@ -12,12 +12,22 @@ describe("waitForOpponentCard", () => {
     container.id = "opponent-card";
     document.body.append(container);
 
-    const promise = waitForOpponentCard();
+    const callbacks = [];
+    class ObserveStub {
+      constructor(cb) {
+        callbacks.push(cb);
+      }
+      observe() {}
+      disconnect() {}
+    }
 
-    await Promise.resolve();
+    const promise = waitForOpponentCard(undefined, ObserveStub);
+
     const card = document.createElement("div");
     card.className = "judoka-card";
     container.appendChild(card);
+
+    callbacks.forEach((cb) => cb());
 
     await expect(promise).resolves.toBeUndefined();
   });
