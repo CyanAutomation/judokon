@@ -5,6 +5,13 @@
  */
 import { escapeHTML } from "../utils.js";
 
+let resolveQuoteReady;
+if (typeof window !== "undefined") {
+  window.quoteReadyPromise = new Promise((resolve) => {
+    resolveQuoteReady = resolve;
+  });
+}
+
 /**
  * @typedef {Object} QuoteLoadState
  * @property {boolean} kgImageLoaded
@@ -75,6 +82,13 @@ function renderFallback() {
   }
 }
 
+function notifyQuoteReady() {
+  resolveQuoteReady?.();
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("quote:ready"));
+  }
+}
+
 /**
  * Renders the fable or a fallback message and updates load state.
  *
@@ -84,6 +98,7 @@ function renderFallback() {
  * 3. Hide the loader and reveal the quote block.
  * 4. Reveal and focus the language toggle if it exists, updating live region text.
  * 5. Mark `quoteLoaded` on `state` and call `checkAssetsReady(state)`.
+ * 6. Dispatch `quote:ready` to signal the markup is available.
  *
  * @param {Object|null} fable - The fable object containing the title and story, or `null` if unavailable.
  * @param {QuoteLoadState} state
@@ -118,4 +133,5 @@ export function displayFable(fable, state) {
   }
   state.quoteLoaded = true;
   checkAssetsReady(state);
+  notifyQuoteReady();
 }
