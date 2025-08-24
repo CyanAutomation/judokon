@@ -10,6 +10,7 @@ const rounds = JSON.parse(readFileSync(resolve("src/data/battleRounds.json"), "u
 test.describe.parallel("Classic battle flow", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
+      window.__NEXT_ROUND_COOLDOWN_MS = 0;
       localStorage.setItem(
         "settings",
         JSON.stringify({ featureFlags: { enableTestMode: { enabled: false } } })
@@ -39,9 +40,9 @@ test.describe.parallel("Classic battle flow", () => {
     await page.evaluate(() => window.skipBattlePhase?.());
     await page.evaluate(() => window.freezeBattleHeader?.());
     const result = page.locator("header #round-message");
-    await expect(result).not.toHaveText("", { timeout: 15000 });
+    await expect(result).not.toHaveText("");
     const snackbar = page.locator(".snackbar");
-    await expect(snackbar).toHaveText(/Next round in: \d+s/, { timeout: 15000 });
+    await expect(snackbar).toHaveText(/Next round in: \d+s/);
   });
 
   test("tie message appears on equal stats", async ({ page }) => {
@@ -57,7 +58,7 @@ test.describe.parallel("Classic battle flow", () => {
     await expect(snackbar).toHaveText("You Picked: Power");
     const msg = page.locator("header #round-message");
     await expect(msg).toHaveText(/Tie/);
-    await expect(snackbar).toHaveText(/Next round in: \d+s/, { timeout: 15000 });
+    await expect(snackbar).toHaveText(/Next round in: \d+s/);
   });
 
   test("quit match confirmation", async ({ page }) => {
@@ -66,7 +67,7 @@ test.describe.parallel("Classic battle flow", () => {
     await roundOptions.first().waitFor();
     await roundOptions.first().click();
     await expect(page.locator(".modal-backdrop:not([hidden])")).toHaveCount(0);
-    await page.waitForSelector('[data-ready="true"]');
+    await page.evaluate(() => window.battleReadyPromise);
     await page.locator("[data-testid='home-link']").click();
     const confirmButton = page.locator("#confirm-quit-button");
     await confirmButton.waitFor({ state: "attached" });
