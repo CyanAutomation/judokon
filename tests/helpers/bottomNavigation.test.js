@@ -32,7 +32,7 @@ describe("populateNavbar", () => {
       <li><a data-testid="nav-3"></a></li>
     `;
 
-    vi.mock("../../src/helpers/gameModeUtils.js", () => ({
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
       loadNavigationItems: vi.fn().mockResolvedValue([
         { id: 1, category: "mainMenu", order: 2, isHidden: false },
         { id: 2, category: "mainMenu", order: 1, isHidden: true },
@@ -41,15 +41,37 @@ describe("populateNavbar", () => {
     }));
 
     const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
-
+    const ready = new Promise((resolve) =>
+      document.addEventListener("nav:ready", resolve, { once: true })
+    );
     await populateNavbar();
-
+    await ready;
     const links = navBar.querySelectorAll("a");
     expect(links[0].style.order).toBe("2");
     expect(links[0].classList.contains("hidden")).toBe(false);
     expect(links[1].style.order).toBe("1");
     expect(links[1].classList.contains("hidden")).toBe(true);
     expect(links[2].classList.contains("hidden")).toBe(true);
+  });
+
+  it("dispatches nav:ready event", async () => {
+    const navBar = setupDom();
+    navBar.querySelector("ul").innerHTML = '<li><a data-testid="nav-1"></a></li>';
+
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems: vi.fn().mockResolvedValue([])
+    }));
+
+    const ready = new Promise((resolve) =>
+      document.addEventListener("nav:ready", resolve, { once: true })
+    );
+
+    const { populateNavbar } = await import("../../src/helpers/navigationBar.js");
+
+    await populateNavbar();
+    await ready;
+
+    expect(document.body.dataset.navReady).toBe("true");
   });
 
   it("highlights the active link based on pathname", async () => {

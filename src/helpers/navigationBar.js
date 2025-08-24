@@ -66,6 +66,13 @@ function addTouchFeedback() {
  */
 export async function populateNavbar() {
   if (typeof document === "undefined") return;
+  const signalReady = () => {
+    document.body?.setAttribute("data-nav-ready", "true");
+    const evt = document.defaultView?.Event
+      ? new document.defaultView.Event("nav:ready")
+      : new Event("nav:ready");
+    document.dispatchEvent(evt);
+  };
   try {
     const links = document.querySelectorAll('a[data-testid^="nav-"]');
     if (links.length === 0) return;
@@ -88,5 +95,7 @@ export async function populateNavbar() {
     highlightActiveLink();
   } catch (error) {
     console.error("Error applying navigation items:", error);
+  } finally {
+    signalReady();
   }
 }
