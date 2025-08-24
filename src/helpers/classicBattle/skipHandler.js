@@ -23,17 +23,11 @@ export function setSkipHandler(fn) {
   } catch {}
   if (pendingSkip && skipHandler) {
     // Immediately consume the pending skip by invoking the handler.
-    // Keep the handler in place during the call so semantics match callers
-    // that expect the handler to be called when it's registered.
+    // Call synchronously so tests observe the invocation right after
+    // `setSkipHandler` returns (the handler itself may decide to defer work).
     pendingSkip = false;
     try {
-      // Invoke asynchronously to avoid surprising synchronous execution
-      // in the caller but run in the next macrotask so tests observe it.
-      setTimeout(() => {
-        try {
-          skipHandler && skipHandler();
-        } catch {}
-      }, 0);
+      skipHandler && skipHandler();
     } catch {}
   }
 }

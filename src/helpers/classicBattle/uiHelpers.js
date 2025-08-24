@@ -4,7 +4,7 @@ import { getScores, getTimerState, isMatchEnded, STATS } from "../battleEngineFa
 import { isTestModeEnabled, getCurrentSeed, setTestMode } from "../testModeUtils.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
-import * as snackbar from "../showSnackbar.js";
+import { showSnackbar } from "../showSnackbar.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showResult } from "../battle/index.js";
 import { shouldReduceMotionSync } from "../motionUtils.js";
@@ -509,7 +509,7 @@ export function initStatButtons(store) {
       // Show snackbar immediately so tests and observers can see the message
       // synchronously; visual state changes remain deferred to the next frame.
       try {
-        snackbar.showSnackbar(`You Picked: ${btn.textContent}`);
+        showSnackbar(`You Picked: ${btn.textContent}`);
       } catch {}
       requestAnimationFrame(() => {
         try {
