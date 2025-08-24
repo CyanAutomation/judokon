@@ -23,13 +23,12 @@ describe("appendCards", () => {
 
     const container = document.createElement("div");
     const judokaList = [{ id: 1, firstname: "Real", surname: "Judoka" }];
-    const replacementPromise = appendCards(container, judokaList, {});
-    await Promise.resolve();
+    const { ready } = appendCards(container, judokaList, {});
 
     const initialCard = container.firstElementChild;
     const img = initialCard.querySelector("img");
-    img.dispatchEvent(new Event("error"));
-    await replacementPromise;
+    queueMicrotask(() => img.dispatchEvent(new Event("error")));
+    await ready;
 
     expect(getFallbackJudoka).toHaveBeenCalled();
     expect(container.children.length).toBe(1);
