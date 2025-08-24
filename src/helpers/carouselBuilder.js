@@ -150,9 +150,6 @@ function validateGokyoData(gokyoData) {
   return createGokyoLookup(gokyoData);
 }
 
-
-
-
 /**
  * Builds a responsive, accessible carousel of judoka cards with scroll buttons, scroll markers, and robust error handling.
  *

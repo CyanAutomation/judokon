@@ -55,7 +55,7 @@ export class Modal {
     this.element.addEventListener("click", this.handleBackdropClick);
   }
 
-    /**
+  /**
    * Traps focus within a given element, ensuring keyboard navigation stays within its boundaries.
    *
    * @pseudocode
@@ -64,15 +64,15 @@ export class Modal {
    * 3. If `focusables` is empty (no focusable elements found), return an empty function immediately as there's nothing to trap.
    * 4. Identify the `first` and `last` focusable elements from the `focusables` list.
    * 5. Define a `handle` function to serve as the keydown event listener:
- *    a. Check if the pressed key (`e.key`) is "Tab". If not, exit the handler.
- *    b. If "Shift" key is also pressed (`e.shiftKey`) AND the currently active element (`document.activeElement`) is the `first` focusable element:
- *       i. Prevent the default tab behavior (`e.preventDefault()`).
- *       ii. Move focus to the `last` focusable element.
- *    c. Else if "Shift" key is NOT pressed AND the currently active element is the `last` focusable element:
- *       i. Prevent the default tab behavior (`e.preventDefault()`).
- *       ii. Move focus to the `first` focusable element.
- * 6. Add the `handle` function as a "keydown" event listener to the `el` element.
- * 7. Return a cleanup function that, when called, will remove the "keydown" event listener from `el`, effectively disabling the focus trap.
+   *    a. Check if the pressed key (`e.key`) is "Tab". If not, exit the handler.
+   *    b. If "Shift" key is also pressed (`e.shiftKey`) AND the currently active element (`document.activeElement`) is the `first` focusable element:
+   *       i. Prevent the default tab behavior (`e.preventDefault()`).
+   *       ii. Move focus to the `last` focusable element.
+   *    c. Else if "Shift" key is NOT pressed AND the currently active element is the `last` focusable element:
+   *       i. Prevent the default tab behavior (`e.preventDefault()`).
+   *       ii. Move focus to the `first` focusable element.
+   * 6. Add the `handle` function as a "keydown" event listener to the `el` element.
+   * 7. Return a cleanup function that, when called, will remove the "keydown" event listener from `el`, effectively disabling the focus trap.
    *
    * @param {HTMLElement} el - The element within which to trap focus.
    * @returns {() => void} A function to call to remove the focus trap.
