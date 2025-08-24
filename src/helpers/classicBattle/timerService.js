@@ -7,6 +7,7 @@ import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
 
 let nextRoundTimer = null;
+let nextRoundReadyResolve = null;
 
 // Skip handler utilities moved to skipHandler.js
 
@@ -41,6 +42,10 @@ export async function onNextButtonClick() {
     btn.disabled = true;
     delete btn.dataset.nextReady;
     await dispatchBattleEventLocal("ready");
+    if (typeof nextRoundReadyResolve === "function") {
+      nextRoundReadyResolve();
+      nextRoundReadyResolve = null;
+    }
     setSkipHandler(null);
     return;
   }
@@ -208,71 +213,84 @@ export function createRoundTimer(onTick, onExpired) {
  * Enable the Next Round button after a cooldown period.
  *
  * @pseudocode
- * 1. If the match ended, return early.
- * 2. Locate `#next-button` and `#next-round-timer`; exit if the button is missing.
+ * 1. If the match ended, resolve immediately.
+ * 2. Locate `#next-button` and `#next-round-timer`.
  * 3. After a short delay, run a 3 second cooldown via `startCoolDown`
  *    and display `"Next round in: <n>s"` using one snackbar that updates each tick.
  * 4. Register a skip handler that stops the timer and invokes the expiration logic.
  * 5. When expired, clear the `#next-round-timer` element, set `data-next-ready="true"`,
  *    enable the Next Round button, dispatch `"ready"` to auto-advance the state machine,
- *    and clear the handler.
+ *    and resolve the returned promise.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
+ * @returns {Promise<void>} Resolves after dispatching "ready".
  */
 export function scheduleNextRound(result) {
-  if (result.matchEnded) {
-    setSkipHandler(null);
-    return;
-  }
-
-  const btn = document.getElementById("next-button");
-  const timerEl = document.getElementById("next-round-timer");
-
-  let snackbarStarted = false;
-  let lastRenderedRemaining = -1;
-
-  if (btn) {
-    btn.disabled = false;
-    delete btn.dataset.nextReady;
-  }
-
-  const onTick = (remaining) => {
-    if (remaining <= 0) {
-      scoreboard.clearTimer();
+  return new Promise((resolve) => {
+    if (result.matchEnded) {
+      setSkipHandler(null);
+      resolve();
       return;
     }
-    if (remaining === lastRenderedRemaining) return;
-    const text = `Next round in: ${remaining}s`;
-    if (!snackbarStarted) {
-      snackbar.showSnackbar(text);
-      snackbarStarted = true;
-    } else {
-      snackbar.updateSnackbar(text);
-    }
-    lastRenderedRemaining = remaining;
-  };
 
-  const onExpired = async () => {
-    setSkipHandler(null);
-    scoreboard.clearTimer();
-    if (timerEl) {
-      timerEl.textContent = "";
-    }
+    const btn = document.getElementById("next-button");
+    const timerEl = document.getElementById("next-round-timer");
+
+    let snackbarStarted = false;
+    let lastRenderedRemaining = -1;
+
+    nextRoundReadyResolve = () => {
+      resolve();
+      nextRoundReadyResolve = null;
+    };
+
     if (btn) {
-      btn.dataset.nextReady = "true";
       btn.disabled = false;
+      delete btn.dataset.nextReady;
     }
-    await dispatchBattleEventLocal("ready");
-    updateDebugPanel();
-  };
 
-  nextRoundTimer = createRoundTimer(onTick, onExpired);
-  setSkipHandler(() => nextRoundTimer.stop());
+    const onTick = (remaining) => {
+      if (remaining <= 0) {
+        scoreboard.clearTimer();
+        return;
+      }
+      if (remaining === lastRenderedRemaining) return;
+      const text = `Next round in: ${remaining}s`;
+      if (!snackbarStarted) {
+        snackbar.showSnackbar(text);
+        snackbarStarted = true;
+      } else {
+        snackbar.updateSnackbar(text);
+      }
+      lastRenderedRemaining = remaining;
+    };
 
-  if (btn && btn.dataset.nextReady === "true") {
-    return;
-  }
+    const onExpired = async () => {
+      setSkipHandler(null);
+      scoreboard.clearTimer();
+      if (timerEl) {
+        timerEl.textContent = "";
+      }
+      if (btn) {
+        btn.dataset.nextReady = "true";
+        btn.disabled = false;
+      }
+      await dispatchBattleEventLocal("ready");
+      updateDebugPanel();
+      if (typeof nextRoundReadyResolve === "function") {
+        nextRoundReadyResolve();
+      }
+    };
 
-  onTick(3);
-  setTimeout(() => nextRoundTimer.start(3), 0);
+    nextRoundTimer = createRoundTimer(onTick, onExpired);
+    setSkipHandler(() => nextRoundTimer.stop());
+
+    if (btn && btn.dataset.nextReady === "true") {
+      nextRoundReadyResolve();
+      return;
+    }
+
+    onTick(3);
+    setTimeout(() => nextRoundTimer.start(3), 0);
+  });
 }

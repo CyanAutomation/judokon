@@ -104,10 +104,11 @@ describe("classicBattle scheduleNextRound", () => {
     await orchestrator.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");
 
-    battleMod.scheduleNextRound({ matchEnded: false });
+    const readyPromise = battleMod.scheduleNextRound({ matchEnded: false });
 
     timerSpy.advanceTimersByTime(3000);
     await vi.runAllTimersAsync();
+    await readyPromise;
 
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
@@ -141,8 +142,9 @@ describe("classicBattle scheduleNextRound", () => {
     await orchestrator.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");
 
-    battleMod.scheduleNextRound({ matchEnded: false });
+    const readyPromise = battleMod.scheduleNextRound({ matchEnded: false });
     document.getElementById("next-button").dispatchEvent(new MouseEvent("click"));
+    await readyPromise;
     await vi.runAllTimersAsync();
 
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);

@@ -39,13 +39,12 @@ describe("timerService next round handling", () => {
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
     const { nextButton } = createTimerNodes();
     nextButton.addEventListener("click", mod.onNextButtonClick);
-    mod.scheduleNextRound({ matchEnded: false });
+    const promise = mod.scheduleNextRound({ matchEnded: false });
     nextButton.click();
-    await vi.waitFor(() => {
-      expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
-    });
+    await promise;
     // Current flow guarantees at least one dispatch; a second may occur
     // via attribute observation. Accept one or more invocations.
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
     expect(dispatchBattleEvent.mock.calls.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -55,10 +54,8 @@ describe("timerService next round handling", () => {
     });
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
     createTimerNodes();
-    mod.scheduleNextRound({ matchEnded: false });
-    await vi.waitFor(() => {
-      expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
-    });
+    await mod.scheduleNextRound({ matchEnded: false });
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
     expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
   });
 });
