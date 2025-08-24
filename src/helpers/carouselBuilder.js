@@ -159,7 +159,7 @@ function validateGokyoData(gokyoData) {
  * @pseudocode
  * 1. Validate input parameters and handle empty or failed data loads with error messages and retry support.
  * 2. Create a carousel container with scroll-snap and responsive card sizing (1–2 cards on mobile, 3–5 on desktop).
- * 3. Add a loading spinner if loading exceeds 2 seconds and remove it once loading completes.
+ * 3. Add a loading spinner (immediately when `globalThis.__showSpinnerImmediately__` is set) and remove it once loading completes.
  * 4. For each judoka:
  *    a. Validate fields; use fallback card if invalid.
  *    b. Generate card, handle broken images, and make focusable.
@@ -188,13 +188,19 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   const gokyoLookup = validateGokyoData(gokyoData);
 
-  const spinner = createSpinner(wrapper);
-  spinner.show();
+  const forceSpinner = globalThis.__showSpinnerImmediately__ === true;
+  const spinner = createSpinner(wrapper, { delay: forceSpinner ? 0 : undefined });
+  if (forceSpinner) {
+    spinner.element.style.display = "block";
+  } else {
+    spinner.show();
+  }
 
   await appendCards(container, judokaList, gokyoLookup);
   setupResponsiveSizing(container);
 
   spinner.remove();
+  if (forceSpinner) delete globalThis.__showSpinnerImmediately__;
 
   // Initialize unified controller (buttons, keyboard, swipe, markers, counter)
   const controller = new CarouselController(container, wrapper, {
@@ -212,3 +218,18 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 }
 
 export { addScrollMarkers };
+
+/**
+ * Force the carousel spinner to appear immediately for testing.
+ *
+ * @pseudocode
+ * 1. Set a global flag so `buildCardCarousel` shows the spinner without delay.
+ */
+export function showSpinnerImmediately() {
+  globalThis.__showSpinnerImmediately__ = true;
+}
+
+if (typeof window !== "undefined") {
+  window.__testHooks = window.__testHooks || {};
+  window.__testHooks.showSpinnerImmediately = showSpinnerImmediately;
+}

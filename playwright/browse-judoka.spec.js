@@ -185,17 +185,23 @@ test.describe.parallel("Browse Judoka screen", () => {
     await expect(left).toBeDisabled();
   });
 
-  test.skip("shows loading spinner on slow network", async ({ page }) => {
+  test("shows loading spinner", async ({ page }) => {
     const context = await page.context();
-    await context.route("**/src/data/judoka.json", async (route) => {
-      await new Promise((r) => setTimeout(r, 2500));
-      await route.fulfill({ path: "tests/fixtures/judoka.json" });
-    });
-    await context.route("**/src/data/gokyo.json", async (route) => {
-      await new Promise((r) => setTimeout(r, 2500));
-      await route.fulfill({ path: "tests/fixtures/gokyo.json" });
-    });
+    await context.route("**/src/data/judoka.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/judoka.json" })
+    );
+    await context.route("**/src/data/gokyo.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/gokyo.json" })
+    );
 
+    await page.addInitScript(() => {
+      window.__testHooks = window.__testHooks || {
+        showSpinnerImmediately: () => {
+          window.__showSpinnerImmediately__ = true;
+        }
+      };
+      window.__testHooks.showSpinnerImmediately();
+    });
     await page.reload();
 
     const spinner = page.locator(".loading-spinner");
