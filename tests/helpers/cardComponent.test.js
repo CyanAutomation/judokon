@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
 import { Card, createCard } from "../../src/components/Card.js";
-import { getSanitizer } from "../../src/helpers/sanitizeHtml.js";
 
 describe("createCard", () => {
   it("creates a div card with text content", () => {
@@ -10,11 +9,11 @@ describe("createCard", () => {
     expect(card.textContent).toBe("Hello");
   });
 
-  it("inserts sanitized HTML when the html flag is true", async () => {
-    const { sanitize } = await getSanitizer();
-    const card = createCard(sanitize("<em>hi</em>"), { html: true });
-    await Promise.resolve();
+  it("inserts sanitized HTML when the html flag is true", () => {
+    const sanitize = vi.fn(() => ({ sanitize: (h) => h }));
+    const card = createCard("<em>hi</em>", { html: true, sanitize });
     expect(card.innerHTML).toBe("<em>hi</em>");
+    expect(sanitize).toHaveBeenCalled();
   });
 
   it("creates an anchor card when href provided", () => {
