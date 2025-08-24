@@ -67,7 +67,7 @@ describe("CarouselController", () => {
     errorSpy.mockRestore();
   });
 
-  it("suppresses scroll sync during programmatic setPage", async () => {
+  it("suppresses scroll sync during programmatic setPage", () => {
     const container = document.createElement("div");
     // emulate scrollTo behavior: set scrollLeft synchronously
     container.scrollTo = vi.fn((opts) => {
@@ -89,9 +89,8 @@ describe("CarouselController", () => {
     container.dispatchEvent(new Event("scroll"));
     // During suppression, currentPage should remain the programmatic target
     expect(controller.currentPage).toBe(2);
-
-    // Allow next frame for suppression to clear
-    await new Promise((r) => setTimeout(r, 0));
+    // Flush suppression synchronously for tests
+    controller.flushSuppression();
 
     // Now a scroll event should update the page normally
     container.scrollLeft = 100;

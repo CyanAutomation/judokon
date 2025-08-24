@@ -24,6 +24,7 @@ export class CarouselController {
     this._rafId = null;
     this._resizeTimer = null;
     this._suppressScrollSync = false;
+    this._suppressTimer = null;
     this._onKeydown = null;
     this._onTouchStart = null;
     this._onTouchEnd = null;
@@ -69,6 +70,8 @@ export class CarouselController {
       this._onPointerDown =
       this._onPointerUp =
         null;
+    clearTimeout(this._suppressTimer);
+    this._suppressTimer = null;
   }
 
   _afterConnectedInit() {
@@ -109,10 +112,24 @@ export class CarouselController {
     // is more reliable across test envs (jsdom/vitest) where rAF may run
     // synchronously; the macrotask ensures programmatic scroll events
     // dispatched immediately after scrollTo are still suppressed.
-    setTimeout(() => {
-      this._suppressScrollSync = false;
-    }, 0);
+    clearTimeout(this._suppressTimer);
+    this._suppressTimer = setTimeout(() => this.flushSuppression(), 0);
     this.update();
+  }
+
+  /**
+   * Immediately re-enable scroll sync by clearing any pending suppression.
+   *
+   * @pseudocode
+   * 1. Clear any scheduled timer to end suppression.
+   * 2. Mark scroll sync as unsuppressed.
+   */
+  flushSuppression() {
+    if (this._suppressTimer) {
+      clearTimeout(this._suppressTimer);
+      this._suppressTimer = null;
+    }
+    this._suppressScrollSync = false;
   }
 
   update() {
