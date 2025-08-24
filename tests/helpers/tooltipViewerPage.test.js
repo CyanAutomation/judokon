@@ -5,9 +5,10 @@ const originalClipboard = navigator.clipboard;
 const originalScrollIntoView = Element.prototype.scrollIntoView;
 const originalHash = location.hash;
 
-async function flush() {
-  await Promise.resolve();
-  await Promise.resolve();
+async function init(mod) {
+  const ready = mod.initTooltipViewerPage({ debounceMs: 0, removeDelayMs: 0 });
+  document.dispatchEvent(new Event("DOMContentLoaded"));
+  await ready;
 }
 
 beforeEach(() => {
@@ -40,9 +41,7 @@ describe("setupTooltipViewerPage", () => {
     const mod = await import("../../src/helpers/tooltipViewerPage.js");
     mod.setTooltipDataLoader(async () => ({ "stat.tipA": "**Bold**", "ui.tipB": "Raw" }));
 
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-
-    await flush();
+    await init(mod);
 
     const item = document.querySelector("#tooltip-list li");
     expect(item).toBeTruthy();
@@ -59,9 +58,7 @@ describe("setupTooltipViewerPage", () => {
     const mod = await import("../../src/helpers/tooltipViewerPage.js");
     mod.setTooltipDataLoader(async () => ({ "ui.ok": "text", "ui.bad": "" }));
 
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-
-    await flush();
+    await init(mod);
 
     const invalid = document.querySelector('#tooltip-list li[data-key="ui.bad"]');
     expect(invalid).toBeTruthy();
@@ -79,9 +76,7 @@ describe("setupTooltipViewerPage", () => {
     const mod = await import("../../src/helpers/tooltipViewerPage.js");
     mod.setTooltipDataLoader(async () => ({ "ui.ok": "text", "ui.warn": "**Bold" }));
 
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-
-    await flush();
+    await init(mod);
 
     const malformed = document.querySelector('#tooltip-list li[data-key="ui.warn"]');
     expect(malformed).toBeTruthy();
@@ -99,9 +94,7 @@ describe("setupTooltipViewerPage", () => {
     const mod = await import("../../src/helpers/tooltipViewerPage.js");
     mod.setTooltipDataLoader(async () => ({ "ui.tip": "**Bold" }));
 
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-
-    await flush();
+    await init(mod);
 
     const item = document.querySelector("#tooltip-list li");
     item.click();
@@ -117,9 +110,7 @@ describe("setupTooltipViewerPage", () => {
     const mod = await import("../../src/helpers/tooltipViewerPage.js");
     mod.setTooltipDataLoader(async () => ({ "ui.tip": "long" }));
 
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-
-    await flush();
+    await init(mod);
 
     const preview = document.getElementById("tooltip-preview");
     Object.defineProperty(preview, "scrollHeight", { value: 400, configurable: true });
@@ -148,9 +139,7 @@ describe("setupTooltipViewerPage", () => {
     mod.setTooltipSnackbar(showSnackbar);
 
     vi.useFakeTimers();
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-
-    await flush();
+    await init(mod);
 
     const item = document.querySelector("#tooltip-list li");
     item.click();
@@ -179,9 +168,7 @@ describe("setupTooltipViewerPage", () => {
     const showSnackbar = vi.fn();
     mod.setTooltipSnackbar(showSnackbar);
 
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-
-    await flush();
+    await init(mod);
 
     const item = document.querySelector("#tooltip-list li");
     item.click();
@@ -206,9 +193,7 @@ describe("setupTooltipViewerPage", () => {
     Element.prototype.scrollIntoView = scrollIntoView;
     location.hash = "#ui.tip";
 
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-
-    await flush();
+    await init(mod);
 
     expect(document.getElementById("tooltip-preview").innerHTML).toBe("text");
     expect(scrollIntoView).toHaveBeenCalled();
@@ -223,9 +208,7 @@ describe("setupTooltipViewerPage", () => {
 
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-
-    await flush();
+    await init(mod);
 
     expect(document.getElementById("tooltip-preview").textContent).toBe("File not found");
 
@@ -241,9 +224,7 @@ describe("setupTooltipViewerPage", () => {
 
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-
-    await flush();
+    await init(mod);
 
     expect(document.getElementById("tooltip-preview").textContent).toBe("Line 3, Column 15");
 
@@ -256,9 +237,7 @@ describe("setupTooltipViewerPage", () => {
     const mod = await import("../../src/helpers/tooltipViewerPage.js");
     mod.setTooltipDataLoader(async () => ({ badkey: "text" }));
 
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-
-    await flush();
+    await init(mod);
 
     const invalid = document.querySelector('#tooltip-list li[data-key="badkey"]');
     expect(invalid).toBeTruthy();
@@ -283,8 +262,7 @@ describe("setupTooltipViewerPage", () => {
     const setSpy = vi.spyOn(globalThis, "setTimeout");
     const clearSpy = vi.spyOn(globalThis, "clearTimeout");
 
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await flush();
+    await init(mod);
 
     const before = setSpy.mock.calls.length;
     searchInput.value = "a";
