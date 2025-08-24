@@ -77,8 +77,9 @@ test.describe.parallel("Classic battle flow", () => {
 
   test("clears match when navigating away and back", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
-    const timer = page.locator("header #next-round-timer");
-    await timer.waitFor();
+    // Wait for the battle view to finish initializing rather than relying on
+    // the header timer, which may be empty before the first round starts.
+    await page.evaluate(() => window.battleReadyPromise);
     await page.locator("[data-testid='nav-13']").click();
     await expect(page).toHaveURL(/settings.html/);
     await page.evaluate(() => window.settingsReadyPromise);
