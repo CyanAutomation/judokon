@@ -10,7 +10,7 @@ test.describe.parallel("PRD Reader page", () => {
     await page.goto("/src/pages/prdViewer.html");
   });
 
-  test("page basics", async ({ page }) => {
+  test("PRD reader basics", async ({ page }) => {
     await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);
   });
 
