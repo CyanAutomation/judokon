@@ -54,8 +54,14 @@ test.describe.parallel("Classic battle flow", () => {
     await page.evaluate(() => window.freezeBattleHeader?.());
     await page.evaluate(_resetForTest);
     await page.evaluate(setTieRound);
-    await page.locator("button[data-stat='power']").click();
+    const powerBtn = page.locator("button[data-stat='power']");
+    console.log("DEBUG: power button disabled attribute:", await powerBtn.getAttribute("disabled"));
+    console.log("DEBUG: power button text:", await powerBtn.innerText());
+    await powerBtn.click();
     const snackbar = page.locator(".snackbar");
+    // Diagnostic: dump snackbar-container HTML to help identify missing snackbar
+    const containerHtml = await page.locator("#snackbar-container").innerHTML();
+    console.log("DEBUG: snackbar-container HTML after click:", containerHtml);
     await expect(snackbar).toHaveText("You Picked: Power");
     const msg = page.locator("header #round-message");
     await expect(msg).toHaveText(/Tie/);
