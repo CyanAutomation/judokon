@@ -1,5 +1,6 @@
 import { onDomReady } from "./domReady.js";
 import { quitMatch } from "./classicBattle/quitModal.js";
+import { markBattlePartReady } from "./battleInit.js";
 
 /**
  * Attach quit confirmation to the header logo in Classic Battle.
@@ -9,7 +10,7 @@ import { quitMatch } from "./classicBattle/quitModal.js";
  * 2. If found, attach a click listener that:
  *    a. Prevents navigation.
  *    b. Calls `quitMatch()` with the shared store and link as trigger.
- * 3. Wait for `window.battleStore` to exist, then set `window.homeLinkReady = true` for tests.
+ * 3. Wait for `window.battleStore` to exist, then call `markBattlePartReady('home')`.
  */
 export function setupClassicBattleHomeLink() {
   const homeLink = document.querySelector('[data-testid="home-link"]');
@@ -20,7 +21,7 @@ export function setupClassicBattleHomeLink() {
     });
     (function waitForStore() {
       if (window.battleStore) {
-        window.homeLinkReady = true;
+        markBattlePartReady("home");
       } else {
         setTimeout(waitForStore, 0);
       }
