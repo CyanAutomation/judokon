@@ -33,7 +33,7 @@ import { chromium } from "playwright";
         if (Element && Element.prototype && Element.prototype.querySelector) {
           Element.prototype.querySelector = wrap(Element.prototype.querySelector, 'Element.querySelector');
         }
-      } catch (e) {}
+      } catch {}
     })();`
   });
   page.on("console", (m) => console.log("PAGE LOG>", m.type(), m.text()));
@@ -41,20 +41,58 @@ import { chromium } from "playwright";
     await page.goto("http://localhost:5000/src/pages/battleJudoka.html?autostart=1");
     console.log("TITLE", await page.title());
 
-    // Wait for machine to initialize
-    await page.waitForFunction(() => typeof window.__classicBattleState !== "undefined", {
-      timeout: 10000
+    // Prefer direct debug helpers when available so we don't need long waits.
+    const machineInfo = await page.evaluate(() => {
+      try {
+        // Common newly-added helpers (try them in order).
+        if (typeof window.__getBattleSnapshot === "function") {
+          return { helper: "__getBattleSnapshot", value: window.__getBattleSnapshot() };
+        }
+        if (typeof window.getBattleSnapshot === "function") {
+          return { helper: "getBattleSnapshot", value: window.getBattleSnapshot() };
+        }
+        // Fallback to reading the classic state object directly.
+        if (typeof window.__classicBattleState !== "undefined") {
+          return { helper: "__classicBattleState", value: window.__classicBattleState };
+        }
+      } catch {}
+      return null;
     });
-    console.log("MACHINE STATE", await page.evaluate(() => window.__classicBattleState));
+    if (machineInfo) {
+      console.log("MACHINE INFO (immediate):", machineInfo.helper, machineInfo.value);
+    } else {
+      // Short fallback: wait briefly for initialization but avoid long blocking waits
+      try {
+        await page.waitForFunction(() => typeof window.__classicBattleState !== "undefined", {
+          timeout: 2000
+        });
+        console.log(
+          "MACHINE STATE (after short wait)",
+          await page.evaluate(() => window.__classicBattleState)
+        );
+      } catch {
+        console.log("MACHINE STATE not available immediately");
+      }
+    }
 
-    await page.waitForSelector("#stat-buttons");
-    await page.waitForFunction(
-      () => document.querySelectorAll("#stat-buttons button").length >= 5,
-      { timeout: 5000 }
-    );
-    const names = await page.$$eval("#stat-buttons button", (els) =>
-      els.map((b) => ({ text: b.textContent, stat: b.dataset.stat, disabled: b.disabled }))
-    );
+    // Attempt to read stat buttons immediately; fall back to a short wait only if none found.
+    let names = await page
+      .$$eval("#stat-buttons button", (els) =>
+        els.map((b) => ({ text: b.textContent, stat: b.dataset.stat, disabled: b.disabled }))
+      )
+      .catch(() => []);
+    if (!names || names.length === 0) {
+      try {
+        await page.waitForSelector("#stat-buttons", { timeout: 1500 });
+        names = await page.$$eval("#stat-buttons button", (els) =>
+          els.map((b) => ({ text: b.textContent, stat: b.dataset.stat, disabled: b.disabled }))
+        );
+      } catch {
+        // give up quickly - we prefer immediate inspection flows
+        console.log("STAT BUTTONS not found quickly");
+        names = [];
+      }
+    }
     console.log("STAT BUTTONS", JSON.stringify(names));
 
     // Try to pre-seed a playerChoice in the shared store so the guard won't interrupt
@@ -81,9 +119,14 @@ import { chromium } from "playwright";
       );
     });
 
-    // Click the power button, but only after it's enabled. If it stays disabled, capture state and screenshot.
+    // Click the power button if present. Prefer immediate check rather than waiting for enablement.
     const powerSelector = '#stat-buttons button[data-stat="power"]';
-    const isDisabled = await page.$eval(powerSelector, (b) => b.disabled).catch(() => true);
+    const isDisabled = await page
+      .$eval(powerSelector, (b) => b.disabled)
+      .catch(() => {
+        // If the button isn't present, treat as disabled and continue without long waits
+        return true;
+      });
     // If the machine is in waitingForPlayerAction or roundDecision, try to simulate a player choice
     // by setting the shared store value. This helps bypass headless guard paths that trigger interrupts.
     try {
@@ -101,36 +144,24 @@ import { chromium } from "playwright";
       }
     } catch {}
     if (isDisabled) {
-      console.log("Power button is disabled — waiting up to 5s for it to become enabled");
-      try {
-        await page.waitForFunction(
-          (sel) => {
-            const el = document.querySelector(sel);
-            return el && !el.disabled;
-          },
-          powerSelector,
-          { timeout: 5000 }
-        );
-      } catch {
-        console.log(
-          "Power button still disabled after timeout — collecting debug state and screenshot"
-        );
-        const state = await page.evaluate(() => ({
-          state: window.__classicBattleState || null,
-          prev: window.__classicBattlePrevState || null,
-          lastEvent: window.__classicBattleLastEvent || null,
-          lastInterruptReason: window.__classicBattleLastInterruptReason || null,
-          lastQuerySelectorError: window.__classicBattleQuerySelectorError || null,
-          log: window.__classicBattleStateLog || []
-        }));
-        console.log("DISABLED_STATE", JSON.stringify(state, null, 2));
-        await page
-          .screenshot({
-            path: "/workspaces/judokon/playwright-battleProgression-disabled.png",
-            fullPage: true
-          })
-          .catch(() => {});
-      }
+      console.log(
+        "Power button is disabled or missing — skipping long waits and capturing quick snapshot"
+      );
+      const state = await page.evaluate(() => ({
+        state: window.__classicBattleState || null,
+        prev: window.__classicBattlePrevState || null,
+        lastEvent: window.__classicBattleLastEvent || null,
+        lastInterruptReason: window.__classicBattleLastInterruptReason || null,
+        lastQuerySelectorError: window.__classicBattleQuerySelectorError || null,
+        log: window.__classicBattleStateLog || []
+      }));
+      console.log("DISABLED_STATE", JSON.stringify(state, null, 2));
+      await page
+        .screenshot({
+          path: "/workspaces/judokon/playwright-battleProgression-disabled.png",
+          fullPage: true
+        })
+        .catch(() => {});
     }
 
     // Attempt click if enabled now
@@ -141,8 +172,19 @@ import { chromium } from "playwright";
       console.error("CLICK FAILED", String(err));
     }
 
-    // Wait for orchestrator guard / resolution to run
-    await page.waitForTimeout(1600);
+    // Wait briefly for any orchestrator resolution, but prefer to read guard outcome helpers if present.
+    try {
+      const guardOutcome = await page.evaluate(() => {
+        if (typeof window.__getGuardOutcome === "function") return window.__getGuardOutcome();
+        return window.__guardOutcomeEvent || null;
+      });
+      if (!guardOutcome) {
+        // short sleep to let immediate handlers run; keep it tiny to avoid long tests
+        await page.waitForTimeout(200);
+      }
+    } catch {
+      await page.waitForTimeout(200);
+    }
 
     const state = await page.evaluate(() => ({
       state: window.__classicBattleState || null,
