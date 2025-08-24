@@ -43,14 +43,12 @@ import {
   const overallTimeout = parseInt(process.env.DEBUG_TIMEOUT_MS || "30000", 10);
   let timeoutId = null;
   let browser = null;
+  let timedOut = false;
   timeoutId = setTimeout(() => {
     console.error(`ERROR: debugBattleProgression overall timeout after ${overallTimeout}ms`);
-    // Set a non-zero exit code to indicate timeout.
+    // Mark timed out and set exit code; avoid closing browser from the timer (causes races).
+    timedOut = true;
     process.exitCode = 2;
-    if (browser && typeof browser.close === "function") {
-      // best-effort close; can't await here because this is inside a timer
-      browser.close().catch(() => {});
-    }
   }, overallTimeout);
 
   browser = await chromium.launch(launchOptions);
@@ -115,13 +113,17 @@ import {
       }
     } catch {}
 
-    // Attempt to click chosen stat
-    const clickRes = await tryClickStat(page, stat, { force: forceClick, timeout: 1500 });
+    // Capture a pre-click snapshot for diagnosis
+    const preSnap = await getBattleSnapshot(page).catch(() => null);
+    console.log("PRE CLICK SNAP", JSON.stringify(preSnap, null, 2));
+
+    // Attempt to click chosen stat (longer click timeout to tolerate slow render)
+    const clickRes = await tryClickStat(page, stat, { force: forceClick, timeout: 3000 });
 
     console.log("CLICK", stat, JSON.stringify(clickRes));
 
     if (!clickRes.ok && !forceClick) {
-      const snap = await getBattleSnapshot(page);
+      const snap = await getBattleSnapshot(page).catch(() => null);
 
       console.log("DISABLED_STATE", JSON.stringify(snap, null, 2));
       await takeScreenshot(page, disabledShotPath);
@@ -137,7 +139,7 @@ import {
       await page.waitForTimeout(200);
     }
 
-    const snap = await getBattleSnapshot(page);
+    const snap = await getBattleSnapshot(page).catch(() => null);
 
     console.log("AFTER CLICK", JSON.stringify(snap, null, 2));
 
@@ -150,9 +152,19 @@ import {
     console.error("ERROR", err);
     process.exitCode = 1;
   } finally {
-    // Clear watchdog and close browser if still open.
+    // Clear watchdog and close browser if still open. If we timed out, attempt a final screenshot.
     if (timeoutId) clearTimeout(timeoutId);
     if (browser && typeof browser.close === "function") {
+      try {
+        if (timedOut && page) {
+          try {
+            await takeScreenshot(
+              page,
+              "/workspaces/judokon/playwright-battleProgression-timeout.png"
+            );
+          } catch {}
+        }
+      } catch {}
       try {
         await browser.close();
       } catch {
