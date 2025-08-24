@@ -92,11 +92,11 @@ describe("battleStateBadge displays state transitions", () => {
     });
     badgeObserver.observe(badge, { childList: true });
 
-    const { dispatchBattleEvent } = await import(
+    const { dispatchBattleEvent, onStateTransition } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
     await dispatchBattleEvent("startClicked");
-    await window.waitForBattleState("waitingForPlayerAction");
+    await onStateTransition("waitingForPlayerAction");
 
     badgeObserver.disconnect();
 

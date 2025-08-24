@@ -44,9 +44,9 @@ export async function waitForStatButtonsReady(page, timeout = 10000) {
  * @param {number} [timeout=10000]
  */
 export async function waitForBattleState(page, stateName, timeout = 10000) {
-  const hasHelper = await page.evaluate(() => typeof window.waitForBattleState === "function");
+  const hasHelper = await page.evaluate(() => typeof window.onStateTransition === "function");
   if (hasHelper) {
-    await page.evaluate((s, t) => window.waitForBattleState(s, t), stateName, timeout);
+    await page.evaluate((s, t) => window.onStateTransition(s, t), stateName, timeout);
     return;
   }
   await page.waitForFunction((s) => window.__classicBattleState === s, stateName, { timeout });

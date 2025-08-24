@@ -11,14 +11,58 @@ import {
   matchOverEnter,
   interruptRoundEnter,
   interruptMatchEnter,
-  roundModificationEnter,
-  isStateTransition
+  roundModificationEnter
 } from "./orchestratorHandlers.js";
 import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { setMachine } from "./eventDispatcher.js";
 
 let machine = null;
+const stateWaiters = new Map();
+
+/**
+ * Wait for the battle state machine to enter a specific state.
+ *
+ * @pseudocode
+ * ```text
+ * onStateTransition(target, timeout=10000):
+ *   if machine exists and machine.getState() == target -> resolve
+ *   else
+ *     add resolver to waiters[target]
+ *     if timeout -> set timer to reject and cleanup
+ * ```
+ *
+ * @param {string} targetState - State name to await.
+ * @param {number} [timeoutMs=10000] - Reject after this many ms.
+ * @returns {Promise<boolean>} Resolves when the state is entered.
+ */
+export function onStateTransition(targetState, timeoutMs = 10000) {
+  return new Promise((resolve, reject) => {
+    try {
+      if (machine?.getState() === targetState) return resolve(true);
+      const entry = { resolve };
+      if (timeoutMs !== Infinity) {
+        entry.timer = setTimeout(() => {
+          removeWaiter(targetState, entry);
+          reject(new Error("onStateTransition timeout"));
+        }, timeoutMs);
+      }
+      const arr = stateWaiters.get(targetState) || [];
+      arr.push(entry);
+      stateWaiters.set(targetState, arr);
+    } catch {
+      reject(new Error("onStateTransition error"));
+    }
+  });
+}
+
+function removeWaiter(stateName, entry) {
+  const arr = stateWaiters.get(stateName);
+  if (!arr) return;
+  const idx = arr.indexOf(entry);
+  if (idx !== -1) arr.splice(idx, 1);
+  if (arr.length === 0) stateWaiters.delete(stateName);
+}
 
 /**
  * Retrieve the current battle state machine instance.
@@ -104,6 +148,16 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
       }
     } catch {}
     emitBattleEvent("debugPanelUpdate");
+    const waiters = stateWaiters.get(to);
+    if (waiters) {
+      stateWaiters.delete(to);
+      for (const w of waiters) {
+        try {
+          if (w.timer) clearTimeout(w.timer);
+          w.resolve(true);
+        } catch {}
+      }
+    }
   };
 
   machine = await BattleStateMachine.create(onEnter, context, onTransition);
@@ -151,20 +205,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
 
   try {
     if (typeof window !== "undefined") {
-      window.waitForBattleState = (stateName, timeoutMs = 10000) =>
-        new Promise((resolve, reject) => {
-          const deadline = Date.now() + timeoutMs;
-          const tick = () => {
-            try {
-              if (isStateTransition(null, stateName)) return resolve(true);
-              if (Date.now() > deadline) return reject(new Error("waitForBattleState timeout"));
-              setTimeout(tick, 50);
-            } catch {
-              setTimeout(tick, 50);
-            }
-          };
-          tick();
-        });
+      window.onStateTransition = onStateTransition;
       window.getBattleStateSnapshot = () => {
         try {
           return {
