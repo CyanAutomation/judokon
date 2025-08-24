@@ -17,7 +17,7 @@ import { toggleInspectorPanels } from "../cardUtils.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { syncScoreDisplay } from "./uiService.js";
-import { onBattleEvent } from "./battleEvents.js";
+import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
 
 function getDebugOutputEl() {
   return document.getElementById("debug-output");
@@ -68,6 +68,7 @@ export function showSelectionPrompt() {
     el.textContent = "";
   }
   snackbar.showSnackbar("Select your move");
+  emitBattleEvent("roundPrompt");
 }
 
 /**

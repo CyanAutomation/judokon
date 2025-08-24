@@ -6,7 +6,7 @@ import * as scoreboard from "../setupScoreboard.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import { showMatchSummaryModal } from "./uiService.js";
 import { handleReplay } from "./roundManager.js";
-import { onBattleEvent } from "./battleEvents.js";
+import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
 
 /**
  * Apply UI updates for a newly started round.
@@ -58,6 +58,7 @@ onBattleEvent("roundResolved", (e) => {
     showMatchSummaryModal(result, async () => {
       await handleReplay(store);
     });
+    emitBattleEvent("matchOver");
   }
   resetStatButtons();
   updateDebugPanel();

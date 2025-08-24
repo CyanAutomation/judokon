@@ -8,18 +8,18 @@ test.describe.parallel("Classic battle button reset", () => {
   test("no button stays selected after next round", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
     await waitForBattleReady(page);
-    await page.locator(".snackbar").filter({ hasText: "Select your move" }).waitFor();
+    await page.evaluate(() => window.roundPromptPromise);
     await page.locator("#stat-buttons button[data-stat='power']").click();
     await page.locator("#next-button").click();
     await page.evaluate(() => window.skipBattlePhase?.());
-    await page.locator(".snackbar").filter({ hasText: "Select your move" }).waitFor();
+    await page.evaluate(() => window.roundPromptPromise);
     await expect(page.locator("#stat-buttons .selected")).toHaveCount(0);
   });
 
   test("tap highlight color cleared after reset", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
     await waitForBattleReady(page);
-    await page.locator(".snackbar").filter({ hasText: "Select your move" }).waitFor();
+    await page.evaluate(() => window.roundPromptPromise);
     // Select a stat, then advance to the next round
     const initialBtn = page.locator("#stat-buttons button[data-stat='power']");
     await initialBtn.click();
@@ -28,7 +28,7 @@ test.describe.parallel("Classic battle button reset", () => {
     // Wait until the state machine reports the new round is awaiting input
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
     // Also wait for the selection prompt that signifies the next round started
-    await page.locator(".snackbar").filter({ hasText: "Select your move" }).waitFor();
+    await page.evaluate(() => window.roundPromptPromise);
     // Wait for stat buttons to be fully re-enabled for the new round
     await page.evaluate(() => window.statButtonsReadyPromise);
     // Re-query the button to avoid any stale handle if DOM updated

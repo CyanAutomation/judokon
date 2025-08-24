@@ -5,6 +5,7 @@ import { updateDebugPanel } from "./uiHelpers.js";
 import * as snackbar from "../showSnackbar.js";
 import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
+import { emitBattleEvent } from "./battleEvents.js";
 
 let nextRoundTimer = null;
 let nextRoundReadyResolve = null;
@@ -231,6 +232,7 @@ export function scheduleNextRound(result) {
   return new Promise((resolve) => {
     if (result.matchEnded) {
       setSkipHandler(null);
+      emitBattleEvent("nextRoundTimerReady");
       resolve();
       return;
     }
@@ -248,6 +250,7 @@ export function scheduleNextRound(result) {
     const cooldownSeconds = Math.max(0, Math.round(overrideMs / 1000));
 
     nextRoundReadyResolve = () => {
+      emitBattleEvent("nextRoundTimerReady");
       resolve();
       nextRoundReadyResolve = null;
     };
