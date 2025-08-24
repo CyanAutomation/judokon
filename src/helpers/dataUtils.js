@@ -201,12 +201,19 @@ export async function validateAndCache(url, data, schema) {
  * Fetch JSON data with caching and optional schema validation.
  *
  * @pseudocode
- * 1. Normalize `url` into a string key.
- * 2. Return cached data when available.
- * 3. Resolve the URL with `resolveUrl`.
- * 4. Read the data via `readData`.
- * 5. Validate and cache the result using `validateAndCache`.
- * 6. On error, remove any stale cache entry, log, and rethrow.
+ * 1. Log a debug message indicating `fetchJson` was called with the given `url`.
+ * 2. Convert the `url` into a string `key` for caching purposes.
+ * 3. Begin a `try...catch` block to handle potential errors during fetching and validation.
+ * 4. Inside the `try` block:
+ *    a. Check if the `dataCache` already contains an entry for the `key`. If yes, return the cached data immediately.
+ *    b. Resolve the `url` into a fully qualified `parsedUrl` using `resolveUrl` and `getBaseUrl`.
+ *    c. Read the data from the `parsedUrl` using `readData`, passing the original `key` for error messages.
+ *    d. Validate the fetched `data` against the provided `schema` (if any) and cache the result using `validateAndCache`.
+ *    e. Return the validated and cached data.
+ * 5. In the `catch` block (if an error occurs):
+ *    a. Remove any potentially stale or incomplete entry for the `key` from `dataCache`.
+ *    b. Log a debug message indicating the error during fetching, including the `key` and the `error` object.
+ *    c. Re-throw the `error` to allow higher-level code to handle it.
  *
  * @template T
  * @param {string|URL} url - Resource location.

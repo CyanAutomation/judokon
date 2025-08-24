@@ -75,6 +75,17 @@ test.describe.parallel("Classic battle flow", () => {
       } catch {}
     });
     console.log(
+      "DEBUG: window.battleStore present before click:",
+      await page.evaluate(() => !!window.battleStore)
+    );
+    console.log(
+      "DEBUG: stat-buttons dataset before click:",
+      await page.evaluate(() => {
+        const s = document.getElementById("stat-buttons");
+        return s ? { buttonsReady: s.dataset.buttonsReady } : null;
+      })
+    );
+    console.log(
       "DEBUG: __disableSnackbars before click:",
       await page.evaluate(() => !!window.__disableSnackbars)
     );

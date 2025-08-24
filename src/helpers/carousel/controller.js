@@ -52,6 +52,25 @@ export class CarouselController {
     this._afterConnectedInit();
   }
 
+  /**
+   * Cleans up the carousel controller by removing all event listeners and DOM elements.
+   * This prevents memory leaks and ensures proper detachment from the document.
+   *
+   * @pseudocode
+   * 1. Remove the "scroll" event listener from `this.container`.
+   * 2. Remove the "keydown" event listener from `this.container`.
+   * 3. Remove the "touchstart" event listener from `this.container`.
+   * 4. Remove the "touchend" event listener from `this.container`.
+   * 5. Remove the "pointerdown" event listener from `this.container`.
+   * 6. Remove the "pointerup" event listener from `this.container`.
+   * 7. Remove the "resize" event listener from `window`.
+   * 8. Remove the `leftBtn` DOM element from the document, if it exists.
+   * 9. Remove the `rightBtn` DOM element from the document, if it exists.
+   * 10. Remove the `markersRoot` DOM element from the document, if it exists.
+   * 11. Set internal event handler references (`_onKeydown`, `_onTouchStart`, etc.) to `null` to release memory.
+   *
+   * @returns {void}
+   */
   destroy() {
     this.container.removeEventListener("scroll", this._onScroll);
     this.container.removeEventListener("keydown", this._onKeydown);
@@ -95,6 +114,23 @@ export class CarouselController {
     this.setPage(this.currentPage - 1);
   }
 
+  /**
+   * Sets the current page of the carousel and updates its display.
+   *
+   * @pseudocode
+   * 1. Destructure `pageCount` and `pageWidth` from `this.metrics`.
+   * 2. Clamp the provided `index` to ensure it is within the valid range of pages (0 to `pageCount - 1`).
+   * 3. Update `this.currentPage` with the clamped index.
+   * 4. Calculate the `left` scroll position by multiplying the clamped index by `pageWidth`.
+   * 5. Set `this._suppressScrollSync` to `true` to temporarily disable scroll event synchronization, preventing conflicts with programmatic scrolling.
+   * 6. Programmatically scroll the `this.container` to the calculated `left` position with `behavior: "auto"` for instant scrolling.
+   * 7. Use `setTimeout(0)` to schedule a task on the next macrotask:
+   *    a. In the callback, set `this._suppressScrollSync` back to `false` to re-enable scroll event synchronization. This ensures that any programmatic scroll events dispatched immediately after `scrollTo` are suppressed, but subsequent user scrolls are not.
+   * 8. Call `this.update()` to refresh the carousel's UI, including button states and markers.
+   *
+   * @param {number} index - The 0-based index of the page to set.
+   * @returns {void}
+   */
   setPage(index) {
     const { pageCount, pageWidth } = this.metrics;
     const clamped = Math.max(0, Math.min(index, pageCount - 1));

@@ -283,6 +283,14 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
  * import `dispatchBattleEvent` from this orchestrator file. Keep it
  * minimal and safe — if the machine isn't ready the call is a no-op.
  *
+ * @pseudocode
+ * 1. Check if the `machine` instance is null. If so, exit the function immediately as there's no machine to dispatch to.
+ * 2. Attempt to dispatch the `eventName` with the `payload` to the `machine`.
+ * 3. If an error occurs during dispatch:
+ *    a. Catch the error to prevent cascading failures (higher-level code can still observe via emitted events).
+ *    b. Attempt to emit a "debugPanelUpdate" battle event to inform UI debug panels of the failure.
+ * 4. Return the result of the dispatch operation (if successful).
+ *
  * @param {string} eventName
  * @param {any} payload
  */
