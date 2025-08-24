@@ -10,13 +10,15 @@
  * 6. Define `updateActive(state)` to query list items and toggle the `active` class on the match.
  * 7. Observe `#machine-state` for text changes; on each change call `updateActive`.
  * 8. If `#machine-state` is missing, poll `window.__classicBattleState` via `requestAnimationFrame` and store the ID.
- * 9. Return a cleanup function that disconnects the observer or cancels the animation frame loop.
+ * 9. After the initial state is applied, call `markBattlePartReady('state')`.
+ * 10. Return a cleanup function that disconnects the observer or cancels the animation frame loop.
  *
  * @returns {Promise<(() => void) | undefined>} Resolves with a cleanup function.
  */
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { updateBattleStateBadge } from "./classicBattle/uiHelpers.js";
+import { markBattlePartReady } from "./battleInit.js";
 
 export async function initBattleStateProgress() {
   if (typeof document === "undefined") return;
@@ -82,16 +84,22 @@ export async function initBattleStateProgress() {
     const initialState = machine.textContent.trim();
     prevState = initialState;
     updateActive(initialState);
+    markBattlePartReady("state");
     return () => observer.disconnect();
   }
 
   let prev;
   let rafId = 0;
+  let ready = false;
   const tick = () => {
     const state = window.__classicBattleState;
     if (state !== prev) {
       prev = state;
       updateActive(state);
+      if (!ready) {
+        markBattlePartReady("state");
+        ready = true;
+      }
     }
     rafId = requestAnimationFrame(tick);
   };
