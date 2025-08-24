@@ -15,7 +15,7 @@ test.describe.parallel("Meditation screen", () => {
     await page.goto("/src/pages/meditation.html");
   });
 
-  test("page basics", async ({ page }) => {
+  test("meditation screen basics", async ({ page }) => {
     await verifyPageBasics(page, []); // Meditation screen has no nav links
   });
 
