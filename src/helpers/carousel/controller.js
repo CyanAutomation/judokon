@@ -187,9 +187,11 @@ export class CarouselController {
     // to settle. Without this, a follow-up scroll event may compute a
     // different page due to rounding/snap adjustments and over-advance
     // the counter.
+    // Clear suppression on next macrotask so immediate programmatic scroll
+    // events are suppressed but normal user scrolls on the next turn resume.
     setTimeout(() => {
       this._suppressScrollSync = false;
-    }, 120);
+    }, 0);
     this.update();
   }
 
