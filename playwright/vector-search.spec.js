@@ -23,8 +23,8 @@ test.describe.parallel("Vector search page", () => {
   test("selecting a result loads context", async ({ page }) => {
     await page.getByRole("searchbox").fill("query");
     await page.getByRole("button", { name: /search/i }).click();
+    await page.evaluate(() => window.vectorSearchResultsPromise);
     const item = page.locator("#vector-results-table tbody tr").first();
-    await item.waitFor();
     await item.click();
     const context = item.locator(".result-context");
     await expect(context).toContainText("context A1");
