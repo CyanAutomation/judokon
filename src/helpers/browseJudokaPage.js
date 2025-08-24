@@ -11,6 +11,18 @@ import { setupButtonEffects } from "./buttonEffects.js";
 import { setupCountryToggle } from "./browse/setupCountryToggle.js";
 import { setupCountryFilter } from "./browse/setupCountryFilter.js";
 
+let resolveBrowseReady;
+export const browseJudokaReadyPromise =
+  typeof window !== "undefined"
+    ? new Promise((resolve) => {
+        resolveBrowseReady = resolve;
+      })
+    : Promise.resolve();
+
+if (typeof window !== "undefined") {
+  window.browseJudokaReadyPromise = browseJudokaReadyPromise;
+}
+
 /**
  * Attach listener to switch layout mode of country panel.
  *
@@ -135,6 +147,7 @@ export async function setupBrowseJudokaPage() {
         carouselContainer,
         ariaLive
       );
+      resolveBrowseReady?.();
     } catch (error) {
       spinner.remove();
       console.error("Error building the carousel:", error);
@@ -168,6 +181,7 @@ export async function setupBrowseJudokaPage() {
         }
       });
       carouselContainer.appendChild(retryButton);
+      resolveBrowseReady?.();
       return;
     }
   }

@@ -116,9 +116,15 @@ export async function tryClickStat(page, stat, { force = false, timeout = 1000 }
         try {
           const el = document.querySelector(sel);
           if (!el) return { ok: false, reason: "no-element" };
-          try { el.disabled = false; } catch {}
-          try { el.classList.remove && el.classList.remove("disabled"); } catch {}
-          try { if (el.tabIndex === -1) el.tabIndex = 0; } catch {}
+          try {
+            el.disabled = false;
+          } catch {}
+          try {
+            el.classList.remove && el.classList.remove("disabled");
+          } catch {}
+          try {
+            if (el.tabIndex === -1) el.tabIndex = 0;
+          } catch {}
           el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
           return { ok: true, reason: "dispatched" };
         } catch (e) {
@@ -138,20 +144,24 @@ export async function getBattleSnapshot(page) {
       const byId = (id) => document.getElementById(id);
       const text = (id) => (byId(id) ? byId(id).textContent || "" : "");
       const machineTimerEl = byId("machine-timer");
-      const progressItems = Array.from(document.querySelectorAll("#battle-state-progress > li")).map(
-        (li) => li.textContent || ""
+      const progressItems = Array.from(
+        document.querySelectorAll("#battle-state-progress > li")
+      ).map((li) => li.textContent || "");
+      const statButtons = Array.from(document.querySelectorAll("#stat-buttons button")).map(
+        (b) => ({
+          text: b.textContent || "",
+          stat: b.dataset.stat || "",
+          disabled: !!b.disabled,
+          classes: b.className || ""
+        })
       );
-      const statButtons = Array.from(document.querySelectorAll("#stat-buttons button")).map((b) => ({
-        text: b.textContent || "",
-        stat: b.dataset.stat || "",
-        disabled: !!b.disabled,
-        classes: b.className || ""
-      }));
       const logArr = Array.isArray(window.__classicBattleStateLog)
         ? window.__classicBattleStateLog.slice(-20)
         : [];
       const active = document.activeElement;
-      const activeDesc = active ? `${active.tagName.toLowerCase()}#${active.id || ''}.${active.className || ''}` : "";
+      const activeDesc = active
+        ? `${active.tagName.toLowerCase()}#${active.id || ""}.${active.className || ""}`
+        : "";
       return {
         state: window.__classicBattleState || null,
         prev: window.__classicBattlePrevState || null,
@@ -173,7 +183,10 @@ export async function getBattleSnapshot(page) {
         progressItems,
         statButtons,
         store: window.battleStore
-          ? { selectionMade: !!window.battleStore.selectionMade, playerChoice: window.battleStore.playerChoice || null }
+          ? {
+              selectionMade: !!window.battleStore.selectionMade,
+              playerChoice: window.battleStore.playerChoice || null
+            }
           : null,
         machineLog: logArr,
         activeElement: activeDesc
@@ -194,4 +207,3 @@ export async function takeScreenshot(page, path) {
     console.warn("screenshot failed:", String(e));
   }
 }
-
