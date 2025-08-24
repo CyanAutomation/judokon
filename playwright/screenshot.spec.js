@@ -37,7 +37,7 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
     test(`${tag} screenshot ${url}`, async ({ page }) => {
       await page.goto(url, { waitUntil: "domcontentloaded" });
       if (url.endsWith("/src/pages/settings.html")) {
-        await page.waitForSelector("[data-settings-ready]");
+        await page.evaluate(() => window.settingsReadyPromise);
       }
       await expect(page).toHaveScreenshot(name, { fullPage: true });
     });
