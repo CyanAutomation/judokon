@@ -74,12 +74,35 @@ test.describe.parallel("Classic battle flow", () => {
         window.__disableSnackbars = false;
       } catch {}
     });
+    console.log(
+      "DEBUG: __disableSnackbars before click:",
+      await page.evaluate(() => !!window.__disableSnackbars)
+    );
     // Use a direct DOM click to trigger the handler even if Playwright
     // considers the element not interactable in this test setup.
     await page.evaluate(() => {
       const b = document.querySelector("button[data-stat='power']");
       if (b && typeof b.click === "function") b.click();
     });
+    // Diagnostic: attempt to call showSnackbar directly to see if it can
+    // render into the container in this environment.
+    const direct = await page.evaluate(() => {
+      try {
+        if (typeof showSnackbar === "function") {
+          showSnackbar("Direct test");
+          const c = document.getElementById("snackbar-container");
+          return c ? c.innerHTML : null;
+        }
+        return "no-showSnackbar";
+      } catch (e) {
+        return `err:${String(e)}`;
+      }
+    });
+    console.log("DEBUG: direct showSnackbar result:", direct);
+    console.log(
+      "DEBUG: __disableSnackbars after click:",
+      await page.evaluate(() => !!window.__disableSnackbars)
+    );
     const snackbar = page.locator(".snackbar");
     // Diagnostic: dump snackbar-container HTML to help identify missing snackbar
     const containerHtml = await page.locator("#snackbar-container").innerHTML();

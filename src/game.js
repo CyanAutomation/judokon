@@ -15,16 +15,27 @@ let inspectorEnabled = false;
  *
  * @pseudocode
  * 1. Exit early if `button` is not provided.
- * 2. Maintain an `isBuilt` flag inside the closure.
- * 3. On click:
- *    a. If the carousel is built, simply reveal `container`.
- *    b. If `container` is missing, log an error.
- *    c. Otherwise fetch judoka and gokyo data.
- *    d. Validate each judoka entry individually, logging and skipping invalid data.
- *    e. Validate `gokyo` data and build the carousel with the valid judoka.
- *    f. Append the carousel to `container`, initialize scroll markers, and reveal it.
- *    g. Log any errors that occur.
- * 4. Return the click handler for optional manual invocation.
+ * 2. Maintain an `isBuilt` flag inside the closure to track if the carousel has been built.
+ * 3. Define an asynchronous `handleClick` function for the button's click event:
+ *    a. If `isBuilt` is true, simply remove the "hidden" class from `container` and return.
+ *    b. If `container` is missing, log an error to the console and return.
+ *    c. Otherwise, attempt to fetch `judoka.json` and `gokyo.json` data.
+ *    d. Initialize an empty array `validJudoka`.
+ *    e. If `judokaData` is an array, iterate through each `judoka` entry:
+ *       i. Attempt to validate the `judoka` entry using `validateData`.
+ *       ii. If validation succeeds, push the `judoka` to `validJudoka`.
+ *       iii. If validation fails, catch the error and log a message indicating the invalid entry was skipped.
+ *    f. If `judokaData` is not an array, log an error.
+ *    g. Validate `gokyoData` using `validateData`.
+ *    h. Build the carousel using `buildCardCarousel` with the `validJudoka` and `gokyoData`.
+ *    i. Append the created `carousel` to the `container`.
+ *    j. Remove the "hidden" class from `container` to reveal it.
+ *    k. If a `.card-carousel` element is found within the `carousel`, initialize scroll markers using `initScrollMarkers`.
+ *    l. Set `isBuilt` to `true`.
+ *    m. Log a debug message indicating the carousel was displayed on demand.
+ *    n. Catch any errors that occur during the fetch, validation, or carousel building process and log them.
+ * 4. Add the `handleClick` function as an event listener for the "click" event on the `button`.
+ * 5. Return the `handleClick` function for optional manual invocation.
  *
  * @param {HTMLElement} button - Button to show the carousel.
  * @param {HTMLElement} container - Container for the carousel.
@@ -154,12 +165,20 @@ export function setupRandomCardButton(button, container) {
  * the judoka carousel when requested.
  *
  * @pseudocode
- * 1. Wait for the `DOMContentLoaded` event.
- * 2. Query elements used by the game (buttons, containers).
- * 3. Call `setupCarouselToggle` with the carousel button and container.
- * 4. Call `setupHideCardButton` with the hide-card button.
- * 5. Call `setupRandomCardButton` with the random button and game area.
- * 6. Call `initTooltips` to initialize tooltips.
+ * 1. Wait for the `DOMContentLoaded` event to ensure the full HTML document has been loaded and parsed.
+ * 2. Query essential DOM elements by their IDs: `showRandom`, `gameArea`, `carousel-container`, `showCarousel`, and `hideCard`.
+ * 3. If `showRandom` or `gameArea` elements are not found, it indicates the current page does not expose the necessary game UI controls, so exit silently.
+ * 4. Asynchronously initialize feature flags using `initFeatureFlags`.
+ * 5. After feature flags are initialized, determine if the "enableCardInspector" feature is enabled using `isEnabled` and store the result in `inspectorEnabled`.
+ * 6. If `initFeatureFlags` fails, set `inspectorEnabled` to `false`.
+ * 7. Call `toggleInspectorPanels` with the current `inspectorEnabled` state to update the visibility of inspector panels.
+ * 8. Add an event listener to `featureFlagsEmitter` for "change" events:
+ *    a. When a change occurs, re-evaluate `inspectorEnabled` using `isEnabled("enableCardInspector")`.
+ *    b. Call `toggleInspectorPanels` again with the new `inspectorEnabled` state to reflect the change in UI.
+ * 9. Call `setupCarouselToggle` to wire up the carousel display button, passing `showCarouselButton` and `carouselContainer`.
+ * 10. Call `setupHideCardButton` to wire up the button for toggling card backs, passing `hideCard`.
+ * 11. Call `setupRandomCardButton` to wire up the button for displaying a random card, passing `showRandom` and `gameArea`.
+ * 12. Initialize all tooltips on the page by calling `initTooltips`.
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
