@@ -24,6 +24,7 @@ let inspectorEnabled = false;
  *    e. Validate `gokyo` data and build the carousel with the valid judoka.
  *    f. Append the carousel to `container`, initialize scroll markers, and reveal it.
  *    g. Log any errors that occur.
+ * 4. Return the click handler for optional manual invocation.
  *
  * @param {HTMLElement} button - Button to show the carousel.
  * @param {HTMLElement} container - Container for the carousel.
@@ -32,10 +33,10 @@ export function setupCarouselToggle(button, container) {
   let isBuilt = false;
   if (!button) {
     console.warn("Show carousel button not found. Skipping carousel initialization.");
-    return;
+    return undefined;
   }
 
-  button.addEventListener("click", async () => {
+  const handleClick = async () => {
     if (isBuilt) {
       container?.classList.remove("hidden");
       return;
@@ -80,7 +81,10 @@ export function setupCarouselToggle(button, container) {
     } catch (error) {
       console.error("Failed to build carousel:", error);
     }
-  });
+  };
+
+  button.addEventListener("click", handleClick);
+  return handleClick;
 }
 
 /**

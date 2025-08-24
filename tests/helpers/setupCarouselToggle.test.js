@@ -8,10 +8,6 @@ function createCarousel() {
   return wrapper;
 }
 
-async function flush() {
-  return await new Promise((resolve) => setTimeout(resolve, 0));
-}
-
 afterEach(() => {
   vi.restoreAllMocks();
   vi.resetModules();
@@ -41,15 +37,13 @@ describe("setupCarouselToggle", () => {
 
     const { setupCarouselToggle } = await import("../../src/game.js");
 
-    setupCarouselToggle(button, container);
+    const handleClick = setupCarouselToggle(button, container);
 
-    button.dispatchEvent(new Event("click"));
-    await flush();
+    await handleClick();
 
     expect(buildCardCarousel).toHaveBeenCalledTimes(1);
 
-    button.dispatchEvent(new Event("click"));
-    await flush();
+    await handleClick();
 
     expect(buildCardCarousel).toHaveBeenCalledTimes(1);
   });
@@ -86,10 +80,9 @@ describe("setupCarouselToggle", () => {
 
     const { setupCarouselToggle } = await import("../../src/game.js");
 
-    setupCarouselToggle(button, container);
+    const handleClick = setupCarouselToggle(button, container);
 
-    button.dispatchEvent(new Event("click"));
-    await flush();
+    await handleClick();
 
     expect(buildCardCarousel).toHaveBeenCalledWith([valid], []);
     expect(container.classList.contains("hidden")).toBe(false);
@@ -118,16 +111,14 @@ describe("setupCarouselToggle", () => {
 
     const { setupCarouselToggle } = await import("../../src/game.js");
 
-    setupCarouselToggle(button, null);
+    const handleClick = setupCarouselToggle(button, null);
 
-    button.dispatchEvent(new Event("click"));
-    await flush();
+    await handleClick();
 
     expect(consoleError).toHaveBeenCalledTimes(1);
     expect(buildCardCarousel).not.toHaveBeenCalled();
 
-    button.dispatchEvent(new Event("click"));
-    await flush();
+    await handleClick();
 
     expect(consoleError).toHaveBeenCalledTimes(2);
     expect(buildCardCarousel).not.toHaveBeenCalled();
