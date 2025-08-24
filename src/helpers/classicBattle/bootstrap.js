@@ -1,6 +1,7 @@
 import { onDomReady } from "../domReady.js";
 import ClassicBattleController from "./controller.js";
 import ClassicBattleView from "./view.js";
+import "./promises.js";
 
 /**
  * Bootstrap Classic Battle page by wiring controller and view.

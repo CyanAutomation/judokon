@@ -5,6 +5,7 @@ import { createModal } from "../../components/Modal.js";
 import { setPointsToWin } from "../battleEngineFacade.js";
 import { initTooltips } from "../tooltip.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
+import { emitBattleEvent } from "./battleEvents.js";
 
 /**
  * Initialize round selection modal for Classic Battle.
@@ -102,4 +103,5 @@ export async function initRoundSelectModal(onStart) {
     console.error("Failed to initialize tooltips:", err);
   }
   modal.open();
+  emitBattleEvent("roundOptionsReady");
 }
