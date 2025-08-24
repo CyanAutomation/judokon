@@ -6,6 +6,7 @@ import { DATA_DIR } from "./constants.js";
 import { getFallbackJudoka } from "./judokaUtils.js";
 import { JudokaCard } from "../components/JudokaCard.js";
 import { setupLazyPortraits } from "./lazyPortrait.js";
+import { markSignatureMoveReady } from "./signatureMove.js";
 
 /**
  * Replaces the contents of an element with the given card and animates it.
@@ -23,6 +24,9 @@ export function displayCard(element, card, skipAnimation = false) {
   if (!element || !card) return;
   element.innerHTML = "";
   element.appendChild(card);
+  if (card.querySelector(".signature-move-container")) {
+    markSignatureMoveReady();
+  }
   setupLazyPortraits(card);
   if (!skipAnimation) {
     requestAnimationFrame(() => {
