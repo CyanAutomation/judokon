@@ -8,7 +8,7 @@ test.describe.parallel("Homepage layout", () => {
 
     test.beforeEach(async ({ page }) => {
       await page.goto("/index.html");
-      await page.waitForSelector(".game-mode-grid");
+      await page.evaluate(() => window.homepageReadyPromise);
       await page.evaluate(() => window.navReadyPromise);
     });
 
@@ -57,7 +57,7 @@ test.describe.parallel("Homepage layout", () => {
 
     test.beforeEach(async ({ page }) => {
       await page.goto("/index.html");
-      await page.waitForSelector(".game-mode-grid");
+      await page.evaluate(() => window.homepageReadyPromise);
       await page.evaluate(() => window.navReadyPromise);
     });
 
