@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createTimerNodes } from "./domUtils.js";
+import { createMockScheduler } from "../mockScheduler.js";
 
 describe("timerService drift handling", () => {
   it("startTimer shows fallback on drift", async () => {
@@ -51,10 +52,10 @@ describe("timerService drift handling", () => {
       return { ...actual, startCoolDown };
     });
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
-    const timer = vi.useFakeTimers();
+    const scheduler = createMockScheduler();
     createTimerNodes();
-    mod.scheduleNextRound({ matchEnded: false });
-    timer.advanceTimersByTime(2000);
+    mod.scheduleNextRound({ matchEnded: false }, scheduler);
+    scheduler.tick(0);
     onDrift(1);
     // Cooldown drift displays a non-intrusive fallback; may use snackbar
     // when a round result message is present. Accept scoreboard fallback too.
@@ -66,6 +67,5 @@ describe("timerService drift handling", () => {
     onDrift(1);
     const usedSnackbar = showSnack.mock.calls.some((c) => c[0] === "Waiting…");
     expect(usedScoreboard || usedSnackbar).toBe(true);
-    timer.clearAllTimers();
   });
 });

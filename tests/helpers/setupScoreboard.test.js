@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createScoreboardHeader } from "../utils/testUtils.js";
+import { createMockScheduler } from "./mockScheduler.js";
 vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
@@ -14,18 +15,17 @@ beforeEach(() => {
 });
 
 describe("setupScoreboard", () => {
-  function createControls() {
+  function createControls(scheduler) {
     return {
       startCoolDown: (onTick, onExpired, duration) => {
         onTick(duration);
-        const id = setInterval(() => {
-          duration -= 1;
-          onTick(duration);
-          if (duration <= 0) {
-            clearInterval(id);
-            onExpired();
-          }
-        }, 1000);
+        for (let i = 1; i <= duration; i++) {
+          scheduler.setTimeout(() => {
+            const remaining = duration - i;
+            onTick(remaining);
+            if (remaining <= 0) onExpired();
+          }, i * 1000);
+        }
       },
       pauseTimer: vi.fn(),
       resumeTimer: vi.fn()
@@ -33,12 +33,12 @@ describe("setupScoreboard", () => {
   }
 
   it("initializes and proxies methods", async () => {
-    vi.useFakeTimers();
+    const scheduler = createMockScheduler();
     const mod = await import("../../src/helpers/setupScoreboard.js");
     const { showSnackbar, updateSnackbar } = await import("../../src/helpers/showSnackbar.js");
     showSnackbar.mockClear();
     updateSnackbar.mockClear();
-    mod.setupScoreboard(createControls());
+    mod.setupScoreboard(createControls(scheduler), scheduler);
 
     mod.showMessage("Hi");
     expect(document.getElementById("round-message").textContent).toBe("Hi");
@@ -58,35 +58,36 @@ describe("setupScoreboard", () => {
     mod.startCountdown(1);
     expect(showSnackbar).toHaveBeenCalledWith("Next round in: 1s");
     expect(updateSnackbar).not.toHaveBeenCalled();
-    await vi.advanceTimersByTimeAsync(1000);
+    scheduler.tick(1000);
     expect(showSnackbar).toHaveBeenCalledTimes(1);
   });
 
   it("initializes when called after DOM load", async () => {
+    const scheduler = createMockScheduler();
     const mod = await import("../../src/helpers/setupScoreboard.js");
-    mod.setupScoreboard(createControls());
+    mod.setupScoreboard(createControls(scheduler), scheduler);
     expect(document.getElementById("score-display")).toBeTruthy();
   });
 
   it("attaches to pre-existing elements", async () => {
     document.body.innerHTML = "";
     document.body.appendChild(createScoreboardHeader());
+    const scheduler = createMockScheduler();
     const mod = await import("../../src/helpers/setupScoreboard.js");
     const { showSnackbar, updateSnackbar } = await import("../../src/helpers/showSnackbar.js");
     showSnackbar.mockClear();
     updateSnackbar.mockClear();
-    mod.setupScoreboard(createControls());
+    mod.setupScoreboard(createControls(scheduler), scheduler);
     mod.showMessage("Hello");
     expect(document.getElementById("round-message").textContent).toBe("Hello");
     mod.clearMessage();
     expect(document.getElementById("round-message").textContent).toBe("");
     mod.updateScore(3, 4);
     expect(document.getElementById("score-display").textContent).toBe("You: 3\nOpponent: 4");
-    vi.useFakeTimers();
     mod.startCountdown(1);
     expect(showSnackbar).toHaveBeenCalledWith("Next round in: 1s");
     expect(updateSnackbar).not.toHaveBeenCalled();
-    await vi.advanceTimersByTimeAsync(1000);
+    scheduler.tick(1000);
     expect(showSnackbar).toHaveBeenCalledTimes(1);
   });
 });

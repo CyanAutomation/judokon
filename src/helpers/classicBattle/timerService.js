@@ -6,6 +6,7 @@ import * as snackbar from "../showSnackbar.js";
 import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
 import { emitBattleEvent } from "./battleEvents.js";
+import { realScheduler } from "../scheduler.js";
 
 let nextRoundTimer = null;
 let nextRoundReadyResolve = null;
@@ -169,9 +170,14 @@ export async function startTimer(onExpiredSelect) {
  * - Callback to handle stat selection.
  * @param {number} [timeoutMs=5000] - Delay before auto-selecting.
  */
-export function handleStatSelectionTimeout(store, onSelect, timeoutMs = 5000) {
+export function handleStatSelectionTimeout(
+  store,
+  onSelect,
+  timeoutMs = 5000,
+  scheduler = realScheduler
+) {
   scoreboard.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
-  store.autoSelectId = setTimeout(() => {
+  store.autoSelectId = scheduler.setTimeout(() => {
     autoSelectStat(onSelect);
   }, timeoutMs);
 }
@@ -228,7 +234,7 @@ export function createRoundTimer(onTick, onExpired) {
  * @param {{matchEnded: boolean}} result - Result from a completed round.
  * @returns {Promise<void>} Resolves after dispatching "ready".
  */
-export function scheduleNextRound(result) {
+export function scheduleNextRound(result, scheduler = realScheduler) {
   return new Promise((resolve) => {
     if (result.matchEnded) {
       setSkipHandler(null);
@@ -309,6 +315,6 @@ export function scheduleNextRound(result) {
     }
 
     onTick(cooldownSeconds);
-    setTimeout(() => nextRoundTimer.start(cooldownSeconds), 0);
+    scheduler.setTimeout(() => nextRoundTimer.start(cooldownSeconds), 0);
   });
 }

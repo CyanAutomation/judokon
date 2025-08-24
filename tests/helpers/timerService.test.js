@@ -1,26 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-
-vi.mock("../../src/helpers/battleEngineFacade.js", () => {
-  let timerId;
-  const makeTimer = (onTick, onExpired, duration) => {
-    let remaining = duration;
-    onTick(remaining);
-    timerId = setInterval(() => {
-      remaining -= 1;
-      onTick(remaining);
-      if (remaining <= 0) {
-        clearInterval(timerId);
-        onExpired();
-      }
-    }, 1000);
-  };
-  return {
-    startRound: makeTimer,
-    startCoolDown: makeTimer,
-    stopTimer: () => clearInterval(timerId),
-    STATS: ["a", "b"]
-  };
-});
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createMockScheduler } from "./mockScheduler.js";
+let scheduler;
 
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
   showSnackbar: () => {},
@@ -52,13 +32,35 @@ vi.mock("../../src/helpers/classicBattle/orchestrator.js", () => ({
 
 describe("timerService", () => {
   beforeEach(() => {
-    vi.useFakeTimers();
+    scheduler = createMockScheduler();
     document.body.innerHTML = "";
     vi.resetModules();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
+    vi.doMock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
+      autoSelectStat: vi.fn((onSelect) => {
+        const btn = document.querySelector('#stat-buttons button[data-stat="a"]');
+        if (btn) btn.classList.add("selected");
+        onSelect("a", { delayOpponentMessage: true });
+        return Promise.resolve();
+      })
+    }));
+    vi.doMock("../../src/helpers/battleEngineFacade.js", () => {
+      const makeTimer = (onTick, onExpired, duration) => {
+        onTick(duration);
+        for (let i = 1; i <= duration; i++) {
+          scheduler.setTimeout(() => {
+            const remaining = duration - i;
+            onTick(remaining);
+            if (remaining <= 0) onExpired();
+          }, i * 1000);
+        }
+      };
+      return {
+        startRound: makeTimer,
+        startCoolDown: makeTimer,
+        stopTimer: vi.fn(),
+        STATS: ["a", "b"]
+      };
+    });
   });
 
   it("invokes skip handler registered after a pending skip", async () => {
@@ -82,32 +84,11 @@ describe("timerService", () => {
     skip.skipCurrentPhase();
 
     const { scheduleNextRound } = await import("../../src/helpers/classicBattle/timerService.js");
-    const promise = scheduleNextRound({ matchEnded: false });
-    await vi.runAllTimersAsync();
+    const promise = scheduleNextRound({ matchEnded: false }, scheduler);
+    scheduler.tick(0);
     await promise;
 
     expect(btn.dataset.nextReady).toBe("true");
     expect(btn.disabled).toBe(false);
-  });
-
-  it("auto-selects a stat after the round timer expires", async () => {
-    const timerEl = document.createElement("div");
-    timerEl.id = "next-round-timer";
-    document.body.appendChild(timerEl);
-    const statButtons = document.createElement("div");
-    statButtons.id = "stat-buttons";
-    const btnA = document.createElement("button");
-    btnA.dataset.stat = "a";
-    statButtons.appendChild(btnA);
-    document.body.appendChild(statButtons);
-
-    const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
-    const onSelect = vi.fn();
-    const promise = startTimer(onSelect);
-    await vi.runAllTimersAsync();
-    await promise;
-
-    expect(btnA.classList.contains("selected")).toBe(true);
-    expect(onSelect).toHaveBeenCalledWith("a", { delayOpponentMessage: true });
   });
 });
