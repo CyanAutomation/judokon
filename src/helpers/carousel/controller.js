@@ -105,10 +105,13 @@ export class CarouselController {
     // avoid intermediary scroll calculations from overriding the target page.
     this._suppressScrollSync = true;
     this.container.scrollTo({ left, behavior: "auto" });
-    // Re-enable scroll sync on next animation frame.
-    requestAnimationFrame(() => {
+    // Re-enable scroll sync on the next macrotask. Using setTimeout(0)
+    // is more reliable across test envs (jsdom/vitest) where rAF may run
+    // synchronously; the macrotask ensures programmatic scroll events
+    // dispatched immediately after scrollTo are still suppressed.
+    setTimeout(() => {
       this._suppressScrollSync = false;
-    });
+    }, 0);
     this.update();
   }
 
