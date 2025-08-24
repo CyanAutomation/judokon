@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-describe("BattleEngine timer interactions", () => {
+describe("battleEngineFacade timer interactions", () => {
   beforeEach(() => {
     vi.resetModules();
   });
