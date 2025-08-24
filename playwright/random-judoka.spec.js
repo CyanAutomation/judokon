@@ -7,7 +7,7 @@ test.describe.parallel("View Judoka screen", () => {
     await page.evaluate(() => window.randomJudokaReadyPromise);
   });
 
-  test("essential elements visible", async ({ page }) => {
+  test("random judoka elements visible", async ({ page }) => {
     await expect(page.getByTestId("draw-button")).toBeVisible();
     await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
   });

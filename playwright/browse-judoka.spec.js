@@ -9,7 +9,7 @@ test.describe.parallel("Browse Judoka screen", () => {
   }); // Close beforeEach
   // Ensure proper nesting of braces and remove any extra closing brace
 
-  test("essential elements visible", async ({ page }) => {
+  test("browse judoka elements visible", async ({ page }) => {
     await expect(page.getByTestId(COUNTRY_TOGGLE_LOCATOR)).toBeVisible();
     await expect(page.getByTestId("country-toggle")).toHaveAttribute(
       "aria-label",
@@ -89,11 +89,11 @@ test.describe.parallel("Browse Judoka screen", () => {
 
     const before = await card.boundingBox();
     await card.hover();
-    await page.waitForFunction(selector => {
+    await page.waitForFunction((selector) => {
       const cardElement = document.querySelector(selector);
       if (!cardElement) return false; // Element not found yet
       const style = window.getComputedStyle(cardElement);
-      return style.transform !== 'none';
+      return style.transform !== "none";
     }, "#carousel-container .judoka-card");
     await page.waitForTimeout(200); // Allow animation to complete
     const after = await card.boundingBox();

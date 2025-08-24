@@ -59,7 +59,7 @@ test.describe.parallel("Settings page", () => {
     await expect(toggle).toBeVisible();
   });
 
-  test("essential elements visible", async ({ page }) => {
+  test("settings elements visible", async ({ page }) => {
     await verifyPageBasics(page, [NAV_CLASSIC_BATTLE, NAV_RANDOM_JUDOKA]);
     await expect(page.getByText(/sound/i)).toBeVisible();
     await expect(page.getByText(/motion effects/i)).toBeVisible();
