@@ -163,7 +163,7 @@ function validateGokyoData(gokyoData) {
  *    b. Create a `spinner` instance using `createSpinner(wrapper)`, setting `delay` to 0 if forced, otherwise `undefined`.
  *    c. If `forceSpinner` is true, immediately set `spinner.element.style.display` to "block".
  *    d. Otherwise, call `spinner.show()` to display it after its configured delay.
- * 5. Asynchronously append cards to the `container` using `appendCards(container, judokaList, gokyoLookup)`.
+ * 5. Asynchronously append cards to the `container` using `appendCards(container, judokaList, gokyoLookup)` and await its `ready` promise.
  * 6. Set up responsive sizing for the `container` using `setupResponsiveSizing(container)`.
  * 7. Remove the `spinner` from the DOM.
  * 8. If `forceSpinner` was true, delete the global flags `__showSpinnerImmediately__` and `__forceSpinner__`.
@@ -202,7 +202,8 @@ export async function buildCardCarousel(judokaList, gokyoData) {
     spinner.show();
   }
 
-  await appendCards(container, judokaList, gokyoLookup);
+  const { ready } = appendCards(container, judokaList, gokyoLookup);
+  await ready;
   setupResponsiveSizing(container);
 
   spinner.remove();

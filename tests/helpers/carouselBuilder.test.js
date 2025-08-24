@@ -5,12 +5,13 @@ vi.mock("../../src/helpers/carousel/index.js", async () => {
   const actual = await vi.importActual("../../src/helpers/carousel/index.js");
   return {
     ...actual,
-    appendCards: vi.fn(async (container, list) => {
+    appendCards: vi.fn((container, list) => {
       list.forEach(() => {
         const card = document.createElement("div");
         card.className = "judoka-card";
         container.appendChild(card);
       });
+      return { ready: Promise.resolve() };
     }),
     setupResponsiveSizing: vi.fn()
   };
