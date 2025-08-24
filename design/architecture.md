@@ -10,7 +10,8 @@ Throughout the project, keep modules simple. Favor small, single-purpose functio
 
 ### `game.js`
 
-The main entry point for the browser. It waits for `DOMContentLoaded` and wires up all game interactions.
+Exports setup helpers and the `initGame` function. `gameBootstrap.js` listens
+for `DOMContentLoaded` and calls `initGame` in production.
 
 - Imports helper functions to:
   - Build the card carousel
@@ -20,6 +21,11 @@ The main entry point for the browser. It waits for `DOMContentLoaded` and wires 
   - Initial card setup
   - Navigation hooks
   - Feature flag checks
+
+### `gameBootstrap.js`
+
+Lightweight bootstrap that waits for `DOMContentLoaded` and invokes
+`initGame`.
 
 ---
 

@@ -121,13 +121,19 @@ describe("renderSettingsControls", () => {
       loadNavigationItems: vi.fn()
     }));
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn() }));
-    const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
+    const { renderSettingsControls, handleGameModeChange } = await import(
+      "../../src/helpers/settingsPage.js"
+    );
     renderSettingsControls(baseSettings, gameModes, tooltipMap);
     const input = document.getElementById("mode-1");
     input.checked = false;
-    input.dispatchEvent(new Event("change"));
-    await Promise.resolve();
-    await Promise.resolve();
+    await handleGameModeChange({
+      input,
+      mode: gameModes[0],
+      label: gameModes[0].name,
+      getCurrentSettings: () => baseSettings,
+      handleUpdate: updateSetting
+    });
     expect(updateNavigationItemHidden).toHaveBeenCalledWith(1, true);
   });
 
@@ -139,17 +145,28 @@ describe("renderSettingsControls", () => {
       resetSettings: vi.fn()
     }));
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn() }));
-    const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
+    const { renderSettingsControls, handleFeatureFlagChange } = await import(
+      "../../src/helpers/settingsPage.js"
+    );
     renderSettingsControls(baseSettings, [], tooltipMap);
     const input = document.querySelector("#feature-battle-debug-panel");
     input.checked = true;
-    input.dispatchEvent(new Event("change"));
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(updateSetting).toHaveBeenCalledWith("featureFlags", {
-      ...baseSettings.featureFlags,
-      battleDebugPanel: { enabled: true }
+    await handleFeatureFlagChange({
+      input,
+      flag: "battleDebugPanel",
+      info: baseSettings.featureFlags.battleDebugPanel,
+      label: "battleDebugPanel",
+      getCurrentSettings: () => baseSettings,
+      handleUpdate: updateSetting
     });
+    expect(updateSetting).toHaveBeenCalledWith(
+      "featureFlags",
+      {
+        ...baseSettings.featureFlags,
+        battleDebugPanel: { enabled: true }
+      },
+      expect.any(Function)
+    );
   });
 
   it("adds navigation cache reset button when flag enabled", async () => {

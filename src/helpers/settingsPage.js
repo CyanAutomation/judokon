@@ -389,3 +389,6 @@ function showLoadSettingsError() {
 }
 
 onDomReady(initializeSettingsPage);
+
+export { handleGameModeChange } from "./settings/gameModeSwitches.js";
+export { handleFeatureFlagChange } from "./settings/featureFlagSwitches.js";

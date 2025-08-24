@@ -4,6 +4,58 @@ import { toggleViewportSimulation } from "../viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "../tooltipOverlayDebug.js";
 import { toggleLayoutDebugPanel } from "../layoutDebugPanel.js";
 
+/**
+ * Handle a feature flag toggle change.
+ *
+ * @pseudocode
+ * 1. Clone current feature flag settings with the updated value.
+ * 2. Persist via `handleUpdate`; on failure revert the checkbox.
+ * 3. Trigger side effects for specific flags.
+ * 4. Show a snackbar confirming the new state.
+ *
+ * @param {{
+ *   input: HTMLInputElement,
+ *   flag: string,
+ *   info: object,
+ *   label: string,
+ *   getCurrentSettings: Function,
+ *   handleUpdate: Function
+ * }} params - Handler dependencies.
+ * @returns {Promise} Resolves when persistence completes.
+ */
+export function handleFeatureFlagChange({
+  input,
+  flag,
+  info,
+  label,
+  getCurrentSettings,
+  handleUpdate
+}) {
+  const prev = !input.checked;
+  const updated = {
+    ...getCurrentSettings().featureFlags,
+    [flag]: { ...info, enabled: input.checked }
+  };
+  return Promise.resolve(
+    handleUpdate("featureFlags", updated, () => {
+      input.checked = prev;
+    })
+  )
+    .then(() => {
+      showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);
+      if (flag === "viewportSimulation") {
+        toggleViewportSimulation(input.checked);
+      }
+      if (flag === "tooltipOverlayDebug") {
+        toggleTooltipOverlayDebug(input.checked);
+      }
+      if (flag === "layoutDebugPanel") {
+        toggleLayoutDebugPanel(input.checked);
+      }
+    })
+    .catch(() => {});
+}
+
 function formatFlagLabel(flag) {
   return String(flag)
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
@@ -67,31 +119,15 @@ export function renderFeatureFlagSwitches(
       container.appendChild(wrapper);
     }
     if (!input) return;
-    input.addEventListener("change", () => {
-      const currentLabel = tooltipMap[`${tipId}.label`] || flag;
-      const prev = !input.checked;
-      const updated = {
-        ...getCurrentSettings().featureFlags,
-        [flag]: { ...info, enabled: input.checked }
-      };
-      Promise.resolve(
-        handleUpdate("featureFlags", updated, () => {
-          input.checked = prev;
-        })
-      )
-        .then(() => {
-          showSnackbar(`${currentLabel} ${input.checked ? "enabled" : "disabled"}`);
-          if (flag === "viewportSimulation") {
-            toggleViewportSimulation(input.checked);
-          }
-          if (flag === "tooltipOverlayDebug") {
-            toggleTooltipOverlayDebug(input.checked);
-          }
-          if (flag === "layoutDebugPanel") {
-            toggleLayoutDebugPanel(input.checked);
-          }
-        })
-        .catch(() => {});
-    });
+    input.addEventListener("change", () =>
+      handleFeatureFlagChange({
+        input,
+        flag,
+        info,
+        label: tooltipMap[`${tipId}.label`] || flag,
+        getCurrentSettings,
+        handleUpdate
+      })
+    );
   });
 }

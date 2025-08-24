@@ -32,75 +32,80 @@ import { getMissingJudokaFields, hasRequiredJudokaFields } from "../judokaValida
  *       iv. Set `card.setAttribute("role", "listitem")`.
  *       v. Set `card.setAttribute("aria-label", card.getAttribute("data-judoka-name") || "Judoka card")` using the judoka's name or a generic label.
  *       vi. Append the `card` to the `container`.
- * 3. After the loop, yield control to the event loop using `await Promise.resolve()` to allow any synchronously dispatched image error events to register their tasks.
- * 4. If `pendingReplacements` contains any tasks, await their completion using `Promise.allSettled()`.
- * 5. Return (the function implicitly resolves after all operations).
+ * 3. After the loop, define an asynchronous `ready` task that:
+ *    a. Yields control to the event loop using `await Promise.resolve()` so synchronously dispatched image error events can register their tasks.
+ *    b. Awaits all tasks in `pendingReplacements` with `Promise.allSettled()`.
+ * 4. Return an object containing the `ready` Promise.
  *
  * @param {HTMLElement} container - Carousel container element.
  * @param {Judoka[]} judokaList - Array of judoka objects.
  * @param {Object} gokyoLookup - Lookup object for gokyo data.
- * @returns {Promise<void>} Resolves after cards are appended (not after images load).
+ * @returns {{ ready: Promise<void> }} Resolves when initial cards mount and listeners attach (not after images load).
  */
-export async function appendCards(container, judokaList, gokyoLookup) {
+export function appendCards(container, judokaList, gokyoLookup) {
   // Track any in-flight replacements triggered during this execution.
   const pendingReplacements = [];
-  for (const judoka of judokaList) {
-    let entry = judoka;
-    if (!hasRequiredJudokaFields(judoka)) {
-      console.error("Invalid judoka object:", judoka);
-      const missing = getMissingJudokaFields(judoka).join(", ");
-      console.error(`Missing fields: ${missing}`);
-      entry = await getFallbackJudoka();
-    }
-    let card = await generateJudokaCard(entry, gokyoLookup, container);
-    if (!card) {
-      console.warn("Failed to generate card for judoka:", entry);
-      const fallback = await getFallbackJudoka();
-      card = await generateJudokaCard(fallback, gokyoLookup, container);
-    }
-    if (card) {
-      const img = card.querySelector("img");
-      if (img) {
-        // Handle portrait load errors by swapping to a fallback card, but
-        // do not block on image load events while building the carousel.
-        img.addEventListener(
-          "error",
-          () => {
-            // Start the replacement asynchronously and track it so that
-            // appendCards can await if the error occurs before it returns.
-            const task = (async () => {
-              try {
-                const fallback = await getFallbackJudoka();
-                // Build a replacement card without auto-appending to container.
-                const fallbackCard = await generateJudokaCard(fallback, gokyoLookup);
-                if (fallbackCard) {
-                  const parent = container || card.parentElement;
-                  if (parent && parent.contains(card)) {
-                    parent.replaceChild(fallbackCard, card);
-                  } else if (parent) {
-                    parent.appendChild(fallbackCard);
-                  }
-                }
-              } catch (err) {
-                console.error("Failed to swap to fallback card", err);
-              }
-            })();
-            pendingReplacements.push(task);
-          },
-          { once: true }
-        );
+
+  const ready = (async () => {
+    for (const judoka of judokaList) {
+      let entry = judoka;
+      if (!hasRequiredJudokaFields(judoka)) {
+        console.error("Invalid judoka object:", judoka);
+        const missing = getMissingJudokaFields(judoka).join(", ");
+        console.error(`Missing fields: ${missing}`);
+        entry = await getFallbackJudoka();
       }
-      card.tabIndex = 0;
-      card.setAttribute("role", "listitem");
-      card.setAttribute("aria-label", card.getAttribute("data-judoka-name") || "Judoka card");
-      container.appendChild(card);
+      let card = await generateJudokaCard(entry, gokyoLookup, container);
+      if (!card) {
+        console.warn("Failed to generate card for judoka:", entry);
+        const fallback = await getFallbackJudoka();
+        card = await generateJudokaCard(fallback, gokyoLookup, container);
+      }
+      if (card) {
+        const img = card.querySelector("img");
+        if (img) {
+          // Handle portrait load errors by swapping to a fallback card, but
+          // do not block on image load events while building the carousel.
+          img.addEventListener(
+            "error",
+            () => {
+              // Start the replacement asynchronously and track it so that
+              // appendCards can await if the error occurs before it returns.
+              const task = (async () => {
+                try {
+                  const fallback = await getFallbackJudoka();
+                  // Build a replacement card without auto-appending to container.
+                  const fallbackCard = await generateJudokaCard(fallback, gokyoLookup);
+                  if (fallbackCard) {
+                    const parent = container || card.parentElement;
+                    if (parent && parent.contains(card)) {
+                      parent.replaceChild(fallbackCard, card);
+                    } else if (parent) {
+                      parent.appendChild(fallbackCard);
+                    }
+                  }
+                } catch (err) {
+                  console.error("Failed to swap to fallback card", err);
+                }
+              })();
+              pendingReplacements.push(task);
+            },
+            { once: true }
+          );
+        }
+        card.tabIndex = 0;
+        card.setAttribute("role", "listitem");
+        card.setAttribute("aria-label", card.getAttribute("data-judoka-name") || "Judoka card");
+        container.appendChild(card);
+      }
     }
-  }
-  // Give the event loop a turn so any synchronously dispatched image
-  // error events can register tasks, then await them.
-  await Promise.resolve();
-  if (pendingReplacements.length) {
-    await Promise.allSettled(pendingReplacements);
-  }
-  return;
+    // Give the event loop a turn so any synchronously dispatched image
+    // error events can register tasks, then await them.
+    await Promise.resolve();
+    if (pendingReplacements.length) {
+      await Promise.allSettled(pendingReplacements);
+    }
+  })();
+
+  return { ready };
 }
