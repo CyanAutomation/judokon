@@ -31,7 +31,8 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
     { url: "/src/pages/meditation.html", name: "meditation.png", tag: "@meditation" },
     { url: "/src/pages/updateJudoka.html", name: "updateJudoka.png", tag: "@updateJudoka" },
     { url: "/src/pages/settings.html", name: "settings.png", tag: "@settings" },
-    { url: "/src/pages/vectorSearch.html", name: "vectorSearch.png", tag: "@vectorSearch" }
+    { url: "/src/pages/vectorSearch.html", name: "vectorSearch.png", tag: "@vectorSearch" },
+    { url: "/src/pages/changeLog.html", name: "changeLog.png", tag: "@changeLog" }
   ];
 
   for (const { url, name, tag } of pages) {
@@ -43,4 +44,43 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
       await expect(page).toHaveScreenshot(name, { fullPage: true });
     });
   }
+
+  test("@battleJudoka-narrow screenshot", async ({ page }) => {
+    await page.goto("/src/pages/battleJudoka.html");
+    await page.setViewportSize({ width: 280, height: 800 });
+    await expect(page).toHaveScreenshot("battleJudoka-narrow.png", {
+      mask: [page.locator("#battle-state-progress")]
+    });
+  });
+
+  test("@homepage-desktop-layout screenshot", async ({ page }) => {
+    await page.goto("/index.html");
+    await page.setViewportSize({ width: 1024, height: 800 });
+    await page.evaluate(() => window.homepageReadyPromise);
+    await page.evaluate(() => window.navReadyPromise);
+    await expect(page).toHaveScreenshot("desktop-layout.png", { fullPage: true });
+  });
+
+  test("@homepage-mobile-layout screenshot", async ({ page }) => {
+    await page.goto("/index.html");
+    await page.setViewportSize({ width: 500, height: 800 });
+    await page.evaluate(() => window.homepageReadyPromise);
+    await page.evaluate(() => window.navReadyPromise);
+    await expect(page).toHaveScreenshot("mobile-layout.png", { fullPage: true });
+  });
+
+  test("@randomJudoka-signature screenshot", async ({ page }) => {
+    await page.goto("/src/pages/randomJudoka.html");
+    await page.getByTestId("draw-button").click();
+    await page.evaluate(() => window.signatureMoveReadyPromise);
+    const sigMove = page.locator(".signature-move-container");
+    await expect(sigMove).toHaveScreenshot("randomJudoka-signature.png");
+  });
+
+  test("@browseJudoka-signature screenshot", async ({ page }) => {
+    await page.goto("/src/pages/browseJudoka.html");
+    await page.evaluate(() => window.signatureMoveReadyPromise);
+    const sigMove = page.locator(".signature-move-container").first();
+    await expect(sigMove).toHaveScreenshot("browseJudoka-signature.png");
+  });
 });

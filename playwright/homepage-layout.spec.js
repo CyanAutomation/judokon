@@ -34,11 +34,6 @@ test.describe.parallel("Homepage layout", () => {
       expect(gridBox.y + gridBox.height - paddingBottom).toBeLessThanOrEqual(
         navBox.y + ALLOWED_OFFSET
       );
-
-      await page.screenshot({
-        path: testInfo.outputPath("desktop-layout.png"),
-        fullPage: true
-      });
     });
 
     test("bottom navbar displays in a single row", async ({ page }) => {
@@ -84,11 +79,6 @@ test.describe.parallel("Homepage layout", () => {
       expect(gridBox.y + gridBox.height - paddingBottom).toBeLessThanOrEqual(
         navBox.y + ALLOWED_OFFSET
       );
-
-      await page.screenshot({
-        path: testInfo.outputPath("mobile-layout.png"),
-        fullPage: true
-      });
     });
   });
 });
