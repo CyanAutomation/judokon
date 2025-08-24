@@ -3,15 +3,54 @@ import { toggleCountryPanel } from "../countryPanel.js";
 import { handleKeyboardNavigation } from "./handleKeyboardNavigation.js";
 
 /**
+ * Handle a click on the country toggle button.
+ *
+ * @pseudocode
+ * 1. Determine if panel was open.
+ * 2. Toggle the panel state.
+ * 3. If opening for the first time, load country slider.
+ *
+ * @param {HTMLButtonElement} toggleButton
+ * @param {Element} panel
+ * @param {Element} listContainer
+ * @returns {Promise<void>}
+ */
+export async function handleToggleClick(toggleButton, panel, listContainer) {
+  const wasOpen = panel.classList.contains("open");
+  toggleCountryPanel(toggleButton, panel);
+  if (!wasOpen && listContainer.children.length === 0) {
+    await createCountrySlider(listContainer);
+  }
+}
+
+/**
+ * Handle keydown interactions within the country panel.
+ *
+ * @pseudocode
+ * 1. If Escape, close the panel.
+ * 2. If ArrowRight/ArrowLeft, delegate to keyboard navigation helper.
+ *
+ * @param {KeyboardEvent} event
+ * @param {HTMLButtonElement} toggleButton
+ * @param {Element} panel
+ * @param {Element} listContainer
+ */
+export function handlePanelKeydown(event, toggleButton, panel, listContainer) {
+  if (event.key === "Escape") {
+    toggleCountryPanel(toggleButton, panel, false);
+  }
+
+  if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+    handleKeyboardNavigation(event, listContainer, "flag-button");
+  }
+}
+
+/**
  * Set up the country selection panel toggle behavior.
  *
  * @pseudocode
- * 1. On toggleButton click:
- *    a. Toggle panel open state.
- *    b. If opening for the first time, initialize country slider.
- * 2. On panel keydown:
- *    a. Close panel on 'Escape'.
- *    b. Navigate slider buttons with ArrowLeft/ArrowRight.
+ * 1. Attach click handler for toggle button.
+ * 2. Attach keydown handler for panel interactions.
  * 3. Return a function indicating if countries are loaded.
  *
  * @param {HTMLButtonElement} toggleButton
@@ -22,23 +61,13 @@ import { handleKeyboardNavigation } from "./handleKeyboardNavigation.js";
 export function setupCountryToggle(toggleButton, panel, listContainer) {
   const countriesLoaded = () => listContainer.children.length > 0;
 
-  toggleButton.addEventListener("click", async () => {
-    const wasOpen = panel.classList.contains("open");
-    toggleCountryPanel(toggleButton, panel);
-    if (!wasOpen && !countriesLoaded()) {
-      await createCountrySlider(listContainer);
-    }
-  });
+  toggleButton.addEventListener("click", () =>
+    handleToggleClick(toggleButton, panel, listContainer)
+  );
 
-  panel.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      toggleCountryPanel(toggleButton, panel, false);
-    }
-
-    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
-      handleKeyboardNavigation(e, listContainer, "flag-button");
-    }
-  });
+  panel.addEventListener("keydown", (e) =>
+    handlePanelKeydown(e, toggleButton, panel, listContainer)
+  );
 
   return countriesLoaded;
 }
