@@ -257,15 +257,17 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
     // In test mode, remove cooldown to make transitions deterministic.
     let cooldownSeconds;
     try {
-      const isEnabled = typeof testModeUtils.isTestModeEnabled === "function"
-        ? testModeUtils.isTestModeEnabled()
-        : false;
+      const isEnabled =
+        typeof testModeUtils.isTestModeEnabled === "function"
+          ? testModeUtils.isTestModeEnabled()
+          : false;
       cooldownSeconds = isEnabled ? 0 : Math.max(0, Math.round(overrideMs / 1000));
     } catch {
       cooldownSeconds = Math.max(0, Math.round(overrideMs / 1000));
     }
     try {
-      if (isTestModeEnabled()) console.warn(`[test] scheduleNextRound: testMode=true cooldown=${cooldownSeconds}`);
+      if (isTestModeEnabled())
+        console.warn(`[test] scheduleNextRound: testMode=true cooldown=${cooldownSeconds}`);
       else console.warn(`[test] scheduleNextRound: testMode=false cooldown=${cooldownSeconds}`);
     } catch {}
 
@@ -341,7 +343,9 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
         emitBattleEvent("nextRoundTimerReady");
       } catch {}
       if (typeof nextRoundReadyResolve === "function") {
-        try { nextRoundReadyResolve(); } catch {}
+        try {
+          nextRoundReadyResolve();
+        } catch {}
         nextRoundReadyResolve = null;
       }
       return;
@@ -349,7 +353,9 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
 
     nextRoundTimer = createRoundTimer(onTick, onExpired);
     setSkipHandler(() => {
-      try { console.warn("[test] skip: stop nextRoundTimer"); } catch {}
+      try {
+        console.warn("[test] skip: stop nextRoundTimer");
+      } catch {}
       nextRoundTimer.stop();
     });
 
