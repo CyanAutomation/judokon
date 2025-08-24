@@ -32,7 +32,7 @@ describe("createScrollButton", () => {
     });
   });
 
-  it("should create a scroll button with the correct class and inner HTML when direction is left", () => {
+  it("createScrollButton returns left button with correct class and inner HTML", () => {
     const button = createScrollButton("left", container);
     expect(button.className).toBe("scroll-button left");
     expect(button.innerHTML).toContain("<svg");
@@ -40,7 +40,7 @@ describe("createScrollButton", () => {
     expect(button).toHaveAttribute("aria-label", "Prev.");
   });
 
-  it("should create a scroll button with the correct class and inner HTML when direction is right", () => {
+  it("createScrollButton returns right button with correct class and inner HTML", () => {
     const button = createScrollButton("right", container);
     expect(button.className).toBe("scroll-button right");
     expect(button.innerHTML).toContain("<svg");
@@ -48,34 +48,34 @@ describe("createScrollButton", () => {
     expect(button).toHaveAttribute("aria-label", "Next");
   });
 
-  it("should throw an error when the direction is invalid", () => {
+  it("createScrollButton throws when direction is invalid", () => {
     expect(() => createScrollButton("up", container)).toThrowError("Invalid direction");
   });
 
-  it("should scroll the container to the left when clicked", () => {
+  it("createScrollButton scrolls container to the left when clicked", () => {
     const button = createScrollButton("left", container);
     button.click();
     expect(container.scrollLeft).toBe(-100);
   });
 
-  it("should scroll the container to the right when clicked", () => {
+  it("createScrollButton scrolls container to the right when clicked", () => {
     const button = createScrollButton("right", container);
     button.click();
     expect(container.scrollLeft).toBe(100);
   });
 
-  it("should throw an error if container is null", () => {
+  it("createScrollButton throws when container is null", () => {
     expect(() => createScrollButton("left", null)).toThrowError("Container is required");
   });
 
-  it("should not throw if scrollBy is not defined on container", () => {
+  it("createScrollButton does not throw if scrollBy is not defined on container", () => {
     const div = document.createElement("div");
     expect(() => createScrollButton("left", div)).not.toThrow();
   });
 });
 
 describe("generateCardStats", () => {
-  it("should return a valid HTML string for a judoka's stats", async () => {
+  it("generateCardStats returns a valid HTML string for a judoka's stats", async () => {
     const card = {
       stats: { power: 9, speed: 6, technique: 7, kumikata: 7, newaza: 8 }
     };
@@ -93,43 +93,35 @@ describe("generateCardStats", () => {
     expect(normalizeHtml(result)).toBe(normalizeHtml(expectedHtml));
   });
 
-  it("should handle missing stats gracefully", async () => {
+  it("generateCardStats handles missing stats gracefully", async () => {
     const card = { stats: {} };
     const result = await generateCardStats(card);
     expect(result).toContain('<div class="card-stats common"');
   });
 
-  it("should throw an error if stats object is missing", async () => {
-    const card = {};
+  it.each([
+    ["stats object is missing", {}],
+    ["stats is null", { stats: null }],
+    ["stats is undefined", { stats: undefined }]
+  ])("generateCardStats throws when %s", async (_, card) => {
     await expect(generateCardStats(card)).rejects.toThrowError("Stats object is required");
   });
 
-  it("should throw an error if stats is null", async () => {
-    const card = { stats: null };
-    await expect(generateCardStats(card)).rejects.toThrowError("Stats object is required");
+  it.each([
+    ["card is null", null],
+    ["card is undefined", undefined]
+  ])("generateCardStats throws when %s", async (_, card) => {
+    await expect(generateCardStats(card)).rejects.toThrowError("Card object is required");
   });
 
-  it("should throw an error if stats is undefined", async () => {
-    const card = { stats: undefined };
-    await expect(generateCardStats(card)).rejects.toThrowError("Stats object is required");
-  });
-
-  it("should throw an error if card is null", async () => {
-    await expect(generateCardStats(null)).rejects.toThrowError("Card object is required");
-  });
-
-  it("should throw an error if card is undefined", async () => {
-    await expect(generateCardStats(undefined)).rejects.toThrowError("Card object is required");
-  });
-
-  it("should handle stats with missing keys gracefully", async () => {
+  it("generateCardStats handles stats with missing keys gracefully", async () => {
     const card = { stats: { power: 5 } };
     const result = await generateCardStats(card);
     expect(result).toContain("Power");
     expect(result).toContain("5");
   });
 
-  it("should escape HTML in stat values", async () => {
+  it("generateCardStats escapes HTML in stat values", async () => {
     const card = { stats: { power: "<b>9</b>", speed: 6, technique: 7, kumikata: 7, newaza: 8 } };
     const result = await generateCardStats(card);
     expect(result).toContain("&lt;b&gt;9&lt;/b&gt;");
@@ -137,34 +129,33 @@ describe("generateCardStats", () => {
 });
 
 describe("generateCardPortrait", () => {
-  it("should throw an error if card is null", () => {
-    expect(() => generateCardPortrait(null)).toThrowError("Card object is required");
+  it.each([
+    ["card is null", null],
+    ["card is undefined", undefined]
+  ])("generateCardPortrait throws when %s", (_, card) => {
+    expect(() => generateCardPortrait(card)).toThrowError("Card object is required");
   });
 
-  it("should throw an error if card is undefined", () => {
-    expect(() => generateCardPortrait(undefined)).toThrowError("Card object is required");
-  });
-
-  it("should include loading attribute on the portrait image", () => {
+  it("generateCardPortrait includes loading attribute on the portrait image", () => {
     const card = { id: 1, firstname: "John", surname: "Doe" };
     const result = generateCardPortrait(card);
     expect(result).toContain('loading="lazy"');
   });
 
-  it("should escape HTML in firstname and surname", () => {
+  it("generateCardPortrait escapes HTML in firstname and surname", () => {
     const card = { id: 1, firstname: "<John>", surname: '"Doe"' };
     const result = generateCardPortrait(card);
     expect(result).toContain("&lt;John&gt;");
     expect(result).toContain("&quot;Doe&quot;");
   });
 
-  it("should include alt attribute with full name", () => {
+  it("generateCardPortrait includes alt attribute with full name", () => {
     const card = { id: 1, firstname: "Jane", surname: "Smith" };
     const result = generateCardPortrait(card);
     expect(result).toContain('alt="Jane Smith"');
   });
 
-  it("uses placeholder src and stores real portrait in data attribute", () => {
+  it("generateCardPortrait uses placeholder src and stores real portrait in data attribute", () => {
     const card = { id: 5, firstname: "Joe", surname: "Bloggs" };
     const result = generateCardPortrait(card);
     expect(result).toContain('src="../assets/judokaPortraits/judokaPortrait-1.png"');
