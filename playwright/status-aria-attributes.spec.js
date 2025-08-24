@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { waitForSettingsReady } from "./fixtures/waits.js";
 
 const pages = [
   "/",
@@ -34,7 +35,7 @@ test.describe.parallel("Status aria attributes", () => {
     test(`${url} has role=status and aria-live=polite`, async ({ page }) => {
       await page.goto(url, { waitUntil: "domcontentloaded" });
       if (url.endsWith("/src/pages/settings.html")) {
-        await page.evaluate(() => window.settingsReadyPromise);
+        await waitForSettingsReady(page);
       }
       const statuses = await page.$$('[role="status"]');
       expect(statuses.length).toBeGreaterThan(0);

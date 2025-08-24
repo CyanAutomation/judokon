@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { waitForBattleReady } from "./fixtures/waits.js";
 
 /**
  * Verify stat buttons are cleared after the next round begins.
@@ -6,7 +7,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 test.describe.parallel("Classic battle button reset", () => {
   test("no button stays selected after next round", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
-    await page.evaluate(() => window.battleReadyPromise);
+    await waitForBattleReady(page);
     await page.locator(".snackbar").filter({ hasText: "Select your move" }).waitFor();
     await page.locator("#stat-buttons button[data-stat='power']").click();
     await page.locator("#next-button").click();
@@ -17,7 +18,7 @@ test.describe.parallel("Classic battle button reset", () => {
 
   test("tap highlight color cleared after reset", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
-    await page.evaluate(() => window.battleReadyPromise);
+    await waitForBattleReady(page);
     await page.locator(".snackbar").filter({ hasText: "Select your move" }).waitFor();
     // Select a stat, then advance to the next round
     const initialBtn = page.locator("#stat-buttons button[data-stat='power']");

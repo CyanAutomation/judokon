@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { waitForSettingsReady } from "./fixtures/waits.js";
 import fs from "fs";
 import { hex } from "wcag-contrast";
 import { DEFAULT_SETTINGS } from "../src/helpers/settingsUtils.js";
@@ -46,7 +47,7 @@ function getLabelData() {
 test.describe.parallel("Settings page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-    await page.evaluate(() => window.settingsReadyPromise);
+    await waitForSettingsReady(page);
   });
 
   test("page loads", async ({ page }) => {

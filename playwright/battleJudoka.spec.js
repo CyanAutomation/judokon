@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { waitForBattleReady } from "./fixtures/waits.js";
 import {
   verifyPageBasics,
   NAV_RANDOM_JUDOKA,
@@ -11,7 +12,7 @@ test.describe.parallel("Battle Judoka page", () => {
       Math.random = () => 0.42;
     });
     await page.goto("/src/pages/battleJudoka.html");
-    await page.evaluate(() => window.battleReadyPromise);
+    await waitForBattleReady(page);
   });
 
   test("page loads and nav visible", async ({ page }) => {

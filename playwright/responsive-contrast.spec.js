@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { waitForSettingsReady } from "./fixtures/waits.js";
 
 test.describe.parallel("Responsive scenarios", () => {
   test("renders ultra-narrow layout without horizontal scroll", async ({ page }) => {
@@ -10,7 +11,7 @@ test.describe.parallel("Responsive scenarios", () => {
 
   test("toggles high-contrast display mode", async ({ page }) => {
     await page.goto("/src/pages/settings.html");
-    await page.evaluate(() => window.settingsReadyPromise);
+    await waitForSettingsReady(page);
     await page.check("#display-mode-high-contrast");
     await expect(page.locator("body")).toHaveAttribute("data-theme", "high-contrast");
   });

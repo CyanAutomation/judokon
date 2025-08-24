@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { waitForBattleReady, waitForSettingsReady } from "./fixtures/waits.js";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 // battleTestUtils resets engine state and manipulates timer for scenarios
@@ -67,7 +68,7 @@ test.describe.parallel("Classic battle flow", () => {
     await roundOptions.first().waitFor();
     await roundOptions.first().click();
     await expect(page.locator(".modal-backdrop:not([hidden])")).toHaveCount(0);
-    await page.evaluate(() => window.battleReadyPromise);
+    await waitForBattleReady(page);
     await page.locator("[data-testid='home-link']").click();
     const confirmButton = page.locator("#confirm-quit-button");
     await confirmButton.waitFor({ state: "attached" });
@@ -79,10 +80,10 @@ test.describe.parallel("Classic battle flow", () => {
     await page.goto("/src/pages/battleJudoka.html");
     // Wait for the battle view to finish initializing rather than relying on
     // the header timer, which may be empty before the first round starts.
-    await page.evaluate(() => window.battleReadyPromise);
+    await waitForBattleReady(page);
     await page.locator("[data-testid='nav-13']").click();
     await expect(page).toHaveURL(/settings.html/);
-    await page.evaluate(() => window.settingsReadyPromise);
+    await waitForSettingsReady(page);
     await page.goBack();
     await expect(page).toHaveURL(/battleJudoka.html/);
     await page.waitForFunction(() => window.__classicBattleState === "matchOver");

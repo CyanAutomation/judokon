@@ -1,9 +1,10 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { waitForBattleReady } from "./fixtures/waits.js";
 
 test.describe.parallel("Battle orientation behavior", () => {
   test("updates orientation data attribute on rotation", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
-    await page.evaluate(() => window.battleReadyPromise);
+    await waitForBattleReady(page);
 
     await page.setViewportSize({ width: 320, height: 480 });
     await page.evaluate(() => window.applyBattleOrientation());
@@ -16,7 +17,7 @@ test.describe.parallel("Battle orientation behavior", () => {
 
   test("truncates round message below 320px", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
-    await page.evaluate(() => window.battleReadyPromise);
+    await waitForBattleReady(page);
     await page.setViewportSize({ width: 300, height: 600 });
     const msg = page.locator("#round-message");
     await msg.evaluate(

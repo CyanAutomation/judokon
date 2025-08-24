@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { waitForBattleReady } from "./fixtures/waits.js";
 import { classicBattleStates } from "./fixtures/classicBattleStates.js";
 
 test.describe.parallel("Battle state progress", () => {
@@ -7,7 +8,7 @@ test.describe.parallel("Battle state progress", () => {
       Math.random = () => 0.42;
     });
     await page.goto("/src/pages/battleJudoka.html");
-    await page.evaluate(() => window.battleReadyPromise);
+    await waitForBattleReady(page);
   });
 
   test("progress ids match classicBattleStates", async ({ page }) => {

@@ -1,6 +1,7 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 const JUDOKA = {
   id: 1,
@@ -17,16 +18,26 @@ const JUDOKA = {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const helperPath = path.resolve(__dirname, "../tests/helpers/mountInspectorPanel.js");
-const helperUrl = pathToFileURL(helperPath).href;
+
+const createInspectorPanelPath = path.resolve(__dirname, "../src/helpers/inspector/createInspectorPanel.js");
+const mountInspectorPanelPath = path.resolve(__dirname, "../tests/helpers/mountInspectorPanel.js");
+
+const createInspectorPanelScript = fs.readFileSync(createInspectorPanelPath, "utf8")
+  .replace("export function createInspectorPanel", "function createInspectorPanel");
+
+const mountInspectorPanelScript = fs.readFileSync(mountInspectorPanelPath, "utf8")
+  .replace('import { createInspectorPanel } from "../../src/helpers/inspector/createInspectorPanel.js";', '')
+  .replace("export function mountInspectorPanel", "function mountInspectorPanel");
+
+const initScript = createInspectorPanelScript + "\n" + mountInspectorPanelScript;
 
 test.describe.parallel("Card inspector accessibility", () => {
-  test("summary keyboard support and ARIA state", async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await page.setContent("<html><body></body></html>");
-    await page.evaluate(async (url) => {
-      const { mountInspectorPanel } = await import(url);
-      window.mountInspectorPanel = mountInspectorPanel;
-    }, helperUrl);
+    await page.addScriptTag({ content: initScript });
+  });
+
+  test("summary keyboard support and ARIA state", async ({ page }) => {
     await page.evaluate((judoka) => {
       window.mountInspectorPanel(judoka);
     }, JUDOKA);
@@ -40,18 +51,13 @@ test.describe.parallel("Card inspector accessibility", () => {
     await expect(summary).toBeFocused();
 
     await summary.press("Enter");
-    await expect(summary).toHaveJSProperty("ariaExpanded", "true");
+    await expect(summary).toHaveAttribute("aria-expanded", "true");
 
     await summary.press(" ");
-    await expect(summary).toHaveJSProperty("ariaExpanded", "false");
+    await expect(summary).toHaveAttribute("aria-expanded", "false");
   });
 
   test("announces invalid card data on JSON failure", async ({ page }) => {
-    await page.setContent("<html><body></body></html>");
-    await page.evaluate(async (url) => {
-      const { mountInspectorPanel } = await import(url);
-      window.mountInspectorPanel = mountInspectorPanel;
-    }, helperUrl);
     await page.evaluate(() => {
       const badJudoka = {
         id: 2,

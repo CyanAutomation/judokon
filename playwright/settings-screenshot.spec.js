@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { waitForSettingsReady } from "./fixtures/waits.js";
 
 const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
 
@@ -23,7 +24,7 @@ test.describe.parallel(
           );
         }, mode);
         await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-        await page.evaluate(() => window.settingsReadyPromise);
+        await waitForSettingsReady(page);
         await expect(page.locator("body")).toHaveAttribute("data-theme", mode);
         await expect(page).toHaveScreenshot(`settings-${mode}.png`, { fullPage: true });
       });
