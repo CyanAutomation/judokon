@@ -1,12 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createRoundMessage, createTimerNodes } from "./domUtils.js";
 
+const mockQuitMatch = () => {
+  const msg = document.getElementById("round-message");
+  if (msg) msg.textContent = "quit";
+  window.location.href = "http://localhost/index.html";
+};
+
 vi.mock("../../../src/helpers/classicBattle/quitModal.js", () => ({
-  quitMatch: () => {
-    const msg = document.getElementById("round-message");
-    if (msg) msg.textContent = "quit";
-    window.location.href = "http://localhost/index.html";
-  }
+  quitMatch: mockQuitMatch
 }));
 
 describe("classicBattle match controls", () => {
@@ -61,9 +63,8 @@ describe("classicBattle match controls", () => {
     );
     const { initQuitButton } = await import("../../../src/helpers/classicBattle/quitButton.js");
     window.battleStore = createBattleStore();
-    initQuitButton(window.battleStore);
+    initQuitButton(window.battleStore, { quitMatch: mockQuitMatch });
     document.getElementById("quit-match-button").click();
-    await new Promise((r) => setTimeout(r, 0));
     expect(document.getElementById("round-message").textContent).toBe("quit");
     expect(window.location.href).toBe("http://localhost/index.html");
   });
