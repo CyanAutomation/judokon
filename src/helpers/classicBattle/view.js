@@ -127,9 +127,16 @@ export class ClassicBattleView {
 
   /**
    * Applies current orientation to header.
-   * @returns {boolean}
+   *
+   * @pseudocode
+   * 1. Query `.battle-header`; resolve `false` if missing.
+   * 2. Determine orientation via `getOrientation`.
+   * 3. Update `data-orientation` when changed.
+   * 4. Resolve `true` once attributes are set.
+   *
+   * @returns {Promise<boolean>} Resolves `true` when applied, `false` if header missing.
    */
-  applyBattleOrientation() {
+  async applyBattleOrientation() {
     const header = document.querySelector(".battle-header");
     if (header) {
       const next = this.getOrientation();
