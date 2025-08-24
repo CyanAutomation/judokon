@@ -160,18 +160,19 @@ export async function startTimer(onExpiredSelect) {
  *
  * @pseudocode
  * 1. Display "Stat selection stalled" via `scoreboard.showMessage`.
- * 2. After 5 seconds call `autoSelectStat(onSelect)`.
+ * 2. After `timeoutMs` milliseconds call `autoSelectStat(onSelect)`.
  *
  * @param {{autoSelectId: ReturnType<typeof setTimeout> | null}} store
  * - Battle state store.
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => void} onSelect
  * - Callback to handle stat selection.
+ * @param {number} [timeoutMs=5000] - Delay before auto-selecting.
  */
-export function handleStatSelectionTimeout(store, onSelect) {
+export function handleStatSelectionTimeout(store, onSelect, timeoutMs = 5000) {
   scoreboard.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
   store.autoSelectId = setTimeout(() => {
     autoSelectStat(onSelect);
-  }, 5000);
+  }, timeoutMs);
 }
 
 export function createRoundTimer(onTick, onExpired) {
