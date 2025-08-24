@@ -118,7 +118,8 @@ export async function setupBrowseJudokaPage() {
   async function init() {
     const forceSpinner =
       new URLSearchParams(globalThis.location?.search || "").has("forceSpinner") ||
-      globalThis.__forceSpinner__ === true;
+      globalThis.__forceSpinner__ === true ||
+      globalThis.__showSpinnerImmediately__ === true;
     const spinner = createSpinner(carouselContainer, {
       delay: forceSpinner ? 0 : undefined
     });
@@ -133,6 +134,10 @@ export async function setupBrowseJudokaPage() {
       console.log("Resolving browseJudokaReadyPromise (success path)"); // Added console.log
       resolveBrowseReady?.(); // Resolve the promise before removing the spinner
       spinner.remove();
+      if (forceSpinner) {
+        delete globalThis.__forceSpinner__;
+        delete globalThis.__showSpinnerImmediately__;
+      }
       if (allJudoka.length === 0) {
         const noResultsMessage = document.createElement("div");
         noResultsMessage.className = "no-results-message";
@@ -160,6 +165,10 @@ export async function setupBrowseJudokaPage() {
       console.log("Resolving browseJudokaReadyPromise (error path)"); // Added console.log
       resolveBrowseReady?.(); // Resolve the promise before removing the spinner
       spinner.remove();
+      if (forceSpinner) {
+        delete globalThis.__forceSpinner__;
+        delete globalThis.__showSpinnerImmediately__;
+      }
       console.error("Error building the carousel:", error);
 
       const fallback = await getFallbackJudoka();

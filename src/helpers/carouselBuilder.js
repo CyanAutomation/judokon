@@ -188,7 +188,8 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   const gokyoLookup = validateGokyoData(gokyoData);
 
-  const forceSpinner = globalThis.__showSpinnerImmediately__ === true;
+  const forceSpinner =
+    globalThis.__forceSpinner__ === true || globalThis.__showSpinnerImmediately__ === true;
   const spinner = createSpinner(wrapper, { delay: forceSpinner ? 0 : undefined });
   if (forceSpinner) {
     spinner.element.style.display = "block";
@@ -200,7 +201,10 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   setupResponsiveSizing(container);
 
   spinner.remove();
-  if (forceSpinner) delete globalThis.__showSpinnerImmediately__;
+  if (forceSpinner) {
+    delete globalThis.__showSpinnerImmediately__;
+    delete globalThis.__forceSpinner__;
+  }
 
   // Initialize unified controller (buttons, keyboard, swipe, markers, counter)
   const controller = new CarouselController(container, wrapper, {

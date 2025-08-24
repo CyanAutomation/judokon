@@ -11,15 +11,16 @@ import { getMissingJudokaFields, hasRequiredJudokaFields } from "../judokaValida
  *    b. Generate a card or fall back to a default judoka.
  *    c. Apply accessibility attributes and append to the container.
  *    d. On portrait load error, rebuild the card using fallback judoka and replace the broken card.
- *    e. Collect a promise that resolves when the portrait either loads or is replaced.
+ *    - Note: Do not await image load events here; the carousel wrapper is
+ *      attached to the DOM after this function returns. Waiting on image
+ *      loads would deadlock when elements are detached.
  *
  * @param {HTMLElement} container - Carousel container element.
  * @param {Judoka[]} judokaList - Array of judoka objects.
  * @param {Object} gokyoLookup - Lookup object for gokyo data.
- * @returns {Promise<void[]>} Resolves when all portraits load or are replaced.
+ * @returns {Promise<void>} Resolves after cards are appended (not after images load).
  */
 export async function appendCards(container, judokaList, gokyoLookup) {
-  const replacements = [];
   for (const judoka of judokaList) {
     let entry = judoka;
     if (!hasRequiredJudokaFields(judoka)) {
@@ -37,37 +38,29 @@ export async function appendCards(container, judokaList, gokyoLookup) {
     if (card) {
       const img = card.querySelector("img");
       if (img) {
-        // Create a promise that resolves when the image either loads or is replaced
-        const replacement = new Promise((resolve) => {
-          const cleanup = () => resolve();
-          img.addEventListener("load", cleanup, { once: true });
-          // If a portrait fails to load, rebuild the card with fallback judoka
-          // and replace the broken element to maintain consistent content.
-          img.addEventListener(
-            "error",
-            async () => {
-              try {
-                const fallback = await getFallbackJudoka();
-                // Build a replacement card without auto-appending to container.
-                const fallbackCard = await generateJudokaCard(fallback, gokyoLookup);
-                if (fallbackCard) {
-                  const parent = container || card.parentElement;
-                  if (parent && parent.contains(card)) {
-                    parent.replaceChild(fallbackCard, card);
-                  } else if (parent) {
-                    parent.appendChild(fallbackCard);
-                  }
+        // Handle portrait load errors by swapping to a fallback card, but
+        // do not block on image load events while building the carousel.
+        img.addEventListener(
+          "error",
+          async () => {
+            try {
+              const fallback = await getFallbackJudoka();
+              // Build a replacement card without auto-appending to container.
+              const fallbackCard = await generateJudokaCard(fallback, gokyoLookup);
+              if (fallbackCard) {
+                const parent = container || card.parentElement;
+                if (parent && parent.contains(card)) {
+                  parent.replaceChild(fallbackCard, card);
+                } else if (parent) {
+                  parent.appendChild(fallbackCard);
                 }
-              } catch (err) {
-                console.error("Failed to swap to fallback card", err);
-              } finally {
-                cleanup();
               }
-            },
-            { once: true }
-          );
-        });
-        replacements.push(replacement);
+            } catch (err) {
+              console.error("Failed to swap to fallback card", err);
+            }
+          },
+          { once: true }
+        );
       }
       card.tabIndex = 0;
       card.setAttribute("role", "listitem");
@@ -75,5 +68,5 @@ export async function appendCards(container, judokaList, gokyoLookup) {
       container.appendChild(card);
     }
   }
-  return Promise.all(replacements);
+  return;
 }
