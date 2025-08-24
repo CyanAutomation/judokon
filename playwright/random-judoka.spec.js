@@ -4,24 +4,22 @@ import { verifyPageBasics, NAV_CLASSIC_BATTLE } from "./fixtures/navigationCheck
 test.describe.parallel("View Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/randomJudoka.html");
+    await page.evaluate(() => window.randomJudokaReadyPromise);
   });
 
   test("essential elements visible", async ({ page }) => {
-    await page.getByTestId("draw-button").waitFor();
     await expect(page.getByTestId("draw-button")).toBeVisible();
     await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
   });
 
   test("battle link navigates", async ({ page }) => {
     const battleLink = page.getByTestId(NAV_CLASSIC_BATTLE);
-    await battleLink.waitFor();
     await battleLink.click();
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
 
   test("draw button accessible name constant", async ({ page }) => {
     const btn = page.getByTestId("draw-button");
-    await btn.waitFor();
     await expect(btn).toHaveText(/draw card/i);
 
     await page.evaluate(() => {
@@ -71,7 +69,6 @@ test.describe.parallel("View Judoka screen", () => {
 
   test("draw button uses design tokens", async ({ page }) => {
     const btn = page.getByTestId("draw-button");
-    await btn.waitFor();
     const styles = await btn.evaluate((el) => {
       const cs = getComputedStyle(el);
       return { bg: cs.backgroundColor, color: cs.color };
@@ -96,7 +93,6 @@ test.describe.parallel("View Judoka screen", () => {
 
   test("draw button remains within viewport", async ({ page }) => {
     const btn = page.getByTestId("draw-button");
-    await btn.waitFor();
     const { bottom, innerHeight } = await btn.evaluate((el) => {
       const rect = el.getBoundingClientRect();
       return { bottom: rect.bottom, innerHeight: window.innerHeight };

@@ -19,14 +19,22 @@ const JUDOKA = {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const createInspectorPanelPath = path.resolve(__dirname, "../src/helpers/inspector/createInspectorPanel.js");
+const createInspectorPanelPath = path.resolve(
+  __dirname,
+  "../src/helpers/inspector/createInspectorPanel.js"
+);
 const mountInspectorPanelPath = path.resolve(__dirname, "../tests/helpers/mountInspectorPanel.js");
 
-const createInspectorPanelScript = fs.readFileSync(createInspectorPanelPath, "utf8")
+const createInspectorPanelScript = fs
+  .readFileSync(createInspectorPanelPath, "utf8")
   .replace("export function createInspectorPanel", "function createInspectorPanel");
 
-const mountInspectorPanelScript = fs.readFileSync(mountInspectorPanelPath, "utf8")
-  .replace('import { createInspectorPanel } from "../../src/helpers/inspector/createInspectorPanel.js";', '')
+const mountInspectorPanelScript = fs
+  .readFileSync(mountInspectorPanelPath, "utf8")
+  .replace(
+    'import { createInspectorPanel } from "../../src/helpers/inspector/createInspectorPanel.js";',
+    ""
+  )
   .replace("export function mountInspectorPanel", "function mountInspectorPanel");
 
 const initScript = createInspectorPanelScript + "\n" + mountInspectorPanelScript;
