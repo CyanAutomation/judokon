@@ -4,6 +4,7 @@ import { getMissingJudokaFields, hasRequiredJudokaFields } from "./judokaValidat
 import { enableCardFlip } from "./cardFlip.js";
 import { cardSectionRegistry } from "./cardSections.js";
 import { createInspectorPanel } from "./inspector/createInspectorPanel.js";
+import { markSignatureMoveReady } from "./signatureMove.js";
 
 /**
  * Generates the "last updated" HTML for a judoka card.
@@ -132,6 +133,9 @@ export async function generateJudokaCard(judoka, gokyoLookup, container, options
   );
   if (card) {
     container.appendChild(card);
+    if (card.querySelector(".signature-move-container")) {
+      markSignatureMoveReady();
+    }
   }
   return card;
 }
