@@ -10,6 +10,8 @@ import { getSanitizer } from "./sanitizeHtml.js";
 import { createSpinner } from "../components/Spinner.js";
 
 let spinner;
+let resolveResultsPromise;
+window.vectorSearchResultsPromise = Promise.resolve();
 
 /**
  * Load surrounding context for a search result element.
@@ -139,9 +141,13 @@ function selectTopMatches(matches) {
  */
 export async function handleSearch(event) {
   event.preventDefault();
+  window.vectorSearchResultsPromise = new Promise((resolve) => {
+    resolveResultsPromise = resolve;
+  });
   const { query, tbody, messageEl } = prepareSearchUi();
   if (!query) {
     finalizeSearchUi(messageEl);
+    resolveResultsPromise?.();
     return;
   }
   const selected = getSelectedTags();
@@ -150,12 +156,16 @@ export async function handleSearch(event) {
     const { terms, vector } = await buildQueryVector(query);
     const matches = await vectorSearch.findMatches(vector, 5, selected, query);
     finalizeSearchUi(messageEl);
-    if (handleNoMatches(matches, messageEl)) return;
+    if (handleNoMatches(matches, messageEl)) {
+      resolveResultsPromise?.();
+      return;
+    }
     renderSearchResults(tbody, messageEl, matches, terms);
   } catch (err) {
     console.error("Search failed", err);
     spinner.hide();
     if (messageEl) messageEl.textContent = "An error occurred while searching.";
+    resolveResultsPromise?.();
   }
 }
 
@@ -180,6 +190,7 @@ function renderSearchResults(tbody, messageEl, matches, terms) {
     messageEl.classList.add("search-result-empty");
   }
   renderResults(tbody, toRender, terms, loadResultContext);
+  queueMicrotask(() => resolveResultsPromise?.());
 }
 
 function showSearching(messageEl) {
