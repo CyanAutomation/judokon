@@ -84,7 +84,7 @@ describe("generateCardTopBar", () => {
     await expect(generateCardTopBar({}, flagUrl)).resolves.toBeTruthy();
   });
 
-  it("escapes HTML in firstname and surname", async () => {
+  it("async: escapes HTML in firstname and surname", async () => {
     const result = await generateCardTopBar(
       { firstname: "<John>", surname: '"Doe"', countryCode: "fr" },
       flagUrl
@@ -93,7 +93,7 @@ describe("generateCardTopBar", () => {
     expect(result.outerHTML).toContain('"Doe"');
   });
 
-  it("escapes HTML in country name for alt attribute", async () => {
+  it("async: escapes HTML in country name for alt attribute", async () => {
     vi.spyOn(countryUtils, "getCountryByCode").mockResolvedValueOnce("<France>");
     const result = await generateCardTopBar(judoka, flagUrl);
     expect(result.outerHTML).toContain('alt="<France> flag"');
@@ -136,7 +136,7 @@ describe("createNameContainer", () => {
     }
   );
 
-  it("escapes HTML in firstname and surname", () => {
+  it("sync: escapes HTML in firstname and surname", () => {
     const nameContainer = createNameContainer("<John>", '"Doe"');
     expect(nameContainer.outerHTML).toContain("&lt;John&gt;");
     expect(nameContainer.outerHTML).toContain('"Doe"');
@@ -156,7 +156,7 @@ describe("createFlagImage", () => {
     expect(flagImage.dataset.tooltipId).toBe("card.flag");
   });
 
-  it("escapes HTML in country name for alt attribute", () => {
+  it("sync: escapes HTML in country name for alt attribute", () => {
     const flagImage = createFlagImage(flagUrl, "<France>");
     expect(flagImage.outerHTML).toContain('alt="<France> flag"');
   });
