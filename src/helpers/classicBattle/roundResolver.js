@@ -40,13 +40,23 @@ export function evaluateRound(store, stat, playerVal, opponentVal) {
  * @param {string} stat - Chosen stat key.
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
+ * @param {{delayMs?: number, sleep?: (ms: number) => Promise<void>}} [opts]
+ * - Optional overrides for testing.
  * @returns {Promise<ReturnType<typeof evaluateRound>>}
  */
-export async function resolveRound(store, stat, playerVal, opponentVal) {
+export async function resolveRound(
+  store,
+  stat,
+  playerVal,
+  opponentVal,
+  {
+    delayMs = 300 + Math.floor(Math.random() * 401),
+    sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+  } = {}
+) {
   if (!stat) return;
   await dispatchBattleEvent("evaluate");
-  const delay = 300 + Math.floor(Math.random() * 401);
-  await new Promise((resolve) => setTimeout(resolve, delay));
+  await sleep(delayMs);
   emitBattleEvent("opponentReveal");
   const result = evaluateRound(store, stat, playerVal, opponentVal);
   const outcomeEvent =

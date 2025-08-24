@@ -20,8 +20,9 @@ import { onBattleEvent } from "./battleEvents.js";
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle state store.
  * @param {number} roundNumber - Current round number to display.
+ * @param {number} [stallTimeoutMs=35000] - Delay before auto-select kicks in.
  */
-export function applyRoundUI(store, roundNumber) {
+export function applyRoundUI(store, roundNumber, stallTimeoutMs = 35000) {
   resetStatButtons();
   disableNextRoundButton();
   const roundResultEl = document.getElementById("round-result");
@@ -30,9 +31,10 @@ export function applyRoundUI(store, roundNumber) {
   scoreboard.updateRoundCounter(roundNumber);
   showSelectionPrompt();
   startTimer((stat, opts) => handleStatSelection(store, stat, opts));
+  store.stallTimeoutMs = stallTimeoutMs;
   store.statTimeoutId = setTimeout(
     () => handleStatSelectionTimeout(store, (s, opts) => handleStatSelection(store, s, opts)),
-    35000
+    store.stallTimeoutMs
   );
   updateDebugPanel();
 }

@@ -16,15 +16,16 @@ const AUTO_SELECT_FEEDBACK_MS = 500;
  * @pseudocode
  * pick random stat from STATS
  * mark corresponding button as selected
- * wait AUTO_SELECT_FEEDBACK_MS
+ * wait `feedbackDelayMs`
  * dispatch "statSelected" battle event
  * invoke onSelect with random stat and delayOpponentMessage true
  *
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>|void} onSelect
  * - Callback to handle the chosen stat.
+ * @param {number} [feedbackDelayMs=AUTO_SELECT_FEEDBACK_MS] - Visual delay before dispatch.
  * @returns {Promise<void>} Resolves after feedback completes.
  */
-export async function autoSelectStat(onSelect) {
+export async function autoSelectStat(onSelect, feedbackDelayMs = AUTO_SELECT_FEEDBACK_MS) {
   const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
   // Defensive: ensure randomStat is a string before using it in a selector
   let btn = null;
@@ -48,7 +49,7 @@ export async function autoSelectStat(onSelect) {
     } catch {}
   }
   if (btn) btn.classList.add("selected");
-  await new Promise((resolve) => setTimeout(resolve, AUTO_SELECT_FEEDBACK_MS));
+  await new Promise((resolve) => setTimeout(resolve, feedbackDelayMs));
   // Ensure timeout event is observed even in environments where the
   // timer's own dispatch might be skipped by mocks.
   try {

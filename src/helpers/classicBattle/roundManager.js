@@ -12,7 +12,7 @@ import { emitBattleEvent } from "./battleEvents.js";
  * 1. Initialize battle state values.
  * 2. Return the store.
  *
- * @returns {{quitModal: ReturnType<import("../../components/Modal.js").createModal>|null, statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number, selectionMade: boolean}}
+ * @returns {{quitModal: ReturnType<import("../../components/Modal.js").createModal>|null, statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number, selectionMade: boolean, stallTimeoutMs: number}}
  */
 export function createBattleStore() {
   return {
@@ -20,7 +20,8 @@ export function createBattleStore() {
     statTimeoutId: null,
     autoSelectId: null,
     compareRaf: 0,
-    selectionMade: false
+    selectionMade: false,
+    stallTimeoutMs: 35000
   };
 }
 
