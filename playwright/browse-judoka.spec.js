@@ -18,7 +18,7 @@ test.describe.parallel("Browse Judoka screen", () => {
     await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
   });
 
-  test("battle link navigates", async ({ page }) => {
+  test("battle link navigates from browse judoka", async ({ page }) => {
     await page.getByTestId(NAV_CLASSIC_BATTLE).click();
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
@@ -89,11 +89,11 @@ test.describe.parallel("Browse Judoka screen", () => {
 
     const before = await card.boundingBox();
     await card.hover();
-    await page.waitForFunction(selector => {
+    await page.waitForFunction((selector) => {
       const cardElement = document.querySelector(selector);
       if (!cardElement) return false; // Element not found yet
       const style = window.getComputedStyle(cardElement);
-      return style.transform !== 'none';
+      return style.transform !== "none";
     }, "#carousel-container .judoka-card");
     await page.waitForTimeout(200); // Allow animation to complete
     const after = await card.boundingBox();

@@ -12,7 +12,7 @@ test.describe.parallel("View Judoka screen", () => {
     await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
   });
 
-  test("battle link navigates", async ({ page }) => {
+  test("battle link navigates from random judoka", async ({ page }) => {
     const battleLink = page.getByTestId(NAV_CLASSIC_BATTLE);
     await battleLink.click();
     await expect(page).toHaveURL(/battleJudoka\.html/);
