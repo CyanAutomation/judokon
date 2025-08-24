@@ -25,14 +25,12 @@ export function toggleCountryPanel(toggleButton, panel, show) {
   const shouldOpen = typeof show === "boolean" ? show : !isOpen;
 
   if (shouldOpen) {
-    panel.removeAttribute("hidden");
     panel.classList.add("open");
     toggleButton.setAttribute("aria-expanded", "true");
     const firstButton = panel.querySelector("button.flag-button");
     firstButton?.focus();
   } else {
     panel.classList.remove("open");
-    panel.setAttribute("hidden", "");
     toggleButton.setAttribute("aria-expanded", "false");
     toggleButton.focus();
   }

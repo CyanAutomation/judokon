@@ -149,9 +149,7 @@
   display: flex;
 }
 
-.country-panel[hidden] {
-  display: none;
-}
+/* Panel is off-screen by default; visibility toggled by `.open` */
 
 .flag-button {
   background: transparent;

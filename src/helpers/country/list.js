@@ -42,7 +42,8 @@ function renderAllButton(container) {
   const allButton = document.createElement("button");
   allButton.className = "flag-button slide";
   allButton.value = "all";
-  allButton.setAttribute("aria-label", "Show all countries");
+  // Accessible name should be just "All" to match tests
+  allButton.setAttribute("aria-label", "All");
   const allImg = document.createElement("img");
   allImg.alt = "All countries";
   allImg.className = "flag-image";
@@ -90,7 +91,8 @@ async function renderCountryBatch(container, countries, nameToCode, imageObserve
     const button = document.createElement("button");
     button.className = "flag-button slide";
     button.value = countryName;
-    button.setAttribute("aria-label", `Filter by ${countryName}`);
+    // Use country name as the accessible name to match tests
+    button.setAttribute("aria-label", countryName);
     const flagImg = document.createElement("img");
     flagImg.alt = `${countryName} Flag`;
     flagImg.className = "flag-image";
