@@ -64,24 +64,12 @@ export function generateCardPortrait(card) {
  * Generates the stats HTML for a judoka card.
  *
  * @pseudocode
- * 1. Validate the input card object:
- *    - Ensure the card is an object and contains a valid `stats` property.
- *    - Throw an error if validation fails.
- *
- * 2. Extract stats (`power`, `speed`, `technique`, `kumikata`, `newaza`) from the card object:
- *    - Default missing values to "?".
- *    - Cap each stat at 10 (see PRD: cap extreme stats).
- *    - Escape each stat value using `escapeHTML`.
- *    - If stats are corrupted (not a number or missing), display error message "Stats unavailable" (see PRD: error state).
- *
- * 3. Construct the stats HTML:
- *    - If stats are valid, create a `<div>` element with the class `card-stats` and the card type as an additional class.
- *    - Add a `<ul>` element containing `<li>` items for each stat:
- *      a. Include the stat name in bold.
- *      b. Include the stat value inside a `<span>` element.
- *    - If stats are unavailable, show error message instead of stats list.
- *
- * 4. Return the constructed HTML string.
+ * 1. Validate the input `card` object:
+ *    a. If `card` is falsy or not an object, throw an error "Card object is required".
+ *    b. If `card.stats` is falsy or not an object, throw an error "Stats object is required".
+ * 2. Asynchronously create a `StatsPanel` instance:
+ *    a. Pass `card.stats` and an options object `{ type: cardType }` to `createStatsPanel()`.
+ * 3. Return the `outerHTML` of the created `StatsPanel` element.
  *
  * @accessibility
  * - Stats text must meet WCAG 2.1 AA contrast ratio (≥4.5:1).
@@ -135,6 +123,23 @@ export async function generateCardStats(card, cardType = "common") {
  * @param {string} cardType - The type of card (e.g., "common", "rare").
  * @returns {string} The HTML string for the signature move.
  */
+/**
+ * Resolves the signature move technique from the `gokyoLookup` based on the judoka's `signatureMoveId`.
+ * Provides fallback mechanisms if the ID is missing or the lookup fails.
+ *
+ * @private
+ * @param {Object} judoka - The judoka object containing the `signatureMoveId`.
+ * @param {Object} gokyoLookup - The lookup object for gokyo techniques.
+ * @returns {Object} The resolved technique object, or a fallback technique.
+ * @pseudocode
+ * 1. Create a `safeJudoka` object, defaulting to an empty object if `judoka` is null or undefined.
+ * 2. Extract the `signatureMoveId` from `safeJudoka`, defaulting to `PLACEHOLDER_ID` if missing, and convert it to a number.
+ * 3. Log debug information for the `signatureMoveId`, `judoka` object, and `gokyoLookup` object.
+ * 4. Attempt to resolve the technique in the following order:
+ *    a. Look up the technique using the `id` in `gokyoLookup`.
+ *    b. If not found, look up the technique using `PLACEHOLDER_ID` in `gokyoLookup`.
+ *    c. If still not found, return a hardcoded fallback technique object `{ id: PLACEHOLDER_ID, name: "Jigoku-guruma" }`.
+ */
 function resolveTechnique(judoka, gokyoLookup) {
   const safeJudoka = judoka ?? {};
   const id = Number(safeJudoka.signatureMoveId ?? PLACEHOLDER_ID);
@@ -147,6 +152,19 @@ function resolveTechnique(judoka, gokyoLookup) {
   );
 }
 
+/**
+ * Formats a technique name for display, handling missing names, decoding HTML entities, and escaping for safety.
+ *
+ * @private
+ * @param {Object} technique - The technique object, expected to have a `name` property.
+ * @returns {string} The formatted and escaped technique name.
+ * @pseudocode
+ * 1. Define a `fallback` name "Jigoku-guruma".
+ * 2. Get `foundName` from `technique?.name`.
+ * 3. If `foundName` is falsy, return the `fallback` name escaped using `escapeHTML()`.
+ * 4. Decode any HTML entities in `foundName` using `decodeHTML()`, then trim whitespace.
+ * 5. Return the decoded and trimmed name, escaped using `escapeHTML()` to prevent XSS.
+ */
 function formatTechniqueName(technique) {
   const fallback = "Jigoku-guruma";
   const foundName = technique?.name;

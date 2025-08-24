@@ -81,6 +81,19 @@ export class StatsPanel {
   }
 }
 
+/**
+ * Creates, initializes, and returns the root HTML element of a `StatsPanel` component.
+ * This function serves as a factory for the `StatsPanel` class, handling its instantiation
+ * and initial data population.
+ *
+ * @param {object} stats - Object with stat values to display.
+ * @param {object} [options] - Optional configuration for the StatsPanel.
+ * @returns {Promise<HTMLElement>} A promise that resolves to the root HTML element of the StatsPanel.
+ * @pseudocode
+ * 1. Instantiate a new `StatsPanel` object, passing the `stats` and `options`.
+ * 2. Asynchronously call the `update()` method on the created `panel` to populate it with data.
+ * 3. Return the `element` property of the `panel` instance, which is the root HTML element.
+ */
 export async function createStatsPanel(stats, options = {}) {
   const panel = new StatsPanel(stats, options);
   await panel.update();

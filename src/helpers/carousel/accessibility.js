@@ -49,9 +49,12 @@ export { ensureTouchTargetSize };
  * Initialize carousel accessibility and interaction helpers.
  *
  * @pseudocode
- * 1. Setup focus handlers for cards.
- * 2. Enable keyboard and swipe navigation.
- * 3. Apply accessibility improvements and lazy portrait loading.
+ * 1. Check if `wrapper` exists and if `wrapper._carouselController` is not already set.
+ *    a. If these conditions are met, instantiate a new `CarouselController` with the `container`, `wrapper`, and an empty options object (using default threshold).
+ *    b. Assign this new controller instance to `wrapper._carouselController`. This ensures a unified controller is available for consistent navigation behavior, especially if it wasn't created by the carousel builder.
+ * 2. Call `setupFocusHandlers(container)` to set up focus management for the carousel cards.
+ * 3. Call `applyAccessibilityImprovements(wrapper)` to apply general accessibility adjustments to the carousel wrapper and its controls.
+ * 4. Call `setupLazyPortraits(container)` to enable lazy loading for judoka portrait images within the carousel.
  *
  * @param {HTMLElement} container - Carousel container element.
  * @param {HTMLElement} wrapper - Carousel wrapper element.

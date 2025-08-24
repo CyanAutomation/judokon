@@ -19,6 +19,22 @@ import { createButton } from "../../components/Button.js";
 import { syncScoreDisplay } from "./uiService.js";
 import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
 
+// Ensure a global statButtonsReadyPromise exists synchronously so tests
+// and early code can safely await it even before `initStatButtons` runs.
+if (typeof window !== "undefined") {
+  try {
+    if (!window.statButtonsReadyPromise) {
+      let _resolve;
+      window.statButtonsReadyPromise = new Promise((r) => {
+        _resolve = r;
+      });
+      // Keep a handle to the current resolver so `initStatButtons` can
+      // replace/resolve it when the real button wiring happens.
+      window.__resolveStatButtonsReady = _resolve;
+    }
+  } catch {}
+}
+
 function getDebugOutputEl() {
   return document.getElementById("debug-output");
 }
@@ -435,10 +451,16 @@ export function setupNextButton() {
 export function initStatButtons(store) {
   const statButtons = document.querySelectorAll("#stat-buttons button");
   const statContainer = document.getElementById("stat-buttons");
-  let resolveReady;
+  // Use a resolver that is wired to a global so the promise exists
+  // synchronously during page init. When we reset/create a new
+  // promise we also publish its resolver on `window.__resolveStatButtonsReady`.
+  let resolveReady = typeof window !== "undefined" ? window.__resolveStatButtonsReady : undefined;
   const resetReadyPromise = () => {
     window.statButtonsReadyPromise = new Promise((r) => {
       resolveReady = r;
+      try {
+        window.__resolveStatButtonsReady = r;
+      } catch {}
     });
   };
 
@@ -452,7 +474,10 @@ export function initStatButtons(store) {
       statContainer.dataset.buttonsReady = String(enable);
     }
     if (enable) {
-      resolveReady?.();
+      // Resolve the current promise to signal readiness to tests / other code.
+      try {
+        resolveReady?.();
+      } catch {}
     } else {
       resetReadyPromise();
     }

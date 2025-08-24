@@ -6,6 +6,18 @@ let namesPromise;
 let cachedNames;
 let labelMap;
 
+/**
+ * Converts a string into a "slug" format: lowercase with spaces and hyphens removed.
+ * This is typically used for creating URL-friendly identifiers or keys.
+ *
+ * @private
+ * @param {string} name - The input string to convert.
+ * @returns {string} The slugified string.
+ * @pseudocode
+ * 1. Convert the input `name` to lowercase.
+ * 2. Replace all occurrences of hyphens (`-`) or whitespace characters (`\s`) with an empty string.
+ * 3. Return the resulting string.
+ */
 function slug(name) {
   return name.toLowerCase().replace(/[-\s]/g, "");
 }

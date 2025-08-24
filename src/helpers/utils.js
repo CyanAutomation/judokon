@@ -84,20 +84,21 @@ export function getValue(value, fallback = "Unknown") {
  * Formats a date string as YYYY-MM-DD or returns "Invalid Date".
  *
  * @pseudocode
- * 1. Validate the input:
- *    - If `dateString` is a `Date` object, check if it is valid using `isNaN(date.getTime())`.
- *    - If `dateString` is not a string or is empty after trimming, return "Invalid Date".
- *
- * 2. Parse the date:
- *    - Create a `Date` object using `dateString`.
- *    - If the `Date` object is invalid, return "Invalid Date".
- *
- * 3. Format the date:
- *    - Convert the valid `Date` object to an ISO string using `toISOString`.
- *    - Extract the date portion (YYYY-MM-DD) by splitting the ISO string at the "T" character.
- *
- * 4. Return the formatted date string:
- *    - Ensure the output is in the format YYYY-MM-DD or "Invalid Date".
+ * 1. Handle `Date` object input:
+ *    a. If `dateString` is an instance of `Date`:
+ *       i. Check if the `Date` object is valid using `isNaN(dateString.getTime())`. If invalid, return "Invalid Date".
+ *       ii. Otherwise, convert the `Date` object to an ISO string and extract the "YYYY-MM-DD" portion.
+ * 2. Handle string input:
+ *    a. If `dateString` is not a string or is empty after trimming whitespace, return "Invalid Date".
+ *    b. Attempt to match the string against an ISO date pattern (`YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SS...`).
+ *    c. Create a `Date` object from `dateString`.
+ *    d. If the created `Date` object is invalid (`isNaN(date.getTime())`), return "Invalid Date".
+ *    e. If `isoMatch` was successful, perform a stricter validation:
+ *       i. Extract year, month, and day components from the `isoMatch`.
+ *       ii. Compare these components with the UTC year, month (0-indexed + 1), and day of the `Date` object.
+ *       iii. If they do not match, return "Invalid Date" (handles cases like "2023-02-30").
+ * 3. If all validations pass, convert the valid `Date` object to an ISO string and extract the "YYYY-MM-DD" portion.
+ * 4. Return the formatted date string or "Invalid Date" if any validation failed.
  *
  * @param {string|Date} dateString - The date string or Date object to format.
  * @returns {string} The formatted date or "Invalid Date".

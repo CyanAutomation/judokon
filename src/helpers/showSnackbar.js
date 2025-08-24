@@ -50,6 +50,21 @@ export function showSnackbar(message) {
   try {
     if (typeof window !== "undefined" && window.__disableSnackbars) return;
   } catch {}
+  // Defensive: ensure a snackbar container exists so early calls (tests)
+  // don't fail because the container is missing. Create a no-op container
+  // when running in test environments where the host page hasn't added it.
+  try {
+    if (typeof document !== "undefined" && !document.getElementById("snackbar-container")) {
+      const container = document.createElement("div");
+      container.id = "snackbar-container";
+      // Keep the container visually inert when inserted by script.
+      container.style.position = "absolute";
+      container.style.width = "0";
+      container.style.height = "0";
+      container.style.overflow = "visible";
+      document.body?.appendChild(container);
+    }
+  } catch {}
   clearTimeout(fadeId);
   clearTimeout(removeId);
   const container = document.getElementById("snackbar-container");
@@ -81,6 +96,18 @@ export function updateSnackbar(message) {
   try {
     if (typeof window !== "undefined" && window.__disableSnackbars) return;
   } catch {}
+  // Defensive: expose updateSnackbar as safe even before DOM wiring.
+  try {
+    if (typeof document !== "undefined" && !document.getElementById("snackbar-container")) {
+      const container = document.createElement("div");
+      container.id = "snackbar-container";
+      container.style.position = "absolute";
+      container.style.width = "0";
+      container.style.height = "0";
+      container.style.overflow = "visible";
+      document.body?.appendChild(container);
+    }
+  } catch {}
   const container = document.getElementById("snackbar-container");
   if (!container) {
     clearTimeout(fadeId);
@@ -96,3 +123,15 @@ export function updateSnackbar(message) {
   bar.classList.add("show");
   resetTimers();
 }
+
+// Expose snackbar helpers globally for tests and early callers.
+try {
+  if (typeof window !== "undefined") {
+    try {
+      window.showSnackbar = showSnackbar;
+    } catch {}
+    try {
+      window.updateSnackbar = updateSnackbar;
+    } catch {}
+  }
+} catch {}
