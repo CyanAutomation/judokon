@@ -20,7 +20,7 @@ test.describe.parallel("Homepage layout", () => {
       expect(columnCount).toBe(2);
     });
 
-    test("grid does not overlap footer", async ({ page }, testInfo) => {
+    test("grid does not overlap footer (desktop)", async ({ page }, testInfo) => {
       const grid = page.locator(".game-mode-grid");
       const gridBox = await grid.boundingBox();
       const navBox = await page.locator(".bottom-navbar").boundingBox();
@@ -64,7 +64,7 @@ test.describe.parallel("Homepage layout", () => {
       expect(columnCount).toBe(1);
     });
 
-    test("grid does not overlap footer", async ({ page }, testInfo) => {
+    test("grid does not overlap footer (mobile)", async ({ page }, testInfo) => {
       const grid = page.locator(".game-mode-grid");
       const gridBox = await grid.boundingBox();
       const navBox = await page.locator(".bottom-navbar").boundingBox();
