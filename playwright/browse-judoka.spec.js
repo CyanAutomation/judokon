@@ -18,7 +18,7 @@ test.describe.parallel("Browse Judoka screen", () => {
     await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
   });
 
-  test("battle link navigates", async ({ page }) => {
+  test("battle link navigates from browse judoka", async ({ page }) => {
     await page.getByTestId(NAV_CLASSIC_BATTLE).click();
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
