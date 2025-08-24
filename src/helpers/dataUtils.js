@@ -215,7 +215,7 @@ export async function validateAndCache(url, data, schema) {
  * @throws {Error} If the fetch request fails, validation fails, or JSON parsing fails.
  */
 export async function fetchJson(url, schema) {
-  console.log(`DEBUG: fetchJson called with URL: ${url}`); // Added console.log
+  debugLog(`fetchJson called with URL: ${url}`);
   const key = String(url);
   try {
     if (dataCache.has(key)) {
