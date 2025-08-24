@@ -12,7 +12,7 @@ test.describe.parallel("Homepage", () => {
     await page.evaluate(() => window.navReadyPromise);
   });
 
-  test("page loads", async ({ page }) => {
+  test("homepage loads", async ({ page }) => {
     await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);
   });
 
