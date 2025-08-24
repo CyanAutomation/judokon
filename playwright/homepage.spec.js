@@ -9,7 +9,7 @@ test.describe.parallel("Homepage", () => {
   // Navigation coverage: footer link visibility and ordering.
   test.beforeEach(async ({ page }) => {
     await page.goto("/index.html");
-    await page.waitForSelector("body[data-nav-ready]");
+    await page.evaluate(() => window.navReadyPromise);
   });
 
   test("page loads", async ({ page }) => {

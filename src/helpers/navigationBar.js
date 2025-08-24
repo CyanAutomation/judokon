@@ -1,5 +1,17 @@
 import { loadNavigationItems } from "./gameModeUtils.js";
 
+let navReadyResolve;
+export const navReadyPromise =
+  typeof window !== "undefined"
+    ? new Promise((resolve) => {
+        navReadyResolve = resolve;
+      })
+    : Promise.resolve();
+
+if (typeof window !== "undefined") {
+  window.navReadyPromise = navReadyPromise;
+}
+
 /**
  * Highlight the navigation link matching the current location.
  *
@@ -72,6 +84,7 @@ export async function populateNavbar() {
       ? new document.defaultView.Event("nav:ready")
       : new Event("nav:ready");
     document.dispatchEvent(evt);
+    navReadyResolve?.();
   };
   try {
     const links = document.querySelectorAll('a[data-testid^="nav-"]');

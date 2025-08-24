@@ -7,7 +7,7 @@ test.describe.parallel("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/browseJudoka.html");
     // Wait for the bottom navbar links to be ready
-    await page.waitForSelector("body[data-nav-ready]");
+    await page.evaluate(() => window.navReadyPromise);
   });
 
   test("essential elements visible", async ({ page }) => {
