@@ -500,16 +500,17 @@ export function initStatButtons(store) {
     const statName = btn.dataset.stat;
     const clickHandler = () => {
       if (btn.disabled) return;
-      // Defer disabling and UI changes to the next frame so the
-      // browser can complete the native click sequence without the
-      // element becoming disabled mid-dispatch (improves test stability).
+      // Invoke selection logic immediately so tests observing the call
+      // don't need to wait for animation frames. Keep visual updates
+      // deferred to the next frame to avoid mid-dispatch UI changes.
+      try {
+        Promise.resolve(handleStatSelection(store, statName)).catch(() => {});
+      } catch {}
       requestAnimationFrame(() => {
-        setEnabled(false);
-        btn.classList.add("selected");
-        snackbar.showSnackbar(`You Picked: ${btn.textContent}`);
-        // Fire-and-forget to avoid blocking the UI thread.
         try {
-          Promise.resolve(handleStatSelection(store, statName)).catch(() => {});
+          setEnabled(false);
+          btn.classList.add("selected");
+          snackbar.showSnackbar(`You Picked: ${btn.textContent}`);
         } catch {}
       });
     };

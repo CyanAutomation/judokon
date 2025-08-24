@@ -22,21 +22,19 @@ export function setSkipHandler(fn) {
     );
   } catch {}
   if (pendingSkip && skipHandler) {
-    // Avoid synchronous re-entrancy into timer callbacks by deferring
-    // the actual skip invocation to the next macrotask.
+    // Immediately consume the pending skip by invoking the handler.
+    // Keep the handler in place during the call so semantics match callers
+    // that expect the handler to be called when it's registered.
     pendingSkip = false;
-    const current = skipHandler;
-    skipHandler = null;
     try {
-      window.dispatchEvent(
-        new CustomEvent("skip-handler-change", { detail: { active: false } })
-      );
+      // Invoke asynchronously to avoid surprising synchronous execution
+      // in the caller but run in the next macrotask so tests observe it.
+      setTimeout(() => {
+        try {
+          skipHandler && skipHandler();
+        } catch {}
+      }, 0);
     } catch {}
-    setTimeout(() => {
-      try {
-        current();
-      } catch {}
-    }, 0);
   }
 }
 

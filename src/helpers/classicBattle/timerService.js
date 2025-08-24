@@ -7,7 +7,7 @@ import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { realScheduler } from "../scheduler.js";
-import { isTestModeEnabled } from "../testModeUtils.js";
+import * as testModeUtils from "../testModeUtils.js";
 
 let nextRoundTimer = null;
 let nextRoundReadyResolve = null;
@@ -255,9 +255,15 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
         ? window.__NEXT_ROUND_COOLDOWN_MS
         : 3000;
     // In test mode, remove cooldown to make transitions deterministic.
-    const cooldownSeconds = isTestModeEnabled()
-      ? 0
-      : Math.max(0, Math.round(overrideMs / 1000));
+    let cooldownSeconds;
+    try {
+      const isEnabled = typeof testModeUtils.isTestModeEnabled === "function"
+        ? testModeUtils.isTestModeEnabled()
+        : false;
+      cooldownSeconds = isEnabled ? 0 : Math.max(0, Math.round(overrideMs / 1000));
+    } catch {
+      cooldownSeconds = Math.max(0, Math.round(overrideMs / 1000));
+    }
     try {
       if (isTestModeEnabled()) console.warn(`[test] scheduleNextRound: testMode=true cooldown=${cooldownSeconds}`);
       else console.warn(`[test] scheduleNextRound: testMode=false cooldown=${cooldownSeconds}`);
