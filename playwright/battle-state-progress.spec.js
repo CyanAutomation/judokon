@@ -16,7 +16,7 @@ test.describe.parallel("Battle state progress", () => {
       .filter((s) => s.id < 90)
       .sort((a, b) => a.id - b.id)
       .map((s) => String(s.id));
-    await page.evaluate(() => window.roundOptionsReadyPromise);
+    await page.evaluate(() => window.battleStateProgressReadyPromise);
     const ids = await page.$$eval("#battle-state-progress li", (lis) =>
       lis.map((li) => li.textContent.trim())
     );

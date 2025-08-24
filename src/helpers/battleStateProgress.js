@@ -7,11 +7,12 @@
  * 3. Sort core states by `id` in ascending order.
  * 4. If `#battle-state-progress` already matches state IDs and names, skip rendering.
  * 5. Otherwise, clear the list and render each state as an `<li>` with `data-state` and its numeric ID.
- * 6. Define `updateActive(state)` to query list items and toggle the `active` class on the match.
- * 7. Observe `#machine-state` for text changes; on each change call `updateActive`.
- * 8. If `#machine-state` is missing, poll `window.__classicBattleState` via `requestAnimationFrame` and store the ID.
- * 9. After the initial state is applied, call `markBattlePartReady('state')`.
- * 10. Return a cleanup function that disconnects the observer or cancels the animation frame loop.
+ * 6. Resolve `battleStateProgressReadyPromise` after rendering.
+ * 7. Define `updateActive(state)` to query list items and toggle the `active` class on the match.
+ * 8. Observe `#machine-state` for text changes; on each change call `updateActive`.
+ * 9. If `#machine-state` is missing, poll `window.__classicBattleState` via `requestAnimationFrame` and store the ID.
+ * 10. After the initial state is applied, call `markBattlePartReady('state')`.
+ * 11. Return a cleanup function that disconnects the observer or cancels the animation frame loop.
  *
  * @returns {Promise<(() => void) | undefined>} Resolves with a cleanup function.
  */
@@ -20,11 +21,26 @@ import { DATA_DIR } from "./constants.js";
 import { updateBattleStateBadge } from "./classicBattle/uiHelpers.js";
 import { markBattlePartReady } from "./battleInit.js";
 
+let resolveBattleStateProgressReady;
+export const battleStateProgressReadyPromise =
+  typeof window !== "undefined"
+    ? new Promise((resolve) => {
+        resolveBattleStateProgressReady = resolve;
+      })
+    : Promise.resolve();
+
+if (typeof window !== "undefined") {
+  window.battleStateProgressReadyPromise = battleStateProgressReadyPromise;
+}
+
 export async function initBattleStateProgress() {
   if (typeof document === "undefined") return;
 
   const list = document.getElementById("battle-state-progress");
-  if (!list) return;
+  if (!list) {
+    resolveBattleStateProgressReady?.();
+    return;
+  }
 
   let states = [];
   try {
@@ -32,6 +48,7 @@ export async function initBattleStateProgress() {
   } catch (error) {
     console.warn("Failed to load battle state progress data:", error);
     list.innerHTML = "<li>Error loading states</li>";
+    resolveBattleStateProgressReady?.();
     return;
   }
 
@@ -41,6 +58,7 @@ export async function initBattleStateProgress() {
 
   if (core.length === 0) {
     list.innerHTML = "<li>No states found</li>";
+    resolveBattleStateProgressReady?.();
     return;
   }
 
@@ -62,6 +80,8 @@ export async function initBattleStateProgress() {
     });
     list.appendChild(frag);
   }
+
+  resolveBattleStateProgressReady?.();
 
   const updateActive = (state) => {
     list.querySelectorAll("li").forEach((li) => {
