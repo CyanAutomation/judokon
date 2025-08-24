@@ -55,7 +55,6 @@ export async function setupBrowseJudokaPage() {
   const toggleBtn = document.getElementById("country-toggle");
   const countryPanel = document.getElementById("country-panel");
   const layoutToggle = document.getElementById("layout-toggle");
-  setupLayoutToggle(layoutToggle);
 
   toggleCountryPanelMode(countryPanel, false);
 
