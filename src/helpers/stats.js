@@ -26,10 +26,19 @@ function slug(name) {
  * Load stat definitions once and return those matching the category.
  *
  * @pseudocode
- * 1. When cached data exists, filter by `category` and return it.
- * 2. Otherwise fetch `statNames.json` via `fetchJson` and cache the promise.
- * 3. Sort the data by `statIndex` and store a lookup of slugified names.
- * 4. Return the entries matching `category`.
+ * 1. Check if `cachedNames` (the array of stat definitions) is already populated.
+ * 2. If `cachedNames` is not populated:
+ *    a. Check if `namesPromise` (the promise for fetching stat names) is not already initiated.
+ *    b. If `namesPromise` is not initiated:
+ *       i. Initiate `namesPromise` by calling `fetchJson` to get `statNames.json`.
+ *       ii. Attach a `catch` block to `namesPromise` to handle potential errors during fetching:
+ *           1. Log a debug message indicating the failure to load stat names.
+ *           2. As a fallback, attempt to import `statNames.json` directly as a module using `importJsonModule`.
+ *           3. If even the module import fails, return an empty array `[]` to prevent further errors.
+ *    c. Await the resolution of `namesPromise` to get the fetched (or fallback) data.
+ *    d. Sort the fetched data by `statIndex` and store it in `cachedNames`.
+ *    e. Create `labelMap` by transforming `cachedNames` into an object where keys are slugified stat names and values are original stat names.
+ * 3. Filter `cachedNames` to return only the entries whose `category` matches the provided `category` (defaulting to "Judo").
  *
  * @param {string} [category="Judo"] - Category of stats to load.
  * @returns {Promise<Array<{id:number,statIndex:number,name:string,category:string,japanese:string,description:string}>>} Sorted stat objects.
