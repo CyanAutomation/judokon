@@ -506,11 +506,15 @@ export function initStatButtons(store) {
       try {
         Promise.resolve(handleStatSelection(store, statName)).catch(() => {});
       } catch {}
+      // Show snackbar immediately so tests and observers can see the message
+      // synchronously; visual state changes remain deferred to the next frame.
+      try {
+        snackbar.showSnackbar(`You Picked: ${btn.textContent}`);
+      } catch {}
       requestAnimationFrame(() => {
         try {
           setEnabled(false);
           btn.classList.add("selected");
-          snackbar.showSnackbar(`You Picked: ${btn.textContent}`);
         } catch {}
       });
     };
