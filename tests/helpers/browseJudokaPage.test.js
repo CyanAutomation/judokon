@@ -19,7 +19,9 @@ describe("browseJudokaPage helpers", () => {
       createCountrySlider
     }));
 
-    const { setupCountryToggle } = await import("../../src/helpers/browse/setupCountryToggle.js");
+    const { setupCountryToggle, handleToggleClick, handlePanelKeydown } = await import(
+      "../../src/helpers/browse/setupCountryToggle.js"
+    );
 
     const toggleBtn = document.createElement("button");
     const panel = document.createElement("div");
@@ -28,27 +30,21 @@ describe("browseJudokaPage helpers", () => {
 
     const countriesLoaded = setupCountryToggle(toggleBtn, panel, list);
 
-    toggleBtn.click();
-    await Promise.resolve();
+    await handleToggleClick(toggleBtn, panel, list);
     expect(toggleCountryPanel).toHaveBeenCalledWith(toggleBtn, panel);
     expect(createCountrySlider).toHaveBeenCalledTimes(1);
     expect(countriesLoaded()).toBe(true);
 
-    toggleBtn.click();
-    await Promise.resolve();
+    await handleToggleClick(toggleBtn, panel, list);
     expect(createCountrySlider).toHaveBeenCalledTimes(1);
 
     const first = list.querySelectorAll("button.flag-button")[0];
     const second = list.querySelectorAll("button.flag-button")[1];
     first.focus();
-    const arrowEvent = new KeyboardEvent("keydown", { key: "ArrowRight" });
-    panel.dispatchEvent(arrowEvent);
-    await Promise.resolve();
+    handlePanelKeydown({ key: "ArrowRight", preventDefault: vi.fn() }, toggleBtn, panel, list);
     expect(document.activeElement).toBe(second);
 
-    const escEvent = new KeyboardEvent("keydown", { key: "Escape" });
-    panel.dispatchEvent(escEvent);
-    await Promise.resolve();
+    handlePanelKeydown({ key: "Escape" }, toggleBtn, panel, list);
     expect(toggleCountryPanel).toHaveBeenCalledWith(toggleBtn, panel, false);
   });
 
@@ -88,7 +84,9 @@ describe("browseJudokaPage helpers", () => {
       toggleCountryPanelMode: vi.fn()
     }));
 
-    const { setupCountryFilter } = await import("../../src/helpers/browse/setupCountryFilter.js");
+    const { applyCountryFilter, clearCountryFilter } = await import(
+      "../../src/helpers/browse/setupCountryFilter.js"
+    );
 
     const list = document.createElement("div");
     const allBtn = document.createElement("button");
@@ -114,20 +112,30 @@ describe("browseJudokaPage helpers", () => {
     ];
     const render = vi.fn();
 
-    setupCountryFilter(list, clear, judoka, render, toggleBtn, panel, carousel, ariaLive);
+    const updateLiveRegion = (count, country) => {
+      ariaLive.textContent = `Showing ${count} judoka for ${country}`;
+    };
 
-    jpBtn.click();
-    await Promise.resolve();
+    await applyCountryFilter(
+      jpBtn,
+      list,
+      judoka,
+      render,
+      toggleBtn,
+      panel,
+      carousel,
+      updateLiveRegion
+    );
     expect(jpBtn.classList.contains("selected")).toBe(true);
     expect(render).toHaveBeenLastCalledWith([{ id: 1, country: "JP" }]);
     expect(ariaLive.textContent).toBe("Showing 1 judoka for JP");
+    expect(toggleCountryPanel).toHaveBeenCalledWith(toggleBtn, panel, false);
 
-    clear.click();
-    await Promise.resolve();
+    await clearCountryFilter(list, judoka, render, toggleBtn, panel, updateLiveRegion);
     expect(allBtn.classList.contains("selected")).toBe(false);
     expect(jpBtn.classList.contains("selected")).toBe(false);
     expect(render).toHaveBeenLastCalledWith(judoka);
-    expect(toggleCountryPanel).toHaveBeenCalledWith(toggleBtn, panel, false);
+    expect(toggleCountryPanel).toHaveBeenCalledTimes(2);
     expect(ariaLive.textContent).toBe("Showing 2 judoka for all countries");
   });
 
