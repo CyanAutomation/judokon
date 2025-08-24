@@ -34,9 +34,8 @@ describe("game.js", () => {
       featureFlagsEmitter: new EventTarget()
     }));
 
-    await import("../../src/game.js");
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await Promise.resolve();
+    const { initGame } = await import("../../src/game.js");
+    await initGame();
     showRandom.dispatchEvent(new Event("click"));
 
     expect(generateRandomCard).toHaveBeenCalledWith(null, null, gameArea, true, undefined, {
