@@ -29,6 +29,13 @@ import { renderFeatureFlagSwitches } from "./settings/featureFlagSwitches.js";
 import { makeHandleUpdate } from "./settings/makeHandleUpdate.js";
 import { addNavResetButton } from "./settings/addNavResetButton.js";
 
+export const settingsReadyPromise = new Promise((resolve) => {
+  document.addEventListener("settings:ready", resolve, { once: true });
+});
+
+// Expose readiness for tests to await.
+window.settingsReadyPromise = settingsReadyPromise;
+
 let errorPopupTimeoutId;
 
 /**
@@ -278,7 +285,7 @@ export async function fetchSettingsData() {
  * 1. Sections render expanded by default.
  * 2. Apply initial display, motion, and feature settings.
  * 3. Initialize controls and render switches using provided data.
- * 4. Mark the page as ready and emit a `settings:ready` event.
+ * 4. Emit a `settings:ready` event.
  * 5. Return the updated `document.body` for inspection.
  *
  * @param {Settings} settings - Current settings.
@@ -291,7 +298,6 @@ export function renderSettingsControls(settings, gameModes, tooltipMap) {
   applyInitialSettings(settings);
   const controlsApi = initializeControls(settings);
   controlsApi.renderSwitches(gameModes, tooltipMap);
-  document.body.setAttribute("data-settings-ready", "");
   document.dispatchEvent(new Event("settings:ready"));
   return document.body;
 }

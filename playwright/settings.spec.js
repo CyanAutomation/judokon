@@ -46,7 +46,7 @@ function getLabelData() {
 test.describe.parallel("Settings page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
-    await page.waitForSelector("[data-settings-ready]");
+    await page.evaluate(() => window.settingsReadyPromise);
   });
 
   test("page loads", async ({ page }) => {
