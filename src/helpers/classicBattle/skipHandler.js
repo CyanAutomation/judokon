@@ -14,17 +14,29 @@ let pendingSkip = false;
  */
 export function setSkipHandler(fn) {
   skipHandler = typeof fn === "function" ? fn : null;
-  window.dispatchEvent(
-    new CustomEvent("skip-handler-change", {
-      detail: { active: Boolean(skipHandler) }
-    })
-  );
+  try {
+    window.dispatchEvent(
+      new CustomEvent("skip-handler-change", {
+        detail: { active: Boolean(skipHandler) }
+      })
+    );
+  } catch {}
   if (pendingSkip && skipHandler) {
+    // Avoid synchronous re-entrancy into timer callbacks by deferring
+    // the actual skip invocation to the next macrotask.
     pendingSkip = false;
     const current = skipHandler;
     skipHandler = null;
-    window.dispatchEvent(new CustomEvent("skip-handler-change", { detail: { active: false } }));
-    current();
+    try {
+      window.dispatchEvent(
+        new CustomEvent("skip-handler-change", { detail: { active: false } })
+      );
+    } catch {}
+    setTimeout(() => {
+      try {
+        current();
+      } catch {}
+    }, 0);
   }
 }
 
@@ -38,7 +50,12 @@ export function skipCurrentPhase() {
   if (skipHandler) {
     const fn = skipHandler;
     setSkipHandler(null);
-    fn();
+    // Defer to avoid executing inside event handlers synchronously.
+    setTimeout(() => {
+      try {
+        fn();
+      } catch {}
+    }, 0);
   } else {
     pendingSkip = true;
   }
