@@ -16,18 +16,7 @@
 export function setupLazyPortraits(root = document) {
   // Short-circuit in non-browser/test environments where IntersectionObserver
   // is not available (e.g., JSDOM) to avoid runtime errors during tests.
-  if (typeof IntersectionObserver === "undefined" || globalThis.__disableLazyLoad__) {
-    const images = root.querySelectorAll("img[data-portrait-src]");
-    for (const img of images) {
-      const realSrc = img.getAttribute("data-portrait-src");
-      if (realSrc) {
-        img.src = realSrc;
-        img.removeAttribute("data-portrait-src");
-      }
-    }
-    return;
-  }
-
+  if (typeof IntersectionObserver === "undefined") return;
   const images = root.querySelectorAll("img[data-portrait-src]");
   if (!images.length) return;
 

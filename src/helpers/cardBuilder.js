@@ -132,7 +132,6 @@ export async function generateJudokaCard(judoka, gokyoLookup, container, options
     null
   );
   if (card) {
-    container.appendChild(card);
     if (card.querySelector(".signature-move-container")) {
       markSignatureMoveReady();
     }

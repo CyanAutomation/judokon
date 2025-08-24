@@ -5,7 +5,6 @@ const COUNTRY_TOGGLE_LOCATOR = "country-toggle";
 
 test.describe.parallel("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => (globalThis.__disableLazyLoad__ = true));
     await page.goto("/src/pages/browseJudoka.html");
   });
 
