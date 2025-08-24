@@ -198,10 +198,12 @@ describe("browseJudokaPage helpers", () => {
     clear.id = "clear-filter";
     document.body.append(carousel, list, toggleBtn, layoutBtn, panel, clear);
 
+    globalThis.__forceSpinner__ = true;
     const pagePromise = setupBrowseJudokaPage();
-    await Promise.resolve();
 
-    expect(carousel.querySelector(".loading-spinner")).not.toBeNull();
+    const spinnerEl = carousel.querySelector(".loading-spinner");
+    expect(spinnerEl).not.toBeNull();
+    expect(spinnerEl.style.display).toBe("block");
     expect(show).toHaveBeenCalled();
 
     fetchResolvers[0]([{ id: 1, country: "JP" }]);
@@ -211,6 +213,7 @@ describe("browseJudokaPage helpers", () => {
     expect(carousel.querySelector(".loading-spinner")).toBeNull();
     expect(remove).toHaveBeenCalled();
     expect(toggleCountryPanelMode).toHaveBeenCalledWith(panel, false);
+    delete globalThis.__forceSpinner__;
   });
 
   it("renders a fallback card when judoka data fails to load", async () => {
