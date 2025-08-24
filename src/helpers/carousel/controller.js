@@ -462,6 +462,29 @@ export class CarouselController {
     return { left, right };
   }
 
+  /**
+   * Builds and returns the root element containing the page indicator markers and a page counter.
+   * It reuses an existing markers container if found, otherwise creates a new one.
+   *
+   * @private
+   * @pseudocode
+   * 1. Attempt to find an existing `.scroll-markers` element within `this.wrapper`.
+   * 2. If an existing element is found, reuse it; otherwise, create a new `div` element for the root.
+   * 3. Assign the class name "scroll-markers" to the `root` element.
+   * 4. Clear any existing `innerHTML` of the `root` element.
+   * 5. Destructure `pageCount` from `this.metrics`.
+   * 6. Loop from `i = 0` to `pageCount - 1`:
+   *    a. Create a new `span` element for each `marker`.
+   *    b. Assign the class name "scroll-marker" to the `marker`.
+   *    c. Append the `marker` to the `root` element.
+   * 7. Create a new `span` element for the `counter`.
+   * 8. Assign the class name "page-counter" to the `counter`.
+   * 9. Set the `aria-live` attribute of the `counter` to "polite" for accessibility.
+   * 10. Append the `counter` to the `root` element.
+   * 11. Return the `root` element.
+   *
+   * @returns {HTMLElement} The root element containing the scroll markers and page counter.
+   */
   _buildMarkers() {
     // If existing markers exist (e.g., older init), reuse container
     const existing = this.wrapper.querySelector(".scroll-markers");
@@ -484,6 +507,21 @@ export class CarouselController {
     return root;
   }
 
+  /**
+   * Synchronizes the visual state of the page indicator markers and the page counter
+   * to reflect the current page of the carousel.
+   *
+   * @private
+   * @pseudocode
+   * 1. Destructure `pageCount` from `this.metrics`.
+   * 2. Query all elements with the class "scroll-marker" within `this.markersRoot` to get the `markers` list.
+   * 3. Iterate over each `marker` in the `markers` list along with its `index` (`i`):
+   *    a. Toggle the "active" class on the `marker` based on whether its `index` (`i`) matches `this.currentPage`.
+   * 4. Query the element with the class "page-counter" within `this.markersRoot` to get the `counter`.
+   * 5. If `counter` exists, update its `textContent` to display the current page number (1-based) and the total `pageCount`.
+   *
+   * @returns {void}
+   */
   _syncMarkers() {
     const { pageCount } = this.metrics;
     const markers = this.markersRoot.querySelectorAll(".scroll-marker");
