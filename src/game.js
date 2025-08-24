@@ -159,29 +159,26 @@ export function setupRandomCardButton(button, container) {
 }
 
 /**
- * Initializes game interactions after the DOM is ready.
+ * Initializes game interactions.
  *
  * Queries required DOM elements, wires up control buttons, and loads data for
  * the judoka carousel when requested.
  *
  * @pseudocode
- * 1. Wait for the `DOMContentLoaded` event to ensure the full HTML document has been loaded and parsed.
- * 2. Query essential DOM elements by their IDs: `showRandom`, `gameArea`, `carousel-container`, `showCarousel`, and `hideCard`.
- * 3. If `showRandom` or `gameArea` elements are not found, it indicates the current page does not expose the necessary game UI controls, so exit silently.
- * 4. Asynchronously initialize feature flags using `initFeatureFlags`.
- * 5. After feature flags are initialized, determine if the "enableCardInspector" feature is enabled using `isEnabled` and store the result in `inspectorEnabled`.
- * 6. If `initFeatureFlags` fails, set `inspectorEnabled` to `false`.
- * 7. Call `toggleInspectorPanels` with the current `inspectorEnabled` state to update the visibility of inspector panels.
- * 8. Add an event listener to `featureFlagsEmitter` for "change" events:
- *    a. When a change occurs, re-evaluate `inspectorEnabled` using `isEnabled("enableCardInspector")`.
- *    b. Call `toggleInspectorPanels` again with the new `inspectorEnabled` state to reflect the change in UI.
- * 9. Call `setupCarouselToggle` to wire up the carousel display button, passing `showCarouselButton` and `carouselContainer`.
- * 10. Call `setupHideCardButton` to wire up the button for toggling card backs, passing `hideCard`.
- * 11. Call `setupRandomCardButton` to wire up the button for displaying a random card, passing `showRandom` and `gameArea`.
- * 12. Initialize all tooltips on the page by calling `initTooltips`.
+ * 1. Query essential DOM elements by their IDs: `showRandom`, `gameArea`, `carousel-container`, `showCarousel`, and `hideCard`.
+ * 2. If `showRandom` or `gameArea` elements are not found, exit silently.
+ * 3. Asynchronously initialize feature flags using `initFeatureFlags`.
+ * 4. Determine if the "enableCardInspector" feature is enabled with `isEnabled` and store the result in `inspectorEnabled`, defaulting to `false` on error.
+ * 5. Call `toggleInspectorPanels` with the current `inspectorEnabled` state to update the visibility of inspector panels.
+ * 6. Add an event listener to `featureFlagsEmitter` for "change" events:
+ *    a. Re-evaluate `inspectorEnabled` using `isEnabled("enableCardInspector")`.
+ *    b. Call `toggleInspectorPanels` again with the new `inspectorEnabled` state.
+ * 7. Call `setupCarouselToggle` to wire up the carousel display button, passing `showCarouselButton` and `carouselContainer`.
+ * 8. Call `setupHideCardButton` to wire up the button for toggling card backs, passing `hideCard`.
+ * 9. Call `setupRandomCardButton` to wire up the button for displaying a random card, passing `showRandom` and `gameArea`.
+ * 10. Initialize all tooltips on the page by calling `initTooltips`.
  */
-
-document.addEventListener("DOMContentLoaded", async () => {
+export async function initGame() {
   const showRandom = document.getElementById("showRandom");
   const gameArea = document.getElementById("gameArea");
   const carouselContainer = document.getElementById("carousel-container");
@@ -210,4 +207,4 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupHideCardButton(hideCard);
   setupRandomCardButton(showRandom, gameArea);
   initTooltips();
-});
+}
