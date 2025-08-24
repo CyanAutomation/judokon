@@ -12,6 +12,32 @@
  * @returns {void}
  */
 const readyParts = new Set();
+
+/**
+ * Promise that resolves once the battle screen has fully initialized.
+ *
+ * @pseudocode
+ * 1. Create a promise and capture its resolve callback.
+ * 2. Add a one-time listener for `battle:init` that resolves the promise.
+ * 3. Expose the promise globally via `window.battleReadyPromise`.
+ */
+let resolveReady;
+export const battleReadyPromise = new Promise((resolve) => {
+  resolveReady = resolve;
+});
+
+document.addEventListener(
+  "battle:init",
+  () => {
+    resolveReady();
+  },
+  { once: true }
+);
+
+if (typeof window !== "undefined") {
+  window.battleReadyPromise = battleReadyPromise;
+}
+
 export function markBattlePartReady(part) {
   readyParts.add(part);
   if (readyParts.has("home") && readyParts.has("state")) {

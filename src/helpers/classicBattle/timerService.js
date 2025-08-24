@@ -215,8 +215,9 @@ export function createRoundTimer(onTick, onExpired) {
  * @pseudocode
  * 1. If the match ended, resolve immediately.
  * 2. Locate `#next-button` and `#next-round-timer`.
- * 3. After a short delay, run a 3 second cooldown via `startCoolDown`
- *    and display `"Next round in: <n>s"` using one snackbar that updates each tick.
+ * 3. After a short delay, run a cooldown (default 3 seconds or
+ *    `window.__NEXT_ROUND_COOLDOWN_MS`) via `startCoolDown` and display
+ *    `"Next round in: <n>s"` using one snackbar that updates each tick.
  * 4. Register a skip handler that stops the timer and invokes the expiration logic.
  * 5. When expired, clear the `#next-round-timer` element, set `data-next-ready="true"`,
  *    enable the Next Round button, dispatch `"ready"` to auto-advance the state machine,
@@ -239,6 +240,12 @@ export function scheduleNextRound(result) {
     let snackbarStarted = false;
     let lastRenderedRemaining = -1;
 
+    const overrideMs =
+      typeof window !== "undefined" && typeof window.__NEXT_ROUND_COOLDOWN_MS === "number"
+        ? window.__NEXT_ROUND_COOLDOWN_MS
+        : 3000;
+    const cooldownSeconds = Math.max(0, Math.round(overrideMs / 1000));
+
     nextRoundReadyResolve = () => {
       resolve();
       nextRoundReadyResolve = null;
@@ -251,6 +258,13 @@ export function scheduleNextRound(result) {
 
     const onTick = (remaining) => {
       if (remaining <= 0) {
+        const text = "Next round in: 0s";
+        if (!snackbarStarted) {
+          snackbar.showSnackbar(text);
+          snackbarStarted = true;
+        } else {
+          snackbar.updateSnackbar(text);
+        }
         scoreboard.clearTimer();
         return;
       }
@@ -290,7 +304,7 @@ export function scheduleNextRound(result) {
       return;
     }
 
-    onTick(3);
-    setTimeout(() => nextRoundTimer.start(3), 0);
+    onTick(cooldownSeconds);
+    setTimeout(() => nextRoundTimer.start(cooldownSeconds), 0);
   });
 }
