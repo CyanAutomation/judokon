@@ -25,12 +25,17 @@ export function toggleCountryPanel(toggleButton, panel, show) {
   const shouldOpen = typeof show === "boolean" ? show : !isOpen;
 
   if (shouldOpen) {
+    // Ensure the panel is exposed to assistive tech and the layout before
+    // starting the open animation.
+    panel.removeAttribute("hidden");
     panel.classList.add("open");
     toggleButton.setAttribute("aria-expanded", "true");
     const firstButton = panel.querySelector("button.flag-button");
     firstButton?.focus();
   } else {
+    // Hide the panel from layout and assistive tech when closed.
     panel.classList.remove("open");
+    panel.setAttribute("hidden", "");
     toggleButton.setAttribute("aria-expanded", "false");
     toggleButton.focus();
   }

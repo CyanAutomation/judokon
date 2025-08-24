@@ -5,7 +5,6 @@ import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { getFallbackJudoka } from "./judokaUtils.js";
 import { createButton } from "../components/Button.js";
-import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
 import { setupButtonEffects } from "./buttonEffects.js";
 import { setupCountryToggle } from "./browse/setupCountryToggle.js";
@@ -64,6 +63,9 @@ export async function setupBrowseJudokaPage() {
   const countryPanel = document.getElementById("country-panel");
   const layoutToggle = document.getElementById("layout-toggle");
 
+  // Ensure panel starts hidden so automated tests and assistive tech see the
+  // expected initial state.
+  countryPanel.setAttribute("hidden", "");
   toggleCountryPanelMode(countryPanel, false);
 
   /**
