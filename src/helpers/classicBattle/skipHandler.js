@@ -28,9 +28,7 @@ export function setSkipHandler(fn) {
     const current = skipHandler;
     skipHandler = null;
     try {
-      window.dispatchEvent(
-        new CustomEvent("skip-handler-change", { detail: { active: false } })
-      );
+      window.dispatchEvent(new CustomEvent("skip-handler-change", { detail: { active: false } }));
     } catch {}
     setTimeout(() => {
       try {

@@ -51,7 +51,9 @@ onBattleEvent("roundStarted", (e) => {
 onBattleEvent("roundResolved", (e) => {
   const { store, result } = e.detail || {};
   if (!result) return;
-  try { console.warn("[test] roundResolved event received"); } catch {}
+  try {
+    console.warn("[test] roundResolved event received");
+  } catch {}
   syncScoreDisplay();
   scheduleNextRound(result);
   if (result.matchEnded) {
