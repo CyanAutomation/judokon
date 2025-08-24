@@ -23,12 +23,13 @@ describe("appendCards", () => {
 
     const container = document.createElement("div");
     const judokaList = [{ id: 1, firstname: "Real", surname: "Judoka" }];
-    await appendCards(container, judokaList, {});
+    const replacementPromise = appendCards(container, judokaList, {});
+    await Promise.resolve();
 
     const initialCard = container.firstElementChild;
     const img = initialCard.querySelector("img");
     img.dispatchEvent(new Event("error"));
-    await new Promise((r) => setTimeout(r, 0));
+    await replacementPromise;
 
     expect(getFallbackJudoka).toHaveBeenCalled();
     expect(container.children.length).toBe(1);
