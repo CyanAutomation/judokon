@@ -10,7 +10,9 @@ test.describe.parallel("Classic battle button reset", () => {
     await waitForBattleReady(page);
     await page.evaluate(() => window.roundPromptPromise);
     await page.locator("#stat-buttons button[data-stat='power']").click();
-    await page.locator("#next-button").click();
+    // The Next button may be disabled while the next-round timer runs. Tests
+    // can directly call the page-level skip helper to advance the phase
+    // deterministically instead of clicking a disabled control.
     await page.evaluate(() => window.skipBattlePhase?.());
     await page.evaluate(() => window.roundPromptPromise);
     await expect(page.locator("#stat-buttons .selected")).toHaveCount(0);
