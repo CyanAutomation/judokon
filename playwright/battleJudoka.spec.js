@@ -11,6 +11,7 @@ test.describe.parallel("Battle Judoka page", () => {
       Math.random = () => 0.42;
     });
     await page.goto("/src/pages/battleJudoka.html");
+    await page.evaluate(() => window.battleReadyPromise);
   });
 
   test("page loads and nav visible", async ({ page }) => {

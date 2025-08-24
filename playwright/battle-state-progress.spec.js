@@ -7,6 +7,7 @@ test.describe.parallel("Battle state progress", () => {
       Math.random = () => 0.42;
     });
     await page.goto("/src/pages/battleJudoka.html");
+    await page.evaluate(() => window.battleReadyPromise);
   });
 
   test("progress ids match classicBattleStates", async ({ page }) => {

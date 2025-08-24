@@ -149,6 +149,12 @@ Run all Playwright tests with:
 npx playwright test
 ```
 
+### Stable readiness waits in Playwright
+
+- Prefer `await page.evaluate(() => window.battleReadyPromise)` to detect that the Classic Battle page is fully initialized. This resolves when both the “home” and “state” parts finish booting (see `src/helpers/battleInit.js`).
+- Avoid waiting for brittle UI states like the header timer element (`#next-round-timer`) to be visible at page load. The initial pre‑match countdown is rendered via snackbar, not the header timer, and may be empty initially.
+- When targeting round start readiness, it’s fine to wait for the selection prompt snackbar (e.g., “Select your move”) or `#stat-buttons[data-buttons-ready="true"]`.
+
 ### Battle Debug Panel
 
 Enable the `battleDebugPanel` feature flag to display a panel above the player and opponent cards with live match data. The panel includes a **Copy** button that copies all text for easy sharing.
@@ -199,4 +205,3 @@ This project is licensed under the GNU General Public License v3.0. See [LICENSE
 ## 🙌 Thanks for Exploring JU-DO-KON!
 
 Whether you're a contributor, player, tester, or agent—thank you for helping build something fun, strategic, and kid-friendly. We’re excited to have you on the tatami!
-
