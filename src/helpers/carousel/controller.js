@@ -27,6 +27,7 @@ export class CarouselController {
     this._onKeydown = null;
     this._onTouchStart = null;
     this._onTouchEnd = null;
+    this._onTouchMove = null;
     this._onPointerDown = null;
     this._onPointerUp = null;
 
@@ -76,6 +77,7 @@ export class CarouselController {
     this.container.removeEventListener("keydown", this._onKeydown);
     this.container.removeEventListener("touchstart", this._onTouchStart);
     this.container.removeEventListener("touchend", this._onTouchEnd);
+    this.container.removeEventListener("touchmove", this._onTouchMove);
     this.container.removeEventListener("pointerdown", this._onPointerDown);
     this.container.removeEventListener("pointerup", this._onPointerUp);
     window.removeEventListener("resize", this._onResize);
@@ -87,6 +89,7 @@ export class CarouselController {
       this._onTouchEnd =
       this._onPointerDown =
       this._onPointerUp =
+      this._onTouchMove =
         null;
   }
 
@@ -180,13 +183,13 @@ export class CarouselController {
     // avoid intermediary scroll calculations from overriding the target page.
     this._suppressScrollSync = true;
     this.container.scrollTo({ left, behavior: "auto" });
-    // Re-enable scroll sync on the next macrotask. Using setTimeout(0)
-    // is more reliable across test envs (jsdom/vitest) where rAF may run
-    // synchronously; the macrotask ensures programmatic scroll events
-    // dispatched immediately after scrollTo are still suppressed.
+    // Re-enable scroll sync after a short delay to allow CSS scroll-snap
+    // to settle. Without this, a follow-up scroll event may compute a
+    // different page due to rounding/snap adjustments and over-advance
+    // the counter.
     setTimeout(() => {
       this._suppressScrollSync = false;
-    }, 0);
+    }, 120);
     this.update();
   }
 
@@ -286,31 +289,52 @@ export class CarouselController {
    */
   _wireSwipe() {
     let startX = 0;
-    const onEnd = (endX) => {
+    // Gate each gesture so only one navigation occurs between a start and its end.
+    let activeKind = null; // "touch" | "pointer" | null
+    let gestureActive = false;
+    const onEnd = (kind, endX) => {
+      if (!gestureActive || activeKind !== kind) return;
       const delta = endX - startX;
       if (delta > this.threshold) this.prev();
       else if (delta < -this.threshold) this.next();
+      // Reset gesture gate after handling
+      gestureActive = false;
+      activeKind = null;
     };
 
+    // Disable native touch scrolling; rely on programmatic paging.
+    this.container.style.touchAction = "none";
+
     this._onTouchStart = (e) => {
+      if (typeof e.preventDefault === "function") e.preventDefault();
+      activeKind = "touch";
+      gestureActive = true;
       startX = e.touches[0].clientX;
     };
     this._onTouchEnd = (e) => {
-      onEnd(e.changedTouches[0].clientX);
+      if (typeof e.preventDefault === "function") e.preventDefault();
+      onEnd("touch", e.changedTouches[0].clientX);
+    };
+    this._onTouchMove = (e) => {
+      // Prevent native momentum scroll during gesture
+      if (typeof e.preventDefault === "function") e.preventDefault();
     };
     this.container.addEventListener("touchstart", this._onTouchStart);
     this.container.addEventListener("touchend", this._onTouchEnd);
+    this.container.addEventListener("touchmove", this._onTouchMove, { passive: false });
 
     // Pointer events for mouse swipe-like interactions
     let pointerDown = false;
     this._onPointerDown = (e) => {
       pointerDown = true;
+      activeKind = "pointer";
+      gestureActive = true;
       startX = e.clientX;
     };
     this._onPointerUp = (e) => {
       if (!pointerDown) return;
       pointerDown = false;
-      onEnd(e.clientX);
+      onEnd("pointer", e.clientX);
     };
     this.container.addEventListener("pointerdown", this._onPointerDown);
     this.container.addEventListener("pointerup", this._onPointerUp);
@@ -355,10 +379,7 @@ export class CarouselController {
       // Immediate sync for tests and snappy UI
       const { pageWidth, pageCount } = this.metrics;
       if (pageWidth > 0) {
-        const maxScroll = this.container.scrollWidth - this.container.clientWidth;
-        const remaining = maxScroll - this.container.scrollLeft;
-        const page =
-          remaining <= 1 ? pageCount - 1 : Math.round(this.container.scrollLeft / pageWidth);
+        const page = Math.round(this.container.scrollLeft / pageWidth);
         // (no-op) immediate scroll sync
         this.currentPage = Math.max(0, Math.min(page, pageCount - 1));
         this.update();
@@ -372,9 +393,7 @@ export class CarouselController {
         }
         const { pageWidth: pw, pageCount: pc } = this.metrics;
         if (pw <= 0) return;
-        const maxScroll = this.container.scrollWidth - this.container.clientWidth;
-        const remaining = maxScroll - this.container.scrollLeft;
-        const page = remaining <= 1 ? pc - 1 : Math.round(this.container.scrollLeft / pw);
+        const page = Math.round(this.container.scrollLeft / pw);
         // (no-op) rAF scroll sync
         this.currentPage = Math.max(0, Math.min(page, pc - 1));
         this.update();
