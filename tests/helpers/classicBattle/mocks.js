@@ -56,9 +56,10 @@ export function mockRoundManager() {
 }
 
 export function mockSelectionHandler() {
-  vi.doMock("../../../src/helpers/classicBattle/selectionHandler.js", () => ({
-    handleStatSelection: vi.fn()
-  }));
+  vi.doMock("../../../src/helpers/classicBattlePage.js", async () => {
+    const actual = await vi.importActual("../../../src/helpers/classicBattlePage.js");
+    return { ...actual, selectStat: vi.fn() };
+  });
 }
 
 export function mockBattleJudokaPage() {

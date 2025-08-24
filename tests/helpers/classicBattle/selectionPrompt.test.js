@@ -63,14 +63,10 @@ describe("classicBattle selection prompt", () => {
     expect(document.querySelector(".snackbar")).toBeNull();
     expect(document.querySelector("header #round-message").textContent).toBe("");
     document.getElementById("player-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
+      `<ul><li class=\"stat\"><strong>Power</strong> <span>5</span></li></ul>`;
     document.getElementById("opponent-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    {
-      const p = battleMod.handleStatSelection(store, "power");
-      await vi.runAllTimersAsync();
-      await p;
-    }
+      `<ul><li class=\"stat\"><strong>Power</strong> <span>3</span></li></ul>`;
+    await battleMod.selectStat(store, "power", { delayMs: 0, sleep: async () => {} });
     expect(document.querySelector(".snackbar")?.textContent).not.toBe("Select your move");
   });
 });

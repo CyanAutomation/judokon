@@ -25,8 +25,9 @@ vi.mock("../../../src/helpers/setupScoreboard.js", () => ({ showMessage: vi.fn()
 vi.mock("../../../src/helpers/battle/index.js", () => ({ showResult: vi.fn() }));
 vi.mock("../../../src/helpers/motionUtils.js", () => ({ shouldReduceMotionSync: () => true }));
 vi.mock("../../../src/utils/scheduler.js", () => ({ onFrame: vi.fn(), cancel: vi.fn() }));
-vi.mock("../../../src/helpers/classicBattle/selectionHandler.js", () => ({
-  handleStatSelection: vi.fn()
+vi.mock("../../../src/helpers/classicBattlePage.js", () => ({
+  selectStat: vi.fn(),
+  setupClassicBattlePage: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
   onNextButtonClick: vi.fn()

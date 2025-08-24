@@ -59,7 +59,6 @@ describe("classicBattle stat selection", () => {
   let store;
   let selectStat;
   let simulateOpponentStat;
-  let handleStatSelection;
   let _resetForTest;
   let createBattleStore;
 
@@ -95,18 +94,13 @@ describe("classicBattle stat selection", () => {
   beforeEach(async () => {
     document.body.innerHTML +=
       '<div id="stat-buttons" data-tooltip-id="ui.selectStat"><button data-stat="power"></button></div>';
-    ({ createBattleStore, handleStatSelection, simulateOpponentStat, _resetForTest } = await import(
+    ({ createBattleStore, selectStat, simulateOpponentStat, _resetForTest } = await import(
       "../../../src/helpers/classicBattle.js"
     ));
     store = createBattleStore();
     _resetForTest(store);
     const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
     eventDispatcher.__reset();
-    selectStat = async (stat) => {
-      const p = handleStatSelection(store, stat);
-      await vi.runAllTimersAsync();
-      await p;
-    };
   });
 
   afterEach(() => {
@@ -116,14 +110,14 @@ describe("classicBattle stat selection", () => {
   it("clears selected class on stat buttons after each round", async () => {
     const btn = document.querySelector("[data-stat='power']");
     btn.classList.add("selected");
-    await selectStat("power");
+    await selectStat(store, "power", { delayMs: 0, sleep: async () => {} });
     expectDeselected(btn);
   });
 
   it("re-enables stat button after selection", async () => {
     const btn = document.querySelector("[data-stat='power']");
     btn.classList.add("selected");
-    await selectStat("power");
+    await selectStat(store, "power", { delayMs: 0, sleep: async () => {} });
     expectDeselected(btn);
     expect(btn.disabled).toBe(false);
   });
@@ -132,7 +126,7 @@ describe("classicBattle stat selection", () => {
     const btn = document.querySelector("[data-stat='power']");
     btn.classList.add("selected");
     btn.style.backgroundColor = "red";
-    await selectStat("power");
+    await selectStat(store, "power", { delayMs: 0, sleep: async () => {} });
     expectDeselected(btn);
     expect(btn.style.backgroundColor).toBe("");
   });
@@ -142,7 +136,7 @@ describe("classicBattle stat selection", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    await selectStat("power");
+    await selectStat(store, "power", { delayMs: 0, sleep: async () => {} });
     expect(document.querySelector("header #round-message").textContent).toMatch(/Tie/);
     expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nOpponent: 0");
   });
@@ -164,7 +158,7 @@ describe("classicBattle stat selection", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
     document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    await selectStat("power");
+    await selectStat(store, "power", { delayMs: 0, sleep: async () => {} });
     expect(document.getElementById("round-result").textContent).toBe("Power – You: 5 Opponent: 3");
   });
 
@@ -174,7 +168,7 @@ describe("classicBattle stat selection", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
     document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    await selectStat("power");
+    await selectStat(store, "power", { delayMs: 0, sleep: async () => {} });
     expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "evaluate");
     expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "outcome=winPlayer");
     expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(3, "continue");
@@ -191,8 +185,8 @@ describe("classicBattle stat selection", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
     document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    await selectStat("power");
-    await selectStat("power");
+    await selectStat(store, "power", { delayMs: 0, sleep: async () => {} });
+    await selectStat(store, "power", { delayMs: 0, sleep: async () => {} });
     expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "evaluate");
     expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "outcome=winPlayer");
     expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(3, "matchPointReached");

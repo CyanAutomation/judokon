@@ -47,9 +47,7 @@ function populateCards() {
 
 async function selectPower(battleMod, store) {
   const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
-  const p = battleMod.handleStatSelection(store, "power");
-  await vi.advanceTimersByTimeAsync(1000);
-  await p;
+  await battleMod.selectStat(store, "power", { delayMs: 0, sleep: async () => {} });
   return { randomSpy };
 }
 

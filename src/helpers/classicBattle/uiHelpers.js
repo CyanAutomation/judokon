@@ -9,7 +9,7 @@ import * as scoreboard from "../setupScoreboard.js";
 import { showResult } from "../battle/index.js";
 import { shouldReduceMotionSync } from "../motionUtils.js";
 import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
-import { handleStatSelection } from "./selectionHandler.js";
+import { selectStat } from "../classicBattlePage.js";
 import { onNextButtonClick } from "./timerService.js";
 import { loadStatNames } from "../stats.js";
 import { toggleViewportSimulation } from "../viewportDebug.js";
@@ -509,7 +509,7 @@ export function initStatButtons(store) {
         snackbar.showSnackbar(`You Picked: ${btn.textContent}`);
         // Fire-and-forget to avoid blocking the UI thread.
         try {
-          Promise.resolve(handleStatSelection(store, statName)).catch(() => {});
+          Promise.resolve(selectStat(store, statName)).catch(() => {});
         } catch {}
       });
     };

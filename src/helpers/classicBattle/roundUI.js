@@ -3,7 +3,7 @@ import { resetStatButtons } from "../battle/index.js";
 import { syncScoreDisplay } from "./uiService.js";
 import { startTimer, handleStatSelectionTimeout, scheduleNextRound } from "./timerService.js";
 import * as scoreboard from "../setupScoreboard.js";
-import { handleStatSelection } from "./selectionHandler.js";
+import { selectStat } from "../classicBattlePage.js";
 import { showMatchSummaryModal } from "./uiService.js";
 import { handleReplay } from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
@@ -30,10 +30,10 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 35000) {
   syncScoreDisplay();
   scoreboard.updateRoundCounter(roundNumber);
   showSelectionPrompt();
-  startTimer((stat, opts) => handleStatSelection(store, stat, opts));
+  startTimer((stat, opts) => selectStat(store, stat, opts));
   store.stallTimeoutMs = stallTimeoutMs;
   store.statTimeoutId = setTimeout(
-    () => handleStatSelectionTimeout(store, (s, opts) => handleStatSelection(store, s, opts)),
+    () => handleStatSelectionTimeout(store, (s, opts) => selectStat(store, s, opts)),
     store.stallTimeoutMs
   );
   updateDebugPanel();

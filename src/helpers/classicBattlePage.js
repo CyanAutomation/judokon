@@ -4,7 +4,8 @@
 /**
  * Initialize the Classic Battle page.
  * @pseudocode
- * - Import `setupClassicBattlePage` from classicBattle/bootstrap
- * - Export it for callers expecting `src/helpers/classicBattlePage.js`
+ * - Import `setupClassicBattlePage` from classicBattle/bootstrap.
+ * - Re-export `selectStat` for consumers needing direct stat processing.
  */
 export { setupClassicBattlePage } from "./classicBattle/bootstrap.js";
+export { selectStat } from "./classicBattle.js";

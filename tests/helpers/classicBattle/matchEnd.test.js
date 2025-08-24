@@ -69,13 +69,11 @@ afterEach(() => {
 
 async function playRound(battleMod, store, playerValue, opponentValue) {
   document.getElementById("player-card").innerHTML =
-    `<ul><li class="stat"><strong>Power</strong> <span>${playerValue}</span></li></ul>`;
+    `<ul><li class=\"stat\"><strong>Power</strong> <span>${playerValue}</span></li></ul>`;
   document.getElementById("opponent-card").innerHTML =
-    `<ul><li class="stat"><strong>Power</strong> <span>${opponentValue}</span></li></ul>`;
+    `<ul><li class=\"stat\"><strong>Power</strong> <span>${opponentValue}</span></li></ul>`;
   store.selectionMade = false;
-  const p = battleMod.handleStatSelection(store, "power");
-  await vi.runAllTimersAsync();
-  await p;
+  await battleMod.selectStat(store, "power", { delayMs: 0, sleep: async () => {} });
 }
 
 async function playerWinsRounds(battleMod, store, count) {

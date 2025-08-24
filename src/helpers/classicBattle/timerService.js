@@ -255,9 +255,7 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
         ? window.__NEXT_ROUND_COOLDOWN_MS
         : 3000;
     // In test mode, remove cooldown to make transitions deterministic.
-    const cooldownSeconds = isTestModeEnabled()
-      ? 0
-      : Math.max(0, Math.round(overrideMs / 1000));
+    const cooldownSeconds = isTestModeEnabled() ? 0 : Math.max(0, Math.round(overrideMs / 1000));
 
     nextRoundReadyResolve = () => {
       emitBattleEvent("nextRoundTimerReady");

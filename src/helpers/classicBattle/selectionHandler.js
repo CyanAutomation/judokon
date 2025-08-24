@@ -25,19 +25,21 @@ export function simulateOpponentStat(stats, difficulty = "easy") {
 }
 
 /**
- * Handles the player's stat selection.
+ * Process a player's stat selection.
  *
  * @pseudocode
- * 1. Ignore if a selection was already made.
- * 2. Record the chosen stat and fetch both stat values from the DOM.
- * 3. Stop running timers and clear pending timeouts on the store.
- * 4. Emit a `statSelected` event with the stat and values.
- * 5. Resolve the round either via the state machine or directly.
+ * 1. Ignore duplicate selections.
+ * 2. Determine both stat values from the DOM or fallback data.
+ * 3. Stop active timers and clear selection timeouts.
+ * 4. Emit a `statSelected` battle event with values.
+ * 5. Resolve the round immediately (tests) or via the orchestrator.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
+ * @param {{delayMs?: number, sleep?: (ms: number) => Promise<void>}} [resolveOpts]
+ * - Optional overrides forwarded to `resolveRound`.
  */
-export async function handleStatSelection(store, stat) {
+export async function selectStat(store, stat, resolveOpts) {
   if (store.selectionMade) {
     return;
   }
@@ -62,7 +64,7 @@ export async function handleStatSelection(store, stat) {
   // In test environments, resolve synchronously to avoid orchestrator coupling
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      result = await resolveRound(store, stat, playerVal, opponentVal);
+      result = await resolveRound(store, stat, playerVal, opponentVal, resolveOpts);
       return result;
     }
   } catch {}
@@ -79,16 +81,19 @@ export async function handleStatSelection(store, stat) {
           // Only run if still awaiting resolution and selection remains.
           try {
             if (isStateTransition(null, "roundDecision") && store.playerChoice) {
-              resolveRound(store, stat, playerVal, opponentVal).catch(() => {});
+              resolveRound(store, stat, playerVal, opponentVal, resolveOpts).catch(() => {});
             }
           } catch {}
         }, 600);
       } catch {}
     } else {
-      result = await resolveRound(store, stat, playerVal, opponentVal);
+      result = await resolveRound(store, stat, playerVal, opponentVal, resolveOpts);
     }
   } catch {
-    result = await resolveRound(store, stat, playerVal, opponentVal);
+    result = await resolveRound(store, stat, playerVal, opponentVal, resolveOpts);
   }
   return result;
 }
+
+// Legacy export for backward compatibility
+export { selectStat as handleStatSelection };

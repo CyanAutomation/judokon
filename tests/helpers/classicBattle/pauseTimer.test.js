@@ -88,9 +88,7 @@ describe("classicBattle timer pause", () => {
     document.getElementById("opponent-card").innerHTML =
       '<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>';
 
-    const promise = battleMod.handleStatSelection(store, "power");
-    await timer.runAllTimersAsync();
-    await promise;
+    await battleMod.selectStat(store, "power", { delayMs: 0, sleep: async () => {} });
     timer.advanceTimersByTime(1000);
     await timer.runAllTimersAsync();
     const messages = showMessage.mock.calls.map((c) => c[0]);
