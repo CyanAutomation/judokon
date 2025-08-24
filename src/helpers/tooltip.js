@@ -139,13 +139,18 @@ function ensureTooltipElement() {
  * @returns {Promise<() => void>} Resolves with a cleanup function.
  */
 export async function initTooltips(root = globalThis.document) {
-  if (!root) return () => {};
+  const notifyReady = () => globalThis.dispatchEvent(new Event("tooltips:ready"));
+  if (!root) {
+    notifyReady();
+    return () => {};
+  }
   let overlay = false;
   try {
     const settings = await loadSettings();
     overlay = Boolean(settings.featureFlags?.tooltipOverlayDebug?.enabled);
     if (!settings.tooltips) {
       toggleTooltipOverlayDebug(false);
+      notifyReady();
       return () => {};
     }
   } catch {
@@ -155,7 +160,10 @@ export async function initTooltips(root = globalThis.document) {
   const DOMPurify = await getSanitizer();
   const data = await loadTooltips();
   const elements = root?.querySelectorAll?.("[data-tooltip-id]") || [];
-  if (elements.length === 0) return () => {};
+  if (elements.length === 0) {
+    notifyReady();
+    return () => {};
+  }
   const tip = ensureTooltipElement();
 
   function show(e) {
@@ -205,7 +213,7 @@ export async function initTooltips(root = globalThis.document) {
     el.addEventListener("mouseout", hide);
     el.addEventListener("blur", hide);
   });
-
+  notifyReady();
   return () => {
     elements.forEach((el) => {
       el.removeEventListener("mouseenter", show);

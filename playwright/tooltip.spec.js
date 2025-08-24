@@ -7,7 +7,7 @@ const pageContent = `<!DOCTYPE html>
     <button id="tip-btn" data-tooltip-id="stat.power">Power</button>
     <script type="module">
       import { initTooltips } from 'http://localhost:5000/src/helpers/tooltip.js';
-      initTooltips().then(() => { window.initDone = true; });
+      window.tooltipsReady = initTooltips();
     </script>
   </body>
 </html>`;
@@ -22,7 +22,7 @@ test.describe.parallel("Tooltip behavior", () => {
     );
     await page.goto("/");
     await page.setContent(pageContent, { baseURL: "http://localhost:5000" });
-    await page.waitForFunction(() => window.initDone === true);
+    await page.evaluate(() => window.tooltipsReady);
   });
 
   test("tooltip appears on hover and hides on mouse out", async ({ page }) => {
