@@ -82,6 +82,21 @@ export function applyOutcome(engine, outcome) {
 }
 
 export class BattleEngine {
+  /**
+   * Initializes a new instance of the BattleEngine, setting up the initial state
+   * for a battle, including scores, timer, and various flags.
+   *
+   * @pseudocode
+   * 1. Initialize `pointsToWin` to `CLASSIC_BATTLE_POINTS_TO_WIN`.
+   * 2. Initialize `playerScore` and `opponentScore` to 0.
+   * 3. Create a new `TimerController` instance and assign it to `timer`.
+   * 4. Set `matchEnded` to `false`.
+   * 5. Set `roundsPlayed` to 0.
+   * 6. Set `roundInterrupted` to `false`.
+   * 7. Initialize `lastInterruptReason` to an empty string.
+   * 8. Initialize `lastError` to an empty string.
+   * 9. Initialize `lastModification` to `null`.
+   */
   constructor() {
     this.pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN;
     this.playerScore = 0;
@@ -120,6 +135,13 @@ export class BattleEngine {
     return this.pointsToWin;
   }
 
+  /**
+   * Stops the internal timer of the battle engine.
+   *
+   * @returns {void}
+   * @pseudocode
+   * 1. Call the `stop()` method on the `this.timer` instance.
+   */
   stopTimer() {
     this.timer.stop();
   }

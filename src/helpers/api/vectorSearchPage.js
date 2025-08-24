@@ -43,11 +43,17 @@ export function selectMatches(strongMatches, weakMatches) {
  * Load the MiniLM feature extractor on first use.
  *
  * @pseudocode
- * 1. Return the cached `extractor` when available.
- * 2. Dynamically import the Transformers.js `pipeline` helper.
- * 3. Instantiate a quantized feature-extraction pipeline with the MiniLM model and store it.
- *    - On failure, log the error, reset `extractor` to `null`, and rethrow.
- * 4. Return the initialized `extractor`.
+ * 1. If `extractor` is already initialized (cached), return it immediately.
+ * 2. If `extractor` is not initialized, begin a `try...catch` block to handle potential loading errors:
+ *    a. Inside the `try` block:
+ *       i. Dynamically import the `pipeline` function from the Transformers.js library.
+ *       ii. Instantiate a feature-extraction pipeline using the "Xenova/all-MiniLM-L6-v2" model, ensuring it's quantized.
+ *       iii. Assign the created pipeline instance to `extractor`.
+ *    b. In the `catch` block (if an error occurs during loading):
+ *       i. Log an error message "Model failed to load" along with the `error` object to the console.
+ *       ii. Reset `extractor` to `null` to ensure that the next call will re-attempt loading.
+ *       iii. Re-throw the `error` to propagate the failure to the caller.
+ * 3. Return the initialized `extractor` instance.
  *
  * @returns {Promise<any>} The feature extraction pipeline instance.
  */
@@ -81,8 +87,13 @@ export function preloadExtractor() {
 }
 
 /**
- * Inject a custom extractor for testing.
- * @param {any} model - Mock extractor to use.
+ * Inject a custom extractor for testing purposes.
+ * This allows mock extractor implementations to be used during tests
+ * without affecting the production loading logic.
+ *
+ * @param {any} model - The mock extractor instance to use.
+ * @pseudocode
+ * 1. Assign the provided `model` to the `extractor` variable.
  */
 export function __setExtractor(model) {
   extractor = model;
