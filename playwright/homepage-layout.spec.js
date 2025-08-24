@@ -9,7 +9,7 @@ test.describe.parallel("Homepage layout", () => {
     test.beforeEach(async ({ page }) => {
       await page.goto("/index.html");
       await page.waitForSelector(".game-mode-grid");
-      await page.waitForSelector("footer .bottom-navbar a");
+      await page.waitForSelector("body[data-nav-ready]");
     });
 
     test("grid has two columns", async ({ page }) => {
@@ -58,7 +58,7 @@ test.describe.parallel("Homepage layout", () => {
     test.beforeEach(async ({ page }) => {
       await page.goto("/index.html");
       await page.waitForSelector(".game-mode-grid");
-      await page.waitForSelector("footer .bottom-navbar a");
+      await page.waitForSelector("body[data-nav-ready]");
     });
 
     test("grid has one column", async ({ page }) => {

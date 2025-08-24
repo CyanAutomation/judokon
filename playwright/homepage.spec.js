@@ -9,6 +9,7 @@ test.describe.parallel("Homepage", () => {
   // Navigation coverage: footer link visibility and ordering.
   test.beforeEach(async ({ page }) => {
     await page.goto("/index.html");
+    await page.waitForSelector("body[data-nav-ready]");
   });
 
   test("page loads", async ({ page }) => {
@@ -17,7 +18,6 @@ test.describe.parallel("Homepage", () => {
 
   // Navigation: footer links are visible
   test("navigation links visible", async ({ page }) => {
-    await page.waitForSelector("footer .bottom-navbar a");
     await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);
   });
 
@@ -29,7 +29,6 @@ test.describe.parallel("Homepage", () => {
 
   // Navigation: links render in expected order
   test("navigation order and visibility", async ({ page }) => {
-    await page.waitForSelector("footer .bottom-navbar a");
     const classic = page.getByTestId(NAV_CLASSIC_BATTLE);
     const random = page.getByTestId(NAV_RANDOM_JUDOKA);
     const update = page.getByTestId("nav-9");
@@ -54,17 +53,13 @@ test.describe.parallel("Homepage", () => {
   test("tile hover zoom and cursor", async ({ page }) => {
     const tile = page.locator(".card").first();
     await tile.hover();
-
-    await expect
-      .poll(
-        async () => {
-          const transform = await tile.evaluate((el) => getComputedStyle(el).transform);
-          const match = transform.match(/matrix\(([^)]+)\)/);
-          return match ? parseFloat(match[1].split(",")[0]) : 1;
-        },
-        { timeout: 5000 }
-      )
-      .toBeGreaterThan(1.01);
+    await tile.locator("[data-zoomed]").waitFor();
+    const scale = await tile.evaluate((el) => {
+      const transform = getComputedStyle(el).transform;
+      const match = transform.match(/matrix\(([^)]+)\)/);
+      return match ? parseFloat(match[1].split(",")[0]) : 1;
+    });
+    expect(scale).toBeGreaterThan(1.01);
 
     const cursor = await tile.evaluate((el) => getComputedStyle(el).cursor);
     expect(cursor).toBe("pointer");
