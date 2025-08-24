@@ -109,8 +109,6 @@ test.describe.parallel("Browse Judoka screen", () => {
     );
     await page.setViewportSize({ width: 320, height: 800 });
     await page.reload();
-    // Surface page console logs to the test runner for diagnostics
-    page.on("console", (msg) => console.log("PAGE-LOG:", msg.text()));
     await page.evaluate(() => window.browseJudokaReadyPromise);
     const container = page.locator('[data-testid="carousel"]');
 

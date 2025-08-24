@@ -185,16 +185,7 @@ export class CarouselController {
         const remaining = maxScroll - this.container.scrollLeft;
         const page =
           remaining <= 1 ? pageCount - 1 : Math.round(this.container.scrollLeft / pageWidth);
-        // Debug: log scroll metrics to help diagnose flakey page jumps
-        try {
-          console.log("[CarouselController] onScroll immediate", {
-            scrollLeft: this.container.scrollLeft,
-            pageWidth,
-            page,
-            pageCount,
-            maxScroll
-          });
-        } catch {}
+        // (no-op) immediate scroll sync
         this.currentPage = Math.max(0, Math.min(page, pageCount - 1));
         this.update();
       }
@@ -210,15 +201,7 @@ export class CarouselController {
         const maxScroll = this.container.scrollWidth - this.container.clientWidth;
         const remaining = maxScroll - this.container.scrollLeft;
         const page = remaining <= 1 ? pc - 1 : Math.round(this.container.scrollLeft / pw);
-        try {
-          console.log("[CarouselController] onScroll rAF", {
-            scrollLeft: this.container.scrollLeft,
-            pw,
-            page,
-            pc,
-            maxScroll
-          });
-        } catch {}
+        // (no-op) rAF scroll sync
         this.currentPage = Math.max(0, Math.min(page, pc - 1));
         this.update();
       });
