@@ -307,4 +307,13 @@ export async function setupRandomJudokaPage() {
   initTooltips();
 }
 
-onDomReady(setupRandomJudokaPage);
+export const randomJudokaReadyPromise = new Promise((resolve) => {
+  onDomReady(async () => {
+    await Promise.all([setupRandomJudokaPage(), window.navReadyPromise]);
+    resolve();
+  });
+});
+
+if (typeof window !== "undefined") {
+  window.randomJudokaReadyPromise = randomJudokaReadyPromise;
+}
