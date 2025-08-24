@@ -11,6 +11,7 @@ test.describe.parallel("Update Judoka page", () => {
       route.fulfill({ path: "tests/fixtures/navigationItems.json" })
     );
     await page.goto("/src/pages/updateJudoka.html");
+    await page.evaluate(() => window.navReadyPromise);
   });
 
   test("page loads", async ({ page }) => {
@@ -18,15 +19,11 @@ test.describe.parallel("Update Judoka page", () => {
   });
 
   test("navigation links work", async ({ page }) => {
-    const randomLink = page.getByTestId(NAV_RANDOM_JUDOKA);
-    await randomLink.waitFor();
-    await randomLink.click();
+    await page.getByTestId(NAV_RANDOM_JUDOKA).click();
     await expect(page).toHaveURL(/randomJudoka\.html/);
     await page.goBack({ waitUntil: "load" });
-
-    const battleLink = page.getByTestId(NAV_CLASSIC_BATTLE);
-    await battleLink.waitFor();
-    await battleLink.click();
+    await page.evaluate(() => window.navReadyPromise);
+    await page.getByTestId(NAV_CLASSIC_BATTLE).click();
     await expect(page).toHaveURL(/battleJudoka\.html/);
   });
 });
