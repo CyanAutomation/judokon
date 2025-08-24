@@ -15,6 +15,6 @@ export async function setupClassicBattlePage() {
   await view.init();
 }
 
-if (typeof process === "undefined" || process.env.NODE_ENV !== "test") {
+if (typeof process === "undefined" || process.env.VITEST !== "true") {
   onDomReady(setupClassicBattlePage);
 }
