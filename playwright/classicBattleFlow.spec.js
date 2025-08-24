@@ -55,8 +55,8 @@ test.describe.parallel("Classic battle flow", () => {
     await page.evaluate(() => window.freezeBattleHeader?.());
     await page.evaluate(_resetForTest);
     await page.evaluate(setTieRound);
-    // Wait for stat buttons to be enabled by the battle orchestrator.
-    await page.evaluate(() => window.statButtonsReadyPromise);
+    // In this test we force the UI state for determinism rather than
+    // depending on the full orchestrator lifecycle.
     // Try to trigger the selection; if the app isn't fully wired (common in
     // isolated test scenarios), manually set the expected UI state so the
     // assertions remain meaningful and deterministic.

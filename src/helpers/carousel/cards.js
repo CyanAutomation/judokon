@@ -6,14 +6,35 @@ import { getMissingJudokaFields, hasRequiredJudokaFields } from "../judokaValida
  * Generate judoka cards and append them to the container.
  *
  * @pseudocode
- * 1. For each judoka:
- *    a. Validate required fields and log errors for missing data.
- *    b. Generate a card or fall back to a default judoka.
- *    c. Apply accessibility attributes and append to the container.
- *    d. On portrait load error, rebuild the card using fallback judoka and replace the broken card.
- *    - Note: Do not await image load events here; the carousel wrapper is
- *      attached to the DOM after this function returns. Waiting on image
- *      loads would deadlock when elements are detached.
+ * 1. Initialize an empty array `pendingReplacements` to track asynchronous card replacement tasks.
+ * 2. Iterate through each `judoka` object in `judokaList`:
+ *    a. Initialize `entry` with the current `judoka`.
+ *    b. Validate `judoka` using `hasRequiredJudokaFields()`:
+ *       i. If validation fails, log an error with missing fields using `getMissingJudokaFields()`.
+ *       ii. Set `entry` to a fallback judoka obtained asynchronously via `getFallbackJudoka()`.
+ *    c. Generate a `card` element asynchronously using `generateJudokaCard(entry, gokyoLookup, container)`.
+ *    d. If `card` generation fails (returns `null` or `undefined`):
+ *       i. Log a warning.
+ *       ii. Obtain another fallback judoka.
+ *       iii. Attempt to generate a `card` again with the new fallback.
+ *    e. If a `card` is successfully generated:
+ *       i. Query for an `<img>` element within the `card`.
+ *       ii. If an `img` element is found:
+ *          1. Add an "error" event listener to the `img` element (set to run `once`).
+ *          2. Inside the error listener, define an asynchronous `task`:
+ *             a. Obtain a fallback judoka.
+ *             b. Generate a `fallbackCard` without appending it to the container.
+ *             c. If `fallbackCard` is valid and the original `card` is still in the DOM, replace the original `card` with `fallbackCard`.
+ *             d. If the original `card` is no longer in the DOM but its parent exists, append the `fallbackCard` to the parent.
+ *             e. Catch and log any errors during the fallback swap.
+ *          3. Push this `task` Promise into `pendingReplacements`.
+ *       iii. Set `card.tabIndex` to 0 to make it focusable.
+ *       iv. Set `card.setAttribute("role", "listitem")`.
+ *       v. Set `card.setAttribute("aria-label", card.getAttribute("data-judoka-name") || "Judoka card")` using the judoka's name or a generic label.
+ *       vi. Append the `card` to the `container`.
+ * 3. After the loop, yield control to the event loop using `await Promise.resolve()` to allow any synchronously dispatched image error events to register their tasks.
+ * 4. If `pendingReplacements` contains any tasks, await their completion using `Promise.allSettled()`.
+ * 5. Return (the function implicitly resolves after all operations).
  *
  * @param {HTMLElement} container - Carousel container element.
  * @param {Judoka[]} judokaList - Array of judoka objects.

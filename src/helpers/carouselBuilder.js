@@ -11,16 +11,36 @@ import { createSpinner } from "../components/Spinner.js";
  * Adds scroll markers to indicate the user's position in the carousel.
  *
  * @pseudocode
- * 1. Validate inputs and exit early if `container` or `wrapper` is missing.
- * 2. Create a `<div>` element with the class `scroll-markers`.
- * 3. Determine how many cards fit within one page of the carousel,
- *    accounting for the gap between cards and ensuring at least one
- *    card per page. Calculate the total page count.
- * 4. Add a marker for each page and an accompanying page counter.
- *    - Highlight the marker for the current page.
- * 5. Update the active marker and counter text on scroll events.
- *    - Clamp to the last page when the remaining scroll distance is
- *      within 1px to avoid rounding to a non-existent page.
+ * 1. Validate inputs: If `container` or `wrapper` is missing, exit early.
+ * 2. Check for existing markers: If a `.scroll-markers` element already exists within `wrapper` (meaning a controller has already set them up), exit to avoid duplication.
+ * 3. Create the `markers` container: Create a `<div>` element, assign it the class `scroll-markers`.
+ * 4. Get card dimensions and calculate page metrics:
+ *    a. Query all `.judoka-card` elements within `container`.
+ *    b. Get the `firstCard` and its `cardWidth`.
+ *    c. Get the `gap` between columns from the computed style of `container`.
+ *    d. Calculate `cardsPerPage`: Determine how many cards fit within the `container.clientWidth`, accounting for `gap`, ensuring at least 1 card per page.
+ *    e. Calculate `pageCount`: Determine the total number of pages based on `cards.length` and `cardsPerPage`.
+ * 5. Create and append page markers:
+ *    a. Loop from `i = 0` to `pageCount - 1`:
+ *       i. Create a `<span>` element for each `marker`.
+ *       ii. Assign it the class `scroll-marker`.
+ *       iii. If `i` is 0 (first page), add the "active" class.
+ *       iv. Append the `marker` to the `markers` container.
+ * 6. Create and append the page counter:
+ *    a. Create a `<span>` element for the `counter`.
+ *    b. Assign it the class `page-counter`.
+ *    c. Set its `aria-live` attribute to "polite" for accessibility.
+ *    d. Set its initial `textContent` to "Page 1 of [pageCount]".
+ *    e. Append the `counter` to the `markers` container.
+ * 7. Append the `markers` container to the `wrapper`.
+ * 8. Add a "scroll" event listener to the `container`:
+ *    a. Inside the listener, recalculate `gapPx`, `pageWidth`, `maxScroll`, and `remaining` scroll distance.
+ *    b. Calculate `currentPage`:
+ *       i. If `remaining` is less than or equal to 1px, set `currentPage` to `pageCount - 1` (last page) to handle rounding issues at the end of scroll.
+ *       ii. Otherwise, if `pageWidth` is greater than 0, calculate `currentPage` by rounding `container.scrollLeft / pageWidth` and clamping it between 0 and `pageCount - 1`.
+ *       iii. If `pageWidth` is 0, set `currentPage` to 0.
+ *    c. Update active markers: Iterate through all `.scroll-marker` elements and toggle the "active" class based on whether their index matches `currentPage`.
+ *    d. Update counter text: Set `counter.textContent` to `Page [currentPage + 1] of [pageCount]`.
  *
  * @param {HTMLElement} [container] - The carousel container element.
  * @param {HTMLElement} [wrapper] - The carousel wrapper element.
@@ -130,45 +150,33 @@ function validateGokyoData(gokyoData) {
   return createGokyoLookup(gokyoData);
 }
 
-/**
- * Creates a loading spinner and sets a timeout to display it.
- *
- * @pseudocode
- * 1. Create a `<div>` element with the class `loading-spinner`.
- * 2. Append the spinner to the provided `wrapper` element.
- * 3. Set a timeout to display the spinner after 2 seconds.
- * 4. Return the spinner element and the timeout ID.
- *
- * @param {HTMLElement} wrapper - The wrapper element to append the spinner to.
- * @returns {Object} An object containing the spinner element and timeout ID.
- */
-/**
- * Handles broken images in a card by setting a fallback image.
- *
- * @pseudocode
- * 1. Find the `<img>` element within the provided `card`.
- * 2. Attach an `onerror` event handler to the image.
- *    - Replace the image source with a fallback image if an error occurs.
- *
- * @param {HTMLElement} card - The card element containing the image.
- */
+
+
 
 /**
  * Builds a responsive, accessible carousel of judoka cards with scroll buttons, scroll markers, and robust error handling.
  *
  * @pseudocode
- * 1. Validate input parameters and handle empty or failed data loads with error messages and retry support.
- * 2. Create a carousel container with scroll-snap and responsive card sizing (1–2 cards on mobile, 3–5 on desktop).
- * 3. Add a loading spinner (immediately when `globalThis.__showSpinnerImmediately__` is set) and remove it once loading completes.
- * 4. For each judoka:
- *    a. Validate fields; use fallback card if invalid.
- *    b. Generate card, handle broken images, and make focusable.
- * 5. Add scroll buttons; scroll markers are initialized after insertion.
- *    - Update button state on scroll and after scroll-snap completes.
- * 6. Use ResizeObserver to adapt card sizing on window resize.
- * 7. Enable keyboard navigation (arrow keys), swipe gestures, and focus/hover enlargement for the center card only.
- * 8. Provide aria-live region for dynamic messages (errors, empty state).
- * 9. Return the completed wrapper element.
+ * 1. Create the base carousel DOM structure (`wrapper`, `container`, `ariaLive`) using `createCarouselStructure()`.
+ * 2. Validate `judokaList`:
+ *    a. If `judokaList` is invalid (e.g., empty), create a "No cards available" message, append it to `wrapper`, update `ariaLive` text, and return `wrapper`.
+ * 3. Validate and transform `gokyoData` into a `gokyoLookup` object using `validateGokyoData()`.
+ * 4. Determine spinner behavior:
+ *    a. Check `globalThis.__forceSpinner__` or `globalThis.__showSpinnerImmediately__` to decide if the spinner should be forced to show immediately.
+ *    b. Create a `spinner` instance using `createSpinner(wrapper)`, setting `delay` to 0 if forced, otherwise `undefined`.
+ *    c. If `forceSpinner` is true, immediately set `spinner.element.style.display` to "block".
+ *    d. Otherwise, call `spinner.show()` to display it after its configured delay.
+ * 5. Asynchronously append cards to the `container` using `appendCards(container, judokaList, gokyoLookup)`.
+ * 6. Set up responsive sizing for the `container` using `setupResponsiveSizing(container)`.
+ * 7. Remove the `spinner` from the DOM.
+ * 8. If `forceSpinner` was true, delete the global flags `__showSpinnerImmediately__` and `__forceSpinner__`.
+ * 9. Initialize the `CarouselController` with the `container`, `wrapper`, and `CAROUSEL_SWIPE_THRESHOLD`.
+ * 10. Expose the `controller` instance on `wrapper._carouselController` for debugging/testing.
+ * 11. Apply non-navigation accessibility helpers:
+ *     a. Set up focus handlers using `setupFocusHandlers(container)`.
+ *     b. Apply general accessibility improvements using `applyAccessibilityImprovements(wrapper)`.
+ *     c. Set up lazy loading for judoka portraits using `setupLazyPortraits(container)`.
+ * 12. Return the completed `wrapper` element.
  *
  * @param {Judoka[]} judokaList - An array of judoka objects.
  * @param {GokyoEntry[]} gokyoData - An array of gokyo objects.

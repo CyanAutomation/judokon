@@ -36,14 +36,29 @@ import { markSignatureMoveReady } from "./signatureMove.js";
  * Build and return a DOM container for a judoka card.
  *
  * @pseudocode
- * 1. Validate `judoka` and `gokyoLookup`:
- *    - Throw when required fields are missing.
- * 2. Resolve the flag URL via `safeGenerate(getFlagUrl)`.
- * 3. Create container and inner card elements and apply gender styling.
- * 4. For each builder in `cardSectionRegistry`, generate and append the section.
- * 5. Enable flip interactivity with `enableCardFlip`.
- * 6. Append an inspector panel when `enableInspector` is true.
- * 7. Return the populated container.
+ * 1. Destructure `enableInspector` from `options`, defaulting to `false`.
+ * 2. Perform initial validation: If `judoka` or `gokyoLookup` are falsy, create a fallback `div` with "No data available" text and return it.
+ * 3. Check for missing required fields in `judoka` using `getMissingJudokaFields()`.
+ * 4. If `judoka` does not have all required fields (`!hasRequiredJudokaFields(judoka)`), throw an error listing the missing fields.
+ * 5. Resolve the `flagUrl`:
+ *    a. Get `countryCode` from `judoka`.
+ *    b. Use `safeGenerate` to call `getFlagUrl(countryCode || "vu")`.
+ *    c. Provide an error message "Failed to resolve flag URL:" and a fallback URL "https://flagcdn.com/w320/vu.png".
+ * 6. Determine `cardType` based on `judoka.rarity` (converted to lowercase), defaulting to "common".
+ * 7. Create the `cardContainer` (`div` with class "card-container").
+ * 8. Attempt to stringify `judoka` and store it in `cardContainer.dataset.cardJson` for inspector use. Catch and ignore serialization errors.
+ * 9. Create the `judokaCard` (`div` with class `judoka-card` and `cardType`).
+ * 10. Set `judokaCard` attributes: `role="button"`, `tabindex="0"`, and `aria-label` using judoka's name.
+ * 11. Determine `genderClass` ("female-card" or "male-card") based on `judoka.gender` and add it to `judokaCard.classList`.
+ * 12. Iterate through each `buildSection` function in `cardSectionRegistry`:
+ *     a. Asynchronously call `buildSection` with `judoka` and an options object containing `flagUrl`, `gokyoLookup`, and `cardType`.
+ *     b. Append the returned `section` to `judokaCard`.
+ * 13. Enable card flip interactivity on `judokaCard` using `enableCardFlip()`.
+ * 14. Append `judokaCard` to `cardContainer`.
+ * 15. If `enableInspector` is true:
+ *     a. Create an `inspectorPanel` using `createInspectorPanel(cardContainer, judoka)`.
+ *     b. Append `inspectorPanel` to `cardContainer`.
+ * 16. Return the `cardContainer`.
  *
  * Validates the judoka data and gokyo lookup, generates DOM sections for the card, and assembles them into a single container. When either argument is missing, a fallback element labeled "No data available" is returned.
  *
@@ -112,14 +127,14 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup, options = {}) 
  * Generates a single judoka card and appends it to the container.
  *
  * @pseudocode
- * 1. Generate the card HTML:
- *    - Use `safeGenerate` with `generateJudokaCardHTML` and a fallback of `null`.
- *
- * 2. Append the card to the container:
- *    - If a card is returned, append it to the DOM.
- *
- * 3. Handle errors:
- *    - Error logging is managed by `safeGenerate`.
+ * 1. Asynchronously generate the `card` HTML element:
+ *    a. Use `safeGenerate()` to call `generateJudokaCardHTML()` with the provided `judoka`, `gokyoLookup`, and `options`.
+ *    b. Provide a descriptive error message including the judoka's first and last name.
+ *    c. Specify `null` as the fallback value if `generateJudokaCardHTML` throws an error.
+ * 2. If a `card` element is successfully returned:
+ *    a. Check if the `card` contains an element with the class ".signature-move-container".
+ *    b. If such an element exists, call `markSignatureMoveReady()` to perform any necessary actions related to the signature move.
+ * 3. Return the generated `card` element (or `null` if generation failed).
  *
  * @param {Object} judoka - A judoka object containing data for the card.
  * @param {Object} gokyoLookup - A lookup object for gokyo data.
