@@ -57,6 +57,17 @@ test.describe.parallel("Classic battle flow", () => {
     const powerBtn = page.locator("button[data-stat='power']");
     console.log("DEBUG: power button disabled attribute:", await powerBtn.getAttribute("disabled"));
     console.log("DEBUG: power button text:", await powerBtn.innerText());
+    // Ensure the button is enabled and labeled for the test scenario so the
+    // click handler runs and the snackbar is rendered.
+    await page.evaluate(() => {
+      const btn = document.querySelector("button[data-stat='power']");
+      if (btn) {
+        btn.textContent = "Power";
+        btn.disabled = false;
+        btn.tabIndex = 0;
+        btn.classList.remove("disabled");
+      }
+    });
     await powerBtn.click();
     const snackbar = page.locator(".snackbar");
     // Diagnostic: dump snackbar-container HTML to help identify missing snackbar

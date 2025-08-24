@@ -59,6 +59,18 @@ export class JudokaCard extends Card {
     this.element.classList.add(this.judoka.gender === "female" ? "female-card" : "male-card");
   }
 
+  /**
+   * Obscures sensitive judoka data (firstname, surname, and stats) for display purposes.
+   *
+   * @pseudocode
+   * 1. Create a deep clone of the judoka object.
+   * 2. Replace the firstname and surname with '?'.
+   * 3. If stats exist and are an object, replace each stat value with '?'.
+   * 4. Return the obscured clone.
+   *
+   * @param {import("../helpers/types.js").Judoka} judoka - The judoka object to obscure.
+   * @returns {import("../helpers/types.js").Judoka} A new judoka object with sensitive data obscured.
+   */
   static #obscureJudoka(judoka) {
     const clone = structuredClone(judoka);
     clone.firstname = "?";
@@ -71,6 +83,16 @@ export class JudokaCard extends Card {
     return clone;
   }
 
+  /**
+   * Asynchronously builds the top bar section of the judoka card.
+   *
+   * @pseudocode
+   * 1. Use `safeGenerate` to create the card top bar using judoka data and flag URL.
+   * 2. Provide error handling and a fallback container if generation fails.
+   *
+   * @param {string} flagUrl - The URL for the judoka's country flag.
+   * @returns {Promise<HTMLElement>} A promise that resolves with the top bar HTMLElement.
+   */
   async #buildTopBar(flagUrl) {
     return await safeGenerate(
       () => generateCardTopBar(this.judoka, flagUrl),
@@ -79,14 +101,38 @@ export class JudokaCard extends Card {
     );
   }
 
+  /**
+   * Builds the portrait section of the judoka card.
+   *
+   * @pseudocode
+   * 1. Create the portrait section using the judoka data.
+   *
+   * @returns {HTMLElement} The portrait section HTMLElement.
+   */
   #buildPortraitSection() {
     return createPortraitSection(this.judoka);
   }
 
+  /**
+   * Asynchronously builds the stats section of the judoka card.
+   *
+   * @pseudocode
+   * 1. Create the stats section using the judoka data and card type.
+   *
+   * @returns {Promise<HTMLElement>} A promise that resolves with the stats section HTMLElement.
+   */
   async #buildStatsSection() {
     return await createStatsSection(this.judoka, this.cardType);
   }
 
+  /**
+   * Builds the signature move section of the judoka card.
+   *
+   * @pseudocode
+   * 1. Create the signature move section using judoka data, gokyo lookup, and card type.
+   *
+   * @returns {HTMLElement} The signature move section HTMLElement.
+   */
   #buildSignatureMoveSection() {
     return createSignatureMoveSection(this.judoka, this.gokyoLookup, this.cardType);
   }

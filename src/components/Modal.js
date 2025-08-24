@@ -60,6 +60,24 @@ export class Modal {
    * @param {HTMLElement} el
    * @returns {() => void} Cleanup function.
    */
+  /**
+   * Traps focus within a given element, ensuring keyboard navigation stays within its boundaries.
+   *
+   * @pseudocode
+   * 1. Define selectors for focusable elements.
+   * 2. Find all focusable elements within the provided element.
+   * 3. If no focusable elements, return an empty cleanup function.
+   * 4. Identify the first and last focusable elements.
+   * 5. Create a keydown event handler:
+   *    a. If the key is not 'Tab', do nothing.
+   *    b. If 'Shift + Tab' is pressed and focus is on the first element, move focus to the last.
+   *    c. If 'Tab' is pressed and focus is on the last element, move focus to the first.
+   * 6. Add the keydown event listener to the element.
+   * 7. Return a cleanup function to remove the event listener.
+   *
+   * @param {HTMLElement} el - The element within which to trap focus.
+   * @returns {() => void} A function to call to remove the focus trap.
+   */
   trapFocus(el) {
     const selectors = "a[href], button, textarea, input, select, [tabindex]:not([tabindex='-1'])";
     const focusables = Array.from(el.querySelectorAll(selectors));
@@ -82,14 +100,49 @@ export class Modal {
     return () => el.removeEventListener("keydown", handle);
   }
 
+  /**
+   * Handles the keydown event to close the modal when the Escape key is pressed.
+   *
+   * @pseudocode
+   * 1. Check if the pressed key is 'Escape'.
+   * 2. If it is, close the modal.
+   *
+   * @param {KeyboardEvent} e - The keyboard event object.
+   * @returns {void}
+   */
   handleEscape(e) {
     if (e.key === "Escape") this.close();
   }
 
+  /**
+   * Handles clicks on the modal backdrop to close the modal.
+   *
+   * @pseudocode
+   * 1. Check if the click target is the modal backdrop element itself.
+   * 2. If it is, close the modal.
+   *
+   * @param {MouseEvent} e - The mouse event object.
+   * @returns {void}
+   */
   handleBackdropClick(e) {
     if (e.target === this.element) this.close();
   }
 
+  /**
+   * Opens the modal dialog, makes it visible, and manages focus.
+   *
+   * @pseudocode
+   * 1. Store the triggering element to return focus to it later.
+   * 2. Remove the 'hidden' attribute from the modal backdrop.
+   * 3. Add the 'open' class to the dialog for styling.
+   * 4. If a trigger element exists, set its 'aria-expanded' attribute to 'true'.
+   * 5. Activate focus trapping within the dialog.
+   * 6. Identify the first focusable element within the dialog and move focus to it.
+   * 7. Add a keydown event listener to the document for handling the Escape key.
+   *
+   * @param {HTMLElement} [trigger] - The element that triggered the modal to open, used for focus management.
+   * @returns {void}
+   */
   open(trigger) {
     this.returnFocus = trigger ?? null;
     this.element.removeAttribute("hidden");
@@ -103,6 +156,18 @@ export class Modal {
     document.addEventListener("keydown", this.handleEscape);
   }
 
+  /**
+   * Closes the modal dialog, hides it, and restores focus to the triggering element.
+   *
+   * @pseudocode
+   * 1. Remove the 'open' class from the dialog.
+   * 2. Set the 'hidden' attribute on the modal backdrop.
+   * 3. Deactivate the focus trap.
+   * 4. Remove the keydown event listener for handling the Escape key.
+   * 5. If a triggering element was stored, set its 'aria-expanded' attribute to 'false' and return focus to it.
+   *
+   * @returns {void}
+   */
   close() {
     this.dialog.classList.remove("open");
     this.element.setAttribute("hidden", "");
