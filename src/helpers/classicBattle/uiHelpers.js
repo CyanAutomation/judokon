@@ -785,6 +785,22 @@ if (typeof window !== "undefined") {
   });
 }
 
+let opponentDelayMs = 500;
+
+/**
+ * Set the delay before the opponent snackbar appears.
+ *
+ * @pseudocode
+ * 1. If `ms` is a finite number, update `opponentDelayMs`.
+ *
+ * @param {number} ms Delay in milliseconds.
+ */
+export function setOpponentDelay(ms) {
+  if (Number.isFinite(ms)) {
+    opponentDelayMs = ms;
+  }
+}
+
 let opponentSnackbarId = 0;
 
 onBattleEvent("opponentReveal", () => {
@@ -796,7 +812,10 @@ onBattleEvent("opponentReveal", () => {
 
 onBattleEvent("statSelected", () => {
   scoreboard.clearTimer();
-  opponentSnackbarId = setTimeout(() => snackbar.showSnackbar("Opponent is choosing…"), 500);
+  opponentSnackbarId = setTimeout(
+    () => snackbar.showSnackbar("Opponent is choosing…"),
+    opponentDelayMs
+  );
 });
 
 onBattleEvent("roundResolved", (e) => {
