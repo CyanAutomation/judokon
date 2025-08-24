@@ -4,7 +4,6 @@ import {
   waitForBattleState,
   waitForStatButtonsReady
 } from "./fixtures/waits.js";
-import { waitForBattleReady } from "./fixtures/waits.js";
 
 /**
  * Verify stat buttons are cleared after the next round begins.
