@@ -5,6 +5,50 @@ import { showSnackbar } from "../showSnackbar.js";
 import { navTooltipKey } from "../navigation/navigationService.js";
 
 /**
+ * Handle a game mode toggle change.
+ *
+ * @pseudocode
+ * 1. Create a copy of current game mode settings with the updated value.
+ * 2. Persist the change via `handleUpdate`; on failure revert the checkbox.
+ * 3. Update navigation visibility via `updateNavigationItemHidden`.
+ * 4. Show a snackbar when the setting is saved.
+ *
+ * @param {{
+ *   input: HTMLInputElement,
+ *   mode: object,
+ *   label: string,
+ *   getCurrentSettings: Function,
+ *   handleUpdate: Function
+ * }} params - Handler dependencies.
+ * @returns {Promise<Array>} Resolves when persistence and navigation update complete.
+ */
+export function handleGameModeChange({ input, mode, label, getCurrentSettings, handleUpdate }) {
+  const prev = !input.checked;
+  const updated = {
+    ...(getCurrentSettings().gameModes ?? {}),
+    [mode.id]: input.checked
+  };
+
+  const updatePromise = Promise.resolve(
+    handleUpdate("gameModes", updated, () => {
+      input.checked = prev;
+    })
+  )
+    .then(() => {
+      showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);
+    })
+    .catch(() => {});
+
+  const navPromise = updateNavigationItemHidden(mode.id, !input.checked).catch((err) => {
+    console.error("Failed to update navigation item", err);
+    input.checked = prev;
+    showSettingsError();
+  });
+
+  return Promise.all([updatePromise, navPromise]);
+}
+
+/**
  * Render game mode toggle switches within the settings page.
  *
  * @pseudocode
@@ -61,26 +105,14 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
     }
     container.appendChild(wrapper);
     if (!input) return;
-    input.addEventListener("change", () => {
-      const prev = !input.checked;
-      const updated = {
-        ...(getCurrentSettings().gameModes ?? {}),
-        [mode.id]: input.checked
-      };
-      Promise.resolve(
-        handleUpdate("gameModes", updated, () => {
-          input.checked = prev;
-        })
-      )
-        .then(() => {
-          showSnackbar(`${label} ${input.checked ? "enabled" : "disabled"}`);
-        })
-        .catch(() => {});
-      updateNavigationItemHidden(mode.id, !input.checked).catch((err) => {
-        console.error("Failed to update navigation item", err);
-        input.checked = prev;
-        showSettingsError();
-      });
-    });
+    input.addEventListener("change", () =>
+      handleGameModeChange({
+        input,
+        mode,
+        label,
+        getCurrentSettings,
+        handleUpdate
+      })
+    );
   });
 }
