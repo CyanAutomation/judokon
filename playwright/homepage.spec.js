@@ -76,19 +76,22 @@ test.describe.parallel("Homepage", () => {
 
   test("fallback icon applied on load failure", async ({ page }) => {
     await page.addInitScript(() => {
-      document.addEventListener("DOMContentLoaded", () => {
-        const img = document.createElement("img");
-        img.id = "broken-icon";
-        img.src = "./missing-icon.svg";
-        img.alt = "Broken icon";
-        document.body.appendChild(img);
+      window.brokenIconInsertedPromise = new Promise((resolve) => {
+        document.addEventListener("DOMContentLoaded", () => {
+          const img = document.createElement("img");
+          img.id = "broken-icon";
+          img.src = "./missing-icon.svg";
+          img.alt = "Broken icon";
+          document.body.appendChild(img);
+          resolve();
+        });
       });
     });
 
     await page.goto("/index.html");
+    await page.evaluate(() => window.brokenIconInsertedPromise);
 
     const icon = page.locator("#broken-icon");
-    await icon.waitFor();
     await expect.poll(() => icon.getAttribute("src")).toContain("judokonLogoSmall.png");
     await expect(icon).toHaveClass(/svg-fallback/);
   });
