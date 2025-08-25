@@ -444,92 +444,100 @@ export function setupNextButton() {
  *
  * @pseudocode
  * 1. Gather all stat buttons inside `#stat-buttons`.
- * 2. Define `setEnabled` to toggle disabled state, tabindex and `data-buttons-ready`.
- * 3. Resolve `window.statButtonsReadyPromise` when buttons are enabled; reset when disabled.
- * 4. On click or Enter/Space, disable all buttons and handle selection.
- * 5. Return controls to enable/disable the group.
+ * 2. Expose `selectStat` to handle selection and UI updates.
+ * 3. Provide `setEnabled` helper to toggle state and manage `statButtonsReadyPromise`.
+ * 4. Return controls to enable or disable the group.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle store.
  */
-export function initStatButtons(store) {
-  const statButtons = document.querySelectorAll("#stat-buttons button");
-  const statContainer = document.getElementById("stat-buttons");
-  // Use a resolver that is wired to a global so the promise exists
-  // synchronously during page init. When we reset/create a new
-  // promise we also publish its resolver on `window.__resolveStatButtonsReady`.
-  let resolveReady = typeof window !== "undefined" ? window.__resolveStatButtonsReady : undefined;
-  const resetReadyPromise = () => {
-    window.statButtonsReadyPromise = new Promise((r) => {
-      resolveReady = r;
-      try {
-        window.__resolveStatButtonsReady = r;
-      } catch {}
-    });
-  };
+let statButtons = [];
+let statContainer;
+let resolveReady;
 
-  function setEnabled(enable = true) {
-    statButtons.forEach((btn) => {
-      btn.disabled = !enable;
-      btn.tabIndex = enable ? 0 : -1;
-      btn.classList.toggle("disabled", !enable);
-    });
-    if (statContainer) {
-      statContainer.dataset.buttonsReady = String(enable);
-    }
-    if (enable) {
-      // Resolve the current promise to signal readiness to tests / other code.
-      try {
-        resolveReady?.();
-      } catch {}
-      try {
-        if (isTestModeEnabled()) console.warn("[test] statButtonsReady=true");
-      } catch {}
-    } else {
-      resetReadyPromise();
-      try {
-        if (isTestModeEnabled()) console.warn("[test] statButtonsReady=false");
-      } catch {}
-    }
+function resetStatButtonsReady() {
+  if (typeof window === "undefined") return;
+  window.statButtonsReadyPromise = new Promise((r) => {
+    resolveReady = r;
+    try {
+      window.__resolveStatButtonsReady = r;
+    } catch {}
+  });
+}
+
+function setStatButtonsEnabled(enable = true) {
+  statButtons.forEach((btn) => {
+    btn.disabled = !enable;
+    btn.tabIndex = enable ? 0 : -1;
+    btn.classList.toggle("disabled", !enable);
+  });
+  if (statContainer) {
+    statContainer.dataset.buttonsReady = String(enable);
   }
+  if (enable) {
+    try {
+      resolveReady?.();
+    } catch {}
+    try {
+      if (isTestModeEnabled()) console.warn("[test] statButtonsReady=true");
+    } catch {}
+  } else {
+    resetStatButtonsReady();
+    try {
+      if (isTestModeEnabled()) console.warn("[test] statButtonsReady=false");
+    } catch {}
+  }
+}
 
-  // Start disabled until the game enters the player action state
-  resetReadyPromise();
-  setEnabled(false);
+/**
+ * Select a stat for the current round.
+ *
+ * @pseudocode
+ * 1. Find the button for the requested stat; exit if missing or disabled.
+ * 2. Delegate to `handleStatSelection` with the provided store and stat.
+ * 3. Show a snackbar with the chosen stat name.
+ * 4. Disable all stat buttons and mark the chosen one on the next frame.
+ *
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle store.
+ * @param {string} statName - Key of the selected stat.
+ */
+export function selectStat(store, statName) {
+  const btn = document.querySelector(`#stat-buttons button[data-stat="${statName}"]`);
+  if (!btn || btn.disabled) return;
+  try {
+    Promise.resolve(handleStatSelection(store, statName)).catch(() => {});
+  } catch {}
+  try {
+    showSnackbar(`You Picked: ${btn.textContent}`);
+  } catch {}
+  requestAnimationFrame(() => {
+    try {
+      setStatButtonsEnabled(false);
+      btn.classList.add("selected");
+    } catch {}
+  });
+}
+
+export function initStatButtons(store) {
+  statButtons = document.querySelectorAll("#stat-buttons button");
+  statContainer = document.getElementById("stat-buttons");
+  resetStatButtonsReady();
+  setStatButtonsEnabled(false);
 
   statButtons.forEach((btn) => {
     const statName = btn.dataset.stat;
-    const clickHandler = () => {
-      if (btn.disabled) return;
-      // Invoke selection logic immediately so tests observing the call
-      // don't need to wait for animation frames. Keep visual updates
-      // deferred to the next frame to avoid mid-dispatch UI changes.
-      try {
-        Promise.resolve(handleStatSelection(store, statName)).catch(() => {});
-      } catch {}
-      // Show snackbar immediately so tests and observers can see the message
-      // synchronously; visual state changes remain deferred to the next frame.
-      try {
-        showSnackbar(`You Picked: ${btn.textContent}`);
-      } catch {}
-      requestAnimationFrame(() => {
-        try {
-          setEnabled(false);
-          btn.classList.add("selected");
-        } catch {}
-      });
-    };
-    btn.addEventListener("click", clickHandler);
+    const handler = () => selectStat(store, statName);
+    btn.addEventListener("click", handler);
     btn.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        clickHandler();
+        handler();
       }
     });
   });
 
   return {
-    enable: () => setEnabled(true),
-    disable: () => setEnabled(false)
+    enable: () => setStatButtonsEnabled(true),
+    disable: () => setStatButtonsEnabled(false)
   };
 }
 

@@ -1,10 +1,11 @@
 // Compatibility shim for tests and legacy imports
-// Re-export setupClassicBattlePage from the classicBattle bootstrap module
+// Re-export setupClassicBattlePage and related helpers
 
 /**
- * Initialize the Classic Battle page.
+ * Initialize the Classic Battle page and expose stat selection.
  * @pseudocode
- * - Import `setupClassicBattlePage` from classicBattle/bootstrap
- * - Export it for callers expecting `src/helpers/classicBattlePage.js`
+ * - Import and re-export `setupClassicBattlePage` from classicBattle/bootstrap.
+ * - Re-export `selectStat` from classicBattle/uiHelpers for callers needing direct access.
  */
 export { setupClassicBattlePage } from "./classicBattle/bootstrap.js";
+export { selectStat } from "./classicBattle/uiHelpers.js";

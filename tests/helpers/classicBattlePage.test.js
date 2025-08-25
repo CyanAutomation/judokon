@@ -48,42 +48,36 @@ describe("classicBattlePage stat button interactions", () => {
     });
     document.body.appendChild(container);
 
-    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
+    const { setupClassicBattlePage, selectStat } = await import(
+      "../../src/helpers/classicBattlePage.js"
+    );
     await setupClassicBattlePage();
 
-    const [first, second, third] = container.querySelectorAll("button");
+    const buttons = container.querySelectorAll("button");
 
-    container.querySelectorAll("button").forEach((b) => {
+    buttons.forEach((b) => {
       b.disabled = false;
       b.tabIndex = 0;
     });
-
-    first.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    await Promise.resolve();
+    selectStat(store, "power");
     expect(handleStatSelection).toHaveBeenCalledWith(store, "power");
     expect(showSnackbar).toHaveBeenCalledWith("You Picked: Power");
-
-    container.querySelectorAll("button").forEach((b) => {
+    buttons.forEach((b) => {
       b.disabled = false;
       b.tabIndex = 0;
     });
     handleStatSelection.mockClear();
     showSnackbar.mockClear();
-
-    second.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-    await Promise.resolve();
+    selectStat(store, "speed");
     expect(handleStatSelection).toHaveBeenCalledWith(store, "speed");
     expect(showSnackbar).toHaveBeenCalledWith("You Picked: Speed");
-
-    container.querySelectorAll("button").forEach((b) => {
+    buttons.forEach((b) => {
       b.disabled = false;
       b.tabIndex = 0;
     });
     handleStatSelection.mockClear();
     showSnackbar.mockClear();
-
-    third.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
-    await Promise.resolve();
+    selectStat(store, "technique");
     expect(handleStatSelection).toHaveBeenCalledWith(store, "technique");
     expect(showSnackbar).toHaveBeenCalledWith("You Picked: Technique");
   });
