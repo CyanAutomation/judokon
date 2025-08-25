@@ -10,7 +10,7 @@ import { showResult } from "../battle/index.js";
 import { shouldReduceMotionSync } from "../motionUtils.js";
 import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
 import { handleStatSelection } from "./selectionHandler.js";
-import { onNextButtonClick } from "./timerService.js";
+import { onNextButtonClick, getNextRoundControls } from "./timerService.js";
 import { loadStatNames } from "../stats.js";
 import { toggleViewportSimulation } from "../viewportDebug.js";
 import { toggleInspectorPanels } from "../cardUtils.js";
@@ -436,7 +436,7 @@ export function registerRoundStartErrorHandler(retryFn) {
 export function setupNextButton() {
   const btn = document.getElementById("next-button");
   if (!btn) return;
-  btn.addEventListener("click", onNextButtonClick);
+  btn.addEventListener("click", (e) => onNextButtonClick(e, getNextRoundControls()));
 }
 
 /**
@@ -821,7 +821,7 @@ export function resetBattleUI(store) {
     const clone = nextBtn.cloneNode(true);
     clone.disabled = true;
     delete clone.dataset.nextReady;
-    clone.addEventListener("click", onNextButtonClick);
+    clone.addEventListener("click", (e) => onNextButtonClick(e, getNextRoundControls()));
     nextBtn.replaceWith(clone);
   }
 

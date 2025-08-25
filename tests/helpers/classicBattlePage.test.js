@@ -371,7 +371,8 @@ describe("startRoundWrapper failures", () => {
       STATS: []
     }));
     vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
-      onNextButtonClick: vi.fn()
+      onNextButtonClick: vi.fn(),
+      getNextRoundControls: vi.fn()
     }));
     vi.doMock("../../src/helpers/classicBattle/skipHandler.js", () => ({
       skipCurrentPhase: vi.fn()
