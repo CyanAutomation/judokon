@@ -45,4 +45,13 @@ describe("debounce", () => {
     expect(fn).toHaveBeenCalledWith("b");
     vi.useRealTimers();
   });
+
+  it("flush runs pending work immediately", async () => {
+    const fn = vi.fn();
+    const debounced = debounce(fn, 100);
+    const promise = debounced("a");
+    debounced.flush();
+    await expect(promise).resolves.toBeUndefined();
+    expect(fn).toHaveBeenCalledWith("a");
+  });
 });
