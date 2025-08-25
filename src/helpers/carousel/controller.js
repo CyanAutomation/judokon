@@ -28,8 +28,10 @@ export class CarouselController {
     this._onTouchStart = null;
     this._onTouchEnd = null;
     this._onTouchMove = null;
+    this._onTouchCancel = null;
     this._onPointerDown = null;
     this._onPointerUp = null;
+    this._onPointerCancel = null;
 
     // Build UI and wire events
     const { left, right } = this._buildButtons();
@@ -62,13 +64,16 @@ export class CarouselController {
    * 2. Remove the "keydown" event listener from `this.container`.
    * 3. Remove the "touchstart" event listener from `this.container`.
    * 4. Remove the "touchend" event listener from `this.container`.
-   * 5. Remove the "pointerdown" event listener from `this.container`.
-   * 6. Remove the "pointerup" event listener from `this.container`.
-   * 7. Remove the "resize" event listener from `window`.
-   * 8. Remove the `leftBtn` DOM element from the document, if it exists.
-   * 9. Remove the `rightBtn` DOM element from the document, if it exists.
-   * 10. Remove the `markersRoot` DOM element from the document, if it exists.
-   * 11. Set internal event handler references (`_onKeydown`, `_onTouchStart`, etc.) to `null` to release memory.
+   * 5. Remove the "touchmove" event listener from `this.container`.
+   * 6. Remove the "touchcancel" event listener from `this.container`.
+   * 7. Remove the "pointerdown" event listener from `this.container`.
+   * 8. Remove the "pointerup" event listener from `this.container`.
+   * 9. Remove the "pointercancel" event listener from `this.container`.
+   * 10. Remove the "resize" event listener from `window`.
+   * 11. Remove the `leftBtn` DOM element from the document, if it exists.
+   * 12. Remove the `rightBtn` DOM element from the document, if it exists.
+   * 13. Remove the `markersRoot` DOM element from the document, if it exists.
+   * 14. Set internal event handler references (`_onKeydown`, `_onTouchStart`, etc.) to `null` to release memory.
    *
    * @returns {void}
    */
@@ -78,8 +83,10 @@ export class CarouselController {
     this.container.removeEventListener("touchstart", this._onTouchStart);
     this.container.removeEventListener("touchend", this._onTouchEnd);
     this.container.removeEventListener("touchmove", this._onTouchMove);
+    this.container.removeEventListener("touchcancel", this._onTouchCancel);
     this.container.removeEventListener("pointerdown", this._onPointerDown);
     this.container.removeEventListener("pointerup", this._onPointerUp);
+    this.container.removeEventListener("pointercancel", this._onPointerCancel);
     window.removeEventListener("resize", this._onResize);
     this.leftBtn?.remove();
     this.rightBtn?.remove();
@@ -89,7 +96,9 @@ export class CarouselController {
       this._onTouchEnd =
       this._onPointerDown =
       this._onPointerUp =
+      this._onPointerCancel =
       this._onTouchMove =
+      this._onTouchCancel =
         null;
   }
 
@@ -266,38 +275,53 @@ export class CarouselController {
    * @private
    * @pseudocode
    * 1. Initialize `startX` to 0 to store the starting X-coordinate of a touch/pointer event.
-   * 2. Define an `onEnd` helper function that takes `endX` (the ending X-coordinate):
-   *    a. Calculate `delta` as the difference between `endX` and `startX`.
-   *    b. If `delta` is greater than `this.threshold`, call `this.prev()` to navigate to the previous page.
-   *    c. Else if `delta` is less than negative `this.threshold`, call `this.next()` to navigate to the next page.
-   * 3. Define `this._onTouchStart` as an event handler for "touchstart" events:
-   *    a. Store the `clientX` of the first touch in `startX`.
-   * 4. Define `this._onTouchEnd` as an event handler for "touchend" events:
+   * 2. Track `gestureActive` and `activeKind` to know if a swipe is in progress and its type.
+   * 3. Define an `onEnd` helper function that takes `endX` (the ending X-coordinate):
+   *    a. If `gestureActive` is false, exit.
+   *    b. Reset `gestureActive`, `activeKind`, and `pointerDown`.
+   *    c. Calculate `delta` as the difference between `endX` and `startX`.
+   *    d. If `delta` is greater than `this.threshold`, call `this.prev()` to navigate to the previous page.
+   *    e. Else if `delta` is less than negative `this.threshold`, call `this.next()` to navigate to the next page.
+   * 4. Define a `reset` helper to clear `gestureActive`, `activeKind`, and `pointerDown` without navigating.
+   * 5. Define `this._onTouchStart` as an event handler for "touchstart" events:
+   *    a. If `gestureActive` is true, exit.
+   *    b. Set `gestureActive` to true and `activeKind` to "touch".
+   *    c. Store the `clientX` of the first touch in `startX`.
+   * 6. Define `this._onTouchEnd` as an event handler for "touchend" events:
    *    a. Call `onEnd` with the `clientX` of the first changed touch.
-   * 5. Add `this._onTouchStart` as a "touchstart" event listener to `this.container`.
-   * 6. Add `this._onTouchEnd` as a "touchend" event listener to `this.container`.
-   * 7. Initialize `pointerDown` to `false` for tracking pointer (mouse) interactions.
-   * 8. Define `this._onPointerDown` as an event handler for "pointerdown" events:
-   *    a. Set `pointerDown` to `true`.
-   *    b. Store the `clientX` of the pointer event in `startX`.
-   * 9. Define `this._onPointerUp` as an event handler for "pointerup" events:
+   * 7. Define `this._onTouchCancel` as an event handler for "touchcancel" events:
+   *    a. Call `reset` to abandon the gesture.
+   * 8. Initialize `pointerDown` to `false` for tracking pointer (mouse) interactions.
+   * 9. Define `this._onPointerDown` as an event handler for "pointerdown" events:
+   *    a. Ignore events where `e.pointerType` is "touch" or `gestureActive` is true.
+   *    b. Set `gestureActive` to true, `activeKind` to "pointer", and `pointerDown` to true.
+   *    c. Store the `clientX` of the pointer event in `startX`.
+   * 10. Define `this._onPointerUp` as an event handler for "pointerup" events:
    *    a. If `pointerDown` is `false`, exit the handler.
-   *    b. Set `pointerDown` to `false`.
-   *    c. Call `onEnd` with the `clientX` of the pointer event.
-   * 10. Add `this._onPointerDown` as a "pointerdown" event listener to `this.container`.
-   * 11. Add `this._onPointerUp` as a "pointerup" event listener to `this.container`.
+   *    b. Call `onEnd` with the `clientX` of the pointer event.
+   * 11. Define `this._onPointerCancel` as an event handler for "pointercancel" events:
+   *    a. Call `reset` to abandon the gesture.
+   * 12. Add event listeners for "touchstart", "touchend", "touchmove", and "touchcancel".
+   * 13. Add event listeners for "pointerdown", "pointerup", and "pointercancel".
    *
    * @returns {void}
    */
   _wireSwipe() {
     let startX = 0;
-    let gestureInProgress = false;
+    let gestureActive = false;
+    let activeKind = null;
+    let pointerDown = false;
+
+    const reset = () => {
+      gestureActive = false;
+      if (activeKind === "pointer") pointerDown = false;
+      activeKind = null;
+    };
 
     const onEnd = (endX) => {
-      if (!gestureInProgress) return;
-      gestureInProgress = false;
-
+      if (!gestureActive) return;
       const delta = endX - startX;
+      reset();
       if (delta > this.threshold) {
         this.prev();
       } else if (delta < -this.threshold) {
@@ -308,8 +332,9 @@ export class CarouselController {
     this.container.style.touchAction = "none";
 
     this._onTouchStart = (e) => {
-      if (gestureInProgress) return;
-      gestureInProgress = true;
+      if (gestureActive) return;
+      gestureActive = true;
+      activeKind = "touch";
       startX = e.touches[0].clientX;
       if (typeof e.preventDefault === "function") e.preventDefault();
     };
@@ -323,25 +348,34 @@ export class CarouselController {
       if (typeof e.preventDefault === "function") e.preventDefault();
     };
 
-    let pointerDown = false;
+    this._onTouchCancel = () => {
+      reset();
+    };
+
     this._onPointerDown = (e) => {
-      if (e.pointerType === "touch" || gestureInProgress) return;
-      gestureInProgress = true;
+      if (e.pointerType === "touch" || gestureActive) return;
+      gestureActive = true;
+      activeKind = "pointer";
       pointerDown = true;
       startX = e.clientX;
     };
 
     this._onPointerUp = (e) => {
       if (!pointerDown) return;
-      pointerDown = false;
       onEnd(e.clientX);
+    };
+
+    this._onPointerCancel = () => {
+      reset();
     };
 
     this.container.addEventListener("touchstart", this._onTouchStart, { passive: false });
     this.container.addEventListener("touchend", this._onTouchEnd, { passive: false });
     this.container.addEventListener("touchmove", this._onTouchMove, { passive: false });
+    this.container.addEventListener("touchcancel", this._onTouchCancel);
     this.container.addEventListener("pointerdown", this._onPointerDown);
     this.container.addEventListener("pointerup", this._onPointerUp);
+    this.container.addEventListener("pointercancel", this._onPointerCancel);
   }
   "";
 
