@@ -7,7 +7,8 @@
  * 3. Extend the base test's page fixture to:
  *    a. Clear localStorage and enable test-mode settings.
  *    b. Remove unexpected modal backdrops once after DOMContentLoaded.
- *    c. Register common routes.
+ *    c. Disable animations for tests via a `data-test-disable-animations` attribute.
+ *    d. Register common routes.
  * 4. Export the extended test and expect.
  */
 import { test as base, expect } from "@playwright/test";
@@ -65,6 +66,9 @@ export const test = base.extend({
         () => document.querySelectorAll(".modal-backdrop").forEach((el) => el.remove()),
         { once: true }
       );
+    });
+    await page.addInitScript(() => {
+      document.documentElement.setAttribute("data-test-disable-animations", "");
     });
     await registerCommonRoutes(page);
     await use(page);

@@ -89,13 +89,7 @@ test.describe.parallel("Browse Judoka screen", () => {
 
     const before = await card.boundingBox();
     await card.hover();
-    await page.waitForFunction((selector) => {
-      const cardElement = document.querySelector(selector);
-      if (!cardElement) return false; // Element not found yet
-      const style = window.getComputedStyle(cardElement);
-      return style.transform !== "none";
-    }, "#carousel-container .judoka-card");
-    await page.waitForTimeout(200); // Allow animation to complete
+    await expect(card).toHaveAttribute("data-enlarged", "true");
     const after = await card.boundingBox();
 
     const widthRatio = after.width / before.width;
