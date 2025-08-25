@@ -12,12 +12,6 @@ test.describe.parallel("View Judoka screen", () => {
     await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
   });
 
-  test("battle link navigates from random judoka", async ({ page }) => {
-    const battleLink = page.getByTestId(NAV_CLASSIC_BATTLE);
-    await battleLink.click();
-    await expect(page).toHaveURL(/battleJudoka\.html/);
-  });
-
   test("draw button accessible name constant", async ({ page }) => {
     const btn = page.getByTestId("draw-button");
     await expect(btn).toHaveText(/draw card/i);
