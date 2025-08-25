@@ -118,10 +118,17 @@ export async function roundStartEnter(machine) {
 }
 export async function roundStartExit() {}
 
+/**
+ * Prepare for player stat selection.
+ *
+ * @pseudocode
+ * 1. Enable stat buttons for interaction.
+ * 2. If both a choice and confirmation exist, dispatch `statSelected`.
+ */
 export async function waitingForPlayerActionEnter(machine) {
   emitBattleEvent("statButtons:enable");
   const store = machine?.context?.store;
-  if (store?.playerChoice) {
+  if (store?.playerChoice && store?.selectionMade) {
     await machine.dispatch("statSelected");
   }
 }
@@ -243,7 +250,20 @@ export async function roundDecisionEnter(machine) {
 }
 export async function roundDecisionExit() {}
 
-export async function roundOverEnter() {}
+/**
+ * Reset round-specific store data.
+ *
+ * @pseudocode
+ * 1. Clear `playerChoice` to `null`.
+ * 2. Set `selectionMade` to `false` for the next round.
+ */
+export async function roundOverEnter(machine) {
+  const store = machine?.context?.store;
+  if (store) {
+    store.playerChoice = null;
+    store.selectionMade = false;
+  }
+}
 export async function roundOverExit() {}
 
 export async function matchDecisionEnter() {}
