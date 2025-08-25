@@ -39,17 +39,24 @@ export function getRoundMessageEl() {
  * 4. Force reflow so Safari clears the overlay.
  * 5. In the next frame via the shared scheduler re-enable, clear styles, and blur.
  */
-export function resetStatButtons() {
+export function resetStatButtons(
+  scheduler = {
+    onFrame: scheduleFrame,
+    cancel: cancelFrame
+  }
+) {
+  const { onFrame, cancel } = scheduler;
   getStatButtons().forEach((btn) => {
     btn.classList.remove("selected");
     btn.style.removeProperty("background-color");
     btn.disabled = true;
     void btn.offsetWidth;
-    const frameId = scheduleFrame(() => {
+    let frameId = 0;
+    frameId = onFrame(() => {
       btn.disabled = false;
       btn.style.backgroundColor = "";
       btn.blur();
-      cancelFrame(frameId);
+      cancel(frameId);
     });
   });
 }
@@ -68,7 +75,16 @@ export function resetStatButtons() {
  * @param {string} message - Result text to show.
  */
 let cancelFade;
-export function showResult(message) {
+export function showResult(
+  message,
+  scheduler = {
+    onFrame: scheduleFrame,
+    cancel: cancelFrame,
+    setTimeout: globalThis.setTimeout,
+    clearTimeout: globalThis.clearTimeout
+  }
+) {
+  const { onFrame, cancel, setTimeout, clearTimeout } = scheduler;
   const el = getRoundMessageEl();
   if (!el) return;
 
@@ -83,32 +99,25 @@ export function showResult(message) {
 
   if (!message) return;
 
-  const start = performance.now();
-  let frame = 0;
+  let frameId = 0;
+  frameId = onFrame(() => {
+    el.style.opacity = 0;
+    cancel(frameId);
+  });
 
-  const step = (now) => {
-    const progress = Math.min((now - start) / 2000, 1);
-    el.style.opacity = 1 - progress;
-    if (progress >= 1) {
-      el.classList.add("fading");
-      el.style.removeProperty("opacity");
-      cancelFade = undefined;
-      cancelFrame(frame);
-      return;
-    }
-    const next = scheduleFrame(step);
-    // Ensure only one active subscription exists
-    cancelFrame(frame);
-    frame = next;
-  };
+  const timeoutId = setTimeout(() => {
+    el.classList.add("fading");
+    el.style.removeProperty("opacity");
+    cancelFade = undefined;
+  }, 2000);
 
-  function cancel() {
-    cancelFrame(frame);
+  function cancelFadeFn() {
+    cancel(frameId);
+    clearTimeout(timeoutId);
     el.classList.remove("fading");
     el.style.removeProperty("opacity");
     cancelFade = undefined;
   }
 
-  cancelFade = cancel;
-  frame = scheduleFrame(step);
+  cancelFade = cancelFadeFn;
 }
