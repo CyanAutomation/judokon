@@ -6,6 +6,7 @@ import { emitBattleEvent } from "./battleEvents.js";
 import { isStateTransition } from "./orchestratorHandlers.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { resolveRound } from "./roundResolver.js";
+import { battleDomConfig, getDom } from "./domConfig.js";
 
 /**
  * Determine the opponent's stat choice based on difficulty.
@@ -46,8 +47,8 @@ export async function handleStatSelection(store, stat) {
   try {
     console.warn(`[test] handleStatSelection: stat=${stat}`);
   } catch {}
-  const playerCard = document.getElementById("player-card");
-  const opponentCard = document.getElementById("opponent-card");
+  const playerCard = getDom(battleDomConfig.playerCard);
+  const opponentCard = getDom(battleDomConfig.opponentCard);
   const playerVal = getStatValue(playerCard, stat);
   let opponentVal = 0;
   try {

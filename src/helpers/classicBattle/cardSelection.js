@@ -11,6 +11,7 @@ import { createButton } from "../../components/Button.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
 import { getFallbackJudoka } from "../judokaUtils.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
+import { battleDomConfig, getDom } from "./domConfig.js";
 
 let judokaData = null;
 let gokyoLookup = null;
@@ -175,8 +176,8 @@ export async function drawCards() {
   // If lookup failed completely, bail out; judoka may be empty but we can still proceed.
   if (!lookup) return { playerJudoka: null, opponentJudoka: null };
 
-  const playerContainer = document.getElementById("player-card");
-  const opponentContainer = document.getElementById("opponent-card");
+  const playerContainer = getDom(battleDomConfig.playerCard);
+  const opponentContainer = getDom(battleDomConfig.opponentCard);
 
   try {
     await loadSettings();

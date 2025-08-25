@@ -18,6 +18,7 @@ import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { syncScoreDisplay } from "./uiService.js";
 import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
+import { battleDomConfig, getDom } from "./domConfig.js";
 
 // Ensure a global statButtonsReadyPromise exists synchronously so tests
 // and early code can safely await it even before `initStatButtons` runs.
@@ -36,7 +37,7 @@ if (typeof window !== "undefined") {
 }
 
 function getDebugOutputEl() {
-  return document.getElementById("debug-output");
+  return getDom(battleDomConfig.debugOutput);
 }
 
 /**
@@ -79,7 +80,7 @@ function ensureDebugCopyButton(panel) {
  * 2. Show "Select your move" via `showSnackbar`.
  */
 export function showSelectionPrompt() {
-  const el = document.getElementById("round-message");
+  const el = getDom(battleDomConfig.roundMessage);
   if (el) {
     el.textContent = "";
   }
@@ -129,14 +130,14 @@ export async function renderOpponentCard(judoka, container) {
 }
 
 export function enableNextRoundButton() {
-  const btn = document.getElementById("next-button");
+  const btn = getDom(battleDomConfig.nextButton);
   if (!btn) return;
   btn.disabled = false;
   btn.dataset.nextReady = "true";
 }
 
 export function disableNextRoundButton() {
-  const btn = document.getElementById("next-button");
+  const btn = getDom(battleDomConfig.nextButton);
   if (!btn) return;
   btn.disabled = true;
   delete btn.dataset.nextReady;
@@ -189,7 +190,7 @@ export function collectDebugState() {
     if (win?.__buildTag) state.buildTag = win.__buildTag;
     if (win?.__roundDebug) state.round = win.__roundDebug;
     if (Array.isArray(win?.__eventDebug)) state.eventDebug = win.__eventDebug.slice();
-    const opp = document.getElementById("opponent-card");
+    const opp = getDom(battleDomConfig.opponentCard);
     if (opp) {
       state.dom = {
         opponentChildren: opp.children ? opp.children.length : 0
@@ -276,7 +277,7 @@ export function showRoundOutcome(message) {
  * @param {number} compVal - Opponent's stat value.
  */
 export function showStatComparison(store, stat, playerVal, compVal) {
-  const el = document.getElementById("round-result");
+  const el = getDom(battleDomConfig.roundResult);
   if (!el) return;
   cancelFrame(store.compareRaf);
   const label = stat.charAt(0).toUpperCase() + stat.slice(1);
@@ -382,7 +383,7 @@ export function watchBattleOrientation(callback) {
  * @param {() => Promise<void>} retryFn - Function to retry round start.
  */
 function showRetryModal(retryFn) {
-  if (document.getElementById("round-retry-modal")) return;
+  if (getDom(battleDomConfig.roundRetryModal)) return;
   const title = document.createElement("h2");
   title.textContent = "Round Start Error";
   const msg = document.createElement("p");
@@ -434,7 +435,7 @@ export function registerRoundStartErrorHandler(retryFn) {
  * 2. Add `onNextButtonClick` listener for `click` events.
  */
 export function setupNextButton() {
-  const btn = document.getElementById("next-button");
+  const btn = getDom(battleDomConfig.nextButton);
   if (!btn) return;
   btn.addEventListener("click", onNextButtonClick);
 }
@@ -519,7 +520,7 @@ export function selectStat(store, statName) {
 
 export function initStatButtons(store) {
   statButtons = document.querySelectorAll("#stat-buttons button");
-  statContainer = document.getElementById("stat-buttons");
+  statContainer = getDom(battleDomConfig.statButtons);
   resetStatButtonsReady();
   setStatButtonsEnabled(false);
 
@@ -586,7 +587,7 @@ export async function applyStatLabels() {
  * @param {string | null} state The current battle state.
  */
 export function updateBattleStateBadge(state) {
-  const badge = document.getElementById("battle-state-badge");
+  const badge = getDom(battleDomConfig.battleStateBadge);
   if (!badge) return;
   try {
     badge.textContent = state ? `State: ${state}` : "State: —";
@@ -604,14 +605,14 @@ export function updateBattleStateBadge(state) {
  * 3. Update text content with current state when available.
  */
 export function setBattleStateBadgeEnabled(enable) {
-  let badge = document.getElementById("battle-state-badge");
+  let badge = getDom(battleDomConfig.battleStateBadge);
   if (!enable) {
     if (badge) badge.remove();
     return;
   }
   if (!badge) {
     const headerRight =
-      document.getElementById("scoreboard-right") ||
+      getDom(battleDomConfig.scoreboardRight) ||
       document.querySelector(".battle-header .scoreboard-right");
     badge = document.createElement("p");
     badge.id = "battle-state-badge";
@@ -670,9 +671,9 @@ export function applyBattleFeatureFlags(battleArea, banner) {
  * 5. Otherwise remove the panel.
  */
 export function initDebugPanel() {
-  const debugPanel = document.getElementById("debug-panel");
+  const debugPanel = getDom(battleDomConfig.debugPanel);
   if (!debugPanel) return;
-  const battleArea = document.getElementById("battle-area");
+  const battleArea = getDom(battleDomConfig.battleArea);
   if (isEnabled("battleDebugPanel") && battleArea) {
     if (debugPanel.tagName !== "DETAILS") {
       const details = document.createElement("details");
@@ -687,7 +688,7 @@ export function initDebugPanel() {
       details.append(summary, pre);
       debugPanel.replaceWith(details);
     }
-    const panel = document.getElementById("debug-panel");
+    const panel = getDom(battleDomConfig.debugPanel);
     ensureDebugCopyButton(panel);
     try {
       const saved = localStorage.getItem("battleDebugOpen");
@@ -715,8 +716,8 @@ export function initDebugPanel() {
  * 4. If disabling, hide and remove the panel.
  */
 export function setDebugPanelEnabled(enabled) {
-  const battleArea = document.getElementById("battle-area");
-  let panel = document.getElementById("debug-panel");
+  const battleArea = getDom(battleDomConfig.battleArea);
+  let panel = getDom(battleDomConfig.debugPanel);
   if (enabled) {
     if (!panel) {
       panel = document.createElement("details");
@@ -778,7 +779,7 @@ export function maybeShowStatHint(durationMs = 3000) {
     if (typeof localStorage === "undefined") return;
     const hintShown = localStorage.getItem("statHintShown");
     if (hintShown) return;
-    const help = document.getElementById("stat-help");
+    const help = getDom(battleDomConfig.statHelp);
     help?.dispatchEvent(new Event("mouseenter"));
     setTimeout(() => {
       help?.dispatchEvent(new Event("mouseleave"));
@@ -813,7 +814,7 @@ export function resetBattleUI(store) {
 
   let nextBtn;
   try {
-    nextBtn = document.getElementById ? document.getElementById("next-button") : null;
+    nextBtn = getDom(battleDomConfig.nextButton);
   } catch {}
   if (nextBtn) {
     const clone = nextBtn.cloneNode(true);
@@ -825,7 +826,7 @@ export function resetBattleUI(store) {
 
   let quitBtn;
   try {
-    quitBtn = document.getElementById ? document.getElementById("quit-match-button") : null;
+    quitBtn = getDom(battleDomConfig.quitMatchButton);
   } catch {}
   if (quitBtn) {
     quitBtn.replaceWith(quitBtn.cloneNode(true));
@@ -836,12 +837,12 @@ export function resetBattleUI(store) {
   } catch {}
   let timerEl;
   try {
-    timerEl = document.getElementById ? document.getElementById("next-round-timer") : null;
+    timerEl = getDom(battleDomConfig.nextRoundTimer);
   } catch {}
   if (timerEl) timerEl.textContent = "";
   let roundResultEl;
   try {
-    roundResultEl = document.getElementById ? document.getElementById("round-result") : null;
+    roundResultEl = getDom(battleDomConfig.roundResult);
   } catch {}
   if (roundResultEl) roundResultEl.textContent = "";
   try {
@@ -877,7 +878,7 @@ export function setOpponentDelay(ms) {
 let opponentSnackbarId = 0;
 
 onBattleEvent("opponentReveal", () => {
-  const container = document.getElementById("opponent-card");
+  const container = getDom(battleDomConfig.opponentCard);
   getOpponentCardData()
     .then((j) => j && renderOpponentCard(j, container))
     .catch(() => {});
