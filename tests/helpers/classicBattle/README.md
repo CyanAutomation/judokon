@@ -16,6 +16,7 @@ This directory contains unit tests for Classic Battle helpers.
 - `matchEnd.test.js`: finishes the match and shows the summary modal.
 - `opponentDelay.test.js`: shows snackbar feedback during opponent delays.
 - `pauseTimer.test.js`: pauses and resumes the round timer.
+- `playerChoiceReset.test.js`: clears previous player choices on new rounds.
 - `quitModal.test.js`: confirms quitting via a modal dialog.
 - `roundSelectModal.test.js`: selects points-to-win via a modal.
 - `roundStartError.test.js`: surfaces round start failures.
