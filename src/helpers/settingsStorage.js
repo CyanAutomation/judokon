@@ -4,15 +4,34 @@ import { loadSettings as baseLoadSettings } from "../config/loadSettings.js";
 import { setCachedSettings, getCachedSettings } from "./settingsCache.js";
 import { debounce } from "../utils/debounce.js";
 
+let setTimer = (...args) => setTimeout(...args);
+let clearTimer = (...args) => clearTimeout(...args);
+
+/**
+ * Override timer functions used by the internal debounce.
+ * @param {{ setTimeout?: typeof setTimeout, clearTimeout?: typeof clearTimeout }} [fns]
+ */
+export function setSettingsStorageTimers(fns = {}) {
+  if (fns.setTimeout) setTimer = fns.setTimeout;
+  if (fns.clearTimeout) clearTimer = fns.clearTimeout;
+}
+
 const SETTINGS_KEY = "settings";
 const SAVE_DELAY_MS = 100;
 
-const debouncedSave = debounce((settings) => {
-  if (typeof localStorage === "undefined") {
-    throw new Error("localStorage unavailable");
-  }
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-}, SAVE_DELAY_MS);
+const debouncedSave = debounce(
+  (settings) => {
+    if (typeof localStorage === "undefined") {
+      throw new Error("localStorage unavailable");
+    }
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  },
+  SAVE_DELAY_MS,
+  { setTimeout: (...args) => setTimer(...args), clearTimeout: (...args) => clearTimer(...args) }
+);
+
+/** Flush pending debounced save immediately. */
+export const flushSettingsSave = () => debouncedSave.flush();
 
 let settingsSchemaPromise;
 

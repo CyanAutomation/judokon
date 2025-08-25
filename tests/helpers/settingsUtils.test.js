@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { DEFAULT_SETTINGS } from "../../src/config/settingsDefaults.js";
-import { resetSettings } from "../../src/helpers/settingsStorage.js";
+import { resetSettings, flushSettingsSave } from "../../src/helpers/settingsStorage.js";
 
 /**
  * @fileoverview
@@ -64,7 +64,6 @@ describe("settings utils", () => {
    * Should debounce and save settings to localStorage.
    */
   it("saves settings with debounce", async () => {
-    vi.useFakeTimers();
     const { saveSettings } = await import("../../src/helpers/settingsStorage.js");
     const data = {
       sound: false,
@@ -81,7 +80,7 @@ describe("settings utils", () => {
       }
     };
     const promise = saveSettings(data);
-    await vi.advanceTimersByTimeAsync(110);
+    flushSettingsSave();
     await promise;
     expect(JSON.parse(localStorage.getItem("settings"))).toEqual(data);
   });
@@ -109,10 +108,9 @@ describe("settings utils", () => {
    * Should update a single setting and persist the change.
    */
   it("updates a single setting and persists", async () => {
-    vi.useFakeTimers();
     const { updateSetting, loadSettings } = await import("../../src/helpers/settingsStorage.js");
     const promise = updateSetting("sound", false);
-    await vi.runAllTimersAsync();
+    flushSettingsSave();
     await promise;
     const stored = await loadSettings();
     expect(stored.sound).toBe(false);
@@ -162,12 +160,11 @@ describe("settings utils", () => {
    * Should return default value when updating a non-existent key.
    */
   it("rejects when updating unknown key", async () => {
-    vi.useFakeTimers();
     const { updateSetting, loadSettings } = await import("../../src/helpers/settingsStorage.js");
     await expect(updateSetting("nonexistentKey", "value")).rejects.toThrow(
       "Schema validation failed"
     );
-    await vi.advanceTimersByTimeAsync(110);
+    flushSettingsSave();
     const stored = await loadSettings();
     expect(stored).toEqual(DEFAULT_SETTINGS);
     expect(stored.nonexistentKey).toBeUndefined();
@@ -177,7 +174,6 @@ describe("settings utils", () => {
    * Should only persist the last settings when saveSettings is called rapidly.
    */
   it("debounces multiple saveSettings calls", async () => {
-    vi.useFakeTimers();
     const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
     const { saveSettings } = await import("../../src/helpers/settingsStorage.js");
     const data1 = {
@@ -211,7 +207,7 @@ describe("settings utils", () => {
     const first = saveSettings(data1);
     const second = saveSettings(data2);
     await expect(first).rejects.toThrow("Debounced");
-    await vi.advanceTimersByTimeAsync(110);
+    flushSettingsSave();
     await expect(second).resolves.toBeUndefined();
     expect(setItemSpy).toHaveBeenCalledTimes(1);
     expect(JSON.parse(localStorage.getItem("settings"))).toEqual(data2);
