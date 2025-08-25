@@ -328,6 +328,7 @@ export class CarouselController {
     // Pointer events for mouse swipe-like interactions
     let pointerDown = false;
     this._onPointerDown = (e) => {
+      if (e.pointerType === "touch") return;
       pointerDown = true;
       activeKind = "pointer";
       gestureActive = true;
