@@ -325,8 +325,6 @@ export class CarouselController {
       }
     };
 
-    this.container.style.touchAction = "none";
-
     this._onTouchStart = (e) => {
       if (gestureActive) return;
       gestureActive = true;

@@ -59,4 +59,22 @@ describe("setupSwipeNavigation", () => {
       behavior: "smooth"
     });
   });
+
+  it("ignores vertical swipes so vertical scrolling remains native", () => {
+    const container = document.createElement("div");
+    Object.defineProperty(container, "clientWidth", { value: 300, configurable: true });
+    Object.defineProperty(container, "scrollWidth", { value: 900, configurable: true });
+    container.scrollTo = vi.fn();
+
+    setupSwipeNavigation(container);
+
+    container.dispatchEvent(
+      new PointerEvent("pointerdown", { clientX: 50, clientY: 0, pointerType: "mouse" })
+    );
+    container.dispatchEvent(
+      new PointerEvent("pointerup", { clientX: 50, clientY: 100, pointerType: "mouse" })
+    );
+
+    expect(container.scrollTo).not.toHaveBeenCalled();
+  });
 });
