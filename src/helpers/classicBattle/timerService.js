@@ -8,6 +8,7 @@ import { autoSelectStat } from "./autoSelectStat.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { realScheduler } from "../scheduler.js";
 import * as testModeUtils from "../testModeUtils.js";
+import { battleDomConfig, getDom } from "./domConfig.js";
 
 let nextRoundTimer = null;
 let nextRoundReadyResolve = null;
@@ -38,7 +39,7 @@ async function dispatchBattleEventLocal(eventName, payload) {
 }
 
 export async function onNextButtonClick() {
-  const btn = document.getElementById("next-button");
+  const btn = getDom(battleDomConfig.nextButton);
   if (!btn) return;
 
   if (btn.dataset.nextReady === "true") {
@@ -97,7 +98,7 @@ async function forceAutoSelectAndDispatch(onExpiredSelect) {
  * @returns {Promise<void>} Resolves when the timer begins.
  */
 export async function startTimer(onExpiredSelect) {
-  const timerEl = document.getElementById("next-round-timer");
+  const timerEl = getDom(battleDomConfig.nextRoundTimer);
   let duration = 30;
   let synced = true;
 
@@ -201,7 +202,7 @@ export function createRoundTimer(onTick, onExpired) {
       onExpiredInternal();
       return;
     }
-    const msgEl = document.getElementById("round-message");
+    const msgEl = getDom(battleDomConfig.roundMessage);
     if (msgEl && msgEl.textContent) {
       snackbar.showSnackbar("Waiting…");
     } else {
@@ -244,8 +245,8 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
       return;
     }
 
-    const btn = document.getElementById("next-button");
-    const timerEl = document.getElementById("next-round-timer");
+    const btn = getDom(battleDomConfig.nextButton);
+    const timerEl = getDom(battleDomConfig.nextRoundTimer);
 
     let snackbarStarted = false;
     let lastRenderedRemaining = -1;
