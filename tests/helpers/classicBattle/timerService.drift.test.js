@@ -27,6 +27,8 @@ describe("timerService drift handling", () => {
     await mod.startTimer(async () => {});
     onDrift(2);
     expect(showMessage).toHaveBeenCalledWith("Waiting…");
+    // Shared timer restarts via factory
+    expect(startRound).toHaveBeenCalledTimes(2);
   });
 
   it("scheduleNextRound shows fallback on drift", async () => {
@@ -67,5 +69,7 @@ describe("timerService drift handling", () => {
     onDrift(1);
     const usedSnackbar = showSnack.mock.calls.some((c) => c[0] === "Waiting…");
     expect(usedScoreboard || usedSnackbar).toBe(true);
+    // Factory restarts cooldown timer on each drift (initial + 2 drifts)
+    expect(startCoolDown).toHaveBeenCalledTimes(3);
   });
 });

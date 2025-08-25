@@ -127,31 +127,14 @@ export async function startTimer(onExpiredSelect) {
   }
   const restore = !synced ? scoreboard.showTemporaryMessage("Waiting…") : () => {};
 
-  const MAX_DRIFT_RETRIES = 3;
-  let retries = 0;
-
-  function start(dur) {
-    // Fire-and-forget: starting the engine timer should not block callers
-    // (especially tests running with mocked schedulers).
-    engineStartRound(onTick, onExpired, dur, handleDrift);
-  }
-
-  async function handleDrift(remaining) {
-    retries += 1;
-    if (retries > MAX_DRIFT_RETRIES) {
-      await forceAutoSelectAndDispatch(onExpiredSelect);
-      return;
-    }
-    scoreboard.showMessage("Waiting…");
-    await start(remaining);
-  }
-
-  setSkipHandler(async () => {
-    stopTimer();
-    await onExpired();
+  const timer = createRoundTimer(onTick, onExpired, {
+    starter: engineStartRound,
+    onDriftFail: () => forceAutoSelectAndDispatch(onExpiredSelect)
   });
 
-  start(duration);
+  setSkipHandler(() => timer.stop());
+
+  timer.start(duration);
   restore();
 }
 
@@ -181,22 +164,26 @@ export function handleStatSelectionTimeout(
   }, timeoutMs);
 }
 
-export function createRoundTimer(onTick, onExpired) {
+export function createRoundTimer(onTick, onExpired, { starter = startCoolDown, onDriftFail } = {}) {
   const MAX_DRIFT_RETRIES = 3;
   let retries = 0;
 
   function start(dur) {
-    startCoolDown(onTick, onExpiredInternal, dur, handleDrift);
+    return starter(onTick, onExpiredInternal, dur, handleDrift);
   }
 
   async function onExpiredInternal() {
     await onExpired();
   }
 
-  function handleDrift(remaining) {
+  async function handleDrift(remaining) {
     retries += 1;
     if (retries > MAX_DRIFT_RETRIES) {
-      onExpiredInternal();
+      if (typeof onDriftFail === "function") {
+        await onDriftFail();
+      } else {
+        await onExpiredInternal();
+      }
       return;
     }
     const msgEl = document.getElementById("round-message");
@@ -205,7 +192,7 @@ export function createRoundTimer(onTick, onExpired) {
     } else {
       scoreboard.showMessage("Waiting…");
     }
-    start(remaining);
+    await start(remaining);
   }
 
   function stop() {
