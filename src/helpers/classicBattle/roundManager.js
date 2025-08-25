@@ -12,7 +12,7 @@ import { emitBattleEvent } from "./battleEvents.js";
  * 1. Initialize battle state values.
  * 2. Return the store.
  *
- * @returns {{quitModal: ReturnType<import("../../components/Modal.js").createModal>|null, statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number, selectionMade: boolean, stallTimeoutMs: number}}
+ * @returns {{quitModal: ReturnType<import("../../components/Modal.js").createModal>|null, statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number, selectionMade: boolean, stallTimeoutMs: number, playerChoice: string|null}}
  */
 export function createBattleStore() {
   return {
@@ -21,7 +21,8 @@ export function createBattleStore() {
     autoSelectId: null,
     compareRaf: 0,
     selectionMade: false,
-    stallTimeoutMs: 35000
+    stallTimeoutMs: 35000,
+    playerChoice: null
   };
 }
 
@@ -53,7 +54,7 @@ export async function handleReplay(store) {
  * Start a new round by drawing cards and starting timers.
  *
  * @pseudocode
- * 1. Reset selection flags on the store.
+ * 1. Reset selection flags on the store and clear any previous player choice.
  * 2. Draw player and opponent cards.
  * 3. Compute the current round number via `battleEngine.getRoundsPlayed() + 1`.
  * 4. Dispatch a `roundStarted` event with the store and round number.
@@ -63,6 +64,7 @@ export async function handleReplay(store) {
  */
 export async function startRound(store) {
   store.selectionMade = false;
+  store.playerChoice = null;
   const cards = await drawCards();
   const roundNumber = battleEngine.getRoundsPlayed() + 1;
   emitBattleEvent("roundStarted", { store, roundNumber });
@@ -71,6 +73,8 @@ export async function startRound(store) {
 
 /**
  * Reset internal state for tests.
+ *
+ * Clears timers, selection flags, and any previous player choice.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
@@ -90,6 +94,8 @@ export function _resetForTest(store) {
     store.statTimeoutId = null;
     store.autoSelectId = null;
     store.selectionMade = false;
+    // Reset any prior player stat selection
+    store.playerChoice = null;
     try {
       cancelFrame(store.compareRaf);
     } catch {}
