@@ -36,6 +36,16 @@ export function evaluateRound(store, stat, playerVal, opponentVal) {
 /**
  * Resolves the round after a stat has been selected.
  *
+ * @pseudocode
+ * 1. If no stat is provided, return immediately.
+ * 2. Dispatch an "evaluate" event unless already in the "roundDecision" state.
+ * 3. Wait for a randomized delay.
+ * 4. Emit "opponentReveal".
+ * 5. Evaluate the round and emit the outcome event.
+ * 6. Emit "matchPointReached" or "continue" based on match progress.
+ * 7. Emit "roundResolved" with round data and clear `store.playerChoice`.
+ * 8. Return the evaluation result.
+ *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
  * @param {number} playerVal - Player's stat value.
@@ -89,5 +99,6 @@ export async function resolveRound(
     opponentVal,
     result
   });
+  store.playerChoice = null;
   return result;
 }
