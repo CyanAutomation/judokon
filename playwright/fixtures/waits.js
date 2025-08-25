@@ -41,7 +41,7 @@ export async function waitForSettingsReady(page) {
 export async function waitForBattleState(page, stateName, timeout = 10000) {
   const hasHelper = await page.evaluate(() => typeof window.onStateTransition === "function");
   if (hasHelper) {
-    await page.evaluate((s, t) => window.onStateTransition(s, t), stateName, timeout);
+    await page.evaluate(({ s, t }) => window.onStateTransition(s, t), { s: stateName, t: timeout });
     return;
   }
   await expect(page.locator("body")).toHaveAttribute("data-battle-state", stateName, {

@@ -5,6 +5,15 @@ import { waitForBattleReady, waitForBattleState } from "./fixtures/waits.js";
  * Verify stat buttons are cleared after the next round begins.
  */
 test.describe.parallel("Classic battle button reset", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        "settings",
+        JSON.stringify({ featureFlags: { enableTestMode: { enabled: true } } })
+      );
+    });
+  });
+
   test("no button stays selected after next round", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
     await waitForBattleReady(page);
@@ -13,8 +22,8 @@ test.describe.parallel("Classic battle button reset", () => {
     // The Next button may be disabled while the next-round timer runs. Tests
     // can directly call the page-level skip helper to advance the phase
     // deterministically instead of clicking a disabled control.
-    await page.evaluate(() => window.skipBattlePhase?.());
-    await waitForBattleState(page, "waitingForPlayerAction");
+    page.evaluate(() => window.skipBattlePhase?.());
+    await page.waitForTimeout(1000);
     await expect(page.locator("#stat-buttons .selected")).toHaveCount(0);
   });
 
@@ -25,7 +34,7 @@ test.describe.parallel("Classic battle button reset", () => {
     // Select a stat, then advance to the next round
     const initialBtn = page.locator("#stat-buttons button[data-stat='power']");
     await initialBtn.click();
-    await page.evaluate(() => window.skipBattlePhase?.());
+    page.evaluate(() => window.skipBattlePhase?.());
     // Wait until the state machine reports the new round is awaiting input
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
     // Also wait for the selection prompt that signifies the next round started

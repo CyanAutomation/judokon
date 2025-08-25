@@ -1,9 +1,10 @@
 /**
- * Settings utility re-exports.
+ * Settings utility re-exports and helpers.
  *
  * @pseudocode
  * 1. Re-export storage and cache helpers used across settings UI.
- * 2. Keep a single import surface for settings-related utilities.
+ * 2. Provide small helpers to normalize settings for the UI.
+ * 3. Keep a single import surface for settings-related utilities to simplify imports.
  */
 export {
   saveSettings,
