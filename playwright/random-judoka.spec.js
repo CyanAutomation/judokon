@@ -5,11 +5,11 @@ test.describe.parallel("View Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/randomJudoka.html");
     await page.locator('body[data-random-judoka-ready="true"]').waitFor();
+    await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
   });
 
   test("random judoka elements visible", async ({ page }) => {
     await expect(page.getByTestId("draw-button")).toBeVisible();
-    await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
   });
 
   test("draw button accessible name constant", async ({ page }) => {

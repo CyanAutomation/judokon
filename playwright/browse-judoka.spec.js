@@ -7,8 +7,8 @@ test.describe.parallel("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/src/pages/browseJudoka.html");
-  }); // Close beforeEach
-  // Ensure proper nesting of braces and remove any extra closing brace
+    await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
+  });
 
   test("browse judoka elements visible", async ({ page }) => {
     await expect(page.getByTestId(COUNTRY_TOGGLE_LOCATOR)).toBeVisible();
@@ -16,7 +16,6 @@ test.describe.parallel("Browse Judoka screen", () => {
       "aria-label",
       /country filter/i
     );
-    await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
   });
 
   test("scroll buttons have labels", async ({ page }) => {
