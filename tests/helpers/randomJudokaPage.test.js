@@ -69,7 +69,6 @@ describe("randomJudokaPage module", () => {
     vi.doUnmock("../../src/helpers/domReady.js");
   });
   it("renders card text with sufficient color contrast", async () => {
-    vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
 
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
@@ -118,12 +117,11 @@ describe("randomJudokaPage module", () => {
       vars["--color-text-inverted"]
     );
 
-    await import("../../src/helpers/randomJudokaPage.js");
-
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await vi.runAllTimersAsync();
+    const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+    await initRandomJudokaPage();
     const drawBtn = document.getElementById("draw-card-btn");
     drawBtn.fallbackDelayMs = 0;
+    drawBtn.timers = { setTimeout: () => 0, clearTimeout: () => {} };
     drawBtn.click();
     await Promise.resolve();
     container.querySelector(".card-container")?.dispatchEvent(new Event("animationend"));
@@ -141,7 +139,6 @@ describe("randomJudokaPage module", () => {
   });
 
   it("draw button meets minimum size requirements", async () => {
-    vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
 
     vi.doMock("../../src/components/Button.js", async () => {
@@ -175,10 +172,8 @@ describe("randomJudokaPage module", () => {
     style.textContent = navbarCss;
     document.head.appendChild(style);
 
-    await import("../../src/helpers/randomJudokaPage.js");
-
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await vi.runAllTimersAsync();
+    const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+    await initRandomJudokaPage();
 
     const button = document.getElementById("draw-card-btn");
     const computed = getComputedStyle(button);
@@ -187,7 +182,6 @@ describe("randomJudokaPage module", () => {
   });
 
   it("updates loading state on draw button while drawing", async () => {
-    vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
 
     vi.doMock("../../src/components/Button.js", async () => {
@@ -220,15 +214,14 @@ describe("randomJudokaPage module", () => {
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);
 
-    await import("../../src/helpers/randomJudokaPage.js");
-
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await vi.runAllTimersAsync();
+    const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+    await initRandomJudokaPage();
 
     const button = document.getElementById("draw-card-btn");
     const label = button.querySelector(".button-label");
 
     button.fallbackDelayMs = 0;
+    button.timers = { setTimeout: () => 0, clearTimeout: () => {} };
     button.click();
     await Promise.resolve();
     const card = container.querySelector(".card-container");
@@ -241,7 +234,6 @@ describe("randomJudokaPage module", () => {
   });
 
   it("toggles history panel visibility", async () => {
-    vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
 
     const generateRandomCard = vi.fn();
@@ -270,10 +262,8 @@ describe("randomJudokaPage module", () => {
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);
 
-    await import("../../src/helpers/randomJudokaPage.js");
-
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await vi.runAllTimersAsync();
+    const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+    await initRandomJudokaPage();
 
     const panel = document.getElementById("history-panel");
     const toggleBtn = document.getElementById("toggle-history-btn");
@@ -285,7 +275,6 @@ describe("randomJudokaPage module", () => {
   });
 
   it("caps history at 5 entries", async () => {
-    vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
     const judokaSeq = [
       { firstname: "A", surname: "One" },
@@ -330,13 +319,12 @@ describe("randomJudokaPage module", () => {
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);
 
-    await import("../../src/helpers/randomJudokaPage.js");
-
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await vi.runAllTimersAsync();
+    const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+    await initRandomJudokaPage();
 
     const drawBtn = document.getElementById("draw-card-btn");
     drawBtn.fallbackDelayMs = 0;
+    drawBtn.timers = { setTimeout: () => 0, clearTimeout: () => {} };
     for (let i = 0; i < judokaSeq.length; i++) {
       drawBtn.click();
       await Promise.resolve();
@@ -354,7 +342,6 @@ describe("randomJudokaPage module", () => {
   });
 
   it("disables draw button when data load fails", async () => {
-    vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
     const dataUtils = await import("../../src/helpers/dataUtils.js");
     const fetchSpy = vi.spyOn(dataUtils, "fetchJson").mockRejectedValue(new Error("fail"));
@@ -379,9 +366,8 @@ describe("randomJudokaPage module", () => {
     document.body.append(section, container, placeholderTemplate);
 
     await withMutedConsole(async () => {
-      await import("../../src/helpers/randomJudokaPage.js");
-      document.dispatchEvent(new Event("DOMContentLoaded"));
-      await vi.runAllTimersAsync();
+      const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+      await initRandomJudokaPage();
     });
 
     const button = document.getElementById("draw-card-btn");
@@ -393,7 +379,6 @@ describe("randomJudokaPage module", () => {
   });
 
   it("storage event toggles card inspector", async () => {
-    vi.useFakeTimers();
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
 
     const generateRandomCard = vi.fn(async (_c, _g, container) => {
@@ -428,13 +413,12 @@ describe("randomJudokaPage module", () => {
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);
 
-    await import("../../src/helpers/randomJudokaPage.js");
-
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await vi.runAllTimersAsync();
+    const { initRandomJudokaPage } = await import("../../src/helpers/randomJudokaPage.js");
+    await initRandomJudokaPage();
 
     const drawBtn = document.getElementById("draw-card-btn");
     drawBtn.fallbackDelayMs = 0;
+    drawBtn.timers = { setTimeout: () => 0, clearTimeout: () => {} };
     drawBtn.click();
     await Promise.resolve();
     container.querySelector(".card-container")?.dispatchEvent(new Event("animationend"));

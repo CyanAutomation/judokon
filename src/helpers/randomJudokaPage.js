@@ -17,7 +17,8 @@
  * 7. Render a placeholder card in the card container.
  * 8. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and attach its event listener.
  * 9. If data fails to load, disable the Draw button and show an error message or fallback card.
- * 10. Use `onDomReady` to execute setup when the DOM content is loaded.
+ * 10. Export `initRandomJudokaPage` to perform setup and await navigation readiness; expose `randomJudokaReadyPromise` that
+ *     invokes it on DOM content loaded.
  *
  * @returns {Promise<void>} Resolves when the page is fully initialized.
  * @see design/productRequirementsDocuments/prdRandomJudoka.md
@@ -173,6 +174,7 @@ async function displayCard({
   cachedGokyoData,
   prefersReducedMotion,
   onSelect,
+  timers,
   fallbackDelayMs = 2000
 }) {
   return new Promise(async (resolve) => {
@@ -242,13 +244,17 @@ async function displayCard({
       if (!cardEl) {
         requestAnimationFrame(enableButton);
       } else {
+        const {
+          setTimeout: set = globalThis.setTimeout,
+          clearTimeout: clear = globalThis.clearTimeout
+        } = timers || globalThis;
         const onEnd = () => {
           cardEl.removeEventListener("animationend", onEnd);
-          clearTimeout(fallbackId);
+          clear(fallbackId);
           enableButton();
         };
         cardEl.addEventListener("animationend", onEnd);
-        const fallbackId = setTimeout(() => {
+        const fallbackId = set(() => {
           cardEl.removeEventListener("animationend", onEnd);
           enableButton();
         }, fallbackDelayMs);
@@ -287,6 +293,7 @@ export async function setupRandomJudokaPage() {
       cachedGokyoData: gokyoData,
       prefersReducedMotion,
       onSelect,
+      timers: drawButton.timers,
       fallbackDelayMs: delay
     });
   });
@@ -307,10 +314,13 @@ export async function setupRandomJudokaPage() {
   initTooltips();
 }
 
+export async function initRandomJudokaPage() {
+  await Promise.all([setupRandomJudokaPage(), window.navReadyPromise]);
+}
+
 export const randomJudokaReadyPromise = new Promise((resolve) => {
-  onDomReady(async () => {
-    await Promise.all([setupRandomJudokaPage(), window.navReadyPromise]);
-    resolve();
+  onDomReady(() => {
+    initRandomJudokaPage().then(resolve);
   });
 });
 
