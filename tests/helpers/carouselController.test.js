@@ -67,7 +67,7 @@ describe("CarouselController", () => {
     errorSpy.mockRestore();
   });
 
-  it("suppresses scroll sync during programmatic setPage", async () => {
+  it("suppresses scroll sync during programmatic setPage until scrollend and keeps counter accurate", () => {
     const container = document.createElement("div");
     // emulate scrollTo behavior: set scrollLeft synchronously
     container.scrollTo = vi.fn((opts) => {
@@ -80,23 +80,26 @@ describe("CarouselController", () => {
     const wrapper = document.createElement("div");
 
     const controller = new CarouselController(container, wrapper);
+    const counter = () => wrapper.querySelector(".page-counter")?.textContent;
     expect(controller.currentPage).toBe(0);
+    expect(counter()).toBe("Page 1 of 3");
 
     // Programmatic setPage should suppress immediate scroll events
     controller.setPage(2);
+    expect(counter()).toBe("Page 3 of 3");
     // Simulate an immediate scroll event that would otherwise change page
     container.scrollLeft = 100; // would compute to page 1
     container.dispatchEvent(new Event("scroll"));
     // During suppression, currentPage should remain the programmatic target
     expect(controller.currentPage).toBe(2);
+    expect(counter()).toBe("Page 3 of 3");
 
-    // Allow next frame for suppression to clear
-    await new Promise((r) => setTimeout(r, 0));
-
-    // Now a scroll event should update the page normally
+    // Release suppression via scrollend and then update via user scroll
+    container.dispatchEvent(new Event("scrollend"));
     container.scrollLeft = 100;
     container.dispatchEvent(new Event("scroll"));
     expect(controller.currentPage).toBe(1);
+    expect(counter()).toBe("Page 2 of 3");
   });
 
   it("resets state on cancel events", () => {

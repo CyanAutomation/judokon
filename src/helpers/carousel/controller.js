@@ -175,8 +175,7 @@ export class CarouselController {
    * 4. Calculate the `left` scroll position by multiplying the clamped index by `pageWidth`.
    * 5. Set `this._suppressScrollSync` to `true` to temporarily disable scroll event synchronization, preventing conflicts with programmatic scrolling.
    * 6. Programmatically scroll the `this.container` to the calculated `left` position with `behavior: "auto"` for instant scrolling.
-   * 7. Use `setTimeout(0)` to schedule a task on the next macrotask:
-   *    a. In the callback, set `this._suppressScrollSync` back to `false` to re-enable scroll event synchronization. This ensures that any programmatic scroll events dispatched immediately after `scrollTo` are suppressed, but subsequent user scrolls are not.
+   * 7. Attach a one-time `scrollend` listener to clear `this._suppressScrollSync` once scrolling finishes and remove the listener.
    * 8. Call `this.update()` to refresh the carousel's UI, including button states and markers.
    *
    * @param {number} index - The 0-based index of the page to set.
@@ -192,15 +191,12 @@ export class CarouselController {
     // avoid intermediary scroll calculations from overriding the target page.
     this._suppressScrollSync = true;
     this.container.scrollTo({ left, behavior: "auto" });
-    // Re-enable scroll sync after a short delay to allow CSS scroll-snap
-    // to settle. Without this, a follow-up scroll event may compute a
-    // different page due to rounding/snap adjustments and over-advance
-    // the counter.
-    // Clear suppression on next macrotask so immediate programmatic scroll
-    // events are suppressed but normal user scrolls on the next turn resume.
-    setTimeout(() => {
+    // Listen for the scroll to fully end before re-enabling scroll sync.
+    const release = () => {
       this._suppressScrollSync = false;
-    }, 0);
+      this.container.removeEventListener("scrollend", release);
+    };
+    this.container.addEventListener("scrollend", release);
     this.update();
   }
 
