@@ -7,7 +7,7 @@ import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { realScheduler } from "../scheduler.js";
-import * as testModeUtils from "../testModeUtils.js";
+import { isTestModeEnabled } from "../testModeUtils.js";
 import { dispatchBattleEvent } from "./battleDispatcher.js";
 
 /**
@@ -208,14 +208,14 @@ export function createRoundTimer(onTick, onExpired, { starter = startCoolDown, o
  *
  * @pseudocode
  * 1. Read `window.__NEXT_ROUND_COOLDOWN_MS` or default to 3000ms.
- * 2. If test mode is enabled, force cooldown to 0 seconds.
+ * 2. If test mode is enabled via `utils.isTestModeEnabled()`, force cooldown to 0.
  * 3. Otherwise convert to whole seconds and clamp to \>=0.
- * 4. Log test mode state and resolved cooldown for deterministic tests.
+ * 4. Log test mode state and resolved cooldown; wrap each warn in try.
  *
- * @param {typeof testModeUtils} utils - Test mode utilities (for injection).
+ * @param {{isTestModeEnabled: () => boolean}} [utils] - Test mode utilities (for injection).
  * @returns {number} Cooldown in seconds.
  */
-export function computeNextRoundCooldown(utils = testModeUtils) {
+export function computeNextRoundCooldown(utils = { isTestModeEnabled }) {
   const overrideMs =
     typeof window !== "undefined" && typeof window.__NEXT_ROUND_COOLDOWN_MS === "number"
       ? window.__NEXT_ROUND_COOLDOWN_MS
@@ -228,11 +228,15 @@ export function computeNextRoundCooldown(utils = testModeUtils) {
   } catch {
     cooldownSeconds = Math.max(0, Math.round(overrideMs / 1000));
   }
-  try {
-    if (isTestModeEnabled())
+  if (isTestModeEnabled()) {
+    try {
       console.warn(`[test] scheduleNextRound: testMode=true cooldown=${cooldownSeconds}`);
-    else console.warn(`[test] scheduleNextRound: testMode=false cooldown=${cooldownSeconds}`);
-  } catch {}
+    } catch {}
+  } else {
+    try {
+      console.warn(`[test] scheduleNextRound: testMode=false cooldown=${cooldownSeconds}`);
+    } catch {}
+  }
   return cooldownSeconds;
 }
 
@@ -355,7 +359,7 @@ export async function handleNextRoundExpiration(controls, btn, timerEl) {
  * 4. If cooldown is zero, delegate to `handleZeroCooldownFastPath`.
  * 5. Otherwise create `onTick` with `createNextRoundSnackbarRenderer` and
  *    `onExpired` with `handleNextRoundExpiration`.
- * 6. Register a skip handler that stops the timer.
+ * 6. Register a skip handler that logs the skip (for tests) and stops the timer.
  * 7. Start the timer and resolve when expired.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
