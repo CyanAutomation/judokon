@@ -153,17 +153,18 @@ describe("classicBattlePage stat button interactions", () => {
 
 describe("classicBattlePage stat help tooltip", () => {
   it("shows tooltip only once", async () => {
-    vi.useFakeTimers();
-
     const help = document.createElement("button");
     help.id = "stat-help";
     document.body.appendChild(help);
     const spy = vi.spyOn(help, "dispatchEvent");
 
     const { maybeShowStatHint } = await import("../../src/helpers/classicBattle/uiHelpers.js");
+    const setTimeoutStub = vi.fn((fn) => {
+      fn();
+      return 0;
+    });
 
-    maybeShowStatHint(0);
-    vi.runAllTimers();
+    maybeShowStatHint(0, setTimeoutStub);
 
     expect(spy).toHaveBeenCalledTimes(2);
     expect(spy.mock.calls[0][0].type).toBe("mouseenter");
@@ -171,8 +172,7 @@ describe("classicBattlePage stat help tooltip", () => {
     expect(localStorage.getItem("statHintShown")).toBe("true");
 
     spy.mockClear();
-    maybeShowStatHint(0);
-    vi.runAllTimers();
+    maybeShowStatHint(0, setTimeoutStub);
     expect(spy).not.toHaveBeenCalled();
   });
 });
