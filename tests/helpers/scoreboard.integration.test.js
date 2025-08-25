@@ -7,10 +7,13 @@ vi.mock("../../src/helpers/motionUtils.js", () => ({
 // We intentionally avoid calling setupScoreboard's DOM initializer here.
 // Timer controls are injected directly so functions work without explicit setup.
 
+let roundDrift;
+
 describe("Scoreboard integration without explicit init", () => {
   beforeEach(async () => {
     vi.useFakeTimers();
     vi.resetModules();
+    roundDrift = undefined;
     document.body.innerHTML = "";
 
     // Header structure as in battleJudoka.html
@@ -44,7 +47,8 @@ describe("Scoreboard integration without explicit init", () => {
     // Provide engine timers used by startTimer
     vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
       // Round selection timer: tick down each second and expire
-      startRound: (onTick, onExpired, duration) => {
+      startRound: (onTick, onExpired, duration, onDrift) => {
+        roundDrift = onDrift;
         onTick(duration);
         const id = setInterval(async () => {
           duration -= 1;
@@ -156,5 +160,14 @@ describe("Scoreboard integration without explicit init", () => {
     await vi.runOnlyPendingTimersAsync();
     expect(onFinish).toHaveBeenCalled();
     expect(timerEl.textContent).toBe("");
+  });
+
+  it("shows fallback message on round timer drift", async () => {
+    const scoreboard = await import("../../src/helpers/setupScoreboard.js");
+    const showMessageSpy = vi.spyOn(scoreboard, "showMessage");
+    const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
+    await startTimer(async () => {});
+    roundDrift(2);
+    expect(showMessageSpy).toHaveBeenCalledWith("Waiting…");
   });
 });
