@@ -1,4 +1,3 @@
-// @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
 const callbacks = [];
 vi.mock("../../src/utils/scheduler.js", () => ({
@@ -20,7 +19,7 @@ function tick() {
 /**
  * These tests cover the small countdown timer utility used by the battle engine
  * and various pages. They focus on verifying the tick callback, pause/resume
- * logic and final expiration behaviour.
+ * logic, auto-pausing on document visibility and final expiration behaviour.
  */
 
 describe("createCountdownTimer", () => {
@@ -67,5 +66,22 @@ describe("createCountdownTimer", () => {
     expect(onExpired).toHaveBeenCalledOnce();
     tick();
     expect(onTick).toHaveBeenCalledOnce();
+  });
+
+  it("auto pauses when hidden", () => {
+    const onExpired = vi.fn();
+    const timer = createCountdownTimer(2, { onExpired, pauseOnHidden: true });
+    timer.start();
+    Object.defineProperty(document, "hidden", { configurable: true, get: () => true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    tick();
+    tick();
+    expect(onExpired).not.toHaveBeenCalled();
+    Object.defineProperty(document, "hidden", { configurable: true, get: () => false });
+    document.dispatchEvent(new Event("visibilitychange"));
+    tick();
+    tick();
+    expect(onExpired).toHaveBeenCalled();
+    delete document.hidden;
   });
 });
