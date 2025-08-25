@@ -6,11 +6,17 @@
 import { escapeHTML } from "../utils.js";
 
 let resolveQuoteReady;
-if (typeof window !== "undefined") {
-  window.quoteReadyPromise = new Promise((resolve) => {
-    resolveQuoteReady = resolve;
-  });
-}
+/**
+ * Promise that resolves when quote markup is ready.
+ *
+ * @type {Promise<void>}
+ */
+export const quoteReadyPromise =
+  typeof window !== "undefined"
+    ? (window.quoteReadyPromise = new Promise((resolve) => {
+        resolveQuoteReady = resolve;
+      }))
+    : Promise.resolve();
 
 /**
  * @typedef {Object} QuoteLoadState

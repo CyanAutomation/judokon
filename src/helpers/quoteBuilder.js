@@ -1,5 +1,5 @@
 import { displayRandomQuote } from "./quotes/quoteService.js";
-import { displayFable, checkAssetsReady } from "./quotes/quoteRenderer.js";
+import { displayFable, checkAssetsReady, quoteReadyPromise } from "./quotes/quoteRenderer.js";
 
 /**
  * @typedef {Object} QuoteLoadState
@@ -52,13 +52,15 @@ async function waitForKgImage(state) {
  * 1. Create a `QuoteLoadState` object.
  * 2. Await `displayRandomQuote()` to retrieve a random fable.
  * 3. Pass the fable and state to `displayFable` for rendering.
- * 4. Await `waitForKgImage(state)` to handle the KG sprite image.
+ * 4. Await both `quoteReadyPromise` and `waitForKgImage(state)` to ensure the
+ *    DOM is updated and the KG sprite image is ready.
  *
- * @returns {Promise<void>} Promise that resolves once the quote is displayed.
+ * @returns {Promise<void>} Promise that resolves once the quote and image are
+ * loaded.
  */
 export async function loadQuote() {
   const state = { kgImageLoaded: false, quoteLoaded: false };
   const fable = await displayRandomQuote();
   displayFable(fable, state);
-  await waitForKgImage(state);
+  await Promise.all([quoteReadyPromise, waitForKgImage(state)]);
 }

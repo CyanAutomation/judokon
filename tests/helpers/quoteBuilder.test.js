@@ -1,15 +1,10 @@
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { loadQuote } from "../../src/helpers/quoteBuilder.js";
 import { formatFableStory } from "../../src/helpers/quotes/quoteRenderer.js";
 
 const originalFetch = global.fetch;
 
-beforeEach(() => {
-  vi.useFakeTimers();
-});
-
 afterEach(() => {
-  vi.useRealTimers();
   vi.restoreAllMocks();
   global.fetch = originalFetch;
   document.body.innerHTML = "";
@@ -42,7 +37,6 @@ describe("loadQuote", () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
 
     await loadQuote();
-    await vi.runAllTimersAsync();
 
     const contentHtml = document.getElementById("quote-content").innerHTML;
     expect(contentHtml).toBe("<p>Line1<br>Line2</p><br><p>Line3</p><br>");
@@ -60,7 +54,6 @@ describe("loadQuote", () => {
     global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
 
     await loadQuote();
-    await vi.runAllTimersAsync();
 
     expect(quoteDiv.innerHTML).toBe("<p>Take a breath. Even a still pond reflects the sky.</p>");
     consoleErrorSpy.mockRestore();
@@ -77,13 +70,11 @@ describe("loadQuote", () => {
     // Empty array
     global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: async () => [] }));
     await loadQuote();
-    await vi.runAllTimersAsync();
     expect(quoteDiv.textContent).toContain("Take a breath");
 
     // Invalid data
     global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: async () => [{}] }));
     await loadQuote();
-    await vi.runAllTimersAsync();
     expect(quoteDiv.textContent).toContain("Take a breath");
   });
 
@@ -96,7 +87,6 @@ describe("loadQuote", () => {
       return Promise.resolve({ ok: true, json: async () => [{ id: 1, title: "A" }] });
     });
     await loadQuote();
-    await vi.runAllTimersAsync();
     // Should not throw even if #quote, #quote-loader, or #language-toggle are missing
   });
 });
