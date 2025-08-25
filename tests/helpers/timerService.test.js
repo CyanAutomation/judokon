@@ -19,7 +19,8 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
 }));
 
 vi.mock("../../src/helpers/testModeUtils.js", () => ({
-  seededRandom: () => 0
+  seededRandom: () => 0,
+  isTestModeEnabled: () => false
 }));
 
 vi.mock("../../src/helpers/timerUtils.js", () => ({
