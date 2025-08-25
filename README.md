@@ -154,7 +154,7 @@ npx playwright test
 - Prefer `await page.evaluate(() => window.battleReadyPromise)` to detect that the Classic Battle page is fully initialized. This resolves when both the “home” and “state” parts finish booting (see `src/helpers/battleInit.js`).
 - Test helper shortcuts are available in `playwright/fixtures/waits.js`:
   - `await waitForBattleReady(page)` and `await waitForSettingsReady(page)`.
-  - `await waitForBattleState(page, "waitingForPlayerAction", 10000)` for machine state assertions.
+  - `await waitForBattleState(page, "waitingForPlayerAction", 10000)` for machine state assertions. This helper rejects if the state isn't reached within the provided timeout, preventing browser deadlocks.
   - `await page.evaluate(() => window.statButtonsReadyPromise)` to wait until stat buttons are re-enabled for a round.
 - Avoid waiting for brittle UI states like the header timer element (`#next-round-timer`) to be visible at page load. The initial pre‑match countdown is rendered via snackbar, not the header timer, and may be empty initially.
 - When targeting round start readiness, it’s fine to wait for the selection prompt snackbar (e.g., “Select your move”) or `#stat-buttons[data-buttons-ready="true"]`.
