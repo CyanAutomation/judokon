@@ -13,15 +13,15 @@ import { addHoverZoomMarkers } from "./setupHoverZoom.js";
 
 let resolveBrowseReady;
 export const browseJudokaReadyPromise =
-  typeof window !== "undefined"
+  typeof document !== "undefined"
     ? new Promise((resolve) => {
-        resolveBrowseReady = resolve;
+        resolveBrowseReady = () => {
+          document.body?.setAttribute("data-browse-judoka-ready", "true");
+          document.dispatchEvent(new CustomEvent("browse-judoka-ready", { bubbles: true }));
+          resolve();
+        };
       })
     : Promise.resolve();
-
-if (typeof window !== "undefined") {
-  window.browseJudokaReadyPromise = browseJudokaReadyPromise;
-}
 
 /**
  * Attach listener to switch layout mode of country panel.
@@ -50,7 +50,6 @@ export function setupLayoutToggle(layoutBtn, panel) {
  * 6. Initialize tooltips for interactive elements.
  */
 export async function setupBrowseJudokaPage() {
-  console.log("DEBUG: setupBrowseJudokaPage called."); // Added console.log
   const carouselContainer = document.getElementById("carousel-container");
   if (!carouselContainer) {
     console.error("Carousel container not found. Cannot set up browse Judoka page.");
@@ -136,8 +135,7 @@ export async function setupBrowseJudokaPage() {
       const { allJudoka, gokyoData } = await loadData();
       const render = (list) => renderCarousel(list, gokyoData);
       await renderCarousel(allJudoka, gokyoData);
-      console.log("Resolving browseJudokaReadyPromise (success path)"); // Added console.log
-      resolveBrowseReady?.(); // Resolve the promise before removing the spinner
+      resolveBrowseReady?.();
       spinner.remove();
       if (forceSpinner) {
         delete globalThis.__forceSpinner__;
@@ -167,8 +165,7 @@ export async function setupBrowseJudokaPage() {
         ariaLive
       );
     } catch (error) {
-      console.log("Resolving browseJudokaReadyPromise (error path)"); // Added console.log
-      resolveBrowseReady?.(); // Resolve the promise before removing the spinner
+      resolveBrowseReady?.();
       spinner.remove();
       if (forceSpinner) {
         delete globalThis.__forceSpinner__;

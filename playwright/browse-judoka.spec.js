@@ -59,7 +59,7 @@ test.describe.parallel("Browse Judoka screen", () => {
   test("resetting filter shows all judoka", async ({ page }) => {
     const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
 
-    await page.evaluate(() => window.browseJudokaReadyPromise);
+    await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
     const allCards = page.locator("[data-testid=carousel-container] .judoka-card");
     const initialCount = await allCards.count();
 
@@ -78,7 +78,7 @@ test.describe.parallel("Browse Judoka screen", () => {
   test("displays country flags", async ({ page }) => {
     const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
     await toggle.click();
-    await page.evaluate(() => window.browseJudokaReadyPromise);
+    await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
     const slides = page.locator("#country-list .slide");
     await expect(slides).toHaveCount(4);
     await expect(slides.first().locator("img")).toHaveAttribute("alt", /all countries/i);
@@ -86,7 +86,7 @@ test.describe.parallel("Browse Judoka screen", () => {
 
   test("judoka card sets zoom marker on hover", async ({ page }) => {
     const card = page.locator("#carousel-container .judoka-card").first();
-    await page.evaluate(() => window.browseJudokaReadyPromise);
+    await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
     await card.hover();
     await expect(card).toHaveAttribute("data-zoomed", "true");
   });
@@ -97,7 +97,7 @@ test.describe.parallel("Browse Judoka screen", () => {
     );
     await page.setViewportSize({ width: 320, height: 800 });
     await page.reload();
-    await page.evaluate(() => window.browseJudokaReadyPromise);
+    await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
     const container = page.locator('[data-testid="carousel"]');
 
     await container.focus();
@@ -128,7 +128,7 @@ test.describe.parallel("Browse Judoka screen", () => {
     );
     await page.setViewportSize({ width: 320, height: 800 });
     await page.reload();
-    await page.evaluate(() => window.browseJudokaReadyPromise);
+    await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
     const container = page.locator(".card-carousel");
 
     const markers = page.locator(".scroll-marker");
@@ -313,7 +313,7 @@ test.describe.parallel("Browse Judoka screen", () => {
 
     const spinner = page.locator(".loading-spinner");
     await expect(spinner).toBeVisible();
-    await page.evaluate(() => window.browseJudokaReadyPromise);
+    await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
     await expect(spinner).toBeHidden();
   });
 }); // Closing brace for test.describe.parallel

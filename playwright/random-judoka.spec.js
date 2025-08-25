@@ -4,7 +4,7 @@ import { verifyPageBasics, NAV_CLASSIC_BATTLE } from "./fixtures/navigationCheck
 test.describe.parallel("View Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/randomJudoka.html");
-    await page.evaluate(() => window.randomJudokaReadyPromise);
+    await page.locator('body[data-random-judoka-ready="true"]').waitFor();
   });
 
   test("random judoka elements visible", async ({ page }) => {

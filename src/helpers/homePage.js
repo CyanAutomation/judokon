@@ -1,20 +1,20 @@
 let resolveHomepageReady;
 
 /**
- * Resolve when the homepage grid is available.
+ * Resolve when the homepage grid is available and signal readiness.
  *
  * @type {Promise<void>}
  */
 export const homepageReadyPromise =
-  typeof window !== "undefined"
+  typeof document !== "undefined"
     ? new Promise((resolve) => {
-        resolveHomepageReady = resolve;
+        resolveHomepageReady = () => {
+          document.body?.setAttribute("data-home-ready", "true");
+          document.dispatchEvent(new CustomEvent("home-ready", { bubbles: true }));
+          resolve();
+        };
       })
     : Promise.resolve();
-
-if (typeof window !== "undefined") {
-  window.homepageReadyPromise = homepageReadyPromise;
-}
 
 if (typeof document !== "undefined") {
   if (document.querySelector(".game-mode-grid")) {
