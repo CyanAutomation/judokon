@@ -17,6 +17,10 @@ describe("timerService next round handling", () => {
       showAutoSelect: vi.fn(),
       clearTimer: vi.fn()
     }));
+    vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar: vi.fn(),
+      updateSnackbar: vi.fn()
+    }));
     vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
       enableNextRoundButton: vi.fn(),
       disableNextRoundButton: vi.fn(),
@@ -63,5 +67,27 @@ describe("timerService next round handling", () => {
     await controls.ready;
     expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
     expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it("computeNextRoundCooldown respects test mode", async () => {
+    const mod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const val = mod.computeNextRoundCooldown({ isTestModeEnabled: () => true });
+    expect(val).toBe(0);
+  });
+
+  it("createNextRoundSnackbarRenderer shows and updates", async () => {
+    const mod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const renderer = mod.createNextRoundSnackbarRenderer();
+    const snackbarMod = await import("../../../src/helpers/showSnackbar.js");
+    const scoreboardMod = await import("../../../src/helpers/setupScoreboard.js");
+
+    renderer(3);
+    renderer(2);
+    renderer(2);
+    renderer(0);
+
+    expect(snackbarMod.showSnackbar).toHaveBeenCalledWith("Next round in: 3s");
+    expect(snackbarMod.updateSnackbar).toHaveBeenCalledWith("Next round in: 2s");
+    expect(scoreboardMod.clearTimer).toHaveBeenCalled();
   });
 });

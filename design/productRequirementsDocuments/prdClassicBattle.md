@@ -124,7 +124,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - After selection, the correct comparison is made, and the score updates based on round outcome.
 - After the player selects a stat, the Scoreboard shows "Opponent is choosing..." until the opponent's stat is revealed.
 - If the selected stats are equal, a tie message displays and the round ends.
-- After round results, a 3s countdown is displayed via snackbar (`Next round in: Xs`). The **Next** button becomes active once the countdown ends or when skipped. Reference [timerService.js](../../src/helpers/classicBattle/timerService.js) for exact durations to keep design and code aligned.
+- After round results, `computeNextRoundCooldown` and `createNextRoundSnackbarRenderer` run a 3s countdown via snackbar (`Next round in: Xs`). The **Next** button becomes active when `handleNextRoundExpiration` fires or immediately via `handleZeroCooldownFastPath` in test mode. Reference [timerService.js](../../src/helpers/classicBattle/timerService.js) for exact durations to keep design and code aligned.
 - After the match ends, a modal appears showing the final result and score with **Quit Match** and **Next Match** buttons; **Quit Match** exits to the main menu and **Next Match** starts a new match.
 - Player can quit mid-match; confirmation prompt appears; if confirmed, match ends with player loss recorded.
 - After confirming the quit action, the player is returned to the main menu (index.html).
