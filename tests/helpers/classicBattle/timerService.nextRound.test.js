@@ -41,11 +41,11 @@ describe("timerService next round handling", () => {
   it("clicking Next during cooldown skips current phase", async () => {
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
     const { nextButton } = createTimerNodes();
-    nextButton.addEventListener("click", mod.onNextButtonClick);
-    const promise = mod.scheduleNextRound({ matchEnded: false }, scheduler);
+    const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
+    nextButton.addEventListener("click", (e) => mod.onNextButtonClick(e, controls));
     scheduler.tick(0);
     nextButton.click();
-    await promise;
+    await controls.ready;
     // Current flow guarantees at least one dispatch; a second may occur
     // via attribute observation. Accept one or more invocations.
     expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
@@ -58,9 +58,9 @@ describe("timerService next round handling", () => {
     });
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
     createTimerNodes();
-    const promise = mod.scheduleNextRound({ matchEnded: false }, scheduler);
+    const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
     scheduler.tick(0);
-    await promise;
+    await controls.ready;
     expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
     expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
   });

@@ -84,9 +84,9 @@ describe("timerService", () => {
     skip.skipCurrentPhase();
 
     const { scheduleNextRound } = await import("../../src/helpers/classicBattle/timerService.js");
-    const promise = scheduleNextRound({ matchEnded: false }, scheduler);
+    const controls = scheduleNextRound({ matchEnded: false }, scheduler);
     scheduler.tick(0);
-    await promise;
+    await controls.ready;
 
     expect(btn.dataset.nextReady).toBe("true");
     expect(btn.disabled).toBe(false);

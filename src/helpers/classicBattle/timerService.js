@@ -10,12 +10,24 @@ import { realScheduler } from "../scheduler.js";
 import * as testModeUtils from "../testModeUtils.js";
 import { dispatchBattleEvent } from "./battleDispatcher.js";
 
-let nextRoundTimer = null;
-let nextRoundReadyResolve = null;
+/**
+ * Store controls for the pending next round. Updated by `scheduleNextRound`
+ * and consumed by `onNextButtonClick` when invoked via the Next button.
+ * @type {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}|null}
+ */
+let currentNextRound = null;
 
 // Skip handler utilities moved to skipHandler.js
 
-export async function onNextButtonClick() {
+/**
+ * Handle clicks on the Next button. Uses the active timer controls provided by
+ * `scheduleNextRound` to either resolve the ready promise or cancel the timer.
+ *
+ * @param {MouseEvent} _evt - Click event.
+ * @param {{timer: {stop: () => void} | null, resolveReady: (() => void) | null}} [controls=currentNextRound]
+ * - Timer controls returned from `scheduleNextRound`.
+ */
+export async function onNextButtonClick(_evt, { timer, resolveReady } = currentNextRound ?? {}) {
   const btn = document.getElementById("next-button");
   if (!btn) return;
 
@@ -23,17 +35,25 @@ export async function onNextButtonClick() {
     btn.disabled = true;
     delete btn.dataset.nextReady;
     await dispatchBattleEvent("ready");
-    if (typeof nextRoundReadyResolve === "function") {
-      nextRoundReadyResolve();
-      nextRoundReadyResolve = null;
+    if (typeof resolveReady === "function") {
+      resolveReady();
     }
     setSkipHandler(null);
     return;
   }
 
-  if (nextRoundTimer) {
-    nextRoundTimer.stop();
+  if (timer) {
+    timer.stop();
   }
+}
+
+/**
+ * Expose current next-round controls for helpers like `setupNextButton`.
+ *
+ * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}|null}
+ */
+export function getNextRoundControls() {
+  return currentNextRound;
 }
 
 /**
@@ -211,144 +231,153 @@ export function createRoundTimer(onTick, onExpired) {
  *    and resolve the returned promise.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
- * @returns {Promise<void>} Resolves after dispatching "ready".
+ * @returns {{
+ *   ready: Promise<void>,
+ *   timer: ReturnType<typeof createRoundTimer> | null,
+ *   resolveReady: (() => void) | null
+ * }} Controls for the scheduled next round.
  */
 export function scheduleNextRound(result, scheduler = realScheduler) {
-  return new Promise((resolve) => {
-    if (result.matchEnded) {
-      setSkipHandler(null);
+  const controls = { timer: null, resolveReady: null, ready: null };
+
+  controls.ready = new Promise((resolve) => {
+    controls.resolveReady = () => {
       emitBattleEvent("nextRoundTimerReady");
       resolve();
-      return;
-    }
-
-    const btn = document.getElementById("next-button");
-    const timerEl = document.getElementById("next-round-timer");
-
-    let snackbarStarted = false;
-    let lastRenderedRemaining = -1;
-
-    const overrideMs =
-      typeof window !== "undefined" && typeof window.__NEXT_ROUND_COOLDOWN_MS === "number"
-        ? window.__NEXT_ROUND_COOLDOWN_MS
-        : 3000;
-    // In test mode, remove cooldown to make transitions deterministic.
-    let cooldownSeconds;
-    try {
-      const isEnabled =
-        typeof testModeUtils.isTestModeEnabled === "function"
-          ? testModeUtils.isTestModeEnabled()
-          : false;
-      cooldownSeconds = isEnabled ? 0 : Math.max(0, Math.round(overrideMs / 1000));
-    } catch {
-      cooldownSeconds = Math.max(0, Math.round(overrideMs / 1000));
-    }
-    try {
-      if (isTestModeEnabled())
-        console.warn(`[test] scheduleNextRound: testMode=true cooldown=${cooldownSeconds}`);
-      else console.warn(`[test] scheduleNextRound: testMode=false cooldown=${cooldownSeconds}`);
-    } catch {}
-
-    nextRoundReadyResolve = () => {
-      emitBattleEvent("nextRoundTimerReady");
-      resolve();
-      nextRoundReadyResolve = null;
+      controls.resolveReady = null;
     };
+  });
 
-    if (btn) {
-      btn.disabled = false;
-      delete btn.dataset.nextReady;
-    }
+  if (result.matchEnded) {
+    setSkipHandler(null);
+    if (controls.resolveReady) controls.resolveReady();
+    currentNextRound = controls;
+    return controls;
+  }
 
-    const onTick = (remaining) => {
-      if (remaining <= 0) {
-        const text = "Next round in: 0s";
-        if (!snackbarStarted) {
-          snackbar.showSnackbar(text);
-          snackbarStarted = true;
-        } else {
-          snackbar.updateSnackbar(text);
-        }
-        scoreboard.clearTimer();
-        return;
-      }
-      if (remaining === lastRenderedRemaining) return;
-      const text = `Next round in: ${remaining}s`;
+  const btn = document.getElementById("next-button");
+  const timerEl = document.getElementById("next-round-timer");
+
+  let snackbarStarted = false;
+  let lastRenderedRemaining = -1;
+
+  const overrideMs =
+    typeof window !== "undefined" && typeof window.__NEXT_ROUND_COOLDOWN_MS === "number"
+      ? window.__NEXT_ROUND_COOLDOWN_MS
+      : 3000;
+  // In test mode, remove cooldown to make transitions deterministic.
+  let cooldownSeconds;
+  try {
+    const isEnabled =
+      typeof testModeUtils.isTestModeEnabled === "function"
+        ? testModeUtils.isTestModeEnabled()
+        : false;
+    cooldownSeconds = isEnabled ? 0 : Math.max(0, Math.round(overrideMs / 1000));
+  } catch {
+    cooldownSeconds = Math.max(0, Math.round(overrideMs / 1000));
+  }
+  try {
+    if (isTestModeEnabled())
+      console.warn(`[test] scheduleNextRound: testMode=true cooldown=${cooldownSeconds}`);
+    else console.warn(`[test] scheduleNextRound: testMode=false cooldown=${cooldownSeconds}`);
+  } catch {}
+
+  if (btn) {
+    btn.disabled = false;
+    delete btn.dataset.nextReady;
+  }
+
+  const onTick = (remaining) => {
+    if (remaining <= 0) {
+      const text = "Next round in: 0s";
       if (!snackbarStarted) {
         snackbar.showSnackbar(text);
         snackbarStarted = true;
       } else {
         snackbar.updateSnackbar(text);
       }
-      lastRenderedRemaining = remaining;
-    };
-
-    const onExpired = async () => {
-      setSkipHandler(null);
       scoreboard.clearTimer();
-      if (timerEl) {
-        timerEl.textContent = "";
-      }
-      if (btn) {
-        btn.dataset.nextReady = "true";
-        btn.disabled = false;
-      }
-      await dispatchBattleEvent("ready");
-      updateDebugPanel();
-      if (typeof nextRoundReadyResolve === "function") {
-        nextRoundReadyResolve();
-      }
-    };
-
-    // Fast-path: zero-second cooldown (e.g., test mode). Ensure the Next button
-    // appears enabled and ready, surface a deterministic snackbar message, and
-    // resolve promptly without starting a timer.
-    if (cooldownSeconds === 0) {
-      // Maintain UX/test determinism: even with a 0s cooldown, show a
-      // countdown snackbar so observers (and tests) see a stable message
-      // instead of the previous round outcome lingering in the snackbar.
-      try {
-        snackbar.showSnackbar("Next round in: 0s");
-      } catch {}
-      if (btn) {
-        btn.dataset.nextReady = "true";
-        btn.disabled = false;
-      }
-      // Signal that the next-round control is ready but do not auto-advance;
-      // tests may click Next or call the page-level skip helper.
-      setSkipHandler(async () => {
-        try {
-          if (btn) btn.disabled = true;
-          await dispatchBattleEvent("ready");
-          updateDebugPanel();
-        } catch {}
-      });
-      try {
-        emitBattleEvent("nextRoundTimerReady");
-      } catch {}
-      if (typeof nextRoundReadyResolve === "function") {
-        try {
-          nextRoundReadyResolve();
-        } catch {}
-        nextRoundReadyResolve = null;
-      }
       return;
     }
+    if (remaining === lastRenderedRemaining) return;
+    const text = `Next round in: ${remaining}s`;
+    if (!snackbarStarted) {
+      snackbar.showSnackbar(text);
+      snackbarStarted = true;
+    } else {
+      snackbar.updateSnackbar(text);
+    }
+    lastRenderedRemaining = remaining;
+  };
 
-    nextRoundTimer = createRoundTimer(onTick, onExpired);
-    setSkipHandler(() => {
+  const onExpired = async () => {
+    setSkipHandler(null);
+    scoreboard.clearTimer();
+    if (timerEl) {
+      timerEl.textContent = "";
+    }
+    if (btn) {
+      btn.dataset.nextReady = "true";
+      btn.disabled = false;
+    }
+    await dispatchBattleEvent("ready");
+    updateDebugPanel();
+    if (typeof controls.resolveReady === "function") {
+      controls.resolveReady();
+    }
+  };
+
+  // Fast-path: zero-second cooldown (e.g., test mode). Ensure the Next button
+  // appears enabled and ready, surface a deterministic snackbar message, and
+  // resolve promptly without starting a timer.
+  if (cooldownSeconds === 0) {
+    // Maintain UX/test determinism: even with a 0s cooldown, show a
+    // countdown snackbar so observers (and tests) see a stable message
+    // instead of the previous round outcome lingering in the snackbar.
+    try {
+      snackbar.showSnackbar("Next round in: 0s");
+    } catch {}
+    if (btn) {
+      btn.dataset.nextReady = "true";
+      btn.disabled = false;
+    }
+    // Signal that the next-round control is ready but do not auto-advance;
+    // tests may click Next or call the page-level skip helper.
+    setSkipHandler(async () => {
       try {
-        console.warn("[test] skip: stop nextRoundTimer");
+        if (btn) btn.disabled = true;
+        await dispatchBattleEvent("ready");
+        updateDebugPanel();
       } catch {}
-      nextRoundTimer.stop();
     });
-
-    if (btn && btn.dataset.nextReady === "true") {
-      nextRoundReadyResolve();
-      return;
+    try {
+      emitBattleEvent("nextRoundTimerReady");
+    } catch {}
+    if (typeof controls.resolveReady === "function") {
+      try {
+        controls.resolveReady();
+      } catch {}
     }
+    currentNextRound = controls;
+    return controls;
+  }
 
-    onTick(cooldownSeconds);
-    scheduler.setTimeout(() => nextRoundTimer.start(cooldownSeconds), 0);
+  controls.timer = createRoundTimer(onTick, onExpired);
+  setSkipHandler(() => {
+    try {
+      console.warn("[test] skip: stop nextRoundTimer");
+    } catch {}
+    if (controls.timer) controls.timer.stop();
   });
+
+  if (btn && btn.dataset.nextReady === "true") {
+    controls.resolveReady();
+    currentNextRound = controls;
+    return controls;
+  }
+
+  onTick(cooldownSeconds);
+  scheduler.setTimeout(() => controls.timer.start(cooldownSeconds), 0);
+  currentNextRound = controls;
+  return controls;
 }
