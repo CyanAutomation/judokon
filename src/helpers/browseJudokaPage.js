@@ -9,6 +9,7 @@ import { initTooltips } from "./tooltip.js";
 import { setupButtonEffects } from "./buttonEffects.js";
 import { setupCountryToggle } from "./browse/setupCountryToggle.js";
 import { setupCountryFilter } from "./browse/setupCountryFilter.js";
+import { addHoverZoomMarkers } from "./setupHoverZoom.js";
 
 let resolveBrowseReady;
 export const browseJudokaReadyPromise =
@@ -100,6 +101,7 @@ export async function setupBrowseJudokaPage() {
    * 2. Clear the existing container and append the carousel.
    * 3. Initialize scroll markers on the carousel container.
    * 4. Apply button ripple effects.
+   * 5. Add hover zoom markers to cards.
    *
    * @param {Judoka[]} list - Judoka to display.
    * @returns {Promise<void>} Resolves when rendering completes.
@@ -115,6 +117,7 @@ export async function setupBrowseJudokaPage() {
     }
 
     setupButtonEffects();
+    addHoverZoomMarkers();
   }
 
   async function init() {
