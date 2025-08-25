@@ -1,5 +1,4 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { waitForSettingsReady } from "./fixtures/waits.js";
 
 // Allow skipping screenshots via the SKIP_SCREENSHOTS environment variable
 const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
@@ -30,7 +29,6 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
     { url: "/src/pages/randomJudoka.html", name: "randomJudoka.png", tag: "@randomJudoka" },
     { url: "/src/pages/meditation.html", name: "meditation.png", tag: "@meditation" },
     { url: "/src/pages/updateJudoka.html", name: "updateJudoka.png", tag: "@updateJudoka" },
-    { url: "/src/pages/settings.html", name: "settings.png", tag: "@settings" },
     { url: "/src/pages/vectorSearch.html", name: "vectorSearch.png", tag: "@vectorSearch" },
     { url: "/src/pages/changeLog.html", name: "changeLog.png", tag: "@changeLog" }
   ];
@@ -38,9 +36,6 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
   for (const { url, name, tag } of pages) {
     test(`${tag} screenshot ${url}`, async ({ page }) => {
       await page.goto(url, { waitUntil: "domcontentloaded" });
-      if (url.endsWith("/src/pages/settings.html")) {
-        await waitForSettingsReady(page);
-      }
       await expect(page).toHaveScreenshot(name, { fullPage: true });
     });
   }
