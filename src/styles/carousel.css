@@ -10,7 +10,7 @@
   /* Disable native touch scrolling during swipe handling to avoid
      double-advancing pages when both native scroll and programmatic
      paging occur from a single gesture. */
-  touch-action: none;
+  touch-action: pan-y;
   width: 100%; /* Ensure carousel doesn't exceed container width */
   /* Safari flexbox quirk: set min-width to 0 so container doesn't expand */
   min-width: 0;

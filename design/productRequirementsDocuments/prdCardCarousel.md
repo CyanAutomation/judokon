@@ -95,6 +95,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - Carousel should debounce swipe/scroll events to prevent rapid-fire performance hits.
 - Card metadata must be dynamically fetched from `judoka.json`; errors should gracefully fallback to judoka id=0 without showing an error message.
 - Programmatic navigation waits for a `scrollend` event before re-enabling scroll synchronization, preserving accurate page counters.
+- Set `touch-action: pan-y` on the carousel so vertical page scrolling passes through natively while horizontal swipes are custom-handled.
 
 ---
 
