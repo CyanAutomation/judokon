@@ -1,4 +1,3 @@
-import { waitForOpponentCard } from "../battleJudokaPage.js";
 import { setupScoreboard } from "../setupScoreboard.js";
 import { initQuitButton } from "./quitButton.js";
 import { skipCurrentPhase } from "./skipHandler.js";
@@ -28,7 +27,10 @@ import "../setupClassicBattleHomeLink.js";
  * Handles DOM interactions and binds to controller events.
  */
 export class ClassicBattleView {
-  constructor() {
+  /**
+   * @param {{ waitForOpponentCard?: () => Promise<void> }} [deps]
+   */
+  constructor({ waitForOpponentCard = () => {} } = {}) {
     this.statButtonControls = null;
     this.waitForOpponentCard = waitForOpponentCard;
   }

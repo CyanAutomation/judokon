@@ -1,4 +1,5 @@
 import { onDomReady } from "../domReady.js";
+import { waitForOpponentCard } from "../battleJudokaPage.js";
 import ClassicBattleController from "./controller.js";
 import ClassicBattleView from "./view.js";
 import "./promises.js";
@@ -9,7 +10,7 @@ import "./roundUI.js";
  * Bootstrap Classic Battle page by wiring controller and view.
  */
 export async function setupClassicBattlePage() {
-  const view = new ClassicBattleView();
+  const view = new ClassicBattleView({ waitForOpponentCard });
   const controller = new ClassicBattleController({
     waitForOpponentCard: view.waitForOpponentCard
   });

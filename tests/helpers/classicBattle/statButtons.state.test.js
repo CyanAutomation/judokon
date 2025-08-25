@@ -5,8 +5,6 @@ import {
   waitingForPlayerActionExit
 } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 import { ClassicBattleView } from "../../../src/helpers/classicBattle/view.js";
-
-vi.mock("../../../src/helpers/battleJudokaPage.js", () => ({ waitForOpponentCard: vi.fn() }));
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({ setupScoreboard: vi.fn() }));
 vi.mock("../../../src/helpers/classicBattle/quitButton.js", () => ({ initQuitButton: vi.fn() }));
 vi.mock("../../../src/helpers/classicBattle/skipHandler.js", () => ({ skipCurrentPhase: vi.fn() }));
@@ -49,7 +47,7 @@ describe("classicBattle stat button state", () => {
   });
 
   it("enables stat buttons only while waiting for player action", async () => {
-    const view = new ClassicBattleView();
+    const view = new ClassicBattleView({ waitForOpponentCard: vi.fn() });
     view.controller = {
       battleStore: {},
       timerControls: {},
