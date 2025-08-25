@@ -53,7 +53,7 @@ test.describe.parallel("Homepage", () => {
   test("tile hover zoom and cursor", async ({ page }) => {
     const tile = page.locator(".card").first();
     await tile.hover();
-    await expect(tile).toHaveAttribute("data-zoomed", "true");
+    await expect(tile).toHaveAttribute("data-enlarged", "true");
     const scale = await tile.evaluate((el) => {
       const transform = getComputedStyle(el).transform;
       const match = transform.match(/matrix\(([^)]+)\)/);
