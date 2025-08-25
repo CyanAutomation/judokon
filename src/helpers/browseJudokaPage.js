@@ -10,18 +10,6 @@ import { setupButtonEffects } from "./buttonEffects.js";
 import { setupCountryToggle } from "./browse/setupCountryToggle.js";
 import { setupCountryFilter } from "./browse/setupCountryFilter.js";
 
-let resolveBrowseReady;
-export const browseJudokaReadyPromise =
-  typeof window !== "undefined"
-    ? new Promise((resolve) => {
-        resolveBrowseReady = resolve;
-      })
-    : Promise.resolve();
-
-if (typeof window !== "undefined") {
-  window.browseJudokaReadyPromise = browseJudokaReadyPromise;
-}
-
 /**
  * Attach listener to switch layout mode of country panel.
  *
@@ -49,13 +37,9 @@ export function setupLayoutToggle(layoutBtn, panel) {
  * 6. Initialize tooltips for interactive elements.
  */
 export async function setupBrowseJudokaPage() {
-  console.log("DEBUG: setupBrowseJudokaPage called."); // Added console.log
   const carouselContainer = document.getElementById("carousel-container");
   if (!carouselContainer) {
     console.error("Carousel container not found. Cannot set up browse Judoka page.");
-    if (resolveBrowseReady) {
-      resolveBrowseReady(); // Resolve the promise to prevent test timeouts
-    }
     return;
   }
   const countryListContainer = document.getElementById("country-list");
@@ -133,8 +117,6 @@ export async function setupBrowseJudokaPage() {
       const { allJudoka, gokyoData } = await loadData();
       const render = (list) => renderCarousel(list, gokyoData);
       await renderCarousel(allJudoka, gokyoData);
-      console.log("Resolving browseJudokaReadyPromise (success path)"); // Added console.log
-      resolveBrowseReady?.(); // Resolve the promise before removing the spinner
       spinner.remove();
       if (forceSpinner) {
         delete globalThis.__forceSpinner__;
@@ -164,8 +146,6 @@ export async function setupBrowseJudokaPage() {
         ariaLive
       );
     } catch (error) {
-      console.log("Resolving browseJudokaReadyPromise (error path)"); // Added console.log
-      resolveBrowseReady?.(); // Resolve the promise before removing the spinner
       spinner.remove();
       if (forceSpinner) {
         delete globalThis.__forceSpinner__;
@@ -210,4 +190,9 @@ export async function setupBrowseJudokaPage() {
   initTooltips();
 }
 
-setupBrowseJudokaPage();
+setupBrowseJudokaPage()
+  .catch((err) => console.error("Error initializing Browse Judoka page:", err))
+  .finally(() => {
+    document.body.setAttribute("data-browse-judoka-ready", "true");
+    document.dispatchEvent(new CustomEvent("browse-judoka-ready"));
+  });

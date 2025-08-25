@@ -1,29 +1,27 @@
-let resolveHomepageReady;
-
 /**
- * Resolve when the homepage grid is available.
+ * Signal when the homepage grid is available.
  *
- * @type {Promise<void>}
+ * @pseudocode
+ * 1. If `.game-mode-grid` exists, mark the document as ready.
+ * 2. Otherwise, observe DOM mutations until it appears, then mark ready.
+ *
+ * Marking ready entails:
+ *  - Setting `data-homepage-ready="true"` on `<body>`.
+ *  - Dispatching a `homepage-ready` event on `document`.
  */
-export const homepageReadyPromise =
-  typeof window !== "undefined"
-    ? new Promise((resolve) => {
-        resolveHomepageReady = resolve;
-      })
-    : Promise.resolve();
-
-if (typeof window !== "undefined") {
-  window.homepageReadyPromise = homepageReadyPromise;
+function markHomepageReady() {
+  document.body.setAttribute("data-homepage-ready", "true");
+  document.dispatchEvent(new CustomEvent("homepage-ready"));
 }
 
 if (typeof document !== "undefined") {
   if (document.querySelector(".game-mode-grid")) {
-    resolveHomepageReady?.();
+    markHomepageReady();
   } else {
     const observer = new MutationObserver(() => {
       if (document.querySelector(".game-mode-grid")) {
         observer.disconnect();
-        resolveHomepageReady?.();
+        markHomepageReady();
       }
     });
     observer.observe(document.documentElement, {

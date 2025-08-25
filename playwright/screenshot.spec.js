@@ -56,7 +56,7 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
   test("@homepage-desktop-layout screenshot", async ({ page }) => {
     await page.goto("/index.html");
     await page.setViewportSize({ width: 1024, height: 800 });
-    await page.evaluate(() => window.homepageReadyPromise);
+    await page.locator('body[data-homepage-ready="true"]').waitFor();
     await page.evaluate(() => window.navReadyPromise);
     await expect(page).toHaveScreenshot("desktop-layout.png", { fullPage: true });
   });
@@ -64,7 +64,7 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
   test("@homepage-mobile-layout screenshot", async ({ page }) => {
     await page.goto("/index.html");
     await page.setViewportSize({ width: 500, height: 800 });
-    await page.evaluate(() => window.homepageReadyPromise);
+    await page.locator('body[data-homepage-ready="true"]').waitFor();
     await page.evaluate(() => window.navReadyPromise);
     await expect(page).toHaveScreenshot("mobile-layout.png", { fullPage: true });
   });
@@ -72,14 +72,14 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
   test("@randomJudoka-signature screenshot", async ({ page }) => {
     await page.goto("/src/pages/randomJudoka.html");
     await page.getByTestId("draw-button").click();
-    await page.evaluate(() => window.signatureMoveReadyPromise);
+    await page.locator('body[data-signature-move-ready="true"]').waitFor();
     const sigMove = page.locator(".signature-move-container");
     await expect(sigMove).toHaveScreenshot("randomJudoka-signature.png");
   });
 
   test("@browseJudoka-signature screenshot", async ({ page }) => {
     await page.goto("/src/pages/browseJudoka.html");
-    await page.evaluate(() => window.signatureMoveReadyPromise);
+    await page.locator('body[data-signature-move-ready="true"]').waitFor();
     const sigMove = page.locator(".signature-move-container").first();
     await expect(sigMove).toHaveScreenshot("browseJudoka-signature.png");
   });
