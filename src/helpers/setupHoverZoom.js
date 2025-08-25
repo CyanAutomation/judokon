@@ -4,15 +4,19 @@ import { onDomReady } from "./domReady.js";
  * Mark cards when their hover zoom transition completes.
  *
  * @pseudocode
- * 1. Select all elements with the `.card` class.
+ * 1. Select all elements with the `.card` or `.judoka-card` class.
  * 2. For each card:
- *    a. Remove the `data-zoomed` marker on `mouseenter` and `mouseleave`.
- *    b. When a `transitionend` event for `transform` fires, set `data-zoomed="true"`.
+ *    a. Skip if listeners already attached.
+ *    b. Remove the `data-zoomed` marker on `mouseenter` and `mouseleave`.
+ *    c. When a `transitionend` event for `transform` fires, set `data-zoomed="true"`.
+ *    d. If `prefers-reduced-motion` is enabled, set `data-zoomed="true"` immediately on `mouseenter`.
  */
 export function addHoverZoomMarkers() {
   if (typeof document === "undefined") return;
-  const cards = document.querySelectorAll(".card");
+  const cards = document.querySelectorAll(".card, .judoka-card");
   cards.forEach((card) => {
+    if (card.dataset.zoomListenerAttached) return;
+    card.dataset.zoomListenerAttached = "true";
     const reset = () => {
       delete card.dataset.zoomed;
     };

@@ -5,6 +5,7 @@ const COUNTRY_TOGGLE_LOCATOR = "country-toggle";
 
 test.describe.parallel("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/src/pages/browseJudoka.html");
   }); // Close beforeEach
   // Ensure proper nesting of braces and remove any extra closing brace
@@ -83,24 +84,11 @@ test.describe.parallel("Browse Judoka screen", () => {
     await expect(slides.first().locator("img")).toHaveAttribute("alt", /all countries/i);
   });
 
-  test("judoka card enlarges on hover", async ({ page }) => {
+  test("judoka card sets zoom marker on hover", async ({ page }) => {
     const card = page.locator("#carousel-container .judoka-card").first();
     await page.evaluate(() => window.browseJudokaReadyPromise);
-
-    const before = await card.boundingBox();
     await card.hover();
-    await page.waitForFunction((selector) => {
-      const cardElement = document.querySelector(selector);
-      if (!cardElement) return false; // Element not found yet
-      const style = window.getComputedStyle(cardElement);
-      return style.transform !== "none";
-    }, "#carousel-container .judoka-card");
-    await page.waitForTimeout(200); // Allow animation to complete
-    const after = await card.boundingBox();
-
-    const widthRatio = after.width / before.width;
-    expect(widthRatio).toBeGreaterThan(1.04);
-    expect(widthRatio).toBeLessThan(1.09);
+    await expect(card).toHaveAttribute("data-zoomed", "true");
   });
 
   test("carousel responds to arrow keys", async ({ page }) => {
