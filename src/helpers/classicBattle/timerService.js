@@ -204,18 +204,159 @@ export function createRoundTimer(onTick, onExpired, { starter = startCoolDown, o
 }
 
 /**
+ * Determine the cooldown duration before the next round.
+ *
+ * @pseudocode
+ * 1. Read `window.__NEXT_ROUND_COOLDOWN_MS` or default to 3000ms.
+ * 2. If test mode is enabled, force cooldown to 0 seconds.
+ * 3. Otherwise convert to whole seconds and clamp to \>=0.
+ * 4. Log test mode state and resolved cooldown for deterministic tests.
+ *
+ * @param {typeof testModeUtils} utils - Test mode utilities (for injection).
+ * @returns {number} Cooldown in seconds.
+ */
+export function computeNextRoundCooldown(utils = testModeUtils) {
+  const overrideMs =
+    typeof window !== "undefined" && typeof window.__NEXT_ROUND_COOLDOWN_MS === "number"
+      ? window.__NEXT_ROUND_COOLDOWN_MS
+      : 3000;
+  let cooldownSeconds;
+  try {
+    const enabled =
+      typeof utils.isTestModeEnabled === "function" ? utils.isTestModeEnabled() : false;
+    cooldownSeconds = enabled ? 0 : Math.max(0, Math.round(overrideMs / 1000));
+  } catch {
+    cooldownSeconds = Math.max(0, Math.round(overrideMs / 1000));
+  }
+  try {
+    if (isTestModeEnabled())
+      console.warn(`[test] scheduleNextRound: testMode=true cooldown=${cooldownSeconds}`);
+    else console.warn(`[test] scheduleNextRound: testMode=false cooldown=${cooldownSeconds}`);
+  } catch {}
+  return cooldownSeconds;
+}
+
+/**
+ * Create a tick handler that renders the next-round countdown via snackbar.
+ *
+ * @pseudocode
+ * 1. Track whether the snackbar was shown and last rendered value.
+ * 2. When remaining \<=0, show "Next round in: 0s" and clear the scoreboard timer.
+ * 3. Skip rendering if the remaining value hasn't changed.
+ * 4. Otherwise show or update the snackbar with the new remaining seconds.
+ *
+ * @returns {(remaining: number) => void} Tick handler for the countdown.
+ */
+export function createNextRoundSnackbarRenderer() {
+  let started = false;
+  let lastRendered = -1;
+  return (remaining) => {
+    if (remaining <= 0) {
+      const text = "Next round in: 0s";
+      if (!started) {
+        snackbar.showSnackbar(text);
+        started = true;
+      } else {
+        snackbar.updateSnackbar(text);
+      }
+      scoreboard.clearTimer();
+      return;
+    }
+    if (remaining === lastRendered) return;
+    const text = `Next round in: ${remaining}s`;
+    if (!started) {
+      snackbar.showSnackbar(text);
+      started = true;
+    } else {
+      snackbar.updateSnackbar(text);
+    }
+    lastRendered = remaining;
+  };
+}
+
+/**
+ * Handle zero-second cooldown by enabling the Next button immediately.
+ *
+ * @pseudocode
+ * 1. Show a deterministic "Next round in: 0s" snackbar.
+ * 2. Mark the Next button as ready and ensure it is enabled.
+ * 3. Register a skip handler that dispatches "ready" when invoked.
+ * 4. Emit "nextRoundTimerReady" and resolve the ready promise.
+ *
+ * @param {{resolveReady: (() => void) | null}} controls - Timer controls.
+ * @param {HTMLButtonElement | null} btn - Next button element.
+ * @returns {{resolveReady: (() => void) | null, ready: Promise<void>, timer: ReturnType<typeof createRoundTimer> | null}} Controls.
+ */
+export function handleZeroCooldownFastPath(controls, btn) {
+  try {
+    snackbar.showSnackbar("Next round in: 0s");
+  } catch {}
+  if (btn) {
+    btn.dataset.nextReady = "true";
+    btn.disabled = false;
+  }
+  setSkipHandler(async () => {
+    try {
+      if (btn) btn.disabled = true;
+      await dispatchBattleEvent("ready");
+      updateDebugPanel();
+    } catch {}
+  });
+  try {
+    emitBattleEvent("nextRoundTimerReady");
+  } catch {}
+  if (typeof controls.resolveReady === "function") {
+    try {
+      controls.resolveReady();
+    } catch {}
+  }
+  currentNextRound = controls;
+  return controls;
+}
+
+/**
+ * Handle expiration of the next-round cooldown.
+ *
+ * @pseudocode
+ * 1. Clear the skip handler and scoreboard timer.
+ * 2. Remove any countdown text from the timer element.
+ * 3. Enable the Next button and mark it as ready.
+ * 4. Dispatch "ready", update the debug panel, and resolve the ready promise.
+ *
+ * @param {{resolveReady: (() => void) | null}} controls - Timer controls.
+ * @param {HTMLButtonElement | null} btn - Next button element.
+ * @param {HTMLElement | null} timerEl - Countdown display element.
+ * @returns {Promise<void>}
+ */
+export async function handleNextRoundExpiration(controls, btn, timerEl) {
+  setSkipHandler(null);
+  scoreboard.clearTimer();
+  if (timerEl) {
+    timerEl.textContent = "";
+  }
+  if (btn) {
+    btn.dataset.nextReady = "true";
+    btn.disabled = false;
+  }
+  await dispatchBattleEvent("ready");
+  updateDebugPanel();
+  if (typeof controls.resolveReady === "function") {
+    controls.resolveReady();
+  }
+}
+
+/**
  * Enable the Next Round button after a cooldown period.
  *
  * @pseudocode
  * 1. If the match ended, resolve immediately.
- * 2. Locate `#next-button` and `#next-round-timer`.
- * 3. After a short delay, run a cooldown (default 3 seconds or
- *    `window.__NEXT_ROUND_COOLDOWN_MS`) via `startCoolDown` and display
- *    `"Next round in: <n>s"` using one snackbar that updates each tick.
- * 4. Register a skip handler that stops the timer and invokes the expiration logic.
- * 5. When expired, clear the `#next-round-timer` element, set `data-next-ready="true"`,
- *    enable the Next Round button, dispatch `"ready"` to auto-advance the state machine,
- *    and resolve the returned promise.
+ * 2. Determine cooldown seconds via `computeNextRoundCooldown`.
+ * 3. Locate `#next-button` and `#next-round-timer` and enable the button.
+ * 4. If cooldown is zero, delegate to `handleZeroCooldownFastPath`.
+ * 5. Otherwise create `onTick` with `createNextRoundSnackbarRenderer` and
+ *    `onExpired` with `handleNextRoundExpiration`.
+ * 6. Register a skip handler that stops the timer.
+ * 7. Start the timer and resolve when expired.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
  * @returns {{
@@ -245,109 +386,19 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
   const btn = document.getElementById("next-button");
   const timerEl = document.getElementById("next-round-timer");
 
-  let snackbarStarted = false;
-  let lastRenderedRemaining = -1;
-
-  const overrideMs =
-    typeof window !== "undefined" && typeof window.__NEXT_ROUND_COOLDOWN_MS === "number"
-      ? window.__NEXT_ROUND_COOLDOWN_MS
-      : 3000;
-  // In test mode, remove cooldown to make transitions deterministic.
-  let cooldownSeconds;
-  try {
-    const isEnabled =
-      typeof testModeUtils.isTestModeEnabled === "function"
-        ? testModeUtils.isTestModeEnabled()
-        : false;
-    cooldownSeconds = isEnabled ? 0 : Math.max(0, Math.round(overrideMs / 1000));
-  } catch {
-    cooldownSeconds = Math.max(0, Math.round(overrideMs / 1000));
-  }
-  try {
-    if (isTestModeEnabled())
-      console.warn(`[test] scheduleNextRound: testMode=true cooldown=${cooldownSeconds}`);
-    else console.warn(`[test] scheduleNextRound: testMode=false cooldown=${cooldownSeconds}`);
-  } catch {}
+  const cooldownSeconds = computeNextRoundCooldown();
 
   if (btn) {
     btn.disabled = false;
     delete btn.dataset.nextReady;
   }
 
-  const onTick = (remaining) => {
-    if (remaining <= 0) {
-      const text = "Next round in: 0s";
-      if (!snackbarStarted) {
-        snackbar.showSnackbar(text);
-        snackbarStarted = true;
-      } else {
-        snackbar.updateSnackbar(text);
-      }
-      scoreboard.clearTimer();
-      return;
-    }
-    if (remaining === lastRenderedRemaining) return;
-    const text = `Next round in: ${remaining}s`;
-    if (!snackbarStarted) {
-      snackbar.showSnackbar(text);
-      snackbarStarted = true;
-    } else {
-      snackbar.updateSnackbar(text);
-    }
-    lastRenderedRemaining = remaining;
-  };
-
-  const onExpired = async () => {
-    setSkipHandler(null);
-    scoreboard.clearTimer();
-    if (timerEl) {
-      timerEl.textContent = "";
-    }
-    if (btn) {
-      btn.dataset.nextReady = "true";
-      btn.disabled = false;
-    }
-    await dispatchBattleEvent("ready");
-    updateDebugPanel();
-    if (typeof controls.resolveReady === "function") {
-      controls.resolveReady();
-    }
-  };
-
-  // Fast-path: zero-second cooldown (e.g., test mode). Ensure the Next button
-  // appears enabled and ready, surface a deterministic snackbar message, and
-  // resolve promptly without starting a timer.
   if (cooldownSeconds === 0) {
-    // Maintain UX/test determinism: even with a 0s cooldown, show a
-    // countdown snackbar so observers (and tests) see a stable message
-    // instead of the previous round outcome lingering in the snackbar.
-    try {
-      snackbar.showSnackbar("Next round in: 0s");
-    } catch {}
-    if (btn) {
-      btn.dataset.nextReady = "true";
-      btn.disabled = false;
-    }
-    // Signal that the next-round control is ready but do not auto-advance;
-    // tests may click Next or call the page-level skip helper.
-    setSkipHandler(async () => {
-      try {
-        if (btn) btn.disabled = true;
-        await dispatchBattleEvent("ready");
-        updateDebugPanel();
-      } catch {}
-    });
-    try {
-      emitBattleEvent("nextRoundTimerReady");
-    } catch {}
-    if (typeof controls.resolveReady === "function") {
-      try {
-        controls.resolveReady();
-      } catch {}
-    }
-    currentNextRound = controls;
-    return controls;
+    return handleZeroCooldownFastPath(controls, btn);
   }
+
+  const onTick = createNextRoundSnackbarRenderer();
+  const onExpired = () => handleNextRoundExpiration(controls, btn, timerEl);
 
   controls.timer = createRoundTimer(onTick, onExpired);
   setSkipHandler(() => {

@@ -113,6 +113,9 @@ describe("classicBattle scheduleNextRound", () => {
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
     expect(machine.getState()).toBe("waitingForPlayerAction");
+    const btn = document.getElementById("next-button");
+    expect(btn?.dataset.nextReady).toBe("true");
+    expect(btn?.disabled).toBe(false);
   });
 
   it("transitions roundOver → cooldown → roundStart without duplicates", async () => {
@@ -150,5 +153,25 @@ describe("classicBattle scheduleNextRound", () => {
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
     expect(machine.getState()).toBe("waitingForPlayerAction");
     expect(generateRandomCardMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("handles zero-second cooldown fast path", async () => {
+    document.getElementById("next-round-timer")?.remove();
+    const { nextButton } = createTimerNodes();
+    nextButton.disabled = true;
+
+    mockBattleData();
+
+    const battleMod = await import("../../../src/helpers/classicBattle.js");
+    const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
+    setTestMode(true);
+
+    const controls = battleMod.scheduleNextRound({ matchEnded: false });
+    await controls.ready;
+
+    expect(nextButton.dataset.nextReady).toBe("true");
+    expect(nextButton.disabled).toBe(false);
+
+    setTestMode(false);
   });
 });
