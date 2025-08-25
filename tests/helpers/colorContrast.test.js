@@ -5,41 +5,95 @@ import { resolve } from "path";
 import { hex } from "wcag-contrast";
 import { parseCssVariables } from "../../src/helpers/cssVariableParser.js";
 
-function getCssVars() {
-  const css = readFileSync(resolve("src/styles/base.css"), "utf8");
-  return parseCssVariables(css);
+function readCss(file) {
+  return readFileSync(resolve(file), "utf8");
 }
 
-describe("base.css color contrast", () => {
-  const vars = getCssVars();
-  const pairs = [
-    ["--button-bg", "--button-text-color"],
-    ["--button-hover-bg", "--button-text-color"],
-    ["--button-active-bg", "--button-text-color"],
-    ["--color-secondary", "--color-surface"],
-    ["--color-primary", "--color-surface"],
-    ["--color-tertiary", "--color-secondary"],
-    ["--color-text", "--color-background"],
-    ["--color-primary", "--color-background"],
-    ["--color-secondary", "--color-background"],
-    ["--color-tertiary", "--color-text"],
-    ["--color-surface", "--color-text"]
+function resolveColor(value, vars) {
+  const varMatch = value.match(/var\((--[^)]+)\)/);
+  if (varMatch) {
+    return vars[varMatch[1]];
+  }
+  return value;
+}
+
+function readComponentsCss() {
+  const base = readCss("src/styles/components.css");
+  let css = base;
+  const importRegex = /@import\s+["'](.+?)["'];/g;
+  let match;
+  while ((match = importRegex.exec(base))) {
+    const filePath = resolve("src/styles", match[1]);
+    css += readFileSync(filePath, "utf8");
+  }
+  return css;
+}
+
+function getComponentColors(vars) {
+  const css = readComponentsCss();
+  const colors = {};
+  const patterns = {
+    "common card": /\.judoka-card\.common\s*{[^}]*--card-bg-color:\s*([^;]+);/,
+    "epic card": /\.judoka-card\.epic\s*{[^}]*--card-bg-color:\s*([^;]+);/,
+    "legendary card": /\.judoka-card\.legendary\s*{[^}]*--card-bg-color:\s*([^;]+);/,
+    "top navbar": /\.top-navbar\s*{[^}]*background-color:\s*([^;]+);/
+  };
+  for (const [key, regex] of Object.entries(patterns)) {
+    const match = css.match(regex);
+    if (match) {
+      colors[key] = resolveColor(match[1].trim(), vars);
+    }
+  }
+  return colors;
+}
+
+describe("css color contrast", () => {
+  const vars = parseCssVariables(readCss("src/styles/base.css"));
+  const componentColors = getComponentColors(vars);
+
+  const basePairs = [
+    ["--button-bg vs --button-text-color", vars["--button-bg"], vars["--button-text-color"]],
+    [
+      "--button-hover-bg vs --button-text-color",
+      vars["--button-hover-bg"],
+      vars["--button-text-color"]
+    ],
+    [
+      "--button-active-bg vs --button-text-color",
+      vars["--button-active-bg"],
+      vars["--button-text-color"]
+    ],
+    ["--color-secondary vs --color-surface", vars["--color-secondary"], vars["--color-surface"]],
+    ["--color-primary vs --color-surface", vars["--color-primary"], vars["--color-surface"]],
+    ["--color-tertiary vs --color-secondary", vars["--color-tertiary"], vars["--color-secondary"]],
+    ["--color-text vs --color-background", vars["--color-text"], vars["--color-background"]],
+    ["--color-primary vs --color-background", vars["--color-primary"], vars["--color-background"]],
+    [
+      "--color-secondary vs --color-background",
+      vars["--color-secondary"],
+      vars["--color-background"]
+    ],
+    ["--color-tertiary vs --color-text", vars["--color-tertiary"], vars["--color-text"]],
+    ["--color-surface vs --color-text", vars["--color-surface"], vars["--color-text"]]
   ];
 
-  it("all referenced CSS variables exist", () => {
-    const allVars = new Set(pairs.flat());
-    for (const v of allVars) {
-      expect(vars[v]).toBeDefined();
+  const componentPairs = Object.entries(componentColors).map(([label, bg]) => [
+    `${label} bg vs --color-text-inverted`,
+    bg,
+    vars["--color-text-inverted"]
+  ]);
+
+  const pairs = [...basePairs, ...componentPairs].filter(([, a, b]) => a && b);
+
+  it("all referenced colors exist", () => {
+    for (const [, a, b] of pairs) {
+      expect(a).toBeDefined();
+      expect(b).toBeDefined();
     }
   });
 
-  it.each(pairs)("%s vs %s should be >= 4.5", (a, b) => {
-    expect(vars[a]).toBeDefined();
-    expect(vars[b]).toBeDefined();
-    const ratio = hex(vars[a], vars[b]);
-    expect(ratio).toBeGreaterThanOrEqual(
-      4.5,
-      `Contrast ratio between ${a} (${vars[a]}) and ${b} (${vars[b]}) is ${ratio}, which is less than the required 4.5.`
-    );
+  it.each(pairs)("%s should be >= 4.5", (_, a, b) => {
+    const ratio = hex(a, b);
+    expect(ratio).toBeGreaterThanOrEqual(4.5);
   });
 });
