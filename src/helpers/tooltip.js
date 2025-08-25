@@ -139,7 +139,7 @@ function ensureTooltipElement() {
  * @returns {Promise<() => void>} Resolves with a cleanup function.
  */
 export async function initTooltips(root = globalThis.document) {
-  const notifyReady = () => globalThis.dispatchEvent(new Event("tooltips:ready"));
+  const notifyReady = () => globalThis.dispatchEvent?.(new Event("tooltips:ready"));
   if (!root) {
     notifyReady();
     return () => {};
