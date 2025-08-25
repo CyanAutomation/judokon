@@ -291,57 +291,59 @@ export class CarouselController {
    */
   _wireSwipe() {
     let startX = 0;
-    // Gate each gesture so only one navigation occurs between a start and its end.
-    let activeKind = null; // "touch" | "pointer" | null
-    let gestureActive = false;
-    const onEnd = (kind, endX) => {
-      if (!gestureActive || activeKind !== kind) return;
+    let gestureInProgress = false;
+
+    const onEnd = (endX) => {
+      if (!gestureInProgress) return;
+      gestureInProgress = false;
+
       const delta = endX - startX;
-      if (delta > this.threshold) this.prev();
-      else if (delta < -this.threshold) this.next();
-      // Reset gesture gate after handling
-      gestureActive = false;
-      activeKind = null;
+      if (delta > this.threshold) {
+        this.prev();
+      } else if (delta < -this.threshold) {
+        this.next();
+      }
     };
 
-    // Disable native touch scrolling; rely on programmatic paging.
     this.container.style.touchAction = "none";
 
     this._onTouchStart = (e) => {
-      if (typeof e.preventDefault === "function") e.preventDefault();
-      activeKind = "touch";
-      gestureActive = true;
+      if (gestureInProgress) return;
+      gestureInProgress = true;
       startX = e.touches[0].clientX;
-    };
-    this._onTouchEnd = (e) => {
-      if (typeof e.preventDefault === "function") e.preventDefault();
-      onEnd("touch", e.changedTouches[0].clientX);
-    };
-    this._onTouchMove = (e) => {
-      // Prevent native momentum scroll during gesture
       if (typeof e.preventDefault === "function") e.preventDefault();
     };
-    this.container.addEventListener("touchstart", this._onTouchStart);
-    this.container.addEventListener("touchend", this._onTouchEnd);
-    this.container.addEventListener("touchmove", this._onTouchMove, { passive: false });
 
-    // Pointer events for mouse swipe-like interactions
+    this._onTouchEnd = (e) => {
+      onEnd(e.changedTouches[0].clientX);
+      if (typeof e.preventDefault === "function") e.preventDefault();
+    };
+
+    this._onTouchMove = (e) => {
+      if (typeof e.preventDefault === "function") e.preventDefault();
+    };
+
     let pointerDown = false;
     this._onPointerDown = (e) => {
-      if (e.pointerType === "touch") return;
+      if (e.pointerType === "touch" || gestureInProgress) return;
+      gestureInProgress = true;
       pointerDown = true;
-      activeKind = "pointer";
-      gestureActive = true;
       startX = e.clientX;
     };
+
     this._onPointerUp = (e) => {
       if (!pointerDown) return;
       pointerDown = false;
-      onEnd("pointer", e.clientX);
+      onEnd(e.clientX);
     };
+
+    this.container.addEventListener("touchstart", this._onTouchStart, { passive: false });
+    this.container.addEventListener("touchend", this._onTouchEnd, { passive: false });
+    this.container.addEventListener("touchmove", this._onTouchMove, { passive: false });
     this.container.addEventListener("pointerdown", this._onPointerDown);
     this.container.addEventListener("pointerup", this._onPointerUp);
   }
+  "";
 
   /**
    * Wires up scroll event synchronization for the carousel container.
