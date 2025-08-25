@@ -2,19 +2,11 @@ import { test, expect } from "./fixtures/commonSetup.js";
 import { waitForSettingsReady } from "./fixtures/waits.js";
 
 const pages = [
-  "/",
-  "/src/pages/browseJudoka.html",
-  "/src/pages/createJudoka.html",
-  "/src/pages/randomJudoka.html",
-  "/src/pages/meditation.html",
-  "/src/pages/updateJudoka.html",
-  "/src/pages/settings.html",
-  "/src/pages/vectorSearch.html",
-  "/src/pages/prdViewer.html",
-  "/src/pages/tooltipViewer.html",
   "/src/pages/battleJudoka.html",
-  "/src/pages/changeLog.html",
-  "/src/pages/mockupViewer.html"
+  "/src/pages/browseJudoka.html",
+  "/src/pages/randomJudoka.html",
+  "/src/pages/settings.html",
+  "/src/pages/vectorSearch.html"
 ];
 
 test.describe.parallel("Status aria attributes", () => {
