@@ -94,6 +94,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - Use hardware-accelerated CSS transforms (e.g., `translate3d`) for smooth scrolling and animations (**≥60 fps**).
 - Carousel should debounce swipe/scroll events to prevent rapid-fire performance hits.
 - Card metadata must be dynamically fetched from `judoka.json`; errors should gracefully fallback to judoka id=0 without showing an error message.
+- Programmatic navigation waits for a `scrollend` event before re-enabling scroll synchronization, preserving accurate page counters.
 
 ---
 
