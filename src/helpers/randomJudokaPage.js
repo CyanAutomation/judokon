@@ -17,8 +17,8 @@
  * 7. Render a placeholder card in the card container.
  * 8. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and attach its event listener.
  * 9. If data fails to load, disable the Draw button and show an error message or fallback card.
- * 10. Export `initRandomJudokaPage` to perform setup and await navigation readiness; expose `randomJudokaReadyPromise` that
- *     invokes it on DOM content loaded.
+ * 10. Export `initRandomJudokaPage` to perform setup and await navigation readiness; resolve `randomJudokaReadyPromise`
+ *     on DOM content loaded after setting `data-random-judoka-ready` on `<body>` and dispatching `random-judoka-ready`.
  *
  * @returns {Promise<void>} Resolves when the page is fully initialized.
  * @see design/productRequirementsDocuments/prdRandomJudoka.md
@@ -320,10 +320,10 @@ export async function initRandomJudokaPage() {
 
 export const randomJudokaReadyPromise = new Promise((resolve) => {
   onDomReady(() => {
-    initRandomJudokaPage().then(resolve);
+    initRandomJudokaPage().then(() => {
+      document.body?.setAttribute("data-random-judoka-ready", "true");
+      document.dispatchEvent(new CustomEvent("random-judoka-ready", { bubbles: true }));
+      resolve();
+    });
   });
 });
-
-if (typeof window !== "undefined") {
-  window.randomJudokaReadyPromise = randomJudokaReadyPromise;
-}
