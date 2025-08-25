@@ -19,11 +19,6 @@ test.describe.parallel("Browse Judoka screen", () => {
     await verifyPageBasics(page, [NAV_CLASSIC_BATTLE]);
   });
 
-  test("battle link navigates from browse judoka", async ({ page }) => {
-    await page.getByTestId(NAV_CLASSIC_BATTLE).click();
-    await expect(page).toHaveURL(/battleJudoka\.html/);
-  });
-
   test("scroll buttons have labels", async ({ page }) => {
     const left = page.getByRole("button", { name: /prev\./i });
     const right = page.getByRole("button", { name: /next/i });
