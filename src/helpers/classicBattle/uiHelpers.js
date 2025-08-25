@@ -768,19 +768,21 @@ export function setDebugPanelEnabled(enabled) {
  *
  * @pseudocode
  * 1. Skip if `localStorage.statHintShown` is set or unavailable.
- * 2. Trigger hover events on `#stat-help` for `durationMs` milliseconds.
- * 3. Record that the hint has been shown.
+ * 2. Dispatch `mouseenter` on `#stat-help`.
+ * 3. After `durationMs` via `setTimeoutFn`, dispatch `mouseleave`.
+ * 4. Record that the hint has been shown.
  *
  * @param {number} [durationMs=3000] Hover duration in milliseconds.
+ * @param {(fn: () => void, ms: number) => any} [setTimeoutFn=setTimeout] Timer function.
  */
-export function maybeShowStatHint(durationMs = 3000) {
+export function maybeShowStatHint(durationMs = 3000, setTimeoutFn = setTimeout) {
   try {
     if (typeof localStorage === "undefined") return;
     const hintShown = localStorage.getItem("statHintShown");
     if (hintShown) return;
     const help = document.getElementById("stat-help");
     help?.dispatchEvent(new Event("mouseenter"));
-    setTimeout(() => {
+    setTimeoutFn(() => {
       help?.dispatchEvent(new Event("mouseleave"));
     }, durationMs);
     localStorage.setItem("statHintShown", "true");
