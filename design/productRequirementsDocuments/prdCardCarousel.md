@@ -84,6 +84,7 @@ Failure to provide an efficient browsing experience may impact core gameplay —
 - **Network Disconnection**: Display a default judoka card (judoka id=0) instead of an error message.
 - **Missing/Broken Card Images**: Display the default judoka card (judoka id=0) rather than an error message.
 - **Slow Network**: Show a loading spinner.
+- **Canceled Gestures**: If a swipe is canceled (touchcancel/pointercancel), reset the gesture state without navigating so the next swipe starts clean.
 
 ---
 

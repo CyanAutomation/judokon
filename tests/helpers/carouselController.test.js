@@ -98,4 +98,45 @@ describe("CarouselController", () => {
     container.dispatchEvent(new Event("scroll"));
     expect(controller.currentPage).toBe(1);
   });
+
+  it("resets state on cancel events", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const container = document.createElement("div");
+    container.scrollTo = vi.fn();
+    const wrapper = document.createElement("div");
+    const controller = new CarouselController(container, wrapper);
+    const prevSpy = vi.spyOn(controller, "prev");
+    const nextSpy = vi.spyOn(controller, "next");
+
+    // touchcancel should reset gesture
+    container.dispatchEvent(new TouchEvent("touchstart", { touches: [{ clientX: 0 }] }));
+    container.dispatchEvent(new TouchEvent("touchcancel"));
+    container.dispatchEvent(new TouchEvent("touchend", { changedTouches: [{ clientX: -100 }] }));
+    expect(nextSpy).not.toHaveBeenCalled();
+    expect(prevSpy).not.toHaveBeenCalled();
+
+    // after cancel, a fresh swipe should still navigate
+    container.dispatchEvent(new TouchEvent("touchstart", { touches: [{ clientX: 0 }] }));
+    container.dispatchEvent(new TouchEvent("touchend", { changedTouches: [{ clientX: -100 }] }));
+    expect(nextSpy).toHaveBeenCalledTimes(1);
+
+    nextSpy.mockClear();
+    prevSpy.mockClear();
+
+    // pointercancel should reset gesture
+    container.dispatchEvent(new PointerEvent("pointerdown", { clientX: 0 }));
+    container.dispatchEvent(new PointerEvent("pointercancel"));
+    container.dispatchEvent(new PointerEvent("pointerup", { clientX: 100 }));
+    expect(prevSpy).not.toHaveBeenCalled();
+
+    // after cancel, a fresh pointer swipe should navigate
+    container.dispatchEvent(new PointerEvent("pointerdown", { clientX: 0 }));
+    container.dispatchEvent(new PointerEvent("pointerup", { clientX: 100 }));
+    expect(prevSpy).toHaveBeenCalledTimes(1);
+
+    warnSpy.mockRestore();
+    errorSpy.mockRestore();
+  });
 });
