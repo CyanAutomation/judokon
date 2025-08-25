@@ -1,3 +1,11 @@
+/**
+ * Homepage readiness helper.
+ *
+ * @pseudocode
+ * 1. Provide a promise that resolves when the homepage grid element exists.
+ * 2. If the grid is already present resolve immediately, otherwise observe DOM mutations.
+ * 3. Emit `home-ready` event and set a data attribute when resolved.
+ */
 let resolveHomepageReady;
 
 /**

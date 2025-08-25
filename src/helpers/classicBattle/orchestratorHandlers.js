@@ -6,6 +6,14 @@ import { scheduleNextRound } from "./timerService.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { resolveRound } from "./roundResolver.js";
 
+/**
+ * Orchestrator state transition helpers.
+ *
+ * @pseudocode
+ * 1. Provide helpers used by orchestrator on-enter/on-exit handlers.
+ * 2. Implement transition guards and glue to UI events (emitBattleEvent).
+ * 3. Keep side-effects isolated and recover gracefully on errors.
+ */
 export function isStateTransition(from, to) {
   try {
     if (typeof document === "undefined") return false;

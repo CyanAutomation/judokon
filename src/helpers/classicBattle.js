@@ -1,3 +1,10 @@
+/**
+ * Classic Battle public helper facade.
+ *
+ * @pseudocode
+ * 1. Re-export the public surface of Classic Battle helpers for other modules.
+ * 2. Keep this file minimal and import only stable, public APIs.
+ */
 export * from "./classicBattle/roundManager.js";
 export * from "./classicBattle/selectionHandler.js";
 export * from "./classicBattle/roundResolver.js";

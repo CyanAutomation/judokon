@@ -14,7 +14,7 @@ test.describe.parallel("Classic battle button reset", () => {
     // can directly call the page-level skip helper to advance the phase
     // deterministically instead of clicking a disabled control.
     await page.evaluate(() => window.skipBattlePhase?.());
-    await page.evaluate(() => window.roundPromptPromise);
+    await waitForBattleState(page, "waitingForPlayerAction");
     await expect(page.locator("#stat-buttons .selected")).toHaveCount(0);
   });
 
@@ -25,7 +25,6 @@ test.describe.parallel("Classic battle button reset", () => {
     // Select a stat, then advance to the next round
     const initialBtn = page.locator("#stat-buttons button[data-stat='power']");
     await initialBtn.click();
-    await page.locator("#next-button").click();
     await page.evaluate(() => window.skipBattlePhase?.());
     // Wait until the state machine reports the new round is awaiting input
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
