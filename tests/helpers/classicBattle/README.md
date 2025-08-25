@@ -19,6 +19,7 @@ This directory contains unit tests for Classic Battle helpers.
 - `playerChoiceReset.test.js`: clears previous player choices on new rounds.
 - `quitModal.test.js`: confirms quitting via a modal dialog.
 - `roundSelectModal.test.js`: selects points-to-win via a modal.
+- `roundResolverOnce.test.js`: clears `playerChoice` after fallback resolution.
 - `roundStartError.test.js`: surfaces round start failures.
 - `scheduleNextRound.test.js`: schedules and auto-dispatches the next round.
 - `selectionPrompt.test.js`: displays the selection prompt until a stat is chosen.
