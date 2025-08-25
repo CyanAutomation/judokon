@@ -14,15 +14,6 @@ test.describe.parallel("Homepage", () => {
 
   test("homepage loads", async ({ page }) => {
     await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);
-  });
-
-  // Navigation: footer links are visible
-  test("navigation links visible", async ({ page }) => {
-    await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);
-  });
-
-  // Navigation: ensure footer has at least one link
-  test("footer navigation links present", async ({ page }) => {
     const footerLinks = page.locator("footer .bottom-navbar a");
     await expect(footerLinks).not.toHaveCount(0);
   });
