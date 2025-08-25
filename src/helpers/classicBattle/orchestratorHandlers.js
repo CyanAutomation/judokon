@@ -8,11 +8,13 @@ import { resolveRound } from "./roundResolver.js";
 
 export function isStateTransition(from, to) {
   try {
-    if (typeof window === "undefined") return false;
+    if (typeof document === "undefined") return false;
+    const current = document.body?.dataset.battleState;
+    const prev = document.body?.dataset.prevBattleState;
     if (from === null || from === undefined) {
-      return window.__classicBattleState === to;
+      return current === to;
     }
-    return window.__classicBattlePrevState === from && window.__classicBattleState === to;
+    return prev === from && current === to;
   } catch {
     return false;
   }

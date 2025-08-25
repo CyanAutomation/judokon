@@ -9,10 +9,10 @@
  * 5. Otherwise, clear the list and render each state as an `<li>` with `data-state` and its numeric ID.
  * 6. Resolve `battleStateProgressReadyPromise` after rendering.
  * 7. Define `updateActive(state)` to query list items and toggle the `active` class on the match.
- * 8. Observe `#machine-state` for text changes; on each change call `updateActive`.
- * 9. If `#machine-state` is missing, poll `window.__classicBattleState` via `requestAnimationFrame` and store the ID.
+ * 8. Listen for `battle:state` events on `document` and call `updateActive` with the event detail.
+ * 9. Apply the initial state from `document.body.dataset.battleState`.
  * 10. After the initial state is applied, call `markBattlePartReady('state')`.
- * 11. Return a cleanup function that disconnects the observer or cancels the animation frame loop.
+ * 11. Return a cleanup function that removes the event listener.
  *
  * @returns {Promise<(() => void) | undefined>} Resolves with a cleanup function.
  */
@@ -90,39 +90,20 @@ export async function initBattleStateProgress() {
     updateBattleStateBadge(state);
   };
 
-  const machine = document.getElementById("machine-state");
-  if (machine && typeof MutationObserver !== "undefined") {
-    let prevState = null;
-    const observer = new MutationObserver(() => {
-      const state = machine.textContent.trim();
-      if (state !== prevState) {
-        prevState = state;
-        updateActive(state);
-      }
-    });
-    observer.observe(machine, { childList: true, characterData: true, subtree: true });
-    const initialState = machine.textContent.trim();
-    prevState = initialState;
-    updateActive(initialState);
-    markBattlePartReady("state");
-    return () => observer.disconnect();
-  }
-
-  let prev;
-  let rafId = 0;
   let ready = false;
-  const tick = () => {
-    const state = window.__classicBattleState;
-    if (state !== prev) {
-      prev = state;
-      updateActive(state);
-      if (!ready) {
-        markBattlePartReady("state");
-        ready = true;
-      }
+  const handler = (e) => {
+    updateActive(e.detail);
+    if (!ready) {
+      ready = true;
+      markBattlePartReady("state");
     }
-    rafId = requestAnimationFrame(tick);
   };
-  rafId = requestAnimationFrame(tick);
-  return () => cancelAnimationFrame(rafId);
+  document.addEventListener("battle:state", handler);
+  const initial = document.body?.dataset.battleState;
+  if (initial) {
+    updateActive(initial);
+    ready = true;
+    markBattlePartReady("state");
+  }
+  return () => document.removeEventListener("battle:state", handler);
 }

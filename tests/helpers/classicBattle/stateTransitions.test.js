@@ -28,12 +28,12 @@ describe("classicBattleStates.json transitions", () => {
     if (!Array.isArray(state.triggers)) continue;
     for (const trigger of state.triggers) {
       it(`${state.name} --${trigger.on}--> ${trigger.target}`, async () => {
-        delete window.__classicBattleState;
-        delete window.__classicBattlePrevState;
+        document.body.dataset.battleState = "";
+        document.body.dataset.prevBattleState = "";
         const spy = vi.fn();
         const onTransition = ({ from, to }) => {
-          window.__classicBattlePrevState = from;
-          window.__classicBattleState = to;
+          document.body.dataset.prevBattleState = from || "";
+          document.body.dataset.battleState = to;
           emitBattleEvent("debugPanelUpdate");
         };
         onBattleEvent("debugPanelUpdate", spy);

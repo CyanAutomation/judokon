@@ -75,7 +75,7 @@ export async function handleStatSelection(store, stat) {
   // If the orchestrator is active, signal selection; otherwise resolve inline
   // to keep tests and non-orchestrated flows moving.
   try {
-    const hasMachine = typeof window !== "undefined" && !!window.__classicBattleState;
+    const hasMachine = typeof document !== "undefined" && !!document.body?.dataset.battleState;
     if (hasMachine) {
       try {
         console.warn("[test] handleStatSelection: dispatch statSelected to machine");

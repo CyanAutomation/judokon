@@ -1,3 +1,5 @@
+import { expect } from "@playwright/test";
+
 /**
  * Common readiness waits for Playwright specs.
  *
@@ -24,7 +26,14 @@ export async function waitForSettingsReady(page) {
 
 /**
  * Wait for the Classic Battle machine to reach a specific state.
- * Attempts to use in-page helper if available, otherwise polls __classicBattleState.
+ * Uses the in-page `onStateTransition` helper when available, otherwise
+ * waits for the `<body>` to expose the state via `data-battle-state`.
+ *
+ * @pseudocode
+ * 1. Evaluate whether `window.onStateTransition` exists on the page.
+ * 2. If it does, invoke it with the target state and timeout.
+ * 3. Otherwise, expect the body element to have `data-battle-state` equal to `stateName`.
+ *
  * @param {import('@playwright/test').Page} page
  * @param {string} stateName
  * @param {number} [timeout=10000]
@@ -35,5 +44,7 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
     await page.evaluate((s, t) => window.onStateTransition(s, t), stateName, timeout);
     return;
   }
-  await page.waitForFunction((s) => window.__classicBattleState === s, stateName, { timeout });
+  await expect(page.locator("body")).toHaveAttribute("data-battle-state", stateName, {
+    timeout
+  });
 }
