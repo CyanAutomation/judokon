@@ -105,11 +105,12 @@ export function getBattleStateMachine() {
  * 4. Define the `onTransition` asynchronous function, which executes every time the state machine transitions:
  *    a. If running in a browser environment (`typeof window !== "undefined"`):
  *       i. Update global `window` variables (`__classicBattleState`, `__classicBattlePrevState`, `__classicBattleLastEvent`) for debugging.
- *       ii. Create a log entry with `from`, `to`, `event`, and timestamp.
- *       iii. Maintain a circular log buffer (`__classicBattleStateLog`) of the last 20 state transitions.
- *       iv. Update a hidden DOM element (`#machine-state`) with the current state and transition details for visual debugging.
- *       v. Update a visible badge (`#battle-state-badge`) with the current state.
- *       vi. If a battle engine exists in the machine's context, update global `window` variables (`__classicBattleTimerState`) and a hidden DOM element (`#machine-timer`) with timer state details.
+ *       ii. Update `document.body` data attributes (`battle-state`, `prev-battle-state`) and dispatch a `battle:state` event with the new state.
+ *       iii. Create a log entry with `from`, `to`, `event`, and timestamp.
+ *       iv. Maintain a circular log buffer (`__classicBattleStateLog`) of the last 20 state transitions.
+ *       v. Update a hidden DOM element (`#machine-state`) with the current state and transition details for visual debugging.
+ *       vi. Update a visible badge (`#battle-state-badge`) with the current state.
+ *       vii. If a battle engine exists in the machine's context, update global `window` variables (`__classicBattleTimerState`) and a hidden DOM element (`#machine-timer`) with timer state details.
  *    b. Emit a "debugPanelUpdate" battle event.
  *    c. Retrieve any pending `waiters` for the new `to` state from `stateWaiters`.
  *    d. If `waiters` exist, delete the entry for `to` from `stateWaiters`.
@@ -161,6 +162,13 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
         window.__classicBattleState = to;
         if (from) window.__classicBattlePrevState = from;
         if (event) window.__classicBattleLastEvent = event;
+        if (typeof document !== "undefined") {
+          try {
+            document.body.dataset.prevBattleState = from || "";
+            document.body.dataset.battleState = to;
+            document.dispatchEvent(new CustomEvent("battle:state", { detail: to }));
+          } catch {}
+        }
         const entry = { from: from || null, to, event: event || null, ts: Date.now() };
         const log = Array.isArray(window.__classicBattleStateLog)
           ? window.__classicBattleStateLog

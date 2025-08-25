@@ -62,7 +62,7 @@ export async function resolveRound(
   // a deadlock. Only dispatch "evaluate" when not already in that state.
   try {
     const inRoundDecision =
-      typeof window !== "undefined" && window.__classicBattleState === "roundDecision";
+      typeof document !== "undefined" && document.body?.dataset.battleState === "roundDecision";
     if (!inRoundDecision) {
       await dispatchBattleEvent("evaluate");
     }

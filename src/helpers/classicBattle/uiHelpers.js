@@ -622,7 +622,9 @@ export function setBattleStateBadgeEnabled(enable) {
     if (headerRight) headerRight.appendChild(badge);
     else document.querySelector("header")?.appendChild(badge);
   }
-  updateBattleStateBadge(typeof window !== "undefined" ? window.__classicBattleState : null);
+  updateBattleStateBadge(
+    typeof document !== "undefined" ? document.body?.dataset.battleState || null : null
+  );
 }
 
 /**
