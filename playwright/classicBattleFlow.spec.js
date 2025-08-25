@@ -86,9 +86,8 @@ test.describe.parallel("Classic battle flow", () => {
     await expect(page.locator(".modal-backdrop:not([hidden])")).toHaveCount(0);
     await waitForBattleReady(page);
     await page.locator("[data-testid='home-link']").click();
-    const confirmButton = page.locator("#confirm-quit-button");
-    await confirmButton.waitFor({ state: "attached" });
-    await confirmButton.click();
+    await page.evaluate(() => window.quitConfirmButtonPromise);
+    await page.locator("#confirm-quit-button").click();
     await expect(page).toHaveURL(/index.html/);
   });
 

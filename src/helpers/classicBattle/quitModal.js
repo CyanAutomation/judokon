@@ -49,6 +49,8 @@ function createQuitConfirmation(store, onConfirm) {
   return modal;
 }
 
+export let quitConfirmButtonPromise = Promise.resolve();
+
 /**
  * Trigger the Classic Battle quit confirmation modal.
  *
@@ -56,11 +58,18 @@ function createQuitConfirmation(store, onConfirm) {
  * 1. Create the modal if needed.
  * 2. Determine the element that opened the modal.
  * 3. Open the modal focusing the triggering element when available.
+ * 4. Resolve a promise with the confirm button once inserted.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {HTMLElement} [trigger] - Element that initiated the quit action.
+ * @returns {Promise<HTMLButtonElement>} Resolves with the confirm button.
  */
 export function quitMatch(store, trigger) {
+  let resolveBtn;
+  quitConfirmButtonPromise = new Promise((resolve) => {
+    resolveBtn = resolve;
+  });
+  window.quitConfirmButtonPromise = quitConfirmButtonPromise;
   if (!store.quitModal) {
     store.quitModal = createQuitConfirmation(store, () => {
       const result = battleEngine.quitMatch();
@@ -69,4 +78,11 @@ export function quitMatch(store, trigger) {
   }
   const fallback = document.getElementById("quit-match-button");
   store.quitModal.open(trigger ?? fallback ?? undefined);
+  const check = () => {
+    const btn = document.getElementById("confirm-quit-button");
+    if (btn) resolveBtn(btn);
+    else requestAnimationFrame(check);
+  };
+  check();
+  return quitConfirmButtonPromise;
 }
