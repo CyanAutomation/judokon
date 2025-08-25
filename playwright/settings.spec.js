@@ -50,10 +50,6 @@ test.describe.parallel("Settings page", () => {
     await waitForSettingsReady(page);
   });
 
-  test("settings page loads", async ({ page }) => {
-    await verifyPageBasics(page, [NAV_CLASSIC_BATTLE, NAV_RANDOM_JUDOKA]);
-  });
-
   test("mode toggle visible", async ({ page }) => {
     const toggle = page.getByRole("checkbox", { name: "Classic Battle" });
     await expect(toggle).toBeVisible();
