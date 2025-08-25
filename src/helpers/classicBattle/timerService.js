@@ -323,9 +323,15 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
     };
 
     // Fast-path: zero-second cooldown (e.g., test mode). Ensure the Next button
-    // appears enabled and ready, dispatch the transition, and resolve promptly
-    // without starting a timer.
+    // appears enabled and ready, surface a deterministic snackbar message, and
+    // resolve promptly without starting a timer.
     if (cooldownSeconds === 0) {
+      // Maintain UX/test determinism: even with a 0s cooldown, show a
+      // countdown snackbar so observers (and tests) see a stable message
+      // instead of the previous round outcome lingering in the snackbar.
+      try {
+        snackbar.showSnackbar("Next round in: 0s");
+      } catch {}
       if (btn) {
         btn.dataset.nextReady = "true";
         btn.disabled = false;
