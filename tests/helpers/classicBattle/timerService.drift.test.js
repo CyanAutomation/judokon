@@ -5,6 +5,9 @@ import { createMockScheduler } from "../mockScheduler.js";
 describe("timerService drift handling", () => {
   it("startTimer shows fallback on drift", async () => {
     vi.resetModules();
+    vi.doMock("../../../src/helpers/classicBattle/battleDispatcher.js", () => ({
+      dispatchBattleEvent: vi.fn()
+    }));
     const showMessage = vi.fn();
     vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
       showMessage,
@@ -33,6 +36,9 @@ describe("timerService drift handling", () => {
 
   it("scheduleNextRound shows fallback on drift", async () => {
     vi.resetModules();
+    vi.doMock("../../../src/helpers/classicBattle/battleDispatcher.js", () => ({
+      dispatchBattleEvent: vi.fn()
+    }));
     const showMessage = vi.fn();
     vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
       showMessage,

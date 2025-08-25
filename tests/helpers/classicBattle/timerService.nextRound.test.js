@@ -33,7 +33,7 @@ describe("timerService next round handling", () => {
       STATS: []
     }));
     dispatchBattleEvent = vi.fn();
-    vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
+    vi.doMock("../../../src/helpers/classicBattle/battleDispatcher.js", () => ({
       dispatchBattleEvent
     }));
   });
@@ -89,5 +89,18 @@ describe("timerService next round handling", () => {
     expect(snackbarMod.showSnackbar).toHaveBeenCalledWith("Next round in: 3s");
     expect(snackbarMod.updateSnackbar).toHaveBeenCalledWith("Next round in: 2s");
     expect(scoreboardMod.clearTimer).toHaveBeenCalled();
+  });
+
+  it("scheduleNextRound handles zero-second cooldown fast path", async () => {
+    const mod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const { nextButton } = createTimerNodes();
+    const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
+    setTestMode(true);
+    const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
+    scheduler.tick(0);
+    await controls.ready;
+    expect(nextButton.dataset.nextReady).toBe("true");
+    expect(nextButton.disabled).toBe(false);
+    setTestMode(false);
   });
 });

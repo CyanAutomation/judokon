@@ -18,6 +18,7 @@ This directory contains unit tests for Classic Battle helpers.
 - `pauseTimer.test.js`: pauses and resumes the round timer.
 - `quitModal.test.js`: confirms quitting via a modal dialog.
 - `roundSelectModal.test.js`: selects points-to-win via a modal.
+- `roundStartError.test.js`: surfaces round start failures.
 - `scheduleNextRound.test.js`: schedules and auto-dispatches the next round.
 - `selectionPrompt.test.js`: displays the selection prompt until a stat is chosen.
 - `stallRecovery.test.js`: recovers when stat selection stalls.
