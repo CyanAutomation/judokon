@@ -51,7 +51,6 @@ test.describe.parallel("Classic battle flow", () => {
   test("tie message appears on equal stats", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
     await waitForBattleReady(page);
-    await page.evaluate(() => window.skipBattlePhase?.());
     await page.evaluate(() => window.freezeBattleHeader?.());
     await page.evaluate(_resetForTest);
     await page.evaluate(setTieRound);
