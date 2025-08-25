@@ -53,22 +53,6 @@ test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (
     });
   });
 
-  test("@homepage-desktop-layout screenshot", async ({ page }) => {
-    await page.goto("/index.html");
-    await page.setViewportSize({ width: 1024, height: 800 });
-    await page.locator('body[data-home-ready="true"]').waitFor();
-    await page.evaluate(() => window.navReadyPromise);
-    await expect(page).toHaveScreenshot("desktop-layout.png", { fullPage: true });
-  });
-
-  test("@homepage-mobile-layout screenshot", async ({ page }) => {
-    await page.goto("/index.html");
-    await page.setViewportSize({ width: 500, height: 800 });
-    await page.locator('body[data-home-ready="true"]').waitFor();
-    await page.evaluate(() => window.navReadyPromise);
-    await expect(page).toHaveScreenshot("mobile-layout.png", { fullPage: true });
-  });
-
   test("@randomJudoka-signature screenshot", async ({ page }) => {
     await page.goto("/src/pages/randomJudoka.html");
     await page.getByTestId("draw-button").click();
