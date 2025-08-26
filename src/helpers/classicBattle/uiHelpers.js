@@ -505,6 +505,10 @@ function setStatButtonsEnabled(enable = true) {
 export function selectStat(store, statName) {
   const btn = document.querySelector(`#stat-buttons button[data-stat="${statName}"]`);
   if (!btn || btn.disabled) return;
+
+  setStatButtonsEnabled(false);
+  btn.classList.add("selected");
+
   try {
     const playerCard = document.getElementById("player-card");
     const opponentCard = document.getElementById("opponent-card");
@@ -518,6 +522,9 @@ export function selectStat(store, statName) {
     Promise.resolve(handleStatSelection(store, statName, { playerVal, opponentVal })).catch(
       () => {}
     );
+  } catch {}
+  try {
+    showSnackbar(`You Picked: ${btn.textContent}`);
   } catch {}
 }
 
