@@ -2,7 +2,7 @@
  * Render Classic Battle state progress list and sync active state.
  *
  * @pseudocode
- * 1. Fetch `classicBattleStates.json` using `fetchJson`.
+ * 1. Load `CLASSIC_BATTLE_STATES` from the embedded module.
  * 2. Filter for core states (IDs below 90).
  * 3. Sort core states by `id` in ascending order.
  * 4. If `#battle-state-progress` already matches state IDs and names, skip rendering.
@@ -16,8 +16,7 @@
  *
  * @returns {Promise<(() => void) | undefined>} Resolves with a cleanup function.
  */
-import { fetchJson } from "./dataUtils.js";
-import { DATA_DIR } from "./constants.js";
+import { CLASSIC_BATTLE_STATES } from "./classicBattle/stateTable.js";
 import { updateBattleStateBadge } from "./classicBattle/uiHelpers.js";
 import { markBattlePartReady } from "./battleInit.js";
 
@@ -42,15 +41,7 @@ export async function initBattleStateProgress() {
     return;
   }
 
-  let states = [];
-  try {
-    states = await fetchJson(`${DATA_DIR}classicBattleStates.json`);
-  } catch (error) {
-    console.warn("Failed to load battle state progress data:", error);
-    list.innerHTML = "<li>Error loading states</li>";
-    resolveBattleStateProgressReady?.();
-    return;
-  }
+  const states = Array.isArray(CLASSIC_BATTLE_STATES) ? CLASSIC_BATTLE_STATES : [];
 
   const core = Array.isArray(states)
     ? states.filter((s) => s.id < 90).sort((a, b) => a.id - b.id)

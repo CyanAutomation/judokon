@@ -1,5 +1,4 @@
-import { fetchJson } from "../dataUtils.js";
-import { DATA_DIR } from "../constants.js";
+import { CLASSIC_BATTLE_STATES } from "./stateTable.js";
 
 /**
  * Minimal event-driven state machine for Classic Battle.
@@ -10,8 +9,7 @@ import { DATA_DIR } from "../constants.js";
  * @pseudocode
  * ```text
  * async create(onEnterMap, context, onTransition):
- *   try states = fetchJson(DATA_DIR + 'classicBattleStates.json')
- *   catch -> states = []           # JSON loading fallback
+ *   states = CLASSIC_BATTLE_STATES (embedded module)
  *   for each state in states:
  *     byName[state.name] = state
  *     if state.type is 'initial' or initial unset -> initial = state.name
@@ -43,13 +41,14 @@ export class BattleStateMachine {
   }
 
   static async create(onEnterMap, context = {}, onTransition) {
-    let states = [];
-    try {
-      states = await fetchJson(`${DATA_DIR}classicBattleStates.json`);
-    } catch {
-      // Fallback to a minimal in-memory scaffold if JSON fails (tests may stub fetch)
-      states = [];
-    }
+    // Load states from the embedded table for reliability in all environments.
+    // Allow a narrow test-only override via globalThis.__CLASSIC_BATTLE_STATES__
+    // so unit tests can inject minimal tables without network mocks.
+    const override =
+      typeof globalThis !== "undefined" && Array.isArray(globalThis.__CLASSIC_BATTLE_STATES__)
+        ? globalThis.__CLASSIC_BATTLE_STATES__
+        : null;
+    const states = override || (Array.isArray(CLASSIC_BATTLE_STATES) ? CLASSIC_BATTLE_STATES : []);
     const byName = new Map();
     let initial = null;
     for (const s of states) {
@@ -58,7 +57,7 @@ export class BattleStateMachine {
         initial = s.name;
       }
     }
-    // Fallback initial state to keep orchestration alive even if JSON is missing in tests
+    // Fallback initial state to keep orchestration alive even if table is empty in tests
     const initName = initial || "waitingForMatchStart";
     const machine = new BattleStateMachine(byName, initName, onEnterMap, context, onTransition);
     if (machine.onTransition) {

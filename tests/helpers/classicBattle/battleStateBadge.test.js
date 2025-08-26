@@ -12,7 +12,7 @@ import {
   mockTestModeUtils,
   mockRoundSelectModal
 } from "./mocks.js";
-import classicBattleStates from "../../../src/data/classicBattleStates.json" with { type: "json" };
+import { CLASSIC_BATTLE_STATES } from "../../../src/helpers/classicBattle/stateTable.js";
 
 // Apply all the necessary mocks
 mockScheduler();
@@ -27,7 +27,7 @@ mockTooltips();
 mockTestModeUtils();
 mockRoundSelectModal();
 
-const coreStateIds = classicBattleStates
+const coreStateIds = CLASSIC_BATTLE_STATES
   .filter((s) => s.id < 90)
   .sort((a, b) => a.id - b.id)
   .map((s) => String(s.id));

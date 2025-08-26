@@ -55,24 +55,26 @@ afterEach(() => {
 
 describe("classicBattle scheduleNextRound", () => {
   function mockBattleData() {
+    // Provide a minimal machine table directly via the test-only override so
+    // the embedded state table uses this deterministic set.
+    const minimal = [
+      {
+        name: "roundOver",
+        type: "initial",
+        triggers: [{ on: "continue", target: "cooldown" }]
+      },
+      { name: "cooldown", triggers: [{ on: "ready", target: "roundStart" }] },
+      {
+        name: "roundStart",
+        triggers: [{ on: "cardsRevealed", target: "waitingForPlayerAction" }]
+      },
+      { name: "waitingForPlayerAction", triggers: [] }
+    ];
+    globalThis.__CLASSIC_BATTLE_STATES__ = minimal;
+
     fetchJsonMock.mockImplementation(async (url) => {
       if (String(url).includes("gameTimers.json")) {
         return [{ id: 1, value: 30, default: true, category: "roundTimer" }];
-      }
-      if (String(url).includes("classicBattleStates.json")) {
-        return [
-          {
-            name: "roundOver",
-            type: "initial",
-            triggers: [{ on: "continue", target: "cooldown" }]
-          },
-          { name: "cooldown", triggers: [{ on: "ready", target: "roundStart" }] },
-          {
-            name: "roundStart",
-            triggers: [{ on: "cardsRevealed", target: "waitingForPlayerAction" }]
-          },
-          { name: "waitingForPlayerAction", triggers: [] }
-        ];
       }
       if (String(url).includes("judoka.json")) return [{ id: 1 }, { id: 2 }];
       if (String(url).includes("gokyo.json")) return [];
@@ -109,6 +111,8 @@ describe("classicBattle scheduleNextRound", () => {
     timerSpy.advanceTimersByTime(3000);
     await vi.runAllTimersAsync();
     await controls.ready;
+    // Wait for the orchestrator to reach the expected state to avoid races
+    await orchestrator.onStateTransition("waitingForPlayerAction");
 
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
@@ -148,6 +152,8 @@ describe("classicBattle scheduleNextRound", () => {
     const controls = battleMod.scheduleNextRound({ matchEnded: false });
     document.getElementById("next-button").dispatchEvent(new MouseEvent("click"));
     await controls.ready;
+    // Ensure state progressed before assertions
+    await orchestrator.onStateTransition("waitingForPlayerAction");
     await vi.runAllTimersAsync();
 
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);

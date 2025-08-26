@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import classicBattleStates from "../../../src/data/classicBattleStates.json" with { type: "json" };
+import { CLASSIC_BATTLE_STATES } from "../../../src/helpers/classicBattle/stateTable.js";
 import { BattleStateMachine } from "../../../src/helpers/classicBattle/stateMachine.js";
 import {
   emitBattleEvent,
@@ -8,7 +8,7 @@ import {
 } from "../../../src/helpers/classicBattle/battleEvents.js";
 import { isStateTransition } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 
-const statesByName = new Map(classicBattleStates.map((s) => [s.name, s]));
+const statesByName = new Map(CLASSIC_BATTLE_STATES.map((s) => [s.name, s]));
 
 // Generates a BattleStateMachine scoped to a single transition
 function createMachineForTransition(state, trigger, onTransition) {
@@ -23,8 +23,8 @@ function createMachineForTransition(state, trigger, onTransition) {
   return new BattleStateMachine(machineStates, state.name, {}, {}, onTransition);
 }
 
-describe("classicBattleStates.json transitions", () => {
-  for (const state of classicBattleStates) {
+describe("classic battle state table transitions", () => {
+  for (const state of CLASSIC_BATTLE_STATES) {
     if (!Array.isArray(state.triggers)) continue;
     for (const trigger of state.triggers) {
       it(`${state.name} --${trigger.on}--> ${trigger.target}`, async () => {
