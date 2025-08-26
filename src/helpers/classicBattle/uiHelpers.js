@@ -491,13 +491,12 @@ function setStatButtonsEnabled(enable = true) {
 }
 
 /**
- * Select a stat for the current round.
+ * Delegate stat selection logic to the core handler.
+ *
+ * UI updates are handled by the `statSelected` listener in `roundUI.js`.
  *
  * @pseudocode
- * 1. Find the button for the requested stat; exit if missing or disabled.
- * 2. Delegate to `handleStatSelection` with the provided store and stat.
- * 3. Show a snackbar with the chosen stat name.
- * 4. Disable all stat buttons and mark the chosen one on the next frame.
+ * 1. Delegate to `handleStatSelection` with the provided store and stat.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle store.
  * @param {string} statName - Key of the selected stat.
