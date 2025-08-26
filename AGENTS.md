@@ -15,6 +15,22 @@ AI agents play a vital role in maintaining quality, clarity, and scalability acr
 
 A successful agent contribution is **concise**, **compliant with code standards**, and **adds lasting value** without introducing regressions or complexity.
 
+## 🧠 RAG Usage
+
+Use the vector database before inspecting files to collect relevant context and reduce unnecessary search work. It excels at:
+
+- Answering architectural questions
+- Surfacing design rationale
+- Illuminating cross-cutting concerns across modules
+
+Sample queries:
+
+- "Explain the data flow for user authentication"
+- "Summarize the classicBattle module"
+- "Outline how settings persistence works"
+
+For deeper guidance, see [example vector queries](design/agentWorkflows/exampleVectorQueries.md).
+
 ---
 
 ## 🧪 Prompt Templates
