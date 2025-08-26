@@ -9,9 +9,11 @@ describe("createCard", () => {
     expect(card.textContent).toBe("Hello");
   });
 
-  it("inserts sanitized HTML when the html flag is true", () => {
-    const sanitize = vi.fn(() => ({ sanitize: (h) => h }));
+  it("inserts sanitized HTML when sanitizer resolves asynchronously", async () => {
+    const promise = Promise.resolve({ sanitize: (h) => h });
+    const sanitize = vi.fn(() => promise);
     const card = createCard("<em>hi</em>", { html: true, sanitize });
+    await promise;
     expect(card.innerHTML).toBe("<em>hi</em>");
     expect(sanitize).toHaveBeenCalled();
   });
