@@ -73,23 +73,17 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
       typeof document !== "undefined" && document.body && document.body.dataset
         ? document.body.dataset.battleState || null
         : null;
-    if (state === "roundDecision") {
-      try {
-        console.log("DEBUG: dispatching outcomeEvent", outcomeEvent);
-      } catch {}
-      await dispatchBattleEvent(outcomeEvent);
-      try {
-        console.log("DEBUG: dispatched outcomeEvent", outcomeEvent);
-      } catch {}
-      if (result.matchEnded) {
-        await dispatchBattleEvent("matchPointReached");
-      } else {
-        await dispatchBattleEvent("continue");
-      }
+    try {
+      console.log("DEBUG: dispatching outcomeEvent", outcomeEvent);
+    } catch {}
+    await dispatchBattleEvent(outcomeEvent);
+    try {
+      console.log("DEBUG: dispatched outcomeEvent", outcomeEvent);
+    } catch {}
+    if (result.matchEnded) {
+      await dispatchBattleEvent("matchPointReached");
     } else {
-      try {
-        console.warn(`[test] suppress outcome '${outcomeEvent}' in state=${state}`);
-      } catch {}
+      await dispatchBattleEvent("continue");
     }
   } catch {}
   resetStatButtons();
