@@ -62,6 +62,7 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
       result = await resolveRound(store, stat, playerVal, opponentVal, opts);
+      store.playerChoice = null;
       return result;
     }
   } catch {}
