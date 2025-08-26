@@ -50,7 +50,8 @@ export function getPlayerAndOpponentValues(stat, playerVal, opponentVal) {
  * resolution on error.
  *
  * @pseudocode
- * 1. Schedule a fallback call to `resolveRound` after 600ms.
+ * 1. Schedule a fallback call to `resolveRound` after 600ms that clears
+ *    `playerChoice` once finished.
  * 2. Await `dispatchBattleEvent("statSelected")`.
  * 3. If dispatch fails, call `resolveRound` immediately with deterministic
  *    options in Vitest environments.
@@ -66,7 +67,6 @@ export async function resolveRoundViaMachine(store, stat, playerVal, opponentVal
   try {
     setTimeout(() => {
       if (store.playerChoice) {
-        store.playerChoice = null;
         resolveRound(store, stat, playerVal, opponentVal, opts)
           .catch(() => {})
           .finally(() => {
@@ -120,8 +120,8 @@ export async function resolveRoundDirect(store, stat, playerVal, opponentVal, op
  * 4. Coerce the stat values to numbers.
  * 5. Stop running timers and clear pending timeouts on the store.
  * 6. Emit a `statSelected` event with the provided values.
- * 7. Resolve the round either via the state machine or directly, clearing
- *    `playerChoice` before fallback resolution.
+ * 7. Resolve the round either via the state machine or directly, letting the
+ *    resolver clear `playerChoice` when finished.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
