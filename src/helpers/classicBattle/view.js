@@ -1,4 +1,5 @@
 import { setupScoreboard } from "../setupScoreboard.js";
+import { resetStatButtons } from "../battle/index.js";
 import { initQuitButton } from "./quitButton.js";
 import { skipCurrentPhase } from "./skipHandler.js";
 import { initInterruptHandlers } from "./interruptHandlers.js";
@@ -70,6 +71,10 @@ export class ClassicBattleView {
       try {
         // Trigger skip (may be pending until a handler is set)
         skipCurrentPhase();
+      } catch {}
+      // Clear any lingering selection immediately for deterministic tests
+      try {
+        resetStatButtons();
       } catch {}
       try {
         const p1 =

@@ -601,16 +601,15 @@ export function initStatButtons(store) {
         Promise.resolve(handleStatSelection(store, statName)).catch(() => {});
       } catch {}
       // Show snackbar immediately so tests and observers can see the message
-      // synchronously; visual state changes remain deferred to the next frame.
+      // synchronously.
       try {
         showSnackbar(`You Picked: ${btn.textContent}`);
       } catch {}
-      requestAnimationFrame(() => {
-        try {
-          setEnabled(false);
-          btn.classList.add("selected");
-        } catch {}
-      });
+      // Disable buttons right away; selected class is applied via the
+      // 'statSelected' event to keep a single source of truth.
+      try {
+        setEnabled(false);
+      } catch {}
     };
     btn.addEventListener("click", clickHandler);
     btn.addEventListener("keydown", (e) => {

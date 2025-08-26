@@ -4,6 +4,7 @@ import { emitBattleEvent } from "./battleEvents.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { resolveRound } from "./roundResolver.js";
 import { getCardStatValue } from "./cardStatUtils.js";
+import { getBattleState } from "./eventBus.js";
 
 /**
  * Determine the opponent's stat choice based on difficulty.
@@ -127,9 +128,25 @@ export async function resolveRoundDirect(store, stat, playerVal, opponentVal, op
  * @param {{playerVal: number, opponentVal: number}} values - Precomputed stat values.
  */
 export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
+  // Ignore selections if a choice was already recorded.
   if (store.selectionMade) {
     return;
   }
+
+  // Defensive guard: only accept stat selections while the orchestrator is
+  // in the stat selection / decision states. This prevents stale clicks
+  // (for example during cooldown) from setting `store.playerChoice` and
+  // confusing the state machine.
+  try {
+    const current = typeof getBattleState === "function" ? getBattleState() : null;
+    if (current && current !== "waitingForPlayerAction" && current !== "roundDecision") {
+      // UX: ignore silently but log for diagnostics
+      try {
+        console.warn(`Ignored stat selection while in state=${current}`);
+      } catch {}
+      return;
+    }
+  } catch {}
   store.selectionMade = true;
   store.playerChoice = stat;
   const values = getPlayerAndOpponentValues(stat, playerVal, opponentVal);
