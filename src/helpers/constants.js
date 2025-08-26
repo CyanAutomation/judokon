@@ -6,35 +6,35 @@
  * default limits for Classic Battle matches.
  *
  * @pseudocode
- * 1. Normalize `import.meta.url`, resolve the helpers directory URL, and derive the base path to JSON data files.
+ * 1. Derive the base path to JSON data files with `resolveDataDir`.
  * 2. Define carousel swipe threshold and spinner delay.
  * 3. Set fade and removal durations for settings error popups.
  * 4. Establish Classic Battle win conditions and maximum rounds.
  */
-
 /**
- * Absolute URL to the helpers directory.
+ * Resolves the path to the directory containing JSON data files.
  *
- * The `@vite-ignore` directive prevents Vitest's Vite-based loader from
- * rewriting this path during tests; production serving uses the original URL
- * and is unaffected.
+ * Builds a URL relative to the helpers directory and ensures the path includes
+ * `/src/` so tests and builds both locate the data directory correctly.
  *
- * @constant {URL}
+ * @param {string|URL} moduleUrl - URL of the calling module.
+ * @returns {string} Absolute URL to the data directory.
  */
-// Normalize the module URL to avoid issues in non-browser environments.
-const moduleUrl = typeof import.meta.url === "string" ? import.meta.url : import.meta.url.href;
-
-const HELPERS_DIR = new URL(/* @vite-ignore */ ".", moduleUrl);
+export function resolveDataDir(moduleUrl) {
+  const normalizedUrl = typeof moduleUrl === "string" ? moduleUrl : moduleUrl.href;
+  const dataUrl = new URL("../data/", new URL(".", normalizedUrl));
+  if (!dataUrl.pathname.includes("/src/")) {
+    dataUrl.pathname = `/src${dataUrl.pathname}`;
+  }
+  return dataUrl.href;
+}
 
 /**
  * Path to the directory containing JSON data files.
  *
- * Resolving the helpers directory separately avoids having Vite
- * analyze the data directory as an asset import.
- *
  * @constant {string}
  */
-export const DATA_DIR = new URL("../data/", HELPERS_DIR).href;
+export const DATA_DIR = resolveDataDir(import.meta.url);
 
 /**
  * Minimum swipe distance in pixels required to trigger carousel
