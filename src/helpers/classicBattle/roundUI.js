@@ -102,6 +102,8 @@ onBattleEvent("roundResolved", (e) => {
     });
     emitBattleEvent("matchOver");
   }
-  requestAnimationFrame(() => resetStatButtons());
+  // Wait two frames so the "selected" class remains visible for one paint
+  // Event order: roundResolved → rAF → rAF → resetStatButtons
+  requestAnimationFrame(() => requestAnimationFrame(() => resetStatButtons()));
   updateDebugPanel();
 });
