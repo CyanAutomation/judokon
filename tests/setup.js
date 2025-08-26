@@ -6,6 +6,12 @@ if (typeof CustomEvent === "undefined") {
     }
   };
 }
+if (typeof global.requestAnimationFrame === "undefined") {
+  global.requestAnimationFrame = (cb) => setTimeout(() => cb(0), 0);
+}
+if (typeof global.cancelAnimationFrame === "undefined") {
+  global.cancelAnimationFrame = (id) => clearTimeout(id);
+}
 import { expect, afterEach, beforeEach } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 import { muteConsole, restoreConsole } from "./utils/console.js";
