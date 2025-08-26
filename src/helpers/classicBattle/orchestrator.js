@@ -95,39 +95,99 @@ export function getBattleStateMachine() {
 }
 
 /**
+ * Mirror transition state to globals and debug elements.
+ *
+ * @pseudocode
+ * 1. Return early when not in a browser environment.
+ * 2. Update window globals for current, previous, and last event.
+ * 3. Update body data attributes and dispatch a `battle:state` event.
+ * 4. Record the transition in a capped log and expose it on `window`.
+ * 5. Ensure `#machine-state` and `#battle-state-badge` reflect the new state.
+ *
+ * @param {string|null} from - Previous state name.
+ * @param {string} to - New state name.
+ * @param {string|null} event - Event that triggered the transition.
+ * @returns {void}
+ */
+export function updateDebugState(from, to, event) {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+  try {
+    window.__classicBattleState = to;
+    if (from) window.__classicBattlePrevState = from;
+    if (event) window.__classicBattleLastEvent = event;
+    document.body.dataset.battleState = to;
+    document.body.dataset.prevBattleState = from || "";
+    document.dispatchEvent(new CustomEvent("battle:state", { detail: { from, to } }));
+    const entry = { from: from || null, to, event: event || null, ts: Date.now() };
+    const log = Array.isArray(window.__classicBattleStateLog) ? window.__classicBattleStateLog : [];
+    log.push(entry);
+    while (log.length > 20) log.shift();
+    window.__classicBattleStateLog = log;
+    let el = document.getElementById("machine-state");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "machine-state";
+      el.style.display = "none";
+      document.body.appendChild(el);
+    }
+    el.textContent = to;
+    if (from) el.dataset.prev = from;
+    if (event) el.dataset.event = event;
+    el.dataset.ts = String(entry.ts);
+    const badge = document.getElementById("battle-state-badge");
+    if (badge) badge.textContent = `State: ${to}`;
+  } catch {}
+}
+
+/**
+ * Expose timer state for debugging when an engine exists.
+ *
+ * @pseudocode
+ * 1. Return early when not in a browser or when no engine is present.
+ * 2. Read timer state from the machine's engine.
+ * 3. Mirror the timer state on `window.__classicBattleTimerState`.
+ * 4. Ensure a hidden `#machine-timer` element exists and reflects the state.
+ *
+ * @param {import("./stateMachine.js").BattleStateMachine|null} machineRef - Current battle machine.
+ * @returns {void}
+ */
+export function updateTimerDebug(machineRef) {
+  if (typeof window === "undefined" || !machineRef?.context?.engine) return;
+  try {
+    const timerState = machineRef.context.engine.getTimerState();
+    window.__classicBattleTimerState = timerState;
+    if (typeof document !== "undefined") {
+      let timerEl = document.getElementById("machine-timer");
+      if (!timerEl) {
+        timerEl = document.createElement("div");
+        timerEl.id = "machine-timer";
+        timerEl.style.display = "none";
+        document.body.appendChild(timerEl);
+      }
+      timerEl.textContent = JSON.stringify(timerState);
+      timerEl.dataset.remaining = timerState.remaining;
+      timerEl.dataset.paused = timerState.paused;
+    }
+  } catch {}
+}
+
+/**
  * Initialize the classic battle orchestrator. This function sets up the battle state machine,
  * defines its transition behavior, and exposes debugging utilities.
  *
  * @pseudocode
  * 1. Destructure `resetGame` and `startRound` from `opts`, falling back to local implementations if not provided.
  * 2. Create a `context` object containing the `store`, resolved `doResetGame`, `doStartRound`, and `startRoundWrapper`.
- * 3. Define the `onEnter` object, mapping state names to their respective handler functions (e.g., `waitingForMatchStart` to `waitingForMatchStartEnter`).
- * 4. Define the `onTransition` asynchronous function, which executes every time the state machine transitions:
- *    a. If running in a browser environment (`typeof window !== "undefined"`):
- *       i. Update global `window` variables (`__classicBattleState`, `__classicBattlePrevState`, `__classicBattleLastEvent`) for debugging.
- *       ii. Update `document.body` data attributes (`battle-state`, `prev-battle-state`) and dispatch a `battle:state` event with the new state.
- *       iii. Create a log entry with `from`, `to`, `event`, and timestamp.
- *       iv. Maintain a circular log buffer (`__classicBattleStateLog`) of the last 20 state transitions.
- *       v. Update a hidden DOM element (`#machine-state`) with the current state and transition details for visual debugging.
- *       vi. Update a visible badge (`#battle-state-badge`) with the current state.
- *       vii. If a battle engine exists in the machine's context, update global `window` variables (`__classicBattleTimerState`) and a hidden DOM element (`#machine-timer`) with timer state details.
- *    b. Emit a "debugPanelUpdate" battle event.
- *    c. Retrieve any pending `waiters` for the new `to` state from `stateWaiters`.
- *    d. If `waiters` exist, delete the entry for `to` from `stateWaiters`.
- *    e. Iterate through each `waiter` in the retrieved list:
- *       i. Clear any associated timeout timer (`w.timer`).
- *       ii. Resolve the waiter's Promise (`w.resolve(true)`).
- * 5. Create the `BattleStateMachine` instance using `BattleStateMachine.create`, passing `onEnter`, `context`, and `onTransition`.
- * 6. Set the created `machine` instance using `setMachine`.
- * 7. If running in a browser environment, expose `window.__getClassicBattleMachine` as a safe getter for the machine instance to avoid import cycles.
- * 8. If running in a document environment, add a "visibilitychange" event listener to the `document`:
- *    a. If the document becomes hidden, call `handleTabInactive` on the battle engine.
- *    b. If the document becomes visible, call `handleTabActive` on the battle engine.
- * 9. If a battle engine exists, set its `onTimerDrift` callback to emit a "scoreboardShowMessage" event with the drift amount, emit a "debugPanelUpdate" event, and call `handleTimerDrift` on the engine.
- * 10. If running in a browser environment and a battle engine exists, expose `window.injectClassicBattleError` for debugging:
- *     a. This function injects an error into the engine, emits a scoreboard message, updates the debug panel, and dispatches an "interruptMatch" event.
- * 11. If running in a browser environment, expose `window.onStateTransition` (the current function) and `window.getBattleStateSnapshot` for external debugging and state inspection.
- * 12. Return the initialized `machine` instance.
+ * 3. Define the `onEnter` object mapping state names to their respective handler functions.
+ * 4. Define the `onTransition` function executed on every state change:
+ *    a. Call `updateDebugState(from, to, event)`.
+ *    b. Call `updateTimerDebug(machine)`.
+ *    c. Emit a `"debugPanelUpdate"` battle event.
+ *    d. Resolve any waiters queued for the new `to` state.
+ * 5. Create the battle state machine via `BattleStateMachine.create` and store it with `setMachine`.
+ * 6. Expose a getter for the machine, wire visibility listeners, and handle timer drift and injected errors.
+ * 7. Expose `onStateTransition` and `getBattleStateSnapshot` on `window` for debugging.
+ * 8. Return the initialized machine.
  *
  * @param {object} store - Shared battle store.
  * @param {Function} startRoundWrapper - Optional wrapper for starting a round.
@@ -157,56 +217,8 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   };
 
   const onTransition = async ({ from, to, event }) => {
-    try {
-      if (typeof window !== "undefined") {
-        window.__classicBattleState = to;
-        if (from) window.__classicBattlePrevState = from;
-        if (event) window.__classicBattleLastEvent = event;
-        if (typeof document !== "undefined") {
-          try {
-            document.body.dataset.prevBattleState = from || "";
-            document.body.dataset.battleState = to;
-            document.dispatchEvent(new CustomEvent("battle:state", { detail: to }));
-          } catch {}
-        }
-        const entry = { from: from || null, to, event: event || null, ts: Date.now() };
-        const log = Array.isArray(window.__classicBattleStateLog)
-          ? window.__classicBattleStateLog
-          : [];
-        log.push(entry);
-        while (log.length > 20) log.shift();
-        window.__classicBattleStateLog = log;
-        let el = document.getElementById("machine-state");
-        if (!el) {
-          el = document.createElement("div");
-          el.id = "machine-state";
-          el.style.display = "none";
-          document.body.appendChild(el);
-        }
-        el.textContent = to;
-        if (from) el.dataset.prev = from;
-        if (event) el.dataset.event = event;
-        el.dataset.ts = String(entry.ts);
-        try {
-          const badge = document.getElementById("battle-state-badge");
-          if (badge) badge.textContent = `State: ${to}`;
-        } catch {}
-        if (typeof window !== "undefined" && machine?.context?.engine) {
-          const timerState = machine.context.engine.getTimerState();
-          window.__classicBattleTimerState = timerState;
-          let timerEl = document.getElementById("machine-timer");
-          if (!timerEl) {
-            timerEl = document.createElement("div");
-            timerEl.id = "machine-timer";
-            timerEl.style.display = "none";
-            document.body.appendChild(timerEl);
-          }
-          timerEl.textContent = JSON.stringify(timerState);
-          timerEl.dataset.remaining = timerState.remaining;
-          timerEl.dataset.paused = timerState.paused;
-        }
-      }
-    } catch {}
+    updateDebugState(from, to, event);
+    updateTimerDebug(machine);
     emitBattleEvent("debugPanelUpdate");
     const waiters = stateWaiters.get(to);
     if (waiters) {
