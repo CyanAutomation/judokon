@@ -1,6 +1,7 @@
 # Example Vector Queries
 
 This document shows how AI agents can search the JU-DO-KON! vector database and provides prompt templates for common workflows.
+See [`RAG_QUERY_GUIDE.md`](./RAG_QUERY_GUIDE.md) for tag references and additional query patterns.
 
 ## Embedding JSON Format
 
