@@ -1,11 +1,4 @@
-/**
- * Settings helper entry point.
- *
- * @pseudocode
- * 1. Re-export common settings utilities for initialization and listeners.
- * 2. Keep this module focused on the public settings API surface.
- */
-export { applyInitialControlValues, applyInitialValues } from "./applyInitialValues.js";
+export * from "./applyInitialValues.js";
 export * from "./listenerUtils.js";
 export * from "./gameModeSwitches.js";
 export * from "./featureFlagSwitches.js";

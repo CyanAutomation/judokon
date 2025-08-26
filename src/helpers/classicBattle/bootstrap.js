@@ -8,21 +8,8 @@ import "./roundUI.js";
 
 /**
  * Bootstrap Classic Battle page by wiring controller and view.
- *
- * @pseudocode
- * 1. Construct view and controller instances.
- * 2. Bind controller to view and initialize both.
- * 3. Defer automatic boot in test environments.
  */
 export async function setupClassicBattlePage() {
-  /**
-   * Classic Battle bootstrap.
-   *
-   * @pseudocode
-   * 1. Create view and controller instances and bind them together.
-   * 2. Initialize orchestrator / feature flags via controller.init().
-   * 3. Initialize view (DOM wiring, tooltips, listeners).
-   */
   const view = new ClassicBattleView({ waitForOpponentCard });
   const controller = new ClassicBattleController({
     waitForOpponentCard: view.waitForOpponentCard

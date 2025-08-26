@@ -1,11 +1,3 @@
-/**
- * Battle event dispatcher.
- *
- * @pseudocode
- * 1. Maintain a reference to the active state machine.
- * 2. Allow other modules to set the machine instance using `setMachine`.
- * 3. Provide `dispatchBattleEvent(event, payload)` to forward events to the machine.
- */
 let machine = null;
 
 /**

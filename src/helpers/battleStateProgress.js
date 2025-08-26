@@ -20,7 +20,25 @@ import { CLASSIC_BATTLE_STATES } from "./classicBattle/stateTable.js";
 import { updateBattleStateBadge } from "./classicBattle/uiHelpers.js";
 import { markBattlePartReady } from "./battleInit.js";
 
+/**
+ * Internal resolver for `battleStateProgressReadyPromise`.
+ * Assigned when running in a browser environment so callers can be
+ * notified after the list is rendered (or skipped).
+ *
+ * @type {((value?: any) => void) | undefined}
+ */
 let resolveBattleStateProgressReady;
+
+/**
+ * Promise that resolves when the battle state progress list has been
+ * rendered (or when rendering is intentionally skipped).
+ *
+ * - In browser environments this promise resolves when rendering completes
+ *   or when the list is absent.
+ * - In non-browser environments the promise resolves immediately.
+ *
+ * @type {Promise<(() => void) | undefined>}
+ */
 export const battleStateProgressReadyPromise =
   typeof window !== "undefined"
     ? new Promise((resolve) => {
@@ -98,3 +116,31 @@ export async function initBattleStateProgress() {
   }
   return () => document.removeEventListener("battle:state", handler);
 }
+
+/**
+ * Initialize and render the battle state progress list and wire up
+ * runtime updates.
+ *
+ * Responsibilities:
+ * - Render a trimmed list of core states (id < 90) into the
+ *   `#battle-state-progress` element when necessary.
+ * - Provide visual active-state updates when `battle:state` events fire.
+ * - Update the small status badge via `updateBattleStateBadge`.
+ * - Resolve `battleStateProgressReadyPromise` once rendering or skip is done.
+ * - Call `markBattlePartReady('state')` after the first active state is applied.
+ *
+ * Contract:
+ * - Inputs: none (reads DOM and imported `CLASSIC_BATTLE_STATES`).
+ * - Output: returns a cleanup function which removes the internal event listener,
+ *   or `undefined` if the function returned early (no DOM available).
+ * - Errors: DOM access issues are not thrown; function will simply return early
+ *   and resolve the ready promise if appropriate.
+ *
+ * Edge cases handled:
+ * - Missing `#battle-state-progress` element (resolves promise and exits).
+ * - Empty or non-array `CLASSIC_BATTLE_STATES` (renders a fallback message).
+ * - Idempotent rendering: skips DOM updates when existing list matches expected.
+ *
+ * @returns {Promise<(() => void) | undefined>} Resolves with a cleanup function
+ *   that removes the `battle:state` listener, or `undefined` if not applicable.
+ */

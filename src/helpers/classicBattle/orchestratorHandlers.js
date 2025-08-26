@@ -6,14 +6,6 @@ import { scheduleNextRound } from "./timerService.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { resolveRound } from "./roundResolver.js";
 
-/**
- * Orchestrator state transition helpers.
- *
- * @pseudocode
- * 1. Provide helpers used by orchestrator on-enter/on-exit handlers.
- * 2. Implement transition guards and glue to UI events (emitBattleEvent).
- * 3. Keep side-effects isolated and recover gracefully on errors.
- */
 export function isStateTransition(from, to) {
   try {
     if (typeof document === "undefined") return false;
@@ -118,18 +110,10 @@ export async function roundStartEnter(machine) {
 }
 export async function roundStartExit() {}
 
-/**
- * Prepare for player stat selection.
- *
- * @pseudocode
- * 1. Enable stat buttons for interaction.
- * 2. If `store.playerChoice` and `store.selectionMade` are truthy,
- *    dispatch `statSelected`.
- */
 export async function waitingForPlayerActionEnter(machine) {
   emitBattleEvent("statButtons:enable");
   const store = machine?.context?.store;
-  if (store?.playerChoice && store?.selectionMade) {
+  if (store?.playerChoice) {
     await machine.dispatch("statSelected");
   }
 }
@@ -137,62 +121,57 @@ export async function waitingForPlayerActionExit() {
   emitBattleEvent("statButtons:disable");
 }
 
-async function roundDecisionGuard(store, machine) {
-  try {
-    if (!isStateTransition(null, "roundDecision")) return;
-    const rd = window.__roundDebug;
-    const resolved = rd && typeof rd.resolvedAt === "number";
-    if (resolved) return;
-    if (!store?.playerChoice) {
-      await machine.dispatch("interrupt", { reason: "stalledNoSelection" });
-      return;
-    }
-    let outcomeEvent = null;
+function computeAndDispatchOutcome(store, machine) {
+  return (async () => {
     try {
-      const stat = store.playerChoice;
-      const pCard = document.getElementById("player-card");
-      const oCard = document.getElementById("opponent-card");
-      const playerVal = getStatValue(pCard, stat);
-      let opponentVal = 0;
+      if (!isStateTransition(null, "roundDecision")) return;
+      const rd = window.__roundDebug;
+      const resolved = rd && typeof rd.resolvedAt === "number";
+      if (resolved) return;
+      if (!store?.playerChoice) {
+        await machine.dispatch("interrupt", { reason: "stalledNoSelection" });
+        return;
+      }
+      let outcomeEvent = null;
       try {
-        const opp = getOpponentJudoka();
-        const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
-        opponentVal = Number.isFinite(raw) ? raw : getStatValue(oCard, stat);
-      } catch {
-        opponentVal = getStatValue(oCard, stat);
+        const stat = store.playerChoice;
+        const pCard = document.getElementById("player-card");
+        const oCard = document.getElementById("opponent-card");
+        const playerVal = getStatValue(pCard, stat);
+        let opponentVal = 0;
+        try {
+          const opp = getOpponentJudoka();
+          const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
+          opponentVal = Number.isFinite(raw) ? raw : getStatValue(oCard, stat);
+        } catch {
+          opponentVal = getStatValue(oCard, stat);
+        }
+        if (Number.isFinite(playerVal) && Number.isFinite(opponentVal)) {
+          if (playerVal > opponentVal) outcomeEvent = "outcome=winPlayer";
+          else if (playerVal < opponentVal) outcomeEvent = "outcome=winOpponent";
+          else outcomeEvent = "outcome=draw";
+        }
+      } catch {}
+      try {
+        window.__guardFiredAt = Date.now();
+        window.__guardOutcomeEvent = outcomeEvent || "none";
+      } catch {}
+      if (outcomeEvent) {
+        await machine.dispatch(outcomeEvent);
+        await machine.dispatch("continue");
+        scheduleNextRound({ matchEnded: false });
+      } else {
+        await machine.dispatch("interrupt", { reason: "guardNoOutcome" });
       }
-      if (Number.isFinite(playerVal) && Number.isFinite(opponentVal)) {
-        if (playerVal > opponentVal) outcomeEvent = "outcome=winPlayer";
-        else if (playerVal < opponentVal) outcomeEvent = "outcome=winOpponent";
-        else outcomeEvent = "outcome=draw";
-      }
+      emitBattleEvent("debugPanelUpdate");
     } catch {}
-    try {
-      window.__guardFiredAt = Date.now();
-      window.__guardOutcomeEvent = outcomeEvent || "none";
-    } catch {}
-    if (outcomeEvent) {
-      await machine.dispatch(outcomeEvent);
-      await machine.dispatch("continue");
-      scheduleNextRound({ matchEnded: false });
-    } else {
-      await machine.dispatch("interrupt", { reason: "guardNoOutcome" });
-    }
-    emitBattleEvent("debugPanelUpdate");
-  } catch {}
+  })();
 }
 
-/**
- * Schedule the round decision guard.
- *
- * @pseudocode
- * 1. After 1.2s, invoke the round decision guard.
- * 2. Return the timer ID for tracking or cancellation.
- */
 export function scheduleRoundDecisionGuard(store, machine) {
   try {
     return setTimeout(() => {
-      roundDecisionGuard(store, machine);
+      computeAndDispatchOutcome(store, machine);
     }, 1200);
   } catch {
     return null;
@@ -270,13 +249,6 @@ export async function roundDecisionEnter(machine) {
 }
 export async function roundDecisionExit() {}
 
-/**
- * Reset round-specific store data.
- *
- * @pseudocode
- * 1. Set `store.playerChoice` to `null`.
- * 2. Set `store.selectionMade` to `false` for the next round.
- */
 export async function roundOverEnter(machine) {
   const store = machine?.context?.store;
   if (store) {

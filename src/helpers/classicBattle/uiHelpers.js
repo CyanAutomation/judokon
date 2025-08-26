@@ -11,8 +11,7 @@ import { shouldReduceMotionSync } from "../motionUtils.js";
 import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import { getCardStatValue } from "./cardStatUtils.js";
-import { getOpponentJudoka } from "./cardSelection.js";
-import { onNextButtonClick, getNextRoundControls } from "./timerService.js";
+import { onNextButtonClick } from "./timerService.js";
 import { loadStatNames } from "../stats.js";
 import { toggleViewportSimulation } from "../viewportDebug.js";
 import { toggleInspectorPanels } from "../cardUtils.js";
@@ -438,7 +437,100 @@ export function registerRoundStartErrorHandler(retryFn) {
 export function setupNextButton() {
   const btn = document.getElementById("next-button");
   if (!btn) return;
-  btn.addEventListener("click", (e) => onNextButtonClick(e, getNextRoundControls()));
+  btn.addEventListener("click", onNextButtonClick);
+}
+
+/**
+ * Programmatically select a stat as if the user clicked the button.
+ *
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store
+ * @param {string} stat
+ */
+export function selectStat(store, stat) {
+  const btn = document.querySelector(`#stat-buttons [data-stat='${stat}']`);
+  // derive label from button text if available
+  const label = btn?.textContent?.trim() || stat.charAt(0).toUpperCase() + stat.slice(1);
+  // best-effort visual state
+  try {
+    const container = document.getElementById("stat-buttons");
+    container?.querySelectorAll("button").forEach((b) => (b.disabled = true));
+    btn?.classList.add("selected");
+  } catch {}
+  // read values from cards
+  const pCard = document.getElementById("player-card");
+  const oCard = document.getElementById("opponent-card");
+  const playerVal = getCardStatValue(pCard, stat);
+  const opponentVal = getCardStatValue(oCard, stat);
+  // fire selection and snackbar
+  try {
+    Promise.resolve(handleStatSelection(store, stat, { playerVal, opponentVal })).catch(() => {});
+  } catch {}
+  try {
+    showSnackbar(`You Picked: ${label}`);
+  } catch {}
+}
+
+/**
+ * Remove modal backdrops and destroy the current quit modal.
+ *
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} [store]
+ */
+export function removeBackdrops(store) {
+  try {
+    document.querySelectorAll?.(".modal-backdrop").forEach((m) => {
+      if (typeof m.remove === "function") m.remove();
+    });
+  } catch {}
+  if (store?.quitModal) {
+    try {
+      store.quitModal.destroy();
+    } catch {}
+    store.quitModal = null;
+  }
+}
+
+/**
+ * Replace Next and Quit buttons with fresh clones and wire Next click handler.
+ */
+export function resetActionButtons() {
+  let nextBtn;
+  try {
+    nextBtn = document.getElementById ? document.getElementById("next-button") : null;
+  } catch {}
+  if (nextBtn) {
+    const clone = nextBtn.cloneNode(true);
+    clone.disabled = true;
+    delete clone.dataset.nextReady;
+    clone.addEventListener("click", onNextButtonClick);
+    nextBtn.replaceWith(clone);
+  }
+  let quitBtn;
+  try {
+    quitBtn = document.getElementById ? document.getElementById("quit-match-button") : null;
+  } catch {}
+  if (quitBtn) {
+    quitBtn.replaceWith(quitBtn.cloneNode(true));
+  }
+}
+
+/**
+ * Clear scoreboard round info and synchronize display.
+ */
+export function clearRoundInfo() {
+  try {
+    scoreboard.clearMessage();
+  } catch {}
+  try {
+    const timerEl = document.getElementById("next-round-timer");
+    if (timerEl) timerEl.textContent = "";
+  } catch {}
+  try {
+    const rr = document.getElementById("round-result");
+    if (rr) rr.textContent = "";
+  } catch {}
+  try {
+    syncScoreDisplay();
+  } catch {}
 }
 
 /**
@@ -446,116 +538,92 @@ export function setupNextButton() {
  *
  * @pseudocode
  * 1. Gather all stat buttons inside `#stat-buttons`.
- * 2. Expose `selectStat` to handle selection and UI updates.
- * 3. Provide `setEnabled` helper to toggle state and manage `statButtonsReadyPromise`.
- * 4. Return controls to enable or disable the group.
+ * 2. Define `setEnabled` to toggle disabled state, tabindex and `data-buttons-ready`.
+ * 3. Resolve `window.statButtonsReadyPromise` when buttons are enabled; reset when disabled.
+ * 4. On click or Enter/Space, disable all buttons and handle selection.
+ * 5. Return controls to enable/disable the group.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle store.
  */
-let statButtons = [];
-let statContainer;
-let resolveReady;
-
-function resetStatButtonsReady() {
-  if (typeof window === "undefined") return;
-  window.statButtonsReadyPromise = new Promise((r) => {
-    resolveReady = r;
-    try {
-      window.__resolveStatButtonsReady = r;
-    } catch {}
-  });
-}
-
-function setStatButtonsEnabled(enable = true) {
-  statButtons.forEach((btn) => {
-    btn.disabled = !enable;
-    btn.tabIndex = enable ? 0 : -1;
-    btn.classList.toggle("disabled", !enable);
-    // When enabling for a new round, ensure any prior visual selection is cleared
-    if (enable) {
+export function initStatButtons(store) {
+  const statButtons = document.querySelectorAll("#stat-buttons button");
+  const statContainer = document.getElementById("stat-buttons");
+  // Use a resolver that is wired to a global so the promise exists
+  // synchronously during page init. When we reset/create a new
+  // promise we also publish its resolver on `window.__resolveStatButtonsReady`.
+  let resolveReady = typeof window !== "undefined" ? window.__resolveStatButtonsReady : undefined;
+  const resetReadyPromise = () => {
+    window.statButtonsReadyPromise = new Promise((r) => {
+      resolveReady = r;
       try {
-        btn.classList.remove("selected");
-        btn.style.removeProperty("background-color");
-        btn.blur();
+        window.__resolveStatButtonsReady = r;
+      } catch {}
+    });
+  };
+
+  function setEnabled(enable = true) {
+    statButtons.forEach((btn) => {
+      btn.disabled = !enable;
+      btn.tabIndex = enable ? 0 : -1;
+      btn.classList.toggle("disabled", !enable);
+    });
+    if (statContainer) {
+      statContainer.dataset.buttonsReady = String(enable);
+    }
+    if (enable) {
+      // Resolve the current promise to signal readiness to tests / other code.
+      try {
+        resolveReady?.();
+      } catch {}
+      try {
+        if (isTestModeEnabled()) console.warn("[test] statButtonsReady=true");
+      } catch {}
+    } else {
+      resetReadyPromise();
+      try {
+        if (isTestModeEnabled()) console.warn("[test] statButtonsReady=false");
       } catch {}
     }
-  });
-  if (statContainer) {
-    statContainer.dataset.buttonsReady = String(enable);
   }
-  if (enable) {
-    try {
-      resolveReady?.();
-    } catch {}
-    try {
-      if (isTestModeEnabled()) console.warn("[test] statButtonsReady=true");
-    } catch {}
-  } else {
-    resetStatButtonsReady();
-    try {
-      if (isTestModeEnabled()) console.warn("[test] statButtonsReady=false");
-    } catch {}
-  }
-}
 
-/**
- * Delegate stat selection logic to the core handler.
- *
- * UI updates are handled by the `statSelected` listener in `roundUI.js`.
- *
- * @pseudocode
- * 1. Delegate to `handleStatSelection` with the provided store and stat.
- *
- * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle store.
- * @param {string} statName - Key of the selected stat.
- */
-export function selectStat(store, statName) {
-  const btn = document.querySelector(`#stat-buttons button[data-stat="${statName}"]`);
-  if (!btn || btn.disabled) return;
-
-  setStatButtonsEnabled(false);
-  btn.classList.add("selected");
-
-  try {
-    const playerCard = document.getElementById("player-card");
-    const opponentCard = document.getElementById("opponent-card");
-    const playerVal = getCardStatValue(playerCard, statName);
-    let opponentVal = getCardStatValue(opponentCard, statName);
-    try {
-      const opp = getOpponentJudoka();
-      const raw = opp && opp.stats ? Number(opp.stats[statName]) : NaN;
-      opponentVal = Number.isFinite(raw) ? raw : opponentVal;
-    } catch {}
-    Promise.resolve(handleStatSelection(store, statName, { playerVal, opponentVal })).catch(
-      () => {}
-    );
-  } catch {}
-  try {
-    showSnackbar(`You Picked: ${btn.textContent}`);
-  } catch {}
-}
-
-export function initStatButtons(store) {
-  statButtons = document.querySelectorAll("#stat-buttons button");
-  statContainer = document.getElementById("stat-buttons");
-  resetStatButtonsReady();
-  setStatButtonsEnabled(false);
+  // Start disabled until the game enters the player action state
+  resetReadyPromise();
+  setEnabled(false);
 
   statButtons.forEach((btn) => {
     const statName = btn.dataset.stat;
-    const handler = () => selectStat(store, statName);
-    btn.addEventListener("click", handler);
+    const clickHandler = () => {
+      if (btn.disabled) return;
+      // Invoke selection logic immediately so tests observing the call
+      // don't need to wait for animation frames. Keep visual updates
+      // deferred to the next frame to avoid mid-dispatch UI changes.
+      try {
+        Promise.resolve(handleStatSelection(store, statName)).catch(() => {});
+      } catch {}
+      // Show snackbar immediately so tests and observers can see the message
+      // synchronously; visual state changes remain deferred to the next frame.
+      try {
+        showSnackbar(`You Picked: ${btn.textContent}`);
+      } catch {}
+      requestAnimationFrame(() => {
+        try {
+          setEnabled(false);
+          btn.classList.add("selected");
+        } catch {}
+      });
+    };
+    btn.addEventListener("click", clickHandler);
     btn.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        handler();
+        clickHandler();
       }
     });
   });
 
   return {
-    enable: () => setStatButtonsEnabled(true),
-    disable: () => setStatButtonsEnabled(false)
+    enable: () => setEnabled(true),
+    disable: () => setEnabled(false)
   };
 }
 
@@ -640,9 +708,7 @@ export function setBattleStateBadgeEnabled(enable) {
     if (headerRight) headerRight.appendChild(badge);
     else document.querySelector("header")?.appendChild(badge);
   }
-  updateBattleStateBadge(
-    typeof document !== "undefined" ? document.body?.dataset.battleState || null : null
-  );
+  updateBattleStateBadge(typeof window !== "undefined" ? window.__classicBattleState : null);
 }
 
 /**
@@ -786,14 +852,12 @@ export function setDebugPanelEnabled(enabled) {
  *
  * @pseudocode
  * 1. Skip if `localStorage.statHintShown` is set or unavailable.
- * 2. Dispatch `mouseenter` on `#stat-help`.
- * 3. After `durationMs` via `setTimeoutFn`, dispatch `mouseleave`.
- * 4. Record that the hint has been shown.
+ * 2. Trigger hover events on `#stat-help` for `durationMs` milliseconds.
+ * 3. Record that the hint has been shown.
  *
  * @param {number} [durationMs=3000] Hover duration in milliseconds.
- * @param {(fn: () => void, ms: number) => any} [setTimeoutFn=setTimeout] Timer function.
  */
-export function maybeShowStatHint(durationMs = 3000, setTimeoutFn = setTimeout) {
+export function maybeShowStatHint(durationMs = 3000, setTimeoutFn = globalThis.setTimeout) {
   try {
     if (typeof localStorage === "undefined") return;
     const hintShown = localStorage.getItem("statHintShown");
@@ -808,16 +872,17 @@ export function maybeShowStatHint(durationMs = 3000, setTimeoutFn = setTimeout) 
 }
 
 /**
- * Remove modal backdrops and destroy any active quit modal.
+ * Reset battle UI elements to their initial state.
  *
  * @pseudocode
- * 1. Remove all elements with class `.modal-backdrop`.
- * 2. If `store.quitModal` exists, call its `destroy` method and null it out.
+ * 1. Remove any active modal backdrops and destroy `store.quitModal`.
+ * 2. Replace the Next Round and Quit buttons with fresh clones.
+ * 3. Clear scoreboard messages and disable the Next Round button.
  *
  * @param {ReturnType<import("./roundManager.js").createBattleStore>} [store]
  * - Optional battle state store used to tear down the quit modal.
  */
-export function removeBackdrops(store) {
+export function resetBattleUI(store) {
   try {
     document.querySelectorAll?.(".modal-backdrop").forEach((m) => {
       if (typeof m.remove === "function") m.remove();
@@ -829,17 +894,7 @@ export function removeBackdrops(store) {
     } catch {}
     store.quitModal = null;
   }
-}
 
-/**
- * Replace battle action buttons with fresh clones.
- *
- * @pseudocode
- * 1. Clone and replace `#next-button`, disabling it and removing `data-next-ready`.
- * 2. Attach `onNextButtonClick` to the cloned next button.
- * 3. Clone and replace `#quit-match-button` to drop old listeners.
- */
-export function resetActionButtons() {
   let nextBtn;
   try {
     nextBtn = document.getElementById ? document.getElementById("next-button") : null;
@@ -848,7 +903,7 @@ export function resetActionButtons() {
     const clone = nextBtn.cloneNode(true);
     clone.disabled = true;
     delete clone.dataset.nextReady;
-    clone.addEventListener("click", (e) => onNextButtonClick(e, getNextRoundControls()));
+    clone.addEventListener("click", onNextButtonClick);
     nextBtn.replaceWith(clone);
   }
 
@@ -859,17 +914,7 @@ export function resetActionButtons() {
   if (quitBtn) {
     quitBtn.replaceWith(quitBtn.cloneNode(true));
   }
-}
 
-/**
- * Clear round messages and refresh the scoreboard display.
- *
- * @pseudocode
- * 1. Invoke `scoreboard.clearMessage`.
- * 2. Empty `#next-round-timer` and `#round-result` elements.
- * 3. Call `syncScoreDisplay` and `updateDebugPanel`.
- */
-export function clearRoundInfo() {
   try {
     scoreboard.clearMessage();
   } catch {}
@@ -887,23 +932,6 @@ export function clearRoundInfo() {
     syncScoreDisplay();
   } catch {}
   updateDebugPanel();
-}
-
-/**
- * Reset battle UI elements to their initial state.
- *
- * @pseudocode
- * 1. Call `removeBackdrops` with `store`.
- * 2. Invoke `resetActionButtons`.
- * 3. Run `clearRoundInfo`.
- *
- * @param {ReturnType<import("./roundManager.js").createBattleStore>} [store]
- * - Optional battle state store used to tear down the quit modal.
- */
-export function resetBattleUI(store) {
-  removeBackdrops(store);
-  resetActionButtons();
-  clearRoundInfo();
 }
 
 // --- Event bindings ---

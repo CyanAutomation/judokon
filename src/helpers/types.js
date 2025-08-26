@@ -1,11 +1,4 @@
 /**
- * Types and typedefs used across the codebase.
- *
- * @pseudocode
- * 1. Provide JSDoc typedefs for core domain objects (Judoka, JudokaCard, GameMode).
- * 2. Keep this file as a single source of truth for common shapes used by helpers.
- */
-/**
  * @typedef {Object} Judoka
  * @property {string|number} id - Unique identifier for the judoka (number for internal use, string for external references)
  * @property {string} firstname - First name of the judoka
