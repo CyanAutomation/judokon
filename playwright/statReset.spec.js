@@ -23,8 +23,11 @@ test.describe("Classic battle button reset", () => {
     // The Next button may be disabled while the next-round timer runs. Tests
     // can directly call the page-level skip helper to advance the phase
     // deterministically instead of clicking a disabled control.
-    page.evaluate(() => window.skipBattlePhase?.());
-    await page.waitForTimeout(1000);
+    await page.evaluate(() => window.skipBattlePhase?.());
+    // Wait until the next round has fully started and buttons are re-enabled
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    await page.evaluate(() => window.roundPromptPromise);
+    await page.evaluate(() => window.statButtonsReadyPromise);
     await expect(page.locator("#stat-buttons .selected")).toHaveCount(0);
   });
 

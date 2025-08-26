@@ -75,26 +75,49 @@ export class BattleStateMachine {
 
   async dispatch(eventName, payload) {
     const state = this.statesByName.get(this.current);
-    if (!state || !Array.isArray(state.triggers)) return;
-    const match = state.triggers.find((t) => t.on === eventName);
-    if (!match) return;
-    const target = match.target;
-    if (!this.statesByName.has(target)) return;
-    const from = this.current;
-    this.current = target;
-    if (this.onTransition) {
-      try {
-        await this.onTransition({ from, to: target, event: eventName });
-      } catch {}
+    try {
+      if (!state || !Array.isArray(state.triggers)) {
+        console.log("STATE_MACHINE: dispatch no triggers for state", this.current, eventName);
+        return;
+      }
+      console.log("STATE_MACHINE: dispatch", { state: this.current, event: eventName });
+      const match = state.triggers.find((t) => t.on === eventName);
+      if (!match) {
+        console.log("STATE_MACHINE: dispatch no matching trigger", {
+          state: this.current,
+          event: eventName
+        });
+        return;
+      }
+      const target = match.target;
+      if (!this.statesByName.has(target)) {
+        console.log("STATE_MACHINE: dispatch target missing", { target });
+        return;
+      }
+      const from = this.current;
+      this.current = target;
+      console.log("STATE_MACHINE: transitioning", { from, to: target, event: eventName });
+      if (this.onTransition) {
+        try {
+          await this.onTransition({ from, to: target, event: eventName });
+        } catch (err) {
+          console.log("STATE_MACHINE: onTransition error", String(err));
+        }
+      }
+      await this.#runOnEnter(target, payload);
+      console.log("STATE_MACHINE: onEnter complete for", target);
+    } catch (err) {
+      console.log("STATE_MACHINE: dispatch unexpected error", String(err));
     }
-    await this.#runOnEnter(target, payload);
   }
 
   async #runOnEnter(stateName, payload) {
     const fn = this.onEnterMap[stateName];
     if (typeof fn === "function") {
       try {
+        console.log("STATE_MACHINE: running onEnter", stateName);
         await fn(this, payload);
+        console.log("STATE_MACHINE: finished onEnter", stateName);
       } catch (err) {
         // Swallow onEnter errors to avoid breaking game flow
         console.debug("State onEnter error", stateName, err);

@@ -212,6 +212,14 @@ export async function roundDecisionEnter(machine) {
 
   if (store.playerChoice) {
     try {
+      // Clear any scheduled guard to avoid a race where the guard fires
+      // while resolveImmediate is running.
+      try {
+        if (typeof window !== "undefined" && window.__roundDecisionGuard) {
+          clearTimeout(window.__roundDecisionGuard);
+          window.__roundDecisionGuard = null;
+        }
+      } catch {}
       await resolveImmediate();
     } catch {
       try {
@@ -273,6 +281,19 @@ export async function matchOverExit() {}
 export async function interruptRoundEnter(machine, payload) {
   emitBattleEvent("scoreboardClearMessage");
   emitBattleEvent("debugPanelUpdate");
+  // Ensure store selection is cleared when an interrupt occurs so leftover
+  // `playerChoice` doesn't persist and block future rounds.
+  try {
+    const store = machine?.context?.store;
+    if (store) {
+      store.playerChoice = null;
+      store.selectionMade = false;
+    }
+    if (typeof window !== "undefined" && window.__roundDecisionGuard) {
+      clearTimeout(window.__roundDecisionGuard);
+      window.__roundDecisionGuard = null;
+    }
+  } catch {}
   // Expose the last interrupt reason for diagnostics and tests
   try {
     if (typeof window !== "undefined") {

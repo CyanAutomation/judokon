@@ -50,14 +50,29 @@ export function evaluateRound(store, stat, playerVal, opponentVal) {
  * @returns {Promise<ReturnType<typeof evaluateRound>>}
  */
 export async function computeRoundResult(store, stat, playerVal, opponentVal) {
-  const result = evaluateRound(store, stat, playerVal, opponentVal);
+  try {
+    console.log("DEBUG: computeRoundResult start", { stat, playerVal, opponentVal });
+  } catch {}
+  // Coerce values to finite numbers to avoid NaN blocking outcome computation.
+  const pVal = Number.isFinite(Number(playerVal)) ? Number(playerVal) : 0;
+  const oVal = Number.isFinite(Number(opponentVal)) ? Number(opponentVal) : 0;
+  const result = evaluateRound(store, stat, pVal, oVal);
+  try {
+    console.log("DEBUG: evaluateRound result", result);
+  } catch {}
   const outcomeEvent =
     result.outcome === "winPlayer"
       ? "outcome=winPlayer"
       : result.outcome === "winOpponent"
         ? "outcome=winOpponent"
         : "outcome=draw";
+  try {
+    console.log("DEBUG: dispatching outcomeEvent", outcomeEvent);
+  } catch {}
   await dispatchBattleEvent(outcomeEvent);
+  try {
+    console.log("DEBUG: dispatched outcomeEvent", outcomeEvent);
+  } catch {}
   if (result.matchEnded) {
     await dispatchBattleEvent("matchPointReached");
   } else {
@@ -117,8 +132,30 @@ export async function resolveRound(
       await dispatchBattleEvent("evaluate");
     }
   } catch {}
+  try {
+    console.log("DEBUG: resolveRound sleep", { delayMs, stat });
+  } catch {}
+  // Clear any scheduled guard to avoid duplicate resolution.
+  try {
+    if (typeof window !== "undefined" && window.__roundDecisionGuard) {
+      clearTimeout(window.__roundDecisionGuard);
+      window.__roundDecisionGuard = null;
+    }
+    if (typeof window !== "undefined") window.__roundDebug = { resolving: true };
+  } catch {}
   await sleep(delayMs);
+  try {
+    console.log("DEBUG: resolveRound before opponentReveal", { stat });
+  } catch {}
   emitBattleEvent("opponentReveal");
   const result = await computeRoundResult(store, stat, playerVal, opponentVal);
+  try {
+    if (typeof window !== "undefined" && window.__roundDebug) {
+      window.__roundDebug.resolvedAt = Date.now();
+    }
+  } catch {}
+  try {
+    console.log("DEBUG: resolveRound result", result);
+  } catch {}
   return result;
 }

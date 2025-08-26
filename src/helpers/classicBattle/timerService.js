@@ -111,6 +111,17 @@ export async function startTimer(onExpiredSelect) {
   const onExpired = async () => {
     setSkipHandler(null);
     scoreboard.clearTimer();
+    // If a selection was already made, do not auto-select again.
+    try {
+      const store = typeof window !== "undefined" ? window.battleStore : null;
+      const alreadyPicked = !!(store && store.selectionMade);
+      try {
+        console.warn(`[test] onExpired: selectionMade=${alreadyPicked}`);
+      } catch {}
+      if (alreadyPicked) {
+        return;
+      }
+    } catch {}
     await dispatchBattleEvent("timeout");
     await autoSelectStat(onExpiredSelect);
   };
