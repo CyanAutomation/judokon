@@ -67,7 +67,15 @@ describe("classicBattle selection prompt", () => {
     document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     {
-      const p = battleMod.handleStatSelection(store, "power");
+      const playerVal = battleMod.getCardStatValue(document.getElementById("player-card"), "power");
+      const opponentVal = battleMod.getCardStatValue(
+        document.getElementById("opponent-card"),
+        "power"
+      );
+      const p = battleMod.handleStatSelection(store, "power", {
+        playerVal,
+        opponentVal
+      });
       await vi.runAllTimersAsync();
       await p;
     }

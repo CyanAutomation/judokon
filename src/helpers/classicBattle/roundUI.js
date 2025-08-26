@@ -7,6 +7,8 @@ import { handleStatSelection } from "./selectionHandler.js";
 import { showMatchSummaryModal } from "./uiService.js";
 import { handleReplay } from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
+import { getCardStatValue } from "./cardStatUtils.js";
+import { getOpponentJudoka } from "./cardSelection.js";
 
 /**
  * Apply UI updates for a newly started round.
@@ -30,10 +32,33 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 35000) {
   syncScoreDisplay();
   scoreboard.updateRoundCounter(roundNumber);
   showSelectionPrompt();
-  startTimer((stat, opts) => handleStatSelection(store, stat, opts));
+  startTimer((stat, opts) => {
+    const playerCard = document.getElementById("player-card");
+    const opponentCard = document.getElementById("opponent-card");
+    const playerVal = getCardStatValue(playerCard, stat);
+    let opponentVal = getCardStatValue(opponentCard, stat);
+    try {
+      const opp = getOpponentJudoka();
+      const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
+      opponentVal = Number.isFinite(raw) ? raw : opponentVal;
+    } catch {}
+    return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
+  });
   store.stallTimeoutMs = stallTimeoutMs;
   store.statTimeoutId = setTimeout(
-    () => handleStatSelectionTimeout(store, (s, opts) => handleStatSelection(store, s, opts)),
+    () =>
+      handleStatSelectionTimeout(store, (s, opts) => {
+        const playerCard = document.getElementById("player-card");
+        const opponentCard = document.getElementById("opponent-card");
+        const playerVal = getCardStatValue(playerCard, s);
+        let opponentVal = getCardStatValue(opponentCard, s);
+        try {
+          const opp = getOpponentJudoka();
+          const raw = opp && opp.stats ? Number(opp.stats[s]) : NaN;
+          opponentVal = Number.isFinite(raw) ? raw : opponentVal;
+        } catch {}
+        return handleStatSelection(store, s, { playerVal, opponentVal, ...opts });
+      }),
     store.stallTimeoutMs
   );
   updateDebugPanel();

@@ -34,6 +34,7 @@ describe.sequential("classicBattle round resolver once", () => {
   let handleStatSelection;
   let createBattleStore;
   let _resetForTest;
+  let getCardStatValue;
 
   beforeEach(async () => {
     warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -44,7 +45,7 @@ describe.sequential("classicBattle round resolver once", () => {
       <div id="stat-buttons"><button data-stat="power"></button></div>
     `;
     document.body.dataset.battleState = "roundDecision";
-    ({ handleStatSelection, createBattleStore, _resetForTest } = await import(
+    ({ handleStatSelection, createBattleStore, _resetForTest, getCardStatValue } = await import(
       "../../../src/helpers/classicBattle.js"
     ));
   });
@@ -59,7 +60,9 @@ describe.sequential("classicBattle round resolver once", () => {
   it("clears playerChoice after fallback resolve", async () => {
     const store = createBattleStore();
     _resetForTest(store);
-    handleStatSelection(store, "power");
+    const playerVal = getCardStatValue(document.getElementById("player-card"), "power");
+    const opponentVal = getCardStatValue(document.getElementById("opponent-card"), "power");
+    handleStatSelection(store, "power", { playerVal, opponentVal });
     expect(store.playerChoice).toBe("power");
     await vi.advanceTimersByTimeAsync(601);
     expect(store.playerChoice).toBeNull();

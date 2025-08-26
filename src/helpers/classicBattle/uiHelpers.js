@@ -10,6 +10,8 @@ import { showResult } from "../battle/index.js";
 import { shouldReduceMotionSync } from "../motionUtils.js";
 import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
 import { handleStatSelection } from "./selectionHandler.js";
+import { getCardStatValue } from "./cardStatUtils.js";
+import { getOpponentJudoka } from "./cardSelection.js";
 import { onNextButtonClick, getNextRoundControls } from "./timerService.js";
 import { loadStatNames } from "../stats.js";
 import { toggleViewportSimulation } from "../viewportDebug.js";
@@ -504,7 +506,18 @@ export function selectStat(store, statName) {
   const btn = document.querySelector(`#stat-buttons button[data-stat="${statName}"]`);
   if (!btn || btn.disabled) return;
   try {
-    Promise.resolve(handleStatSelection(store, statName)).catch(() => {});
+    const playerCard = document.getElementById("player-card");
+    const opponentCard = document.getElementById("opponent-card");
+    const playerVal = getCardStatValue(playerCard, statName);
+    let opponentVal = getCardStatValue(opponentCard, statName);
+    try {
+      const opp = getOpponentJudoka();
+      const raw = opp && opp.stats ? Number(opp.stats[statName]) : NaN;
+      opponentVal = Number.isFinite(raw) ? raw : opponentVal;
+    } catch {}
+    Promise.resolve(handleStatSelection(store, statName, { playerVal, opponentVal })).catch(
+      () => {}
+    );
   } catch {}
   try {
     showSnackbar(`You Picked: ${btn.textContent}`);

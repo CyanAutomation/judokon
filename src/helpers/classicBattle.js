@@ -25,3 +25,4 @@ export {
   nextRoundTimerReadyPromise,
   matchOverPromise
 } from "./classicBattle/promises.js";
+export { getCardStatValue } from "./classicBattle/cardStatUtils.js";

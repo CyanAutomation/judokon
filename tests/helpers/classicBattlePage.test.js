@@ -60,7 +60,11 @@ describe("classicBattlePage stat button interactions", () => {
       b.tabIndex = 0;
     });
     selectStat(store, "power");
-    expect(handleStatSelection).toHaveBeenCalledWith(store, "power");
+    expect(handleStatSelection).toHaveBeenCalledWith(
+      store,
+      "power",
+      expect.objectContaining({ playerVal: expect.any(Number), opponentVal: expect.any(Number) })
+    );
     expect(showSnackbar).toHaveBeenCalledWith("You Picked: Power");
     buttons.forEach((b) => {
       b.disabled = false;
@@ -69,7 +73,11 @@ describe("classicBattlePage stat button interactions", () => {
     handleStatSelection.mockClear();
     showSnackbar.mockClear();
     selectStat(store, "speed");
-    expect(handleStatSelection).toHaveBeenCalledWith(store, "speed");
+    expect(handleStatSelection).toHaveBeenCalledWith(
+      store,
+      "speed",
+      expect.objectContaining({ playerVal: expect.any(Number), opponentVal: expect.any(Number) })
+    );
     expect(showSnackbar).toHaveBeenCalledWith("You Picked: Speed");
     buttons.forEach((b) => {
       b.disabled = false;
@@ -78,7 +86,11 @@ describe("classicBattlePage stat button interactions", () => {
     handleStatSelection.mockClear();
     showSnackbar.mockClear();
     selectStat(store, "technique");
-    expect(handleStatSelection).toHaveBeenCalledWith(store, "technique");
+    expect(handleStatSelection).toHaveBeenCalledWith(
+      store,
+      "technique",
+      expect.objectContaining({ playerVal: expect.any(Number), opponentVal: expect.any(Number) })
+    );
     expect(showSnackbar).toHaveBeenCalledWith("You Picked: Technique");
   });
 
