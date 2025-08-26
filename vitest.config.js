@@ -11,14 +11,14 @@ export default defineConfig({
       "@": resolve(rootDir, "src")
     }
   },
-      test: {
-        environment: 'jsdom',
-        globals: true,
-        setupFiles: ['./tests/setup.js'],
-        exclude: ['node_modules', 'dist', '.idea', '.git', '.cache', 'tests/e2e', 'tests/playwright'],
-        reporters: 'basic',
-        coverage: {
-            reporter: ['text', 'json', 'html'],
-        },
-    },
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./tests/setup.js"],
+    exclude: ["node_modules", "dist", ".idea", ".git", ".cache", "tests/e2e", "tests/playwright"],
+    reporters: "basic",
+    coverage: {
+      reporter: ["text", "json", "html"]
+    }
+  }
 });
