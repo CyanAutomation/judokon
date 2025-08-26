@@ -15,26 +15,6 @@ const CONTROL_MAP = [
 ];
 
 /**
- * Apply a value to an input or checkbox element.
- *
- * @pseudocode
- * 1. Exit early when `element` is null or undefined.
- * 2. For checkboxes, set the `checked` property based on `value`.
- * 3. For other inputs, assign the `value` directly.
- *
- * @param {HTMLInputElement|HTMLSelectElement|null} element - Control to update.
- * @param {*} value - Value to apply.
- */
-function applyInputState(element, value) {
-  if (!element) return;
-  if (element.type === "checkbox") {
-    element.checked = Boolean(value);
-  } else {
-    element.value = value;
-  }
-}
-
-/**
  * Initialize control states based on a settings object.
  *
  * @pseudocode
@@ -46,6 +26,27 @@ function applyInputState(element, value) {
  * @param {Record<string, string>} [tooltipMap] - Flattened tooltip lookup.
  */
 export function applyInitialControlValues(controls, settings = DEFAULT_SETTINGS, tooltipMap = {}) {
+  /**
+   * Apply a value to an input or checkbox element.
+   *
+   * @private
+   * @pseudocode
+   * 1. Exit early when `element` is null or undefined.
+   * 2. For checkboxes, set the `checked` property based on `value`.
+   * 3. For other inputs, assign the `value` directly.
+   *
+   * @param {HTMLInputElement|HTMLSelectElement|null} element - Control to update.
+   * @param {*} value - Value to apply.
+   */
+  function applyInputState(element, value) {
+    if (!element) return;
+    if (element.type === "checkbox") {
+      element.checked = Boolean(value);
+    } else {
+      element.value = value;
+    }
+  }
+
   CONTROL_MAP.forEach(({ control, setting, descId }) => {
     const el = controls[control];
     applyInputState(el, settings[setting]);
