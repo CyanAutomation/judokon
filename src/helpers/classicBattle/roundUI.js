@@ -102,8 +102,24 @@ onBattleEvent("roundResolved", (e) => {
     });
     emitBattleEvent("matchOver");
   }
-  // Wait two frames so the "selected" class remains visible for one paint
-  // Event order: roundResolved → rAF → rAF → resetStatButtons
-  requestAnimationFrame(() => requestAnimationFrame(() => resetStatButtons()));
+  // Prefer immediate reset. In some headless/CI environments rAF can be
+  // throttled heavily, which would delay clearing the visual selection
+  // state and make tests flaky. We still attempt the two-rAF path to allow
+  // one paint of the selected state in interactive sessions, but back it up
+  // with a timeout-based fallback to guarantee timely clearing.
+  try {
+    requestAnimationFrame(() => requestAnimationFrame(() => resetStatButtons()));
+  } catch {
+    // If rAF is unavailable, clear immediately.
+    resetStatButtons();
+  }
+  // Fallback: ensure reset occurs even if rAF is throttled/not firing.
+  try {
+    setTimeout(() => {
+      try {
+        resetStatButtons();
+      } catch {}
+    }, 120);
+  } catch {}
   updateDebugPanel();
 });
