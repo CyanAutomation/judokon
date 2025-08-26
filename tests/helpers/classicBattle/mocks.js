@@ -1,5 +1,4 @@
 import { vi } from "vitest";
-import { CLASSIC_BATTLE_STATES } from "../../../src/helpers/classicBattle/stateTable.js";
 import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
 
 export function mockScheduler() {
@@ -27,7 +26,6 @@ export function mockFeatureFlags(initialFlags = {}) {
 
 export function mockDataUtils(fetchImplementation) {
   const defaultFetch = async (path) => {
-    if (path.includes("classicBattleStates.json")) return CLASSIC_BATTLE_STATES;
     if (path.includes("battleRounds.json")) return [];
     return {};
   };
