@@ -1,7 +1,7 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { waitForBattleReady } from "./fixtures/waits.js";
 
-test.describe.parallel("Battle orientation behavior", () => {
+test.describe("Battle orientation behavior", () => {
   test("updates orientation data attribute on rotation", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
     await waitForBattleReady(page);

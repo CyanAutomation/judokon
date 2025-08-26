@@ -44,7 +44,7 @@ function getLabelData() {
   return { sortedNames, flagLabels, expectedLabels };
 }
 
-test.describe.parallel("Settings page", () => {
+test.describe("Settings page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
     await waitForSettingsReady(page);

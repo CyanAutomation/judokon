@@ -39,7 +39,7 @@ const mountInspectorPanelScript = fs
 
 const initScript = createInspectorPanelScript + "\n" + mountInspectorPanelScript;
 
-test.describe.parallel("Card inspector accessibility", () => {
+test.describe("Card inspector accessibility", () => {
   test.beforeEach(async ({ page }) => {
     await page.setContent("<html><body></body></html>");
     await page.addScriptTag({ content: initScript });

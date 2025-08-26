@@ -5,7 +5,7 @@ import {
   NAV_CLASSIC_BATTLE
 } from "./fixtures/navigationChecks.js";
 
-test.describe.parallel("PRD Reader page", () => {
+test.describe("PRD Reader page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/prdViewer.html");
   });

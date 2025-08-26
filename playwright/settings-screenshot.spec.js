@@ -3,7 +3,7 @@ import { waitForSettingsReady } from "./fixtures/waits.js";
 
 const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
 
-test.describe.parallel(
+test.describe(
   runScreenshots ? "Settings screenshots" : "Settings screenshots (skipped)",
   () => {
     test.use({ viewport: { width: 1280, height: 720 } });

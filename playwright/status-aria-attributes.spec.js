@@ -9,7 +9,7 @@ const pages = [
   "/src/pages/vectorSearch.html"
 ];
 
-test.describe.parallel("Status aria attributes", () => {
+test.describe("Status aria attributes", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       Math.random = () => 0.42;

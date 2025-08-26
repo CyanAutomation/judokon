@@ -12,7 +12,7 @@ const pageContent = `<!DOCTYPE html>
   </body>
 </html>`;
 
-test.describe.parallel("Tooltip behavior", () => {
+test.describe("Tooltip behavior", () => {
   test.beforeEach(async ({ page }) => {
     await page.route("**/src/helpers/tooltip.js", (route) =>
       route.fulfill({

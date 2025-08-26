@@ -2,7 +2,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 import { waitForBattleReady } from "./fixtures/waits.js";
 import { classicBattleStates } from "./fixtures/classicBattleStates.js";
 
-test.describe.parallel("Battle state progress", () => {
+test.describe("Battle state progress", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       Math.random = () => 0.42;

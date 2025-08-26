@@ -1,7 +1,7 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { verifyPageBasics, NAV_CLASSIC_BATTLE } from "./fixtures/navigationChecks.js";
 
-test.describe.parallel("View Judoka screen", () => {
+test.describe("View Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/src/pages/randomJudoka.html");
     await page.locator('body[data-random-judoka-ready="true"]').waitFor();

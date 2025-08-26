@@ -1,7 +1,7 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { waitForSettingsReady } from "./fixtures/waits.js";
 
-test.describe.parallel("Responsive scenarios", () => {
+test.describe("Responsive scenarios", () => {
   test("renders ultra-narrow layout without horizontal scroll", async ({ page }) => {
     await page.goto("/index.html", { waitUntil: "networkidle" });
     await page.setViewportSize({ width: 260, height: 800 });

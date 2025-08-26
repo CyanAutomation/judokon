@@ -3,7 +3,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 // Allow skipping screenshots via the SKIP_SCREENSHOTS environment variable
 const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
 
-test.describe.parallel(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)", () => {
+test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)", () => {
   test.use({ viewport: { width: 1280, height: 720 } });
   test.skip(!runScreenshots);
 

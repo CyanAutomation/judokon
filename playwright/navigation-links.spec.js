@@ -6,7 +6,7 @@ const NAV_PAGES = [
   { url: "/src/pages/randomJudoka.html", linkId: NAV_CLASSIC_BATTLE }
 ];
 
-test.describe.parallel("Navigation links", () => {
+test.describe("Navigation links", () => {
   for (const { url, linkId } of NAV_PAGES) {
     test(`battle link navigates from ${url}`, async ({ page }) => {
       await page.goto(url);

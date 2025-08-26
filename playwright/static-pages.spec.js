@@ -11,7 +11,7 @@ const pages = [
   { url: "/src/pages/changeLog.html", name: "Change Log" }
 ];
 
-test.describe.parallel("Static pages", () => {
+test.describe("Static pages", () => {
   for (const { url, name } of pages) {
     test(`${name} page loads and nav visible`, async ({ page }) => {
       await page.goto(url);

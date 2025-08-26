@@ -5,7 +5,7 @@ import {
   NAV_CLASSIC_BATTLE
 } from "./fixtures/navigationChecks.js";
 
-test.describe.parallel("Homepage", () => {
+test.describe("Homepage", () => {
   // Navigation coverage: footer link visibility and ordering.
   test.beforeEach(async ({ page }) => {
     await page.goto("/index.html");

@@ -314,6 +314,15 @@ export function handleZeroCooldownFastPath(controls, btn) {
       controls.resolveReady();
     } catch {}
   }
+  // In test mode, auto-advance to the next round to avoid flakiness from
+  // relying on external calls to the skip handler.
+  try {
+    if (isTestModeEnabled && isTestModeEnabled()) {
+      setTimeout(() => {
+        dispatchBattleEvent("ready").catch(() => {});
+      }, 0);
+    }
+  } catch {}
   currentNextRound = controls;
   return controls;
 }

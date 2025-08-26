@@ -4,7 +4,7 @@ import { waitForBattleReady, waitForBattleState } from "./fixtures/waits.js";
 /**
  * Verify stat buttons are cleared after the next round begins.
  */
-test.describe.parallel("Classic battle button reset", () => {
+test.describe("Classic battle button reset", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem(

@@ -3,7 +3,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 /**
  * Vector search demo tests.
  */
-test.describe.parallel("Vector search page", () => {
+test.describe("Vector search page", () => {
   test.beforeEach(async ({ page }) => {
     await page.route("**/client_embeddings.json", (route) =>
       route.fulfill({ path: "tests/fixtures/client_embeddings_vector.json" })

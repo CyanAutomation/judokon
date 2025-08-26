@@ -1,7 +1,7 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { verifyPageBasics } from "./fixtures/navigationChecks.js";
 
-test.describe.parallel("Meditation screen", () => {
+test.describe("Meditation screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() =>
       localStorage.setItem(

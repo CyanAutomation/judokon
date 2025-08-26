@@ -8,7 +8,7 @@ import { _resetForTest, setTieRound } from "../tests/helpers/battleTestUtils.js"
 
 const rounds = JSON.parse(readFileSync(resolve("src/data/battleRounds.json"), "utf8"));
 
-test.describe.parallel("Classic battle flow", () => {
+test.describe("Classic battle flow", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       window.__NEXT_ROUND_COOLDOWN_MS = 0;
