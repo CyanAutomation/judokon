@@ -44,6 +44,7 @@ import { walk } from "estree-walker";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
+let codeGraphs = { modules: {} };
 
 // Larger chunks reduce the total embedding count and help keep the
 // final JSON under the 6.8MB limit. Bump slightly to shrink output.
@@ -359,18 +360,45 @@ function determineRole(relativePath) {
   return "utility";
 }
 
+/**
+ * Build embedding metadata linking to graph nodes and relations.
+ *
+ * @pseudocode
+ * 1. Locate the module and function in the precomputed `codeGraphs` map.
+ * 2. Use graph data to collect import and call relations along with pattern tags.
+ * 3. Return metadata containing construct, role, graph node ids, patterns,
+ *    and relation arrays for tagging.
+ *
+ * @param {string} relativePath - File path relative to the repo root.
+ * @param {object} [chunkMeta] - Details about the current code chunk.
+ * @param {Array<string>} [imports] - Fallback import list.
+ * @returns {{construct?:string,role:string,graph?:object,patterns:string[],relations:{imports:string[],calls:string[]}}}
+ */
 function buildMetadata(relativePath, chunkMeta = {}, imports = []) {
+  const moduleGraph = codeGraphs.modules?.[relativePath] || {};
+  const functionGraph = chunkMeta.id ? moduleGraph.functions?.[chunkMeta.id] || {} : {};
+  const relations = {
+    imports: moduleGraph.imports || imports,
+    calls: functionGraph.calls || chunkMeta.references || []
+  };
+  const graph = chunkMeta.id ? { module: relativePath, node: chunkMeta.id } : undefined;
   return {
     construct: chunkMeta.construct,
     role: determineRole(relativePath),
-    relations: {
-      imports,
-      references: chunkMeta.references || []
-    }
+    graph,
+    patterns: functionGraph.patterns || [],
+    relations
   };
 }
 
 async function generate() {
+  try {
+    const graphPath = path.join(rootDir, "src/data/codeGraphs.json");
+    codeGraphs = JSON.parse(await readFile(graphPath, "utf8"));
+  } catch {
+    codeGraphs = { modules: {} };
+  }
+
   const files = await getFiles();
   const extractor = await loadModel();
   const outputPath = path.join(rootDir, "src/data/client_embeddings.json");
@@ -424,6 +452,9 @@ async function generate() {
           const tagSet = new Set(baseTags);
           tagSet.add(intent);
           tagSet.add(metadata.role);
+          for (const mod of metadata.relations.imports) tagSet.add(mod);
+          for (const call of metadata.relations.calls) tagSet.add(call);
+          for (const pat of metadata.patterns) tagSet.add(pat);
           const tags = Array.from(tagSet);
           const result = await extractor(chunkText, { pooling: "mean" });
           const qa = createQaContext(chunkText);
@@ -447,6 +478,9 @@ async function generate() {
           const tagSet = new Set(baseTags);
           tagSet.add(intent);
           tagSet.add(metadata.role);
+          for (const mod of metadata.relations.imports) tagSet.add(mod);
+          for (const call of metadata.relations.calls) tagSet.add(call);
+          for (const pat of metadata.patterns) tagSet.add(pat);
           const tags = Array.from(tagSet);
           const result = await extractor(chunkText, { pooling: "mean" });
           const qa = createQaContext(chunkText);
@@ -470,6 +504,9 @@ async function generate() {
         const tagSet = new Set(baseTags);
         tagSet.add(intent);
         tagSet.add(metadata.role);
+        for (const mod of metadata.relations.imports) tagSet.add(mod);
+        for (const call of metadata.relations.calls) tagSet.add(call);
+        for (const pat of metadata.patterns) tagSet.add(pat);
         const tags = Array.from(tagSet);
         const result = await extractor(chunkText, { pooling: "mean" });
         const qa = createQaContext(chunkText);
@@ -496,7 +533,8 @@ async function generate() {
         if (metadata.construct) tagSet.add(metadata.construct);
         tagSet.add(metadata.role);
         for (const mod of metadata.relations.imports) tagSet.add(mod);
-        for (const ref of metadata.relations.references) tagSet.add(ref);
+        for (const call of metadata.relations.calls) tagSet.add(call);
+        for (const pat of metadata.patterns) tagSet.add(pat);
         const tags = Array.from(tagSet);
         const result = await extractor(chunkText, { pooling: "mean" });
         const qa = createQaContext(chunkText);
