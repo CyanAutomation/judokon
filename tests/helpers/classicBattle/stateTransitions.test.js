@@ -23,6 +23,20 @@ function createMachineForTransition(state, trigger, onTransition) {
   return new BattleStateMachine(machineStates, state.name, {}, {}, onTransition);
 }
 
+describe("BattleStateMachine.create", () => {
+  it("initialises with embedded state table", async () => {
+    const machine = await BattleStateMachine.create();
+    expect(
+      CLASSIC_BATTLE_STATES.length,
+      "Classic battle state table should not be empty"
+    ).toBeGreaterThan(0);
+    const initialState = (
+      CLASSIC_BATTLE_STATES.find((s) => s.type === "initial") || CLASSIC_BATTLE_STATES[0]
+    ).name;
+    expect(machine.getState()).toBe(initialState);
+  });
+});
+
 describe("classic battle state table transitions", () => {
   for (const state of CLASSIC_BATTLE_STATES) {
     if (!Array.isArray(state.triggers)) continue;
