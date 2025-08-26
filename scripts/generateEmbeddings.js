@@ -1,9 +1,9 @@
 /* eslint-env node */
 /**
- * Generate embeddings for PRD markdown and JSON data files.
+ * Generate embeddings for PRD markdown, JSON data, and JS source files.
  *
  * @pseudocode
- * 1. Use glob to gather markdown and JSON sources, skipping existing
+ * 1. Use glob to gather markdown, JSON, and JS sources, skipping existing
  *    `client_embeddings.json` and large datasets.
  * 2. Load the quantized transformer model for feature extraction to reduce
  *    memory usage.
@@ -15,12 +15,16 @@
  *      * When the root is an array, embed each item individually.
  *      * When the root is an object, flatten nested fields and embed each
  *        key/value pair.
+ *    - If JS, parse the AST.
+ *      * For source files, emit one chunk per exported function or class.
+ *      * For test files, emit one chunk per `it` test case including describe
+ *        context.
  * 4. Encode each chunk or entry using mean pooling and round the values.
  * 5. Build output objects with id, text, embedding, source, tags, and version.
  *    - Include an optional `qaContext` field containing a short summary when
  *      one can be derived from the text.
- *    - Tags include both a broad category ("prd" or "data") and more specific
- *      labels such as "judoka-data" or "tooltip".
+ *    - Tags include both a broad category ("prd", "data", or "code") and more
+ *      specific labels such as "judoka-data" or "tooltip".
  *    - Append a simple intent tag ("why", "how", or "what") based on text
  *      analysis.
  * 6. Stream each output object directly to `client_embeddings.json` using
@@ -35,6 +39,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { glob } from "glob";
 import { pipeline } from "@xenova/transformers";
+import * as acorn from "acorn";
+import { walk } from "estree-walker";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -104,6 +110,114 @@ function chunkMarkdown(text) {
   return chunks;
 }
 
+/**
+ * Chunk JavaScript source into logical units.
+ *
+ * @pseudocode
+ * 1. Parse the source into an AST using acorn.
+ * 2. When `isTest` is true:
+ *    - Track nested `describe` titles while walking the tree.
+ *    - Emit one chunk for each `it`/`test` call with its describe context.
+ * 3. Otherwise:
+ *    - Collect exported functions or classes and include any leading JSDoc.
+ * 4. Return an array of `{id, text}` chunks ready for embedding.
+ *
+ * @param {string} source - JS file contents.
+ * @param {boolean} isTest - Whether the file is a test file.
+ * @returns {Array<{id:string,text:string}>} Code chunks.
+ */
+function chunkCode(source, isTest = false) {
+  const comments = [];
+  const ast = acorn.parse(source, {
+    ecmaVersion: "latest",
+    sourceType: "module",
+    ranges: true,
+    onComment: comments
+  });
+  const chunks = [];
+
+  function findJsDoc(start) {
+    for (let i = comments.length - 1; i >= 0; i--) {
+      const c = comments[i];
+      if (c.end <= start && c.type === "Block" && c.value.startsWith("*")) {
+        if (/^\s*$/.test(source.slice(c.end, start))) return c;
+        break;
+      }
+    }
+    return null;
+  }
+
+  function callName(node) {
+    if (node.type === "Identifier") return node.name;
+    if (node.type === "MemberExpression") return callName(node.property);
+    return null;
+  }
+
+  if (isTest) {
+    const stack = [];
+    walk(ast, {
+      enter(node) {
+        if (node.type === "CallExpression") {
+          const name = callName(node.callee);
+          if (name === "describe") {
+            const title = node.arguments[0] && node.arguments[0].value;
+            stack.push(title || "");
+          } else if (name === "it" || name === "test") {
+            const title = node.arguments[0] && node.arguments[0].value;
+            const context = [...stack, title || ""].filter(Boolean).join(" > ");
+            const [start, end] = node.range;
+            const code = source.slice(start, end);
+            const prefix = context ? `// ${context}\n` : "";
+            chunks.push({
+              id: context || `test-${chunks.length + 1}`,
+              text: `${prefix}${code}`
+            });
+          }
+        }
+      },
+      leave(node) {
+        if (node.type === "CallExpression" && callName(node.callee) === "describe") {
+          stack.pop();
+        }
+      }
+    });
+  } else {
+    walk(ast, {
+      enter(node) {
+        if (node.type === "ExportNamedDeclaration" || node.type === "ExportDefaultDeclaration") {
+          const decl = node.declaration;
+          if (!decl) return;
+          const exports = [];
+          if (decl.type === "FunctionDeclaration" || decl.type === "ClassDeclaration") {
+            exports.push({ id: decl.id && decl.id.name, start: node.start, end: node.end });
+          } else if (decl.type === "VariableDeclaration") {
+            for (const d of decl.declarations) {
+              const init = d.init;
+              if (
+                init &&
+                (init.type === "FunctionExpression" ||
+                  init.type === "ArrowFunctionExpression" ||
+                  init.type === "ClassExpression")
+              ) {
+                exports.push({ id: d.id.name, start: node.start, end: node.end, decl: d });
+              }
+            }
+          }
+          for (const ex of exports) {
+            let start = ex.start;
+            const doc = findJsDoc(start);
+            if (doc) start = doc.start;
+            const code = source.slice(start, ex.end);
+            chunks.push({ id: ex.id || "default", text: code });
+          }
+        }
+      }
+    });
+  }
+
+  return chunks;
+}
+
 function createQaContext(text) {
   if (typeof text !== "string") return undefined;
   const cleaned = text
@@ -138,7 +252,11 @@ async function getFiles() {
         "japaneseConverter.json"
       ].includes(path.basename(f))
   );
-  return [...prdFiles, ...guidelineFiles, ...workflowFiles, ...jsonFiles];
+  const jsFiles = await glob("{src,tests,playwright}/**/*.js", {
+    cwd: rootDir,
+    ignore: ["**/node_modules/**"]
+  });
+  return [...prdFiles, ...guidelineFiles, ...workflowFiles, ...jsonFiles, ...jsFiles];
 }
 
 /**
@@ -151,14 +269,20 @@ async function loadModel() {
   return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { quantized: true });
 }
 
-function determineTags(relativePath, isJson) {
-  const tags = [isJson ? "data" : "prd"];
-  if (isJson) {
+function determineTags(relativePath, ext, isTest) {
+  if (ext === ".json") {
+    const tags = ["data"];
     const file = path.basename(relativePath);
     if (file === "judoka.json") tags.push("judoka-data");
     else if (file === "tooltips.json") tags.push("tooltip");
     else tags.push("game-data");
-  } else if (relativePath.startsWith("design/productRequirementsDocuments")) {
+    return tags;
+  }
+  if (ext === ".js") {
+    return [isTest ? "test-code" : "code"];
+  }
+  const tags = ["prd"];
+  if (relativePath.startsWith("design/productRequirementsDocuments")) {
     tags.push("design-doc");
   } else if (relativePath.startsWith("design/codeStandards")) {
     tags.push("design-guideline");
@@ -213,8 +337,17 @@ async function generate() {
     const fullPath = path.join(rootDir, relativePath);
     const text = await readFile(fullPath, "utf8");
     const base = path.basename(relativePath);
-    const isJson = relativePath.endsWith(".json");
-    const baseTags = determineTags(relativePath, isJson);
+    const ext = path.extname(relativePath);
+    const isJson = ext === ".json";
+    const isMarkdown = ext === ".md";
+    const isJs = ext === ".js";
+    const isTest =
+      isJs &&
+      (/\.test\.js$/.test(base) ||
+        /\.spec\.js$/.test(base) ||
+        relativePath.includes("/tests/") ||
+        relativePath.includes("/playwright/"));
+    const baseTags = determineTags(relativePath, ext, isTest);
 
     if (isJson) {
       const json = JSON.parse(text);
@@ -254,7 +387,7 @@ async function generate() {
           });
         }
       }
-    } else {
+    } else if (isMarkdown) {
       const chunks = chunkMarkdown(text);
       for (const [index, chunkText] of chunks.entries()) {
         const intent = determineIntent(chunkText);
@@ -267,6 +400,25 @@ async function generate() {
           ...(qa ? { qaContext: qa } : {}),
           embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
           source: `${relativePath} [chunk ${index + 1}]`,
+          tags,
+          version: 1
+        });
+      }
+    } else if (isJs) {
+      const chunks = chunkCode(text, isTest);
+      for (const [index, chunk] of chunks.entries()) {
+        const chunkText = chunk.text;
+        const idSuffix = chunk.id || `chunk-${index + 1}`;
+        const intent = determineIntent(chunkText);
+        const tags = baseTags.includes(intent) ? [...baseTags] : [...baseTags, intent];
+        const result = await extractor(chunkText, { pooling: "mean" });
+        const qa = createQaContext(chunkText);
+        writeEntry({
+          id: `${base}-${idSuffix}`,
+          text: chunkText,
+          ...(qa ? { qaContext: qa } : {}),
+          embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
+          source: `${relativePath} [${idSuffix}]`,
           tags,
           version: 1
         });
