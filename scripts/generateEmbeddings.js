@@ -299,13 +299,21 @@ function createQaContext(text) {
     .replace(/\s+/g, " ")
     .replace(/^#+\s*/, "")
     .trim();
-  const match = cleaned.match(/[^.!?]+[.!?]/);
-  if (!match) return undefined;
-  let sentence = match[0].trim();
-  if (sentence.length > 160) {
-    sentence = sentence.slice(0, 157) + "...";
+  const sentences = cleaned.match(/[^.!?]+[.!?]/g);
+  if (!sentences || sentences.length === 0) return undefined;
+  const whySentence =
+    sentences.find((s) => /(why|reason|because|goal|problem|purpose)/i.test(s)) || sentences[0];
+  const howSentence =
+    sentences.find(
+      (s) => s !== whySentence && /(how|using|through|via|step|process|by\s|approach)/i.test(s)
+    ) ||
+    sentences[whySentence === sentences[0] && sentences[1] ? 1 : 0] ||
+    sentences[0];
+  let summary = `Why: ${whySentence.trim()} How: ${howSentence.trim()}`;
+  if (summary.length > 200) {
+    summary = summary.slice(0, 197) + "...";
   }
-  return sentence;
+  return summary;
 }
 
 /**
@@ -313,10 +321,11 @@ function createQaContext(text) {
  *
  * @pseudocode
  * 1. Collect all markdown under `design/` and every `README.md`.
- * 2. Include game data JSON files, excluding large generated files.
- * 3. Add `.js` and `.ts` sources from `src/` and `tests/` while skipping
+ * 2. Add top-level overview markdown like `CONTRIBUTING.md` and `MIGRATION.md`.
+ * 3. Include game data JSON files, excluding large generated files.
+ * 4. Add `.js` and `.ts` sources from `src/` and `tests/` while skipping
  *    `node_modules`.
- * 4. Deduplicate and return the combined list.
+ * 5. Deduplicate and return the combined list.
  *
  * @returns {Promise<string[]>} Paths relative to the repo root.
  */
@@ -326,6 +335,7 @@ async function getFiles() {
     cwd: rootDir,
     ignore: ["**/node_modules/**"]
   });
+  const overviewDocs = await glob("*.md", { cwd: rootDir });
   const jsonFiles = (await glob("src/data/*.json", { cwd: rootDir })).filter(
     (f) =>
       path.extname(f) === ".json" &&
@@ -342,7 +352,9 @@ async function getFiles() {
     cwd: rootDir,
     ignore: ["**/node_modules/**"]
   });
-  return Array.from(new Set([...designDocs, ...readmes, ...jsonFiles, ...jsFiles]));
+  return Array.from(
+    new Set([...designDocs, ...readmes, ...overviewDocs, ...jsonFiles, ...jsFiles])
+  );
 }
 
 /**
@@ -374,6 +386,10 @@ function determineTags(relativePath, ext, isTest) {
     tags.push("design-guideline");
   } else if (relativePath.startsWith("design/agentWorkflows")) {
     tags.push("agent-workflow");
+  } else if (relativePath.startsWith("design/architecture")) {
+    tags.push("architecture-doc");
+  } else if (/^(README|CONTRIBUTING|MIGRATION)\.md$/.test(path.basename(relativePath))) {
+    tags.push("overview-doc");
   }
   return tags;
 }
@@ -389,6 +405,14 @@ function determineIntent(text) {
   if (/(why|reason|because|goal|problem)/.test(lower)) return "why";
   if (/(how|step|workflow|process|flow)/.test(lower)) return "how";
   return "what";
+}
+
+function detectCrossCutting(text) {
+  const lower = text.toLowerCase();
+  const tags = [];
+  if (/\b(log|logger|console|debug)\b/.test(lower)) tags.push("logging");
+  if (/(state|store|reducer|context)/.test(lower)) tags.push("state-management");
+  return tags;
 }
 
 function determineRole(relativePath) {
@@ -498,6 +522,7 @@ async function generate() {
           for (const mod of metadata.relations.imports) tagSet.add(mod);
           for (const call of metadata.relations.calls) tagSet.add(call);
           for (const pat of metadata.patterns) tagSet.add(pat);
+          for (const cc of detectCrossCutting(chunkText)) tagSet.add(cc);
           const tags = Array.from(tagSet);
           const result = await extractor(chunkText, { pooling: "mean" });
           const qa = createQaContext(chunkText);
@@ -524,6 +549,7 @@ async function generate() {
           for (const mod of metadata.relations.imports) tagSet.add(mod);
           for (const call of metadata.relations.calls) tagSet.add(call);
           for (const pat of metadata.patterns) tagSet.add(pat);
+          for (const cc of detectCrossCutting(chunkText)) tagSet.add(cc);
           const tags = Array.from(tagSet);
           const result = await extractor(chunkText, { pooling: "mean" });
           const qa = createQaContext(chunkText);
@@ -550,6 +576,7 @@ async function generate() {
         for (const mod of metadata.relations.imports) tagSet.add(mod);
         for (const call of metadata.relations.calls) tagSet.add(call);
         for (const pat of metadata.patterns) tagSet.add(pat);
+        for (const cc of detectCrossCutting(chunkText)) tagSet.add(cc);
         const tags = Array.from(tagSet);
         const result = await extractor(chunkText, { pooling: "mean" });
         const qa = createQaContext(chunkText);
@@ -578,6 +605,7 @@ async function generate() {
         for (const mod of metadata.relations.imports) tagSet.add(mod);
         for (const call of metadata.relations.calls) tagSet.add(call);
         for (const pat of metadata.patterns) tagSet.add(pat);
+        for (const cc of detectCrossCutting(chunkText)) tagSet.add(cc);
         const tags = Array.from(tagSet);
         const result = await extractor(chunkText, { pooling: "mean" });
         const qa = createQaContext(chunkText);
