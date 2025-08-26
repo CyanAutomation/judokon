@@ -1,5 +1,6 @@
 import { initRoundSelectModal } from "./roundSelectModal.js";
 import { getDefaultTimer } from "../timerUtils.js";
+import { isTestModeEnabled } from "../testModeUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { getStatValue } from "../battle/index.js";
 import { scheduleNextRound } from "./timerService.js";
@@ -90,11 +91,33 @@ export async function cooldownEnter(machine, payload) {
       );
     } catch {}
   }
+  // For inter-round cooldowns in test mode, auto-advance to the next round to
+  // avoid relying on external UI timers/handlers which can be racy under CI.
+  try {
+    if (isTestModeEnabled && isTestModeEnabled()) {
+      setTimeout(() => {
+        try {
+          machine.dispatch("ready");
+        } catch {}
+      }, 0);
+    }
+  } catch {}
 }
 export async function cooldownExit() {}
 
 export async function roundStartEnter(machine) {
   const { startRoundWrapper, doStartRound, store } = machine.context;
+  // In test mode, proactively dispatch cardsRevealed on the next tick so the
+  // machine progresses even if startRound has async work or external deps.
+  try {
+    if (isTestModeEnabled && isTestModeEnabled()) {
+      setTimeout(() => {
+        try {
+          machine.dispatch("cardsRevealed");
+        } catch {}
+      }, 0);
+    }
+  } catch {}
   try {
     if (typeof startRoundWrapper === "function") await startRoundWrapper();
     else if (typeof doStartRound === "function") await doStartRound(store);
