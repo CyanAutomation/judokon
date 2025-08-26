@@ -23,6 +23,94 @@ export function simulateOpponentStat(stats, difficulty = "easy") {
 }
 
 /**
+ * Retrieve stat values for the player and opponent cards.
+ *
+ * @pseudocode
+ * 1. If `playerVal` is missing or NaN, read the value from `#player-card`.
+ * 2. If `opponentVal` is missing or NaN, read the value from `#opponent-card`.
+ * 3. Coerce both values to numbers and return them.
+ *
+ * @param {string} stat - Selected stat key.
+ * @param {number} [playerVal] - Precomputed player stat value.
+ * @param {number} [opponentVal] - Precomputed opponent stat value.
+ * @returns {{playerVal: number, opponentVal: number}}
+ */
+export function getPlayerAndOpponentValues(stat, playerVal, opponentVal) {
+  if (playerVal === undefined || Number.isNaN(playerVal)) {
+    playerVal = getCardStatValue(document.querySelector("#player-card"), stat);
+  }
+  if (opponentVal === undefined || Number.isNaN(opponentVal)) {
+    opponentVal = getCardStatValue(document.querySelector("#opponent-card"), stat);
+  }
+  return { playerVal: Number(playerVal), opponentVal: Number(opponentVal) };
+}
+
+/**
+ * Resolve the round via the battle state machine, falling back to direct
+ * resolution on error.
+ *
+ * @pseudocode
+ * 1. Schedule a fallback call to `resolveRound` after 600ms.
+ * 2. Await `dispatchBattleEvent("statSelected")`.
+ * 3. If dispatch fails, call `resolveRound` immediately with deterministic
+ *    options in Vitest environments.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ * @param {object} [opts] - Resolver options.
+ * @returns {Promise<ReturnType<typeof resolveRound>|undefined>}
+ */
+export async function resolveRoundViaMachine(store, stat, playerVal, opponentVal, opts = {}) {
+  try {
+    setTimeout(() => {
+      if (store.playerChoice) {
+        store.playerChoice = null;
+        resolveRound(store, stat, playerVal, opponentVal, opts)
+          .catch(() => {})
+          .finally(() => {
+            store.playerChoice = null;
+          });
+      }
+    }, 600);
+    await dispatchBattleEvent("statSelected");
+    return undefined;
+  } catch {
+    const deterministicOpts =
+      typeof process !== "undefined" && process.env && process.env.VITEST
+        ? { ...opts, delayMs: 0 }
+        : opts;
+    return resolveRound(store, stat, playerVal, opponentVal, deterministicOpts);
+  }
+}
+
+/**
+ * Resolve the round directly without the battle state machine.
+ *
+ * @pseudocode
+ * 1. In Vitest, use a deterministic delay of 0ms.
+ * 2. Call `resolveRound` and clear `store.playerChoice`.
+ * 3. Return the result.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ * @param {object} [opts] - Resolver options.
+ * @returns {Promise<ReturnType<typeof resolveRound>>}
+ */
+export async function resolveRoundDirect(store, stat, playerVal, opponentVal, opts = {}) {
+  const deterministicOpts =
+    typeof process !== "undefined" && process.env && process.env.VITEST
+      ? { ...opts, delayMs: 0 }
+      : opts;
+  const result = await resolveRound(store, stat, playerVal, opponentVal, deterministicOpts);
+  store.playerChoice = null;
+  return result;
+}
+
+/**
  * Handles the player's stat selection.
  *
  * @pseudocode
@@ -45,59 +133,14 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   }
   store.selectionMade = true;
   store.playerChoice = stat;
-  if (playerVal === undefined || Number.isNaN(playerVal)) {
-    playerVal = getCardStatValue(document.querySelector("#player-card"), stat);
-  }
-  if (opponentVal === undefined || Number.isNaN(opponentVal)) {
-    opponentVal = getCardStatValue(document.querySelector("#opponent-card"), stat);
-  }
-  playerVal = Number(playerVal);
-  opponentVal = Number(opponentVal);
+  const values = getPlayerAndOpponentValues(stat, playerVal, opponentVal);
+  playerVal = values.playerVal;
+  opponentVal = values.opponentVal;
   stopTimer();
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
   emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal });
-  let result;
-  // Determine whether the battle state machine is active
   const hasMachine = typeof document !== "undefined" && !!document.body?.dataset.battleState;
-  // Prefer orchestrator-aware path when the machine is present to keep
-  // behavior consistent in tests and runtime.
-  try {
-    if (hasMachine) {
-      // Schedule the fallback BEFORE awaiting the dispatcher so tests that
-      // don't await this function still register the timer immediately.
-      try {
-        setTimeout(() => {
-          // Only run if still awaiting resolution and selection remains.
-          if (store.playerChoice) {
-            store.playerChoice = null;
-            resolveRound(store, stat, playerVal, opponentVal, opts)
-              .catch(() => {})
-              .finally(() => {
-                store.playerChoice = null;
-              });
-          }
-        }, 600);
-      } catch {}
-      await dispatchBattleEvent("statSelected");
-    } else {
-      // No machine: in Vitest, make the delay deterministic to avoid flakiness.
-      const deterministicOpts =
-        typeof process !== "undefined" && process.env && process.env.VITEST
-          ? { ...opts, delayMs: 0 }
-          : opts;
-      result = await resolveRound(store, stat, playerVal, opponentVal, deterministicOpts);
-      // Ensure the choice is cleared for non-machine flows.
-      store.playerChoice = null;
-      return result;
-    }
-  } catch {
-    // If any of the orchestrator steps fail, fall back to direct resolution.
-    const deterministicOpts =
-      typeof process !== "undefined" && process.env && process.env.VITEST
-        ? { ...opts, delayMs: 0 }
-        : opts;
-    result = await resolveRound(store, stat, playerVal, opponentVal, deterministicOpts);
-  }
-  return result;
+  const resolver = hasMachine ? resolveRoundViaMachine : resolveRoundDirect;
+  return resolver(store, stat, playerVal, opponentVal, opts);
 }
