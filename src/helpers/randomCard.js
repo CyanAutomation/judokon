@@ -19,8 +19,9 @@ import { markSignatureMoveReady } from "./signatureMove.js";
  * @param {HTMLElement} element - DOM element to contain the card.
  * @param {HTMLElement} card - The card element to display.
  * @param {boolean} [skipAnimation=false] - Skip the entry animation when true.
+ * @private
  */
-export function displayCard(element, card, skipAnimation = false) {
+function displayCard(element, card, skipAnimation = false) {
   if (!element || !card) return;
   element.innerHTML = "";
   element.appendChild(card);
@@ -47,8 +48,9 @@ export function displayCard(element, card, skipAnimation = false) {
  * @param {HTMLElement} containerEl - Element to contain the card.
  * @param {boolean} prefersReducedMotion - Motion preference flag.
  * @returns {Promise<void>} Resolves when the card is displayed.
+ * @private
  */
-export async function createCardForJudoka(judoka, gokyoLookup, containerEl, prefersReducedMotion) {
+async function createCardForJudoka(judoka, gokyoLookup, containerEl, prefersReducedMotion) {
   const card = await new JudokaCard(judoka, gokyoLookup).render();
   if (card) {
     displayCard(containerEl, card, prefersReducedMotion);
