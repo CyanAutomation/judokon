@@ -17,6 +17,9 @@ import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/sch
  * @returns {NodeListOf<HTMLButtonElement>} Node list of stat buttons.
  */
 export function getStatButtons() {
+  if (typeof document?.querySelectorAll !== "function") {
+    return [];
+  }
   return document.querySelectorAll("#stat-buttons button");
 }
 
