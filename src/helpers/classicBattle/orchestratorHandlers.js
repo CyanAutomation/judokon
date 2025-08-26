@@ -110,11 +110,7 @@ export async function roundStartEnter(machine) {
     try {
       emitBattleEvent("scoreboardShowMessage", "Round start error. Recovering…");
       emitBattleEvent("debugPanelUpdate");
-      // In test environments, avoid interrupting the round flow so tests relying on
-      // minimal mocks can progress deterministically.
-      if (!(typeof process !== "undefined" && process.env && process.env.VITEST)) {
-        await machine.dispatch("interrupt", { reason: "roundStartError" });
-      }
+      await machine.dispatch("interrupt", { reason: "roundStartError" });
     } catch {}
   } finally {
     await machine.dispatch("cardsRevealed");
