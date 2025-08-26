@@ -28,7 +28,8 @@ export default defineConfig({
       "playwright/**",
       "scripts/**/*.spec.*"
     ],
-    reporters: "basic",
+    // Use default reporter w/o summary (replaces deprecated 'basic')
+    reporters: [["default", { summary: false }]],
     coverage: {
       reporter: ["text", "json", "html"]
     }
