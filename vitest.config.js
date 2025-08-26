@@ -15,7 +15,19 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./tests/setup.js"],
-    exclude: ["node_modules", "dist", ".idea", ".git", ".cache", "tests/e2e", "tests/playwright"],
+    // Exclude Playwright specs and diagnostic Playwright files from Vitest.
+    // Vitest should only run unit/integration tests under `tests/`.
+    exclude: [
+      "node_modules/**",
+      "dist/**",
+      ".idea/**",
+      ".git/**",
+      ".cache/**",
+      "tests/e2e/**",
+      "tests/playwright/**",
+      "playwright/**",
+      "scripts/**/*.spec.*"
+    ],
     reporters: "basic",
     coverage: {
       reporter: ["text", "json", "html"]

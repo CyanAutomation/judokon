@@ -319,7 +319,9 @@ export function handleZeroCooldownFastPath(controls, btn) {
   try {
     if (isTestModeEnabled && isTestModeEnabled()) {
       setTimeout(() => {
-        dispatchBattleEvent("ready").catch(() => {});
+        // Ensure we always have a thenable to attach catch to, even if
+        // dispatchBattleEvent was mocked to return undefined in tests.
+        Promise.resolve(dispatchBattleEvent("ready")).catch(() => {});
       }, 0);
     }
   } catch {}
