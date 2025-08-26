@@ -71,9 +71,8 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   try {
     const hasMachine = typeof document !== "undefined" && !!document.body?.dataset.battleState;
     if (hasMachine) {
-      await dispatchBattleEvent("statSelected");
-      // Failsafe: if the orchestrator onEnter(roundDecision) does not resolve
-      // the round promptly, kick off a local resolution after a short delay.
+      // Schedule the fallback BEFORE awaiting the dispatcher so tests that
+      // don't await this function still register the timer immediately.
       try {
         setTimeout(() => {
           // Only run if still awaiting resolution and selection remains.
@@ -87,6 +86,7 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
           }
         }, 600);
       } catch {}
+      await dispatchBattleEvent("statSelected");
     } else {
       result = await resolveRound(store, stat, playerVal, opponentVal, opts);
     }
