@@ -471,6 +471,14 @@ function setStatButtonsEnabled(enable = true) {
     btn.disabled = !enable;
     btn.tabIndex = enable ? 0 : -1;
     btn.classList.toggle("disabled", !enable);
+    // When enabling for a new round, ensure any prior visual selection is cleared
+    if (enable) {
+      try {
+        btn.classList.remove("selected");
+        btn.style.removeProperty("background-color");
+        btn.blur();
+      } catch {}
+    }
   });
   if (statContainer) {
     statContainer.dataset.buttonsReady = String(enable);

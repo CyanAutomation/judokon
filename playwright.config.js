@@ -3,6 +3,7 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./playwright",
+  reporter: 'dot',
   use: {
     baseURL: "http://localhost:5000",
     // Capture rich artifacts to aid debugging flaky UI timing in CI/local
