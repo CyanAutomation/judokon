@@ -133,9 +133,11 @@ When a player quits in the middle of a match, the engine follows a defined seque
 
 - `stateTable.js` defines all match states and transitions.
 - `BattleEngine.js` implements round logic, scoring, timer, and match end conditions.  
-- `orchestrator.js` manages state machine, transitions, and exposes hooks for UI and tests.  
-- `battleStateProgress.js` renders state progress bar and syncs active state.  
+- `orchestrator.js` manages state machine, transitions, and exposes hooks for UI and tests.
+- `battleStateProgress.js` renders state progress bar and syncs active state.
 - Scoreboard UI and accessibility requirements as described in `prdBattleScoreboard.md`.
+- `eventDispatcher.js` buffers battle events until the state machine is
+  initialized so early selections are not lost.
 
 ---
 

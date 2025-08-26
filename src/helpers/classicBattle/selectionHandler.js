@@ -50,9 +50,11 @@ export function getPlayerAndOpponentValues(stat, playerVal, opponentVal) {
  * deterministic zero‑delay resolution on error.
  *
  * @pseudocode
- * 1. Schedule a fallback call to `resolveRoundDirect` after 600ms so the
- *    round resolves with `delayMs: 0` and clears `playerChoice` when done.
- * 2. Await `dispatchBattleEvent("statSelected")`.
+ * 1. Capture the current `playerChoice` and schedule a fallback call to
+ *    `resolveRoundDirect` after 600ms so the round resolves with `delayMs: 0`
+ *    and clears `playerChoice` when done.
+ * 2. Await `dispatchBattleEvent("statSelected")` and clear the fallback
+ *    timer.
  * 3. If dispatch fails, call `resolveRound` immediately with deterministic
  *    options in Vitest environments.
  *
@@ -64,15 +66,16 @@ export function getPlayerAndOpponentValues(stat, playerVal, opponentVal) {
  * @returns {Promise<ReturnType<typeof resolveRound>|undefined>}
  */
 export async function resolveRoundViaMachine(store, stat, playerVal, opponentVal, opts = {}) {
+  const choice = store.playerChoice;
+  const timeoutId = setTimeout(() => {
+    if (choice) {
+      resolveRoundDirect(store, stat, playerVal, opponentVal, {
+        ...opts,
+        delayMs: 0
+      }).catch(() => {});
+    }
+  }, 600);
   try {
-    setTimeout(() => {
-      if (store.playerChoice) {
-        resolveRoundDirect(store, stat, playerVal, opponentVal, {
-          ...opts,
-          delayMs: 0
-        }).catch(() => {});
-      }
-    }, 600);
     await dispatchBattleEvent("statSelected");
     return undefined;
   } catch {
@@ -81,6 +84,8 @@ export async function resolveRoundViaMachine(store, stat, playerVal, opponentVal
         ? { ...opts, delayMs: 0 }
         : opts;
     return resolveRound(store, stat, playerVal, opponentVal, deterministicOpts);
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

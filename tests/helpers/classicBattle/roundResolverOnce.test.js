@@ -5,7 +5,7 @@ vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
   onBattleEvent: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
-  dispatchBattleEvent: vi.fn().mockResolvedValue()
+  dispatchBattleEvent: vi.fn().mockReturnValue(new Promise(() => {}))
 }));
 vi.mock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
   getOpponentJudoka: vi.fn(() => null),
