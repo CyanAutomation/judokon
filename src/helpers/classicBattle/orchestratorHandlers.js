@@ -109,25 +109,30 @@ export async function cooldownExit() {}
 
 export async function roundStartEnter(machine) {
   const { startRoundWrapper, doStartRound, store } = machine.context;
+  // Kick off round start work without blocking the state machine from advancing
+  // to waitingForPlayerAction. Errors are handled by interrupting the round.
   try {
-    if (typeof startRoundWrapper === "function") await startRoundWrapper();
-    else if (typeof doStartRound === "function") await doStartRound(store);
-  } catch {
-    try {
-      emitBattleEvent("scoreboardShowMessage", "Round start error. Recovering…");
-      emitBattleEvent("debugPanelUpdate");
-      await machine.dispatch("interrupt", { reason: "roundStartError" });
-    } catch {}
-  } finally {
-    try {
-      const state = machine.getState ? machine.getState() : null;
-      // Only dispatch cardsRevealed if we are still in roundStart to avoid
-      // invalid or duplicate transitions (observed in tests).
-      if (state === "roundStart") {
-        await machine.dispatch("cardsRevealed");
-      }
-    } catch {}
-  }
+    const p =
+      typeof startRoundWrapper === "function"
+        ? startRoundWrapper()
+        : typeof doStartRound === "function"
+          ? doStartRound(store)
+          : Promise.resolve();
+    Promise.resolve(p).catch(async () => {
+      try {
+        emitBattleEvent("scoreboardShowMessage", "Round start error. Recovering…");
+        emitBattleEvent("debugPanelUpdate");
+        await machine.dispatch("interrupt", { reason: "roundStartError" });
+      } catch {}
+    });
+  } catch {}
+  // Immediately transition to waitingForPlayerAction if still in roundStart.
+  try {
+    const state = machine.getState ? machine.getState() : null;
+    if (state === "roundStart") {
+      await machine.dispatch("cardsRevealed");
+    }
+  } catch {}
 }
 export async function roundStartExit() {}
 

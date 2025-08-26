@@ -14,8 +14,7 @@ import {
   const base = buildBaseUrl();
   const url = `${base}/src/pages/battleJudoka.html?autostart=1`;
   const overallTimeout = parseInt(process.env.DEBUG_TIMEOUT_MS || "30000", 10);
-  let overallTimer = null;
-  // Removed unused variable 'timedOut'
+  // No global watchdog; rely on Playwright timeouts to avoid racing closure
 
   const browser = await chromium.launch({ headless });
   const context = await browser.newContext();
@@ -24,17 +23,7 @@ import {
   attachLoggers(page, { withLocations: true });
 
   try {
-    // Global watchdog to avoid hanging the runner. If triggered, attempt to
-    // close the browser and set a non-zero exit code.
-    overallTimer = setTimeout(() => {
-      console.error(`ERROR: overall timeout after ${overallTimeout}ms`);
-      try {
-        process.exitCode = 2;
-      } catch {}
-      // Removed assignment to unused variable 'timedOut'
-      // Don't close the browser here; closing from the timer races with
-      // Playwright actions and causes "Target page has been closed" errors.
-    }, overallTimeout);
+    // No external watchdog here; page.waitForFunction below uses its own timeout.
 
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 15000 });
     console.log("TITLE", await page.title());
@@ -95,11 +84,6 @@ import {
     } catch {
       console.log("TIMED OUT waiting for resolution");
       process.exitCode = 2;
-      timedOut = true;
-    } finally {
-      try {
-        if (overallTimer) clearTimeout(overallTimer);
-      } catch {}
     }
 
     const snap = await getBattleSnapshot(page).catch(() => null);
@@ -111,9 +95,7 @@ import {
     console.error("ERROR", err);
     process.exitCode = 1;
   } finally {
-    try {
-      if (overallTimer) clearTimeout(overallTimer);
-    } catch {}
+    // nothing to clean up here
     try {
       await browser.close();
     } catch {}
