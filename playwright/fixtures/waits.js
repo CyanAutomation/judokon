@@ -42,8 +42,13 @@ export async function waitForSettingsReady(page) {
 export async function waitForBattleState(page, stateName, timeout = 10000) {
   const hasHelper = await page.evaluate(() => typeof window.onStateTransition === "function");
   if (hasHelper) {
+    // Race the in-page helper against a DOM fallback in case the helper
+    // hangs or doesn't resolve due to internal state races.
     await Promise.race([
       page.evaluate(({ s, t }) => window.onStateTransition(s, t), { s: stateName, t: timeout }),
+      page.waitForFunction((s) => document.body?.dataset?.battleState === s, stateName, {
+        timeout
+      }),
       page.waitForTimeout(timeout).then(() => {
         throw new Error(`Timed out waiting for battle state "${stateName}"`);
       })

@@ -317,7 +317,8 @@ export function handleZeroCooldownFastPath(controls, btn) {
         typeof window !== "undefined" && window.__classicBattleState
           ? window.__classicBattleState
           : null;
-      if (state === "cooldown") {
+      // Dispatch when state is unknown (tests) or explicitly cooldown
+      if (!state || state === "cooldown") {
         await dispatchBattleEvent("ready");
         updateDebugPanel();
       } else {
@@ -345,7 +346,7 @@ export function handleZeroCooldownFastPath(controls, btn) {
             typeof window !== "undefined" && window.__classicBattleState
               ? window.__classicBattleState
               : null;
-          if (state === "cooldown") {
+          if (!state || state === "cooldown") {
             Promise.resolve(dispatchBattleEvent("ready")).catch(() => {});
           } else {
             try {
@@ -389,7 +390,7 @@ export async function handleNextRoundExpiration(controls, btn, timerEl) {
       typeof window !== "undefined" && window.__classicBattleState
         ? window.__classicBattleState
         : null;
-    if (state === "cooldown") {
+    if (!state || state === "cooldown") {
       await dispatchBattleEvent("ready");
     } else {
       try {
@@ -467,7 +468,7 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
   });
 
   if (btn && btn.dataset.nextReady === "true") {
-    controls.resolveReady();
+    if (typeof controls.resolveReady === "function") controls.resolveReady();
     currentNextRound = controls;
     return controls;
   }
