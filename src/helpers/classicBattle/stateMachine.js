@@ -3,7 +3,7 @@ import { CLASSIC_BATTLE_STATES } from "./stateTable.js";
 /**
  * Minimal event-driven state machine for Classic Battle.
  *
- * Loads states from JSON, tracks current state, and runs onEnter handlers.
+ * Tracks current state, runs onEnter handlers, and uses an embedded state table.
  * Transitions are matched by the `on` field value in each state's `triggers`.
  *
  * @pseudocode
