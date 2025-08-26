@@ -2,15 +2,41 @@
  * Basic card container class.
  *
  * @pseudocode
- * 1. Use a `<div>` element by default or an `<a>` element when `href` is provided.
- * 2. Apply `id`, `href`, `className` and `onClick` options if present.
- * 3. Always include the `card` class plus any additional `className`.
- * 4. Insert string content with `textContent` by default, or with sanitized
- *    HTML when `html` is true using a provided or default sanitizer.
+ * 1. Choose a `<div>` or `<a>` element based on the presence of `href`.
+ * 2. Add the base `card` class and exit early when no options or content exist.
+ * 3. Apply `id`, `href`, optional classes and `onClick` via helpers.
+ * 4. Insert string or Node content using a helper that sanitizes HTML when requested.
  *
  * @class
  */
 import { getSanitizer } from "../helpers/sanitizeHtml.js";
+
+function applyClasses(el, className) {
+  if (!className) return;
+  for (const cls of className.split(/\s+/)) {
+    if (cls) el.classList.add(cls);
+  }
+}
+
+function insertContent(el, content, html, sanitize) {
+  if (!content) return;
+  if (typeof content === "string") {
+    if (!html) {
+      el.textContent = content;
+      return;
+    }
+    const maybe = sanitize();
+    if (typeof maybe?.then === "function") {
+      maybe.then(({ sanitize: fn }) => {
+        el.innerHTML = fn(content);
+      });
+    } else {
+      el.innerHTML = maybe.sanitize(content);
+    }
+    return;
+  }
+  if (content instanceof Node) el.append(content);
+}
 
 export class Card {
   /**
@@ -23,35 +49,13 @@ export class Card {
   constructor(content, options = {}) {
     const { id, className, href, onClick, html = false, sanitize = getSanitizer } = options;
     this.element = href ? document.createElement("a") : document.createElement("div");
+    this.element.classList.add("card");
+    if (!content && !id && !className && !onClick && !href) return;
     if (id) this.element.id = id;
     if (href) this.element.href = href;
-    this.element.classList.add("card");
-    if (className) {
-      for (const cls of className.split(/\s+/)) {
-        if (cls) this.element.classList.add(cls);
-      }
-    }
-    if (typeof onClick === "function") {
-      this.element.addEventListener("click", onClick);
-    }
-    if (typeof content === "string") {
-      if (html) {
-        const maybe = sanitize();
-        if (typeof maybe?.then === "function") {
-          // Sanitize HTML content when sanitizer is loaded asynchronously
-          maybe.then(({ sanitize: fn }) => {
-            this.element.innerHTML = fn(content);
-          });
-        } else {
-          // Sanitize immediately when provided synchronously
-          this.element.innerHTML = maybe.sanitize(content);
-        }
-      } else {
-        this.element.textContent = content;
-      }
-    } else if (content instanceof Node) {
-      this.element.append(content);
-    }
+    if (typeof onClick === "function") this.element.addEventListener("click", onClick);
+    applyClasses(this.element, className);
+    insertContent(this.element, content, html, sanitize);
   }
 }
 
