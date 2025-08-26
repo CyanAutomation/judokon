@@ -808,17 +808,16 @@ export function maybeShowStatHint(durationMs = 3000, setTimeoutFn = setTimeout) 
 }
 
 /**
- * Reset battle UI elements to their initial state.
+ * Remove modal backdrops and destroy any active quit modal.
  *
  * @pseudocode
- * 1. Remove any active modal backdrops and destroy `store.quitModal`.
- * 2. Replace the Next Round and Quit buttons with fresh clones.
- * 3. Clear scoreboard messages and disable the Next Round button.
+ * 1. Remove all elements with class `.modal-backdrop`.
+ * 2. If `store.quitModal` exists, call its `destroy` method and null it out.
  *
  * @param {ReturnType<import("./roundManager.js").createBattleStore>} [store]
  * - Optional battle state store used to tear down the quit modal.
  */
-export function resetBattleUI(store) {
+export function removeBackdrops(store) {
   try {
     document.querySelectorAll?.(".modal-backdrop").forEach((m) => {
       if (typeof m.remove === "function") m.remove();
@@ -830,7 +829,17 @@ export function resetBattleUI(store) {
     } catch {}
     store.quitModal = null;
   }
+}
 
+/**
+ * Replace battle action buttons with fresh clones.
+ *
+ * @pseudocode
+ * 1. Clone and replace `#next-button`, disabling it and removing `data-next-ready`.
+ * 2. Attach `onNextButtonClick` to the cloned next button.
+ * 3. Clone and replace `#quit-match-button` to drop old listeners.
+ */
+export function resetActionButtons() {
   let nextBtn;
   try {
     nextBtn = document.getElementById ? document.getElementById("next-button") : null;
@@ -850,7 +859,17 @@ export function resetBattleUI(store) {
   if (quitBtn) {
     quitBtn.replaceWith(quitBtn.cloneNode(true));
   }
+}
 
+/**
+ * Clear round messages and refresh the scoreboard display.
+ *
+ * @pseudocode
+ * 1. Invoke `scoreboard.clearMessage`.
+ * 2. Empty `#next-round-timer` and `#round-result` elements.
+ * 3. Call `syncScoreDisplay` and `updateDebugPanel`.
+ */
+export function clearRoundInfo() {
   try {
     scoreboard.clearMessage();
   } catch {}
@@ -868,6 +887,23 @@ export function resetBattleUI(store) {
     syncScoreDisplay();
   } catch {}
   updateDebugPanel();
+}
+
+/**
+ * Reset battle UI elements to their initial state.
+ *
+ * @pseudocode
+ * 1. Call `removeBackdrops` with `store`.
+ * 2. Invoke `resetActionButtons`.
+ * 3. Run `clearRoundInfo`.
+ *
+ * @param {ReturnType<import("./roundManager.js").createBattleStore>} [store]
+ * - Optional battle state store used to tear down the quit modal.
+ */
+export function resetBattleUI(store) {
+  removeBackdrops(store);
+  resetActionButtons();
+  clearRoundInfo();
 }
 
 // --- Event bindings ---
