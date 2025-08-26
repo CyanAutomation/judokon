@@ -97,7 +97,9 @@ export async function cooldownEnter(machine, payload) {
     if (isTestModeEnabled && isTestModeEnabled()) {
       setTimeout(() => {
         try {
-          machine.dispatch("ready");
+          if (machine.getState && machine.getState() === "cooldown") {
+            machine.dispatch("ready");
+          }
         } catch {}
       }, 0);
     }
@@ -107,17 +109,6 @@ export async function cooldownExit() {}
 
 export async function roundStartEnter(machine) {
   const { startRoundWrapper, doStartRound, store } = machine.context;
-  // In test mode, proactively dispatch cardsRevealed on the next tick so the
-  // machine progresses even if startRound has async work or external deps.
-  try {
-    if (isTestModeEnabled && isTestModeEnabled()) {
-      setTimeout(() => {
-        try {
-          machine.dispatch("cardsRevealed");
-        } catch {}
-      }, 0);
-    }
-  } catch {}
   try {
     if (typeof startRoundWrapper === "function") await startRoundWrapper();
     else if (typeof doStartRound === "function") await doStartRound(store);
@@ -128,7 +119,14 @@ export async function roundStartEnter(machine) {
       await machine.dispatch("interrupt", { reason: "roundStartError" });
     } catch {}
   } finally {
-    await machine.dispatch("cardsRevealed");
+    try {
+      const state = machine.getState ? machine.getState() : null;
+      // Only dispatch cardsRevealed if we are still in roundStart to avoid
+      // invalid or duplicate transitions (observed in tests).
+      if (state === "roundStart") {
+        await machine.dispatch("cardsRevealed");
+      }
+    } catch {}
   }
 }
 export async function roundStartExit() {}

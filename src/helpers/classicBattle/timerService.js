@@ -313,8 +313,18 @@ export function handleZeroCooldownFastPath(controls, btn) {
   setSkipHandler(async () => {
     try {
       if (btn) btn.disabled = true;
-      await dispatchBattleEvent("ready");
-      updateDebugPanel();
+      const state =
+        typeof window !== "undefined" && window.__classicBattleState
+          ? window.__classicBattleState
+          : null;
+      if (state === "cooldown") {
+        await dispatchBattleEvent("ready");
+        updateDebugPanel();
+      } else {
+        try {
+          console.warn(`[test] skip: suppress ready; state=${state}`);
+        } catch {}
+      }
     } catch {}
   });
   try {
@@ -330,9 +340,19 @@ export function handleZeroCooldownFastPath(controls, btn) {
   try {
     if (isTestModeEnabled && isTestModeEnabled()) {
       setTimeout(() => {
-        // Ensure we always have a thenable to attach catch to, even if
-        // dispatchBattleEvent was mocked to return undefined in tests.
-        Promise.resolve(dispatchBattleEvent("ready")).catch(() => {});
+        try {
+          const state =
+            typeof window !== "undefined" && window.__classicBattleState
+              ? window.__classicBattleState
+              : null;
+          if (state === "cooldown") {
+            Promise.resolve(dispatchBattleEvent("ready")).catch(() => {});
+          } else {
+            try {
+              console.warn(`[test] auto-advance suppressed; state=${state}`);
+            } catch {}
+          }
+        } catch {}
       }, 0);
     }
   } catch {}
@@ -364,7 +384,19 @@ export async function handleNextRoundExpiration(controls, btn, timerEl) {
     btn.dataset.nextReady = "true";
     btn.disabled = false;
   }
-  await dispatchBattleEvent("ready");
+  try {
+    const state =
+      typeof window !== "undefined" && window.__classicBattleState
+        ? window.__classicBattleState
+        : null;
+    if (state === "cooldown") {
+      await dispatchBattleEvent("ready");
+    } else {
+      try {
+        console.warn(`[test] expiration suppressed ready; state=${state}`);
+      } catch {}
+    }
+  } catch {}
   updateDebugPanel();
   if (typeof controls.resolveReady === "function") {
     controls.resolveReady();

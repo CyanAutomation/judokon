@@ -14,6 +14,8 @@ import {
   const base = buildBaseUrl();
   const url = `${base}/src/pages/battleJudoka.html?autostart=1`;
   const overallTimeout = parseInt(process.env.DEBUG_TIMEOUT_MS || "30000", 10);
+  let overallTimer = null;
+  // Removed unused variable 'timedOut'
 
   const browser = await chromium.launch({ headless });
   const context = await browser.newContext();
@@ -22,6 +24,18 @@ import {
   attachLoggers(page, { withLocations: true });
 
   try {
+    // Global watchdog to avoid hanging the runner. If triggered, attempt to
+    // close the browser and set a non-zero exit code.
+    overallTimer = setTimeout(() => {
+      console.error(`ERROR: overall timeout after ${overallTimeout}ms`);
+      try {
+        process.exitCode = 2;
+      } catch {}
+      // Removed assignment to unused variable 'timedOut'
+      // Don't close the browser here; closing from the timer races with
+      // Playwright actions and causes "Target page has been closed" errors.
+    }, overallTimeout);
+
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 15000 });
     console.log("TITLE", await page.title());
 
@@ -32,6 +46,7 @@ import {
     // Wait for the chosen stat button to become enabled before clicking.
     const selector = `#stat-buttons button[data-stat="${stat}"]`;
     try {
+      console.log("WAIT: waiting for stat button to be enabled", stat);
       await page.waitForFunction(
         (sel) => {
           try {
@@ -44,6 +59,7 @@ import {
         selector,
         { timeout: 8000 }
       );
+      console.log("WAIT: stat button enabled", stat);
     } catch {}
 
     const clickRes = await tryClickStat(page, stat, { timeout: 3000 });
@@ -57,52 +73,33 @@ import {
       return;
     }
 
-    // Wait until one of: window.__roundDebug.resolvedAt, document.body.dataset.battleState is roundOver/cooldown, or store.playerChoice == null
-    const start = Date.now();
-    const max = overallTimeout;
-    let resolved = false;
-    while (Date.now() - start < max) {
-      const info = await page
-        .evaluate(() => {
+    // Wait for one of the canonical resolution signals using page.waitForFunction
+    try {
+      await page.waitForFunction(
+        () => {
           try {
-            return {
-              battleState: document.body?.dataset?.battleState || null,
-              playerChoice: window?.battleStore?.playerChoice || null,
-              roundDebug: window.__roundDebug || null,
-              guardOutcome: window.__guardOutcomeEvent || null
-            };
+            const bs = document.body?.dataset?.battleState;
+            const pc = window?.battleStore?.playerChoice;
+            const rd = window.__roundDebug;
+            if (rd && rd.resolvedAt) return true;
+            if (bs === "roundOver" || bs === "cooldown") return true;
+            if (pc === null) return true;
+            return false;
           } catch {
-            return null;
+            return false;
           }
-        })
-        .catch(() => null);
-
-      console.log("POLL", JSON.stringify(info));
-
-      if (info) {
-        if (info.roundDebug && info.roundDebug.resolvedAt) {
-          resolved = true;
-          console.log("RESOLVED via roundDebug.resolvedAt", info.roundDebug.resolvedAt);
-          break;
-        }
-        if (info.battleState === "roundOver" || info.battleState === "cooldown") {
-          resolved = true;
-          console.log("RESOLVED via battleState", info.battleState);
-          break;
-        }
-        if (info.playerChoice === null) {
-          resolved = true;
-          console.log("RESOLVED via playerChoice cleared");
-          break;
-        }
-      }
-
-      await page.waitForTimeout(200);
-    }
-
-    if (!resolved) {
+        },
+        { timeout: overallTimeout }
+      );
+      console.log("RESOLVED: waitForFunction observed resolution signal");
+    } catch {
       console.log("TIMED OUT waiting for resolution");
       process.exitCode = 2;
+      timedOut = true;
+    } finally {
+      try {
+        if (overallTimer) clearTimeout(overallTimer);
+      } catch {}
     }
 
     const snap = await getBattleSnapshot(page).catch(() => null);
@@ -114,6 +111,9 @@ import {
     console.error("ERROR", err);
     process.exitCode = 1;
   } finally {
+    try {
+      if (overallTimer) clearTimeout(overallTimer);
+    } catch {}
     try {
       await browser.close();
     } catch {}
