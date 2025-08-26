@@ -15,6 +15,7 @@ test.describe.parallel("Classic battle button reset", () => {
   });
 
   test("no button stays selected after next round", async ({ page }) => {
+    page.on('console', msg => console.log(msg.text()));
     await page.goto("/src/pages/battleJudoka.html");
     await waitForBattleReady(page);
     await page.evaluate(() => window.roundPromptPromise);
