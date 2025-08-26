@@ -34,6 +34,46 @@ export function evaluateRound(store, stat, playerVal, opponentVal) {
 }
 
 /**
+ * Compute the round result and emit outcome events.
+ *
+ * @pseudocode
+ * 1. Call `evaluateRound` to obtain the round outcome.
+ * 2. Dispatch an outcome event based on the result.
+ * 3. Dispatch `matchPointReached` or `continue` depending on `matchEnded`.
+ * 4. Emit `roundResolved` with round data and clear `store.playerChoice`.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ * @returns {Promise<ReturnType<typeof evaluateRound>>}
+ */
+export async function computeRoundResult(store, stat, playerVal, opponentVal) {
+  const result = evaluateRound(store, stat, playerVal, opponentVal);
+  const outcomeEvent =
+    result.outcome === "winPlayer"
+      ? "outcome=winPlayer"
+      : result.outcome === "winOpponent"
+        ? "outcome=winOpponent"
+        : "outcome=draw";
+  await dispatchBattleEvent(outcomeEvent);
+  if (result.matchEnded) {
+    await dispatchBattleEvent("matchPointReached");
+  } else {
+    await dispatchBattleEvent("continue");
+  }
+  emitBattleEvent("roundResolved", {
+    store,
+    stat,
+    playerVal,
+    opponentVal,
+    result
+  });
+  store.playerChoice = null;
+  return result;
+}
+
+/**
  * Resolves the round after a stat has been selected.
  *
  * @pseudocode
@@ -41,10 +81,8 @@ export function evaluateRound(store, stat, playerVal, opponentVal) {
  * 2. Dispatch an "evaluate" event unless already in the "roundDecision" state.
  * 3. Wait for a randomized delay.
  * 4. Emit "opponentReveal".
- * 5. Evaluate the round and emit the outcome event.
- * 6. Emit "matchPointReached" or "continue" based on match progress.
- * 7. Emit "roundResolved" with round data and clear `store.playerChoice`.
- * 8. Return the evaluation result.
+ * 5. Evaluate the round via `computeRoundResult` which also emits outcome events.
+ * 6. Return the evaluation result.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -79,26 +117,6 @@ export async function resolveRound(
   } catch {}
   await sleep(delayMs);
   emitBattleEvent("opponentReveal");
-  const result = evaluateRound(store, stat, playerVal, opponentVal);
-  const outcomeEvent =
-    result.outcome === "winPlayer"
-      ? "outcome=winPlayer"
-      : result.outcome === "winOpponent"
-        ? "outcome=winOpponent"
-        : "outcome=draw";
-  await dispatchBattleEvent(outcomeEvent);
-  if (result.matchEnded) {
-    await dispatchBattleEvent("matchPointReached");
-  } else {
-    await dispatchBattleEvent("continue");
-  }
-  emitBattleEvent("roundResolved", {
-    store,
-    stat,
-    playerVal,
-    opponentVal,
-    result
-  });
-  store.playerChoice = null;
+  const result = await computeRoundResult(store, stat, playerVal, opponentVal);
   return result;
 }

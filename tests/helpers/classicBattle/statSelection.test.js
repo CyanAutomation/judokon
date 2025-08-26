@@ -62,6 +62,7 @@ describe("classicBattle stat selection", () => {
   let handleStatSelection;
   let _resetForTest;
   let createBattleStore;
+  let getCardStatValue;
 
   beforeEach(() => {
     document.body.innerHTML = "";
@@ -95,15 +96,21 @@ describe("classicBattle stat selection", () => {
   beforeEach(async () => {
     document.body.innerHTML +=
       '<div id="stat-buttons" data-tooltip-id="ui.selectStat"><button data-stat="power"></button></div>';
-    ({ createBattleStore, handleStatSelection, simulateOpponentStat, _resetForTest } = await import(
-      "../../../src/helpers/classicBattle.js"
-    ));
+    ({
+      createBattleStore,
+      handleStatSelection,
+      simulateOpponentStat,
+      _resetForTest,
+      getCardStatValue
+    } = await import("../../../src/helpers/classicBattle.js"));
     store = createBattleStore();
     _resetForTest(store);
     const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
     eventDispatcher.__reset();
     selectStat = async (stat) => {
-      const p = handleStatSelection(store, stat);
+      const playerVal = getCardStatValue(document.getElementById("player-card"), stat);
+      const opponentVal = getCardStatValue(document.getElementById("opponent-card"), stat);
+      const p = handleStatSelection(store, stat, { playerVal, opponentVal });
       await vi.runAllTimersAsync();
       await p;
     };

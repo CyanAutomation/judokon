@@ -47,7 +47,12 @@ function populateCards() {
 
 async function selectPower(battleMod, store) {
   const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
-  const p = battleMod.handleStatSelection(store, "power");
+  const playerVal = battleMod.getCardStatValue(document.getElementById("player-card"), "power");
+  const opponentVal = battleMod.getCardStatValue(document.getElementById("opponent-card"), "power");
+  const p = battleMod.handleStatSelection(store, "power", {
+    playerVal,
+    opponentVal
+  });
   await vi.advanceTimersByTimeAsync(1000);
   await p;
   return { randomSpy };
