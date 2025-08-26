@@ -112,7 +112,7 @@ function chunkMarkdown(text) {
 }
 
 /**
- * Chunk JavaScript source into logical units.
+ * Chunk JavaScript/TypeScript source into logical units.
  *
  * @pseudocode
  * 1. Parse the source into an AST using acorn.
@@ -120,12 +120,15 @@ function chunkMarkdown(text) {
  *    - Track nested `describe` titles while walking the tree.
  *    - Emit one chunk for each `it`/`test` call with its describe context.
  * 3. Otherwise:
- *    - Collect exported functions or classes and include any leading JSDoc.
- * 4. Return an array of `{id, text}` chunks ready for embedding.
+ *    - Collect exported functions or classes.
+ *    - Capture leading JSDoc and any `@pseudocode` lines for each export.
+ * 4. Return an array of `{id, code, jsDoc, pseudocode}` chunks ready for
+ *    embedding.
  *
- * @param {string} source - JS file contents.
+ * @param {string} source - JS/TS file contents.
  * @param {boolean} isTest - Whether the file is a test file.
- * @returns {Array<{id:string,text:string}>} Code chunks.
+ * @returns {{chunks:Array<{id:string,code:string,jsDoc?:string,pseudocode?:string,construct?:string,references?:string[]}>,imports:string[]}}
+ *   Code chunks and detected imports.
  */
 function chunkCode(source, isTest = false) {
   const comments = [];
@@ -153,6 +156,33 @@ function chunkCode(source, isTest = false) {
       }
     }
     return null;
+  }
+
+  function parseDoc(c) {
+    if (!c) return {};
+    const lines = c.value.split(/\r?\n/).map((l) => l.replace(/^\s*\*? ?/, ""));
+    let jsDocLines = [];
+    let pseudoLines = [];
+    let inPseudo = false;
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith("@pseudocode")) {
+        inPseudo = true;
+        continue;
+      }
+      if (inPseudo) {
+        if (/^@\w+/.test(trimmed)) {
+          inPseudo = false;
+        } else {
+          pseudoLines.push(line);
+          continue;
+        }
+      }
+      jsDocLines.push(line);
+    }
+    const jsDoc = jsDocLines.join("\n").trim() || undefined;
+    const pseudocode = pseudoLines.join("\n").trim() || undefined;
+    return { jsDoc, pseudocode };
   }
 
   function callName(node) {
@@ -242,11 +272,14 @@ function chunkCode(source, isTest = false) {
           for (const ex of exports) {
             let start = ex.start;
             const doc = findJsDoc(start);
-            if (doc) start = doc.start;
+            const { jsDoc, pseudocode } = parseDoc(doc);
+            if (doc) start = doc.end;
             const code = source.slice(start, ex.end);
             chunks.push({
               id: ex.id || "default",
-              text: code,
+              code,
+              jsDoc,
+              pseudocode,
               construct: ex.construct,
               references: gatherReferences(ex.node)
             });
@@ -275,12 +308,24 @@ function createQaContext(text) {
   return sentence;
 }
 
+/**
+ * Gather files to embed from markdown, data, and source directories.
+ *
+ * @pseudocode
+ * 1. Collect all markdown under `design/` and every `README.md`.
+ * 2. Include game data JSON files, excluding large generated files.
+ * 3. Add `.js` and `.ts` sources from `src/` and `tests/` while skipping
+ *    `node_modules`.
+ * 4. Deduplicate and return the combined list.
+ *
+ * @returns {Promise<string[]>} Paths relative to the repo root.
+ */
 async function getFiles() {
-  const prdFiles = await glob("design/productRequirementsDocuments/*.md", {
-    cwd: rootDir
+  const designDocs = await glob("design/**/*.md", { cwd: rootDir });
+  const readmes = await glob("**/README.md", {
+    cwd: rootDir,
+    ignore: ["**/node_modules/**"]
   });
-  const guidelineFiles = await glob("design/codeStandards/*.md", { cwd: rootDir });
-  const workflowFiles = await glob("design/agentWorkflows/*.md", { cwd: rootDir });
   const jsonFiles = (await glob("src/data/*.json", { cwd: rootDir })).filter(
     (f) =>
       path.extname(f) === ".json" &&
@@ -293,11 +338,11 @@ async function getFiles() {
         "japaneseConverter.json"
       ].includes(path.basename(f))
   );
-  const jsFiles = await glob("{src,tests,playwright}/**/*.js", {
+  const jsFiles = await glob(["src/**/*.{js,ts}", "tests/**/*.{js,ts}"], {
     cwd: rootDir,
     ignore: ["**/node_modules/**"]
   });
-  return [...prdFiles, ...guidelineFiles, ...workflowFiles, ...jsonFiles, ...jsFiles];
+  return Array.from(new Set([...designDocs, ...readmes, ...jsonFiles, ...jsFiles]));
 }
 
 /**
@@ -319,7 +364,7 @@ function determineTags(relativePath, ext, isTest) {
     else tags.push("game-data");
     return tags;
   }
-  if (ext === ".js") {
+  if (ext === ".js" || ext === ".ts") {
     return [isTest ? "test-code" : "code"];
   }
   const tags = ["prd"];
@@ -349,9 +394,8 @@ function determineIntent(text) {
 function determineRole(relativePath) {
   if (
     /tests\//.test(relativePath) ||
-    /playwright\//.test(relativePath) ||
-    /\.test\.js$/.test(relativePath) ||
-    /\.spec\.js$/.test(relativePath)
+    /\.test\.[jt]s$/.test(relativePath) ||
+    /\.spec\.[jt]s$/.test(relativePath)
   ) {
     return "test";
   }
@@ -433,13 +477,12 @@ async function generate() {
     const ext = path.extname(relativePath);
     const isJson = ext === ".json";
     const isMarkdown = ext === ".md";
-    const isJs = ext === ".js";
+    const isJs = ext === ".js" || ext === ".ts";
     const isTest =
       isJs &&
-      (/\.test\.js$/.test(base) ||
-        /\.spec\.js$/.test(base) ||
-        relativePath.includes("/tests/") ||
-        relativePath.includes("/playwright/"));
+      (/\.test\.[jt]s$/.test(base) ||
+        /\.spec\.[jt]s$/.test(base) ||
+        relativePath.includes("/tests/"));
     const baseTags = determineTags(relativePath, ext, isTest);
 
     if (isJson) {
@@ -524,7 +567,7 @@ async function generate() {
     } else if (isJs) {
       const { chunks, imports } = chunkCode(text, isTest);
       for (const [index, chunk] of chunks.entries()) {
-        const chunkText = chunk.text;
+        const chunkText = [chunk.jsDoc, chunk.pseudocode, chunk.code].filter(Boolean).join("\n");
         const idSuffix = chunk.id || `chunk-${index + 1}`;
         const intent = determineIntent(chunkText);
         const metadata = buildMetadata(relativePath, chunk, imports);
