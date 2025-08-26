@@ -1,7 +1,6 @@
 import { evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { emitBattleEvent } from "./battleEvents.js";
-import { resetStatButtons } from "../battle/battleUI.js";
 
 /**
  * Evaluate round data without side effects.
@@ -63,7 +62,6 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   } else {
     await dispatchBattleEvent("continue");
   }
-  resetStatButtons();
   emitBattleEvent("roundResolved", {
     store,
     stat,

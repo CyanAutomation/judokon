@@ -9,6 +9,7 @@ import { handleReplay } from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
+import { showSnackbar } from "../showSnackbar.js";
 
 /**
  * Apply UI updates for a newly started round.
@@ -73,6 +74,18 @@ onBattleEvent("roundStarted", (e) => {
   }
 });
 
+onBattleEvent("statSelected", (e) => {
+  console.log("GEMINI: statSelected event handler");
+  const { stat } = e.detail || {};
+  if (!stat) return;
+  const btn = document.querySelector(`#stat-buttons button[data-stat="${stat}"]`);
+  if (btn) {
+    btn.classList.add("selected");
+    showSnackbar(`You Picked: ${btn.textContent}`);
+  }
+  emitBattleEvent("statButtons:disable");
+});
+
 onBattleEvent("roundResolved", (e) => {
   const { store, result } = e.detail || {};
   if (!result) return;
@@ -88,5 +101,6 @@ onBattleEvent("roundResolved", (e) => {
     });
     emitBattleEvent("matchOver");
   }
+  requestAnimationFrame(() => resetStatButtons());
   updateDebugPanel();
 });

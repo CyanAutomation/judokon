@@ -48,6 +48,7 @@ export function resetStatButtons(
     cancel: cancelFrame
   }
 ) {
+  console.log("GEMINI: resetStatButtons called");
   const { onFrame, cancel } = scheduler;
   getStatButtons().forEach((btn) => {
     btn.classList.remove("selected");

@@ -519,15 +519,6 @@ export function selectStat(store, statName) {
       () => {}
     );
   } catch {}
-  try {
-    showSnackbar(`You Picked: ${btn.textContent}`);
-  } catch {}
-  requestAnimationFrame(() => {
-    try {
-      setStatButtonsEnabled(false);
-      btn.classList.add("selected");
-    } catch {}
-  });
 }
 
 export function initStatButtons(store) {
