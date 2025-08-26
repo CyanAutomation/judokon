@@ -7,31 +7,34 @@ import { onDomReady } from "./domReady.js";
  * 1. Select all elements with the `.card` or `.judoka-card` class.
  * 2. For each card:
  *    a. Skip if listeners already attached.
- *    b. Remove the `data-zoomed` marker on `mouseenter` and `mouseleave`.
- *    c. When a `transitionend` event for `transform` fires, set `data-zoomed="true"`.
- *    d. If `prefers-reduced-motion` is enabled, set `data-zoomed="true"` immediately on `mouseenter`.
+ *    b. Remove the `data-enlarged` marker on `mouseenter` and `mouseleave`.
+ *    c. On `mouseenter`, if animations are disabled, set `data-enlarged="true"` immediately.
+ *    d. When a `transitionend` event for `transform` fires, set `data-enlarged="true"`.
  */
 export function addHoverZoomMarkers() {
   if (typeof document === "undefined") return;
   const cards = document.querySelectorAll(".card, .judoka-card");
   cards.forEach((card) => {
-    if (card.dataset.zoomListenerAttached) return;
-    card.dataset.zoomListenerAttached = "true";
+    if (card.dataset.enlargeListenerAttached) return;
+    card.dataset.enlargeListenerAttached = "true";
     const reset = () => {
-      delete card.dataset.zoomed;
+      delete card.dataset.enlarged;
     };
     card.addEventListener("mouseenter", () => {
       reset();
       try {
-        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          card.dataset.zoomed = "true";
+        const reduceMotion =
+          window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const disableAnimations = document.body?.hasAttribute("data-test-disable-animations");
+        if (reduceMotion || disableAnimations) {
+          card.dataset.enlarged = "true";
         }
       } catch {}
     });
     card.addEventListener("mouseleave", reset);
     card.addEventListener("transitionend", (event) => {
       if (event.propertyName === "transform") {
-        card.dataset.zoomed = "true";
+        card.dataset.enlarged = "true";
       }
     });
   });

@@ -27,6 +27,18 @@
   box-shadow: var(--shadow-hover);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .judoka-card {
+    transition: none !important;
+  }
+}
+
+body[data-test-disable-animations] .card,
+body[data-test-disable-animations] .judoka-card {
+  transition: none !important;
+}
+
 .tile-content h2 {
   padding: 1vh var(--space-large, 1rem);
   font-size: var(--font-large);
