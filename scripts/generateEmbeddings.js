@@ -135,6 +135,13 @@ function chunkCode(source, isTest = false) {
     onComment: comments
   });
   const chunks = [];
+  const importModules = new Set();
+
+  for (const node of ast.body) {
+    if (node.type === "ImportDeclaration") {
+      importModules.add(node.source.value);
+    }
+  }
 
   function findJsDoc(start) {
     for (let i = comments.length - 1; i >= 0; i--) {
@@ -151,6 +158,19 @@ function chunkCode(source, isTest = false) {
     if (node.type === "Identifier") return node.name;
     if (node.type === "MemberExpression") return callName(node.property);
     return null;
+  }
+
+  function gatherReferences(node) {
+    const refs = new Set();
+    walk(node, {
+      enter(n) {
+        if (n.type === "CallExpression") {
+          const nName = callName(n.callee);
+          if (nName) refs.add(nName);
+        }
+      }
+    });
+    return Array.from(refs);
   }
 
   if (isTest) {
@@ -170,7 +190,9 @@ function chunkCode(source, isTest = false) {
             const prefix = context ? `// ${context}\n` : "";
             chunks.push({
               id: context || `test-${chunks.length + 1}`,
-              text: `${prefix}${code}`
+              text: `${prefix}${code}`,
+              construct: "test",
+              references: gatherReferences(node)
             });
           }
         }
@@ -189,7 +211,14 @@ function chunkCode(source, isTest = false) {
           if (!decl) return;
           const exports = [];
           if (decl.type === "FunctionDeclaration" || decl.type === "ClassDeclaration") {
-            exports.push({ id: decl.id && decl.id.name, start: node.start, end: node.end });
+            const construct = decl.type === "FunctionDeclaration" ? "function" : "class";
+            exports.push({
+              id: decl.id && decl.id.name,
+              start: node.start,
+              end: node.end,
+              construct,
+              node: decl
+            });
           } else if (decl.type === "VariableDeclaration") {
             for (const d of decl.declarations) {
               const init = d.init;
@@ -199,7 +228,13 @@ function chunkCode(source, isTest = false) {
                   init.type === "ArrowFunctionExpression" ||
                   init.type === "ClassExpression")
               ) {
-                exports.push({ id: d.id.name, start: node.start, end: node.end, decl: d });
+                exports.push({
+                  id: d.id.name,
+                  start: node.start,
+                  end: node.end,
+                  node: d,
+                  construct: "variable"
+                });
               }
             }
           }
@@ -208,14 +243,19 @@ function chunkCode(source, isTest = false) {
             const doc = findJsDoc(start);
             if (doc) start = doc.start;
             const code = source.slice(start, ex.end);
-            chunks.push({ id: ex.id || "default", text: code });
+            chunks.push({
+              id: ex.id || "default",
+              text: code,
+              construct: ex.construct,
+              references: gatherReferences(ex.node)
+            });
           }
         }
       }
     });
   }
 
-  return chunks;
+  return { chunks, imports: Array.from(importModules) };
 }
 
 function createQaContext(text) {
@@ -305,6 +345,31 @@ function determineIntent(text) {
   return "what";
 }
 
+function determineRole(relativePath) {
+  if (
+    /tests\//.test(relativePath) ||
+    /playwright\//.test(relativePath) ||
+    /\.test\.js$/.test(relativePath) ||
+    /\.spec\.js$/.test(relativePath)
+  ) {
+    return "test";
+  }
+  if (/components\//.test(relativePath)) return "component";
+  if (/config/.test(relativePath)) return "config";
+  return "utility";
+}
+
+function buildMetadata(relativePath, chunkMeta = {}, imports = []) {
+  return {
+    construct: chunkMeta.construct,
+    role: determineRole(relativePath),
+    relations: {
+      imports,
+      references: chunkMeta.references || []
+    }
+  };
+}
+
 async function generate() {
   const files = await getFiles();
   const extractor = await loadModel();
@@ -355,7 +420,11 @@ async function generate() {
         for (const [index, item] of json.entries()) {
           const chunkText = JSON.stringify(item);
           const intent = determineIntent(chunkText);
-          const tags = baseTags.includes(intent) ? [...baseTags] : [...baseTags, intent];
+          const metadata = buildMetadata(relativePath);
+          const tagSet = new Set(baseTags);
+          tagSet.add(intent);
+          tagSet.add(metadata.role);
+          const tags = Array.from(tagSet);
           const result = await extractor(chunkText, { pooling: "mean" });
           const qa = createQaContext(chunkText);
           writeEntry({
@@ -365,6 +434,7 @@ async function generate() {
             embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
             source: `${relativePath} [${index}]`,
             tags,
+            metadata,
             version: 1
           });
         }
@@ -373,7 +443,11 @@ async function generate() {
         for (const [key, value] of Object.entries(flat)) {
           const chunkText = typeof value === "string" ? value : JSON.stringify(value);
           const intent = determineIntent(chunkText);
-          const tags = baseTags.includes(intent) ? [...baseTags] : [...baseTags, intent];
+          const metadata = buildMetadata(relativePath);
+          const tagSet = new Set(baseTags);
+          tagSet.add(intent);
+          tagSet.add(metadata.role);
+          const tags = Array.from(tagSet);
           const result = await extractor(chunkText, { pooling: "mean" });
           const qa = createQaContext(chunkText);
           writeEntry({
@@ -383,6 +457,7 @@ async function generate() {
             embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
             source: `${relativePath} [${key}]`,
             tags,
+            metadata,
             version: 1
           });
         }
@@ -391,7 +466,11 @@ async function generate() {
       const chunks = chunkMarkdown(text);
       for (const [index, chunkText] of chunks.entries()) {
         const intent = determineIntent(chunkText);
-        const tags = baseTags.includes(intent) ? [...baseTags] : [...baseTags, intent];
+        const metadata = buildMetadata(relativePath);
+        const tagSet = new Set(baseTags);
+        tagSet.add(intent);
+        tagSet.add(metadata.role);
+        const tags = Array.from(tagSet);
         const result = await extractor(chunkText, { pooling: "mean" });
         const qa = createQaContext(chunkText);
         writeEntry({
@@ -401,16 +480,24 @@ async function generate() {
           embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
           source: `${relativePath} [chunk ${index + 1}]`,
           tags,
+          metadata,
           version: 1
         });
       }
     } else if (isJs) {
-      const chunks = chunkCode(text, isTest);
+      const { chunks, imports } = chunkCode(text, isTest);
       for (const [index, chunk] of chunks.entries()) {
         const chunkText = chunk.text;
         const idSuffix = chunk.id || `chunk-${index + 1}`;
         const intent = determineIntent(chunkText);
-        const tags = baseTags.includes(intent) ? [...baseTags] : [...baseTags, intent];
+        const metadata = buildMetadata(relativePath, chunk, imports);
+        const tagSet = new Set(baseTags);
+        tagSet.add(intent);
+        if (metadata.construct) tagSet.add(metadata.construct);
+        tagSet.add(metadata.role);
+        for (const mod of metadata.relations.imports) tagSet.add(mod);
+        for (const ref of metadata.relations.references) tagSet.add(ref);
+        const tags = Array.from(tagSet);
         const result = await extractor(chunkText, { pooling: "mean" });
         const qa = createQaContext(chunkText);
         writeEntry({
@@ -420,6 +507,7 @@ async function generate() {
           embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
           source: `${relativePath} [${idSuffix}]`,
           tags,
+          metadata,
           version: 1
         });
       }
