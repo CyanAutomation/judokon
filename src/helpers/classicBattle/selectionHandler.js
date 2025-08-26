@@ -82,9 +82,10 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
       await dispatchBattleEvent("statSelected");
     } else {
       // No machine: in Vitest, make the delay deterministic to avoid flakiness.
-      const deterministicOpts = (typeof process !== "undefined" && process.env && process.env.VITEST)
-        ? { ...opts, delayMs: 0 }
-        : opts;
+      const deterministicOpts =
+        typeof process !== "undefined" && process.env && process.env.VITEST
+          ? { ...opts, delayMs: 0 }
+          : opts;
       result = await resolveRound(store, stat, playerVal, opponentVal, deterministicOpts);
       // Ensure the choice is cleared for non-machine flows.
       store.playerChoice = null;
@@ -92,9 +93,10 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
     }
   } catch {
     // If any of the orchestrator steps fail, fall back to direct resolution.
-    const deterministicOpts = (typeof process !== "undefined" && process.env && process.env.VITEST)
-      ? { ...opts, delayMs: 0 }
-      : opts;
+    const deterministicOpts =
+      typeof process !== "undefined" && process.env && process.env.VITEST
+        ? { ...opts, delayMs: 0 }
+        : opts;
     result = await resolveRound(store, stat, playerVal, opponentVal, deterministicOpts);
   }
   return result;
