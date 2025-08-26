@@ -41,10 +41,10 @@ test.describe.parallel("Homepage", () => {
     await expect(page).toHaveURL(/randomJudoka\.html/);
   });
 
-  test("tile hover zoom and cursor", async ({ page }) => {
+  test("tile hover enlarges and shows pointer", async ({ page }) => {
     const tile = page.locator(".card").first();
     await tile.hover();
-    await expect(tile).toHaveAttribute("data-zoomed", "true");
+    await expect(tile).toHaveAttribute("data-enlarged", "true");
     const scale = await tile.evaluate((el) => {
       const transform = getComputedStyle(el).transform;
       const match = transform.match(/matrix\(([^)]+)\)/);

@@ -47,6 +47,16 @@
   transform: scale(1.05); /* Interactive feedback */
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .judoka-card {
+    transition: none !important;
+  }
+}
+
+body[data-test-disable-animations] .judoka-card {
+  transition: none !important;
+}
+
 /* Styles for tablets */
 @media (max-width: 1024px) {
   .judoka-card {
