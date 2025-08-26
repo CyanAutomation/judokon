@@ -26,7 +26,7 @@ import { showSnackbar } from "../showSnackbar.js";
  * @param {number} [stallTimeoutMs=35000] - Delay before auto-select kicks in.
  */
 export function applyRoundUI(store, roundNumber, stallTimeoutMs = 35000) {
-  console.log("GEMINI: applyRoundUI called for round", roundNumber);
+  console.log("INFO: applyRoundUI called for round", roundNumber);
   resetStatButtons();
   disableNextRoundButton();
   const roundResultEl = document.getElementById("round-result");
@@ -76,7 +76,7 @@ onBattleEvent("roundStarted", (e) => {
 });
 
 onBattleEvent("statSelected", (e) => {
-  console.log("GEMINI: statSelected event handler");
+  console.log("INFO: statSelected event handler");
   const { stat } = e.detail || {};
   if (!stat) return;
   const btn = document.querySelector(`#stat-buttons button[data-stat="${stat}"]`);
