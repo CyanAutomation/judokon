@@ -32,7 +32,8 @@ export function simulateOpponentStat(stats, difficulty = "easy") {
  * 4. Coerce the stat values to numbers.
  * 5. Stop running timers and clear pending timeouts on the store.
  * 6. Emit a `statSelected` event with the provided values.
- * 7. Resolve the round either via the state machine or directly.
+ * 7. Resolve the round either via the state machine or directly, clearing
+ *    `playerChoice` before fallback resolution.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -76,7 +77,12 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
         setTimeout(() => {
           // Only run if still awaiting resolution and selection remains.
           if (store.playerChoice) {
-            resolveRound(store, stat, playerVal, opponentVal, opts).catch(() => {});
+            store.playerChoice = null;
+            resolveRound(store, stat, playerVal, opponentVal, opts)
+              .catch(() => {})
+              .finally(() => {
+                store.playerChoice = null;
+              });
           }
         }, 600);
       } catch {}
