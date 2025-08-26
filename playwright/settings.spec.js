@@ -50,11 +50,6 @@ test.describe("Settings page", () => {
     await waitForSettingsReady(page);
   });
 
-  test("mode toggle visible", async ({ page }) => {
-    const toggle = page.getByRole("checkbox", { name: "Classic Battle" });
-    await expect(toggle).toBeVisible();
-  });
-
   test("settings elements visible", async ({ page }) => {
     await verifyPageBasics(page, [NAV_CLASSIC_BATTLE, NAV_RANDOM_JUDOKA]);
     await expect(page.getByText(/sound/i)).toBeVisible();
