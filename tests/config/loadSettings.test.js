@@ -59,6 +59,22 @@ describe("loadSettings", () => {
     warnSpy.mockRestore();
   });
 
+  it("drops unknown keys from fetched settings", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ bogus: true })
+      })
+    );
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { loadSettings } = await import("../../src/config/loadSettings.js");
+    const settings = await loadSettings();
+    expect(settings.bogus).toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith('Unknown setting "bogus" ignored');
+    warnSpy.mockRestore();
+  });
+
   it("deeply merges nested objects and replaces arrays", async () => {
     vi.doMock("../../src/config/settingsDefaults.js", () => ({
       DEFAULT_SETTINGS: { items: [1], nested: { a: 1, arr: [1] } }
@@ -74,5 +90,24 @@ describe("loadSettings", () => {
     const { loadSettings } = await import("../../src/config/loadSettings.js");
     const settings = await loadSettings();
     expect(settings).toEqual({ items: [2, 3], nested: { a: 1, b: 2, arr: [3] } });
+  });
+
+  it("allows nested overrides with unknown keys", async () => {
+    vi.doMock("../../src/config/settingsDefaults.js", () => ({
+      DEFAULT_SETTINGS: { nested: { a: 1 } }
+    }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ nested: { b: 2 } })
+      })
+    );
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { loadSettings } = await import("../../src/config/loadSettings.js");
+    const settings = await loadSettings();
+    expect(settings.nested).toEqual({ a: 1, b: 2 });
+    expect(warnSpy).not.toHaveBeenCalled();
+    warnSpy.mockRestore();
   });
 });
