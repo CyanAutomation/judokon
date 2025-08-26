@@ -27,8 +27,7 @@ mockTooltips();
 mockTestModeUtils();
 mockRoundSelectModal();
 
-const coreStateIds = CLASSIC_BATTLE_STATES
-  .filter((s) => s.id < 90)
+const coreStateIds = CLASSIC_BATTLE_STATES.filter((s) => s.id < 90)
   .sort((a, b) => a.id - b.id)
   .map((s) => String(s.id));
 

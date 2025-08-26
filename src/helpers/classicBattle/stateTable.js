@@ -26,7 +26,12 @@ export const CLASSIC_BATTLE_STATES = [
     name: "matchStart",
     description:
       "Initialises match context. Stores selected win target, resets scores, and fixes user as first player for all rounds.",
-    onEnter: ["init:matchContext", "store:winTargetSelection", "reset:scores", "set:firstPlayerUser"],
+    onEnter: [
+      "init:matchContext",
+      "store:winTargetSelection",
+      "reset:scores",
+      "set:firstPlayerUser"
+    ],
     triggers: [
       { on: "ready", target: "cooldown" },
       { on: "interrupt", target: "interruptMatch" },
@@ -121,8 +126,7 @@ export const CLASSIC_BATTLE_STATES = [
     id: 9,
     name: "matchOver",
     type: "final",
-    description:
-      "Match completed. Offer Rematch or Home. Final score remains visible.",
+    description: "Match completed. Offer Rematch or Home. Final score remains visible.",
     onEnter: ["show:matchResultScreen"],
     triggers: [
       { on: "rematch", target: "waitingForMatchStart" },
@@ -134,7 +138,11 @@ export const CLASSIC_BATTLE_STATES = [
     name: "interruptRound",
     description:
       "Round-level interruption (quit, navigation, or error). Performs safe rollback and offers options.",
-    onEnter: ["timer:clearIfRunning", "rollback:roundContextIfNeeded", "log:analyticsInterruptRound"],
+    onEnter: [
+      "timer:clearIfRunning",
+      "rollback:roundContextIfNeeded",
+      "log:analyticsInterruptRound"
+    ],
     triggers: [
       { on: "roundModifyFlag", target: "roundModification", guard: "FF_ROUND_MODIFY" },
       { on: "restartRound", target: "cooldown" },
@@ -145,8 +153,7 @@ export const CLASSIC_BATTLE_STATES = [
   {
     id: 97,
     name: "roundModification",
-    description:
-      "Admin/test-only branch to adjust round decision parameters before re-evaluating.",
+    description: "Admin/test-only branch to adjust round decision parameters before re-evaluating.",
     onEnter: ["open:roundModificationPanel"],
     triggers: [
       { on: "modifyRoundDecision", target: "roundDecision" },
@@ -165,4 +172,3 @@ export const CLASSIC_BATTLE_STATES = [
     ]
   }
 ];
-
