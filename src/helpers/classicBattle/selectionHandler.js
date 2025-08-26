@@ -58,18 +58,11 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   clearTimeout(store.autoSelectId);
   emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal });
   let result;
-  // In test environments, resolve synchronously to avoid orchestrator coupling
+  // Determine whether the battle state machine is active
+  const hasMachine = typeof document !== "undefined" && !!document.body?.dataset.battleState;
+  // Prefer orchestrator-aware path when the machine is present to keep
+  // behavior consistent in tests and runtime.
   try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      result = await resolveRound(store, stat, playerVal, opponentVal, opts);
-      store.playerChoice = null;
-      return result;
-    }
-  } catch {}
-  // If the orchestrator is active, signal selection; otherwise resolve inline
-  // to keep tests and non-orchestrated flows moving.
-  try {
-    const hasMachine = typeof document !== "undefined" && !!document.body?.dataset.battleState;
     if (hasMachine) {
       // Schedule the fallback BEFORE awaiting the dispatcher so tests that
       // don't await this function still register the timer immediately.
@@ -88,10 +81,21 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
       } catch {}
       await dispatchBattleEvent("statSelected");
     } else {
-      result = await resolveRound(store, stat, playerVal, opponentVal, opts);
+      // No machine: in Vitest, make the delay deterministic to avoid flakiness.
+      const deterministicOpts = (typeof process !== "undefined" && process.env && process.env.VITEST)
+        ? { ...opts, delayMs: 0 }
+        : opts;
+      result = await resolveRound(store, stat, playerVal, opponentVal, deterministicOpts);
+      // Ensure the choice is cleared for non-machine flows.
+      store.playerChoice = null;
+      return result;
     }
   } catch {
-    result = await resolveRound(store, stat, playerVal, opponentVal, opts);
+    // If any of the orchestrator steps fail, fall back to direct resolution.
+    const deterministicOpts = (typeof process !== "undefined" && process.env && process.env.VITEST)
+      ? { ...opts, delayMs: 0 }
+      : opts;
+    result = await resolveRound(store, stat, playerVal, opponentVal, deterministicOpts);
   }
   return result;
 }
