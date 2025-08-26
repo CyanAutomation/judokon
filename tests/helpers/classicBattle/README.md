@@ -26,7 +26,7 @@ This directory contains unit tests for Classic Battle helpers.
 - `stallRecovery.test.js`: recovers when stat selection stalls.
 - `statButtons.state.test.js`: toggles stat buttons based on battle state.
 - `statSelection.test.js`: resolves round outcomes after stat selection.
-- `stateTransitions.test.js`: validates `classicBattleStates.json` transitions.
+- `stateTransitions.test.js`: validates `src/helpers/classicBattle/stateTable.js` transitions.
 - `timerService.drift.test.js`: falls back to messaging when timers drift.
 - `timerService.nextRound.test.js`: manages cooldown and Next button interaction.
 - `timerStateExposure.test.js`: exposes timer state to window and DOM.

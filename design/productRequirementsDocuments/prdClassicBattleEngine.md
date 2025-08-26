@@ -29,7 +29,7 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 
 ## Goals
 
-1. **Predictable Match Flow** — Ensure 100% of Classic Battle matches follow the defined state sequence from `classicBattleStates.json` with no skipped or duplicate states.  
+1. **Predictable Match Flow** — Ensure 100% of Classic Battle matches follow the defined state sequence from `src/helpers/classicBattle/stateTable.js` with no skipped or duplicate states.
 2. **UI Feedback Speed** — Surface round results, timers, and scores to the UI within target response budgets.  
 3. **Accessibility Compliance** — Meet WCAG 2.1 AA contrast, focus, and readability guidelines for all state and timer displays.  
 4. **Test Coverage** — Achieve **≥95% automated test pass rate** for match state and timer scenarios in Playwright and unit tests.  
@@ -58,7 +58,7 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 
 | Priority | Feature                      | Description                                                                                                                        |
 |----------|------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| **P1**   | State Machine                | Implements all match states and transitions as defined in `classicBattleStates.json`. Exposes current state to UI and tests.       |
+| **P1**   | State Machine                | Implements all match states and transitions as defined in `src/helpers/classicBattle/stateTable.js`. Exposes current state to UI and tests.       |
 | **P1**   | Round Logic                  | Handles round start, stat selection, comparison, scoring, and round end.                                                          |
 | **P1**   | Stat Selection Timer         | 30s timer for stat selection, with pause/resume and auto-select fallback (Random Stat Mode, `FF_AUTO_SELECT`, enabled by default). |
 | **P1**   | Scoring                      | Updates player and opponent scores after each round.                                                                               |
@@ -74,7 +74,7 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 1. **State Machine Accuracy**  
    - **Given** a match is running  
    - **When** a state transition occurs  
-   - **Then** the new state must match the definition in `classicBattleStates.json` exactly.
+   - **Then** the new state must match the definition in `src/helpers/classicBattle/stateTable.js` exactly.
 
 2. **Timer Behavior**  
    - **Given** the player is in `waitingForPlayerAction`  
@@ -131,7 +131,7 @@ When a player quits in the middle of a match, the engine follows a defined seque
 
 ## Dependencies
 
-- `classicBattleStates.json` defines all match states and transitions.  
+- `stateTable.js` defines all match states and transitions.
 - `BattleEngine.js` implements round logic, scoring, timer, and match end conditions.  
 - `orchestrator.js` manages state machine, transitions, and exposes hooks for UI and tests.  
 - `battleStateProgress.js` renders state progress bar and syncs active state.  
@@ -368,7 +368,7 @@ flowchart TD
 **See also:**
 - [Classic Battle PRD](prdClassicBattle.md)
 - [Battle Scoreboard PRD](prdBattleScoreboard.md)
-- [classicBattleStates.json](../../src/data/classicBattleStates.json)
+- [stateTable.js](../../src/helpers/classicBattle/stateTable.js)
 - [BattleEngine.js](../../src/helpers/BattleEngine.js)
 - [orchestrator.js](../../src/helpers/classicBattle/orchestrator.js)
 - [battleStateProgress.js](../../src/helpers/battleStateProgress.js)
@@ -378,7 +378,7 @@ flowchart TD
 ## Tasks
 
 - [ ] 1.0 Implement State Machine
-  - [ ] 1.1 Define states and transitions in `classicBattleStates.json`
+  - [ ] 1.1 Define states and transitions in `src/helpers/classicBattle/stateTable.js`
   - [ ] 1.2 Create `orchestrator.js` to manage state changes
   - [ ] 1.3 Expose state via DOM and window hooks
 - [ ] 2.0 Build Round Logic
