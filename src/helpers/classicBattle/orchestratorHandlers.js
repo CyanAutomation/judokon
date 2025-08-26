@@ -123,7 +123,8 @@ export async function roundStartExit() {}
  *
  * @pseudocode
  * 1. Enable stat buttons for interaction.
- * 2. If both a choice and confirmation exist, dispatch `statSelected`.
+ * 2. If `store.playerChoice` and `store.selectionMade` are truthy,
+ *    dispatch `statSelected`.
  */
 export async function waitingForPlayerActionEnter(machine) {
   emitBattleEvent("statButtons:enable");
@@ -254,8 +255,8 @@ export async function roundDecisionExit() {}
  * Reset round-specific store data.
  *
  * @pseudocode
- * 1. Clear `playerChoice` to `null`.
- * 2. Set `selectionMade` to `false` for the next round.
+ * 1. Set `store.playerChoice` to `null`.
+ * 2. Set `store.selectionMade` to `false` for the next round.
  */
 export async function roundOverEnter(machine) {
   const store = machine?.context?.store;
