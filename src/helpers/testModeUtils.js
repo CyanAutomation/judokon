@@ -5,6 +5,10 @@
  * 1. Track whether test mode is active and a numeric seed.
  * 2. When active, `seededRandom()` returns a predictable pseudo-random number.
  * 3. Provide helpers to enable/disable test mode and query current state.
+ *
+ * `computeNextRoundCooldown` logs the resolved cooldown with a `[test]` prefix
+ * when Test Mode is enabled. Override the cooldown for manual testing by
+ * setting `window.__NEXT_ROUND_COOLDOWN_MS`.
  */
 let active = false;
 let seed = 1;
