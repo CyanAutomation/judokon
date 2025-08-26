@@ -124,6 +124,7 @@ export async function waitingForPlayerActionExit() {
 function computeAndDispatchOutcome(store, machine) {
   return (async () => {
     try {
+      console.log("DEBUG: computeAndDispatchOutcome start", { playerChoice: store?.playerChoice });
       if (!isStateTransition(null, "roundDecision")) return;
       const rd = window.__roundDebug;
       const resolved = rd && typeof rd.resolvedAt === "number";
@@ -138,6 +139,7 @@ function computeAndDispatchOutcome(store, machine) {
         const pCard = document.getElementById("player-card");
         const oCard = document.getElementById("opponent-card");
         const playerVal = getStatValue(pCard, stat);
+        console.log("DEBUG: computeAndDispatchOutcome values", { stat, playerVal });
         let opponentVal = 0;
         try {
           const opp = getOpponentJudoka();
@@ -152,6 +154,7 @@ function computeAndDispatchOutcome(store, machine) {
           else outcomeEvent = "outcome=draw";
         }
       } catch {}
+      console.log("DEBUG: computeAndDispatchOutcome outcomeEvent", { outcomeEvent });
       try {
         window.__guardFiredAt = Date.now();
         window.__guardOutcomeEvent = outcomeEvent || "none";
@@ -194,6 +197,9 @@ export async function roundDecisionEnter(machine) {
     } catch {
       opponentVal = getStatValue(oCard, stat);
     }
+    try {
+      console.log("DEBUG: roundDecision.resolveImmediate", { stat, playerVal, opponentVal });
+    } catch {}
     await resolveRound(store, stat, playerVal, opponentVal);
   };
 

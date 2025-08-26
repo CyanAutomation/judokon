@@ -49,6 +49,10 @@ export function resetStatButtons(
   }
 ) {
   console.log("INFO: resetStatButtons called");
+  try {
+    const before = document.querySelectorAll("#stat-buttons .selected").length;
+    console.warn(`[test] resetStatButtons: before=${before}`);
+  } catch {}
   const { onFrame, cancel } = scheduler;
   getStatButtons().forEach((btn) => {
     btn.classList.remove("selected");
@@ -63,6 +67,10 @@ export function resetStatButtons(
       cancel(frameId);
     });
   });
+  try {
+    const after = document.querySelectorAll("#stat-buttons .selected").length;
+    console.warn(`[test] resetStatButtons: after=${after}`);
+  } catch {}
 }
 
 /**

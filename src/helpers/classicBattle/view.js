@@ -75,6 +75,8 @@ export class ClassicBattleView {
       // Clear any lingering selection immediately for deterministic tests
       try {
         resetStatButtons();
+        const c = document.querySelectorAll("#stat-buttons .selected").length;
+        console.warn(`[test] skipBattlePhase: after immediate reset selected=${c}`);
       } catch {}
       try {
         const p1 =

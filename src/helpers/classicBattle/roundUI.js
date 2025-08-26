@@ -81,6 +81,11 @@ onBattleEvent("statSelected", (e) => {
   if (!stat) return;
   const btn = document.querySelector(`#stat-buttons button[data-stat="${stat}"]`);
   if (btn) {
+    try {
+      console.warn(
+        `[test] addSelected: stat=${stat} label=${btn.textContent?.trim() || ""}`
+      );
+    } catch {}
     btn.classList.add("selected");
     showSnackbar(`You Picked: ${btn.textContent}`);
   }

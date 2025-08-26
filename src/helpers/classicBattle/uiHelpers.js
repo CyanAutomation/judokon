@@ -566,11 +566,22 @@ export function initStatButtons(store) {
       btn.disabled = !enable;
       btn.tabIndex = enable ? 0 : -1;
       btn.classList.toggle("disabled", !enable);
+      // Defensive: ensure no lingering selection styling when enabling
+      if (enable) {
+        try {
+          btn.classList.remove("selected");
+          btn.style.removeProperty("background-color");
+        } catch {}
+      }
     });
     if (statContainer) {
       statContainer.dataset.buttonsReady = String(enable);
     }
     if (enable) {
+      try {
+        const count = document.querySelectorAll("#stat-buttons .selected").length;
+        console.warn(`[test] setEnabled(true): selectedCount=${count}`);
+      } catch {}
       // Resolve the current promise to signal readiness to tests / other code.
       try {
         resolveReady?.();
@@ -579,6 +590,10 @@ export function initStatButtons(store) {
         if (isTestModeEnabled()) console.warn("[test] statButtonsReady=true");
       } catch {}
     } else {
+      try {
+        const count = document.querySelectorAll("#stat-buttons .selected").length;
+        console.warn(`[test] setEnabled(false): selectedCount=${count}`);
+      } catch {}
       resetReadyPromise();
       try {
         if (isTestModeEnabled()) console.warn("[test] statButtonsReady=false");
