@@ -88,6 +88,6 @@ onBattleEvent("roundResolved", (e) => {
     });
     emitBattleEvent("matchOver");
   }
-  resetStatButtons();
+  requestAnimationFrame(() => resetStatButtons());
   updateDebugPanel();
 });
