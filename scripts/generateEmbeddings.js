@@ -48,43 +48,23 @@ let codeGraphs = { modules: {} };
 
 // Target chunk ≈ 350 tokens (≈ 1,400 chars), overlap ≈ 15%
 const CHUNK_SIZE = 1400;
-const OVERLAP = 210;
+// Removed unused constant OVERLAP
 const MAX_OUTPUT_SIZE = 9.8 * 1024 * 1024;
-const SHARD_SIZE = 1000;
-
-const STOP_WORDS = new Set([
-  'a', 'an', 'the', 'and', 'or', 'in', 'on', 'at', 'for', 'to', 'of',
-  'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
-  'do', 'does', 'did', 'but', 'if', 'not', 'it', 'i', 'me', 'my', 'we', 'our',
-  'you', 'your', 'he', 'his', 'she', 'her', 'they', 'their', 'what', 'which',
-  'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was',
-  'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did',
-  'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while',
-  'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into',
-  'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from',
-  'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further',
-  'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any',
-  'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor',
-  'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can',
-  'will', 'just', 'don', 'should', 'now'
-]);
-
-function createSparseVector(text) {
-  const tokens = text.toLowerCase().replace(/[^a-zA-Z0-9\s]/g, '').split(/\s+/);
-  const termFrequencies = {};
-  for (const token of tokens) {
-    if (!STOP_WORDS.has(token)) {
-      termFrequencies[token] = (termFrequencies[token] || 0) + 1;
-    }
-  }
-  return termFrequencies;
-}
 
 const JSON_FIELD_ALLOWLIST = {
-  "judoka.json": ["firstname", "surname", "country", "weightClass", "category", "bio", "rarity", "stats"],
+  "judoka.json": [
+    "firstname",
+    "surname",
+    "country",
+    "weightClass",
+    "category",
+    "bio",
+    "rarity",
+    "stats"
+  ],
   "tooltips.json": true, // Allow all fields
   "gameModes.json": ["name", "japaneseName", "description", "rules"],
-  "default": ["name", "description", "label"]
+  default: ["name", "description", "label"]
 };
 
 /**
@@ -144,7 +124,6 @@ function chunkMarkdown(text) {
       overlappedChunks.push(finalChunks[i]);
     }
   }
-
 
   return overlappedChunks;
 }
@@ -507,36 +486,17 @@ async function generate() {
 
   const files = await getFiles();
   const extractor = await loadModel();
-  const outputDir = path.join(rootDir, "src/data");
-  const shards = [];
-  let shardIndex = 0;
-  let writer;
+  const outputPath = path.join(rootDir, "src/data/client_embeddings.json");
+  const writer = createWriteStream(outputPath, { encoding: "utf8" });
   let bytesWritten = 0;
   let first = true;
   let entryCount = 0;
   let vectorLengthTotal = 0;
 
-  const startShard = () => {
-    const shardPath = path.join(outputDir, `client_embeddings.shard.${shardIndex}.json`);
-    shards.push(`client_embeddings.shard.${shardIndex}.json`);
-    writer = createWriteStream(shardPath, { encoding: "utf8" });
-    writer.write("[");
-    bytesWritten = Buffer.byteLength("[", "utf8");
-    first = true;
-  };
-
-  const endShard = () => {
-    writer.end("\n]\n");
-  };
-
-  startShard();
+  writer.write("[");
+  bytesWritten += Buffer.byteLength("[", "utf8");
 
   const writeEntry = (obj) => {
-    if (entryCount > 0 && entryCount % SHARD_SIZE === 0) {
-      endShard();
-      shardIndex++;
-      startShard();
-    }
     const serialized = JSON.stringify(obj);
     const chunk = (first ? "\n" : ",\n") + serialized;
     const size = Buffer.byteLength(chunk + "\n]", "utf8");
@@ -568,7 +528,6 @@ async function generate() {
 
     if (isJson) {
       const json = JSON.parse(text);
-      const allowlist = JSON_FIELD_ALLOWLIST[base] || JSON_FIELD_ALLOWLIST.default;
       if (Array.isArray(json)) {
         for (const [index, item] of json.entries()) {
           const chunkText = JSON.stringify(item);
@@ -584,13 +543,11 @@ async function generate() {
           const tags = Array.from(tagSet);
           const result = await extractor(chunkText, { pooling: "mean" });
           const qa = createQaContext(chunkText);
-          const sparseVector = createSparseVector(chunkText);
           writeEntry({
             id: `${base}-${index + 1}`,
             text: chunkText,
             ...(qa ? { qaContext: qa } : {}),
             embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
-            sparseVector,
             source: `${relativePath} [${index}]`,
             tags,
             metadata,
@@ -599,8 +556,9 @@ async function generate() {
         }
       } else if (json && typeof json === "object") {
         const flat = flattenObject(json);
+        const allowlist = JSON_FIELD_ALLOWLIST[base] || JSON_FIELD_ALLOWLIST.default;
         for (const [key, value] of Object.entries(flat)) {
-          if (allowlist !== true && !allowlist.some(allowedKey => key.startsWith(allowedKey))) {
+          if (allowlist !== true && !allowlist.some((allowedKey) => key.startsWith(allowedKey))) {
             continue;
           }
           const chunkText = typeof value === "string" ? value : JSON.stringify(value);
@@ -616,13 +574,11 @@ async function generate() {
           const tags = Array.from(tagSet);
           const result = await extractor(chunkText, { pooling: "mean" });
           const qa = createQaContext(chunkText);
-          const sparseVector = createSparseVector(chunkText);
           writeEntry({
             id: `${base}-${key}`,
             text: chunkText,
             ...(qa ? { qaContext: qa } : {}),
             embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
-            sparseVector,
             source: `${relativePath} [${key}]`,
             tags,
             metadata,
@@ -645,13 +601,11 @@ async function generate() {
         const tags = Array.from(tagSet);
         const result = await extractor(chunkText, { pooling: "mean" });
         const qa = createQaContext(chunkText);
-        const sparseVector = createSparseVector(chunkText);
         writeEntry({
           id: `${base}-chunk-${index + 1}`,
           text: chunkText,
           ...(qa ? { qaContext: qa } : {}),
-          embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
-          sparseVector,
+          embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
           source: `${relativePath} [chunk ${index + 1}]`,
           tags,
           metadata,
@@ -676,13 +630,11 @@ async function generate() {
         const tags = Array.from(tagSet);
         const result = await extractor(chunkText, { pooling: "mean" });
         const qa = createQaContext(chunkText);
-        const sparseVector = createSparseVector(chunkText);
         writeEntry({
           id: `${base}-${idSuffix}`,
           text: chunkText,
           ...(qa ? { qaContext: qa } : {}),
-          embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
-          sparseVector,
+          embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
           source: `${relativePath} [${idSuffix}]`,
           tags,
           metadata,
@@ -692,15 +644,19 @@ async function generate() {
     }
   }
 
-  endShard();
-
-  const manifestPath = path.join(outputDir, "client_embeddings.manifest.json");
-  await writeFile(manifestPath, JSON.stringify({ shards }, null, 2));
-
+  const endStr = "\n]\n";
+  if (bytesWritten + Buffer.byteLength(endStr, "utf8") > MAX_OUTPUT_SIZE) {
+    writer.end();
+    throw new Error("Output exceeds 6.8MB");
+  }
+  writer.end(endStr);
+  await new Promise((resolve) => writer.on("finish", resolve));
+  const stats = await stat(outputPath);
+  const avgLength = entryCount ? Number((vectorLengthTotal / entryCount).toFixed(2)) : 0;
   const meta = {
     count: entryCount,
-    avgVectorLength: entryCount ? Number((vectorLengthTotal / entryCount).toFixed(2)) : 0,
-    shards: shards.length
+    avgVectorLength: avgLength,
+    fileSizeKB: Number((stats.size / 1024).toFixed(2))
   };
   await writeFile(
     path.join(rootDir, "src/data/client_embeddings.meta.json"),
