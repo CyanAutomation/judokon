@@ -21,6 +21,7 @@ function setupPromise(key, eventName) {
     try {
       if (typeof window !== "undefined") {
         window[key] = p;
+        window[`__resolved_${key}`] = false;
         try {
           window.__promiseEvents = window.__promiseEvents || [];
           window.__promiseEvents.push({ type: "promise-reset", key, ts: Date.now() });
@@ -36,6 +37,7 @@ function setupPromise(key, eventName) {
         window.__promiseEvents = window.__promiseEvents || [];
         window.__promiseEvents.push({ type: "promise-resolve", key, ts: Date.now() });
       } catch {}
+      if (typeof window !== "undefined") window[`__resolved_${key}`] = true;
       resolve();
     } catch {}
     promise = reset();
@@ -70,7 +72,10 @@ export let roundResolvedPromise;
 // reference maintained by setupPromise(). This avoids races where a module-level
 // Promise was already resolved before the test started awaiting it.
 function latest(key, fallback) {
-  if (typeof window !== "undefined" && window[key] instanceof Promise) return window[key];
+  if (typeof window !== "undefined") {
+    if (window[`__resolved_${key}`]) return Promise.resolve();
+    if (window[key] instanceof Promise) return window[key];
+  }
   return fallback;
 }
 
