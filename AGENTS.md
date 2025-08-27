@@ -100,6 +100,17 @@ Before submitting or completing a task, verify that your work:
 - Validate all modified JSON files with `npm run validate:data`
 - Use createButton, createCard, createModal factories when building UI
 
+## Classic Battle: Testing and Rebinding
+
+- Prefer `tests/helpers/initClassicBattleTest.js` to initialize bindings:
+  - Call `await initClassicBattleTest({ afterMock: true })` immediately after `vi.doMock(...)` inside a test to rebind event listeners and reset promises.
+- Prefer event promises over sleeps:
+  - `getRoundPromptPromise`, `getCountdownStartedPromise`, `getRoundResolvedPromise`, `getRoundTimeoutPromise`, `getStatSelectionStalledPromise`.
+- Assert against the correct surface:
+  - Outcome → `#round-message`; countdown/hints → snackbar.
+- Bindings are idempotent and per-worker via `__ensureClassicBattleBindings()`.
+- Global `afterEach` clears snackbar and `#round-message` to prevent bleed.
+
 ### ❌ DON’T
 
 - Don’t commit baseline screenshots (playwright/\*-snapshots)
