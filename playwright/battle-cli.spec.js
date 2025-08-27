@@ -5,8 +5,12 @@ test.describe("Classic Battle CLI", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       // Keep UI deterministic for tests
-      try { localStorage.setItem("battleCLI.verbose", "false"); } catch {}
-      try { localStorage.setItem("battleCLI.pointsToWin", "5"); } catch {}
+      try {
+        localStorage.setItem("battleCLI.verbose", "false");
+      } catch {}
+      try {
+        localStorage.setItem("battleCLI.pointsToWin", "5");
+      } catch {}
       // Speed up inter-round where possible
       window.__NEXT_ROUND_COOLDOWN_MS = 0;
     });
@@ -43,4 +47,3 @@ test.describe("Classic Battle CLI", () => {
     await expect(page.locator("#cli-verbose-section")).toBeHidden();
   });
 });
-
