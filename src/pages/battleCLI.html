@@ -1,2 +1,107 @@
-<head></head>
-<body></body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="JU-DO-KON! Classic Battle – CLI mode" />
+    <title>JU-DO-KON! – Classic Battle CLI</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      html, body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        background: #0b0c0c;
+        color: #f2f2f2;
+      }
+      .cli-root {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .cli-header {
+        padding: 8px 12px;
+        border-bottom: 1px solid #3a3a3a;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      .cli-title {
+        font-weight: 700;
+      }
+      .cli-score {
+        white-space: pre;
+      }
+      .cli-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 12px;
+        gap: 12px;
+      }
+      .cli-block {
+        padding: 8px 10px;
+        border: 1px solid #2a2a2a;
+      }
+      #cli-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 6px;
+      }
+      .cli-stat {
+        padding: 4px 6px;
+        background: #121212;
+        border: 1px solid #3a3a3a;
+      }
+      .cli-footer {
+        margin-top: auto;
+        border-top: 1px solid #3a3a3a;
+      }
+      /* Terminal-style snackbar line at the bottom */
+      #cli-countdown {
+        padding: 8px 12px;
+        background: #111;
+        color: #e6e6e6;
+      }
+      /* Ensure good contrast for links if any appear */
+      a { color: #9ad1ff; }
+      a:focus, [tabindex]:focus { outline: 2px solid #9ad1ff; outline-offset: 2px; }
+    </style>
+  </head>
+  <body>
+    <div id="cli-root" class="cli-root">
+      <header id="cli-header" class="cli-header" role="banner">
+        <div class="cli-title">Classic Battle (CLI)</div>
+        <div id="cli-score" class="cli-score" aria-live="polite" aria-atomic="true">You: 0  Opponent: 0</div>
+      </header>
+
+      <main id="cli-main" class="cli-main" role="main">
+        <section aria-label="Round Status" class="cli-block">
+          <div id="round-message" role="status" aria-live="polite" aria-atomic="true"></div>
+        </section>
+
+        <section aria-label="Stat Selection" class="cli-block">
+          <div id="cli-stats" role="listbox" tabindex="0" aria-label="Select a stat with number keys 1–9">
+            <div class="cli-stat" role="option" aria-selected="false" data-stat-index="1">[1] Power</div>
+            <div class="cli-stat" role="option" aria-selected="false" data-stat-index="2">[2] Speed</div>
+            <div class="cli-stat" role="option" aria-selected="false" data-stat-index="3">[3] Technique</div>
+            <div class="cli-stat" role="option" aria-selected="false" data-stat-index="4">[4] Kumi-Kata</div>
+            <div class="cli-stat" role="option" aria-selected="false" data-stat-index="5">[5] Ne-Waza</div>
+          </div>
+        </section>
+
+        <section aria-label="Shortcuts" id="cli-shortcuts" class="cli-block">
+          <div>[1–9] Select Stat  |  [Enter]/[Space] Next  |  [Q] Quit  |  [H] Help</div>
+        </section>
+      </main>
+
+      <footer class="cli-footer" role="contentinfo">
+        <div id="cli-countdown" role="status" aria-live="polite" aria-atomic="true"></div>
+      </footer>
+    </div>
+  </body>
+  </html>
