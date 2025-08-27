@@ -1,14 +1,14 @@
-# PRD: Classic Battle Engine
+# PRD: Battle Engine
 
 ---
 
-**Supports:** [Classic Battle Mode PRD](prdClassicBattle.md)
+**Supports:** [Classic Battle Mode PRD](prdBattleClassic.md)
 
 ---
 
 ## TL;DR
 
-The Classic Battle Engine defines the core mechanics, state transitions, and round logic for JU-DO-KON!'s Classic Battle mode.  
+The Battle Engine defines the core mechanics, state transitions, and round logic for JU-DO-KON!'s Classic Battle mode.
 It manages match setup, round progression, stat selection, scoring, timers, and end conditions, ensuring a smooth, accessible, and testable game flow.  
 This PRD details the state machine, round logic, and technical requirements for the engine and orchestrator modules.
 
@@ -141,7 +141,7 @@ When a player quits in the middle of a match, the engine follows a defined seque
 
 ## Match Flow
 
-The Classic Battle Engine PRD focuses on technical implementation details for state management, timer logic, and deterministic randomization. Gameplay rules and user-facing logic are described in the Classic Battle PRD; this document covers how the engine orchestrates those rules programmatically.
+The Battle Engine PRD focuses on technical implementation details for state management, timer logic, and deterministic randomization. Gameplay rules and user-facing logic are described in the Classic Battle PRD; this document covers how the engine orchestrates those rules programmatically.
 
 - State transitions, timer management, and scoring are implemented as pure functions and exposed via orchestrator hooks for UI and test automation.
 - Random card draws use a seedable PRNG to ensure reproducibility for test and debug scenarios. The engine exposes a method to set and retrieve the current seed.
@@ -366,7 +366,7 @@ flowchart TD
 ---
 
 **See also:**
-- [Classic Battle PRD](prdClassicBattle.md)
+- [Classic Battle PRD](prdBattleClassic.md)
 - [Battle Scoreboard PRD](prdBattleScoreboard.md)
 - [stateTable.js](../../src/helpers/classicBattle/stateTable.js)
 - [BattleEngine.js](../../src/helpers/BattleEngine.js)
