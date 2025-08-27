@@ -212,7 +212,6 @@ function computeAndDispatchOutcome(store, machine) {
       if (outcomeEvent) {
         await machine.dispatch(outcomeEvent);
         await machine.dispatch("continue");
-        scheduleNextRound({ matchEnded: false });
       } else {
         await machine.dispatch("interrupt", { reason: "guardNoOutcome" });
       }

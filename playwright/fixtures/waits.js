@@ -35,7 +35,12 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
   while (Date.now() < deadline) {
     const info = await page.evaluate(() => {
       const d = document.body?.dataset?.battleState || null;
-      const w = typeof window !== "undefined" ? window.__classicBattleState || null : null;
+      let w = null;
+      if (typeof window !== "undefined" && typeof window.__classicBattleState !== "undefined") {
+        const raw = window.__classicBattleState;
+        if (typeof raw === "string") w = raw;
+        else if (raw && typeof raw.state === "string") w = raw.state;
+      }
       return { d, w };
     });
     if (info.d === stateName || info.w === stateName) return;
@@ -46,7 +51,12 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
   try {
     const info = await page.evaluate(() => {
       const d = document.body?.dataset?.battleState || null;
-      const w = typeof window !== "undefined" ? window.__classicBattleState || null : null;
+      let w = null;
+      if (typeof window !== "undefined" && typeof window.__classicBattleState !== "undefined") {
+        const raw = window.__classicBattleState;
+        if (typeof raw === "string") w = raw;
+        else if (raw && typeof raw.state === "string") w = raw.state;
+      }
       const el = document.getElementById("machine-state");
       const t = el ? el.textContent : null;
       const prev = document.body?.dataset?.prevBattleState || null;
@@ -56,8 +66,8 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
       return { dataset: d, windowState: w, machineText: t, prev, log };
     });
     const tail = Array.isArray(info.log)
-      ? info.log.map((e) => `${e.from || 'null'}->${e.to}(${e.event || 'init'})`).join(',')
-      : '';
+      ? info.log.map((e) => `${e.from || "null"}->${e.to}(${e.event || "init"})`).join(",")
+      : "";
     snapshot = ` (dataset=${info.dataset} window=${info.windowState} machine=${info.machineText} prev=${info.prev} log=[${tail}])`;
   } catch {}
   throw new Error(`Timed out waiting for battle state "${stateName}"${snapshot}`);
