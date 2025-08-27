@@ -50,38 +50,13 @@ export function onStateTransition(targetState, timeoutMs = 10000) {
         return;
       }
       const entry = { resolve };
-      // Debug bookkeeping for diagnostics (safe in browsers only)
-      try {
-        if (typeof window !== "undefined") {
-          entry.__id = Math.random().toString(36).slice(2, 9);
-          window.__stateWaiterEvents = window.__stateWaiterEvents || [];
-          window.__stateWaiterEvents.push({
-            action: "add",
-            state: targetState,
-            id: entry.__id,
-            ts: Date.now()
-          });
-        }
-      } catch {}
       if (timeoutMs !== Infinity) {
         entry.timer = setTimeout(() => {
           try {
-            // remove this entry from the waiter list on timeout
             const list = stateWaiters.get(targetState) || [];
             const idx = list.indexOf(entry);
             if (idx !== -1) list.splice(idx, 1);
             if (list.length === 0) stateWaiters.delete(targetState);
-            try {
-              if (typeof window !== "undefined") {
-                window.__stateWaiterEvents = window.__stateWaiterEvents || [];
-                window.__stateWaiterEvents.push({
-                  action: "timeout",
-                  state: targetState,
-                  id: entry.__id || null,
-                  ts: Date.now()
-                });
-              }
-            } catch {}
           } catch {}
           reject(new Error(`onStateTransition timeout for ${targetState}`));
         }, timeoutMs);
@@ -96,120 +71,32 @@ export function onStateTransition(targetState, timeoutMs = 10000) {
 }
 
 /**
- * Mirror state transitions to window/DOM and resolve in-page waiters.
- * @param {string|null} from
- * @param {string} to
- * @param {string|null} event
- */
-function updateDebugState(from, to, event) {
-  if (typeof window === "undefined" || typeof document === "undefined") return;
-  try {
-    window.__classicBattleState = to;
-    if (from) window.__classicBattlePrevState = from;
-    if (event) window.__classicBattleLastEvent = event;
-    document.body.dataset.battleState = to;
-    document.body.dataset.prevBattleState = from || "";
-    try {
-      // Keep tests observable; muted by test helpers in CI
-
-      console.warn(`[test] dataset.battleState set -> ${document.body.dataset.battleState}`);
-    } catch {}
-    document.dispatchEvent(new CustomEvent("battle:state", { detail: { from, to } }));
-    const logEntry = { from: from || null, to, event: event || null, ts: Date.now() };
-    const log = Array.isArray(window.__classicBattleStateLog) ? window.__classicBattleStateLog : [];
-    log.push(logEntry);
-    while (log.length > 20) log.shift();
-    window.__classicBattleStateLog = log;
-    let el = document.getElementById("machine-state");
-    if (!el) {
-      el = document.createElement("div");
-      el.id = "machine-state";
-      el.style.display = "none";
-      document.body.appendChild(el);
-    }
-    el.textContent = to;
-    if (from) el.dataset.prev = from;
-    if (event) el.dataset.event = event;
-    el.dataset.ts = String(logEntry.ts);
-    const badge = document.getElementById("battle-state-badge");
-    if (badge) badge.textContent = `State: ${to}`;
-    // Resolve any in-page awaiters registered via window.awaitBattleState
-    try {
-      const waiters = (window.__stateWaiters && window.__stateWaiters[to]) || [];
-      if (Array.isArray(waiters) && waiters.length) {
-        window.__stateWaiters[to] = [];
-        for (const w of waiters) {
-          try {
-            if (w && typeof w.resolve === "function") {
-              if (w.timer) clearTimeout(w.timer);
-              w.resolve(true);
-            }
-          } catch {}
-        }
-      }
-    } catch {}
-  } catch {}
-}
-
-/**
- * Expose timer state for debugging when an engine exists.
+ * Initialize the classic battle orchestrator. This function sets up the battle state machine
+ * and defines its transition behavior.
  *
  * @pseudocode
- * 1. Return early when not in a browser or when no engine is present.
- * 2. Read timer state from the machine's engine.
- * 3. Mirror the timer state on `window.__classicBattleTimerState`.
- * 4. Ensure a hidden `#machine-timer` element exists and reflects the state.
- *
- * @param {import("./stateMachine.js").BattleStateMachine|null} machineRef - Current battle machine.
- * @returns {void}
- */
-export function updateTimerDebug(machineRef) {
-  if (typeof window === "undefined" || !machineRef?.context?.engine) return;
-  try {
-    const timerState = machineRef.context.engine.getTimerState();
-    window.__classicBattleTimerState = timerState;
-    if (typeof document !== "undefined") {
-      let timerEl = document.getElementById("machine-timer");
-      if (!timerEl) {
-        timerEl = document.createElement("div");
-        timerEl.id = "machine-timer";
-        timerEl.style.display = "none";
-        document.body.appendChild(timerEl);
-      }
-      timerEl.textContent = JSON.stringify(timerState);
-      timerEl.dataset.remaining = timerState.remaining;
-      timerEl.dataset.paused = timerState.paused;
-    }
-  } catch {}
-}
-
-/**
- * Initialize the classic battle orchestrator. This function sets up the battle state machine,
- * defines its transition behavior, and exposes debugging utilities.
- *
- * @pseudocode
- * 1. Destructure `resetGame` and `startRound` from `opts`, falling back to local implementations if not provided.
+ * 1. Destructure `resetGame`, `startRound`, and `onStateChange` from `opts`, falling back to local implementations if not provided.
  * 2. Create a `context` object containing the `store`, resolved `doResetGame`, `doStartRound`, and `startRoundWrapper`.
  * 3. Define the `onEnter` object mapping state names to their respective handler functions.
  * 4. Define the `onTransition` function executed on every state change:
- *    a. Call `updateDebugState(from, to, event)`.
- *    b. Call `updateTimerDebug(machine)`.
- *    c. Emit a `"debugPanelUpdate"` battle event.
- *    d. Resolve any waiters queued for the new `to` state.
+ *    a. Emit a `"battleStateChange"` battle event with `{ from, to, event }`.
+ *    b. Emit a `"debugPanelUpdate"` battle event.
+ *    c. Resolve any waiters queued for the new `to` state.
+ *    d. Invoke the optional `onStateChange` callback with `{ from, to, event }`.
  * 5. Create the battle state machine via `BattleStateMachine.create` and store it with `setMachine`.
- * 6. Expose a getter for the machine, wire visibility listeners, and handle timer drift and injected errors.
- * 7. Expose `onStateTransition` and `getBattleStateSnapshot` on `window` for debugging.
- * 8. Return the initialized machine.
+ * 6. Attach a timer drift handler if an engine is present.
+ * 7. Return the initialized machine.
  *
  * @param {object} store - Shared battle store.
  * @param {Function} startRoundWrapper - Optional wrapper for starting a round.
  * @param {object} [opts] - Optional overrides.
  * @param {Function} [opts.resetGame] - Custom reset handler.
  * @param {Function} [opts.startRound] - Custom round start handler.
+ * @param {Function} [opts.onStateChange] - Callback invoked on each state transition.
  * @returns {Promise<void>} Resolves when setup completes.
  */
 export async function initClassicBattleOrchestrator(store, startRoundWrapper, opts = {}) {
-  const { resetGame: resetGameOpt, startRound: startRoundOpt } = opts;
+  const { resetGame: resetGameOpt, startRound: startRoundOpt, onStateChange } = opts;
   const doResetGame = typeof resetGameOpt === "function" ? resetGameOpt : resetGameLocal;
   const doStartRound = typeof startRoundOpt === "function" ? startRoundOpt : startRoundLocal;
   const context = { store, doResetGame, doStartRound, startRoundWrapper };
@@ -229,53 +116,27 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   };
 
   const onTransition = async ({ from, to, event }) => {
-    updateDebugState(from, to, event);
-    updateTimerDebug(machine);
+    emitBattleEvent("battleStateChange", { from, to, event });
     emitBattleEvent("debugPanelUpdate");
     const waiters = stateWaiters.get(to);
     if (waiters) {
       stateWaiters.delete(to);
       for (const w of waiters) {
         try {
-          try {
-            window.__stateWaiterEvents = window.__stateWaiterEvents || [];
-            window.__stateWaiterEvents.push({
-              action: "resolve",
-              state: to,
-              id: w.__id || null,
-              ts: Date.now()
-            });
-          } catch {}
           if (w.timer) clearTimeout(w.timer);
           w.resolve(true);
         } catch {}
       }
     }
+    if (typeof onStateChange === "function") {
+      try {
+        onStateChange({ from, to, event });
+      } catch {}
+    }
   };
 
   machine = await BattleStateMachine.create(onEnter, context, onTransition);
   setMachine(machine);
-
-  // Expose a safe getter for the running machine to avoid import cycles
-  // in hot-path modules (e.g., selection handling).
-  try {
-    if (typeof window !== "undefined") {
-      window.__getClassicBattleMachine = () => machine;
-    }
-  } catch {}
-
-  if (typeof document !== "undefined") {
-    document.addEventListener("visibilitychange", () => {
-      if (machine?.context?.engine) {
-        if (document.hidden) {
-          machine.context.engine.handleTabInactive();
-        } else {
-          machine.context.engine.handleTabActive();
-        }
-      }
-    });
-  }
-
   if (machine?.context?.engine) {
     machine.context.engine.onTimerDrift = (driftAmount) => {
       emitBattleEvent(
@@ -286,108 +147,6 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
       machine.context.engine.handleTimerDrift(driftAmount);
     };
   }
-
-  if (typeof window !== "undefined" && machine?.context?.engine) {
-    window.injectClassicBattleError = (errorMsg) => {
-      machine.context.engine.injectError(errorMsg);
-      emitBattleEvent("scoreboardShowMessage", `Injected error: ${errorMsg}`);
-      emitBattleEvent("debugPanelUpdate");
-      machine.dispatch("interruptMatch", { reason: errorMsg });
-    };
-  }
-
-  try {
-    if (typeof window !== "undefined") {
-      window.onStateTransition = onStateTransition;
-      // Provide a robust in-page awaiter to avoid brittle DOM polling from tests
-      if (!window.awaitBattleState) {
-        window.awaitBattleState = (target, timeoutMs = 10000) =>
-          new Promise((resolve, reject) => {
-            try {
-              if (window.__classicBattleState === target) return resolve(true);
-              if (!window.__stateWaiters) window.__stateWaiters = {};
-              const entry = { resolve };
-              try {
-                entry.__id = Math.random().toString(36).slice(2, 9);
-                window.__stateWaiterEvents = window.__stateWaiterEvents || [];
-                window.__stateWaiterEvents.push({
-                  action: "add",
-                  state: target,
-                  id: entry.__id,
-                  ts: Date.now()
-                });
-              } catch {}
-              if (timeoutMs !== Infinity) {
-                entry.timer = setTimeout(() => {
-                  try {
-                    window.__stateWaiterEvents = window.__stateWaiterEvents || [];
-                    window.__stateWaiterEvents.push({
-                      action: "timeout",
-                      state: target,
-                      id: entry.__id,
-                      ts: Date.now()
-                    });
-                    const arr = window.__stateWaiters[target] || [];
-                    const idx = arr.indexOf(entry);
-                    if (idx !== -1) arr.splice(idx, 1);
-                    if (arr.length === 0) delete window.__stateWaiters[target];
-                  } catch {}
-                  reject(new Error(`awaitBattleState timeout for ${target}`));
-                }, timeoutMs);
-              }
-              const arr = window.__stateWaiters[target] || [];
-              arr.push(entry);
-              window.__stateWaiters[target] = arr;
-            } catch {
-              reject(new Error("awaitBattleState setup error"));
-            }
-          });
-      }
-      try {
-        // expose a helper to dump current waiters for diagnostics
-        // NOTE: Do not return functions or timers (non-serializable). Map to safe descriptors.
-        window.dumpStateWaiters = () => {
-          try {
-            const raw = window.__stateWaiters || {};
-            const waiters = {};
-            for (const key of Object.keys(raw)) {
-              try {
-                const arr = Array.isArray(raw[key]) ? raw[key] : [];
-                waiters[key] = arr.map((e) => ({
-                  id: e && e.__id ? e.__id : null,
-                  hasTimer: !!(e && e.timer)
-                }));
-              } catch {
-                waiters[key] = [];
-              }
-            }
-            return {
-              waiters,
-              events: window.__stateWaiterEvents || [],
-              promiseEvents: window.__promiseEvents || []
-            };
-          } catch {
-            return null;
-          }
-        };
-      } catch {}
-      // Expose a snapshot helper for tests/debuggers
-      window.getBattleStateSnapshot = () => {
-        try {
-          return {
-            state: window.__classicBattleState || null,
-            prev: window.__classicBattlePrevState || null,
-            event: window.__classicBattleLastEvent || null,
-            log: Array.isArray(window.__classicBattleStateLog)
-              ? window.__classicBattleStateLog.slice()
-              : []
-          };
-        } catch {
-          return { state: null, prev: null, event: null, log: [] };
-        }
-      };
-    }
-  } catch {}
   return machine;
 }
 
