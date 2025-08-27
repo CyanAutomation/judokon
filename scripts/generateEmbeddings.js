@@ -29,7 +29,7 @@
  *      analysis.
  * 6. Stream each output object directly to `client_embeddings.json` using
  *    `fs.createWriteStream`.
- *    - Track bytes written and abort if the total exceeds MAX_OUTPUT_SIZE (6.8 MB).
+ *    - Track bytes written and abort if the total exceeds MAX_OUTPUT_SIZE (9.8 MB).
  * 7. After writing the file, record the total count, average vector length,
  *    and output size in `client_embeddings.meta.json`.
  */
@@ -47,10 +47,10 @@ const rootDir = path.resolve(__dirname, "..");
 let codeGraphs = { modules: {} };
 
 // Larger chunks reduce the total embedding count and help keep the
-// final JSON under the 6.8MB limit. Bump slightly to shrink output.
+// final JSON under the 9.8MB limit. Bump slightly to shrink output.
 const CHUNK_SIZE = 2000;
 const OVERLAP = 100;
-const MAX_OUTPUT_SIZE = 6.8 * 1024 * 1024;
+const MAX_OUTPUT_SIZE = 9.8 * 1024 * 1024;
 
 /**
  * Recursively flatten a nested object using dot notation keys.
