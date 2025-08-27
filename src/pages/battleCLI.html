@@ -36,11 +36,11 @@
       .cli-title {
         font-weight: 700;
       }
-<<<<<<< HEAD
-      .state-badge { font-size: 12px; opacity: 0.8; margin-left: 8px; }
-      .cli-score { white-space: pre; }
-      .cli-controls { display: flex; gap: 8px; align-items: center; }
-=======
+      <<<<<<< HEAD .state-badge {
+        font-size: 12px;
+        opacity: 0.8;
+        margin-left: 8px;
+      }
       .cli-score {
         white-space: pre;
       }
@@ -49,8 +49,15 @@
         gap: 8px;
         align-items: center;
       }
->>>>>>> 01733594a44d8342ec37a88c617ebdc820e9de41
-      .cli-main {
+      ======= .cli-score {
+        white-space: pre;
+      }
+      .cli-controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      >>>>>>>01733594a44d8342ec37a88c617ebdc820e9de41 .cli-main {
         flex: 1;
         display: flex;
         flex-direction: column;
@@ -98,7 +105,8 @@
   <body>
     <div id="cli-root" class="cli-root">
       <header id="cli-header" class="cli-header" role="banner">
-        <div class="cli-title">Classic Battle (CLI)
+        <div class="cli-title">
+          Classic Battle (CLI)
           <span id="battle-state-badge" class="state-badge" aria-live="polite">State: —</span>
         </div>
         <div class="cli-controls" role="group" aria-label="Match Settings">
@@ -143,7 +151,12 @@
         </section>
 
         <section aria-label="Verbose Log" id="cli-verbose-section" class="cli-block" hidden>
-          <pre id="cli-verbose-log" aria-live="polite" aria-atomic="false" style="margin:0; white-space: pre-wrap;"></pre>
+          <pre
+            id="cli-verbose-log"
+            aria-live="polite"
+            aria-atomic="false"
+            style="margin: 0; white-space: pre-wrap"
+          ></pre>
         </section>
       </main>
 

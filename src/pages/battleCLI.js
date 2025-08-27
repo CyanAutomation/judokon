@@ -280,7 +280,9 @@ async function init() {
     if (section) section.hidden = !verboseEnabled;
     checkbox?.addEventListener("change", () => {
       verboseEnabled = !!checkbox.checked;
-      try { localStorage.setItem(vKey, String(verboseEnabled)); } catch {}
+      try {
+        localStorage.setItem(vKey, String(verboseEnabled));
+      } catch {}
       if (section) section.hidden = !verboseEnabled;
     });
   } catch {}
