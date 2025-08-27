@@ -120,7 +120,10 @@ describe("renderSettingsControls", () => {
       updateNavigationItemHidden,
       loadNavigationItems: vi.fn()
     }));
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn(), updateSnackbar: vi.fn() }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar: vi.fn(),
+      updateSnackbar: vi.fn()
+    }));
     const { renderSettingsControls, handleGameModeChange } = await import(
       "../../src/helpers/settingsPage.js"
     );
@@ -144,7 +147,10 @@ describe("renderSettingsControls", () => {
       loadSettings: vi.fn(),
       resetSettings: vi.fn()
     }));
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn(), updateSnackbar: vi.fn() }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar: vi.fn(),
+      updateSnackbar: vi.fn()
+    }));
     const { renderSettingsControls, handleFeatureFlagChange } = await import(
       "../../src/helpers/settingsPage.js"
     );
@@ -181,7 +187,10 @@ describe("renderSettingsControls", () => {
     const showSnackbar = vi.fn();
     const resetNavigationCache = vi.fn();
     vi.doMock("../../src/helpers/navigationBar.js", () => ({ populateNavbar }));
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar, updateSnackbar: vi.fn() }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar,
+      updateSnackbar: vi.fn()
+    }));
     vi.doMock("../../src/helpers/navigationCache.js", () => ({ reset: resetNavigationCache }));
     currentFlags = settingsWithButton.featureFlags;
     const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
@@ -209,7 +218,10 @@ describe("renderSettingsControls", () => {
       isEnabled: vi.fn().mockReturnValue(false),
       initFeatureFlags
     }));
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar, updateSnackbar: vi.fn() }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar,
+      updateSnackbar: vi.fn()
+    }));
     const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
     renderSettingsControls(baseSettings, [], tooltipMap);
     document.getElementById("reset-settings-button").dispatchEvent(new Event("click"));
