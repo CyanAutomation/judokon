@@ -76,6 +76,20 @@ You debug UI issues. Find references about the navigation bar animation timing.
 Query: "navbar button transition duration"
 ```
 
+## `queryRag` Helper
+
+Use the `queryRag(question)` helper to expand a natural-language question and
+fetch the most relevant vector matches before digging through files.
+
+```javascript
+import queryRag from "../../src/helpers/queryRag.js";
+
+const matches = await queryRag("How does the battle engine work?");
+```
+
+The function handles synonym expansion, embedding generation, and ranking so
+agents start with focused context.
+
 ## Updating Embeddings
 
 Run `npm run generate:embeddings` whenever you update any PRD, files in
