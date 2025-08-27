@@ -97,6 +97,11 @@ onBattleEvent("roundResolved", (e) => {
   try {
     console.warn("[test] roundResolved event received");
   } catch {}
+  // Update the round message with the resolved outcome to keep #round-message
+  // in sync and avoid being overwritten by drift fallbacks.
+  try {
+    emitBattleEvent("scoreboardShowMessage", result.message || "");
+  } catch {}
   syncScoreDisplay();
   scheduleNextRound(result);
   if (result.matchEnded) {

@@ -63,6 +63,12 @@ describe("countdown resets after stat selection", () => {
   let store;
   beforeEach(async () => {
     document.body.innerHTML = "";
+    // Ensure previous tests don't leave snackbars disabled
+    try {
+      if (typeof window !== "undefined" && window.__disableSnackbars) {
+        delete window.__disableSnackbars;
+      }
+    } catch {}
     const { playerCard, opponentCard } = createBattleCardContainers();
     const header = createBattleHeader();
     header.querySelector("#next-round-timer")?.remove();

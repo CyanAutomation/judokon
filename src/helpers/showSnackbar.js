@@ -50,6 +50,18 @@ export function showSnackbar(message) {
   try {
     if (typeof window !== "undefined" && window.__disableSnackbars) return;
   } catch {}
+  // Route round outcome messages to the round message area instead of snackbar
+  // to avoid overwriting countdown/snackbar content in tests and UI.
+  try {
+    const isOutcome = /^(You win the round!|Opponent wins the round!|Tie – no score!)/.test(
+      String(message)
+    );
+    if (isOutcome) {
+      const roundMsg = document.getElementById("round-message");
+      if (roundMsg) roundMsg.textContent = String(message);
+      return;
+    }
+  } catch {}
   // Defensive: ensure a snackbar container exists so early calls (tests)
   // don't fail because the container is missing. Create a no-op container
   // when running in test environments where the host page hasn't added it.
