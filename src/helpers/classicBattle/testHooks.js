@@ -39,7 +39,7 @@ export async function triggerRoundTimeoutNow(store) {
     emitBattleEvent("roundTimeout");
   } catch {}
   await dispatchBattleEvent("timeout");
-  await autoSelectStat(onExpiredSelect);
+  await autoSelectStat(onExpiredSelect, 0);
 }
 
 /**

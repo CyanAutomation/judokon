@@ -21,7 +21,12 @@ export {
   countdownStartedPromise,
   roundTimeoutPromise,
   statSelectionStalledPromise,
-  roundResolvedPromise
+  roundResolvedPromise,
+  getRoundPromptPromise,
+  getCountdownStartedPromise,
+  getRoundResolvedPromise,
+  getRoundTimeoutPromise,
+  getStatSelectionStalledPromise
 } from "./classicBattle/promises.js";
 export {
   ensureBindings as __ensureClassicBattleBindings,

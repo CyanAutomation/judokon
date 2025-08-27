@@ -65,3 +65,19 @@ export let roundResolvedPromise;
   )();
   roundResolvedPromise = setupPromise("roundResolvedPromise", "roundResolved")();
 })();
+
+// Return the latest promise instance for each awaitable, using the window-scoped
+// reference maintained by setupPromise(). This avoids races where a module-level
+// Promise was already resolved before the test started awaiting it.
+function latest(key, fallback) {
+  if (typeof window !== "undefined" && window[key] instanceof Promise) return window[key];
+  return fallback;
+}
+
+export const getRoundPromptPromise = () => latest("roundPromptPromise", roundPromptPromise);
+export const getCountdownStartedPromise = () =>
+  latest("countdownStartedPromise", countdownStartedPromise);
+export const getRoundResolvedPromise = () => latest("roundResolvedPromise", roundResolvedPromise);
+export const getRoundTimeoutPromise = () => latest("roundTimeoutPromise", roundTimeoutPromise);
+export const getStatSelectionStalledPromise = () =>
+  latest("statSelectionStalledPromise", statSelectionStalledPromise);
