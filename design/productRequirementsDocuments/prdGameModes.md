@@ -78,7 +78,7 @@ Improving session variety directly supports retention and encourages more person
 
 **Japanese**: 試合 (バトルモード)
 **URL**: `battleJudoka.html`
-A 1v1 stat-based match against an AI opponent using a deck of 25 random judoka cards. On first visit, a modal prompts the player to choose a win target of 5, 10, or 15 points (default 10); first to that target wins. [Read full PRD](prdClassicBattle.md)
+A 1v1 stat-based match against an AI opponent using a deck of 25 random judoka cards. On first visit, a modal prompts the player to choose a win target of 5, 10, or 15 points (default 10); first to that target wins. [Read full PRD](prdBattleClassic.md)
 SVG Icon: M762-96 645-212l-88 88-28-28q-23-23-23-57t23-57l169-169q23-23 57-23t57 23l28 28-88 88 116 117q12 12 12 28t-12 28l-50 50q-12 12-28 12t-28-12Zm118-628L426-270l5 4q23 23 23 57t-23 57l-28 28-88-88L198-96q-12 12-28 12t-28-12l-50-50q-12-12-12-28t12-28l116-117-88-88 28-28q23-23 57-23t57 23l4 5 454-454h160v160ZM334-583l24-23 23-24-23 24-24 23Zm-56 57L80-724v-160h160l198 198-57 56-174-174h-47v47l174 174-56 57Zm92 199 430-430v-47h-47L323-374l47 47Zm0 0-24-23-23-24 23 24 24 23Z
 
 #### Goals
@@ -110,7 +110,7 @@ SVG Icon: M762-96 645-212l-88 88-28-28q-23-23-23-57t23-57l169-169q23-23 57-23t57
 
 #### Open Questions
 
-_Resolved in [Classic Battle](prdClassicBattle.md#7-future-considerations):_ AI difficulty will determine stat selection strategy.
+_Resolved in [Classic Battle](prdBattleClassic.md#7-future-considerations):_ AI difficulty will determine stat selection strategy.
 
 ---
 

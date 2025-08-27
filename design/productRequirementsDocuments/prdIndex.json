@@ -1,5 +1,7 @@
 [
+  "prdBattleClassic.md",
   "prdBattleDebugPanel.md",
+  "prdBattleEngine.md",
   "prdBattleScoreboard.md",
   "prdBrowseJudoka.md",
   "prdCardCarousel.md",
@@ -7,8 +9,6 @@
   "prdCardInspector.md",
   "prdCardOfTheDay.md",
   "prdChangeLog.md",
-  "prdClassicBattle.md",
-  "prdClassicBattleEngine.md",
   "prdCountryPickerFilter.md",
   "prdDrawRandomCard.md",
   "prdGameModes.md",
