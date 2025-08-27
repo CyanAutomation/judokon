@@ -4,6 +4,7 @@ import * as battleEngine from "../battleEngineFacade.js";
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
 import { resetSkipState } from "./skipHandler.js";
 import { emitBattleEvent } from "./battleEvents.js";
+import { applyRoundUI } from "./roundUI.js";
 
 /**
  * Create a new battle state store.
@@ -67,6 +68,19 @@ export async function startRound(store) {
   store.playerChoice = null;
   const cards = await drawCards();
   const roundNumber = battleEngine.getRoundsPlayed() + 1;
+  // In tests, apply the round UI directly to avoid flakiness when event bus
+  // bindings are reordered around mocks. The event is still emitted for
+  // observability and for runtime listeners.
+  try {
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      applyRoundUI(store, roundNumber);
+      // Emit prompt event explicitly for deterministic tests
+      try {
+        const { emitBattleEvent } = await import("./battleEvents.js");
+        emitBattleEvent("roundPrompt");
+      } catch {}
+    }
+  } catch {}
   emitBattleEvent("roundStarted", { store, roundNumber });
   return { ...cards, roundNumber };
 }

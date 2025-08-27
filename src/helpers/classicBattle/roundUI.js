@@ -69,66 +69,141 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 35000) {
 
 // --- Event bindings ---
 
-onBattleEvent("roundStarted", (e) => {
-  const { store, roundNumber } = e.detail || {};
-  if (store && typeof roundNumber === "number") {
-    applyRoundUI(store, roundNumber);
-  }
-});
+export function bindRoundUIEventHandlers() {
+  onBattleEvent("roundStarted", (e) => {
+    const { store, roundNumber } = e.detail || {};
+    if (store && typeof roundNumber === "number") {
+      applyRoundUI(store, roundNumber);
+    }
+  });
 
-onBattleEvent("statSelected", (e) => {
-  console.log("INFO: statSelected event handler");
-  const { stat } = e.detail || {};
-  if (!stat) return;
-  const btn = document.querySelector(`#stat-buttons button[data-stat="${stat}"]`);
-  if (btn) {
-    try {
-      console.warn(`[test] addSelected: stat=${stat} label=${btn.textContent?.trim() || ""}`);
-    } catch {}
-    btn.classList.add("selected");
-    showSnackbar(`You Picked: ${btn.textContent}`);
-  }
-  emitBattleEvent("statButtons:disable");
-});
-
-onBattleEvent("roundResolved", (e) => {
-  const { store, result } = e.detail || {};
-  if (!result) return;
-  try {
-    console.warn("[test] roundResolved event received");
-  } catch {}
-  // Update the round message with the resolved outcome to keep #round-message
-  // in sync even when uiService is mocked in unit tests.
-  try {
-    scoreboard.showMessage(result.message || "");
-  } catch {}
-  syncScoreDisplay();
-  scheduleNextRound(result);
-  if (result.matchEnded) {
-    scoreboard.clearRoundCounter();
-    showMatchSummaryModal(result, async () => {
-      await handleReplay(store);
-    });
-    emitBattleEvent("matchOver");
-  }
-  // Prefer immediate reset. In some headless/CI environments rAF can be
-  // throttled heavily, which would delay clearing the visual selection
-  // state and make tests flaky. We still attempt the two-rAF path to allow
-  // one paint of the selected state in interactive sessions, but back it up
-  // with a timeout-based fallback to guarantee timely clearing.
-  try {
-    requestAnimationFrame(() => requestAnimationFrame(() => resetStatButtons()));
-  } catch {
-    // If rAF is unavailable, clear immediately.
-    resetStatButtons();
-  }
-  // Fallback: ensure reset occurs even if rAF is throttled/not firing.
-  try {
-    setTimeout(() => {
+  onBattleEvent("statSelected", (e) => {
+    console.log("INFO: statSelected event handler");
+    const { stat } = e.detail || {};
+    if (!stat) return;
+    const btn = document.querySelector(`#stat-buttons button[data-stat="${stat}"]`);
+    if (btn) {
       try {
-        resetStatButtons();
+        console.warn(`[test] addSelected: stat=${stat} label=${btn.textContent?.trim() || ""}`);
       } catch {}
-    }, 120);
-  } catch {}
-  updateDebugPanel();
-});
+      btn.classList.add("selected");
+      showSnackbar(`You Picked: ${btn.textContent}`);
+    }
+    emitBattleEvent("statButtons:disable");
+  });
+
+  onBattleEvent("roundResolved", (e) => {
+    const { store, result } = e.detail || {};
+    if (!result) return;
+    try {
+      console.warn("[test] roundResolved event received");
+    } catch {}
+    // Update the round message with the resolved outcome to keep #round-message
+    // in sync even when uiService is mocked in unit tests.
+    try {
+      scoreboard.showMessage(result.message || "");
+    } catch {}
+    syncScoreDisplay();
+    scheduleNextRound(result);
+    if (result.matchEnded) {
+      scoreboard.clearRoundCounter();
+      showMatchSummaryModal(result, async () => {
+        await handleReplay(store);
+      });
+      emitBattleEvent("matchOver");
+    }
+    // Prefer immediate reset. In some headless/CI environments rAF can be
+    // throttled heavily, which would delay clearing the visual selection
+    // state and make tests flaky. We still attempt the two-rAF path to allow
+    // one paint of the selected state in interactive sessions, but back it up
+    // with a timeout-based fallback to guarantee timely clearing.
+    try {
+      requestAnimationFrame(() => requestAnimationFrame(() => resetStatButtons()));
+    } catch {
+      // If rAF is unavailable, clear immediately.
+      resetStatButtons();
+    }
+    // Fallback: ensure reset occurs even if rAF is throttled/not firing.
+    try {
+      setTimeout(() => {
+        try {
+          resetStatButtons();
+        } catch {}
+      }, 120);
+    } catch {}
+    updateDebugPanel();
+  });
+}
+
+// Bind once on module load for production/runtime usage.
+bindRoundUIEventHandlers();
+
+// Test-friendly variant: dynamically import dependencies within handlers so
+// that vi.mock replacements are honored even when bindings occur before mocks.
+export function bindRoundUIEventHandlersDynamic() {
+  onBattleEvent("roundStarted", (e) => {
+    const { store, roundNumber } = e.detail || {};
+    if (store && typeof roundNumber === "number") {
+      applyRoundUI(store, roundNumber);
+    }
+  });
+  onBattleEvent("statSelected", async (e) => {
+    const { stat } = e.detail || {};
+    if (!stat) return;
+    const btn = document.querySelector(`#stat-buttons button[data-stat="${stat}"]`);
+    if (btn) {
+      try {
+        console.warn(`[test] addSelected: stat=${stat} label=${btn.textContent?.trim() || ""}`);
+      } catch {}
+      btn.classList.add("selected");
+      try {
+        const snackbar = await import("../showSnackbar.js");
+        snackbar.showSnackbar(`You Picked: ${btn.textContent}`);
+      } catch {}
+    }
+    emitBattleEvent("statButtons:disable");
+  });
+  onBattleEvent("roundResolved", async (e) => {
+    const { store, result } = e.detail || {};
+    if (!result) return;
+    try {
+      console.warn("[test] roundResolved event received (dynamic)");
+    } catch {}
+    try {
+      const scoreboard = await import("../setupScoreboard.js");
+      scoreboard.showMessage(result.message || "");
+      scoreboard.syncScoreDisplay?.();
+    } catch {}
+    try {
+      const { scheduleNextRound } = await import("./timerService.js");
+      scheduleNextRound(result);
+    } catch {}
+    if (result.matchEnded) {
+      try {
+        const scoreboard = await import("../setupScoreboard.js");
+        const { showMatchSummaryModal } = await import("./uiService.js");
+        scoreboard.clearRoundCounter?.();
+        await showMatchSummaryModal(result, async () => {
+          await handleReplay(store);
+        });
+        emitBattleEvent("matchOver");
+      } catch {}
+    }
+    try {
+      requestAnimationFrame(() => requestAnimationFrame(() => resetStatButtons()));
+    } catch {
+      resetStatButtons();
+    }
+    try {
+      setTimeout(() => {
+        try {
+          resetStatButtons();
+        } catch {}
+      }, 120);
+    } catch {}
+    try {
+      const { updateDebugPanel } = await import("./uiHelpers.js");
+      updateDebugPanel();
+    } catch {}
+  });
+}

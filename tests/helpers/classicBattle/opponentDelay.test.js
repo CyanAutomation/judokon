@@ -78,6 +78,8 @@ beforeEach(() => {
 describe("classicBattle opponent delay", () => {
   it("shows snackbar during opponent delay and clears before outcome", async () => {
     const timer = vi.useFakeTimers();
+    const { initClassicBattleTest } = await import("./initClassicBattle.js");
+    await initClassicBattleTest({ afterMock: true });
     const mod = await import("../../../src/helpers/classicBattle.js");
     const { setOpponentDelay } = await import("../../../src/helpers/classicBattle/uiHelpers.js");
     setOpponentDelay(0);

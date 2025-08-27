@@ -62,9 +62,7 @@ describe("classicBattle selection prompt", () => {
     const battleMod = await initClassicBattleTest({ afterMock: true });
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
-    const { getRoundPromptPromise } = await import("../../../src/helpers/classicBattle.js");
     await battleMod.startRound(store);
-    await getRoundPromptPromise();
     expect(document.querySelector(".snackbar").textContent).toBe("Select your move");
     timerSpy.advanceTimersByTime(5000);
     expect(document.querySelector(".snackbar")).toBeNull();

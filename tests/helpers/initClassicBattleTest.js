@@ -1,7 +1,7 @@
 // Helper to (re)initialize Classic Battle bindings in tests.
 // Usage: await initClassicBattleTest({ afterMock: true }) immediately after vi.doMock(...)
 export async function initClassicBattleTest(opts = {}) {
-  const battleMod = await import("../src/helpers/classicBattle.js");
+  const battleMod = await import("../../src/helpers/classicBattle.js");
   const afterMock = !!opts.afterMock;
   if (afterMock && typeof battleMod.__resetClassicBattleBindings === "function") {
     await battleMod.__resetClassicBattleBindings();
@@ -11,4 +11,3 @@ export async function initClassicBattleTest(opts = {}) {
   }
   return battleMod;
 }
-

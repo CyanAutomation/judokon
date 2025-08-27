@@ -986,23 +986,64 @@ export function setOpponentDelay(ms) {
 
 let opponentSnackbarId = 0;
 
-onBattleEvent("opponentReveal", () => {
-  const container = document.getElementById("opponent-card");
-  getOpponentCardData()
-    .then((j) => j && renderOpponentCard(j, container))
-    .catch(() => {});
-});
+export function bindUIHelperEventHandlers() {
+  onBattleEvent("opponentReveal", () => {
+    const container = document.getElementById("opponent-card");
+    getOpponentCardData()
+      .then((j) => j && renderOpponentCard(j, container))
+      .catch(() => {});
+  });
 
-onBattleEvent("statSelected", () => {
-  scoreboard.clearTimer();
-  opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), opponentDelayMs);
-});
+  onBattleEvent("statSelected", () => {
+    scoreboard.clearTimer();
+    opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), opponentDelayMs);
+  });
 
-onBattleEvent("roundResolved", (e) => {
-  clearTimeout(opponentSnackbarId);
-  const { store, stat, playerVal, opponentVal, result } = e.detail || {};
-  if (!result) return;
-  showRoundOutcome(result.message || "");
-  showStatComparison(store, stat, playerVal, opponentVal);
-  updateDebugPanel();
-});
+  onBattleEvent("roundResolved", (e) => {
+    clearTimeout(opponentSnackbarId);
+    const { store, stat, playerVal, opponentVal, result } = e.detail || {};
+    if (!result) return;
+    showRoundOutcome(result.message || "");
+    showStatComparison(store, stat, playerVal, opponentVal);
+    updateDebugPanel();
+  });
+}
+
+// Bind once on module load for runtime
+bindUIHelperEventHandlers();
+
+// Dynamic variant for tests to honor vi.mocks after rebind
+export function bindUIHelperEventHandlersDynamic() {
+  onBattleEvent("opponentReveal", async () => {
+    const container = document.getElementById("opponent-card");
+    try {
+      const { getOpponentCardData } = await import("./opponentController.js");
+      const { renderOpponentCard } = await import("./uiHelpers.js");
+      const j = await getOpponentCardData();
+      if (j) await renderOpponentCard(j, container);
+    } catch {}
+  });
+
+  onBattleEvent("statSelected", async () => {
+    try {
+      const scoreboard = await import("../setupScoreboard.js");
+      scoreboard.clearTimer?.();
+    } catch {}
+    try {
+      const snackbar = await import("../showSnackbar.js");
+      opponentSnackbarId = setTimeout(() => snackbar.showSnackbar("Opponent is choosing…"), opponentDelayMs);
+    } catch {}
+  });
+
+  onBattleEvent("roundResolved", async (e) => {
+    clearTimeout(opponentSnackbarId);
+    const { store, stat, playerVal, opponentVal, result } = e.detail || {};
+    if (!result) return;
+    try {
+      const { showRoundOutcome, showStatComparison, updateDebugPanel } = await import("./uiHelpers.js");
+      showRoundOutcome(result.message || "");
+      showStatComparison(store, stat, playerVal, opponentVal);
+      updateDebugPanel();
+    } catch {}
+  });
+}

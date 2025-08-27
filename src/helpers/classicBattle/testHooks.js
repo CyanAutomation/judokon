@@ -1,4 +1,4 @@
-import { emitBattleEvent } from "./battleEvents.js";
+import { emitBattleEvent, __resetBattleEventTarget } from "./battleEvents.js";
 
 // Internal flags to make bindings idempotent and allow limited rebinds in tests.
 let __uiBound = false;
@@ -23,6 +23,15 @@ export async function ensureBindings(opts = {}) {
   if (!__uiBound) {
     await import("./roundUI.js");
     __uiBound = true;
+  } else if (force) {
+    // Reset the event bus and bind dynamic handlers to honor vi.mocks.
+    try {
+      __resetBattleEventTarget();
+    } catch {}
+    const ui = await import("./roundUI.js");
+    if (typeof ui.bindRoundUIEventHandlersDynamic === "function") ui.bindRoundUIEventHandlersDynamic();
+    const helpers = await import("./uiHelpers.js");
+    if (typeof helpers.bindUIHelperEventHandlersDynamic === "function") helpers.bindUIHelperEventHandlersDynamic();
   }
   // Ensure event promises exist; allow a forced refresh after mocks in tests.
   if (!__promisesBound || force) {

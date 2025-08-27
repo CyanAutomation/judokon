@@ -103,7 +103,7 @@ describe("classicBattle stat selection", () => {
       simulateOpponentStat,
       _resetForTest,
       getCardStatValue
-    } = await initClassicBattleTest({ afterMock: true });
+    } = await initClassicBattleTest({ afterMock: true }));
     store = createBattleStore();
     _resetForTest(store);
     const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");

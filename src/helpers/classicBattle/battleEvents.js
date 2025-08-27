@@ -5,7 +5,7 @@
  * 1. Create a shared `EventTarget` instance.
  * 2. Expose helper functions to subscribe, unsubscribe, and emit events.
  */
-const target = new EventTarget();
+let target = new EventTarget();
 
 /**
  * Subscribe to a battle event.
@@ -38,3 +38,9 @@ export function emitBattleEvent(type, detail) {
 }
 
 export default target;
+
+// Test-only: reset the internal EventTarget so new listeners can bind
+// against a fresh bus after module mocks change.
+export function __resetBattleEventTarget() {
+  target = new EventTarget();
+}
