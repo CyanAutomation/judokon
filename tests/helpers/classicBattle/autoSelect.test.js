@@ -64,9 +64,9 @@ describe("classicBattle auto select", () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
+    const { roundTimeoutPromise } = await import("../../../src/helpers/classicBattle.js");
     await battleMod.startRound(store);
-    timerSpy.advanceTimersByTime(31000);
-    await vi.runOnlyPendingTimersAsync();
+    await roundTimeoutPromise;
     const events = dispatchSpy.mock.calls.map((c) => c[0]);
     expect(events).toContain("timeout");
     expect(events).toContain("statSelected");

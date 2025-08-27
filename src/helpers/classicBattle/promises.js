@@ -47,10 +47,24 @@ export let roundOptionsReadyPromise;
 export let roundPromptPromise;
 export let nextRoundTimerReadyPromise;
 export let matchOverPromise;
+export let countdownStartedPromise;
+export let roundTimeoutPromise;
+export let statSelectionStalledPromise;
+export let roundResolvedPromise;
 
 (() => {
   roundOptionsReadyPromise = setupPromise("roundOptionsReadyPromise", "roundOptionsReady")();
   roundPromptPromise = setupPromise("roundPromptPromise", "roundPrompt")();
   nextRoundTimerReadyPromise = setupPromise("nextRoundTimerReadyPromise", "nextRoundTimerReady")();
   matchOverPromise = setupPromise("matchOverPromise", "matchOver")();
+  countdownStartedPromise = setupPromise(
+    "countdownStartedPromise",
+    "nextRoundCountdownStarted"
+  )();
+  roundTimeoutPromise = setupPromise("roundTimeoutPromise", "roundTimeout")();
+  statSelectionStalledPromise = setupPromise(
+    "statSelectionStalledPromise",
+    "statSelectionStalled"
+  )();
+  roundResolvedPromise = setupPromise("roundResolvedPromise", "roundResolved")();
 })();

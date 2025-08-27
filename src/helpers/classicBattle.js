@@ -17,5 +17,9 @@ export {
   roundOptionsReadyPromise,
   roundPromptPromise,
   nextRoundTimerReadyPromise,
-  matchOverPromise
+  matchOverPromise,
+  countdownStartedPromise,
+  roundTimeoutPromise,
+  statSelectionStalledPromise,
+  roundResolvedPromise
 } from "./classicBattle/promises.js";

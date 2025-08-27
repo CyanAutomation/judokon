@@ -140,6 +140,17 @@ export function showMessage(text) {
   // Prefer a fresh lookup to avoid stale references in dynamic tests
   const el = document.getElementById("round-message") || messageEl;
   if (el) {
+    // Do not overwrite a freshly-set round outcome with a transient placeholder
+    // like "Waiting…". This keeps assertions stable and the UI consistent.
+    try {
+      const isTransient = String(text) === "Waiting…";
+      const isOutcome = /^(You win the round!|Opponent wins the round!|Tie – no score!)/.test(
+        String(el.textContent || "")
+      );
+      if (isTransient && isOutcome) {
+        return;
+      }
+    } catch {}
     el.textContent = text;
     messageEl = el;
   }

@@ -122,6 +122,9 @@ export async function startTimer(onExpiredSelect) {
         return;
       }
     } catch {}
+    try {
+      emitBattleEvent("roundTimeout");
+    } catch {}
     await dispatchBattleEvent("timeout");
     await autoSelectStat(onExpiredSelect);
   };
@@ -170,6 +173,9 @@ export function handleStatSelectionTimeout(
   scheduler = realScheduler
 ) {
   scoreboard.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
+  try {
+    emitBattleEvent("statSelectionStalled");
+  } catch {}
   store.autoSelectId = scheduler.setTimeout(() => {
     autoSelectStat(onSelect);
   }, timeoutMs);
@@ -275,6 +281,9 @@ export function createNextRoundSnackbarRenderer() {
         snackbar.updateSnackbar(text);
       }
       scoreboard.clearTimer();
+      try {
+        emitBattleEvent("nextRoundCountdownTick", { remaining });
+      } catch {}
       return;
     }
     if (remaining === lastRendered) return;
@@ -282,9 +291,15 @@ export function createNextRoundSnackbarRenderer() {
     if (!started) {
       snackbar.showSnackbar(text);
       started = true;
+      try {
+        emitBattleEvent("nextRoundCountdownStarted", { remaining });
+      } catch {}
     } else {
       snackbar.updateSnackbar(text);
     }
+    try {
+      emitBattleEvent("nextRoundCountdownTick", { remaining });
+    } catch {}
     lastRendered = remaining;
   };
 }

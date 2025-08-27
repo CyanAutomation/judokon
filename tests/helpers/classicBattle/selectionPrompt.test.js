@@ -30,6 +30,9 @@ let renderMock;
 let currentFlags;
 
 beforeEach(() => {
+  try {
+    if (typeof window !== "undefined" && window.__disableSnackbars) delete window.__disableSnackbars;
+  } catch {}
   ({
     timerSpy,
     fetchJsonMock,
@@ -57,7 +60,9 @@ describe("classicBattle selection prompt", () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
+    const { roundPromptPromise } = await import("../../../src/helpers/classicBattle.js");
     await battleMod.startRound(store);
+    await roundPromptPromise;
     expect(document.querySelector(".snackbar").textContent).toBe("Select your move");
     timerSpy.advanceTimersByTime(5000);
     expect(document.querySelector(".snackbar")).toBeNull();
