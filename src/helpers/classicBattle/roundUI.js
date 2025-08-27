@@ -1,4 +1,4 @@
-import { disableNextRoundButton, showSelectionPrompt, updateDebugPanel } from "./uiHelpers.js";
+import { showSelectionPrompt, updateDebugPanel } from "./uiHelpers.js";
 import { resetStatButtons } from "../battle/index.js";
 import { syncScoreDisplay } from "./uiService.js";
 import { startTimer, handleStatSelectionTimeout, scheduleNextRound } from "./timerService.js";

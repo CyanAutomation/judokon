@@ -27,13 +27,13 @@ export async function loadEmbeddings() {
   if (cachedEmbeddings !== undefined) return cachedEmbeddings;
   if (!embeddingsPromise) {
     embeddingsPromise = fetchJson(`${DATA_DIR}client_embeddings.manifest.json`)
-      .then(manifest => {
-        const shardPromises = manifest.shards.map(shardFile =>
+      .then((manifest) => {
+        const shardPromises = manifest.shards.map((shardFile) =>
           fetchJson(`${DATA_DIR}${shardFile}`)
         );
         return Promise.all(shardPromises);
       })
-      .then(shards => {
+      .then((shards) => {
         return shards.flat();
       })
       .catch((err) => {

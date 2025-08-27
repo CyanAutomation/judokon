@@ -323,7 +323,9 @@ export function handleZeroCooldownFastPath(controls, btn) {
           : null;
       // Dispatch when state is unknown (tests) or explicitly cooldown
       if (!state || state === "cooldown") {
-        try { console.warn("[test] zero-cooldown skip: dispatch ready"); } catch {}
+        try {
+          console.warn("[test] zero-cooldown skip: dispatch ready");
+        } catch {}
         await dispatchBattleEvent("ready");
         updateDebugPanel();
       } else {
@@ -349,7 +351,9 @@ export function handleZeroCooldownFastPath(controls, btn) {
           ? window.__classicBattleState
           : null;
       if (!state || state === "cooldown") {
-        try { console.warn("[test] zero-cooldown auto-advance: dispatch ready"); } catch {}
+        try {
+          console.warn("[test] zero-cooldown auto-advance: dispatch ready");
+        } catch {}
         Promise.resolve(dispatchBattleEvent("ready")).catch(() => {});
       } else {
         try {
@@ -451,14 +455,18 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
       const controls = { timer: null, resolveReady: null, ready: null };
       controls.ready = new Promise((resolve) => {
         controls.resolveReady = () => {
-          try { emitBattleEvent("nextRoundTimerReady"); } catch {}
+          try {
+            emitBattleEvent("nextRoundTimerReady");
+          } catch {}
           resolve();
           controls.resolveReady = null;
         };
       });
       if (controls.resolveReady) controls.resolveReady();
       currentNextRound = controls;
-      try { console.warn(`[test] scheduleNextRound: skipped in state=${s}`); } catch {}
+      try {
+        console.warn(`[test] scheduleNextRound: skipped in state=${s}`);
+      } catch {}
       return controls;
     }
   } catch {}

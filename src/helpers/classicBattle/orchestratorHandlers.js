@@ -3,7 +3,6 @@ import { getDefaultTimer } from "../timerUtils.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { getStatValue } from "../battle/index.js";
-import { scheduleNextRound } from "./timerService.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { resolveRound } from "./roundResolver.js";
 import { enableNextRoundButton } from "./uiHelpers.js";
@@ -127,8 +126,8 @@ export async function roundStartEnter(machine) {
       typeof startRoundWrapper === "function"
         ? startRoundWrapper()
         : typeof doStartRound === "function"
-        ? doStartRound(store)
-        : Promise.resolve();
+          ? doStartRound(store)
+          : Promise.resolve();
     Promise.resolve(p).catch(async () => {
       try {
         if (fallback) clearTimeout(fallback);

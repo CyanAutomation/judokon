@@ -69,10 +69,6 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   // Only dispatch outcome/continue when machine is in roundDecision. Late
   // completions from an earlier resolve can occur in a different state.
   try {
-    const state =
-      typeof document !== "undefined" && document.body && document.body.dataset
-        ? document.body.dataset.battleState || null
-        : null;
     try {
       console.log("DEBUG: dispatching outcomeEvent", outcomeEvent);
     } catch {}

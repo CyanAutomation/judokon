@@ -22,7 +22,13 @@ describe("round start error recovery", () => {
           ]
         }
       ],
-      ["waitingForPlayerAction", { name: "waitingForPlayerAction", triggers: [{ on: "interrupt", target: "interruptRound" }] }],
+      [
+        "waitingForPlayerAction",
+        {
+          name: "waitingForPlayerAction",
+          triggers: [{ on: "interrupt", target: "interruptRound" }]
+        }
+      ],
       ["interruptRound", { name: "interruptRound", triggers: [] }]
     ]);
     const machine = new BattleStateMachine(

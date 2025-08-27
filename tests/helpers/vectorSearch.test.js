@@ -116,11 +116,11 @@ describe("vectorSearch", () => {
 
   it("skips entries with invalid embeddings", async () => {
     const malformed = [
-      { id: "a", text: "A", embedding: [1, 0], source: "doc1", sparseVector: {a:1} },
-      { id: "bad1", text: "X", embedding: [1], source: "doc3", sparseVector: {x:1} },
-      { id: "bad2", text: "Y", embedding: ["no"], source: "doc4", sparseVector: {y:1} },
-      { id: "bad3", text: "Z", source: "doc5", sparseVector: {z:1} },
-      { id: "b", text: "B", embedding: [0, 1], source: "doc2", sparseVector: {b:1} }
+      { id: "a", text: "A", embedding: [1, 0], source: "doc1", sparseVector: { a: 1 } },
+      { id: "bad1", text: "X", embedding: [1], source: "doc3", sparseVector: { x: 1 } },
+      { id: "bad2", text: "Y", embedding: ["no"], source: "doc4", sparseVector: { y: 1 } },
+      { id: "bad3", text: "Z", source: "doc5", sparseVector: { z: 1 } },
+      { id: "b", text: "B", embedding: [0, 1], source: "doc2", sparseVector: { b: 1 } }
     ];
     fetchJsonMock.mockImplementation((url) => {
       if (url.endsWith("client_embeddings.manifest.json")) {
@@ -134,7 +134,7 @@ describe("vectorSearch", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
     const res = await findMatches([1, 0], 5);
-        expect(res?.map((r) => r.id)).toEqual(["a", "b"]);
+    expect(res?.map((r) => r.id)).toEqual(["a", "b"]);
     expect(warn).toHaveBeenCalledTimes(3);
     warn.mockRestore();
   });
