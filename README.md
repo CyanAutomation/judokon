@@ -120,6 +120,7 @@ const embeddings = await vectorSearch.loadEmbeddings();
 const expanded = await vectorSearch.expandQueryWithSynonyms("grip fighting");
 const results = await vectorSearch.findMatches([0, 1, 0], 5, ["prd"], expanded);
 ```
+Embeddings are quantized to **three decimal places** to keep file size and comparisons predictable.
 See [RAG_QUERY_GUIDE.md](design/agentWorkflows/RAG_QUERY_GUIDE.md) for template prompts and tag combinations when querying.
 ## ⚡ Module Loading Policy: Static vs Dynamic Imports
 
