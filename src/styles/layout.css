@@ -120,7 +120,8 @@ body {
   padding: var(--space-large) var(--space-xl);
   padding-bottom: calc(var(--space-large) + var(--footer-height) + env(safe-area-inset-bottom));
   flex: 1 1 auto;
-  min-height: 100%;
+  height: 100%;
+  overflow-y: auto;
   box-sizing: border-box;
   /* border: 2px solid red; */
 }
