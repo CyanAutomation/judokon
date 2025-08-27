@@ -29,11 +29,17 @@ Sample queries:
 - "Summarize the classicBattle module"
 - "Outline how settings persistence works"
 
-For deeper guidance, see [example vector queries](design/agentWorkflows/exampleVectorQueries.md).
+- When a prompt starts with question patterns like "Explain X" or "How does Y work?",
+  call [`queryRag(question)`](src/helpers/queryRag.js) to gather context before scanning files.
+- For deeper guidance and code samples, see
+  [example vector queries](design/agentWorkflows/exampleVectorQueries.md#queryrag-helper).
 
 ---
 
 ## 🧪 Prompt Templates
+
+Before applying any template, look for question-style prompts such as
+"Explain X" or "How does Y work?" and run `queryRag` for context.
 
 Use these prompt formats when engaging with AI or testing tools:
 
