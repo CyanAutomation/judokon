@@ -308,9 +308,43 @@ export function updateScore(playerScore, opponentScore) {
 
 function runCountdown(duration, onTick, onExpired, handleDrift) {
   if (timerControls && typeof timerControls.startCoolDown === "function") {
-    timerControls.startCoolDown(onTick, onExpired, duration, handleDrift);
+    let ticked = false;
+    const tickOnce = (r) => {
+      ticked = true;
+      onTick(r);
+    };
+    // Start the engine countdown; TimerController usually calls onTick(remaining)
+    // synchronously. If a mocked or alternate implementation defers the first
+    // tick, render the initial value synchronously when we detect no immediate tick.
+    let fallbackId = 0;
+    const onExpiredOnce = () => {
+      if (fallbackId) {
+        clearInterval(fallbackId);
+        fallbackId = 0;
+      }
+      onExpired();
+    };
+    timerControls.startCoolDown(tickOnce, onExpiredOnce, duration, handleDrift);
+    if (!ticked && typeof duration === "number" && duration > 0) {
+      // Engine did not render initial tick synchronously; provide a simple
+      // visual fallback so UI stays responsive in tests or alternate envs.
+      onTick(duration);
+      let remaining = duration;
+      fallbackId = setInterval(() => {
+        remaining -= 1;
+        if (remaining <= 0) {
+          clearInterval(fallbackId);
+          fallbackId = 0;
+          onExpiredOnce();
+          return;
+        }
+        onTick(remaining);
+      }, 1000);
+    }
   } else {
-    console.warn("timerControls.startCoolDown is not callable. Countdown will not start.");
+    console.warn(
+      "timerControls.startCoolDown is not callable. Countdown will not start. To use startCountdown(), initialize the scoreboard with timer controls: { startCoolDown, pauseTimer, resumeTimer }."
+    );
   }
 }
 

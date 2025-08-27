@@ -90,12 +90,6 @@ beforeEach(async () => {
     if (mod && typeof mod.__ensureClassicBattleBindings === "function") {
       await mod.__ensureClassicBattleBindings();
     }
-    // Normalize test URL to a stable default rather than Vitest's dev server
-    try {
-      if (typeof window !== "undefined") {
-        window.location.href = "http://localhost/index.html";
-      }
-    } catch {}
     const currentHref = String(window.location.href || "http://localhost/");
     const state = { href: currentHref };
     Object.defineProperty(window, "location", {
@@ -170,24 +164,44 @@ beforeEach(async () => {
       if (!originalReplaceState) {
         originalReplaceState = history.replaceState.bind(history);
       }
+      function updateHrefOnly(url) {
+        try {
+          state.href = new URL(String(url), state.href).href;
+        } catch {}
+      }
+      function sameOrigin(u1, u2) {
+        try {
+          const base = state.href || String(window.location?.href || "http://localhost/");
+          const a = new URL(String(u1), base);
+          const b = new URL(String(u2), base);
+          return a.origin === b.origin;
+        } catch {
+          return false;
+        }
+      }
       history.pushState = (...args) => {
-        const result = originalPushState(...args);
         const url = args[2];
         if (url !== undefined && url !== null) {
-          try {
-            state.href = new URL(String(url), state.href).href;
-          } catch {}
+          // Avoid JSDOM SecurityError by skipping cross-origin calls; update href only.
+          if (!sameOrigin(url, state.href)) {
+            updateHrefOnly(url);
+            return;
+          }
         }
+        const result = originalPushState(...args);
+        if (url !== undefined && url !== null) updateHrefOnly(url);
         return result;
       };
       history.replaceState = (...args) => {
-        const result = originalReplaceState(...args);
         const url = args[2];
         if (url !== undefined && url !== null) {
-          try {
-            state.href = new URL(String(url), state.href).href;
-          } catch {}
+          if (!sameOrigin(url, state.href)) {
+            updateHrefOnly(url);
+            return;
+          }
         }
+        const result = originalReplaceState(...args);
+        if (url !== undefined && url !== null) updateHrefOnly(url);
         return result;
       };
     }
