@@ -76,6 +76,15 @@ AI agents should begin by reading:
 - ✅ Validate stat blocks against rarity rules
 - ✅ Generate or evaluate PRDs for new features
 
+### Classic Battle CLI (text-first)
+
+- Page: `src/pages/battleCLI.html` – terminal-style UI that reuses the Classic Battle engine/state machine.
+- Controls: number keys [1–5] select stats, Enter/Space advances, Q quits, H toggles help, R toggles Retro Mode.
+- State badge: `#battle-state-badge` reflects the current machine state.
+- Bottom line: snackbars render as a single status line using `#snackbar-container`.
+- Win target: choose 5/10/15 from the header; persisted in localStorage under `battleCLI.pointsToWin`.
+- Optional verbose log: enable header toggle to record recent state transitions.
+
 ### Snackbar Container
 
 Pages that display snackbars must include a persistent container near the end of `<body>`:
@@ -150,6 +159,8 @@ Run all Playwright tests with:
 ```bash
 npx playwright test
 ```
+
+CLI-specific tests live in `playwright/battle-cli.spec.js` and verify the state badge, verbose log behavior, and keyboard selection flow.
 
 ### Stable readiness waits in Playwright
 

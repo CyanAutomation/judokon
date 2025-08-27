@@ -1,0 +1,46 @@
+import { test, expect } from "@playwright/test";
+import { waitForBattleState } from "./fixtures/waits.js";
+
+test.describe("Classic Battle CLI", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      // Keep UI deterministic for tests
+      try { localStorage.setItem("battleCLI.verbose", "false"); } catch {}
+      try { localStorage.setItem("battleCLI.pointsToWin", "5"); } catch {}
+      // Speed up inter-round where possible
+      window.__NEXT_ROUND_COOLDOWN_MS = 0;
+    });
+  });
+
+  test("shows state badge with current state", async ({ page }) => {
+    await page.goto("/src/pages/battleCLI.html");
+    // Wait until the player can act
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    const badge = page.locator("#battle-state-badge");
+    await expect(badge).toContainText(/State:\s*waitingForPlayerAction/);
+  });
+
+  test("verbose log toggles and records transitions", async ({ page }) => {
+    await page.goto("/src/pages/battleCLI.html");
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+
+    // Enable verbose mode
+    const toggle = page.locator("#verbose-toggle");
+    await toggle.check();
+    await expect(page.locator("#cli-verbose-section")).toBeVisible();
+
+    // Cause a transition by selecting a stat via keyboard (mapped to 1)
+    await page.keyboard.press("1");
+
+    // Wait for a later state to appear in the badge and log
+    await waitForBattleState(page, "roundDecision", 10000);
+
+    const log = page.locator("#cli-verbose-log");
+    await expect(log).toContainText(/roundDecision/);
+
+    // Turn verbose off hides the section
+    await toggle.uncheck();
+    await expect(page.locator("#cli-verbose-section")).toBeHidden();
+  });
+});
+
