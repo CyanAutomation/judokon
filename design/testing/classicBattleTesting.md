@@ -44,4 +44,3 @@ This note explains how Classic Battle bindings and promises are set up for tests
   - `selectionHandler` clears transient text and surfaces the opponent-delay snackbar during selection.
   - `handleStatSelectionTimeout()` only shows the stall message at timeout (not earlier).
   - `__triggerStallPromptNow(store)` surfaces a stall prompt immediately for tests.
-
