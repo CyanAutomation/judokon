@@ -77,7 +77,8 @@ describe("countdown resets after stat selection", () => {
     createTimerNodes();
     document.body.innerHTML += '<div id="stat-buttons"><button data-stat="power"></button></div>';
     createSnackbarContainer();
-    battleMod = await import("../../../src/helpers/classicBattle.js");
+    const { initClassicBattleTest } = await import("./initClassicBattle.js");
+    battleMod = await initClassicBattleTest();
     store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
   });

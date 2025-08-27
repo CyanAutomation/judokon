@@ -58,8 +58,8 @@ afterEach(() => {
 
 describe("classicBattle selection prompt", () => {
   it("shows selection prompt until a stat is chosen", async () => {
-    const battleMod = await import("../../../src/helpers/classicBattle.js");
-    await battleMod.__ensureClassicBattleBindings();
+    const { initClassicBattleTest } = await import("./initClassicBattle.js");
+    const battleMod = await initClassicBattleTest();
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     const { roundPromptPromise } = await import("../../../src/helpers/classicBattle.js");

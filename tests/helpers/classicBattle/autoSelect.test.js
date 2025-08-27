@@ -61,8 +61,8 @@ describe("classicBattle auto select", () => {
       return { ...actual, dispatchBattleEvent: dispatchSpy };
     });
     vi.spyOn(Math, "random").mockReturnValue(0);
-    const battleMod = await import("../../../src/helpers/classicBattle.js");
-    await battleMod.__ensureClassicBattleBindings();
+    const { initClassicBattleTest } = await import("./initClassicBattle.js");
+    const battleMod = await initClassicBattleTest();
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await battleMod.startRound(store);

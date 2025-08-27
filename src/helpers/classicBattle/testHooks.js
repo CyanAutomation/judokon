@@ -1,10 +1,4 @@
 import { emitBattleEvent } from "./battleEvents.js";
-import { handleStatSelectionTimeout, startTimer } from "./timerService.js";
-import { autoSelectStat } from "./autoSelectStat.js";
-import { handleStatSelection } from "./selectionHandler.js";
-import { getOpponentJudoka } from "./cardSelection.js";
-import { getCardStatValue } from "./cardStatUtils.js";
-import { dispatchBattleEvent } from "./eventDispatcher.js";
 
 /**
  * Ensure round UI event listeners and promises are registered.
@@ -22,6 +16,13 @@ export async function ensureBindings() {
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store
  */
 export async function triggerRoundTimeoutNow(store) {
+  const { getOpponentJudoka } = await import("./cardSelection.js");
+  const { getCardStatValue } = await import("./cardStatUtils.js");
+  const { handleStatSelection } = await import("./selectionHandler.js");
+  const { default: eventBus, emitBattleEvent: emitEvt } = await import("./battleEvents.js");
+  const { dispatchBattleEvent } = await import("./eventDispatcher.js");
+  const { autoSelectStat } = await import("./autoSelectStat.js");
+
   const onExpiredSelect = async (stat, opts) => {
     const playerCard = document.getElementById("player-card");
     const opponentCard = document.getElementById("opponent-card");
@@ -47,6 +48,11 @@ export async function triggerRoundTimeoutNow(store) {
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store
  */
 export async function triggerStallPromptNow(store) {
+  const { getOpponentJudoka } = await import("./cardSelection.js");
+  const { getCardStatValue } = await import("./cardStatUtils.js");
+  const { handleStatSelection } = await import("./selectionHandler.js");
+  const { handleStatSelectionTimeout } = await import("./timerService.js");
+
   const onSelect = (stat, opts) => {
     const playerCard = document.getElementById("player-card");
     const opponentCard = document.getElementById("opponent-card");
