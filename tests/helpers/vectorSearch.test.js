@@ -45,6 +45,29 @@ describe("vectorSearch", () => {
     expect(fetchJsonMock).toHaveBeenCalledTimes(2); // manifest + 1 shard
   });
 
+  it("ensures embeddings use three-decimal precision", async () => {
+    const decimalSample = [
+      { id: "c", text: "C", embedding: [0.123, 0.456, 0.789], source: "doc3" }
+    ];
+    fetchJsonMock.mockImplementation((url) => {
+      if (url.endsWith("client_embeddings.manifest.json")) {
+        return Promise.resolve({ shards: ["shard1.json"] });
+      }
+      if (url.endsWith("shard1.json")) {
+        return Promise.resolve(decimalSample);
+      }
+      return Promise.resolve([]);
+    });
+    const { loadEmbeddings } = await import("../../src/helpers/vectorSearch/loader.js");
+    const embeddings = await loadEmbeddings();
+    for (const entry of embeddings ?? []) {
+      for (const value of entry.embedding) {
+        const decimals = value.toString().split(".")[1];
+        expect(decimals ? decimals.length : 0).toBeLessThanOrEqual(3);
+      }
+    }
+  });
+
   it("returns null when loading fails", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     fetchJsonMock.mockImplementation((url) => {

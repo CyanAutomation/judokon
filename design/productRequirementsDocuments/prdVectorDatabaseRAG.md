@@ -114,6 +114,7 @@ than an entire file.
 - When testing locally, serve the repository with `npm start` so the search page can fetch Markdown context files.
 - Vector format must be JSON-serializable and readable by JavaScript.
 - Embedding dimensionality must be ≤384 for performance.
+- Vector values are rounded to three decimal places to minimize size and maintain deterministic comparisons.
 - UI must support keyboard navigation and screen readers.
 - Tap/click targets should be at least 44px height for accessibility.
 - Display an error message when embeddings or the model fail to load.
