@@ -62,7 +62,7 @@ describe("classicBattle selection prompt", () => {
     const battleMod = await initClassicBattleTest({ afterMock: true });
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
-    await battleMod.startRound(store);
+    await battleMod.startRound(store, battleMod.applyRoundUI);
     expect(document.querySelector(".snackbar").textContent).toBe("Select your move");
     timerSpy.advanceTimersByTime(5000);
     expect(document.querySelector(".snackbar")).toBeNull();

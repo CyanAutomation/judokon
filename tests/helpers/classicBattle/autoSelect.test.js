@@ -59,7 +59,7 @@ describe("classicBattle auto select", () => {
     const battleMod = await initClassicBattleTest({ afterMock: true });
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
-    await battleMod.startRound(store);
+    await battleMod.startRound(store, battleMod.applyRoundUI);
     const pending = battleMod.__triggerRoundTimeoutNow(store);
     await vi.runAllTimersAsync();
     await pending;
