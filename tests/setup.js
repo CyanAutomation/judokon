@@ -61,6 +61,30 @@ beforeEach(() => {
   // Mute noisy console methods by default; tests can opt-in to logging
   muteConsole(["warn", "error"]);
   try {
+    // Ensure snackbars are enabled for tests by default
+    if (typeof window !== "undefined" && window.__disableSnackbars) {
+      delete window.__disableSnackbars;
+    }
+    // Ensure a snackbar container exists for any code paths that use it
+    if (typeof document !== "undefined" && !document.getElementById("snackbar-container")) {
+      const container = document.createElement("div");
+      container.id = "snackbar-container";
+      container.setAttribute("role", "status");
+      container.setAttribute("aria-live", "polite");
+      document.body.appendChild(container);
+    }
+  } catch {}
+  try {
+    // Preload classic battle bindings so event listeners/promises are registered
+    // Tests that don't use classic battle will simply ignore this.
+    import("../src/helpers/classicBattle.js")
+      .then((mod) => {
+        if (mod && typeof mod.__ensureClassicBattleBindings === "function") {
+          return mod.__ensureClassicBattleBindings();
+        }
+        return undefined;
+      })
+      .catch(() => {});
     const currentHref = String(window.location.href || "http://localhost/");
     const state = { href: currentHref };
     Object.defineProperty(window, "location", {
