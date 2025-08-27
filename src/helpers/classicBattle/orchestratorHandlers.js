@@ -95,13 +95,12 @@ export async function cooldownEnter(machine, payload) {
   // avoid relying on external UI timers/handlers which can be racy under CI.
   try {
     if (isTestModeEnabled && isTestModeEnabled()) {
-      setTimeout(() => {
-        try {
-          if (machine.getState && machine.getState() === "cooldown") {
-            machine.dispatch("ready");
-          }
-        } catch {}
-      }, 0);
+      try {
+        if (machine.getState && machine.getState() === "cooldown") {
+          console.warn("[test] cooldownEnter: auto-advance dispatch ready");
+          machine.dispatch("ready");
+        }
+      } catch {}
     }
   } catch {}
 }

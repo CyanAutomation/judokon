@@ -310,6 +310,10 @@ export function handleZeroCooldownFastPath(controls, btn) {
     btn.dataset.nextReady = "true";
     btn.disabled = false;
   }
+  try {
+    const s = typeof window !== "undefined" ? window.__classicBattleState || null : null;
+    console.warn(`[test] zero-cooldown fast-path: current state=${s}`);
+  } catch {}
   setSkipHandler(async () => {
     try {
       if (btn) btn.disabled = true;
@@ -319,6 +323,7 @@ export function handleZeroCooldownFastPath(controls, btn) {
           : null;
       // Dispatch when state is unknown (tests) or explicitly cooldown
       if (!state || state === "cooldown") {
+        try { console.warn("[test] zero-cooldown skip: dispatch ready"); } catch {}
         await dispatchBattleEvent("ready");
         updateDebugPanel();
       } else {
@@ -336,25 +341,21 @@ export function handleZeroCooldownFastPath(controls, btn) {
       controls.resolveReady();
     } catch {}
   }
-  // In test mode, auto-advance to the next round to avoid flakiness from
-  // relying on external calls to the skip handler.
+  // In test mode, dispatch ready immediately to avoid any races.
   try {
     if (isTestModeEnabled && isTestModeEnabled()) {
-      setTimeout(() => {
+      const state =
+        typeof window !== "undefined" && window.__classicBattleState
+          ? window.__classicBattleState
+          : null;
+      if (!state || state === "cooldown") {
+        try { console.warn("[test] zero-cooldown auto-advance: dispatch ready"); } catch {}
+        Promise.resolve(dispatchBattleEvent("ready")).catch(() => {});
+      } else {
         try {
-          const state =
-            typeof window !== "undefined" && window.__classicBattleState
-              ? window.__classicBattleState
-              : null;
-          if (!state || state === "cooldown") {
-            Promise.resolve(dispatchBattleEvent("ready")).catch(() => {});
-          } else {
-            try {
-              console.warn(`[test] auto-advance suppressed; state=${state}`);
-            } catch {}
-          }
+          console.warn(`[test] auto-advance suppressed; state=${state}`);
         } catch {}
-      }, 0);
+      }
     }
   } catch {}
   currentNextRound = controls;
