@@ -49,7 +49,9 @@ export async function autoSelectStat(onSelect, feedbackDelayMs = AUTO_SELECT_FEE
     } catch {}
   }
   if (btn) btn.classList.add("selected");
-  await new Promise((resolve) => setTimeout(resolve, feedbackDelayMs));
+  if (feedbackDelayMs > 0) {
+    await new Promise((resolve) => setTimeout(resolve, feedbackDelayMs));
+  }
   // Ensure timeout event is observed even in environments where the
   // timer's own dispatch might be skipped by mocks.
   try {

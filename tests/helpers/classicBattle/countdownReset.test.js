@@ -86,9 +86,9 @@ describe("countdown resets after stat selection", () => {
   it("clears the next round timer after stat selection", async () => {
     populateCards();
     const timer = vi.useFakeTimers();
-    const { countdownStartedPromise } = await import("../../../src/helpers/classicBattle.js");
+    const { getCountdownStartedPromise } = await import("../../../src/helpers/classicBattle.js");
     const { randomSpy } = await selectPower(battleMod, store);
-    await countdownStartedPromise;
+    await getCountdownStartedPromise();
     expect(document.getElementById("next-round-timer").textContent).toBe("");
     await vi.advanceTimersByTimeAsync(3000);
     expect(document.getElementById("next-round-timer").textContent).toBe("");
