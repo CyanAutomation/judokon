@@ -57,10 +57,7 @@ export let roundResolvedPromise;
   roundPromptPromise = setupPromise("roundPromptPromise", "roundPrompt")();
   nextRoundTimerReadyPromise = setupPromise("nextRoundTimerReadyPromise", "nextRoundTimerReady")();
   matchOverPromise = setupPromise("matchOverPromise", "matchOver")();
-  countdownStartedPromise = setupPromise(
-    "countdownStartedPromise",
-    "nextRoundCountdownStarted"
-  )();
+  countdownStartedPromise = setupPromise("countdownStartedPromise", "nextRoundCountdownStarted")();
   roundTimeoutPromise = setupPromise("roundTimeoutPromise", "roundTimeout")();
   statSelectionStalledPromise = setupPromise(
     "statSelectionStalledPromise",

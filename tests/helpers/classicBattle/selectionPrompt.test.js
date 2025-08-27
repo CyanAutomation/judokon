@@ -31,7 +31,8 @@ let currentFlags;
 
 beforeEach(() => {
   try {
-    if (typeof window !== "undefined" && window.__disableSnackbars) delete window.__disableSnackbars;
+    if (typeof window !== "undefined" && window.__disableSnackbars)
+      delete window.__disableSnackbars;
   } catch {}
   ({
     timerSpy,
