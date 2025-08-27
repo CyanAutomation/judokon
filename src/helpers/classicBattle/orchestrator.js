@@ -423,3 +423,11 @@ export async function dispatchBattleEvent(eventName, payload) {
     }
   }
 }
+
+/**
+ * Get the current battle state machine instance for tests and helpers.
+ * @returns {import('./stateMachine.js').BattleStateMachine|null}
+ */
+export function getBattleStateMachine() {
+  return machine;
+}
