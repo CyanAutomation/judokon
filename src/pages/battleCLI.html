@@ -9,12 +9,15 @@
       :root {
         color-scheme: light dark;
       }
-      html, body {
+      html,
+      body {
         height: 100%;
         margin: 0;
       }
       body {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+          monospace;
         background: #0b0c0c;
         color: #f2f2f2;
       }
@@ -33,8 +36,14 @@
       .cli-title {
         font-weight: 700;
       }
-      .cli-score { white-space: pre; }
-      .cli-controls { display: flex; gap: 8px; align-items: center; }
+      .cli-score {
+        white-space: pre;
+      }
+      .cli-controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
       .cli-main {
         flex: 1;
         display: flex;
@@ -66,10 +75,18 @@
         background: #111;
         color: #e6e6e6;
       }
-      #snackbar-container .snackbar { display: block; }
+      #snackbar-container .snackbar {
+        display: block;
+      }
       /* Ensure good contrast for links if any appear */
-      a { color: #9ad1ff; }
-      a:focus, [tabindex]:focus { outline: 2px solid #9ad1ff; outline-offset: 2px; }
+      a {
+        color: #9ad1ff;
+      }
+      a:focus,
+      [tabindex]:focus {
+        outline: 2px solid #9ad1ff;
+        outline-offset: 2px;
+      }
     </style>
   </head>
   <body>
@@ -78,13 +95,19 @@
         <div class="cli-title">Classic Battle (CLI)</div>
         <div class="cli-controls" role="group" aria-label="Match Settings">
           <label for="points-select">Win target:</label>
-          <select id="points-select" aria-label="Points to win" data-tooltip-id="settings.pointsToWin">
+          <select
+            id="points-select"
+            aria-label="Points to win"
+            data-tooltip-id="settings.pointsToWin"
+          >
             <option value="5">5</option>
             <option value="10" selected>10</option>
             <option value="15">15</option>
           </select>
         </div>
-        <div id="cli-score" class="cli-score" aria-live="polite" aria-atomic="true">You: 0  Opponent: 0</div>
+        <div id="cli-score" class="cli-score" aria-live="polite" aria-atomic="true">
+          You: 0 Opponent: 0
+        </div>
       </header>
 
       <main id="cli-main" class="cli-main" role="main">
@@ -93,13 +116,20 @@
         </section>
 
         <section aria-label="Stat Selection" class="cli-block">
-          <div id="cli-stats" role="listbox" tabindex="0" aria-label="Select a stat with number keys 1–5">
+          <div
+            id="cli-stats"
+            role="listbox"
+            tabindex="0"
+            aria-label="Select a stat with number keys 1–5"
+          >
             <!-- Populated from statNames.json at runtime as [n] Label -->
           </div>
         </section>
 
         <section aria-label="Shortcuts" id="cli-shortcuts" class="cli-block">
-          <div id="cli-help">[1–5] Select Stat  |  [Enter]/[Space] Next  |  [Q] Quit  |  [H] Toggle Help  |  [R] Retro Mode</div>
+          <div id="cli-help">
+            [1–5] Select Stat | [Enter]/[Space] Next | [Q] Quit | [H] Toggle Help | [R] Retro Mode
+          </div>
         </section>
       </main>
 
@@ -110,9 +140,9 @@
         </div>
       </footer>
       <!-- Hidden containers for compatibility with classic battle DOM queries -->
-      <div id="player-card" style="display:none"></div>
-      <div id="opponent-card" style="display:none"></div>
+      <div id="player-card" style="display: none"></div>
+      <div id="opponent-card" style="display: none"></div>
       <script type="module" src="../pages/battleCLI.js"></script>
     </div>
   </body>
-  </html>
+</html>

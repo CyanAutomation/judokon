@@ -1,7 +1,10 @@
 // Classic Battle CLI bootstrap and controller
 // Wires the existing Classic Battle engine/state machine to a terminal-style UI.
 
-import { createBattleStore, startRound as startRoundCore } from "../helpers/classicBattle/roundManager.js";
+import {
+  createBattleStore,
+  startRound as startRoundCore
+} from "../helpers/classicBattle/roundManager.js";
 import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
 import { onBattleEvent, emitBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { STATS } from "../helpers/BattleEngine.js";
@@ -182,7 +185,9 @@ async function init() {
   installRetroStyles();
   store = createBattleStore();
   // Expose store for debug panels if needed
-  try { window.battleStore = store; } catch {}
+  try {
+    window.battleStore = store;
+  } catch {}
   // Ensure autostart so the modal is skipped in CLI
   try {
     const url = new URL(window.location.href);
@@ -237,7 +242,9 @@ async function init() {
       const val = Number(select.value);
       if ([5, 10, 15].includes(val)) {
         setPointsToWin(val);
-        try { localStorage.setItem(key, String(val)); } catch {}
+        try {
+          localStorage.setItem(key, String(val));
+        } catch {}
       }
     });
   } catch {}
