@@ -3,7 +3,6 @@ import { emitBattleEvent, __resetBattleEventTarget } from "./battleEvents.js";
 // Internal flags to make bindings idempotent and allow limited rebinds in tests.
 let __uiBound = false;
 let __promisesBound = false;
-let __rebindVersion = 0;
 
 /**
  * Ensure round UI event listeners and promises are registered.
@@ -62,7 +61,6 @@ export async function triggerRoundTimeoutNow(store) {
   const { getOpponentJudoka } = await import("./cardSelection.js");
   const { getCardStatValue } = await import("./cardStatUtils.js");
   const { handleStatSelection } = await import("./selectionHandler.js");
-  const { default: eventBus, emitBattleEvent: emitEvt } = await import("./battleEvents.js");
   const { dispatchBattleEvent } = await import("./eventDispatcher.js");
   const { autoSelectStat } = await import("./autoSelectStat.js");
 
