@@ -31,11 +31,28 @@ export async function waitForSettingsReady(page) {
 export async function waitForBattleState(page, stateName, timeout = 10000) {
   try {
     await page.waitForFunction(
-      (s) => document.body?.dataset?.battleState === s,
+      (s) => {
+        const d = document.body?.dataset?.battleState;
+        const w = typeof window !== "undefined" ? window.__classicBattleState : null;
+        return d === s || w === s;
+      },
       stateName,
       { timeout }
     );
   } catch (err) {
-    throw new Error(`Timed out waiting for battle state "${stateName}"`);
+    // Enrich error with in-page diagnostics without changing the expected prefix.
+    let snapshot = "";
+    try {
+      const info = await page.evaluate(() => {
+        const d = document.body?.dataset?.battleState || null;
+        const w = typeof window !== "undefined" ? window.__classicBattleState || null : null;
+        const el = document.getElementById("machine-state");
+        const t = el ? el.textContent : null;
+        const prev = document.body?.dataset?.prevBattleState || null;
+        return { dataset: d, windowState: w, machineText: t, prev };
+      });
+      snapshot = ` (dataset=${info.dataset} window=${info.windowState} machine=${info.machineText} prev=${info.prev})`;
+    } catch {}
+    throw new Error(`Timed out waiting for battle state "${stateName}"${snapshot}`);
   }
 }

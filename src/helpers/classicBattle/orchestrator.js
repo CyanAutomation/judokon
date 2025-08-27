@@ -117,6 +117,9 @@ export function updateDebugState(from, to, event) {
     if (event) window.__classicBattleLastEvent = event;
     document.body.dataset.battleState = to;
     document.body.dataset.prevBattleState = from || "";
+    try {
+      console.warn(`[test] dataset.battleState set -> ${document.body.dataset.battleState}`);
+    } catch {}
     document.dispatchEvent(new CustomEvent("battle:state", { detail: { from, to } }));
     const entry = { from: from || null, to, event: event || null, ts: Date.now() };
     const log = Array.isArray(window.__classicBattleStateLog) ? window.__classicBattleStateLog : [];

@@ -13,7 +13,16 @@ beforeEach(async () => {
   vi.resetModules();
   fetchJsonMock = (await import("../../src/helpers/dataUtils.js")).fetchJson;
   fetchJsonMock.mockReset();
-  fetchJsonMock.mockResolvedValue(sample);
+  // Mock the manifest and the shard
+  fetchJsonMock.mockImplementation((url) => {
+    if (url.endsWith("client_embeddings.manifest.json")) {
+      return Promise.resolve({ shards: ["shard1.json"] });
+    }
+    if (url.endsWith("shard1.json")) {
+      return Promise.resolve(sample);
+    }
+    return Promise.resolve([]);
+  });
 });
 
 afterEach(() => {
@@ -33,12 +42,17 @@ describe("vectorSearch", () => {
     const second = await loadEmbeddings();
     expect(first).toEqual(sample);
     expect(second).toBe(first);
-    expect(fetchJsonMock).toHaveBeenCalledTimes(1);
+    expect(fetchJsonMock).toHaveBeenCalledTimes(2); // manifest + 1 shard
   });
 
   it("returns null when loading fails", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    fetchJsonMock.mockRejectedValueOnce(new Error("fail"));
+    fetchJsonMock.mockImplementation((url) => {
+      if (url.endsWith("client_embeddings.manifest.json")) {
+        return Promise.reject(new Error("fail"));
+      }
+      return Promise.resolve(sample);
+    });
     const { loadEmbeddings } = await import("../../src/helpers/vectorSearch/loader.js");
     const result = await loadEmbeddings();
     expect(result).toBeNull();
@@ -54,7 +68,7 @@ describe("vectorSearch", () => {
   it("finds top matches", async () => {
     const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
     const res = await findMatches([1, 0], 1);
-    expect(res.length).toBe(1);
+    expect(res?.length).toBe(1);
     expect(res[0].id).toBe("a");
     expect(res[0].score).toBeCloseTo(1);
   });
@@ -62,9 +76,9 @@ describe("vectorSearch", () => {
   it("filters by tags", async () => {
     const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
     const res = await findMatches([1, 0], 1, ["foo"]);
-    expect(res[0].id).toBe("a");
+    expect(res?.[0].id).toBe("a");
     const other = await findMatches([1, 0], 1, ["bar"]);
-    expect(other[0].id).toBe("b");
+    expect(other?.[0].id).toBe("b");
   });
 
   it("returns empty array when tags exclude all entries", async () => {
@@ -76,7 +90,7 @@ describe("vectorSearch", () => {
   it("boosts results containing exact query terms", async () => {
     const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
     const res = await findMatches([1, 1], 2, [], "B");
-    expect(res[0].id).toBe("b");
+    expect(res?.[0].id).toBe("b");
   });
 
   it("returns empty array for dimension mismatch", async () => {
@@ -86,7 +100,15 @@ describe("vectorSearch", () => {
   });
 
   it("returns empty array when embeddings dataset is empty", async () => {
-    fetchJsonMock.mockResolvedValueOnce([]);
+    fetchJsonMock.mockImplementation((url) => {
+      if (url.endsWith("client_embeddings.manifest.json")) {
+        return Promise.resolve({ shards: ["shard1.json"] });
+      }
+      if (url.endsWith("shard1.json")) {
+        return Promise.resolve([]);
+      }
+      return Promise.resolve([]);
+    });
     const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
     const res = await findMatches([1, 0], 1);
     expect(res).toEqual([]);
@@ -94,24 +116,40 @@ describe("vectorSearch", () => {
 
   it("skips entries with invalid embeddings", async () => {
     const malformed = [
-      { id: "a", text: "A", embedding: [1, 0], source: "doc1" },
-      { id: "bad1", text: "X", embedding: [1], source: "doc3" },
-      { id: "bad2", text: "Y", embedding: ["no"], source: "doc4" },
-      { id: "bad3", text: "Z", source: "doc5" },
-      { id: "b", text: "B", embedding: [0, 1], source: "doc2" }
+      { id: "a", text: "A", embedding: [1, 0], source: "doc1", sparseVector: {a:1} },
+      { id: "bad1", text: "X", embedding: [1], source: "doc3", sparseVector: {x:1} },
+      { id: "bad2", text: "Y", embedding: ["no"], source: "doc4", sparseVector: {y:1} },
+      { id: "bad3", text: "Z", source: "doc5", sparseVector: {z:1} },
+      { id: "b", text: "B", embedding: [0, 1], source: "doc2", sparseVector: {b:1} }
     ];
-    fetchJsonMock.mockResolvedValueOnce(malformed);
+    fetchJsonMock.mockImplementation((url) => {
+      if (url.endsWith("client_embeddings.manifest.json")) {
+        return Promise.resolve({ shards: ["shard1.json"] });
+      }
+      if (url.endsWith("shard1.json")) {
+        return Promise.resolve(malformed);
+      }
+      return Promise.resolve([]);
+    });
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
     const res = await findMatches([1, 0], 5);
-    expect(res.map((r) => r.id)).toEqual(["a", "b"]);
+        expect(res?.map((r) => r.id)).toEqual(["a", "b"]);
     expect(warn).toHaveBeenCalledTimes(3);
     warn.mockRestore();
   });
 
   it("returns null when embeddings fail to load", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    fetchJsonMock.mockRejectedValueOnce(new Error("fail"));
+    fetchJsonMock.mockImplementation((url) => {
+      if (url.endsWith("client_embeddings.manifest.json")) {
+        return Promise.resolve({ shards: ["shard1.json"] });
+      }
+      if (url.endsWith("shard1.json")) {
+        return Promise.reject(new Error("fail"));
+      }
+      return Promise.resolve([]);
+    });
     const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
     const res = await findMatches([1, 0], 1);
     expect(res).toBeNull();
