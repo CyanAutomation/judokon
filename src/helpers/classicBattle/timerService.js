@@ -449,27 +449,6 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
   // Guard: only schedule when the machine is in roundOver/cooldown. If we're
   // already in roundStart or waitingForPlayerAction, skip scheduling entirely
   // to avoid conflicting timers and suppressed auto-advance.
-  try {
-    const s = typeof window !== "undefined" ? window.__classicBattleState || null : null;
-    if (s && s !== "roundOver" && s !== "cooldown") {
-      const controls = { timer: null, resolveReady: null, ready: null };
-      controls.ready = new Promise((resolve) => {
-        controls.resolveReady = () => {
-          try {
-            emitBattleEvent("nextRoundTimerReady");
-          } catch {}
-          resolve();
-          controls.resolveReady = null;
-        };
-      });
-      if (controls.resolveReady) controls.resolveReady();
-      currentNextRound = controls;
-      try {
-        console.warn(`[test] scheduleNextRound: skipped in state=${s}`);
-      } catch {}
-      return controls;
-    }
-  } catch {}
   const controls = { timer: null, resolveReady: null, ready: null };
 
   controls.ready = new Promise((resolve) => {
@@ -499,6 +478,20 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
   if (cooldownSeconds === 0) {
     return handleZeroCooldownFastPath(controls, btn);
   }
+
+  // Only skip scheduling when not in roundOver/cooldown for non-zero cooldowns.
+  // Allow zero-cooldown fast-path regardless of state to keep tests deterministic.
+  try {
+    const s = typeof window !== "undefined" ? window.__classicBattleState || null : null;
+    if (s && s !== "roundOver" && s !== "cooldown") {
+      if (typeof controls.resolveReady === "function") controls.resolveReady();
+      currentNextRound = controls;
+      try {
+        console.warn(`[test] scheduleNextRound: skipped in state=${s}`);
+      } catch {}
+      return controls;
+    }
+  } catch {}
 
   const onTick = createNextRoundSnackbarRenderer();
   const onExpired = () => handleNextRoundExpiration(controls, btn, timerEl);
