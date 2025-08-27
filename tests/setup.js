@@ -57,7 +57,7 @@ afterEach(() => {
 
 // Prevent JSDOM navigation errors when tests assign to window.location.href.
 // Simulate URL changes by updating history without performing a real navigation.
-beforeEach(() => {
+beforeEach(async () => {
   // Mute noisy console methods by default; tests can opt-in to logging
   muteConsole(["warn", "error"]);
   try {
@@ -77,14 +77,10 @@ beforeEach(() => {
   try {
     // Preload classic battle bindings so event listeners/promises are registered
     // Tests that don't use classic battle will simply ignore this.
-    import("../src/helpers/classicBattle.js")
-      .then((mod) => {
-        if (mod && typeof mod.__ensureClassicBattleBindings === "function") {
-          return mod.__ensureClassicBattleBindings();
-        }
-        return undefined;
-      })
-      .catch(() => {});
+    const mod = await import("../src/helpers/classicBattle.js");
+    if (mod && typeof mod.__ensureClassicBattleBindings === "function") {
+      await mod.__ensureClassicBattleBindings();
+    }
     const currentHref = String(window.location.href || "http://localhost/");
     const state = { href: currentHref };
     Object.defineProperty(window, "location", {

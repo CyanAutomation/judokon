@@ -103,7 +103,6 @@ describe("classicBattle stat selection", () => {
       _resetForTest,
       getCardStatValue
     } = await import("../../../src/helpers/classicBattle.js"));
-    await (await import("../../../src/helpers/classicBattle.js")).__ensureClassicBattleBindings();
     store = createBattleStore();
     _resetForTest(store);
     const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
