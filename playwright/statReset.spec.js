@@ -25,7 +25,9 @@ test.describe("Classic battle button reset", () => {
             windowSnapshot:
               typeof window.getBattleStateSnapshot === "function"
                 ? window.getBattleStateSnapshot()
-                : null
+                : null,
+            waiters:
+              typeof window.dumpStateWaiters === "function" ? window.dumpStateWaiters() : null
           };
         } catch {
           return null;

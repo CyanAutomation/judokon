@@ -45,99 +45,63 @@ const stateWaiters = new Map();
 export function onStateTransition(targetState, timeoutMs = 10000) {
   return new Promise((resolve, reject) => {
     try {
-      if (machine?.getState() === targetState) return resolve(true);
+      if (machine?.getState?.() === targetState) {
+        resolve(true);
+        return;
+      }
       const entry = { resolve };
+      // Debug bookkeeping for diagnostics (safe in browsers only)
       try {
-        entry.__id = Math.random().toString(36).slice(2, 9);
-        window.__stateWaiterEvents = window.__stateWaiterEvents || [];
-        window.__stateWaiterEvents.push({
-          action: "add",
-          state: targetState,
-          id: entry.__id,
-          ts: Date.now()
-        });
+        if (typeof window !== "undefined") {
+          entry.__id = Math.random().toString(36).slice(2, 9);
+          window.__stateWaiterEvents = window.__stateWaiterEvents || [];
+          window.__stateWaiterEvents.push({
+            action: "add",
+            state: targetState,
+            id: entry.__id,
+            ts: Date.now()
+          });
+        }
       } catch {}
       if (timeoutMs !== Infinity) {
         entry.timer = setTimeout(() => {
           try {
-            window.__stateWaiterEvents = window.__stateWaiterEvents || [];
-            window.__stateWaiterEvents.push({
-              action: "timeout",
-              state: targetState,
-              id: entry.__id,
-              ts: Date.now()
-            });
+            // remove this entry from the waiter list on timeout
+            const list = stateWaiters.get(targetState) || [];
+            const idx = list.indexOf(entry);
+            if (idx !== -1) list.splice(idx, 1);
+            if (list.length === 0) stateWaiters.delete(targetState);
+            try {
+              if (typeof window !== "undefined") {
+                window.__stateWaiterEvents = window.__stateWaiterEvents || [];
+                window.__stateWaiterEvents.push({
+                  action: "timeout",
+                  state: targetState,
+                  id: entry.__id || null,
+                  ts: Date.now()
+                });
+              }
+            } catch {}
           } catch {}
-          removeWaiter(targetState, entry);
-          reject(new Error("onStateTransition timeout"));
+          reject(new Error(`onStateTransition timeout for ${targetState}`));
         }, timeoutMs);
       }
       const arr = stateWaiters.get(targetState) || [];
       arr.push(entry);
       stateWaiters.set(targetState, arr);
     } catch {
-      reject(new Error("onStateTransition error"));
+      reject(new Error("onStateTransition setup error"));
     }
   });
 }
 
 /**
- * Removes a specific waiter entry from the `stateWaiters` Map for a given state.
- * This function is used internally to clean up waiters, especially after a Promise resolves or times out.
- *
- * @pseudocode
- * 1. Retrieve the array of waiters (`arr`) associated with `stateName` from `stateWaiters`.
- * 2. If no array is found (`!arr`), exit the function as there are no waiters for this state.
- * 3. Find the index of the `entry` within the `arr`.
- * 4. If the `entry` is found (`idx !== -1`), remove it from the `arr` using `splice`.
- * 5. After removal, if the `arr` becomes empty (`arr.length === 0`), delete the `stateName` key from `stateWaiters` to clean up empty entries.
- *
- * @param {string} stateName - The name of the state whose waiter is to be removed.
- * @param {object} entry - The specific waiter entry object to remove.
- * @returns {void}
+ * Mirror state transitions to window/DOM and resolve in-page waiters.
+ * @param {string|null} from
+ * @param {string} to
+ * @param {string|null} event
  */
-function removeWaiter(stateName, entry) {
-  const arr = stateWaiters.get(stateName);
-  if (!arr) return;
-  const idx = arr.indexOf(entry);
-  if (idx !== -1) arr.splice(idx, 1);
-  try {
-    window.__stateWaiterEvents = window.__stateWaiterEvents || [];
-    window.__stateWaiterEvents.push({
-      action: "remove",
-      state: stateName,
-      id: entry.__id || null,
-      ts: Date.now()
-    });
-  } catch {}
-  if (arr.length === 0) stateWaiters.delete(stateName);
-}
-
-/**
- * Retrieve the current battle state machine instance.
- *
- * @returns {import('./stateMachine.js').BattleStateMachine|null} Current instance.
- */
-export function getBattleStateMachine() {
-  return machine;
-}
-
-/**
- * Mirror transition state to globals and debug elements.
- *
- * @pseudocode
- * 1. Return early when not in a browser environment.
- * 2. Update window globals for current, previous, and last event.
- * 3. Update body data attributes and dispatch a `battle:state` event.
- * 4. Record the transition in a capped log and expose it on `window`.
- * 5. Ensure `#machine-state` and `#battle-state-badge` reflect the new state.
- *
- * @param {string|null} from - Previous state name.
- * @param {string} to - New state name.
- * @param {string|null} event - Event that triggered the transition.
- * @returns {void}
- */
-export function updateDebugState(from, to, event) {
+function updateDebugState(from, to, event) {
   if (typeof window === "undefined" || typeof document === "undefined") return;
   try {
     window.__classicBattleState = to;
@@ -146,12 +110,14 @@ export function updateDebugState(from, to, event) {
     document.body.dataset.battleState = to;
     document.body.dataset.prevBattleState = from || "";
     try {
+      // Keep tests observable; muted by test helpers in CI
+
       console.warn(`[test] dataset.battleState set -> ${document.body.dataset.battleState}`);
     } catch {}
     document.dispatchEvent(new CustomEvent("battle:state", { detail: { from, to } }));
-    const entry = { from: from || null, to, event: event || null, ts: Date.now() };
+    const logEntry = { from: from || null, to, event: event || null, ts: Date.now() };
     const log = Array.isArray(window.__classicBattleStateLog) ? window.__classicBattleStateLog : [];
-    log.push(entry);
+    log.push(logEntry);
     while (log.length > 20) log.shift();
     window.__classicBattleStateLog = log;
     let el = document.getElementById("machine-state");
@@ -164,7 +130,7 @@ export function updateDebugState(from, to, event) {
     el.textContent = to;
     if (from) el.dataset.prev = from;
     if (event) el.dataset.event = event;
-    el.dataset.ts = String(entry.ts);
+    el.dataset.ts = String(logEntry.ts);
     const badge = document.getElementById("battle-state-badge");
     if (badge) badge.textContent = `State: ${to}`;
     // Resolve any in-page awaiters registered via window.awaitBattleState
@@ -379,10 +345,24 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
       }
       try {
         // expose a helper to dump current waiters for diagnostics
+        // NOTE: Do not return functions or timers (non-serializable). Map to safe descriptors.
         window.dumpStateWaiters = () => {
           try {
+            const raw = window.__stateWaiters || {};
+            const waiters = {};
+            for (const key of Object.keys(raw)) {
+              try {
+                const arr = Array.isArray(raw[key]) ? raw[key] : [];
+                waiters[key] = arr.map((e) => ({
+                  id: e && e.__id ? e.__id : null,
+                  hasTimer: !!(e && e.timer)
+                }));
+              } catch {
+                waiters[key] = [];
+              }
+            }
             return {
-              waiters: window.__stateWaiters || {},
+              waiters,
               events: window.__stateWaiterEvents || [],
               promiseEvents: window.__promiseEvents || []
             };
@@ -391,6 +371,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
           }
         };
       } catch {}
+      // Expose a snapshot helper for tests/debuggers
       window.getBattleStateSnapshot = () => {
         try {
           return {
@@ -437,6 +418,8 @@ export async function dispatchBattleEvent(eventName, payload) {
     try {
       // emit a debug event so UI debug panels can show the failure
       emitBattleEvent("debugPanelUpdate");
-    } catch {}
+    } catch (innerError) {
+      console.error("Failed to emit debugPanelUpdate event:", innerError);
+    }
   }
 }

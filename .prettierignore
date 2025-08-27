@@ -9,4 +9,6 @@ src/vendor/ajv6.min.js
 README.md
 src/data/client_embeddings.json
 src/data/client_embeddings.meta.json
+src/data/client_embeddings.shard.*.json
+src/data/client_embeddings.manifest.json
 design/productRequirementsDocuments/*.md
