@@ -34,7 +34,7 @@ describe("classicBattlePage stat button interactions", () => {
     vi.doMock("../../src/config/loadSettings.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({ initTooltips }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar, updateSnackbar: vi.fn() }));
     vi.doMock("../../src/helpers/stats.js", () => ({
       loadStatNames: async () => [{ name: "Power" }, { name: "Speed" }, { name: "Technique" }]
     }));
@@ -362,7 +362,7 @@ describe("startRoundWrapper failures", () => {
     vi.doMock("../../src/helpers/stats.js", () => ({
       loadStatNames: vi.fn().mockResolvedValue([])
     }));
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn() }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn(), updateSnackbar: vi.fn() }));
     vi.doMock("../../src/helpers/featureFlags.js", () => ({
       initFeatureFlags: vi.fn(),
       isEnabled: vi.fn().mockReturnValue(false),

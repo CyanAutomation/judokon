@@ -20,7 +20,10 @@ vi.mock("../../../src/helpers/testModeUtils.js", () => ({
 }));
 vi.mock("../../../src/components/JudokaCard.js", () => ({ JudokaCard: vi.fn() }));
 vi.mock("../../../src/helpers/lazyPortrait.js", () => ({ setupLazyPortraits: vi.fn() }));
-vi.mock("../../../src/helpers/showSnackbar.js", () => ({ showSnackbar: vi.fn() }));
+vi.mock("../../../src/helpers/showSnackbar.js", () => ({
+  showSnackbar: vi.fn(),
+  updateSnackbar: vi.fn()
+}));
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({ showMessage: vi.fn() }));
 vi.mock("../../../src/helpers/battle/index.js", () => ({ showResult: vi.fn() }));
 vi.mock("../../../src/helpers/motionUtils.js", () => ({ shouldReduceMotionSync: () => true }));
