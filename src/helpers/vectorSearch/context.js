@@ -1,5 +1,5 @@
-const CHUNK_SIZE = 1500;
-const OVERLAP = 100;
+const CHUNK_SIZE = 1400;
+const OVERLAP_RATIO = 0.15;
 
 function splitIntoSections(lines) {
   const heading = /^(#{1,6})\s+/;
@@ -33,9 +33,35 @@ function collectHeadingSections(lines, startIdx, out) {
 
 function chunkSection(section) {
   if (section.length <= CHUNK_SIZE) return [section];
+  const sentences = section.match(/[^.!?]+[.!?]*\s*/g) || [section];
+  const baseChunks = [];
+  let current = "";
+  for (const sentence of sentences) {
+    if (current.length + sentence.length > CHUNK_SIZE) {
+      if (current) baseChunks.push(current.trim());
+      if (sentence.length > CHUNK_SIZE) {
+        for (let i = 0; i < sentence.length; i += CHUNK_SIZE) {
+          baseChunks.push(sentence.slice(i, i + CHUNK_SIZE).trim());
+        }
+        current = "";
+      } else {
+        current = sentence;
+      }
+    } else {
+      current += sentence;
+    }
+  }
+  if (current) baseChunks.push(current.trim());
+
   const chunks = [];
-  for (let start = 0; start < section.length; start += CHUNK_SIZE - OVERLAP) {
-    chunks.push(section.slice(start, start + CHUNK_SIZE));
+  const overlapSize = Math.floor(CHUNK_SIZE * OVERLAP_RATIO);
+  for (let i = 0; i < baseChunks.length; i++) {
+    if (i === 0) {
+      chunks.push(baseChunks[i]);
+    } else {
+      const overlap = baseChunks[i - 1].slice(-overlapSize);
+      chunks.push((overlap + baseChunks[i]).slice(0, CHUNK_SIZE));
+    }
   }
   return chunks;
 }
