@@ -219,6 +219,17 @@ const JSON_FIELD_ALLOWLIST = {
   ],
   "tooltips.json": true, // Allow all fields
   "gameModes.json": ["name", "japaneseName", "description", "rules"],
+  "battleRounds.json": ["label", "description", "category"],
+  "gameTimers.json": ["description", "category"],
+  "gokyo.json": ["name", "japanese", "description", "style", "category", "subCategory"],
+  "locations.json": ["name", "japaneseName", "description"],
+  "navigationItems.json": ["url", "category"],
+  "settings.json": ["displayMode", "aiDifficulty"],
+  "statNames.json": ["name", "japanese", "description", "category"],
+  "svgCodes.json": ["name", "category"],
+  "synonyms.json": true,
+  "weightCategories.json": ["gender", "description", "categories.descriptor"],
+  "codeGraphs.json": false,
   default: ["name", "description", "label"]
 };
 
@@ -239,6 +250,63 @@ function flattenObject(obj, prefix = "") {
     }
     return acc;
   }, {});
+}
+
+const BOILERPLATE_STRINGS = new Set(["lorem ipsum", "todo", "tbd"]);
+
+/**
+ * Normalize text by lowercasing and collapsing whitespace.
+ *
+ * @param {string} text - Text to normalize.
+ * @returns {string} Normalized text.
+ */
+function normalizeText(text) {
+  return text.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Return normalized text when unique and not boilerplate.
+ *
+ * @param {string} text - Raw text to evaluate.
+ * @param {Set<string>} seen - Set tracking previously used text.
+ * @returns {string|undefined} Normalized text or undefined when skipped.
+ */
+function normalizeAndFilter(text, seen) {
+  const normalized = normalizeText(text);
+  if (!normalized || BOILERPLATE_STRINGS.has(normalized) || seen.has(normalized)) {
+    return undefined;
+  }
+  seen.add(normalized);
+  return normalized;
+}
+
+/**
+ * Extract allowlisted values from a JSON item.
+ *
+ * @param {string} base - Filename base of the JSON source.
+ * @param {any} item - JSON value to process.
+ * @returns {string|undefined} Space-joined values or undefined when none.
+ */
+function extractAllowedValues(base, item) {
+  const allowlist =
+    Object.hasOwn(JSON_FIELD_ALLOWLIST, base) && JSON_FIELD_ALLOWLIST[base] !== undefined
+      ? JSON_FIELD_ALLOWLIST[base]
+      : JSON_FIELD_ALLOWLIST.default;
+  if (allowlist === false) return undefined;
+  if (Array.isArray(item)) {
+    return item.join(" ");
+  }
+  if (typeof item === "object" && item !== null) {
+    const values = [];
+    const flat = flattenObject(item);
+    for (const [key, value] of Object.entries(flat)) {
+      if (allowlist === true || allowlist.some((allowedKey) => key.startsWith(allowedKey))) {
+        values.push(value);
+      }
+    }
+    return values.length ? values.join(" ") : undefined;
+  }
+  return String(item);
 }
 
 function chunkMarkdown(text) {
@@ -649,6 +717,7 @@ async function generate() {
   let first = true;
   let entryCount = 0;
   let vectorLengthTotal = 0;
+  const seenTexts = new Set();
 
   writer.write("[");
   bytesWritten += Buffer.byteLength("[", "utf8");
@@ -685,25 +754,12 @@ async function generate() {
 
     if (isJson) {
       const json = JSON.parse(text);
-      const allowlist = JSON_FIELD_ALLOWLIST[base] || JSON_FIELD_ALLOWLIST.default;
       const processItem = async (item, id) => {
-        let textToEmbed = "";
-        if (Array.isArray(item)) {
-          textToEmbed = item.join(" ");
-        } else if (typeof item === "object" && item !== null) {
-          const values = [];
-          const flat = flattenObject(item);
-          for (const [key, value] of Object.entries(flat)) {
-            if (allowlist === true || allowlist.some((allowedKey) => key.startsWith(allowedKey))) {
-              values.push(value);
-            }
-          }
-          textToEmbed = values.join(" ");
-        } else {
-          textToEmbed = String(item);
-        }
-
-        const chunkText = textToEmbed;
+        const textToEmbed = extractAllowedValues(base, item);
+        const chunkText = textToEmbed
+          ? normalizeAndFilter(String(textToEmbed), seenTexts)
+          : undefined;
+        if (!chunkText) return;
         const intent = determineIntent(chunkText);
         const metadata = buildMetadata(relativePath);
         const tagSet = new Set(baseTags);
@@ -741,7 +797,9 @@ async function generate() {
       }
     } else if (isMarkdown) {
       const chunks = chunkMarkdown(text);
-      for (const [index, chunkText] of chunks.entries()) {
+      for (const [index, rawChunk] of chunks.entries()) {
+        const chunkText = normalizeAndFilter(rawChunk, seenTexts);
+        if (!chunkText) continue;
         const intent = determineIntent(chunkText);
         const metadata = buildMetadata(relativePath);
         const tagSet = new Set(baseTags);
@@ -770,7 +828,9 @@ async function generate() {
     } else if (isJs) {
       const { chunks, imports } = chunkCode(text, isTest);
       for (const [index, chunk] of chunks.entries()) {
-        const chunkText = [chunk.jsDoc, chunk.pseudocode, chunk.code].filter(Boolean).join("\n");
+        const rawChunk = [chunk.jsDoc, chunk.pseudocode, chunk.code].filter(Boolean).join("\n");
+        const chunkText = normalizeAndFilter(rawChunk, seenTexts);
+        if (!chunkText) continue;
         const idSuffix = chunk.id || `chunk-${index + 1}`;
         const intent = determineIntent(chunkText);
         const metadata = buildMetadata(relativePath, chunk, imports);
@@ -821,4 +881,15 @@ async function generate() {
   );
 }
 
-await generate();
+export {
+  JSON_FIELD_ALLOWLIST,
+  flattenObject,
+  BOILERPLATE_STRINGS,
+  normalizeText,
+  normalizeAndFilter,
+  extractAllowedValues
+};
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  await generate();
+}
