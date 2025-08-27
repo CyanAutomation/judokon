@@ -17,8 +17,8 @@ export const CURRENT_EMBEDDING_VERSION = 1;
  *
  * @pseudocode
  * 1. Return cached embeddings when available.
- * 2. Otherwise fetch `client_embeddings.json` via `fetchJson` and cache the promise.
- *    - On failure, log the error and resolve to `null`.
+ * 2. Otherwise load via manifest + shards (`client_embeddings.manifest.json`).
+ *    - On any failure (manifest or shard), log the error and resolve to `null`.
  * 3. Await the promise, store the result, and return it.
  *
  * @returns {Promise<Array<{id:string,text:string,embedding:number[],source:string,tags?:string[],qaContext?:string}>>} Parsed embeddings array.
@@ -28,21 +28,26 @@ export async function loadEmbeddings() {
   if (!embeddingsPromise) {
     embeddingsPromise = (async () => {
       try {
-        // Preferred: load via manifest + shards
+        // Load via manifest + shards
         const manifest = await fetchJson(`${DATA_DIR}client_embeddings.manifest.json`);
         const shardPromises = (manifest?.shards ?? []).map((shardFile) =>
           fetchJson(`${DATA_DIR}${shardFile}`)
         );
         const shards = await Promise.all(shardPromises);
         return shards.flat();
-      } catch (manifestError) {
-        // Fallback: legacy single-file embeddings for backward compatibility (e.g., tests)
-        try {
-          return await fetchJson(`${DATA_DIR}client_embeddings.json`);
-        } catch (legacyError) {
-          console.error("Failed to load embeddings:", manifestError, legacyError);
-          return null;
+      } catch (err) {
+        // In browser contexts (e.g., Playwright), allow a legacy single-file fallback
+        // so tests can intercept `client_embeddings.json` with small fixtures.
+        if (typeof window !== "undefined") {
+          try {
+            return await fetchJson(`${DATA_DIR}client_embeddings.json`);
+          } catch (legacyError) {
+            console.error("Failed to load embeddings:", err, legacyError);
+            return null;
+          }
         }
+        console.error("Failed to load embeddings:", err);
+        return null;
       }
     })();
   }
