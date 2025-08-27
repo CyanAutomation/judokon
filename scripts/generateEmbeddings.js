@@ -44,6 +44,35 @@ import { walk } from "estree-walker";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
+
+const STOP_WORDS = new Set([
+  'a', 'an', 'the', 'and', 'or', 'in', 'on', 'at', 'for', 'to', 'of',
+  'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
+  'do', 'does', 'did', 'but', 'if', 'not', 'it', 'i', 'me', 'my', 'we', 'our',
+  'you', 'your', 'he', 'his', 'she', 'her', 'they', 'their', 'what', 'which',
+  'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was',
+  'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did',
+  'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while',
+  'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into',
+  'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from',
+  'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further',
+  'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any',
+  'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor',
+  'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can',
+  'will', 'just', 'don', 'should', 'now'
+]);
+
+function createSparseVector(text) {
+  const tokens = text.toLowerCase().replace(/[^a-zA-Z0-9\s]/g, '').split(/\s+/);
+  const termFrequencies = {};
+  for (const token of tokens) {
+    if (!STOP_WORDS.has(token)) {
+      termFrequencies[token] = (termFrequencies[token] || 0) + 1;
+    }
+  }
+  return termFrequencies;
+}
+
 let codeGraphs = { modules: {} };
 
 // Target chunk ≈ 350 tokens (≈ 1,400 chars), overlap ≈ 15%
@@ -528,62 +557,58 @@ async function generate() {
 
     if (isJson) {
       const json = JSON.parse(text);
+      const allowlist = JSON_FIELD_ALLOWLIST[base] || JSON_FIELD_ALLOWLIST.default;
+      const processItem = async (item, id) => {
+        let textToEmbed = "";
+        if (Array.isArray(item)) {
+          textToEmbed = item.join(" ");
+        } else if (typeof item === 'object' && item !== null) {
+          const values = [];
+          const flat = flattenObject(item);
+          for (const [key, value] of Object.entries(flat)) {
+            if (allowlist === true || allowlist.some(allowedKey => key.startsWith(allowedKey))) {
+              values.push(value);
+            }
+          }
+          textToEmbed = values.join(" ");
+        } else {
+          textToEmbed = String(item);
+        }
+
+        const chunkText = textToEmbed;
+        const intent = determineIntent(chunkText);
+        const metadata = buildMetadata(relativePath);
+        const tagSet = new Set(baseTags);
+        tagSet.add(intent);
+        tagSet.add(metadata.role);
+        for (const mod of metadata.relations.imports) tagSet.add(mod);
+        for (const call of metadata.relations.calls) tagSet.add(call);
+        for (const pat of metadata.patterns) tagSet.add(pat);
+        for (const cc of detectCrossCutting(chunkText)) tagSet.add(cc);
+        const tags = Array.from(tagSet);
+        const result = await extractor(chunkText, { pooling: "mean" });
+        const qa = createQaContext(chunkText);
+        const sparseVector = createSparseVector(chunkText);
+        writeEntry({
+          id: `${base}-${id}`,
+          text: chunkText,
+          ...(qa ? { qaContext: qa } : {}),
+          embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
+          sparseVector,
+          source: `${relativePath} [${id}]`,
+          tags,
+          metadata,
+          version: 1
+        });
+      };
+
       if (Array.isArray(json)) {
         for (const [index, item] of json.entries()) {
-          const chunkText = JSON.stringify(item);
-          const intent = determineIntent(chunkText);
-          const metadata = buildMetadata(relativePath);
-          const tagSet = new Set(baseTags);
-          tagSet.add(intent);
-          tagSet.add(metadata.role);
-          for (const mod of metadata.relations.imports) tagSet.add(mod);
-          for (const call of metadata.relations.calls) tagSet.add(call);
-          for (const pat of metadata.patterns) tagSet.add(pat);
-          for (const cc of detectCrossCutting(chunkText)) tagSet.add(cc);
-          const tags = Array.from(tagSet);
-          const result = await extractor(chunkText, { pooling: "mean" });
-          const qa = createQaContext(chunkText);
-          writeEntry({
-            id: `${base}-${index + 1}`,
-            text: chunkText,
-            ...(qa ? { qaContext: qa } : {}),
-            embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
-            source: `${relativePath} [${index}]`,
-            tags,
-            metadata,
-            version: 1
-          });
+          await processItem(item, index + 1);
         }
       } else if (json && typeof json === "object") {
-        const flat = flattenObject(json);
-        const allowlist = JSON_FIELD_ALLOWLIST[base] || JSON_FIELD_ALLOWLIST.default;
-        for (const [key, value] of Object.entries(flat)) {
-          if (allowlist !== true && !allowlist.some((allowedKey) => key.startsWith(allowedKey))) {
-            continue;
-          }
-          const chunkText = typeof value === "string" ? value : JSON.stringify(value);
-          const intent = determineIntent(chunkText);
-          const metadata = buildMetadata(relativePath);
-          const tagSet = new Set(baseTags);
-          tagSet.add(intent);
-          tagSet.add(metadata.role);
-          for (const mod of metadata.relations.imports) tagSet.add(mod);
-          for (const call of metadata.relations.calls) tagSet.add(call);
-          for (const pat of metadata.patterns) tagSet.add(pat);
-          for (const cc of detectCrossCutting(chunkText)) tagSet.add(cc);
-          const tags = Array.from(tagSet);
-          const result = await extractor(chunkText, { pooling: "mean" });
-          const qa = createQaContext(chunkText);
-          writeEntry({
-            id: `${base}-${key}`,
-            text: chunkText,
-            ...(qa ? { qaContext: qa } : {}),
-            embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
-            source: `${relativePath} [${key}]`,
-            tags,
-            metadata,
-            version: 1
-          });
+        for (const [key, value] of Object.entries(json)) {
+          await processItem(value, key);
         }
       }
     } else if (isMarkdown) {
@@ -601,11 +626,13 @@ async function generate() {
         const tags = Array.from(tagSet);
         const result = await extractor(chunkText, { pooling: "mean" });
         const qa = createQaContext(chunkText);
+        const sparseVector = createSparseVector(chunkText);
         writeEntry({
           id: `${base}-chunk-${index + 1}`,
           text: chunkText,
           ...(qa ? { qaContext: qa } : {}),
-          embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
+          embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
+          sparseVector,
           source: `${relativePath} [chunk ${index + 1}]`,
           tags,
           metadata,
@@ -630,11 +657,13 @@ async function generate() {
         const tags = Array.from(tagSet);
         const result = await extractor(chunkText, { pooling: "mean" });
         const qa = createQaContext(chunkText);
+        const sparseVector = createSparseVector(chunkText);
         writeEntry({
           id: `${base}-${idSuffix}`,
           text: chunkText,
           ...(qa ? { qaContext: qa } : {}),
-          embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(4))),
+          embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
+          sparseVector,
           source: `${relativePath} [${idSuffix}]`,
           tags,
           metadata,
