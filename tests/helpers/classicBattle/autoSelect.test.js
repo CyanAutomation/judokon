@@ -62,7 +62,7 @@ describe("classicBattle auto select", () => {
     });
     vi.spyOn(Math, "random").mockReturnValue(0);
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
-    const battleMod = await initClassicBattleTest();
+    const battleMod = await initClassicBattleTest({ afterMock: true });
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await battleMod.startRound(store);

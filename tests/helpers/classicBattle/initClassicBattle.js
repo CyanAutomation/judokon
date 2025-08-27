@@ -1,8 +1,4 @@
-export async function initClassicBattleTest() {
-  const mod = await import("../../../src/helpers/classicBattle.js");
-  if (typeof mod.__ensureClassicBattleBindings === "function") {
-    await mod.__ensureClassicBattleBindings();
-  }
-  return mod;
+export async function initClassicBattleTest(opts = {}) {
+  const helper = await import("../initClassicBattleTest.js");
+  return helper.initClassicBattleTest(opts);
 }
-

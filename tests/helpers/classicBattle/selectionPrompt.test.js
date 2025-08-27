@@ -59,7 +59,7 @@ afterEach(() => {
 describe("classicBattle selection prompt", () => {
   it("shows selection prompt until a stat is chosen", async () => {
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
-    const battleMod = await initClassicBattleTest();
+    const battleMod = await initClassicBattleTest({ afterMock: true });
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     const { getRoundPromptPromise } = await import("../../../src/helpers/classicBattle.js");
