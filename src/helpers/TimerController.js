@@ -1,4 +1,5 @@
-import { getDefaultTimer, createCountdownTimer } from "./timerUtils.js";
+// Use dynamic import of timerUtils within methods to ensure tests that mock
+// the module with vi.doMock inside an individual test still take effect.
 import { onSecondTick as scheduleSecond, cancel as cancelSchedule } from "../utils/scheduler.js";
 
 const FALLBACKS = {
@@ -36,9 +37,10 @@ export class TimerController {
   }
 
   async #start(category, onTick, onExpired, duration, pauseOnHidden, onDrift) {
+    const timerUtils = await import("./timerUtils.js");
     if (duration === undefined) {
       try {
-        duration = await getDefaultTimer(category);
+        duration = await timerUtils.getDefaultTimer(category);
       } catch {
         duration = FALLBACKS[category];
       }
@@ -53,7 +55,7 @@ export class TimerController {
     let pausedAt = null;
     let pausedMs = 0;
 
-    this.currentTimer = createCountdownTimer(duration, {
+    this.currentTimer = timerUtils.createCountdownTimer(duration, {
       onTick: (r) => {
         this.remaining = r;
         if (this.onTickCb) this.onTickCb(r);
