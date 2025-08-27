@@ -157,18 +157,19 @@ describe("vectorSearch", () => {
   });
 
   it("fetches context around an id", async () => {
-    const seg1 = "x".repeat(1600);
-    const seg2 = "y".repeat(1600);
-    const seg3 = "z".repeat(1600);
-    const md = `${seg1}\n\n${seg2}\n\n${seg3}`;
+    const sentence = "Lorem ipsum dolor sit amet. ";
+    const md = Array(200).fill(sentence).join("");
     global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => md });
-    const { fetchContextById } = await import("../../src/helpers/vectorSearch/context.js");
+    const { fetchContextById, chunkMarkdown } = await import(
+      "../../src/helpers/vectorSearch/context.js"
+    );
     const result = await fetchContextById("doc.md-chunk-3", 1);
     expect(global.fetch).toHaveBeenCalled();
-    expect(result).toHaveLength(3);
-    expect(result[0].length).toBe(1500);
-    expect(result[1].length).toBe(1500);
-    expect(result[2].length).toBe(604);
+    const expected = chunkMarkdown(md).slice(1, 4);
+    expect(result).toEqual(expected);
+    for (const chunk of result) {
+      expect(chunk.length).toBeLessThanOrEqual(1400);
+    }
   });
 
   it("chunks markdown by heading", async () => {
@@ -176,6 +177,20 @@ describe("vectorSearch", () => {
     const { chunkMarkdown } = await import("../../src/helpers/vectorSearch/context.js");
     const chunks = chunkMarkdown(md);
     expect(chunks).toEqual(["## A\nText A\n### B\nText B", "### B\nText B", "## C\nText C"]);
+  });
+
+  it("respects 1400-char chunks with 15% overlap", async () => {
+    const sentence = "Sentence with enough length to test splitting. ";
+    const md = Array(120).fill(sentence).join("");
+    const { chunkMarkdown } = await import("../../src/helpers/vectorSearch/context.js");
+    const chunks = chunkMarkdown(md);
+    expect(chunks.length).toBeGreaterThan(1);
+    expect(chunks[0].length).toBeLessThanOrEqual(1400);
+    expect(chunks[1].length).toBeLessThanOrEqual(1400);
+    const overlapSize = Math.floor(1400 * 0.15);
+    const overlap = chunks[0].slice(-overlapSize);
+    expect(chunks[1].startsWith(overlap)).toBe(true);
+    expect(chunks[0].endsWith(".")).toBe(true);
   });
 
   it("returns empty array for invalid id", async () => {

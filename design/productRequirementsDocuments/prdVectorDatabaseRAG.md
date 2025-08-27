@@ -75,7 +75,8 @@ regeneration whenever those folders change.
 The generator parses JSON arrays and objects into individual snippets so each
 record receives its own embedding. For markdown sources, text is chunked from
 one heading to the next heading of the same or higher level so each section is
-semantically coherent. Tooltips, judoka entries, and PRD sections are broken
+semantically coherent. Each chunk targets roughly **350 tokens** (about **1,400 characters**) with a **15% overlap** and uses
+sentence-aware splitting to maintain context. Tooltips, judoka entries, and PRD sections are broken
 down into discrete blocks with unique IDs. This granularity improves lookup
 accuracy because search results map back to a single section or data row rather
 than an entire file.
