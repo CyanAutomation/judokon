@@ -1,4 +1,6 @@
 // Common readiness waits for Playwright specs.
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 // Keep these helpers minimal and robust for CI environments.
 
 /**
@@ -29,34 +31,41 @@ export async function waitForSettingsReady(page) {
  * @param {number} [timeout=10000]
  */
 export async function waitForBattleState(page, stateName, timeout = 10000) {
-  const start = Date.now();
-  const deadline = start + timeout;
-  // Manual polling avoids rare Playwright waitForFunction edge cases in CI.
-  while (Date.now() < deadline) {
-    const info = await page.evaluate(() => {
-      const d = document.body?.dataset?.battleState || null;
-      let w = null;
-      if (typeof window !== "undefined" && typeof window.__classicBattleState !== "undefined") {
-        const raw = window.__classicBattleState;
-        if (typeof raw === "string") w = raw;
-        else if (raw && typeof raw.state === "string") w = raw.state;
+  const ok = await page.evaluate(
+    async (args) => {
+      const s = args.stateName;
+      const t = args.timeout;
+      try {
+        if (typeof window.awaitBattleState === "function") {
+          await window.awaitBattleState(s, t);
+          return true;
+        }
+      } catch {}
+      // Fallback: poll
+      const start = Date.now();
+      const deadline = start + (typeof t === "number" ? t : 10000);
+      while (Date.now() < deadline) {
+        const d = document.body?.dataset?.battleState || null;
+        let w = null;
+        try {
+          const raw = typeof window !== "undefined" ? window.__classicBattleState : null;
+          if (typeof raw === "string") w = raw;
+          else if (raw && typeof raw.state === "string") w = raw.state;
+        } catch {}
+        if (d === s || w === s) return true;
+        await new Promise((r) => setTimeout(r, 25));
       }
-      return { d, w };
-    });
-    if (info.d === stateName || info.w === stateName) return;
-    await page.waitForTimeout(25);
-  }
+      return false;
+    },
+    { stateName, timeout }
+  );
+  if (ok) return;
   // Timed out: include page-side diagnostics
   let snapshot = "";
   try {
     const info = await page.evaluate(() => {
       const d = document.body?.dataset?.battleState || null;
-      let w = null;
-      if (typeof window !== "undefined" && typeof window.__classicBattleState !== "undefined") {
-        const raw = window.__classicBattleState;
-        if (typeof raw === "string") w = raw;
-        else if (raw && typeof raw.state === "string") w = raw.state;
-      }
+      const w = typeof window !== "undefined" ? window.__classicBattleState || null : null;
       const el = document.getElementById("machine-state");
       const t = el ? el.textContent : null;
       const prev = document.body?.dataset?.prevBattleState || null;
@@ -70,5 +79,54 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
       : "";
     snapshot = ` (dataset=${info.dataset} window=${info.windowState} machine=${info.machineText} prev=${info.prev} log=[${tail}])`;
   } catch {}
+  // Try to save helpful artifacts to test-results/ for offline inspection.
+  try {
+    const outDir = path.resolve(process.cwd(), "test-results");
+    await mkdir(outDir, { recursive: true });
+    const ts = Date.now();
+    // Screenshot
+    try {
+      const shotPath = path.join(outDir, `waitForBattleState-${stateName}-${ts}.png`);
+      await page.screenshot({ path: shotPath, fullPage: true }).catch(() => {});
+      snapshot += ` screenshot=${shotPath}`;
+    } catch {}
+    // HTML dump
+    try {
+      const html = await page.content().catch(() => null);
+      if (html) {
+        const htmlPath = path.join(outDir, `waitForBattleState-${stateName}-${ts}.html`);
+        await writeFile(htmlPath, html, "utf8").catch(() => {});
+        snapshot += ` html=${htmlPath}`;
+      }
+    } catch {}
+    // Window-side JSON snapshot
+    try {
+      const win = await page
+        .evaluate(() => {
+          try {
+            return {
+              classicState:
+                typeof window.__classicBattleState !== "undefined"
+                  ? window.__classicBattleState
+                  : null,
+              stateLog: Array.isArray(window.__classicBattleStateLog)
+                ? window.__classicBattleStateLog.slice(-20)
+                : null,
+              dataset: document.body?.dataset?.battleState || null,
+              prev: document.body?.dataset?.prevBattleState || null
+            };
+          } catch {
+            return null;
+          }
+        })
+        .catch(() => null);
+      if (win) {
+        const jsonPath = path.join(outDir, `waitForBattleState-${stateName}-${ts}.json`);
+        await writeFile(jsonPath, JSON.stringify(win, null, 2), "utf8").catch(() => {});
+        snapshot += ` json=${jsonPath}`;
+      }
+    } catch {}
+  } catch {}
+
   throw new Error(`Timed out waiting for battle state "${stateName}"${snapshot}`);
 }

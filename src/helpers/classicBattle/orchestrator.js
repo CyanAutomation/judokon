@@ -139,6 +139,21 @@ export function updateDebugState(from, to, event) {
     el.dataset.ts = String(entry.ts);
     const badge = document.getElementById("battle-state-badge");
     if (badge) badge.textContent = `State: ${to}`;
+    // Resolve any in-page awaiters registered via window.awaitBattleState
+    try {
+      const waiters = (window.__stateWaiters && window.__stateWaiters[to]) || [];
+      if (Array.isArray(waiters) && waiters.length) {
+        window.__stateWaiters[to] = [];
+        for (const w of waiters) {
+          try {
+            if (w && typeof w.resolve === "function") {
+              if (w.timer) clearTimeout(w.timer);
+              w.resolve(true);
+            }
+          } catch {}
+        }
+      }
+    } catch {}
   } catch {}
 }
 
@@ -281,6 +296,33 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   try {
     if (typeof window !== "undefined") {
       window.onStateTransition = onStateTransition;
+      // Provide a robust in-page awaiter to avoid brittle DOM polling from tests
+      if (!window.awaitBattleState) {
+        window.awaitBattleState = (target, timeoutMs = 10000) =>
+          new Promise((resolve, reject) => {
+            try {
+              if (window.__classicBattleState === target) return resolve(true);
+              if (!window.__stateWaiters) window.__stateWaiters = {};
+              const entry = { resolve };
+              if (timeoutMs !== Infinity) {
+                entry.timer = setTimeout(() => {
+                  try {
+                    const arr = window.__stateWaiters[target] || [];
+                    const idx = arr.indexOf(entry);
+                    if (idx !== -1) arr.splice(idx, 1);
+                    if (arr.length === 0) delete window.__stateWaiters[target];
+                  } catch {}
+                  reject(new Error(`awaitBattleState timeout for ${target}`));
+                }, timeoutMs);
+              }
+              const arr = window.__stateWaiters[target] || [];
+              arr.push(entry);
+              window.__stateWaiters[target] = arr;
+            } catch {
+              reject(new Error("awaitBattleState setup error"));
+            }
+          });
+      }
       window.getBattleStateSnapshot = () => {
         try {
           return {
