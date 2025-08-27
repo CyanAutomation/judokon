@@ -508,18 +508,20 @@ async function getFiles() {
     ignore: ["**/node_modules/**"]
   });
   const overviewDocs = await glob("*.md", { cwd: rootDir });
-  const jsonFiles = (await glob("src/data/*.json", { cwd: rootDir })).filter(
-    (f) =>
-      path.extname(f) === ".json" &&
-      ![
-        "client_embeddings.json",
-        "client_embeddings.meta.json",
+  const jsonFiles = (await glob("src/data/*.json", { cwd: rootDir }))
+    .filter((f) => path.extname(f) === ".json")
+    .filter((f) => {
+      const base = path.basename(f);
+      // Exclude generated embedding outputs and shards from ingestion
+      if (base.startsWith("client_embeddings.")) return false;
+      // Exclude large or auxiliary datasets
+      return ![
         "aesopsFables.json",
         "aesopsMeta.json",
         "countryCodeMapping.json",
         "japaneseConverter.json"
-      ].includes(path.basename(f))
-  );
+      ].includes(base);
+    });
   const jsFiles = await glob(["src/**/*.{js,ts}", "tests/**/*.{js,ts}"], {
     cwd: rootDir,
     ignore: ["**/node_modules/**"]
