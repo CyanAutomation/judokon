@@ -382,6 +382,7 @@ export async function handleNextRoundExpiration(controls, btn, timerEl) {
   if (timerEl) {
     timerEl.textContent = "";
   }
+  // Mark Next as ready before signaling state progression
   if (btn) {
     btn.dataset.nextReady = "true";
     btn.disabled = false;
@@ -393,6 +394,12 @@ export async function handleNextRoundExpiration(controls, btn, timerEl) {
         : null;
     if (!state || state === "cooldown") {
       await dispatchBattleEvent("ready");
+      // Ensure Next remains marked ready after the transition in case
+      // other handlers mutated the element during state changes.
+      if (btn) {
+        btn.dataset.nextReady = "true";
+        btn.disabled = false;
+      }
     } else {
       try {
         console.warn(`[test] expiration suppressed ready; state=${state}`);
@@ -477,10 +484,9 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
 
   const cooldownSeconds = computeNextRoundCooldown();
 
-  if (btn) {
-    btn.disabled = false;
-    delete btn.dataset.nextReady;
-  }
+  // Do not mutate the Next button until the cooldown actually expires.
+  // Enabling early or clearing the readiness flag can race with state
+  // transitions and tests that assert the ready state after auto-advance.
 
   if (cooldownSeconds === 0) {
     return handleZeroCooldownFastPath(controls, btn);

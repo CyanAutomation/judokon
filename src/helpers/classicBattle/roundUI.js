@@ -28,7 +28,8 @@ import { showSnackbar } from "../showSnackbar.js";
 export function applyRoundUI(store, roundNumber, stallTimeoutMs = 35000) {
   console.log("INFO: applyRoundUI called for round", roundNumber);
   resetStatButtons();
-  disableNextRoundButton();
+  // Do not force-disable the Next button here; it should remain
+  // ready after cooldown so tests and users can advance immediately.
   const roundResultEl = document.getElementById("round-result");
   if (roundResultEl) roundResultEl.textContent = "";
   syncScoreDisplay();

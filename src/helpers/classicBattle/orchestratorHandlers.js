@@ -6,6 +6,7 @@ import { getStatValue } from "../battle/index.js";
 import { scheduleNextRound } from "./timerService.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { resolveRound } from "./roundResolver.js";
+import { enableNextRoundButton } from "./uiHelpers.js";
 
 export function isStateTransition(from, to) {
   try {
@@ -162,6 +163,12 @@ export async function roundStartExit() {}
 
 export async function waitingForPlayerActionEnter(machine) {
   emitBattleEvent("statButtons:enable");
+  // Ensure the Next button is marked ready when the player can act.
+  // This mirrors the cooldown-expiration behavior and avoids races
+  // from state transitions clearing the flag before assertions.
+  try {
+    enableNextRoundButton();
+  } catch {}
   const store = machine?.context?.store;
   if (store?.playerChoice) {
     await machine.dispatch("statSelected");

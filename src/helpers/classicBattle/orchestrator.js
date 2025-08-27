@@ -47,8 +47,27 @@ export function onStateTransition(targetState, timeoutMs = 10000) {
     try {
       if (machine?.getState() === targetState) return resolve(true);
       const entry = { resolve };
+      try {
+        entry.__id = Math.random().toString(36).slice(2, 9);
+        window.__stateWaiterEvents = window.__stateWaiterEvents || [];
+        window.__stateWaiterEvents.push({
+          action: "add",
+          state: targetState,
+          id: entry.__id,
+          ts: Date.now()
+        });
+      } catch {}
       if (timeoutMs !== Infinity) {
         entry.timer = setTimeout(() => {
+          try {
+            window.__stateWaiterEvents = window.__stateWaiterEvents || [];
+            window.__stateWaiterEvents.push({
+              action: "timeout",
+              state: targetState,
+              id: entry.__id,
+              ts: Date.now()
+            });
+          } catch {}
           removeWaiter(targetState, entry);
           reject(new Error("onStateTransition timeout"));
         }, timeoutMs);
@@ -82,6 +101,15 @@ function removeWaiter(stateName, entry) {
   if (!arr) return;
   const idx = arr.indexOf(entry);
   if (idx !== -1) arr.splice(idx, 1);
+  try {
+    window.__stateWaiterEvents = window.__stateWaiterEvents || [];
+    window.__stateWaiterEvents.push({
+      action: "remove",
+      state: stateName,
+      id: entry.__id || null,
+      ts: Date.now()
+    });
+  } catch {}
   if (arr.length === 0) stateWaiters.delete(stateName);
 }
 
@@ -243,6 +271,15 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
       stateWaiters.delete(to);
       for (const w of waiters) {
         try {
+          try {
+            window.__stateWaiterEvents = window.__stateWaiterEvents || [];
+            window.__stateWaiterEvents.push({
+              action: "resolve",
+              state: to,
+              id: w.__id || null,
+              ts: Date.now()
+            });
+          } catch {}
           if (w.timer) clearTimeout(w.timer);
           w.resolve(true);
         } catch {}
@@ -304,9 +341,26 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
               if (window.__classicBattleState === target) return resolve(true);
               if (!window.__stateWaiters) window.__stateWaiters = {};
               const entry = { resolve };
+              try {
+                entry.__id = Math.random().toString(36).slice(2, 9);
+                window.__stateWaiterEvents = window.__stateWaiterEvents || [];
+                window.__stateWaiterEvents.push({
+                  action: "add",
+                  state: target,
+                  id: entry.__id,
+                  ts: Date.now()
+                });
+              } catch {}
               if (timeoutMs !== Infinity) {
                 entry.timer = setTimeout(() => {
                   try {
+                    window.__stateWaiterEvents = window.__stateWaiterEvents || [];
+                    window.__stateWaiterEvents.push({
+                      action: "timeout",
+                      state: target,
+                      id: entry.__id,
+                      ts: Date.now()
+                    });
                     const arr = window.__stateWaiters[target] || [];
                     const idx = arr.indexOf(entry);
                     if (idx !== -1) arr.splice(idx, 1);
@@ -323,6 +377,20 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
             }
           });
       }
+      try {
+        // expose a helper to dump current waiters for diagnostics
+        window.dumpStateWaiters = () => {
+          try {
+            return {
+              waiters: window.__stateWaiters || {},
+              events: window.__stateWaiterEvents || [],
+              promiseEvents: window.__promiseEvents || []
+            };
+          } catch {
+            return null;
+          }
+        };
+      } catch {}
       window.getBattleStateSnapshot = () => {
         try {
           return {

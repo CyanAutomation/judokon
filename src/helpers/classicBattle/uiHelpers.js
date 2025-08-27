@@ -32,6 +32,10 @@ if (typeof window !== "undefined") {
       // Keep a handle to the current resolver so `initStatButtons` can
       // replace/resolve it when the real button wiring happens.
       window.__resolveStatButtonsReady = _resolve;
+      try {
+        window.__promiseEvents = window.__promiseEvents || [];
+        window.__promiseEvents.push({ type: "statButtonsReady-initialized", ts: Date.now() });
+      } catch {}
     }
   } catch {}
 }
@@ -559,6 +563,10 @@ export function initStatButtons(store) {
         window.__resolveStatButtonsReady = r;
       } catch {}
     });
+    try {
+      window.__promiseEvents = window.__promiseEvents || [];
+      window.__promiseEvents.push({ type: "statButtonsReady-reset", ts: Date.now() });
+    } catch {}
   };
 
   function setEnabled(enable = true) {
@@ -585,6 +593,10 @@ export function initStatButtons(store) {
       // Resolve the current promise to signal readiness to tests / other code.
       try {
         resolveReady?.();
+        try {
+          window.__promiseEvents = window.__promiseEvents || [];
+          window.__promiseEvents.push({ type: "statButtonsReady-resolve", ts: Date.now() });
+        } catch {}
       } catch {}
       try {
         if (isTestModeEnabled()) console.warn("[test] statButtonsReady=true");

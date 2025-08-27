@@ -18,14 +18,26 @@ function setupPromise(key, eventName) {
     const p = new Promise((r) => {
       resolve = r;
     });
-    if (typeof window !== "undefined") {
-      window[key] = p;
-    }
+    try {
+      if (typeof window !== "undefined") {
+        window[key] = p;
+        try {
+          window.__promiseEvents = window.__promiseEvents || [];
+          window.__promiseEvents.push({ type: "promise-reset", key, ts: Date.now() });
+        } catch {}
+      }
+    } catch {}
     return p;
   }
   let promise = reset();
   onBattleEvent(eventName, () => {
-    resolve();
+    try {
+      try {
+        window.__promiseEvents = window.__promiseEvents || [];
+        window.__promiseEvents.push({ type: "promise-resolve", key, ts: Date.now() });
+      } catch {}
+      resolve();
+    } catch {}
     promise = reset();
   });
   return () => promise;
