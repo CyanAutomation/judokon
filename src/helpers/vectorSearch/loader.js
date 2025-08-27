@@ -28,6 +28,13 @@ export async function loadEmbeddings() {
   if (!embeddingsPromise) {
     embeddingsPromise = (async () => {
       try {
+        // In browser contexts, allow a lightweight single-file override used by tests
+        if (typeof window !== "undefined") {
+          try {
+            const single = await fetchJson(`${DATA_DIR}client_embeddings.json`);
+            if (Array.isArray(single)) return single;
+          } catch {}
+        }
         // Load via manifest + shards
         const manifest = await fetchJson(`${DATA_DIR}client_embeddings.manifest.json`);
         const shardPromises = (manifest?.shards ?? []).map((shardFile) =>
@@ -36,8 +43,7 @@ export async function loadEmbeddings() {
         const shards = await Promise.all(shardPromises);
         return shards.flat();
       } catch (err) {
-        // In browser contexts (e.g., Playwright), allow a legacy single-file fallback
-        // so tests can intercept `client_embeddings.json` with small fixtures.
+        // Final fallback in browser: legacy single-file
         if (typeof window !== "undefined") {
           try {
             return await fetchJson(`${DATA_DIR}client_embeddings.json`);
