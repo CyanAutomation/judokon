@@ -29,9 +29,11 @@ export async function ensureBindings(opts = {}) {
       __resetBattleEventTarget();
     } catch {}
     const ui = await import("./roundUI.js");
-    if (typeof ui.bindRoundUIEventHandlersDynamic === "function") ui.bindRoundUIEventHandlersDynamic();
+    if (typeof ui.bindRoundUIEventHandlersDynamic === "function")
+      ui.bindRoundUIEventHandlersDynamic();
     const helpers = await import("./uiHelpers.js");
-    if (typeof helpers.bindUIHelperEventHandlersDynamic === "function") helpers.bindUIHelperEventHandlersDynamic();
+    if (typeof helpers.bindUIHelperEventHandlersDynamic === "function")
+      helpers.bindUIHelperEventHandlersDynamic();
   }
   // Ensure event promises exist; allow a forced refresh after mocks in tests.
   if (!__promisesBound || force) {

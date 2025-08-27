@@ -1031,7 +1031,10 @@ export function bindUIHelperEventHandlersDynamic() {
     } catch {}
     try {
       const snackbar = await import("../showSnackbar.js");
-      opponentSnackbarId = setTimeout(() => snackbar.showSnackbar("Opponent is choosing…"), opponentDelayMs);
+      opponentSnackbarId = setTimeout(
+        () => snackbar.showSnackbar("Opponent is choosing…"),
+        opponentDelayMs
+      );
     } catch {}
   });
 
@@ -1040,7 +1043,9 @@ export function bindUIHelperEventHandlersDynamic() {
     const { store, stat, playerVal, opponentVal, result } = e.detail || {};
     if (!result) return;
     try {
-      const { showRoundOutcome, showStatComparison, updateDebugPanel } = await import("./uiHelpers.js");
+      const { showRoundOutcome, showStatComparison, updateDebugPanel } = await import(
+        "./uiHelpers.js"
+      );
       showRoundOutcome(result.message || "");
       showStatComparison(store, stat, playerVal, opponentVal);
       updateDebugPanel();
