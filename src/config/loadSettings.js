@@ -100,7 +100,7 @@ export async function loadSettings() {
       if (raw) {
         const parsed = JSON.parse(raw);
         settings = mergeKnown(settings, parsed, DEFAULT_SETTINGS);
-  }
+      }
     }
   } catch {
     // Ignore localStorage unavailability or JSON errors
