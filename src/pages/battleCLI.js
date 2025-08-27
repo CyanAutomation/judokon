@@ -5,6 +5,9 @@ import { createBattleStore, startRound as startRoundCore } from "../helpers/clas
 import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
 import { onBattleEvent, emitBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { STATS } from "../helpers/BattleEngine.js";
+import { setPointsToWin } from "../helpers/battleEngineFacade.js";
+import { fetchJson } from "../helpers/dataUtils.js";
+import { DATA_DIR } from "../helpers/constants.js";
 
 /**
  * Minimal DOM utils for the CLI page
@@ -145,23 +148,7 @@ function installEventBindings() {
   });
   onBattleEvent("scoreboardClearMessage", () => setRoundMessage(""));
 
-  // Render countdown in the bottom line and signal when finished
-  onBattleEvent("countdownStart", (e) => {
-    const duration = Number(e?.detail?.duration) || 0;
-    if (!duration) return;
-    let remaining = duration;
-    showBottomLine(`Next round in: ${remaining}s`);
-    const id = setInterval(() => {
-      remaining -= 1;
-      if (remaining <= 0) {
-        clearInterval(id);
-        clearBottomLine();
-        emitBattleEvent("countdownFinished");
-        return;
-      }
-      showBottomLine(`Next round in: ${remaining}s`);
-    }, 1000);
-  });
+  // Countdown is handled by Scoreboard/startCountdown via snackbar helpers.
 
   // After round resolves, update message and score
   onBattleEvent("roundResolved", (e) => {
@@ -196,6 +183,64 @@ async function init() {
   store = createBattleStore();
   // Expose store for debug panels if needed
   try { window.battleStore = store; } catch {}
+  // Ensure autostart so the modal is skipped in CLI
+  try {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("autostart") !== "1") {
+      url.searchParams.set("autostart", "1");
+      history.replaceState({}, "", url);
+    }
+  } catch {}
+  // Load stat names and render mapping
+  try {
+    const stats = await fetchJson(`${DATA_DIR}statNames.json`);
+    const list = byId("cli-stats");
+    if (list && Array.isArray(stats)) {
+      list.innerHTML = "";
+      stats
+        .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
+        .forEach((s) => {
+          const idx = Number(s.statIndex) || 0;
+          if (!idx) return;
+          const div = document.createElement("div");
+          div.className = "cli-stat";
+          div.setAttribute("role", "option");
+          div.setAttribute("aria-selected", "false");
+          div.dataset.statIndex = String(idx);
+          div.textContent = `[${idx}] ${s.name}`;
+          list.appendChild(div);
+        });
+      // Also enrich the help line with the mapping
+      try {
+        const help = byId("cli-help");
+        if (help) {
+          const mapping = stats
+            .slice()
+            .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
+            .map((s) => `[${s.statIndex}] ${s.name}`)
+            .join("  ·  ");
+          help.textContent = `${help.textContent}  |  ${mapping}`;
+        }
+      } catch {}
+    }
+  } catch {}
+  // Restore persisted points-to-win if available and sync select
+  try {
+    const select = byId("points-select");
+    const key = "battleCLI.pointsToWin";
+    const saved = Number(localStorage.getItem(key));
+    if ([5, 10, 15].includes(saved)) {
+      setPointsToWin(saved);
+      if (select) select.value = String(saved);
+    }
+    select?.addEventListener("change", () => {
+      const val = Number(select.value);
+      if ([5, 10, 15].includes(val)) {
+        setPointsToWin(val);
+        try { localStorage.setItem(key, String(val)); } catch {}
+      }
+    });
+  } catch {}
   // Install CLI event bridges
   installEventBindings();
   // Initialize orchestrator using our startRound wrapper
@@ -217,4 +262,3 @@ if (document.readyState === "loading") {
 } else {
   init();
 }
-

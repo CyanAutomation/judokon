@@ -33,9 +33,8 @@
       .cli-title {
         font-weight: 700;
       }
-      .cli-score {
-        white-space: pre;
-      }
+      .cli-score { white-space: pre; }
+      .cli-controls { display: flex; gap: 8px; align-items: center; }
       .cli-main {
         flex: 1;
         display: flex;
@@ -77,6 +76,14 @@
     <div id="cli-root" class="cli-root">
       <header id="cli-header" class="cli-header" role="banner">
         <div class="cli-title">Classic Battle (CLI)</div>
+        <div class="cli-controls" role="group" aria-label="Match Settings">
+          <label for="points-select">Win target:</label>
+          <select id="points-select" aria-label="Points to win" data-tooltip-id="settings.pointsToWin">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="15">15</option>
+          </select>
+        </div>
         <div id="cli-score" class="cli-score" aria-live="polite" aria-atomic="true">You: 0  Opponent: 0</div>
       </header>
 
@@ -86,17 +93,13 @@
         </section>
 
         <section aria-label="Stat Selection" class="cli-block">
-          <div id="cli-stats" role="listbox" tabindex="0" aria-label="Select a stat with number keys 1–9">
-            <div class="cli-stat" role="option" aria-selected="false" data-stat-index="1">[1] Power</div>
-            <div class="cli-stat" role="option" aria-selected="false" data-stat-index="2">[2] Speed</div>
-            <div class="cli-stat" role="option" aria-selected="false" data-stat-index="3">[3] Technique</div>
-            <div class="cli-stat" role="option" aria-selected="false" data-stat-index="4">[4] Kumi-Kata</div>
-            <div class="cli-stat" role="option" aria-selected="false" data-stat-index="5">[5] Ne-Waza</div>
+          <div id="cli-stats" role="listbox" tabindex="0" aria-label="Select a stat with number keys 1–5">
+            <!-- Populated from statNames.json at runtime as [n] Label -->
           </div>
         </section>
 
         <section aria-label="Shortcuts" id="cli-shortcuts" class="cli-block">
-          <div>[1–9] Select Stat  |  [Enter]/[Space] Next  |  [Q] Quit  |  [H] Help</div>
+          <div id="cli-help">[1–5] Select Stat  |  [Enter]/[Space] Next  |  [Q] Quit  |  [H] Toggle Help  |  [R] Retro Mode</div>
         </section>
       </main>
 
@@ -106,6 +109,9 @@
           <!-- snackbar.js will populate .snackbar elements here; in CLI this renders as a single bottom line. -->
         </div>
       </footer>
+      <!-- Hidden containers for compatibility with classic battle DOM queries -->
+      <div id="player-card" style="display:none"></div>
+      <div id="opponent-card" style="display:none"></div>
       <script type="module" src="../pages/battleCLI.js"></script>
     </div>
   </body>
