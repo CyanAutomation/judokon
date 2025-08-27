@@ -57,7 +57,7 @@ describe("classicBattle stalled stat selection recovery", () => {
     await battleMod.__ensureClassicBattleBindings();
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
-    await battleMod.startRound(store);
+    await battleMod.startRound(store, battleMod.applyRoundUI);
     await battleMod.__triggerStallPromptNow(store);
     expect(document.querySelector("header #round-message").textContent).toMatch(/stalled/i);
     timerSpy.advanceTimersByTime(5000);
