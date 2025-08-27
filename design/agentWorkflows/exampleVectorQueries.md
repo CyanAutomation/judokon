@@ -9,7 +9,7 @@ Embeddings are stored in `client_embeddings.json` as an array of objects. Each e
 
 ```json
 {
-  "id": "prdClassicBattle.md#overview",
+  "id": "prdBattleClassic.md#overview",
   "text": "Classic Battle is Ju-Do-Kon!'s introductory mode...",
   "qaContext": "Classic Battle introduces the game's basic one-on-one mode.",
   "embedding": [0.12, -0.04, 0.33, ...],

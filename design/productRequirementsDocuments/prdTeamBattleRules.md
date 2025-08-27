@@ -81,7 +81,7 @@ Players enjoy forming teams of favorite judoka, but rules vary between modes and
 
 ## Dependencies
 
-- Reuses the 1v1 logic defined in [PRD: Classic Battle](prdClassicBattle.md).
+- Reuses the 1v1 logic defined in [PRD: Classic Battle](prdBattleClassic.md).
 - Relies on the shared `generateRandomCard` helper for drawing each judoka card.
 
 ---
