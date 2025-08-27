@@ -51,6 +51,10 @@ describe("onTransition helpers", () => {
     vi.resetModules();
     document.body.innerHTML = "";
     orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    const { attachStateDebugObserver } = await import(
+      "../../../src/helpers/classicBattle/stateDebugObserver.js"
+    );
+    attachStateDebugObserver();
     await orchestrator.initClassicBattleOrchestrator({});
     machine = orchestrator.getBattleStateMachine();
   });

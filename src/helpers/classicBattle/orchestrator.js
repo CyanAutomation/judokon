@@ -96,62 +96,6 @@ export function onStateTransition(targetState, timeoutMs = 10000) {
 }
 
 /**
- * Mirror state transitions to window/DOM and resolve in-page waiters.
- * @param {string|null} from
- * @param {string} to
- * @param {string|null} event
- */
-function updateDebugState(from, to, event) {
-  if (typeof window === "undefined" || typeof document === "undefined") return;
-  try {
-    window.__classicBattleState = to;
-    if (from) window.__classicBattlePrevState = from;
-    if (event) window.__classicBattleLastEvent = event;
-    document.body.dataset.battleState = to;
-    document.body.dataset.prevBattleState = from || "";
-    try {
-      // Keep tests observable; muted by test helpers in CI
-
-      console.warn(`[test] dataset.battleState set -> ${document.body.dataset.battleState}`);
-    } catch {}
-    document.dispatchEvent(new CustomEvent("battle:state", { detail: { from, to } }));
-    const logEntry = { from: from || null, to, event: event || null, ts: Date.now() };
-    const log = Array.isArray(window.__classicBattleStateLog) ? window.__classicBattleStateLog : [];
-    log.push(logEntry);
-    while (log.length > 20) log.shift();
-    window.__classicBattleStateLog = log;
-    let el = document.getElementById("machine-state");
-    if (!el) {
-      el = document.createElement("div");
-      el.id = "machine-state";
-      el.style.display = "none";
-      document.body.appendChild(el);
-    }
-    el.textContent = to;
-    if (from) el.dataset.prev = from;
-    if (event) el.dataset.event = event;
-    el.dataset.ts = String(logEntry.ts);
-    const badge = document.getElementById("battle-state-badge");
-    if (badge) badge.textContent = `State: ${to}`;
-    // Resolve any in-page awaiters registered via window.awaitBattleState
-    try {
-      const waiters = (window.__stateWaiters && window.__stateWaiters[to]) || [];
-      if (Array.isArray(waiters) && waiters.length) {
-        window.__stateWaiters[to] = [];
-        for (const w of waiters) {
-          try {
-            if (w && typeof w.resolve === "function") {
-              if (w.timer) clearTimeout(w.timer);
-              w.resolve(true);
-            }
-          } catch {}
-        }
-      }
-    } catch {}
-  } catch {}
-}
-
-/**
  * Expose timer state for debugging when an engine exists.
  *
  * @pseudocode
@@ -192,10 +136,11 @@ export function updateTimerDebug(machineRef) {
  * 2. Create a `context` object containing the `store`, resolved `doResetGame`, `doStartRound`, and `startRoundWrapper`.
  * 3. Define the `onEnter` object mapping state names to their respective handler functions.
  * 4. Define the `onTransition` function executed on every state change:
- *    a. Call `updateDebugState(from, to, event)`.
- *    b. Call `updateTimerDebug(machine)`.
- *    c. Emit a `"debugPanelUpdate"` battle event.
- *    d. Resolve any waiters queued for the new `to` state.
+ *    a. Invoke `onStateChange(from, to, event)` if provided.
+ *    b. Emit a `"stateChange"` battle event.
+ *    c. Call `updateTimerDebug(machine)`.
+ *    d. Emit a `"debugPanelUpdate"` battle event.
+ *    e. Resolve any waiters queued for the new `to` state.
  * 5. Create the battle state machine via `BattleStateMachine.create` and store it with `setMachine`.
  * 6. Expose a getter for the machine, wire visibility listeners, and handle timer drift and injected errors.
  * 7. Expose `onStateTransition` and `getBattleStateSnapshot` on `window` for debugging.
@@ -206,10 +151,11 @@ export function updateTimerDebug(machineRef) {
  * @param {object} [opts] - Optional overrides.
  * @param {Function} [opts.resetGame] - Custom reset handler.
  * @param {Function} [opts.startRound] - Custom round start handler.
+ * @param {Function} [opts.onStateChange] - Callback fired on state changes.
  * @returns {Promise<void>} Resolves when setup completes.
  */
 export async function initClassicBattleOrchestrator(store, startRoundWrapper, opts = {}) {
-  const { resetGame: resetGameOpt, startRound: startRoundOpt } = opts;
+  const { resetGame: resetGameOpt, startRound: startRoundOpt, onStateChange } = opts;
   const doResetGame = typeof resetGameOpt === "function" ? resetGameOpt : resetGameLocal;
   const doStartRound = typeof startRoundOpt === "function" ? startRoundOpt : startRoundLocal;
   const context = { store, doResetGame, doStartRound, startRoundWrapper };
@@ -229,7 +175,12 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   };
 
   const onTransition = async ({ from, to, event }) => {
-    updateDebugState(from, to, event);
+    if (typeof onStateChange === "function") {
+      try {
+        onStateChange(from, to, event);
+      } catch {}
+    }
+    emitBattleEvent("stateChange", { from, to, event });
     updateTimerDebug(machine);
     emitBattleEvent("debugPanelUpdate");
     const waiters = stateWaiters.get(to);
