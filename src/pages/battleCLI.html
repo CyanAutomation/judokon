@@ -62,11 +62,12 @@
         border-top: 1px solid #3a3a3a;
       }
       /* Terminal-style snackbar line at the bottom */
-      #cli-countdown {
+      #snackbar-container {
         padding: 8px 12px;
         background: #111;
         color: #e6e6e6;
       }
+      #snackbar-container .snackbar { display: block; }
       /* Ensure good contrast for links if any appear */
       a { color: #9ad1ff; }
       a:focus, [tabindex]:focus { outline: 2px solid #9ad1ff; outline-offset: 2px; }
@@ -100,8 +101,12 @@
       </main>
 
       <footer class="cli-footer" role="contentinfo">
-        <div id="cli-countdown" role="status" aria-live="polite" aria-atomic="true"></div>
+        <!-- Terminal-style snackbar container anchored at the bottom -->
+        <div id="snackbar-container">
+          <!-- snackbar.js will populate .snackbar elements here; in CLI this renders as a single bottom line. -->
+        </div>
       </footer>
+      <script type="module" src="../pages/battleCLI.js"></script>
     </div>
   </body>
   </html>
