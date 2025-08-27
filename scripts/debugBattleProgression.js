@@ -131,12 +131,41 @@ import {
       return;
     }
 
-    // Short settle for immediate handlers/guard
+    // Wait for the round to resolve (either resolver completed or guard fired).
+    // Some resolution paths use a randomized sleep; prefer waiting for an
+    // explicit marker instead of a fixed short timeout to avoid reporting a
+    // mid-resolution snapshot.
     try {
-      const guardOutcome = await page.evaluate(() => window.__guardOutcomeEvent || null);
-      if (!guardOutcome) await page.waitForTimeout(200);
+      await page.waitForFunction(
+        () => {
+          try {
+            // resolvedAt set by resolveRound when finished
+            if (window.__roundDebug && typeof window.__roundDebug.resolvedAt === "number")
+              return true;
+            // guard outcome set when guard computes outcome
+            if (
+              typeof window.__guardOutcomeEvent !== "undefined" &&
+              window.__guardOutcomeEvent !== null
+            )
+              return true;
+            // state moved out of roundDecision
+            if (
+              typeof window.__classicBattleState === "string" &&
+              window.__classicBattleState !== "roundDecision"
+            )
+              return true;
+            return false;
+          } catch {
+            return false;
+          }
+        },
+        { timeout: 2000 }
+      );
     } catch {
-      await page.waitForTimeout(200);
+      // fall back to a brief wait so we still capture a snapshot
+      try {
+        await page.waitForTimeout(200);
+      } catch {}
     }
 
     const snap = await getBattleSnapshot(page).catch(() => null);
