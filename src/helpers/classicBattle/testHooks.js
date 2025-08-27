@@ -61,4 +61,3 @@ export async function triggerStallPromptNow(store) {
   };
   handleStatSelectionTimeout(store, onSelect, 0);
 }
-
