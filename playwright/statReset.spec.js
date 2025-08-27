@@ -16,8 +16,47 @@ test.describe("Classic battle button reset", () => {
 
   test("no button stays selected after next round", async ({ page }) => {
     page.on("console", (msg) => console.log(msg.text()));
+    const dumpState = async (label) => {
+      const snap = await page.evaluate(() => {
+        try {
+          return {
+            dataset: document.body?.dataset?.battleState || null,
+            prev: document.body?.dataset?.prevBattleState || null,
+            windowSnapshot:
+              typeof window.getBattleStateSnapshot === "function"
+                ? window.getBattleStateSnapshot()
+                : null
+          };
+        } catch {
+          return null;
+        }
+      });
+      console.log(`SNAPSHOT ${label}:`, JSON.stringify(snap));
+    };
+    const attachPromiseWatchers = async () => {
+      await page.evaluate(() => {
+        try {
+          if (window.roundPromptPromise && !window.__roundPromptWatcher) {
+            window.__roundPromptWatcher = true;
+            window.roundPromptPromise
+              .then(() => (window.__roundPromptResolved = true))
+              .catch(() => (window.__roundPromptRejected = true));
+          }
+        } catch {}
+        try {
+          if (window.statButtonsReadyPromise && !window.__statButtonsWatcher) {
+            window.__statButtonsWatcher = true;
+            window.statButtonsReadyPromise
+              .then(() => (window.__statButtonsReadyResolved = true))
+              .catch(() => (window.__statButtonsReadyRejected = true));
+          }
+        } catch {}
+      });
+    };
     await page.goto("/src/pages/battleJudoka.html");
     await waitForBattleReady(page);
+    await attachPromiseWatchers();
+    await dumpState("before-initial-prompt");
     await page.evaluate(() => window.roundPromptPromise);
     await page.locator("#stat-buttons button[data-stat='power']").click();
     // The Next button may be disabled while the next-round timer runs. Tests
@@ -26,7 +65,9 @@ test.describe("Classic battle button reset", () => {
     await page.evaluate(() => window.skipBattlePhase?.());
     // Wait until the next round has fully started and buttons are re-enabled
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    await dumpState("after-waitForBattleState");
     await page.evaluate(() => window.roundPromptPromise);
+    await dumpState("after-roundPrompt");
     await page.evaluate(() => window.statButtonsReadyPromise);
     await expect(page.locator("#stat-buttons .selected")).toHaveCount(0);
   });
