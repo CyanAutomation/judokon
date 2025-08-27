@@ -166,6 +166,11 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
         const el = document.getElementById("next-round-timer");
         if (el) el.textContent = "";
       } catch {}
+      // Clear any transient round message (e.g., stall prompt) before outcome
+      try {
+        const msg = document.getElementById("round-message");
+        if (msg) msg.textContent = "";
+      } catch {}
       // Surface opponent delay snackbar immediately when delay is 0.
       try {
         const ui = await import("../showSnackbar.js");

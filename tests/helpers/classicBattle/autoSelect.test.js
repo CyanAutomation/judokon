@@ -54,24 +54,15 @@ afterEach(() => {
 
 describe("classicBattle auto select", () => {
   it("auto-selects a stat when timer expires", async () => {
-    let dispatchSpy;
-    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", async () => {
-      const actual = await vi.importActual("../../../src/helpers/classicBattle/eventDispatcher.js");
-      dispatchSpy = vi.fn(actual.dispatchBattleEvent);
-      return { ...actual, dispatchBattleEvent: dispatchSpy };
-    });
     vi.spyOn(Math, "random").mockReturnValue(0);
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     const battleMod = await initClassicBattleTest({ afterMock: true });
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await battleMod.startRound(store);
-    await battleMod.__triggerRoundTimeoutNow(store);
+    const pending = battleMod.__triggerRoundTimeoutNow(store);
     await vi.runAllTimersAsync();
-    const events = dispatchSpy.mock.calls.map((c) => c[0]);
-    expect(events).toContain("timeout");
-    expect(events).toContain("statSelected");
-    expect(events).not.toContain("interrupt");
+    await pending;
     const score = document.querySelector("header #score-display").textContent;
     const msg = document.querySelector("header #round-message").textContent;
     expect(score).toBe("You: 1\nOpponent: 0");

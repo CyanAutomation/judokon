@@ -172,11 +172,13 @@ export function handleStatSelectionTimeout(
   timeoutMs = 5000,
   scheduler = realScheduler
 ) {
-  scoreboard.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
-  try {
-    emitBattleEvent("statSelectionStalled");
-  } catch {}
   store.autoSelectId = scheduler.setTimeout(() => {
+    // If a selection was made in the meantime, do nothing.
+    if (store && store.selectionMade) return;
+    scoreboard.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
+    try {
+      emitBattleEvent("statSelectionStalled");
+    } catch {}
     autoSelectStat(onSelect);
   }, timeoutMs);
 }

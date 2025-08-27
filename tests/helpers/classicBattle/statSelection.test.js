@@ -150,10 +150,7 @@ describe("classicBattle stat selection", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    const { roundResolvedPromise } = await import("../../../src/helpers/classicBattle.js");
     await selectStat("power");
-    const { getRoundResolvedPromise } = await import("../../../src/helpers/classicBattle.js");
-    await getRoundResolvedPromise();
     expect(document.querySelector("header #round-message").textContent).toMatch(/Tie/);
     expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nOpponent: 0");
   });
