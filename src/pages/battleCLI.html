@@ -33,6 +33,7 @@
       .cli-title {
         font-weight: 700;
       }
+      .state-badge { font-size: 12px; opacity: 0.8; margin-left: 8px; }
       .cli-score { white-space: pre; }
       .cli-controls { display: flex; gap: 8px; align-items: center; }
       .cli-main {
@@ -75,7 +76,9 @@
   <body>
     <div id="cli-root" class="cli-root">
       <header id="cli-header" class="cli-header" role="banner">
-        <div class="cli-title">Classic Battle (CLI)</div>
+        <div class="cli-title">Classic Battle (CLI)
+          <span id="battle-state-badge" class="state-badge" aria-live="polite">State: —</span>
+        </div>
         <div class="cli-controls" role="group" aria-label="Match Settings">
           <label for="points-select">Win target:</label>
           <select id="points-select" aria-label="Points to win" data-tooltip-id="settings.pointsToWin">
@@ -83,6 +86,8 @@
             <option value="10" selected>10</option>
             <option value="15">15</option>
           </select>
+          <label for="verbose-toggle">Verbose:</label>
+          <input id="verbose-toggle" type="checkbox" aria-label="Toggle verbose logging" />
         </div>
         <div id="cli-score" class="cli-score" aria-live="polite" aria-atomic="true">You: 0  Opponent: 0</div>
       </header>
@@ -100,6 +105,10 @@
 
         <section aria-label="Shortcuts" id="cli-shortcuts" class="cli-block">
           <div id="cli-help">[1–5] Select Stat  |  [Enter]/[Space] Next  |  [Q] Quit  |  [H] Toggle Help  |  [R] Retro Mode</div>
+        </section>
+
+        <section aria-label="Verbose Log" id="cli-verbose-section" class="cli-block" hidden>
+          <pre id="cli-verbose-log" aria-live="polite" aria-atomic="false" style="margin:0; white-space: pre-wrap;"></pre>
         </section>
       </main>
 

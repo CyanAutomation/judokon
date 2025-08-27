@@ -19,6 +19,7 @@ const byId = (id) => document.getElementById(id);
 let currentPlayerJudoka = null;
 let currentOpponentJudoka = null;
 let store = null;
+let verboseEnabled = false;
 
 function setRetroMode(enabled) {
   document.body.classList.toggle("retro", !!enabled);
@@ -160,6 +161,26 @@ function installEventBindings() {
       updateScoreLine(result.playerScore ?? 0, result.opponentScore ?? 0);
     }
   });
+
+  // Append state changes to the verbose log when enabled
+  document.addEventListener("battle:state", (ev) => {
+    if (!verboseEnabled) return;
+    try {
+      const { from, to } = ev.detail || {};
+      const pre = byId("cli-verbose-log");
+      if (!pre) return;
+      const ts = new Date();
+      const hh = String(ts.getHours()).padStart(2, "0");
+      const mm = String(ts.getMinutes()).padStart(2, "0");
+      const ss = String(ts.getSeconds()).padStart(2, "0");
+      const line = `[${hh}:${mm}:${ss}] ${from || "(init)"} -> ${to}`;
+      // Keep last 50 lines
+      const existing = pre.textContent ? pre.textContent.split("\n").filter(Boolean) : [];
+      existing.push(line);
+      while (existing.length > 50) existing.shift();
+      pre.textContent = existing.join("\n");
+    } catch {}
+  });
 }
 
 function installRetroStyles() {
@@ -239,6 +260,21 @@ async function init() {
         setPointsToWin(val);
         try { localStorage.setItem(key, String(val)); } catch {}
       }
+    });
+  } catch {}
+  // Initialize verbose toggle
+  try {
+    const vKey = "battleCLI.verbose";
+    const checkbox = byId("verbose-toggle");
+    const section = byId("cli-verbose-section");
+    const saved = localStorage.getItem(vKey);
+    verboseEnabled = saved === "true";
+    if (checkbox) checkbox.checked = verboseEnabled;
+    if (section) section.hidden = !verboseEnabled;
+    checkbox?.addEventListener("change", () => {
+      verboseEnabled = !!checkbox.checked;
+      try { localStorage.setItem(vKey, String(verboseEnabled)); } catch {}
+      if (section) section.hidden = !verboseEnabled;
     });
   } catch {}
   // Install CLI event bridges
