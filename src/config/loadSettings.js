@@ -1,5 +1,3 @@
-import { DEFAULT_SETTINGS } from "./settingsDefaults.js";
-
 const SETTINGS_KEY = "settings";
 
 /**
@@ -80,6 +78,8 @@ function mergeKnown(base, override, defaults, path = []) {
  * @returns {Promise<import("./settingsDefaults.js").Settings>} Resolved settings object.
  */
 export async function loadSettings() {
+  // Load defaults at runtime so test-time mocks (vi.doMock) are honored.
+  const { DEFAULT_SETTINGS } = await import("./settingsDefaults.js");
   let settings = structuredClone(DEFAULT_SETTINGS);
 
   try {
@@ -100,7 +100,7 @@ export async function loadSettings() {
       if (raw) {
         const parsed = JSON.parse(raw);
         settings = mergeKnown(settings, parsed, DEFAULT_SETTINGS);
-      }
+  }
     }
   } catch {
     // Ignore localStorage unavailability or JSON errors
