@@ -54,7 +54,7 @@ export let roundTimeoutPromise;
 export let statSelectionStalledPromise;
 export let roundResolvedPromise;
 
-(() => {
+export function resetBattlePromises() {
   roundOptionsReadyPromise = setupPromise("roundOptionsReadyPromise", "roundOptionsReady")();
   roundPromptPromise = setupPromise("roundPromptPromise", "roundPrompt")();
   nextRoundTimerReadyPromise = setupPromise("nextRoundTimerReadyPromise", "nextRoundTimerReady")();
@@ -66,7 +66,10 @@ export let roundResolvedPromise;
     "statSelectionStalled"
   )();
   roundResolvedPromise = setupPromise("roundResolvedPromise", "roundResolved")();
-})();
+}
+
+// Initialize on module load
+resetBattlePromises();
 
 // Return the latest promise instance for each awaitable, using the window-scoped
 // reference maintained by setupPromise(). This avoids races where a module-level

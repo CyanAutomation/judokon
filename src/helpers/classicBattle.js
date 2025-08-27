@@ -30,6 +30,7 @@ export {
 } from "./classicBattle/promises.js";
 export {
   ensureBindings as __ensureClassicBattleBindings,
+  resetBindings as __resetClassicBattleBindings,
   triggerRoundTimeoutNow as __triggerRoundTimeoutNow,
   triggerStallPromptNow as __triggerStallPromptNow
 } from "./classicBattle/testHooks.js";

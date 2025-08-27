@@ -51,6 +51,15 @@ afterEach(() => {
     if (originalReplaceState) history.replaceState = originalReplaceState;
   }
   resetDom();
+  // Clear transient UI surfaces to avoid cross-test bleed
+  try {
+    const sc = document.getElementById("snackbar-container");
+    if (sc) sc.innerHTML = "";
+  } catch {}
+  try {
+    const msg = document.querySelector("#round-message");
+    if (msg) msg.textContent = "";
+  } catch {}
   // Restore console to originals after each test
   restoreConsole(["warn", "error"]);
 });
@@ -81,6 +90,12 @@ beforeEach(async () => {
     if (mod && typeof mod.__ensureClassicBattleBindings === "function") {
       await mod.__ensureClassicBattleBindings();
     }
+    // Normalize test URL to a stable default rather than Vitest's dev server
+    try {
+      if (typeof window !== "undefined") {
+        window.location.href = "http://localhost/index.html";
+      }
+    } catch {}
     const currentHref = String(window.location.href || "http://localhost/");
     const state = { href: currentHref };
     Object.defineProperty(window, "location", {

@@ -1,12 +1,44 @@
 import { emitBattleEvent } from "./battleEvents.js";
 
+// Internal flags to make bindings idempotent and allow limited rebinds in tests.
+let __uiBound = false;
+let __promisesBound = false;
+let __rebindVersion = 0;
+
 /**
  * Ensure round UI event listeners and promises are registered.
  * Importing this module has side effects that bind onBattleEvent handlers.
  */
-export async function ensureBindings() {
-  await import("./roundUI.js");
-  await import("./promises.js");
+/**
+ * Ensure Classic Battle listeners and test promises are ready.
+ *
+ * @pseudocode
+ * 1. Import roundUI once to bind event listeners (idempotent per worker).
+ * 2. Import promises; if `force`, cache-bust to create fresh awaitables post-mock.
+ * 3. Track bound state to avoid duplicate UI bindings.
+ */
+export async function ensureBindings(opts = {}) {
+  const force = !!opts.force;
+  // Bind round UI listeners once per worker to avoid duplicate handlers.
+  if (!__uiBound) {
+    await import("./roundUI.js");
+    __uiBound = true;
+  }
+  // Ensure event promises exist; allow a forced refresh after mocks in tests.
+  if (!__promisesBound || force) {
+    const prom = await import("./promises.js");
+    if (typeof prom.resetBattlePromises === "function") prom.resetBattlePromises();
+    __promisesBound = true;
+  }
+}
+
+// Allow tests to clear the internal "promises bound" state so a subsequent
+// ensureBindings({ force: true }) can recreate the awaitables after vi.doMock.
+/**
+ * Reset internal promise-bound flag so tests can rebind after vi.doMock().
+ */
+export function resetBindings() {
+  __promisesBound = false;
 }
 
 /**
