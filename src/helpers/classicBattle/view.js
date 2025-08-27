@@ -78,22 +78,8 @@ export class ClassicBattleView {
         const c = document.querySelectorAll("#stat-buttons .selected").length;
         console.warn(`[test] skipBattlePhase: after immediate reset selected=${c}`);
       } catch {}
-      try {
-        const p1 =
-          typeof window !== "undefined" && window.nextRoundTimerReadyPromise
-            ? window.nextRoundTimerReadyPromise
-            : Promise.resolve();
-        const p2 =
-          typeof window !== "undefined" && window.roundPromptPromise
-            ? window.roundPromptPromise
-            : Promise.resolve();
-        try {
-          console.warn("[test] skipBattlePhase: awaiting timerReady or next round prompt");
-        } catch {}
-        return Promise.race([p1, p2]);
-      } catch {
-        return Promise.resolve();
-      }
+      // Resolve immediately; tests will explicitly wait for the next state.
+      return Promise.resolve();
     };
 
     if (!(typeof process !== "undefined" && process.env.VITEST)) {

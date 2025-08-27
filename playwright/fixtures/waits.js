@@ -29,7 +29,13 @@ export async function waitForSettingsReady(page) {
  * @param {number} [timeout=10000]
  */
 export async function waitForBattleState(page, stateName, timeout = 10000) {
-  await page.waitForFunction((s) => document.body?.dataset?.battleState === s, stateName, {
-    timeout
-  });
+  try {
+    await page.waitForFunction(
+      (s) => document.body?.dataset?.battleState === s,
+      stateName,
+      { timeout }
+    );
+  } catch (err) {
+    throw new Error(`Timed out waiting for battle state "${stateName}"`);
+  }
 }

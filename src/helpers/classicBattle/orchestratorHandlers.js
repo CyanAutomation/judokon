@@ -121,9 +121,24 @@ export async function roundStartEnter(machine) {
       }, 50);
     }
   } catch {}
+  // Start the round asynchronously; do not block state progression on opponent card rendering.
   try {
-    if (typeof startRoundWrapper === "function") await startRoundWrapper();
-    else if (typeof doStartRound === "function") await doStartRound(store);
+    const p =
+      typeof startRoundWrapper === "function"
+        ? startRoundWrapper()
+        : typeof doStartRound === "function"
+        ? doStartRound(store)
+        : Promise.resolve();
+    Promise.resolve(p).catch(async () => {
+      try {
+        if (fallback) clearTimeout(fallback);
+      } catch {}
+      try {
+        emitBattleEvent("scoreboardShowMessage", "Round start error. Recovering…");
+        emitBattleEvent("debugPanelUpdate");
+        await machine.dispatch("interrupt", { reason: "roundStartError" });
+      } catch {}
+    });
   } catch {
     try {
       if (fallback) clearTimeout(fallback);
@@ -135,6 +150,7 @@ export async function roundStartEnter(machine) {
     } catch {}
     return;
   }
+  // Immediately proceed to stat selection if still in roundStart.
   try {
     if (fallback) clearTimeout(fallback);
   } catch {}

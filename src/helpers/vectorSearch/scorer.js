@@ -60,6 +60,25 @@ function tagFilterStep(state) {
   };
 }
 
+function sparseFilterStep(state) {
+  if (Object.keys(state.sparseQueryVector).length === 0) return state;
+  const scoredEntries = state.entries.map(entry => {
+    let score = 0;
+    if (entry.sparseVector) {
+      for (const term in state.sparseQueryVector) {
+        if (entry.sparseVector[term]) {
+          score += state.sparseQueryVector[term] * entry.sparseVector[term];
+        }
+      }
+    }
+    return { ...entry, sparseScore: score };
+  });
+  return {
+    ...state,
+    entries: scoredEntries.filter(e => e.sparseScore > 0)
+  };
+}
+
 export function cosineSimilarity(a, b) {
   if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) {
     return 0;
@@ -126,7 +145,7 @@ function runPipeline(state, steps) {
  * @param {string} [queryText=""] - Full query text for exact term matching.
  * @returns {Promise<Array<{score:number} & Record<string, any>>|null>} Match results sorted by score.
  */
-export async function findMatches(queryVector, topN = 5, tags = [], queryText = "") {
+export async function findMatches(queryVector, topN = 5, tags = [], queryText = "", sparseQueryVector = {}) {
   const entries = await loadEmbeddings();
   if (entries === null) return null;
   const initial = {
@@ -135,9 +154,10 @@ export async function findMatches(queryVector, topN = 5, tags = [], queryText = 
     queryVector,
     topN,
     tags,
-    queryText
+    queryText,
+    sparseQueryVector
   };
-  const pipeline = [normalizeStep, tagFilterStep, scoringStep, limitStep];
+  const pipeline = [sparseFilterStep, normalizeStep, tagFilterStep, scoringStep, limitStep];
   const result = runPipeline(initial, pipeline);
   if (result.status === "null") return null;
   if (result.status !== "ok") return [];

@@ -1,0 +1,27 @@
+
+[
+  {
+    "query": "settings feature flags order",
+    "expected_source": "design/codeStandards/settingsPageDesignGuidelines.md"
+  },
+  {
+    "query": "judoka bio tone guidelines",
+    "expected_source": "design/characterDesign/kgCharacterDesignDocument.md"
+  },
+  {
+    "query": "navbar button transition duration",
+    "expected_source": "src/styles/main.css"
+  },
+  {
+    "query": "how to add a new tooltip",
+    "expected_source": "src/data/tooltips.json"
+  },
+  {
+    "query": "what is the purpose of the classic battle mode",
+    "expected_source": "src/data/gameModes.json"
+  },
+  {
+    "query": "how are judoka stats calculated",
+    "expected_source": "src/data/judoka.json"
+  }
+]

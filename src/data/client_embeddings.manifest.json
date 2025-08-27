@@ -1,0 +1,7 @@
+{
+  "shards": [
+    "client_embeddings.shard.0.json",
+    "client_embeddings.shard.1.json",
+    "client_embeddings.shard.2.json"
+  ]
+}

@@ -26,10 +26,20 @@ export const CURRENT_EMBEDDING_VERSION = 1;
 export async function loadEmbeddings() {
   if (cachedEmbeddings !== undefined) return cachedEmbeddings;
   if (!embeddingsPromise) {
-    embeddingsPromise = fetchJson(`${DATA_DIR}client_embeddings.json`).catch((err) => {
-      console.error("Failed to load embeddings:", err);
-      return null;
-    });
+    embeddingsPromise = fetchJson(`${DATA_DIR}client_embeddings.manifest.json`)
+      .then(manifest => {
+        const shardPromises = manifest.shards.map(shardFile =>
+          fetchJson(`${DATA_DIR}${shardFile}`)
+        );
+        return Promise.all(shardPromises);
+      })
+      .then(shards => {
+        return shards.flat();
+      })
+      .catch((err) => {
+        console.error("Failed to load embeddings:", err);
+        return null;
+      });
   }
   cachedEmbeddings = await embeddingsPromise;
   return cachedEmbeddings;
