@@ -111,15 +111,24 @@ export function bindRoundUIEventHandlers() {
       });
       emitBattleEvent("matchOver");
     } else {
-        const onStateChange = (e) => {
-            if (e.detail.to === 'roundOver') {
-                scheduleNextRound(result);
-                document.removeEventListener('battle:state', onStateChange);
-            }
-        }
-        document.addEventListener('battle:state', onStateChange);
+      // Start the next-round cooldown immediately. The scheduler internally
+      // validates live state before dispatching 'ready', so scheduling here is
+      // safe and ensures the snackbar countdown appears without waiting for a
+      // separate state change event that may be mocked out in tests.
+      scheduleNextRound(result);
     }
-    resetStatButtons();
+    // Keep the selected stat highlighted for two frames to allow tests and
+    // users to perceive the selection before it clears.
+    try {
+      requestAnimationFrame(() => requestAnimationFrame(() => resetStatButtons()));
+    } catch {
+      // Fallback for environments without rAF
+      setTimeout(() => {
+        try {
+          resetStatButtons();
+        } catch {}
+      }, 32);
+    }
     updateDebugPanel();
   });
 }
@@ -174,14 +183,9 @@ export function bindRoundUIEventHandlersDynamic() {
         emitBattleEvent("matchOver");
       } catch {}
     } else {
-        const { scheduleNextRound } = await import("./timerService.js");
-        const onStateChange = (e) => {
-            if (e.detail.to === 'roundOver') {
-                scheduleNextRound(result);
-                document.removeEventListener('battle:state', onStateChange);
-            }
-        }
-        document.addEventListener('battle:state', onStateChange);
+      const { scheduleNextRound } = await import("./timerService.js");
+      // Schedule immediately to surface the countdown in tests and runtime.
+      scheduleNextRound(result);
     }
     try {
       requestAnimationFrame(() => requestAnimationFrame(() => resetStatButtons()));

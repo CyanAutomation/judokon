@@ -10,6 +10,7 @@
  */
 
 import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
+import { isEnabled } from "../featureFlags.js";
 
 /**
  * Query all stat buttons.
@@ -60,12 +61,16 @@ export function resetStatButtons(
     btn.disabled = true;
     void btn.offsetWidth;
     let frameId = 0;
-    frameId = onFrame(() => {
+    if (isEnabled("enableTestMode")) {
       btn.disabled = false;
-      btn.style.backgroundColor = "";
-      btn.blur();
-      cancel(frameId);
-    });
+    } else {
+      frameId = onFrame(() => {
+        btn.disabled = false;
+        btn.style.backgroundColor = "";
+        btn.blur();
+        cancel(frameId);
+      });
+    }
   });
   try {
     const after = document.querySelectorAll("#stat-buttons .selected").length;

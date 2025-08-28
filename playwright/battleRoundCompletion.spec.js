@@ -16,7 +16,10 @@ test.describe("Classic battle round completion", () => {
   test("plays a round to completion without hanging", async ({ page }) => {
     page.on('console', msg => console.log(msg.text()));
 
-    await page.goto("/src/pages/battleJudoka.html?autostart=1");
+    await page.goto("/src/pages/battleJudoka.html");
+
+    // Click the 5 points button in the round select modal
+    await page.locator("#round-select-1").click();
 
     // Wait for the battle to be ready
     await waitForBattleReady(page);

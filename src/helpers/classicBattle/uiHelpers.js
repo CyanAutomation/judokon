@@ -262,7 +262,8 @@ export function updateDebugPanel() {
 export function showRoundOutcome(message) {
   showResult(message);
   scoreboard.showMessage(message);
-  showSnackbar(message);
+  // Outcome messages belong in the round message region; avoid using snackbar
+  // here so countdowns and hints can occupy it consistently.
 }
 
 /**
