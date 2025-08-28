@@ -47,7 +47,7 @@ describe("timerService next round handling", () => {
     const { nextButton } = createTimerNodes();
     const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
     nextButton.addEventListener("click", (e) => mod.onNextButtonClick(e, controls));
-    scheduler.tick(0);
+    scheduler.tick(100);
     nextButton.dispatchEvent(new MouseEvent("click"));
     await controls.ready;
     // Current flow guarantees at least one dispatch; a second may occur
@@ -56,14 +56,14 @@ describe("timerService next round handling", () => {
     expect(dispatchBattleEvent.mock.calls.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("auto-dispatches ready when cooldown finishes", async () => {
+  it("auto-dispatches ready after 1s cooldown", async () => {
     startCoolDown.mockImplementation((_t, onExpired) => {
       onExpired();
     });
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
     createTimerNodes();
     const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
-    scheduler.tick(0);
+    scheduler.tick(1100);
     await controls.ready;
     expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
     expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);

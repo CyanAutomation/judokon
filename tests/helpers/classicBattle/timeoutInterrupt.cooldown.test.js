@@ -21,7 +21,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
   });
 
-  it("advances from cooldown after interrupt without hanging", async () => {
+  it("advances from cooldown after interrupt with 1s auto-advance", async () => {
     const { initClassicBattleOrchestrator } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );

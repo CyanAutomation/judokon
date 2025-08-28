@@ -82,12 +82,13 @@ describe("classicBattle scheduleNextRound", () => {
     });
   }
 
-  it("auto-dispatches ready after cooldown", async () => {
+  it("auto-dispatches ready after 1s cooldown", async () => {
     document.getElementById("next-round-timer")?.remove();
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
 
     mockBattleData();
+    window.__NEXT_ROUND_COOLDOWN_MS = 1000;
 
     const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
     const dispatchSpy = vi.spyOn(orchestrator, "dispatchBattleEvent");
@@ -108,7 +109,7 @@ describe("classicBattle scheduleNextRound", () => {
 
     const controls = battleMod.scheduleNextRound({ matchEnded: false });
 
-    timerSpy.advanceTimersByTime(3000);
+    timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
     await controls.ready;
     // Wait for the orchestrator to reach the expected state to avoid races
@@ -120,6 +121,7 @@ describe("classicBattle scheduleNextRound", () => {
     const btn = document.getElementById("next-button");
     expect(btn?.dataset.nextReady).toBe("true");
     expect(btn?.disabled).toBe(false);
+    delete window.__NEXT_ROUND_COOLDOWN_MS;
   });
 
   it("transitions roundOver → cooldown → roundStart without duplicates", async () => {
@@ -161,7 +163,7 @@ describe("classicBattle scheduleNextRound", () => {
     expect(generateRandomCardMock).toHaveBeenCalledTimes(2);
   });
 
-  it("schedules a minimum cooldown in test mode", async () => {
+  it("schedules a 1s minimum cooldown in test mode", async () => {
     document.getElementById("next-round-timer")?.remove();
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
@@ -174,6 +176,7 @@ describe("classicBattle scheduleNextRound", () => {
 
     const controls = battleMod.scheduleNextRound({ matchEnded: false });
     expect(nextButton.dataset.nextReady).toBeUndefined();
+    timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
     await controls.ready;
 
