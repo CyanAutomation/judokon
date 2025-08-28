@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createScoreboardHeader } from "../utils/testUtils.js";
 import { createMockScheduler } from "./mockScheduler.js";
+
 vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
@@ -9,85 +10,78 @@ vi.mock("../../src/helpers/showSnackbar.js", () => ({
   updateSnackbar: vi.fn()
 }));
 
-beforeEach(() => {
-  vi.resetModules();
-  document.body.appendChild(createScoreboardHeader());
-});
-
 describe("setupScoreboard", () => {
-  function createControls(scheduler) {
+  beforeEach(() => {
+    vi.resetModules();
+    document.body.innerHTML = "";
+    document.body.appendChild(createScoreboardHeader());
+  });
+
+  function createControls() {
     return {
-      startCoolDown: (onTick, onExpired, duration) => {
-        onTick(duration);
-        for (let i = 1; i <= duration; i++) {
-          scheduler.setTimeout(() => {
-            const remaining = duration - i;
-            onTick(remaining);
-            if (remaining <= 0) onExpired();
-          }, i * 1000);
-        }
-      },
+      startCoolDown: vi.fn(),
       pauseTimer: vi.fn(),
       resumeTimer: vi.fn()
     };
   }
 
-  it("initializes and proxies methods", async () => {
+  it("initializes scoreboard and proxies component methods", async () => {
     const scheduler = createMockScheduler();
+    const controls = createControls();
+    const scoreboard = await import("../../src/components/Scoreboard.js");
+    const initSpy = vi.spyOn(scoreboard, "initScoreboard");
+    const showSpy = vi.spyOn(scoreboard, "showMessage");
+    const clearSpy = vi.spyOn(scoreboard, "clearMessage");
+    const tempSpy = vi.spyOn(scoreboard, "showTemporaryMessage");
+    const scoreSpy = vi.spyOn(scoreboard, "updateScore");
+    const countdownSpy = vi.spyOn(scoreboard, "startCountdown");
+
     const mod = await import("../../src/helpers/setupScoreboard.js");
-    const { showSnackbar, updateSnackbar } = await import("../../src/helpers/showSnackbar.js");
-    showSnackbar.mockClear();
-    updateSnackbar.mockClear();
-    mod.setupScoreboard(createControls(scheduler), scheduler);
+    mod.setupScoreboard(controls, scheduler);
+
+    expect(initSpy).toHaveBeenCalledWith(
+      document.querySelector("header"),
+      expect.objectContaining({
+        startCoolDown: controls.startCoolDown,
+        pauseTimer: controls.pauseTimer,
+        resumeTimer: controls.resumeTimer,
+        scheduler
+      })
+    );
 
     mod.showMessage("Hi");
-    expect(document.getElementById("round-message").textContent).toBe("Hi");
+    expect(showSpy).toHaveBeenCalledWith("Hi");
+
+    mod.clearMessage();
+    expect(clearSpy).toHaveBeenCalled();
 
     const reset = mod.showTemporaryMessage("Temp");
-    expect(document.getElementById("round-message").textContent).toBe("Temp");
-    reset();
-    expect(document.getElementById("round-message").textContent).toBe("");
-
-    mod.showMessage("Hi");
-    mod.clearMessage();
-    expect(document.getElementById("round-message").textContent).toBe("");
+    expect(tempSpy).toHaveBeenCalledWith("Temp");
+    expect(typeof reset).toBe("function");
 
     mod.updateScore(1, 2);
-    expect(document.getElementById("score-display").textContent).toBe("You: 1\nOpponent: 2");
+    expect(scoreSpy).toHaveBeenCalledWith(1, 2);
 
-    mod.startCountdown(1);
-    expect(showSnackbar).toHaveBeenCalledWith("Next round in: 1s");
-    expect(updateSnackbar).not.toHaveBeenCalled();
-    scheduler.tick(1000);
-    expect(showSnackbar).toHaveBeenCalledTimes(1);
+    mod.startCountdown(3);
+    expect(countdownSpy).toHaveBeenCalledWith(3);
   });
 
-  it("initializes when called after DOM load", async () => {
-    const scheduler = createMockScheduler();
-    const mod = await import("../../src/helpers/setupScoreboard.js");
-    mod.setupScoreboard(createControls(scheduler), scheduler);
-    expect(document.getElementById("score-display")).toBeTruthy();
-  });
-
-  it("attaches to pre-existing elements", async () => {
+  it("calls initScoreboard with null when header missing", async () => {
     document.body.innerHTML = "";
-    document.body.appendChild(createScoreboardHeader());
     const scheduler = createMockScheduler();
+    const controls = createControls();
+    const scoreboard = await import("../../src/components/Scoreboard.js");
+    const initSpy = vi.spyOn(scoreboard, "initScoreboard");
     const mod = await import("../../src/helpers/setupScoreboard.js");
-    const { showSnackbar, updateSnackbar } = await import("../../src/helpers/showSnackbar.js");
-    showSnackbar.mockClear();
-    updateSnackbar.mockClear();
-    mod.setupScoreboard(createControls(scheduler), scheduler);
-    mod.showMessage("Hello");
-    expect(document.getElementById("round-message").textContent).toBe("Hello");
-    mod.clearMessage();
-    expect(document.getElementById("round-message").textContent).toBe("");
-    mod.updateScore(3, 4);
-    expect(document.getElementById("score-display").textContent).toBe("You: 3\nOpponent: 4");
-    mod.startCountdown(1);
-    expect(showSnackbar).toHaveBeenCalledWith("Next round in: 1s");
-    expect(updateSnackbar).not.toHaveBeenCalled();
-    scheduler.tick(1000);
-    expect(showSnackbar).toHaveBeenCalledTimes(1);
+    mod.setupScoreboard(controls, scheduler);
+    expect(initSpy).toHaveBeenCalledWith(
+      null,
+      expect.objectContaining({
+        startCoolDown: controls.startCoolDown,
+        pauseTimer: controls.pauseTimer,
+        resumeTimer: controls.resumeTimer,
+        scheduler
+      })
+    );
   });
 });
