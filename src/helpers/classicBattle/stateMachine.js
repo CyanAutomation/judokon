@@ -1,4 +1,5 @@
 import { CLASSIC_BATTLE_STATES } from "./stateTable.js";
+const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
  * Minimal event-driven state machine for Classic Battle.
@@ -77,13 +78,14 @@ export class BattleStateMachine {
     const state = this.statesByName.get(this.current);
     try {
       if (!state || !Array.isArray(state.triggers)) {
-        console.log("STATE_MACHINE: dispatch no triggers for state", this.current, eventName);
+        if (!IS_VITEST)
+          console.log("STATE_MACHINE: dispatch no triggers for state", this.current, eventName);
         return;
       }
-      console.log("STATE_MACHINE: dispatch", { state: this.current, event: eventName });
+      if (!IS_VITEST) console.log("STATE_MACHINE: dispatch", { state: this.current, event: eventName });
       const match = state.triggers.find((t) => t.on === eventName);
       if (!match) {
-        console.log("STATE_MACHINE: dispatch no matching trigger", {
+        if (!IS_VITEST) console.log("STATE_MACHINE: dispatch no matching trigger", {
           state: this.current,
           event: eventName
         });
@@ -91,23 +93,23 @@ export class BattleStateMachine {
       }
       const target = match.target;
       if (!this.statesByName.has(target)) {
-        console.log("STATE_MACHINE: dispatch target missing", { target });
+        if (!IS_VITEST) console.log("STATE_MACHINE: dispatch target missing", { target });
         return;
       }
       const from = this.current;
       this.current = target;
-      console.log("STATE_MACHINE: transitioning", { from, to: target, event: eventName });
+      if (!IS_VITEST) console.log("STATE_MACHINE: transitioning", { from, to: target, event: eventName });
       if (this.onTransition) {
         try {
           await this.onTransition({ from, to: target, event: eventName });
         } catch (err) {
-          console.log("STATE_MACHINE: onTransition error", String(err));
+          if (!IS_VITEST) console.log("STATE_MACHINE: onTransition error", String(err));
         }
       }
       await this.#runOnEnter(target, payload);
-      console.log("STATE_MACHINE: onEnter complete for", target);
+      if (!IS_VITEST) console.log("STATE_MACHINE: onEnter complete for", target);
     } catch (err) {
-      console.log("STATE_MACHINE: dispatch unexpected error", String(err));
+      if (!IS_VITEST) console.log("STATE_MACHINE: dispatch unexpected error", String(err));
     }
   }
 
@@ -115,12 +117,12 @@ export class BattleStateMachine {
     const fn = this.onEnterMap[stateName];
     if (typeof fn === "function") {
       try {
-        console.log("STATE_MACHINE: running onEnter", stateName);
+        if (!IS_VITEST) console.log("STATE_MACHINE: running onEnter", stateName);
         await fn(this, payload);
-        console.log("STATE_MACHINE: finished onEnter", stateName);
+        if (!IS_VITEST) console.log("STATE_MACHINE: finished onEnter", stateName);
       } catch (err) {
         // Swallow onEnter errors to avoid breaking game flow
-        console.debug("State onEnter error", stateName, err);
+        if (!IS_VITEST) console.debug("State onEnter error", stateName, err);
       }
     }
   }

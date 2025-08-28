@@ -12,6 +12,8 @@
 import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
 import { isEnabled } from "../featureFlags.js";
 
+const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
+
 /**
  * Query all stat buttons.
  *
@@ -49,10 +51,8 @@ export function resetStatButtons(
     cancel: cancelFrame
   }
 ) {
-  console.log("INFO: resetStatButtons called");
   try {
-    const before = document.querySelectorAll("#stat-buttons .selected").length;
-    console.warn(`[test] resetStatButtons: before=${before}`);
+    if (!IS_VITEST) console.log("INFO: resetStatButtons called");
   } catch {}
   const { onFrame, cancel } = scheduler;
   getStatButtons().forEach((btn) => {
@@ -72,10 +72,6 @@ export function resetStatButtons(
       });
     }
   });
-  try {
-    const after = document.querySelectorAll("#stat-buttons .selected").length;
-    console.warn(`[test] resetStatButtons: after=${after}`);
-  } catch {}
 }
 
 /**
