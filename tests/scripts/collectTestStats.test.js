@@ -1,24 +1,41 @@
-import { describe, it, expect } from "vitest";
-import { collectTestStats, rollDice } from "../../scripts/collectTestStats.mjs";
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import path from "node:path";
+import { describe, it, expect, vi } from "vitest";
 
-async function setupTempProject() {
-  const root = await mkdtemp(path.join(tmpdir(), "stats-"));
-  await mkdir(path.join(root, "test-results"), { recursive: true });
-  await writeFile(path.join(root, "test-results", "a.png"), "");
-  await writeFile(path.join(root, "test-results", "b.png"), "");
-  await mkdir(path.join(root, "playwright"), { recursive: true });
-  await writeFile(path.join(root, "playwright", "a.spec.js"), "test('a', () => {})");
-  await writeFile(path.join(root, "playwright", "b.spec.ts"), "it('b', () => {})");
-  await mkdir(path.join(root, "tests"), { recursive: true });
-  await writeFile(
-    path.join(root, "tests", "c.test.js"),
-    "test('c1', () => {}); it('c2', () => {})"
-  );
-  return root;
-}
+const files = vi.hoisted(() => ({
+  "test-results/a.png": "",
+  "test-results/b.png": "",
+  "playwright/a.spec.js": "test('a', () => {})",
+  "playwright/b.spec.ts": "it('b', () => {})",
+  "tests/c.test.js": "test('c1', () => {}); it('c2', () => {})"
+}));
+
+vi.mock("glob", () => ({
+  glob: vi.fn(async (pattern) => {
+    const patterns = Array.isArray(pattern) ? pattern : [pattern];
+    const results = [];
+    for (const pat of patterns) {
+      if (pat === "test-results/**/*.png") {
+        results.push("test-results/a.png", "test-results/b.png");
+      } else if (pat === "playwright/**/*.spec.@(js|ts)") {
+        results.push("playwright/a.spec.js", "playwright/b.spec.ts");
+      } else if (pat === "tests/**/*.{test,spec}.@(js|ts)") {
+        results.push("tests/c.test.js");
+      } else if (pat === "tests/**/*.@(js|ts)") {
+        results.push("tests/c.test.js");
+      } else if (pat === "playwright/**/*.@(js|ts)") {
+        results.push("playwright/a.spec.js", "playwright/b.spec.ts");
+      }
+    }
+    return results;
+  })
+}));
+
+vi.mock("node:fs/promises", () => {
+  const readFile = vi.fn(async (file) => files[file]);
+  const appendFile = vi.fn();
+  return { readFile, appendFile, default: { readFile, appendFile } };
+});
+
+import { collectTestStats, rollDice } from "../../scripts/collectTestStats.mjs";
 
 describe("rollDice", () => {
   it("maps random values to judo throws", () => {
@@ -36,8 +53,7 @@ describe("rollDice", () => {
 
 describe("collectTestStats", () => {
   it("counts files, cases and updated snapshots", async () => {
-    const root = await setupTempProject();
-    const stats = await collectTestStats(root, () => "test-results/a.png\ntest-results/b.png\n");
+    const stats = await collectTestStats("", () => "test-results/a.png\ntest-results/b.png\n");
     expect(stats).toEqual({
       snapshots: 2,
       testfiles: 3,
