@@ -32,6 +32,8 @@
         display: flex;
         justify-content: space-between;
         align-items: center; /* prevent height changes from baseline shifts */
+        box-sizing: border-box; /* include padding in fixed height */
+        height: 56px; /* hard cap header height for consistency */
       }
       .cli-title {
         font-weight: 700;

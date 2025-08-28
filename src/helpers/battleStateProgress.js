@@ -101,7 +101,16 @@ export async function initBattleStateProgress() {
 
   let ready = false;
   const handler = (e) => {
-    updateActive(e.detail);
+    // Accept both legacy string detail and new object shape { from, to }
+    const detail = e && e.detail;
+    const state =
+      typeof detail === "string"
+        ? detail
+        : detail && typeof detail.to === "string"
+          ? detail.to
+          : document.body?.dataset?.battleState || "";
+    if (!state) return;
+    updateActive(state);
     if (!ready) {
       ready = true;
       markBattlePartReady("state");

@@ -164,6 +164,18 @@ AI agents are encouraged to parse, test, and modify the system using these archi
 
 ---
 
+## 🔔 Battle State Events
+
+- The Classic Battle orchestrator mirrors state transitions through a DOM event:
+  - `document.dispatchEvent(new CustomEvent('battle:state', { detail }))`
+- `detail` may be:
+  - A string state name (legacy), or
+  - An object `{ from: string|null, to: string, event?: string|null }` (current).
+- Consumers should read `detail.to` when `detail` is an object; otherwise use the string value.
+- The current state is also mirrored on `document.body.dataset.battleState`.
+
+---
+
 ## 📎 Related Docs for AI Agents
 
 - `AGENTS.md`: Agent prompts, goals, and best practices
