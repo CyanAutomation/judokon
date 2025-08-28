@@ -211,7 +211,7 @@ beforeEach(async () => {
 // If a dependency/test removed it, restore from Node, then lock the binding.
 if (typeof globalThis.process === "undefined") {
   // restore minimally; should be rare—root cause still gets removed in step 2
-  // eslint-disable-next-line no-undef
+
   globalThis.process = process;
 }
 const __originalProcessRef = globalThis.process;

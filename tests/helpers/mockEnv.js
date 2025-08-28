@@ -19,4 +19,3 @@ export async function withEnv(vars, fn) {
     process.env = original;
   }
 }
-
