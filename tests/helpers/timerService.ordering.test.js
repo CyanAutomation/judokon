@@ -5,7 +5,8 @@ describe("timerService timeout ordering", () => {
     vi.resetModules();
 
     // Minimal DOM
-    document.body.innerHTML = '<div id="next-round-timer"></div><div id="stat-buttons"><button data-stat="a"></button></div>';
+    document.body.innerHTML =
+      '<div id="next-round-timer"></div><div id="stat-buttons"><button data-stat="a"></button></div>';
 
     // Scoreboard + UI stubs
     vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
@@ -81,4 +82,3 @@ describe("timerService timeout ordering", () => {
     resolveTimeout();
   });
 });
-
