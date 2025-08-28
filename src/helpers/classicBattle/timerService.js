@@ -60,6 +60,19 @@ export async function onNextButtonClick(_evt, { timer, resolveReady } = currentN
 
   if (timer) {
     timer.stop();
+  } else {
+    // No active timer controls: if we're in cooldown, advance immediately
+    try {
+      const state =
+        typeof window !== "undefined" && window.__classicBattleState
+          ? window.__classicBattleState
+          : null;
+      if (state === "cooldown") {
+        await dispatchBattleEvent("ready");
+        if (typeof resolveReady === "function") resolveReady();
+        setSkipHandler(null);
+      }
+    } catch {}
   }
 }
 
