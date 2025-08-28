@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
 import { withAllowedConsole } from "../utils/console.js";
+import { CHUNK_SIZE, OVERLAP_RATIO } from "../../src/helpers/vectorSearch/chunkConfig.js";
 
 vi.mock("../../src/helpers/dataUtils.js", () => ({
   fetchJson: vi.fn(),
@@ -198,7 +199,7 @@ describe("vectorSearch", () => {
     const expected = chunkMarkdown(md).slice(1, 4);
     expect(result).toEqual(expected);
     for (const chunk of result) {
-      expect(chunk.length).toBeLessThanOrEqual(1400);
+      expect(chunk.length).toBeLessThanOrEqual(CHUNK_SIZE);
     }
   });
 
@@ -215,9 +216,9 @@ describe("vectorSearch", () => {
     const { chunkMarkdown } = await import("../../src/helpers/vectorSearch/context.js");
     const chunks = chunkMarkdown(md);
     expect(chunks.length).toBeGreaterThan(1);
-    expect(chunks[0].length).toBeLessThanOrEqual(1400);
-    expect(chunks[1].length).toBeLessThanOrEqual(1400);
-    const overlapSize = Math.floor(1400 * 0.15);
+    expect(chunks[0].length).toBeLessThanOrEqual(CHUNK_SIZE);
+    expect(chunks[1].length).toBeLessThanOrEqual(CHUNK_SIZE);
+    const overlapSize = Math.floor(CHUNK_SIZE * OVERLAP_RATIO);
     const overlap = chunks[0].slice(-overlapSize);
     expect(chunks[1].startsWith(overlap)).toBe(true);
     expect(chunks[0].endsWith(".")).toBe(true);

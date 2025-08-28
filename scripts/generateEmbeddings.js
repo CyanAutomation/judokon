@@ -41,6 +41,7 @@ import { glob } from "glob";
 import { pipeline } from "@xenova/transformers";
 import * as acorn from "acorn";
 import { walk } from "estree-walker";
+import { CHUNK_SIZE, OVERLAP_RATIO } from "../src/helpers/vectorSearch/chunkConfig.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -201,9 +202,6 @@ function createSparseVector(text) {
 
 let codeGraphs = { modules: {} };
 
-// Target chunk ≈ 350 tokens (≈ 1,400 chars), overlap ≈ 15%
-const CHUNK_SIZE = 1400;
-// Removed unused constant OVERLAP
 const MAX_OUTPUT_SIZE = 9.8 * 1024 * 1024;
 
 const JSON_FIELD_ALLOWLIST = {
@@ -341,7 +339,7 @@ function chunkMarkdown(text) {
   for (let i = 0; i < finalChunks.length; i++) {
     if (i > 0) {
       const previous = finalChunks[i - 1].split(" ");
-      const overlap = previous.slice(-Math.floor(previous.length * 0.15)).join(" ");
+      const overlap = previous.slice(-Math.floor(previous.length * OVERLAP_RATIO)).join(" ");
       overlappedChunks.push(overlap + " " + finalChunks[i]);
     } else {
       overlappedChunks.push(finalChunks[i]);

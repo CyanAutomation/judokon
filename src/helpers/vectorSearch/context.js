@@ -1,5 +1,4 @@
-const CHUNK_SIZE = 1400;
-const OVERLAP_RATIO = 0.15;
+import { CHUNK_SIZE, OVERLAP_RATIO } from "./chunkConfig.js";
 
 function splitIntoSections(lines) {
   const heading = /^(#{1,6})\s+/;
