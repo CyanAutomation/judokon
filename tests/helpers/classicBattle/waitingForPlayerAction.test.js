@@ -20,4 +20,3 @@ describe("waitingForPlayerActionEnter", () => {
     expect(btn.dataset.nextReady).toBeUndefined();
   });
 });
-
