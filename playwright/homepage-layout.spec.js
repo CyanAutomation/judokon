@@ -20,6 +20,23 @@ test.describe("Homepage layout", () => {
       expect(columnCount).toBe(2);
     });
 
+    test("home screen matches viewport height", async ({ page }) => {
+      const { homeHeight, headerHeight, footerHeight, viewportHeight } = await page.evaluate(() => {
+        const home = document.querySelector(".home-screen");
+        const header = document.querySelector(".header");
+        const footer = document.querySelector(".bottom-navbar");
+        return {
+          homeHeight: parseFloat(getComputedStyle(home).height),
+          headerHeight: parseFloat(getComputedStyle(header).height),
+          footerHeight: parseFloat(getComputedStyle(footer).height),
+          viewportHeight: window.innerHeight
+        };
+      });
+      expect(
+        Math.abs(homeHeight + headerHeight + footerHeight - viewportHeight)
+      ).toBeLessThanOrEqual(ALLOWED_OFFSET);
+    });
+
     test("grid does not overlap footer (desktop)", async ({ page }) => {
       const grid = page.locator(".game-mode-grid");
       const gridBox = await grid.boundingBox();
@@ -62,6 +79,23 @@ test.describe("Homepage layout", () => {
         return style.gridTemplateColumns.split(/\s+/).filter(Boolean).length;
       });
       expect(columnCount).toBe(1);
+    });
+
+    test("home screen matches viewport height", async ({ page }) => {
+      const { homeHeight, headerHeight, footerHeight, viewportHeight } = await page.evaluate(() => {
+        const home = document.querySelector(".home-screen");
+        const header = document.querySelector(".header");
+        const footer = document.querySelector(".bottom-navbar");
+        return {
+          homeHeight: parseFloat(getComputedStyle(home).height),
+          headerHeight: parseFloat(getComputedStyle(header).height),
+          footerHeight: parseFloat(getComputedStyle(footer).height),
+          viewportHeight: window.innerHeight
+        };
+      });
+      expect(
+        Math.abs(homeHeight + headerHeight + footerHeight - viewportHeight)
+      ).toBeLessThanOrEqual(ALLOWED_OFFSET);
     });
 
     test("grid does not overlap footer (mobile)", async ({ page }) => {
