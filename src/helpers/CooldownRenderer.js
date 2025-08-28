@@ -18,23 +18,31 @@ import { emitBattleEvent } from "./classicBattle/battleEvents.js";
 export function attachCooldownRenderer(timer, initialRemaining) {
   let started = false;
   let lastRendered = -1;
+  let rendered = false;
 
-  const onTick = (remaining) => {
+  const render = (remaining) => {
     const clamped = Math.max(0, remaining);
     const text = `Next round in: ${clamped}s`;
-    if (!started) {
+    if (!rendered) {
       snackbar.showSnackbar(text);
-      started = true;
-      emitBattleEvent("nextRoundCountdownStarted");
+      rendered = true;
     } else if (clamped !== lastRendered) {
       snackbar.updateSnackbar(text);
+    }
+    lastRendered = clamped;
+    return clamped;
+  };
+
+  const onTick = (remaining) => {
+    const clamped = render(remaining);
+    if (!started) {
+      started = true;
+      emitBattleEvent("nextRoundCountdownStarted");
     }
     emitBattleEvent("nextRoundCountdownTick", { remaining: clamped });
     if (clamped <= 0) {
       scoreboard.clearTimer();
-      return;
     }
-    lastRendered = clamped;
   };
 
   const onExpired = () => onTick(0);
@@ -42,7 +50,8 @@ export function attachCooldownRenderer(timer, initialRemaining) {
   timer.on("tick", onTick);
   timer.on("expired", onExpired);
   if (typeof initialRemaining === "number") {
-    onTick(initialRemaining);
+    const clamped = render(initialRemaining);
+    if (clamped <= 0) scoreboard.clearTimer();
   }
   return () => {
     timer.off("tick", onTick);
