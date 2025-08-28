@@ -142,12 +142,9 @@ export async function resolveRound(
   try {
     if (!IS_VITEST) console.log("DEBUG: resolveRound sleep", { delayMs, stat });
   } catch {}
-  // Clear any scheduled guard to avoid duplicate resolution.
+  // Mark resolving but keep the guard active until resolution completes; this
+  // allows the guard to rescue the round if resolution stalls.
   try {
-    if (typeof window !== "undefined" && window.__roundDecisionGuard) {
-      clearTimeout(window.__roundDecisionGuard);
-      window.__roundDecisionGuard = null;
-    }
     if (typeof window !== "undefined") window.__roundDebug = { resolving: true };
   } catch {}
   await sleep(delayMs);
@@ -156,6 +153,14 @@ export async function resolveRound(
   } catch {}
   emitBattleEvent("opponentReveal");
   const result = await computeRoundResult(store, stat, playerVal, opponentVal);
+  // Resolution completed; clear any scheduled guard to avoid late duplicate
+  // outcome dispatch after we've already advanced the machine.
+  try {
+    if (typeof window !== "undefined" && window.__roundDecisionGuard) {
+      clearTimeout(window.__roundDecisionGuard);
+      window.__roundDecisionGuard = null;
+    }
+  } catch {}
   try {
     if (typeof window !== "undefined" && window.__roundDebug) {
       window.__roundDebug.resolvedAt = Date.now();
