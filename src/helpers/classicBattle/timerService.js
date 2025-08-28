@@ -158,8 +158,18 @@ export async function startTimer(onExpiredSelect) {
     try {
       emitBattleEvent("roundTimeout");
     } catch {}
+    // Important: don't block auto-select behind the state transition.
+    // The roundDecision onEnter waits for a short window for playerChoice;
+    // if we await the dispatch first, the guard can interrupt before
+    // autoSelect runs. Start auto-select immediately and then await the
+    // timeout dispatch so both proceed concurrently.
+    const selecting = (async () => {
+      try {
+        await autoSelectStat(onExpiredSelect);
+      } catch {}
+    })();
     await dispatchBattleEvent("timeout");
-    await autoSelectStat(onExpiredSelect);
+    await selecting;
   };
 
   try {
