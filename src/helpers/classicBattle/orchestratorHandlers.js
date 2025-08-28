@@ -331,6 +331,19 @@ export async function roundDecisionEnter(machine) {
           window.__roundDecisionGuard = null;
         }
       } catch {}
+      // Watchdog: if for any reason the machine is still stuck in
+      // roundDecision a short time after resolveImmediate returns, force an
+      // interrupt to avoid a visible stall.
+      try {
+        setTimeout(async () => {
+          try {
+            const still = machine.getState ? machine.getState() : null;
+            if (still === "roundDecision") {
+              await machine.dispatch("interrupt", { reason: "postResolveWatchdog" });
+            }
+          } catch {}
+        }, 600);
+      } catch {}
     } catch {
       try {
         emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
