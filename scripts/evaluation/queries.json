@@ -22,5 +22,45 @@
   {
     "query": "how are judoka stats calculated",
     "expected_source": "src/data/judoka.json"
+  },
+  {
+    "query": "tooltip content coverage guidelines",
+    "expected_source": "design/productRequirementsDocuments/prdTooltipSystem.md"
+  },
+  {
+    "query": "requirements for navigation bar layout",
+    "expected_source": "design/productRequirementsDocuments/prdNavigationBar.md"
+  },
+  {
+    "query": "purpose of the prd viewer tool",
+    "expected_source": "design/productRequirementsDocuments/prdPRDViewer.md"
+  },
+  {
+    "query": "default navigation items",
+    "expected_source": "src/data/navigationItems.json"
+  },
+  {
+    "query": "weight category definitions",
+    "expected_source": "src/data/weightCategories.json"
+  },
+  {
+    "query": "game timer phases",
+    "expected_source": "src/data/gameTimers.json"
+  },
+  {
+    "query": "what does the power stat represent",
+    "expected_source": "src/data/statNames.json"
+  },
+  {
+    "query": "steps to update a judoka profile",
+    "expected_source": "design/productRequirementsDocuments/prdUpdateJudoka.md"
+  },
+  {
+    "query": "goals of the tooltip viewer",
+    "expected_source": "design/productRequirementsDocuments/prdTooltipViewer.md"
+  },
+  {
+    "query": "default sound setting in configuration",
+    "expected_source": "src/data/settings.json"
   }
 ]
