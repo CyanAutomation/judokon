@@ -5,6 +5,7 @@ import ClassicBattleView from "./view.js";
 import "./promises.js";
 // Ensure round UI event listeners are registered (roundStarted → showSelectionPrompt)
 import "./roundUI.js";
+import { createClassicBattleDebugAPI } from "./setupTestHelpers.js";
 
 /**
  * Bootstrap Classic Battle page by wiring controller and view.
@@ -17,6 +18,11 @@ export async function setupClassicBattlePage() {
   view.bindController(controller);
   await controller.init();
   await view.init();
+  const debugAPI = createClassicBattleDebugAPI(view);
+  if (typeof process !== "undefined" && process.env.VITEST === "true") {
+    window.__classicBattleDebugAPI = debugAPI;
+  }
+  return debugAPI;
 }
 
 if (typeof process === "undefined" || process.env.VITEST !== "true") {

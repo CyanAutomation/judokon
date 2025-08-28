@@ -3,19 +3,19 @@ import { skipCurrentPhase } from "./skipHandler.js";
 import { start as startScheduler, stop as stopScheduler } from "../../utils/scheduler.js";
 
 /**
- * Install test helpers on the global window.
+ * Create debug helpers for Classic Battle tests.
  *
  * @pseudocode
- * 1. Expose `battleStore` and `skipBattlePhase` on `window`.
- * 2. Provide overrides to start a round and freeze/resume the header.
- * 3. Use scheduler helpers when freezing or resuming the header.
+ * 1. Reference the controller's battle store.
+ * 2. Define `skipBattlePhase` that resets stat buttons after skipping.
+ * 3. Expose overrides to start a round and freeze/resume the header.
+ * 4. Return the helpers without mutating global state.
  *
  * @param {import("./view.js").ClassicBattleView} view
  */
-export function setupTestHelpers(view) {
+export function createClassicBattleDebugAPI(view) {
   const store = view.controller.battleStore;
-  window.battleStore = store;
-  window.skipBattlePhase = () => {
+  const skipBattlePhase = () => {
     try {
       skipCurrentPhase();
     } catch {}
@@ -27,21 +27,27 @@ export function setupTestHelpers(view) {
     return Promise.resolve();
   };
 
-  try {
-    window.startRoundOverride = () => view.startRound();
-    window.freezeBattleHeader = () => {
-      try {
-        view.controller.timerControls.pauseTimer();
-        stopScheduler();
-      } catch {}
-    };
-    window.resumeBattleHeader = () => {
-      try {
-        startScheduler();
-        view.controller.timerControls.resumeTimer();
-      } catch {}
-    };
-  } catch {}
+  const startRoundOverride = () => view.startRound();
+  const freezeBattleHeader = () => {
+    try {
+      view.controller.timerControls.pauseTimer();
+      stopScheduler();
+    } catch {}
+  };
+  const resumeBattleHeader = () => {
+    try {
+      startScheduler();
+      view.controller.timerControls.resumeTimer();
+    } catch {}
+  };
+
+  return {
+    battleStore: store,
+    skipBattlePhase,
+    startRoundOverride,
+    freezeBattleHeader,
+    resumeBattleHeader
+  };
 }
 
-export default setupTestHelpers;
+export default createClassicBattleDebugAPI;

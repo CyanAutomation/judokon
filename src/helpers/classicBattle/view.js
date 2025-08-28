@@ -1,5 +1,4 @@
 import { setBattleStateBadgeEnabled, applyBattleFeatureFlags } from "./uiHelpers.js";
-import setupTestHelpers from "./setupTestHelpers.js";
 import setupScheduler from "./setupScheduler.js";
 import setupUIBindings from "./setupUIBindings.js";
 import setupDebugHooks from "./setupDebugHooks.js";
@@ -46,7 +45,6 @@ export class ClassicBattleView {
    * @returns {Promise<void>}
    */
   async init() {
-    setupTestHelpers(this);
     setupScheduler();
     this.statButtonControls = await setupUIBindings(this);
     setupDebugHooks(this);
