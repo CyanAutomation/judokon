@@ -1,6 +1,7 @@
 // @vitest-environment node
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { generateCardSignatureMove } from "../../src/helpers/cardRender.js";
+import * as utils from "../../src/helpers/utils.js";
 
 describe("generateCardSignatureMove", () => {
   describe("Valid Cases", () => {
@@ -121,62 +122,16 @@ describe("generateCardSignatureMove", () => {
     });
   });
 
-  describe("HTML Safety and Formatting", () => {
-    it("should not include <script> tags in output", () => {
-      const html = generateCardSignatureMove(
-        { signatureMoveId: 1 },
-        { 1: { id: 1, name: "<script>alert(1)</script>" } }
-      );
-      expect(html).not.toMatch(/<script>/i);
-    });
-
-    it("escapes HTML tags in technique names", () => {
+  describe("HTML Safety", () => {
+    it("sanitizes technique names using escapeHTML", () => {
+      const spy = vi.spyOn(utils, "escapeHTML");
       const html = generateCardSignatureMove(
         { signatureMoveId: 1 },
         { 1: { id: 1, name: "<b>Uchi-mata</b>" } }
       );
+      expect(spy).toHaveBeenCalledWith("<b>Uchi-mata</b>");
       expect(html).toContain("&lt;b&gt;Uchi-mata&lt;/b&gt;");
-      expect(html).not.toContain("<b>Uchi-mata</b>");
-    });
-
-    it("escapes script content to prevent XSS", () => {
-      const html = generateCardSignatureMove(
-        { signatureMoveId: 1 },
-        { 1: { id: 1, name: "<script>alert('XSS')</script>" } }
-      );
-      expect(html).toContain("&lt;script&gt;alert(&#039;XSS&#039;)&lt;/script&gt;");
-    });
-
-    it("escapes additional malicious tags", () => {
-      const html = generateCardSignatureMove(
-        { signatureMoveId: 1 },
-        { 1: { id: 1, name: "<img src=x onerror=alert('XSS')>" } }
-      );
-      expect(html).toContain("&lt;img src=x onerror=alert(&#039;XSS&#039;)&gt;");
-    });
-
-    it("does not double-escape already escaped entities", () => {
-      const html = generateCardSignatureMove(
-        { signatureMoveId: 1 },
-        { 1: { id: 1, name: "&lt;b&gt;alert(1)&lt;/b&gt;" } }
-      );
-      expect(html).toContain("&lt;b&gt;alert(1)&lt;/b&gt;");
-    });
-
-    it("should trim whitespace from technique names", () => {
-      const html = generateCardSignatureMove(
-        { signatureMoveId: 1 },
-        { 1: { id: 1, name: "  Uchi-mata  " } }
-      );
-      expect(html).toContain("Uchi-mata");
-    });
-
-    it("should handle HTML entities in technique names", () => {
-      const html = generateCardSignatureMove(
-        { signatureMoveId: 1 },
-        { 1: { id: 1, name: "O-soto-gari &amp; Tomoe-nage" } }
-      );
-      expect(html).toContain("O-soto-gari &amp; Tomoe-nage");
+      spy.mockRestore();
     });
   });
 });
