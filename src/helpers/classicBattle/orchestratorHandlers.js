@@ -9,6 +9,9 @@ import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.j
 import { resolveRound } from "./roundResolver.js";
 // Removed unused import for enableNextRoundButton
 
+// Test-mode flag for muting noisy logs in Vitest
+const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
+
 export function isStateTransition(from, to) {
   try {
     if (typeof document === "undefined") return false;
