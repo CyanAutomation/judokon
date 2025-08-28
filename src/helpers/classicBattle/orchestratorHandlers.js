@@ -441,7 +441,8 @@ export async function interruptRoundEnter(machine, payload) {
   if (payload?.adminTest) {
     await machine.dispatch("roundModification", payload);
   } else {
-    await machine.dispatch("cooldown");
+    // Use the state-table-defined trigger to reach cooldown
+    await machine.dispatch("restartRound");
   }
 }
 export async function interruptRoundExit() {}
@@ -452,7 +453,8 @@ export async function interruptMatchEnter(machine, payload) {
   if (payload?.reason) {
     emitBattleEvent("scoreboardShowMessage", `Match interrupted: ${payload.reason}`);
   }
-  await machine.dispatch("matchOver", payload);
+  // Return to lobby via state-table-defined trigger
+  await machine.dispatch("toLobby", payload);
 }
 export async function interruptMatchExit() {}
 
