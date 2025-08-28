@@ -48,7 +48,7 @@ describe("timerService next round handling", () => {
     const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
     nextButton.addEventListener("click", (e) => mod.onNextButtonClick(e, controls));
     scheduler.tick(0);
-    nextButton.click();
+    nextButton.dispatchEvent(new MouseEvent("click"));
     await controls.ready;
     // Current flow guarantees at least one dispatch; a second may occur
     // via attribute observation. Accept one or more invocations.
@@ -67,6 +67,21 @@ describe("timerService next round handling", () => {
     await controls.ready;
     expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
     expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears stale nextReady before starting a new cooldown", async () => {
+    const mod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const { nextButton } = createTimerNodes();
+    nextButton.dataset.nextReady = "true";
+    nextButton.disabled = false;
+    window.__NEXT_ROUND_COOLDOWN_MS = 1000;
+    const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
+    expect(nextButton.dataset.nextReady).toBeUndefined();
+    expect(nextButton.disabled).toBe(true);
+    scheduler.tick(1100);
+    await controls.ready;
+    expect(nextButton.dataset.nextReady).toBe("true");
+    delete window.__NEXT_ROUND_COOLDOWN_MS;
   });
 
   it("computeNextRoundCooldown respects test mode", async () => {

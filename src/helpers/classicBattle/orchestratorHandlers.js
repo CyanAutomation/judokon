@@ -143,20 +143,6 @@ export async function cooldownEnter(machine, payload) {
       return;
     }
   } catch {}
-
-  // For other inter-round cooldowns in test mode, auto-advance to the next
-  // round to avoid relying on external UI timers/handlers which can be racy
-  // under CI.
-  try {
-    if (isTestModeEnabled && isTestModeEnabled()) {
-      try {
-        if (machine.getState && machine.getState() === "cooldown") {
-          console.warn("[test] cooldownEnter: auto-advance dispatch ready");
-          machine.dispatch("ready");
-        }
-      } catch {}
-    }
-  } catch {}
 }
 export async function cooldownExit() {}
 

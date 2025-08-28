@@ -395,7 +395,7 @@ export async function handleNextRoundExpiration(controls, btn, timerEl) {
  * @pseudocode
  * 1. If the match ended, resolve immediately.
  * 2. Determine cooldown seconds via `computeNextRoundCooldown` (minimum 1s).
- * 3. Locate `#next-button` and `#next-round-timer`.
+ * 3. Locate `#next-button` and `#next-round-timer`; reset the button state.
  * 4. Create `onTick` with `createNextRoundSnackbarRenderer` and
  *    `onExpired` with `handleNextRoundExpiration`.
  * 5. Register a skip handler that logs the skip (for tests) and stops the timer.
@@ -442,11 +442,14 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
   const btn = document.getElementById("next-button");
   const timerEl = document.getElementById("next-round-timer");
 
-  const cooldownSeconds = computeNextRoundCooldown();
+  // Reset any leftover ready state so each cooldown runs through the timer
+  // path even after an auto-advance.
+  if (btn) {
+    btn.disabled = true;
+    delete btn.dataset.nextReady;
+  }
 
-  // Do not mutate the Next button until the cooldown actually expires.
-  // Enabling early or clearing the readiness flag can race with state
-  // transitions and tests that assert the ready state after auto-advance.
+  const cooldownSeconds = computeNextRoundCooldown();
 
   // Do not skip scheduling based on current state; roundResolved may fire
   // while the machine is still transitioning. Scheduling early is safe — the
@@ -467,12 +470,6 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
     } catch {}
     if (controls.timer) controls.timer.stop();
   });
-
-  if (btn && btn.dataset.nextReady === "true") {
-    if (typeof controls.resolveReady === "function") controls.resolveReady();
-    currentNextRound = controls;
-    return controls;
-  }
 
   onTick(cooldownSeconds);
   // Start engine-backed countdown on the next tick.
