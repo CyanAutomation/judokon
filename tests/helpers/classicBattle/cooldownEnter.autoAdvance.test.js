@@ -1,0 +1,29 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
+vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
+  computeNextRoundCooldown: vi.fn(() => 0),
+  getNextRoundControls: vi.fn(() => null)
+}));
+
+import { cooldownEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
+
+describe("cooldownEnter", () => {
+  let timerSpy;
+  let machine;
+  beforeEach(() => {
+    timerSpy = vi.useFakeTimers();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    machine = { dispatch: vi.fn(), getState: vi.fn(() => "cooldown"), context: {} };
+  });
+  afterEach(() => {
+    timerSpy.clearAllTimers();
+    vi.restoreAllMocks();
+  });
+  it("auto dispatches ready after timers for zero cooldown", async () => {
+    await cooldownEnter(machine);
+    expect(machine.dispatch).not.toHaveBeenCalled();
+    vi.runAllTimers();
+    expect(machine.dispatch).toHaveBeenCalledWith("ready");
+  });
+});
