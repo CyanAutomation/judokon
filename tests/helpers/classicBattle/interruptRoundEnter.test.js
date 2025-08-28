@@ -1,5 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
-import { interruptRoundEnter, interruptMatchEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
+import {
+  interruptRoundEnter,
+  interruptMatchEnter
+} from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 
 describe("interrupt handlers dispatch valid state-table triggers", () => {
   it("interruptRoundEnter dispatches restartRound (not cooldown)", async () => {
