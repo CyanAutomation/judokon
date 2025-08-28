@@ -46,31 +46,32 @@ describe("loadSettings", () => {
     expect(settings.sound).toBe(false);
   });
 
-  it("strips unknown keys and warns", async () => {
+  it.each([
+    {
+      source: "localStorage",
+      setup: () => {
+        vi.stubGlobal(
+          "fetch",
+          vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({}) })
+        );
+        localStorage.setItem("settings", JSON.stringify({ bogus: true }));
+      }
+    },
+    {
+      source: "fetched settings",
+      setup: () => {
+        vi.stubGlobal(
+          "fetch",
+          vi.fn().mockResolvedValue({
+            ok: true,
+            json: () => Promise.resolve({ bogus: true })
+          })
+        );
+      }
+    }
+  ])("drops unknown keys from %s and warns", async ({ setup }) => {
     await withAllowedConsole(async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({}) })
-      );
-      localStorage.setItem("settings", JSON.stringify({ bogus: true }));
-      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-      const { loadSettings } = await import("../../src/config/loadSettings.js");
-      const settings = await loadSettings();
-      expect(settings.bogus).toBeUndefined();
-      expect(warnSpy).toHaveBeenCalledWith('Unknown setting "bogus" ignored');
-      warnSpy.mockRestore();
-    }, ["warn"]);
-  });
-
-  it("drops unknown keys from fetched settings", async () => {
-    await withAllowedConsole(async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue({
-          ok: true,
-          json: () => Promise.resolve({ bogus: true })
-        })
-      );
+      setup();
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       const { loadSettings } = await import("../../src/config/loadSettings.js");
       const settings = await loadSettings();
