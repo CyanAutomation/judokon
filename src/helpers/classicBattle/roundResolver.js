@@ -74,7 +74,6 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   // transitions run after onEnter completes.
   try {
     const run = () => {
-      if (!IS_VITEST) console.log("DEBUG: Dispatching outcomeEvent:", outcomeEvent);
       Promise.resolve(dispatchBattleEvent(outcomeEvent))
         .then(() =>
           result.matchEnded
@@ -83,13 +82,13 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
         )
         .catch(() => {});
     };
-    try {
-      if (typeof queueMicrotask === "function") queueMicrotask(run);
-    } catch {}
-    try {
-      if (typeof setTimeout === "function") setTimeout(run, 0);
-      else run();
-    } catch {}
+    if (typeof queueMicrotask === "function") {
+      queueMicrotask(run);
+    } else if (typeof setTimeout === "function") {
+      setTimeout(run, 0);
+    } else {
+      run(); // Fallback for environments without microtasks or setTimeout
+    }
   } catch {}
   resetStatButtons();
   emitBattleEvent("roundResolved", {
