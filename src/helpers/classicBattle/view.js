@@ -2,6 +2,7 @@ import { setBattleStateBadgeEnabled, applyBattleFeatureFlags } from "./uiHelpers
 import setupScheduler from "./setupScheduler.js";
 import setupUIBindings from "./setupUIBindings.js";
 import setupDebugHooks from "./setupDebugHooks.js";
+import { getOrientation } from "../orientation.js";
 import "../setupBottomNavbar.js";
 import "../setupDisplaySettings.js";
 import "../setupSvgFallback.js";
@@ -50,41 +51,20 @@ export class ClassicBattleView {
     setupDebugHooks(this);
   }
 
-  /** @returns {"portrait"|"landscape"} */
-  getOrientation() {
-    try {
-      const portrait = window.innerHeight >= window.innerWidth;
-      if (typeof window.matchMedia === "function") {
-        const mm = window.matchMedia("(orientation: portrait)");
-        if (typeof mm.matches === "boolean" && mm.matches !== portrait) {
-          return portrait ? "portrait" : "landscape";
-        }
-        return mm.matches ? "portrait" : "landscape";
-      }
-      return portrait ? "portrait" : "landscape";
-    } catch {
-      return window.innerHeight >= window.innerWidth ? "portrait" : "landscape";
-    }
-  }
-
   /**
    * Applies current orientation to header.
    *
    * @pseudocode
    * 1. Query `.battle-header`; resolve `false` if missing.
-   * 2. Determine orientation via `getOrientation`.
-   * 3. Update `data-orientation` when changed.
-   * 4. Resolve `true` once attributes are set.
+   * 2. Update `data-orientation` with {@link getOrientation}.
+   * 3. Resolve `true` once attributes are set.
    *
    * @returns {Promise<boolean>} Resolves `true` when applied, `false` if header missing.
    */
   async applyBattleOrientation() {
     const header = document.querySelector(".battle-header");
     if (header) {
-      const next = this.getOrientation();
-      if (header.dataset.orientation !== next) {
-        header.dataset.orientation = next;
-      }
+      header.dataset.orientation = getOrientation();
       return true;
     }
     return false;
