@@ -38,8 +38,10 @@ test.describe("Classic battle flow", () => {
     await roundOptions.first().click();
     await expect(page.locator(".modal-backdrop:not([hidden])")).toHaveCount(0);
     await waitForBattleReady(page);
-    // Let the timer expire
-    await expect(page.locator(".snackbar")).toHaveText(/Time's up!/, { timeout: 35000 });
+    // Let the timer expire. Current UX shows the next-round countdown
+    // via snackbar after auto-select, rather than a "Time's up!" banner.
+    // Assert the countdown appears to confirm expiration + auto-pick.
+    await expect(page.locator(".snackbar")).toHaveText(/Next round in: \d+s/, { timeout: 35000 });
   });
 
   test("tie message appears on equal stats", async ({ page }) => {

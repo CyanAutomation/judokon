@@ -1,11 +1,9 @@
 import { seededRandom } from "../testModeUtils.js";
 import { STATS } from "../battleEngineFacade.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
-// Avoid writing to the header message area during auto-select; tests expect
-// the outcome message to occupy that region immediately after selection.
-// Intentionally avoid showing a snackbar here to prevent racing with
-// the cooldown countdown snackbar. The auto-select announcement is
-// surfaced via the Scoreboard message area instead.
+import { showAutoSelect } from "../setupScoreboard.js";
+// Announce auto-select in the Scoreboard header to satisfy PRD acceptance
+// criteria and avoid racing with the cooldown snackbar updates.
 
 const AUTO_SELECT_FEEDBACK_MS = 500;
 
@@ -49,6 +47,14 @@ export async function autoSelectStat(onSelect, feedbackDelayMs = AUTO_SELECT_FEE
     } catch {}
   }
   if (btn) btn.classList.add("selected");
+  // Announce in the scoreboard header (capitalize for readability)
+  try {
+    const label =
+      typeof randomStat === "string"
+        ? randomStat.charAt(0).toUpperCase() + randomStat.slice(1)
+        : String(randomStat);
+    showAutoSelect(label);
+  } catch {}
   if (feedbackDelayMs > 0) {
     await new Promise((resolve) => setTimeout(resolve, feedbackDelayMs));
   }
