@@ -17,7 +17,9 @@ describe("battleStateProgress updates on object-shaped battle:state", () => {
     expect(list.children.length).toBeGreaterThan(0);
 
     // Dispatch an object-shaped event and verify the active item toggles.
-    document.dispatchEvent(new CustomEvent("battle:state", { detail: { from: "x", to: "cooldown" } }));
+    document.dispatchEvent(
+      new CustomEvent("battle:state", { detail: { from: "x", to: "cooldown" } })
+    );
     const active = list.querySelector("li.active");
     expect(active?.dataset.state).toBe("cooldown");
 
@@ -26,4 +28,3 @@ describe("battleStateProgress updates on object-shaped battle:state", () => {
     expect(badge.textContent).toBe("State: cooldown");
   });
 });
-

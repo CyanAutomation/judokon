@@ -80,7 +80,9 @@ describe("battle-state-progress stays in sync across transitions", () => {
 
     // Select a stat → roundDecision (simulate via DOM event to assert UI sync)
     document.dispatchEvent(
-      new CustomEvent("battle:state", { detail: { from: "waitingForPlayerAction", to: "roundDecision" } })
+      new CustomEvent("battle:state", {
+        detail: { from: "waitingForPlayerAction", to: "roundDecision" }
+      })
     );
     active = list.querySelector("li.active");
     expect(active?.dataset.state).toBe("roundDecision");
