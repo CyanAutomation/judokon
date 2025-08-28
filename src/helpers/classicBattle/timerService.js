@@ -496,22 +496,17 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
     return handleZeroCooldownFastPath(controls, btn);
   }
 
-  // Only skip scheduling when not in roundOver/cooldown for non-zero cooldowns.
-  // Allow zero-cooldown fast-path regardless of state to keep tests deterministic.
-  try {
-    const s = typeof window !== "undefined" ? window.__classicBattleState || null : null;
-    if (s && s !== "roundOver" && s !== "cooldown") {
-      if (typeof controls.resolveReady === "function") controls.resolveReady();
-      currentNextRound = controls;
-      try {
-        console.warn(`[test] scheduleNextRound: skipped in state=${s}`);
-      } catch {}
-      return controls;
-    }
-  } catch {}
+  // Do not skip scheduling based on current state; roundResolved may fire
+  // while the machine is still transitioning. Scheduling early is safe — the
+  // expiration handler checks the live state before dispatching 'ready'.
 
   const onTick = createNextRoundSnackbarRenderer();
-  const onExpired = () => handleNextRoundExpiration(controls, btn, timerEl);
+  let expired = false;
+  const onExpired = () => {
+    if (expired) return;
+    expired = true;
+    return handleNextRoundExpiration(controls, btn, timerEl);
+  };
 
   controls.timer = createRoundTimer(onTick, onExpired);
   setSkipHandler(() => {
@@ -528,7 +523,15 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
   }
 
   onTick(cooldownSeconds);
+  // Start engine-backed countdown on the next tick.
   scheduler.setTimeout(() => controls.timer.start(cooldownSeconds), 0);
+  // Fallback: in environments where the engine isn't running (or mocks omit
+  // startCoolDown), ensure expiration still occurs so the state machine can
+  // progress and tests don't hang.
+  try {
+    const ms = Math.max(0, Number(cooldownSeconds) * 1000) + 10;
+    scheduler.setTimeout(onExpired, ms);
+  } catch {}
   currentNextRound = controls;
   return controls;
 }
