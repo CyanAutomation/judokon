@@ -29,9 +29,6 @@ test.describe("Timeout autoselect does not stall", () => {
     await waitForBattleState(page, "waitingForPlayerAction", 10000);
 
     // Sanity: stat buttons enabled again
-    await expect(
-      page.locator("#stat-buttons button").first()
-    ).toBeEnabled({ timeout: 5000 });
+    await expect(page.locator("#stat-buttons button").first()).toBeEnabled({ timeout: 5000 });
   });
 });
-
