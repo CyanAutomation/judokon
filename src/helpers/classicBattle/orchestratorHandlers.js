@@ -360,7 +360,8 @@ export async function roundDecisionEnter(machine) {
           } catch {}
         }, 600);
       } catch {}
-    } catch (error) { // Catch the error and log it
+    } catch (error) {
+      // Catch the error and log it
       if (!IS_VITEST) console.error("DEBUG: Error in roundDecisionEnter:", error);
       try {
         emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
