@@ -79,8 +79,16 @@ export async function triggerRoundTimeoutNow(store) {
   try {
     emitBattleEvent("roundTimeout");
   } catch {}
+  // Mirror timerService ordering: kick off auto-select immediately to
+  // ensure `store.playerChoice` is set while the machine processes the
+  // timeout transition into roundDecision.
+  const selecting = (async () => {
+    try {
+      await autoSelectStat(onExpiredSelect, 0);
+    } catch {}
+  })();
   await dispatchBattleEvent("timeout");
-  await autoSelectStat(onExpiredSelect, 0);
+  await selecting;
 }
 
 /**

@@ -11,8 +11,11 @@ test.describe("Timeout autoselect does not stall", () => {
 
   test("trigger timeout → round resolves → cooldown → next round", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
-    // Choose a round length to start the match
-    await page.locator("#round-select-1").click();
+    // If the modal is present, pick a round length; otherwise continue.
+    const hasRoundSelect = await page.locator("#round-select-1").count();
+    if (hasRoundSelect) {
+      await page.locator("#round-select-1").click();
+    }
     await waitForBattleReady(page);
 
     // Use in-page test hook to trigger timeout immediately instead of waiting 30s
@@ -34,4 +37,3 @@ test.describe("Timeout autoselect does not stall", () => {
     ).toBeEnabled({ timeout: 5000 });
   });
 });
-
