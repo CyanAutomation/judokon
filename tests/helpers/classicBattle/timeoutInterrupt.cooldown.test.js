@@ -17,8 +17,8 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
       <button id="next-button" disabled>Next</button>
       <div id="snackbar-container"></div>
     `;
-    // Force zero cooldown for quick auto-advance
-    window.__NEXT_ROUND_COOLDOWN_MS = 0;
+    // Use minimal 1s cooldown for auto-advance
+    window.__NEXT_ROUND_COOLDOWN_MS = 1000;
   });
 
   it("advances from cooldown after interrupt without hanging", async () => {
@@ -44,8 +44,8 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     await window.awaitBattleState?.("cooldown", 5000);
 
     // CooldownEnter should emit countdownStart and then auto-dispatch ready via fallback timer.
-    // With test mode, computeNextRoundCooldown() = 0 → auto-advance immediately to roundStart.
-    await new Promise((r) => setTimeout(r, 450));
+    // With the 1s floor, computeNextRoundCooldown() = 1 → auto-advance after ~1s to roundStart.
+    await new Promise((r) => setTimeout(r, 1250));
     const snapshot = window.getBattleStateSnapshot?.();
     expect(["roundStart", "waitingForPlayerAction"]).toContain(snapshot?.state);
   });

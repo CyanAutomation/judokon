@@ -72,7 +72,7 @@ describe("timerService next round handling", () => {
   it("computeNextRoundCooldown respects test mode", async () => {
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
     const val = mod.computeNextRoundCooldown({ isTestModeEnabled: () => true });
-    expect(val).toBe(0);
+    expect(val).toBe(1);
   });
 
   it("createNextRoundSnackbarRenderer shows and updates", async () => {
@@ -91,15 +91,15 @@ describe("timerService next round handling", () => {
     expect(scoreboardMod.clearTimer).toHaveBeenCalled();
   });
 
-  it("resolves ready immediately in test mode", async () => {
+  it("resolves ready after minimum cooldown in test mode", async () => {
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
     const { nextButton } = createTimerNodes();
     const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
     setTestMode(true);
     vi.spyOn(console, "warn").mockImplementation(() => {});
     const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
-    scheduler.tick(0);
-    await expect(controls.ready).resolves.toBeUndefined();
+    scheduler.tick(1100);
+    await controls.ready;
     expect(nextButton.dataset.nextReady).toBe("true");
     expect(nextButton.disabled).toBe(false);
     setTestMode(false);

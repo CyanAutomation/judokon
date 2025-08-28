@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
-  computeNextRoundCooldown: vi.fn(() => 0),
+  computeNextRoundCooldown: vi.fn(() => 1),
   getNextRoundControls: vi.fn(() => null)
 }));
 
@@ -20,7 +20,7 @@ describe("cooldownEnter", () => {
     timerSpy.clearAllTimers();
     vi.restoreAllMocks();
   });
-  it("auto dispatches ready after timers for zero cooldown", async () => {
+  it("auto dispatches ready after timers", async () => {
     await cooldownEnter(machine);
     expect(machine.dispatch).not.toHaveBeenCalled();
     vi.runAllTimers();

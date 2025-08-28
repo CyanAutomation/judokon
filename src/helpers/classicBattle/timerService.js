@@ -258,8 +258,8 @@ export function createRoundTimer(onTick, onExpired, { starter = startCoolDown, o
  *
  * @pseudocode
  * 1. Read `window.__NEXT_ROUND_COOLDOWN_MS` or default to 3000ms.
- * 2. If test mode is enabled via `utils.isTestModeEnabled()`, force cooldown to 0.
- * 3. Otherwise convert to whole seconds and clamp to \>=0.
+ * 2. If test mode is enabled via `utils.isTestModeEnabled()`, force cooldown to 1.
+ * 3. Otherwise convert to whole seconds and clamp to \>=1.
  * 4. Log test mode state and resolved cooldown; wrap each warn in try.
  *
  * @param {{isTestModeEnabled: () => boolean}} [utils] - Test mode utilities (for injection).
@@ -274,9 +274,9 @@ export function computeNextRoundCooldown(utils = { isTestModeEnabled }) {
   try {
     const enabled =
       typeof utils.isTestModeEnabled === "function" ? utils.isTestModeEnabled() : false;
-    cooldownSeconds = enabled ? 0 : Math.max(0, Math.round(overrideMs / 1000));
+    cooldownSeconds = enabled ? 1 : Math.max(1, Math.round(overrideMs / 1000));
   } catch {
-    cooldownSeconds = Math.max(0, Math.round(overrideMs / 1000));
+    cooldownSeconds = Math.max(1, Math.round(overrideMs / 1000));
   }
   if (!IS_VITEST) {
     if (isTestModeEnabled()) {
@@ -340,84 +340,6 @@ export function createNextRoundSnackbarRenderer() {
 }
 
 /**
- * Handle zero-second cooldown by enabling the Next button immediately.
- *
- * @pseudocode
- * 1. Show a deterministic "Next round in: 0s" snackbar.
- * 2. Mark the Next button as ready and ensure it is enabled.
- * 3. Register a skip handler that dispatches "ready" when invoked.
- * 4. Emit "nextRoundTimerReady" and resolve the ready promise.
- *
- * @param {{resolveReady: (() => void) | null}} controls - Timer controls.
- * @param {HTMLButtonElement | null} btn - Next button element.
- * @returns {{resolveReady: (() => void) | null, ready: Promise<void>, timer: ReturnType<typeof createRoundTimer> | null}} Controls.
- */
-export function handleZeroCooldownFastPath(controls, btn) {
-  try {
-    if (!IS_VITEST) console.warn("[test] handleZeroCooldownFastPath called");
-    snackbar.showSnackbar("Next round in: 0s");
-  } catch {}
-  if (btn) {
-    btn.dataset.nextReady = "true";
-    btn.disabled = false;
-  }
-  try {
-    const s = typeof window !== "undefined" ? window.__classicBattleState || null : null;
-    if (!IS_VITEST) console.warn(`[test] zero-cooldown fast-path: current state=${s}`);
-  } catch {}
-  setSkipHandler(async () => {
-    try {
-      if (btn) btn.disabled = true;
-      const state =
-        typeof window !== "undefined" && window.__classicBattleState
-          ? window.__classicBattleState
-          : null;
-      // Dispatch when state is unknown (tests) or explicitly cooldown
-      if (!state || state === "cooldown") {
-        try {
-          if (!IS_VITEST) console.warn("[test] zero-cooldown skip: dispatch ready");
-        } catch {}
-        await dispatchBattleEvent("ready");
-        updateDebugPanel();
-      } else {
-        try {
-          if (!IS_VITEST) console.warn(`[test] skip: suppress ready; state=${state}`);
-        } catch {}
-      }
-    } catch {}
-  });
-  try {
-    emitBattleEvent("nextRoundTimerReady");
-  } catch {}
-  if (typeof controls.resolveReady === "function") {
-    try {
-      controls.resolveReady();
-    } catch {}
-  }
-  // In test mode, dispatch ready immediately to avoid any races.
-  try {
-    if (isTestModeEnabled && isTestModeEnabled()) {
-      const state =
-        typeof window !== "undefined" && window.__classicBattleState
-          ? window.__classicBattleState
-          : null;
-      if (!state || state === "cooldown") {
-        try {
-          if (!IS_VITEST) console.warn("[test] zero-cooldown auto-advance: dispatch ready");
-        } catch {}
-        Promise.resolve(dispatchBattleEvent("ready")).catch(() => {});
-      } else {
-        try {
-          if (!IS_VITEST) console.warn(`[test] auto-advance suppressed; state=${state}`);
-        } catch {}
-      }
-    }
-  } catch {}
-  currentNextRound = controls;
-  return controls;
-}
-
-/**
  * Handle expiration of the next-round cooldown.
  *
  * @pseudocode
@@ -472,13 +394,12 @@ export async function handleNextRoundExpiration(controls, btn, timerEl) {
  *
  * @pseudocode
  * 1. If the match ended, resolve immediately.
- * 2. Determine cooldown seconds via `computeNextRoundCooldown`.
- * 3. Locate `#next-button` and `#next-round-timer` and enable the button.
- * 4. If cooldown is zero, delegate to `handleZeroCooldownFastPath`.
- * 5. Otherwise create `onTick` with `createNextRoundSnackbarRenderer` and
+ * 2. Determine cooldown seconds via `computeNextRoundCooldown` (minimum 1s).
+ * 3. Locate `#next-button` and `#next-round-timer`.
+ * 4. Create `onTick` with `createNextRoundSnackbarRenderer` and
  *    `onExpired` with `handleNextRoundExpiration`.
- * 6. Register a skip handler that logs the skip (for tests) and stops the timer.
- * 7. Start the timer and resolve when expired.
+ * 5. Register a skip handler that logs the skip (for tests) and stops the timer.
+ * 6. Start the timer and resolve when expired.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
  * @returns {{
@@ -526,10 +447,6 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
   // Do not mutate the Next button until the cooldown actually expires.
   // Enabling early or clearing the readiness flag can race with state
   // transitions and tests that assert the ready state after auto-advance.
-
-  if (cooldownSeconds === 0) {
-    return handleZeroCooldownFastPath(controls, btn);
-  }
 
   // Do not skip scheduling based on current state; roundResolved may fire
   // while the machine is still transitioning. Scheduling early is safe — the

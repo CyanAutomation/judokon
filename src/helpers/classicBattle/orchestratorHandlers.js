@@ -2,7 +2,6 @@ import { initRoundSelectModal } from "./roundSelectModal.js";
 import { getDefaultTimer } from "../timerUtils.js";
 import { computeNextRoundCooldown, getNextRoundControls } from "./timerService.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
-import { realScheduler } from "../scheduler.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { getStatValue } from "../battle/index.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
@@ -103,8 +102,9 @@ export async function cooldownEnter(machine, payload) {
       try {
         duration = computeNextRoundCooldown();
       } catch {}
+      // `computeNextRoundCooldown` enforces a 1s floor.
       // Mirror scheduleNextRound minimal UI: enable Next immediately and
-      // mark as ready when countdown expires (or immediately for zero cooldown).
+      // mark as ready when the minimum 1s countdown expires.
       const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
       if (btn) {
         btn.disabled = false;
@@ -128,24 +128,6 @@ export async function cooldownEnter(machine, payload) {
           machine.dispatch("ready");
         } catch {}
       };
-      // Zero-cooldown fast-path
-      if (Number(duration) === 0) {
-        if (btn) {
-          btn.dataset.nextReady = "true";
-          btn.disabled = false;
-        }
-        try {
-          emitBattleEvent("nextRoundTimerReady");
-        } catch {}
-        try {
-          realScheduler.setTimeout(() => {
-            try {
-              machine.dispatch("ready");
-            } catch {}
-          }, 0);
-        } catch {}
-        return;
-      }
       onBattleEvent("countdownFinished", onFinished);
       emitBattleEvent("countdownStart", { duration });
       let fallbackTimer = null;
