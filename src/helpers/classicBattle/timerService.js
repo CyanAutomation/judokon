@@ -6,8 +6,9 @@ import * as snackbar from "../showSnackbar.js";
 import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
 import { emitBattleEvent } from "./battleEvents.js";
-import { realScheduler } from "../scheduler.js";
+
 import { isTestModeEnabled } from "../testModeUtils.js";
+import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent } from "./battleDispatcher.js";
 
 /**
