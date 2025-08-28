@@ -319,15 +319,18 @@ export async function roundDecisionEnter(machine) {
 
   if (store.playerChoice) {
     try {
-      // Clear any scheduled guard to avoid a race where the guard fires
-      // while resolveImmediate is running.
+      // Do NOT clear the guard until resolution completes. If resolution
+      // stalls due to an unforeseen await (e.g., event dispatch deadlock),
+      // the guard must fire to compute an outcome or interrupt to avoid a hang.
+      await resolveImmediate();
+      // Now that resolution completed, clear any scheduled guard to prevent
+      // a late double-dispatch.
       try {
         if (typeof window !== "undefined" && window.__roundDecisionGuard) {
           clearTimeout(window.__roundDecisionGuard);
           window.__roundDecisionGuard = null;
         }
       } catch {}
-      await resolveImmediate();
     } catch {
       try {
         emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
