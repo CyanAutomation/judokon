@@ -76,7 +76,11 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
     const schedule = (fn) => (typeof setTimeout === "function" ? setTimeout(fn, 0) : fn());
     schedule(() => {
       Promise.resolve(dispatchBattleEvent(outcomeEvent))
-        .then(() => (result.matchEnded ? dispatchBattleEvent("matchPointReached") : dispatchBattleEvent("continue")))
+        .then(() =>
+          result.matchEnded
+            ? dispatchBattleEvent("matchPointReached")
+            : dispatchBattleEvent("continue")
+        )
         .catch(() => {});
     });
   } catch {}
