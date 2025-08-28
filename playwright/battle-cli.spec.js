@@ -57,4 +57,26 @@ test.describe("Classic Battle CLI", () => {
     await toggle.uncheck();
     await expect(page.locator("#cli-verbose-section")).toBeHidden();
   });
+
+  test("plays a full round and skips cooldown", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__NEXT_ROUND_COOLDOWN_MS = 3000;
+    });
+    await page.goto("/src/pages/battleCLI.html");
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+
+    const score = page.locator("#cli-score");
+
+    await page.keyboard.press("1");
+    await waitForBattleState(page, "roundOver", 10000);
+    const afterRoundScore = await score.textContent();
+    const cardBefore = await page.locator("#player-card ul").elementHandle();
+
+    await page.keyboard.press("Enter");
+    await waitForBattleState(page, "waitingForPlayerAction", 10000);
+    const cardAfter = await page.locator("#player-card ul").elementHandle();
+
+    await expect(score).toHaveText(afterRoundScore || "");
+    expect(cardAfter).not.toBe(cardBefore);
+  });
 });
