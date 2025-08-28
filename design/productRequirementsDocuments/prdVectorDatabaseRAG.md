@@ -81,6 +81,23 @@ down into discrete blocks with unique IDs. This granularity improves lookup
 accuracy because search results map back to a single section or data row rather
 than an entire file.
 
+
+### JSON Field Allowlists and Boilerplate Filtering
+
+The embedding script extracts only approved fields from JSON sources and skips generic text. A field allowlist limits which keys are embedded while boilerplate strings such as "lorem ipsum" are ignored to reduce noise during indexing.
+
+### Deduplication of Normalized Text
+
+Before encoding, each chunk is lowercased, whitespace-collapsed, and checked against previously seen values. Duplicates or empty strings are dropped so the embedding set contains unique, meaningful entries.
+
+### Sharded Embedding Files with a Manifest
+
+Embeddings load through a lightweight manifest that enumerates shard files. The loader fetches each shard listed in `client_embeddings.manifest.json` and flattens them into a single array, falling back to a legacy single-file format if any shard fails.
+
+### Sparse Term-Frequency Vectors for Pre-filtering
+
+Each stored entry also includes a sparse term-frequency vector. Search requests build a similar vector for the query, and a pre-filter step multiplies these sparse vectors to discard entries that share no terms before cosine similarity ranking.
+
 ---
 
 ## Acceptance Criteria
