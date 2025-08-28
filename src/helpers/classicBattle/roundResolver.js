@@ -74,6 +74,7 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   // transitions run after onEnter completes.
   try {
     const run = () => {
+      if (!IS_VITEST) console.log("DEBUG: Dispatching outcomeEvent:", outcomeEvent);
       Promise.resolve(dispatchBattleEvent(outcomeEvent))
         .then(() =>
           result.matchEnded
