@@ -26,6 +26,7 @@ While battleJudoka.html provides a rich, animated UI, some users prefer a lightw
 
 - Deliver a fast, text-first Classic Battle that reuses the engine verbatim.
 - Provide full keyboard control with clear, discoverable shortcuts.
+- Support mouse and touch input so stats can be selected and rounds advanced without the keyboard.
 - Surface state, timer, and outcomes instantly via text and ARIA live regions.
 - Maintain parity with Classic Battle mechanics, timers, and end conditions.
 - Enable robust Playwright/Vitest automation by exposing stable DOM hooks.
@@ -45,6 +46,7 @@ While battleJudoka.html provides a rich, animated UI, some users prefer a lightw
 
 - As a player on a low-spec device, I want a lightweight mode that loads instantly and is easy to read.
 - As a keyboard-only user, I want to select stats and advance rounds without the mouse.
+- As a mouse or touch user, I want to click or tap to select stats and advance rounds.
 - As a screen-reader user, I want the current round message and timer to be announced clearly.
 - As a developer/tester, I want deterministic, textual feedback of state transitions for debugging.
 - As a returning player, I want to quickly play a few rounds without UI overhead.
@@ -58,6 +60,7 @@ While battleJudoka.html provides a rich, animated UI, some users prefer a lightw
 | **P1** | Engine Integration | Use the same Classic Battle engine and state machine as battleJudoka; static import for core gameplay modules. |
 | **P1** | Textual Renderer | Render all state changes (countdown, prompts, outcomes, score) as text within a monospace pane; no images/animations. |
 | **P1** | Keyboard Controls | Shortcut keys for stat selection (1–9), Next/Continue (Enter/Space), Quit (Q), Help (H). Display a concise cheat sheet. |
+| **P1** | Pointer Controls | Stats and Next prompts are clickable/tappable for mouse and touch users. |
 | **P1** | Timer Display | Show a 1 Hz textual countdown for stat selection; on expiry, auto-select per `FF_AUTO_SELECT`. |
 | **P1** | Outcome/Score | After decision, print outcome (Win/Loss/Draw), selected stat/value pairs, and updated score. |
 | **P1** | Accessibility Hooks | Provide `aria-live="polite"` for round messages and countdown; maintain focus order for keyboard use. |
