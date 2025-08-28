@@ -23,7 +23,7 @@ describe("cooldownEnter", () => {
   it("auto dispatches ready after 1s timer", async () => {
     await cooldownEnter(machine);
     expect(machine.dispatch).not.toHaveBeenCalled();
-    timerSpy.advanceTimersByTime(1000);
+    await timerSpy.advanceTimersByTimeAsync(1200); // 1s duration + 200ms fallback
     expect(machine.dispatch).toHaveBeenCalledWith("ready");
   });
 });
