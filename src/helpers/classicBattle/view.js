@@ -1,23 +1,8 @@
-import { setupScoreboard } from "../setupScoreboard.js";
-import { resetStatButtons } from "../battle/index.js";
-import { initQuitButton } from "./quitButton.js";
-import { skipCurrentPhase } from "./skipHandler.js";
-import { initInterruptHandlers } from "./interruptHandlers.js";
-import {
-  watchBattleOrientation,
-  registerRoundStartErrorHandler,
-  setupNextButton,
-  initStatButtons,
-  applyStatLabels,
-  setBattleStateBadgeEnabled,
-  applyBattleFeatureFlags,
-  initDebugPanel,
-  maybeShowStatHint
-} from "./uiHelpers.js";
-import { onBattleEvent } from "./battleEvents.js";
-import { initBattleStateProgress } from "../battleStateProgress.js";
-import { initTooltips } from "../tooltip.js";
-import { start as startScheduler, stop as stopScheduler } from "../../utils/scheduler.js";
+import { setBattleStateBadgeEnabled, applyBattleFeatureFlags } from "./uiHelpers.js";
+import setupTestHelpers from "./setupTestHelpers.js";
+import setupScheduler from "./setupScheduler.js";
+import setupUIBindings from "./setupUIBindings.js";
+import setupDebugHooks from "./setupDebugHooks.js";
 import "../setupBottomNavbar.js";
 import "../setupDisplaySettings.js";
 import "../setupSvgFallback.js";
@@ -61,71 +46,10 @@ export class ClassicBattleView {
    * @returns {Promise<void>}
    */
   async init() {
-    const store = this.controller.battleStore;
-    window.battleStore = store;
-    // Provide a robust skip helper: invoke the skip handler and return a
-    // Promise that resolves when either the next-round timer path completes
-    // or the next round prompts the player again. This makes tests deterministic
-    // and avoids racing the handler registration.
-    window.skipBattlePhase = () => {
-      try {
-        // Trigger skip (may be pending until a handler is set)
-        skipCurrentPhase();
-      } catch {}
-      // Clear any lingering selection immediately for deterministic tests
-      try {
-        resetStatButtons();
-        const c = document.querySelectorAll("#stat-buttons .selected").length;
-        console.warn(`[test] skipBattlePhase: after immediate reset selected=${c}`);
-      } catch {}
-      // Resolve immediately; tests will explicitly wait for the next state.
-      return Promise.resolve();
-    };
-
-    if (!(typeof process !== "undefined" && process.env.VITEST)) {
-      startScheduler();
-      window.addEventListener("pagehide", stopScheduler, { once: true });
-    }
-
-    setupScoreboard(this.controller.timerControls);
-    initQuitButton(store);
-    initInterruptHandlers(store);
-    watchBattleOrientation(() => this.applyBattleOrientation());
-
-    setupNextButton();
-    this.statButtonControls = initStatButtons(store);
-    onBattleEvent("statButtons:enable", () => this.statButtonControls?.enable());
-    onBattleEvent("statButtons:disable", () => this.statButtonControls?.disable());
-
-    initDebugPanel();
-    registerRoundStartErrorHandler(() => this.startRound());
-
-    const cleanupBattleStateProgress = await initBattleStateProgress();
-    if (cleanupBattleStateProgress) {
-      window.addEventListener("pagehide", cleanupBattleStateProgress, {
-        once: true
-      });
-    }
-
-    await applyStatLabels().catch(() => {});
-    await initTooltips();
-    maybeShowStatHint();
-
-    try {
-      window.startRoundOverride = () => this.startRound();
-      window.freezeBattleHeader = () => {
-        try {
-          this.controller.timerControls.pauseTimer();
-          stopScheduler();
-        } catch {}
-      };
-      window.resumeBattleHeader = () => {
-        try {
-          startScheduler();
-          this.controller.timerControls.resumeTimer();
-        } catch {}
-      };
-    } catch {}
+    setupTestHelpers(this);
+    setupScheduler();
+    this.statButtonControls = await setupUIBindings(this);
+    setupDebugHooks(this);
   }
 
   /** @returns {"portrait"|"landscape"} */
