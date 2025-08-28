@@ -23,6 +23,7 @@ body {
     Match the visible viewport height so the draw controls stay
     above the fixed footer on tablets like iPad.
   */
+  height: 100dvh;
   min-height: calc(100vh - var(--header-height) - var(--footer-height));
   min-height: calc(100svh - var(--header-height) - var(--footer-height));
   min-height: calc(100dvh - var(--header-height) - var(--footer-height));
