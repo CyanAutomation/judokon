@@ -1,13 +1,14 @@
 import * as snackbar from "./showSnackbar.js";
 import * as scoreboard from "./setupScoreboard.js";
+import { emitBattleEvent } from "./classicBattle/battleEvents.js";
 
 /**
  * Attach snackbar + scoreboard rendering to a timer.
  *
  * @pseudocode
  * 1. Subscribe to timer `tick` and `expired` events.
- * 2. On `tick`, show or update snackbar with remaining seconds.
- * 3. On `expired`, render final 0s and clear scoreboard timer.
+ * 2. On `tick`, emit countdown events and render snackbar.
+ * 3. On `expired`, render final 0s, emit final tick, and clear scoreboard timer.
  * 4. Optionally render initial remaining immediately when provided.
  *
  * @param {{on: Function, off: Function}} timer - Timer with event API.
@@ -19,26 +20,21 @@ export function attachCooldownRenderer(timer, initialRemaining) {
   let lastRendered = -1;
 
   const onTick = (remaining) => {
-    if (remaining <= 0) {
-      const text = "Next round in: 0s";
-      if (!started) {
-        snackbar.showSnackbar(text);
-        started = true;
-      } else {
-        snackbar.updateSnackbar(text);
-      }
-      scoreboard.clearTimer();
-      return;
-    }
-    if (remaining === lastRendered) return;
-    const text = `Next round in: ${remaining}s`;
+    const clamped = Math.max(0, remaining);
+    const text = `Next round in: ${clamped}s`;
     if (!started) {
       snackbar.showSnackbar(text);
       started = true;
-    } else {
+      emitBattleEvent("nextRoundCountdownStarted");
+    } else if (clamped !== lastRendered) {
       snackbar.updateSnackbar(text);
     }
-    lastRendered = remaining;
+    emitBattleEvent("nextRoundCountdownTick", { remaining: clamped });
+    if (clamped <= 0) {
+      scoreboard.clearTimer();
+      return;
+    }
+    lastRendered = clamped;
   };
 
   const onExpired = () => onTick(0);
