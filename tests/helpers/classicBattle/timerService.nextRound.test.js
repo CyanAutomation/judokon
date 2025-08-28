@@ -91,16 +91,18 @@ describe("timerService next round handling", () => {
     expect(scoreboardMod.clearTimer).toHaveBeenCalled();
   });
 
-  it("scheduleNextRound handles zero-second cooldown fast path", async () => {
+  it("resolves ready immediately in test mode", async () => {
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
     const { nextButton } = createTimerNodes();
     const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
     setTestMode(true);
+    vi.spyOn(console, "warn").mockImplementation(() => {});
     const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
     scheduler.tick(0);
-    await controls.ready;
+    await expect(controls.ready).resolves.toBeUndefined();
     expect(nextButton.dataset.nextReady).toBe("true");
     expect(nextButton.disabled).toBe(false);
     setTestMode(false);
+    vi.restoreAllMocks();
   });
 });
