@@ -1,5 +1,6 @@
 import { initRoundSelectModal } from "./roundSelectModal.js";
 import { getDefaultTimer } from "../timerUtils.js";
+import { computeNextRoundCooldown, getNextRoundControls } from "./timerService.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { getStatValue } from "../battle/index.js";
@@ -91,8 +92,48 @@ export async function cooldownEnter(machine, payload) {
       );
     } catch {}
   }
-  // For inter-round cooldowns in test mode, auto-advance to the next round to
-  // avoid relying on external UI timers/handlers which can be racy under CI.
+  // For inter-round cooldowns with no scheduled next-round timer (e.g., after
+  // an interrupt path like timeout/noSelection), emit a countdown so the UI
+  // advances reliably even without a round result. This prevents hangs.
+  try {
+    const controls = getNextRoundControls?.();
+    if (!controls || (!controls.timer && !controls.ready)) {
+      let duration = 0;
+      try {
+        duration = computeNextRoundCooldown();
+      } catch {}
+      const onFinished = () => {
+        try {
+          offBattleEvent("countdownFinished", onFinished);
+        } catch {}
+        try {
+          if (fallbackTimer) clearTimeout(fallbackTimer);
+        } catch {}
+        try {
+          machine.dispatch("ready");
+        } catch {}
+      };
+      onBattleEvent("countdownFinished", onFinished);
+      emitBattleEvent("countdownStart", { duration });
+      let fallbackTimer = null;
+      try {
+        const ms = Math.max(0, Number(duration) * 1000) + 200;
+        fallbackTimer = setTimeout(() => {
+          try {
+            offBattleEvent("countdownFinished", onFinished);
+          } catch {}
+          try {
+            machine.dispatch("ready");
+          } catch {}
+        }, ms);
+      } catch {}
+      return;
+    }
+  } catch {}
+
+  // For other inter-round cooldowns in test mode, auto-advance to the next
+  // round to avoid relying on external UI timers/handlers which can be racy
+  // under CI.
   try {
     if (isTestModeEnabled && isTestModeEnabled()) {
       try {

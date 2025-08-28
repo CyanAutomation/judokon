@@ -60,6 +60,10 @@
         padding: 8px 10px;
         border: 1px solid #2a2a2a;
       }
+      /* Reserve space for round message to prevent layout jump */
+      #round-message {
+        min-height: 1.4em; /* ~1 line of monospace text */
+      }
       /* Make verbose section scrollable so newest entries are visible */
       #cli-verbose-log {
         max-height: 35vh;
