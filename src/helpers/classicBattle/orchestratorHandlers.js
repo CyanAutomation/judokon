@@ -6,7 +6,7 @@ import { getOpponentJudoka } from "./cardSelection.js";
 import { getStatValue } from "../battle/index.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { resolveRound } from "./roundResolver.js";
-import { enableNextRoundButton } from "./uiHelpers.js";
+// Removed unused import for enableNextRoundButton
 
 export function isStateTransition(from, to) {
   try {
@@ -128,7 +128,7 @@ export async function cooldownEnter(machine, payload) {
         } catch {}
       };
       // Zero-cooldown fast-path
-      if (Number(duration) == 0) {
+      if (Number(duration) === 0) {
         if (btn) {
           btn.dataset.nextReady = "true";
           btn.disabled = false;
