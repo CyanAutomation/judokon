@@ -275,8 +275,25 @@ export async function handleNextRoundExpiration(controls, btn, timerEl) {
         btn.disabled = false;
       }
     } else {
+      // If cooldown hasn't begun yet, wait for it and then mark ready.
       try {
-        console.warn(`[test] expiration suppressed ready; state=${state}`);
+        const onState = async (e) => {
+          try {
+            const to = e && e.detail ? e.detail.to : null;
+            if (to === "cooldown") {
+              document.removeEventListener("battle:state", onState);
+              await dispatchBattleEvent("ready");
+              if (btn) {
+                btn.dataset.nextReady = "true";
+                btn.disabled = false;
+              }
+            }
+          } catch {}
+        };
+        document.addEventListener("battle:state", onState);
+      } catch {}
+      try {
+        console.warn(`[test] expiration deferred until cooldown; state=${state}`);
       } catch {}
     }
   } catch {}
