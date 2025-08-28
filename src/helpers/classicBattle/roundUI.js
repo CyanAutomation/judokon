@@ -122,6 +122,27 @@ export function bindRoundUIEventHandlers() {
       // safe and ensures the snackbar countdown appears without waiting for a
       // separate state change event that may be mocked out in tests.
       scheduleNextRound(result);
+      // Failsafe: if the machine is still stuck in roundDecision shortly after
+      // roundResolved, force the outcome → continue transitions to prevent a
+      // visible stall.
+      try {
+        const outcomeEvent =
+          result?.outcome === "winPlayer"
+            ? "outcome=winPlayer"
+            : result?.outcome === "winOpponent"
+              ? "outcome=winOpponent"
+              : "outcome=draw";
+        setTimeout(async () => {
+          try {
+            const state = typeof window !== "undefined" ? window.__classicBattleState : null;
+            if (state === "roundDecision") {
+              const mod = await import("./eventDispatcher.js");
+              await mod.dispatchBattleEvent(outcomeEvent);
+              await mod.dispatchBattleEvent("continue");
+            }
+          } catch {}
+        }, 0);
+      } catch {}
     }
     // Keep the selected stat highlighted for two frames to allow tests and
     // users to perceive the selection before it clears.
@@ -193,6 +214,25 @@ export function bindRoundUIEventHandlersDynamic() {
       const { scheduleNextRound } = await import("./timerService.js");
       // Schedule immediately to surface the countdown in tests and runtime.
       scheduleNextRound(result);
+      // Failsafe for dynamic path as well
+      try {
+        const outcomeEvent =
+          result?.outcome === "winPlayer"
+            ? "outcome=winPlayer"
+            : result?.outcome === "winOpponent"
+              ? "outcome=winOpponent"
+              : "outcome=draw";
+        setTimeout(async () => {
+          try {
+            const state = typeof window !== "undefined" ? window.__classicBattleState : null;
+            if (state === "roundDecision") {
+              const mod = await import("./eventDispatcher.js");
+              await mod.dispatchBattleEvent(outcomeEvent);
+              await mod.dispatchBattleEvent("continue");
+            }
+          } catch {}
+        }, 0);
+      } catch {}
     }
     resetStatButtons();
     try {
