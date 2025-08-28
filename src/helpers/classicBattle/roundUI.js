@@ -10,6 +10,7 @@ import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { showSnackbar } from "../showSnackbar.js";
+const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
  * Apply UI updates for a newly started round.
@@ -26,7 +27,9 @@ import { showSnackbar } from "../showSnackbar.js";
  * @param {number} [stallTimeoutMs=35000] - Delay before auto-select kicks in.
  */
 export function applyRoundUI(store, roundNumber, stallTimeoutMs = 35000) {
-  console.log("INFO: applyRoundUI called for round", roundNumber);
+  try {
+    if (!IS_VITEST) console.log("INFO: applyRoundUI called for round", roundNumber);
+  } catch {}
   resetStatButtons();
   // Do not force-disable the Next button here; it should remain
   // ready after cooldown so tests and users can advance immediately.
@@ -78,13 +81,16 @@ export function bindRoundUIEventHandlers() {
   });
 
   onBattleEvent("statSelected", (e) => {
-    console.log("INFO: statSelected event handler");
+    try {
+      if (!IS_VITEST) console.log("INFO: statSelected event handler");
+    } catch {}
     const { stat } = e.detail || {};
     if (!stat) return;
     const btn = document.querySelector(`#stat-buttons button[data-stat="${stat}"]`);
     if (btn) {
       try {
-        console.warn(`[test] addSelected: stat=${stat} label=${btn.textContent?.trim() || ""}`);
+        if (!IS_VITEST)
+          console.warn(`[test] addSelected: stat=${stat} label=${btn.textContent?.trim() || ""}`);
       } catch {}
       btn.classList.add("selected");
       showSnackbar(`You Picked: ${btn.textContent}`);
@@ -96,7 +102,7 @@ export function bindRoundUIEventHandlers() {
     const { store, result } = e.detail || {};
     if (!result) return;
     try {
-      console.warn("[test] roundResolved event received");
+      if (!IS_VITEST) console.warn("[test] roundResolved event received");
     } catch {}
     // Update the round message with the resolved outcome to keep #round-message
     // in sync even when uiService is mocked in unit tests.
@@ -151,7 +157,8 @@ export function bindRoundUIEventHandlersDynamic() {
     const btn = document.querySelector(`#stat-buttons button[data-stat="${stat}"]`);
     if (btn) {
       try {
-        console.warn(`[test] addSelected: stat=${stat} label=${btn.textContent?.trim() || ""}`);
+        if (!IS_VITEST)
+          console.warn(`[test] addSelected: stat=${stat} label=${btn.textContent?.trim() || ""}`);
       } catch {}
       btn.classList.add("selected");
       try {
@@ -165,7 +172,7 @@ export function bindRoundUIEventHandlersDynamic() {
     const { store, result } = e.detail || {};
     if (!result) return;
     try {
-      console.warn("[test] roundResolved event received (dynamic)");
+      if (!IS_VITEST) console.warn("[test] roundResolved event received (dynamic)");
     } catch {}
     try {
       const scoreboard = await import("../setupScoreboard.js");

@@ -5,6 +5,7 @@ import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { resolveRound } from "./roundResolver.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getBattleState } from "./eventBus.js";
+const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
  * Determine the opponent's stat choice based on difficulty.
@@ -163,9 +164,9 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   try {
     const current = typeof getBattleState === "function" ? getBattleState() : null;
     if (current && current !== "waitingForPlayerAction" && current !== "roundDecision") {
-      // UX: ignore silently but log for diagnostics
+      // UX: ignore silently but log for diagnostics (mute in Vitest)
       try {
-        console.warn(`Ignored stat selection while in state=${current}`);
+        if (!IS_VITEST) console.warn(`Ignored stat selection while in state=${current}`);
       } catch {}
       return;
     }

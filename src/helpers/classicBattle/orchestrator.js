@@ -1,4 +1,5 @@
 import { BattleStateMachine } from "./stateMachine.js";
+const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 import {
   waitingForMatchStartEnter,
   matchStartEnter,
@@ -110,9 +111,9 @@ function updateDebugState(from, to, event) {
     document.body.dataset.battleState = to;
     document.body.dataset.prevBattleState = from || "";
     try {
-      // Keep tests observable; muted by test helpers in CI
-
-      console.warn(`[test] dataset.battleState set -> ${document.body.dataset.battleState}`);
+      // Keep tests observable; muted during Vitest runs
+      if (!IS_VITEST)
+        console.warn(`[test] dataset.battleState set -> ${document.body.dataset.battleState}`);
     } catch {}
     document.dispatchEvent(new CustomEvent("battle:state", { detail: { from, to } }));
     const logEntry = { from: from || null, to, event: event || null, ts: Date.now() };
@@ -419,7 +420,7 @@ export async function dispatchBattleEvent(eventName, payload) {
       // emit a debug event so UI debug panels can show the failure
       emitBattleEvent("debugPanelUpdate");
     } catch (innerError) {
-      console.error("Failed to emit debugPanelUpdate event:", innerError);
+      if (!IS_VITEST) console.error("Failed to emit debugPanelUpdate event:", innerError);
     }
   }
 }

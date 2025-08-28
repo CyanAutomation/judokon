@@ -10,6 +10,7 @@ import { emitBattleEvent } from "./battleEvents.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent } from "./battleDispatcher.js";
+const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
  * Store controls for the pending next round. Updated by `scheduleNextRound`
@@ -277,14 +278,16 @@ export function computeNextRoundCooldown(utils = { isTestModeEnabled }) {
   } catch {
     cooldownSeconds = Math.max(0, Math.round(overrideMs / 1000));
   }
-  if (isTestModeEnabled()) {
-    try {
-      console.warn(`[test] scheduleNextRound: testMode=true cooldown=${cooldownSeconds}`);
-    } catch {}
-  } else {
-    try {
-      console.warn(`[test] scheduleNextRound: testMode=false cooldown=${cooldownSeconds}`);
-    } catch {}
+  if (!IS_VITEST) {
+    if (isTestModeEnabled()) {
+      try {
+        console.warn(`[test] scheduleNextRound: testMode=true cooldown=${cooldownSeconds}`);
+      } catch {}
+    } else {
+      try {
+        console.warn(`[test] scheduleNextRound: testMode=false cooldown=${cooldownSeconds}`);
+      } catch {}
+    }
   }
   return cooldownSeconds;
 }
@@ -351,7 +354,7 @@ export function createNextRoundSnackbarRenderer() {
  */
 export function handleZeroCooldownFastPath(controls, btn) {
   try {
-    console.warn("[test] handleZeroCooldownFastPath called");
+    if (!IS_VITEST) console.warn("[test] handleZeroCooldownFastPath called");
     snackbar.showSnackbar("Next round in: 0s");
   } catch {}
   if (btn) {
@@ -360,7 +363,7 @@ export function handleZeroCooldownFastPath(controls, btn) {
   }
   try {
     const s = typeof window !== "undefined" ? window.__classicBattleState || null : null;
-    console.warn(`[test] zero-cooldown fast-path: current state=${s}`);
+    if (!IS_VITEST) console.warn(`[test] zero-cooldown fast-path: current state=${s}`);
   } catch {}
   setSkipHandler(async () => {
     try {
@@ -372,13 +375,13 @@ export function handleZeroCooldownFastPath(controls, btn) {
       // Dispatch when state is unknown (tests) or explicitly cooldown
       if (!state || state === "cooldown") {
         try {
-          console.warn("[test] zero-cooldown skip: dispatch ready");
+          if (!IS_VITEST) console.warn("[test] zero-cooldown skip: dispatch ready");
         } catch {}
         await dispatchBattleEvent("ready");
         updateDebugPanel();
       } else {
         try {
-          console.warn(`[test] skip: suppress ready; state=${state}`);
+          if (!IS_VITEST) console.warn(`[test] skip: suppress ready; state=${state}`);
         } catch {}
       }
     } catch {}
@@ -400,12 +403,12 @@ export function handleZeroCooldownFastPath(controls, btn) {
           : null;
       if (!state || state === "cooldown") {
         try {
-          console.warn("[test] zero-cooldown auto-advance: dispatch ready");
+          if (!IS_VITEST) console.warn("[test] zero-cooldown auto-advance: dispatch ready");
         } catch {}
         Promise.resolve(dispatchBattleEvent("ready")).catch(() => {});
       } else {
         try {
-          console.warn(`[test] auto-advance suppressed; state=${state}`);
+          if (!IS_VITEST) console.warn(`[test] auto-advance suppressed; state=${state}`);
         } catch {}
       }
     }
@@ -489,9 +492,10 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
     const s = typeof window !== "undefined" ? window.__classicBattleState || null : null;
     if (typeof window !== "undefined") {
       window.__scheduleNextRoundCount = (window.__scheduleNextRoundCount || 0) + 1;
-      console.warn(
-        `[test] scheduleNextRound call#${window.__scheduleNextRoundCount}: state=${s} matchEnded=${!!result?.matchEnded}`
-      );
+      if (!IS_VITEST)
+        console.warn(
+          `[test] scheduleNextRound call#${window.__scheduleNextRoundCount}: state=${s} matchEnded=${!!result?.matchEnded}`
+        );
     }
   } catch {}
   // Guard: only schedule when the machine is in roundOver/cooldown. If we're

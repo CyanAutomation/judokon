@@ -1,4 +1,5 @@
 let machine = null;
+const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
  * Set the state machine instance for the dispatcher.
@@ -16,10 +17,10 @@ export function setMachine(m) {
 export async function dispatchBattleEvent(eventName, payload) {
   if (!machine) return;
   try {
-    console.log("DEBUG: eventDispatcher dispatch", { eventName, payload });
+    if (!IS_VITEST) console.log("DEBUG: eventDispatcher dispatch", { eventName, payload });
   } catch {}
   await machine.dispatch(eventName, payload);
   try {
-    console.log("DEBUG: eventDispatcher dispatched", { eventName });
+    if (!IS_VITEST) console.log("DEBUG: eventDispatcher dispatched", { eventName });
   } catch {}
 }
