@@ -1,18 +1,24 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import { toggleViewportSimulation } from "../../src/helpers/viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "../../src/helpers/tooltipOverlayDebug.js";
 
 beforeEach(() => {
   document.body.className = "";
 });
 
-describe("toggleTooltipOverlayDebug", () => {
+describe.each([
+  ["toggleViewportSimulation", toggleViewportSimulation, "simulate-viewport"],
+  ["toggleTooltipOverlayDebug", toggleTooltipOverlayDebug, "tooltip-overlay-debug"]
+])("%s", (_name, fn, className) => {
   it("adds and removes the class based on argument", () => {
-    toggleTooltipOverlayDebug(true);
-    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(true);
-    toggleTooltipOverlayDebug(false);
-    expect(document.body.classList.contains("tooltip-overlay-debug")).toBe(false);
+    fn(true);
+    expect(document.body.classList.contains(className)).toBe(true);
+    fn(false);
+    expect(document.body.classList.contains(className)).toBe(false);
   });
+});
 
+describe("toggleTooltipOverlayDebug", () => {
   it("does nothing when document is undefined", () => {
     const originalDocument = global.document;
     // @ts-ignore - simulate an environment without document
