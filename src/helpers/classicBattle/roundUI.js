@@ -187,18 +187,7 @@ export function bindRoundUIEventHandlersDynamic() {
       // Schedule immediately to surface the countdown in tests and runtime.
       scheduleNextRound(result);
     }
-    try {
-      requestAnimationFrame(() => requestAnimationFrame(() => resetStatButtons()));
-    } catch {
-      resetStatButtons();
-    }
-    try {
-      setTimeout(() => {
-        try {
-          resetStatButtons();
-        } catch {}
-      }, 120);
-    } catch {}
+    resetStatButtons();
     try {
       const { updateDebugPanel } = await import("./uiHelpers.js");
       updateDebugPanel();

@@ -62,7 +62,7 @@ export function resetStatButtons(
     void btn.offsetWidth;
     let frameId = 0;
     if (isEnabled("enableTestMode")) {
-      // btn.disabled = false; // Do not re-enable in test mode
+      btn.disabled = false;
     } else {
       frameId = onFrame(() => {
         btn.disabled = false;
