@@ -82,13 +82,15 @@ export class BattleStateMachine {
           console.log("STATE_MACHINE: dispatch no triggers for state", this.current, eventName);
         return;
       }
-      if (!IS_VITEST) console.log("STATE_MACHINE: dispatch", { state: this.current, event: eventName });
+      if (!IS_VITEST)
+        console.log("STATE_MACHINE: dispatch", { state: this.current, event: eventName });
       const match = state.triggers.find((t) => t.on === eventName);
       if (!match) {
-        if (!IS_VITEST) console.log("STATE_MACHINE: dispatch no matching trigger", {
-          state: this.current,
-          event: eventName
-        });
+        if (!IS_VITEST)
+          console.log("STATE_MACHINE: dispatch no matching trigger", {
+            state: this.current,
+            event: eventName
+          });
         return;
       }
       const target = match.target;
@@ -98,7 +100,8 @@ export class BattleStateMachine {
       }
       const from = this.current;
       this.current = target;
-      if (!IS_VITEST) console.log("STATE_MACHINE: transitioning", { from, to: target, event: eventName });
+      if (!IS_VITEST)
+        console.log("STATE_MACHINE: transitioning", { from, to: target, event: eventName });
       if (this.onTransition) {
         try {
           await this.onTransition({ from, to: target, event: eventName });

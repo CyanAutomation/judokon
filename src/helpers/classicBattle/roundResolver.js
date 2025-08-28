@@ -53,7 +53,8 @@ export function evaluateRound(store, stat, playerVal, opponentVal) {
  */
 export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   try {
-    if (!IS_VITEST) console.log("DEBUG: computeRoundResult start", { stat, playerVal, opponentVal });
+    if (!IS_VITEST)
+      console.log("DEBUG: computeRoundResult start", { stat, playerVal, opponentVal });
   } catch {}
   // Coerce values to finite numbers to avoid NaN blocking outcome computation.
   const pVal = Number.isFinite(Number(playerVal)) ? Number(playerVal) : 0;
