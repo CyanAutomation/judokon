@@ -73,23 +73,16 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   // within a state's onEnter handler. Schedule via microtask and macrotask so
   // transitions run after onEnter completes.
   try {
-    const run = () => {
-      Promise.resolve(dispatchBattleEvent(outcomeEvent))
-        .then(() =>
-          result.matchEnded
-            ? dispatchBattleEvent("matchPointReached")
-            : dispatchBattleEvent("continue")
-        )
-        .catch(() => {});
-    };
-    if (typeof queueMicrotask === "function") {
-      queueMicrotask(run);
-    } else if (typeof setTimeout === "function") {
-      setTimeout(run, 0);
+    if (!IS_VITEST) console.log("DEBUG: Dispatching outcomeEvent:", outcomeEvent);
+    await dispatchBattleEvent(outcomeEvent);
+    if (result.matchEnded) {
+      await dispatchBattleEvent("matchPointReached");
     } else {
-      run(); // Fallback for environments without microtasks or setTimeout
+      await dispatchBattleEvent("continue");
     }
-  } catch {}
+  } catch (error) {
+    if (!IS_VITEST) console.error("DEBUG: Error dispatching outcome events:", error);
+  }
   resetStatButtons();
   emitBattleEvent("roundResolved", {
     store,
