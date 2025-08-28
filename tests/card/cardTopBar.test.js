@@ -46,18 +46,10 @@ describe("generateCardTopBar", () => {
     expect(result.outerHTML).toContain('alt="France flag"');
   });
 
-  it("should include judoka's firstname", async () => {
+  it("should include judoka's firstname, surname, and flag URL", async () => {
     const result = await generateCardTopBar(judoka, flagUrl);
     expect(result.outerHTML).toContain("Clarisse");
-  });
-
-  it("should include judoka's surname", async () => {
-    const result = await generateCardTopBar(judoka, flagUrl);
     expect(result.outerHTML).toContain("Agbegnenou");
-  });
-
-  it("should include the flag URL in the HTML", async () => {
-    const result = await generateCardTopBar(judoka, flagUrl);
     expect(result.outerHTML).toContain(flagUrl);
   });
 
