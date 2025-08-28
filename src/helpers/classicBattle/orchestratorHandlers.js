@@ -2,6 +2,7 @@ import { initRoundSelectModal } from "./roundSelectModal.js";
 import { getDefaultTimer } from "../timerUtils.js";
 import { computeNextRoundCooldown, getNextRoundControls } from "./timerService.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
+import { realScheduler } from "../scheduler.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { getStatValue } from "../battle/index.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
@@ -137,7 +138,11 @@ export async function cooldownEnter(machine, payload) {
           emitBattleEvent("nextRoundTimerReady");
         } catch {}
         try {
-          machine.dispatch("ready");
+          realScheduler.setTimeout(() => {
+            try {
+              machine.dispatch("ready");
+            } catch {}
+          }, 0);
         } catch {}
         return;
       }
