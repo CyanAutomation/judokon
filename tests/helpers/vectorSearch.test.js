@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
+import { withAllowedConsole } from "../utils/console.js";
 
 vi.mock("../../src/helpers/dataUtils.js", () => ({
   fetchJson: vi.fn(),
@@ -69,17 +70,19 @@ describe("vectorSearch", () => {
   });
 
   it("returns null when loading fails", async () => {
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    fetchJsonMock.mockImplementation((url) => {
-      if (url.endsWith("client_embeddings.manifest.json")) {
-        return Promise.reject(new Error("fail"));
-      }
-      return Promise.resolve(sample);
-    });
-    const { loadEmbeddings } = await import("../../src/helpers/vectorSearch/loader.js");
-    const result = await loadEmbeddings();
-    expect(result).toBeNull();
-    errorSpy.mockRestore();
+    await withAllowedConsole(async () => {
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      fetchJsonMock.mockImplementation((url) => {
+        if (url.endsWith("client_embeddings.manifest.json")) {
+          return Promise.reject(new Error("fail"));
+        }
+        return Promise.resolve(sample);
+      });
+      const { loadEmbeddings } = await import("../../src/helpers/vectorSearch/loader.js");
+      const result = await loadEmbeddings();
+      expect(result).toBeNull();
+      errorSpy.mockRestore();
+    }, ["error"]);
   });
 
   it("computes cosine similarity", async () => {
@@ -138,45 +141,49 @@ describe("vectorSearch", () => {
   });
 
   it("skips entries with invalid embeddings", async () => {
-    const malformed = [
-      { id: "a", text: "A", embedding: [1, 0], source: "doc1", sparseVector: { a: 1 } },
-      { id: "bad1", text: "X", embedding: [1], source: "doc3", sparseVector: { x: 1 } },
-      { id: "bad2", text: "Y", embedding: ["no"], source: "doc4", sparseVector: { y: 1 } },
-      { id: "bad3", text: "Z", source: "doc5", sparseVector: { z: 1 } },
-      { id: "b", text: "B", embedding: [0, 1], source: "doc2", sparseVector: { b: 1 } }
-    ];
-    fetchJsonMock.mockImplementation((url) => {
-      if (url.endsWith("client_embeddings.manifest.json")) {
-        return Promise.resolve({ shards: ["shard1.json"] });
-      }
-      if (url.endsWith("shard1.json")) {
-        return Promise.resolve(malformed);
-      }
-      return Promise.resolve([]);
-    });
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
-    const res = await findMatches([1, 0], 5);
-    expect(res?.map((r) => r.id)).toEqual(["a", "b"]);
-    expect(warn).toHaveBeenCalledTimes(3);
-    warn.mockRestore();
+    await withAllowedConsole(async () => {
+      const malformed = [
+        { id: "a", text: "A", embedding: [1, 0], source: "doc1", sparseVector: { a: 1 } },
+        { id: "bad1", text: "X", embedding: [1], source: "doc3", sparseVector: { x: 1 } },
+        { id: "bad2", text: "Y", embedding: ["no"], source: "doc4", sparseVector: { y: 1 } },
+        { id: "bad3", text: "Z", source: "doc5", sparseVector: { z: 1 } },
+        { id: "b", text: "B", embedding: [0, 1], source: "doc2", sparseVector: { b: 1 } }
+      ];
+      fetchJsonMock.mockImplementation((url) => {
+        if (url.endsWith("client_embeddings.manifest.json")) {
+          return Promise.resolve({ shards: ["shard1.json"] });
+        }
+        if (url.endsWith("shard1.json")) {
+          return Promise.resolve(malformed);
+        }
+        return Promise.resolve([]);
+      });
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
+      const res = await findMatches([1, 0], 5);
+      expect(res?.map((r) => r.id)).toEqual(["a", "b"]);
+      expect(warn).toHaveBeenCalledTimes(3);
+      warn.mockRestore();
+    }, ["warn"]);
   });
 
   it("returns null when embeddings fail to load", async () => {
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    fetchJsonMock.mockImplementation((url) => {
-      if (url.endsWith("client_embeddings.manifest.json")) {
-        return Promise.resolve({ shards: ["shard1.json"] });
-      }
-      if (url.endsWith("shard1.json")) {
-        return Promise.reject(new Error("fail"));
-      }
-      return Promise.resolve([]);
-    });
-    const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
-    const res = await findMatches([1, 0], 1);
-    expect(res).toBeNull();
-    errorSpy.mockRestore();
+    await withAllowedConsole(async () => {
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      fetchJsonMock.mockImplementation((url) => {
+        if (url.endsWith("client_embeddings.manifest.json")) {
+          return Promise.resolve({ shards: ["shard1.json"] });
+        }
+        if (url.endsWith("shard1.json")) {
+          return Promise.reject(new Error("fail"));
+        }
+        return Promise.resolve([]);
+      });
+      const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
+      const res = await findMatches([1, 0], 1);
+      expect(res).toBeNull();
+      errorSpy.mockRestore();
+    }, ["error"]);
   });
 
   it("fetches context around an id", async () => {
