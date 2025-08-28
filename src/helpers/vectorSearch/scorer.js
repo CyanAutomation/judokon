@@ -79,9 +79,7 @@ function sparseFilterStep(state) {
   const filtered = state.entries
     .map((entry) => {
       const emb = entry?.embedding;
-      const hasComplement = Array.isArray(emb)
-        ? zeroIdx.some((i) => emb[i] && emb[i] !== 0)
-        : true; // If embedding is malformed, don't decide here; let normalize handle it.
+      const hasComplement = Array.isArray(emb) ? zeroIdx.some((i) => emb[i] && emb[i] !== 0) : true; // If embedding is malformed, don't decide here; let normalize handle it.
       if (!hasComplement) return { entry, keep: false };
 
       if (entry && entry.sparseVector && typeof entry.sparseVector === "object") {
