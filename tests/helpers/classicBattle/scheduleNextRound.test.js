@@ -161,7 +161,7 @@ describe("classicBattle scheduleNextRound", () => {
     expect(generateRandomCardMock).toHaveBeenCalledTimes(2);
   });
 
-  it("handles zero-second cooldown fast path", async () => {
+  it("schedules a minimum cooldown in test mode", async () => {
     document.getElementById("next-round-timer")?.remove();
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
@@ -173,6 +173,8 @@ describe("classicBattle scheduleNextRound", () => {
     setTestMode(true);
 
     const controls = battleMod.scheduleNextRound({ matchEnded: false });
+    expect(nextButton.dataset.nextReady).toBeUndefined();
+    await vi.runAllTimersAsync();
     await controls.ready;
 
     expect(nextButton.dataset.nextReady).toBe("true");
