@@ -34,6 +34,22 @@ export async function onNextButtonClick(_evt, { timer, resolveReady } = currentN
   if (btn.dataset.nextReady === "true") {
     btn.disabled = true;
     delete btn.dataset.nextReady;
+    // Failsafe: if the machine isn't in cooldown, advance via a safe path.
+    try {
+      const state =
+        typeof window !== "undefined" && window.__classicBattleState
+          ? window.__classicBattleState
+          : null;
+      if (state && state !== "cooldown") {
+        // If we're still in roundDecision or waitingForPlayerAction due to a race,
+        // interrupt the round to reach cooldown, then mark ready.
+        if (state === "roundDecision" || state === "waitingForPlayerAction") {
+          try {
+            await dispatchBattleEvent("interrupt", { reason: "advanceNextFromNonCooldown" });
+          } catch {}
+        }
+      }
+    } catch {}
     await dispatchBattleEvent("ready");
     if (typeof resolveReady === "function") {
       resolveReady();
