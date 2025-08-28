@@ -20,10 +20,10 @@ describe("cooldownEnter", () => {
     timerSpy.clearAllTimers();
     vi.restoreAllMocks();
   });
-  it("auto dispatches ready after timers", async () => {
+  it("auto dispatches ready after 1s timer", async () => {
     await cooldownEnter(machine);
     expect(machine.dispatch).not.toHaveBeenCalled();
-    vi.runAllTimers();
+    timerSpy.advanceTimersByTime(1000);
     expect(machine.dispatch).toHaveBeenCalledWith("ready");
   });
 });
