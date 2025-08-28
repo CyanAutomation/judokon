@@ -69,21 +69,16 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
       : result.outcome === "winOpponent"
         ? "outcome=winOpponent"
         : "outcome=draw";
-  // Only dispatch outcome/continue when machine is in roundDecision. Late
-  // completions from an earlier resolve can occur in a different state.
+  // Fire-and-forget dispatch to avoid re-entrancy deadlocks when called from
+  // within a state's onEnter handler. Schedule on the next tick so the current
+  // onEnter can complete before transitions run.
   try {
-    try {
-      if (!IS_VITEST) console.log("DEBUG: dispatching outcomeEvent", outcomeEvent);
-    } catch {}
-    await dispatchBattleEvent(outcomeEvent);
-    try {
-      if (!IS_VITEST) console.log("DEBUG: dispatched outcomeEvent", outcomeEvent);
-    } catch {}
-    if (result.matchEnded) {
-      await dispatchBattleEvent("matchPointReached");
-    } else {
-      await dispatchBattleEvent("continue");
-    }
+    const schedule = (fn) => (typeof setTimeout === "function" ? setTimeout(fn, 0) : fn());
+    schedule(() => {
+      Promise.resolve(dispatchBattleEvent(outcomeEvent))
+        .then(() => (result.matchEnded ? dispatchBattleEvent("matchPointReached") : dispatchBattleEvent("continue")))
+        .catch(() => {});
+    });
   } catch {}
   resetStatButtons();
   emitBattleEvent("roundResolved", {
