@@ -162,12 +162,13 @@ export async function roundStartExit() {}
 
 export async function waitingForPlayerActionEnter(machine) {
   emitBattleEvent("statButtons:enable");
-  // Ensure the Next button is marked ready when the player can act.
-  // This mirrors the cooldown-expiration behavior and avoids races
-  // from state transitions clearing the flag before assertions.
-  try {
-    enableNextRoundButton();
-  } catch {}
+  // Do NOT mark the Next button as ready here. The Next button is reserved
+  // for advancing after cooldown between rounds. Enabling it during stat
+  // selection can cause `scheduleNextRound` to short-circuit, skipping the
+  // cooldown timer and preventing the state machine from progressing — seen
+  // as a "hang" on the classic battle page. The CLI page never enables Next
+  // during selection and does not suffer this issue. Keep Next controlled by
+  // `scheduleNextRound` only.
   const store = machine?.context?.store;
   if (store?.playerChoice) {
     await machine.dispatch("statSelected");

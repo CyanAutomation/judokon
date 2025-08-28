@@ -25,6 +25,9 @@ When you open `src/pages/battleJudoka.html`, a modal prompts you to choose the m
 
 For debugging or automated tests, append `?autostart=1` to `battleJudoka.html` to skip the modal and begin a default-length match immediately.
 
+Note on Next button behavior:
+- The `Next` button advances only during the inter-round cooldown. It remains disabled while choosing a stat to avoid skipping the cooldown logic accidentally. The cooldown enables `Next` (or auto-advances in test mode); do not expect `Next` to be ready during stat selection.
+
 ---
 
 ## 🚧 Development Status

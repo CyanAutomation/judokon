@@ -286,6 +286,8 @@ function installEventBindings() {
       existing.push(line);
       while (existing.length > 50) existing.shift();
       pre.textContent = existing.join("\n");
+      // Auto-scroll to the latest entry
+      pre.scrollTop = pre.scrollHeight;
     } catch {}
   });
 }
@@ -389,6 +391,13 @@ async function init() {
         localStorage.setItem(vKey, String(verboseEnabled));
       } catch {}
       if (section) section.hidden = !verboseEnabled;
+      // If enabling verbose, scroll the log to the latest entry
+      if (verboseEnabled) {
+        try {
+          const pre = byId("cli-verbose-log");
+          if (pre) pre.scrollTop = pre.scrollHeight;
+        } catch {}
+      }
     });
   } catch {}
   // Install CLI event bridges
