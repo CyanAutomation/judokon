@@ -117,8 +117,9 @@ Players and developers currently lack a simple, in-game method to see which Judo
   Judoka ID, portrait (48×48 px), full name, card code, and formatted date.
 - Portrait images use a fallback source (`judokaPortrait-0.png`) when loading
   fails, with alt text like "Portrait of Judoka Kano".
-- The page follows existing layout conventions: header, `.home-screen` wrapper,
-  and bottom navigation bar. Include a spinner during loading and a friendly
+- The page follows existing layout conventions: header, `.home-screen` wrapper
+  (set `height: 100dvh` so child grids size correctly), and bottom navigation bar.
+  Include a spinner during loading and a friendly
   message if no data is available.
 - Table rows alternate between `--color-surface` and `--color-tertiary` to
   create zebra striping, starting with `odd` for the first row.

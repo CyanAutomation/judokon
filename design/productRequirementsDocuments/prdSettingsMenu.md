@@ -114,7 +114,7 @@ On load, the Settings page must pre-populate each control with values from
 - All data reads/writes should use asynchronous, promise-based functions with error handling.
 - `settings.json` must persist via the storage utility for session retention.
 - Updates should debounce writes to avoid excessive file operations if toggles are changed rapidly.
-- Wrap the page contents in a `.home-screen` container so the fixed header does not cover the first settings control.
+- Wrap the page contents in a `.home-screen` container so the fixed header does not cover the first settings control. Screen wrappers should set `height: 100dvh` to ensure child grids can size correctly.
 
 ---
 
