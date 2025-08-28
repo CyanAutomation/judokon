@@ -1,6 +1,7 @@
 import { initRoundSelectModal } from "./roundSelectModal.js";
 import { getDefaultTimer } from "../timerUtils.js";
-import { computeNextRoundCooldown, getNextRoundControls } from "./timerService.js";
+import { getNextRoundControls } from "./timerService.js";
+import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { getStatValue } from "../battle/index.js";

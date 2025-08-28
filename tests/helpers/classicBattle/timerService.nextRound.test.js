@@ -85,21 +85,27 @@ describe("timerService next round handling", () => {
   });
 
   it("computeNextRoundCooldown respects test mode", async () => {
-    const mod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const mod = await import("../../../src/helpers/timers/computeNextRoundCooldown.js");
     const val = mod.computeNextRoundCooldown({ isTestModeEnabled: () => true });
     expect(val).toBe(1);
   });
 
-  it("createNextRoundSnackbarRenderer shows and updates", async () => {
-    const mod = await import("../../../src/helpers/classicBattle/timerService.js");
-    const renderer = mod.createNextRoundSnackbarRenderer();
+  it("CooldownRenderer shows and updates", async () => {
+    const timerMod = await import("../../../src/helpers/timers/createRoundTimer.js");
+    const { attachCooldownRenderer } = await import("../../../src/helpers/CooldownRenderer.js");
     const snackbarMod = await import("../../../src/helpers/showSnackbar.js");
     const scoreboardMod = await import("../../../src/helpers/setupScoreboard.js");
 
-    renderer(3);
-    renderer(2);
-    renderer(2);
-    renderer(0);
+    const timer = timerMod.createRoundTimer({
+      starter: (onTick, onExpired) => {
+        onTick(3);
+        onTick(2);
+        onTick(0);
+        onExpired();
+      }
+    });
+    attachCooldownRenderer(timer);
+    timer.start(3);
 
     expect(snackbarMod.showSnackbar).toHaveBeenCalledWith("Next round in: 3s");
     expect(snackbarMod.updateSnackbar).toHaveBeenCalledWith("Next round in: 2s");
