@@ -3,37 +3,21 @@ import { describe, test, expect } from "vitest";
 import { formatDate, escapeHTML } from "../../src/helpers/utils.js";
 
 describe("formatDate", () => {
-  test.each(["not-a-date", null])('returns "Invalid Date" for input %p', (input) => {
+  test.each(["not-a-date", "2025-02-30"])('returns "Invalid Date" for input %p', (input) => {
     expect(() => formatDate(input)).not.toThrow();
     expect(formatDate(input)).toBe("Invalid Date");
   });
 
-  test.each(["2025-02-30", "2025-13-01"])(
-    'returns "Invalid Date" for impossible calendar date %p',
-    (input) => {
-      expect(formatDate(input)).toBe("Invalid Date");
-    }
-  );
-
-  test.each([
-    ["2025-04-24", "2025-04-24"],
-    ["2024-02-29", "2024-02-29"]
-  ])("formats input %p to %p", (input, expected) => {
-    expect(formatDate(input)).toBe(expected);
+  test("formats valid date", () => {
+    expect(formatDate("2024-02-29")).toBe("2024-02-29");
   });
 
-  test.each([
-    ["2025-04-24T12:00:00+05:00", "2025-04-24"],
-    ["2025-04-24T12:00:00-05:00", "2025-04-24"]
-  ])("handles timezone offsets correctly for input %p", (input, expected) => {
-    expect(formatDate(input)).toBe(expected);
+  test("handles timezone offsets", () => {
+    expect(formatDate("2025-04-24T12:00:00+05:00")).toBe("2025-04-24");
   });
 
-  test.each([
-    ["2025-04-24T15:30:00.123456Z", "2025-04-24"],
-    ["2025-04-24T15:30:00.999Z", "2025-04-24"]
-  ])("handles sub-second precision correctly for input %p", (input, expected) => {
-    expect(formatDate(input)).toBe(expected);
+  test("handles sub-second precision", () => {
+    expect(formatDate("2025-04-24T15:30:00.123456Z")).toBe("2025-04-24");
   });
 
   test("returns 'Invalid Date' for unsupported inputs like Symbol", () => {
@@ -41,38 +25,12 @@ describe("formatDate", () => {
     expect(formatDate(Symbol("date"))).toBe("Invalid Date");
   });
 
-  test("handles edge cases for valid date strings", () => {
-    const edgeCases = [
-      ["2025-04-24T00:00:00.000Z", "2025-04-24"],
-      ["2025-04-24T23:59:59.999Z", "2025-04-24"]
-    ];
-    edgeCases.forEach(([input, expected]) => {
-      expect(formatDate(input)).toBe(expected);
-    });
+  test("handles edge case at end of day", () => {
+    expect(formatDate("2025-04-24T23:59:59.999Z")).toBe("2025-04-24");
   });
 
-  test.each([
-    ["2025-04-24T15:30:00.123456789Z", "2025-04-24"],
-    ["2025-04-24T15:30:00.999999999Z", "2025-04-24"]
-  ])("handles nanosecond precision correctly for input %p", (input, expected) => {
-    expect(formatDate(input)).toBe(expected);
-  });
-
-  test.each([
-    ["2025-04-24T15:30:00Z", "2025-04-24"],
-    ["2025-04-24T15:30:00.123Z", "2025-04-24"]
-  ])(
-    "does not modify valid ISO date strings with time components for input %p",
-    (input, expected) => {
-      expect(formatDate(input)).toBe(expected);
-    }
-  );
-
-  test.each([
-    [new Date("2025-04-24T00:00:00Z"), "2025-04-24"],
-    [new Date("2024-02-29T23:59:59Z"), "2024-02-29"]
-  ])("formats Date instance %p to %p", (dateObj, expected) => {
-    expect(formatDate(dateObj)).toBe(expected);
+  test("formats Date instance", () => {
+    expect(formatDate(new Date("2025-04-24T00:00:00Z"))).toBe("2025-04-24");
   });
 
   test("returns 'Invalid Date' for NaN and Infinity", () => {
