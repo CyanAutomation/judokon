@@ -93,8 +93,16 @@ export async function initBattleStateProgress() {
   resolveBattleStateProgressReady?.();
 
   const updateActive = (state) => {
+    let target = state;
+    // Map non-core states to nearest visible core state so the list
+    // continues to reflect progress during interrupts or admin paths.
+    if (!list.querySelector(`li[data-state="${target}"]`)) {
+      if (target === "interruptRound") target = "cooldown";
+      else if (target === "interruptMatch") target = "matchOver";
+      else if (target === "roundModification") target = "roundDecision";
+    }
     list.querySelectorAll("li").forEach((li) => {
-      li.classList.toggle("active", li.dataset.state === state);
+      li.classList.toggle("active", li.dataset.state === target);
     });
     updateBattleStateBadge(state);
   };

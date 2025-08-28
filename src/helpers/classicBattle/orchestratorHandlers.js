@@ -102,6 +102,13 @@ export async function cooldownEnter(machine, payload) {
       try {
         duration = computeNextRoundCooldown();
       } catch {}
+      // Mirror scheduleNextRound minimal UI: enable Next immediately and
+      // mark as ready when countdown expires (or immediately for zero cooldown).
+      const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
+      if (btn) {
+        btn.disabled = false;
+        delete btn.dataset.nextReady;
+      }
       const onFinished = () => {
         try {
           offBattleEvent("countdownFinished", onFinished);
@@ -109,10 +116,31 @@ export async function cooldownEnter(machine, payload) {
         try {
           if (fallbackTimer) clearTimeout(fallbackTimer);
         } catch {}
+        if (btn) {
+          btn.dataset.nextReady = "true";
+          btn.disabled = false;
+        }
+        try {
+          emitBattleEvent("nextRoundTimerReady");
+        } catch {}
         try {
           machine.dispatch("ready");
         } catch {}
       };
+      // Zero-cooldown fast-path
+      if (Number(duration) == 0) {
+        if (btn) {
+          btn.dataset.nextReady = "true";
+          btn.disabled = false;
+        }
+        try {
+          emitBattleEvent("nextRoundTimerReady");
+        } catch {}
+        try {
+          machine.dispatch("ready");
+        } catch {}
+        return;
+      }
       onBattleEvent("countdownFinished", onFinished);
       emitBattleEvent("countdownStart", { duration });
       let fallbackTimer = null;
@@ -122,9 +150,7 @@ export async function cooldownEnter(machine, payload) {
           try {
             offBattleEvent("countdownFinished", onFinished);
           } catch {}
-          try {
-            machine.dispatch("ready");
-          } catch {}
+          onFinished();
         }, ms);
       } catch {}
       return;
