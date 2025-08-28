@@ -67,6 +67,14 @@ describe("vectorSearch scoring", () => {
     expect(res?.[0].id).toBe("b");
   });
 
+  it("filters entries with sparse vectors before cosine scoring", async () => {
+    const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
+    const res = await withAllowedConsole(() => findMatches([1, 0], 5, [], "", { beta: 1 }));
+    expect(res).toHaveLength(1);
+    expect(res[0].id).toBe("b");
+    expect(res[0].score).toBeCloseTo(0.5);
+  });
+
   it("returns empty array for dimension mismatch", async () => {
     const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
     const res = await findMatches([1, 0, 0], 1);
