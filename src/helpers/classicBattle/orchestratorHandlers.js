@@ -294,6 +294,7 @@ export function scheduleRoundDecisionGuard(store, machine) {
 }
 
 export async function roundDecisionEnter(machine) {
+  if (!IS_VITEST) console.log("DEBUG: Entering roundDecisionEnter");
   const { store } = machine.context;
 
   const resolveImmediate = async () => {
@@ -334,12 +335,12 @@ export async function roundDecisionEnter(machine) {
 
   if (store.playerChoice) {
     try {
+      if (!IS_VITEST) console.log("DEBUG: Calling resolveImmediate");
+      await resolveImmediate();
+      if (!IS_VITEST) console.log("DEBUG: resolveImmediate completed");
       // Do NOT clear the guard until resolution completes. If resolution
       // stalls due to an unforeseen await (e.g., event dispatch deadlock),
       // the guard must fire to compute an outcome or interrupt to avoid a hang.
-      await resolveImmediate();
-      // Now that resolution completed, clear any scheduled guard to prevent
-      // a late double-dispatch.
       try {
         if (typeof window !== "undefined" && window.__roundDecisionGuard) {
           clearTimeout(window.__roundDecisionGuard);
@@ -359,7 +360,8 @@ export async function roundDecisionEnter(machine) {
           } catch {}
         }, 600);
       } catch {}
-    } catch {
+    } catch (error) { // Catch the error and log it
+      if (!IS_VITEST) console.error("DEBUG: Error in roundDecisionEnter:", error);
       try {
         emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
         emitBattleEvent("debugPanelUpdate");
