@@ -223,7 +223,7 @@ function addMachineDiagnostics(win, state) {
  *
  * @pseudocode
  * 1. Exit if `pre` is missing.
- * 2. Stringify `state` with indentation.
+ * 2. Stringify `state` without indentation for compact output.
  * 3. Assign result to `pre.textContent`.
  *
  * @param {HTMLElement | null} pre Target element to update.
@@ -231,7 +231,8 @@ function addMachineDiagnostics(win, state) {
  */
 export function renderDebugState(pre, state) {
   if (!pre) return;
-  pre.textContent = JSON.stringify(state, null, 2);
+  // Use compact JSON to remove line breaks for AI-friendly copying.
+  pre.textContent = JSON.stringify(state);
 }
 
 /**
