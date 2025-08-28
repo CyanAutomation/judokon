@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-  initRoundSelectModal: vi.fn(async (cb) => { await cb?.(); })
+  initRoundSelectModal: vi.fn(async (cb) => {
+    await cb?.();
+  })
 }));
 
 describe("timeout → interruptRound → cooldown auto-advance", () => {
@@ -26,7 +28,9 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     // minimal store
     const store = { selectionMade: false, playerChoice: null };
     await initClassicBattleOrchestrator(store, undefined, {});
-    const machine = (await import("../../../src/helpers/classicBattle/orchestrator.js")).getBattleStateMachine();
+    const machine = (
+      await import("../../../src/helpers/classicBattle/orchestrator.js")
+    ).getBattleStateMachine();
 
     // Simulate match start then go to waitingForPlayerAction
     await machine.dispatch("matchStart");
