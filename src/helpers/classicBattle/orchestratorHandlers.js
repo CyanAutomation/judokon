@@ -307,6 +307,16 @@ export async function roundDecisionEnter(machine) {
   } catch {}
   emitBattleEvent("debugPanelUpdate");
 
+  // Always schedule a guard to compute outcome or interrupt if the state
+  // remains in roundDecision for too long. If resolution completes, the
+  // guard is cleared in roundDecisionExit.
+  try {
+    if (typeof window !== "undefined") {
+      const guardId = scheduleRoundDecisionGuard(store, machine);
+      window.__roundDecisionGuard = guardId;
+    }
+  } catch {}
+
   if (store.playerChoice) {
     try {
       // Clear any scheduled guard to avoid a race where the guard fires
@@ -334,12 +344,6 @@ export async function roundDecisionEnter(machine) {
     await new Promise((r) => setTimeout(r, 50));
     waited += 50;
   }
-  try {
-    if (typeof window !== "undefined") {
-      const guardId = scheduleRoundDecisionGuard(store, machine);
-      window.__roundDecisionGuard = guardId;
-    }
-  } catch {}
   if (!store.playerChoice) {
     try {
       emitBattleEvent("scoreboardShowMessage", "No selection detected. Interrupting round.");
