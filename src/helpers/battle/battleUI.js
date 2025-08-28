@@ -10,7 +10,6 @@
  */
 
 import { onFrame as scheduleFrame, cancel as cancelFrame } from "../../utils/scheduler.js";
-import { isEnabled } from "../featureFlags.js";
 
 /**
  * Query all stat buttons.

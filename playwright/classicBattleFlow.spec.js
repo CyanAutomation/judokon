@@ -34,18 +34,12 @@ test.describe("Classic battle flow", () => {
 
   test("timer auto-selects when expired", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
-    // Select a round so the pre-round countdown starts and the snackbar
-    // is rendered. The header timer may be empty before the first round
-    // starts, so assert against the snackbar which reports the countdown.
     const roundOptions = page.locator(".round-select-buttons button");
     await roundOptions.first().click();
     await expect(page.locator(".modal-backdrop:not([hidden])")).toHaveCount(0);
-    const sn = page.locator(".snackbar");
-    await expect(sn).toHaveText(/Next round in: \d+s/);
     await waitForBattleReady(page);
-    await page.evaluate(() => window.skipBattlePhase?.());
-    await page.evaluate(() => window.freezeBattleHeader?.());
-    await expect(sn).toHaveText(/Next round in: \d+s/);
+    // Let the timer expire
+    await expect(page.locator(".snackbar")).toHaveText(/Time's up!/, { timeout: 35000 });
   });
 
   test("tie message appears on equal stats", async ({ page }) => {
