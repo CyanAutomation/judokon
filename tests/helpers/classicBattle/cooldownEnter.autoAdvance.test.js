@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
-  computeNextRoundCooldown: vi.fn(() => 1),
   getNextRoundControls: vi.fn(() => null)
+}));
+vi.mock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
+  computeNextRoundCooldown: vi.fn(() => 1)
 }));
 
 import { cooldownEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";

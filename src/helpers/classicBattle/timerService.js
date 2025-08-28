@@ -1,5 +1,5 @@
 import { getDefaultTimer } from "../timerUtils.js";
-import { startRound as engineStartRound, startCoolDown, stopTimer } from "../battleEngineFacade.js";
+import { startRound as engineStartRound } from "../battleEngineFacade.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 import * as snackbar from "../showSnackbar.js";
@@ -7,9 +7,11 @@ import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
 import { emitBattleEvent } from "./battleEvents.js";
 
-import { isTestModeEnabled } from "../testModeUtils.js";
 import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent } from "./battleDispatcher.js";
+import { createRoundTimer } from "../timers/createRoundTimer.js";
+import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
+import { attachCooldownRenderer } from "../CooldownRenderer.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
@@ -172,9 +174,19 @@ export async function startTimer(onExpiredSelect) {
   }
   const restore = !synced ? scoreboard.showTemporaryMessage("Waiting…") : () => {};
 
-  const timer = createRoundTimer(onTick, onExpired, {
+  const timer = createRoundTimer({
     starter: engineStartRound,
     onDriftFail: () => forceAutoSelectAndDispatch(onExpiredSelect)
+  });
+  timer.on("tick", onTick);
+  timer.on("expired", onExpired);
+  timer.on("drift", () => {
+    const msgEl = document.getElementById("round-message");
+    if (msgEl && msgEl.textContent) {
+      snackbar.showSnackbar("Waiting…");
+    } else {
+      scoreboard.showMessage("Waiting…");
+    }
   });
 
   setSkipHandler(() => timer.stop());
@@ -212,131 +224,6 @@ export function handleStatSelectionTimeout(
     } catch {}
     autoSelectStat(onSelect);
   }, timeoutMs);
-}
-
-export function createRoundTimer(onTick, onExpired, { starter = startCoolDown, onDriftFail } = {}) {
-  const MAX_DRIFT_RETRIES = 3;
-  let retries = 0;
-
-  function start(dur) {
-    return starter(onTick, onExpiredInternal, dur, handleDrift);
-  }
-
-  async function onExpiredInternal() {
-    await onExpired();
-  }
-
-  async function handleDrift(remaining) {
-    retries += 1;
-    if (retries > MAX_DRIFT_RETRIES) {
-      if (typeof onDriftFail === "function") {
-        await onDriftFail();
-      } else {
-        await onExpiredInternal();
-      }
-      return;
-    }
-    const msgEl = document.getElementById("round-message");
-    if (msgEl && msgEl.textContent) {
-      snackbar.showSnackbar("Waiting…");
-    } else {
-      scoreboard.showMessage("Waiting…");
-    }
-    await start(remaining);
-  }
-
-  function stop() {
-    stopTimer();
-    onExpiredInternal();
-  }
-
-  return { start, stop };
-}
-
-/**
- * Determine the cooldown duration before the next round.
- *
- * @pseudocode
- * 1. Read `window.__NEXT_ROUND_COOLDOWN_MS` or default to 3000ms.
- * 2. If test mode is enabled via `utils.isTestModeEnabled()`, force cooldown to 1.
- * 3. Otherwise convert to whole seconds and clamp to \>=1.
- * 4. Log test mode state and resolved cooldown; wrap each warn in try.
- *
- * @param {{isTestModeEnabled: () => boolean}} [utils] - Test mode utilities (for injection).
- * @returns {number} Cooldown in seconds.
- */
-export function computeNextRoundCooldown(utils = { isTestModeEnabled }) {
-  const overrideMs =
-    typeof window !== "undefined" && typeof window.__NEXT_ROUND_COOLDOWN_MS === "number"
-      ? window.__NEXT_ROUND_COOLDOWN_MS
-      : 3000;
-  let cooldownSeconds;
-  try {
-    const enabled =
-      typeof utils.isTestModeEnabled === "function" ? utils.isTestModeEnabled() : false;
-    cooldownSeconds = enabled ? 1 : Math.max(1, Math.round(overrideMs / 1000));
-  } catch {
-    cooldownSeconds = Math.max(1, Math.round(overrideMs / 1000));
-  }
-  if (!IS_VITEST) {
-    if (isTestModeEnabled()) {
-      try {
-        console.warn(`[test] scheduleNextRound: testMode=true cooldown=${cooldownSeconds}`);
-      } catch {}
-    } else {
-      try {
-        console.warn(`[test] scheduleNextRound: testMode=false cooldown=${cooldownSeconds}`);
-      } catch {}
-    }
-  }
-  return cooldownSeconds;
-}
-
-/**
- * Create a tick handler that renders the next-round countdown via snackbar.
- *
- * @pseudocode
- * 1. Track whether the snackbar was shown and last rendered value.
- * 2. When remaining \<=0, show "Next round in: 0s" and clear the scoreboard timer.
- * 3. Skip rendering if the remaining value hasn't changed.
- * 4. Otherwise show or update the snackbar with the new remaining seconds.
- *
- * @returns {(remaining: number) => void} Tick handler for the countdown.
- */
-export function createNextRoundSnackbarRenderer() {
-  let started = false;
-  let lastRendered = -1;
-  return (remaining) => {
-    if (remaining <= 0) {
-      const text = "Next round in: 0s";
-      if (!started) {
-        snackbar.showSnackbar(text);
-        started = true;
-      } else {
-        snackbar.updateSnackbar(text);
-      }
-      scoreboard.clearTimer();
-      try {
-        emitBattleEvent("nextRoundCountdownTick", { remaining });
-      } catch {}
-      return;
-    }
-    if (remaining === lastRendered) return;
-    const text = `Next round in: ${remaining}s`;
-    if (!started) {
-      snackbar.showSnackbar(text);
-      started = true;
-      try {
-        emitBattleEvent("nextRoundCountdownStarted", { remaining });
-      } catch {}
-    } else {
-      snackbar.updateSnackbar(text);
-    }
-    try {
-      emitBattleEvent("nextRoundCountdownTick", { remaining });
-    } catch {}
-    lastRendered = remaining;
-  };
 }
 
 /**
@@ -396,8 +283,7 @@ export async function handleNextRoundExpiration(controls, btn, timerEl) {
  * 1. If the match ended, resolve immediately.
  * 2. Determine cooldown seconds via `computeNextRoundCooldown` (minimum 1s).
  * 3. Locate `#next-button` and `#next-round-timer`; reset the button state.
- * 4. Create `onTick` with `createNextRoundSnackbarRenderer` and
- *    `onExpired` with `handleNextRoundExpiration`.
+ * 4. Attach `CooldownRenderer` to update UI and register `onExpired` with `handleNextRoundExpiration`.
  * 5. Register a skip handler that logs the skip (for tests) and stops the timer.
  * 6. Start the timer and resolve when expired.
  *
@@ -455,23 +341,31 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
   // while the machine is still transitioning. Scheduling early is safe — the
   // expiration handler checks the live state before dispatching 'ready'.
 
-  const onTick = createNextRoundSnackbarRenderer();
+  const timer = createRoundTimer();
+  attachCooldownRenderer(timer, cooldownSeconds);
   let expired = false;
   const onExpired = () => {
     if (expired) return;
     expired = true;
     return handleNextRoundExpiration(controls, btn, timerEl);
   };
-
-  controls.timer = createRoundTimer(onTick, onExpired);
+  timer.on("expired", onExpired);
+  timer.on("drift", () => {
+    const msgEl = document.getElementById("round-message");
+    if (msgEl && msgEl.textContent) {
+      snackbar.showSnackbar("Waiting…");
+    } else {
+      scoreboard.showMessage("Waiting…");
+    }
+  });
+  controls.timer = timer;
   setSkipHandler(() => {
     try {
       console.warn("[test] skip: stop nextRoundTimer");
     } catch {}
-    if (controls.timer) controls.timer.stop();
+    controls.timer?.stop();
   });
 
-  onTick(cooldownSeconds);
   // Start engine-backed countdown on the next tick.
   scheduler.setTimeout(() => controls.timer.start(cooldownSeconds), 0);
   // Fallback: in environments where the engine isn't running (or mocks omit
