@@ -81,11 +81,13 @@ Notes:
 2. Keyboard Controls
    - Given the player is in stat selection, when pressing keys 1–9 mapped to visible stats, then the corresponding stat is selected and input is debounced until the next state.
    - Given a round has completed, when pressing Enter/Space, then the flow advances to cooldown/next round.
+   - Given an inter-round cooldown is running, when pressing Enter/Space, then the countdown is skipped and the next round begins immediately.
    - Given an active match, when pressing Q, then a quit confirmation prompt appears; confirming ends or rolls back per engine rules.
 
 3. Timer Behavior
    - Given `waitingForPlayerAction`, when the timer ticks, then `#cli-countdown` updates once per second with remaining time.
    - Given timer expiry and `FF_AUTO_SELECT` enabled, when the countdown reaches zero, then a random stat is selected and printed before decision.
+   - Given `cooldown`, when countdownStart fires, then a fallback timer runs and emits `countdownFinished` after the duration if not skipped.
    - Given the tab is hidden or device sleeps, when focus returns, then the timer resumes without double-firing and remains consistent with the engine PRD.
 
 4. Outcome and Score

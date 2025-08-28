@@ -15,14 +15,14 @@ import { DATA_DIR } from "../helpers/constants.js";
 /**
  * Minimal DOM utils for the CLI page
  */
-const $ = (sel) => document.querySelector(sel);
 const byId = (id) => document.getElementById(id);
 
 // Track current round judoka so we can compute values without card DOM
 let currentPlayerJudoka = null;
-let currentOpponentJudoka = null;
 let store = null;
 let verboseEnabled = false;
+let cooldownTimer = null;
+let cooldownInterval = null;
 
 function setRetroMode(enabled) {
   document.body.classList.toggle("retro", !!enabled);
@@ -83,9 +83,8 @@ function renderHiddenPlayerStats(judoka) {
 
 async function startRoundWrapper() {
   // Use the core startRound to select judoka; capture results and prepare hidden values.
-  const { playerJudoka, opponentJudoka } = await startRoundCore(store);
+  const { playerJudoka } = await startRoundCore(store);
   currentPlayerJudoka = playerJudoka || null;
-  currentOpponentJudoka = opponentJudoka || null;
   if (currentPlayerJudoka) renderHiddenPlayerStats(currentPlayerJudoka);
   // Prompt user for input in the bottom line
   setRoundMessage("");
@@ -136,6 +135,22 @@ function onKeyDown(e) {
         if (machine) machine.dispatch("continue");
       } catch {}
     }
+  } else if (state === "cooldown") {
+    if (key === "enter" || key === " ") {
+      try {
+        if (cooldownTimer) clearTimeout(cooldownTimer);
+      } catch {}
+      try {
+        if (cooldownInterval) clearInterval(cooldownInterval);
+      } catch {}
+      cooldownTimer = null;
+      cooldownInterval = null;
+      clearBottomLine();
+      try {
+        const machine = window.__getClassicBattleMachine?.();
+        if (machine) machine.dispatch("ready");
+      } catch {}
+    }
   } else if (key === "q") {
     // Quit at any time → interrupt path
     try {
@@ -152,7 +167,51 @@ function installEventBindings() {
   });
   onBattleEvent("scoreboardClearMessage", () => setRoundMessage(""));
 
-  // Countdown is handled by Scoreboard/startCountdown via snackbar helpers.
+  // CLI-specific countdown handler
+  onBattleEvent("countdownStart", (e) => {
+    const duration = Number(e.detail?.duration) || 0;
+    try {
+      if (cooldownTimer) clearTimeout(cooldownTimer);
+    } catch {}
+    try {
+      if (cooldownInterval) clearInterval(cooldownInterval);
+    } catch {}
+    cooldownTimer = null;
+    cooldownInterval = null;
+    if (duration > 0) {
+      let remaining = duration;
+      showBottomLine(`Next round in: ${remaining}`);
+      try {
+        cooldownInterval = setInterval(() => {
+          remaining -= 1;
+          if (remaining > 0) showBottomLine(`Next round in: ${remaining}`);
+        }, 1000);
+      } catch {}
+      try {
+        cooldownTimer = setTimeout(() => {
+          try {
+            emitBattleEvent("countdownFinished");
+          } catch {}
+        }, duration * 1000);
+      } catch {}
+    } else {
+      try {
+        emitBattleEvent("countdownFinished");
+      } catch {}
+    }
+  });
+
+  onBattleEvent("countdownFinished", () => {
+    try {
+      if (cooldownTimer) clearTimeout(cooldownTimer);
+    } catch {}
+    try {
+      if (cooldownInterval) clearInterval(cooldownInterval);
+    } catch {}
+    cooldownTimer = null;
+    cooldownInterval = null;
+    clearBottomLine();
+  });
 
   // After round resolves, update message and score
   onBattleEvent("roundResolved", (e) => {
