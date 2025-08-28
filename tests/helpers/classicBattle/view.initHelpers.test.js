@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import setupTestHelpers from "../../../src/helpers/classicBattle/setupTestHelpers.js";
+import createClassicBattleDebugAPI from "../../../src/helpers/classicBattle/setupTestHelpers.js";
 import setupScheduler from "../../../src/helpers/classicBattle/setupScheduler.js";
 import setupUIBindings from "../../../src/helpers/classicBattle/setupUIBindings.js";
 import setupDebugHooks from "../../../src/helpers/classicBattle/setupDebugHooks.js";
@@ -71,19 +71,19 @@ function makeView() {
   };
 }
 
-describe("setupTestHelpers", () => {
-  it("installs globals for tests", async () => {
+describe("createClassicBattleDebugAPI", () => {
+  it("returns helpers for tests", async () => {
     const view = makeView();
-    setupTestHelpers(view);
-    expect(window.battleStore).toBe(view.controller.battleStore);
-    await window.skipBattlePhase();
+    const api = createClassicBattleDebugAPI(view);
+    expect(api.battleStore).toBe(view.controller.battleStore);
+    await api.skipBattlePhase();
     expect(skipHandler.skipCurrentPhase).toHaveBeenCalled();
     expect(battle.resetStatButtons).toHaveBeenCalled();
-    window.startRoundOverride();
+    api.startRoundOverride();
     expect(view.startRound).toHaveBeenCalled();
-    window.freezeBattleHeader();
+    api.freezeBattleHeader();
     expect(scheduler.stop).toHaveBeenCalled();
-    window.resumeBattleHeader();
+    api.resumeBattleHeader();
     expect(scheduler.start).toHaveBeenCalled();
   });
 });

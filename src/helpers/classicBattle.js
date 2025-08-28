@@ -13,6 +13,7 @@ export { getCardStatValue } from "./classicBattle/cardStatUtils.js";
 export { scheduleNextRound } from "./classicBattle/timerService.js";
 export { applyRoundUI } from "./classicBattle/roundUI.js";
 export { getOpponentCardData } from "./classicBattle/opponentController.js";
+export { createClassicBattleDebugAPI } from "./classicBattle/setupTestHelpers.js";
 export {
   roundOptionsReadyPromise,
   roundPromptPromise,

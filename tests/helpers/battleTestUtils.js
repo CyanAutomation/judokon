@@ -11,7 +11,10 @@
  */
 export async function _resetForTest() {
   const mod = await import(new URL("/src/helpers/classicBattle.js", window.location.href));
-  mod._resetForTest(window.battleStore);
+  const store = window.__classicBattleDebugAPI
+    ? window.__classicBattleDebugAPI.battleStore
+    : window.battleStore;
+  mod._resetForTest(store);
 }
 
 /**

@@ -421,12 +421,12 @@ describe("startRoundWrapper failures", () => {
     document.body.append(container, battleArea);
 
     const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
-    await setupClassicBattlePage();
+    const api = await setupClassicBattlePage();
 
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     const errorSpy = vi.fn();
     document.addEventListener("round-start-error", errorSpy);
-    await window.startRoundOverride();
+    await api.startRoundOverride();
     expect(errorSpy).toHaveBeenCalled();
     expect(showMessage).toHaveBeenCalledWith("Round start error. Please retry.");
     expect(btn.disabled).toBe(false);

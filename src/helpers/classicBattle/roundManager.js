@@ -27,8 +27,9 @@ export function createBattleStore() {
 }
 
 function getStartRound(store) {
-  if (typeof window !== "undefined" && window.startRoundOverride) {
-    return window.startRoundOverride;
+  if (typeof window !== "undefined") {
+    const api = window.__classicBattleDebugAPI;
+    if (api?.startRoundOverride) return api.startRoundOverride;
   }
   return () => startRound(store);
 }
@@ -92,7 +93,9 @@ export function _resetForTest(store) {
   battleEngine._resetForTest();
   stopScheduler();
   if (typeof window !== "undefined") {
-    delete window.startRoundOverride;
+    const api = window.__classicBattleDebugAPI;
+    if (api) delete api.startRoundOverride;
+    else delete window.startRoundOverride;
   }
   if (store && typeof store === "object") {
     try {
