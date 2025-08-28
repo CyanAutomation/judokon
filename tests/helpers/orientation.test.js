@@ -2,19 +2,32 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import { getOrientation } from "../../src/helpers/orientation.js";
 
 const originalMatchMedia = window.matchMedia;
+const originalWidthDescriptor = Object.getOwnPropertyDescriptor(window, "innerWidth");
+const originalHeightDescriptor = Object.getOwnPropertyDescriptor(window, "innerHeight");
 const originalWidth = window.innerWidth;
 const originalHeight = window.innerHeight;
 
 const mockMatchMedia = (matches) => vi.fn().mockReturnValue({ matches });
 
 const setViewport = (width, height) => {
-  Object.defineProperty(window, "innerWidth", { configurable: true, value: width });
-  Object.defineProperty(window, "innerHeight", { configurable: true, value: height });
+  Object.defineProperty(window, "innerWidth", {
+    configurable: true,
+    writable: true,
+    value: width
+  });
+  Object.defineProperty(window, "innerHeight", {
+    configurable: true,
+    writable: true,
+    value: height
+  });
 };
 
 afterEach(() => {
   window.matchMedia = originalMatchMedia;
-  setViewport(originalWidth, originalHeight);
+  Object.defineProperty(window, "innerWidth", originalWidthDescriptor);
+  Object.defineProperty(window, "innerHeight", originalHeightDescriptor);
+  window.innerWidth = originalWidth;
+  window.innerHeight = originalHeight;
 });
 
 describe("getOrientation", () => {
