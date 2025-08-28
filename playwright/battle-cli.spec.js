@@ -16,6 +16,17 @@ test.describe("Classic Battle CLI", () => {
     });
   });
 
+  test("loads without console errors", async ({ page }) => {
+    const errors = [];
+    page.on("pageerror", (err) => errors.push(err.message));
+    page.on("console", (msg) => {
+      if (msg.type() === "error") errors.push(msg.text());
+    });
+    await page.goto("/src/pages/battleCLI.html");
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    expect(errors).toEqual([]);
+  });
+
   test("shows state badge with current state", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html");
     // Wait until the player can act
