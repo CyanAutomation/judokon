@@ -207,3 +207,27 @@ beforeEach(async () => {
     }
   } catch {}
 });
+// --- Keep Node's global `process` stable during Vitest runs ---
+// If a dependency/test removed it, restore from Node, then lock the binding.
+if (typeof globalThis.process === "undefined") {
+  // restore minimally; should be rare—root cause still gets removed in step 2
+  // eslint-disable-next-line no-undef
+  globalThis.process = process;
+}
+const __originalProcessRef = globalThis.process;
+try {
+  Object.defineProperty(globalThis, "process", {
+    configurable: false,
+    writable: false,
+    value: __originalProcessRef
+  });
+} catch (_) {
+  // property already non-configurable; that's fine
+}
+// Detect late attempts to swap the binding
+afterAll(() => {
+  if (globalThis.process !== __originalProcessRef) {
+    throw new Error("A test or dependency replaced the global `process` binding.");
+  }
+});
+// --------------------------------------------------------------

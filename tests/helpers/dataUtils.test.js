@@ -34,18 +34,13 @@ describe("resolveUrl and readData", () => {
 
   it("uses provided base when resolving relative URLs", async () => {
     const originalWindow = global.window;
-    const originalProcess = global.process;
     vi.resetModules();
     const href = "https://example.com/subdir/page.html";
     global.window = { location: { href } };
-    // Simulate non-Node environment
-    // @ts-ignore
-    delete global.process;
     const { resolveUrl } = await import("../../src/helpers/dataUtils.js");
     const parsed = await resolveUrl("data/file.json", window.location.href);
     expect(parsed.href).toBe("https://example.com/subdir/data/file.json");
     global.window = originalWindow;
-    global.process = originalProcess;
     vi.resetModules();
   });
 });

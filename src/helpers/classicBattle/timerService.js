@@ -351,6 +351,7 @@ export function createNextRoundSnackbarRenderer() {
  */
 export function handleZeroCooldownFastPath(controls, btn) {
   try {
+    console.warn("[test] handleZeroCooldownFastPath called");
     snackbar.showSnackbar("Next round in: 0s");
   } catch {}
   if (btn) {

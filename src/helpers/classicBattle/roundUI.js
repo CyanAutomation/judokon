@@ -104,13 +104,20 @@ export function bindRoundUIEventHandlers() {
       scoreboard.showMessage(result.message || "");
     } catch {}
     syncScoreDisplay();
-    scheduleNextRound(result);
     if (result.matchEnded) {
       scoreboard.clearRoundCounter();
       showMatchSummaryModal(result, async () => {
         await handleReplay(store);
       });
       emitBattleEvent("matchOver");
+    } else {
+        const onStateChange = (e) => {
+            if (e.detail.to === 'roundOver') {
+                scheduleNextRound(result);
+                document.removeEventListener('battle:state', onStateChange);
+            }
+        }
+        document.addEventListener('battle:state', onStateChange);
     }
     resetStatButtons();
     updateDebugPanel();
@@ -156,10 +163,6 @@ export function bindRoundUIEventHandlersDynamic() {
       scoreboard.showMessage(result.message || "");
       scoreboard.syncScoreDisplay?.();
     } catch {}
-    try {
-      const { scheduleNextRound } = await import("./timerService.js");
-      setTimeout(() => scheduleNextRound(result), 0);
-    } catch {}
     if (result.matchEnded) {
       try {
         const scoreboard = await import("../setupScoreboard.js");
@@ -170,6 +173,15 @@ export function bindRoundUIEventHandlersDynamic() {
         });
         emitBattleEvent("matchOver");
       } catch {}
+    } else {
+        const { scheduleNextRound } = await import("./timerService.js");
+        const onStateChange = (e) => {
+            if (e.detail.to === 'roundOver') {
+                scheduleNextRound(result);
+                document.removeEventListener('battle:state', onStateChange);
+            }
+        }
+        document.addEventListener('battle:state', onStateChange);
     }
     try {
       requestAnimationFrame(() => requestAnimationFrame(() => resetStatButtons()));

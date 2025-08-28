@@ -1,8 +1,11 @@
+
 import { test, expect } from "./fixtures/commonSetup.js";
 import { waitForBattleReady } from "./fixtures/waits.js";
 
 test.describe("Classic battle round completion", () => {
   test("plays a round to completion without hanging", async ({ page }) => {
+    page.on('console', msg => console.log(msg.text()));
+
     await page.goto("/src/pages/battleJudoka.html?autostart=1");
 
     // Wait for the battle to be ready
