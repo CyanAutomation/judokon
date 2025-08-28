@@ -70,11 +70,10 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
         ? "outcome=winOpponent"
         : "outcome=draw";
   // Fire-and-forget dispatch to avoid re-entrancy deadlocks when called from
-  // within a state's onEnter handler. Schedule on the next tick so the current
-  // onEnter can complete before transitions run.
+  // within a state's onEnter handler. Schedule via microtask and macrotask so
+  // transitions run after onEnter completes.
   try {
-    const schedule = (fn) => (typeof setTimeout === "function" ? setTimeout(fn, 0) : fn());
-    schedule(() => {
+    const run = () => {
       Promise.resolve(dispatchBattleEvent(outcomeEvent))
         .then(() =>
           result.matchEnded
@@ -82,7 +81,14 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
             : dispatchBattleEvent("continue")
         )
         .catch(() => {});
-    });
+    };
+    try {
+      if (typeof queueMicrotask === "function") queueMicrotask(run);
+    } catch {}
+    try {
+      if (typeof setTimeout === "function") setTimeout(run, 0);
+      else run();
+    } catch {}
   } catch {}
   resetStatButtons();
   emitBattleEvent("roundResolved", {

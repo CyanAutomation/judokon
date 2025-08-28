@@ -258,8 +258,23 @@ function computeAndDispatchOutcome(store, machine) {
         window.__guardOutcomeEvent = outcomeEvent || "none";
       } catch {}
       if (outcomeEvent) {
-        await machine.dispatch(outcomeEvent);
-        await machine.dispatch("continue");
+        // Avoid re-entrant dispatch inside onEnter; schedule transitions
+        // after onEnter/microtasks complete.
+        try {
+          const run = async () => {
+            try {
+              await machine.dispatch(outcomeEvent);
+              await machine.dispatch("continue");
+            } catch {}
+          };
+          if (typeof queueMicrotask === "function") queueMicrotask(run);
+          setTimeout(run, 0);
+        } catch {
+          try {
+            await machine.dispatch(outcomeEvent);
+            await machine.dispatch("continue");
+          } catch {}
+        }
       } else {
         await machine.dispatch("interrupt", { reason: "guardNoOutcome" });
       }
