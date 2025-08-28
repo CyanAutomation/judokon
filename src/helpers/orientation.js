@@ -2,17 +2,25 @@
  * Determine the current screen orientation.
  *
  * @pseudocode
- * 1. Use `matchMedia('(orientation: portrait)')` to check if portrait.
- * 2. If `matchMedia` throws, compare `innerHeight` and `innerWidth`.
- * 3. Return "portrait" when portrait, otherwise "landscape".
+ * 1. Determine the viewport orientation via `innerHeight`/`innerWidth`.
+ * 2. Try `matchMedia('(orientation: portrait)')` to check if portrait.
+ * 3. When `matchMedia` disagrees with the viewport, prefer the viewport.
+ * 4. If `matchMedia` throws, use the viewport value.
+ * 5. Return "portrait" when portrait, otherwise "landscape".
  *
  * @returns {"portrait"|"landscape"}
  */
 export function getOrientation() {
+  const viewportOrientation = window.innerHeight >= window.innerWidth ? "portrait" : "landscape";
+
   try {
-    return window.matchMedia("(orientation: portrait)").matches ? "portrait" : "landscape";
+    const mediaOrientation = window.matchMedia("(orientation: portrait)").matches
+      ? "portrait"
+      : "landscape";
+
+    return mediaOrientation === viewportOrientation ? mediaOrientation : viewportOrientation;
   } catch {
-    return window.innerHeight >= window.innerWidth ? "portrait" : "landscape";
+    return viewportOrientation;
   }
 }
 
