@@ -1,4 +1,3 @@
-
 import { test, expect } from "./fixtures/commonSetup.js";
 import { waitForBattleReady } from "./fixtures/waits.js";
 
@@ -14,7 +13,7 @@ test.describe("Classic battle round completion", () => {
   });
 
   test("plays a round to completion without hanging", async ({ page }) => {
-    page.on('console', msg => console.log(msg.text()));
+    page.on("console", (msg) => console.log(msg.text()));
 
     await page.goto("/src/pages/battleJudoka.html");
 
@@ -25,25 +24,36 @@ test.describe("Classic battle round completion", () => {
     await waitForBattleReady(page);
 
     // 1. Wait for the stat buttons to be enabled
-    await page.waitForFunction(() => {
-      const statButtons = document.querySelectorAll("#stat-buttons button");
-      return Array.from(statButtons).every(btn => !btn.disabled);
-    }, null, { timeout: 10000 });
+    await page.waitForFunction(
+      () => {
+        const statButtons = document.querySelectorAll("#stat-buttons button");
+        return Array.from(statButtons).every((btn) => !btn.disabled);
+      },
+      null,
+      { timeout: 10000 }
+    );
 
     // 2. Click a stat button
     await page.locator("button[data-stat='power']").click();
 
     // 3. Wait for the stat buttons to be disabled (indicating the round is processing)
-    await page.waitForFunction(() => {
-      const statButtons = document.querySelectorAll("#stat-buttons button");
-      return Array.from(statButtons).every(btn => btn.disabled);
-    }, null, { timeout: 10000 });
+    await page.waitForFunction(
+      () => {
+        const statButtons = document.querySelectorAll("#stat-buttons button");
+        return Array.from(statButtons).every((btn) => btn.disabled);
+      },
+      null,
+      { timeout: 10000 }
+    );
 
     // 4. Wait for the stat buttons to be enabled again (indicating the next round has started)
-    await page.waitForFunction(() => {
-      const statButtons = document.querySelectorAll("#stat-buttons button");
-      return Array.from(statButtons).every(btn => !btn.disabled);
-    }, null, { timeout: 10000 });
-
+    await page.waitForFunction(
+      () => {
+        const statButtons = document.querySelectorAll("#stat-buttons button");
+        return Array.from(statButtons).every((btn) => !btn.disabled);
+      },
+      null,
+      { timeout: 10000 }
+    );
   });
 });
