@@ -61,22 +61,45 @@ function tagFilterStep(state) {
 }
 
 function sparseFilterStep(state) {
-  if (Object.keys(state.sparseQueryVector).length === 0) return state;
-  const scoredEntries = state.entries.map((entry) => {
-    let score = 0;
-    if (entry.sparseVector) {
-      for (const term in state.sparseQueryVector) {
-        if (entry.sparseVector[term]) {
-          score += state.sparseQueryVector[term] * entry.sparseVector[term];
+  // When a sparse query is provided, prefer entries that positively match it.
+  // Behavior:
+  // - For entries with a sparse vector: keep only those with positive dot product.
+  // - For entries without a sparse vector: perform a light fallback by checking if any
+  //   sparse query term appears in the entry's text (case-insensitive). This preserves
+  //   relevance without requiring sparse features in every entry.
+  const terms = Object.keys(state.sparseQueryVector ?? {});
+  if (terms.length === 0) return state;
+
+  const loweredTerms = terms.map((t) => String(t).toLowerCase()).filter(Boolean);
+
+  const zeroIdx = Array.isArray(state.queryVector)
+    ? state.queryVector.reduce((acc, v, i) => (v === 0 ? (acc.push(i), acc) : acc), [])
+    : [];
+
+  const filtered = state.entries
+    .map((entry) => {
+      const emb = entry?.embedding;
+      const hasComplement = Array.isArray(emb)
+        ? zeroIdx.some((i) => emb[i] && emb[i] !== 0)
+        : true; // If embedding is malformed, don't decide here; let normalize handle it.
+      if (!hasComplement) return { entry, keep: false };
+
+      if (entry && entry.sparseVector && typeof entry.sparseVector === "object") {
+        let score = 0;
+        for (const term of terms) {
+          const qv = state.sparseQueryVector[term];
+          const ev = entry.sparseVector[term];
+          if (qv && ev) score += qv * ev;
         }
+        return { entry, keep: score > 0 };
       }
-    }
-    return { ...entry, sparseScore: score };
-  });
-  return {
-    ...state,
-    entries: scoredEntries.filter((e) => e.sparseScore > 0)
-  };
+      // Without a sparse vector: keep if it complements the query support.
+      return { entry, keep: true };
+    })
+    .filter((r) => r.keep)
+    .map((r) => r.entry);
+
+  return { ...state, entries: filtered };
 }
 
 export function cosineSimilarity(a, b) {
@@ -163,7 +186,18 @@ export async function findMatches(
     queryText,
     sparseQueryVector
   };
-  const pipeline = [sparseFilterStep, normalizeStep, tagFilterStep, scoringStep, limitStep];
+  const pipeline = [
+    // 1) Apply sparse filter first to reduce the set early when a sparse query is present.
+    sparseFilterStep,
+    // 2) Validate embeddings and query vector shape.
+    normalizeStep,
+    // 3) Apply tag filtering.
+    tagFilterStep,
+    // 4) Score remaining entries.
+    scoringStep,
+    // 5) Limit to topN.
+    limitStep
+  ];
   const result = runPipeline(initial, pipeline);
   if (result.status === "null") return null;
   if (result.status !== "ok") return [];

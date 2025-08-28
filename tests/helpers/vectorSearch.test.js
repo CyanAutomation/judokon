@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { withAllowedConsole } from "../utils/console.js";
 
 vi.mock("../../src/helpers/dataUtils.js", () => ({
   fetchJson: vi.fn(),
