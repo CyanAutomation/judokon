@@ -1,6 +1,6 @@
 import { STATS, stopTimer } from "../battleEngineFacade.js";
 import { chooseOpponentStat } from "../api/battleUI.js";
-import { emitBattleEvent } from "./battleEvents.js";
+import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { resolveRound } from "./roundResolver.js";
 import { getCardStatValue } from "./cardStatUtils.js";
@@ -65,10 +65,41 @@ export function getPlayerAndOpponentValues(stat, playerVal, opponentVal) {
  * @returns {Promise<ReturnType<typeof resolveRound>|undefined>}
  */
 export async function resolveRoundViaMachine(store, stat, playerVal, opponentVal, opts = {}) {
+  // Schedule a one-shot guard: if the state machine doesn't resolve the round
+  // within 600ms, fall back to a direct, deterministic resolution to keep the
+  // game responsive and tests deterministic.
+  let cancelled = false;
+  const cancelGuard = () => {
+    cancelled = true;
+    try {
+      clearTimeout(guardId);
+    } catch {}
+    try {
+      offBattleEvent("roundResolved", onResolved);
+    } catch {}
+  };
+  const onResolved = () => cancelGuard();
+  try {
+    onBattleEvent("roundResolved", onResolved);
+  } catch {}
+  const guardId = setTimeout(() => {
+    if (cancelled) return;
+    const deterministicOpts =
+      typeof process !== "undefined" && process.env && process.env.VITEST
+        ? { ...opts, delayMs: 0 }
+        : opts;
+    // Use the direct path to ensure store.playerChoice is cleared.
+    Promise.resolve(
+      resolveRoundDirect(store, stat, playerVal, opponentVal, deterministicOpts)
+    ).catch(() => {});
+  }, 600);
+
   try {
     await dispatchBattleEvent("statSelected");
     return undefined;
   } catch {
+    // Dispatch failed; perform a deterministic direct resolve and cancel guard.
+    cancelGuard();
     const deterministicOpts =
       typeof process !== "undefined" && process.env && process.env.VITEST
         ? { ...opts, delayMs: 0 }
