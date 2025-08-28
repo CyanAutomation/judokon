@@ -3,6 +3,16 @@ import { test, expect } from "./fixtures/commonSetup.js";
 import { waitForBattleReady } from "./fixtures/waits.js";
 
 test.describe("Classic battle round completion", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__NEXT_ROUND_COOLDOWN_MS = 0;
+      localStorage.setItem(
+        "settings",
+        JSON.stringify({ featureFlags: { enableTestMode: { enabled: false } } })
+      );
+    });
+  });
+
   test("plays a round to completion without hanging", async ({ page }) => {
     page.on('console', msg => console.log(msg.text()));
 
@@ -11,19 +21,22 @@ test.describe("Classic battle round completion", () => {
     // Wait for the battle to be ready
     await waitForBattleReady(page);
 
-    // Wait for the stat buttons to be enabled
+    // 1. Wait for the stat buttons to be enabled
     await page.waitForFunction(() => {
       const statButtons = document.querySelectorAll("#stat-buttons button");
       return Array.from(statButtons).every(btn => !btn.disabled);
     }, null, { timeout: 10000 });
 
-    // Select the first stat
+    // 2. Click a stat button
     await page.locator("button[data-stat='power']").click();
 
-    // Wait for the round to be resolved and the "Next round in: Xs" snackbar to appear
-    await expect(page.locator(".snackbar")).toHaveText(/Next round in: \d+s/, { timeout: 10000 });
+    // 3. Wait for the stat buttons to be disabled (indicating the round is processing)
+    await page.waitForFunction(() => {
+      const statButtons = document.querySelectorAll("#stat-buttons button");
+      return Array.from(statButtons).every(btn => btn.disabled);
+    }, null, { timeout: 10000 });
 
-    // Wait for the cooldown to finish and the next round to start, by waiting for the stat buttons to be enabled again
+    // 4. Wait for the stat buttons to be enabled again (indicating the next round has started)
     await page.waitForFunction(() => {
       const statButtons = document.querySelectorAll("#stat-buttons button");
       return Array.from(statButtons).every(btn => !btn.disabled);

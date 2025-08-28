@@ -66,14 +66,6 @@ export function getPlayerAndOpponentValues(stat, playerVal, opponentVal) {
  */
 export async function resolveRoundViaMachine(store, stat, playerVal, opponentVal, opts = {}) {
   try {
-    setTimeout(() => {
-      if (store.playerChoice) {
-        resolveRoundDirect(store, stat, playerVal, opponentVal, {
-          ...opts,
-          delayMs: 0
-        }).catch(() => {});
-      }
-    }, 600);
     await dispatchBattleEvent("statSelected");
     return undefined;
   } catch {
