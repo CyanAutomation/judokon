@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { getJudokaFixture, getGokyoFixture } from "../utils/testUtils.js";
+import { withMutedConsole } from "../utils/console.js";
 
 let getRandomJudokaMock;
 const renderMock = vi.fn();
@@ -68,8 +69,7 @@ describe("generateRandomCard", () => {
   });
 
   it("falls back to id 0 when selection fails", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    try {
+    await withMutedConsole(async () => {
       const container = document.createElement("div");
       const fallbackEl = document.createElement("div");
       const judokaData = getJudokaFixture().slice(0, 2);
@@ -88,14 +88,11 @@ describe("generateRandomCard", () => {
 
       expect(renderMock).toHaveBeenCalled();
       expect(container.firstChild).toBe(fallbackEl);
-    } finally {
-      consoleErrorSpy.mockRestore();
-    }
+    });
   });
 
   it("does not refetch gokyo data when falling back", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    try {
+    await withMutedConsole(async () => {
       const container = document.createElement("div");
       const fallbackEl = document.createElement("div");
 
@@ -117,9 +114,7 @@ describe("generateRandomCard", () => {
       expect(fetchJson).toHaveBeenCalledTimes(1);
       expect(fetchJson).toHaveBeenCalledWith(expect.stringContaining("gokyo.json"));
       expect(container.firstChild).toBe(fallbackEl);
-    } finally {
-      consoleErrorSpy.mockRestore();
-    }
+    });
   });
 
   it("does not throw if container is null or undefined", async () => {
@@ -137,8 +132,7 @@ describe("generateRandomCard", () => {
   });
 
   it("handles render throwing an error", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    try {
+    await withMutedConsole(async () => {
       const container = document.createElement("div");
       const judokaData = getJudokaFixture().slice(0, 2);
       const gokyoData = getGokyoFixture();
@@ -151,9 +145,7 @@ describe("generateRandomCard", () => {
         generateRandomCard(judokaData, gokyoData, container, true)
       ).resolves.toBeUndefined();
       expect(container.childNodes.length).toBe(0);
-    } finally {
-      consoleErrorSpy.mockRestore();
-    }
+    });
   });
 
   it("does not update DOM if generated element is null or undefined", async () => {

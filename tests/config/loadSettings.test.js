@@ -1,4 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
+import { withAllowedConsole } from "../utils/console.js";
 
 /**
  * @fileoverview
@@ -46,33 +47,37 @@ describe("loadSettings", () => {
   });
 
   it("strips unknown keys and warns", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({}) })
-    );
-    localStorage.setItem("settings", JSON.stringify({ bogus: true }));
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const { loadSettings } = await import("../../src/config/loadSettings.js");
-    const settings = await loadSettings();
-    expect(settings.bogus).toBeUndefined();
-    expect(warnSpy).toHaveBeenCalledWith('Unknown setting "bogus" ignored');
-    warnSpy.mockRestore();
+    await withAllowedConsole(async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({}) })
+      );
+      localStorage.setItem("settings", JSON.stringify({ bogus: true }));
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const { loadSettings } = await import("../../src/config/loadSettings.js");
+      const settings = await loadSettings();
+      expect(settings.bogus).toBeUndefined();
+      expect(warnSpy).toHaveBeenCalledWith('Unknown setting "bogus" ignored');
+      warnSpy.mockRestore();
+    }, ["warn"]);
   });
 
   it("drops unknown keys from fetched settings", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ bogus: true })
-      })
-    );
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const { loadSettings } = await import("../../src/config/loadSettings.js");
-    const settings = await loadSettings();
-    expect(settings.bogus).toBeUndefined();
-    expect(warnSpy).toHaveBeenCalledWith('Unknown setting "bogus" ignored');
-    warnSpy.mockRestore();
+    await withAllowedConsole(async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve({ bogus: true })
+        })
+      );
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const { loadSettings } = await import("../../src/config/loadSettings.js");
+      const settings = await loadSettings();
+      expect(settings.bogus).toBeUndefined();
+      expect(warnSpy).toHaveBeenCalledWith('Unknown setting "bogus" ignored');
+      warnSpy.mockRestore();
+    }, ["warn"]);
   });
 
   it("deeply merges nested objects and replaces arrays", async () => {
@@ -93,21 +98,23 @@ describe("loadSettings", () => {
   });
 
   it("allows nested overrides with unknown keys", async () => {
-    vi.doMock("../../src/config/settingsDefaults.js", () => ({
-      DEFAULT_SETTINGS: { nested: { a: 1 } }
-    }));
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ nested: { b: 2 } })
-      })
-    );
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const { loadSettings } = await import("../../src/config/loadSettings.js");
-    const settings = await loadSettings();
-    expect(settings.nested).toEqual({ a: 1, b: 2 });
-    expect(warnSpy).not.toHaveBeenCalled();
-    warnSpy.mockRestore();
+    await withAllowedConsole(async () => {
+      vi.doMock("../../src/config/settingsDefaults.js", () => ({
+        DEFAULT_SETTINGS: { nested: { a: 1 } }
+      }));
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve({ nested: { b: 2 } })
+        })
+      );
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const { loadSettings } = await import("../../src/config/loadSettings.js");
+      const settings = await loadSettings();
+      expect(settings.nested).toEqual({ a: 1, b: 2 });
+      expect(warnSpy).not.toHaveBeenCalled();
+      warnSpy.mockRestore();
+    }, ["warn"]);
   });
 });
