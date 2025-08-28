@@ -15,6 +15,14 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./tests/setup.js"],
+    /**
+     * IMPORTANT: Force Node worker threads and disable the browser runner.
+     * This prevents crashes where Vitest's runtime calls `process.listeners(...)`
+     * but `process` is absent in a browser-style worker, leading to:
+     *   ReferenceError: process is not defined  -> worker dies -> ERR_IPC_CHANNEL_CLOSED
+     */
+    pool: "threads",
+    browser: { enabled: false },
     // Exclude Playwright specs and diagnostic Playwright files from Vitest.
     // Vitest should only run unit/integration tests under `tests/`.
     exclude: [
