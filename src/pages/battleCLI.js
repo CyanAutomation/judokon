@@ -160,6 +160,51 @@ function onKeyDown(e) {
   }
 }
 
+function handleStatClick(event) {
+  const idx = event.target?.dataset?.statIndex;
+  if (!idx) return;
+  const state = document.body?.dataset?.battleState || "";
+  if (state !== "waitingForPlayerAction") return;
+  const stat = getStatByIndex(idx);
+  if (!stat) return;
+  try {
+    if (store) {
+      store.playerChoice = stat;
+      store.selectionMade = true;
+    }
+  } catch {}
+  showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
+  try {
+    const machine = window.__getClassicBattleMachine?.();
+    if (machine) machine.dispatch("statSelected");
+  } catch {}
+}
+
+function onClickAdvance(event) {
+  const state = document.body?.dataset?.battleState || "";
+  if (event.target?.closest?.(".cli-stat")) return;
+  if (state === "roundOver") {
+    try {
+      const machine = window.__getClassicBattleMachine?.();
+      if (machine) machine.dispatch("continue");
+    } catch {}
+  } else if (state === "cooldown") {
+    try {
+      if (cooldownTimer) clearTimeout(cooldownTimer);
+    } catch {}
+    try {
+      if (cooldownInterval) clearInterval(cooldownInterval);
+    } catch {}
+    cooldownTimer = null;
+    cooldownInterval = null;
+    clearBottomLine();
+    try {
+      const machine = window.__getClassicBattleMachine?.();
+      if (machine) machine.dispatch("ready");
+    } catch {}
+  }
+}
+
 function installEventBindings() {
   // Mirror scoreboard message events to CLI message area
   onBattleEvent("scoreboardShowMessage", (e) => {
@@ -289,12 +334,13 @@ async function init() {
           if (!idx) return;
           const div = document.createElement("div");
           div.className = "cli-stat";
-          div.setAttribute("role", "option");
-          div.setAttribute("aria-selected", "false");
+          div.setAttribute("role", "button");
+          div.setAttribute("tabindex", "0");
           div.dataset.statIndex = String(idx);
           div.textContent = `[${idx}] ${s.name}`;
           list.appendChild(div);
         });
+      list.addEventListener("click", handleStatClick);
       // Also enrich the help line with the mapping
       try {
         const help = byId("cli-help");
@@ -359,6 +405,7 @@ async function init() {
   } catch {}
   // Keyboard controls
   window.addEventListener("keydown", onKeyDown);
+  document.addEventListener("click", onClickAdvance);
 }
 
 if (document.readyState === "loading") {
