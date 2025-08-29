@@ -21,12 +21,12 @@ test.describe("Homepage layout", () => {
     });
 
     test("home screen matches viewport height", async ({ page }) => {
-      const { scrollHeight, innerHeight } = await page.evaluate(() => ({
-        scrollHeight: document.documentElement.scrollHeight,
-        innerHeight: window.innerHeight
-      }));
+      const heightDiff = await page.evaluate(() => {
+        const doc = document.documentElement;
+        return doc.scrollHeight - window.innerHeight;
+      });
       // .home-screen already includes header/footer padding
-      expect(Math.abs(scrollHeight - innerHeight)).toBeLessThanOrEqual(ALLOWED_OFFSET);
+      expect(Math.abs(heightDiff)).toBeLessThanOrEqual(ALLOWED_OFFSET);
     });
 
     test("grid does not overlap footer (desktop)", async ({ page }) => {
@@ -74,12 +74,12 @@ test.describe("Homepage layout", () => {
     });
 
     test("home screen matches viewport height", async ({ page }) => {
-      const { scrollHeight, innerHeight } = await page.evaluate(() => ({
-        scrollHeight: document.documentElement.scrollHeight,
-        innerHeight: window.innerHeight
-      }));
+      const heightDiff = await page.evaluate(() => {
+        const doc = document.documentElement;
+        return doc.scrollHeight - window.innerHeight;
+      });
       // .home-screen already includes header/footer padding
-      expect(Math.abs(scrollHeight - innerHeight)).toBeLessThanOrEqual(ALLOWED_OFFSET);
+      expect(Math.abs(heightDiff)).toBeLessThanOrEqual(ALLOWED_OFFSET);
     });
 
     test("grid does not overlap footer (mobile)", async ({ page }) => {
