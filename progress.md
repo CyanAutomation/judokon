@@ -119,7 +119,7 @@
 - Focus trapping in modals: Use `src/components/Modal.js` which already traps focus, supports Escape/backdrop close, and restores focus to the trigger. Ensure all entry modals (points-to-win, quit-confirm) are instantiated with labelledBy/describedBy and that their initial focus targets are the primary action buttons.
 - Visibility change handling: Rely on existing visibility handlers in `classicBattle/orchestrator.js` and `timerUtils.createCountdownTimer({ pauseOnHidden: true })`. Ensure the round timer and cooldown timers pause on `document.hidden === true` and resume accurately. Add a quick sanity check in the page bootstrap to set `pauseOnHidden: true` for timers or use the facade that already does this.
 - Network/data-loading indicators and timeouts: Use `src/components/Spinner.js` while loading judoka data. Show spinner after a short delay (token `SPINNER_DELAY_MS`). If fetch exceeds a timeout (e.g., 8–10s), surface an error via Scoreboard and a modal with “Retry” (reload or re-fetch) and “Cancel” (abort to home). Reuse `dataUtils.fetchJson` fallback behavior; log errors via the project’s debug logger.
-- Localization keys for strings: Define a keys list for user-facing text used by Classic Battle (scoreboard messages, snackbars, modal titles/buttons, tooltips). Route string lookup through a thin `t(key, params)` adapter (backed by a static English map initially). Avoid inlining literals in the page script; use keys to ease future i18n.
+- Localization keys for strings: Define a keys list for user-facing text used by Classic Battle (scoreboard messages, snackbars, modal titles/buttons, tooltips). Route string lookup through a thin `t(key, params)` adapter (backed by a static English map initially). Avoid inlining literals in the page script; use keys to ease future i18n. Implemented in `src/helpers/i18n.js`; integrated into selection prompt and "You Picked" snackbar.
 
 ## Proposed APIs (concise)
 
@@ -138,6 +138,17 @@
 - Orchestrator testAPI export: Extend existing classic battle exports to expose a small `testAPI` (e.g., `getMachine()`, `waitFor(state)`, `forceSkip()`) for deterministic testing without reaching into internals.
 - seedRandom helper: Add `src/helpers/seedRandom.js` with deterministic PRNG (e.g., mulberry32) and wire under a test flag to produce repeatable draws in tests.
 - Unit test scaffolding: Add vitest scaffolds for timer pause/resume and auto-select paths (expiry → `roundTimeout`, auto-select snackbar/message, AI delay reveal). Keep them minimal and parallel current test patterns.
+
+## Milestone 4 — A11y and Hotkeys
+
+- Added hidden stat descriptions and `aria-describedby` to each stat button (via `applyStatLabels()`), using i18n keys like `stat.desc.power`.
+- Added optional keyboard shortcuts (keys 1..5) behind feature flag `statHotkeys` to trigger stat selection; disabled by default.
+- Standardized feature-flag naming in docs/plan: prefer camelCase keys (e.g., `autoSelect`, `statHotkeys`) instead of `FF_*` forms; align with `featureFlags` in settings.
+
+## Milestone 5 — Minimal Tests Added
+
+- `tests/helpers/autoSelectStat.min.test.js`: Verifies `autoSelectStat` announces via `showAutoSelect` and calls the provided `onSelect` with `delayOpponentMessage: true`.
+- `tests/helpers/classicBattleBindings.idempotent.test.js`: Ensures `__ensureClassicBattleBindings()` can be called multiple times without throwing.
 
 ## Milestone 2 — Defaults Config
 

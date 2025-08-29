@@ -5,6 +5,7 @@ import { isTestModeEnabled, getCurrentSeed, setTestMode } from "../testModeUtils
 import { JudokaCard } from "../../components/JudokaCard.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
 import { showSnackbar } from "../showSnackbar.js";
+import { t } from "../i18n.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showResult } from "../battle/index.js";
 import { shouldReduceMotionSync } from "../motionUtils.js";
@@ -88,7 +89,7 @@ export function showSelectionPrompt() {
   if (el) {
     el.textContent = "";
   }
-  showSnackbar("Select your move");
+  showSnackbar(t("ui.selectMove"));
   emitBattleEvent("roundPrompt");
   try {
     if (isTestModeEnabled()) console.warn("[test] roundPrompt emitted");
@@ -632,7 +633,8 @@ export function initStatButtons(store) {
       // Show snackbar immediately so tests and observers can see the message
       // synchronously.
       try {
-        showSnackbar(`You Picked: ${btn.textContent}`);
+        const label = String(btn.textContent || "").trim();
+        showSnackbar(t("ui.youPicked", { stat: label }));
       } catch {}
       // Disable buttons right away; selected class is applied via the
       // 'statSelected' event to keep a single source of truth.
@@ -648,6 +650,28 @@ export function initStatButtons(store) {
       }
     });
   });
+
+  // Optional keyboard shortcuts (1..5) behind feature flag `statHotkeys`
+  const handleHotkeys = (e) => {
+    try {
+      if (!isEnabled("statHotkeys")) return;
+    } catch {
+      return;
+    }
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    const active = document.activeElement;
+    if (active && ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName)) return;
+    const idx = e.key >= "1" && e.key <= "5" ? Number(e.key) - 1 : -1;
+    if (idx < 0 || idx >= statButtons.length) return;
+    const target = statButtons[idx];
+    if (target && !target.disabled) {
+      e.preventDefault();
+      target.click();
+    }
+  };
+  try {
+    document.addEventListener("keydown", handleHotkeys);
+  } catch {}
 
   return {
     enable: () => setEnabled(true),
@@ -690,6 +714,20 @@ export async function applyStatLabels() {
     if (btn) {
       btn.textContent = n.name;
       btn.setAttribute("aria-label", `Select ${n.name}`);
+      // Provide a short, hidden description to screen readers without requiring tooltip open
+      try {
+        const descId = `stat-desc-${key}`;
+        let desc = document.getElementById(descId);
+        if (!desc) {
+          desc = document.createElement("span");
+          desc.id = descId;
+          desc.className = "visually-hidden";
+          desc.textContent = t(`stat.desc.${key}`);
+          const group = document.getElementById("stat-buttons");
+          group?.appendChild(desc);
+        }
+        btn.setAttribute("aria-describedby", descId);
+      } catch {}
     }
   });
 }

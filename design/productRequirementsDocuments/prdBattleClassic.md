@@ -36,6 +36,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Give new players an approachable mode to learn how judoka stats impact outcomes.
 - Reduce frustration by providing immediate, clear feedback on round results.
 - Ensure round result messages, stat selection timer, and score are surfaced via the Scoreboard (see prdBattleScoreboard.md) for clarity and accessibility. The "Select your move" prompt and the countdown to the next round are shown in snackbars that update their text each second.
+ - Ensure round result messages, stat selection timer, and score are surfaced via the Scoreboard (see prdBattleScoreboard.md) for clarity and accessibility. The "Select your move" prompt and the countdown to the next round are shown in snackbars that update their text each second. Add hidden stat descriptions referenced by `aria-describedby` on each stat button so screen readers get a short hint without opening a tooltip.
 
 ---
 
@@ -75,7 +76,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
 - Round selection modal must use shared `Modal` and `Button` components for consistent accessibility.
 - Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices.
-- Stat selection timer (30s) must be displayed in the Scoreboard; if timer expires, a random stat is auto-selected. This auto-select behavior is controlled by Random Stat Mode (`FF_AUTO_SELECT`), enabled by default. Timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleScoreboard.md).
+- Stat selection timer (30s) must be displayed in the Scoreboard; if timer expires, a random stat is auto-selected. This auto-select behavior is controlled by a feature flag `autoSelect` (enabled by default). Timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleScoreboard.md).
 - Stat selection timer halts immediately once the player picks a stat.
 - Detect timer drift by comparing engine state with real time; if drift exceeds 2s, display "Waiting…" and restart the countdown.
 - Opponent stat selection runs entirely on the client. After the player picks a stat (or the timer auto-chooses), the opponent's choice is revealed after a short artificial delay to mimic turn-taking.
@@ -172,6 +173,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
     dismissal.
   - Tooltips on stat names, country flags, weight indicators, and navigation icons provide accessible explanations.
   - The Scoreboard includes a round counter and a field showing the player's selected stat for the current round.
+  - Optional keyboard shortcuts: When `statHotkeys` feature flag is enabled, allow number keys 1–5 to select the corresponding stat button (left→right order) for power users and tests. Disabled by default.
   - **Accessibility:**
   - Minimum text contrast ratio: ≥4.5:1 (per WCAG).
   - Minimum touch target size: ≥44px. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) for the full rule.
