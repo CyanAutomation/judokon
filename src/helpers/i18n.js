@@ -12,7 +12,7 @@ export function t(key, params = {}) {
 
 export const EN = {
   // UI prompts
-  "ui.selectMove": "Choose an attribute to challenge!",
+  "ui.selectMove": "Select your move",
   "ui.youPicked": "You Picked: {stat}",
   "ui.opponentChoosing": "Opponent is choosing…",
 
