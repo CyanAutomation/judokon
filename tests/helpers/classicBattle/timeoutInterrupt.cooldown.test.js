@@ -33,13 +33,30 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     ).getBattleStateMachine();
 
     // Simulate match start then go to waitingForPlayerAction
-    await machine.dispatch("matchStart");
-    await machine.dispatch("ready"); // to cooldown
-    await machine.dispatch("ready"); // to roundStart
-    await machine.dispatch("cardsRevealed"); // to waitingForPlayerAction
+  await machine.dispatch("matchStart");
+  // eslint-disable-next-line no-console
+  console.log("DIAG: state after matchStart ->", machine.getState());
+  await machine.dispatch("ready"); // to cooldown
+  // eslint-disable-next-line no-console
+  console.log("DIAG: state after first ready ->", machine.getState());
+  await machine.dispatch("ready"); // to roundStart
+  // eslint-disable-next-line no-console
+  console.log("DIAG: state after second ready ->", machine.getState());
+  await machine.dispatch("cardsRevealed"); // to waitingForPlayerAction
+  // eslint-disable-next-line no-console
+  console.log("DIAG: state after cardsRevealed ->", machine.getState());
 
     // Trigger timeout: machine goes to roundDecision then interruptRound(noSelection)
-    await machine.dispatch("timeout");
+  await machine.dispatch("timeout");
+  // eslint-disable-next-line no-console
+  console.log("DIAG: state after timeout dispatch ->", machine.getState());
+    // Diagnostic: dump state snapshot and any registered waiters to diagnose why cooldown wasn't reached
+    try {
+      // eslint-disable-next-line no-console
+      console.log("DIAG: snapshot after timeout =>", window.getBattleStateSnapshot?.());
+      // eslint-disable-next-line no-console
+      console.log("DIAG: dump waiters =>", window.dumpStateWaiters?.());
+    } catch (e) {}
     // Wait until cooldown is reached
     await window.awaitBattleState?.("cooldown", 5000);
 

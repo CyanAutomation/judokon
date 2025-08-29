@@ -4,6 +4,10 @@ import { emitBattleEvent } from "./battleEvents.js";
 import { resetStatButtons } from "../battle/battleUI.js";
 
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
+// Guard to prevent concurrent resolution attempts. Module-scoped so multiple
+// callers share the same guard in test environments where modules are not
+// re-instantiated between tests.
+let isResolving = false;
 
 /**
  * Evaluate round data without side effects.
