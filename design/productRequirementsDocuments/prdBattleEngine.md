@@ -41,7 +41,9 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 
 - **Stat Selection Timer:** 30 seconds, or another value
 - **Win Target:** User-selected at match start (5, 10, or 15 round wins)
-- **Random Stat Mode (`FF_AUTO_SELECT`):** Enabled by default
+- **Random Stat Mode (`autoSelect`):** Enabled by default
+
+> **Note:** Feature flags use camelCase keys.
 
 ---
 
@@ -60,7 +62,7 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 |----------|------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
 | **P1**   | State Machine                | Implements all match states and transitions as defined in `src/helpers/classicBattle/stateTable.js`. Exposes current state to UI and tests.       |
 | **P1**   | Round Logic                  | Handles round start, stat selection, comparison, scoring, and round end.                                                          |
-| **P1**   | Stat Selection Timer         | 30s timer for stat selection, with pause/resume and auto-select fallback (Random Stat Mode, `FF_AUTO_SELECT`, enabled by default). |
+| **P1**   | Stat Selection Timer         | 30s timer for stat selection, with pause/resume and auto-select fallback (Random Stat Mode, `autoSelect`, enabled by default). |
 | **P1**   | Scoring                      | Updates player and opponent scores after each round.                                                                               |
 | **P1**   | Match End Condition          | Ends match when user-selected win target is reached; exposes final result and score.                                               |
 | **P2**   | Interrupt Handling           | Supports early quit, navigation, or error interrupts. Navigation away pauses play and rolls back to the last completed round. Unexpected errors revert to the last stable state, surface an error message, and return to the lobby. |
@@ -80,8 +82,8 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
    - **Given** the player is in `waitingForPlayerAction`  
    - **When** the timer reaches zero  
    - **Then**  
-    - If `FF_AUTO_SELECT` (Random Stat Mode) is enabled → system auto-selects the highest stat allowed by rules, and match proceeds to `roundDecision`.
-    - If `FF_AUTO_SELECT` is disabled → match proceeds to `interruptRound` or a defined grace extension.
+    - If `autoSelect` (Random Stat Mode) is enabled → system auto-selects the highest stat allowed by rules, and match proceeds to `roundDecision`.
+    - If `autoSelect` is disabled → match proceeds to `interruptRound` or a defined grace extension.
 
 3. **Timer Drift Handling**  
    - **Given** the tab is inactive or device clock drifts by >200ms  
@@ -114,7 +116,7 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 
 ## Edge Cases / Failure States
 
-- **Timeout Auto-Select:** If enabled via `FF_AUTO_SELECT` (Random Stat Mode), the engine auto-selects highest stat by ruleset; otherwise follow fallback path.
+- **Timeout Auto-Select:** If enabled via `autoSelect` (Random Stat Mode), the engine auto-selects highest stat by ruleset; otherwise follow fallback path.
 - **Tab Inactivity / App Backgrounding:** Timers pause; state resumes accurately on return.  
 - **Error Injection (Testing):** Engine must recover from simulated logic or UI hook errors without corrupting match state.
 
@@ -196,8 +198,8 @@ The game waits for a stat selection.
 
 - **Triggers:**
   - `statSelected` → **`roundDecision`**
-  - `timeout` (if `FF_AUTO_SELECT` enabled) → **`roundDecision`**
-  - `timeout` (if `FF_AUTO_SELECT` disabled) → **`interruptRound`**
+  - `timeout` (if `autoSelect` enabled) → **`roundDecision`**
+  - `timeout` (if `autoSelect` disabled) → **`interruptRound`**
   - `interrupt` → **`interruptRound`**
 - **Notes:** The user always chooses first; AI only selects if it is the AI’s turn in other modes. Stat buttons remain disabled until this state is entered and are disabled again when leaving it.
 
@@ -326,8 +328,8 @@ flowchart TD
     D -->|interrupt| L
 
     E -->|statSelected| F[roundDecision]
-    E -->|timeout & FF_AUTO_SELECT| F
-    E -->|timeout & !FF_AUTO_SELECT| L
+    E -->|timeout & autoSelect| F
+    E -->|timeout & !autoSelect| L
     E -->|interrupt| L
 
     F -->|winP1 / winP2 / draw| G[roundOver]
