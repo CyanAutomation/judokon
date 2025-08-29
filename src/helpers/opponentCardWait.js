@@ -38,4 +38,3 @@ export function waitForOpponentCard(timeoutMs = 5000, observe = globalThis.Mutat
     }, timeoutMs);
   });
 }
-
