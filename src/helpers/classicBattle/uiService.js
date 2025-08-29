@@ -158,6 +158,10 @@ onBattleEvent("countdownStart", (e) => {
       } catch {}
       activeCountdown = null;
     });
+    if (!activeCountdown) {
+      // A pending skip consumed the countdown before it began
+      return;
+    }
     timer.start(duration);
   } catch (err) {
     console.error("Error in countdownStart event handler:", err);
