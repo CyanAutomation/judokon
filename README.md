@@ -134,6 +134,22 @@ const results = await vectorSearch.findMatches([0, 1, 0], 5, ["prd"], expanded);
 ```
 Embeddings are quantized to **three decimal places** to keep file size and comparisons predictable.
 See [RAG_QUERY_GUIDE.md](design/agentWorkflows/RAG_QUERY_GUIDE.md) for template prompts and tag combinations when querying.
+
+### Query RAG from the CLI
+
+Search the vector database directly from the terminal:
+
+```bash
+npm run rag:query "How does the battle engine work?"
+```
+
+Sample output:
+
+```text
+- Classic Battle introduces the game's basic one-on-one mode.
+- The round resolver compares chosen stats to decide a winner.
+- Each round alternates between player choice and resolver phases.
+```
 ## ⚡ Module Loading Policy: Static vs Dynamic Imports
 
 JU-DO-KON! favors **deterministic gameplay and snappy input handling**. Use **static imports** for core gameplay; reserve **dynamic imports** (`import('…')`) for optional screens and heavy tools.
