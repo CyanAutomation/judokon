@@ -6,6 +6,17 @@ Displays round messages, stat selection timer, and live match score in the page 
 
 ---
 
+### Canonical DOM IDs
+
+The Scoreboard reserves the following DOM IDs for its placeholders so other docs and code can reference them consistently:
+
+- `#round-message` – round outcomes and status messages
+- `#next-round-timer` – stat selection timer
+- `#score-display` – player vs opponent score
+- `#round-counter` – current round number
+
+---
+
 ## Problem Statement
 
 In battle game modes (e.g. Classic Battle), players have a real need to receive clear visual feedback between or after rounds. Without this info, it will leave users uncertain about match state, leading to confusion, reduced immersion, and increased risk of game abandonment. Players could feel "lost" due to a lack of timely updates about round outcomes, next steps, or overall progress.
@@ -14,16 +25,15 @@ In battle game modes (e.g. Classic Battle), players have a real need to receive 
 
 ## Goals
 
-1. **Display match score (player vs opponent)** on the **right side of the top bar**, updated at the **end of each round**, within **800ms** of score finalization.
-2. **Display round-specific messaging** on the **left side of the top bar**, depending on match state:
+1. **Display match score (player vs opponent)** on the **right side of the top bar** via `#score-display`, updated at the **end of each round**, within **800ms** of score finalization.
+2. **Display round-specific messaging** on the **left side of the top bar** via `#round-message`, depending on match state:
    - If a round ends: show **win/loss/result** message briefly.
-   - If awaiting action: show a **selection prompt** via Scoreboard until a decision is made.
-   - If waiting for next round: show a **countdown timer** that begins at round end and updates its text each second.
-   - If in stat selection phase: show **a countdown timer** and prompt; if timer expires, auto-select a stat (see [Classic Battle PRD](prdBattleClassic.md)).
+   - If in stat selection phase: show **a countdown timer** in `#next-round-timer`; if timer expires, auto-select a stat (see [Classic Battle PRD](prdBattleClassic.md)).
    - After the player picks a stat: show **"Opponent is choosing..."** until the opponent's choice is revealed.
+   - Snackbars surface selection prompts and next-round countdowns.
 3. Ensure all messages are clearly readable, positioned responsively, and maintain usability across devices.
-4. Display fallback messages within 500ms of sync failure.
-5. Surface a round counter, but not the total number of rounds.
+4. Display fallback messages within 500ms of sync failure in `#round-message`.
+5. Surface a round counter (`#round-counter`), but not the total number of rounds.
 6. **Complement header messaging with a numbered progress bar** beneath the battle area that displays the current state ID in ascending order for clear, accessible progress tracking.
 
 ---
@@ -40,7 +50,7 @@ In battle game modes (e.g. Classic Battle), players have a real need to receive 
 
 ## Description
 
-The round message, timer, and score now sit directly inside the page header rather than in a separate bar. The Scoreboard also displays the stat selection timer (30 seconds by default), and triggers auto-selection if the timer expires, as specified in [Classic Battle PRD](prdBattleClassic.md) and [Random Stat Mode PRD](prdRandomStatMode.md). The timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see [Classic Battle PRD](prdBattleClassic.md)).
+The round message (`#round-message`), timer (`#next-round-timer`), round counter (`#round-counter`), and score (`#score-display`) now sit directly inside the page header rather than in a separate bar. The Scoreboard also displays the stat selection timer (30 seconds by default), and triggers auto-selection if the timer expires, as specified in [Classic Battle PRD](prdBattleClassic.md) and [Random Stat Mode PRD](prdRandomStatMode.md). The timer in `#next-round-timer` must pause if the game tab is inactive or device goes to sleep, and resume on focus (see [Classic Battle PRD](prdBattleClassic.md)).
 
 **Note:** The Scoreboard does not display contextual feedback such as stat selection confirmation, countdowns to next round, or error messages. These are surfaced via the Snackbar component (see prdSnackbar.md).
 
@@ -48,37 +58,38 @@ The round message, timer, and score now sit directly inside the page header rath
 
 ## Functional Requirements
 
-| Priority | Feature                | Description                                                                                                                                                                                                                                |
-| -------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **P1**   | Match Score Display    | Real-time, fast update of player vs opponent score per round                                                                                                                                                                               |
-| **P1**   | Round Status Messaging | Show clear win/loss messages post-round                                                                                                                                                                                                    |
-| **P1**   | Stat Selection Timer   | Display 30s countdown for stat selection; auto-select if expired; timer pauses/resumes on tab inactivity (see [Classic Battle PRD](prdBattleClassic.md))                                                                                   |
-| **P2**   | Countdown Timer        | Display countdown to next round with fallback for server sync                                                                                                                                                                              |
-| **P2**   | User Action Prompt     | Prompt player for input and hide after interaction                                                                                                                                                                                         |
-| **P3**   | Responsive Layout      | Adapt layout for small screens and collapse content as needed                                                                                                                                                                              |
-| **P3**   | Accessibility Features | Ensure text contrast, screen reader compatibility (via `role="status"` on messages and timers), minimum touch target size, and keyboard navigation for stat, Next, and Quit controls. The **Next** button advances rounds and skips timers (see [Classic Battle PRD](prdBattleClassic.md)) |
-| **P2**   | Edge Case Handling     | Fallback messages for backend sync failure and display issues                                                                                                                                                                              |
+| Priority | Feature                | Description |
+| -------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **P1**   | Match Score Display    | Real-time, fast update of player vs opponent score per round via `#score-display` |
+| **P1**   | Round Status Messaging | Show clear win/loss messages post-round in `#round-message` |
+| **P1**   | Stat Selection Timer   | Display 30s countdown for stat selection in `#next-round-timer`; auto-select if expired; timer pauses/resumes on tab inactivity (see [Classic Battle PRD](prdBattleClassic.md)) |
+| **P3**   | Responsive Layout      | Adapt layout for small screens and collapse content as needed |
+| **P3**   | Accessibility Features | Ensure text contrast, screen reader compatibility (`role="status"` on `#round-message` and `#next-round-timer`), minimum touch target size, and keyboard navigation for stat, Next, and Quit controls. The **Next** button advances rounds and skips timers (see [Classic Battle PRD](prdBattleClassic.md)) |
+| **P2**   | Edge Case Handling     | Fallback messages for backend sync failure and display issues |
+
+Snackbars handle selection prompts and next-round countdowns.
 
 ---
 
 ## Acceptance Criteria
 
-- The Scoreboard always displays the current match score (player vs opponent) on the right side of the top bar, updated within 800ms after round ends.
-- The Scoreboard displays round-specific messages (win/loss/result) on the left side of the top bar, visible for at least 1s after round end.
-- During stat selection, the Scoreboard shows a 30s countdown timer and prompt; if timer expires, a random stat is auto-selected and a message is shown.
-- The timer pauses if the tab is inactive or device sleeps, and resumes on focus.
-- After stat selection, the Scoreboard shows "Opponent is choosing..." until the opponent's choice is revealed.
-- Fallback messages (e.g., "Waiting…") are displayed within 500ms if backend sync fails or timer mismatches server start.
-- The Scoreboard adapts responsively to screen size and orientation, stacking or truncating content as needed.
-- All Scoreboard messages and controls meet accessibility standards: minimum contrast ratio 4.5:1, screen reader compatibility (`aria-live`, `role="status"`), minimum 44px touch targets, and keyboard navigation.
+ - The Scoreboard always displays the current match score (player vs opponent) on the right side of the top bar in `#score-display`, updated within 800ms after round ends.
+ - The Scoreboard displays round-specific messages (win/loss/result) on the left side of the top bar in `#round-message`, visible for at least 1s after round end.
+ - Snackbars display selection prompts and next-round countdowns.
+ - During stat selection, the Scoreboard shows a 30s countdown timer in `#next-round-timer`; if the timer expires, a random stat is auto-selected and a snackbar announces it.
+ - The timer in `#next-round-timer` pauses if the tab is inactive or device sleeps, and resumes on focus.
+ - After stat selection, the Scoreboard shows "Opponent is choosing..." in `#round-message` until the opponent's choice is revealed.
+ - Fallback messages (e.g., "Waiting…") are displayed within 500ms in `#round-message` if backend sync fails or the timer mismatches server start.
+ - The Scoreboard adapts responsively to screen size and orientation, stacking or truncating content as needed.
+ - All Scoreboard messages and controls (`#round-message`, `#next-round-timer`, `#score-display`, `#round-counter`) meet accessibility standards: minimum contrast ratio 4.5:1, screen reader compatibility (`aria-live`, `role="status"`), minimum 44px touch targets, and keyboard navigation.
 - The progress bar beneath the battle area displays the current state ID in ascending order for accessible progress tracking.
 
 ---
 
 ## Edge Cases / Failure States
 
-- **Score desync between UI and backend** → Fallback to **“Waiting…”** label if backend sync fails. <!-- Implemented: see Scoreboard.js -->
-- **Timer mismatch with server start** → Display **“Waiting…”** until match is confirmed to start. <!-- Implemented: see Scoreboard.js -->
+- **Score desync between UI and backend** → Fallback to **“Waiting…”** label in `#round-message` if backend sync fails. <!-- Implemented: see Scoreboard.js -->
+- **Timer mismatch with server start** → Display **“Waiting…”** in `#next-round-timer` until match is confirmed to start. <!-- Implemented: see Scoreboard.js -->
 - **Bar display issues due to screen resolution** → Collapse content into a stacked layout or truncate non-critical info with ellipsis. <!-- Partially implemented: CSS @media queries for stacking/truncation, but some edge cases pending -->
 - **Player does not select a stat within 30s** → Auto-select a random stat and display appropriate message (see [Classic Battle PRD](prdBattleClassic.md)). <!-- Implemented: see startRound in battleEngine.js -->
 - **Stat selection appears stalled** → Show "Stat selection stalled" message; auto-select a random stat after 5s if no input. <!-- Implemented: see classicBattle.js -->
@@ -88,10 +99,10 @@ The round message, timer, and score now sit directly inside the page header rath
 ## Design and UX Considerations
 
 - **Layout**
-  - Right side: score display (`Player: X – Opponent: Y`)
+  - Right side: score display in `#score-display` (`Player: X – Opponent: Y`)
   - Two-line score format appears on narrow screens via stacked `<span>` elements (`<span>You: X</span> <span>Opponent: Y</span>`)
-  - Left side: rotating status messages (e.g., "You won!", **"Time left: 29s"**, "Opponent is choosing..."). Selection prompts and the countdown to the next round appear in Scoreboard only if they relate to persistent match/round state. Plus round counter (`Round 3`), but not total rounds. 
-  - Contextual feedback (e.g., stat selection confirmation, countdowns, error messages) is handled by the Snackbar.
+  - Left side: rotating status messages in `#round-message` (e.g., "You won!", "Opponent is choosing..."). `#next-round-timer` shows the stat-selection countdown. Include round counter `#round-counter`, but not total rounds.
+  - Contextual feedback (e.g., selection prompts, next-round countdowns, error messages) is handled by the Snackbar.
 - **Visuals**
   - Font size: `clamp(16px, 4vw, 24px)`; on narrow screens (<375px) `clamp(14px, 5vw, 20px)`.
   - Color coding: green (win), red (loss), neutral grey (countdown).
@@ -116,7 +127,7 @@ The round message, timer, and score now sit directly inside the page header rath
 
   - [x] 2.1 Display win/loss messages briefly
   - [x] 2.2 Start countdown timer after message disappears
-  - [x] 2.3 Display selection prompt when input is needed
+  - [x] 2.3 Display selection prompt via snackbar when input is needed
   - [x] 2.4 Display stat selection timer and auto-select if expired (see [Classic Battle PRD](prdBattleClassic.md))
   - [x] 2.5 Pause/resume stat selection timer on tab inactivity (see battleEngine.js)
 

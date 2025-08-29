@@ -2,51 +2,22 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
-vi.mock("../../src/helpers/showSnackbar.js", () => ({
-  showSnackbar: vi.fn(),
-  updateSnackbar: vi.fn()
-}));
-vi.mock("../../src/utils/scheduler.js", () => ({
-  onFrame: (cb) => {
-    const id = setTimeout(() => cb(performance.now()), 16);
-    return id;
-  },
-  onSecondTick: (cb) => {
-    const id = setInterval(() => cb(performance.now()), 1000);
-    return id;
-  },
-  cancel: (id) => {
-    clearTimeout(id);
-    clearInterval(id);
-  },
-  start: vi.fn(),
-  stop: vi.fn()
-}));
 import {
   createScoreboard,
   initScoreboard,
   showMessage,
   clearMessage,
   showTemporaryMessage,
-  startCountdown,
   updateScore
 } from "../../src/components/Scoreboard.js";
-import { showSnackbar, updateSnackbar } from "../../src/helpers/showSnackbar.js";
-import * as battleEngine from "../../src/helpers/battleEngineFacade.js";
 import { createScoreboardHeader } from "../utils/testUtils.js";
 
 describe("Scoreboard component", () => {
   let header;
 
   beforeEach(() => {
-    showSnackbar.mockClear();
-    updateSnackbar.mockClear();
     header = document.createElement("header");
-    createScoreboard(header, {
-      startCoolDown: battleEngine.startCoolDown,
-      pauseTimer: battleEngine.pauseTimer,
-      resumeTimer: battleEngine.resumeTimer
-    });
+    createScoreboard(header);
     document.body.appendChild(header);
   });
 
@@ -83,78 +54,18 @@ describe("Scoreboard component", () => {
     expect(document.getElementById("round-message").textContent).toBe("");
   });
 
-  it("countdown displays and clears correctly", () => {
-    const timer = vi.useFakeTimers();
-    const onFinish = vi.fn();
-    startCountdown(2, onFinish);
-    expect(showSnackbar).toHaveBeenCalledWith("Next round in: 2s");
-    expect(showSnackbar).toHaveBeenCalledTimes(1);
-    timer.advanceTimersByTime(1000);
-    expect(updateSnackbar).toHaveBeenCalledWith("Next round in: 1s");
-    timer.advanceTimersByTime(1000);
-    expect(updateSnackbar).toHaveBeenCalledTimes(1);
-    expect(onFinish).toHaveBeenCalled();
-    expect(document.getElementById("next-round-timer").textContent).toBe("");
-    timer.clearAllTimers();
-  });
-
-  it("startCountdown displays fallback on drift", () => {
-    const timer = vi.useFakeTimers();
-    const coolSpy = vi.spyOn(battleEngine, "startCoolDown");
-    initScoreboard(undefined, {
-      startCoolDown: coolSpy,
-      pauseTimer: battleEngine.pauseTimer,
-      resumeTimer: battleEngine.resumeTimer
-    });
-    startCountdown(2);
-    const onDrift = coolSpy.mock.calls[0][3];
-    onDrift(1);
-    expect(document.getElementById("round-message").textContent).toBe("Waiting…");
-    timer.clearAllTimers();
-    coolSpy.mockRestore();
-  });
-
-  it("drift handler restarts only up to the retry limit", () => {
-    const timer = vi.useFakeTimers();
-    const coolSpy = vi.spyOn(battleEngine, "startCoolDown");
-    initScoreboard(undefined, {
-      startCoolDown: coolSpy,
-      pauseTimer: battleEngine.pauseTimer,
-      resumeTimer: battleEngine.resumeTimer
-    });
-    const onFinish = vi.fn();
-    startCountdown(5, onFinish);
-    const onDrift = coolSpy.mock.calls[0][3];
-    onDrift(4);
-    onDrift(4);
-    onDrift(4);
-    expect(coolSpy).toHaveBeenCalledTimes(4);
-    onDrift(4);
-    expect(onFinish).toHaveBeenCalled();
-    expect(coolSpy).toHaveBeenCalledTimes(4);
-    timer.clearAllTimers();
-    coolSpy.mockRestore();
-  });
-
   it("initializes from existing DOM", () => {
-    const timer = vi.useFakeTimers();
     document.body.innerHTML = "";
     const existing = createScoreboardHeader();
     document.body.appendChild(existing);
     initScoreboard(existing, {
-      startCoolDown: battleEngine.startCoolDown,
-      pauseTimer: battleEngine.pauseTimer,
-      resumeTimer: battleEngine.resumeTimer
+      startCoolDown: vi.fn(),
+      pauseTimer: vi.fn(),
+      resumeTimer: vi.fn()
     });
     showMessage("Hi");
     expect(document.getElementById("round-message").textContent).toBe("Hi");
     updateScore(2, 3);
     expect(document.getElementById("score-display").textContent).toBe("You: 2\nOpponent: 3");
-    startCountdown(1);
-    expect(showSnackbar).toHaveBeenCalledWith("Next round in: 1s");
-    expect(updateSnackbar).not.toHaveBeenCalled();
-    timer.advanceTimersByTime(1000);
-    expect(showSnackbar).toHaveBeenCalledTimes(1);
-    timer.clearAllTimers();
   });
 });

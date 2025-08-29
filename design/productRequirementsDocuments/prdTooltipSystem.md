@@ -47,9 +47,10 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 | **P1**   | Markdown-like formatting    | Allows rich text without HTML bloat.                                      |
 | **P2**   | Tooltip styling             | Visual consistency with the JU-DO-KON! theme.                             |
 | **P2**   | Auto-hide on mouseout       | Ensures intuitive interaction flow.                                       |
+| **P2**   | Touch interaction support   | Tap shows tooltip; second tap outside hides; optional long-press delay on mobile. |
 | **P2**   | JSON load error fallback    | Prevents UI issues if file loading fails.                                 |
 | **P2**   | Programmatic API            | Expose `openTooltip(id)` / `closeTooltip(id)` for manual control.         |
-| **P3**   | Keyboard focus support      | Improves accessibility for non-mouse users.                               |
+| **P3**   | Keyboard focus parity       | Focus triggers and dismisses tooltips like hover.                         |
 | **P3**   | Settings (delay, animation) | Optional dev configurability for UX tuning.                               |
 
 ---
@@ -57,12 +58,14 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 ## Acceptance Criteria
 
 - All tooltips appear on hover or focus with no perceptible delay (≤150ms).
+- Tooltips display on tap; a second tap outside hides them.
 - Tooltip content is loaded from `tooltips.json` and matches the key provided in `data-tooltip-id`.
 - Tooltip supports markdown-like formatting: bold, italics, and line breaks.
-- Tooltip disappears when mouse leaves the element or focus is lost.
+- Tooltip disappears when mouse leaves the element, focus is lost, or a second tap occurs outside the tooltip.
 - Tooltip is styled according to JU-DO-KON! theme and remains readable on all screen sizes.
 - Tooltip does not trigger browser-native tooltips (no use of `title` attribute).
-- Tooltip is accessible via keyboard and screen reader (ARIA labels, semantic roles).
+- Tooltip is accessible via keyboard and screen reader (ARIA labels, semantic roles), mirroring hover behavior.
+- Automated tests verify hover, tap, and keyboard navigation triggers.
 - If `tooltips.json` fails to load, tooltips are suppressed and an error is logged once.
 - A tooltip can be opened programmatically and suppressed after one dismissal per storage key.
 
@@ -114,7 +117,6 @@ To ensure tooltips are consistently helpful and aligned with JU-DO-KON!’s tone
 - Should we support richer content in tooltips (e.g. icons, links)?
 - Do we want to internationalize `tooltips.json` immediately or defer localization support?
 - Should tooltip delays or animations be configurable in settings?
-- Should touch-triggered tooltips behave the same on tablets as on phones?
 
 ---
 
@@ -165,6 +167,7 @@ To ensure tooltips are consistently helpful and aligned with JU-DO-KON!’s tone
   - [ ] 5.6 Add unit and Playwright UI tests to verify tooltip triggers, content, and dismissal
   - [ ] 5.7 Ensure all required UI elements (stat cards, country flags, weight indicators, navigation links, help icons) have tooltips per guidelines
   - [ ] 5.8 Document storage key naming convention and expose helper for checking whether a tooltip has been viewed
+- [ ] 5.9 Create Playwright test cases for touch (tap/long-press) and keyboard tooltip triggers
 
 - [ ] 6.0 (Optional) Settings and Configuration
 

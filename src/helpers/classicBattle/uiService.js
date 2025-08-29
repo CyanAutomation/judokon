@@ -5,6 +5,8 @@ import { createButton } from "../../components/Button.js";
 import { navigateToHome } from "../navUtils.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
+import { attachCooldownRenderer } from "../CooldownRenderer.js";
+import { createRoundTimer } from "../timers/createRoundTimer.js";
 
 /**
  * Update the scoreboard with current scores.
@@ -123,9 +125,10 @@ onBattleEvent("countdownStart", (e) => {
   const { duration } = e.detail || {};
   if (typeof duration !== "number") return;
   try {
-    scoreboard.startCountdown(duration, () => {
-      emitBattleEvent("countdownFinished");
-    });
+    const timer = createRoundTimer();
+    attachCooldownRenderer(timer, duration);
+    timer.on("expired", () => emitBattleEvent("countdownFinished"));
+    timer.start(duration);
   } catch (err) {
     console.error("Error in countdownStart event handler:", err);
   }

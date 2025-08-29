@@ -44,14 +44,14 @@
   - Enable stat buttons; update Scoreboard round counter and clear prior outcome.
   - Display snackbar: “Choose an attribute to challenge!”
 - Selection phase (30s):
-  - Use timer service through `setupScoreboard.startCountdown(...)` and timer facade to render `#next-round-timer` and snackbar countdown updates.
+  - Use timer service to render `#next-round-timer` and snackbar countdown updates.
   - If time expires and `FF_AUTO_SELECT` is on (default), pick a random stat and show `showAutoSelect(<stat>)`.
   - On click, immediately stop timer, highlight chosen stat, and show snackbar `You Picked: <stat>`.
 - Resolve round:
   - Short artificial delay to mimic opponent choose; then reveal opponent card stat and resolve via `roundResolver`/`getCardStatValue`.
   - Update score with `updateScore`, message with `showMessage`: “You win the round!”, “Opponent wins the round!”, or “Tie – no score!”.
 - Between rounds:
-  - Display cooldown countdown (`startCountdown`), enable `Next` to skip the remainder.
+  - Display cooldown countdown via snackbar, enable `Next` to skip the remainder.
   - On `Next`, cancel cooldown and immediately start next round.
 - End conditions:
   - First to selected win target (5/10/15; default 10) OR 25 rounds → show match over UI/score and disable interactions.
@@ -66,7 +66,7 @@
 6. Scoreboard Integration
 
 - Use `setupScoreboard` to initialize references.
-- Update via: `showMessage`, `updateScore`, `updateRoundCounter`, and `startCountdown`.
+- Update via: `showMessage`, `updateScore`, and `updateRoundCounter`.
 - Timer drift: On drift >2s, display “Waiting…” then restart countdown using Scoreboard’s drift handler.
 
 7. State, Feature Flags, Persistence

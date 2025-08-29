@@ -1,6 +1,7 @@
 import * as snackbar from "./showSnackbar.js";
 import * as scoreboard from "./setupScoreboard.js";
 import { emitBattleEvent } from "./classicBattle/battleEvents.js";
+import { t } from "./i18n.js";
 
 /**
  * Attach snackbar + scoreboard rendering to a timer.
@@ -22,7 +23,7 @@ export function attachCooldownRenderer(timer, initialRemaining) {
 
   const render = (remaining) => {
     const clamped = Math.max(0, remaining);
-    const text = `Next round in: ${clamped}s`;
+    const text = t("ui.nextRoundIn", { seconds: clamped });
     if (!rendered) {
       snackbar.showSnackbar(text);
       rendered = true;

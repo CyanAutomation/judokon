@@ -1,5 +1,5 @@
 /**
- * Create a battle scoreboard showing round messages, round counter, countdown timer and score.
+ * Create a battle scoreboard showing round messages, stat-selection timer, round counter and score.
  *
  * @pseudocode
  * 1. Create four `<p>` elements:
@@ -9,15 +9,12 @@
  *    - `#score-display` with `aria-live="polite"` and `aria-atomic="true"` for the match score.
  * 2. Append them to the provided container (typically the page header).
  * 3. Store references to these elements for later updates.
- * 4. Save injected timer controls for countdown management.
- * 5. Return the container element.
+ * 4. Return the container element.
  *
  * @param {HTMLDivElement} [container=document.createElement("div")] - Wrapper to populate.
- * @param {object} [controls] - Timer control callbacks.
  * @returns {HTMLDivElement} The scoreboard element.
  */
 import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
-import { showSnackbar, updateSnackbar } from "../helpers/showSnackbar.js";
 import { t } from "../helpers/i18n.js";
 
 let messageEl;
@@ -27,9 +24,7 @@ let roundCounterEl;
 let scoreRafId = 0;
 let currentPlayer = 0;
 let currentOpponent = 0;
-let timerControls = {};
-
-export function createScoreboard(container = document.createElement("div"), controls = {}) {
+export function createScoreboard(container = document.createElement("div")) {
   messageEl = document.createElement("p");
   messageEl.id = "round-message";
   messageEl.setAttribute("aria-live", "polite");
@@ -54,7 +49,6 @@ export function createScoreboard(container = document.createElement("div"), cont
   scoreEl.setAttribute("aria-atomic", "true");
 
   container.append(messageEl, timerEl, roundCounterEl, scoreEl);
-  timerControls = controls;
   return container;
 }
 
@@ -63,18 +57,13 @@ export function createScoreboard(container = document.createElement("div"), cont
  * header.
  *
  * @pseudocode
- * 1. Capture provided timer-control callbacks.
- * 2. Locate child elements within `container` by their IDs.
- * 3. Store these nodes in module-scoped variables for later updates.
+ * 1. Locate child elements within `container` by their IDs.
+ * 2. Store these nodes in module-scoped variables for later updates.
  *
  * @param {HTMLElement} container - Header element containing the scoreboard nodes.
- * @param {object} [controls] - Timer control callbacks.
  * @returns {void}
  */
-export function initScoreboard(container, controls = {}) {
-  if (controls && typeof controls === "object") {
-    timerControls = controls;
-  }
+export function initScoreboard(container) {
   if (!container) return;
   messageEl = container.querySelector("#round-message");
   timerEl = container.querySelector("#next-round-timer");
@@ -253,33 +242,6 @@ export function clearRoundCounter() {
 }
 
 /**
- * Start a countdown timer that monitors for drift and displays a fallback when
- * desynchronization occurs.
- *
- * @pseudocode
- * 1. Create a countdown `state` object.
- * 2. Build pure helpers for tick rendering, expiration handling, and drift restarts.
- * 3. Kick off the countdown with `runCountdown` and monitor for drift.
- *
- * @param {number} seconds - Seconds to count down from.
- * @param {Function} [onFinish] - Optional callback when countdown ends.
- * @returns {void}
- */
-export function startCountdown(seconds, onFinish) {
-  clearTimer();
-  if (seconds <= 0) {
-    if (typeof onFinish === "function") onFinish();
-    return;
-  }
-
-  const state = createCountdownState();
-  const onTick = createTickRenderer(state);
-  const onExpired = createExpirationHandler(onFinish);
-  const restart = (rem) => runCountdown(rem, onTick, onExpired, state.handleDrift);
-  state.handleDrift = createDriftHandler(restart, onExpired);
-
-  runCountdown(seconds, onTick, onExpired, state.handleDrift);
-}
 
 /**
  * Display the current match score with an animated count.
@@ -305,87 +267,4 @@ export function updateScore(playerScore, opponentScore) {
   currentPlayer = playerScore;
   currentOpponent = opponentScore;
   animateScore(startPlayer, startOpponent, playerScore, opponentScore);
-}
-
-function runCountdown(duration, onTick, onExpired, handleDrift) {
-  if (timerControls && typeof timerControls.startCoolDown === "function") {
-    let ticked = false;
-    const tickOnce = (r) => {
-      ticked = true;
-      onTick(r);
-    };
-    // Start the engine countdown; TimerController usually calls onTick(remaining)
-    // synchronously. If a mocked or alternate implementation defers the first
-    // tick, render the initial value synchronously when we detect no immediate tick.
-    let fallbackId = 0;
-    const onExpiredOnce = () => {
-      if (fallbackId) {
-        clearInterval(fallbackId);
-        fallbackId = 0;
-      }
-      onExpired();
-    };
-    timerControls.startCoolDown(tickOnce, onExpiredOnce, duration, handleDrift);
-    if (!ticked && typeof duration === "number" && duration > 0) {
-      // Engine did not render initial tick synchronously; provide a simple
-      // visual fallback so UI stays responsive in tests or alternate envs.
-      onTick(duration);
-      let remaining = duration;
-      fallbackId = setInterval(() => {
-        remaining -= 1;
-        if (remaining <= 0) {
-          clearInterval(fallbackId);
-          fallbackId = 0;
-          onExpiredOnce();
-          return;
-        }
-        onTick(remaining);
-      }, 1000);
-    }
-  } else {
-    console.warn(
-      "timerControls.startCoolDown is not callable. Countdown will not start. To use startCountdown(), initialize the scoreboard with timer controls: { startCoolDown, pauseTimer, resumeTimer }."
-    );
-  }
-}
-
-function createDriftHandler(restartFn, onGiveUp) {
-  const MAX_DRIFT_RETRIES = 3;
-  let retries = 0;
-  return (remaining) => {
-    retries += 1;
-    if (retries > MAX_DRIFT_RETRIES) {
-      onGiveUp();
-      return;
-    }
-    showMessage(t("ui.waiting"));
-    restartFn(remaining);
-  };
-}
-
-function createCountdownState() {
-  return { started: false, handleDrift: undefined };
-}
-
-function createTickRenderer(state) {
-  return (remaining) => {
-    if (remaining <= 0) {
-      clearTimer();
-      return;
-    }
-    const text = t("ui.nextRoundIn", { seconds: remaining });
-    if (!state.started) {
-      showSnackbar(text);
-      state.started = true;
-    } else {
-      updateSnackbar(text);
-    }
-  };
-}
-
-function createExpirationHandler(onFinish) {
-  return () => {
-    clearTimer();
-    if (typeof onFinish === "function") onFinish();
-  };
 }
