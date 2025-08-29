@@ -122,6 +122,7 @@ body {
   padding-bottom: calc(var(--space-large) + var(--footer-height) + env(safe-area-inset-bottom));
   flex: 1 1 auto;
   height: 100%;
+  min-height: 0;
   overflow-y: auto;
   box-sizing: border-box;
   /* border: 2px solid red; */
