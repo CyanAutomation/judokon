@@ -25,4 +25,3 @@ export function seededInt(seed, min, max) {
   const n = Math.floor(rng() * (max - min + 1)) + min;
   return n;
 }
-

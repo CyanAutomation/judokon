@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 
-describe('__ensureClassicBattleBindings idempotency', () => {
-  it('can be called multiple times without throwing', async () => {
+describe("__ensureClassicBattleBindings idempotency", () => {
+  it("can be called multiple times without throwing", async () => {
     document.body.innerHTML = `
       <header class="header battle-header">
         <div id="scoreboard-left">
@@ -29,9 +29,8 @@ describe('__ensureClassicBattleBindings idempotency', () => {
         </section>
       </main>`;
 
-    const battle = await import('../../src/helpers/classicBattle.js');
+    const battle = await import("../../src/helpers/classicBattle.js");
     await expect(battle.__ensureClassicBattleBindings()).resolves.not.toThrow();
     await expect(battle.__ensureClassicBattleBindings()).resolves.not.toThrow();
   });
 });
-
