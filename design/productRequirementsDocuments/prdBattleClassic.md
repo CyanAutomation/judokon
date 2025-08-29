@@ -152,7 +152,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 ## Design and UX Considerations
 
 - Use consistent color coding for player (blue) vs opponent (red) as shown in attached mockups.
-- Display clear, large call-to-action text for "Choose an attribute to challenge!" to guide new players.
+- Surface a snackbar with clear, large call-to-action text reading "Choose an attribute to challenge!" to guide new players.
 - When a player selects a stat, surface a snackbar via [showSnackbar.js](../../src/helpers/showSnackbar.js) reading `You Picked: <stat>` (e.g., `You Picked: Power`) so tests can confirm the feedback.
 - Snackbars slide in/out using standard fade/translate animations and auto-select feedback remains visible for at least 1s before "Opponent is choosing..." appears.
 - Provide a quit confirmation when the player clicks the logo in the header to return to the Home screen.
