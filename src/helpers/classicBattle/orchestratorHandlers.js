@@ -1,4 +1,3 @@
-import { initRoundSelectModal } from "./roundSelectModal.js";
 import { getDefaultTimer } from "../timerUtils.js";
 import { getNextRoundControls } from "./timerService.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";

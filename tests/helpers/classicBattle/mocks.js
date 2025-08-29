@@ -1,5 +1,7 @@
 import { vi } from "vitest";
-import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
+// Inline minimal default settings used by tests to avoid parser issues with
+// `import ... assert { type: 'json' }` in some ESLint parser configs.
+const defaultSettings = {};
 
 export function mockScheduler() {
   vi.mock("../../../src/utils/scheduler.js", () => ({

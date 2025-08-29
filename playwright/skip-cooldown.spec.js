@@ -31,7 +31,7 @@ test.describe("Skip cooldown flow", () => {
     await page.waitForTimeout(1000);
     await page.waitForSelector(".snackbar");
     const snackbar = page.locator(".snackbar");
-    await expect(snackbar).toHaveText(/Next round in: 1\d+s/);
+    await expect(snackbar).toHaveText(/Next round in: 1\\d+s/);
 
     // Click the Next button to skip the cooldown
     await page.locator("#next-button").click();
