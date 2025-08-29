@@ -6,7 +6,6 @@ import { JudokaCard } from "../../components/JudokaCard.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
-import { t } from "../i18n.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showResult } from "../battle/index.js";
 import { shouldReduceMotionSync } from "../motionUtils.js";
