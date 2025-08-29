@@ -72,3 +72,56 @@ export function removeItem(key) {
     memoryStore.delete(key);
   }
 }
+
+/**
+ * Create a thin wrapper around storage APIs with JSON safety and optional
+ * fallback strategy.
+ *
+ * @pseudocode
+ * 1. Return `{ get, set, remove }` bound to a specific key prefix.
+ * 2. Use `localStorage` when available; otherwise fall back to in-memory map.
+ * 3. Swallow JSON errors and remove corrupt values automatically.
+ *
+ * @param {string} key - Storage key to wrap.
+ * @param {{ fallback?: 'session' }} [options]
+ * @returns {{ get: () => any, set: (val:any) => void, remove: () => void }}
+ */
+export function wrap(key, { fallback = "session" } = {}) {
+  const useMemory = () => fallback === "session" || typeof localStorage === "undefined";
+  return {
+    get() {
+      try {
+        if (!useMemory()) {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : null;
+        }
+        return memoryStore.get(key) ?? null;
+      } catch {
+        try {
+          if (!useMemory()) localStorage.removeItem(key);
+        } catch {}
+        memoryStore.delete(key);
+        return null;
+      }
+    },
+    set(val) {
+      try {
+        const str = JSON.stringify(val);
+        if (!useMemory()) {
+          localStorage.setItem(key, str);
+          return;
+        }
+        memoryStore.set(key, val);
+      } catch (err) {
+        debugLog("storage.wrap.set failed", err);
+        memoryStore.set(key, val);
+      }
+    },
+    remove() {
+      try {
+        if (!useMemory()) localStorage.removeItem(key);
+      } catch {}
+      memoryStore.delete(key);
+    }
+  };
+}

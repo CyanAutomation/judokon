@@ -91,6 +91,15 @@
   - Quit flow and confirmation
 - Run checks: `npx prettier . --check`, `npx eslint .`, `npx vitest run`, `npx playwright test`, `npm run check:contrast`.
 
+## Milestone 1 — Page Scaffold
+
+- Added `src/pages/battleClassic.html` mirroring the Classic Battle layout (header/scoreboard, battle area with stat buttons, controls, debug panel, bottom nav) and statically importing `../helpers/classicBattle/bootstrap.js`.
+- Linked required styles: `fonts.css`, `base.css`, `layout.css`, `components.css`, `utilities.css`, `battle.css`.
+- Sanity checks:
+  - Prettier applied to the new file.
+  - ESLint warning noted (HTML ignored by config), no JS issues introduced.
+- Next: Update PRD URL, then add `battleDefaults.js` and begin wiring defaults.
+
 ## Approach Considerations
 - Reuse shared helpers under `src/helpers/classicBattle/*` to avoid duplicating logic; the page script primarily wires DOM to the orchestrator and scoreboard.
 - Follow the “Module Loading Policy”: keep stat selection, resolve logic, event dispatchers, and render loops statically imported; only dynamically import optional/help modules and preload during idle.
@@ -129,3 +138,14 @@
 - Orchestrator testAPI export: Extend existing classic battle exports to expose a small `testAPI` (e.g., `getMachine()`, `waitFor(state)`, `forceSkip()`) for deterministic testing without reaching into internals.
 - seedRandom helper: Add `src/helpers/seedRandom.js` with deterministic PRNG (e.g., mulberry32) and wire under a test flag to produce repeatable draws in tests.
 - Unit test scaffolding: Add vitest scaffolds for timer pause/resume and auto-select paths (expiry → `roundTimeout`, auto-select snackbar/message, AI delay reveal). Keep them minimal and parallel current test patterns.
+
+## Milestone 2 — Defaults Config
+
+- Added `src/config/battleDefaults.js` exporting `POINTS_TO_WIN_OPTIONS`, `DEFAULT_POINTS_TO_WIN`, and `FEATURE_FLAGS` with reasonable defaults aligning to PRD (auto-select enabled by default).
+- No functional wiring yet; will integrate during bootstrap and modal work.
+
+## Milestone 3 — Storage + RNG Utilities
+
+- Added `storage.wrap(key, { fallback: 'session' })` to `src/helpers/storage.js`, providing `{ get, set, remove }` with safe JSON handling and in-memory fallback.
+- Added `src/helpers/seedRandom.js` with `mulberry32(seed)` and `seededInt(seed, min, max)` for deterministic randomness under test flags.
+- Sanity: No breaking changes to existing storage API.
