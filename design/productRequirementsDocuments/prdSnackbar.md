@@ -47,17 +47,19 @@ This inconsistency led to confusion, missed information, and reduced trust in th
 | P1      | Show Snackbar                  | Display a temporary message at the bottom of the screen with fade-in/out animation. |
 | P1      | Update Snackbar                | Change the current snackbar's text and restart its timers if already shown. |
 | P1      | Accessibility Compliance       | Snackbar uses ARIA live region and `role="status"` for screen readers.      |
+| P1      | Configurable Duration          | Snackbar auto-dismisses after a default **3s** and supports **1–10s** range. |
 | P2      | Prevent Overlapping Snackbars  | Only one snackbar is visible at a time; new messages replace the old.       |
 | P2      | Theming and Contrast           | Snackbar colors adapt to theme and pass contrast checks (≥4.5:1 ratio).     |
 | P2      | Localization Support           | Snackbar text supports multi-language strings and right-to-left layouts.    |
 
 ## Acceptance Criteria (Given/When/Then)
-1. **Given** the player triggers an action that requires confirmation, **when** the action completes, **then** a snackbar appears promptly and fades out after the default duration.  
+1. **Given** the player triggers an action that requires confirmation, **when** the action completes, **then** a snackbar appears promptly and fades out after the configured duration (default **3s**).
 2. **Given** a snackbar is already visible, **when** a new snackbar is triggered, **then** the current snackbar is replaced and the timer restarts.  
 3. **Given** the snackbar is displayed, **when** viewed by a screen reader, **then** it is announced using ARIA live region with role="status".  
 4. **Given** the snackbar text is displayed, **then** it passes WCAG 2.1 AA contrast checks in all supported themes.  
 5. **Given** the app is in a right-to-left language mode, **then** snackbar text and layout adjust accordingly.  
-6. **Given** the snackbar is triggered by an error, **then** the error message is displayed in the snackbar.  
+6. **Given** the snackbar is triggered by an error, **then** the error message is displayed in the snackbar.
+7. **Given** a custom duration is specified, **when** that duration elapses, **then** the snackbar auto-dismisses.
 
 ## Edge Cases / Failure States
 - **Offline Mode:** If network errors occur, display an offline snackbar with retry instructions.  
@@ -97,6 +99,7 @@ This inconsistency led to confusion, missed information, and reduced trust in th
   - [ ] 3.2 Create `updateSnackbar(message)` function
   - [ ] 3.3 Ensure only one snackbar is visible at a time
   - [ ] 3.4 Clear timers and listeners when snackbar is removed
+  - [ ] 3.5 Expose optional `duration` parameter in `showSnackbar()`
 - [ ] 4.0 Accessibility & Localization
   - [ ] 4.1 Ensure ARIA attributes work with screen readers
   - [ ] 4.2 Test WCAG 2.1 AA contrast compliance
@@ -109,5 +112,6 @@ This inconsistency led to confusion, missed information, and reduced trust in th
 - [ ] 6.0 Testing & Edge Cases
   - [ ] 6.1 Test offline mode snackbar with retry instructions
   - [ ] 6.2 Test empty/malformed message fallback
-  - [ ] 6.3 Test theme conflict fallback colors
+ - [ ] 6.3 Test theme conflict fallback colors
   - [ ] 6.4 Test multiple snackbar triggers in rapid succession
+  - [ ] 6.5 Test variable snackbar durations
