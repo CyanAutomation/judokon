@@ -228,6 +228,18 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     interruptMatch: interruptMatchEnter,
     roundModification: roundModificationEnter
   };
+    matchStart: matchStartEnter,
+    cooldown: cooldownEnter,
+    roundStart: roundStartEnter,
+    waitingForPlayerAction: waitingForPlayerActionEnter,
+    roundDecision: roundDecisionEnter,
+    roundOver: roundOverEnter,
+    matchDecision: matchDecisionEnter,
+    matchOver: matchOverEnter,
+    interruptRound: interruptRoundEnter,
+    interruptMatch: interruptMatchEnter,
+    roundModification: roundModificationEnter
+  };
 
   const onTransition = async ({ from, to, event }) => {
     updateDebugState(from, to, event);

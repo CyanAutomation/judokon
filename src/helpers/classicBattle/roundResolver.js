@@ -124,48 +124,54 @@ export async function resolveRound(
     sleep = (ms) => new Promise((r) => setTimeout(r, ms))
   } = {}
 ) {
-  if (!stat) return;
-  // Avoid re-entrant dispatch loops: when called from the state machine's
-  // roundDecision onEnter, the machine is already in "roundDecision" and will
-  // run this resolver. Dispatching an additional "evaluate" event here would
-  // attempt to re-enter the same state and invoke this function again, causing
-  // a deadlock. Only dispatch "evaluate" when not already in that state.
+  if (isResolving) return;
+  isResolving = true;
   try {
-    const inRoundDecision =
-      typeof document !== "undefined" && document.body?.dataset.battleState === "roundDecision";
-    if (!inRoundDecision) {
-      await dispatchBattleEvent("evaluate");
-    }
-  } catch {}
-  try {
-    if (!IS_VITEST) console.log("DEBUG: resolveRound sleep", { delayMs, stat });
-  } catch {}
-  // Mark resolving but keep the guard active until resolution completes; this
-  // allows the guard to rescue the round if resolution stalls.
-  try {
-    if (typeof window !== "undefined") window.__roundDebug = { resolving: true };
-  } catch {}
-  await sleep(delayMs);
-  try {
-    if (!IS_VITEST) console.log("DEBUG: resolveRound before opponentReveal", { stat });
-  } catch {}
-  emitBattleEvent("opponentReveal");
-  const result = await computeRoundResult(store, stat, playerVal, opponentVal);
-  // Resolution completed; clear any scheduled guard to avoid late duplicate
-  // outcome dispatch after we've already advanced the machine.
-  try {
-    if (typeof window !== "undefined" && window.__roundDecisionGuard) {
-      clearTimeout(window.__roundDecisionGuard);
-      window.__roundDecisionGuard = null;
-    }
-  } catch {}
-  try {
-    if (typeof window !== "undefined" && window.__roundDebug) {
-      window.__roundDebug.resolvedAt = Date.now();
-    }
-  } catch {}
-  try {
-    if (!IS_VITEST) console.log("DEBUG: resolveRound result", result);
-  } catch {}
-  return result;
+    if (!stat) return;
+    // Avoid re-entrant dispatch loops: when called from the state machine's
+    // roundDecision onEnter, the machine is already in "roundDecision" and will
+    // run this resolver. Dispatching an additional "evaluate" event here would
+    // attempt to re-enter the same state and invoke this function again, causing
+    // a deadlock. Only dispatch "evaluate" when not already in that state.
+    try {
+      const inRoundDecision =
+        typeof document !== "undefined" && document.body?.dataset.battleState === "roundDecision";
+      if (!inRoundDecision) {
+        await dispatchBattleEvent("evaluate");
+      }
+    } catch {}
+    try {
+      if (!IS_VITEST) console.log("DEBUG: resolveRound sleep", { delayMs, stat });
+    } catch {}
+    // Mark resolving but keep the guard active until resolution completes; this
+    // allows the guard to rescue the round if resolution stalls.
+    try {
+      if (typeof window !== "undefined") window.__roundDebug = { resolving: true };
+    } catch {}
+    await sleep(delayMs);
+    try {
+      if (!IS_VITEST) console.log("DEBUG: resolveRound before opponentReveal", { stat });
+    } catch {}
+    emitBattleEvent("opponentReveal");
+    const result = await computeRoundResult(store, stat, playerVal, opponentVal);
+    // Resolution completed; clear any scheduled guard to avoid late duplicate
+    // outcome dispatch after we've already advanced the machine.
+    try {
+      if (typeof window !== "undefined" && window.__roundDecisionGuard) {
+        clearTimeout(window.__roundDecisionGuard);
+        window.__roundDecisionGuard = null;
+      }
+    } catch {}
+    try {
+      if (typeof window !== "undefined" && window.__roundDebug) {
+        window.__roundDebug.resolvedAt = Date.now();
+      }
+    } catch {}
+    try {
+      if (!IS_VITEST) console.log("DEBUG: resolveRound result", result);
+    } catch {}
+    return result;
+  } finally {
+    isResolving = false;
+  }
 }
