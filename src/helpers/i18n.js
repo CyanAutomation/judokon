@@ -15,6 +15,11 @@ export const EN = {
   "ui.selectMove": "Select your move",
   "ui.youPicked": "You Picked: {stat}",
   "ui.opponentChoosing": "Opponent is choosing…",
+  "ui.nextRoundIn": "Next round in: {seconds}s",
+  "ui.waiting": "Waiting…",
+  "ui.autoSelect": "Time's up! Auto-selecting {stat}",
+  "ui.timerErrorAutoSelect": "Timer error. Auto-selecting stat.",
+  "ui.statSelectionStalled": "Stat selection stalled. Pick a stat or wait for auto-pick.",
 
   // Stat descriptions (short hints for screen readers)
   "stat.desc.power": "Power: raw strength used to dominate throws.",
@@ -24,5 +29,10 @@ export const EN = {
   "stat.desc.newaza": "Ne-waza: groundwork control and submissions.",
 
   // Modal labels (samples; extend as needed)
-  "modal.roundSelect.title": "Select Match Length"
+  "modal.roundSelect.title": "Select Match Length",
+  "modal.roundSelect.error": "Failed to load match options. Using defaults.",
+  "modal.quit.title": "Quit the match?",
+  "modal.quit.desc": "Your progress will be lost.",
+  "modal.quit.cancel": "Cancel",
+  "modal.quit.confirm": "Quit"
 };

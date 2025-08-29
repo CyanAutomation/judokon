@@ -18,6 +18,7 @@
  */
 import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
 import { showSnackbar, updateSnackbar } from "../helpers/showSnackbar.js";
+import { t } from "../helpers/i18n.js";
 
 let messageEl;
 let timerEl;
@@ -202,7 +203,7 @@ export function showTemporaryMessage(text) {
  * @returns {void}
  */
 export function showAutoSelect(stat) {
-  showMessage(`Time's up! Auto-selecting ${stat}`);
+  showMessage(t("ui.autoSelect", { stat }));
 }
 
 /**
@@ -357,7 +358,7 @@ function createDriftHandler(restartFn, onGiveUp) {
       onGiveUp();
       return;
     }
-    showMessage("Waiting…");
+    showMessage(t("ui.waiting"));
     restartFn(remaining);
   };
 }
@@ -372,7 +373,7 @@ function createTickRenderer(state) {
       clearTimer();
       return;
     }
-    const text = `Next round in: ${remaining}s`;
+    const text = t("ui.nextRoundIn", { seconds: remaining });
     if (!state.started) {
       showSnackbar(text);
       state.started = true;

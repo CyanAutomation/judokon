@@ -3,6 +3,8 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 
 import { CLASSIC_BATTLE_POINTS_TO_WIN } from "../../../src/helpers/constants.js";
+import { wrap } from "../../../src/helpers/storage.js";
+import { BATTLE_POINTS_TO_WIN } from "../../../src/config/storageKeys.js";
 
 const rounds = JSON.parse(readFileSync(resolve("src/data/battleRounds.json"), "utf8"));
 
@@ -42,6 +44,7 @@ import { initRoundSelectModal } from "../../../src/helpers/classicBattle/roundSe
 describe("initRoundSelectModal", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
+    wrap(BATTLE_POINTS_TO_WIN).remove();
     vi.clearAllMocks();
     mocks.fetchJson.mockResolvedValue(rounds);
     mocks.cleanup = vi.fn();

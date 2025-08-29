@@ -4,24 +4,25 @@ import * as battleEngine from "../battleEngineFacade.js";
 import { showResult } from "../battle/index.js";
 import { navigateToHome } from "../navUtils.js";
 import { dispatchBattleEvent, getBattleState } from "./eventBus.js";
+import { t } from "../i18n.js";
 
 function createQuitConfirmation(store, onConfirm) {
   const title = document.createElement("h2");
   title.id = "quit-modal-title";
-  title.textContent = "Quit the match?";
+  title.textContent = t("modal.quit.title") || "Quit the match?";
 
   const desc = document.createElement("p");
   desc.id = "quit-modal-desc";
-  desc.textContent = "Your progress will be lost.";
+  desc.textContent = t("modal.quit.desc") || "Your progress will be lost.";
 
   const actions = document.createElement("div");
   actions.className = "modal-actions";
 
-  const cancel = createButton("Cancel", {
+  const cancel = createButton(t("modal.quit.cancel") || "Cancel", {
     id: "cancel-quit-button",
     className: "secondary-button"
   });
-  const quit = createButton("Quit", { id: "confirm-quit-button" });
+  const quit = createButton(t("modal.quit.confirm") || "Quit", { id: "confirm-quit-button" });
   actions.append(cancel, quit);
 
   const frag = document.createDocumentFragment();

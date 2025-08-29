@@ -198,7 +198,8 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
       // Surface opponent delay snackbar immediately when delay is 0.
       try {
         const ui = await import("../showSnackbar.js");
-        ui.showSnackbar("Opponent is choosing…");
+        const i18n = await import("../i18n.js");
+        ui.showSnackbar(i18n.t("ui.opponentChoosing"));
       } catch {}
     }
   } catch {}

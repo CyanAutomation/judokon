@@ -10,6 +10,7 @@ import { wrap } from "../storage.js";
 import { POINTS_TO_WIN_OPTIONS, DEFAULT_POINTS_TO_WIN } from "../../config/battleDefaults.js";
 import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";
 import { logEvent } from "../telemetry.js";
+import { t } from "../i18n.js";
 
 /**
  * Initialize round selection modal for Classic Battle.
@@ -85,7 +86,7 @@ export async function initRoundSelectModal(onStart) {
 
   const title = document.createElement("h2");
   title.id = "round-select-title";
-  title.textContent = "Select Match Length";
+  title.textContent = t("modal.roundSelect.title");
 
   const btnWrap = document.createElement("div");
   btnWrap.className = "round-select-buttons";
@@ -94,7 +95,7 @@ export async function initRoundSelectModal(onStart) {
   if (loadError) {
     const note = document.createElement("p");
     note.id = "round-select-error";
-    note.textContent = "Failed to load match options. Using defaults.";
+    note.textContent = t("modal.roundSelect.error");
     frag.append(note);
   }
   frag.append(title, btnWrap);

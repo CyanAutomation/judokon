@@ -6,6 +6,7 @@ import { JudokaCard } from "../../components/JudokaCard.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
+import { t } from "../i18n.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showResult } from "../battle/index.js";
 import { shouldReduceMotionSync } from "../motionUtils.js";
@@ -1036,7 +1037,7 @@ export function bindUIHelperEventHandlers() {
 
   onBattleEvent("statSelected", () => {
     scoreboard.clearTimer();
-    opponentSnackbarId = setTimeout(() => showSnackbar("Opponent is choosing…"), opponentDelayMs);
+    opponentSnackbarId = setTimeout(() => showSnackbar(t("ui.opponentChoosing")), opponentDelayMs);
   });
 
   onBattleEvent("roundResolved", (e) => {
@@ -1071,8 +1072,9 @@ export function bindUIHelperEventHandlersDynamic() {
     } catch {}
     try {
       const snackbar = await import("../showSnackbar.js");
+      const i18n = await import("../i18n.js");
       opponentSnackbarId = setTimeout(
-        () => snackbar.showSnackbar("Opponent is choosing…"),
+        () => snackbar.showSnackbar(i18n.t("ui.opponentChoosing")),
         opponentDelayMs
       );
     } catch {}

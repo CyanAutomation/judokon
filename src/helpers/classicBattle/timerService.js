@@ -3,6 +3,7 @@ import { startRound as engineStartRound } from "../battleEngineFacade.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { updateDebugPanel } from "./uiHelpers.js";
 import * as snackbar from "../showSnackbar.js";
+import { t } from "../i18n.js";
 import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
 import { emitBattleEvent } from "./battleEvents.js";
@@ -102,7 +103,7 @@ export function getNextRoundControls() {
  * @returns {Promise<void>}
  */
 async function forceAutoSelectAndDispatch(onExpiredSelect) {
-  scoreboard.showMessage("Timer error. Auto-selecting stat.");
+  scoreboard.showMessage(t("ui.timerErrorAutoSelect"));
   try {
     await autoSelectStat(onExpiredSelect);
   } catch {
@@ -182,7 +183,7 @@ export async function startTimer(onExpiredSelect) {
   } catch {
     synced = false;
   }
-  const restore = !synced ? scoreboard.showTemporaryMessage("Waiting…") : () => {};
+  const restore = !synced ? scoreboard.showTemporaryMessage(t("ui.waiting")) : () => {};
 
   const timer = createRoundTimer({
     starter: engineStartRound,
@@ -193,9 +194,9 @@ export async function startTimer(onExpiredSelect) {
   timer.on("drift", () => {
     const msgEl = document.getElementById("round-message");
     if (msgEl && msgEl.textContent) {
-      snackbar.showSnackbar("Waiting…");
+      snackbar.showSnackbar(t("ui.waiting"));
     } else {
-      scoreboard.showMessage("Waiting…");
+      scoreboard.showMessage(t("ui.waiting"));
     }
   });
 
@@ -228,7 +229,7 @@ export function handleStatSelectionTimeout(
   store.autoSelectId = scheduler.setTimeout(() => {
     // If a selection was made in the meantime, do nothing.
     if (store && store.selectionMade) return;
-    scoreboard.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
+    scoreboard.showMessage(t("ui.statSelectionStalled"));
     try {
       emitBattleEvent("statSelectionStalled");
     } catch {}

@@ -202,3 +202,11 @@
 ## Observability
 
 - Added `src/helpers/telemetry.js` with `logEvent(name, payload)`. Currently dispatches a window event and logs to console. Used to record `battle.start` with `{ pointsToWin, source }` (modal/storage).
+
+## Milestone 8 — i18n coverage + visibility tests
+
+- Extended i18n usage:
+  - Opponent-choosing snackbar now uses `t('ui.opponentChoosing')` in both static and dynamic handlers.
+  - Round select modal title uses `t('modal.roundSelect.title')`.
+  - Quit modal title/description/buttons use `t('modal.quit.*')` keys.
+- Added small visibilitychange test: `tests/helpers/visibilityTimer.test.js` verifies `createCountdownTimer` pauses when `document.hidden` is true and resumes on visible.
