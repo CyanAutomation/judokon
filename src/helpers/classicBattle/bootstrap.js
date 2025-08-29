@@ -8,25 +8,45 @@ import { ClassicBattleController } from "./controller.js";
 import { ClassicBattleView } from "./view.js";
 import createClassicBattleDebugAPI from "./setupTestHelpers.js";
 import { onDomReady } from "../domReady.js";
+import { initRoundSelectModal } from "./roundSelectModal.js";
 
 /**
  * Bootstrap Classic Battle page by wiring controller and view.
- * Returns a debug API useful for tests.
+ *
+ * @pseudocode
+ * 1. Define `startCallback` which:
+ *    a. Creates view and controller.
+ *    b. Binds them together and initializes both.
+ *    c. Creates the debug API and exposes it in test mode.
+ * 2. Await `initRoundSelectModal(startCallback)`.
+ * 3. Return the debug API after the round is selected.
  */
 export async function setupClassicBattlePage() {
-  const view = new ClassicBattleView({ waitForOpponentCard });
-  const controller = new ClassicBattleController({
-    waitForOpponentCard: view.waitForOpponentCard
+  let debugApi;
+  let resolveStart;
+  const startPromise = new Promise((r) => {
+    resolveStart = r;
   });
-  view.bindController(controller);
-  await controller.init();
-  await view.init();
-  const debugApi = createClassicBattleDebugAPI(view);
-  if (typeof process !== "undefined" && process.env && process.env.VITEST === "true") {
-    try {
-      window.__classicbattledebugapi = debugApi;
-    } catch {}
+
+  async function startCallback() {
+    const view = new ClassicBattleView({ waitForOpponentCard });
+    const controller = new ClassicBattleController({
+      waitForOpponentCard: view.waitForOpponentCard
+    });
+    view.bindController(controller);
+    await controller.init();
+    await view.init();
+    debugApi = createClassicBattleDebugAPI(view);
+    if (typeof process !== "undefined" && process.env && process.env.VITEST === "true") {
+      try {
+        window.__classicbattledebugapi = debugApi;
+      } catch {}
+    }
+    resolveStart();
   }
+
+  await initRoundSelectModal(startCallback);
+  await startPromise;
   return debugApi;
 }
 

@@ -43,7 +43,10 @@ describe("randomJudokaPage feature flags", () => {
     vi.doMock("../../src/helpers/cardUtils.js", () => ({ toggleInspectorPanels }));
     vi.doMock("../../src/helpers/viewportDebug.js", () => ({ toggleViewportSimulation }));
     vi.doMock("../../src/helpers/tooltipOverlayDebug.js", () => ({ toggleTooltipOverlayDebug }));
-    vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode }));
+    vi.doMock("../../src/helpers/testModeUtils.js", () => ({
+      setTestMode,
+      isTestModeEnabled: () => false
+    }));
     vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady: vi.fn() }));
 
     const { initFeatureFlagState } = await import("../../src/helpers/randomJudokaPage.js");

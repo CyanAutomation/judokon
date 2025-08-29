@@ -51,6 +51,7 @@ test.describe("Classic battle flow", () => {
 
   test("tie message appears on equal stats", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
+    await page.locator("#round-select-1").click();
     await waitForBattleReady(page);
     await page.evaluate(() => window.freezeBattleHeader?.());
     await page.evaluate(_resetForTest);
@@ -95,6 +96,7 @@ test.describe("Classic battle flow", () => {
     await page.goto("/src/pages/battleJudoka.html");
     // Wait for the battle view to finish initializing rather than relying on
     // the header timer, which may be empty before the first round starts.
+    await page.locator("#round-select-1").click();
     await waitForBattleReady(page);
     await page.locator("[data-testid='nav-13']").click();
     await expect(page).toHaveURL(/settings.html/);

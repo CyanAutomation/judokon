@@ -8,6 +8,7 @@ test.describe("Battle state progress", () => {
       Math.random = () => 0.42;
     });
     await page.goto("/src/pages/battleJudoka.html");
+    await page.locator("#round-select-1").click();
     await waitForBattleReady(page);
   });
 
