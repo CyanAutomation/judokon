@@ -1,11 +1,13 @@
 import { fetchJson } from "../dataUtils.js";
-import { DATA_DIR, CLASSIC_BATTLE_POINTS_TO_WIN } from "../constants.js";
+import { DATA_DIR } from "../constants.js";
 import { createButton } from "../../components/Button.js";
 import { createModal } from "../../components/Modal.js";
 import { setPointsToWin } from "../battleEngineFacade.js";
 import { initTooltips } from "../tooltip.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { emitBattleEvent } from "./battleEvents.js";
+import { wrap } from "../storage.js";
+import { POINTS_TO_WIN_OPTIONS, DEFAULT_POINTS_TO_WIN } from "../../config/battleDefaults.js";
 
 /**
  * Initialize round selection modal for Classic Battle.
@@ -38,7 +40,7 @@ export async function initRoundSelectModal(onStart) {
     if (typeof location !== "undefined") {
       const params = new URLSearchParams(location.search);
       if (params.get("autostart") === "1") {
-        setPointsToWin(CLASSIC_BATTLE_POINTS_TO_WIN);
+        setPointsToWin(DEFAULT_POINTS_TO_WIN);
         if (typeof onStart === "function") await onStart();
         return;
       }
@@ -46,10 +48,21 @@ export async function initRoundSelectModal(onStart) {
   } catch {}
 
   if (isTestModeEnabled()) {
-    setPointsToWin(CLASSIC_BATTLE_POINTS_TO_WIN);
+    setPointsToWin(DEFAULT_POINTS_TO_WIN);
     if (typeof onStart === "function") await onStart();
     return;
   }
+
+  // Persisted preference: if a prior selection exists, use it and skip modal
+  try {
+    const storage = wrap("battle.pointsToWin");
+    const saved = storage.get();
+    if (POINTS_TO_WIN_OPTIONS.includes(Number(saved))) {
+      setPointsToWin(Number(saved));
+      if (typeof onStart === "function") await onStart();
+      return;
+    }
+  } catch {}
 
   let rounds;
   let loadError = false;
@@ -88,6 +101,10 @@ export async function initRoundSelectModal(onStart) {
     btn.dataset.tooltipId = `ui.round${r.label}`;
     btn.addEventListener("click", () => {
       setPointsToWin(r.value);
+      try {
+        const storage = wrap("battle.pointsToWin");
+        storage.set(r.value);
+      } catch {}
       modal.close();
       if (typeof onStart === "function") onStart();
       cleanupTooltips();

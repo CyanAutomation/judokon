@@ -164,6 +164,18 @@
 - `tests/helpers/autoSelectStat.min.test.js`: Verifies `autoSelectStat` announces via `showAutoSelect` and calls the provided `onSelect` with `delayOpponentMessage: true`.
 - `tests/helpers/classicBattleBindings.idempotent.test.js`: Ensures `__ensureClassicBattleBindings()` can be called multiple times without throwing.
 
+## Milestone 6 — Defaults Wired via Modal/Bootstrap
+
+- Updated `src/helpers/classicBattle/roundSelectModal.js` to use:
+  - `DEFAULT_POINTS_TO_WIN` and `POINTS_TO_WIN_OPTIONS` from `src/config/battleDefaults.js`.
+  - Persist and read the user’s selection via `storage.wrap('battle.pointsToWin')`.
+- Behavior:
+  - On first visit (no stored value), show modal; selection is saved for next time.
+  - When `autostart=1` or Test Mode enabled, use `DEFAULT_POINTS_TO_WIN` without showing the modal.
+  - On subsequent visits with a saved value (5, 10, 15), skip the modal and start immediately.
+- Added tests:
+  - `tests/helpers/roundSelectModal.storage.test.js` validates using stored points and skipping the modal.
+
 ## Milestone 2 — Defaults Config
 
 - Added `src/config/battleDefaults.js` exporting `POINTS_TO_WIN_OPTIONS`, `DEFAULT_POINTS_TO_WIN`, and `FEATURE_FLAGS` with reasonable defaults aligning to PRD (auto-select enabled by default).

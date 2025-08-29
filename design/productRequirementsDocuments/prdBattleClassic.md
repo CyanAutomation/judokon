@@ -223,9 +223,59 @@ This section lists small, implementer-facing contracts to reduce ambiguity betwe
 
   List of feature flags and their intended defaults for Classic Battle. Implementations should read these from the global feature-flag service or `src/config/battleDefaults.js` when available.
 
-  - `FF_AUTO_SELECT` — boolean, default: `true`. When enabled, the system auto-selects a random stat on timer expiry.
+  - `autoSelect` — boolean, default: `true`. When enabled, the system auto-selects a random stat on timer expiry.
   - `battleDebugPanel` — boolean, default: `false`. When enabled, show debug panel above the cards with copy/export controls.
-  - `FF_TEST_MODE` — boolean, default: `false` (test-only). When enabled, allow `battle.testRandomSeed` and fast AI delays for deterministic tests.
+  - `testMode` — boolean, default: `false` (test-only). When enabled, allow `battle.testRandomSeed` and fast AI delays for deterministic tests.
+  - `statHotkeys` — boolean, default: `false`. When enabled, number keys 1–5 map to stat buttons (left→right).
+
+  Implementations should read these flags via the global feature-flag service or from `src/config/battleDefaults.js`. The PRD and tests should reference the camelCase keys above (not `FF_*` prefixes) to avoid mismatches between code and documentation.
+
+  ### Constants & Timers
+
+  Define canonical constants so design and tests align with implementation:
+
+  - `ROUND_SELECTION_MS = 30_000` (30s)
+  - `DRIFT_THRESHOLD_MS = 2_000` (2s)
+  - `MAX_ROUNDS = 25`
+  - `POINTS_TO_WIN_OPTIONS = [5, 10, 15]` with `DEFAULT_POINTS_TO_WIN = 10`
+  - `DATA_FETCH_TIMEOUT_MS = 10_000` (10s)
+  - `SPINNER_DELAY_MS = 200` (ms before showing spinner)
+
+  These constants should be implemented in `src/config/*` or referenced from `timerService.js` so tests can import and assert deterministic behavior.
+
+  ### i18n keys
+
+  All user-facing strings must be keyed and obtained via a `t(key, params)` adapter. Minimum required keys for Classic Battle:
+
+  - `round.chooseStat`
+  - `snackbar.youPicked` (params: { stat })
+  - `snackbar.autoSelected` (params: { stat })
+  - `ui.next`
+  - `ui.quitMatch`
+  - `ui.selectStat`
+  - `stat.power`, `stat.speed`, `stat.technique`, `stat.kumikata`, `stat.newaza`
+  - `stat.desc.power`, `stat.desc.speed`, ... (short accessible descriptions for screen readers)
+  - `match.summary.title`, `match.summary.quit`, `match.summary.next`
+
+  Use these keys in the UI helpers and snackbars rather than inline text.
+
+  ### Test hooks & observability
+
+  Exported promises and hooks (implementations under `src/helpers/classicBattle/*`) that tests will use:
+
+  - `roundPromptPromise`
+  - `countdownStartedPromise`
+  - `roundResolvedPromise`
+  - `roundTimeoutPromise`
+  - `statSelectionStalledPromise`
+  - `__ensureClassicBattleBindings()` and `__resetClassicBattleBindings()` for idempotent setup/teardown
+
+  Include a short example for Playwright tests:
+
+  ```js
+  import { roundPromptPromise } from 'src/helpers/classicBattle.js';
+  await roundPromptPromise; // waits until UI prompts for stat selection
+  ```
 
   Storage keys referenced above should be treated as optional overrides in test and debug environments only.
 
