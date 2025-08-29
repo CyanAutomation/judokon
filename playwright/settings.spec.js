@@ -187,6 +187,11 @@ test.describe("Settings page", () => {
     }
   });
 
+  test("toggles high-contrast display mode", async ({ page }) => {
+    await page.check("#display-mode-high-contrast");
+    await expect(page.locator("body")).toHaveAttribute("data-theme", "high-contrast");
+  });
+
   test("restore defaults resets settings", async ({ page }) => {
     await expect(page.getByRole("checkbox", { name: "Sound" })).toBeChecked();
     const sound = page.getByRole("checkbox", { name: "Sound" });
