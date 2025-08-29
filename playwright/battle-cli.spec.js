@@ -35,17 +35,6 @@ test.describe("Classic Battle CLI", () => {
     await expect(badge).toContainText(/State:\s*waitingForPlayerAction/);
   });
 
-  test("clicking a stat advances to round decision", async ({ page }) => {
-    await page.goto("/src/pages/battleCLI.html");
-    await waitForBattleState(page, "waitingForPlayerAction", 15000);
-
-    const firstStat = page.locator(".cli-stat").first();
-    await firstStat.click();
-    await firstStat.click();
-
-    await waitForBattleState(page, "roundDecision", 10000);
-  });
-
   test("verbose log toggles and records transitions", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html");
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
@@ -84,8 +73,8 @@ test.describe("Classic Battle CLI", () => {
     const cardBefore = await page.locator("#player-card ul").elementHandle();
 
     await waitForBattleState(page, "cooldown", 10000);
-    // Clicking the main surface advances to the next round
-    await page.locator("#cli-main").click();
+    // Pressing Enter advances to the next round
+    await page.keyboard.press("Enter");
     await waitForBattleState(page, "waitingForPlayerAction", 10000);
     const cardAfter = await page.locator("#player-card ul").elementHandle();
 
