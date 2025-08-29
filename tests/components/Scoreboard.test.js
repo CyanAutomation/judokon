@@ -58,11 +58,7 @@ describe("Scoreboard component", () => {
     document.body.innerHTML = "";
     const existing = createScoreboardHeader();
     document.body.appendChild(existing);
-    initScoreboard(existing, {
-      startCoolDown: vi.fn(),
-      pauseTimer: vi.fn(),
-      resumeTimer: vi.fn()
-    });
+    initScoreboard(existing);
     showMessage("Hi");
     expect(document.getElementById("round-message").textContent).toBe("Hi");
     updateScore(2, 3);

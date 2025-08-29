@@ -18,11 +18,7 @@ describe("setupScoreboard", () => {
   });
 
   function createControls() {
-    return {
-      startCoolDown: vi.fn(),
-      pauseTimer: vi.fn(),
-      resumeTimer: vi.fn()
-    };
+    return {};
   }
 
   it("initializes scoreboard and proxies component methods", async () => {
@@ -40,12 +36,7 @@ describe("setupScoreboard", () => {
 
     expect(initSpy).toHaveBeenCalledWith(
       document.querySelector("header"),
-      expect.objectContaining({
-        startCoolDown: controls.startCoolDown,
-        pauseTimer: controls.pauseTimer,
-        resumeTimer: controls.resumeTimer,
-        scheduler
-      })
+      expect.objectContaining({ scheduler })
     );
 
     mod.showMessage("Hi");
@@ -70,14 +61,6 @@ describe("setupScoreboard", () => {
     const initSpy = vi.spyOn(scoreboard, "initScoreboard");
     const mod = await import("../../src/helpers/setupScoreboard.js");
     mod.setupScoreboard(controls, scheduler);
-    expect(initSpy).toHaveBeenCalledWith(
-      null,
-      expect.objectContaining({
-        startCoolDown: controls.startCoolDown,
-        pauseTimer: controls.pauseTimer,
-        resumeTimer: controls.resumeTimer,
-        scheduler
-      })
-    );
+    expect(initSpy).toHaveBeenCalledWith(null, expect.objectContaining({ scheduler }));
   });
 });
