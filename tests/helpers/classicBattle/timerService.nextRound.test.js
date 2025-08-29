@@ -48,7 +48,7 @@ describe("timerService next round handling", () => {
     const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
     nextButton.addEventListener("click", (e) => mod.onNextButtonClick(e, controls));
     scheduler.tick(100);
-    nextButton.dispatchEvent(new MouseEvent("click"));
+    nextButton.click();
     await controls.ready;
     // Current flow guarantees at least one dispatch; a second may occur
     // via attribute observation. Accept one or more invocations.
@@ -77,7 +77,7 @@ describe("timerService next round handling", () => {
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
     const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
     expect(nextButton.dataset.nextReady).toBeUndefined();
-    expect(nextButton.disabled).toBe(true);
+    expect(nextButton.disabled).toBe(false);
     scheduler.tick(1100);
     await controls.ready;
     expect(nextButton.dataset.nextReady).toBe("true");

@@ -152,7 +152,7 @@ describe("classicBattle scheduleNextRound", () => {
     expect(machine.getState()).toBe("cooldown");
 
     const controls = battleMod.scheduleNextRound({ matchEnded: false });
-    document.getElementById("next-button").dispatchEvent(new MouseEvent("click"));
+    document.getElementById("next-button").click();
     await controls.ready;
     // Ensure state progressed before assertions
     await orchestrator.onStateTransition("waitingForPlayerAction");
