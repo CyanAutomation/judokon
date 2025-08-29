@@ -19,7 +19,8 @@
     "generate:embeddings": "node --max-old-space-size=8192 scripts/generateEmbeddings.js",
     "pretest": "node scripts/generatePrdIndex.js",
     "update:codes": "node updateCodes.mjs",
-    "sync:agents": "node scripts/syncAgentDocs.mjs"
+    "sync:agents": "node scripts/syncAgentDocs.mjs",
+    "rag:query": "node scripts/queryRagCli.mjs"
   },
   "keywords": [],
   "author": "",

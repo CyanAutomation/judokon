@@ -1,3 +1,5 @@
+import { isNodeEnvironment } from "../env.js";
+
 let extractor;
 
 /**
@@ -46,7 +48,7 @@ export function selectMatches(strongMatches, weakMatches) {
  * 1. If `extractor` is already initialized (cached), return it immediately.
  * 2. If `extractor` is not initialized, begin a `try...catch` block to handle potential loading errors:
  *    a. Inside the `try` block:
- *       i. Dynamically import the `pipeline` function from the Transformers.js library.
+ *       i. Import the `pipeline` function from Transformers.js (use CDN in browsers, local package in Node).
  *       ii. Instantiate a feature-extraction pipeline using the "Xenova/all-MiniLM-L6-v2" model, ensuring it's quantized.
  *       iii. Assign the created pipeline instance to `extractor`.
  *    b. In the `catch` block (if an error occurs during loading):
@@ -60,12 +62,19 @@ export function selectMatches(strongMatches, weakMatches) {
 export async function getExtractor() {
   if (!extractor) {
     try {
-      const { pipeline } = await import(
-        "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0/dist/transformers.min.js"
-      );
-      extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
-        quantized: true
-      });
+      if (isNodeEnvironment()) {
+        const { pipeline } = await import("@xenova/transformers");
+        extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
+          quantized: true
+        });
+      } else {
+        const { pipeline } = await import(
+          "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0/dist/transformers.min.js"
+        );
+        extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
+          quantized: true
+        });
+      }
     } catch (error) {
       console.error("Model failed to load", error);
       extractor = null;
