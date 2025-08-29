@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { waitForSettingsReady } from "./fixtures/waits.js";
 
 // Allow skipping screenshots via the SKIP_SCREENSHOTS environment variable
 const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
@@ -37,6 +38,28 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
     test(`${tag} screenshot ${url}`, async ({ page }) => {
       await page.goto(url, { waitUntil: "domcontentloaded" });
       await expect(page).toHaveScreenshot(name, { fullPage: true });
+    });
+  }
+
+  // Capture settings page in multiple display modes.
+  const modes = ["light", "dark", "high-contrast"];
+
+  for (const mode of modes) {
+    test(`@settings-${mode} screenshot`, async ({ page }) => {
+      await page.addInitScript((mode) => {
+        localStorage.setItem(
+          "settings",
+          JSON.stringify({
+            displayMode: mode,
+            typewriterEffect: false,
+            featureFlags: { enableTestMode: { enabled: true } }
+          })
+        );
+      }, mode);
+      await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
+      await waitForSettingsReady(page);
+      await expect(page.locator("body")).toHaveAttribute("data-theme", mode);
+      await expect(page).toHaveScreenshot(`settings-${mode}.png`, { fullPage: true });
     });
   }
 
