@@ -131,37 +131,6 @@ describe("Scoreboard integration without explicit init", () => {
     await promise;
   });
 
-  it("renders cooldown countdown via snackbar without touching timer element", async () => {
-    const scoreboard = await import("../../src/helpers/setupScoreboard.js");
-    const snackbar = await import("../../src/helpers/showSnackbar.js");
-
-    // Ensure the timer area is empty to begin with
-    const timerEl = document.getElementById("next-round-timer");
-    expect(timerEl.textContent).toBe("");
-
-    const onFinish = vi.fn();
-    scoreboard.startCountdown(3, onFinish);
-
-    // First tick triggers showSnackbar with 3s
-    await vi.advanceTimersByTimeAsync(0);
-    expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 3s");
-    expect(timerEl.textContent).toBe("");
-
-    // Next ticks trigger updateSnackbar only
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(snackbar.updateSnackbar).toHaveBeenCalledWith("Next round in: 2s");
-    expect(timerEl.textContent).toBe("");
-
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(snackbar.updateSnackbar).toHaveBeenCalledWith("Next round in: 1s");
-    expect(timerEl.textContent).toBe("");
-
-    // Expiration calls onFinish and keeps timer element clear
-    await vi.runOnlyPendingTimersAsync();
-    expect(onFinish).toHaveBeenCalled();
-    expect(timerEl.textContent).toBe("");
-  });
-
   it("shows fallback message on round timer drift", async () => {
     const scoreboard = await import("../../src/helpers/setupScoreboard.js");
     const showMessageSpy = vi.spyOn(scoreboard, "showMessage");

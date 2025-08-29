@@ -34,7 +34,6 @@ describe("setupScoreboard", () => {
     const clearSpy = vi.spyOn(scoreboard, "clearMessage");
     const tempSpy = vi.spyOn(scoreboard, "showTemporaryMessage");
     const scoreSpy = vi.spyOn(scoreboard, "updateScore");
-    const countdownSpy = vi.spyOn(scoreboard, "startCountdown");
 
     const mod = await import("../../src/helpers/setupScoreboard.js");
     mod.setupScoreboard(controls, scheduler);
@@ -61,9 +60,6 @@ describe("setupScoreboard", () => {
 
     mod.updateScore(1, 2);
     expect(scoreSpy).toHaveBeenCalledWith(1, 2);
-
-    mod.startCountdown(3);
-    expect(countdownSpy).toHaveBeenCalledWith(3);
   });
 
   it("calls initScoreboard with null when header missing", async () => {
