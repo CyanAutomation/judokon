@@ -7,6 +7,7 @@ import { waitForOpponentCard } from "../battleJudokaPage.js";
 import { ClassicBattleController } from "./controller.js";
 import { ClassicBattleView } from "./view.js";
 import createClassicBattleDebugAPI from "./setupTestHelpers.js";
+import { onDomReady } from "../domReady.js";
 
 /**
  * Bootstrap Classic Battle page by wiring controller and view.
@@ -28,3 +29,11 @@ export async function setupClassicBattlePage() {
   }
   return debugApi;
 }
+
+// When this module is loaded as a module script from the page, initialize
+// the Classic Battle page once the DOM is ready. Tests can still import and
+// call `setupClassicBattlePage` directly.
+onDomReady(() => {
+  // Fire-and-forget; errors are swallowed to avoid noisy failures on page load.
+  setupClassicBattlePage().catch(() => {});
+});
