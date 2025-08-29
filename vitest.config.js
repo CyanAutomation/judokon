@@ -34,7 +34,8 @@ export default defineConfig({
       "tests/e2e/**",
       "tests/playwright/**",
       "playwright/**",
-      "scripts/**/*.spec.*"
+      "scripts/**/*.spec.*",
+      "tests/styles/**"
     ],
     // Use default reporter w/o summary (replaces deprecated 'basic')
     reporters: [["default", { summary: false }]],

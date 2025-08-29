@@ -4407,7 +4407,7 @@
         }
       }
     },
-    "tests/helpers/bottomNavbarCss.test.js": {
+    "tests/styles/bottomNavbarCss.test.js": {
       "imports": ["vitest", "fs", "postcss"],
       "functions": {
         "getRule": {
