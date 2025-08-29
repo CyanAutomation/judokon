@@ -1,4 +1,5 @@
 import { emitBattleEvent, __resetBattleEventTarget } from "./battleEvents.js";
+import { stopTimer } from "../battleEngineFacade.js";
 
 // Internal flags to make bindings idempotent and allow limited rebinds in tests.
 let __uiBound = false;
@@ -55,6 +56,11 @@ export function resetBindings() {
  * Trigger the round timeout path immediately without waiting for the timer.
  * Mirrors the onExpired logic in startTimer.
  *
+ * @pseudocode
+ * 1. Import stat-selection helpers and dispatch utils.
+ * 2. Stop any active timer to prevent overlap.
+ * 3. Emit `roundTimeout`, auto-select a stat, and dispatch `timeout`.
+ *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store
  */
 export async function triggerRoundTimeoutNow(store) {
@@ -76,6 +82,7 @@ export async function triggerRoundTimeoutNow(store) {
     } catch {}
     return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
   };
+  stopTimer();
   try {
     emitBattleEvent("roundTimeout");
   } catch {}
