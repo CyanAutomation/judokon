@@ -14,4 +14,3 @@ export const FEATURE_FLAGS = {
   enableTestMode: { enabled: false },
   battleStateBadge: { enabled: false }
 };
-

@@ -1,19 +1,22 @@
 # Classic Battle — Implementation Plan (battleClassic.html)
 
 ## Summary
+
 - Goal: Implement the Classic Battle game mode UI and wiring inside `src/pages/battleClassic.html` per `design/productRequirementsDocuments/prdBattleClassic.md`.
 - Scope: Page structure, static imports, UI bindings, scoreboard integration, round flow, timer, controls, accessibility, and observability hooks. No server work.
 - Constraint: Do not rely on `battleJudoka.html` specifics; build a self-sufficient page that reuses shared helpers/components.
 
 ## Implementation Plan
 
-1) Page Skeleton & Styles
+1. Page Skeleton & Styles
+
 - Header: Include site header with a centered logo block and the scoreboard placeholders: `#round-message`, `#next-round-timer`, `#round-counter`, `#score-display` within a `.battle-header` grid.
 - Main: `#battle-area` with two card containers (`#player-card`, `#opponent-card`) and a center column for stat buttons `#stat-buttons`.
 - Controls: An `.action-buttons` row containing `#next-button`, `#quit-match-button`, and a help icon `#stat-help` (tooltip target).
 - Styles: Link `src/styles/base.css`, `src/styles/layout.css`, `src/styles/navbar.css`, `src/styles/battle.css`, `src/styles/buttons.css`, `src/styles/card.css`, `src/styles/snackbar.css`, `src/styles/modal.css`, and fonts.
 
-2) Static Imports (hot path) vs Dynamic (optional)
+2. Static Imports (hot path) vs Dynamic (optional)
+
 - Static (hot path, per policy):
   - `src/helpers/classicBattle.js` (re-exports orchestrator, selection, UI helpers)
   - `src/helpers/setupScoreboard.js` (scoreboard wiring)
@@ -25,14 +28,16 @@
   - Any debug/test-only helpers guarded by feature flags
 - Preload strategy: Use an idle callback (or a short timeout post-first-interaction) to `import()` optional modules so subsequent usage is hitch-free.
 
-3) Initialization Flow (on DOMContentLoaded)
+3. Initialization Flow (on DOMContentLoaded)
+
 - Build the header DOM and call `setupScoreboard({ startCoolDown, pauseTimer, resumeTimer })` from the timer controller facade.
 - Initialize Classic Battle bindings idempotently via `__ensureClassicBattleBindings()` to connect UI → engine → UI loop.
 - Show “points to win” modal (5/10/15, default 10) using `createModal` and `createButton`.
   - Persist selection in a local storage key (e.g., `battle.pointsToWin`), default to 10 when missing.
   - After selection, start match by dispatching the bootstrap event to the orchestrator/controller.
 
-4) Round Flow (per PRD)
+4. Round Flow (per PRD)
+
 - Start of round:
   - Draw top cards (shared random draw via `src/helpers/randomCard.js`).
   - Render player card immediately; render opponent card obscured (Mystery Card placeholder via `renderJudokaCard()` with `useObscuredStats`).
@@ -51,39 +56,46 @@
 - End conditions:
   - First to selected win target (5/10/15; default 10) OR 25 rounds → show match over UI/score and disable interactions.
 
-5) Controls & UI Semantics
+5. Controls & UI Semantics
+
 - `Next` button: Enabled during cooldown; when selection or cooldown active, a press skips remaining time and advances.
 - `Quit Match` button: Opens confirmation modal styled similar to Settings “Restore Defaults”; confirm ends match and records as player loss.
 - `#stat-help` icon: Tooltip explaining stat-pick basics; auto-open once per device using storage helper to remember dismissal.
 - Accessibility: Ensure WCAG contrast, touch targets ≥44px, proper aria-live for status regions, and keyboard navigation for stat buttons, Next, and Quit.
 
-6) Scoreboard Integration
+6. Scoreboard Integration
+
 - Use `setupScoreboard` to initialize references.
 - Update via: `showMessage`, `updateScore`, `updateRoundCounter`, and `startCountdown`.
 - Timer drift: On drift >2s, display “Waiting…” then restart countdown using Scoreboard’s drift handler.
 
-7) State, Feature Flags, Persistence
+7. State, Feature Flags, Persistence
+
 - Feature flags: Honor `FF_AUTO_SELECT` (default enabled) and `battleDebugPanel` if present.
 - Persist “first visit” help-tooltip dismissal and user-selected points-to-win.
 - Maintain `window.__classicBattleState`/`dataset.battleState` updates for test fixtures if already provided by helpers.
 
-8) Error Handling & Edge Cases
+8. Error Handling & Edge Cases
+
 - Dataset failures → Surface error in Scoreboard and show retry dialog (reload option) using shared helpers.
 - AI selection failures → Fallback to random stat.
 - Tooltips failing → Proceed without, log error.
 - Navigating away mid-match or unexpected errors → Roll back to last completed round (leveraging existing orchestrator/test hooks if available).
 
-9) Performance & Animation
+9. Performance & Animation
+
 - Use CSS transforms/opacity for card reveals and result transitions; respect reduced motion.
 - Avoid dynamic imports in hot paths (stat click handlers, resolve loops, per-frame operations).
 - Preload optional modules during idle to avoid input hitches.
 
-10) Observability & Test Hooks
+10. Observability & Test Hooks
+
 - Expose and wire `roundPromptPromise`, `countdownStartedPromise`, `roundResolvedPromise`, `roundTimeoutPromise`, and `statSelectionStalledPromise` from `classicBattle/promises.js` for tests.
 - Ensure idempotent bindings via `__ensureClassicBattleBindings()` and `__resetClassicBattleBindings()`.
 - Keep snackbar/`#round-message` cleared between tests per project conventions.
 
-11) Testing & Programmatic Checks
+11. Testing & Programmatic Checks
+
 - Add/align Playwright scenarios for:
   - Round state progress list and header orientation
   - Countdown rendering, skip via `Next`, auto-select stat path
@@ -101,6 +113,7 @@
 - Next: Update PRD URL, then add `battleDefaults.js` and begin wiring defaults.
 
 ## Approach Considerations
+
 - Reuse shared helpers under `src/helpers/classicBattle/*` to avoid duplicating logic; the page script primarily wires DOM to the orchestrator and scoreboard.
 - Follow the “Module Loading Policy”: keep stat selection, resolve logic, event dispatchers, and render loops statically imported; only dynamically import optional/help modules and preload during idle.
 - Keep DOM and CSS tokens consistent with `battle.css` and button styles; ensure `-webkit-tap-highlight-color: transparent` behavior and reflow on stat select to clear Safari overlay.
@@ -108,6 +121,7 @@
 - Ensure tooltips and help flows degrade gracefully.
 
 ## Open Questions
+
 - PRD references URL `battleJudoka.html` but this plan targets `battleClassic.html`. Confirm that `battleClassic.html` is the intended canonical page for Classic Battle.
 - Confirm the feature flag keys and defaults (e.g., `FF_AUTO_SELECT`, `battleDebugPanel`) and their storage location to ensure correct initialization on this page.
 - Should the “points to win” choice persist globally across sessions/pages or be per-session on `battleClassic.html` only?

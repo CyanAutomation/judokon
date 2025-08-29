@@ -26,4 +26,3 @@ export const EN = {
   // Modal labels (samples; extend as needed)
   "modal.roundSelect.title": "Select Match Length"
 };
-
