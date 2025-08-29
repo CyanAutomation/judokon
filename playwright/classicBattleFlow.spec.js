@@ -101,6 +101,6 @@ test.describe("Classic battle flow", () => {
     await waitForSettingsReady(page);
     await page.goBack();
     await expect(page).toHaveURL(/battleJudoka.html/);
-    await expect(page.locator("header #next-round-timer")).toHaveText("");
+    await expect(page.locator(".snackbar")).toHaveCount(0);
   });
 });

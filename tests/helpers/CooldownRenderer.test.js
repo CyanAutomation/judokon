@@ -16,6 +16,7 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
 import { attachCooldownRenderer } from "../../src/helpers/CooldownRenderer.js";
 import { emitBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js";
 import * as snackbar from "../../src/helpers/showSnackbar.js";
+import * as scoreboard from "../../src/helpers/setupScoreboard.js";
 
 describe("attachCooldownRenderer", () => {
   let timer;
@@ -46,5 +47,19 @@ describe("attachCooldownRenderer", () => {
 
     expect(emitBattleEvent).toHaveBeenCalledWith("nextRoundCountdownStarted");
     expect(emitBattleEvent).toHaveBeenCalledWith("nextRoundCountdownTick", { remaining: 5 });
+  });
+
+  it("updates snackbar on tick and clears timer at zero", () => {
+    attachCooldownRenderer(timer);
+
+    timer.emit("tick", 3);
+    expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 3s");
+
+    timer.emit("tick", 2);
+    expect(snackbar.updateSnackbar).toHaveBeenCalledWith("Next round in: 2s");
+
+    timer.emit("tick", 0);
+    expect(snackbar.updateSnackbar).toHaveBeenCalledWith("Next round in: 0s");
+    expect(scoreboard.clearTimer).toHaveBeenCalled();
   });
 });

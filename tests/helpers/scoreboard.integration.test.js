@@ -60,18 +60,6 @@ describe("Scoreboard integration without explicit init", () => {
         }, 1000);
         return Promise.resolve();
       },
-      // Cooldown timer (not exercised here)
-      startCoolDown: (onTick, onExpired, duration) => {
-        onTick(duration);
-        const id = setInterval(() => {
-          duration -= 1;
-          onTick(duration);
-          if (duration <= 0) {
-            clearInterval(id);
-            onExpired();
-          }
-        }, 1000);
-      },
       stopTimer: vi.fn(),
       pauseTimer: vi.fn(),
       resumeTimer: vi.fn(),
@@ -85,13 +73,8 @@ describe("Scoreboard integration without explicit init", () => {
       updateSnackbar: vi.fn()
     }));
 
-    const engine = await import("../../src/helpers/battleEngineFacade.js");
     const { initScoreboard } = await import("../../src/components/Scoreboard.js");
-    initScoreboard(undefined, {
-      startCoolDown: engine.startCoolDown,
-      pauseTimer: engine.pauseTimer,
-      resumeTimer: engine.resumeTimer
-    });
+    initScoreboard(undefined);
   });
 
   it("renders messages, score, round counter, and round timer without init", async () => {

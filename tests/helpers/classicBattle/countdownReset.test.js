@@ -83,17 +83,6 @@ describe("countdown resets after stat selection", () => {
     battleMod._resetForTest(store);
   });
 
-  it("clears the next round timer after stat selection", async () => {
-    populateCards();
-    const timer = vi.useFakeTimers();
-    const { randomSpy } = await selectPower(battleMod, store);
-    expect(document.getElementById("next-round-timer").textContent).toBe("");
-    await vi.advanceTimersByTimeAsync(3000);
-    expect(document.getElementById("next-round-timer").textContent).toBe("");
-    timer.clearAllTimers();
-    randomSpy.mockRestore();
-  });
-
   it("shows snackbar countdown with sequential updates", async () => {
     populateCards();
     const timer = vi.useFakeTimers();
