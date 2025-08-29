@@ -22,6 +22,18 @@ export async function setupClassicBattlePage() {
   if (typeof process !== "undefined" && process.env.VITEST === "true") {
     window.__classicBattleDebugAPI = debugAPI;
   }
+
+  // Preload optional modules during idle to reduce jank on first use
+  try {
+    const rIC =
+      window.requestIdleCallback || ((cb) => setTimeout(() => cb({ timeRemaining: () => 0 }), 200));
+    rIC(() => {
+      // Tooltip library
+      import("../tooltip.js").catch(() => {});
+      // Test helpers / debug APIs
+      import("./setupTestHelpers.js").catch(() => {});
+    });
+  } catch {}
   return debugAPI;
 }
 

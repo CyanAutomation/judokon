@@ -13,7 +13,7 @@
 - Header: Include site header with a centered logo block and the scoreboard placeholders: `#round-message`, `#next-round-timer`, `#round-counter`, `#score-display` within a `.battle-header` grid.
 - Main: `#battle-area` with two card containers (`#player-card`, `#opponent-card`) and a center column for stat buttons `#stat-buttons`.
 - Controls: An `.action-buttons` row containing `#next-button`, `#quit-match-button`, and a help icon `#stat-help` (tooltip target).
-- Styles: Link `src/styles/base.css`, `src/styles/layout.css`, `src/styles/navbar.css`, `src/styles/battle.css`, `src/styles/buttons.css`, `src/styles/card.css`, `src/styles/snackbar.css`, `src/styles/modal.css`, and fonts.
+- Styles (canonical for this page): link `../styles/fonts.css`, `../styles/base.css`, `../styles/layout.css`, `../styles/components.css`, `../styles/utilities.css`, `../styles/battle.css`.
 
 2. Static Imports (hot path) vs Dynamic (optional)
 
@@ -186,3 +186,19 @@
 - Added `storage.wrap(key, { fallback: 'session' })` to `src/helpers/storage.js`, providing `{ get, set, remove }` with safe JSON handling and in-memory fallback.
 - Added `src/helpers/seedRandom.js` with `mulberry32(seed)` and `seededInt(seed, min, max)` for deterministic randomness under test flags.
 - Sanity: No breaking changes to existing storage API.
+
+## Milestone 7 — Idle Preload & A11y Smoketest
+
+- Added requestIdleCallback preloader in `src/helpers/classicBattle/bootstrap.js` to dynamically import `../tooltip.js` and `./setupTestHelpers.js` after initial init to reduce jank on first use.
+- Added `tests/pages/battleClassic.a11y.smoke.test.js` to assert key ARIA regions exist and stat buttons expose `aria-label` or `aria-describedby`.
+- Centralized storage keys in `src/config/storageKeys.js` and updated modal wiring.
+- Documented `?autostart=1` query param as a supported way to skip the modal during dev/tests.
+
+## Notes on Feature Flags
+
+- Canonical keys (camelCase): `autoSelect`, `battleDebugPanel`, `enableTestMode`, `battleStateBadge`, `statHotkeys`.
+- Older docs may reference `FF_*` names; prefer the keys above.
+
+## Observability
+
+- Added `src/helpers/telemetry.js` with `logEvent(name, payload)`. Currently dispatches a window event and logs to console. Used to record `battle.start` with `{ pointsToWin, source }` (modal/storage).

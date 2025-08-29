@@ -8,6 +8,8 @@ import { isTestModeEnabled } from "../testModeUtils.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { wrap } from "../storage.js";
 import { POINTS_TO_WIN_OPTIONS, DEFAULT_POINTS_TO_WIN } from "../../config/battleDefaults.js";
+import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";
+import { logEvent } from "../telemetry.js";
 
 /**
  * Initialize round selection modal for Classic Battle.
@@ -55,10 +57,13 @@ export async function initRoundSelectModal(onStart) {
 
   // Persisted preference: if a prior selection exists, use it and skip modal
   try {
-    const storage = wrap("battle.pointsToWin");
+    const storage = wrap(BATTLE_POINTS_TO_WIN);
     const saved = storage.get();
     if (POINTS_TO_WIN_OPTIONS.includes(Number(saved))) {
       setPointsToWin(Number(saved));
+      try {
+        logEvent("battle.start", { pointsToWin: Number(saved), source: "storage" });
+      } catch {}
       if (typeof onStart === "function") await onStart();
       return;
     }
@@ -102,8 +107,11 @@ export async function initRoundSelectModal(onStart) {
     btn.addEventListener("click", () => {
       setPointsToWin(r.value);
       try {
-        const storage = wrap("battle.pointsToWin");
+        const storage = wrap(BATTLE_POINTS_TO_WIN);
         storage.set(r.value);
+      } catch {}
+      try {
+        logEvent("battle.start", { pointsToWin: r.value, source: "modal" });
       } catch {}
       modal.close();
       if (typeof onStart === "function") onStart();
