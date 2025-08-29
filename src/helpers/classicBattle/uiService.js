@@ -7,6 +7,10 @@ import { updateDebugPanel } from "./uiHelpers.js";
 import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
+import { setSkipHandler } from "./skipHandler.js";
+
+/** @type {{ timer: ReturnType<typeof createRoundTimer>, onExpired: Function }|null} */
+let activeCountdown = null;
 
 /**
  * Update the scoreboard with current scores.
@@ -125,9 +129,35 @@ onBattleEvent("countdownStart", (e) => {
   const { duration } = e.detail || {};
   if (typeof duration !== "number") return;
   try {
+    if (activeCountdown) {
+      try {
+        activeCountdown.timer.off("expired", activeCountdown.onExpired);
+      } catch {}
+      try {
+        activeCountdown.timer.stop();
+      } catch {}
+      activeCountdown = null;
+    }
+
     const timer = createRoundTimer();
+    const onExpired = () => {
+      setSkipHandler(null);
+      activeCountdown = null;
+      emitBattleEvent("countdownFinished");
+    };
+
+    activeCountdown = { timer, onExpired };
     attachCooldownRenderer(timer, duration);
-    timer.on("expired", () => emitBattleEvent("countdownFinished"));
+    timer.on("expired", onExpired);
+    setSkipHandler(() => {
+      try {
+        timer.off("expired", onExpired);
+      } catch {}
+      try {
+        timer.stop();
+      } catch {}
+      activeCountdown = null;
+    });
     timer.start(duration);
   } catch (err) {
     console.error("Error in countdownStart event handler:", err);
