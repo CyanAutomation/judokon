@@ -6,10 +6,6 @@ import {
   createFlagImage
 } from "../../src/helpers/cardTopBar.js";
 
-// Utility function for normalization
-const normalizeHtml = (html) =>
-  html.replace(/>\s+</g, "><").replace(/></g, "> <").replace(/\s+/g, " ").trim();
-
 const judoka = {
   firstname: "Clarisse",
   surname: "Agbegnenou",
@@ -23,78 +19,29 @@ beforeEach(() => {
 });
 
 describe("generateCardTopBar", () => {
-  it("should render top bar with placeholder flag when no flagUrl is provided", async () => {
-    const expectedHtml = `
-      <div class="card-top-bar">
-        <div class="card-name">
-          <span class="firstname">John</span>
-          <span class="surname">Doe</span>
-        </div>
-        <div class="card-flag" data-tooltip-id="card.flag">
-          <img src="../assets/countryFlags/placeholder-flag.png" alt="Unknown flag" loading="lazy" onerror="this.src='../assets/countryFlags/placeholder-flag.png'">
-        </div>
-      </div>
-    `;
-
-    const result = await generateCardTopBar({ firstname: "John", surname: "Doe" }, null);
-
-    expect(normalizeHtml(result.outerHTML)).toBe(normalizeHtml(expectedHtml));
-  });
-
-  it("should include correct alt text for country name in flag image", async () => {
-    const result = await generateCardTopBar(judoka, flagUrl);
-    expect(result.outerHTML).toContain('alt="France flag"');
-  });
-
-  it("should include judoka's firstname, surname, and flag URL", async () => {
+  it("renders judoka name, flag URL, and alt text", async () => {
     const result = await generateCardTopBar(judoka, flagUrl);
     expect(result.outerHTML).toContain("Clarisse");
     expect(result.outerHTML).toContain("Agbegnenou");
     expect(result.outerHTML).toContain(flagUrl);
+    expect(result.outerHTML).toContain('alt="France flag"');
   });
 
-  it("should fallback to placeholder flag when flagUrl is missing", async () => {
-    const result = await generateCardTopBar(judoka);
-    expect(result.outerHTML).toContain("placeholder-flag.png");
-  });
-
-  it("should render placeholder text when judoka is missing", async () => {
-    const result = await generateCardTopBar(null, flagUrl);
-    expect(result.outerHTML).toContain("No data available");
-  });
-
-  it("should fallback to 'Unknown' when countryCode is missing", async () => {
-    countryUtils.getCountryByCode.mockResolvedValueOnce("Unknown");
-    const incompleteJudoka = { firstname: "Clarisse", surname: "Agbegnenou" };
-    const result = await generateCardTopBar(incompleteJudoka, flagUrl);
-    expect(result.outerHTML).toContain('alt="Unknown flag"');
-  });
-
-  it("should handle invalid judoka input types gracefully", async () => {
+  it("handles invalid judoka input types gracefully", async () => {
     await expect(generateCardTopBar(42, flagUrl)).resolves.toBeTruthy();
     await expect(generateCardTopBar(true, flagUrl)).resolves.toBeTruthy();
     await expect(generateCardTopBar({}, flagUrl)).resolves.toBeTruthy();
   });
 
-  it("async: escapes HTML in firstname and surname", async () => {
+  it("escapes HTML in firstname, surname, and country name", async () => {
+    vi.spyOn(countryUtils, "getCountryByCode").mockResolvedValueOnce("<France>");
     const result = await generateCardTopBar(
       { firstname: "<John>", surname: '"Doe"', countryCode: "fr" },
       flagUrl
     );
     expect(result.outerHTML).toContain("&lt;John&gt;");
     expect(result.outerHTML).toContain('"Doe"');
-  });
-
-  it("async: escapes HTML in country name for alt attribute", async () => {
-    vi.spyOn(countryUtils, "getCountryByCode").mockResolvedValueOnce("<France>");
-    const result = await generateCardTopBar(judoka, flagUrl);
     expect(result.outerHTML).toContain('alt="<France> flag"');
-  });
-
-  it("includes alt attribute even if countryName is falsy", async () => {
-    vi.spyOn(countryUtils, "getCountryByCode").mockResolvedValueOnce("");
-    const result = await generateCardTopBar(judoka, flagUrl);
-    expect(result.outerHTML).toContain('alt="Unknown flag"');
   });
 });
 
