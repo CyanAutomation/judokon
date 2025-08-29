@@ -20,29 +20,47 @@ describe("timer defaults", () => {
     expect(val).toBe(42);
   });
 
-  it("startRound uses default duration when none provided", async () => {
-    vi.doMock("../../src/helpers/timerUtils.js", async (importOriginal) => {
-      const actual = await importOriginal();
-      return {
-        ...actual,
-        getDefaultTimer: vi.fn().mockResolvedValue(42),
-        createCountdownTimer: vi.fn(() => ({
-          start: vi.fn(),
-          stop: vi.fn(),
-          pause: vi.fn(),
-          resume: vi.fn()
-        }))
-      };
+  describe("battleEngine uses default duration", () => {
+    let startRound;
+    let startCoolDown;
+    let timerUtils;
+    let resetFacade;
+
+    beforeEach(async () => {
+      vi.doMock("../../src/helpers/timerUtils.js", async (importOriginal) => {
+        const actual = await importOriginal();
+        return {
+          ...actual,
+          getDefaultTimer: vi.fn().mockResolvedValue(42),
+          createCountdownTimer: vi.fn(() => ({
+            start: vi.fn(),
+            stop: vi.fn(),
+            pause: vi.fn(),
+            resume: vi.fn()
+          }))
+        };
+      });
+
+      ({
+        startRound,
+        startCoolDown,
+        _resetForTest: resetFacade
+      } = await import("../../src/helpers/battleEngineFacade.js"));
+      timerUtils = await import("../../src/helpers/timerUtils.js");
+      resetFacade();
     });
 
-    const { startRound, _resetForTest } = await import("../../src/helpers/battleEngineFacade.js");
-    const timerUtils = await import("../../src/helpers/timerUtils.js");
-    _resetForTest();
+    it("startRound uses default duration when none provided", async () => {
+      await startRound(vi.fn(), vi.fn());
+      expect(timerUtils.createCountdownTimer).toHaveBeenCalledWith(42, expect.any(Object));
+      expect(timerUtils.createCountdownTimer.mock.results[0].value.start).toHaveBeenCalled();
+    });
 
-    await startRound(vi.fn(), vi.fn());
-
-    expect(timerUtils.createCountdownTimer).toHaveBeenCalledWith(42, expect.any(Object));
-    expect(timerUtils.createCountdownTimer.mock.results[0].value.start).toHaveBeenCalled();
+    it("startCoolDown uses default duration when none provided", async () => {
+      await startCoolDown(vi.fn(), vi.fn());
+      expect(timerUtils.createCountdownTimer).toHaveBeenCalledWith(42, expect.any(Object));
+      expect(timerUtils.createCountdownTimer.mock.results[0].value.start).toHaveBeenCalled();
+    });
   });
 });
 
