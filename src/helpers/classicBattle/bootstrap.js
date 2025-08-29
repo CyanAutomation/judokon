@@ -18,31 +18,39 @@ import { initRoundSelectModal } from "./roundSelectModal.js";
  *    a. Creates view and controller.
  *    b. Binds them together and initializes both.
  *    c. Creates the debug API and exposes it in test mode.
+ *    d. Resolves or rejects `startPromise` based on initialization outcome.
  * 2. Await `initRoundSelectModal(startCallback)`.
- * 3. Return the debug API after the round is selected.
+ * 3. Await `startPromise`.
+ * 4. Return the debug API after the round is selected.
  */
 export async function setupClassicBattlePage() {
   let debugApi;
   let resolveStart;
-  const startPromise = new Promise((r) => {
-    resolveStart = r;
+  let rejectStart;
+  const startPromise = new Promise((resolve, reject) => {
+    resolveStart = resolve;
+    rejectStart = reject;
   });
 
   async function startCallback() {
-    const view = new ClassicBattleView({ waitForOpponentCard });
-    const controller = new ClassicBattleController({
-      waitForOpponentCard: view.waitForOpponentCard
-    });
-    view.bindController(controller);
-    await controller.init();
-    await view.init();
-    debugApi = createClassicBattleDebugAPI(view);
-    if (typeof process !== "undefined" && process.env && process.env.VITEST === "true") {
-      try {
-        window.__classicbattledebugapi = debugApi;
-      } catch {}
+    try {
+      const view = new ClassicBattleView({ waitForOpponentCard });
+      const controller = new ClassicBattleController({
+        waitForOpponentCard: view.waitForOpponentCard
+      });
+      view.bindController(controller);
+      await controller.init();
+      await view.init();
+      debugApi = createClassicBattleDebugAPI(view);
+      if (typeof process !== "undefined" && process.env && process.env.VITEST === "true") {
+        try {
+          window.__classicbattledebugapi = debugApi;
+        } catch {}
+      }
+      resolveStart();
+    } catch (err) {
+      rejectStart(err);
     }
-    resolveStart();
   }
 
   await initRoundSelectModal(startCallback);
