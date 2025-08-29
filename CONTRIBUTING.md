@@ -15,6 +15,7 @@ Before committing any changes, run the following commands from the repository ro
 npx prettier . --check # verify formatting
 npx eslint . # lint the codebase
 npx vitest run # run unit tests
+npm run test:style # run style tests on demand
 npx playwright test # run Playwright UI tests
 ```
 
