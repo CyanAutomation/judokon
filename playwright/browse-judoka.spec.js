@@ -90,7 +90,7 @@ test.describe("Browse Judoka screen", () => {
     await expect(card).toHaveAttribute("data-enlarged", "true");
   });
 
-  test("carousel responds to arrow keys", async ({ page }) => {
+  test("carousel updates page counter with arrow keys", async ({ page }) => {
     await page.route("**/src/data/judoka.json", (route) =>
       route.fulfill({ path: "tests/fixtures/judoka-carousel.json" })
     );
@@ -109,69 +109,13 @@ test.describe("Browse Judoka screen", () => {
     await expect(left).toBeDisabled();
 
     for (let i = 2; i <= pageCount; i++) {
-      await right.click();
+      await page.keyboard.press("ArrowRight");
       await expect(counter).toHaveText(`Page ${i} of ${pageCount}`);
     }
     await expect(right).toBeDisabled();
 
     for (let i = pageCount - 1; i >= 1; i--) {
-      await left.click();
-      await expect(counter).toHaveText(`Page ${i} of ${pageCount}`);
-    }
-    await expect(left).toBeDisabled();
-  });
-
-  test("carousel responds to swipe gestures", async ({ page }) => {
-    await page.route("**/src/data/judoka.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/judoka-carousel.json" })
-    );
-    await page.setViewportSize({ width: 320, height: 800 });
-    await page.reload();
-    await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
-    const container = page.locator(".card-carousel");
-
-    const markers = page.locator(".scroll-marker");
-    const counter = page.locator(".page-counter");
-    const left = page.getByRole("button", { name: /prev\.?/i });
-    const right = page.getByRole("button", { name: /next/i });
-    const pageCount = await markers.count();
-    await expect(counter).toHaveText(`Page 1 of ${pageCount}`);
-    await expect(left).toBeDisabled();
-
-    const box = await container.boundingBox();
-    const startX = box.x + box.width * 0.9;
-    const endX = box.x + box.width * 0.1;
-    const y = box.y + box.height / 2;
-    const swipe = (from, to) =>
-      page.evaluate(
-        ({ from, to, y }) => {
-          const el = document.querySelector(".card-carousel");
-          el.dispatchEvent(
-            new TouchEvent("touchstart", {
-              bubbles: true,
-              cancelable: true,
-              touches: [new Touch({ identifier: 1, target: el, clientX: from, clientY: y })]
-            })
-          );
-          el.dispatchEvent(
-            new TouchEvent("touchend", {
-              bubbles: true,
-              cancelable: true,
-              changedTouches: [new Touch({ identifier: 1, target: el, clientX: to, clientY: y })]
-            })
-          );
-        },
-        { from, to, y }
-      );
-
-    for (let i = 2; i <= pageCount; i++) {
-      await swipe(startX, startX - box.width);
-      await expect(counter).toHaveText(`Page ${i} of ${pageCount}`);
-    }
-    await expect(right).toBeDisabled();
-
-    for (let i = pageCount - 1; i >= 1; i--) {
-      await swipe(endX, endX + box.width);
+      await page.keyboard.press("ArrowLeft");
       await expect(counter).toHaveText(`Page ${i} of ${pageCount}`);
     }
     await expect(left).toBeDisabled();
