@@ -82,12 +82,15 @@ export function mockTooltips() {
 
 export function mockTestModeUtils() {
   vi.doMock("../../../src/helpers/testModeUtils.js", () => ({
-    setTestMode: vi.fn()
+    setTestMode: vi.fn(),
+    isTestModeEnabled: () => true
   }));
 }
 
 export function mockRoundSelectModal() {
   vi.doMock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-    initRoundSelectModal: vi.fn()
+    initRoundSelectModal: vi.fn(async (onStart) => {
+      if (typeof onStart === "function") await onStart();
+    })
   }));
 }

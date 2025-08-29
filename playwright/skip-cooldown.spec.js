@@ -15,11 +15,12 @@ test.describe("Skip cooldown flow", () => {
   });
 
   test("clicking Next button skips cooldown timer", async ({ page }) => {
-    await waitForBattleReady(page);
-
-    // Wait for the first round to be ready for player action
     await page.locator("#round-select-1").click();
-    await waitForBattleState(page, "waitingForPlayerAction");
+    await waitForBattleReady(page);
+    await page.waitForFunction(() => {
+      const btn = document.querySelector("#stat-buttons button");
+      return btn && !btn.disabled;
+    });
 
     // Click a stat to finish the round
     await page.locator("button[data-stat='power']").click();

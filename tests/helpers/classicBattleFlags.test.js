@@ -67,7 +67,7 @@ describe("classicBattlePage feature flag updates", () => {
     }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({
       setTestMode: vi.fn(),
-      isTestModeEnabled: () => currentFlags.enableTestMode?.enabled ?? false
+      isTestModeEnabled: () => true
     }));
 
     const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
@@ -116,6 +116,10 @@ describe("classicBattlePage feature flag updates", () => {
       startRound: vi.fn(),
       resetGame: vi.fn(),
       _resetForTest: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/testModeUtils.js", () => ({
+      setTestMode: vi.fn(),
+      isTestModeEnabled: () => true
     }));
 
     const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");

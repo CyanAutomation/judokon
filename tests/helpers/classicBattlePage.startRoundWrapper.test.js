@@ -33,7 +33,10 @@ describe("startRoundWrapper failures", () => {
     vi.doMock("../../src/helpers/tooltip.js", () => ({
       initTooltips: vi.fn().mockResolvedValue(() => {})
     }));
-    vi.doMock("../../src/helpers/testModeUtils.js", () => ({ setTestMode: vi.fn() }));
+    vi.doMock("../../src/helpers/testModeUtils.js", () => ({
+      setTestMode: vi.fn(),
+      isTestModeEnabled: () => true
+    }));
     vi.doMock("../../src/helpers/stats.js", () => ({
       loadStatNames: vi.fn().mockResolvedValue([])
     }));
@@ -58,7 +61,8 @@ describe("startRoundWrapper failures", () => {
       startCoolDown: vi.fn(),
       pauseTimer: vi.fn(),
       resumeTimer: vi.fn(),
-      STATS: []
+      STATS: [],
+      setPointsToWin: vi.fn()
     }));
     vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
       onNextButtonClick: vi.fn(),

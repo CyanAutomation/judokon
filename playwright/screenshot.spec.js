@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { waitForSettingsReady } from "./fixtures/waits.js";
+import { waitForSettingsReady, waitForBattleReady } from "./fixtures/waits.js";
 
 // Allow skipping screenshots via the SKIP_SCREENSHOTS environment variable
 const runScreenshots = process.env.SKIP_SCREENSHOTS !== "true";
@@ -65,6 +65,8 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
 
   test("@battleJudoka-narrow screenshot", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
+    await page.locator("#round-select-1").click();
+    await waitForBattleReady(page);
     await page.setViewportSize({ width: 280, height: 800 });
     await expect(page).toHaveScreenshot("battleJudoka-narrow.png", {
       mask: [page.locator("#battle-state-progress")]

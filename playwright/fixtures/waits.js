@@ -8,6 +8,7 @@ import path from "path";
  * @param {import('@playwright/test').Page} page
  */
 export async function waitForBattleReady(page) {
+  await page.waitForFunction(() => window.battleReadyPromise);
   await page.evaluate(() => window.battleReadyPromise);
 }
 

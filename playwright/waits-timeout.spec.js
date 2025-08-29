@@ -6,6 +6,7 @@ test("waitForBattleState rejects when state isn't reached", async ({ page }) => 
     window.onStateTransition = () => new Promise(() => {});
   });
   await page.goto("/src/pages/battleJudoka.html");
+  await page.locator("#round-select-1").click();
   await waitForBattleReady(page);
   const targetState = "neverAppears";
   await expect(waitForBattleState(page, targetState, 100)).rejects.toThrow(
