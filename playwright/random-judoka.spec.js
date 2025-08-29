@@ -12,6 +12,11 @@ test.describe("View Judoka screen", () => {
     await expect(page.getByTestId("draw-button")).toBeVisible();
   });
 
+  test("classic battle link navigates", async ({ page }) => {
+    await page.getByTestId(NAV_CLASSIC_BATTLE).click();
+    await expect(page).toHaveURL(/battleJudoka\.html/);
+  });
+
   test("draw button accessible name constant", async ({ page }) => {
     const btn = page.getByTestId("draw-button");
     await expect(btn).toHaveText(/draw card/i);

@@ -25,6 +25,11 @@ test.describe("Browse Judoka screen", () => {
     await expect(right).toBeVisible();
   });
 
+  test("classic battle link navigates", async ({ page }) => {
+    await page.getByTestId(NAV_CLASSIC_BATTLE).click();
+    await expect(page).toHaveURL(/battleJudoka\.html/);
+  });
+
   test("filter panel toggles", async ({ page }) => {
     const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
     const panel = page.getByRole("region");
