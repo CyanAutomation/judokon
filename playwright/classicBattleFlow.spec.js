@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { waitForBattleReady, waitForSettingsReady } from "./fixtures/waits.js";
+import { waitForBattleReady, waitForSettingsReady, waitForBattleState } from "./fixtures/waits.js";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 // battleTestUtils resets engine state and manipulates timer for scenarios
@@ -42,6 +42,11 @@ test.describe("Classic battle flow", () => {
     // via snackbar after auto-select, rather than a "Time's up!" banner.
     // Assert the countdown appears to confirm expiration + auto-pick.
     await expect(page.locator(".snackbar")).toHaveText(/Next round in: \d+s/, { timeout: 35000 });
+
+    // Additional assertions: machine proceeds without stalling and stat buttons re-enable.
+    await waitForBattleState(page, "cooldown", 5000);
+    await waitForBattleState(page, "waitingForPlayerAction", 10000);
+    await expect(page.locator("#stat-buttons button").first()).toBeEnabled({ timeout: 5000 });
   });
 
   test("tie message appears on equal stats", async ({ page }) => {
