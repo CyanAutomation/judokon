@@ -11,7 +11,6 @@ vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
 }));
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
   clearMessage: vi.fn(),
-  startCountdown: vi.fn(),
   showMessage: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({

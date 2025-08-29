@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // Mocks for UI modules invoked via uiService listeners
 const clearMessage = vi.fn();
 const showMessage = vi.fn();
-const startCountdown = vi.fn((_, cb) => cb());
 const updateDebugPanel = vi.fn();
 
 describe("classic battle orchestrator UI events", () => {
@@ -14,12 +13,10 @@ describe("classic battle orchestrator UI events", () => {
     delete window.__classicBattlePrevState;
     clearMessage.mockClear();
     showMessage.mockClear();
-    startCountdown.mockClear();
     updateDebugPanel.mockClear();
     vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
       clearMessage,
-      showMessage,
-      startCountdown
+      showMessage
     }));
     vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
       updateDebugPanel
