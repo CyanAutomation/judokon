@@ -359,7 +359,7 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
   // Reset any leftover ready state so each cooldown runs through the timer
   // path even after an auto-advance.
   if (btn) {
-    btn.disabled = true;
+    btn.disabled = false;
     delete btn.dataset.nextReady;
   }
 
