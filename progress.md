@@ -221,11 +221,12 @@
   - Stat comparison renders in `#round-result` via `showStatComparison()` (mocking reduced motion for synchronous behavior).
 
 ## Milestone 10 — Round Flow: Card Drawing
+
 - **In Progress:** Implementing the initial card draw logic.
 - Plan:
-    - Read `src/helpers/classicBattle/bootstrap.js` and `src/helpers/randomCard.js`.
-    - Modify `bootstrap.js` to draw player and opponent cards at the start of a round.
-    - Render the player card immediately.
-    - Render the opponent card in an obscured state.
- - Update: The repository already implements the draw flow in `src/helpers/classicBattle/cardSelection.js` (`drawCards()` uses `generateRandomCard()` for the player and renders an obscured opponent placeholder). I added an auto-invoke in `bootstrap.js` to call `setupClassicBattlePage()` on DOM ready so the page initializes when loaded.
- - Status: Verified-by-inspection; runtime tests still pending. Next: run unit tests and a small DOM smoke test to assert `#player-card` and `#opponent-card` are populated on round start.
+  - Read `src/helpers/classicBattle/bootstrap.js` and `src/helpers/randomCard.js`.
+  - Modify `bootstrap.js` to draw player and opponent cards at the start of a round.
+  - Render the player card immediately.
+  - Render the opponent card in an obscured state.
+- Update: The repository already implements the draw flow in `src/helpers/classicBattle/cardSelection.js` (`drawCards()` uses `generateRandomCard()` for the player and renders an obscured opponent placeholder). I added an auto-invoke in `bootstrap.js` to call `setupClassicBattlePage()` on DOM ready so the page initializes when loaded.
+- Status: Verified-by-inspection; runtime tests still pending. Next: run unit tests and a small DOM smoke test to assert `#player-card` and `#opponent-card` are populated on round start.
