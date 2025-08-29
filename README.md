@@ -119,6 +119,20 @@ accessing `settings.featureFlags` directly.
 
 > `navigationItems.json` and `gameModes.json` must be present on the server; otherwise, the game loads built-in fallback data.
 
+## 🔎 Using the Vector RAG System
+
+Before scanning the repo for answers, call [`queryRag`](./src/helpers/queryRag.js)
+with a natural-language question to pull relevant context from the embeddings:
+
+```javascript
+import queryRag from "./src/helpers/queryRag.js";
+
+const matches = await queryRag("How does the battle engine work?");
+```
+
+Check [example vector queries](design/agentWorkflows/exampleVectorQueries.md)
+for more usage patterns.
+
 ## Vector Search Helpers
 
 Utilities for working with the embedding database are centralized in
