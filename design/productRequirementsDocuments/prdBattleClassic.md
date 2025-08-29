@@ -191,6 +191,56 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ---
 
+## Contracts
+
+This section lists small, implementer-facing contracts to reduce ambiguity between design and code.
+
+- DOM contract (required elements & attributes)
+  - `#round-message` — role="status", `aria-live="polite"`. Shows per-round messages (snackbars may duplicate for animation, but this must be the authoritative accessible region).
+  - `#next-round-timer` — `aria-hidden="true"` when inactive; updated by scoreboard/timer facade while active.
+  - `#round-counter` — visible counter showing current round number (readable by screen readers).
+  - `#score-display` — shows player/opponent score values; each score element has an accessible label (e.g., `aria-label="Player score: 3"`).
+  - `#player-card`, `#opponent-card` — contain proper `alt` text on images and `aria-describedby` for stat labels.
+  - `#stat-buttons` — container for stat buttons; each button: `role="button"`, `tabindex="0"`, `data-stat-id="<statName>"` and a clear visible focus state.
+  - `#next-button`, `#quit-match-button`, `#stat-help` — actionable controls with `aria-disabled` used while inactive.
+
+- API contract (scoreboard / timer / page init)
+  - `setupScoreboard` expected surface:
+    - `startCountdown(durationMs, { onTick(msLeft), onComplete(), id? }) -> { cancel() }`
+    - `pause()` / `resume()` for global timer control
+    - `updateRoundCounter(n)` / `updateScore({ player, opponent })` / `showMessage(keyOrText)`
+  - Timer facade: pause on visibility change and expose `isPaused()` for assertions in tests.
+  - `classicBattle.init({ rootEl, scoreboardFacade, pointsToWin, featureFlags }) -> testAPI` where `testAPI` exposes deterministic hooks (seed injection, fast-forward, await promises listed in Observability).
+
+- Storage keys and semantics
+  - `battle.pointsToWin` — persisted preferred win target (integer). Fallback to session storage when `localStorage` is unavailable.
+  - `battle.helpDismissed` — boolean: whether `#stat-help` auto-open has been dismissed for this device/user.
+  - `battle.testRandomSeed` — optional test-only key to inject a deterministic RNG seed (only used when running with test flags enabled).
+
+  ## Feature flags & defaults
+
+  List of feature flags and their intended defaults for Classic Battle. Implementations should read these from the global feature-flag service or `src/config/battleDefaults.js` when available.
+
+  - `FF_AUTO_SELECT` — boolean, default: `true`. When enabled, the system auto-selects a random stat on timer expiry.
+  - `battleDebugPanel` — boolean, default: `false`. When enabled, show debug panel above the cards with copy/export controls.
+  - `FF_TEST_MODE` — boolean, default: `false` (test-only). When enabled, allow `battle.testRandomSeed` and fast AI delays for deterministic tests.
+
+  Storage keys referenced above should be treated as optional overrides in test and debug environments only.
+
+  ## Acceptance Criteria & Test Mapping
+
+  This section provides concise acceptance criteria mapped to testable scenarios (Playwright / Vitest). Use these as the canonical checklist for QA and automation.
+
+  - Happy path: Start match → player picks stat within 30s → opponent reveal → score updates → cooldown → Next → repeat until win target reached. (Test: `playwright/classic-battle/happy-path.spec.js`)
+  - Auto-select on timeout: With `FF_AUTO_SELECT=true`, allow timer expiry to auto-pick a stat, show `Time's up! Auto-selecting <stat>`, proceed to resolve. (Test: `playwright/classic-battle/auto-select.spec.js`)
+  - Race: Simultaneous user click and auto-select fire; ensure only one selection is processed, UI shows a single `You Picked` or `Auto-selecting` message, and score resolves once. (Test: `vitest/classic-battle/race.spec.js`)
+  - Timer drift: Simulate a clock jump >2s; scoreboard shows "Waiting..." and restarts countdown correctly. (Test: `vitest/classic-battle/timer-drift.spec.js`)
+  - Quit flow: Click `#quit-match-button` → confirm → match ends and recorded as player loss; final modal appears. (Test: `playwright/classic-battle/quit.spec.js`)
+  - 25-round draw: Play 25 rounds with tied or alternating wins where neither player reaches the selected win target; match ends in draw UI. (Test: `playwright/classic-battle/25-round-draw.spec.js`)
+
+  Each test should use the `testAPI` (when available) to inject deterministic RNG and fast-forward timers where appropriate. Tests must assert ARIA attributes and accessible regions for messages and timer updates.
+
+
 ## Tasks
 
 - [x] 1.0 Implement Classic Battle Match Flow
