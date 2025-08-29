@@ -49,6 +49,7 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 | **P2**   | Auto-hide on mouseout       | Ensures intuitive interaction flow.                                       |
 | **P2**   | Touch interaction support   | Tap shows tooltip; second tap outside hides; optional long-press delay on mobile. |
 | **P2**   | JSON load error fallback    | Prevents UI issues if file loading fails.                                 |
+| **P2**   | Programmatic API            | Expose `openTooltip(id)` / `closeTooltip(id)` for manual control.         |
 | **P3**   | Keyboard focus parity       | Focus triggers and dismisses tooltips like hover.                         |
 | **P3**   | Settings (delay, animation) | Optional dev configurability for UX tuning.                               |
 
@@ -66,6 +67,7 @@ Currently, JU-DO-KON! has no way of surfacing explanatory text in the UI without
 - Tooltip is accessible via keyboard and screen reader (ARIA labels, semantic roles), mirroring hover behavior.
 - Automated tests verify hover, tap, and keyboard navigation triggers.
 - If `tooltips.json` fails to load, tooltips are suppressed and an error is logged once.
+- A tooltip can be opened programmatically and suppressed after one dismissal per storage key.
 
 ---
 
@@ -161,10 +163,11 @@ To ensure tooltips are consistently helpful and aligned with JU-DO-KON!’s tone
   - [x] 5.2 Log error only once
   - [x] 5.3 Avoid using `title=` attribute
   - [x] 5.4 Ensure tooltip is screen-reader compatible
-- [ ] 5.5 Validate tooltip accessibility for screen readers and mobile/touch (manual and automated checks)
-- [ ] 5.6 Add unit and Playwright UI tests to verify tooltip triggers, content, and dismissal
-- [ ] 5.7 Ensure all required UI elements (stat cards, country flags, weight indicators, navigation links, help icons) have tooltips per guidelines
-- [ ] 5.8 Create Playwright test cases for touch (tap/long-press) and keyboard tooltip triggers
+  - [ ] 5.5 Validate tooltip accessibility for screen readers and mobile/touch (manual and automated checks)
+  - [ ] 5.6 Add unit and Playwright UI tests to verify tooltip triggers, content, and dismissal
+  - [ ] 5.7 Ensure all required UI elements (stat cards, country flags, weight indicators, navigation links, help icons) have tooltips per guidelines
+  - [ ] 5.8 Document storage key naming convention and expose helper for checking whether a tooltip has been viewed
+- [ ] 5.9 Create Playwright test cases for touch (tap/long-press) and keyboard tooltip triggers
 
 - [ ] 6.0 (Optional) Settings and Configuration
 
