@@ -11,6 +11,7 @@
     "start": "node scripts/playwrightServer.js",
     "test": "vitest",
     "test:screenshot": "playwright test",
+    "test:scripts": "vitest run -c vitest.scripts.config.js",
     "lint": "npx prettier . --check && npx eslint .",
     "check:contrast": "node scripts/runPa11y.js",
     "prepare": "husky install",

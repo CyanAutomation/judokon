@@ -33,6 +33,7 @@ export default defineConfig({
       ".cache/**",
       "tests/e2e/**",
       "tests/playwright/**",
+      "tests/scripts/**",
       "playwright/**",
       "scripts/**/*.spec.*"
     ],
