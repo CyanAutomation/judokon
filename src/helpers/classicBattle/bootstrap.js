@@ -13,18 +13,18 @@ import createClassicBattleDebugAPI from "./setupTestHelpers.js";
  * Returns a debug API useful for tests.
  */
 export async function setupClassicBattlePage() {
-	const view = new ClassicBattleView({ waitForOpponentCard });
-	const controller = new ClassicBattleController({
-		waitForOpponentCard: view.waitForOpponentCard,
-	});
-	view.bindController(controller);
-	await controller.init();
-	await view.init();
-	const debugApi = createClassicBattleDebugAPI(view);
-	if (typeof process !== "undefined" && process.env && process.env.VITEST === "true") {
-		try {
-			window.__classicbattledebugapi = debugApi;
-		} catch {}
-	}
-	return debugApi;
+  const view = new ClassicBattleView({ waitForOpponentCard });
+  const controller = new ClassicBattleController({
+    waitForOpponentCard: view.waitForOpponentCard
+  });
+  view.bindController(controller);
+  await controller.init();
+  await view.init();
+  const debugApi = createClassicBattleDebugAPI(view);
+  if (typeof process !== "undefined" && process.env && process.env.VITEST === "true") {
+    try {
+      window.__classicbattledebugapi = debugApi;
+    } catch {}
+  }
+  return debugApi;
 }

@@ -32,14 +32,14 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
       await import("../../../src/helpers/classicBattle/orchestrator.js")
     ).getBattleStateMachine();
 
-  // Simulate match start then go to waitingForPlayerAction
-  await machine.dispatch("matchStart");
-  await machine.dispatch("ready"); // to cooldown
-  await machine.dispatch("ready"); // to roundStart
-  await machine.dispatch("cardsRevealed"); // to waitingForPlayerAction
+    // Simulate match start then go to waitingForPlayerAction
+    await machine.dispatch("matchStart");
+    await machine.dispatch("ready"); // to cooldown
+    await machine.dispatch("ready"); // to roundStart
+    await machine.dispatch("cardsRevealed"); // to waitingForPlayerAction
 
-  // Trigger timeout: machine goes to roundDecision then interruptRound(noSelection)
-  await machine.dispatch("timeout");
+    // Trigger timeout: machine goes to roundDecision then interruptRound(noSelection)
+    await machine.dispatch("timeout");
     // Wait until cooldown is reached
     await window.awaitBattleState?.("cooldown", 5000);
 
