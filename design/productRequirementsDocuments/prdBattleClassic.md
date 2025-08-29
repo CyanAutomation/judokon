@@ -35,8 +35,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - ≥70% of new players complete a Classic Battle within their first session.
 - Give new players an approachable mode to learn how judoka stats impact outcomes.
 - Reduce frustration by providing immediate, clear feedback on round results.
-- Ensure round result messages, stat selection timer, and score are surfaced via the Scoreboard (see prdBattleScoreboard.md) for clarity and accessibility. The "Select your move" prompt and the countdown to the next round are shown in snackbars that update their text each second.
- - Ensure round result messages, stat selection timer, and score are surfaced via the Scoreboard (see prdBattleScoreboard.md) for clarity and accessibility. The "Select your move" prompt and the countdown to the next round are shown in snackbars that update their text each second. Add hidden stat descriptions referenced by `aria-describedby` on each stat button so screen readers get a short hint without opening a tooltip.
+- Ensure round result messages (`#round-message`), stat selection timer (`#next-round-timer`), and score (`#score-display`) are surfaced via the Scoreboard (see prdBattleScoreboard.md) for clarity and accessibility. The "Select your move" prompt and the countdown to the next round are shown in snackbars that update their text each second. Add hidden stat descriptions referenced by `aria-describedby` on each stat button so screen readers get a short hint without opening a tooltip.
 
 ---
 
@@ -76,17 +75,17 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
 - Round selection modal must use shared `Modal` and `Button` components for consistent accessibility.
 - Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices.
-- Stat selection timer (30s) must be displayed in the Scoreboard; if timer expires, a random stat is auto-selected. This auto-select behavior is controlled by a feature flag `autoSelect` (enabled by default). Timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleScoreboard.md).
+- Stat selection timer (30s) must be displayed in `#next-round-timer`; if the timer expires, a random stat is auto-selected. This auto-select behavior is controlled by a feature flag `autoSelect` (enabled by default). The timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleScoreboard.md).
 - Stat selection timer halts immediately once the player picks a stat.
 - Detect timer drift by comparing engine state with real time; if drift exceeds 2s, display "Waiting…" and restart the countdown.
 - Opponent stat selection runs entirely on the client. After the player picks a stat (or the timer auto-chooses), the opponent's choice is revealed after a short artificial delay to mimic turn-taking.
-- During this delay, the Scoreboard displays "Opponent is choosing..." to reinforce turn flow.
+- During this delay, the Scoreboard displays "Opponent is choosing..." in `#round-message` to reinforce turn flow.
 - The cooldown timer between rounds begins only after round results are shown in the Scoreboard and is displayed using one persistent snackbar that updates its text each second.
 - The debug panel is available when the `battleDebugPanel` feature flag is enabled, appears above the player and opponent cards, and includes a copy button for exporting its text.
 
 ### Round Data Fallback
 
-- If `battleRounds.json` fails to load, the game falls back to default round settings and surfaces an error message in the Scoreboard.
+- If `battleRounds.json` fails to load, the game falls back to default round settings and surfaces an error message in `#round-message`.
 - **QA:** Temporarily block `battleRounds.json` to confirm default rounds appear and the error message is displayed.
 
 
@@ -97,7 +96,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 | Priority | Feature                 | Description                                                                                                                                                                      |
 | -------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **P1**   | Random Card Draw        | Draw one random card per player each round; the opponent card must differ from the player's.                                                                                     |
-| **P1**   | Stat Selection Timer    | Player selects stat within 30 seconds; otherwise, random stat is chosen. Auto-select is controlled by Random Stat Mode (`FF_AUTO_SELECT`), enabled by default. Timer is displayed in the Scoreboard and pauses/resumes on tab inactivity. |
+| **P1**   | Stat Selection Timer    | Player selects stat within 30 seconds; otherwise, random stat is chosen. Auto-select is controlled by Random Stat Mode (`FF_AUTO_SELECT`), enabled by default. Timer is displayed in `#next-round-timer` and pauses/resumes on tab inactivity. |
 | **P1**   | Scoring                 | Increase score by one for each round win.                                                                                                                                        |
 | **P1**   | Match End Condition     | End match when either player reaches a user-selected win target of 5, 10, or 15 points (default 10) or after 25 rounds.                                                                                                                                       |
 | **P2**   | Tie Handling            | Show tie message; round ends without score change; continue to next round.                                                                                                       |
@@ -109,7 +108,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
  - Behavior on tie rounds: round ends with a message explaining the tie and an option to start the next round via the **Next** button.
 - Match start conditions: both players begin with a score of zero; player goes first by drawing their card.
-  - Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card. **The timer is displayed in the Scoreboard and the prompt appears in a snackbar.**
+  - Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card. **The timer is displayed in `#next-round-timer` and the prompt appears in a snackbar.**
 - The opponent's card must always differ from the player's card for each round.
 - **Default:** 30-second timer is fixed (not adjustable by the player at launch), but can be reviewed for future difficulty settings.
 
@@ -119,11 +118,11 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 - Cards are revealed in the correct sequence each round.
 - The opponent card displays a placeholder ("Mystery Judoka") until the player selects a stat ([prdMysteryCard.md](prdMysteryCard.md)).
-- Player can select a stat within 30 seconds; if not, the system auto-selects a random stat automatically. **Timer is surfaced in the Scoreboard, and the "Select your move" prompt appears in a snackbar.**
+ - Player can select a stat within 30 seconds; if not, the system auto-selects a random stat automatically. **Timer is surfaced in `#next-round-timer`, and the "Select your move" prompt appears in a snackbar.**
 - Stat-selection timer stops the moment a stat is chosen.
 - "Time's up! Auto-selecting <stat>" appears only if no stat was chosen before the timer expires.
 - After selection, the correct comparison is made, and the score updates based on round outcome.
-- After the player selects a stat, the Scoreboard shows "Opponent is choosing..." until the opponent's stat is revealed.
+ - After the player selects a stat, the Scoreboard shows "Opponent is choosing..." in `#round-message` until the opponent's stat is revealed.
 - If the selected stats are equal, a tie message displays and the round ends.
 - After round results, `computeNextRoundCooldown` and `createNextRoundSnackbarRenderer` run a 3s countdown via snackbar (`Next round in: Xs`). `computeNextRoundCooldown` enforces a minimum 1 s countdown even in test mode. The **Next** button activates only after `handleNextRoundExpiration` completes the countdown. Reference [timerService.js](../../src/helpers/classicBattle/timerService.js) for exact durations to keep design and code aligned.
 - After the match ends, a modal appears showing the final result and score with **Quit Match** and **Next Match** buttons; **Quit Match** exits to the main menu and **Next Match** starts a new match.
@@ -133,7 +132,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Animation flow: transitions between card reveal, stat selection, and result screens complete smoothly without stalling.
 - Stat buttons reset between rounds so no previous selection remains highlighted. The `battle.css` rule `#stat-buttons button { -webkit-tap-highlight-color: transparent; }` combined with a reflow ensures Safari clears the red touch overlay.
 - If the Judoka dataset fails to load, an error message appears with option to reload.
-- **All Scoreboard content (messages, timer, score) must meet accessibility and responsiveness requirements as described in prdBattleScoreboard.md.**
+- **All Scoreboard content (`#round-message`, `#next-round-timer`, `#score-display`, `#round-counter`) must meet accessibility and responsiveness requirements as described in prdBattleScoreboard.md.**
 - Roll back the match to the last completed round when the player navigates away mid-match.
 - Roll back the match to the last completed round and display an error message when an unexpected error occurs.
 
@@ -141,8 +140,8 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ## Edge Cases / Failure States
 
-- **Judoka or Gokyo dataset fails to load:** error message surfaces in the Scoreboard and an error dialog offers a "Retry" button to reload data or the page.
-- **Player does not make a stat selection within 30 seconds:** system randomly selects a stat automatically. **Scoreboard updates the timer, and the snackbar prompt informs the player.**
+- **Judoka or Gokyo dataset fails to load:** error message surfaces in `#round-message` and an error dialog offers a "Retry" button to reload data or the page.
+- **Player does not make a stat selection within 30 seconds:** system randomly selects a stat automatically. **Scoreboard updates `#next-round-timer`, and the snackbar prompt informs the player.**
 - **AI fails to select a stat (if difficulty logic implemented):** fallback to random stat selection.
 - **Round selection tooltips fail to initialize:** modal opens without tooltips and the match proceeds; error is logged.
 - **Player navigates away mid-match:** roll back to the last completed round when the player returns.
@@ -172,14 +171,14 @@ This feedback highlights why Classic Battle is needed now: new players currently
     attribute and auto-opens on first visit using the storage helper to remember the
     dismissal.
   - Tooltips on stat names, country flags, weight indicators, and navigation icons provide accessible explanations.
-  - The Scoreboard includes a round counter and a field showing the player's selected stat for the current round.
+   - The Scoreboard includes a round counter (`#round-counter`) and a field showing the player's selected stat for the current round.
   - Optional keyboard shortcuts: When `statHotkeys` feature flag is enabled, allow number keys 1–5 to select the corresponding stat button (left→right order) for power users and tests. Disabled by default.
   - **Accessibility:**
   - Minimum text contrast ratio: ≥4.5:1 (per WCAG).
   - Minimum touch target size: ≥44px. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) for the full rule.
   - Support keyboard navigation for stat selection, the **Next** button (for round progression and timer skipping), and quit confirmation.
   - Provide alt text for cards and labels readable by screen readers.
-  - **All Scoreboard content must be accessible and responsive as described in prdBattleScoreboard.md.**
+   - **All Scoreboard content (`#round-message`, `#next-round-timer`, `#score-display`, `#round-counter`) must be accessible and responsive as described in prdBattleScoreboard.md.**
 
 ---
 
@@ -189,7 +188,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - Only judoka with `isHidden` set to `false` are eligible for battle.
 - Uses the shared random card draw module (`generateRandomCard`) as detailed in [prdDrawRandomCard.md](prdDrawRandomCard.md) (see `src/helpers/randomCard.js`).
 - Uses the Mystery Card placeholder outlined in [prdMysteryCard.md](prdMysteryCard.md), which relies on the `useObscuredStats` flag added to `renderJudokaCard()`.
-- **Relies on Scoreboard (see prdBattleScoreboard.md) for all round messages, timer, and score display.**
+  - **Relies on Scoreboard (see prdBattleScoreboard.md) for all round messages (`#round-message`), timer (`#next-round-timer`), round counter (`#round-counter`), and score display (`#score-display`).**
 
 ---
 
@@ -297,7 +296,7 @@ This section lists small, implementer-facing contracts to reduce ambiguity betwe
 
 - [x] 1.0 Implement Classic Battle Match Flow
 - [x] 1.1 Create round loop: random card draw, stat selection, comparison
-  - [x] 1.2 Implement 30-second stat selection timer with auto-selection fallback (displayed in Scoreboard)
+   - [x] 1.2 Implement 30-second stat selection timer with auto-selection fallback (displayed in `#next-round-timer`)
   - [x] 1.3 Handle scoring updates on win, loss, and tie
   - [x] 1.4 Add "Next" (round advance/timer skip) and "Quit Match" buttons to controls
   - [x] 1.5 End match after the user-selected win target (5, 10, or 15 points; default 10) or 25 rounds
