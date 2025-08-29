@@ -210,3 +210,12 @@
   - Round select modal title uses `t('modal.roundSelect.title')`.
   - Quit modal title/description/buttons use `t('modal.quit.*')` keys.
 - Added small visibilitychange test: `tests/helpers/visibilityTimer.test.js` verifies `createCountdownTimer` pauses when `document.hidden` is true and resumes on visible.
+
+## Milestone 9 — Neutral opponent wait + UI surface test
+
+- Extracted a neutral DOM helper `src/helpers/opponentCardWait.js` exporting `waitForOpponentCard(timeoutMs?, observe?)`.
+- Updated Classic Battle bootstrap to import from the neutral helper: `src/helpers/classicBattle/bootstrap.js` now imports `../opponentCardWait.js`.
+- Preserved backward compatibility: `src/helpers/battleJudokaPage.js` now re-exports `waitForOpponentCard` from the neutral helper so existing mocks/tests continue to work.
+- Added UI assertion test `tests/helpers/classicBattle/outcomeVsComparison.test.js` to verify:
+  - Outcome text renders in `#round-message` via `showRoundOutcome()`.
+  - Stat comparison renders in `#round-result` via `showStatComparison()` (mocking reduced motion for synchronous behavior).

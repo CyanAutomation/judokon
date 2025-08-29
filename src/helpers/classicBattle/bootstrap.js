@@ -1,5 +1,5 @@
 import { onDomReady } from "../domReady.js";
-import { waitForOpponentCard } from "../battleJudokaPage.js";
+import { waitForOpponentCard } from "../opponentCardWait.js";
 import ClassicBattleController from "./controller.js";
 import ClassicBattleView from "./view.js";
 import "./promises.js";
