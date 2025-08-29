@@ -1,11 +1,11 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from "vitest";
 
 // Force synchronous stat comparison (no animation)
-vi.mock('../../../src/helpers/motionUtils.js', () => ({
+vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
 
-describe('Classic Battle — outcome vs comparison surfaces', () => {
+describe("Classic Battle — outcome vs comparison surfaces", () => {
   let ui;
   let scoreboard;
 
@@ -23,25 +23,24 @@ describe('Classic Battle — outcome vs comparison surfaces', () => {
         <div id="player-card"></div>
       </main>
     `;
-    scoreboard = await import('../../../src/helpers/setupScoreboard.js');
+    scoreboard = await import("../../../src/helpers/setupScoreboard.js");
     // Initialize scoreboard references against the header we just created
     scoreboard.setupScoreboard({});
-    ui = await import('../../../src/helpers/classicBattle/uiHelpers.js');
+    ui = await import("../../../src/helpers/classicBattle/uiHelpers.js");
   });
 
-  it('writes the outcome to #round-message and comparison to #round-result', () => {
-    const outcome = 'You win the round!';
+  it("writes the outcome to #round-message and comparison to #round-result", () => {
+    const outcome = "You win the round!";
     ui.showRoundOutcome(outcome);
 
     // Comparison uses a label derived from stat
     const store = { compareRaf: 0 };
-    ui.showStatComparison(store, 'power', 12, 8);
+    ui.showStatComparison(store, "power", 12, 8);
 
-    const messageEl = document.getElementById('round-message');
-    const compareEl = document.getElementById('round-result');
+    const messageEl = document.getElementById("round-message");
+    const compareEl = document.getElementById("round-result");
 
-    expect(messageEl?.textContent).toContain('You win the round!');
-    expect(compareEl?.textContent).toContain('Power – You: 12 Opponent: 8');
+    expect(messageEl?.textContent).toContain("You win the round!");
+    expect(compareEl?.textContent).toContain("Power – You: 12 Opponent: 8");
   });
 });
-
