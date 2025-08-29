@@ -54,6 +54,12 @@ Please follow these practices:
 
 AI contributors should follow a structured and predictable format when submitting contributions. These rules help humans and other agents review and trace AI-generated changes.
 
+Before scanning files for any question‑style prompt (for example, beginning with
+"Explain" or "How does"), run [`queryRag`](./src/helpers/queryRag.js) to collect
+relevant context from the embeddings. See
+[example vector queries](design/agentWorkflows/exampleVectorQueries.md#queryrag-helper)
+for deeper patterns.
+
 ### 🎯 Scope of Work
 
 AI agents are encouraged to contribute in areas such as:
