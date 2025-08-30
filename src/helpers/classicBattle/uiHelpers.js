@@ -19,7 +19,8 @@ import { toggleInspectorPanels } from "../cardUtils.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { syncScoreDisplay } from "./uiService.js";
-import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
+import { onBattleEvent } from "./battleEvents.js";
+import * as battleEvents from "./battleEvents.js";
 
 /**
  * Skip the inter-round cooldown when the corresponding feature flag is enabled.
@@ -35,7 +36,8 @@ export function skipRoundCooldownIfEnabled() {
   if (!isEnabled("skipRoundCooldown")) return false;
   const run = () => {
     try {
-      emitBattleEvent("countdownFinished");
+      // Emit via module namespace so spies observe the call
+      battleEvents.emitBattleEvent("countdownFinished");
     } catch {}
   };
   try {

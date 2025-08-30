@@ -146,6 +146,10 @@ export function updateTimerDebug(machineRef) {
  * @returns {Promise<void>} Resolves when setup completes.
  */
 export async function initClassicBattleOrchestrator(store, startRoundWrapper, opts = {}) {
+  // Ensure UI service listeners are bound before emitting any init events
+  try {
+    await import("./uiService.js");
+  } catch {}
   const { resetGame: resetGameOpt, startRound: startRoundOpt, onStateChange } = opts;
   const doResetGame = typeof resetGameOpt === "function" ? resetGameOpt : resetGameLocal;
   const doStartRound = typeof startRoundOpt === "function" ? startRoundOpt : startRoundLocal;

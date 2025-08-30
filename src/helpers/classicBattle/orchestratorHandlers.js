@@ -74,6 +74,15 @@ export async function waitingForMatchStartEnter(machine) {
   if (typeof doResetGame === "function") doResetGame();
   emitBattleEvent("scoreboardClearMessage");
   emitBattleEvent("debugPanelUpdate");
+  // Also directly invoke UI side-effects to guarantee initialization in tests/runtime
+  try {
+    const scoreboard = await import("../setupScoreboard.js");
+    scoreboard.clearMessage?.();
+  } catch {}
+  try {
+    const helpers = await import("./uiHelpers.js");
+    helpers.updateDebugPanel?.();
+  } catch {}
 }
 /**
  * onExit handler for `waitingForMatchStart` (no-op stub).

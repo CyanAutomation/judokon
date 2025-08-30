@@ -3,8 +3,9 @@ import * as scoreboard from "../setupScoreboard.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { navigateToHome } from "../navUtils.js";
-import { updateDebugPanel, skipRoundCooldownIfEnabled } from "./uiHelpers.js";
-import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
+import * as uiHelpers from "./uiHelpers.js";
+import { onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
+import * as battleEvents from "./battleEvents.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { setSkipHandler } from "./skipHandler.js";
@@ -124,82 +125,8 @@ export function showMatchSummaryModal(result, onNext) {
 }
 
 // --- Event bindings ---
-// Bind once per worker to avoid accumulating listeners during repeated test imports.
-try {
-  const FLAG = "__classicBattleUIServiceBound";
-  if (!globalThis[FLAG]) {
-    globalThis[FLAG] = true;
-    // Register listeners exactly once
-    onBattleEvent("scoreboardClearMessage", () => {
-      try {
-        scoreboard.clearMessage();
-      } catch (err) {
-        console.error("Error clearing scoreboard message:", err);
-      }
-    });
-
-    onBattleEvent("scoreboardShowMessage", (e) => {
-      try {
-        scoreboard.showMessage(e.detail);
-      } catch (err) {
-        console.error("Error in scoreboard.showMessage:", err);
-      }
-    });
-
-    onBattleEvent("debugPanelUpdate", () => {
-      try {
-        updateDebugPanel();
-      } catch (err) {
-        console.error("Error updating debug panel:", err);
-      }
-    });
-
-    onBattleEvent("countdownStart", (e) => {
-      if (skipRoundCooldownIfEnabled()) return;
-      const { duration } = e.detail || {};
-      if (typeof duration !== "number") return;
-      try {
-        if (activeCountdown) {
-          try {
-            activeCountdown.timer.off("expired", activeCountdown.onExpired);
-          } catch {}
-          try {
-            activeCountdown.timer.stop();
-          } catch {}
-          activeCountdown = null;
-        }
-
-        const timer = createRoundTimer();
-        const onExpired = () => {
-          setSkipHandler(null);
-          activeCountdown = null;
-          emitBattleEvent("countdownFinished");
-        };
-
-        activeCountdown = { timer, onExpired };
-        attachCooldownRenderer(timer, duration);
-        timer.on("expired", onExpired);
-        setSkipHandler(() => {
-          try {
-            timer.off("expired", onExpired);
-          } catch {}
-          try {
-            timer.stop();
-          } catch {}
-          activeCountdown = null;
-        });
-        if (!activeCountdown) {
-          // A pending skip consumed the countdown before it began
-          return;
-        }
-        timer.start(duration);
-      } catch (err) {
-        console.error("Error in countdownStart event handler:", err);
-      }
-    });
-  }
-} catch {
-  // Fallback: bind without guard if global not available
+function bindUIServiceEventHandlers() {
+  // Register listeners exactly once per EventTarget instance
   onBattleEvent("scoreboardClearMessage", () => {
     try {
       scoreboard.clearMessage();
@@ -218,9 +145,66 @@ try {
 
   onBattleEvent("debugPanelUpdate", () => {
     try {
-      updateDebugPanel();
+      uiHelpers.updateDebugPanel?.();
     } catch (err) {
       console.error("Error updating debug panel:", err);
     }
   });
+
+  onBattleEvent("countdownStart", (e) => {
+    // If the skip flag is enabled, immediately finish the countdown
+    if (uiHelpers.skipRoundCooldownIfEnabled?.()) return;
+    const { duration } = e.detail || {};
+    if (typeof duration !== "number") return;
+    try {
+      if (activeCountdown) {
+        try {
+          activeCountdown.timer.off("expired", activeCountdown.onExpired);
+        } catch {}
+        try {
+          activeCountdown.timer.stop();
+        } catch {}
+        activeCountdown = null;
+      }
+
+      const timer = createRoundTimer();
+      const onExpired = () => {
+        setSkipHandler(null);
+        activeCountdown = null;
+        battleEvents.emitBattleEvent("countdownFinished");
+      };
+
+      activeCountdown = { timer, onExpired };
+      attachCooldownRenderer(timer, duration);
+      timer.on("expired", onExpired);
+      setSkipHandler(() => {
+        try {
+          timer.off("expired", onExpired);
+        } catch {}
+        try {
+          timer.stop();
+        } catch {}
+        activeCountdown = null;
+      });
+      if (!activeCountdown) {
+        // A pending skip consumed the countdown before it began
+        return;
+      }
+      timer.start(duration);
+    } catch (err) {
+      console.error("Error in countdownStart event handler:", err);
+    }
+  });
+}
+
+// Bind per EventTarget instance; if tests reset the bus, we rebind.
+try {
+  const KEY = "__classicBattleUIServiceBoundTarget";
+  const current = getBattleEventTarget();
+  if (globalThis[KEY] !== current) {
+    bindUIServiceEventHandlers();
+    globalThis[KEY] = current;
+  }
+} catch {
+  bindUIServiceEventHandlers();
 }
