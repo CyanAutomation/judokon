@@ -43,7 +43,9 @@ export async function setupUIBindings(view) {
   }
 
   await applyStatLabels().catch(() => {});
-  await initTooltips();
+  await initTooltips().catch((error) => {
+    console.debug("initTooltips failed", error);
+  });
   maybeShowStatHint();
 
   return statButtonControls;
