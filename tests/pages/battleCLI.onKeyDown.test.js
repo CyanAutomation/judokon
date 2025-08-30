@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 describe("battleCLI onKeyDown", () => {
-  let onKeyDown;
+  let onKeyDown, __test;
 
   beforeEach(async () => {
     window.__TEST__ = true;
-    ({ onKeyDown } = await import("../../src/pages/battleCLI.js"));
+    ({ onKeyDown, __test } = await import("../../src/pages/battleCLI.js"));
     document.body.innerHTML = `
       <div id="cli-shortcuts" hidden></div>
       <div id="snackbar-container"></div>
@@ -38,6 +38,22 @@ describe("battleCLI onKeyDown", () => {
     window.__getClassicBattleMachine = () => ({ dispatch });
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
     expect(dispatch).toHaveBeenCalledWith("interrupt", { reason: "quit" });
+  });
+
+  it("clears cooldown timers when quitting", () => {
+    const dispatch = vi.fn();
+    window.__getClassicBattleMachine = () => ({ dispatch });
+    const timer = setTimeout(() => {}, 1000);
+    const interval = setInterval(() => {}, 1000);
+    const spyTimeout = vi.spyOn(globalThis, "clearTimeout");
+    const spyInterval = vi.spyOn(globalThis, "clearInterval");
+    __test.setCooldownTimers(timer, interval);
+    onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
+    expect(spyTimeout).toHaveBeenCalledWith(timer);
+    expect(spyInterval).toHaveBeenCalledWith(interval);
+    expect(__test.getCooldownTimers()).toEqual({ cooldownTimer: null, cooldownInterval: null });
+    spyTimeout.mockRestore();
+    spyInterval.mockRestore();
   });
 
   it("dispatches statSelected in waitingForPlayerAction state", () => {

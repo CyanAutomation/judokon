@@ -24,6 +24,17 @@ let verboseEnabled = false;
 let cooldownTimer = null;
 let cooldownInterval = null;
 
+// Test hooks to access internal timer state
+export const __test = {
+  setCooldownTimers(timer, interval) {
+    cooldownTimer = timer;
+    cooldownInterval = interval;
+  },
+  getCooldownTimers() {
+    return { cooldownTimer, cooldownInterval };
+  }
+};
+
 function setRetroMode(enabled) {
   document.body.classList.toggle("retro", !!enabled);
 }
@@ -108,6 +119,8 @@ function getStatByIndex(index1Based) {
  *   toggle retro mode
  *   return true
  * if key is 'q':
+ *   clear cooldown timers
+ *   clear bottom line
  *   dispatch 'interrupt' on the machine
  *   return true
  * return false
@@ -123,6 +136,15 @@ export function handleGlobalKey(key) {
     return true;
   }
   if (key === "q") {
+    try {
+      if (cooldownTimer) clearTimeout(cooldownTimer);
+    } catch {}
+    try {
+      if (cooldownInterval) clearInterval(cooldownInterval);
+    } catch {}
+    cooldownTimer = null;
+    cooldownInterval = null;
+    clearBottomLine();
     try {
       const machine = window.__getClassicBattleMachine?.();
       if (machine) machine.dispatch("interrupt", { reason: "quit" });
