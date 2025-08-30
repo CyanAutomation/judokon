@@ -19,7 +19,10 @@ import {
   setFlag,
   featureFlagsEmitter
 } from "../helpers/featureFlags.js";
-import { skipRoundCooldownIfEnabled } from "../helpers/classicBattle/uiHelpers.js";
+import {
+  skipRoundCooldownIfEnabled,
+  updateBattleStateBadge
+} from "../helpers/classicBattle/uiHelpers.js";
 import { autoSelectStat } from "../helpers/classicBattle/autoSelectStat.js";
 import { setTestMode } from "../helpers/testModeUtils.js";
 import { wrap } from "../helpers/storage.js";
@@ -950,9 +953,25 @@ function installEventBindings() {
   onBattleEvent("matchOver", handleMatchOver);
   document.addEventListener("matchOver", handleMatchOver);
 
-  // Track state changes: start/stop countdown and append verbose log
+  /**
+   * Handle Classic Battle state transitions: manage timers, badge, and verbose log.
+   *
+   * @pseudocode
+   * on "battle:state" event:
+   *   extract { from, to } from event.detail
+   *   updateBattleStateBadge(to)
+   *   if to is "waitingForPlayerAction":
+   *     start selection countdown and focus stats
+   *   else:
+   *     stop selection countdown
+   *   if to is "roundOver":
+   *     show continue prompt and focus snackbar
+   *   if verboseEnabled:
+   *     append transition line to verbose log
+   */
   document.addEventListener("battle:state", (ev) => {
     const { from, to } = ev.detail || {};
+    updateBattleStateBadge(to);
     if (to === "waitingForPlayerAction") {
       startSelectionCountdown(30);
       byId("cli-stats")?.focus();
@@ -1013,6 +1032,7 @@ async function init() {
   } catch {}
   updateVerbose();
   updateStateBadgeVisibility();
+  updateBattleStateBadge(window.__classicBattleState || null);
   updateCliShortcutsVisibility();
   checkbox?.addEventListener("change", () => {
     setFlag("cliVerbose", !!checkbox.checked);
