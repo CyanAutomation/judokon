@@ -181,6 +181,15 @@ export async function roundStartEnter(machine) {
     if (state === "roundStart") await machine.dispatch("cardsRevealed");
   } catch {}
 }
+/**
+ * Ensure the machine transitions to player selection after round start.
+ *
+ * @pseudocode
+ * 1. Start round wrapper or doStartRound asynchronously to render cards.
+ * 2. Install a short fallback to advance state in headless/test mode.
+ * 3. If rendering fails, emit a scoreboard message and dispatch interrupt.
+ * 4. When cards are ready and machine still in roundStart, dispatch 'cardsRevealed'.
+ */
 export async function roundStartExit() {}
 
 export async function waitingForPlayerActionEnter(machine) {

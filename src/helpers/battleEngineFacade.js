@@ -45,6 +45,13 @@ export const setPointsToWin = (value) => battleEngine.setPointsToWin(value);
  * 1. Delegate the call to `battleEngine.getPointsToWin()` and return its result.
  */
 export const getPointsToWin = () => battleEngine.getPointsToWin();
+/**
+ * Stop any active battle timer and clear round callbacks.
+ *
+ * @pseudocode
+ * 1. Call the underlying engine to stop its timer immediately.
+ * 2. Ensure any scheduled callbacks are cancelled so no late transitions occur.
+ */
 export const stopTimer = () => battleEngine.stopTimer();
 /**
  * Starts a new round in the battle engine, initiating its timer and associated callbacks.
@@ -56,7 +63,19 @@ export const stopTimer = () => battleEngine.stopTimer();
  */
 export const startRound = (...args) => battleEngine.startRound(...args);
 export const startCoolDown = (...args) => battleEngine.startCoolDown(...args);
+/**
+ * Pause the current round timer.
+ *
+ * @pseudocode
+ * 1. Delegate pause to the engine which records remaining time and cancels ticks.
+ */
 export const pauseTimer = () => battleEngine.pauseTimer();
+/**
+ * Resume a previously paused round timer.
+ *
+ * @pseudocode
+ * 1. Delegate resume to the engine which restores remaining time and restarts ticks.
+ */
 export const resumeTimer = () => battleEngine.resumeTimer();
 /**
  * Handles the selection of a stat in the battle engine, comparing player and opponent stats

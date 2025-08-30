@@ -97,6 +97,19 @@ export function showSelectionPrompt() {
 }
 
 /**
+ * showRoundOutcome already has pseudocode above — placeholder stub for consistency.
+ * @pseudocode
+ * 1. Render the result across scoreboard and snackbar.
+ */
+
+// ...generated JSDoc stubs inserted below for exported symbols that lacked them
+/**
+ * @pseudocode
+ * 1. Ensure the round message element is cleared and prompt is shown.
+ */
+// (showSelectionPrompt already documented above)
+
+/**
  * Render the opponent card inside a container element.
  *
  * @pseudocode
