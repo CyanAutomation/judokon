@@ -48,6 +48,10 @@
     "battleStateBadge": {
       "enabled": false,
       "tooltipId": "settings.battleStateBadge"
+    },
+    "cliVerbose": {
+      "enabled": false,
+      "tooltipId": "settings.cliVerbose"
     }
   }
 }
