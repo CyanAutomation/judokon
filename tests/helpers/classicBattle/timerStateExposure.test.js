@@ -63,13 +63,11 @@ describe("classic battle timer state exposure", () => {
     vi.clearAllMocks();
   });
 
-  it("mirrors timer state on window and DOM", async () => {
+  it("mirrors timer state on window", async () => {
     await machine.dispatch("stateA");
     expect(window.__classicBattleTimerState).toEqual({ remaining: 30, paused: false });
     const el = document.getElementById("machine-timer");
-    expect(el).toBeTruthy();
-    expect(el.dataset.remaining).toBe("30");
-    expect(el.dataset.paused).toBe("false");
+    expect(el).toBeNull();
   });
 
   it("updates paused/resumed and remaining after transitions", async () => {
@@ -78,19 +76,13 @@ describe("classic battle timer state exposure", () => {
     timerState.paused = true;
     timerState.remaining = 25;
     await machine.dispatch("paused");
-    let el = document.getElementById("machine-timer");
     expect(window.__classicBattleTimerState.paused).toBe(true);
     expect(window.__classicBattleTimerState.remaining).toBe(25);
-    expect(el.dataset.paused).toBe("true");
-    expect(el.dataset.remaining).toBe("25");
 
     timerState.paused = false;
     timerState.remaining = 20;
     await machine.dispatch("resumed");
-    el = document.getElementById("machine-timer");
     expect(window.__classicBattleTimerState.paused).toBe(false);
     expect(window.__classicBattleTimerState.remaining).toBe(20);
-    expect(el.dataset.paused).toBe("false");
-    expect(el.dataset.remaining).toBe("20");
   });
 });

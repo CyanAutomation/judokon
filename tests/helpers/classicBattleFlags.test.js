@@ -62,7 +62,8 @@ describe("classicBattlePage feature flag updates", () => {
       showSnackbar: vi.fn(),
       updateSnackbar: vi.fn()
     }));
-    vi.doMock("../../src/helpers/tooltip.js", () => ({
+    vi.mock("../../src/helpers/tooltip.js", () => ({
+      __esModule: true,
       initTooltips: vi.fn().mockResolvedValue(() => {})
     }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({

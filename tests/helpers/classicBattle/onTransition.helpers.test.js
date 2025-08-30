@@ -58,8 +58,7 @@ describe("onTransition helpers", () => {
     await machine.dispatch("stateA");
     expect(window.__classicBattleState).toBe("stateA");
     const el = document.getElementById("machine-state");
-    expect(el).toBeTruthy();
-    expect(el.textContent).toBe("stateA");
+    expect(el).toBeNull();
     expect(window.__classicBattleTimerState).toEqual({ remaining: 30, paused: false });
   });
 });

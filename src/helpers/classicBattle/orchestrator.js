@@ -97,143 +97,12 @@ export function onStateTransition(targetState, timeoutMs = 10000) {
 }
 
 /**
- * Mirror the battle state to window and DOM.
- *
- * @pseudocode
- * 1. Sync state variables on `window` for diagnostics.
- * 2. Mirror current and previous state to `document.body.dataset`.
- * 3. Emit a `"battle:state"` event with `{ from, to }` details.
- * 4. Ensure a hidden `#machine-state` element reflects the state, prev, event and timestamp.
- * 5. Update `#battle-state-badge` text when present.
- *
- * @param {string|null} from - Previous state name.
- * @param {string} to - New state name.
- * @param {string|null} event - Event that triggered the transition.
- */
-function mirrorStateToDom(from, to, event) {
-  window.__classicBattleState = to;
-  if (from) window.__classicBattlePrevState = from;
-  if (event) window.__classicBattleLastEvent = event;
-  document.body.dataset.battleState = to;
-  document.body.dataset.prevBattleState = from || "";
-  try {
-    // Keep tests observable; muted during Vitest runs
-    if (!IS_VITEST)
-      console.warn(`[test] dataset.battleState set -> ${document.body.dataset.battleState}`);
-  } catch {}
-  document.dispatchEvent(new CustomEvent("battle:state", { detail: { from, to } }));
-  let el = document.getElementById("machine-state");
-  if (!el) {
-    el = document.createElement("div");
-    el.id = "machine-state";
-    el.style.display = "none";
-    document.body.appendChild(el);
-  }
-  el.textContent = to;
-  if (from) el.dataset.prev = from;
-  if (event) el.dataset.event = event;
-  el.dataset.ts = String(Date.now());
-  const badge = document.getElementById("battle-state-badge");
-  if (badge) badge.textContent = `State: ${to}`;
-}
-
-/**
- * Append a state transition entry to the debug log.
- *
- * @pseudocode
- * 1. Create a log entry with `{ from, to, event, ts }`.
- * 2. Push the entry to `window.__classicBattleStateLog`.
- * 3. Trim the log to the most recent 20 entries.
- *
- * @param {string|null} from - Previous state name.
- * @param {string} to - New state name.
- * @param {string|null} event - Event that triggered the transition.
- */
-function logStateTransition(from, to, event) {
-  const logEntry = { from: from || null, to, event: event || null, ts: Date.now() };
-  const log = Array.isArray(window.__classicBattleStateLog) ? window.__classicBattleStateLog : [];
-  log.push(logEntry);
-  while (log.length > 20) log.shift();
-  window.__classicBattleStateLog = log;
-}
-
-/**
- * Resolve any state waiters registered on `window` for the given state.
- *
- * @pseudocode
- * 1. Retrieve waiters for `to` from `window.__stateWaiters`.
- * 2. Clear the stored waiters array for that state.
- * 3. For each waiter, clear its timer (when present) and call `resolve(true)`.
- *
- * @param {string} to - State that has just been entered.
- */
-function resolveWindowWaiters(to) {
-  try {
-    const waiters = (window.__stateWaiters && window.__stateWaiters[to]) || [];
-    if (Array.isArray(waiters) && waiters.length) {
-      window.__stateWaiters[to] = [];
-      for (const w of waiters) {
-        try {
-          if (w && typeof w.resolve === "function") {
-            if (w.timer) clearTimeout(w.timer);
-            w.resolve(true);
-          }
-        } catch {}
-      }
-    }
-  } catch {}
-}
-
-/**
- * Mirror state transitions to window/DOM and resolve in-page waiters.
- *
- * @pseudocode
- * 1. Return early if not running in a browser environment.
- * 2. Call `mirrorStateToDom(from, to, event)`.
- * 3. Call `logStateTransition(from, to, event)`.
- * 4. Call `resolveWindowWaiters(to)`.
- *
- * @param {string|null} from
- * @param {string} to
- * @param {string|null} event
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export function updateDebugState(from, to, event) {
-  if (typeof window === "undefined" || typeof document === "undefined") return;
-  try {
-    mirrorStateToDom(from, to, event);
-    logStateTransition(from, to, event);
-    resolveWindowWaiters(to);
-  } catch {}
-}
-
-/**
  * Expose timer state for debugging when an engine exists.
  *
  * @pseudocode
  * 1. Return early when not in a browser or when no engine is present.
  * 2. Read timer state from the machine's engine.
  * 3. Mirror the timer state on `window.__classicBattleTimerState`.
- * 4. Ensure a hidden `#machine-timer` element exists and reflects the state.
  *
  * @param {import("./stateMachine.js").BattleStateMachine|null} machineRef - Current battle machine.
  * @returns {void}
@@ -243,18 +112,6 @@ export function updateTimerDebug(machineRef) {
   try {
     const timerState = machineRef.context.engine.getTimerState();
     window.__classicBattleTimerState = timerState;
-    if (typeof document !== "undefined") {
-      let timerEl = document.getElementById("machine-timer");
-      if (!timerEl) {
-        timerEl = document.createElement("div");
-        timerEl.id = "machine-timer";
-        timerEl.style.display = "none";
-        document.body.appendChild(timerEl);
-      }
-      timerEl.textContent = JSON.stringify(timerState);
-      timerEl.dataset.remaining = timerState.remaining;
-      timerEl.dataset.paused = timerState.paused;
-    }
   } catch {}
 }
 
@@ -263,14 +120,15 @@ export function updateTimerDebug(machineRef) {
  * defines its transition behavior, and exposes debugging utilities.
  *
  * @pseudocode
- * 1. Destructure `resetGame` and `startRound` from `opts`, falling back to local implementations if not provided.
+ * 1. Destructure `resetGame`, `startRound`, and `onStateChange` from `opts`, falling back to local implementations if not provided.
  * 2. Create a `context` object containing the `store`, resolved `doResetGame`, `doStartRound`, and `startRoundWrapper`.
  * 3. Define the `onEnter` object mapping state names to their respective handler functions.
  * 4. Define the `onTransition` function executed on every state change:
- *    a. Call `updateDebugState(from, to, event)`.
- *    b. Call `updateTimerDebug(machine)`.
- *    c. Emit a `"debugPanelUpdate"` battle event.
- *    d. Resolve any waiters queued for the new `to` state.
+ *    a. Call `onStateChange({ from, to, event })` when provided.
+ *    b. Emit a `"battleStateChange"` battle event with `{ from, to, event }`.
+ *    c. Call `updateTimerDebug(machine)`.
+ *    d. Emit a `"debugPanelUpdate"` battle event.
+ *    e. Resolve any waiters queued for the new `to` state.
  * 5. Create the battle state machine via `BattleStateMachine.create` and store it with `setMachine`.
  * 6. Expose a getter for the machine, wire visibility listeners, and handle timer drift and injected errors.
  * 7. Expose `onStateTransition` and `getBattleStateSnapshot` on `window` for debugging.
@@ -281,10 +139,12 @@ export function updateTimerDebug(machineRef) {
  * @param {object} [opts] - Optional overrides.
  * @param {Function} [opts.resetGame] - Custom reset handler.
  * @param {Function} [opts.startRound] - Custom round start handler.
+ * @param {(args: {from: string|null, to: string, event: string|null}) => void} [opts.onStateChange]
+ *   Optional callback invoked on every state change.
  * @returns {Promise<void>} Resolves when setup completes.
  */
 export async function initClassicBattleOrchestrator(store, startRoundWrapper, opts = {}) {
-  const { resetGame: resetGameOpt, startRound: startRoundOpt } = opts;
+  const { resetGame: resetGameOpt, startRound: startRoundOpt, onStateChange } = opts;
   const doResetGame = typeof resetGameOpt === "function" ? resetGameOpt : resetGameLocal;
   const doStartRound = typeof startRoundOpt === "function" ? startRoundOpt : startRoundLocal;
   const context = { store, doResetGame, doStartRound, startRoundWrapper };
@@ -304,7 +164,31 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   };
 
   const onTransition = async ({ from, to, event }) => {
-    updateDebugState(from, to, event);
+    onStateChange?.({ from, to, event });
+    emitBattleEvent("battleStateChange", { from, to, event });
+    try {
+      if (typeof window !== "undefined") {
+        window.__classicBattleState = to;
+        if (from) window.__classicBattlePrevState = from;
+        if (event) window.__classicBattleLastEvent = event;
+        const log = Array.isArray(window.__classicBattleStateLog)
+          ? window.__classicBattleStateLog
+          : [];
+        log.push({ from: from || null, to, event: event || null, ts: Date.now() });
+        while (log.length > 20) log.shift();
+        window.__classicBattleStateLog = log;
+        const winWaiters = (window.__stateWaiters && window.__stateWaiters[to]) || [];
+        if (Array.isArray(winWaiters) && winWaiters.length) {
+          window.__stateWaiters[to] = [];
+          for (const w of winWaiters) {
+            try {
+              if (w.timer) clearTimeout(w.timer);
+              w.resolve(true);
+            } catch {}
+          }
+        }
+      }
+    } catch {}
     updateTimerDebug(machine);
     emitBattleEvent("debugPanelUpdate");
     const waiters = stateWaiters.get(to);

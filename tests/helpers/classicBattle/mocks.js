@@ -75,7 +75,8 @@ export function mockShowSnackbar() {
 }
 
 export function mockTooltips() {
-  vi.doMock("../../../src/helpers/tooltip.js", () => ({
+  vi.mock("../../../src/helpers/tooltip.js", () => ({
+    __esModule: true,
     initTooltips: vi.fn().mockResolvedValue(() => {})
   }));
 }
