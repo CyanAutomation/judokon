@@ -11,6 +11,8 @@ import { STATS } from "../helpers/BattleEngine.js";
 import { setPointsToWin } from "../helpers/battleEngineFacade.js";
 import { fetchJson } from "../helpers/dataUtils.js";
 import { DATA_DIR } from "../helpers/constants.js";
+import { createModal } from "../components/Modal.js";
+import { createButton } from "../components/Button.js";
 import {
   initFeatureFlags,
   isEnabled,
@@ -37,6 +39,9 @@ let cooldownTimer = null;
 let cooldownInterval = null;
 let selectionTimer = null;
 let selectionInterval = null;
+let quitModal = null;
+let pausedSelectionRemaining = null;
+let pausedCooldownRemaining = null;
 
 // Test hooks to access internal timer state
 export const __test = {
@@ -130,6 +135,150 @@ function showBottomLine(text) {
     }
     bar.textContent = text || "";
   } catch {}
+}
+
+/**
+ * Ensure a container exists for modal dialogs.
+ *
+ * @pseudocode
+ * el = document.getElementById("modal-container")
+ * if el missing:
+ *   create div#modal-container and append to body
+ * return el
+ *
+ * @returns {HTMLElement} Modal container element.
+ */
+function ensureModalContainer() {
+  let el = byId("modal-container");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "modal-container";
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
+/**
+ * Pause active selection and cooldown timers, preserving remaining time.
+ *
+ * @pseudocode
+ * countdownEl = #cli-countdown
+ * if selection timers exist:
+ *   clear them and store remaining time from countdown dataset
+ * if cooldown timers exist:
+ *   clear them and parse remaining time from snackbar
+ */
+function pauseTimers() {
+  const countdown = byId("cli-countdown");
+  if (selectionTimer || selectionInterval) {
+    try {
+      if (selectionTimer) clearTimeout(selectionTimer);
+    } catch {}
+    try {
+      if (selectionInterval) clearInterval(selectionInterval);
+    } catch {}
+    pausedSelectionRemaining = Number(countdown?.dataset?.remainingTime) || null;
+    selectionTimer = null;
+    selectionInterval = null;
+  }
+  const bar = byId("snackbar-container")?.querySelector(".snackbar");
+  if (cooldownTimer || cooldownInterval) {
+    try {
+      if (cooldownTimer) clearTimeout(cooldownTimer);
+    } catch {}
+    try {
+      if (cooldownInterval) clearInterval(cooldownInterval);
+    } catch {}
+    const match = bar?.textContent?.match(/Next round in: (\d+)/);
+    pausedCooldownRemaining = match ? Number(match[1]) : null;
+    cooldownTimer = null;
+    cooldownInterval = null;
+  }
+}
+
+/**
+ * Resume timers previously paused by `pauseTimers`.
+ *
+ * @pseudocode
+ * if in waitingForPlayerAction and have selection remaining:
+ *   startSelectionCountdown(remaining)
+ * if in cooldown and have cooldown remaining:
+ *   show bottom line and start interval/timeout
+ * reset stored remaining values
+ */
+function resumeTimers() {
+  if (document.body?.dataset?.battleState === "waitingForPlayerAction" && pausedSelectionRemaining) {
+    startSelectionCountdown(pausedSelectionRemaining);
+  }
+  if (document.body?.dataset?.battleState === "cooldown" && pausedCooldownRemaining) {
+    let remaining = pausedCooldownRemaining;
+    showBottomLine(`Next round in: ${remaining}`);
+    try {
+      cooldownInterval = setInterval(() => {
+        remaining -= 1;
+        if (remaining > 0) showBottomLine(`Next round in: ${remaining}`);
+      }, 1000);
+    } catch {}
+    try {
+      cooldownTimer = setTimeout(() => {
+        try {
+          emitBattleEvent("countdownFinished");
+        } catch {}
+      }, remaining * 1000);
+    } catch {}
+  }
+  pausedSelectionRemaining = null;
+  pausedCooldownRemaining = null;
+}
+
+/**
+ * Build and display a quit confirmation modal.
+ *
+ * @pseudocode
+ * pauseTimers()
+ * if modal not yet created:
+ *   build modal with Cancel and Quit buttons
+ *   cancel closes modal and resumes timers
+ *   quit dispatches interrupt and clears bottom line
+ *   append modal to container
+ * open modal
+ */
+function showQuitModal() {
+  pauseTimers();
+  if (!quitModal) {
+    const title = document.createElement("h2");
+    title.id = "quit-modal-title";
+    title.textContent = "Quit the match?";
+
+    const actions = document.createElement("div");
+    actions.className = "modal-actions";
+
+    const cancel = createButton("Cancel", {
+      id: "cancel-quit-button",
+      className: "secondary-button"
+    });
+    const quit = createButton("Quit", { id: "confirm-quit-button" });
+    actions.append(cancel, quit);
+
+    const frag = document.createDocumentFragment();
+    frag.append(title, actions);
+
+    quitModal = createModal(frag, { labelledBy: title });
+    cancel.addEventListener("click", () => {
+      quitModal.close();
+      resumeTimers();
+    });
+    quit.addEventListener("click", () => {
+      quitModal.close();
+      clearBottomLine();
+      try {
+        const machine = window.__getClassicBattleMachine?.();
+        if (machine) machine.dispatch("interrupt", { reason: "quit" });
+      } catch {}
+    });
+    ensureModalContainer().appendChild(quitModal.element);
+  }
+  quitModal.open();
 }
 
 function clearBottomLine() {
@@ -409,9 +558,7 @@ function getStatByIndex(index1Based) {
  *   toggle retro mode
  *   return true
  * if key is 'q':
- *   clear cooldown timers
- *   clear bottom line
- *   dispatch 'interrupt' on the machine
+ *   show quit confirmation modal
  *   return true
  * return false
  */
@@ -426,27 +573,7 @@ export function handleGlobalKey(key) {
     return true;
   }
   if (key === "q") {
-    try {
-      if (cooldownTimer) clearTimeout(cooldownTimer);
-    } catch {}
-    try {
-      if (cooldownInterval) clearInterval(cooldownInterval);
-    } catch {}
-    try {
-      if (selectionTimer) clearTimeout(selectionTimer);
-    } catch {}
-    try {
-      if (selectionInterval) clearInterval(selectionInterval);
-    } catch {}
-    cooldownTimer = null;
-    cooldownInterval = null;
-    selectionTimer = null;
-    selectionInterval = null;
-    clearBottomLine();
-    try {
-      const machine = window.__getClassicBattleMachine?.();
-      if (machine) machine.dispatch("interrupt", { reason: "quit" });
-    } catch {}
+    showQuitModal();
     return true;
   }
   return false;
@@ -755,6 +882,24 @@ function installEventBindings() {
       );
       updateScoreLine(result.playerScore ?? 0, result.opponentScore ?? 0);
     }
+  });
+
+  onBattleEvent("matchOver", () => {
+    const main = byId("cli-main");
+    if (!main || byId("play-again-button")) return;
+    const section = document.createElement("section");
+    section.className = "cli-block";
+    const btn = createButton("Play again", {
+      id: "play-again-button",
+      className: "primary-button"
+    });
+    btn.addEventListener("click", () => {
+      try {
+        location.reload();
+      } catch {}
+    });
+    section.append(btn);
+    main.append(section);
   });
 
   // Track state changes: start/stop countdown and append verbose log

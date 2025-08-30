@@ -77,7 +77,7 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 | **P2** | Minimal Settings | Allow selecting win target (5/10/15). Changing the value prompts to reset scores and restart the match; the last choice persists via the shared settings helper. |
 | **P2** | Deterministic Seed | Optional numeric seed via header input or `?seed=` query parameter enables reproducible runs; last seed is stored locally. |
 | **P2** | Observability Mode | Optional verbose logs (controlled by the `cliVerbose` feature flag) that echo internal state transitions. |
-| **P2** | Interrupt Handling | Surface quit/interrupt flows as text prompts; roll back to last completed round consistent with engine PRD. |
+| **P2** | Interrupt Handling | Show a quit confirmation modal that pauses timers; cancel resumes play, confirm rolls back per engine rules. |
 | **P3** | Retro Mode | Optional ASCII borders and simple color accents via CSS classes; disabled by default for maximum contrast. |
 
 ### Feature Flags
@@ -104,7 +104,7 @@ Notes:
    - Given the player is in stat selection, when pressing keys 1–9 mapped to visible stats, then the corresponding stat is selected and input is debounced until the next state.  
    - Given a round has completed, when pressing Enter/Space, then the flow advances to cooldown/next round.  
    - Given an inter-round cooldown is running, when pressing Enter/Space, then the countdown is skipped and the next round begins immediately.  
-   - Given an active match, when pressing Q, then a quit confirmation prompt appears; confirming ends or rolls back per engine rules.  
+  - Given an active match, when pressing Q, then a quit confirmation modal appears; confirming ends or rolls back per engine rules, cancelling resumes any paused timers.
 
 3. Timer Behavior  
   - Given `waitingForPlayerAction`, when the timer ticks, then `#cli-countdown` updates once per second with remaining time and exposes the value via `data-remaining-time`.
@@ -113,9 +113,10 @@ Notes:
    - Given `skipRoundCooldown` enabled, when `countdownStart` fires, then the next round begins immediately without showing countdown text.
    - Given the tab is hidden or device sleeps, when focus returns, then the timer resumes without double-firing and remains consistent with the engine PRD.  
 
-4. Outcome and Score  
+4. Outcome and Score
    - Given `roundDecision`, when the outcome resolves, then `#round-message` prints Win/Loss/Draw and both chosen stat values.  
-   - Given `roundOver`, when scores update, then `#cli-score` reflects the new totals immediately.  
+   - Given `roundOver`, when scores update, then `#cli-score` reflects the new totals immediately.
+   - Given a match reaches the win target, when it ends, then a "Play again" control is offered or the page returns to the lobby.
 
 5. Accessibility  
    - Given any message update, when content changes, then `aria-live` announces the new round message or countdown text.  
