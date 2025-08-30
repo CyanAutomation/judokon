@@ -120,71 +120,103 @@ export function showMatchSummaryModal(result, onNext) {
 }
 
 // --- Event bindings ---
-
-onBattleEvent("scoreboardClearMessage", () => {
-  try {
-    scoreboard.clearMessage();
-  } catch (err) {
-    console.error("Error clearing scoreboard message:", err);
-  }
-});
-
-onBattleEvent("scoreboardShowMessage", (e) => {
-  try {
-    scoreboard.showMessage(e.detail);
-  } catch (err) {
-    console.error("Error in scoreboard.showMessage:", err);
-  }
-});
-
-onBattleEvent("debugPanelUpdate", () => {
-  try {
-    updateDebugPanel();
-  } catch (err) {
-    console.error("Error updating debug panel:", err);
-  }
-});
-
-onBattleEvent("countdownStart", (e) => {
-  if (skipRoundCooldownIfEnabled()) return;
-  const { duration } = e.detail || {};
-  if (typeof duration !== "number") return;
-  try {
-    if (activeCountdown) {
+// Bind once per worker to avoid accumulating listeners during repeated test imports.
+try {
+  const FLAG = "__classicBattleUIServiceBound";
+  if (!globalThis[FLAG]) {
+    globalThis[FLAG] = true;
+    // Register listeners exactly once
+    onBattleEvent("scoreboardClearMessage", () => {
       try {
-        activeCountdown.timer.off("expired", activeCountdown.onExpired);
-      } catch {}
-      try {
-        activeCountdown.timer.stop();
-      } catch {}
-      activeCountdown = null;
-    }
-
-    const timer = createRoundTimer();
-    const onExpired = () => {
-      setSkipHandler(null);
-      activeCountdown = null;
-      emitBattleEvent("countdownFinished");
-    };
-
-    activeCountdown = { timer, onExpired };
-    attachCooldownRenderer(timer, duration);
-    timer.on("expired", onExpired);
-    setSkipHandler(() => {
-      try {
-        timer.off("expired", onExpired);
-      } catch {}
-      try {
-        timer.stop();
-      } catch {}
-      activeCountdown = null;
+        scoreboard.clearMessage();
+      } catch (err) {
+        console.error("Error clearing scoreboard message:", err);
+      }
     });
-    if (!activeCountdown) {
-      // A pending skip consumed the countdown before it began
-      return;
-    }
-    timer.start(duration);
-  } catch (err) {
-    console.error("Error in countdownStart event handler:", err);
+
+    onBattleEvent("scoreboardShowMessage", (e) => {
+      try {
+        scoreboard.showMessage(e.detail);
+      } catch (err) {
+        console.error("Error in scoreboard.showMessage:", err);
+      }
+    });
+
+    onBattleEvent("debugPanelUpdate", () => {
+      try {
+        updateDebugPanel();
+      } catch (err) {
+        console.error("Error updating debug panel:", err);
+      }
+    });
+
+    onBattleEvent("countdownStart", (e) => {
+      if (skipRoundCooldownIfEnabled()) return;
+      const { duration } = e.detail || {};
+      if (typeof duration !== "number") return;
+      try {
+        if (activeCountdown) {
+          try {
+            activeCountdown.timer.off("expired", activeCountdown.onExpired);
+          } catch {}
+          try {
+            activeCountdown.timer.stop();
+          } catch {}
+          activeCountdown = null;
+        }
+
+        const timer = createRoundTimer();
+        const onExpired = () => {
+          setSkipHandler(null);
+          activeCountdown = null;
+          emitBattleEvent("countdownFinished");
+        };
+
+        activeCountdown = { timer, onExpired };
+        attachCooldownRenderer(timer, duration);
+        timer.on("expired", onExpired);
+        setSkipHandler(() => {
+          try {
+            timer.off("expired", onExpired);
+          } catch {}
+          try {
+            timer.stop();
+          } catch {}
+          activeCountdown = null;
+        });
+        if (!activeCountdown) {
+          // A pending skip consumed the countdown before it began
+          return;
+        }
+        timer.start(duration);
+      } catch (err) {
+        console.error("Error in countdownStart event handler:", err);
+      }
+    });
   }
-});
+} catch {
+  // Fallback: bind without guard if global not available
+  onBattleEvent("scoreboardClearMessage", () => {
+    try {
+      scoreboard.clearMessage();
+    } catch (err) {
+      console.error("Error clearing scoreboard message:", err);
+    }
+  });
+
+  onBattleEvent("scoreboardShowMessage", (e) => {
+    try {
+      scoreboard.showMessage(e.detail);
+    } catch (err) {
+      console.error("Error in scoreboard.showMessage:", err);
+    }
+  });
+
+  onBattleEvent("debugPanelUpdate", () => {
+    try {
+      updateDebugPanel();
+    } catch (err) {
+      console.error("Error updating debug panel:", err);
+    }
+  });
+}

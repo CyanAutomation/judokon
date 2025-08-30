@@ -1766,8 +1766,17 @@ export function bindUIHelperEventHandlers() {
   });
 }
 
-// Bind once on module load for runtime
-bindUIHelperEventHandlers();
+// Bind once on module load for runtime. Guard against duplicate bindings when
+// tests reset modules across files within the same worker process.
+try {
+  const FLAG = "__classicBattleUIHelpersBound";
+  if (!globalThis[FLAG]) {
+    bindUIHelperEventHandlers();
+    globalThis[FLAG] = true;
+  }
+} catch {
+  bindUIHelperEventHandlers();
+}
 
 // Dynamic variant for tests to honor vi.mocks after rebind
 /**
