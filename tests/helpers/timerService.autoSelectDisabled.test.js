@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 
 describe("timerService without auto-select", () => {
-  it("does not dispatch timeout when autoSelect disabled", async () => {
+  it("dispatches timeout when autoSelect disabled", async () => {
     vi.resetModules();
 
     document.body.innerHTML =
@@ -59,7 +59,8 @@ describe("timerService without auto-select", () => {
     const mod = await import("../../src/helpers/classicBattle/timerService.js");
     await mod.startTimer(async () => {});
 
-    expect(dispatchSpy).not.toHaveBeenCalled();
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchSpy).toHaveBeenCalledWith("timeout");
     expect(autoSelectSpy).not.toHaveBeenCalled();
   });
 });
