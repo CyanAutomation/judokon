@@ -58,6 +58,11 @@ if (typeof window !== "undefined") {
 }
 
 if (!isEnabled("battleStateProgress")) {
+  if (typeof document !== "undefined") {
+    document.addEventListener("battle:state", () => markBattlePartReady("state"), { once: true });
+  } else {
+    markBattlePartReady("state");
+  }
   resolveBattleStateProgressReady?.();
 }
 
@@ -86,8 +91,9 @@ if (!isEnabled("battleStateProgress")) {
  *
  * @summary Render core battle states into `#battle-state-progress` and register a
  * `battle:state` listener to update the active item. Returns a cleanup function.
+ * When disabled, `'state'` is still marked ready on the next `battle:state` event.
  * @pseudocode
- * 1. If the feature flag is disabled, hide the element if the DOM exists, resolve the ready promise, and return.
+ * 1. If the feature flag is disabled, hide the element if the DOM exists, ensure `'state'` is marked ready, resolve the ready promise, and return.
  * 2. If `document` is unavailable resolve the ready promise and return.
  * 3. Locate `#battle-state-progress` and either render or skip depending on `CLASSIC_BATTLE_STATES`.
  * 4. Resolve the ready promise and register an event listener to toggle `active` on list items.
