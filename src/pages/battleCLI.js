@@ -96,68 +96,138 @@ function getStatByIndex(index1Based) {
   return STATS[i] || null;
 }
 
-function onKeyDown(e) {
-  const key = e.key.toLowerCase();
+/**
+ * Handle global shortcuts that work in any state.
+ * @param {string} key
+ * @returns {boolean} true if the key was handled
+ * @pseudocode
+ * if key is 'h':
+ *   toggle shortcuts visibility
+ *   return true
+ * if key is 'r':
+ *   toggle retro mode
+ *   return true
+ * if key is 'q':
+ *   dispatch 'interrupt' on the machine
+ *   return true
+ * return false
+ */
+export function handleGlobalKey(key) {
   if (key === "h") {
-    // Toggle shortcuts visibility
     const sec = byId("cli-shortcuts");
     if (sec) sec.hidden = !sec.hidden;
-    return;
+    return true;
   }
   if (key === "r") {
     setRetroMode(!document.body.classList.contains("retro"));
-    return;
+    return true;
   }
-  // Only handle gameplay keys when the machine is ready
-  const state = document.body?.dataset?.battleState || "";
-  if (state === "waitingForPlayerAction") {
-    if (key >= "1" && key <= "9") {
-      const stat = getStatByIndex(key);
-      if (!stat) return;
-      try {
-        // Record selection on the store; machine will transition to roundDecision
-        if (store) {
-          store.playerChoice = stat;
-          store.selectionMade = true;
-        }
-      } catch {}
-      showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
-      // Move to roundDecision; resolution will read from hidden #player-card and opponent module state
-      try {
-        const machine = window.__getClassicBattleMachine?.();
-        if (machine) machine.dispatch("statSelected");
-      } catch {}
-    }
-  } else if (state === "roundOver") {
-    if (key === "enter" || key === " ") {
-      try {
-        const machine = window.__getClassicBattleMachine?.();
-        if (machine) machine.dispatch("continue");
-      } catch {}
-    }
-  } else if (state === "cooldown") {
-    if (key === "enter" || key === " ") {
-      try {
-        if (cooldownTimer) clearTimeout(cooldownTimer);
-      } catch {}
-      try {
-        if (cooldownInterval) clearInterval(cooldownInterval);
-      } catch {}
-      cooldownTimer = null;
-      cooldownInterval = null;
-      clearBottomLine();
-      try {
-        const machine = window.__getClassicBattleMachine?.();
-        if (machine) machine.dispatch("ready");
-      } catch {}
-    }
-  } else if (key === "q") {
-    // Quit at any time → interrupt path
+  if (key === "q") {
     try {
       const machine = window.__getClassicBattleMachine?.();
       if (machine) machine.dispatch("interrupt", { reason: "quit" });
     } catch {}
+    return true;
   }
+  return false;
+}
+
+/**
+ * Handle key presses while waiting for the player to select a stat.
+ * @param {string} key
+ * @pseudocode
+ * if key is between '1' and '9':
+ *   lookup stat by index
+ *   record selection on the store if available
+ *   show bottom line with picked stat
+ *   dispatch 'statSelected'
+ */
+export function handleWaitingForPlayerActionKey(key) {
+  if (key >= "1" && key <= "9") {
+    const stat = getStatByIndex(key);
+    if (!stat) return;
+    try {
+      if (store) {
+        store.playerChoice = stat;
+        store.selectionMade = true;
+      }
+    } catch {}
+    showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
+    try {
+      const machine = window.__getClassicBattleMachine?.();
+      if (machine) machine.dispatch("statSelected");
+    } catch {}
+  }
+}
+
+/**
+ * Handle key presses after a round has resolved.
+ * @param {string} key
+ * @pseudocode
+ * if key is Enter or Space:
+ *   dispatch 'continue'
+ */
+export function handleRoundOverKey(key) {
+  if (key === "enter" || key === " ") {
+    try {
+      const machine = window.__getClassicBattleMachine?.();
+      if (machine) machine.dispatch("continue");
+    } catch {}
+  }
+}
+
+/**
+ * Handle key presses during cooldown between rounds.
+ * @param {string} key
+ * @pseudocode
+ * if key is Enter or Space:
+ *   clear timers
+ *   clear bottom line
+ *   dispatch 'ready'
+ */
+export function handleCooldownKey(key) {
+  if (key === "enter" || key === " ") {
+    try {
+      if (cooldownTimer) clearTimeout(cooldownTimer);
+    } catch {}
+    try {
+      if (cooldownInterval) clearInterval(cooldownInterval);
+    } catch {}
+    cooldownTimer = null;
+    cooldownInterval = null;
+    clearBottomLine();
+    try {
+      const machine = window.__getClassicBattleMachine?.();
+      if (machine) machine.dispatch("ready");
+    } catch {}
+  }
+}
+
+/**
+ * Dispatch keyboard input based on the current battle state.
+ * @param {KeyboardEvent} e
+ * @pseudocode
+ * key = lowercased key from event
+ * if handleGlobalKey(key) handled:
+ *   return
+ * state = document.body.dataset.battleState
+ * table = { waitingForPlayerAction: handleWaitingForPlayerActionKey,
+ *           roundOver: handleRoundOverKey,
+ *           cooldown: handleCooldownKey }
+ * handler = table[state]
+ * if handler exists: handler(key)
+ */
+export function onKeyDown(e) {
+  const key = e.key.toLowerCase();
+  if (handleGlobalKey(key)) return;
+  const state = document.body?.dataset?.battleState || "";
+  const table = {
+    waitingForPlayerAction: handleWaitingForPlayerActionKey,
+    roundOver: handleRoundOverKey,
+    cooldown: handleCooldownKey
+  };
+  const handler = table[state];
+  if (handler) handler(key);
 }
 
 function handleStatClick(event) {
@@ -417,8 +487,10 @@ async function init() {
   document.addEventListener("click", onClickAdvance);
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init);
-} else {
-  init();
+if (!window.__TEST__) {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 }
