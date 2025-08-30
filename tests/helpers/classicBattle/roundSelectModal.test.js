@@ -12,7 +12,7 @@ const mocks = vi.hoisted(() => ({
   fetchJson: vi.fn(),
   setPointsToWin: vi.fn(),
   initTooltips: vi.fn(),
-  modal: { open: vi.fn(), close: vi.fn() },
+  modal: { open: vi.fn(), close: vi.fn(), destroy: vi.fn() },
   emit: vi.fn()
 }));
 
@@ -32,7 +32,12 @@ vi.mock("../../../src/components/Modal.js", () => ({
   createModal: (content) => {
     const element = document.createElement("div");
     element.appendChild(content);
-    return { element, open: mocks.modal.open, close: mocks.modal.close, destroy: vi.fn() };
+    return {
+      element,
+      open: mocks.modal.open,
+      close: mocks.modal.close,
+      destroy: mocks.modal.destroy
+    };
   }
 }));
 vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
