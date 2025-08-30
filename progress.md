@@ -230,3 +230,9 @@
   - Render the opponent card in an obscured state.
 - Update: The repository already implements the draw flow in `src/helpers/classicBattle/cardSelection.js` (`drawCards()` uses `generateRandomCard()` for the player and renders an obscured opponent placeholder). I added an auto-invoke in `bootstrap.js` to call `setupClassicBattlePage()` on DOM ready so the page initializes when loaded.
 - Status: Verified-by-inspection; runtime tests still pending. Next: run unit tests and a small DOM smoke test to assert `#player-card` and `#opponent-card` are populated on round start.
+
+## Milestone 11 — Modal Start Event Ordering Fix
+
+- Reordered round selection modal start logic so the battle machine receives
+  `startClicked` only after initialization, preventing the lobby from hanging in
+  `waitingForMatchStart`.

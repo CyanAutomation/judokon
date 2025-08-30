@@ -69,14 +69,15 @@ describe("initRoundSelectModal", () => {
     await initRoundSelectModal(onStart);
     const first = document.querySelector(".round-select-buttons button");
     first.click();
+    await Promise.resolve();
     expect(mocks.setPointsToWin).toHaveBeenCalledWith(rounds[0].value);
     expect(onStart).toHaveBeenCalled();
     expect(mocks.cleanup).toHaveBeenCalled();
     expect(mocks.emit).toHaveBeenNthCalledWith(1, "roundOptionsReady");
     expect(mocks.emit).toHaveBeenNthCalledWith(2, "startClicked");
-    const emitOrder = mocks.emit.mock.invocationCallOrder[1];
     const startOrder = onStart.mock.invocationCallOrder[0];
-    expect(emitOrder).toBeLessThan(startOrder);
+    const emitOrder = mocks.emit.mock.invocationCallOrder[1];
+    expect(startOrder).toBeLessThan(emitOrder);
   });
 
   it("opens modal and starts match even if tooltip init fails", async () => {
