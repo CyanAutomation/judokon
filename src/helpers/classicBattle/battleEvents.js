@@ -94,7 +94,11 @@ export function offBattleEvent(type, handler) {
  * 1. TODO: Add pseudocode
  */
 export function emitBattleEvent(type, detail) {
-  target.dispatchEvent(new CustomEvent(type, { detail }));
+  const event = new CustomEvent(type, { detail });
+  target.dispatchEvent(event);
+  try {
+    document.dispatchEvent(event);
+  } catch {}
 }
 
 export default target;

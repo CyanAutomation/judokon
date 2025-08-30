@@ -115,9 +115,21 @@
         outline: 2px solid #9ad1ff;
         outline-offset: 2px;
       }
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        background: #0b0c0c;
+        color: #f2f2f2;
+        padding: 8px;
+      }
+      .skip-link:focus {
+        top: 0;
+      }
     </style>
   </head>
   <body>
+    <a href="#cli-main" class="skip-link">Skip to main content</a>
     <div id="cli-root" class="cli-root">
       <header id="cli-header" class="cli-header" role="banner">
         <div class="cli-title">
