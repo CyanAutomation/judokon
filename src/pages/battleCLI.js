@@ -207,7 +207,10 @@ function pauseTimers() {
  * reset stored remaining values
  */
 function resumeTimers() {
-  if (document.body?.dataset?.battleState === "waitingForPlayerAction" && pausedSelectionRemaining) {
+  if (
+    document.body?.dataset?.battleState === "waitingForPlayerAction" &&
+    pausedSelectionRemaining
+  ) {
     startSelectionCountdown(pausedSelectionRemaining);
   }
   if (document.body?.dataset?.battleState === "cooldown" && pausedCooldownRemaining) {

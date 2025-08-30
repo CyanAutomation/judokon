@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { emitBattleEvent, __resetBattleEventTarget } from "../../src/helpers/classicBattle/battleEvents.js";
+import {
+  emitBattleEvent,
+  __resetBattleEventTarget
+} from "../../src/helpers/classicBattle/battleEvents.js";
 
 describe("battleCLI onKeyDown", () => {
   let onKeyDown, __test;
