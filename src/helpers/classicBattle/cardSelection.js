@@ -166,6 +166,18 @@ async function renderOpponentPlaceholder(container, placeholder, enableInspector
   }
 }
 
+/**
+ * Draw and render player and opponent cards.
+ *
+ * @pseudocode
+ * 1. Ensure judoka and gokyo datasets are loaded (fetch if missing).
+ * 2. Filter out hidden judoka and generate a random player card.
+ * 3. Pick an opponent that doesn't match the player where possible.
+ * 4. Render an opponent placeholder card with obscured stats.
+ * 5. Return the selected player and opponent judoka objects.
+ *
+ * @returns {Promise<{playerJudoka: object|null, opponentJudoka: object|null}>}
+ */
 export async function drawCards() {
   // Always attempt to load both datasets so retries re-fetch both.
   const allJudoka = await ensureJudokaData();

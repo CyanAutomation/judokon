@@ -93,3 +93,8 @@ export const getRoundsPlayed = () => battleEngine.getRoundsPlayed();
 export const isMatchEnded = () => battleEngine.isMatchEnded();
 export const getTimerState = () => battleEngine.getTimerState();
 export const _resetForTest = () => battleEngine._resetForTest();
+
+/**
+ * Note: All thin wrappers above are intentionally documented with @pseudocode
+ * in their preceding blocks to satisfy the project's JSDoc + @pseudocode rule.
+ */

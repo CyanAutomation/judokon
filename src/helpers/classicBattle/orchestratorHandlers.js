@@ -11,6 +11,19 @@ import { resolveRound } from "./roundResolver.js";
 // Test-mode flag for muting noisy logs in Vitest
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
+/**
+ * Determine whether the machine transitioned from `from` to `to`.
+ *
+ * @pseudocode
+ * 1. Read current and previous state from `document.body.dataset`.
+ * 2. If `from` is null/undefined, compare only current → `to`.
+ * 3. Otherwise, return whether previous equals `from` and current equals `to`.
+ * 4. Return false on any error.
+ *
+ * @param {string|null|undefined} from
+ * @param {string} to
+ * @returns {boolean}
+ */
 export function isStateTransition(from, to) {
   try {
     if (typeof document === "undefined") return false;
@@ -25,6 +38,16 @@ export function isStateTransition(from, to) {
   }
 }
 
+/**
+ * onEnter handler for `waitingForMatchStart` state.
+ *
+ * @pseudocode
+ * 1. If this is a no-op transition, return early.
+ * 2. Call `doResetGame` from machine context when available.
+ * 3. Emit events to clear the scoreboard and refresh debug panel.
+ *
+ * @param {object} machine
+ */
 export async function waitingForMatchStartEnter(machine) {
   if (isStateTransition("waitingForMatchStart", "waitingForMatchStart")) return;
   const { doResetGame } = machine.context;
@@ -32,6 +55,12 @@ export async function waitingForMatchStartEnter(machine) {
   emitBattleEvent("scoreboardClearMessage");
   emitBattleEvent("debugPanelUpdate");
 }
+/**
+ * onExit handler for `waitingForMatchStart` (no-op stub).
+ *
+ * @pseudocode
+ * 1. No cleanup required currently.
+ */
 export async function waitingForMatchStartExit() {}
 
 export async function matchStartEnter(machine) {
@@ -39,6 +68,18 @@ export async function matchStartEnter(machine) {
 }
 export async function matchStartExit() {}
 
+/**
+ * onEnter handler for `cooldown` state.
+ *
+ * @pseudocode
+ * 1. If `payload.initial`, compute match start duration via timer utils and emit countdown events.
+ * 2. Install fallback timers to advance the machine in headless/test environments.
+ * 3. If there is no scheduled next-round timer, ensure Next button is enabled and ready after a minimal cooldown.
+ * 4. Emit `countdownStart` and `nextRoundTimerReady` as appropriate.
+ *
+ * @param {object} machine
+ * @param {object} [payload]
+ */
 export async function cooldownEnter(machine, payload) {
   if (payload?.initial) {
     let duration = 3;
@@ -127,8 +168,25 @@ export async function cooldownEnter(machine, payload) {
     }
   } catch {}
 }
+/**
+ * onExit handler for `cooldown` state (no-op).
+ *
+ * @pseudocode
+ * 1. No cleanup required currently; placeholder for future logic.
+ */
 export async function cooldownExit() {}
 
+/**
+ * onEnter handler for `roundStart` state.
+ *
+ * @pseudocode
+ * 1. Start the round via `startRoundWrapper` or `doStartRound` asynchronously.
+ * 2. Install a short fallback in test/headless mode to advance to `cardsRevealed` to avoid stalls.
+ * 3. If rendering fails, emit an error message and dispatch `interrupt`.
+ * 4. If still in `roundStart`, dispatch `cardsRevealed` to proceed.
+ *
+ * @param {object} machine
+ */
 export async function roundStartEnter(machine) {
   const { startRoundWrapper, doStartRound, store } = machine.context;
   // In Playwright test mode, set a short fallback to avoid UI stalls
@@ -190,8 +248,23 @@ export async function roundStartEnter(machine) {
  * 3. If rendering fails, emit a scoreboard message and dispatch interrupt.
  * 4. When cards are ready and machine still in roundStart, dispatch 'cardsRevealed'.
  */
+/**
+ * onExit handler for `roundStart` (no-op placeholder).
+ *
+ * @pseudocode
+ * 1. No cleanup currently required.
+ */
 export async function roundStartExit() {}
 
+/**
+ * onEnter handler for `waitingForPlayerAction` state.
+ *
+ * @pseudocode
+ * 1. Enable stat buttons via battle events.
+ * 2. If a selection already exists on the store, dispatch `statSelected` immediately.
+ *
+ * @param {object} machine
+ */
 export async function waitingForPlayerActionEnter(machine) {
   emitBattleEvent("statButtons:enable");
   // Do NOT mark the Next button as ready here. The Next button is reserved
@@ -206,6 +279,12 @@ export async function waitingForPlayerActionEnter(machine) {
     await machine.dispatch("statSelected");
   }
 }
+/**
+ * onExit handler for `waitingForPlayerAction` state.
+ *
+ * @pseudocode
+ * 1. Emit an event to disable stat buttons.
+ */
 export async function waitingForPlayerActionExit() {
   emitBattleEvent("statButtons:disable");
 }

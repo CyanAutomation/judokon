@@ -39,6 +39,17 @@ import { preloadRandomCardData, createHistoryManager } from "./randomCardService
 const DRAW_ICON =
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m600-200-56-57 143-143H300q-75 0-127.5-52.5T120-580q0-75 52.5-127.5T300-760h20v80h-20q-42 0-71 29t-29 71q0 42 29 71t71 29h387L544-624l56-56 240 240-240 240Z"/></svg>';
 
+/**
+ * Initialize feature flag state and apply motion/viewport preferences.
+ *
+ * @pseudocode
+ * 1. Initialize feature flags and load persisted settings.
+ * 2. Derive `prefersReducedMotion` and apply motion preferences.
+ * 3. Toggle inspector panels, viewport simulation and tooltip overlays.
+ * 4. Return an object with `prefersReducedMotion` for callers.
+ *
+ * @returns {Promise<{prefersReducedMotion: boolean}>}
+ */
 export async function initFeatureFlagState() {
   const hasMatchMedia = typeof window !== "undefined" && typeof window.matchMedia === "function";
   let settings;
@@ -70,6 +81,17 @@ export async function initFeatureFlagState() {
   return { prefersReducedMotion };
 }
 
+/**
+ * Build a slide-out history panel for previously drawn cards.
+ *
+ * @pseudocode
+ * 1. Create toggle button and a fixed-position aside element.
+ * 2. Populate the panel with a title and empty list container.
+ * 3. Append the panel to the document body and return UI handles.
+ *
+ * @param {boolean} prefersReducedMotion
+ * @returns {{historyPanel: HTMLElement, historyList: HTMLElement, toggleHistoryBtn: HTMLElement}}
+ */
 export function buildHistoryPanel(prefersReducedMotion) {
   const cardSection = document.querySelector(".card-section");
   const toggleHistoryBtn = createButton("History", {
@@ -102,6 +124,16 @@ export function buildHistoryPanel(prefersReducedMotion) {
   return { historyPanel, historyList, toggleHistoryBtn };
 }
 
+/**
+ * Create the primary Draw button used on the Random Judoka page.
+ *
+ * @pseudocode
+ * 1. Build a large, accessible button with an icon and ARIA attributes.
+ * 2. Apply size, role, and test hooks for UI automation.
+ * 3. Return the constructed button element.
+ *
+ * @returns {HTMLElement}
+ */
 export function createDrawButton() {
   const drawButton = createButton("Draw Card!", {
     id: "draw-card-btn",
