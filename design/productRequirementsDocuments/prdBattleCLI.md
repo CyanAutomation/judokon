@@ -84,6 +84,7 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 - `battleStateBadge` – shows a header badge reflecting the current match state; disabled by default.
 - `autoSelect` – when enabled (default), the match auto-picks a random stat when the selection timer expires.
   When disabled, the CLI waits for manual input after timeout.
+- `skipRoundCooldown` – when enabled, the CLI skips the inter-round countdown and immediately begins the next round.
 
 Notes:
 - Core gameplay and timers must not use dynamic imports in hot paths. Optional features (e.g., Retro Mode) may be dynamically imported but preloaded during idle if enabled.  
@@ -105,7 +106,8 @@ Notes:
 3. Timer Behavior  
    - Given `waitingForPlayerAction`, when the timer ticks, then `#cli-countdown` updates once per second with remaining time.  
    - Given timer expiry and `FF_AUTO_SELECT` enabled, when the countdown reaches zero, then a random stat is selected and printed before decision.  
-   - Given `cooldown`, when countdownStart fires, then a fallback timer runs and emits `countdownFinished` after the duration if not skipped.  
+   - Given `cooldown`, when countdownStart fires, then a fallback timer runs and emits `countdownFinished` after the duration if not skipped.
+   - Given `skipRoundCooldown` enabled, when `countdownStart` fires, then the next round begins immediately without showing countdown text.
    - Given the tab is hidden or device sleeps, when focus returns, then the timer resumes without double-firing and remains consistent with the engine PRD.  
 
 4. Outcome and Score  

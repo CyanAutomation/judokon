@@ -17,6 +17,7 @@ import {
   setFlag,
   featureFlagsEmitter
 } from "../helpers/featureFlags.js";
+import { skipRoundCooldownIfEnabled } from "../helpers/classicBattle/uiHelpers.js";
 
 /**
  * Minimal DOM utils for the CLI page
@@ -409,6 +410,7 @@ function installEventBindings() {
 
   // CLI-specific countdown handler
   onBattleEvent("countdownStart", (e) => {
+    if (skipRoundCooldownIfEnabled()) return;
     const duration = Number(e.detail?.duration) || 0;
     try {
       if (cooldownTimer) clearTimeout(cooldownTimer);

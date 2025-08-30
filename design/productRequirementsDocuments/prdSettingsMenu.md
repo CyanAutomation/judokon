@@ -96,6 +96,7 @@ On load, the Settings page must pre-populate each control with values from
 - **Tooltip overlay debug feature flag (binary):** ON/OFF (default: OFF) – Outline tooltip targets to debug placement.
 - **Layout debug outlines feature flag (binary):** ON/OFF (default: OFF) – Show element outlines to inspect page layout.
 - **Navigation cache reset feature flag (binary):** ON/OFF (default: OFF) – Add a button to clear cached navigation data.
+- **Skip round cooldown feature flag (binary):** ON/OFF (default: OFF) – Begin the next round immediately without waiting for the cooldown timer.
 - **Motion effects (binary):** ON/OFF (default: ON) – Disable animations for a calmer interface.
 - **Typewriter effect (binary):** ON/OFF (default: ON, not currently used on the meditation screen) – Toggle the quote typing animation.
 - **Tooltips (binary):** ON/OFF (default: ON) – Show or hide helpful tooltips.

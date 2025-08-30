@@ -49,6 +49,10 @@
       "enabled": false,
       "tooltipId": "settings.battleStateBadge"
     },
+    "skipRoundCooldown": {
+      "enabled": false,
+      "tooltipId": "settings.skipRoundCooldown"
+    },
     "cliVerbose": {
       "enabled": false,
       "tooltipId": "settings.cliVerbose"
