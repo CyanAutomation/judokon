@@ -205,6 +205,15 @@ let codeGraphs = { modules: {} };
 const MAX_OUTPUT_SIZE = 9.8 * 1024 * 1024;
 
 const JSON_FIELD_ALLOWLIST = {
+  "aesopsFables.json": false,
+  "aesopsMeta.json": false,
+  "battleRounds.json": ["label", "description", "category"],
+  "codeGraphs.json": false,
+  "countryCodeMapping.json": false,
+  "gameModes.json": ["name", "japaneseName", "description", "rules"],
+  "gameTimers.json": ["description", "category"],
+  "gokyo.json": ["name", "japanese", "description", "style", "category", "subCategory"],
+  "japaneseConverter.json": false,
   "judoka.json": [
     "firstname",
     "surname",
@@ -215,19 +224,14 @@ const JSON_FIELD_ALLOWLIST = {
     "rarity",
     "stats"
   ],
-  "tooltips.json": true, // Allow all fields
-  "gameModes.json": ["name", "japaneseName", "description", "rules"],
-  "battleRounds.json": ["label", "description", "category"],
-  "gameTimers.json": ["description", "category"],
-  "gokyo.json": ["name", "japanese", "description", "style", "category", "subCategory"],
   "locations.json": ["name", "japaneseName", "description"],
   "navigationItems.json": ["url", "category"],
   "settings.json": ["displayMode", "aiDifficulty"],
   "statNames.json": ["name", "japanese", "description", "category"],
   "svgCodes.json": ["name", "category"],
   "synonyms.json": true,
+  "tooltips.json": true, // Allow all fields
   "weightCategories.json": ["gender", "description", "categories.descriptor"],
-  "codeGraphs.json": false,
   default: ["name", "description", "label"]
 };
 
