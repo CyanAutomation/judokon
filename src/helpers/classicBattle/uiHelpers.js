@@ -149,25 +149,21 @@ export function disableNextRoundButton() {
 }
 
 /**
- * Gather scores, timer details, and machine diagnostics for the debug panel.
+ * Extract machine state and diagnostics from a window object.
  *
  * @pseudocode
- * 1. Initialize state with scores, timer, and match end flag.
- * 2. Add test seed when test mode is active.
- * 3. Merge machine state and diagnostics when available.
- * 4. Append store snapshot, build info, and DOM status.
- * 5. Return accumulated state.
+ * 1. Exit with `{}` if `win` lacks machine globals.
+ * 2. Copy current, previous, last event, and state log values.
+ * 3. Append round decision and guard diagnostics when present.
+ * 4. Merge machine readiness and triggers via `addMachineDiagnostics`.
+ * 5. Return accumulated machine info.
+ *
+ * @param {Window | null} win Source window.
+ * @returns {object}
  */
-export function collectDebugState() {
-  const state = {
-    ...getScores(),
-    timer: getTimerState(),
-    matchEnded: isMatchEnded()
-  };
-  if (isTestModeEnabled()) state.seed = getCurrentSeed();
-
+export function getMachineDebugState(win) {
+  const state = {};
   try {
-    const win = typeof window !== "undefined" ? window : null;
     if (!win || !win.__classicBattleState) return state;
     state.machineState = win.__classicBattleState;
     if (win.__classicBattlePrevState) state.machinePrevState = win.__classicBattlePrevState;
@@ -179,31 +175,87 @@ export function collectDebugState() {
     if (win.__guardOutcomeEvent) state.guardOutcomeEvent = win.__guardOutcomeEvent;
     addMachineDiagnostics(win, state);
   } catch {}
+  return state;
+}
 
+/**
+ * Create a minimal snapshot of the battle store.
+ *
+ * @pseudocode
+ * 1. Exit with `{}` when `win.battleStore` is missing.
+ * 2. Capture `selectionMade` and `playerChoice` values.
+ * 3. Wrap results in a `store` object and return.
+ *
+ * @param {Window | null} win Source window.
+ * @returns {object}
+ */
+export function getStoreSnapshot(win) {
+  const out = {};
   try {
-    const store = typeof window !== "undefined" ? window.battleStore : null;
+    const store = win?.battleStore;
     if (store) {
-      state.store = {
+      out.store = {
         selectionMade: !!store.selectionMade,
         playerChoice: store.playerChoice || null
       };
     }
   } catch {}
+  return out;
+}
 
+/**
+ * Gather build metadata and DOM status from a window object.
+ *
+ * @pseudocode
+ * 1. Exit with `{}` if `win` is missing.
+ * 2. Copy build tag, round number, and clone event debug array.
+ * 3. Record `#opponent-card` child count when the element exists.
+ * 4. Return the assembled build info.
+ *
+ * @param {Window | null} win Source window.
+ * @returns {object}
+ */
+export function getBuildInfo(win) {
+  const info = {};
   try {
-    const win = typeof window !== "undefined" ? window : null;
-    if (win?.__buildTag) state.buildTag = win.__buildTag;
-    if (win?.__roundDebug) state.round = win.__roundDebug;
-    if (Array.isArray(win?.__eventDebug)) state.eventDebug = win.__eventDebug.slice();
-    const opp = document.getElementById("opponent-card");
+    if (win?.__buildTag) info.buildTag = win.__buildTag;
+    if (win?.__roundDebug) info.round = win.__roundDebug;
+    if (Array.isArray(win?.__eventDebug)) info.eventDebug = win.__eventDebug.slice();
+    const opp = win?.document?.getElementById("opponent-card");
     if (opp) {
-      state.dom = {
+      info.dom = {
         opponentChildren: opp.children ? opp.children.length : 0
       };
     }
   } catch {}
+  return info;
+}
 
-  return state;
+/**
+ * Gather scores, timer details, and machine diagnostics for the debug panel.
+ *
+ * @pseudocode
+ * 1. Initialize state with scores, timer, and match end flag.
+ * 2. Add test seed when test mode is active.
+ * 3. Merge machine diagnostics via `getMachineDebugState`.
+ * 4. Merge store snapshot via `getStoreSnapshot`.
+ * 5. Merge build info via `getBuildInfo`.
+ * 6. Return accumulated state.
+ */
+export function collectDebugState() {
+  const base = {
+    ...getScores(),
+    timer: getTimerState(),
+    matchEnded: isMatchEnded()
+  };
+  if (isTestModeEnabled()) base.seed = getCurrentSeed();
+  const win = typeof window !== "undefined" ? window : null;
+  return {
+    ...base,
+    ...getMachineDebugState(win),
+    ...getStoreSnapshot(win),
+    ...getBuildInfo(win)
+  };
 }
 
 function addMachineDiagnostics(win, state) {
