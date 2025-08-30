@@ -8,6 +8,23 @@
  */
 const EVENT_TARGET_KEY = "__classicBattleEventTarget";
 
+function __tuneMaxListenersIfNode(target) {
+  try {
+    // Only in Node/Vitest: remove listener cap for this EventTarget
+    const isVitest = typeof process !== "undefined" && !!process.env?.VITEST;
+    if (!isVitest || !target) return;
+    // Defer import to avoid bundling 'events' in the browser build
+    queueMicrotask(async () => {
+      try {
+        const events = await import("events");
+        if (typeof events.setMaxListeners === "function") {
+          events.setMaxListeners(0, target);
+        }
+      } catch {}
+    });
+  } catch {}
+}
+
 /**
  * Return the shared event target, creating it if needed.
  *
@@ -19,7 +36,12 @@ const EVENT_TARGET_KEY = "__classicBattleEventTarget";
  * 3. Return the stored target.
  */
 function getTarget() {
-  return (globalThis[EVENT_TARGET_KEY] ||= new EventTarget());
+  if (!globalThis[EVENT_TARGET_KEY]) {
+    const t = new EventTarget();
+    globalThis[EVENT_TARGET_KEY] = t;
+    __tuneMaxListenersIfNode(t);
+  }
+  return globalThis[EVENT_TARGET_KEY];
 }
 
 /**
@@ -78,7 +100,9 @@ export function emitBattleEvent(type, detail) {
  * 2. Store it under `EVENT_TARGET_KEY` on `globalThis`.
  */
 export function __resetBattleEventTarget() {
-  globalThis[EVENT_TARGET_KEY] = new EventTarget();
+  const t = new EventTarget();
+  globalThis[EVENT_TARGET_KEY] = t;
+  __tuneMaxListenersIfNode(t);
 }
 
 export { getTarget as getBattleEventTarget };
