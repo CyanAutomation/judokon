@@ -11,7 +11,7 @@ describe("check-jsdoc", () => {
       const symbols = findExportedSymbols(content);
       expect(symbols).toEqual([
         { name: "myFunction", line: 2, type: "function" },
-        { name: "myAsyncFunction", line: 3, type: "function" },
+        { name: "myAsyncFunction", line: 3, type: "function" }
       ]);
     });
 
@@ -23,7 +23,7 @@ describe("check-jsdoc", () => {
       const symbols = findExportedSymbols(content);
       expect(symbols).toEqual([
         { name: "myVar", line: 2, type: "variable" },
-        { name: "myLet", line: 3, type: "variable" },
+        { name: "myLet", line: 3, type: "variable" }
       ]);
     });
 
@@ -35,22 +35,22 @@ describe("check-jsdoc", () => {
       const symbols = findExportedSymbols(content);
       expect(symbols).toEqual([
         { name: "myFunction", line: 2, type: "default-function" },
-        { name: "default", line: 3, type: "default-function" },
+        { name: "default", line: 3, type: "default-function" }
       ]);
     });
 
     it("should find named exports", () => {
-        const content = `
+      const content = `
           const foo = () => {};
           function bar() {};
           export { foo, bar as baz };
         `;
-        const symbols = findExportedSymbols(content);
-        expect(symbols).toEqual([
-          { name: "foo", line: 4, type: "named" },
-          { name: "baz", line: 4, type: "named" },
-        ]);
-      });
+      const symbols = findExportedSymbols(content);
+      expect(symbols).toEqual([
+        { name: "foo", line: 4, type: "named" },
+        { name: "baz", line: 4, type: "named" }
+      ]);
+    });
   });
 
   describe("validateJsDoc", () => {
