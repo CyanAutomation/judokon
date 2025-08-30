@@ -65,7 +65,7 @@ export class Card {
  * @pseudocode
  * 1. Create a new Card instance.
  * 2. Return the card's element.
- * 
+ *
  * @param {string|Node} content - Text or HTML to place inside the card.
  * @param {object} [options] - Optional settings passed to the `Card` constructor.
  * @returns {HTMLElement} The card element.

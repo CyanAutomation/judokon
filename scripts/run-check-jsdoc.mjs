@@ -8,16 +8,16 @@ import { walk, checkFiles } from "./check-jsdoc.mjs";
   let allFiles = [];
 
   try {
-    for(const dir of dirs) {
-        const base = path.resolve(dir);
-        const files = await walk(base, ".js");
-        allFiles.push(...files)
+    for (const dir of dirs) {
+      const base = path.resolve(dir);
+      const files = await walk(base, ".js");
+      allFiles.push(...files);
     }
 
     const problems = await checkFiles(allFiles);
 
     if (problems.length === 0) {
-      console.log("All exported symbols in", dirs.join(', '), "have valid JSDoc blocks.");
+      console.log("All exported symbols in", dirs.join(", "), "have valid JSDoc blocks.");
       process.exit(0);
     }
 
