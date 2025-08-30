@@ -2,7 +2,7 @@ import { getDefaultTimer } from "../timerUtils.js";
 import { startRound as engineStartRound } from "../battleEngineFacade.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { updateDebugPanel } from "./uiHelpers.js";
-import * as snackbar from "../showSnackbar.js";
+import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
 import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
@@ -199,7 +199,7 @@ export async function startTimer(onExpiredSelect) {
   timer.on("drift", () => {
     const msgEl = document.getElementById("round-message");
     if (msgEl && msgEl.textContent) {
-      snackbar.showSnackbar(t("ui.waiting"));
+      showSnackbar(t("ui.waiting"));
     } else {
       scoreboard.showMessage(t("ui.waiting"));
     }
@@ -216,7 +216,7 @@ export async function startTimer(onExpiredSelect) {
  * random stat.
  *
  * @pseudocode
- * 1. Display "Stat selection stalled" via `scoreboard.showMessage`.
+ * 1. Display "Stat selection stalled" via `showSnackbar`.
  * 2. After `timeoutMs` milliseconds call `autoSelectStat(onSelect)`.
  *
  * @param {{autoSelectId: ReturnType<typeof setTimeout> | null}} store
@@ -234,7 +234,7 @@ export function handleStatSelectionTimeout(
   store.autoSelectId = scheduler.setTimeout(() => {
     // If a selection was made in the meantime, do nothing.
     if (store && store.selectionMade) return;
-    scoreboard.showMessage(t("ui.statSelectionStalled"));
+    showSnackbar(t("ui.statSelectionStalled"));
     try {
       emitBattleEvent("statSelectionStalled");
     } catch {}
@@ -382,7 +382,7 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
   timer.on("drift", () => {
     const msgEl = document.getElementById("round-message");
     if (msgEl && msgEl.textContent) {
-      snackbar.showSnackbar("Waiting…");
+      showSnackbar("Waiting…");
     } else {
       scoreboard.showMessage("Waiting…");
     }
