@@ -20,6 +20,9 @@ import {
 import { skipRoundCooldownIfEnabled } from "../helpers/classicBattle/uiHelpers.js";
 import { autoSelectStat } from "../helpers/classicBattle/autoSelectStat.js";
 import { setTestMode } from "../helpers/testModeUtils.js";
+import { wrap } from "../helpers/storage.js";
+import { BATTLE_POINTS_TO_WIN } from "../config/storageKeys.js";
+import { POINTS_TO_WIN_OPTIONS } from "../config/battleDefaults.js";
 
 /**
  * Minimal DOM utils for the CLI page
@@ -318,41 +321,40 @@ export async function renderStatList() {
 }
 
 /**
- * @summary TODO: Add summary
+ * Restore and persist the selected points-to-win value.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Find `#points-select`; return if missing.
+ * 2. Read saved value from storage and apply when valid.
+ * 3. On select change:
+ *    a. Ignore invalid values.
+ *    b. Show confirm that scores reset and match restarts.
+ *    c. If confirmed: save, apply, and reload.
+ *    d. Otherwise revert to previous value.
  */
 export function restorePointsToWin() {
   try {
     const select = byId("points-select");
-    const key = "battleCLI.pointsToWin";
-    const saved = Number(localStorage.getItem(key));
-    if ([5, 10, 15].includes(saved)) {
+    if (!select) return;
+    const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
+    const saved = Number(storage.get());
+    if (POINTS_TO_WIN_OPTIONS.includes(saved)) {
       setPointsToWin(saved);
-      if (select) select.value = String(saved);
+      select.value = String(saved);
     }
-    select?.addEventListener("change", () => {
+    let current = Number(select.value);
+    select.addEventListener("change", () => {
       const val = Number(select.value);
-      if ([5, 10, 15].includes(val)) {
+      if (!POINTS_TO_WIN_OPTIONS.includes(val)) return;
+      if (window.confirm("Changing win target resets scores. Start a new match?")) {
+        storage.set(val);
         setPointsToWin(val);
         try {
-          localStorage.setItem(key, String(val));
+          location.reload();
         } catch {}
+        current = val;
+      } else {
+        select.value = String(current);
       }
     });
   } catch {}
