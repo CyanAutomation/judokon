@@ -3,6 +3,16 @@ import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { resetStatButtons } from "../battle/battleUI.js";
 
+/**
+ * Round resolution helpers and orchestrator for Classic Battle.
+ *
+ * @pseudocode
+ * 1. `resolveRound` guards against concurrent execution via `isResolving`.
+ * 2. `ensureRoundDecisionState` dispatches `evaluate` when needed.
+ * 3. `delayAndRevealOpponent` waits before revealing the opponent's stat.
+ * 4. `finalizeRoundResult` evaluates the round and clears any pending guards.
+ */
+
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 // Guard to prevent concurrent resolution attempts. Module-scoped so multiple
 // callers share the same guard in test environments where modules are not
@@ -100,15 +110,94 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
 }
 
 /**
+ * Ensure the state machine is ready to evaluate the round.
+ *
+ * @pseudocode
+ * 1. Check if `document.body.dataset.battleState` is `"roundDecision"`.
+ * 2. If not, dispatch the `"evaluate"` event.
+ * 3. Swallow any errors from dispatching.
+ *
+ * @returns {Promise<void>}
+ */
+export async function ensureRoundDecisionState() {
+  try {
+    const inRoundDecision =
+      typeof document !== "undefined" && document.body?.dataset.battleState === "roundDecision";
+    if (!inRoundDecision) {
+      await dispatchBattleEvent("evaluate");
+    }
+  } catch {}
+}
+
+/**
+ * Wait for a delay then reveal the opponent's stat.
+ *
+ * @pseudocode
+ * 1. Mark `window.__roundDebug.resolving`.
+ * 2. Sleep for `delayMs` using the provided `sleep` function.
+ * 3. Emit `"opponentReveal"`.
+ *
+ * @param {number} delayMs - Delay before revealing.
+ * @param {(ms: number) => Promise<void>} sleep - Sleep implementation.
+ * @param {string} stat - Chosen stat key (for debug logging).
+ * @returns {Promise<void>}
+ */
+export async function delayAndRevealOpponent(delayMs, sleep, stat) {
+  try {
+    if (!IS_VITEST) console.log("DEBUG: resolveRound sleep", { delayMs, stat });
+  } catch {}
+  try {
+    if (typeof window !== "undefined") window.__roundDebug = { resolving: true };
+  } catch {}
+  await sleep(delayMs);
+  try {
+    if (!IS_VITEST) console.log("DEBUG: resolveRound before opponentReveal", { stat });
+  } catch {}
+  emitBattleEvent("opponentReveal");
+}
+
+/**
+ * Finalize round resolution after the opponent is revealed.
+ *
+ * @pseudocode
+ * 1. Call `computeRoundResult`.
+ * 2. Clear any `window.__roundDecisionGuard` timeout.
+ * 3. Stamp `window.__roundDebug.resolvedAt`.
+ * 4. Return the computation result.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ * @returns {Promise<ReturnType<typeof evaluateRound>>}
+ */
+export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
+  const result = await computeRoundResult(store, stat, playerVal, opponentVal);
+  try {
+    if (typeof window !== "undefined" && window.__roundDecisionGuard) {
+      clearTimeout(window.__roundDecisionGuard);
+      window.__roundDecisionGuard = null;
+    }
+  } catch {}
+  try {
+    if (typeof window !== "undefined" && window.__roundDebug) {
+      window.__roundDebug.resolvedAt = Date.now();
+    }
+  } catch {}
+  try {
+    if (!IS_VITEST) console.log("DEBUG: resolveRound result", result);
+  } catch {}
+  return result;
+}
+
+/**
  * Resolves the round after a stat has been selected.
  *
  * @pseudocode
  * 1. If no stat is provided, return immediately.
- * 2. Dispatch an "evaluate" event unless already in the "roundDecision" state.
- * 3. Wait for a randomized delay.
- * 4. Emit "opponentReveal".
- * 5. Evaluate the round via `computeRoundResult` which also emits outcome events.
- * 6. Return the evaluation result.
+ * 2. Call `ensureRoundDecisionState`.
+ * 3. Await `delayAndRevealOpponent`.
+ * 4. Call `finalizeRoundResult` and return its value.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -132,48 +221,9 @@ export async function resolveRound(
   isResolving = true;
   try {
     if (!stat) return;
-    // Avoid re-entrant dispatch loops: when called from the state machine's
-    // roundDecision onEnter, the machine is already in "roundDecision" and will
-    // run this resolver. Dispatching an additional "evaluate" event here would
-    // attempt to re-enter the same state and invoke this function again, causing
-    // a deadlock. Only dispatch "evaluate" when not already in that state.
-    try {
-      const inRoundDecision =
-        typeof document !== "undefined" && document.body?.dataset.battleState === "roundDecision";
-      if (!inRoundDecision) {
-        await dispatchBattleEvent("evaluate");
-      }
-    } catch {}
-    try {
-      if (!IS_VITEST) console.log("DEBUG: resolveRound sleep", { delayMs, stat });
-    } catch {}
-    // Mark resolving but keep the guard active until resolution completes; this
-    // allows the guard to rescue the round if resolution stalls.
-    try {
-      if (typeof window !== "undefined") window.__roundDebug = { resolving: true };
-    } catch {}
-    await sleep(delayMs);
-    try {
-      if (!IS_VITEST) console.log("DEBUG: resolveRound before opponentReveal", { stat });
-    } catch {}
-    emitBattleEvent("opponentReveal");
-    const result = await computeRoundResult(store, stat, playerVal, opponentVal);
-    // Resolution completed; clear any scheduled guard to avoid late duplicate
-    // outcome dispatch after we've already advanced the machine.
-    try {
-      if (typeof window !== "undefined" && window.__roundDecisionGuard) {
-        clearTimeout(window.__roundDecisionGuard);
-        window.__roundDecisionGuard = null;
-      }
-    } catch {}
-    try {
-      if (typeof window !== "undefined" && window.__roundDebug) {
-        window.__roundDebug.resolvedAt = Date.now();
-      }
-    } catch {}
-    try {
-      if (!IS_VITEST) console.log("DEBUG: resolveRound result", result);
-    } catch {}
+    await ensureRoundDecisionState();
+    await delayAndRevealOpponent(delayMs, sleep, stat);
+    const result = await finalizeRoundResult(store, stat, playerVal, opponentVal);
     return result;
   } finally {
     isResolving = false;
