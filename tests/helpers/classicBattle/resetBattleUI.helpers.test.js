@@ -6,7 +6,8 @@ vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
 }));
 
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
-  clearMessage: vi.fn()
+  clearMessage: vi.fn(),
+  clearTimer: vi.fn()
 }));
 
 vi.mock("../../../src/helpers/classicBattle/uiService.js", () => ({
@@ -78,7 +79,7 @@ describe("resetBattleUI helpers", () => {
       clearRoundInfo();
 
       expect(scoreboard.clearMessage).toHaveBeenCalledTimes(1);
-      expect(document.getElementById("next-round-timer").textContent).toBe("");
+      expect(scoreboard.clearTimer).toHaveBeenCalledTimes(1);
       expect(document.getElementById("round-result").textContent).toBe("");
       expect(uiService.syncScoreDisplay).toHaveBeenCalledTimes(1);
     });

@@ -28,6 +28,7 @@ beforeEach(() => {
     showMessage,
     clearMessage,
     clearTimer,
+    updateTimer: vi.fn(),
     updateScore: vi.fn(),
     showAutoSelect: vi.fn()
   }));

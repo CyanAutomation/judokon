@@ -63,6 +63,7 @@ describe("classicBattle timer pause", () => {
       showMessage,
       showTemporaryMessage: () => () => {},
       clearTimer: vi.fn(),
+      updateTimer: vi.fn(),
       clearMessage: vi.fn(),
       updateScore: vi.fn(),
       showAutoSelect: vi.fn(),

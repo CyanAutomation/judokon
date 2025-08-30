@@ -53,7 +53,9 @@ describe("syncScoreDisplay", () => {
           document.body.appendChild(el);
         }
         el.textContent = `You: ${p}\nOpponent: ${o}`;
-      }
+      },
+      clearTimer: vi.fn(),
+      updateTimer: vi.fn()
     }));
 
     vi.doMock("../../src/config/loadSettings.js", () => ({

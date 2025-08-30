@@ -28,7 +28,9 @@ describe("startRoundWrapper failures", () => {
     }));
     vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
       setupScoreboard: vi.fn(),
-      showMessage
+      showMessage,
+      updateTimer: vi.fn(),
+      clearTimer: vi.fn()
     }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({
       initTooltips: vi.fn().mockResolvedValue(() => {})

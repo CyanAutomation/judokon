@@ -12,6 +12,11 @@ const gokyoFixture = JSON.parse(readFileSync(path.join(__dirname, "../fixtures/g
  * 1. Create a <header> element.
  * 2. Inject paragraphs for round message, next round timer, and score display.
  * 3. Return the populated header element.
+ *
+ * @example
+ * const header = createScoreboardHeader();
+ * document.body.appendChild(header);
+ * scoreboard.updateTimer(5); // Renders "Time Left: 5s"
  */
 export function createScoreboardHeader() {
   const header = document.createElement("header");
@@ -30,6 +35,11 @@ export function createScoreboardHeader() {
  * 1. Create a <header> element.
  * 2. Populate it with round message, next round timer, and score display paragraphs.
  * 3. Return the header element.
+ *
+ * @example
+ * const header = createBattleHeader();
+ * document.body.appendChild(header);
+ * scoreboard.updateTimer(10); // Renders "Time Left: 10s"
  */
 export function createBattleHeader() {
   const header = document.createElement("header");

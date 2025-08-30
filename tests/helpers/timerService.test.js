@@ -8,10 +8,11 @@ vi.mock("../../src/helpers/showSnackbar.js", () => ({
 }));
 
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({
-  clearTimer: () => {},
+  clearTimer: vi.fn(),
   showMessage: () => {},
   showAutoSelect: () => {},
-  showTemporaryMessage: () => () => {}
+  showTemporaryMessage: () => () => {},
+  updateTimer: vi.fn()
 }));
 
 vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
@@ -35,6 +36,7 @@ describe("timerService", () => {
   beforeEach(() => {
     scheduler = createMockScheduler();
     document.body.innerHTML = "";
+    vi.clearAllMocks();
     vi.resetModules();
     vi.doMock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
       autoSelectStat: vi.fn((onSelect) => {
@@ -70,6 +72,19 @@ describe("timerService", () => {
     mod.skipCurrentPhase();
     mod.setSkipHandler(handler);
     expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it("updates scoreboard timer and clears on expiration", async () => {
+    const scoreboard = await import("../../src/helpers/setupScoreboard.js");
+    const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
+    await startTimer(async () => {});
+
+    expect(scoreboard.updateTimer).toHaveBeenCalledWith(2);
+    scheduler.tick(1000);
+    expect(scoreboard.updateTimer).toHaveBeenCalledWith(1);
+    scheduler.tick(1000);
+    expect(scoreboard.updateTimer).toHaveBeenCalledWith(0);
+    expect(scoreboard.clearTimer).toHaveBeenCalledTimes(1);
   });
 
   it("enables next round when skipped before cooldown starts", async () => {

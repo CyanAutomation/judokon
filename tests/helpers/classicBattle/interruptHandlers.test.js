@@ -11,7 +11,8 @@ vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
 }));
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
   showMessage: vi.fn(),
-  clearTimer: vi.fn()
+  clearTimer: vi.fn(),
+  updateTimer: vi.fn()
 }));
 vi.mock("../../../src/utils/scheduler.js", () => ({
   stop: vi.fn(),

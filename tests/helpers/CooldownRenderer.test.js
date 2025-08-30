@@ -6,7 +6,8 @@ vi.mock("../../src/helpers/showSnackbar.js", () => ({
 }));
 
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({
-  clearTimer: vi.fn()
+  clearTimer: vi.fn(),
+  updateTimer: vi.fn()
 }));
 
 vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
@@ -54,12 +55,14 @@ describe("attachCooldownRenderer", () => {
 
     timer.emit("tick", 3);
     expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 3s");
+    expect(scoreboard.updateTimer).toHaveBeenCalledWith(3);
 
     timer.emit("tick", 2);
     expect(snackbar.updateSnackbar).toHaveBeenCalledWith("Next round in: 2s");
+    expect(scoreboard.updateTimer).toHaveBeenCalledWith(2);
 
     timer.emit("tick", 0);
     expect(snackbar.updateSnackbar).toHaveBeenCalledWith("Next round in: 0s");
-    expect(scoreboard.clearTimer).toHaveBeenCalled();
+    expect(scoreboard.updateTimer).toHaveBeenCalledWith(0);
   });
 });

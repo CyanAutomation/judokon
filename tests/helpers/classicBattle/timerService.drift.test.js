@@ -13,7 +13,9 @@ describe("timerService drift handling", () => {
     vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
       showMessage,
       showTemporaryMessage: () => () => {},
-      showAutoSelect: vi.fn()
+      showAutoSelect: vi.fn(),
+      clearTimer: vi.fn(),
+      updateTimer: vi.fn()
     }));
     vi.doMock("../../../src/helpers/timerUtils.js", () => ({
       getDefaultTimer: () => 30
@@ -41,7 +43,9 @@ describe("timerService drift handling", () => {
     vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
       showMessage,
       showTemporaryMessage: () => () => {},
-      showAutoSelect: vi.fn()
+      showAutoSelect: vi.fn(),
+      clearTimer: vi.fn(),
+      updateTimer: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
       enableNextRoundButton: vi.fn(),

@@ -129,17 +129,11 @@ async function forceAutoSelectAndDispatch(onExpiredSelect) {
  * @returns {Promise<void>} Resolves when the timer begins.
  */
 export async function startTimer(onExpiredSelect) {
-  const timerEl = document.getElementById("next-round-timer");
   let duration = 30;
   let synced = true;
 
   const onTick = (remaining) => {
-    if (!timerEl) return;
-    if (remaining <= 0) {
-      scoreboard.clearTimer();
-      return;
-    }
-    timerEl.textContent = `Time Left: ${remaining}s`;
+    scoreboard.updateTimer(remaining);
   };
 
   const onExpired = async () => {
@@ -242,21 +236,16 @@ export function handleStatSelectionTimeout(
  *
  * @pseudocode
  * 1. Clear the skip handler and scoreboard timer.
- * 2. Remove any countdown text from the timer element.
- * 3. Enable the Next button and mark it as ready.
- * 4. Dispatch "ready", update the debug panel, and resolve the ready promise.
+ * 2. Enable the Next button and mark it as ready.
+ * 3. Dispatch "ready", update the debug panel, and resolve the ready promise.
  *
  * @param {{resolveReady: (() => void) | null}} controls - Timer controls.
  * @param {HTMLButtonElement | null} btn - Next button element.
- * @param {HTMLElement | null} timerEl - Countdown display element.
  * @returns {Promise<void>}
  */
-export async function handleNextRoundExpiration(controls, btn, timerEl) {
+export async function handleNextRoundExpiration(controls, btn) {
   setSkipHandler(null);
   scoreboard.clearTimer();
-  if (timerEl) {
-    timerEl.textContent = "";
-  }
   // Mark Next as ready before signaling state progression
   if (btn) {
     btn.dataset.nextReady = "true";
@@ -310,7 +299,7 @@ export async function handleNextRoundExpiration(controls, btn, timerEl) {
  * @pseudocode
  * 1. If the match ended, resolve immediately.
  * 2. Determine cooldown seconds via `computeNextRoundCooldown` (minimum 1s).
- * 3. Locate `#next-button` and `#next-round-timer`; reset the button state.
+ * 3. Locate `#next-button` and reset the button state.
  * 4. Attach `CooldownRenderer` to update UI and register `onExpired` with `handleNextRoundExpiration`.
  * 5. Register a skip handler that logs the skip (for tests) and stops the timer.
  * 6. Start the timer and resolve when expired.
@@ -354,7 +343,6 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
   }
 
   const btn = document.getElementById("next-button");
-  const timerEl = document.getElementById("next-round-timer");
 
   // Reset any leftover ready state so each cooldown runs through the timer
   // path even after an auto-advance.
@@ -375,7 +363,7 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
   const onExpired = () => {
     if (expired) return;
     expired = true;
-    return handleNextRoundExpiration(controls, btn, timerEl);
+    return handleNextRoundExpiration(controls, btn);
   };
   timer.on("expired", onExpired);
   timer.on("drift", () => {

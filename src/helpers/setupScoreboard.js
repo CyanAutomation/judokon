@@ -5,6 +5,7 @@ import {
   clearMessage,
   showTemporaryMessage,
   clearTimer,
+  updateTimer,
   showAutoSelect,
   updateRoundCounter,
   clearRoundCounter
@@ -37,6 +38,7 @@ export {
   clearMessage,
   showTemporaryMessage,
   clearTimer,
+  updateTimer,
   showAutoSelect,
   updateRoundCounter,
   clearRoundCounter

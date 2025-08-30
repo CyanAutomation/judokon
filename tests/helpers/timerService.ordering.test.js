@@ -13,7 +13,8 @@ describe("timerService timeout ordering", () => {
       clearTimer: () => {},
       showMessage: () => {},
       showAutoSelect: () => {},
-      showTemporaryMessage: () => () => {}
+      showTemporaryMessage: () => () => {},
+      updateTimer: () => {}
     }));
     vi.doMock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
       updateDebugPanel: () => {}

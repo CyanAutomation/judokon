@@ -31,6 +31,7 @@ export function attachCooldownRenderer(timer, initialRemaining) {
       snackbar.updateSnackbar(text);
     }
     lastRendered = clamped;
+    scoreboard.updateTimer(clamped);
     return clamped;
   };
 
@@ -41,9 +42,6 @@ export function attachCooldownRenderer(timer, initialRemaining) {
       emitBattleEvent("nextRoundCountdownStarted");
     }
     emitBattleEvent("nextRoundCountdownTick", { remaining: clamped });
-    if (clamped <= 0) {
-      scoreboard.clearTimer();
-    }
   };
 
   const onExpired = () => onTick(0);
@@ -51,8 +49,7 @@ export function attachCooldownRenderer(timer, initialRemaining) {
   timer.on("tick", onTick);
   timer.on("expired", onExpired);
   if (typeof initialRemaining === "number") {
-    const clamped = render(initialRemaining);
-    if (clamped <= 0) scoreboard.clearTimer();
+    render(initialRemaining);
   }
   return () => {
     timer.off("tick", onTick);

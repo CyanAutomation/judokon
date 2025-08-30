@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
-  showAutoSelect: vi.fn()
+  showAutoSelect: vi.fn(),
+  updateTimer: vi.fn(),
+  clearTimer: vi.fn()
 }));
 
 describe("autoSelectStat basic path", () => {
