@@ -422,6 +422,7 @@ export async function roundDecisionEnter(machine) {
   scheduleRoundDecisionGuard(store, machine);
 
   try {
+    // Attempt immediate resolution; returns true if round already resolved.
     const resolved = await resolveSelectionIfPresent(store);
     if (resolved) {
       try {
