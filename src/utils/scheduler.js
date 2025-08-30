@@ -32,24 +32,15 @@ let rafId = 0;
  * 3. Kick off the loop with `requestAnimationFrame(loop)`.
  */
 /**
- * @summary TODO: Add summary
+ * Start the scheduler's requestAnimationFrame loop.
+ *
+ * @summary Begin invoking registered frame and second callbacks on a RAF loop.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. If already running, return.
+ * 2. Start RAF loop that updates `currentTime`, runs frame callbacks, and when
+ *    a new second is observed, runs second callbacks.
+ *
+ * @returns {void}
  */
 export function start() {
   if (running) return;
@@ -128,19 +119,13 @@ export function onSecondTick(cb) {
  * 1. TODO: Add pseudocode
  */
 /**
- * @summary TODO: Add summary
+ * Remove a scheduled callback by id.
+ *
+ * @summary Cancel a previously registered `onFrame` or `onSecondTick` callback.
+ * @param {number} id - Identifier returned from `onFrame` or `onSecondTick`.
+ * @returns {void}
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Delete the id from both `frameCallbacks` and `secondCallbacks` maps.
  */
 export function cancel(id) {
   frameCallbacks.delete(id);
@@ -156,24 +141,14 @@ export function cancel(id) {
  * 3. Clear both callback maps and reset timing state.
  */
 /**
- * @summary TODO: Add summary
+ * Stop the animation loop and clear all registered callbacks.
+ *
+ * @summary Cancel the RAF loop, clear callback maps, and reset scheduler state.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. If not running, return.
+ * 2. Cancel the scheduled RAF frame.
+ * 3. Clear callback maps and reset timing variables.
+ * @returns {void}
  */
 export function stop() {
   if (!running) return;

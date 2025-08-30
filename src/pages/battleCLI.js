@@ -61,23 +61,11 @@ export const __test = {
     return { selectionTimer, selectionInterval };
   },
   installEventBindings,
-  init,
   autostartBattle,
   renderStatList,
   restorePointsToWin,
   startRoundWrapper
 };
-
-function setRetroMode(enabled) {
-  document.body.classList.toggle("retro", !!enabled);
-}
-
-function updateScoreLine(player, opponent) {
-  const el = byId("cli-score");
-  if (!el) return;
-  el.textContent = `You: ${player}  Opponent: ${opponent}`;
-}
-
 /**
  * Update the round counter line in the header.
  *
@@ -409,24 +397,13 @@ function startSelectionCountdown(seconds = 5) {
 }
 
 /**
- * @summary TODO: Add summary
+ * Auto-start the battle when the URL indicates `autostart=1`.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Ensure `autostart=1` is present in the URL to persist intent.
+ * 2. If present, dispatch `startClicked` on the battle machine.
+ *
+ * @returns {void}
  */
 export function autostartBattle() {
   // Ensure autostart so the modal is skipped in CLI and dispatch start
@@ -447,24 +424,15 @@ export function autostartBattle() {
 }
 
 /**
- * @summary TODO: Add summary
+ * Load stat names and render them into the CLI stat selection list.
+ *
+ * @summary Fetch `statNames.json`, build stat buttons, and wire click handlers.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Fetch `statNames.json` and locate `#cli-stats`.
+ * 2. Sort and render stat entries into clickable elements with `data-stat-index`.
+ * 3. Attach `handleStatClick` to the list and populate help text when available.
+ *
+ * @returns {Promise<void>} Resolves when the stat list has been rendered.
  */
 export async function renderStatList() {
   try {
@@ -514,6 +482,17 @@ export async function renderStatList() {
  *    b. Show confirm that scores reset and match restarts.
  *    c. If confirmed: save, apply, and reload.
  *    d. Otherwise revert to previous value.
+ */
+/**
+ * Restore, persist, and handle changes to the points-to-win selector.
+ *
+ * @summary Read the saved points-to-win value, apply it, and prompt the user on change.
+ * @pseudocode
+ * 1. Locate `#points-select` and read stored value using the provided storage wrapper.
+ * 2. If a stored value is valid, apply it and update the select control.
+ * 3. On user change: validate the chosen value, confirm reset, persist and reload when confirmed.
+ *
+ * @returns {void}
  */
 export function restorePointsToWin() {
   try {
@@ -657,6 +636,20 @@ export function handleGlobalKey(key) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Handle key input while waiting for the player's stat selection.
+ *
+ * @summary Convert numeric key presses into stat selections when appropriate.
+ * @param {string} key - Normalized single-character key value (e.g., '1').
+ * @returns {boolean} True when the key was handled and resulted in a selection.
+ * @pseudocode
+ * if key is between '1' and '9':
+ *   lookup stat by index
+ *   if stat missing: return false
+ *   selectStat(stat)
+ *   return true
+ * return false
+ */
 export function handleWaitingForPlayerActionKey(key) {
   if (key >= "1" && key <= "9") {
     const stat = getStatByIndex(key);
@@ -695,6 +688,18 @@ export function handleWaitingForPlayerActionKey(key) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Handle key input after a round has resolved.
+ *
+ * @summary Treat Enter/Space as confirmation to continue to the next state.
+ * @param {string} key - Normalized key value (lowercased or space string).
+ * @returns {boolean} True when the key was handled.
+ * @pseudocode
+ * if key is Enter or Space:
+ *   dispatch 'continue'
+ *   return true
+ * return false
  */
 export function handleRoundOverKey(key) {
   if (key === "enter" || key === " ") {
@@ -737,6 +742,20 @@ export function handleRoundOverKey(key) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Handle key input during cooldown between rounds.
+ *
+ * @summary Allow Enter/Space to skip cooldown, clear timers, and mark machine as ready.
+ * @param {string} key - Normalized key value.
+ * @returns {boolean} True when the key was handled.
+ * @pseudocode
+ * if key is Enter or Space:
+ *   clear timers
+ *   clear bottom line
+ *   dispatch 'ready'
+ *   return true
+ * return false
  */
 export function handleCooldownKey(key) {
   if (key === "enter" || key === " ") {
@@ -794,6 +813,26 @@ export function handleCooldownKey(key) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Global keyboard handler that routes input based on the current battle state.
+ *
+ * @summary Normalize keyboard events, run global handlers, then state-specific handlers.
+ * @param {KeyboardEvent} e - Browser keyboard event.
+ * @returns {void}
+ * @pseudocode
+ * key = lowercased key from event
+ * state = document.body.dataset.battleState
+ * table = { waitingForPlayerAction: handleWaitingForPlayerActionKey,
+ *           roundOver: handleRoundOverKey,
+ *           cooldown: handleCooldownKey }
+ * handler = table[state]
+ * handled = handleGlobalKey(key) OR (handler ? handler(key) : false)
+ * countdown = element '#cli-countdown'
+ * if not handled:
+ *   if countdown exists: set text to "Invalid key, press H for help"
+ * else if countdown has text:
+ *   clear countdown text
  */
 export function onKeyDown(e) {
   const key = e.key.toLowerCase();
