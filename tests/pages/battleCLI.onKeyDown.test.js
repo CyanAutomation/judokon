@@ -1,15 +1,19 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { emitBattleEvent, __resetBattleEventTarget } from "../../src/helpers/classicBattle/battleEvents.js";
 
 describe("battleCLI onKeyDown", () => {
   let onKeyDown, __test;
 
   beforeEach(async () => {
+    __resetBattleEventTarget();
     window.__TEST__ = true;
     ({ onKeyDown, __test } = await import("../../src/pages/battleCLI.js"));
     document.body.innerHTML = `
+      <div id="cli-main"></div>
       <div id="cli-shortcuts" hidden></div>
       <div id="cli-countdown" aria-live="polite"></div>
       <div id="snackbar-container"></div>
+      <div id="modal-container"></div>
     `;
     document.body.className = "";
     document.body.dataset.battleState = "";
@@ -42,14 +46,32 @@ describe("battleCLI onKeyDown", () => {
     expect(countdown.textContent).toBe("");
   });
 
-  it("quits on Q key", () => {
+  it("confirms quit via modal", () => {
     const dispatch = vi.fn();
     window.__getClassicBattleMachine = () => ({ dispatch });
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
+    const confirm = document.getElementById("confirm-quit-button");
+    expect(confirm).toBeTruthy();
+    expect(dispatch).not.toHaveBeenCalled();
+    confirm.click();
     expect(dispatch).toHaveBeenCalledWith("interrupt", { reason: "quit" });
   });
 
-  it("clears timers when quitting", () => {
+  it("resumes timers when quit is canceled", () => {
+    const dispatch = vi.fn();
+    window.__getClassicBattleMachine = () => ({ dispatch });
+    document.body.dataset.battleState = "waitingForPlayerAction";
+    const selT = setTimeout(() => {}, 1000);
+    const selI = setInterval(() => {}, 1000);
+    __test.setSelectionTimers(selT, selI);
+    const countdown = document.getElementById("cli-countdown");
+    countdown.dataset.remainingTime = "3";
+    onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
+    document.getElementById("cancel-quit-button").click();
+    expect(__test.getSelectionTimers().selectionTimer).not.toBeNull();
+  });
+
+  it("clears timers when confirming quit", () => {
     const dispatch = vi.fn();
     window.__getClassicBattleMachine = () => ({ dispatch });
     const cooldownT = setTimeout(() => {}, 1000);
@@ -61,6 +83,7 @@ describe("battleCLI onKeyDown", () => {
     __test.setCooldownTimers(cooldownT, cooldownI);
     __test.setSelectionTimers(selT, selI);
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
+    document.getElementById("confirm-quit-button").click();
     expect(spyTimeout).toHaveBeenCalledWith(cooldownT);
     expect(spyInterval).toHaveBeenCalledWith(cooldownI);
     expect(spyTimeout).toHaveBeenCalledWith(selT);
@@ -69,6 +92,17 @@ describe("battleCLI onKeyDown", () => {
     expect(__test.getSelectionTimers()).toEqual({ selectionTimer: null, selectionInterval: null });
     spyTimeout.mockRestore();
     spyInterval.mockRestore();
+  });
+
+  it("shows play again button on match over", () => {
+    __test.installEventBindings();
+    const reload = vi.spyOn(location, "reload").mockImplementation(() => {});
+    emitBattleEvent("matchOver");
+    const btn = document.getElementById("play-again-button");
+    expect(btn).toBeTruthy();
+    btn.click();
+    expect(reload).toHaveBeenCalled();
+    reload.mockRestore();
   });
 
   it("dispatches statSelected in waitingForPlayerAction state", () => {
