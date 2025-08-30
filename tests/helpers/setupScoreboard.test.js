@@ -18,7 +18,11 @@ describe("setupScoreboard", () => {
   });
 
   function createControls() {
-    return {};
+    return {
+      startCoolDown: vi.fn(),
+      pauseTimer: vi.fn(),
+      resumeTimer: vi.fn()
+    };
   }
 
   it("initializes scoreboard and proxies component methods", async () => {
@@ -62,5 +66,18 @@ describe("setupScoreboard", () => {
     const mod = await import("../../src/helpers/setupScoreboard.js");
     mod.setupScoreboard(controls, scheduler);
     expect(initSpy).toHaveBeenCalledWith(null, expect.objectContaining({ scheduler }));
+  });
+
+  it("pauses on hide and resumes on focus", async () => {
+    const scheduler = createMockScheduler();
+    const controls = createControls();
+    const mod = await import("../../src/helpers/setupScoreboard.js");
+    mod.setupScoreboard(controls, scheduler);
+    Object.defineProperty(document, "hidden", { value: true, configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(controls.pauseTimer).toHaveBeenCalled();
+    Object.defineProperty(document, "hidden", { value: false, configurable: true });
+    window.dispatchEvent(new Event("focus"));
+    expect(controls.resumeTimer).toHaveBeenCalled();
   });
 });

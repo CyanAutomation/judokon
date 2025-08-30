@@ -24,6 +24,12 @@ let roundCounterEl;
 let scoreRafId = 0;
 let currentPlayer = 0;
 let currentOpponent = 0;
+let startCoolDown;
+let pauseTimer;
+let resumeTimer;
+let scheduler;
+let visibilityHandler;
+let focusHandler;
 export function createScoreboard(container = document.createElement("div")) {
   messageEl = document.createElement("p");
   messageEl.id = "round-message";
@@ -53,22 +59,64 @@ export function createScoreboard(container = document.createElement("div")) {
 }
 
 /**
- * Initialize internal references using elements that already exist in the page
- * header.
+ * Initialize internal references and store timer controls.
  *
  * @pseudocode
- * 1. Locate child elements within `container` by their IDs.
+ * 1. Locate child elements within `container` by their IDs when provided.
  * 2. Store these nodes in module-scoped variables for later updates.
+ * 3. Persist `startCoolDown`, `pauseTimer`, `resumeTimer`, and `scheduler` from
+ *    `controls` for visibility-based countdown pausing.
+ * 4. Attach `visibilitychange` and `focus` listeners that call the stored
+ *    pause/resume callbacks.
  *
- * @param {HTMLElement} container - Header element containing the scoreboard nodes.
+ * @param {HTMLElement|null} container - Header element containing the
+ * scoreboard nodes.
+ * @param {{
+ *   startCoolDown?: Function,
+ *   pauseTimer?: Function,
+ *   resumeTimer?: Function,
+ *   scheduler?: object
+ * }} [controls={}] - Timer control callbacks.
  * @returns {void}
  */
-export function initScoreboard(container) {
-  if (!container) return;
-  messageEl = container.querySelector("#round-message");
-  timerEl = container.querySelector("#next-round-timer");
-  roundCounterEl = container.querySelector("#round-counter");
-  scoreEl = container.querySelector("#score-display");
+export function initScoreboard(container, controls = {}) {
+  if (container) {
+    messageEl = container.querySelector("#round-message");
+    timerEl = container.querySelector("#next-round-timer");
+    roundCounterEl = container.querySelector("#round-counter");
+    scoreEl = container.querySelector("#score-display");
+  }
+
+  startCoolDown = controls.startCoolDown;
+  pauseTimer = controls.pauseTimer;
+  resumeTimer = controls.resumeTimer;
+  scheduler = controls.scheduler;
+
+  // Mark currently unused controls to satisfy lint while retaining references.
+  void startCoolDown;
+  void scheduler;
+
+  if (visibilityHandler) {
+    document.removeEventListener("visibilitychange", visibilityHandler);
+  }
+  if (focusHandler) {
+    window.removeEventListener("focus", focusHandler);
+  }
+
+  visibilityHandler = () => {
+    if (document.hidden && typeof pauseTimer === "function") {
+      pauseTimer();
+    }
+  };
+
+  focusHandler = () => {
+    if (!document.hidden && typeof resumeTimer === "function") {
+      resumeTimer();
+    }
+  };
+
+  document.addEventListener("visibilitychange", visibilityHandler);
+  window.addEventListener("focus", focusHandler);
 }
 
 // Best-effort lazy lookup for header elements in case initialization runs late
