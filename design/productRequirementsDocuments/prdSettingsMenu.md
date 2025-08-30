@@ -44,6 +44,7 @@ Players need to easily adjust game settings to personalize their experience, imp
 | P1       | Full Navigation Map Toggle          | Enable or disable the full navigation map via general setting; updates `settings.json` live on change. |
 | P3       | Test Mode Feature Flag              | Enables deterministic battles for automated testing.                                                   |
 | P3       | Battle Debug Panel Feature Flag     | Adds a collapsible debug `<pre>` beside the opponent's card showing match state.                       |
+| P3       | Battle State Badge Feature Flag     | Displays the current battle state in a header badge on battle pages.                                   |
 | P3       | Card Inspector Feature Flag         | Reveals a panel on each card with its raw JSON for debugging.                                          |
 | P3       | Viewport Simulation Feature Flag    | Choose preset sizes to simulate different devices.                                                     |
 | P3       | Tooltip Overlay Debug Feature Flag  | Outline tooltip targets to debug placement.                                                            |
@@ -89,6 +90,7 @@ On load, the Settings page must pre-populate each control with values from
 - **Full navigation map (binary):** ON/OFF (default: ON) – Display an overlay map linking to every page.
 - **Test mode feature flag (binary):** ON/OFF (default: OFF) – Run deterministic matches for testing.
 - **Battle debug panel feature flag (binary):** ON/OFF (default: OFF) – Show a panel above the cards with live match data and a copy button for debugging.
+- **Battle state badge feature flag (binary):** ON/OFF (default: OFF) – Display the current battle state in a header badge.
 - **Card inspector feature flag (binary):** ON/OFF (default: OFF) – Reveal raw card JSON in a collapsible panel.
 - **Viewport simulation feature flag (binary):** ON/OFF (default: OFF) – Choose preset sizes to simulate different devices.
 - **Tooltip overlay debug feature flag (binary):** ON/OFF (default: OFF) – Outline tooltip targets to debug placement.
@@ -165,6 +167,12 @@ On load, the Settings page must pre-populate each control with values from
 - The panel is keyboard accessible and hidden by default.
   - The panel appears above the player and opponent cards rather than at the page bottom.
 - The panel stays visible for the whole match once enabled.
+- Setting persists across page refreshes and sessions.
+
+### Battle State Badge Feature Flag
+
+- Enabling the flag shows a badge with the current battle state on battle pages.
+- The badge updates as the state machine transitions.
 - Setting persists across page refreshes and sessions.
 
 ### Card Inspector Feature Flag
