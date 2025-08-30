@@ -53,6 +53,10 @@
       "enabled": false,
       "tooltipId": "settings.skipRoundCooldown"
     },
+    "statHotkeys": {
+      "enabled": false,
+      "tooltipId": "settings.statHotkeys"
+    },
     "cliVerbose": {
       "enabled": false,
       "tooltipId": "settings.cliVerbose"
