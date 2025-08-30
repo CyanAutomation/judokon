@@ -29,8 +29,10 @@ import { t } from "../i18n.js";
  * 6. Attempt to initialize tooltips for the modal; log errors but continue.
  * 7. Open the modal.
  * 8. When a button is clicked:
- *    a. Call `setPointsToWin` with the round value.
- *    b. Close and destroy the modal, then invoke the provided start callback.
+ *    a. Call `setPointsToWin` with the round value and persist it.
+ *    b. Close the modal.
+ *    c. Invoke the provided start callback and await completion.
+ *    d. Emit `startClicked`, then clean up tooltips and destroy the modal.
  *
  * @param {Function} onStart - Callback to invoke after selecting rounds.
  * @returns {Promise<void>} Resolves when modal is initialized.
@@ -105,7 +107,7 @@ export async function initRoundSelectModal(onStart) {
   rounds.forEach((r) => {
     const btn = createButton(r.label, { id: `round-select-${r.id}` });
     btn.dataset.tooltipId = `ui.round${r.label}`;
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       setPointsToWin(r.value);
       try {
         const storage = wrap(BATTLE_POINTS_TO_WIN);
@@ -115,8 +117,8 @@ export async function initRoundSelectModal(onStart) {
         logEvent("battle.start", { pointsToWin: r.value, source: "modal" });
       } catch {}
       modal.close();
+      if (typeof onStart === "function") await onStart();
       emitBattleEvent("startClicked");
-      if (typeof onStart === "function") onStart();
       cleanupTooltips();
       modal.destroy();
     });
