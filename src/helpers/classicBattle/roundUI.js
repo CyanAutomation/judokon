@@ -241,6 +241,15 @@ try {
  * 1. TODO: Add pseudocode
  */
 export function bindRoundUIEventHandlersDynamic() {
+  // Guard against rebinding on the same EventTarget instance
+  try {
+    const { getBattleEventTarget } = await import("./battleEvents.js");
+    const KEY = "__cbRoundUIDynamicBoundTargets";
+    const target = getBattleEventTarget();
+    const set = (globalThis[KEY] ||= new WeakSet());
+    if (set.has(target)) return;
+    set.add(target);
+  } catch {}
   onBattleEvent("roundStarted", (e) => {
     const { store, roundNumber } = e.detail || {};
     if (store && typeof roundNumber === "number") {

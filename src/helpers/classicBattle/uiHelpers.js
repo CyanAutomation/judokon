@@ -19,7 +19,7 @@ import { toggleInspectorPanels } from "../cardUtils.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { syncScoreDisplay } from "./uiService.js";
-import { onBattleEvent } from "./battleEvents.js";
+import { onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import * as battleEvents from "./battleEvents.js";
 
 /**
@@ -1803,6 +1803,14 @@ try {
  * 1. TODO: Add pseudocode
  */
 export function bindUIHelperEventHandlersDynamic() {
+  // Ensure we only bind once per EventTarget instance
+  try {
+    const KEY = "__cbUIHelpersDynamicBoundTargets";
+    const target = getBattleEventTarget();
+    const set = (globalThis[KEY] ||= new WeakSet());
+    if (set.has(target)) return;
+    set.add(target);
+  } catch {}
   onBattleEvent("opponentReveal", async () => {
     const container = document.getElementById("opponent-card");
     try {
