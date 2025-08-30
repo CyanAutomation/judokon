@@ -1,356 +1,150 @@
-import { BattleEngine } from "./BattleEngine.js";
+import { BattleEngine, STATS } from "./BattleEngine.js";
 
-/**
- * Facade for a singleton BattleEngine instance.
- *
- * @pseudocode
- * Import and re-export `BattleEngine` and `STATS`.
- * Instantiate `battleEngine`.
- * Export wrappers:
- *  - `setPointsToWin(value)` -> `battleEngine.setPointsToWin(value)`
- *  - `getPointsToWin()` -> `battleEngine.getPointsToWin()`
- *  - `stopTimer()` -> `battleEngine.stopTimer()`
- *  - `startRound(...args)` -> `battleEngine.startRound(...args)`
- *  - `startCoolDown(...args)` -> `battleEngine.startCoolDown(...args)`
- *  - `pauseTimer()` -> `battleEngine.pauseTimer()`
- *  - `resumeTimer()` -> `battleEngine.resumeTimer()`
- *  - `handleStatSelection(...args)` -> `battleEngine.handleStatSelection(...args)`
- *  - `quitMatch()` -> `battleEngine.quitMatch()`
- *  - `getScores()` -> `battleEngine.getScores()`
- *  - `getRoundsPlayed()` -> `battleEngine.getRoundsPlayed()`
- *  - `isMatchEnded()` -> `battleEngine.isMatchEnded()`
- *  - `getTimerState()` -> `battleEngine.getTimerState()`
- *  - `_resetForTest()` -> `battleEngine._resetForTest()`
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export { BattleEngine, STATS } from "./BattleEngine.js";
 
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export const battleEngine = new BattleEngine();
-
-// Thin wrappers delegate directly to the underlying `battleEngine` instance.
+const battleEngine = new BattleEngine();
 
 /**
- * Sets the number of points required to win a match in the battle engine.
+ * Set the number of points required to win a match.
  *
- * @param {number} value - The new points threshold to win.
- * @returns {void}
  * @pseudocode
- * 1. Delegate the call to `battleEngine.setPointsToWin()` with the provided `value`.
+ * 1. Delegate to `battleEngine.setPointsToWin(value)`.
+ *
+ * @param {number} value
+ * @returns {void}
  */
 export const setPointsToWin = (value) => battleEngine.setPointsToWin(value);
+
 /**
- * Retrieves the number of points currently required to win a match from the battle engine.
+ * Get the current points required to win a match.
  *
- * @returns {number} The current points threshold to win.
  * @pseudocode
- * 1. Delegate the call to `battleEngine.getPointsToWin()` and return its result.
+ * 1. Return `battleEngine.getPointsToWin()` result.
+ *
+ * @returns {number}
  */
 export const getPointsToWin = () => battleEngine.getPointsToWin();
+
 /**
- * Stop any active battle timer and clear round callbacks.
+ * Stop any active battle timer.
  *
  * @pseudocode
- * 1. Call the underlying engine to stop its timer immediately.
- * 2. Ensure any scheduled callbacks are cancelled so no late transitions occur.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Call `battleEngine.stopTimer()` to cancel ticks and callbacks.
+ *
+ * @returns {void}
  */
 export const stopTimer = () => battleEngine.stopTimer();
+
 /**
- * Starts a new round in the battle engine, initiating its timer and associated callbacks.
+ * Start a new round via the underlying battle engine.
  *
- * @param {...any} args - Arguments to pass to the underlying `battleEngine.startRound` method.
- * @returns {Promise<void>} A promise that resolves when the round timer starts.
  * @pseudocode
- * 1. Delegate the call to `battleEngine.startRound()` with all provided arguments (`...args`).
+ * 1. Delegate to `battleEngine.startRound(...args)`.
+ *
+ * @param {...any} args
+ * @returns {Promise<void>}
  */
 export const startRound = (...args) => battleEngine.startRound(...args);
+
 /**
- * @summary TODO: Add summary
+ * Start the engine cooldown sequence.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Delegate to `battleEngine.startCoolDown(...args)`.
+ *
+ * @param {...any} args
+ * @returns {Promise<void>}
  */
 export const startCoolDown = (...args) => battleEngine.startCoolDown(...args);
+
 /**
  * Pause the current round timer.
  *
  * @pseudocode
- * 1. Delegate pause to the engine which records remaining time and cancels ticks.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Delegate to `battleEngine.pauseTimer()` which saves remaining time and cancels ticks.
+ *
+ * @returns {void}
  */
 export const pauseTimer = () => battleEngine.pauseTimer();
+
 /**
  * Resume a previously paused round timer.
  *
  * @pseudocode
- * 1. Delegate resume to the engine which restores remaining time and restarts ticks.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Delegate to `battleEngine.resumeTimer()` which restores remaining time and restarts ticks.
+ *
+ * @returns {void}
  */
 export const resumeTimer = () => battleEngine.resumeTimer();
+
 /**
- * Handles the selection of a stat in the battle engine, comparing player and opponent stats
- * and updating the match state accordingly.
+ * Forward stat selection to the engine which computes outcome and updates scores.
  *
- * @param {...any} args - Arguments to pass to the underlying `battleEngine.handleStatSelection` method.
- * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number}} The result of the stat selection, including round outcome and updated scores.
  * @pseudocode
- * 1. Delegate the call to `battleEngine.handleStatSelection()` with all provided arguments (`...args`).
+ * 1. Call `battleEngine.handleStatSelection(...args)` and return its result.
+ *
+ * @param {...any} args
+ * @returns {object}
  */
 export const handleStatSelection = (...args) => battleEngine.handleStatSelection(...args);
+
 /**
- * @summary TODO: Add summary
+ * Quit the current match via the engine.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Delegate to `battleEngine.quitMatch()`.
+ *
+ * @returns {void}
  */
 export const quitMatch = () => battleEngine.quitMatch();
+
 /**
- * @summary TODO: Add summary
+ * Retrieve the current scores from the engine.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Return `battleEngine.getScores()`.
+ *
+ * @returns {object}
  */
 export const getScores = () => battleEngine.getScores();
+
 /**
- * @summary TODO: Add summary
+ * Retrieve how many rounds have been played.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Return `battleEngine.getRoundsPlayed()`.
+ *
+ * @returns {number}
  */
 export const getRoundsPlayed = () => battleEngine.getRoundsPlayed();
+
 /**
- * @summary TODO: Add summary
+ * Query whether the match has ended.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Return `battleEngine.isMatchEnded()`.
+ *
+ * @returns {boolean}
  */
 export const isMatchEnded = () => battleEngine.isMatchEnded();
+
 /**
- * @summary TODO: Add summary
+ * Get timer state (remaining, running, paused) from the engine.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Return `battleEngine.getTimerState()`.
+ *
+ * @returns {object}
  */
 export const getTimerState = () => battleEngine.getTimerState();
+
 /**
- * @summary TODO: Add summary
+ * Internal test helper to reset engine state between tests.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Call `battleEngine._resetForTest()` to clear internal state.
+ *
+ * @returns {void}
  */
 export const _resetForTest = () => battleEngine._resetForTest();
 

@@ -1,3 +1,20 @@
+import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
+import { t } from "../helpers/i18n.js";
+
+let messageEl,
+  timerEl,
+  roundCounterEl,
+  scoreEl,
+  startCoolDown,
+  pauseTimer,
+  resumeTimer,
+  scheduler,
+  visibilityHandler,
+  focusHandler,
+  scoreRafId,
+  currentPlayer = 0,
+  currentOpponent = 0;
+
 /**
  * Create a battle scoreboard showing round messages, stat-selection timer, round counter and score.
  *

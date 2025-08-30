@@ -433,16 +433,10 @@ export async function waitingForPlayerActionExit() {
  * Record that the machine entered `roundDecision` for debug tracing.
  *
  * @pseudocode
- * 1. Log debug entry and set `window.__roundDecisionEnter` timestamp.
- * 2. Emit `debugPanelUpdate` event.
+ * 1. Log debug entry if not in Vitest.
+ * 2. Record `window.__roundDecisionEnter` timestamp.
+ * 3. Emit `debugPanelUpdate` event.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-// Removed duplicate declaration of recordRoundDecisionEntry
-
 /**
  * Compute round outcome and dispatch the resulting events.
  *
