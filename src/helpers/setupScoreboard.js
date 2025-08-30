@@ -17,19 +17,20 @@ import { realScheduler } from "./scheduler.js";
  *
  * @pseudocode
  * 1. Locate the `<header>` element.
- * 2. Pass the header and timer controls to `initScoreboard()` so the module can query its children.
+ * 2. Attach the scheduler to `controls` and pass both to `initScoreboard()` so
+ *    the module can query its children.
  *
  * @param {object} controls - Timer control callbacks.
  * @param {object} [scheduler=realScheduler] - Timer scheduler.
  */
 function setupScoreboard(controls, scheduler = realScheduler) {
   const header = document.querySelector("header");
-  const withScheduler = { ...controls, scheduler };
+  controls.scheduler = scheduler;
   if (!header) {
-    initScoreboard(null, withScheduler);
+    initScoreboard(null, controls);
     return;
   }
-  initScoreboard(header, withScheduler);
+  initScoreboard(header, controls);
 }
 export {
   setupScoreboard,

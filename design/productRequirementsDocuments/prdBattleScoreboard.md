@@ -19,9 +19,13 @@ The Scoreboard reserves the following DOM IDs for its placeholders so other docs
 
 ### API
 
-The Scoreboard exposes functions for updating its displays:
+The Scoreboard exposes initialization and update helpers:
 
-- `updateTimer(seconds)` – render countdown text in `#next-round-timer` or clear it when `seconds <= 0`.
+- `initScoreboard(container, controls)` – capture DOM nodes and provide timer
+  controls (`startCoolDown`, `pauseTimer`, `resumeTimer`, `scheduler`) so
+  countdowns pause on tab hide and resume on focus.
+- `updateTimer(seconds)` – render countdown text in `#next-round-timer` or clear
+  it when `seconds <= 0`.
 
 ---
 
