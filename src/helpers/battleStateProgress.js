@@ -60,8 +60,6 @@ if (typeof window !== "undefined") {
 if (!isEnabled("battleStateProgress")) {
   if (typeof document !== "undefined") {
     document.addEventListener("battle:state", () => markBattlePartReady("state"), { once: true });
-  } else {
-    markBattlePartReady("state");
   }
   resolveBattleStateProgressReady?.();
 }
