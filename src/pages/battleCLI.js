@@ -792,43 +792,6 @@ export function handleCooldownKey(key) {
 }
 
 /**
- * Dispatch keyboard input based on the current battle state.
- * @param {KeyboardEvent} e
- * @pseudocode
- * key = lowercased key from event
- * state = document.body.dataset.battleState
- * table = { waitingForPlayerAction: handleWaitingForPlayerActionKey,
- *           roundOver: handleRoundOverKey,
- *           cooldown: handleCooldownKey }
- * handler = table[state]
- * handled = handleGlobalKey(key) OR (handler ? handler(key) : false)
- * countdown = element '#cli-countdown'
- * if not handled:
- *   if countdown exists: set text to "Invalid key, press H for help"
- * else if countdown has text:
- *   clear countdown text
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Global keyboard handler that routes input based on the current battle state.
  *
  * @summary Normalize keyboard events, run global handlers, then state-specific handlers.
@@ -836,6 +799,7 @@ export function handleCooldownKey(key) {
  * @returns {void}
  * @pseudocode
  * key = lowercased key from event
+ * if cliShortcuts disabled AND key != 'q': return
  * state = document.body.dataset.battleState
  * table = { waitingForPlayerAction: handleWaitingForPlayerActionKey,
  *           roundOver: handleRoundOverKey,
@@ -849,8 +813,8 @@ export function handleCooldownKey(key) {
  *   clear countdown text
  */
 export function onKeyDown(e) {
-  if (!isEnabled("cliShortcuts")) return;
   const key = e.key.toLowerCase();
+  if (!isEnabled("cliShortcuts") && key !== "q") return;
   const state = document.body?.dataset?.battleState || "";
   const table = {
     waitingForPlayerAction: handleWaitingForPlayerActionKey,

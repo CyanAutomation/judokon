@@ -41,6 +41,7 @@ describe("battleCLI onKeyDown", () => {
     delete window.__TEST__;
     vi.resetModules();
     vi.doUnmock("../../src/components/Button.js");
+    vi.restoreAllMocks();
   });
 
   it("toggles shortcuts with H key", () => {
@@ -164,5 +165,16 @@ describe("battleCLI onKeyDown", () => {
     document.body.dataset.battleState = "cooldown";
     onKeyDown(new KeyboardEvent("keydown", { key: "Enter" }));
     expect(dispatch).toHaveBeenCalledWith("ready");
+  });
+
+  it("allows quitting with Q when cliShortcuts flag is disabled", async () => {
+    const featureFlags = await import("../../src/helpers/featureFlags.js");
+    vi.spyOn(featureFlags, "isEnabled").mockImplementation((flag) =>
+      flag === "cliShortcuts" ? false : featureFlags.isEnabled(flag)
+    );
+    const dispatch = vi.fn();
+    window.__getClassicBattleMachine = () => ({ dispatch });
+    onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
+    expect(document.getElementById("confirm-quit-button")).toBeTruthy();
   });
 });
