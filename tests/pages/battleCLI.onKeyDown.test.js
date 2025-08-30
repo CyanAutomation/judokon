@@ -49,18 +49,24 @@ describe("battleCLI onKeyDown", () => {
     expect(dispatch).toHaveBeenCalledWith("interrupt", { reason: "quit" });
   });
 
-  it("clears cooldown timers when quitting", () => {
+  it("clears timers when quitting", () => {
     const dispatch = vi.fn();
     window.__getClassicBattleMachine = () => ({ dispatch });
-    const timer = setTimeout(() => {}, 1000);
-    const interval = setInterval(() => {}, 1000);
+    const cooldownT = setTimeout(() => {}, 1000);
+    const cooldownI = setInterval(() => {}, 1000);
+    const selT = setTimeout(() => {}, 1000);
+    const selI = setInterval(() => {}, 1000);
     const spyTimeout = vi.spyOn(globalThis, "clearTimeout");
     const spyInterval = vi.spyOn(globalThis, "clearInterval");
-    __test.setCooldownTimers(timer, interval);
+    __test.setCooldownTimers(cooldownT, cooldownI);
+    __test.setSelectionTimers(selT, selI);
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
-    expect(spyTimeout).toHaveBeenCalledWith(timer);
-    expect(spyInterval).toHaveBeenCalledWith(interval);
+    expect(spyTimeout).toHaveBeenCalledWith(cooldownT);
+    expect(spyInterval).toHaveBeenCalledWith(cooldownI);
+    expect(spyTimeout).toHaveBeenCalledWith(selT);
+    expect(spyInterval).toHaveBeenCalledWith(selI);
     expect(__test.getCooldownTimers()).toEqual({ cooldownTimer: null, cooldownInterval: null });
+    expect(__test.getSelectionTimers()).toEqual({ selectionTimer: null, selectionInterval: null });
     spyTimeout.mockRestore();
     spyInterval.mockRestore();
   });
