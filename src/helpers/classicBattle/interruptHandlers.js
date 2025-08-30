@@ -121,7 +121,7 @@ export function initInterruptHandlers(store) {
     const msg = e?.reason?.message || e?.reason || e?.message || "Unknown error";
     cleanup();
     try {
-      battleEngine.interruptMatch("error");
+      interruptMatch("error");
     } catch {}
     showErrorDialog(msg);
     try {
@@ -175,5 +175,7 @@ function showErrorDialog(message) {
   }
   try {
     errorModal.open();
+  } catch {}
+}
   } catch {}
 }

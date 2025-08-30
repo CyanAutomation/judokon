@@ -99,6 +99,19 @@ export const handleStatSelection = (...args) => battleEngine.handleStatSelection
 export const quitMatch = () => battleEngine.quitMatch();
 
 /**
+ * Interrupt the entire match (admin/test/error/quit).
+ *
+ * @pseudocode
+ * 1. Stop the timer and set matchEnded to true.
+ * 2. Optionally log or store the reason.
+ * 3. Return an interrupt message and current scores.
+ *
+ * @param {string} [reason] - Reason for interruption.
+ * @returns {{message: string, playerScore: number, opponentScore: number}}
+ */
+export const interruptMatch = (reason) => battleEngine.interruptMatch(reason);
+
+/**
  * Retrieve the current scores from the engine.
  *
  * @pseudocode
