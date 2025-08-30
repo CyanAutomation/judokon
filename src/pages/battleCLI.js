@@ -19,6 +19,7 @@ import {
 } from "../helpers/featureFlags.js";
 import { skipRoundCooldownIfEnabled } from "../helpers/classicBattle/uiHelpers.js";
 import { autoSelectStat } from "../helpers/classicBattle/autoSelectStat.js";
+import { setTestMode } from "../helpers/testModeUtils.js";
 
 /**
  * Minimal DOM utils for the CLI page
@@ -70,6 +71,34 @@ function updateScoreLine(player, opponent) {
 function setRoundMessage(text) {
   const el = byId("round-message");
   if (el) el.textContent = text || "";
+}
+
+function initSeed() {
+  const input = byId("seed-input");
+  let seed = null;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    seed = params.get("seed") || input?.value || localStorage.getItem("battleCLI.seed");
+  } catch {}
+  const apply = (n) => {
+    setTestMode({ enabled: true, seed: n });
+    try {
+      localStorage.setItem("battleCLI.seed", String(n));
+    } catch {}
+  };
+  if (seed !== null && seed !== "") {
+    const num = Number(seed);
+    if (!Number.isNaN(num)) {
+      apply(num);
+      if (input) input.value = String(num);
+    }
+  }
+  input?.addEventListener("change", () => {
+    const val = Number(input.value);
+    if (!Number.isNaN(val)) {
+      apply(val);
+    }
+  });
 }
 
 /**
@@ -739,6 +768,7 @@ function installRetroStyles() {
 
 async function init() {
   installRetroStyles();
+  initSeed();
   store = createBattleStore();
   // Expose store for debug panels if needed
   try {

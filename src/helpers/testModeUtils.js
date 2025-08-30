@@ -14,73 +14,44 @@ let active = false;
 let seed = 1;
 
 /**
- * @summary TODO: Add summary
+ * Enable or disable deterministic test mode.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
+ * if input is object:
+ *   active = Boolean(input.enabled)
+ *   seed = Number(input.seed) or 1
+ * else:
+ *   active = Boolean(enable)
+ *   seed = initialSeed or 1
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export function setTestMode(enable, initialSeed = 1) {
-  active = Boolean(enable);
-  seed = initialSeed;
+export function setTestMode(enableOrOptions, initialSeed = 1) {
+  if (typeof enableOrOptions === "object") {
+    active = Boolean(enableOrOptions.enabled);
+    seed = Number(enableOrOptions.seed) || 1;
+  } else {
+    active = Boolean(enableOrOptions);
+    seed = initialSeed;
+  }
 }
 
 /**
- * @summary TODO: Add summary
+ * Check whether deterministic test mode is active.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * return active
  */
 export function isTestModeEnabled() {
   return active;
 }
 
 /**
- * @summary TODO: Add summary
+ * Return a pseudo-random number.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * if not active: return Math.random()
+ * x = sin(seed) * 10000
+ * seed += 1
+ * return fractional part of x
  */
 export function seededRandom() {
   if (!active) return Math.random();
@@ -89,24 +60,10 @@ export function seededRandom() {
 }
 
 /**
- * @summary TODO: Add summary
+ * Get the current seed value.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * return seed
  */
 export function getCurrentSeed() {
   return seed;

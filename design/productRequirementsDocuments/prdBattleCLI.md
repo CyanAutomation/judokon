@@ -75,6 +75,7 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 | **P1** | Accessibility Hooks | Provide `aria-live="polite"` for round messages and countdown; maintain focus order for keyboard use. |
 | **P1** | Test Hooks | Expose stable selectors/ids (e.g., `#round-message`, `#cli-score`, `#cli-countdown`, `data-flag`) to support existing tests and new CLI tests. |
 | **P2** | Minimal Settings | Allow selecting win target (5/10/15) at start; persist last choice using existing settings helper. |
+| **P2** | Deterministic Seed | Optional numeric seed via header input or `?seed=` query parameter enables reproducible runs; last seed is stored locally. |
 | **P2** | Observability Mode | Optional verbose logs (controlled by the `cliVerbose` feature flag) that echo internal state transitions. |
 | **P2** | Interrupt Handling | Surface quit/interrupt flows as text prompts; roll back to last completed round consistent with engine PRD. |
 | **P3** | Retro Mode | Optional ASCII borders and simple color accents via CSS classes; disabled by default for maximum contrast. |
@@ -125,12 +126,15 @@ Notes:
    - Given a fresh load on average hardware, when opening `battleCLI.html`, then the page is interactive in ≤500 ms after network idle (no heavy assets).  
    - No runtime use of `await import()` on stat selection, round decision, event dispatch, or render loops.  
 
-7. Testability  
-   - Given the CLI page loads, when running Playwright/Vitest, then selectors `#round-message`, `#cli-countdown`, and `#cli-score` are present and update as the engine advances.  
-   - Given verbose mode is enabled (`FF_CLI_VERBOSE`), when state transitions occur, then logs are emitted via a muted logger during tests (no unsilenced console.error/warn in CI).  
+7. Testability
+   - Given the CLI page loads, when running Playwright/Vitest, then selectors `#round-message`, `#cli-countdown`, and `#cli-score` are present and update as the engine advances.
+   - Given verbose mode is enabled (`FF_CLI_VERBOSE`), when state transitions occur, then logs are emitted via a muted logger during tests (no unsilenced console.error/warn in CI).
 
-8. Interrupts  
-   - Given an unexpected error, when the engine triggers rollback, then the UI prints an error message and returns to the last completed round/lobby per engine PRD.  
+8. Interrupts
+   - Given an unexpected error, when the engine triggers rollback, then the UI prints an error message and returns to the last completed round/lobby per engine PRD.
+
+9. Deterministic Seed
+   - Given a `seed` is provided via query parameter or header input, when the match is run repeatedly with that seed, then pseudo-random choices follow the same sequence each time.
 
 ---
 
@@ -193,9 +197,8 @@ Notes:
 
 ## Open Questions
 
-- Should the CLI mirror snackbar semantics exactly or consolidate to a single `#cli-countdown` area? If consolidated, update tests accordingly.  
-- Do we expose a “seed” input to make deterministic runs selectable from the UI, or keep seed-only via dev tools?  
-- Is Retro Mode desired by default on desktop, or opt-in only?  
+- Should the CLI mirror snackbar semantics exactly or consolidate to a single `#cli-countdown` area? If consolidated, update tests accordingly.
+- Is Retro Mode desired by default on desktop, or opt-in only?
 
 ---
 
