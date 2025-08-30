@@ -135,67 +135,95 @@ export async function resolveRoundDirect(store, stat, playerVal, opponentVal, op
 }
 
 /**
- * Handles the player's stat selection.
+ * Validate whether a stat selection should proceed.
  *
  * @pseudocode
- * 1. Ignore if a selection was already made.
- * 2. Record the chosen stat.
- * 3. If values are missing, read them from the player and opponent cards.
- * 4. Coerce the stat values to numbers.
- * 5. Stop running timers and clear pending timeouts on the store.
- * 6. Emit a `statSelected` event with the provided values.
- * 7. Resolve the round either via the state machine or directly, letting the
- *    resolver clear `playerChoice` when finished.
+ * 1. Return `false` if a selection was already made.
+ * 2. Read the current battle state via `getBattleState()`.
+ * 3. Return `false` unless the state is `waitingForPlayerAction` or `roundDecision`.
+ * 4. Otherwise return `true`.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @param {string} stat - Chosen stat key.
- * @param {{playerVal: number, opponentVal: number}} values - Precomputed stat values.
+ * @returns {boolean} `true` if the selection is allowed.
  */
-export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
-  // Ignore selections if a choice was already recorded.
+function validateSelectionState(store) {
   if (store.selectionMade) {
-    return;
+    return false;
   }
 
-  // Defensive guard: only accept stat selections while the orchestrator is
-  // in the stat selection / decision states. This prevents stale clicks
-  // (for example during cooldown) from setting `store.playerChoice` and
-  // confusing the state machine.
   try {
     const current = typeof getBattleState === "function" ? getBattleState() : null;
     if (current && current !== "waitingForPlayerAction" && current !== "roundDecision") {
-      // UX: ignore silently but log for diagnostics (mute in Vitest)
       try {
         if (!IS_VITEST) console.warn(`Ignored stat selection while in state=${current}`);
       } catch {}
-      return;
+      return false;
     }
   } catch {}
+  return true;
+}
+
+/**
+ * Record the player's selection on the store and coerce stat values.
+ *
+ * @pseudocode
+ * 1. Mark `store.selectionMade` and store the chosen stat.
+ * 2. Resolve missing stat values via `getPlayerAndOpponentValues`.
+ * 3. Return the coerced `{playerVal, opponentVal}`.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} [playerVal] - Optional player stat value.
+ * @param {number} [opponentVal] - Optional opponent stat value.
+ * @returns {{playerVal: number, opponentVal: number}}
+ */
+function applySelectionToStore(store, stat, playerVal, opponentVal) {
   store.selectionMade = true;
   store.playerChoice = stat;
-  const values = getPlayerAndOpponentValues(stat, playerVal, opponentVal);
-  playerVal = values.playerVal;
-  opponentVal = values.opponentVal;
+  return getPlayerAndOpponentValues(stat, playerVal, opponentVal);
+}
+
+/**
+ * Stop timers and clear pending timeouts tied to stat selection.
+ *
+ * @pseudocode
+ * 1. Call `stopTimer()` to halt the countdown.
+ * 2. Clear `store.statTimeoutId` and `store.autoSelectId`.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ */
+function cleanupTimers(store) {
   stopTimer();
   clearTimeout(store.statTimeoutId);
   clearTimeout(store.autoSelectId);
+}
+
+/**
+ * Emit the selection event and apply test-mode shortcuts.
+ *
+ * @pseudocode
+ * 1. Emit `statSelected` via `emitBattleEvent`.
+ * 2. In Vitest, clear the next-round timer and round message elements.
+ * 3. Dynamically show the opponent delay snackbar.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ */
+async function emitSelectionEvent(store, stat, playerVal, opponentVal) {
   emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal });
-  // Test-mode assist: some event listeners (e.g., UI helpers) are bound at
-  // module load and can miss rebinding after vi.doMock(). Provide a
-  // deterministic fallback for unit tests to surface expected UI effects.
+
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      // Clear the scoreboard next-round timer immediately.
       try {
         const el = document.getElementById("next-round-timer");
         if (el) el.textContent = "";
       } catch {}
-      // Clear any transient round message (e.g., stall prompt) before outcome
       try {
         const msg = document.getElementById("round-message");
         if (msg) msg.textContent = "";
       } catch {}
-      // Surface opponent delay snackbar immediately when delay is 0.
       try {
         const ui = await import("../showSnackbar.js");
         const i18n = await import("../i18n.js");
@@ -203,6 +231,30 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
       } catch {}
     }
   } catch {}
+}
+
+/**
+ * Handles the player's stat selection.
+ *
+ * @pseudocode
+ * 1. Abort unless `validateSelectionState` allows the selection.
+ * 2. Mark the selection and coerce stat values via `applySelectionToStore`.
+ * 3. Halt timers with `cleanupTimers`.
+ * 4. Emit the `statSelected` event via `emitSelectionEvent`.
+ * 5. Resolve the round through the state machine or direct resolver.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {{playerVal: number, opponentVal: number}} values - Precomputed stat values.
+ */
+export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
+  if (!validateSelectionState(store)) {
+    return;
+  }
+
+  ({ playerVal, opponentVal } = applySelectionToStore(store, stat, playerVal, opponentVal));
+  cleanupTimers(store);
+  await emitSelectionEvent(store, stat, playerVal, opponentVal);
   const hasMachine = typeof document !== "undefined" && !!document.body?.dataset.battleState;
   const resolver = hasMachine ? resolveRoundViaMachine : resolveRoundDirect;
   return resolver(store, stat, playerVal, opponentVal, opts);
