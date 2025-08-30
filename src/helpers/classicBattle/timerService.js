@@ -217,7 +217,8 @@ export async function startTimer(onExpiredSelect) {
  *
  * @pseudocode
  * 1. Display "Stat selection stalled" via `showSnackbar`.
- * 2. After `timeoutMs` milliseconds call `autoSelectStat(onSelect)`.
+ * 2. If auto-select is disabled, surface the prompt via the scoreboard.
+ * 3. After `timeoutMs` milliseconds call `autoSelectStat(onSelect)`.
  *
  * @param {{autoSelectId: ReturnType<typeof setTimeout> | null}} store
  * - Battle state store.
@@ -234,7 +235,11 @@ export function handleStatSelectionTimeout(
   store.autoSelectId = scheduler.setTimeout(() => {
     // If a selection was made in the meantime, do nothing.
     if (store && store.selectionMade) return;
-    showSnackbar(t("ui.statSelectionStalled"));
+    const stalledMsg = t("ui.statSelectionStalled");
+    showSnackbar(stalledMsg);
+    if (!isEnabled("autoSelect")) {
+      scoreboard.showMessage(stalledMsg);
+    }
     try {
       emitBattleEvent("statSelectionStalled");
     } catch {}

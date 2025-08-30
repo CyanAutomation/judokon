@@ -2,14 +2,16 @@ import { describe, it, expect, vi } from "vitest";
 
 describe("timerService without auto-select", () => {
   it("dispatches timeout when autoSelect disabled", async () => {
+    vi.useFakeTimers();
     vi.resetModules();
 
     document.body.innerHTML =
       '<div id="next-round-timer"></div><div id="stat-buttons"><button data-stat="a"></button></div>';
 
+    const showMessage = vi.fn();
     vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
       clearTimer: () => {},
-      showMessage: () => {},
+      showMessage,
       showAutoSelect: () => {},
       showTemporaryMessage: () => () => {},
       updateTimer: () => {}
@@ -58,9 +60,15 @@ describe("timerService without auto-select", () => {
 
     const mod = await import("../../src/helpers/classicBattle/timerService.js");
     await mod.startTimer(async () => {});
+    const store = { selectionMade: false, autoSelectId: null };
+    mod.handleStatSelectionTimeout(store, () => {}, 0);
+    await vi.runAllTimersAsync();
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith("timeout");
+    expect(showMessage).toHaveBeenCalledWith(
+      "Stat selection stalled. Pick a stat or wait for auto-pick."
+    );
     expect(autoSelectSpy).not.toHaveBeenCalled();
   });
 });
