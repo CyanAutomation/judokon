@@ -46,6 +46,7 @@ export async function cooldownEnter(machine, payload) {
       const val = await getDefaultTimer("matchStartTimer");
       if (typeof val === "number") duration = val;
     } catch {}
+    duration = Math.max(1, Number(duration));
     const onFinished = () => {
       try {
         offBattleEvent("countdownFinished", onFinished);
@@ -63,19 +64,14 @@ export async function cooldownEnter(machine, payload) {
     emitBattleEvent("countdownStart", { duration });
 
     // Fallback: if no countdownFinished event arrives (headless/test environments),
-    // advance after duration+1 seconds to avoid stalling the state machine.
+    // advance after `duration` seconds to avoid stalling the state machine.
     let fallbackTimer = null;
     try {
       fallbackTimer = setTimeout(
         () => {
-          try {
-            offBattleEvent("countdownFinished", onFinished);
-          } catch {}
-          try {
-            machine.dispatch("ready");
-          } catch {}
+          onFinished();
         },
-        (duration + 1) * 1000 + 200
+        duration * 1000 + 200
       );
     } catch {}
   }
