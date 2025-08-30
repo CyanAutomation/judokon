@@ -117,10 +117,13 @@ export async function initRoundSelectModal(onStart) {
         logEvent("battle.start", { pointsToWin: r.value, source: "modal" });
       } catch {}
       modal.close();
-      if (typeof onStart === "function") await onStart();
-      emitBattleEvent("startClicked");
-      cleanupTooltips();
-      modal.destroy();
+      try {
+        if (typeof onStart === "function") await onStart();
+        emitBattleEvent("startClicked");
+      } finally {
+        cleanupTooltips();
+        modal.destroy();
+      }
     });
     btnWrap.appendChild(btn);
   });
