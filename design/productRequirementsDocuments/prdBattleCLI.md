@@ -81,6 +81,8 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 
 ### Feature Flags
 - `cliVerbose` – toggles the verbose log section on the CLI page; disabled by default.
+- `autoSelect` – when enabled (default), the match auto-picks a random stat when the selection timer expires.
+  When disabled, the CLI waits for manual input after timeout.
 
 Notes:
 - Core gameplay and timers must not use dynamic imports in hot paths. Optional features (e.g., Retro Mode) may be dynamically imported but preloaded during idle if enabled.  

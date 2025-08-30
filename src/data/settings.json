@@ -52,6 +52,10 @@
     "cliVerbose": {
       "enabled": false,
       "tooltipId": "settings.cliVerbose"
+    },
+    "autoSelect": {
+      "enabled": true,
+      "tooltipId": "settings.autoSelect"
     }
   }
 }

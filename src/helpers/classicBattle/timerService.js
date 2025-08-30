@@ -7,6 +7,7 @@ import { t } from "../i18n.js";
 import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
 import { emitBattleEvent } from "./battleEvents.js";
+import { isEnabled } from "../featureFlags.js";
 
 import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent } from "./battleDispatcher.js";
@@ -105,7 +106,11 @@ export function getNextRoundControls() {
 async function forceAutoSelectAndDispatch(onExpiredSelect) {
   scoreboard.showMessage(t("ui.timerErrorAutoSelect"));
   try {
-    await autoSelectStat(onExpiredSelect);
+    if (isEnabled("autoSelect")) {
+      await autoSelectStat(onExpiredSelect);
+    } else {
+      await dispatchBattleEvent("interrupt");
+    }
   } catch {
     // If auto-select fails, dispatch interrupt to avoid stalling
     await dispatchBattleEvent("interrupt");
@@ -158,11 +163,13 @@ export async function startTimer(onExpiredSelect) {
     // if we await the dispatch first, the guard can interrupt before
     // autoSelect runs. Start auto-select immediately and then await the
     // timeout dispatch so both proceed concurrently.
-    const selecting = (async () => {
-      try {
-        await autoSelectStat(onExpiredSelect);
-      } catch {}
-    })();
+    const selecting = isEnabled("autoSelect")
+      ? (async () => {
+          try {
+            await autoSelectStat(onExpiredSelect);
+          } catch {}
+        })()
+      : Promise.resolve();
     await dispatchBattleEvent("timeout");
     await selecting;
   };
@@ -227,7 +234,9 @@ export function handleStatSelectionTimeout(
     try {
       emitBattleEvent("statSelectionStalled");
     } catch {}
-    autoSelectStat(onSelect);
+    if (isEnabled("autoSelect")) {
+      autoSelectStat(onSelect);
+    }
   }, timeoutMs);
 }
 

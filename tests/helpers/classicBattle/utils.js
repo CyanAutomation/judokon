@@ -44,7 +44,7 @@ export function setupClassicBattleDom() {
     el.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     return el;
   });
-  const currentFlags = {};
+  const currentFlags = { autoSelect: { enabled: true } };
 
   return {
     timerSpy,

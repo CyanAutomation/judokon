@@ -192,10 +192,12 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
-function cleanupTimers(store) {
+export function cleanupTimers(store) {
   stopTimer();
   clearTimeout(store.statTimeoutId);
+  store.statTimeoutId = null;
   clearTimeout(store.autoSelectId);
+  store.autoSelectId = null;
 }
 
 /**
