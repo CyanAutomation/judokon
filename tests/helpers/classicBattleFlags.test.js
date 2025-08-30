@@ -147,7 +147,7 @@ describe("classicBattlePage feature flag updates", () => {
     copyBtn.dispatchEvent(new Event("click", { bubbles: true }));
 
     expect(writeText).toHaveBeenCalledWith("battle info");
-      expect(copyBtn.closest("#debug-panel")).toBe(panel);
+    expect(copyBtn.closest("#debug-panel")).toBe(panel);
   });
   it("maps number keys to stat buttons only when statHotkeys is enabled", async () => {
     const stats = document.createElement("div");
