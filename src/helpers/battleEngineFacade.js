@@ -1,4 +1,4 @@
-import { BattleEngine, STATS } from "./BattleEngine.js";
+import { BattleEngine } from "./BattleEngine.js";
 
 export { BattleEngine, STATS } from "./BattleEngine.js";
 

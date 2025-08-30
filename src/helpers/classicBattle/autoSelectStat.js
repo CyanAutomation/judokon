@@ -1,6 +1,5 @@
 import { seededRandom } from "../testModeUtils.js";
 import { STATS } from "../battleEngineFacade.js";
-import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { showAutoSelect } from "../setupScoreboard.js";
 // Announce auto-select in the Scoreboard header to satisfy PRD acceptance
 // criteria and avoid racing with the cooldown snackbar updates.

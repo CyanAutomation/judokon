@@ -70,7 +70,8 @@ function sparseFilterStep(state) {
   const terms = Object.keys(state.sparseQueryVector ?? {});
   if (terms.length === 0) return state;
 
-  const loweredTerms = terms.map((t) => String(t).toLowerCase()).filter(Boolean);
+  // Lowercased sparse terms (not used directly but normalized earlier if needed).
+  // Keep normalization logic inline when needed to avoid unused variable warnings.
 
   const zeroIdx = Array.isArray(state.queryVector)
     ? state.queryVector.reduce((acc, v, i) => (v === 0 ? (acc.push(i), acc) : acc), [])

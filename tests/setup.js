@@ -221,7 +221,7 @@ try {
     writable: false,
     value: __originalProcessRef
   });
-} catch (_) {
+} catch {
   // property already non-configurable; that's fine
 }
 // Detect late attempts to swap the binding
