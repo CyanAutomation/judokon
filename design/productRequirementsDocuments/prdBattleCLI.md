@@ -75,11 +75,14 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 | **P1** | Accessibility Hooks | Provide `aria-live="polite"` for round messages and countdown; maintain focus order for keyboard use. |
 | **P1** | Test Hooks | Expose stable selectors/ids (e.g., `#round-message`, `#cli-score`, `#cli-countdown`, `data-flag`) to support existing tests and new CLI tests. |
 | **P2** | Minimal Settings | Allow selecting win target (5/10/15) at start; persist last choice using existing settings helper. |
-| **P2** | Observability Mode | Optional verbose logs (guarded by `data-flag="FF_CLI_VERBOSE"`) that echo internal state transitions. |
+| **P2** | Observability Mode | Optional verbose logs (controlled by the `cliVerbose` feature flag) that echo internal state transitions. |
 | **P2** | Interrupt Handling | Surface quit/interrupt flows as text prompts; roll back to last completed round consistent with engine PRD. |
 | **P3** | Retro Mode | Optional ASCII borders and simple color accents via CSS classes; disabled by default for maximum contrast. |
 
-Notes:  
+### Feature Flags
+- `cliVerbose` – toggles the verbose log section on the CLI page; disabled by default.
+
+Notes:
 - Core gameplay and timers must not use dynamic imports in hot paths. Optional features (e.g., Retro Mode) may be dynamically imported but preloaded during idle if enabled.  
 - Maintain the scoreboard/snackbar surface contract where feasible: `#round-message` for outcomes and a dedicated area for countdown/prompts to keep tests consistent.  
 

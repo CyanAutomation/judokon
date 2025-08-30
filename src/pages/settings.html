@@ -222,6 +222,23 @@
           <fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">
             <legend>Advanced Settings</legend>
             <!-- Flag toggles are inserted here dynamically -->
+            <div class="settings-item">
+              <label for="feature-cli-verbose" class="switch">
+                <input
+                  type="checkbox"
+                  id="feature-cli-verbose"
+                  data-flag="cliVerbose"
+                  aria-label="CLI Verbose Logging"
+                  aria-describedby="feature-cli-verbose-desc"
+                  data-tooltip-id="settings.cliVerbose"
+                />
+                <div class="slider round"></div>
+                <span>CLI Verbose Logging</span>
+              </label>
+              <p id="feature-cli-verbose-desc" class="settings-description">
+                Show state transition logs in the battle CLI.
+              </p>
+            </div>
           </fieldset>
           <fieldset id="links-container" class="settings-form">
             <legend>Links</legend>

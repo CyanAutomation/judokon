@@ -11,6 +11,12 @@ import { STATS } from "../helpers/BattleEngine.js";
 import { setPointsToWin } from "../helpers/battleEngineFacade.js";
 import { fetchJson } from "../helpers/dataUtils.js";
 import { DATA_DIR } from "../helpers/constants.js";
+import {
+  initFeatureFlags,
+  isEnabled,
+  setFlag,
+  featureFlagsEmitter
+} from "../helpers/featureFlags.js";
 
 /**
  * Minimal DOM utils for the CLI page
@@ -32,7 +38,9 @@ export const __test = {
   },
   getCooldownTimers() {
     return { cooldownTimer, cooldownInterval };
-  }
+  },
+  installEventBindings,
+  init
 };
 
 function setRetroMode(enabled) {
@@ -468,30 +476,32 @@ async function init() {
       }
     });
   } catch {}
-  // Initialize verbose toggle
-  try {
-    const vKey = "battleCLI.verbose";
-    const checkbox = byId("verbose-toggle");
-    const section = byId("cli-verbose-section");
-    const saved = localStorage.getItem(vKey);
-    verboseEnabled = saved === "true";
+  // Initialize feature flags and verbose section
+  const checkbox = byId("verbose-toggle");
+  const section = byId("cli-verbose-section");
+  const updateVerbose = () => {
+    verboseEnabled = isEnabled("cliVerbose");
     if (checkbox) checkbox.checked = verboseEnabled;
     if (section) section.hidden = !verboseEnabled;
-    checkbox?.addEventListener("change", () => {
-      verboseEnabled = !!checkbox.checked;
+    if (verboseEnabled) {
       try {
-        localStorage.setItem(vKey, String(verboseEnabled));
+        const pre = byId("cli-verbose-log");
+        if (pre) pre.scrollTop = pre.scrollHeight;
       } catch {}
-      if (section) section.hidden = !verboseEnabled;
-      // If enabling verbose, scroll the log to the latest entry
-      if (verboseEnabled) {
-        try {
-          const pre = byId("cli-verbose-log");
-          if (pre) pre.scrollTop = pre.scrollHeight;
-        } catch {}
-      }
-    });
+    }
+  };
+  try {
+    await initFeatureFlags();
   } catch {}
+  updateVerbose();
+  checkbox?.addEventListener("change", () => {
+    setFlag("cliVerbose", !!checkbox.checked);
+  });
+  featureFlagsEmitter.addEventListener("change", (e) => {
+    if (!e.detail?.flag || e.detail.flag === "cliVerbose") {
+      updateVerbose();
+    }
+  });
   // Install CLI event bridges
   installEventBindings();
   // Initialize orchestrator using our startRound wrapper
