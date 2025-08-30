@@ -18,6 +18,7 @@ import {
   featureFlagsEmitter
 } from "../helpers/featureFlags.js";
 import { skipRoundCooldownIfEnabled } from "../helpers/classicBattle/uiHelpers.js";
+import { autoSelectStat } from "../helpers/classicBattle/autoSelectStat.js";
 import { setTestMode } from "../helpers/testModeUtils.js";
 
 /**
@@ -31,6 +32,8 @@ let store = null;
 let verboseEnabled = false;
 let cooldownTimer = null;
 let cooldownInterval = null;
+let selectionTimer = null;
+let selectionInterval = null;
 
 // Test hooks to access internal timer state
 export const __test = {
@@ -40,6 +43,13 @@ export const __test = {
   },
   getCooldownTimers() {
     return { cooldownTimer, cooldownInterval };
+  },
+  setSelectionTimers(timer, interval) {
+    selectionTimer = timer;
+    selectionInterval = interval;
+  },
+  getSelectionTimers() {
+    return { selectionTimer, selectionInterval };
   },
   installEventBindings,
   init,
@@ -121,6 +131,97 @@ function showBottomLine(text) {
 
 function clearBottomLine() {
   showBottomLine("");
+}
+
+/**
+ * Clear active stat selection countdown timers and reset the countdown UI.
+ *
+ * @pseudocode
+ * if timer exists: clearTimeout(timer)
+ * if interval exists: clearInterval(interval)
+ * null timers and remove countdown text/attribute
+ */
+function stopSelectionCountdown() {
+  try {
+    if (selectionTimer) clearTimeout(selectionTimer);
+  } catch {}
+  try {
+    if (selectionInterval) clearInterval(selectionInterval);
+  } catch {}
+  selectionTimer = null;
+  selectionInterval = null;
+  const el = byId("cli-countdown");
+  if (el) {
+    el.textContent = "";
+    delete el.dataset.remainingTime;
+  }
+}
+
+/**
+ * Apply the chosen stat and notify the state machine.
+ *
+ * @pseudocode
+ * stopSelectionCountdown()
+ * update store with selection
+ * show bottom line with picked stat
+ * dispatch "statSelected" on machine
+ */
+function selectStat(stat) {
+  if (!stat) return;
+  stopSelectionCountdown();
+  try {
+    if (store) {
+      store.playerChoice = stat;
+      store.selectionMade = true;
+    }
+  } catch {}
+  showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
+  try {
+    const machine = window.__getClassicBattleMachine?.();
+    if (machine) machine.dispatch("statSelected");
+  } catch {}
+}
+
+/**
+ * Start a countdown for stat selection and handle expiry.
+ *
+ * @param {number} [seconds=5]
+ * @pseudocode
+ * stopSelectionCountdown()
+ * set remaining=seconds and update countdown element
+ * every 1s: decrement remaining and update element
+ * after seconds: stop countdown and
+ *   if autoSelect enabled: autoSelectStat(selectStat)
+ *   else emit "statSelectionStalled"
+ */
+function startSelectionCountdown(seconds = 5) {
+  const el = byId("cli-countdown");
+  if (!el) return;
+  stopSelectionCountdown();
+  let remaining = seconds;
+  el.dataset.remainingTime = String(remaining);
+  el.textContent = `Time remaining: ${remaining}`;
+  try {
+    selectionInterval = setInterval(() => {
+      remaining -= 1;
+      if (remaining > 0) {
+        el.dataset.remainingTime = String(remaining);
+        el.textContent = `Time remaining: ${remaining}`;
+      }
+    }, 1000);
+  } catch {}
+  try {
+    selectionTimer = setTimeout(() => {
+      stopSelectionCountdown();
+      if (isEnabled("autoSelect")) {
+        autoSelectStat(selectStat);
+      } else {
+        try {
+          emitBattleEvent("statSelectionStalled");
+        } catch {}
+      }
+    }, seconds * 1000);
+  } catch {}
 }
 
 /**
@@ -329,8 +430,16 @@ export function handleGlobalKey(key) {
     try {
       if (cooldownInterval) clearInterval(cooldownInterval);
     } catch {}
+    try {
+      if (selectionTimer) clearTimeout(selectionTimer);
+    } catch {}
+    try {
+      if (selectionInterval) clearInterval(selectionInterval);
+    } catch {}
     cooldownTimer = null;
     cooldownInterval = null;
+    selectionTimer = null;
+    selectionInterval = null;
     clearBottomLine();
     try {
       const machine = window.__getClassicBattleMachine?.();
@@ -375,17 +484,7 @@ export function handleWaitingForPlayerActionKey(key) {
   if (key >= "1" && key <= "9") {
     const stat = getStatByIndex(key);
     if (!stat) return;
-    try {
-      if (store) {
-        store.playerChoice = stat;
-        store.selectionMade = true;
-      }
-    } catch {}
-    showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
-    try {
-      const machine = window.__getClassicBattleMachine?.();
-      if (machine) machine.dispatch("statSelected");
-    } catch {}
+    selectStat(stat);
   }
 }
 
@@ -526,17 +625,7 @@ function handleStatClick(event) {
   if (state !== "waitingForPlayerAction") return;
   const stat = getStatByIndex(idx);
   if (!stat) return;
-  try {
-    if (store) {
-      store.playerChoice = stat;
-      store.selectionMade = true;
-    }
-  } catch {}
-  showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
-  try {
-    const machine = window.__getClassicBattleMachine?.();
-    if (machine) machine.dispatch("statSelected");
-  } catch {}
+  selectStat(stat);
 }
 
 function onClickAdvance(event) {
@@ -635,11 +724,16 @@ function installEventBindings() {
     }
   });
 
-  // Append state changes to the verbose log when enabled
+  // Track state changes: start/stop countdown and append verbose log
   document.addEventListener("battle:state", (ev) => {
+    const { from, to } = ev.detail || {};
+    if (to === "waitingForPlayerAction") {
+      startSelectionCountdown(5);
+    } else {
+      stopSelectionCountdown();
+    }
     if (!verboseEnabled) return;
     try {
-      const { from, to } = ev.detail || {};
       const pre = byId("cli-verbose-log");
       if (!pre) return;
       const ts = new Date();
@@ -647,12 +741,10 @@ function installEventBindings() {
       const mm = String(ts.getMinutes()).padStart(2, "0");
       const ss = String(ts.getSeconds()).padStart(2, "0");
       const line = `[${hh}:${mm}:${ss}] ${from || "(init)"} -> ${to}`;
-      // Keep last 50 lines
       const existing = pre.textContent ? pre.textContent.split("\n").filter(Boolean) : [];
       existing.push(line);
       while (existing.length > 50) existing.shift();
       pre.textContent = existing.join("\n");
-      // Auto-scroll to the latest entry
       pre.scrollTop = pre.scrollHeight;
     } catch {}
   });
@@ -700,6 +792,10 @@ async function init() {
   };
   try {
     await initFeatureFlags();
+  } catch {}
+  try {
+    const skip = new URLSearchParams(location.search).get("skipRoundCooldown");
+    if (skip === "1") setFlag("skipRoundCooldown", true);
   } catch {}
   updateVerbose();
   updateStateBadgeVisibility();
