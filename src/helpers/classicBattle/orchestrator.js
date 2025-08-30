@@ -188,6 +188,20 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
           }
         }
       }
+      if (typeof document !== "undefined") {
+        try {
+          const ds = document.body?.dataset;
+          if (ds) {
+            ds.battleState = to;
+            if (from) ds.prevBattleState = from;
+          }
+        } catch {}
+        document.dispatchEvent(
+          new CustomEvent("battle:state", {
+            detail: { from: from || null, to, event: event || null }
+          })
+        );
+      }
     } catch {}
     updateTimerDebug(machine);
     emitBattleEvent("debugPanelUpdate");
