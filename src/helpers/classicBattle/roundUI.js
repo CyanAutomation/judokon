@@ -6,7 +6,7 @@ import * as scoreboard from "../setupScoreboard.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import { showMatchSummaryModal } from "./uiService.js";
 import { handleReplay } from "./roundManager.js";
-import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
+import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { showSnackbar } from "../showSnackbar.js";
@@ -243,7 +243,6 @@ try {
 export function bindRoundUIEventHandlersDynamic() {
   // Guard against rebinding on the same EventTarget instance
   try {
-    const { getBattleEventTarget } = await import("./battleEvents.js");
     const KEY = "__cbRoundUIDynamicBoundTargets";
     const target = getBattleEventTarget();
     const set = (globalThis[KEY] ||= new WeakSet());
