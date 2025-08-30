@@ -58,6 +58,18 @@ function setRoundMessage(text) {
   if (el) el.textContent = text || "";
 }
 
+/**
+ * Show or hide the battle state badge based on feature flag.
+ *
+ * @pseudocode
+ * if badge element exists:
+ *   set hidden to !isEnabled("battleStateBadge")
+ */
+function updateStateBadgeVisibility() {
+  const badge = byId("battle-state-badge");
+  if (badge) badge.style.display = isEnabled("battleStateBadge") ? "" : "none";
+}
+
 function showBottomLine(text) {
   // Render as a single bottom line using the snackbar container
   try {
@@ -500,12 +512,17 @@ async function init() {
     await initFeatureFlags();
   } catch {}
   updateVerbose();
+  updateStateBadgeVisibility();
   checkbox?.addEventListener("change", () => {
     setFlag("cliVerbose", !!checkbox.checked);
   });
   featureFlagsEmitter.addEventListener("change", (e) => {
-    if (!e.detail?.flag || e.detail.flag === "cliVerbose") {
+    const flag = e.detail?.flag;
+    if (!flag || flag === "cliVerbose") {
       updateVerbose();
+    }
+    if (!flag || flag === "battleStateBadge") {
+      updateStateBadgeVisibility();
     }
   });
   // Install CLI event bridges

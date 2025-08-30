@@ -81,6 +81,7 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 
 ### Feature Flags
 - `cliVerbose` – toggles the verbose log section on the CLI page; disabled by default.
+- `battleStateBadge` – shows a header badge reflecting the current match state; disabled by default.
 - `autoSelect` – when enabled (default), the match auto-picks a random stat when the selection timer expires.
   When disabled, the CLI waits for manual input after timeout.
 

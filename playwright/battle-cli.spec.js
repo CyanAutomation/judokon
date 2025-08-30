@@ -27,11 +27,25 @@ test.describe("Classic Battle CLI", () => {
     expect(errors).toEqual([]);
   });
 
-  test("shows state badge with current state", async ({ page }) => {
+  test("state badge hidden when flag disabled", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html");
-    // Wait until the player can act
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    await expect(page.locator("#battle-state-badge")).toBeHidden();
+  });
+
+  test("state badge visible when flag enabled", async ({ page }) => {
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem(
+          "settings",
+          JSON.stringify({ featureFlags: { battleStateBadge: { enabled: true } } })
+        );
+      } catch {}
+    });
+    await page.goto("/src/pages/battleCLI.html");
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
     const badge = page.locator("#battle-state-badge");
+    await expect(badge).toBeVisible();
     await expect(badge).toContainText(/State:\s*waitingForPlayerAction/);
   });
 
