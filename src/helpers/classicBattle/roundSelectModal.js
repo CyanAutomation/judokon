@@ -119,8 +119,10 @@ export async function initRoundSelectModal(onStart) {
       modal.close();
       try {
         if (typeof onStart === "function") await onStart();
-        emitBattleEvent("startClicked");
+      } catch (err) {
+        console.error("Failed to start battle:", err);
       } finally {
+        emitBattleEvent("startClicked");
         cleanupTooltips();
         modal.destroy();
       }
