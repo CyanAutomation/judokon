@@ -205,68 +205,114 @@ export async function waitingForPlayerActionExit() {
   emitBattleEvent("statButtons:disable");
 }
 
-function computeAndDispatchOutcome(store, machine) {
-  return (async () => {
+/**
+ * Compute round outcome and dispatch the resulting events.
+ *
+ * @param {object} store
+ * @param {object} machine
+ * @returns {Promise<void>}
+ * @pseudocode
+ * ```
+ * if not in roundDecision or already resolved → return
+ * if no player choice → dispatch interrupt(stalledNoSelection)
+ * outcomeEvent ← determineOutcomeEvent(store)
+ * record debug guard timing
+ * await dispatchOutcome(outcomeEvent, machine)
+ * emit debug panel update
+ * ```
+ */
+export async function computeAndDispatchOutcome(store, machine) {
+  try {
+    console.log("DEBUG: computeAndDispatchOutcome start", { playerChoice: store?.playerChoice });
+    if (!isStateTransition(null, "roundDecision")) return;
+    const rd = window.__roundDebug;
+    const resolved = rd && typeof rd.resolvedAt === "number";
+    if (resolved) return;
+    if (!store?.playerChoice) {
+      await machine.dispatch("interrupt", { reason: "stalledNoSelection" });
+      return;
+    }
+    const outcomeEvent = determineOutcomeEvent(store);
+    console.log("DEBUG: computeAndDispatchOutcome outcomeEvent", { outcomeEvent });
     try {
-      console.log("DEBUG: computeAndDispatchOutcome start", { playerChoice: store?.playerChoice });
-      if (!isStateTransition(null, "roundDecision")) return;
-      const rd = window.__roundDebug;
-      const resolved = rd && typeof rd.resolvedAt === "number";
-      if (resolved) return;
-      if (!store?.playerChoice) {
-        await machine.dispatch("interrupt", { reason: "stalledNoSelection" });
-        return;
-      }
-      let outcomeEvent = null;
-      try {
-        const stat = store.playerChoice;
-        const pCard = document.getElementById("player-card");
-        const oCard = document.getElementById("opponent-card");
-        const playerVal = getStatValue(pCard, stat);
-        console.log("DEBUG: computeAndDispatchOutcome values", { stat, playerVal });
-        let opponentVal = 0;
-        try {
-          const opp = getOpponentJudoka();
-          const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
-          opponentVal = Number.isFinite(raw) ? raw : getStatValue(oCard, stat);
-        } catch {
-          opponentVal = getStatValue(oCard, stat);
-        }
-        if (Number.isFinite(playerVal) && Number.isFinite(opponentVal)) {
-          if (playerVal > opponentVal) outcomeEvent = "outcome=winPlayer";
-          else if (playerVal < opponentVal) outcomeEvent = "outcome=winOpponent";
-          else outcomeEvent = "outcome=draw";
-        }
-      } catch {}
-      console.log("DEBUG: computeAndDispatchOutcome outcomeEvent", { outcomeEvent });
-      try {
-        window.__guardFiredAt = Date.now();
-        window.__guardOutcomeEvent = outcomeEvent || "none";
-      } catch {}
-      if (outcomeEvent) {
-        // Avoid re-entrant dispatch inside onEnter; schedule transitions
-        // after onEnter/microtasks complete.
-        try {
-          const run = async () => {
-            try {
-              await machine.dispatch(outcomeEvent);
-              await machine.dispatch("continue");
-            } catch {}
-          };
-          if (typeof queueMicrotask === "function") queueMicrotask(run);
-          setTimeout(run, 0);
-        } catch {
-          try {
-            await machine.dispatch(outcomeEvent);
-            await machine.dispatch("continue");
-          } catch {}
-        }
-      } else {
-        await machine.dispatch("interrupt", { reason: "guardNoOutcome" });
-      }
-      emitBattleEvent("debugPanelUpdate");
+      window.__guardFiredAt = Date.now();
+      window.__guardOutcomeEvent = outcomeEvent || "none";
     } catch {}
-  })();
+    await dispatchOutcome(outcomeEvent, machine);
+    emitBattleEvent("debugPanelUpdate");
+  } catch {}
+}
+
+/**
+ * Determine the outcome event based on player and opponent stat values.
+ *
+ * @param {object} store
+ * @returns {string|null}
+ * @pseudocode
+ * ```
+ * read player and opponent values
+ * if both numbers → return corresponding outcome event
+ * else → null
+ * ```
+ */
+function determineOutcomeEvent(store) {
+  try {
+    const stat = store.playerChoice;
+    const pCard = document.getElementById("player-card");
+    const oCard = document.getElementById("opponent-card");
+    const playerVal = getStatValue(pCard, stat);
+    console.log("DEBUG: computeAndDispatchOutcome values", { stat, playerVal });
+    let opponentVal = 0;
+    try {
+      const opp = getOpponentJudoka();
+      const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
+      opponentVal = Number.isFinite(raw) ? raw : getStatValue(oCard, stat);
+    } catch {
+      opponentVal = getStatValue(oCard, stat);
+    }
+    if (Number.isFinite(playerVal) && Number.isFinite(opponentVal)) {
+      if (playerVal > opponentVal) return "outcome=winPlayer";
+      if (playerVal < opponentVal) return "outcome=winOpponent";
+      return "outcome=draw";
+    }
+  } catch {}
+  return null;
+}
+
+/**
+ * Dispatch the outcome or interrupt if none exists.
+ *
+ * @param {string|null} outcomeEvent
+ * @param {object} machine
+ * @returns {Promise<void>}
+ * @pseudocode
+ * ```
+ * if outcome event → schedule dispatch(outcomeEvent) and dispatch(continue)
+ * else → dispatch interrupt(guardNoOutcome)
+ * ```
+ */
+async function dispatchOutcome(outcomeEvent, machine) {
+  if (outcomeEvent) {
+    // Avoid re-entrant dispatch inside onEnter; schedule transitions
+    // after onEnter/microtasks complete.
+    try {
+      const run = async () => {
+        try {
+          await machine.dispatch(outcomeEvent);
+          await machine.dispatch("continue");
+        } catch {}
+      };
+      if (typeof queueMicrotask === "function") queueMicrotask(run);
+      setTimeout(run, 0);
+    } catch {
+      try {
+        await machine.dispatch(outcomeEvent);
+        await machine.dispatch("continue");
+      } catch {}
+    }
+  } else {
+    await machine.dispatch("interrupt", { reason: "guardNoOutcome" });
+  }
 }
 
 export function scheduleRoundDecisionGuard(store, machine) {
