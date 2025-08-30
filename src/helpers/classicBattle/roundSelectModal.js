@@ -31,7 +31,7 @@ import { t } from "../i18n.js";
  * 8. When a button is clicked:
  *    a. Call `setPointsToWin` with the round value and persist it.
  *    b. Close the modal.
- *    c. Invoke the provided start callback and await completion.
+ *    c. Invoke the provided start callback and await completion; log failures.
  *    d. If initialization succeeds, emit `startClicked`.
  *    e. Clean up tooltips and destroy the modal.
  *
@@ -123,7 +123,6 @@ export async function initRoundSelectModal(onStart) {
         emitBattleEvent("startClicked");
       } catch (err) {
         console.error("Failed to start battle:", err);
-        throw err;
       } finally {
         cleanupTooltips();
         modal.destroy();
