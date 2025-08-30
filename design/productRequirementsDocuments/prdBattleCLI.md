@@ -86,6 +86,8 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
   When disabled, the CLI waits for manual input after timeout.
 - `skipRoundCooldown` – when enabled, the CLI skips the inter-round countdown and immediately begins the next round.
 
+`skipRoundCooldown` may also be enabled via the `?skipRoundCooldown=1` query parameter, which sets the feature flag at startup.
+
 Notes:
 - Core gameplay and timers must not use dynamic imports in hot paths. Optional features (e.g., Retro Mode) may be dynamically imported but preloaded during idle if enabled.  
 - Maintain the scoreboard/snackbar surface contract where feasible: `#round-message` for outcomes and a dedicated area for countdown/prompts to keep tests consistent.  
@@ -104,8 +106,8 @@ Notes:
    - Given an active match, when pressing Q, then a quit confirmation prompt appears; confirming ends or rolls back per engine rules.  
 
 3. Timer Behavior  
-   - Given `waitingForPlayerAction`, when the timer ticks, then `#cli-countdown` updates once per second with remaining time.  
-   - Given timer expiry and `FF_AUTO_SELECT` enabled, when the countdown reaches zero, then a random stat is selected and printed before decision.  
+  - Given `waitingForPlayerAction`, when the timer ticks, then `#cli-countdown` updates once per second with remaining time and exposes the value via `data-remaining-time`.
+- Given timer expiry and `FF_AUTO_SELECT` enabled, when the countdown reaches zero, then a random stat is selected and printed before decision.
    - Given `cooldown`, when countdownStart fires, then a fallback timer runs and emits `countdownFinished` after the duration if not skipped.
    - Given `skipRoundCooldown` enabled, when `countdownStart` fires, then the next round begins immediately without showing countdown text.
    - Given the tab is hidden or device sleeps, when focus returns, then the timer resumes without double-firing and remains consistent with the engine PRD.  
