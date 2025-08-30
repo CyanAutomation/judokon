@@ -64,7 +64,9 @@ export const __test = {
   autostartBattle,
   renderStatList,
   restorePointsToWin,
-  startRoundWrapper
+  startRoundWrapper,
+  // Expose init for tests to manually initialize without DOMContentLoaded
+  init
 };
 /**
  * Update the round counter line in the header.
