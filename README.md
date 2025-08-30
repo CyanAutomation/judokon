@@ -79,6 +79,12 @@ AI agents should begin by reading:
 - ✅ Validate stat blocks against rarity rules
 - ✅ Generate or evaluate PRDs for new features
 
+Before committing code changes, run the project checks including the JSDoc/pseudocode scanner:
+
+```bash
+npm run check:jsdoc
+```
+
 ### Classic Battle CLI (text-first)
 
 - Page: `src/pages/battleCLI.html` – terminal-style UI that reuses the Classic Battle engine/state machine.

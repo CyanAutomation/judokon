@@ -17,6 +17,7 @@ npx eslint . # lint the codebase
 npx vitest run # run unit tests
 npm run test:style # run style tests on demand
 npx playwright test # run Playwright UI tests
+npm run check:jsdoc # ensure exported helpers have JSDoc + @pseudocode
 ```
 
 - Confirm that any new or modified functions include JSDoc with an `@pseudocode` block so documentation stays complete.

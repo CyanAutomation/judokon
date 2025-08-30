@@ -206,6 +206,7 @@ npx eslint .
 npx vitest run
 npx playwright test
 npm run check:contrast
+npm run check:jsdoc
 ```
 
 **Common fixes:**
