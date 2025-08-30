@@ -24,26 +24,12 @@ test.describe("Classic battle round completion", () => {
     await waitForBattleReady(page);
 
     // 1. Wait for the stat buttons to be enabled
-    await page.waitForFunction(
-      () => {
-        const statButtons = document.querySelectorAll("#stat-buttons button");
-        return Array.from(statButtons).every((btn) => !btn.disabled);
-      },
-      null,
-      { timeout: 10000 }
-    );
+    await page.evaluate(() => window.statButtonsReadyPromise);
 
     // 2. Click a stat button
     await page.locator("button[data-stat='power']").click();
 
     // 3. Wait for the stat buttons to be disabled (indicating the round is processing)
-    await page.waitForFunction(
-      () => {
-        const statButtons = document.querySelectorAll("#stat-buttons button");
-        return Array.from(statButtons).every((btn) => btn.disabled);
-      },
-      null,
-      { timeout: 10000 }
-    );
+    await page.locator("#stat-buttons[data-buttons-ready='false']").waitFor();
   });
 });
