@@ -169,25 +169,29 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     onStateChange?.({ from, to, event });
     emitBattleEvent("battleStateChange", { from, to, event });
     try {
-      if (typeof window !== "undefined") {
-        if (typeof document !== "undefined") {
-          document.dispatchEvent(new CustomEvent("battle:state", { detail: { from, to, event } }));
-          if (document.body?.dataset) {
-            document.body.dataset.battleState = to;
-            if (from) {
-              document.body.dataset.prevBattleState = from;
-            } else {
-              delete document.body.dataset.prevBattleState;
-            }
+      // Mirror state in DOM dataset and dispatch legacy DOM event exactly once
+      const detail = { from: from || null, to, event: event || null };
+      if (typeof document !== "undefined") {
+        try {
+          const ds = document.body?.dataset;
+          if (ds) {
+            ds.battleState = to;
+            if (from) ds.prevBattleState = from;
+            else delete ds.prevBattleState;
           }
-        }
+        } catch {}
+        document.dispatchEvent(new CustomEvent("battle:state", { detail }));
+      }
+
+      // Update window-scoped debug globals and resolve window waiters
+      if (typeof window !== "undefined") {
         window.__classicBattleState = to;
         if (from) window.__classicBattlePrevState = from;
         if (event) window.__classicBattleLastEvent = event;
         const log = Array.isArray(window.__classicBattleStateLog)
           ? window.__classicBattleStateLog
           : [];
-        log.push({ from: from || null, to, event: event || null, ts: Date.now() });
+        log.push({ from: detail.from, to: detail.to, event: detail.event, ts: Date.now() });
         while (log.length > 20) log.shift();
         window.__classicBattleStateLog = log;
         const winWaiters = (window.__stateWaiters && window.__stateWaiters[to]) || [];
@@ -200,20 +204,6 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
             } catch {}
           }
         }
-      }
-      if (typeof document !== "undefined") {
-        try {
-          const ds = document.body?.dataset;
-          if (ds) {
-            ds.battleState = to;
-            if (from) ds.prevBattleState = from;
-          }
-        } catch {}
-        document.dispatchEvent(
-          new CustomEvent("battle:state", {
-            detail: { from: from || null, to, event: event || null }
-          })
-        );
       }
     } catch {}
     updateTimerDebug(machine);

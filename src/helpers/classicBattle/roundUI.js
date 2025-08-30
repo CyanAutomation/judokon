@@ -200,8 +200,17 @@ export function bindRoundUIEventHandlers() {
   });
 }
 
-// Bind once on module load for production/runtime usage.
-bindRoundUIEventHandlers();
+// Bind once on module load for production/runtime usage. Guard against
+// duplicate bindings when tests reset modules across files.
+try {
+  const FLAG = "__classicBattleRoundUIBound";
+  if (!globalThis[FLAG]) {
+    bindRoundUIEventHandlers();
+    globalThis[FLAG] = true;
+  }
+} catch {
+  bindRoundUIEventHandlers();
+}
 
 // Test-friendly variant: dynamically import dependencies within handlers so
 // that vi.mock replacements are honored even when bindings occur before mocks.
