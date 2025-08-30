@@ -188,6 +188,7 @@ export async function cooldownEnter(machine, payload) {
         duration * 1000 + 200
       );
     } catch {}
+    return;
   }
   // For inter-round cooldowns with no scheduled next-round timer (e.g., after
   // an interrupt path like timeout/noSelection), emit a countdown so the UI
