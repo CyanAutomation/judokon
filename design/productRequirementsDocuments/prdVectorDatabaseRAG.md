@@ -190,6 +190,14 @@ No user settings or toggles are included. This is appropriate since the feature 
 - Do we want a UI search tool for developers and designers, or agent-only access?
 - Should embedding versioning be tracked per file (`v1_embeddings.json`)?
 
+## Retrieval Quality Evaluation
+
+Run `node scripts/evaluation/evaluateRAG.js` from the project root to measure retrieval performance. The script reads the representative queries in `scripts/evaluation/queries.json` and reports:
+
+- **MRR@5** – Mean Reciprocal Rank of the expected document within the top five results.
+- **Recall@3** – Fraction of queries whose expected document appears in the top three results.
+- **Recall@5** – Fraction of queries whose expected document appears in the top five results.
+
 ## Tasks
 
 - [x] 1.0 Build Embedding Generation System
