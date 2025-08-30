@@ -421,16 +421,38 @@ export async function roundDecisionEnter(machine) {
   recordRoundDecisionEntry();
   scheduleRoundDecisionGuard(store, machine);
 
-  if (await resolveSelectionIfPresent(store)) {
+  try {
+    const resolved = await resolveSelectionIfPresent(store);
+    if (resolved) {
+      try {
+        if (typeof window !== "undefined" && window.__roundDecisionGuard) {
+          clearTimeout(window.__roundDecisionGuard);
+          window.__roundDecisionGuard = null;
+        }
+      } catch {}
+      try {
+        setTimeout(async () => {
+          try {
+            const still = machine.getState ? machine.getState() : null;
+            if (still === "roundDecision") {
+              await machine.dispatch("interrupt", { reason: "postResolveWatchdog" });
+            }
+          } catch {}
+        }, 600);
+      } catch {}
+      return;
+    }
+  } catch {
     try {
-      setTimeout(async () => {
-        try {
-          const still = machine.getState ? machine.getState() : null;
-          if (still === "roundDecision") {
-            await machine.dispatch("interrupt", { reason: "postResolveWatchdog" });
-          }
-        } catch {}
-      }, 600);
+      if (typeof window !== "undefined" && window.__roundDecisionGuard) {
+        clearTimeout(window.__roundDecisionGuard);
+        window.__roundDecisionGuard = null;
+      }
+    } catch {}
+    try {
+      emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
+      emitBattleEvent("debugPanelUpdate");
+      await machine.dispatch("interrupt", { reason: "roundResolutionError" });
     } catch {}
     return;
   }
@@ -452,6 +474,12 @@ export async function roundDecisionEnter(machine) {
   try {
     await resolveSelectionIfPresent(store);
     try {
+      if (typeof window !== "undefined" && window.__roundDecisionGuard) {
+        clearTimeout(window.__roundDecisionGuard);
+        window.__roundDecisionGuard = null;
+      }
+    } catch {}
+    try {
       setTimeout(async () => {
         try {
           const still = machine.getState ? machine.getState() : null;
@@ -462,6 +490,12 @@ export async function roundDecisionEnter(machine) {
       }, 600);
     } catch {}
   } catch {
+    try {
+      if (typeof window !== "undefined" && window.__roundDecisionGuard) {
+        clearTimeout(window.__roundDecisionGuard);
+        window.__roundDecisionGuard = null;
+      }
+    } catch {}
     try {
       emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
       emitBattleEvent("debugPanelUpdate");
