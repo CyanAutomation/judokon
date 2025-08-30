@@ -84,11 +84,13 @@ function updateScoreLine(player, opponent) {
  * @pseudocode
  * if round element exists:
  *   set text to `Round ${round} of ${target}`
+ * set `data-round` on root element
  */
 function updateRoundHeader(round, target) {
   const el = byId("cli-round");
-  if (!el) return;
-  el.textContent = `Round ${round} of ${target}`;
+  if (el) el.textContent = `Round ${round} of ${target}`;
+  const root = byId("cli-root");
+  if (root) root.dataset.round = String(round);
 }
 
 function setRoundMessage(text) {

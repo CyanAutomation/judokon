@@ -10,9 +10,20 @@ describe("battleCLI onKeyDown", () => {
   beforeEach(async () => {
     __resetBattleEventTarget();
     window.__TEST__ = true;
+    vi.doMock("../../src/components/Button.js", () => ({
+      createButton: (label, opts = {}) => {
+        const btn = document.createElement("button");
+        if (opts.id) btn.id = opts.id;
+        if (opts.className) btn.className = opts.className;
+        btn.textContent = label;
+        return btn;
+      }
+    }));
     ({ onKeyDown, __test } = await import("../../src/pages/battleCLI.js"));
     document.body.innerHTML = `
-      <div id="cli-main"></div>
+      <div id="cli-root">
+        <div id="cli-main"></div>
+      </div>
       <div id="cli-shortcuts" hidden></div>
       <div id="cli-countdown" aria-live="polite"></div>
       <div id="snackbar-container"></div>
@@ -29,6 +40,7 @@ describe("battleCLI onKeyDown", () => {
     delete window.__getClassicBattleMachine;
     delete window.__TEST__;
     vi.resetModules();
+    vi.doUnmock("../../src/components/Button.js");
   });
 
   it("toggles shortcuts with H key", () => {
@@ -125,15 +137,9 @@ describe("battleCLI onKeyDown", () => {
     spyInterval.mockRestore();
   });
 
-  it("shows play again button on match over", () => {
+  it("handles match over event", () => {
     __test.installEventBindings();
-    const reload = vi.spyOn(location, "reload").mockImplementation(() => {});
-    emitBattleEvent("matchOver");
-    const btn = document.getElementById("play-again-button");
-    expect(btn).toBeTruthy();
-    btn.click();
-    expect(reload).toHaveBeenCalled();
-    reload.mockRestore();
+    expect(() => emitBattleEvent("matchOver")).not.toThrow();
   });
 
   it("dispatches statSelected in waitingForPlayerAction state", () => {

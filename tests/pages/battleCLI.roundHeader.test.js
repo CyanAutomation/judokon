@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { readFileSync } from "node:fs";
 
 async function loadBattleCLI() {
   const emitter = new EventTarget();
@@ -34,9 +35,12 @@ describe("battleCLI round header", () => {
   beforeEach(() => {
     window.__TEST__ = true;
     document.body.innerHTML = `
+      <div id="cli-root"></div>
       <div id="cli-stats"></div>
       <div id="cli-round"></div>
       <div id="round-message"></div>
+      <div id="cli-countdown"></div>
+      <div id="cli-score"></div>
       <div id="snackbar-container"></div>
     `;
   });
@@ -60,5 +64,16 @@ describe("battleCLI round header", () => {
     const mod = await loadBattleCLI();
     await mod.__test.startRoundWrapper();
     expect(document.getElementById("cli-round").textContent).toBe("Round 2 of 10");
+    expect(document.getElementById("cli-root").dataset.round).toBe("2");
+  });
+
+  it("battleCLI.html exposes required selectors", () => {
+    const html = readFileSync("src/pages/battleCLI.html", "utf8");
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    expect(doc.querySelector("#cli-countdown")).toBeTruthy();
+    expect(doc.querySelector("#round-message")).toBeTruthy();
+    expect(doc.querySelector("#cli-score")).toBeTruthy();
+    expect(doc.querySelector("#cli-root")?.getAttribute("data-round")).not.toBeNull();
+    expect(doc.querySelector("#cli-countdown")?.getAttribute("data-remaining-time")).not.toBeNull();
   });
 });
