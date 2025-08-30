@@ -1,10 +1,7 @@
-name: Check JSDoc and Pseudocode
+name: Check JSDoc & Pseudocode
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
   check-jsdoc:

@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import path from "path";
 
 // Recursively list files under a directory
-async function walk(dir, ext = ".js") {
+export async function walk(dir, ext = ".js") {
   const entries = await fs.readdir(dir, { withFileTypes: true });
   const files = [];
   for (const e of entries) {
@@ -18,14 +18,16 @@ async function walk(dir, ext = ".js") {
   return files;
 }
 
-function findExportedSymbols(content) {
+export function findExportedSymbols(content) {
   const lines = content.split(/\n/);
   const results = [];
 
   const exportFnRegex = /^\s*export\s+(async\s+)?function\s+([A-Za-z0-9_$]+)\s*\(/;
   const exportVarRegex =
     /^\s*export\s+(const|let|var)\s+([A-Za-z0-9_$]+)\s*=\s*(?:async\s+)?(?:function|\(|[A-Za-z0-9_$]+)/;
-  const exportDefaultFnRegex = /^\s*export\s+default\s+function\s+([A-Za-z0-9_$]+)?\s*\(/;
+  const exportDefaultFnRegex =
+    /^\s*export\s+default\s+(?:async\s+)?function(?:\s+([A-Za-z0-9_$]+))?\s*\(/;
+  const exportNamedRegex = /^\s*export\s+\{([^}]+)\}/;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -44,68 +46,68 @@ function findExportedSymbols(content) {
       results.push({ name: m[1] || "default", line: i + 1, type: "default-function" });
       continue;
     }
+    m = line.match(exportNamedRegex);
+    if (m) {
+      const names = m[1]
+        .split(",")
+        .map((name) => name.trim().split(" as ")[1] || name.trim().split(" as ")[0]);
+      for (const name of names) {
+        results.push({ name, line: i + 1, type: "named" });
+      }
+      continue;
+    }
   }
   return results;
 }
 
-function hasJsDocAbove(lines, index) {
-  // index is 0-based line index where export statement is
+export function validateJsDoc(lines, index) {
   let j = index - 1;
-  // skip blank lines and single-line comments
   while (j >= 0 && (/^\s*$/.test(lines[j]) || /^\s*\/\//.test(lines[j]))) j--;
   if (j < 0) return false;
   if (!/\*\//.test(lines[j])) return false;
-  // find start of block
+
   let start = j;
   while (start >= 0 && !/\/\*\*/.test(lines[start])) start--;
   if (start < 0) return false;
-  // confirm it's a /** block (JSDoc)
+
   if (!/\/\*\*/.test(lines[start])) return false;
-  // Basic sanity: ensure block contains @pseudocode (project standard) and
-  // optionally @param/@returns when configured externally.
+
   const block = lines.slice(start, j + 1).join("\n");
   if (!/@pseudocode\b/.test(block)) return false;
-  // If present, consider it valid. Further checks (param/returns) are optional.
+
+  // Extract function signature to check for params and return
+  const signature = lines[index];
+  const hasParams = /\(([^)]*)\)/.exec(signature)?.[1].trim().length > 0;
+  const returnsValue =
+    (!/=>\s*\{/.test(signature) &&
+      !/function\s+[A-Za-z0-9_$]+\s*\([^)]*\)\s*\{\}/.test(signature)) ||
+    /return\s+/.test(signature);
+
+  const hasParamTag = /@param\b/.test(block);
+  const hasReturnTag = /@returns\b/.test(block);
+
+  if (hasParams && !hasParamTag) return false;
+  if (returnsValue && !hasReturnTag) return false;
+
+  const summary = lines[start + 1].replace(/\*/, "").trim();
+  if (summary.length === 0) return false;
+
   return true;
 }
 
-async function checkHelpers(dir = "src/helpers") {
-  const base = path.resolve(dir);
-  try {
-    const files = await walk(base, ".js");
-    const problems = [];
-    for (const f of files) {
-      const rel = path.relative(process.cwd(), f);
-      const src = await fs.readFile(f, "utf8");
-      const symbols = findExportedSymbols(src);
-      if (symbols.length === 0) continue;
-      const lines = src.split(/\n/);
-      for (const sym of symbols) {
-        const idx = sym.line - 1;
-        const ok = hasJsDocAbove(lines, idx);
-        if (!ok) problems.push({ file: rel, name: sym.name, line: sym.line });
-      }
+export async function checkFiles(files) {
+  const problems = [];
+  for (const f of files) {
+    const rel = path.relative(process.cwd(), f);
+    const src = await fs.readFile(f, "utf8");
+    const symbols = findExportedSymbols(src);
+    if (symbols.length === 0) continue;
+    const lines = src.split(/\n/);
+    for (const sym of symbols) {
+      const idx = sym.line - 1;
+      const ok = validateJsDoc(lines, idx);
+      if (!ok) problems.push({ file: rel, name: sym.name, line: sym.line });
     }
-
-    if (problems.length === 0) {
-      console.log("All exported functions in", dir, "have JSDoc blocks (basic check).");
-      return 0;
-    }
-
-    console.log("\nFunctions missing JSDoc blocks:");
-    for (const p of problems) {
-      console.log(` - ${p.file}:${p.line} -> ${p.name}`);
-    }
-    console.log(`\nTotal missing: ${problems.length}`);
-    return 2;
-  } catch (err) {
-    console.error("Error scanning", err);
-    return 1;
   }
+  return problems;
 }
-
-(async function main() {
-  const dir = process.argv[2] || "src/helpers";
-  const code = await checkHelpers(dir);
-  process.exit(code);
-})();

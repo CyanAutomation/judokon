@@ -19,7 +19,7 @@
     "generate:embeddings": "node --max-old-space-size=8192 scripts/generateEmbeddings.js",
     "pretest": "node scripts/generatePrdIndex.js",
     "update:codes": "node updateCodes.mjs",
-  "check:jsdoc": "node scripts/check-jsdoc.mjs src/helpers",
+  "check:jsdoc": "node scripts/run-check-jsdoc.mjs",
     "sync:agents": "node scripts/syncAgentDocs.mjs",
     "rag:query": "node scripts/queryRagCli.mjs"
   },
