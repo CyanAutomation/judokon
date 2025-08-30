@@ -87,11 +87,26 @@ export function renderFeatureFlagSwitches(
 ) {
   if (!container || !flags) return;
   Object.keys(flags).forEach((flag) => {
-    const kebab = flag.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
     const info = flags[flag];
     const tipId = info.tooltipId || `settings.${flag}`;
     const label = tooltipMap[`${tipId}.label`] || formatFlagLabel(flag);
+    const existing = container.querySelector(`[data-flag="${flag}"]`);
     const getDescription = () => tooltipMap[`${tipId}.description`] || "";
+    if (existing) {
+      existing.checked = Boolean(getCurrentSettings().featureFlags[flag]?.enabled);
+      existing.addEventListener("change", () =>
+        handleFeatureFlagChange({
+          input: existing,
+          flag,
+          info,
+          label: tooltipMap[`${tipId}.label`] || flag,
+          getCurrentSettings,
+          handleUpdate
+        })
+      );
+      return;
+    }
+    const kebab = flag.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
     const description = getDescription();
     const toggle = new ToggleSwitch(label, {
       id: `feature-${kebab}`,

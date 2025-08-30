@@ -105,6 +105,10 @@
     "battleStateBadge": {
       "label": "Battle State Badge",
       "description": "Show the current match state in the header for testing."
+    },
+    "autoSelect": {
+      "label": "Auto Select",
+      "description": "Automatically choose a stat when the timer expires."
     }
   },
   "card": {

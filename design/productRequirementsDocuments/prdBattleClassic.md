@@ -222,7 +222,7 @@ This section lists small, implementer-facing contracts to reduce ambiguity betwe
 
   List of feature flags and their intended defaults for Classic Battle. Implementations should read these from the global feature-flag service or `src/config/battleDefaults.js` when available.
 
-  - `autoSelect` — boolean, default: `true`. When enabled, the system auto-selects a random stat on timer expiry.
+  - `autoSelect` — boolean, default: `true`. When enabled, the system auto-selects a random stat on timer expiry. The setting can be toggled from the Settings page.
   - `battleDebugPanel` — boolean, default: `false`. When enabled, show debug panel above the cards with copy/export controls.
   - `testMode` — boolean, default: `false` (test-only). When enabled, allow `battle.testRandomSeed` and fast AI delays for deterministic tests.
   - `statHotkeys` — boolean, default: `false`. When enabled, number keys 1–5 map to stat buttons (left→right).

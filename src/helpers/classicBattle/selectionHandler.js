@@ -5,6 +5,7 @@ import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { resolveRound } from "./roundResolver.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getBattleState } from "./eventBus.js";
+import { isEnabled } from "../featureFlags.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
@@ -195,7 +196,9 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
 function cleanupTimers(store) {
   stopTimer();
   clearTimeout(store.statTimeoutId);
-  clearTimeout(store.autoSelectId);
+  if (isEnabled("autoSelect")) {
+    clearTimeout(store.autoSelectId);
+  }
 }
 
 /**

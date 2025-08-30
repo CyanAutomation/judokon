@@ -221,6 +221,25 @@
           </fieldset>
           <fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">
             <legend>Advanced Settings</legend>
+            <div class="settings-item">
+              <label for="feature-auto-select" class="switch">
+                <input
+                  type="checkbox"
+                  id="feature-auto-select"
+                  name="autoSelect"
+                  aria-label="Auto Select"
+                  aria-describedby="feature-auto-select-desc"
+                  data-flag="autoSelect"
+                  data-tooltip-id="settings.autoSelect"
+                  checked
+                />
+                <div class="slider round"></div>
+                <span>Auto Select</span>
+              </label>
+              <p id="feature-auto-select-desc" class="settings-description">
+                Automatically choose a stat when the timer expires.
+              </p>
+            </div>
             <!-- Flag toggles are inserted here dynamically -->
           </fieldset>
           <fieldset id="links-container" class="settings-form">

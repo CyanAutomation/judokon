@@ -11,6 +11,7 @@ import { STATS } from "../helpers/BattleEngine.js";
 import { setPointsToWin } from "../helpers/battleEngineFacade.js";
 import { fetchJson } from "../helpers/dataUtils.js";
 import { DATA_DIR } from "../helpers/constants.js";
+import { isEnabled } from "../helpers/featureFlags.js";
 
 /**
  * Minimal DOM utils for the CLI page
@@ -326,6 +327,7 @@ function installEventBindings() {
       } catch {}
       try {
         cooldownTimer = setTimeout(() => {
+          if (!isEnabled("autoSelect")) return;
           try {
             emitBattleEvent("countdownFinished");
           } catch {}

@@ -168,7 +168,13 @@ Notes:
 - Reuse hooks: Keep `#round-message` and a countdown/prompt surface matching Classic Battle test expectations to minimize new test code.  
 - Accessibility: Use `role="status"`/`aria-live="polite"` for prompts and outcomes; ensure semantic headings and landmarks.  
 - Data and settings: Use existing settings defaults for win target; persist locally via the shared helper.  
-- Logging: Route verbose/diagnostic output through a muted logger helper in tests to keep CI clean.  
+- Logging: Route verbose/diagnostic output through a muted logger helper in tests to keep CI clean.
+
+---
+
+## Feature flags & defaults
+
+- `autoSelect` — boolean, default: `true`. When enabled, the timer auto-selects a random stat on expiry. Players can toggle this in Settings.
 
 ---
 

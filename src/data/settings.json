@@ -17,6 +17,10 @@
   },
   "gameModes": {},
   "featureFlags": {
+    "autoSelect": {
+      "enabled": true,
+      "tooltipId": "settings.autoSelect"
+    },
     "battleDebugPanel": {
       "enabled": false,
       "tooltipId": "settings.battleDebugPanel"
