@@ -61,4 +61,16 @@ describe("onTransition helpers", () => {
     expect(el).toBeNull();
     expect(window.__classicBattleTimerState).toEqual({ remaining: 30, paused: false });
   });
+
+  it("mirrors state to dataset and dispatches legacy event", async () => {
+    const handler = vi.fn();
+    document.addEventListener("battle:state", handler);
+    await machine.dispatch("stateA");
+    expect(document.body.dataset.battleState).toBe("stateA");
+    expect(document.body.dataset.prevBattleState).toBe("init");
+    expect(handler).toHaveBeenCalledTimes(1);
+    const evt = handler.mock.calls[0][0];
+    expect(evt.detail).toEqual({ from: "init", to: "stateA", event: "stateA" });
+    document.removeEventListener("battle:state", handler);
+  });
 });

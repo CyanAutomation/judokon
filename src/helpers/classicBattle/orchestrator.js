@@ -126,9 +126,11 @@ export function updateTimerDebug(machineRef) {
  * 4. Define the `onTransition` function executed on every state change:
  *    a. Call `onStateChange({ from, to, event })` when provided.
  *    b. Emit a `"battleStateChange"` battle event with `{ from, to, event }`.
- *    c. Call `updateTimerDebug(machine)`.
- *    d. Emit a `"debugPanelUpdate"` battle event.
- *    e. Resolve any waiters queued for the new `to` state.
+ *    c. Dispatch a legacy `"battle:state"` DOM event with the same detail.
+ *    d. Mirror state changes on `document.body.dataset` in the browser.
+ *    e. Call `updateTimerDebug(machine)`.
+ *    f. Emit a `"debugPanelUpdate"` battle event.
+ *    g. Resolve any waiters queued for the new `to` state.
  * 5. Create the battle state machine via `BattleStateMachine.create` and store it with `setMachine`.
  * 6. Expose a getter for the machine, wire visibility listeners, and handle timer drift and injected errors.
  * 7. Expose `onStateTransition` and `getBattleStateSnapshot` on `window` for debugging.
@@ -168,6 +170,17 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     emitBattleEvent("battleStateChange", { from, to, event });
     try {
       if (typeof window !== "undefined") {
+        if (typeof document !== "undefined") {
+          document.dispatchEvent(new CustomEvent("battle:state", { detail: { from, to, event } }));
+          if (document.body?.dataset) {
+            document.body.dataset.battleState = to;
+            if (from) {
+              document.body.dataset.prevBattleState = from;
+            } else {
+              delete document.body.dataset.prevBattleState;
+            }
+          }
+        }
         window.__classicBattleState = to;
         if (from) window.__classicBattlePrevState = from;
         if (event) window.__classicBattleLastEvent = event;
