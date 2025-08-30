@@ -2,7 +2,7 @@ import { BattleEngine, STATS } from "./BattleEngine.js";
 
 export { BattleEngine, STATS } from "./BattleEngine.js";
 
-const battleEngine = new BattleEngine();
+export const battleEngine = new BattleEngine();
 
 /**
  * Set the number of points required to win a match.
