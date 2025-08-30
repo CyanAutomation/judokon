@@ -37,6 +37,7 @@ function getLabelData() {
     "Typewriter Effect",
     "Tooltips",
     "Card of the Day",
+    "Full Navigation Map",
     ...sortedNames,
     ...flagLabels
   ];
