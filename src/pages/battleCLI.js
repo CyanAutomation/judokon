@@ -8,7 +8,7 @@ import {
 import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
 import { onBattleEvent, emitBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { STATS } from "../helpers/BattleEngine.js";
-import { setPointsToWin } from "../helpers/battleEngineFacade.js";
+import { setPointsToWin, getPointsToWin } from "../helpers/battleEngineFacade.js";
 import { fetchJson } from "../helpers/dataUtils.js";
 import { DATA_DIR } from "../helpers/constants.js";
 import { createModal } from "../components/Modal.js";
@@ -63,7 +63,8 @@ export const __test = {
   init,
   autostartBattle,
   renderStatList,
-  restorePointsToWin
+  restorePointsToWin,
+  startRoundWrapper
 };
 
 function setRetroMode(enabled) {
@@ -74,6 +75,19 @@ function updateScoreLine(player, opponent) {
   const el = byId("cli-score");
   if (!el) return;
   el.textContent = `You: ${player}  Opponent: ${opponent}`;
+}
+
+/**
+ * Update the round counter line in the header.
+ *
+ * @pseudocode
+ * if round element exists:
+ *   set text to `Round ${round} of ${target}`
+ */
+function updateRoundHeader(round, target) {
+  const el = byId("cli-round");
+  if (!el) return;
+  el.textContent = `Round ${round} of ${target}`;
 }
 
 function setRoundMessage(text) {
@@ -317,6 +331,7 @@ function stopSelectionCountdown() {
  *
  * @pseudocode
  * stopSelectionCountdown()
+ * highlight chosen stat
  * update store with selection
  * show bottom line with picked stat
  * dispatch "statSelected" on machine
@@ -324,6 +339,11 @@ function stopSelectionCountdown() {
 function selectStat(stat) {
   if (!stat) return;
   stopSelectionCountdown();
+  const list = byId("cli-stats");
+  list?.querySelectorAll(".selected").forEach((el) => el.classList.remove("selected"));
+  const idx = STATS.indexOf(stat) + 1;
+  const choiceEl = list?.querySelector(`[data-stat-index="${idx}"]`);
+  choiceEl?.classList.add("selected");
   try {
     if (store) {
       store.playerChoice = stat;
@@ -465,7 +485,9 @@ export async function renderStatList() {
             .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
             .map((s) => `[${s.statIndex}] ${s.name}`)
             .join("  ·  ");
-          help.textContent = `${help.textContent}  |  ${mapping}`;
+          const li = document.createElement("li");
+          li.textContent = mapping;
+          help.appendChild(li);
         }
       } catch {}
     }
@@ -534,14 +556,27 @@ function renderHiddenPlayerStats(judoka) {
   container.replaceChildren(ul);
 }
 
+/**
+ * Start a new round and prepare the CLI UI.
+ *
+ * @pseudocode
+ * call core startRound → { judoka, roundNumber }
+ * renderHiddenPlayerStats(judoka)
+ * remove any `.selected` stat classes
+ * clear round message and show prompt
+ * update round header with roundNumber and points target
+ */
 async function startRoundWrapper() {
   // Use the core startRound to select judoka; capture results and prepare hidden values.
-  const { playerJudoka } = await startRoundCore(store);
+  const { playerJudoka, roundNumber } = await startRoundCore(store);
   currentPlayerJudoka = playerJudoka || null;
   if (currentPlayerJudoka) renderHiddenPlayerStats(currentPlayerJudoka);
-  // Prompt user for input in the bottom line
+  // Reset selections and prompt user for input
+  const list = byId("cli-stats");
+  list?.querySelectorAll(".selected").forEach((el) => el.classList.remove("selected"));
   setRoundMessage("");
   showBottomLine("Select your move");
+  updateRoundHeader(roundNumber, getPointsToWin());
 }
 
 function getStatByIndex(index1Based) {
@@ -589,9 +624,7 @@ export function handleGlobalKey(key) {
  * if key is between '1' and '9':
  *   lookup stat by index
  *   if stat missing: return false
- *   record selection on the store if available
- *   show bottom line with picked stat
- *   dispatch 'statSelected'
+ *   selectStat(stat)
  *   return true
  * return false
  */
@@ -619,17 +652,7 @@ export function handleWaitingForPlayerActionKey(key) {
   if (key >= "1" && key <= "9") {
     const stat = getStatByIndex(key);
     if (!stat) return false;
-    try {
-      if (store) {
-        store.playerChoice = stat;
-        store.selectionMade = true;
-      }
-    } catch {}
-    showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
-    try {
-      const machine = window.__getClassicBattleMachine?.();
-      if (machine) machine.dispatch("statSelected");
-    } catch {}
+    selectStat(stat);
     return true;
   }
   return false;
