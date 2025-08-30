@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
 
 async function loadBattleCLI() {
   const emitter = new EventTarget();
@@ -46,7 +47,7 @@ describe("battleCLI init helpers", () => {
     const machine = { dispatch: vi.fn() };
     window.__getClassicBattleMachine = vi.fn(() => machine);
     window.__TEST_MACHINE__ = machine;
-    localStorage.setItem("battleCLI.pointsToWin", "5");
+    localStorage.setItem(BATTLE_POINTS_TO_WIN, "5");
   });
 
   afterEach(() => {

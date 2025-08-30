@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
 
-async function loadBattleCLI(seed) {
+async function loadBattleCLI() {
   const emitter = new EventTarget();
   vi.doMock("../../src/helpers/featureFlags.js", () => ({
     initFeatureFlags: vi
@@ -28,23 +28,25 @@ async function loadBattleCLI(seed) {
     fetchJson: vi.fn().mockResolvedValue([{ statIndex: 1, name: "Speed" }])
   }));
   vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
-  vi.stubGlobal("location", new URL(`http://localhost/battleCLI.html?seed=${seed}`));
   const mod = await import("../../src/pages/battleCLI.js");
   return mod;
 }
 
-describe("battleCLI deterministic seed", () => {
+describe("battleCLI points select", () => {
   beforeEach(() => {
     window.__TEST__ = true;
     document.body.innerHTML = `
       <div id="cli-stats"></div>
       <div id="cli-help"></div>
-      <select id="points-select"></select>
+      <select id="points-select">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+      </select>
       <section id="cli-verbose-section" hidden>
         <pre id="cli-verbose-log"></pre>
       </section>
       <input id="verbose-toggle" type="checkbox" />
-      <input id="seed-input" type="number" />
     `;
     const machine = { dispatch: vi.fn() };
     window.__getClassicBattleMachine = vi.fn(() => machine);
@@ -68,27 +70,29 @@ describe("battleCLI deterministic seed", () => {
     vi.doUnmock("../../src/helpers/dataUtils.js");
     vi.doUnmock("../../src/helpers/constants.js");
     localStorage.clear();
-    vi.unstubAllGlobals();
   });
 
-  it("applies seed for deterministic random", async () => {
-    const mod = await loadBattleCLI(5);
+  it("confirms and persists points to win", async () => {
+    const mod = await loadBattleCLI();
     await mod.__test.init();
-    const { seededRandom } = await import("../../src/helpers/testModeUtils.js");
-    const first = seededRandom();
-    const second = seededRandom();
-    const expected = (start, count) => {
-      const out = [];
-      let s = start;
-      for (let i = 0; i < count; i++) {
-        const x = Math.sin(s++) * 10000;
-        out.push(x - Math.floor(x));
-      }
-      return out;
-    };
-    const [e1, e2] = expected(5, 2);
-    expect(first).toBeCloseTo(e1);
-    expect(second).toBeCloseTo(e2);
-    expect(localStorage.getItem("battleCLI.seed")).toBe("5");
+    const { setPointsToWin } = await import("../../src/helpers/battleEngineFacade.js");
+    setPointsToWin.mockClear();
+
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const reloadSpy = vi.spyOn(window.location, "reload").mockImplementation(() => {});
+
+    const select = document.getElementById("points-select");
+    select.value = "15";
+    select.dispatchEvent(new Event("change"));
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(setPointsToWin).toHaveBeenCalledWith(15);
+    expect(reloadSpy).toHaveBeenCalled();
+    expect(localStorage.getItem(BATTLE_POINTS_TO_WIN)).toBe("15");
+
+    setPointsToWin.mockClear();
+    await mod.__test.restorePointsToWin();
+    expect(setPointsToWin).toHaveBeenCalledWith(15);
+    expect(select.value).toBe("15");
   });
 });
