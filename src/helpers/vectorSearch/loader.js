@@ -7,28 +7,15 @@ let cachedEmbeddings;
 /**
  * Current version of the client embedding data.
  *
- * Increment this when regenerating embeddings to ensure the
- * vector search page can detect outdated data.
- */
-/**
- * @summary TODO: Add summary
+ * Increment this when regenerating embeddings so the UI and loader can
+ * detect mismatches between entry metadata and the expected format.
+ *
+ * @constant {number}
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Bump this value when embeddings are regenerated.
+ * 2. Consumers compare entry.version and metadata.version to this constant.
+ *
+ * @returns {number} The current embedding schema version.
  */
 export const CURRENT_EMBEDDING_VERSION = 1;
 

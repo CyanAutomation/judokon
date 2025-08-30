@@ -5,6 +5,12 @@ import {
   waitingForPlayerActionExit
 } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 import { ClassicBattleView } from "../../../src/helpers/classicBattle/view.js";
+const currentFlags = { statHotkeys: { enabled: false } };
+vi.mock("../../../src/helpers/featureFlags.js", () => ({
+  isEnabled: (flag) => currentFlags[flag]?.enabled ?? false,
+  featureFlagsEmitter: new EventTarget(),
+  initFeatureFlags: vi.fn()
+}));
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({ setupScoreboard: vi.fn() }));
 vi.mock("../../../src/helpers/classicBattle/quitButton.js", () => ({ initQuitButton: vi.fn() }));
 vi.mock("../../../src/helpers/classicBattle/skipHandler.js", () => ({ skipCurrentPhase: vi.fn() }));
@@ -97,5 +103,24 @@ describe("classicBattle stat button state", () => {
 
     await machine.dispatch("statSelected");
     expect(btn.disabled).toBe(true);
+  });
+
+  it("triggers stat selection via keyboard only when statHotkeys is enabled", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { initStatButtons } = await import("../../../src/helpers/classicBattle/uiHelpers.js");
+    const controls = initStatButtons({});
+    const btn = document.querySelector("#stat-buttons button");
+    btn.disabled = false;
+    const clickSpy = vi.spyOn(btn, "click");
+
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
+    expect(clickSpy).not.toHaveBeenCalled();
+
+    currentFlags.statHotkeys.enabled = true;
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+
+    controls.disable();
+    warn.mockRestore();
   });
 });

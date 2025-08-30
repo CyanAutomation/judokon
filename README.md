@@ -226,6 +226,10 @@ CLI-specific tests live in `playwright/battle-cli.spec.js` and verify the state 
 
 Enable the `battleDebugPanel` feature flag to display a panel above the player and opponent cards with live match data. The panel includes a **Copy** button that copies all text for easy sharing.
 
+### Stat Hotkeys
+
+Enable the `statHotkeys` feature flag to map number keys 1–5 to stat buttons for quicker selection. Disabled by default.
+
 
 Screenshot suites store their baseline images in `playwright/*-snapshots/`. To skip running these comparison tests locally, set the `SKIP_SCREENSHOTS` environment variable:
 

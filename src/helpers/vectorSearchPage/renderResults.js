@@ -81,6 +81,23 @@ function buildResultRow(match, queryTerms, isTop) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Populate the results table body with rendered matches.
+ *
+ * @summary Render a sequence of match rows and wire interactions to request context.
+ * @pseudocode
+ * 1. For each match in `toRender`:
+ *    a. Build a table row with `buildResultRow`.
+ *    b. Attach click and keyboard handlers that call `loadResultContext`.
+ *    c. Append the row to the provided `tbody` element.
+ * 2. The first match is visually marked as the top match.
+ *
+ * @param {HTMLElement} tbody - Table body element to append rows to.
+ * @param {Array<Object>} toRender - Matches to render (sorted by score).
+ * @param {string[]} queryTerms - Tokenized query terms for highlighting.
+ * @param {(el: HTMLElement)=>void} loadResultContext - Callback to load surrounding context when a row is activated.
+ * @returns {void}
+ */
 export function renderResults(tbody, toRender, queryTerms, loadResultContext) {
   for (const [idx, match] of toRender.entries()) {
     const row = buildResultRow(match, queryTerms, idx === 0);

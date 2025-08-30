@@ -32,6 +32,20 @@
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Handle arrow-key navigation among a group of buttons inside `container`.
+ *
+ * @summary Move focus left/right between buttons matching `buttonClass` when Arrow keys are pressed.
+ * @pseudocode
+ * 1. Exit if the key is not ArrowLeft or ArrowRight.
+ * 2. Find buttons inside `container` matching the provided class.
+ * 3. Locate the index of the currently focused element and move focus accordingly.
+ *
+ * @param {KeyboardEvent} event - The originating keyboard event.
+ * @param {Element} container - Container element that holds the buttons.
+ * @param {string} buttonClass - CSS class for the target buttons.
+ * @returns {void}
+ */
 export function handleKeyboardNavigation(event, container, buttonClass) {
   if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
     return;

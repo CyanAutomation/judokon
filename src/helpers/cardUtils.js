@@ -115,6 +115,20 @@ export function getRandomJudoka(data) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Render and display a judoka card in the provided `gameArea` element.
+ *
+ * @summary Validate `judoka`, generate a card via `JudokaCard`, append it to `gameArea`, and setup lazy portraits.
+ * @pseudocode
+ * 1. Validate `gameArea` and `judoka` inputs.
+ * 2. If invalid, write an error/fallback message to `gameArea`.
+ * 3. Otherwise generate the card element and append it, then call `setupLazyPortraits`.
+ *
+ * @param {Object} judoka - Judoka data.
+ * @param {Object} gokyo - Gokyo lookup data.
+ * @param {HTMLElement} gameArea - Container to render the card into.
+ * @returns {Promise<void>}
+ */
 export async function displayJudokaCard(judoka, gokyo, gameArea) {
   debugLog("Judoka passed to displayJudokaCard:", judoka);
   if (!gameArea) {
@@ -177,6 +191,18 @@ export async function displayJudokaCard(judoka, gokyo, gameArea) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Toggle inspector/debug panels for each card container on the page.
+ *
+ * @summary When `enable` is true, create and append an inspector panel for each card; when false remove them.
+ * @pseudocode
+ * 1. Iterate over `.card-container` elements.
+ * 2. If `enable` and no `.debug-panel` exists: parse `data-card-json` and append inspector.
+ * 3. If `!enable` and `.debug-panel` exists: remove it and clear `data-inspector`.
+ *
+ * @param {boolean} enable - Whether to show or hide inspector panels.
+ * @returns {void}
  */
 export function toggleInspectorPanels(enable) {
   document.querySelectorAll(".card-container").forEach((container) => {

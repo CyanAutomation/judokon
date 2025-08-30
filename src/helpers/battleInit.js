@@ -42,6 +42,17 @@ let resolveReady;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Promise that resolves when the battle screen has fully initialized.
+ *
+ * @summary A promise consumers can await to know when the battle UI has finished
+ * initializing (both 'home' and 'state' parts are ready).
+ * @pseudocode
+ * 1. Create a promise and capture its resolver.
+ * 2. Listen for `battle:init` and call the resolver once fired.
+ * 3. Expose the promise on `window` for legacy consumers.
+ * @type {Promise<void>}
+ */
 export const battleReadyPromise = new Promise((resolve) => {
   resolveReady = resolve;
 });
@@ -77,6 +88,19 @@ if (typeof window !== "undefined") {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Mark a named portion of the battle page as ready and dispatch `battle:init` when complete.
+ *
+ * @summary Add `part` to an internal set; when both `home` and `state` are ready,
+ * set the DOM ready flag and dispatch `battle:init`.
+ * @pseudocode
+ * 1. Add `part` to the `readyParts` set.
+ * 2. If both `home` and `state` are present, set `data-ready="true"` on the root
+ *    and dispatch `battle:init`.
+ *
+ * @param {"home"|"state"} part - The portion of the page that finished initializing.
+ * @returns {void}
  */
 export function markBattlePartReady(part) {
   readyParts.add(part);

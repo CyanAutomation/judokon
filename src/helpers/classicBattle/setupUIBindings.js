@@ -42,10 +42,16 @@ export async function setupUIBindings(view) {
     window.addEventListener("pagehide", cleanupBattleStateProgress, { once: true });
   }
 
-  await applyStatLabels().catch(() => {});
-  await initTooltips().catch((error) => {
-    console.debug("initTooltips failed", error);
-  });
+  try {
+    await applyStatLabels();
+  } catch {}
+  try {
+    await initTooltips();
+  } catch (error) {
+    try {
+      console.debug("initTooltips failed", error);
+    } catch {}
+  }
   maybeShowStatHint();
 
   return statButtonControls;

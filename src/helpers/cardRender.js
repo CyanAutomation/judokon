@@ -193,6 +193,19 @@ function formatTechniqueName(technique) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Generate the signature move HTML band for a judoka card.
+ *
+ * @summary Resolve the technique from `gokyoLookup` and return a signature move HTML block.
+ * @pseudocode
+ * 1. Resolve the technique using `resolveTechnique()` (with fallbacks).
+ * 2. Format the technique name and inject it into the signature move container markup.
+ *
+ * @param {Object} judoka - The judoka object containing `signatureMoveId`.
+ * @param {Object} gokyoLookup - The lookup object for techniques.
+ * @param {string} [cardType="common"] - Card type used to style the band.
+ * @returns {string} HTML string for the signature move band.
+ */
 export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
   const technique = resolveTechnique(judoka, gokyoLookup);
   debugLog("Selected Technique:", technique);

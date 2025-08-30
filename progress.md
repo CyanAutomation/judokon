@@ -236,3 +236,7 @@
 - Reordered round selection modal start logic so the battle machine receives
   `startClicked` only after initialization, preventing the lobby from hanging in
   `waitingForMatchStart`.
+
+## Milestone 12 — Stat Hotkeys Toggle
+
+- Surfaced `statHotkeys` in Advanced Settings with tooltip coverage and keyboard shortcut tests.

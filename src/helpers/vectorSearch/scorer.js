@@ -121,6 +121,19 @@ function sparseFilterStep(state) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Compute cosine similarity between two numeric vectors.
+ *
+ * @summary Calculate cosine similarity in a numerically stable way.
+ * @pseudocode
+ * 1. If inputs are not arrays of equal length, return 0.
+ * 2. Compute dot product and squared magnitudes for both vectors.
+ * 3. Return dot / (|a| * |b|) or 0 when magnitude is zero.
+ *
+ * @param {number[]} a - First vector.
+ * @param {number[]} b - Second vector.
+ * @returns {number} Cosine similarity in range [-1, 1], or 0 for invalid input.
+ */
 export function cosineSimilarity(a, b) {
   if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) {
     return 0;
@@ -158,6 +171,24 @@ export function cosineSimilarity(a, b) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Score a list of entries against a query vector and optional query text.
+ *
+ * @summary Assign a normalized similarity score [0..1] and apply an exact-term bonus.
+ * @pseudocode
+ * 1. Tokenize `queryText` into lowercase terms.
+ * 2. For each entry:
+ *    a. Compute cosine similarity with `queryVector`.
+ *    b. Normalize similarity from [-1,1] to [0,1].
+ *    c. If any query term appears in the entry text, add a small bonus.
+ *    d. Clamp the final score to at most 1.
+ * 3. Sort entries in descending score order and return.
+ *
+ * @param {Array<Record<string, any>>} entries - Candidate entries with `embedding` and `text`.
+ * @param {number[]} queryVector - Query embedding vector.
+ * @param {string} [queryText=""] - Original query used to provide exact-match boosts.
+ * @returns {Array<Record<string, any>>} Sorted entries with an added numeric `score` field.
  */
 export function scoreEntries(entries, queryVector, queryText) {
   const terms = String(queryText).toLowerCase().split(/\s+/).filter(Boolean);

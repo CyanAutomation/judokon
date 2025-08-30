@@ -1,7 +1,22 @@
 import { BattleEngine } from "./BattleEngine.js";
 
+/**
+ * Core battle engine and useful constants exported from the engine module.
+ *
+ * @summary Re-export the `BattleEngine` class and `STATS` constant from the engine module.
+ * @pseudocode
+ * 1. Import engine implementation from `./BattleEngine.js` and re-export its public API.
+ */
 export { BattleEngine, STATS } from "./BattleEngine.js";
 
+/**
+ * Singleton engine instance used by application code and helpers.
+ *
+ * @summary A single shared `BattleEngine` instance used across the app.
+ * @pseudocode
+ * 1. Construct a new `BattleEngine` and export it so modules can delegate calls.
+ * @type {BattleEngine}
+ */
 export const battleEngine = new BattleEngine();
 
 /**

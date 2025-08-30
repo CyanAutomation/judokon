@@ -237,13 +237,13 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
     const flagsContainerEl = document.getElementById("feature-flags-container");
     if (flagsContainerEl) {
       clearToggles(flagsContainerEl);
-      const flags =
-        current.featureFlags && Object.keys(current.featureFlags).length > 0
-          ? current.featureFlags
-          : { ...DEFAULT_SETTINGS.featureFlags };
-      if (!current.featureFlags || Object.keys(current.featureFlags).length === 0) {
-        current.featureFlags = flags;
-      }
+      // Merge persisted flags with defaults so newly added flags appear automatically
+      const flags = {
+        ...DEFAULT_SETTINGS.featureFlags,
+        ...(current.featureFlags || {})
+      };
+      // Keep the working settings in sync with the merged map
+      current.featureFlags = flags;
       renderFeatureFlagSwitches(
         flagsContainerEl,
         flags,
