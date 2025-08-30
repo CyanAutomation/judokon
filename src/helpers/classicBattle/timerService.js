@@ -26,60 +26,94 @@ let currentNextRound = null;
 // Skip handler utilities moved to skipHandler.js
 
 /**
- * Handle clicks on the Next button. Uses the active timer controls provided by
- * `scheduleNextRound` to either resolve the ready promise or cancel the timer.
+ * Disable the Next button and dispatch "ready" if it was already marked ready.
+ *
+ * @pseudocode
+ * 1. Disable the button and clear `data-next-ready`.
+ * 2. If state isn't cooldown, interrupt to reach cooldown.
+ * 3. Dispatch "ready", resolve the promise, and clear skip handler.
+ *
+ * @param {HTMLButtonElement} btn - Next button element.
+ * @param {(() => void)|null} resolveReady - Resolver for the ready promise.
+ * @example
+ * await advanceWhenReady(btn, resolve);
+ */
+export async function advanceWhenReady(btn, resolveReady) {
+  btn.disabled = true;
+  delete btn.dataset.nextReady;
+  // Failsafe: if the machine isn't in cooldown, advance via a safe path.
+  try {
+    const state =
+      typeof window !== "undefined" && window.__classicBattleState
+        ? window.__classicBattleState
+        : null;
+    if (state && state !== "cooldown") {
+      // If we're still in roundDecision or waitingForPlayerAction due to a race,
+      // interrupt the round to reach cooldown, then mark ready.
+      if (state === "roundDecision" || state === "waitingForPlayerAction") {
+        try {
+          await dispatchBattleEvent("interrupt", { reason: "advanceNextFromNonCooldown" });
+        } catch {}
+      }
+    }
+  } catch {}
+  await dispatchBattleEvent("ready");
+  if (typeof resolveReady === "function") {
+    resolveReady();
+  }
+  setSkipHandler(null);
+}
+
+/**
+ * Cancel an active timer or immediately advance when already in cooldown.
+ *
+ * @pseudocode
+ * 1. If timer exists, stop it and return.
+ * 2. Otherwise, dispatch "ready" when state is cooldown.
+ *
+ * @param {HTMLButtonElement} _btn - Next button element.
+ * @param {{stop: () => void}|null} timer - Active cooldown timer.
+ * @param {(() => void)|null} resolveReady - Resolver for the ready promise.
+ * @example
+ * await cancelTimerOrAdvance(btn, timer, resolve);
+ */
+export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
+  if (timer) {
+    timer.stop();
+    return;
+  }
+  // No active timer controls: if we're in cooldown, advance immediately
+  try {
+    const state =
+      typeof window !== "undefined" && window.__classicBattleState
+        ? window.__classicBattleState
+        : null;
+    if (state === "cooldown") {
+      await dispatchBattleEvent("ready");
+      if (typeof resolveReady === "function") resolveReady();
+      setSkipHandler(null);
+    }
+  } catch {}
+}
+
+/**
+ * Handle clicks on the Next button by delegating to helper functions.
  *
  * @param {MouseEvent} _evt - Click event.
  * @param {{timer: {stop: () => void} | null, resolveReady: (() => void) | null}} [controls=currentNextRound]
  * - Timer controls returned from `scheduleNextRound`.
+ * @example
+ * const controls = { timer, resolveReady };
+ * await onNextButtonClick(new MouseEvent("click"), controls);
  */
 export async function onNextButtonClick(_evt, { timer, resolveReady } = currentNextRound ?? {}) {
   const btn = document.getElementById("next-button");
   if (!btn) return;
-
   if (btn.dataset.nextReady === "true") {
-    btn.disabled = true;
-    delete btn.dataset.nextReady;
-    // Failsafe: if the machine isn't in cooldown, advance via a safe path.
-    try {
-      const state =
-        typeof window !== "undefined" && window.__classicBattleState
-          ? window.__classicBattleState
-          : null;
-      if (state && state !== "cooldown") {
-        // If we're still in roundDecision or waitingForPlayerAction due to a race,
-        // interrupt the round to reach cooldown, then mark ready.
-        if (state === "roundDecision" || state === "waitingForPlayerAction") {
-          try {
-            await dispatchBattleEvent("interrupt", { reason: "advanceNextFromNonCooldown" });
-          } catch {}
-        }
-      }
-    } catch {}
-    await dispatchBattleEvent("ready");
-    if (typeof resolveReady === "function") {
-      resolveReady();
-    }
-    setSkipHandler(null);
+    await advanceWhenReady(btn, resolveReady);
     return;
   }
-
-  if (timer) {
-    timer.stop();
-  } else {
-    // No active timer controls: if we're in cooldown, advance immediately
-    try {
-      const state =
-        typeof window !== "undefined" && window.__classicBattleState
-          ? window.__classicBattleState
-          : null;
-      if (state === "cooldown") {
-        await dispatchBattleEvent("ready");
-        if (typeof resolveReady === "function") resolveReady();
-        setSkipHandler(null);
-      }
-    } catch {}
-  }
+  await cancelTimerOrAdvance(btn, timer, resolveReady);
 }
 
 /**
