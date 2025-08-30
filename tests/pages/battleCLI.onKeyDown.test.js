@@ -8,6 +8,7 @@ describe("battleCLI onKeyDown", () => {
     ({ onKeyDown, __test } = await import("../../src/pages/battleCLI.js"));
     document.body.innerHTML = `
       <div id="cli-shortcuts" hidden></div>
+      <div id="cli-countdown" aria-live="polite"></div>
       <div id="snackbar-container"></div>
     `;
     document.body.className = "";
@@ -31,6 +32,14 @@ describe("battleCLI onKeyDown", () => {
   it("toggles retro mode with R key", () => {
     onKeyDown(new KeyboardEvent("keydown", { key: "r" }));
     expect(document.body.classList.contains("retro")).toBe(true);
+  });
+
+  it("shows an invalid key message and clears on next valid key", () => {
+    const countdown = document.getElementById("cli-countdown");
+    onKeyDown(new KeyboardEvent("keydown", { key: "x" }));
+    expect(countdown.textContent).toBe("Invalid key, press H for help");
+    onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
+    expect(countdown.textContent).toBe("");
   });
 
   it("quits on Q key", () => {

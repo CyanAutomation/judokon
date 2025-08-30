@@ -347,9 +347,12 @@ export function handleGlobalKey(key) {
  * @pseudocode
  * if key is between '1' and '9':
  *   lookup stat by index
+ *   if stat missing: return false
  *   record selection on the store if available
  *   show bottom line with picked stat
  *   dispatch 'statSelected'
+ *   return true
+ * return false
  */
 /**
  * @summary TODO: Add summary
@@ -374,7 +377,7 @@ export function handleGlobalKey(key) {
 export function handleWaitingForPlayerActionKey(key) {
   if (key >= "1" && key <= "9") {
     const stat = getStatByIndex(key);
-    if (!stat) return;
+    if (!stat) return false;
     try {
       if (store) {
         store.playerChoice = stat;
@@ -386,7 +389,9 @@ export function handleWaitingForPlayerActionKey(key) {
       const machine = window.__getClassicBattleMachine?.();
       if (machine) machine.dispatch("statSelected");
     } catch {}
+    return true;
   }
+  return false;
 }
 
 /**
@@ -395,6 +400,8 @@ export function handleWaitingForPlayerActionKey(key) {
  * @pseudocode
  * if key is Enter or Space:
  *   dispatch 'continue'
+ *   return true
+ * return false
  */
 /**
  * @summary TODO: Add summary
@@ -422,7 +429,9 @@ export function handleRoundOverKey(key) {
       const machine = window.__getClassicBattleMachine?.();
       if (machine) machine.dispatch("continue");
     } catch {}
+    return true;
   }
+  return false;
 }
 
 /**
@@ -433,6 +442,8 @@ export function handleRoundOverKey(key) {
  *   clear timers
  *   clear bottom line
  *   dispatch 'ready'
+ *   return true
+ * return false
  */
 /**
  * @summary TODO: Add summary
@@ -469,7 +480,9 @@ export function handleCooldownKey(key) {
       const machine = window.__getClassicBattleMachine?.();
       if (machine) machine.dispatch("ready");
     } catch {}
+    return true;
   }
+  return false;
 }
 
 /**
@@ -477,14 +490,17 @@ export function handleCooldownKey(key) {
  * @param {KeyboardEvent} e
  * @pseudocode
  * key = lowercased key from event
- * if handleGlobalKey(key) handled:
- *   return
  * state = document.body.dataset.battleState
  * table = { waitingForPlayerAction: handleWaitingForPlayerActionKey,
  *           roundOver: handleRoundOverKey,
  *           cooldown: handleCooldownKey }
  * handler = table[state]
- * if handler exists: handler(key)
+ * handled = handleGlobalKey(key) OR (handler ? handler(key) : false)
+ * countdown = element '#cli-countdown'
+ * if not handled:
+ *   if countdown exists: set text to "Invalid key, press H for help"
+ * else if countdown has text:
+ *   clear countdown text
  */
 /**
  * @summary TODO: Add summary
@@ -508,7 +524,6 @@ export function handleCooldownKey(key) {
  */
 export function onKeyDown(e) {
   const key = e.key.toLowerCase();
-  if (handleGlobalKey(key)) return;
   const state = document.body?.dataset?.battleState || "";
   const table = {
     waitingForPlayerAction: handleWaitingForPlayerActionKey,
@@ -516,7 +531,13 @@ export function onKeyDown(e) {
     cooldown: handleCooldownKey
   };
   const handler = table[state];
-  if (handler) handler(key);
+  const handled = handleGlobalKey(key) || (handler ? handler(key) : false);
+  const countdown = byId("cli-countdown");
+  if (!handled) {
+    if (countdown) countdown.textContent = "Invalid key, press H for help";
+  } else if (countdown && countdown.textContent) {
+    countdown.textContent = "";
+  }
 }
 
 function handleStatClick(event) {
