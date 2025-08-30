@@ -21,6 +21,12 @@ import { createButton } from "../../components/Button.js";
 import { syncScoreDisplay } from "./uiService.js";
 import { onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import * as battleEvents from "./battleEvents.js";
+import {
+  resetStatButtonsReadyPromise,
+  setStatButtonsEnabled,
+  createStatHotkeyHandler
+} from "./statButtons.js";
+import { guard } from "./guard.js";
 
 /**
  * Skip the inter-round cooldown when the corresponding feature flag is enabled.
@@ -1081,66 +1087,13 @@ export function clearScoreboardAndMessages() {
 export function initStatButtons(store) {
   const statButtons = document.querySelectorAll("#stat-buttons button");
   const statContainer = document.getElementById("stat-buttons");
-  // Use a resolver that is wired to a global so the promise exists
-  // synchronously during page init. When we reset/create a new
-  // promise we also publish its resolver on `window.__resolveStatButtonsReady`.
   let resolveReady = typeof window !== "undefined" ? window.__resolveStatButtonsReady : undefined;
   const resetReadyPromise = () => {
-    window.statButtonsReadyPromise = new Promise((r) => {
-      resolveReady = r;
-      try {
-        window.__resolveStatButtonsReady = r;
-      } catch {}
-    });
-    try {
-      window.__promiseEvents = window.__promiseEvents || [];
-      window.__promiseEvents.push({ type: "statButtonsReady-reset", ts: Date.now() });
-    } catch {}
+    ({ resolve: resolveReady } = resetStatButtonsReadyPromise());
   };
 
-  function setEnabled(enable = true) {
-    statButtons.forEach((btn) => {
-      btn.disabled = !enable;
-      btn.tabIndex = enable ? 0 : -1;
-      btn.classList.toggle("disabled", !enable);
-      // Defensive: ensure no lingering selection styling when enabling
-      if (enable) {
-        try {
-          btn.classList.remove("selected");
-          btn.style.removeProperty("background-color");
-        } catch {}
-      }
-    });
-    if (statContainer) {
-      statContainer.dataset.buttonsReady = String(enable);
-    }
-    if (enable) {
-      try {
-        const count = document.querySelectorAll("#stat-buttons .selected").length;
-        console.warn(`[test] setEnabled(true): selectedCount=${count}`);
-      } catch {}
-      // Resolve the current promise to signal readiness to tests / other code.
-      try {
-        resolveReady?.();
-        try {
-          window.__promiseEvents = window.__promiseEvents || [];
-          window.__promiseEvents.push({ type: "statButtonsReady-resolve", ts: Date.now() });
-        } catch {}
-      } catch {}
-      try {
-        if (isTestModeEnabled()) console.warn("[test] statButtonsReady=true");
-      } catch {}
-    } else {
-      try {
-        const count = document.querySelectorAll("#stat-buttons .selected").length;
-        console.warn(`[test] setEnabled(false): selectedCount=${count}`);
-      } catch {}
-      resetReadyPromise();
-      try {
-        if (isTestModeEnabled()) console.warn("[test] statButtonsReady=false");
-      } catch {}
-    }
-  }
+  const setEnabled = (enable = true) =>
+    setStatButtonsEnabled(statButtons, statContainer, enable, resolveReady, resetReadyPromise);
 
   // Start disabled until the game enters the player action state
   resetReadyPromise();
@@ -1153,20 +1106,18 @@ export function initStatButtons(store) {
       // Invoke selection logic immediately so tests observing the call
       // don't need to wait for animation frames. Keep visual updates
       // deferred to the next frame to avoid mid-dispatch UI changes.
-      try {
+      guard(() => {
         Promise.resolve(handleStatSelection(store, statName)).catch(() => {});
-      } catch {}
+      });
       // Show snackbar immediately so tests and observers can see the message
       // synchronously.
-      try {
+      guard(() => {
         const label = String(btn.textContent || "").trim();
         showSnackbar(t("ui.youPicked", { stat: label }));
-      } catch {}
+      });
       // Disable buttons right away; selected class is applied via the
       // 'statSelected' event to keep a single source of truth.
-      try {
-        setEnabled(false);
-      } catch {}
+      guard(() => setEnabled(false));
     };
     btn.addEventListener("click", clickHandler);
     btn.addEventListener("keydown", (e) => {
@@ -1178,26 +1129,8 @@ export function initStatButtons(store) {
   });
 
   // Optional keyboard shortcuts (1..5) behind feature flag `statHotkeys`
-  const handleHotkeys = (e) => {
-    try {
-      if (!isEnabled("statHotkeys")) return;
-    } catch {
-      return;
-    }
-    if (e.altKey || e.ctrlKey || e.metaKey) return;
-    const active = document.activeElement;
-    if (active && ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName)) return;
-    const idx = e.key >= "1" && e.key <= "5" ? Number(e.key) - 1 : -1;
-    if (idx < 0 || idx >= statButtons.length) return;
-    const target = statButtons[idx];
-    if (target && !target.disabled) {
-      e.preventDefault();
-      target.click();
-    }
-  };
-  try {
-    document.addEventListener("keydown", handleHotkeys);
-  } catch {}
+  const handleHotkeys = createStatHotkeyHandler(statButtons);
+  guard(() => document.addEventListener("keydown", handleHotkeys));
 
   return {
     enable: () => setEnabled(true),
