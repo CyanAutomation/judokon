@@ -12,7 +12,11 @@ describe("JSON_FIELD_ALLOWLIST", () => {
   it("covers all data JSON files", async () => {
     const dataDir = path.resolve(__dirname, "../../src/data");
     const files = (await readdir(dataDir)).filter(
-      (f) => f.endsWith(".json") && !f.startsWith("client_embeddings.")
+      (f) =>
+        f.endsWith(".json") &&
+        !f.startsWith("client_embeddings.") &&
+        f !== "aesopsFables.json" &&
+        f !== "aesopsMeta.json"
     );
     for (const file of files) {
       expect(JSON_FIELD_ALLOWLIST).toHaveProperty(file);

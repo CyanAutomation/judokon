@@ -205,8 +205,6 @@ let codeGraphs = { modules: {} };
 const MAX_OUTPUT_SIZE = 9.8 * 1024 * 1024;
 
 const JSON_FIELD_ALLOWLIST = {
-  "aesopsFables.json": false,
-  "aesopsMeta.json": false,
   "battleRounds.json": ["label", "description", "category"],
   "codeGraphs.json": false,
   "countryCodeMapping.json": false,
