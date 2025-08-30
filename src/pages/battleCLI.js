@@ -69,7 +69,15 @@ export const __test = {
   restorePointsToWin,
   startRoundWrapper,
   // Expose init for tests to manually initialize without DOMContentLoaded
-  init
+  init,
+  handleScoreboardShowMessage,
+  handleScoreboardClearMessage,
+  handleStatSelectionStalled,
+  handleCountdownStart,
+  handleCountdownFinished,
+  handleRoundResolved,
+  handleMatchOver,
+  handleBattleState
 };
 /**
  * Update the round counter line in the header.
@@ -89,6 +97,11 @@ function updateRoundHeader(round, target) {
 function setRoundMessage(text) {
   const el = byId("round-message");
   if (el) el.textContent = text || "";
+}
+
+function updateScoreLine(player, opponent) {
+  const el = byId("cli-score");
+  if (el) el.textContent = `You: ${player} Opponent: ${opponent}`;
 }
 
 function initSeed() {
@@ -862,142 +875,138 @@ function onClickAdvance(event) {
   }
 }
 
+function handleScoreboardShowMessage(e) {
+  setRoundMessage(String(e.detail || ""));
+}
+
+function handleScoreboardClearMessage() {
+  setRoundMessage("");
+}
+
+function handleStatSelectionStalled() {
+  if (!isEnabled("autoSelect")) {
+    showBottomLine("Stat selection stalled. Pick a stat.");
+  }
+}
+
+function handleCountdownStart(e) {
+  if (skipRoundCooldownIfEnabled()) return;
+  const duration = Number(e.detail?.duration) || 0;
+  try {
+    if (cooldownTimer) clearTimeout(cooldownTimer);
+  } catch {}
+  try {
+    if (cooldownInterval) clearInterval(cooldownInterval);
+  } catch {}
+  cooldownTimer = null;
+  cooldownInterval = null;
+  if (duration > 0) {
+    let remaining = duration;
+    showBottomLine(`Next round in: ${remaining}`);
+    try {
+      cooldownInterval = setInterval(() => {
+        remaining -= 1;
+        if (remaining > 0) showBottomLine(`Next round in: ${remaining}`);
+      }, 1000);
+    } catch {}
+    try {
+      cooldownTimer = setTimeout(() => {
+        try {
+          emitBattleEvent("countdownFinished");
+        } catch {}
+      }, duration * 1000);
+    } catch {}
+  } else {
+    try {
+      emitBattleEvent("countdownFinished");
+    } catch {}
+  }
+}
+
+function handleCountdownFinished() {
+  try {
+    if (cooldownTimer) clearTimeout(cooldownTimer);
+  } catch {}
+  try {
+    if (cooldownInterval) clearInterval(cooldownInterval);
+  } catch {}
+  cooldownTimer = null;
+  cooldownInterval = null;
+  clearBottomLine();
+}
+
+function handleRoundResolved(e) {
+  const { result, stat, playerVal, opponentVal } = e.detail || {};
+  if (result) {
+    setRoundMessage(
+      `${result.message} (${String(stat || "").toUpperCase()} – You: ${playerVal} Opponent: ${opponentVal})`
+    );
+    updateScoreLine(result.playerScore ?? 0, result.opponentScore ?? 0);
+  }
+}
+
+function handleMatchOver() {
+  const main = byId("cli-main");
+  if (!main || byId("play-again-button")) return;
+  const section = document.createElement("section");
+  section.className = "cli-block";
+  const btn = createButton("Play again", {
+    id: "play-again-button",
+    className: "primary-button"
+  });
+  btn.addEventListener("click", () => {
+    try {
+      location.reload();
+    } catch {}
+  });
+  section.append(btn);
+  main.append(section);
+}
+
+function handleBattleState(ev) {
+  const { from, to } = ev.detail || {};
+  updateBattleStateBadge(to);
+  if (to === "waitingForPlayerAction") {
+    startSelectionCountdown(30);
+    byId("cli-stats")?.focus();
+  } else {
+    stopSelectionCountdown();
+  }
+  if (to === "roundOver") {
+    showBottomLine("Press Enter to continue");
+    byId("snackbar-container")?.querySelector(".snackbar")?.focus();
+  }
+  if (!verboseEnabled) return;
+  try {
+    const pre = byId("cli-verbose-log");
+    if (!pre) return;
+    const ts = new Date();
+    const hh = String(ts.getHours()).padStart(2, "0");
+    const mm = String(ts.getMinutes()).padStart(2, "0");
+    const ss = String(ts.getSeconds()).padStart(2, "0");
+    const line = `[${hh}:${mm}:${ss}] ${from || "(init)"} -> ${to}`;
+    const existing = pre.textContent ? pre.textContent.split("\n").filter(Boolean) : [];
+    existing.push(line);
+    while (existing.length > 50) existing.shift();
+    pre.textContent = existing.join("\n");
+    pre.scrollTop = pre.scrollHeight;
+  } catch {}
+}
+
+const battleEventHandlers = {
+  scoreboardShowMessage: handleScoreboardShowMessage,
+  scoreboardClearMessage: handleScoreboardClearMessage,
+  statSelectionStalled: handleStatSelectionStalled,
+  countdownStart: handleCountdownStart,
+  countdownFinished: handleCountdownFinished,
+  roundResolved: handleRoundResolved,
+  matchOver: handleMatchOver
+};
+
 function installEventBindings() {
-  // Mirror scoreboard message events to CLI message area
-  onBattleEvent("scoreboardShowMessage", (e) => {
-    setRoundMessage(String(e.detail || ""));
-  });
-  onBattleEvent("scoreboardClearMessage", () => setRoundMessage(""));
-
-  onBattleEvent("statSelectionStalled", () => {
-    if (!isEnabled("autoSelect")) {
-      showBottomLine("Stat selection stalled. Pick a stat.");
-    }
-  });
-
-  // CLI-specific countdown handler
-  onBattleEvent("countdownStart", (e) => {
-    if (skipRoundCooldownIfEnabled()) return;
-    const duration = Number(e.detail?.duration) || 0;
-    try {
-      if (cooldownTimer) clearTimeout(cooldownTimer);
-    } catch {}
-    try {
-      if (cooldownInterval) clearInterval(cooldownInterval);
-    } catch {}
-    cooldownTimer = null;
-    cooldownInterval = null;
-    if (duration > 0) {
-      let remaining = duration;
-      showBottomLine(`Next round in: ${remaining}`);
-      try {
-        cooldownInterval = setInterval(() => {
-          remaining -= 1;
-          if (remaining > 0) showBottomLine(`Next round in: ${remaining}`);
-        }, 1000);
-      } catch {}
-      try {
-        cooldownTimer = setTimeout(() => {
-          try {
-            emitBattleEvent("countdownFinished");
-          } catch {}
-        }, duration * 1000);
-      } catch {}
-    } else {
-      try {
-        emitBattleEvent("countdownFinished");
-      } catch {}
-    }
-  });
-
-  onBattleEvent("countdownFinished", () => {
-    try {
-      if (cooldownTimer) clearTimeout(cooldownTimer);
-    } catch {}
-    try {
-      if (cooldownInterval) clearInterval(cooldownInterval);
-    } catch {}
-    cooldownTimer = null;
-    cooldownInterval = null;
-    clearBottomLine();
-  });
-
-  // After round resolves, update message and score
-  onBattleEvent("roundResolved", (e) => {
-    const { result, stat, playerVal, opponentVal } = e.detail || {};
-    if (result) {
-      setRoundMessage(
-        `${result.message} (${String(stat || "").toUpperCase()} – You: ${playerVal} Opponent: ${opponentVal})`
-      );
-      updateScoreLine(result.playerScore ?? 0, result.opponentScore ?? 0);
-    }
-  });
-
-  const handleMatchOver = () => {
-    const main = byId("cli-main");
-    if (!main || byId("play-again-button")) return;
-    const section = document.createElement("section");
-    section.className = "cli-block";
-    const btn = createButton("Play again", {
-      id: "play-again-button",
-      className: "primary-button"
-    });
-    btn.addEventListener("click", () => {
-      try {
-        location.reload();
-      } catch {}
-    });
-    section.append(btn);
-    main.append(section);
-  };
-  onBattleEvent("matchOver", handleMatchOver);
+  Object.entries(battleEventHandlers).forEach(([event, handler]) => onBattleEvent(event, handler));
   document.addEventListener("matchOver", handleMatchOver);
-
-  /**
-   * Handle Classic Battle state transitions: manage timers, badge, and verbose log.
-   *
-   * @pseudocode
-   * on "battle:state" event:
-   *   extract { from, to } from event.detail
-   *   updateBattleStateBadge(to)
-   *   if to is "waitingForPlayerAction":
-   *     start selection countdown and focus stats
-   *   else:
-   *     stop selection countdown
-   *   if to is "roundOver":
-   *     show continue prompt and focus snackbar
-   *   if verboseEnabled:
-   *     append transition line to verbose log
-   */
-  document.addEventListener("battle:state", (ev) => {
-    const { from, to } = ev.detail || {};
-    updateBattleStateBadge(to);
-    if (to === "waitingForPlayerAction") {
-      startSelectionCountdown(30);
-      byId("cli-stats")?.focus();
-    } else {
-      stopSelectionCountdown();
-    }
-    if (to === "roundOver") {
-      showBottomLine("Press Enter to continue");
-      byId("snackbar-container")?.querySelector(".snackbar")?.focus();
-    }
-    if (!verboseEnabled) return;
-    try {
-      const pre = byId("cli-verbose-log");
-      if (!pre) return;
-      const ts = new Date();
-      const hh = String(ts.getHours()).padStart(2, "0");
-      const mm = String(ts.getMinutes()).padStart(2, "0");
-      const ss = String(ts.getSeconds()).padStart(2, "0");
-      const line = `[${hh}:${mm}:${ss}] ${from || "(init)"} -> ${to}`;
-      const existing = pre.textContent ? pre.textContent.split("\n").filter(Boolean) : [];
-      existing.push(line);
-      while (existing.length > 50) existing.shift();
-      pre.textContent = existing.join("\n");
-      pre.scrollTop = pre.scrollHeight;
-    } catch {}
-  });
+  document.addEventListener("battle:state", handleBattleState);
 }
 
 async function init() {
