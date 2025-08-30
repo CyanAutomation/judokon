@@ -68,7 +68,7 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 |---|---|---|
 | **P1** | Engine Integration | Use the same Classic Battle engine and state machine as battleJudoka; static import for core gameplay modules. |
 | **P1** | Textual Renderer | Render all state changes (countdown, prompts, outcomes, score) as text within a monospace pane; no images/animations. |
-| **P1** | Keyboard Controls | Shortcut keys for stat selection (1–9), Next/Continue (Enter/Space), Quit (Q), Help (H). Display a concise cheat sheet. |
+| **P1** | Keyboard Controls | Shortcut keys for stat selection (1–9), Next/Continue (Enter/Space), Quit (Q), Help (H). Display a multi-line help list. |
 | **P1** | Pointer Controls | Stats and Next prompts are clickable/tappable for mouse and touch users. |
 | **P1** | Timer Display | Show a 1 Hz textual countdown for stat selection; on expiry, auto-select per `FF_AUTO_SELECT`. |
 | **P1** | Outcome/Score | After decision, print outcome (Win/Loss/Draw), selected stat/value pairs, and updated score. |
@@ -76,6 +76,7 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 | **P1** | Test Hooks | Expose stable selectors/ids (e.g., `#round-message`, `#cli-score`, `#cli-countdown`, `data-flag`) to support existing tests and new CLI tests. |
 | **P2** | Minimal Settings | Allow selecting win target (5/10/15). Changing the value prompts to reset scores and restart the match; the last choice persists via the shared settings helper. |
 | **P2** | Deterministic Seed | Optional numeric seed via header input or `?seed=` query parameter enables reproducible runs; last seed is stored locally. |
+| **P2** | Round Context | Header shows current round and win target ("Round X of Y"). |
 | **P2** | Observability Mode | Optional verbose logs (controlled by the `cliVerbose` feature flag) that echo internal state transitions. |
 | **P2** | Interrupt Handling | Surface quit/interrupt flows as text prompts; roll back to last completed round consistent with engine PRD. |
 | **P3** | Retro Mode | Optional ASCII borders and simple color accents via CSS classes; disabled by default for maximum contrast. |
@@ -152,23 +153,26 @@ Notes:
 
 ### ASCII Wireframe (Desktop)
 
-| Classic Battle CLI         Target: 5 Wins       |
+| Classic Battle CLI   Round 1 of 5   Target: 5 Wins |
 
-| [Timer: 08]                                     |
-| Choose a stat:                                  |
-|   (1) Strength: 72                              |
-|   (2) Agility: 63                               |
-|   (3) Stamina: 81                               |
+| [Timer: 08]                                        |
+| Choose a stat:                                     |
+|   (1) Strength: 72                                 |
+|   (2) Agility: 63                                  |
+|   (3) Stamina: 81                                  |
 
-| Last Round: You WON! (72 vs 64)                 |
-| Score: Player 2 - Opponent 1                    |
+| Last Round: You WON! (72 vs 64)                    |
+| Score: Player 2 - Opponent 1                       |
 
-| Shortcuts: [1-9] Select | [Enter] Next | [Q] Quit |
-|            [H] Help                             |
+| Shortcuts:                                        |
+|   [1-9] Select Stat                               |
+|   [Enter]/[Space] Next                            |
+|   [Q] Quit                                        |
+|   [H] Toggle Help                                 |
 
 ## UI and Interaction Model
 
-- Layout: A single-column, monospace pane with sections: Header (mode title + win target), Countdown/Prompt area, Stat List with numeric hotkeys, Round Message, Score line, Shortcut cheat sheet.
+- Layout: A single-column, monospace pane with sections: Header (mode title + win target + round context), Countdown/Prompt area, Stat List with numeric hotkeys, Round Message, Score line, multi-line shortcut list.
 - DOM hooks: `#cli-root`, `#cli-header`, `#cli-countdown` (snackbar equivalent), `#cli-stats`, `#round-message`, `#cli-score`, `#cli-shortcuts`.
 - Keyboard map: 1–9 for stat selection; Enter/Space for Next; Q for Quit; H for Help/shortcuts.
 - Focus: Initial focus on the stat list container during selection; after outcome, focus moves to Next instruction hint.

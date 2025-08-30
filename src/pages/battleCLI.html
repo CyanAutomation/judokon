@@ -46,9 +46,6 @@
         min-width: 30ch; /* reserve width for longest state (prevents wrap/jump) */
         white-space: nowrap;
       }
-      .cli-score {
-        white-space: pre;
-      }
       .cli-controls {
         display: flex;
         gap: 8px;
@@ -83,6 +80,18 @@
         padding: 4px 6px;
         background: #121212;
         border: 1px solid #3a3a3a;
+      }
+      .cli-stat.selected {
+        border-color: #9ad1ff;
+        background: #1a1a1a;
+      }
+      .cli-status {
+        text-align: right;
+        white-space: pre;
+      }
+      #cli-help {
+        margin: 0;
+        padding-left: 16px;
       }
       .cli-footer {
         margin-top: auto;
@@ -145,8 +154,9 @@
             style="width: 6ch"
           />
         </div>
-        <div id="cli-score" class="cli-score" aria-live="polite" aria-atomic="true">
-          You: 0 Opponent: 0
+        <div class="cli-status" aria-live="polite" aria-atomic="true">
+          <div id="cli-round">Round 0 of 0</div>
+          <div id="cli-score">You: 0 Opponent: 0</div>
         </div>
       </header>
 
@@ -168,9 +178,13 @@
         </section>
 
         <section aria-label="Shortcuts" id="cli-shortcuts" class="cli-block">
-          <div id="cli-help">
-            [1–5] Select Stat | [Enter]/[Space] Next | [Q] Quit | [H] Toggle Help | [R] Retro Mode
-          </div>
+          <ul id="cli-help">
+            <li>[1–5] Select Stat</li>
+            <li>[Enter]/[Space] Next</li>
+            <li>[Q] Quit</li>
+            <li>[H] Toggle Help</li>
+            <li>[R] Retro Mode</li>
+          </ul>
         </section>
 
         <section aria-label="Verbose Log" id="cli-verbose-section" class="cli-block" hidden>
