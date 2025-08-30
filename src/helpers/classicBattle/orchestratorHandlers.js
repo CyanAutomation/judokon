@@ -315,92 +315,123 @@ async function dispatchOutcome(outcomeEvent, machine) {
   }
 }
 
+/**
+ * Schedule a timeout that computes the round outcome if resolution stalls.
+ *
+ * @param {object} store
+ * @param {object} machine
+ * @returns {number|null} guard timeout id
+ * @pseudocode
+ * ```
+ * setTimeout → computeAndDispatchOutcome(store, machine)
+ * store id on window for cancellation
+ * return id
+ * ```
+ */
 export function scheduleRoundDecisionGuard(store, machine) {
   try {
-    return setTimeout(() => {
+    const id = setTimeout(() => {
       computeAndDispatchOutcome(store, machine);
     }, 1200);
+    try {
+      if (typeof window !== "undefined") window.__roundDecisionGuard = id;
+    } catch {}
+    return id;
   } catch {
     return null;
   }
 }
 
-export async function roundDecisionEnter(machine) {
-  if (!IS_VITEST) console.log("DEBUG: Entering roundDecisionEnter");
-  const { store } = machine.context;
-
-  const resolveImmediate = async () => {
-    const stat = store.playerChoice;
-    const pCard = document.getElementById("player-card");
-    const oCard = document.getElementById("opponent-card");
-    const playerVal = getStatValue(pCard, stat);
-    let opponentVal = 0;
-    try {
-      const opp = getOpponentJudoka();
-      const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
-      opponentVal = Number.isFinite(raw) ? raw : getStatValue(oCard, stat);
-    } catch {
-      opponentVal = getStatValue(oCard, stat);
-    }
-    try {
-      console.log("DEBUG: roundDecision.resolveImmediate", { stat, playerVal, opponentVal });
-    } catch {}
-    await resolveRound(store, stat, playerVal, opponentVal);
-  };
-
+/**
+ * Record entry into the round decision state for debug purposes.
+ *
+ * @pseudocode
+ * ```
+ * log debug entry if not in Vitest
+ * record timestamp on window
+ * emit debug panel update
+ * ```
+ */
+export function recordRoundDecisionEntry() {
+  try {
+    if (!IS_VITEST) console.log("DEBUG: Entering roundDecisionEnter");
+  } catch {}
   try {
     if (typeof window !== "undefined") {
       window.__roundDecisionEnter = Date.now();
     }
   } catch {}
   emitBattleEvent("debugPanelUpdate");
+}
 
-  // Always schedule a guard to compute outcome or interrupt if the state
-  // remains in roundDecision for too long. If resolution completes, the
-  // guard is cleared in roundDecisionExit.
+/**
+ * Resolve the round immediately if a selection exists.
+ *
+ * @param {object} store
+ * @returns {Promise<boolean>} whether a resolution occurred
+ * @pseudocode
+ * ```
+ * if no player choice → return false
+ * read stat values
+ * log debug values
+ * await resolveRound
+ * return true
+ * ```
+ */
+export async function resolveSelectionIfPresent(store) {
+  if (!store.playerChoice) return false;
+  const stat = store.playerChoice;
+  const pCard = document.getElementById("player-card");
+  const oCard = document.getElementById("opponent-card");
+  const playerVal = getStatValue(pCard, stat);
+  let opponentVal = 0;
   try {
-    if (typeof window !== "undefined") {
-      const guardId = scheduleRoundDecisionGuard(store, machine);
-      window.__roundDecisionGuard = guardId;
-    }
+    const opp = getOpponentJudoka();
+    const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
+    opponentVal = Number.isFinite(raw) ? raw : getStatValue(oCard, stat);
+  } catch {
+    opponentVal = getStatValue(oCard, stat);
+  }
+  try {
+    console.log("DEBUG: roundDecision.resolveImmediate", { stat, playerVal, opponentVal });
   } catch {}
+  await resolveRound(store, stat, playerVal, opponentVal);
+  return true;
+}
 
-  if (store.playerChoice) {
+/**
+ * Orchestrate round decision entry by scheduling a guard and resolving any
+ * immediate selection.
+ *
+ * @param {object} machine
+ * @returns {Promise<void>}
+ * @pseudocode
+ * ```
+ * record round decision entry
+ * schedule guard to compute outcome
+ * if resolveSelectionIfPresent(store) → schedule watchdog and return
+ * wait up to 1.5s for player choice
+ * if still none → show message and interrupt
+ * else resolveSelectionIfPresent(store); on error → show message and interrupt
+ * schedule watchdog after resolve
+ * ```
+ */
+export async function roundDecisionEnter(machine) {
+  const { store } = machine.context;
+  recordRoundDecisionEntry();
+  scheduleRoundDecisionGuard(store, machine);
+
+  if (await resolveSelectionIfPresent(store)) {
     try {
-      if (!IS_VITEST) console.log("DEBUG: Calling resolveImmediate");
-      await resolveImmediate();
-      if (!IS_VITEST) console.log("DEBUG: resolveImmediate completed");
-      // Do NOT clear the guard until resolution completes. If resolution
-      // stalls due to an unforeseen await (e.g., event dispatch deadlock),
-      // the guard must fire to compute an outcome or interrupt to avoid a hang.
-      try {
-        if (typeof window !== "undefined" && window.__roundDecisionGuard) {
-          clearTimeout(window.__roundDecisionGuard);
-          window.__roundDecisionGuard = null;
-        }
-      } catch {}
-      // Watchdog: if for any reason the machine is still stuck in
-      // roundDecision a short time after resolveImmediate returns, force an
-      // interrupt to avoid a visible stall.
-      try {
-        setTimeout(async () => {
-          try {
-            const still = machine.getState ? machine.getState() : null;
-            if (still === "roundDecision") {
-              await machine.dispatch("interrupt", { reason: "postResolveWatchdog" });
-            }
-          } catch {}
-        }, 600);
-      } catch {}
-    } catch (error) {
-      // Catch the error and log it
-      if (!IS_VITEST) console.error("DEBUG: Error in roundDecisionEnter:", error);
-      try {
-        emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
-        emitBattleEvent("debugPanelUpdate");
-        await machine.dispatch("interrupt", { reason: "roundResolutionError" });
-      } catch {}
-    }
+      setTimeout(async () => {
+        try {
+          const still = machine.getState ? machine.getState() : null;
+          if (still === "roundDecision") {
+            await machine.dispatch("interrupt", { reason: "postResolveWatchdog" });
+          }
+        } catch {}
+      }, 600);
+    } catch {}
     return;
   }
 
@@ -419,7 +450,17 @@ export async function roundDecisionEnter(machine) {
     return;
   }
   try {
-    await resolveImmediate();
+    await resolveSelectionIfPresent(store);
+    try {
+      setTimeout(async () => {
+        try {
+          const still = machine.getState ? machine.getState() : null;
+          if (still === "roundDecision") {
+            await machine.dispatch("interrupt", { reason: "postResolveWatchdog" });
+          }
+        } catch {}
+      }, 600);
+    } catch {}
   } catch {
     try {
       emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
