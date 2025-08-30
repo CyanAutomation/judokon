@@ -312,6 +312,12 @@ function installEventBindings() {
   });
   onBattleEvent("scoreboardClearMessage", () => setRoundMessage(""));
 
+  onBattleEvent("statSelectionStalled", () => {
+    if (!isEnabled("autoSelect")) {
+      showBottomLine("Stat selection stalled. Pick a stat.");
+    }
+  });
+
   // CLI-specific countdown handler
   onBattleEvent("countdownStart", (e) => {
     const duration = Number(e.detail?.duration) || 0;

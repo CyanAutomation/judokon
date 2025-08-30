@@ -69,4 +69,18 @@ describe("classicBattle auto select", () => {
     // Ensure we surfaced the win message; cooldown drift hints must not overwrite it
     expect(msg).toMatch(/win the round/i);
   });
+
+  it("does not auto-select when feature flag disabled", async () => {
+    currentFlags.autoSelect.enabled = false;
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const { initClassicBattleTest } = await import("./initClassicBattle.js");
+    const battleMod = await initClassicBattleTest({ afterMock: true });
+    const store = battleMod.createBattleStore();
+    battleMod._resetForTest(store);
+    await battleMod.startRound(store, battleMod.applyRoundUI);
+    await vi.advanceTimersByTimeAsync(30000);
+    await vi.runAllTimersAsync();
+    const score = document.querySelector("header #score-display").textContent;
+    expect(score).toBe("You: 0\nOpponent: 0");
+  });
 });

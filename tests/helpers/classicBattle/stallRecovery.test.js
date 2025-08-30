@@ -42,7 +42,8 @@ describe("classicBattle stalled stat selection recovery", () => {
       fetchJsonMock,
       generateRandomCardMock,
       getRandomJudokaMock,
-      renderMock
+      renderMock,
+      currentFlags: { autoSelect: { enabled: true } }
     });
     vi.spyOn(Math, "random").mockReturnValue(0);
   });

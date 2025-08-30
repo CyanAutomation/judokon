@@ -49,6 +49,31 @@ test.describe("Classic battle flow", () => {
     await expect(page.locator("#stat-buttons button").first()).toBeEnabled({ timeout: 5000 });
   });
 
+  test("does not auto-select when flag disabled", async ({ page }) => {
+    test.setTimeout(45000);
+    await page.addInitScript(() => {
+      window.__NEXT_ROUND_COOLDOWN_MS = 0;
+      localStorage.setItem(
+        "settings",
+        JSON.stringify({
+          featureFlags: {
+            enableTestMode: { enabled: false },
+            autoSelect: { enabled: false }
+          }
+        })
+      );
+    });
+    await page.goto("/src/pages/battleJudoka.html");
+    const roundOptions = page.locator(".round-select-buttons button");
+    await roundOptions.first().click();
+    await expect(page.locator(".modal-backdrop:not([hidden])")).toHaveCount(0);
+    await waitForBattleReady(page);
+    await expect(page.locator(".snackbar")).toHaveText(/Stat selection stalled/, {
+      timeout: 45000
+    });
+    await expect(page.locator("#stat-buttons button").first()).toBeEnabled();
+  });
+
   test("tie message appears on equal stats", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html");
     await page.locator("#round-select-1").click();

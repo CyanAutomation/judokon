@@ -36,6 +36,8 @@ vi.mock("../../src/helpers/i18n.js", () => ({
 }));
 
 import { handleStatSelection } from "../../src/helpers/classicBattle.js";
+import { cleanupTimers } from "../../src/helpers/classicBattle/selectionHandler.js";
+import { setFlag } from "../../src/helpers/featureFlags.js";
 
 describe("handleStatSelection helpers", () => {
   let store;
@@ -70,5 +72,16 @@ describe("handleStatSelection helpers", () => {
     expect(document.getElementById("next-round-timer").textContent).toBe("");
     expect(document.getElementById("round-message").textContent).toBe("");
     expect(showSnackbar).toHaveBeenCalledWith("ui.opponentChoosing");
+  });
+
+  it("clears autoSelectId even when feature flag disabled", async () => {
+    const timeout = setTimeout(() => {}, 1000);
+    store.autoSelectId = timeout;
+    await setFlag("autoSelect", false);
+    const spy = vi.spyOn(global, "clearTimeout");
+    cleanupTimers(store);
+    expect(spy).toHaveBeenCalledWith(timeout);
+    expect(store.autoSelectId).toBeNull();
+    spy.mockRestore();
   });
 });
