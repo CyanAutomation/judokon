@@ -17,6 +17,14 @@ The Scoreboard reserves the following DOM IDs for its placeholders so other docs
 
 ---
 
+### API
+
+The Scoreboard exposes functions for updating its displays:
+
+- `updateTimer(seconds)` – render countdown text in `#next-round-timer` or clear it when `seconds <= 0`.
+
+---
+
 ## Problem Statement
 
 In battle game modes (e.g. Classic Battle), players have a real need to receive clear visual feedback between or after rounds. Without this info, it will leave users uncertain about match state, leading to confusion, reduced immersion, and increased risk of game abandonment. Players could feel "lost" due to a lack of timely updates about round outcomes, next steps, or overall progress.

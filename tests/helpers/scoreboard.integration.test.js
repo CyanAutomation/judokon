@@ -96,7 +96,7 @@ describe("Scoreboard integration without explicit init", () => {
     expect(scoreText).toContain("You: 2");
     expect(scoreText).toContain("Opponent: 1");
 
-    // Round timer (selection phase) writes directly to #next-round-timer
+    // Round timer (selection phase) updates #next-round-timer via scoreboard.updateTimer
     const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
     const promise = startTimer(async () => {});
     // Initial tick shows 3

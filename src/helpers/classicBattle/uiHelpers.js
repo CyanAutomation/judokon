@@ -580,8 +580,7 @@ export function clearRoundInfo() {
     scoreboard.clearMessage();
   } catch {}
   try {
-    const timerEl = document.getElementById("next-round-timer");
-    if (timerEl) timerEl.textContent = "";
+    scoreboard.clearTimer();
   } catch {}
   try {
     const rr = document.getElementById("round-result");
@@ -1036,11 +1035,9 @@ export function resetBattleUI(store) {
   try {
     scoreboard.clearMessage();
   } catch {}
-  let timerEl;
   try {
-    timerEl = document.getElementById ? document.getElementById("next-round-timer") : null;
+    scoreboard.clearTimer();
   } catch {}
-  if (timerEl) timerEl.textContent = "";
   let roundResultEl;
   try {
     roundResultEl = document.getElementById ? document.getElementById("round-result") : null;

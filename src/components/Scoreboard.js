@@ -196,6 +196,27 @@ export function showAutoSelect(stat) {
 }
 
 /**
+ * Update the countdown display.
+ *
+ * @pseudocode
+ * 1. Ensure the timer element reference is available.
+ * 2. If `seconds` is less than or equal to 0, clear the timer text.
+ * 3. Otherwise, render `"Time Left: <seconds>s"` inside the timer element.
+ *
+ * @param {number} seconds - Remaining seconds in the countdown.
+ * @returns {void}
+ */
+export function updateTimer(seconds) {
+  ensureRefs();
+  if (!timerEl) return;
+  if (seconds <= 0) {
+    timerEl.textContent = "";
+    return;
+  }
+  timerEl.textContent = `Time Left: ${seconds}s`;
+}
+
+/**
  * Clear the countdown display.
  *
  * @pseudocode

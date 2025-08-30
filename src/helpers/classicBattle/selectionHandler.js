@@ -217,8 +217,8 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal) {
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
       try {
-        const el = document.getElementById("next-round-timer");
-        if (el) el.textContent = "";
+        const sb = await import("../setupScoreboard.js");
+        sb.clearTimer();
       } catch {}
       try {
         const msg = document.getElementById("round-message");

@@ -15,7 +15,8 @@ describe("timerService next round handling", () => {
       showMessage: vi.fn(),
       showTemporaryMessage: () => () => {},
       showAutoSelect: vi.fn(),
-      clearTimer: vi.fn()
+      clearTimer: vi.fn(),
+      updateTimer: vi.fn()
     }));
     vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
       showSnackbar: vi.fn(),
@@ -109,7 +110,9 @@ describe("timerService next round handling", () => {
 
     expect(snackbarMod.showSnackbar).toHaveBeenCalledWith("Next round in: 3s");
     expect(snackbarMod.updateSnackbar).toHaveBeenCalledWith("Next round in: 2s");
-    expect(scoreboardMod.clearTimer).toHaveBeenCalled();
+    expect(scoreboardMod.updateTimer).toHaveBeenCalledWith(3);
+    expect(scoreboardMod.updateTimer).toHaveBeenCalledWith(2);
+    expect(scoreboardMod.updateTimer).toHaveBeenCalledWith(0);
   });
 
   it("resolves ready after minimum cooldown in test mode", async () => {

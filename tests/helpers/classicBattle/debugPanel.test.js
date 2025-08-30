@@ -24,7 +24,11 @@ vi.mock("../../../src/helpers/showSnackbar.js", () => ({
   showSnackbar: vi.fn(),
   updateSnackbar: vi.fn()
 }));
-vi.mock("../../../src/helpers/setupScoreboard.js", () => ({ showMessage: vi.fn() }));
+vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
+  showMessage: vi.fn(),
+  clearTimer: vi.fn(),
+  updateTimer: vi.fn()
+}));
 vi.mock("../../../src/helpers/battle/index.js", () => ({ showResult: vi.fn() }));
 vi.mock("../../../src/helpers/motionUtils.js", () => ({ shouldReduceMotionSync: () => true }));
 vi.mock("../../../src/utils/scheduler.js", () => ({ onFrame: vi.fn(), cancel: vi.fn() }));
