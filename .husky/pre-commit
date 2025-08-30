@@ -1,3 +1,23 @@
+#!/bin/sh
+# Husky pre-commit: run JSDoc + @pseudocode checker
+# To bypass locally: SKIP_CHECK_JSDOC=1 git commit -m "..."
+
+SKIP_VAR_NAME=SKIP_CHECK_JSDOC
+if [ "${!SKIP_VAR_NAME}" = "1" ]; then
+  echo "Skipping JSDoc check because ${SKIP_VAR_NAME}=1"
+  exit 0
+fi
+
+echo "Running JSDoc/pseudocode check..."
+npm run check:jsdoc
+status=$?
+if [ $status -ne 0 ]; then
+  printf "\nJSDoc check failed. To bypass set %s=1 and retry commit.\n" "$SKIP_VAR_NAME"
+  exit $status
+fi
+
+echo "JSDoc check passed"
+exit 0
 #!/usr/bin/env sh
 . "$(dirname "$0")/_/h"
 
