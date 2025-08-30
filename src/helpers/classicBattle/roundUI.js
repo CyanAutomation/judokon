@@ -107,7 +107,7 @@ export function bindRoundUIEventHandlers() {
     // Update the round message with the resolved outcome to keep #round-message
     // in sync even when uiService is mocked in unit tests.
     try {
-      scoreboard.showMessage(result.message || "");
+      scoreboard.showMessage(result.message || "", { outcome: true });
     } catch {}
     syncScoreDisplay();
     if (result.matchEnded) {
@@ -197,7 +197,7 @@ export function bindRoundUIEventHandlersDynamic() {
     } catch {}
     try {
       const scoreboard = await import("../setupScoreboard.js");
-      scoreboard.showMessage(result.message || "");
+      scoreboard.showMessage(result.message || "", { outcome: true });
       scoreboard.syncScoreDisplay?.();
     } catch {}
     if (result.matchEnded) {

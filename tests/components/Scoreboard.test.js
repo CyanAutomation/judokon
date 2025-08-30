@@ -64,4 +64,23 @@ describe("Scoreboard component", () => {
     updateScore(2, 3);
     expect(document.getElementById("score-display").textContent).toBe("You: 2\nOpponent: 3");
   });
+
+  it("prevents placeholders from overriding localized outcomes", () => {
+    showMessage("¡Ganas la ronda!", { outcome: true });
+    showMessage("Waiting…");
+    const msg = document.getElementById("round-message");
+    expect(msg.textContent).toBe("¡Ganas la ronda!");
+    expect(msg.dataset.outcome).toBe("true");
+    showMessage("Next round");
+    expect(msg.textContent).toBe("Next round");
+    expect(msg.dataset.outcome).toBeUndefined();
+  });
+
+  it("allows fallback placeholder when no outcome is set", () => {
+    showMessage("Some info");
+    showMessage("Waiting…");
+    const msg = document.getElementById("round-message");
+    expect(msg.textContent).toBe("Waiting…");
+    expect(msg.dataset.outcome).toBeUndefined();
+  });
 });

@@ -121,27 +121,32 @@ function animateScore(startPlayer, startOpponent, playerTarget, opponentTarget) 
  * Update the round message text.
  *
  * @pseudocode
- * 1. When a message element exists, set its text content to the provided value.
+ * 1. When a message element exists, skip overwriting round outcomes with
+ *    transient placeholders.
+ * 2. Update the element text content and toggle the `data-outcome` flag based
+ *    on `isOutcome`.
  *
  * @param {string} text - Message to display.
+ * @param {{ outcome?: boolean }} [opts] - Options controlling update behavior.
  * @returns {void}
  */
-export function showMessage(text) {
+export function showMessage(text, opts = {}) {
+  const { outcome = false } = opts;
   // Prefer a fresh lookup to avoid stale references in dynamic tests
   const el = document.getElementById("round-message") || messageEl;
   if (el) {
-    // Do not overwrite a freshly-set round outcome with a transient placeholder
-    // like "Waiting…". This keeps assertions stable and the UI consistent.
     try {
       const isTransient = String(text) === "Waiting…";
-      const isOutcome = /^(You win the round!|Opponent wins the round!|Tie – no score!)/.test(
-        String(el.textContent || "")
-      );
-      if (isTransient && isOutcome) {
+      if (isTransient && el.dataset.outcome === "true") {
         return;
       }
     } catch {}
     el.textContent = text;
+    if (outcome) {
+      el.dataset.outcome = "true";
+    } else {
+      delete el.dataset.outcome;
+    }
     messageEl = el;
   }
 }
@@ -150,7 +155,8 @@ export function showMessage(text) {
  * Clear the round message.
  *
  * @pseudocode
- * 1. If the message element exists, set its text content to an empty string.
+ * 1. If the message element exists, set its text content to an empty string and
+ *    remove the `data-outcome` flag.
  *
  * @returns {void}
  */
@@ -158,6 +164,7 @@ export function clearMessage() {
   const el = document.getElementById("round-message") || messageEl;
   if (el) {
     el.textContent = "";
+    delete el.dataset.outcome;
     messageEl = el;
   }
 }
