@@ -173,6 +173,16 @@ function formatTechniqueName(technique) {
   return escapeHTML(decoded);
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function generateCardSignatureMove(judoka, gokyoLookup, cardType = "common") {
   const technique = resolveTechnique(judoka, gokyoLookup);
   debugLog("Selected Technique:", technique);

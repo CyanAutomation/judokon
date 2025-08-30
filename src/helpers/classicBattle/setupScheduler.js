@@ -7,6 +7,16 @@ import { start as startScheduler, stop as stopScheduler } from "../../utils/sche
  * 1. Skip when running under Vitest.
  * 2. Start the scheduler and stop it on `pagehide`.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setupScheduler() {
   if (!(typeof process !== "undefined" && process.env.VITEST)) {
     startScheduler();

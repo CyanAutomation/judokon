@@ -67,6 +67,16 @@ function normalizeCode(code) {
  * @param {string} code
  * @returns {Promise<string>}
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function getCountryName(code) {
   const normalized = normalizeCode(code);
   if (!normalized) return DEFAULT_COUNTRY;
@@ -80,6 +90,16 @@ export async function getCountryName(code) {
  *
  * @param {string} code
  * @returns {Promise<string>}
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export async function getFlagUrl(code) {
   const normalized = normalizeCode(code);

@@ -8,6 +8,16 @@
  *
  * @param {HTMLElement} cardElement - Card container to enable flipping on.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function enableCardFlip(cardElement) {
   if (!cardElement) return;
   const toggle = () => {

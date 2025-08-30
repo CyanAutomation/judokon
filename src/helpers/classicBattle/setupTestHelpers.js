@@ -14,6 +14,16 @@ import { start as startScheduler, stop as stopScheduler } from "../../utils/sche
  *
  * @param {import("./view.js").ClassicBattleView} view
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function createClassicBattleDebugAPI(view) {
   const store = view.controller.battleStore;
   const skipBattlePhase = () => {

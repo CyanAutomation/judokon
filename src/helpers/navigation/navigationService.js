@@ -43,6 +43,16 @@ export function escapeHtml(value) {
 /**
  * Base path for navigation links derived from the current module location.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const BASE_PATH = (() => {
   const url = new URL(import.meta.url);
   url.pathname = url.pathname.replace(/helpers\/navigation\/navigationService.js$/, "pages/");

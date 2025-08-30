@@ -11,6 +11,16 @@ let clearTimer = (...args) => clearTimeout(...args);
  * Override timer functions used by the internal debounce.
  * @param {{ setTimeout?: typeof setTimeout, clearTimeout?: typeof clearTimeout }} [fns]
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setSettingsStorageTimers(fns = {}) {
   if (fns.setTimeout) setTimer = fns.setTimeout;
   if (fns.clearTimeout) clearTimer = fns.clearTimeout;
@@ -31,6 +41,16 @@ const debouncedSave = debounce(
 );
 
 /** Flush pending debounced save immediately. */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const flushSettingsSave = () => debouncedSave.flush();
 
 let settingsSchemaPromise;
@@ -134,6 +154,16 @@ export async function loadSettings() {
  */
 let updateQueue = Promise.resolve();
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function updateSetting(key, value) {
   const task = async () => {
     await getSettingsSchema();

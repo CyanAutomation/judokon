@@ -21,6 +21,16 @@ import { DATA_DIR } from "./constants.js";
  * @returns {Promise<{judokaData: any[]|null, gokyoData: any[]|null, error: Error|null}>}
  *   Resolves with the datasets or an error when loading fails.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function preloadRandomCardData() {
   try {
     const [judokaData, gokyoData] = await Promise.all([
@@ -40,6 +50,16 @@ export async function preloadRandomCardData() {
  * @param {number} [limit=5] - Maximum history entries to retain.
  * @returns {{ add: (j: any) => any[], get: () => any[] }}
  *   Functions to add to and retrieve the history list.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function createHistoryManager(limit = 5) {
   const history = [];

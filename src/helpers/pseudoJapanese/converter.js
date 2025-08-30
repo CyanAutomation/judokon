@@ -5,6 +5,16 @@ export const STATIC_FALLBACK = "\u65e5\u672c\u8a9e\u98a8\u30c6\u30ad\u30b9\u30c8
 let cachedConverter;
 let lastFetch;
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function loadConverter() {
   if (cachedConverter && lastFetch === fetch) {
     return cachedConverter;

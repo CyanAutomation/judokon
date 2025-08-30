@@ -61,6 +61,16 @@ function buildResultRow(match, queryTerms, isTop) {
  * @param {string[]} queryTerms
  * @param {(el: HTMLElement) => void} loadResultContext
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function renderResults(tbody, toRender, queryTerms, loadResultContext) {
   for (const [idx, match] of toRender.entries()) {
     const row = buildResultRow(match, queryTerms, idx === 0);

@@ -295,6 +295,16 @@ async function displayCard({
   });
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function setupRandomJudokaPage() {
   const { prefersReducedMotion } = await initFeatureFlagState();
 
@@ -346,10 +356,30 @@ export async function setupRandomJudokaPage() {
   initTooltips();
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function initRandomJudokaPage() {
   await Promise.all([setupRandomJudokaPage(), window.navReadyPromise]);
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const randomJudokaReadyPromise = new Promise((resolve) => {
   onDomReady(() => {
     initRandomJudokaPage().then(() => {

@@ -6,6 +6,16 @@
  * @param {string} name
  * @param {Record<string, any>} [payload]
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function logEvent(name, payload = {}) {
   try {
     const evt = new CustomEvent("telemetry", { detail: { name, payload, ts: Date.now() } });

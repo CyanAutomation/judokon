@@ -17,6 +17,16 @@ import { onDomReady } from "./domReady.js";
 import { initTooltips } from "./tooltip.js";
 import { loadQuote } from "./quoteBuilder.js";
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setupMeditationPage() {
   const quoteEl = document.getElementById("quote");
   loadQuote();

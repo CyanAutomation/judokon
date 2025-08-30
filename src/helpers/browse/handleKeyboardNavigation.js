@@ -12,6 +12,16 @@
  * @param {Element} container
  * @param {string} buttonClass
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function handleKeyboardNavigation(event, container, buttonClass) {
   if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
     return;

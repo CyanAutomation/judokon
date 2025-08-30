@@ -93,6 +93,16 @@ function clearBottomLine() {
   showBottomLine("");
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function autostartBattle() {
   // Ensure autostart so the modal is skipped in CLI and dispatch start
   try {
@@ -111,6 +121,16 @@ export function autostartBattle() {
   } catch {}
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function renderStatList() {
   try {
     const stats = await fetchJson(`${DATA_DIR}statNames.json`);
@@ -146,6 +166,16 @@ export async function renderStatList() {
   } catch {}
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function restorePointsToWin() {
   try {
     const select = byId("points-select");
@@ -261,6 +291,16 @@ export function handleGlobalKey(key) {
  *   show bottom line with picked stat
  *   dispatch 'statSelected'
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function handleWaitingForPlayerActionKey(key) {
   if (key >= "1" && key <= "9") {
     const stat = getStatByIndex(key);
@@ -286,6 +326,16 @@ export function handleWaitingForPlayerActionKey(key) {
  * if key is Enter or Space:
  *   dispatch 'continue'
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function handleRoundOverKey(key) {
   if (key === "enter" || key === " ") {
     try {
@@ -303,6 +353,16 @@ export function handleRoundOverKey(key) {
  *   clear timers
  *   clear bottom line
  *   dispatch 'ready'
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function handleCooldownKey(key) {
   if (key === "enter" || key === " ") {
@@ -335,6 +395,16 @@ export function handleCooldownKey(key) {
  *           cooldown: handleCooldownKey }
  * handler = table[state]
  * if handler exists: handler(key)
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function onKeyDown(e) {
   const key = e.key.toLowerCase();

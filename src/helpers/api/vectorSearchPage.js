@@ -5,6 +5,16 @@ let extractor;
 /**
  * Similarity threshold separating strong from weak matches.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const SIMILARITY_THRESHOLD = 0.6;
 
 /**
@@ -91,6 +101,16 @@ export async function getExtractor() {
  * 1. Call `getExtractor()` to trigger the model download.
  * 2. Ignore any errors to avoid blocking page initialization.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function preloadExtractor() {
   getExtractor().catch(() => {});
 }
@@ -103,6 +123,16 @@ export function preloadExtractor() {
  * @param {any} model - The mock extractor instance to use.
  * @pseudocode
  * 1. Assign the provided `model` to the `extractor` variable.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function __setExtractor(model) {
   extractor = model;

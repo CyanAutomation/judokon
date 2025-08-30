@@ -12,6 +12,16 @@ import { markBattlePartReady } from "./battleInit.js";
  *    b. Calls `quitMatch()` with the shared store and link as trigger.
  * 3. Wait for `window.battleStore` to exist, then call `markBattlePartReady('home')`.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setupClassicBattleHomeLink() {
   const homeLink = document.querySelector('[data-testid="home-link"]');
   if (homeLink) {

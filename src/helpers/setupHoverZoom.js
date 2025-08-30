@@ -11,6 +11,16 @@ import { onDomReady } from "./domReady.js";
  *    c. On `mouseenter`, if animations are disabled, set `data-enlarged="true"` immediately.
  *    d. When a `transitionend` event for `transform` fires, set `data-enlarged="true"`.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function addHoverZoomMarkers() {
   if (typeof document === "undefined") return;
   const cards = document.querySelectorAll(".card, .judoka-card");

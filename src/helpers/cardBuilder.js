@@ -140,6 +140,16 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup, options = {}) 
  * @param {Object} gokyoLookup - A lookup object for gokyo data.
  * @param {HTMLElement} container - The container to append the card to.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function generateJudokaCard(judoka, gokyoLookup, container, options = {}) {
   const card = await safeGenerate(
     () => generateJudokaCardHTML(judoka, gokyoLookup, options),

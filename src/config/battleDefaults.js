@@ -10,6 +10,16 @@
  * `statHotkeys`). Older docs may reference FF_* names; prefer camelCase going forward.
  */
 export const POINTS_TO_WIN_OPTIONS = [5, 10, 15];
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const DEFAULT_POINTS_TO_WIN = 10;
 export const FEATURE_FLAGS = {
   autoSelect: { enabled: true },

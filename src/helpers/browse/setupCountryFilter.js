@@ -9,6 +9,16 @@ import { toggleCountryPanel } from "../countryPanel.js";
  * @param {Element} container
  * @param {HTMLButtonElement} button
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function highlightSelection(container, button) {
   const buttons = container.querySelectorAll("button.flag-button");
   buttons.forEach((b) => b.classList.remove("selected"));
@@ -129,6 +139,16 @@ export async function applyCountryFilter(
  * @param {Element} panel
  * @param {Element} carouselEl
  * @param {Element} ariaLiveEl
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function setupCountryFilter(
   listContainer,

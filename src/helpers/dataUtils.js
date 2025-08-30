@@ -256,6 +256,16 @@ export async function fetchJson(url, schema) {
  * @param {string} type - A descriptive name for the type of data being validated (e.g., "judoka", "country").
  * @throws {Error} If the `data` is not an object or is `null`.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function validateData(data, type) {
   if (typeof data !== "object" || data === null) {
     throw new Error(`Invalid or missing ${type} data.`);
@@ -283,6 +293,16 @@ export function validateData(data, type) {
  * @param {any} data - Data to validate.
  * @param {object} schema - JSON schema to validate against.
  * @throws {Error} If validation fails.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export async function validateWithSchema(data, schema) {
   const ajv = await getAjv();

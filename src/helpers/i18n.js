@@ -5,6 +5,16 @@
  * @param {Record<string, any>} [params]
  * @returns {string}
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function t(key, params = {}) {
   const template = EN[key] || key;
   return template.replace(/\{(\w+)\}/g, (_, k) => String(params[k] ?? ""));

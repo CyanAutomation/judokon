@@ -13,6 +13,16 @@
  *
  * @param {ParentNode} [root=document] - Root element containing card images.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setupLazyPortraits(root = document) {
   // Short-circuit in non-browser/test environments where IntersectionObserver
   // is not available (e.g., JSDOM) to avoid runtime errors during tests.

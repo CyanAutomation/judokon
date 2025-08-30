@@ -38,6 +38,16 @@ let currentNextRound = null;
  * @example
  * await advanceWhenReady(btn, resolve);
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function advanceWhenReady(btn, resolveReady) {
   btn.disabled = true;
   delete btn.dataset.nextReady;
@@ -77,6 +87,16 @@ export async function advanceWhenReady(btn, resolveReady) {
  * @example
  * await cancelTimerOrAdvance(btn, timer, resolve);
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
   if (timer) {
     timer.stop();
@@ -106,6 +126,16 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
  * const controls = { timer, resolveReady };
  * await onNextButtonClick(new MouseEvent("click"), controls);
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function onNextButtonClick(_evt, { timer, resolveReady } = currentNextRound ?? {}) {
   const btn = document.getElementById("next-button");
   if (!btn) return;
@@ -120,6 +150,16 @@ export async function onNextButtonClick(_evt, { timer, resolveReady } = currentN
  * Expose current next-round controls for helpers like `setupNextButton`.
  *
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}|null}
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function getNextRoundControls() {
   return currentNextRound;
@@ -259,6 +299,16 @@ export async function startTimer(onExpiredSelect) {
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => void} onSelect
  * - Callback to handle stat selection.
  * @param {number} [timeoutMs=5000] - Delay before auto-selecting.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function handleStatSelectionTimeout(
   store,

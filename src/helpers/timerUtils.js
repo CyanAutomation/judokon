@@ -27,12 +27,32 @@ async function loadTimers() {
  * @param {string} category - Timer category to search.
  * @returns {Promise<number|undefined>} Resolved default timer value.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function getDefaultTimer(category) {
   const timers = await loadTimers();
   const entry = timers.find((t) => t.category === category && t.default);
   return entry ? entry.value : undefined;
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function _resetForTest() {
   timersPromise = undefined;
   cachedTimers = undefined;

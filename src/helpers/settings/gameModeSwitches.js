@@ -63,6 +63,16 @@ export function handleGameModeChange({ input, mode, label, getCurrentSettings, h
  * @param {Function} getCurrentSettings - Returns the current settings.
  * @param {Function} handleUpdate - Persist function.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function renderGameModeSwitches(container, gameModes, getCurrentSettings, handleUpdate) {
   if (!container || !Array.isArray(gameModes)) {
     console.warn("renderGameModeSwitches: invalid container or gameModes", {

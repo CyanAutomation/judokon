@@ -30,6 +30,16 @@ import { renderFeatureFlagSwitches } from "./settings/featureFlagSwitches.js";
 import { makeHandleUpdate } from "./settings/makeHandleUpdate.js";
 import { addNavResetButton } from "./settings/addNavResetButton.js";
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const settingsReadyPromise = new Promise((resolve) => {
   document.addEventListener("settings:ready", resolve, { once: true });
 });
@@ -341,6 +351,16 @@ function showSectionError(containerId, message) {
  * @param {{settings: Settings, gameModes: Array, tooltipMap: object}} data
  *   Loaded settings data.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function renderWithFallbacks({ settings, gameModes, tooltipMap }) {
   if (!settings) return;
   if (!Array.isArray(gameModes) || gameModes.length === 0) {
@@ -398,5 +418,25 @@ function showLoadSettingsError() {
 
 onDomReady(initializeSettingsPage);
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export { handleGameModeChange } from "./settings/gameModeSwitches.js";
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export { handleFeatureFlagChange } from "./settings/featureFlagSwitches.js";

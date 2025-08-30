@@ -14,6 +14,16 @@ const DEFAULT_SELECTORS = ["body *:not(script):not(style)"];
  * @param {boolean} enabled - Whether to show the outlines.
  * @param {string[]} [selectors] - Optional custom selectors.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function toggleLayoutDebugPanel(enabled, selectors = DEFAULT_SELECTORS) {
   if (!document.body) return;
   enabledState = Boolean(enabled);

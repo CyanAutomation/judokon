@@ -46,6 +46,16 @@ export function evaluateRoundData(playerVal, opponentVal) {
  * @param {number} opponentVal - Opponent's stat value.
  * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number, outcome: string, playerVal: number, opponentVal: number}}
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function evaluateRound(store, stat, playerVal, opponentVal) {
   return evaluateRoundData(playerVal, opponentVal);
 }

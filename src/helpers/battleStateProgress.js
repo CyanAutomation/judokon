@@ -50,6 +50,16 @@ if (typeof window !== "undefined") {
   window.battleStateProgressReadyPromise = battleStateProgressReadyPromise;
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function initBattleStateProgress() {
   if (typeof document === "undefined") return;
 

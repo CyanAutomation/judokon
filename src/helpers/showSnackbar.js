@@ -46,6 +46,16 @@ function resetTimers() {
   }, SNACKBAR_REMOVE_MS);
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function showSnackbar(message) {
   try {
     if (typeof window !== "undefined" && window.__disableSnackbars) return;
@@ -86,6 +96,16 @@ export function showSnackbar(message) {
  * 3. Clear and restart fade and removal timers.
  *
  * @param {string} message - New text for the snackbar.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function updateSnackbar(message) {
   try {

@@ -73,6 +73,16 @@ export function createScrollButton(direction, container) {
  * @param {HTMLButtonElement} leftBtn - Button that scrolls left.
  * @param {HTMLButtonElement} rightBtn - Button that scrolls right.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function updateScrollButtonState(container, leftBtn, rightBtn) {
   const EPSILON = 1; // allow small rounding differences
   const remaining = container.scrollWidth - container.clientWidth - container.scrollLeft;

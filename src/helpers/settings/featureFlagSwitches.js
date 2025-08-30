@@ -78,6 +78,16 @@ function formatFlagLabel(flag) {
  * @param {Function} handleUpdate - Persist function.
  * @param {Record<string, string>} [tooltipMap] - Flattened tooltip lookup.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function renderFeatureFlagSwitches(
   container,
   flags,

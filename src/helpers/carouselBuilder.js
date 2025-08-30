@@ -107,6 +107,16 @@ function addScrollMarkers(container, wrapper) {
  * @param {HTMLElement} [container] - The carousel container element.
  * @param {HTMLElement} [wrapper] - The carousel wrapper element.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function initScrollMarkers(container, wrapper) {
   if (!container || !wrapper) return;
   requestAnimationFrame(() => addScrollMarkers(container, wrapper));
@@ -227,6 +237,16 @@ export async function buildCardCarousel(judokaList, gokyoData) {
   return wrapper;
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export { addScrollMarkers };
 
 /**
@@ -234,6 +254,16 @@ export { addScrollMarkers };
  *
  * @pseudocode
  * 1. Set a global flag so `buildCardCarousel` shows the spinner without delay.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function showSpinnerImmediately() {
   globalThis.__showSpinnerImmediately__ = true;

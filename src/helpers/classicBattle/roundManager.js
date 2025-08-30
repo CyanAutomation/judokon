@@ -44,6 +44,16 @@ function getStartRound(store) {
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function handleReplay(store) {
   resetEngineForTest();
   window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } }));
@@ -66,6 +76,16 @@ export async function handleReplay(store) {
  * @param {(store: ReturnType<typeof createBattleStore>, roundNumber: number) => void} [onRoundStart]
  *        Optional callback to apply UI updates immediately.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function startRound(store, onRoundStart) {
   store.selectionMade = false;
   store.playerChoice = null;
@@ -86,6 +106,16 @@ export async function startRound(store, onRoundStart) {
  * Clears timers, selection flags, and any previous player choice.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function _resetForTest(store) {
   resetSkipState();
@@ -129,5 +159,15 @@ export function _resetForTest(store) {
  * store timeouts, and emits a `game:reset-ui` event to allow the UI to
  * teardown/reinitialize. Used by the classic battle orchestrator when
  * entering the lobby (`waitingForMatchStart`).
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export const resetGame = _resetForTest;

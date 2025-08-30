@@ -14,6 +14,16 @@ import { getSetting } from "./settingsCache.js";
  *
  * @returns {boolean} True when the effect is enabled.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function shouldEnableTypewriter() {
   return Boolean(getSetting("typewriterEffect"));
 }
@@ -25,6 +35,16 @@ export function shouldEnableTypewriter() {
  * @param {string} finalHtml - Final HTML to restore once typing finishes.
  * @param {number} [speed=200] - Delay in milliseconds between characters.
  * @returns {void}
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function runTypewriterEffect(element, finalHtml, speed = 200) {
   if (!element) return;

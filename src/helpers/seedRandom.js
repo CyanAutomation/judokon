@@ -4,6 +4,16 @@
  * @param {number} seed - 32-bit seed value.
  * @returns {() => number} Function returning pseudo-random [0,1).
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function mulberry32(seed) {
   let t = seed >>> 0;
   return function () {
@@ -19,6 +29,16 @@ export function mulberry32(seed) {
  * @param {number} seed
  * @param {number} min
  * @param {number} max
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function seededInt(seed, min, max) {
   const rng = mulberry32(seed);

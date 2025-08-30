@@ -10,6 +10,16 @@ let cachedEmbeddings;
  * Increment this when regenerating embeddings to ensure the
  * vector search page can detect outdated data.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const CURRENT_EMBEDDING_VERSION = 1;
 
 /**

@@ -13,6 +13,16 @@ import { populateNavbar } from "../navigationBar.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { isEnabled } from "../featureFlags.js";
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function addNavResetButton() {
   const section = document.getElementById("feature-flags-container");
   const existing = document.getElementById("nav-cache-reset-button");

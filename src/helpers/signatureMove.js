@@ -8,6 +8,16 @@
  *    `signature-move-ready`.
  */
 let resolveReady;
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const signatureMoveReadyPromise = new Promise((resolve) => {
   resolveReady = resolve;
 });
@@ -19,6 +29,16 @@ export const signatureMoveReadyPromise = new Promise((resolve) => {
  * 1. Set `data-signature-move-ready="true"` on `<body>`.
  * 2. Dispatch a `signature-move-ready` event on `document`.
  * 3. If a resolver exists, invoke it.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function markSignatureMoveReady() {
   document.body?.setAttribute("data-signature-move-ready", "true");

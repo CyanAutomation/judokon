@@ -95,6 +95,16 @@ export function getRandomJudoka(data) {
  * @param {Object} gokyo - The gokyo data used to enrich the card.
  * @param {HTMLElement} gameArea - The DOM element where the card will be displayed.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function displayJudokaCard(judoka, gokyo, gameArea) {
   debugLog("Judoka passed to displayJudokaCard:", judoka);
   if (!gameArea) {
@@ -137,6 +147,16 @@ export async function displayJudokaCard(judoka, gokyo, gameArea) {
  *    - Remove the panel and clear the `data-inspector` attribute.
  *
  * @param {boolean} enable - Whether to show inspector panels.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function toggleInspectorPanels(enable) {
   document.querySelectorAll(".card-container").forEach((container) => {

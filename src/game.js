@@ -40,6 +40,16 @@ let inspectorEnabled = false;
  * @param {HTMLElement} button - Button to show the carousel.
  * @param {HTMLElement} container - Container for the carousel.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setupCarouselToggle(button, container) {
   let isBuilt = false;
   if (!button) {
@@ -110,6 +120,16 @@ export function setupCarouselToggle(button, container) {
  *
  * @param {HTMLElement} button - Button that hides card faces.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setupHideCardButton(button) {
   if (!button) return;
   button.addEventListener("click", () => {
@@ -145,6 +165,16 @@ export function setupHideCardButton(button) {
  * @param {HTMLElement} button - Button to trigger card generation.
  * @param {HTMLElement} container - Element to display the card.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setupRandomCardButton(button, container) {
   if (!button || !container) return;
   button.addEventListener("click", async () => {
@@ -177,6 +207,16 @@ export function setupRandomCardButton(button, container) {
  * 8. Call `setupHideCardButton` to wire up the button for toggling card backs, passing `hideCard`.
  * 9. Call `setupRandomCardButton` to wire up the button for displaying a random card, passing `showRandom` and `gameArea`.
  * 10. Initialize all tooltips on the page by calling `initTooltips`.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export async function initGame() {
   const showRandom = document.getElementById("showRandom");

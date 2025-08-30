@@ -15,6 +15,16 @@
 /** Default PNG fallback when an SVG fails to load. */
 export const DEFAULT_FALLBACK = "./src/assets/images/judokonLogoSmall.png";
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function applySvgFallback(fallbackSrc = DEFAULT_FALLBACK) {
   const svgImages = document.querySelectorAll('img[src$=".svg"]');
 

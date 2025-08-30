@@ -22,6 +22,16 @@ const readyParts = new Set();
  * 3. Expose the promise globally via `window.battleReadyPromise`.
  */
 let resolveReady;
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const battleReadyPromise = new Promise((resolve) => {
   resolveReady = resolve;
 });
@@ -38,6 +48,16 @@ if (typeof window !== "undefined") {
   window.battleReadyPromise = battleReadyPromise;
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function markBattlePartReady(part) {
   readyParts.add(part);
   if (readyParts.has("home") && readyParts.has("state")) {

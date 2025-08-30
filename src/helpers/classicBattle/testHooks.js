@@ -17,6 +17,16 @@ let __promisesBound = false;
  * 2. Import promises; if `force`, cache-bust to create fresh awaitables post-mock.
  * 3. Track bound state to avoid duplicate UI bindings.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function ensureBindings(opts = {}) {
   const force = !!opts.force;
   // Bind round UI listeners once per worker to avoid duplicate handlers.
@@ -48,6 +58,16 @@ export async function ensureBindings(opts = {}) {
 /**
  * Reset internal promise-bound flag so tests can rebind after vi.doMock().
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function resetBindings() {
   __promisesBound = false;
 }
@@ -62,6 +82,16 @@ export function resetBindings() {
  * 3. Emit `roundTimeout`, auto-select a stat, and dispatch `timeout`.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export async function triggerRoundTimeoutNow(store) {
   const { getOpponentJudoka } = await import("./cardSelection.js");
@@ -102,6 +132,16 @@ export async function triggerRoundTimeoutNow(store) {
  * Trigger the stalled-selection prompt immediately and auto-select a stat.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export async function triggerStallPromptNow(store) {
   const { getOpponentJudoka } = await import("./cardSelection.js");

@@ -54,6 +54,16 @@ export let roundTimeoutPromise;
 export let statSelectionStalledPromise;
 export let roundResolvedPromise;
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function resetBattlePromises() {
   roundOptionsReadyPromise = setupPromise("roundOptionsReadyPromise", "roundOptionsReady")();
   roundPromptPromise = setupPromise("roundPromptPromise", "roundPrompt")();
@@ -82,10 +92,60 @@ function latest(key, fallback) {
   return fallback;
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const getRoundPromptPromise = () => latest("roundPromptPromise", roundPromptPromise);
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const getCountdownStartedPromise = () =>
   latest("countdownStartedPromise", countdownStartedPromise);
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const getRoundResolvedPromise = () => latest("roundResolvedPromise", roundResolvedPromise);
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const getRoundTimeoutPromise = () => latest("roundTimeoutPromise", roundTimeoutPromise);
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const getStatSelectionStalledPromise = () =>
   latest("statSelectionStalledPromise", statSelectionStalledPromise);

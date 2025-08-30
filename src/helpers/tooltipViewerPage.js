@@ -10,6 +10,16 @@ const FILE_NOT_FOUND_MSG = "File not found";
 const LOAD_ERROR_MSG = "Error loading tooltips.";
 // Test hooks for dependency injection
 let snackbarFnOverride = null;
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setTooltipSnackbar(fn) {
   snackbarFnOverride = typeof fn === "function" ? fn : null;
 }
@@ -17,6 +27,16 @@ export function setTooltipSnackbar(fn) {
 // Optional injection hook used by tests to bypass module resolution quirks
 /** @type {null | ((url: string) => Promise<Record<string, any>>)} */
 let tooltipDataLoader = null;
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setTooltipDataLoader(fn) {
   tooltipDataLoader = typeof fn === "function" ? fn : null;
 }
@@ -100,6 +120,16 @@ export function initSearchFilter(searchInput, updateList, debounceMs = 300) {
  * @param {HTMLButtonElement} keyCopyBtn - Button for copying the key.
  * @param {HTMLButtonElement} bodyCopyBtn - Button for copying the body.
  * @param {number} [removeDelayMs=600] - Delay before removing the `copied` class.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function bindCopyButtons(keyCopyBtn, bodyCopyBtn, removeDelayMs = 600) {
   // Use dynamic import so tests can vi.doMock this module after initial import
@@ -188,6 +218,16 @@ export function bindCopyButtons(keyCopyBtn, bodyCopyBtn, removeDelayMs = 600) {
  * @param {HTMLElement} listPlaceholder - List element containing tooltip items.
  * @param {(key: string) => void} select - Selection callback.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function applyHashSelection(listPlaceholder, select) {
   if (location.hash) {
     let key;
@@ -236,6 +276,16 @@ export function applyHashSelection(listPlaceholder, select) {
  * 4. Bind copy buttons, warm the snackbar module, and set up search filtering.
  * 5. Apply URL hash selection, then initialize help tooltips.
  * 6. Clean up search filtering on `pagehide`.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export async function setupTooltipViewerPage({ debounceMs = 300, removeDelayMs = 600 } = {}) {
   // Start loading sanitizer but don't block initial render

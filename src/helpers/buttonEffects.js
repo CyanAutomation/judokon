@@ -9,6 +9,16 @@
  */
 import { shouldReduceMotionSync } from "./motionUtils.js";
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setupButtonEffects() {
   const buttons = document.querySelectorAll("button, .primary-button");
   buttons.forEach((button) => {

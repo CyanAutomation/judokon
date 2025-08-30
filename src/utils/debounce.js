@@ -36,6 +36,16 @@ export class DebounceError extends Error {
  * }} [options]
  * @returns {((...args: Parameters<F>) => Promise<ReturnType<F>>)&{flush: () => void}} Debounced function.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function debounce(
   fn,
   delay,

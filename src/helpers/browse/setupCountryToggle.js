@@ -35,6 +35,16 @@ export async function handleToggleClick(toggleButton, panel, listContainer) {
  * @param {Element} panel
  * @param {Element} listContainer
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function handlePanelKeydown(event, toggleButton, panel, listContainer) {
   if (event.key === "Escape") {
     toggleCountryPanel(toggleButton, panel, false);

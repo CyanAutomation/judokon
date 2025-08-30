@@ -9,6 +9,16 @@ import { initDebugPanel, registerRoundStartErrorHandler } from "./uiHelpers.js";
  *
  * @param {import("./view.js").ClassicBattleView} view
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setupDebugHooks(view) {
   initDebugPanel();
   registerRoundStartErrorHandler(() => view.startRound());

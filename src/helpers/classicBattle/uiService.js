@@ -19,6 +19,16 @@ let activeCountdown = null;
  * 1. Read scores via `getScores()`.
  * 2. Forward the values to `scoreboard.updateScore`.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function syncScoreDisplay() {
   const { playerScore, opponentScore } = getScores();
   if (typeof scoreboard.updateScore === "function") {

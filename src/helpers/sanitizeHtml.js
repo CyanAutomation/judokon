@@ -10,6 +10,16 @@
  * @returns {Promise<{ sanitize: (html:string)=>string }>}
  */
 let cached;
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function getSanitizer() {
   if (cached) return cached;
 

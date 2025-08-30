@@ -11,6 +11,16 @@
  *
  * @param {"light"|"dark"|"high-contrast"} mode - Desired display mode.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function applyDisplayMode(mode) {
   const validModes = ["light", "dark", "high-contrast"];
   if (!validModes.includes(mode)) {

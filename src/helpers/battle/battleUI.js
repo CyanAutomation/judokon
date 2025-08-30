@@ -19,6 +19,16 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
  *
  * @returns {NodeListOf<HTMLButtonElement>} Node list of stat buttons.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function getStatButtons() {
   if (typeof document?.querySelectorAll !== "function") {
     return [];
@@ -30,6 +40,16 @@ export function getStatButtons() {
  * Get the element used for round messages.
  *
  * @returns {HTMLElement|null} The round message element or null.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function getRoundMessageEl() {
   return document.getElementById("round-message");
@@ -44,6 +64,16 @@ export function getRoundMessageEl() {
  * 3. Disable the button to clear active/tap highlight.
  * 4. Force reflow so Safari clears the overlay.
  * 5. In the next frame via the shared scheduler re-enable, clear styles, and blur.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export function resetStatButtons(
   scheduler = {
@@ -88,6 +118,16 @@ export function resetStatButtons(
  * @param {string} message - Result text to show.
  */
 let cancelFade;
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function showResult(
   message,
   scheduler = {

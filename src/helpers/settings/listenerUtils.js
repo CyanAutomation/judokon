@@ -17,6 +17,16 @@ import { showSnackbar } from "../showSnackbar.js";
  * @param {(key: string, value: any, revert: Function) => Promise<any>} handleUpdate -
  *   Persist function that returns a Promise.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function attachToggleListeners(controls, getCurrentSettings, handleUpdate) {
   const {
     soundToggle,

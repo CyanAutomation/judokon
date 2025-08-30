@@ -247,14 +247,44 @@ export async function drawCards() {
   return { playerJudoka, opponentJudoka };
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function getOpponentJudoka() {
   return opponentJudoka;
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function clearOpponentJudoka() {
   opponentJudoka = null;
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function getGokyoLookup() {
   return gokyoLookup;
 }
@@ -264,10 +294,30 @@ export function getGokyoLookup() {
  * Primarily used by tests or code paths that render the opponent card directly.
  * @returns {Promise<ReturnType<typeof createGokyoLookup>>} Lookup (empty on failure).
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function getOrLoadGokyoLookup() {
   return await ensureGokyoLookup();
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function _resetForTest() {
   judokaData = null;
   gokyoLookup = null;

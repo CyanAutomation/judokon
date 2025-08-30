@@ -139,6 +139,16 @@ function selectTopMatches(matches) {
  *
  * @param {Event} event - The submit event from the form.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function handleSearch(event) {
   event.preventDefault();
   window.vectorSearchResultsPromise = new Promise((resolve) => {
@@ -238,6 +248,16 @@ function handleNoMatches(matches, messageEl) {
  * 5. Populate the tag filter dropdown with unique tags.
  * 6. Display the embedding count in the header.
  * 7. Attach `handleSearch` to the form and intercept Enter key submissions.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 export async function init() {
   preloadExtractor();

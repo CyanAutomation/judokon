@@ -26,6 +26,16 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
  * @param {number} roundNumber - Current round number to display.
  * @param {number} [stallTimeoutMs=35000] - Delay before auto-select kicks in.
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function applyRoundUI(store, roundNumber, stallTimeoutMs = 35000) {
   try {
     if (!IS_VITEST) console.log("INFO: applyRoundUI called for round", roundNumber);
@@ -72,6 +82,16 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 35000) {
 
 // --- Event bindings ---
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function bindRoundUIEventHandlers() {
   onBattleEvent("roundStarted", (e) => {
     const { store, roundNumber } = e.detail || {};
@@ -165,6 +185,16 @@ bindRoundUIEventHandlers();
 
 // Test-friendly variant: dynamically import dependencies within handlers so
 // that vi.mock replacements are honored even when bindings occur before mocks.
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function bindRoundUIEventHandlersDynamic() {
   onBattleEvent("roundStarted", (e) => {
     const { store, roundNumber } = e.detail || {};
