@@ -150,6 +150,7 @@ function showBottomLine(text) {
       bar.className = "snackbar";
       container.appendChild(bar);
     }
+    bar.setAttribute("tabindex", "0");
     bar.textContent = text || "";
   } catch {}
 }
@@ -918,7 +919,7 @@ function installEventBindings() {
     }
   });
 
-  onBattleEvent("matchOver", () => {
+  const handleMatchOver = () => {
     const main = byId("cli-main");
     if (!main || byId("play-again-button")) return;
     const section = document.createElement("section");
@@ -934,15 +935,22 @@ function installEventBindings() {
     });
     section.append(btn);
     main.append(section);
-  });
+  };
+  onBattleEvent("matchOver", handleMatchOver);
+  document.addEventListener("matchOver", handleMatchOver);
 
   // Track state changes: start/stop countdown and append verbose log
   document.addEventListener("battle:state", (ev) => {
     const { from, to } = ev.detail || {};
     if (to === "waitingForPlayerAction") {
       startSelectionCountdown(5);
+      byId("cli-stats")?.focus();
     } else {
       stopSelectionCountdown();
+    }
+    if (to === "roundOver") {
+      showBottomLine("Press Enter to continue");
+      byId("snackbar-container")?.querySelector(".snackbar")?.focus();
     }
     if (!verboseEnabled) return;
     try {

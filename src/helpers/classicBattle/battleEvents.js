@@ -2,125 +2,68 @@
  * Lightweight event bus for Classic Battle interactions.
  *
  * @pseudocode
- * 1. Create a shared `EventTarget` instance.
- * 2. Expose helper functions to subscribe, unsubscribe, and emit events.
+ * 1. Retrieve a shared `EventTarget` from `globalThis` using a fixed key.
+ * 2. Create and cache it if missing.
+ * 3. Provide helpers to subscribe, unsubscribe, emit, and reset events.
  */
-let target = new EventTarget();
+const EVENT_TARGET_KEY = "__classicBattleEventTarget";
+let target = (globalThis[EVENT_TARGET_KEY] ||= new EventTarget());
 
 /**
- * Subscribe to a battle event.
+ * Listen for a battle event.
  *
  * @param {string} type - Event name.
  * @param {(e: CustomEvent) => void} handler - Listener callback.
- */
-/**
- * @summary TODO: Add summary
+ * @summary Listen for a specific classic battle event.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Add `handler` as a listener on the shared target.
  */
 export function onBattleEvent(type, handler) {
   target.addEventListener(type, handler);
 }
 
 /**
- * Unsubscribe from a battle event.
+ * Stop listening for a battle event.
  *
  * @param {string} type - Event name.
  * @param {(e: CustomEvent) => void} handler - Listener callback.
- */
-/**
- * @summary TODO: Add summary
+ * @summary Remove a listener for a classic battle event.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Remove `handler` from the shared target.
  */
 export function offBattleEvent(type, handler) {
   target.removeEventListener(type, handler);
 }
 
 /**
- * Emit a battle event with optional detail payload.
+ * Dispatch a battle event with optional detail.
  *
  * @param {string} type - Event name.
- * @param {any} [detail] - Optional data to pass to listeners.
- */
-/**
- * @summary TODO: Add summary
+ * @param {any} [detail] - Optional data for listeners.
+ * @summary Notify listeners of a classic battle event.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Create a `CustomEvent` with the provided detail.
+ * 2. Dispatch it on the shared target.
  */
 export function emitBattleEvent(type, detail) {
-  target.dispatchEvent(new CustomEvent(type, { detail }));
+  const event = new CustomEvent(type, { detail });
+  target.dispatchEvent(event);
+  try {
+    document.dispatchEvent(event);
+  } catch {}
 }
 
-export default target;
-
-// Test-only: reset the internal EventTarget so new listeners can bind
-// against a fresh bus after module mocks change.
 /**
- * @summary TODO: Add summary
+ * Replace the shared `EventTarget` instance.
+ *
+ * @summary Refresh the global event bus and local reference.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Create a new `EventTarget`.
+ * 2. Store it under `EVENT_TARGET_KEY` on `globalThis`.
+ * 3. Reassign the module-scoped `target`.
  */
 export function __resetBattleEventTarget() {
-  target = new EventTarget();
+  target = globalThis[EVENT_TARGET_KEY] = new EventTarget();
 }
+
+export { target as default };
