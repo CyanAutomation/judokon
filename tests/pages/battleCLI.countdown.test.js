@@ -84,10 +84,10 @@ describe("battleCLI countdown", () => {
       new CustomEvent("battle:state", { detail: { to: "waitingForPlayerAction" } })
     );
     const cd = document.getElementById("cli-countdown");
-    expect(cd.dataset.remainingTime).toBe("5");
+    expect(cd.dataset.remainingTime).toBe("30");
     vi.advanceTimersByTime(1000);
-    expect(cd.dataset.remainingTime).toBe("4");
-    vi.advanceTimersByTime(4000);
+    expect(cd.dataset.remainingTime).toBe("29");
+    vi.advanceTimersByTime(29000);
     expect(autoSelectStat).toHaveBeenCalled();
   });
 
@@ -96,7 +96,7 @@ describe("battleCLI countdown", () => {
     document.dispatchEvent(
       new CustomEvent("battle:state", { detail: { to: "waitingForPlayerAction" } })
     );
-    vi.advanceTimersByTime(5000);
+    vi.advanceTimersByTime(30000);
     expect(autoSelectStat).not.toHaveBeenCalled();
     expect(emitBattleEvent).toHaveBeenCalledWith("statSelectionStalled");
   });

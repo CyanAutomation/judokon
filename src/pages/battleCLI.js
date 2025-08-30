@@ -380,7 +380,7 @@ function selectStat(stat) {
  *   if autoSelect enabled: autoSelectStat(selectStat)
  *   else emit "statSelectionStalled"
  */
-function startSelectionCountdown(seconds = 5) {
+function startSelectionCountdown(seconds = 30) {
   const el = byId("cli-countdown");
   if (!el) return;
   stopSelectionCountdown();
@@ -954,7 +954,7 @@ function installEventBindings() {
   document.addEventListener("battle:state", (ev) => {
     const { from, to } = ev.detail || {};
     if (to === "waitingForPlayerAction") {
-      startSelectionCountdown(5);
+      startSelectionCountdown(30);
       byId("cli-stats")?.focus();
     } else {
       stopSelectionCountdown();
