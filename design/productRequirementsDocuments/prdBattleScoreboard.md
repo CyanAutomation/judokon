@@ -10,7 +10,7 @@ Displays round messages, stat selection timer, and live match score in the page 
 
 The Scoreboard reserves the following DOM IDs for its placeholders so other docs and code can reference them consistently:
 
-- `#round-message` – round outcomes and status messages
+- `#round-message` – round outcomes and status messages (outcome messages set `data-outcome="true"` to prevent placeholders like "Waiting…" from overwriting them)
 - `#next-round-timer` – stat selection timer
 - `#score-display` – player vs opponent score
 - `#round-counter` – current round number
