@@ -76,6 +76,7 @@ describe("vectorSearch scoring", () => {
     const embeddings = await loadEmbeddings();
     for (const entry of embeddings ?? []) {
       for (const value of entry.embedding) {
+        expect(Number(value.toFixed(3))).toBe(value);
         const decimals = value.toString().split(".")[1];
         expect(decimals ? decimals.length : 0).toBeLessThanOrEqual(3);
       }
