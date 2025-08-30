@@ -25,6 +25,7 @@ describe("skipRoundCooldown feature flag", () => {
     const emitSpy = vi.spyOn(battleEvents, "emitBattleEvent");
     await import("../../../src/helpers/classicBattle/uiService.js");
     await battleEvents.emitBattleEvent("countdownStart", { duration: 3 });
+    await Promise.resolve();
     const { attachCooldownRenderer } = await import("../../../src/helpers/CooldownRenderer.js");
     expect(attachCooldownRenderer).not.toHaveBeenCalled();
     expect(emitSpy).toHaveBeenCalledWith("countdownFinished");
@@ -36,6 +37,7 @@ describe("skipRoundCooldown feature flag", () => {
     const emitSpy = vi.spyOn(battleEvents, "emitBattleEvent");
     await import("../../../src/helpers/classicBattle/uiService.js");
     await battleEvents.emitBattleEvent("countdownStart", { duration: 3 });
+    await Promise.resolve();
     const { attachCooldownRenderer } = await import("../../../src/helpers/CooldownRenderer.js");
     expect(attachCooldownRenderer).toHaveBeenCalled();
     expect(emitSpy).toHaveBeenCalledTimes(1); // only countdownStart

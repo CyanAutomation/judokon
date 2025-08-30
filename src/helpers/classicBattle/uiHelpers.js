@@ -24,13 +24,25 @@ import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
 /**
  * Skip the inter-round cooldown when the corresponding feature flag is enabled.
  *
+ * @pseudocode
+ * 1. Exit early if the `skipRoundCooldown` flag is disabled.
+ * 2. Schedule a microtask that emits `countdownFinished`.
+ * 3. Return `true` when the cooldown will be skipped.
+ *
  * @returns {boolean} `true` if the cooldown was skipped.
  */
 export function skipRoundCooldownIfEnabled() {
   if (!isEnabled("skipRoundCooldown")) return false;
+  const run = () => {
+    try {
+      emitBattleEvent("countdownFinished");
+    } catch {}
+  };
   try {
-    emitBattleEvent("countdownFinished");
-  } catch {}
+    queueMicrotask(run);
+  } catch {
+    setTimeout(run, 0);
+  }
   return true;
 }
 
