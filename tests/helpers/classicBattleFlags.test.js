@@ -183,5 +183,11 @@ describe("classicBattlePage feature flag updates", () => {
     featureFlagsEmitter.dispatchEvent(new CustomEvent("change"));
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
     expect(clickSpy).toHaveBeenCalledTimes(1);
+
+    clickSpy.mockReset();
+    currentFlags.statHotkeys.enabled = false;
+    featureFlagsEmitter.dispatchEvent(new CustomEvent("change"));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
+    expect(clickSpy).not.toHaveBeenCalled();
   });
 });
