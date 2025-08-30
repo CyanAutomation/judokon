@@ -39,6 +39,110 @@ export function isStateTransition(from, to) {
 }
 
 /**
+ * Schedule a fallback timeout and return its id.
+ *
+ * @pseudocode
+ * 1. Attempt to call `setTimeout(cb, ms)`.
+ * 2. Return the timer id or `null` on failure.
+ *
+ * @param {number} ms
+ * @param {Function} cb
+ * @returns {ReturnType<typeof setTimeout>|null}
+ */
+export function setupFallbackTimer(ms, cb) {
+  try {
+    return setTimeout(cb, ms);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Initialize the match start cooldown timer.
+ *
+ * @pseudocode
+ * 1. Resolve match start duration with 3s default.
+ * 2. Emit `countdownStart` and listen for `countdownFinished`.
+ * 3. Schedule fallback timer to dispatch `ready` if no event fires.
+ */
+export async function initStartCooldown(machine) {
+  let duration = 3;
+  try {
+    const val = await getDefaultTimer("matchStartTimer");
+    if (typeof val === "number") duration = val;
+  } catch {}
+  duration = Math.max(1, Number(duration));
+  let fallback = null;
+  const onFinished = () => {
+    try {
+      offBattleEvent("countdownFinished", onFinished);
+    } catch {}
+    try {
+      if (fallback) clearTimeout(fallback);
+    } catch {}
+    try {
+      machine.dispatch("ready");
+    } catch {}
+  };
+  onBattleEvent("countdownFinished", onFinished);
+  emitBattleEvent("countdownStart", { duration });
+  fallback = setupFallbackTimer(duration * 1000 + 200, onFinished);
+}
+
+/**
+ * Initialize cooldown when no next-round timer is scheduled.
+ *
+ * @pseudocode
+ * 1. If controls already have a timer/ready flag, abort.
+ * 2. Compute minimal duration and enable Next button.
+ * 3. Listen for `countdownFinished` to mark ready and dispatch `ready`.
+ * 4. Schedule fallback timer that invokes the same completion logic.
+ */
+export function initInterRoundCooldown(machine) {
+  try {
+    const controls = getNextRoundControls?.();
+    if (controls && (controls.timer || controls.ready)) return;
+    let duration = 0;
+    try {
+      duration = computeNextRoundCooldown();
+    } catch {}
+    const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
+    if (btn) {
+      btn.disabled = false;
+      delete btn.dataset.nextReady;
+    }
+    let fallback = null;
+    const onFinished = () => {
+      try {
+        offBattleEvent("countdownFinished", onFinished);
+      } catch {}
+      try {
+        if (fallback) clearTimeout(fallback);
+      } catch {}
+      if (btn) {
+        btn.dataset.nextReady = "true";
+        btn.disabled = false;
+      }
+      try {
+        emitBattleEvent("nextRoundTimerReady");
+      } catch {}
+      try {
+        machine.dispatch("ready");
+      } catch {}
+    };
+    onBattleEvent("countdownFinished", onFinished);
+    emitBattleEvent("countdownStart", { duration });
+    const ms = Math.max(0, Number(duration) * 1000) + 200;
+    fallback = setupFallbackTimer(ms, () => {
+      try {
+        offBattleEvent("countdownFinished", onFinished);
+      } catch {}
+      onFinished();
+    });
+  } catch {}
+}
+
+/**
  * onEnter handler for `waitingForMatchStart` state.
  *
  * @pseudocode
@@ -134,10 +238,8 @@ export async function matchStartExit() {}
  * onEnter handler for `cooldown` state.
  *
  * @pseudocode
- * 1. If `payload.initial`, compute match start duration via timer utils and emit countdown events.
- * 2. Install fallback timers to advance the machine in headless/test environments.
- * 3. If there is no scheduled next-round timer, ensure Next button is enabled and ready after a minimal cooldown.
- * 4. Emit `countdownStart` and `nextRoundTimerReady` as appropriate.
+ * 1. If `payload.initial`, delegate to `initStartCooldown`.
+ * 2. Otherwise, invoke `initInterRoundCooldown`.
  *
  * @param {object} machine
  * @param {object} [payload]
@@ -145,7 +247,8 @@ export async function matchStartExit() {}
 /**
  * @summary TODO: Add summary
  * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. If initial cooldown requested → `initStartCooldown`.
+ * 2. Else → `initInterRoundCooldown`.
  */
 /**
  * @summary TODO: Add summary
@@ -163,93 +266,8 @@ export async function matchStartExit() {}
  * 1. TODO: Add pseudocode
  */
 export async function cooldownEnter(machine, payload) {
-  if (payload?.initial) {
-    let duration = 3;
-    try {
-      const val = await getDefaultTimer("matchStartTimer");
-      if (typeof val === "number") duration = val;
-    } catch {}
-    duration = Math.max(1, Number(duration));
-    const onFinished = () => {
-      try {
-        offBattleEvent("countdownFinished", onFinished);
-      } catch {}
-      try {
-        if (fallbackTimer) clearTimeout(fallbackTimer);
-      } catch {}
-      try {
-        machine.dispatch("ready");
-      } catch {}
-    };
-    onBattleEvent("countdownFinished", onFinished);
-
-    // Emit countdown start for UI timers
-    emitBattleEvent("countdownStart", { duration });
-
-    // Fallback: if no countdownFinished event arrives (headless/test environments),
-    // advance after `duration` seconds to avoid stalling the state machine.
-    let fallbackTimer = null;
-    try {
-      fallbackTimer = setTimeout(
-        () => {
-          onFinished();
-        },
-        duration * 1000 + 200
-      );
-    } catch {}
-    return;
-  }
-  // For inter-round cooldowns with no scheduled next-round timer (e.g., after
-  // an interrupt path like timeout/noSelection), emit a countdown so the UI
-  // advances reliably even without a round result. This prevents hangs.
-  try {
-    const controls = getNextRoundControls?.();
-    if (!controls || (!controls.timer && !controls.ready)) {
-      let duration = 0;
-      try {
-        duration = computeNextRoundCooldown();
-      } catch {}
-      // `computeNextRoundCooldown` enforces a 1s floor.
-      // Mirror scheduleNextRound minimal UI: enable Next immediately and
-      // mark as ready when the minimum 1s countdown expires.
-      const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
-      if (btn) {
-        btn.disabled = false;
-        delete btn.dataset.nextReady;
-      }
-      const onFinished = () => {
-        try {
-          offBattleEvent("countdownFinished", onFinished);
-        } catch {}
-        try {
-          if (fallbackTimer) clearTimeout(fallbackTimer);
-        } catch {}
-        if (btn) {
-          btn.dataset.nextReady = "true";
-          btn.disabled = false;
-        }
-        try {
-          emitBattleEvent("nextRoundTimerReady");
-        } catch {}
-        try {
-          machine.dispatch("ready");
-        } catch {}
-      };
-      onBattleEvent("countdownFinished", onFinished);
-      emitBattleEvent("countdownStart", { duration });
-      let fallbackTimer = null;
-      try {
-        const ms = Math.max(0, Number(duration) * 1000) + 200;
-        fallbackTimer = setTimeout(() => {
-          try {
-            offBattleEvent("countdownFinished", onFinished);
-          } catch {}
-          onFinished();
-        }, ms);
-      } catch {}
-      return;
-    }
-  } catch {}
+  if (payload?.initial) return initStartCooldown(machine);
+  return initInterRoundCooldown(machine);
 }
 /**
  * onExit handler for `cooldown` state (no-op).
@@ -296,12 +314,12 @@ export async function roundStartEnter(machine) {
   let fallback = null;
   try {
     if (isTestModeEnabled && isTestModeEnabled()) {
-      fallback = setTimeout(() => {
+      fallback = setupFallbackTimer(50, () => {
         try {
           const state = machine.getState ? machine.getState() : null;
           if (state === "roundStart") machine.dispatch("cardsRevealed");
         } catch {}
-      }, 50);
+      });
     }
   } catch {}
   // Start the round asynchronously; do not block state progression on opponent card rendering.
