@@ -87,17 +87,25 @@ if (!isEnabled("battleStateProgress")) {
  * @summary Render core battle states into `#battle-state-progress` and register a
  * `battle:state` listener to update the active item. Returns a cleanup function.
  * @pseudocode
- * 1. If `document` is unavailable return early.
- * 2. Locate `#battle-state-progress` and either render or skip depending on `CLASSIC_BATTLE_STATES`.
- * 3. Resolve the ready promise and register an event listener to toggle `active` on list items.
- * 4. If an initial state exists on the body, apply it and mark the state part ready.
- * 5. Return a cleanup function that removes the event listener.
+ * 1. If the feature flag is disabled, hide the element if the DOM exists, resolve the ready promise, and return.
+ * 2. If `document` is unavailable resolve the ready promise and return.
+ * 3. Locate `#battle-state-progress` and either render or skip depending on `CLASSIC_BATTLE_STATES`.
+ * 4. Resolve the ready promise and register an event listener to toggle `active` on list items.
+ * 5. If an initial state exists on the body, apply it and mark the state part ready.
+ * 6. Return a cleanup function that removes the event listener.
  *
  * @returns {Promise<(() => void) | undefined>} Resolves with a cleanup function or undefined.
  */
 export async function initBattleStateProgress() {
-  if (!isEnabled("battleStateProgress") || typeof document === "undefined") {
-    document.getElementById("battle-state-progress")?.style.setProperty("display", "none");
+  if (!isEnabled("battleStateProgress")) {
+    if (typeof document !== "undefined") {
+      document.getElementById("battle-state-progress")?.style.setProperty("display", "none");
+    }
+    resolveBattleStateProgressReady?.();
+    return;
+  }
+
+  if (typeof document === "undefined") {
     resolveBattleStateProgressReady?.();
     return;
   }
