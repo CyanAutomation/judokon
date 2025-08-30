@@ -81,6 +81,12 @@ down into discrete blocks with unique IDs. This granularity improves lookup
 accuracy because search results map back to a single section or data row rather
 than an entire file.
 
+Chunking rules are shared across tooling via [`src/helpers/vectorSearch/chunkConfig.js`](../../src/helpers/vectorSearch/chunkConfig.js) and follow these guidelines:
+
+- **Goal:** ~350 tokens per chunk (≈1,400 characters).
+- **Overlap:** 15% of characters between sequential chunks.
+- **Splitting:** Sentence-aware to avoid mid-sentence breaks.
+
 
 ### JSON Field Allowlists and Boilerplate Filtering
 
