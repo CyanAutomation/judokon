@@ -87,6 +87,7 @@ AI agents should begin by reading:
 - Bottom line: snackbars render as a single status line using `#snackbar-container`.
 - Win target: choose 5/10/15 from the header; persisted in localStorage under `battleCLI.pointsToWin`.
 - Optional verbose log: enable header toggle to record recent state transitions.
+- Bootstrap helpers: `autostartBattle()`, `renderStatList()`, and `restorePointsToWin()` orchestrate CLI startup.
 
 ### Snackbar Container
 

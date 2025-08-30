@@ -40,7 +40,10 @@ export const __test = {
     return { cooldownTimer, cooldownInterval };
   },
   installEventBindings,
-  init
+  init,
+  autostartBattle,
+  renderStatList,
+  restorePointsToWin
 };
 
 function setRetroMode(enabled) {
@@ -76,6 +79,80 @@ function showBottomLine(text) {
 
 function clearBottomLine() {
   showBottomLine("");
+}
+
+export function autostartBattle() {
+  // Ensure autostart so the modal is skipped in CLI and dispatch start
+  try {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("autostart") !== "1") {
+      url.searchParams.set("autostart", "1");
+      history.replaceState({}, "", url);
+    }
+  } catch {}
+  try {
+    const autostart = new URLSearchParams(location.search).get("autostart");
+    if (autostart === "1") {
+      const machine = window.__getClassicBattleMachine?.();
+      if (machine) machine.dispatch("startClicked");
+    }
+  } catch {}
+}
+
+export async function renderStatList() {
+  try {
+    const stats = await fetchJson(`${DATA_DIR}statNames.json`);
+    const list = byId("cli-stats");
+    if (list && Array.isArray(stats)) {
+      list.innerHTML = "";
+      stats
+        .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
+        .forEach((s) => {
+          const idx = Number(s.statIndex) || 0;
+          if (!idx) return;
+          const div = document.createElement("div");
+          div.className = "cli-stat";
+          div.setAttribute("role", "button");
+          div.setAttribute("tabindex", "0");
+          div.dataset.statIndex = String(idx);
+          div.textContent = `[${idx}] ${s.name}`;
+          list.appendChild(div);
+        });
+      list.addEventListener("click", handleStatClick);
+      try {
+        const help = byId("cli-help");
+        if (help) {
+          const mapping = stats
+            .slice()
+            .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
+            .map((s) => `[${s.statIndex}] ${s.name}`)
+            .join("  ·  ");
+          help.textContent = `${help.textContent}  |  ${mapping}`;
+        }
+      } catch {}
+    }
+  } catch {}
+}
+
+export function restorePointsToWin() {
+  try {
+    const select = byId("points-select");
+    const key = "battleCLI.pointsToWin";
+    const saved = Number(localStorage.getItem(key));
+    if ([5, 10, 15].includes(saved)) {
+      setPointsToWin(saved);
+      if (select) select.value = String(saved);
+    }
+    select?.addEventListener("change", () => {
+      const val = Number(select.value);
+      if ([5, 10, 15].includes(val)) {
+        setPointsToWin(val);
+        try {
+          localStorage.setItem(key, String(val));
+        } catch {}
+      }
+    });
+  } catch {}
 }
 
 function renderHiddenPlayerStats(judoka) {
@@ -421,67 +498,8 @@ async function init() {
   try {
     window.battleStore = store;
   } catch {}
-  // Ensure autostart so the modal is skipped in CLI
-  try {
-    const url = new URL(window.location.href);
-    if (url.searchParams.get("autostart") !== "1") {
-      url.searchParams.set("autostart", "1");
-      history.replaceState({}, "", url);
-    }
-  } catch {}
-  // Load stat names and render mapping
-  try {
-    const stats = await fetchJson(`${DATA_DIR}statNames.json`);
-    const list = byId("cli-stats");
-    if (list && Array.isArray(stats)) {
-      list.innerHTML = "";
-      stats
-        .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
-        .forEach((s) => {
-          const idx = Number(s.statIndex) || 0;
-          if (!idx) return;
-          const div = document.createElement("div");
-          div.className = "cli-stat";
-          div.setAttribute("role", "button");
-          div.setAttribute("tabindex", "0");
-          div.dataset.statIndex = String(idx);
-          div.textContent = `[${idx}] ${s.name}`;
-          list.appendChild(div);
-        });
-      list.addEventListener("click", handleStatClick);
-      // Also enrich the help line with the mapping
-      try {
-        const help = byId("cli-help");
-        if (help) {
-          const mapping = stats
-            .slice()
-            .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
-            .map((s) => `[${s.statIndex}] ${s.name}`)
-            .join("  ·  ");
-          help.textContent = `${help.textContent}  |  ${mapping}`;
-        }
-      } catch {}
-    }
-  } catch {}
-  // Restore persisted points-to-win if available and sync select
-  try {
-    const select = byId("points-select");
-    const key = "battleCLI.pointsToWin";
-    const saved = Number(localStorage.getItem(key));
-    if ([5, 10, 15].includes(saved)) {
-      setPointsToWin(saved);
-      if (select) select.value = String(saved);
-    }
-    select?.addEventListener("change", () => {
-      const val = Number(select.value);
-      if ([5, 10, 15].includes(val)) {
-        setPointsToWin(val);
-        try {
-          localStorage.setItem(key, String(val));
-        } catch {}
-      }
-    });
-  } catch {}
+  await renderStatList();
+  restorePointsToWin();
   // Initialize feature flags and verbose section
   const checkbox = byId("verbose-toggle");
   const section = byId("cli-verbose-section");
@@ -512,14 +530,7 @@ async function init() {
   installEventBindings();
   // Initialize orchestrator using our startRound wrapper
   await initClassicBattleOrchestrator(store, startRoundWrapper);
-  // Autostart if requested
-  try {
-    const autostart = new URLSearchParams(location.search).get("autostart");
-    if (autostart === "1") {
-      const machine = window.__getClassicBattleMachine?.();
-      if (machine) machine.dispatch("startClicked");
-    }
-  } catch {}
+  autostartBattle();
   // Keyboard controls
   window.addEventListener("keydown", onKeyDown);
   document.addEventListener("click", onClickAdvance);
