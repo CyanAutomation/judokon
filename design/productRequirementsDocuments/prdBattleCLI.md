@@ -73,7 +73,7 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 | **P1** | Timer Display | Show a 1 Hz textual countdown for stat selection; on expiry, auto-select per `FF_AUTO_SELECT`. |
 | **P1** | Outcome/Score | After decision, print outcome (Win/Loss/Draw), selected stat/value pairs, and updated score. |
 | **P1** | Accessibility Hooks | Provide `aria-live="polite"` for round messages and countdown; maintain focus order for keyboard use. |
-| **P1** | Test Hooks | Expose stable selectors/ids (e.g., `#round-message`, `#cli-score`, `#cli-countdown`, `data-flag`) to support existing tests and new CLI tests. |
+| **P1** | Test Hooks | Expose stable selectors/ids (e.g., `#round-message`, `#cli-score`, `#cli-countdown`, `data-flag`) and data attributes like `#cli-root[data-round]` and `#cli-countdown[data-remaining-time]` to support Playwright/Vitest. |
 | **P2** | Minimal Settings | Allow selecting win target (5/10/15). Changing the value prompts to reset scores and restart the match; the last choice persists via the shared settings helper. |
 | **P2** | Deterministic Seed | Optional numeric seed via header input or `?seed=` query parameter enables reproducible runs; last seed is stored locally. |
 | **P2** | Round Context | Header shows current round and win target ("Round X of Y"). |
@@ -130,6 +130,7 @@ Notes:
 
 7. Testability
    - Given the CLI page loads, when running Playwright/Vitest, then selectors `#round-message`, `#cli-countdown`, and `#cli-score` are present and update as the engine advances.
+   - Hooks expose current round and countdown via `#cli-root[data-round]` and `#cli-countdown[data-remaining-time]`.
    - Given verbose mode is enabled (`FF_CLI_VERBOSE`), when state transitions occur, then logs are emitted via a muted logger during tests (no unsilenced console.error/warn in CI).
 
 8. Interrupts
