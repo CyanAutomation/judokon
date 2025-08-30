@@ -57,11 +57,6 @@ export function showSnackbar(message) {
     if (typeof document !== "undefined" && !document.getElementById("snackbar-container")) {
       const container = document.createElement("div");
       container.id = "snackbar-container";
-      // Keep the container visually inert when inserted by script.
-      container.style.position = "absolute";
-      container.style.width = "0";
-      container.style.height = "0";
-      container.style.overflow = "visible";
       document.body?.appendChild(container);
     }
   } catch {}
@@ -101,10 +96,6 @@ export function updateSnackbar(message) {
     if (typeof document !== "undefined" && !document.getElementById("snackbar-container")) {
       const container = document.createElement("div");
       container.id = "snackbar-container";
-      container.style.position = "absolute";
-      container.style.width = "0";
-      container.style.height = "0";
-      container.style.overflow = "visible";
       document.body?.appendChild(container);
     }
   } catch {}

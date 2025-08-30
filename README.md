@@ -96,7 +96,7 @@ Pages that display snackbars must include a persistent container near the end of
 <div id="snackbar-container" role="status" aria-live="polite"></div>
 ```
 
-`showSnackbar` and `updateSnackbar` reuse this element for notifications.
+Place this element **before** any script that may trigger snackbars during page load to avoid creating a fallback container with duplicate IDs. `showSnackbar` and `updateSnackbar` reuse this element for notifications.
 
 ## Settings API
 
