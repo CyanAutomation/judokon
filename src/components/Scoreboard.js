@@ -14,41 +14,18 @@
  * @param {HTMLDivElement} [container=document.createElement("div")] - Wrapper to populate.
  * @returns {HTMLDivElement} The scoreboard element.
  */
-import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
-import { t } from "../helpers/i18n.js";
-
-let messageEl;
-let timerEl;
-let scoreEl;
-let roundCounterEl;
-let scoreRafId = 0;
-let currentPlayer = 0;
-let currentOpponent = 0;
-let startCoolDown;
-let pauseTimer;
-let resumeTimer;
-let scheduler;
-let visibilityHandler;
-let focusHandler;
 /**
- * @summary TODO: Add summary
+ * @summary Creates a battle scoreboard.
+ * @description Creates and configures the DOM elements for the battle scoreboard, including the round message, timer, round counter, and score display.
+ * @param {HTMLDivElement} [container=document.createElement("div")] - The container element to which the scoreboard will be appended.
+ * @returns {HTMLDivElement} The container element with the scoreboard appended.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Create a `<p>` element for the round message with appropriate ARIA attributes.
+ * 2. Create a `<p>` element for the timer with appropriate ARIA attributes.
+ * 3. Create a `<p>` element for the round counter with appropriate ARIA attributes.
+ * 4. Create a `<p>` element for the score display with appropriate ARIA attributes.
+ * 5. Append all created elements to the container.
+ * 6. Return the container.
  */
 export function createScoreboard(container = document.createElement("div")) {
   messageEl = document.createElement("p");
@@ -292,30 +269,12 @@ export function updateTimer(seconds) {
 }
 
 /**
- * Clear the countdown display.
- *
+ * @summary Clears the timer display.
+ * @description Clears the text content of the timer element.
+ * @returns {void}
  * @pseudocode
- * 1. If the timer element exists, set its text content to an empty string.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Ensure a reference to the timer element exists.
+ * 2. If the timer element exists, set its text content to an empty string.
  */
 export function clearTimer() {
   ensureRefs();

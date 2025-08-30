@@ -201,17 +201,18 @@ When reviewing or modifying imports, agents must apply the JU-DO-KON! static vs 
 Run these from the repo root:
 
 ```bash
+npm run check:jsdoc
 npx prettier . --check
 npx eslint .
 npx vitest run
 npx playwright test
 npm run check:contrast
-npm run check:jsdoc
 ```
 
 **Common fixes:**
 
 ```bash
+npm run check:jsdoc:fix
 npx prettier . --write
 npx eslint . --fix
 ```
