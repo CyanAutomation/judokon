@@ -49,6 +49,10 @@
       "enabled": false,
       "tooltipId": "settings.battleStateBadge"
     },
+    "battleStateProgress": {
+      "enabled": false,
+      "tooltipId": "settings.battleStateProgress"
+    },
     "skipRoundCooldown": {
       "enabled": false,
       "tooltipId": "settings.skipRoundCooldown"

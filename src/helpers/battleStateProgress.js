@@ -19,6 +19,7 @@
 import { CLASSIC_BATTLE_STATES } from "./classicBattle/stateTable.js";
 import { updateBattleStateBadge } from "./classicBattle/uiHelpers.js";
 import { markBattlePartReady } from "./battleInit.js";
+import { isEnabled } from "./featureFlags.js";
 
 /**
  * Internal resolver for `battleStateProgressReadyPromise`.
@@ -50,6 +51,10 @@ if (typeof window !== "undefined") {
   window.battleStateProgressReadyPromise = battleStateProgressReadyPromise;
 }
 
+if (!isEnabled("battleStateProgress")) {
+  resolveBattleStateProgressReady?.();
+}
+
 /**
  * @summary TODO: Add summary
  * @pseudocode
@@ -71,13 +76,18 @@ if (typeof window !== "undefined") {
  * 1. TODO: Add pseudocode
  */
 export async function initBattleStateProgress() {
-  if (typeof document === "undefined") return;
+  if (!isEnabled("battleStateProgress") || typeof document === "undefined") {
+    document.getElementById("battle-state-progress")?.style.setProperty("display", "none");
+    resolveBattleStateProgressReady?.();
+    return;
+  }
 
   const list = document.getElementById("battle-state-progress");
   if (!list) {
     resolveBattleStateProgressReady?.();
     return;
   }
+  list.style.display = "";
 
   const states = Array.isArray(CLASSIC_BATTLE_STATES) ? CLASSIC_BATTLE_STATES : [];
 

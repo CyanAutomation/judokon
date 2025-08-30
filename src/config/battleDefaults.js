@@ -36,5 +36,6 @@ export const FEATURE_FLAGS = {
   battleDebugPanel: { enabled: false },
   enableTestMode: { enabled: false },
   battleStateBadge: { enabled: false },
+  battleStateProgress: { enabled: false },
   statHotkeys: { enabled: false }
 };

@@ -39,6 +39,9 @@ function createBattleDom() {
 
 describe("battleStateProgress updates on object-shaped battle:state", () => {
   beforeEach(() => {
+    vi.doMock("../../../src/helpers/featureFlags.js", () => ({
+      isEnabled: () => true
+    }));
     document.body.innerHTML = `
       <ul id="battle-state-progress"></ul>
       <div id="battle-state-badge"></div>
@@ -66,6 +69,20 @@ describe("battleStateProgress updates on object-shaped battle:state", () => {
   });
 });
 
+describe("battleStateProgress disabled", () => {
+  it("resolves without rendering", async () => {
+    vi.doMock("../../../src/helpers/featureFlags.js", () => ({
+      isEnabled: () => false
+    }));
+    document.body.innerHTML = '<ul id="battle-state-progress"></ul>';
+    const mod = await import("../../../src/helpers/battleStateProgress.js");
+    await mod.initBattleStateProgress();
+    const list = document.getElementById("battle-state-progress");
+    expect(list.children.length).toBe(0);
+    await mod.battleStateProgressReadyPromise;
+  });
+});
+
 describe("battle-state-progress stays in sync across transitions", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
@@ -80,7 +97,7 @@ describe("battle-state-progress stays in sync across transitions", () => {
 
   it("tracks waitingForPlayerAction \u2192 roundDecision", async () => {
     mockScheduler();
-    mockFeatureFlags();
+    mockFeatureFlags({ battleStateProgress: { enabled: true } });
     mockDataUtils();
     mockStats();
     mockRoundManager();

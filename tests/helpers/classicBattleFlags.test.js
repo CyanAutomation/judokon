@@ -69,6 +69,9 @@ describe("classicBattlePage feature flag updates", () => {
       setTestMode: vi.fn(),
       isTestModeEnabled: () => true
     }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      initTooltips: vi.fn().mockResolvedValue(() => {})
+    }));
 
     const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
     await setupClassicBattlePage();

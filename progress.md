@@ -196,7 +196,7 @@
 
 ## Notes on Feature Flags
 
-- Canonical keys (camelCase): `autoSelect`, `battleDebugPanel`, `enableTestMode`, `battleStateBadge`, `statHotkeys`.
+- Canonical keys (camelCase): `autoSelect`, `battleDebugPanel`, `enableTestMode`, `battleStateBadge`, `battleStateProgress`, `statHotkeys`.
 - Older docs may reference `FF_*` names; prefer the keys above.
 
 ## Observability

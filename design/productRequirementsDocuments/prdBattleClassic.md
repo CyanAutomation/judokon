@@ -82,6 +82,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - During this delay, the Scoreboard displays "Opponent is choosing..." in `#round-message` to reinforce turn flow.
 - The cooldown timer between rounds begins only after round results are shown in the Scoreboard and is displayed using one persistent snackbar that updates its text each second.
 - The debug panel is available when the `battleDebugPanel` feature flag is enabled, appears above the player and opponent cards, and includes a copy button for exporting its text.
+- A battle state progress list can be enabled via the `battleStateProgress` feature flag to show the sequence of match states beneath the battle area; disabled by default.
 
 ### Round Data Fallback
 
@@ -225,6 +226,7 @@ This section lists small, implementer-facing contracts to reduce ambiguity betwe
   - `autoSelect` — boolean, default: `true`. When enabled, the system auto-selects a random stat on timer expiry.
     When disabled, the timer expires without choosing a stat and the player must pick manually.
   - `battleDebugPanel` — boolean, default: `false`. When enabled, show debug panel above the cards with copy/export controls.
+  - `battleStateProgress` — boolean, default: `false`. When enabled, display a state progress list beneath the battle area.
   - `testMode` — boolean, default: `false` (test-only). When enabled, allow `battle.testRandomSeed` and fast AI delays for deterministic tests.
   - `statHotkeys` — boolean, default: `false`. When enabled, number keys 1–5 map to stat buttons (left→right).
   - `skipRoundCooldown` — boolean, default: `false`. When enabled, bypass inter-round cooldown and begin the next round immediately.
