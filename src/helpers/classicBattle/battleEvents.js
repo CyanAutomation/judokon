@@ -46,7 +46,11 @@ export function offBattleEvent(type, handler) {
  * 2. Dispatch it on the shared target.
  */
 export function emitBattleEvent(type, detail) {
-  target.dispatchEvent(new CustomEvent(type, { detail }));
+  const event = new CustomEvent(type, { detail });
+  target.dispatchEvent(event);
+  try {
+    document.dispatchEvent(event);
+  } catch {}
 }
 
 /**

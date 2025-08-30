@@ -72,7 +72,7 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 | **P1** | Pointer Controls | Stats and Next prompts are clickable/tappable for mouse and touch users. |
 | **P1** | Timer Display | Show a 1 Hz textual countdown for stat selection; on expiry, auto-select per `FF_AUTO_SELECT`. |
 | **P1** | Outcome/Score | After decision, print outcome (Win/Loss/Draw), selected stat/value pairs, and updated score. |
-| **P1** | Accessibility Hooks | Provide `aria-live="polite"` for round messages and countdown; maintain focus order for keyboard use. |
+| **P1** | Accessibility Hooks | Provide `aria-live="polite"` for round messages and countdown; maintain focus order for keyboard use, including a skip link and programmatic focus on stat selection and Next prompts. |
 | **P1** | Test Hooks | Expose stable selectors/ids (e.g., `#round-message`, `#cli-score`, `#cli-countdown`, `data-flag`) to support existing tests and new CLI tests. |
 | **P2** | Minimal Settings | Allow selecting win target (5/10/15). Changing the value prompts to reset scores and restart the match; the last choice persists via the shared settings helper. |
 | **P2** | Deterministic Seed | Optional numeric seed via header input or `?seed=` query parameter enables reproducible runs; last seed is stored locally. |
