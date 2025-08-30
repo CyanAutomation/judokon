@@ -173,7 +173,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
     dismissal.
   - Tooltips on stat names, country flags, weight indicators, and navigation icons provide accessible explanations.
    - The Scoreboard includes a round counter (`#round-counter`) and a field showing the player's selected stat for the current round.
-  - Optional keyboard shortcuts: When `statHotkeys` feature flag is enabled, allow number keys 1–5 to select the corresponding stat button (left→right order) for power users and tests. Disabled by default.
+   - Optional keyboard shortcuts: When `statHotkeys` feature flag is enabled, allow number keys 1–5 to select the corresponding stat button (left→right order) for power users and tests. Disabled by default. The toggle resides under **Advanced Settings** on the Settings page.
   - **Accessibility:**
   - Minimum text contrast ratio: ≥4.5:1 (per WCAG).
   - Minimum touch target size: ≥44px. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) for the full rule.

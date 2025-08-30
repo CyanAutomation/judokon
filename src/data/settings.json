@@ -57,9 +57,17 @@
       "enabled": false,
       "tooltipId": "settings.skipRoundCooldown"
     },
+    "statHotkeys": {
+      "enabled": false,
+      "tooltipId": "settings.statHotkeys"
+    },
     "cliVerbose": {
       "enabled": false,
       "tooltipId": "settings.cliVerbose"
+    },
+    "cliShortcuts": {
+      "enabled": true,
+      "tooltipId": "settings.cliShortcuts"
     },
     "autoSelect": {
       "enabled": true,

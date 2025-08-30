@@ -47,8 +47,14 @@ export async function initFeatureFlags() {
   let settings;
   try {
     settings = await loadSettings();
-    cachedFlags = settings.featureFlags || { ...DEFAULT_SETTINGS.featureFlags };
-    setCachedSettings(settings);
+    // Merge defaults with any persisted featureFlags so new flags are present by default
+    const mergedFlags = {
+      ...DEFAULT_SETTINGS.featureFlags,
+      ...(settings.featureFlags || {})
+    };
+    cachedFlags = mergedFlags;
+    // Keep cached settings in sync with the merged map used by `isEnabled`
+    setCachedSettings({ ...settings, featureFlags: mergedFlags });
   } catch {
     settings = { ...DEFAULT_SETTINGS };
     cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };

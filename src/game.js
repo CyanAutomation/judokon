@@ -11,8 +11,10 @@ import { debugLog } from "./helpers/debug.js";
 let inspectorEnabled = false;
 
 /**
- * Wire up the carousel toggle button.
+ * Wire up the carousel toggle button and lazily build the carousel on demand.
  *
+ * @summary Attach a click handler to `button` that builds and reveals a judoka carousel
+ * if it hasn't been built yet. Validates fetched data before building.
  * @pseudocode
  * 1. Exit early if `button` is not provided.
  * 2. Maintain an `isBuilt` flag inside the closure to track if the carousel has been built.
@@ -39,26 +41,7 @@ let inspectorEnabled = false;
  *
  * @param {HTMLElement} button - Button to show the carousel.
  * @param {HTMLElement} container - Container for the carousel.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @returns {(Function|undefined)} The click handler or undefined when initialization is skipped.
  */
 export function setupCarouselToggle(button, container) {
   let isBuilt = false;
@@ -119,8 +102,10 @@ export function setupCarouselToggle(button, container) {
 }
 
 /**
- * Toggle card backs in the carousel.
+ * Toggle the visibility of card backs within the carousel.
  *
+ * @summary Attach a click handler to `button` which toggles the `show-card-back` CSS
+ * class on every `.judoka-card` inside the carousel container.
  * @pseudocode
  * 1. Exit early if `button` is missing.
  * 2. On click:
@@ -129,26 +114,7 @@ export function setupCarouselToggle(button, container) {
  *    c. Log errors when elements are missing.
  *
  * @param {HTMLElement} button - Button that hides card faces.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @returns {void}
  */
 export function setupHideCardButton(button) {
   if (!button) return;
@@ -173,8 +139,9 @@ export function setupHideCardButton(button) {
 }
 
 /**
- * Display a random judoka card.
+ * Display a random judoka card inside `container` when `button` is clicked.
  *
+ * @summary Wire `button` to generate and show a single random judoka card in `container`.
  * @pseudocode
  * 1. Exit early if `button` or `container` is missing.
  * 2. On click:
@@ -184,26 +151,7 @@ export function setupHideCardButton(button) {
  *
  * @param {HTMLElement} button - Button to trigger card generation.
  * @param {HTMLElement} container - Element to display the card.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @returns {void}
  */
 export function setupRandomCardButton(button, container) {
   if (!button || !container) return;
@@ -219,11 +167,10 @@ export function setupRandomCardButton(button, container) {
 }
 
 /**
- * Initializes game interactions.
+ * Initializes game interactions and wires control buttons for the game UI.
  *
- * Queries required DOM elements, wires up control buttons, and loads data for
- * the judoka carousel when requested.
- *
+ * @summary Find UI controls, initialize feature flags and tooltips, and wire
+ * up the carousel, hide-card, and random-card buttons.
  * @pseudocode
  * 1. Query essential DOM elements by their IDs: `showRandom`, `gameArea`, `carousel-container`, `showCarousel`, and `hideCard`.
  * 2. If `showRandom` or `gameArea` elements are not found, exit silently.
@@ -237,26 +184,8 @@ export function setupRandomCardButton(button, container) {
  * 8. Call `setupHideCardButton` to wire up the button for toggling card backs, passing `hideCard`.
  * 9. Call `setupRandomCardButton` to wire up the button for displaying a random card, passing `showRandom` and `gameArea`.
  * 10. Initialize all tooltips on the page by calling `initTooltips`.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ *
+ * @returns {Promise<void>} Resolves after feature flags and UI wiring complete.
  */
 export async function initGame() {
   const showRandom = document.getElementById("showRandom");

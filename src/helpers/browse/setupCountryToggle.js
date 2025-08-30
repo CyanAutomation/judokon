@@ -55,6 +55,20 @@ export async function handleToggleClick(toggleButton, panel, listContainer) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Handle keydown events inside the country panel.
+ *
+ * @summary Close the panel on Escape and delegate ArrowLeft/ArrowRight to keyboard navigation.
+ * @pseudocode
+ * 1. If Escape key, close the panel via `toggleCountryPanel(toggleButton, panel, false)`.
+ * 2. If Arrow keys, call `handleKeyboardNavigation` with the list container and `flag-button`.
+ *
+ * @param {KeyboardEvent} event - The keydown event.
+ * @param {HTMLButtonElement} toggleButton - Panel toggle button to control open/close.
+ * @param {Element} panel - The panel element.
+ * @param {Element} listContainer - Container that holds flag buttons.
+ * @returns {void}
+ */
 export function handlePanelKeydown(event, toggleButton, panel, listContainer) {
   if (event.key === "Escape") {
     toggleCountryPanel(toggleButton, panel, false);

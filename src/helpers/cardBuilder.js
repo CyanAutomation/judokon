@@ -160,6 +160,21 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup, options = {}) 
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Generate and return a judoka card element for display.
+ *
+ * @summary Build a judoka card DOM element from `judoka` and append to an optional container.
+ * @pseudocode
+ * 1. Use `safeGenerate()` to call `generateJudokaCardHTML()` and catch errors.
+ * 2. If a card element is produced, check for a signature move container and call `markSignatureMoveReady()`.
+ * 3. Return the generated card element or `null` if generation failed.
+ *
+ * @param {Object} judoka - Judoka data object.
+ * @param {Object} gokyoLookup - Lookup data for gokyo techniques.
+ * @param {HTMLElement} [container] - Optional container to append the card to.
+ * @param {Object} [options] - Optional generation options (e.g., enableInspector).
+ * @returns {Promise<HTMLElement|null>} The generated card element or null on failure.
+ */
 export async function generateJudokaCard(judoka, gokyoLookup, container, options = {}) {
   const card = await safeGenerate(
     () => generateJudokaCardHTML(judoka, gokyoLookup, options),

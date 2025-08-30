@@ -63,6 +63,7 @@ describe("classicBattlePage feature flag updates", () => {
       updateSnackbar: vi.fn()
     }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({
+      __esModule: true,
       initTooltips: vi.fn().mockResolvedValue(() => {})
     }));
     vi.doMock("../../src/helpers/testModeUtils.js", () => ({
@@ -125,6 +126,8 @@ describe("classicBattlePage feature flag updates", () => {
       isTestModeEnabled: () => true
     }));
 
+    const tooltip = await import("../../src/helpers/tooltip.js");
+    vi.spyOn(tooltip, "initTooltips").mockResolvedValue(() => {});
     const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
     await setupClassicBattlePage();
 
@@ -144,6 +147,41 @@ describe("classicBattlePage feature flag updates", () => {
     copyBtn.dispatchEvent(new Event("click", { bubbles: true }));
 
     expect(writeText).toHaveBeenCalledWith("battle info");
-    expect(copyBtn.closest("#debug-panel")).toBe(panel);
+      expect(copyBtn.closest("#debug-panel")).toBe(panel);
+  });
+  it("maps number keys to stat buttons only when statHotkeys is enabled", async () => {
+    const stats = document.createElement("div");
+    stats.id = "stat-buttons";
+    const btn = document.createElement("button");
+    btn.dataset.stat = "power";
+    stats.appendChild(btn);
+    document.body.append(stats);
+
+    const currentFlags = { statHotkeys: { enabled: false } };
+    const featureFlagsEmitter = new EventTarget();
+
+    vi.doMock("../../src/helpers/featureFlags.js", () => ({
+      featureFlagsEmitter,
+      isEnabled: (flag) => currentFlags[flag]?.enabled ?? false,
+      initFeatureFlags: vi.fn().mockResolvedValue({ featureFlags: currentFlags })
+    }));
+    vi.doMock("../../src/helpers/testModeUtils.js", () => ({
+      setTestMode: vi.fn(),
+      isTestModeEnabled: () => false
+    }));
+
+    const { initStatButtons } = await import("../../src/helpers/classicBattle/uiHelpers.js");
+    initStatButtons({});
+
+    const clickSpy = vi.spyOn(btn, "click");
+    btn.disabled = false;
+
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
+    expect(clickSpy).not.toHaveBeenCalled();
+
+    currentFlags.statHotkeys.enabled = true;
+    featureFlagsEmitter.dispatchEvent(new CustomEvent("change"));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
+    expect(clickSpy).toHaveBeenCalledTimes(1);
   });
 });

@@ -29,6 +29,18 @@ import { toggleCountryPanel } from "../countryPanel.js";
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Highlight the selected flag button within a container.
+ *
+ * @summary Remove `selected` from all flag buttons in `container` and add it to `button`.
+ * @pseudocode
+ * 1. Remove `selected` from all `button.flag-button` in the container.
+ * 2. Add `selected` class to the provided `button`.
+ *
+ * @param {Element} container - Container that holds flag buttons.
+ * @param {HTMLButtonElement} button - The button to mark as selected.
+ * @returns {void}
+ */
 export function highlightSelection(container, button) {
   const buttons = container.querySelectorAll("button.flag-button");
   buttons.forEach((b) => b.classList.remove("selected"));
@@ -169,6 +181,24 @@ export async function applyCountryFilter(
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Configure country filter interactions for the carousel.
+ *
+ * @summary Wire up event handlers for country filter UI: clear and selection handling.
+ * @pseudocode
+ * 1. Attach click handler to the clear button that resets the filter.
+ * 2. Attach click handler to `listContainer` to handle flag button selection and filtering.
+ *
+ * @param {Element} listContainer - Container that contains flag buttons.
+ * @param {HTMLButtonElement} clearButton - Button to clear the country filter.
+ * @param {Array<Judoka>} judokaList - Full judoka dataset.
+ * @param {Function} render - Rendering function that accepts filtered lists.
+ * @param {HTMLButtonElement} toggleButton - Toggle control for the country panel.
+ * @param {Element} panel - The country panel element.
+ * @param {Element} carouselEl - Carousel element used to show no-results messages.
+ * @param {Element} ariaLiveEl - Live region element to announce counts.
+ * @returns {void}
  */
 export function setupCountryFilter(
   listContainer,

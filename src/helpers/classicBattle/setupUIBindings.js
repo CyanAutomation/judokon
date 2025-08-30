@@ -45,11 +45,15 @@ export async function setupUIBindings(view) {
     }
   }
 
-  await applyStatLabels().catch(() => {});
+  try {
+    await applyStatLabels();
+  } catch {}
   try {
     await initTooltips();
   } catch (error) {
-    console.debug("initTooltips failed", error);
+    try {
+      console.debug("initTooltips failed", error);
+    } catch {}
   }
   maybeShowStatHint();
 

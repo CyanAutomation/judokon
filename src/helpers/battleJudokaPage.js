@@ -1,23 +1,11 @@
 // Deprecated: kept for backward-compatibility with tests and older imports.
 // Use `src/helpers/opponentCardWait.js` instead.
 /**
- * @summary TODO: Add summary
+ * Re-export of `waitForOpponentCard` maintained for backward compatibility.
+ *
+ * @summary Export the `waitForOpponentCard` helper from `opponentCardWait.js` for
+ * legacy imports.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Re-export the symbol so older modules and tests can continue importing it.
  */
 export { waitForOpponentCard } from "./opponentCardWait.js";

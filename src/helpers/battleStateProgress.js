@@ -40,6 +40,12 @@ let resolveBattleStateProgressReady;
  *
  * @type {Promise<(() => void) | undefined>}
  */
+/**
+ * Promise resolving when the battle state progress list has been rendered or skipped.
+ *
+ * @summary Notifies callers when the state progress list has been initialized.
+ * @type {Promise<(() => void) | undefined>}
+ */
 export const battleStateProgressReadyPromise =
   typeof window !== "undefined"
     ? new Promise((resolve) => {
@@ -74,6 +80,20 @@ if (!isEnabled("battleStateProgress")) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Initialize and render the battle state progress list and wire up runtime updates.
+ *
+ * @summary Render core battle states into `#battle-state-progress` and register a
+ * `battle:state` listener to update the active item. Returns a cleanup function.
+ * @pseudocode
+ * 1. If `document` is unavailable return early.
+ * 2. Locate `#battle-state-progress` and either render or skip depending on `CLASSIC_BATTLE_STATES`.
+ * 3. Resolve the ready promise and register an event listener to toggle `active` on list items.
+ * 4. If an initial state exists on the body, apply it and mark the state part ready.
+ * 5. Return a cleanup function that removes the event listener.
+ *
+ * @returns {Promise<(() => void) | undefined>} Resolves with a cleanup function or undefined.
  */
 export async function initBattleStateProgress() {
   if (!isEnabled("battleStateProgress") || typeof document === "undefined") {

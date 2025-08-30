@@ -37,24 +37,23 @@ export class DebounceError extends Error {
  * @returns {((...args: Parameters<F>) => Promise<ReturnType<F>>)&{flush: () => void}} Debounced function.
  */
 /**
- * @summary TODO: Add summary
+ * Create a debounced wrapper that returns a promise and supports flushing.
+ *
+ * @summary Returns a debounced async wrapper around `fn` that exposes `.flush()`.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Track a pending promise and a scheduled timer.
+ * 2. On each call, clear the existing timer and reject the prior pending promise
+ *    (or resolve it when `suppressRejection` is set) while invoking `onCancel`.
+ * 3. Schedule `fn` to run after `delay`; resolve or reject the pending promise
+ *    with `fn`'s result or thrown error.
+ * 4. Provide `.flush()` to synchronously run any pending invocation immediately.
+ *
+ * @param {Function} fn - Function to debounce.
+ * @param {number} delay - Milliseconds to wait before invoking `fn`.
+ * @param {object} [options] - Optional settings.
+ * @param {boolean} [options.suppressRejection] - Resolve previous pending promise instead of rejecting.
+ * @param {(error: DebounceError) => void} [options.onCancel] - Callback invoked when a pending call is canceled.
+ * @returns {Function & {flush: () => void}} Debounced function returning a Promise and exposing `.flush()`.
  */
 export function debounce(
   fn,

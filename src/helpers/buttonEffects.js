@@ -29,6 +29,16 @@ import { shouldReduceMotionSync } from "./motionUtils.js";
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Attach ripple and interaction effects to buttons on the page.
+ *
+ * @summary Wire up `mousedown` ripple animations for interactive buttons unless reduced motion is preferred.
+ * @pseudocode
+ * 1. Select `button` and `.primary-button` elements.
+ * 2. For each element attach a `mousedown` handler that creates a `span.ripple` and removes it after animation.
+ *
+ * @returns {void}
+ */
 export function setupButtonEffects() {
   const buttons = document.querySelectorAll("button, .primary-button");
   buttons.forEach((button) => {

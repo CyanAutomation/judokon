@@ -159,6 +159,21 @@ function selectTopMatches(matches) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Handle the vector search form submission and orchestrate the UI flow.
+ *
+ * @summary Build a query vector, run the vector search, and render results.
+ * @pseudocode
+ * 1. Prevent default form submission and create a results promise.
+ * 2. Prepare the UI and exit early if the query is empty.
+ * 3. Show spinner and build a vector for the query.
+ * 4. Call `vectorSearch.findMatches` with the vector and selected tags.
+ * 5. Finalize the UI, handle no-match conditions, and render results.
+ * 6. On error: log, hide spinner, show fallback message, and resolve the promise.
+ *
+ * @param {Event} event - Submit event from the search form.
+ * @returns {Promise<void>}
+ */
 export async function handleSearch(event) {
   event.preventDefault();
   window.vectorSearchResultsPromise = new Promise((resolve) => {
@@ -278,6 +293,19 @@ function handleNoMatches(matches, messageEl) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Initialize the Vector Search page: preload models, load embeddings, and wire UI handlers.
+ *
+ * @summary Preload extractor, load embedding data and metadata, populate UI, and attach handlers.
+ * @pseudocode
+ * 1. Preload extractor to reduce first-call latency.
+ * 2. Create spinner and locate form/message elements.
+ * 3. Attempt to load embeddings and metadata in parallel.
+ *    - On failure: hide spinner, show error, attach handlers and exit.
+ * 4. Warn on version mismatches, populate tag filters, update stats, and attach handlers.
+ *
+ * @returns {Promise<void>}
  */
 export async function init() {
   preloadExtractor();
