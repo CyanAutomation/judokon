@@ -57,6 +57,10 @@
       "enabled": false,
       "tooltipId": "settings.cliVerbose"
     },
+    "cliShortcuts": {
+      "enabled": true,
+      "tooltipId": "settings.cliShortcuts"
+    },
     "autoSelect": {
       "enabled": true,
       "tooltipId": "settings.autoSelect"
