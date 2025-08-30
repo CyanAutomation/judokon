@@ -1,34 +1,15 @@
 import { start as startScheduler, stop as stopScheduler } from "../../utils/scheduler.js";
 
 /**
- * Start the animation scheduler for the battle view.
+ * @summary Start the animation scheduler for the battle view.
  *
  * @pseudocode
- * 1. Skip when running under Vitest.
- * 2. Start the scheduler and stop it on `pagehide`.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. If `process.env.VITEST` is "true", exit early.
+ * 2. Otherwise start the scheduler and stop it on `pagehide`.
+ * @returns {void}
  */
 export function setupScheduler() {
-  if (!(typeof process !== "undefined" && process.env.VITEST)) {
+  if (!(typeof process !== "undefined" && process.env.VITEST === "true")) {
     startScheduler();
     window.addEventListener("pagehide", stopScheduler, { once: true });
   }
