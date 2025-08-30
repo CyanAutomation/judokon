@@ -12,7 +12,8 @@ const mocks = vi.hoisted(() => ({
   fetchJson: vi.fn(),
   setPointsToWin: vi.fn(),
   initTooltips: vi.fn(),
-  modal: { open: vi.fn(), close: vi.fn() }
+  modal: { open: vi.fn(), close: vi.fn() },
+  emit: vi.fn()
 }));
 
 vi.mock("../../../src/helpers/dataUtils.js", () => ({
@@ -38,6 +39,9 @@ vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   setPointsToWin: mocks.setPointsToWin
 }));
 vi.mock("../../../src/helpers/tooltip.js", () => ({ initTooltips: mocks.initTooltips }));
+vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
+  emitBattleEvent: mocks.emit
+}));
 
 import { initRoundSelectModal } from "../../../src/helpers/classicBattle/roundSelectModal.js";
 
@@ -57,6 +61,7 @@ describe("initRoundSelectModal", () => {
     const buttons = document.querySelectorAll(".round-select-buttons button");
     expect(buttons).toHaveLength(3);
     expect([...buttons].map((b) => b.textContent)).toEqual(rounds.map((r) => r.label));
+    expect(mocks.emit).toHaveBeenCalledWith("roundOptionsReady");
   });
 
   it("selecting an option sets points and starts the match", async () => {
@@ -67,6 +72,11 @@ describe("initRoundSelectModal", () => {
     expect(mocks.setPointsToWin).toHaveBeenCalledWith(rounds[0].value);
     expect(onStart).toHaveBeenCalled();
     expect(mocks.cleanup).toHaveBeenCalled();
+    expect(mocks.emit).toHaveBeenNthCalledWith(1, "roundOptionsReady");
+    expect(mocks.emit).toHaveBeenNthCalledWith(2, "startClicked");
+    const emitOrder = mocks.emit.mock.invocationCallOrder[1];
+    const startOrder = onStart.mock.invocationCallOrder[0];
+    expect(emitOrder).toBeLessThan(startOrder);
   });
 
   it("opens modal and starts match even if tooltip init fails", async () => {
@@ -109,5 +119,6 @@ describe("initRoundSelectModal", () => {
     expect(onStart).toHaveBeenCalled();
     expect(mocks.fetchJson).not.toHaveBeenCalled();
     expect(document.querySelector(".round-select-buttons")).toBeNull();
+    expect(mocks.emit).not.toHaveBeenCalled();
   });
 });
