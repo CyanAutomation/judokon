@@ -532,6 +532,10 @@ export function selectStat(store, stat) {
 /**
  * Remove modal backdrops and destroy the current quit modal.
  *
+ * @pseudocode
+ * 1. Remove all `.modal-backdrop` elements.
+ * 2. Destroy and nullify `store.quitModal` when present.
+ *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} [store]
  */
 export function removeBackdrops(store) {
@@ -549,9 +553,14 @@ export function removeBackdrops(store) {
 }
 
 /**
- * Replace Next and Quit buttons with fresh clones and wire Next click handler.
+ * Replace the Next button with a fresh disabled clone and wire the click handler.
+ *
+ * @pseudocode
+ * 1. Locate `#next-button`.
+ * 2. Clone it, disable the clone, remove `data-next-ready`, and add `onNextButtonClick`.
+ * 3. Replace the original button with the clone.
  */
-export function resetActionButtons() {
+export function resetNextButton() {
   let nextBtn;
   try {
     nextBtn = document.getElementById ? document.getElementById("next-button") : null;
@@ -563,6 +572,16 @@ export function resetActionButtons() {
     clone.addEventListener("click", onNextButtonClick);
     nextBtn.replaceWith(clone);
   }
+}
+
+/**
+ * Replace the Quit button with a fresh clone to drop existing listeners.
+ *
+ * @pseudocode
+ * 1. Locate `#quit-match-button`.
+ * 2. Replace it with an inert clone.
+ */
+export function resetQuitButton() {
   let quitBtn;
   try {
     quitBtn = document.getElementById ? document.getElementById("quit-match-button") : null;
@@ -573,19 +592,25 @@ export function resetActionButtons() {
 }
 
 /**
- * Clear scoreboard round info and synchronize display.
+ * Clear scoreboard and round messages, then synchronize the score display.
+ *
+ * @pseudocode
+ * 1. Clear scoreboard message and timer.
+ * 2. Empty `#round-result` text.
+ * 3. Invoke `syncScoreDisplay`.
  */
-export function clearRoundInfo() {
+export function clearScoreboardAndMessages() {
   try {
     scoreboard.clearMessage();
   } catch {}
   try {
     scoreboard.clearTimer();
   } catch {}
+  let roundResultEl;
   try {
-    const rr = document.getElementById("round-result");
-    if (rr) rr.textContent = "";
+    roundResultEl = document.getElementById ? document.getElementById("round-result") : null;
   } catch {}
+  if (roundResultEl) roundResultEl.textContent = "";
   try {
     syncScoreDisplay();
   } catch {}
@@ -992,60 +1017,20 @@ export function maybeShowStatHint(durationMs = 3000, setTimeoutFn = globalThis.s
  * Reset battle UI elements to their initial state.
  *
  * @pseudocode
- * 1. Remove any active modal backdrops and destroy `store.quitModal`.
- * 2. Replace the Next Round and Quit buttons with fresh clones.
- * 3. Clear scoreboard messages and disable the Next Round button.
+ * 1. Call `removeBackdrops(store)`.
+ * 2. Call `resetNextButton()`.
+ * 3. Call `resetQuitButton()`.
+ * 4. Call `clearScoreboardAndMessages()`.
+ * 5. Update the debug panel.
  *
  * @param {ReturnType<import("./roundManager.js").createBattleStore>} [store]
  * - Optional battle state store used to tear down the quit modal.
  */
 export function resetBattleUI(store) {
-  try {
-    document.querySelectorAll?.(".modal-backdrop").forEach((m) => {
-      if (typeof m.remove === "function") m.remove();
-    });
-  } catch {}
-  if (store?.quitModal) {
-    try {
-      store.quitModal.destroy();
-    } catch {}
-    store.quitModal = null;
-  }
-
-  let nextBtn;
-  try {
-    nextBtn = document.getElementById ? document.getElementById("next-button") : null;
-  } catch {}
-  if (nextBtn) {
-    const clone = nextBtn.cloneNode(true);
-    clone.disabled = true;
-    delete clone.dataset.nextReady;
-    clone.addEventListener("click", onNextButtonClick);
-    nextBtn.replaceWith(clone);
-  }
-
-  let quitBtn;
-  try {
-    quitBtn = document.getElementById ? document.getElementById("quit-match-button") : null;
-  } catch {}
-  if (quitBtn) {
-    quitBtn.replaceWith(quitBtn.cloneNode(true));
-  }
-
-  try {
-    scoreboard.clearMessage();
-  } catch {}
-  try {
-    scoreboard.clearTimer();
-  } catch {}
-  let roundResultEl;
-  try {
-    roundResultEl = document.getElementById ? document.getElementById("round-result") : null;
-  } catch {}
-  if (roundResultEl) roundResultEl.textContent = "";
-  try {
-    syncScoreDisplay();
-  } catch {}
+  removeBackdrops(store);
+  resetNextButton();
+  resetQuitButton();
+  clearScoreboardAndMessages();
   updateDebugPanel();
 }
 
