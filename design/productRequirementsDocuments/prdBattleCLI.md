@@ -79,7 +79,7 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 | **P2** | Round Context | Header shows current round and win target ("Round X of Y"). |
 | **P2** | Observability Mode | Optional verbose logs (controlled by the `cliVerbose` feature flag) that echo internal state transitions. |
 | **P2** | Interrupt Handling | Show a quit confirmation modal that pauses timers; cancel resumes play, confirm rolls back per engine rules. |
-| **P3** | Retro Mode | Optional ASCII borders and simple color accents via CSS classes; disabled by default for maximum contrast. |
+<!-- Retro Mode removed in favor of a single, consistent high-contrast style. -->
 
 ### Feature Flags
 - `cliVerbose` – toggles the verbose log section on the CLI page; disabled by default.
@@ -92,7 +92,7 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 `skipRoundCooldown` may also be enabled via the `?skipRoundCooldown=1` query parameter, which sets the feature flag at startup.
 
 Notes:
-- Core gameplay and timers must not use dynamic imports in hot paths. Optional features (e.g., Retro Mode) may be dynamically imported but preloaded during idle if enabled.  
+- Core gameplay and timers must not use dynamic imports in hot paths.  
 - Maintain the scoreboard/snackbar surface contract where feasible: `#round-message` for outcomes and a dedicated area for countdown/prompts to keep tests consistent.  
 
 ---
@@ -179,7 +179,7 @@ Notes:
 - DOM hooks: `#cli-root`, `#cli-header`, `#cli-countdown` (snackbar equivalent), `#cli-stats`, `#round-message`, `#cli-score`, `#cli-shortcuts`.
 - Keyboard map: 1–9 for stat selection; Enter/Space for Next; Q for Quit; H for Help/shortcuts.
 - Focus: Initial focus on the stat list container during selection; after outcome, focus moves to Next instruction hint.
-- Styling: Minimal CSS for spacing and contrast; optional ASCII borders when Retro Mode is on.
+- Styling: Minimal CSS for spacing and contrast; focus on a single, consistent high-contrast look.
 
 ---
 
@@ -205,7 +205,7 @@ Notes:
 ## Open Questions
 
 - Should the CLI mirror snackbar semantics exactly or consolidate to a single `#cli-countdown` area? If consolidated, update tests accordingly.
-- Is Retro Mode desired by default on desktop, or opt-in only?
+<!-- Retro Mode removed; no longer applicable. -->
 
 ---
 

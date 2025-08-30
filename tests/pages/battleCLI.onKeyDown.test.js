@@ -49,10 +49,7 @@ describe("battleCLI onKeyDown", () => {
     expect(document.getElementById("cli-shortcuts").hidden).toBe(false);
   });
 
-  it("toggles retro mode with R key", () => {
-    onKeyDown(new KeyboardEvent("keydown", { key: "r" }));
-    expect(document.body.classList.contains("retro")).toBe(true);
-  });
+  // Retro mode was removed; no longer handles 'R'.
 
   it("shows an invalid key message and clears on next valid key", () => {
     const countdown = document.getElementById("cli-countdown");

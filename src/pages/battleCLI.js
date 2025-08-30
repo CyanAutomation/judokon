@@ -594,9 +594,6 @@ function getStatByIndex(index1Based) {
  * if key is 'h':
  *   toggle shortcuts visibility
  *   return true
- * if key is 'r':
- *   toggle retro mode
- *   return true
  * if key is 'q':
  *   show quit confirmation modal
  *   return true
@@ -606,10 +603,6 @@ export function handleGlobalKey(key) {
   if (key === "h") {
     const sec = byId("cli-shortcuts");
     if (sec) sec.hidden = !sec.hidden;
-    return true;
-  }
-  if (key === "r") {
-    setRetroMode(!document.body.classList.contains("retro"));
     return true;
   }
   if (key === "q") {
@@ -988,24 +981,7 @@ function installEventBindings() {
   });
 }
 
-function installRetroStyles() {
-  const style = document.createElement("style");
-  style.textContent = `
-    body.retro .cli-block { border: none; background: #0a0a0a; position: relative; }
-    body.retro .cli-block::before,
-    body.retro .cli-block::after { content: ""; position: absolute; left: 0; right: 0; height: 1px; background: #5e5e5e; }
-    body.retro .cli-block::before { top: 0; }
-    body.retro .cli-block::after { bottom: 0; }
-    body.retro .cli-header, body.retro .cli-footer { background: #080808; }
-    /* Snackbar bottom line look */
-    #snackbar-container { padding: 8px 12px; }
-    #snackbar-container .snackbar { color: #e6e6e6; }
-  `;
-  document.head.appendChild(style);
-}
-
 async function init() {
-  installRetroStyles();
   initSeed();
   store = createBattleStore();
   // Expose store for debug panels if needed
