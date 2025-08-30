@@ -10,6 +10,7 @@ import {
 } from "./uiHelpers.js";
 import { onBattleEvent } from "./battleEvents.js";
 import { initBattleStateProgress } from "../battleStateProgress.js";
+import { isEnabled } from "../featureFlags.js";
 import { initTooltips } from "../tooltip.js";
 
 /**
@@ -37,9 +38,11 @@ export async function setupUIBindings(view) {
   onBattleEvent("statButtons:enable", () => statButtonControls?.enable());
   onBattleEvent("statButtons:disable", () => statButtonControls?.disable());
 
-  const cleanupBattleStateProgress = await initBattleStateProgress();
-  if (cleanupBattleStateProgress) {
-    window.addEventListener("pagehide", cleanupBattleStateProgress, { once: true });
+  if (isEnabled("battleStateProgress")) {
+    const cleanupBattleStateProgress = await initBattleStateProgress();
+    if (cleanupBattleStateProgress) {
+      window.addEventListener("pagehide", cleanupBattleStateProgress, { once: true });
+    }
   }
 
   try {

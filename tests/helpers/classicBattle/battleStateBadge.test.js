@@ -16,7 +16,7 @@ import { CLASSIC_BATTLE_STATES } from "../../../src/helpers/classicBattle/stateT
 
 // Apply all the necessary mocks
 mockScheduler();
-mockFeatureFlags();
+mockFeatureFlags({ battleStateProgress: { enabled: true } });
 mockDataUtils();
 mockStats();
 mockRoundManager();
