@@ -115,6 +115,7 @@ export async function initRoundSelectModal(onStart) {
         logEvent("battle.start", { pointsToWin: r.value, source: "modal" });
       } catch {}
       modal.close();
+      emitBattleEvent("startClicked");
       if (typeof onStart === "function") onStart();
       cleanupTooltips();
       modal.destroy();
