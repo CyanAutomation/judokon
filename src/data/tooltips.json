@@ -114,6 +114,10 @@
       "label": "CLI Verbose Logging",
       "description": "Show state transition logs in the battle CLI."
     },
+    "cliShortcuts": {
+      "label": "CLI Shortcuts",
+      "description": "Enable single-key shortcuts in the battle CLI."
+    },
     "autoSelect": {
       "label": "Auto-Select",
       "description": "Automatically pick a random stat when time runs out."

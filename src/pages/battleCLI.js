@@ -128,6 +128,18 @@ function updateStateBadgeVisibility() {
   if (badge) badge.style.display = isEnabled("battleStateBadge") ? "" : "none";
 }
 
+/**
+ * Show or hide the CLI shortcuts section based on feature flag.
+ *
+ * @pseudocode
+ * if shortcuts section exists:
+ *   set hidden to !isEnabled("cliShortcuts")
+ */
+function updateCliShortcutsVisibility() {
+  const section = byId("cli-shortcuts");
+  if (section) section.hidden = !isEnabled("cliShortcuts");
+}
+
 function showBottomLine(text) {
   // Render as a single bottom line using the snackbar container
   try {
@@ -837,6 +849,7 @@ export function handleCooldownKey(key) {
  *   clear countdown text
  */
 export function onKeyDown(e) {
+  if (!isEnabled("cliShortcuts")) return;
   const key = e.key.toLowerCase();
   const state = document.body?.dataset?.battleState || "";
   const table = {
@@ -1060,6 +1073,7 @@ async function init() {
   } catch {}
   updateVerbose();
   updateStateBadgeVisibility();
+  updateCliShortcutsVisibility();
   checkbox?.addEventListener("change", () => {
     setFlag("cliVerbose", !!checkbox.checked);
   });
@@ -1070,6 +1084,9 @@ async function init() {
     }
     if (!flag || flag === "battleStateBadge") {
       updateStateBadgeVisibility();
+    }
+    if (!flag || flag === "cliShortcuts") {
+      updateCliShortcutsVisibility();
     }
   });
   // Install CLI event bridges
