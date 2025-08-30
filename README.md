@@ -164,6 +164,16 @@ Sample output:
 - The round resolver compares chosen stats to decide a winner.
 - Each round alternates between player choice and resolver phases.
 ```
+
+### Evaluate retrieval quality
+
+Measure how well the vector search performs by running the evaluator:
+
+```bash
+node scripts/evaluation/evaluateRAG.js
+```
+
+It reads `scripts/evaluation/queries.json` and reports **MRR@5**, **Recall@3**, and **Recall@5** for the expected sources.
 ## ⚡ Module Loading Policy: Static vs Dynamic Imports
 
 JU-DO-KON! favors **deterministic gameplay and snappy input handling**. Use **static imports** for core gameplay; reserve **dynamic imports** (`import('…')`) for optional screens and heavy tools.

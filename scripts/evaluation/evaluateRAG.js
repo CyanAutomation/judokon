@@ -166,7 +166,7 @@ async function loadModel() {
   return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { quantized: true });
 }
 
-async function evaluate() {
+export async function evaluate() {
   const model = await loadModel();
 
   const queriesPath = path.join(rootDir, "scripts/evaluation/queries.json");
@@ -213,4 +213,8 @@ async function evaluate() {
   console.log(`Recall@5: ${recall5 / queries.length}`);
 }
 
-await evaluate();
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  await evaluate();
+}
+
+export { createSparseVector };
