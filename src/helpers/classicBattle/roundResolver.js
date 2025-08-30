@@ -118,6 +118,15 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
     if (!IS_VITEST) console.error("DEBUG: Error dispatching outcome events:", error);
   }
   resetStatButtons();
+  // Proactively update the scoreboard with the resolved scores so tests and
+  // runtime reflect the new totals immediately, even if downstream handlers
+  // are mocked or not yet bound.
+  try {
+    const sb = await import("../setupScoreboard.js");
+    if (typeof sb.updateScore === "function") {
+      sb.updateScore(result.playerScore, result.opponentScore);
+    }
+  } catch {}
   emitBattleEvent("roundResolved", {
     store,
     stat,

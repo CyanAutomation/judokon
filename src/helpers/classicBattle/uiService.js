@@ -41,23 +41,27 @@ let activeCountdown = null;
  */
 export function syncScoreDisplay() {
   const { playerScore, opponentScore } = getScores();
+  // Update via the component API when available
   if (typeof scoreboard.updateScore === "function") {
-    scoreboard.updateScore(playerScore, opponentScore);
-    return;
+    try {
+      scoreboard.updateScore(playerScore, opponentScore);
+    } catch {}
   }
-  // Fallback for tests that partially mock setupScoreboard without updateScore
-  const el = document.getElementById("score-display");
-  if (el) {
-    let playerSpan = el.firstElementChild;
-    let opponentSpan = el.lastElementChild;
-    if (!playerSpan || !opponentSpan) {
-      playerSpan = document.createElement("span");
-      opponentSpan = document.createElement("span");
-      el.append(playerSpan, opponentSpan);
+  // Always ensure the DOM reflects current scores as a robust fallback
+  try {
+    const el = document.getElementById("score-display");
+    if (el) {
+      let playerSpan = el.firstElementChild;
+      let opponentSpan = el.lastElementChild;
+      if (!playerSpan || !opponentSpan) {
+        playerSpan = document.createElement("span");
+        opponentSpan = document.createElement("span");
+        el.append(playerSpan, opponentSpan);
+      }
+      playerSpan.textContent = `You: ${playerScore}`;
+      opponentSpan.textContent = `\nOpponent: ${opponentScore}`;
     }
-    playerSpan.textContent = `You: ${playerScore}`;
-    opponentSpan.textContent = `\nOpponent: ${opponentScore}`;
-  }
+  } catch {}
 }
 
 /**

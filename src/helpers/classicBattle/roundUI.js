@@ -144,12 +144,18 @@ export function bindRoundUIEventHandlers() {
     try {
       if (!IS_VITEST) console.warn("[test] roundResolved event received");
     } catch {}
-    // Update the round message with the resolved outcome to keep #round-message
-    // in sync even when uiService is mocked in unit tests.
+    // Update the round message and score using the resolved values to avoid
+    // relying on engine singletons in test environments.
     try {
       scoreboard.showMessage(result.message || "", { outcome: true });
     } catch {}
-    syncScoreDisplay();
+    try {
+      if (typeof scoreboard.updateScore === "function") {
+        scoreboard.updateScore(result.playerScore, result.opponentScore);
+      } else {
+        syncScoreDisplay();
+      }
+    } catch {}
     if (result.matchEnded) {
       scoreboard.clearRoundCounter();
       showMatchSummaryModal(result, async () => {
@@ -266,8 +272,18 @@ export function bindRoundUIEventHandlersDynamic() {
     } catch {}
     try {
       const scoreboard = await import("../setupScoreboard.js");
+      // Always surface the outcome message
       scoreboard.showMessage(result.message || "", { outcome: true });
-      scoreboard.syncScoreDisplay?.();
+      // Update the score display using the resolved values to avoid
+      // cross-module instance drift in tests. Fallback to full sync if needed.
+      if (typeof scoreboard.updateScore === "function") {
+        scoreboard.updateScore(result.playerScore, result.opponentScore);
+      } else {
+        try {
+          const ui = await import("./uiService.js");
+          ui.syncScoreDisplay?.();
+        } catch {}
+      }
     } catch {}
     if (result.matchEnded) {
       try {
