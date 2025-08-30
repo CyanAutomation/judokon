@@ -164,6 +164,7 @@ export class Modal {
    * 3. Deactivate the focus trap.
    * 4. Remove the keydown event listener for handling the Escape key.
    * 5. If a triggering element was stored, set its 'aria-expanded' attribute to 'false' and return focus to it.
+   * 6. Dispatch a `close` event on the modal backdrop.
    *
    * @returns {void}
    */
@@ -176,6 +177,7 @@ export class Modal {
       this.returnFocus.setAttribute("aria-expanded", "false");
       this.returnFocus.focus();
     }
+    this.element.dispatchEvent(new CustomEvent("close"));
   }
 
   /**

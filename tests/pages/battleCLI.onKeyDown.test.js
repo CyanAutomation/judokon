@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { emitBattleEvent, __resetBattleEventTarget } from "../../src/helpers/classicBattle/battleEvents.js";
+import {
+  emitBattleEvent,
+  __resetBattleEventTarget
+} from "../../src/helpers/classicBattle/battleEvents.js";
 
 describe("battleCLI onKeyDown", () => {
   let onKeyDown, __test;
@@ -68,6 +71,34 @@ describe("battleCLI onKeyDown", () => {
     countdown.dataset.remainingTime = "3";
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
     document.getElementById("cancel-quit-button").click();
+    expect(__test.getSelectionTimers().selectionTimer).not.toBeNull();
+  });
+
+  it("resumes timers when quit modal dismissed with Escape", () => {
+    const dispatch = vi.fn();
+    window.__getClassicBattleMachine = () => ({ dispatch });
+    document.body.dataset.battleState = "waitingForPlayerAction";
+    const selT = setTimeout(() => {}, 1000);
+    const selI = setInterval(() => {}, 1000);
+    __test.setSelectionTimers(selT, selI);
+    const countdown = document.getElementById("cli-countdown");
+    countdown.dataset.remainingTime = "3";
+    onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(__test.getSelectionTimers().selectionTimer).not.toBeNull();
+  });
+
+  it("resumes timers when backdrop is clicked", () => {
+    const dispatch = vi.fn();
+    window.__getClassicBattleMachine = () => ({ dispatch });
+    document.body.dataset.battleState = "waitingForPlayerAction";
+    const selT = setTimeout(() => {}, 1000);
+    const selI = setInterval(() => {}, 1000);
+    __test.setSelectionTimers(selT, selI);
+    const countdown = document.getElementById("cli-countdown");
+    countdown.dataset.remainingTime = "3";
+    onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
+    document.querySelector(".modal-backdrop").click();
     expect(__test.getSelectionTimers().selectionTimer).not.toBeNull();
   });
 

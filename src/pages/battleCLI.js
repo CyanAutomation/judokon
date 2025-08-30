@@ -40,6 +40,7 @@ let cooldownInterval = null;
 let selectionTimer = null;
 let selectionInterval = null;
 let quitModal = null;
+let isQuitting = false;
 let pausedSelectionRemaining = null;
 let pausedCooldownRemaining = null;
 
@@ -207,7 +208,10 @@ function pauseTimers() {
  * reset stored remaining values
  */
 function resumeTimers() {
-  if (document.body?.dataset?.battleState === "waitingForPlayerAction" && pausedSelectionRemaining) {
+  if (
+    document.body?.dataset?.battleState === "waitingForPlayerAction" &&
+    pausedSelectionRemaining
+  ) {
     startSelectionCountdown(pausedSelectionRemaining);
   }
   if (document.body?.dataset?.battleState === "cooldown" && pausedCooldownRemaining) {
@@ -238,13 +242,15 @@ function resumeTimers() {
  * pauseTimers()
  * if modal not yet created:
  *   build modal with Cancel and Quit buttons
- *   cancel closes modal and resumes timers
- *   quit dispatches interrupt and clears bottom line
+ *   listen for modal 'close' to resume timers when not quitting
+ *   cancel closes modal
+ *   quit sets quitting flag, dispatches interrupt and clears bottom line
  *   append modal to container
  * open modal
  */
 function showQuitModal() {
   pauseTimers();
+  isQuitting = false;
   if (!quitModal) {
     const title = document.createElement("h2");
     title.id = "quit-modal-title";
@@ -264,11 +270,14 @@ function showQuitModal() {
     frag.append(title, actions);
 
     quitModal = createModal(frag, { labelledBy: title });
+    quitModal.element.addEventListener("close", () => {
+      if (!isQuitting) resumeTimers();
+    });
     cancel.addEventListener("click", () => {
       quitModal.close();
-      resumeTimers();
     });
     quit.addEventListener("click", () => {
+      isQuitting = true;
       quitModal.close();
       clearBottomLine();
       try {
