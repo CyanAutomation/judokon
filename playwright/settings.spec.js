@@ -122,6 +122,27 @@ test.describe("Settings page", () => {
     }
   });
 
+  test("auto-select toggle reachable via keyboard tabbing", async ({ page }) => {
+    const autoSelect = page.locator(
+      '#feature-flags-container input[type=checkbox][data-flag="autoSelect"]'
+    );
+    await expect(autoSelect).toHaveCount(1);
+
+    await page.focus("#display-mode-light");
+    let reached = false;
+    for (let i = 0; i < 50; i++) {
+      const isAuto = await page.evaluate(
+        () => document.activeElement?.dataset.flag === "autoSelect"
+      );
+      if (isAuto) {
+        reached = true;
+        break;
+      }
+      await page.keyboard.press("Tab");
+    }
+    expect(reached).toBe(true);
+  });
+
   test("controls meet minimum color contrast", async ({ page }) => {
     const rgbToHex = (rgb) => {
       const [r, g, b] = rgb

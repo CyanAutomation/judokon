@@ -21,6 +21,7 @@ import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { initFeatureFlags, isEnabled } from "./featureFlags.js";
 import { showSnackbar } from "./showSnackbar.js";
+import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 
 import { applyInitialControlValues } from "./settings/applyInitialValues.js";
 import { attachToggleListeners } from "./settings/listenerUtils.js";
@@ -216,9 +217,16 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
     const flagsContainerEl = document.getElementById("feature-flags-container");
     if (flagsContainerEl) {
       clearToggles(flagsContainerEl);
+      const flags =
+        current.featureFlags && Object.keys(current.featureFlags).length > 0
+          ? current.featureFlags
+          : { ...DEFAULT_SETTINGS.featureFlags };
+      if (!current.featureFlags || Object.keys(current.featureFlags).length === 0) {
+        current.featureFlags = flags;
+      }
       renderFeatureFlagSwitches(
         flagsContainerEl,
-        current.featureFlags,
+        flags,
         getCurrentSettings,
         handleUpdate,
         tooltipMap
