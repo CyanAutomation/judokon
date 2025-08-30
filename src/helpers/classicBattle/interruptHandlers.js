@@ -1,4 +1,4 @@
-import { battleEngine } from "../battleEngineFacade.js";
+import { interruptMatch } from "../battleEngineFacade.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
 import { showMessage, clearTimer } from "../setupScoreboard.js";
 import { stop as stopScheduler, cancel as cancelFrame } from "../../utils/scheduler.js";
@@ -88,14 +88,14 @@ export function initInterruptHandlers(store) {
    *
    * @pseudocode
    * 1. Invoke `cleanup` to cancel timers and the scheduler.
-   * 2. Call `battleEngine.interruptMatch("navigation")`.
+   * 2. Call `interruptMatch("navigation")`.
    * 3. Show "Match interrupted: navigation" on the scoreboard.
    * 4. Dispatch `dispatchBattleEvent("interrupt", { reason: "navigation" })`.
    */
   function handleNavigation() {
     cleanup();
     try {
-      battleEngine.interruptMatch("navigation");
+      interruptMatch("navigation");
     } catch {}
     try {
       showMessage("Match interrupted: navigation");
@@ -111,7 +111,7 @@ export function initInterruptHandlers(store) {
    * @pseudocode
    * 1. Derive an error message from the event.
    * 2. Invoke `cleanup` to cancel timers and the scheduler.
-   * 3. Call `battleEngine.interruptMatch("error")`.
+   * 3. Call `interruptMatch("error")`.
    * 4. Show an error dialog with the message.
    * 5. Dispatch `dispatchBattleEvent("interrupt", { reason: message })`.
    *
@@ -175,7 +175,5 @@ function showErrorDialog(message) {
   }
   try {
     errorModal.open();
-  } catch {}
-}
   } catch {}
 }
