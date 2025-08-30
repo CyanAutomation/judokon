@@ -7,7 +7,7 @@ beforeEach(() => {
 });
 
 describe("roundDecisionEnter", () => {
-  it("schedules a decision guard", async () => {
+  it("clears the decision guard after immediate resolution", async () => {
     vi.useFakeTimers();
     vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
       emitBattleEvent: vi.fn(),
@@ -33,7 +33,7 @@ describe("roundDecisionEnter", () => {
     };
 
     await mod.roundDecisionEnter(machine);
-    expect(window.__roundDecisionGuard).toBeTruthy();
+    expect(window.__roundDecisionGuard).toBeNull();
     await vi.runAllTimersAsync();
     vi.useRealTimers();
   });

@@ -419,9 +419,26 @@ export async function resolveSelectionIfPresent(store) {
 export async function roundDecisionEnter(machine) {
   const { store } = machine.context;
   recordRoundDecisionEntry();
-  scheduleRoundDecisionGuard(store, machine);
+  const guardId = scheduleRoundDecisionGuard(store, machine);
 
-  if (await resolveSelectionIfPresent(store)) {
+  let immediate = false;
+  try {
+    immediate = await resolveSelectionIfPresent(store);
+  } catch {
+    try {
+      emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
+      emitBattleEvent("debugPanelUpdate");
+      await machine.dispatch("interrupt", { reason: "roundResolutionError" });
+    } catch {}
+    return;
+  }
+  if (immediate) {
+    try {
+      if (guardId) {
+        clearTimeout(guardId);
+        if (typeof window !== "undefined") window.__roundDecisionGuard = null;
+      }
+    } catch {}
     try {
       setTimeout(async () => {
         try {
