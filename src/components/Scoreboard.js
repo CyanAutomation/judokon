@@ -40,6 +40,16 @@ let focusHandler;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function createScoreboard(container = document.createElement("div")) {
   messageEl = document.createElement("p");
   messageEl.id = "round-message";
@@ -286,6 +296,16 @@ export function updateTimer(seconds) {
  *
  * @pseudocode
  * 1. If the timer element exists, set its text content to an empty string.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

@@ -33,6 +33,16 @@ import { initRoundSelectModal } from "./roundSelectModal.js";
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function setupClassicBattlePage() {
   let debugApi;
   let resolveStart;

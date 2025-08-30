@@ -20,6 +20,16 @@ let cachedEmbeddings;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const CURRENT_EMBEDDING_VERSION = 1;
 
 /**

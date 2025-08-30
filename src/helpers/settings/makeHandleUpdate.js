@@ -22,6 +22,16 @@ import { updateSetting } from "../settingsStorage.js";
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function makeHandleUpdate(setCurrentSettings, showErrorAndRevert) {
   return function handleUpdate(key, value, revert) {
     return updateSetting(key, value)

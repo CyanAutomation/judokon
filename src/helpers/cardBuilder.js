@@ -150,6 +150,16 @@ export async function generateJudokaCardHTML(judoka, gokyoLookup, options = {}) 
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function generateJudokaCard(judoka, gokyoLookup, container, options = {}) {
   const card = await safeGenerate(
     () => generateJudokaCardHTML(judoka, gokyoLookup, options),

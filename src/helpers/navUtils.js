@@ -43,6 +43,16 @@ export function resolveHomeHref() {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function navigateToHome() {
   try {
     window.location.href = resolveHomeHref();

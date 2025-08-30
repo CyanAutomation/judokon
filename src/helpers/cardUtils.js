@@ -105,6 +105,16 @@ export function getRandomJudoka(data) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function displayJudokaCard(judoka, gokyo, gameArea) {
   debugLog("Judoka passed to displayJudokaCard:", judoka);
   if (!gameArea) {
@@ -147,6 +157,16 @@ export async function displayJudokaCard(judoka, gokyo, gameArea) {
  *    - Remove the panel and clear the `data-inspector` attribute.
  *
  * @param {boolean} enable - Whether to show inspector panels.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

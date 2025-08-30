@@ -75,6 +75,16 @@ function chunkSection(section) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function chunkMarkdown(text) {
   const lines = text.split(/\r?\n/);
   const sections = splitIntoSections(lines);

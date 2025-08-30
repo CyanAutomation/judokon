@@ -15,6 +15,16 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setMachine(m) {
   machine = m;
 }
@@ -23,6 +33,16 @@ export function setMachine(m) {
  * Dispatch an event to the state machine.
  * @param {string} eventName
  * @param {any} payload
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

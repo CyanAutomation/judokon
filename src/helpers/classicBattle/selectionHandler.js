@@ -202,6 +202,16 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function cleanupTimers(store) {
   stopTimer();
   clearTimeout(store.statTimeoutId);
@@ -258,6 +268,16 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal) {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
  * @param {{playerVal: number, opponentVal: number}} values - Precomputed stat values.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

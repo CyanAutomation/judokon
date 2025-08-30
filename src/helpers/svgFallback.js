@@ -25,6 +25,16 @@ export const DEFAULT_FALLBACK = "./src/assets/images/judokonLogoSmall.png";
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function applySvgFallback(fallbackSrc = DEFAULT_FALLBACK) {
   const svgImages = document.querySelectorAll('img[src$=".svg"]');
 

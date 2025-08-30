@@ -32,6 +32,16 @@ let resolveReady;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const battleReadyPromise = new Promise((resolve) => {
   resolveReady = resolve;
 });
@@ -48,6 +58,16 @@ if (typeof window !== "undefined") {
   window.battleReadyPromise = battleReadyPromise;
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 /**
  * @summary TODO: Add summary
  * @pseudocode

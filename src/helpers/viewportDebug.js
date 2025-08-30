@@ -17,6 +17,16 @@
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function toggleViewportSimulation(enabled) {
   if (!document.body) return;
   document.body.classList.toggle("simulate-viewport", Boolean(enabled));

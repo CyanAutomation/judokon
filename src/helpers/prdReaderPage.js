@@ -97,6 +97,16 @@ export function createSidebarList(labels, placeholder, onSelect) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function bindNavigation({
   container,
   nextButtons,
@@ -203,6 +213,16 @@ export async function fetchAndRenderDoc(files, docsMap, parserFn, dir) {
  * 3. Initialize tooltips and play fade-in animation.
  *
  * @param {number} index
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -396,6 +416,16 @@ export async function initSidebar(docsMap, parserFn = markdownToHtml) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function initNavigationHandlers(sidebar, _files) {
   void _files;
   const nextButtons = document.querySelectorAll('[data-nav="next"]');
@@ -422,6 +452,16 @@ export function initNavigationHandlers(sidebar, _files) {
  *
  * @param {Record<string, string>} [docsMap]
  * @param {Function} [parserFn=markdownToHtml]
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

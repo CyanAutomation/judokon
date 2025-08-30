@@ -42,8 +42,38 @@ import { BattleEngine } from "./BattleEngine.js";
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export { BattleEngine, STATS } from "./BattleEngine.js";
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 /**
  * @summary TODO: Add summary
  * @pseudocode
@@ -92,6 +122,16 @@ export const getPointsToWin = () => battleEngine.getPointsToWin();
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const stopTimer = () => battleEngine.stopTimer();
 /**
  * Starts a new round in the battle engine, initiating its timer and associated callbacks.
@@ -102,6 +142,16 @@ export const stopTimer = () => battleEngine.stopTimer();
  * 1. Delegate the call to `battleEngine.startRound()` with all provided arguments (`...args`).
  */
 export const startRound = (...args) => battleEngine.startRound(...args);
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 /**
  * @summary TODO: Add summary
  * @pseudocode
@@ -129,12 +179,32 @@ export const startCoolDown = (...args) => battleEngine.startCoolDown(...args);
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const pauseTimer = () => battleEngine.pauseTimer();
 /**
  * Resume a previously paused round timer.
  *
  * @pseudocode
  * 1. Delegate resume to the engine which restores remaining time and restarts ticks.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -167,7 +237,27 @@ export const handleStatSelection = (...args) => battleEngine.handleStatSelection
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const quitMatch = () => battleEngine.quitMatch();
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 /**
  * @summary TODO: Add summary
  * @pseudocode
@@ -189,7 +279,27 @@ export const getScores = () => battleEngine.getScores();
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const getRoundsPlayed = () => battleEngine.getRoundsPlayed();
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 /**
  * @summary TODO: Add summary
  * @pseudocode
@@ -211,7 +321,27 @@ export const isMatchEnded = () => battleEngine.isMatchEnded();
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const getTimerState = () => battleEngine.getTimerState();
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 /**
  * @summary TODO: Add summary
  * @pseudocode

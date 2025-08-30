@@ -102,6 +102,11 @@ function ensureDebugCopyButton(panel) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function showSelectionPrompt() {
   const el = document.getElementById("round-message");
   if (el) {
@@ -160,6 +165,11 @@ export function showSelectionPrompt() {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function renderOpponentCard(judoka, container) {
   if (!judoka || !container) return;
   const { lookup, enableInspector, ...data } = judoka;
@@ -203,6 +213,11 @@ export async function renderOpponentCard(judoka, container) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function enableNextRoundButton() {
   const btn = document.getElementById("next-button");
   if (!btn) return;
@@ -229,6 +244,11 @@ export function enableNextRoundButton() {
  * @pseudocode
  * 1. Find `#next-button` and disable it.
  * 2. Remove `data-next-ready` attribute.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -419,6 +439,11 @@ function addMachineDiagnostics(win, state) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function renderDebugState(pre, state) {
   if (!pre) return;
   // Use compact JSON to remove line breaks for AI-friendly copying.
@@ -444,6 +469,11 @@ export function renderDebugState(pre, state) {
  * @pseudocode
  * 1. Locate `#debug-output` element and exit if missing.
  * 2. Collect debug state and render it into the element.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -480,6 +510,11 @@ export function updateDebugPanel() {
  * 2. Show the outcome in the scoreboard and optionally in snackbar.
  *
  * @param {string} message
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -526,6 +561,11 @@ export function showRoundOutcome(message) {
  * @param {string} stat
  * @param {number} playerVal
  * @param {number} compVal
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -590,6 +630,11 @@ export function showStatComparison(store, stat, playerVal, compVal) {
  * 3. Attach listeners for `orientationchange` and `resize` and throttle via RAF.
  *
  * @param {() => Promise<boolean>} callback
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -726,6 +771,11 @@ export function registerRoundStartErrorHandler(retryFn) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setupNextButton() {
   const btn = document.getElementById("next-button");
   if (!btn) return;
@@ -753,6 +803,11 @@ export function setupNextButton() {
  *
  * @param {object} store
  * @param {string} stat
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -811,6 +866,11 @@ export function selectStat(store, stat) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function removeBackdrops(store) {
   try {
     document.querySelectorAll?.(".modal-backdrop").forEach((m) => {
@@ -844,6 +904,11 @@ export function removeBackdrops(store) {
  * @pseudocode
  * 1. Locate existing `#next-button`, clone it and disable the clone.
  * 2. Attach `onNextButtonClick` to the clone and replace the original.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -887,6 +952,11 @@ export function resetNextButton() {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function resetQuitButton() {
   let quitBtn;
   try {
@@ -916,6 +986,11 @@ export function resetQuitButton() {
  * @pseudocode
  * 1. Clear scoreboard message and timer.
  * 2. Empty `#round-result` text and call `syncScoreDisplay()`.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -965,6 +1040,11 @@ export function clearScoreboardAndMessages() {
  * 3. Return an API `{ enable, disable }`.
  *
  * @param {object} store
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -1121,6 +1201,11 @@ export function initStatButtons(store) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function applyStatLabels() {
   const names = await loadStatNames();
   names.forEach((n, i) => {
@@ -1190,6 +1275,11 @@ export async function applyStatLabels() {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function updateBattleStateBadge(state) {
   const badge = document.getElementById("battle-state-badge");
   if (!badge) return;
@@ -1221,6 +1311,11 @@ export function updateBattleStateBadge(state) {
  * 2. If disabling, remove the badge.
  *
  * @param {boolean} enable
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -1281,6 +1376,11 @@ export function setBattleStateBadgeEnabled(enable) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function applyBattleFeatureFlags(battleArea, banner) {
   if (battleArea) {
     battleArea.dataset.mode = "classic";
@@ -1324,6 +1424,11 @@ export function applyBattleFeatureFlags(battleArea, banner) {
  * 1. Locate `#debug-panel` and transform to `<details>` if necessary.
  * 2. Insert copy button and restore toggle state from localStorage.
  * 3. Insert panel before the battle area.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -1388,6 +1493,11 @@ export function initDebugPanel() {
  * 2. If disabling, hide and remove the panel.
  *
  * @param {boolean} enabled
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -1474,6 +1584,11 @@ export function setDebugPanelEnabled(enabled) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function maybeShowStatHint(durationMs = 3000, setTimeoutFn = globalThis.setTimeout) {
   try {
     if (typeof localStorage === "undefined") return;
@@ -1514,6 +1629,11 @@ export function maybeShowStatHint(durationMs = 3000, setTimeoutFn = globalThis.s
  * 2. Clear scoreboard/messages and update debug panel.
  *
  * @param {object} [store]
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -1564,6 +1684,11 @@ let opponentDelayMs = 500;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setOpponentDelay(ms) {
   if (Number.isFinite(ms)) {
     opponentDelayMs = ms;
@@ -1582,6 +1707,11 @@ let opponentSnackbarId = 0;
  *
  * @pseudocode
  * 1. Register listeners for `opponentReveal`, `statSelected` and `roundResolved`.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -1625,6 +1755,11 @@ bindUIHelperEventHandlers();
  *
  * @pseudocode
  * 1. Register async listeners that import required modules on demand.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

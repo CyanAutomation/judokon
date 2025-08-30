@@ -21,6 +21,16 @@ const DEFAULT_SETTINGS = deepFreeze(settings);
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export { DEFAULT_SETTINGS };
 
 /**

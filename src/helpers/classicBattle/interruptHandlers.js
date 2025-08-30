@@ -39,6 +39,16 @@ let errorModal;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function initInterruptHandlers(store) {
   /**
    * Cancel timers and scheduler callbacks to prevent UI drift.

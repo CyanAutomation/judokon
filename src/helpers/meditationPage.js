@@ -27,6 +27,16 @@ import { loadQuote } from "./quoteBuilder.js";
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setupMeditationPage() {
   const quoteEl = document.getElementById("quote");
   loadQuote();

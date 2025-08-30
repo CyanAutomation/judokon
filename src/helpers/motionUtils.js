@@ -40,6 +40,16 @@ export function shouldReduceMotionSync() {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function applyMotionPreference(enabled) {
   if (!enabled) {
     document.body.classList.add("reduce-motion");

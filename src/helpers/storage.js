@@ -48,6 +48,16 @@ export function getItem(key) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setItem(key, value) {
   try {
     const str = JSON.stringify(value);
@@ -70,6 +80,16 @@ export function setItem(key, value) {
  * 2. Always remove the key from the in-memory Map as a fallback.
  *
  * @param {string} key - Storage key to delete.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

@@ -27,6 +27,16 @@ import { showSnackbar } from "../showSnackbar.js";
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function attachToggleListeners(controls, getCurrentSettings, handleUpdate) {
   const {
     soundToggle,

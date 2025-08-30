@@ -20,7 +20,7 @@
     "pretest": "node scripts/generatePrdIndex.js",
     "update:codes": "node updateCodes.mjs",
     "check:jsdoc": "node scripts/run-check-jsdoc.mjs",
-    "add:jsdoc": "node scripts/add-jsdoc.mjs",
+    "check:jsdoc:fix": "node scripts/run-check-jsdoc.mjs --fix",
     "sync:agents": "node scripts/syncAgentDocs.mjs",
     "rag:query": "node scripts/queryRagCli.mjs"
   },

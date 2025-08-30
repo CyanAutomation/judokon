@@ -18,6 +18,16 @@ import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const featureFlagsEmitter = new EventTarget();
 
 let cachedFlags = { ...DEFAULT_SETTINGS.featureFlags };

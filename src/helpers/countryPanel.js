@@ -30,6 +30,16 @@
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function toggleCountryPanel(toggleButton, panel, show) {
   const isOpen = panel.classList.contains("open");
   const shouldOpen = typeof show === "boolean" ? show : !isOpen;
@@ -62,6 +72,16 @@ export function toggleCountryPanel(toggleButton, panel, show) {
  *
  * @param {HTMLElement} panel - The panel element to update.
  * @param {boolean} [enable] - Force grid mode on (`true`) or off (`false`).
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

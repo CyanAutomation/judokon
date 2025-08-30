@@ -40,6 +40,16 @@ import { addNavResetButton } from "./settings/addNavResetButton.js";
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const settingsReadyPromise = new Promise((resolve) => {
   document.addEventListener("settings:ready", resolve, { once: true });
 });
@@ -361,6 +371,16 @@ function showSectionError(containerId, message) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function renderWithFallbacks({ settings, gameModes, tooltipMap }) {
   if (!settings) return;
   if (!Array.isArray(gameModes) || gameModes.length === 0) {
@@ -428,7 +448,27 @@ onDomReady(initializeSettingsPage);
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export { handleGameModeChange } from "./settings/gameModeSwitches.js";
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 /**
  * @summary TODO: Add summary
  * @pseudocode

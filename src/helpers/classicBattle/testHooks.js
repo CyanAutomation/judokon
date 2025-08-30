@@ -27,6 +27,16 @@ let __promisesBound = false;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function ensureBindings(opts = {}) {
   const force = !!opts.force;
   // Bind round UI listeners once per worker to avoid duplicate handlers.
@@ -68,6 +78,16 @@ export async function ensureBindings(opts = {}) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function resetBindings() {
   __promisesBound = false;
 }
@@ -82,6 +102,16 @@ export function resetBindings() {
  * 3. Emit `roundTimeout`, auto-select a stat, and dispatch `timeout`.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -132,6 +162,16 @@ export async function triggerRoundTimeoutNow(store) {
  * Trigger the stalled-selection prompt immediately and auto-select a stat.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

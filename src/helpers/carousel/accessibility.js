@@ -44,6 +44,16 @@ function ensureTouchTargetSize(element) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function applyAccessibilityImprovements(wrapper) {
   const buttons = wrapper.querySelectorAll(".scroll-button");
   buttons.forEach((button) => ensureTouchTargetSize(button));
@@ -53,6 +63,16 @@ export function applyAccessibilityImprovements(wrapper) {
   });
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 /**
  * @summary TODO: Add summary
  * @pseudocode
@@ -78,6 +98,16 @@ export { ensureTouchTargetSize };
  *
  * @param {HTMLElement} container - Carousel container element.
  * @param {HTMLElement} wrapper - Carousel wrapper element.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

@@ -60,6 +60,16 @@ function createQuitConfirmation(store, onConfirm) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export let quitConfirmButtonPromise = Promise.resolve();
 
 /**

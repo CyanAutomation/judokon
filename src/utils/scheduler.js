@@ -41,6 +41,16 @@ let rafId = 0;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function start() {
   if (running) return;
   running = true;
@@ -122,6 +132,16 @@ export function onSecondTick(cb) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function cancel(id) {
   frameCallbacks.delete(id);
   secondCallbacks.delete(id);
@@ -134,6 +154,16 @@ export function cancel(id) {
  * 1. If not running, do nothing.
  * 2. Set `running` to false and cancel the scheduled frame via `cancelAnimationFrame`.
  * 3. Clear both callback maps and reset timing state.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

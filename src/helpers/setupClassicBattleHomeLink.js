@@ -22,6 +22,16 @@ import { markBattlePartReady } from "./battleInit.js";
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setupClassicBattleHomeLink() {
   const homeLink = document.querySelector('[data-testid="home-link"]');
   if (homeLink) {

@@ -35,6 +35,16 @@ const CONTROL_MAP = [
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function applyInitialControlValues(controls, settings = DEFAULT_SETTINGS, tooltipMap = {}) {
   /**
    * Apply a value to an input or checkbox element.
@@ -87,6 +97,16 @@ export function applyInitialControlValues(controls, settings = DEFAULT_SETTINGS,
  * @param {Object} controls - Collection of form elements.
  * @param {Record<string, string>} [tooltipMap] - Flattened tooltip lookup.
  * @returns {Promise<import("../../config/settingsDefaults.js").Settings>} Resolved settings.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

@@ -30,6 +30,16 @@
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function resolveDataDir(moduleUrl) {
   const normalizedUrl = typeof moduleUrl === "string" ? moduleUrl : moduleUrl.href;
   const dataUrl = new URL("../data/", new URL(".", normalizedUrl));
@@ -43,6 +53,16 @@ export function resolveDataDir(moduleUrl) {
  * Path to the directory containing JSON data files.
  *
  * @constant {string}
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -72,6 +92,16 @@ export const DATA_DIR = resolveDataDir(import.meta.url);
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const CAROUSEL_SWIPE_THRESHOLD = 40;
 
 /**
@@ -90,12 +120,32 @@ export const CAROUSEL_SWIPE_THRESHOLD = 40;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const SPINNER_DELAY_MS = 2000;
 
 /**
  * Duration in milliseconds before hiding the settings error popup.
  *
  * @constant {number}
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -125,12 +175,32 @@ export const SETTINGS_FADE_MS = 1800;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const SETTINGS_REMOVE_MS = 2000;
 
 /**
  * Duration in milliseconds before the snackbar begins fading out.
  *
  * @constant {number}
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -159,6 +229,16 @@ export const SNACKBAR_FADE_MS = 2500;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const SNACKBAR_REMOVE_MS = 3000;
 
 /**
@@ -176,12 +256,32 @@ export const SNACKBAR_REMOVE_MS = 3000;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export const CLASSIC_BATTLE_POINTS_TO_WIN = 10;
 
 /**
  * Maximum number of rounds allowed in a Classic Battle match.
  *
  * @constant {number}
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

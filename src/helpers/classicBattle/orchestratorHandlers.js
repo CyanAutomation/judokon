@@ -58,6 +58,16 @@ export function isStateTransition(from, to) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function waitingForMatchStartEnter(machine) {
   if (isStateTransition("waitingForMatchStart", "waitingForMatchStart")) return;
   const { doResetGame } = machine.context;
@@ -73,6 +83,24 @@ export async function waitingForMatchStartEnter(machine) {
  */
 export async function waitingForMatchStartExit() {}
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * onEnter handler for `matchStart` state.
+ *
+ * @pseudocode
+ * 1. Dispatch `ready` immediately to proceed with initial match flow.
+ *
+ * @param {object} machine
+ */
 /**
  * @summary TODO: Add summary
  * @pseudocode
@@ -104,6 +132,16 @@ export async function matchStartExit() {}
  *
  * @param {object} machine
  * @param {object} [payload]
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -232,6 +270,16 @@ export async function cooldownExit() {}
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function roundStartEnter(machine) {
   const { startRoundWrapper, doStartRound, store } = machine.context;
   // In Playwright test mode, set a short fallback to avoid UI stalls
@@ -285,6 +333,13 @@ export async function roundStartEnter(machine) {
   } catch {}
 }
 /**
+ * onExit handler for `roundStart` (no-op placeholder).
+ *
+ * @pseudocode
+ * 1. No cleanup currently required.
+ */
+
+/**
  * Ensure the machine transitions to player selection after round start.
  *
  * @pseudocode
@@ -309,6 +364,16 @@ export async function roundStartExit() {}
  * 2. If a selection already exists on the store, dispatch `statSelected` immediately.
  *
  * @param {object} machine
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -350,9 +415,33 @@ export async function waitingForPlayerActionEnter(machine) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function waitingForPlayerActionExit() {
   emitBattleEvent("statButtons:disable");
 }
+
+/**
+ * Record that the machine entered `roundDecision` for debug tracing.
+ *
+ * @pseudocode
+ * 1. Log debug entry and set `window.__roundDecisionEnter` timestamp.
+ * 2. Emit `debugPanelUpdate` event.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+// Removed duplicate declaration of recordRoundDecisionEntry
 
 /**
  * Compute round outcome and dispatch the resulting events.
@@ -500,6 +589,16 @@ export function scheduleRoundDecisionGuard(store, machine) {
  * record timestamp on window
  * emit debug panel update
  * ```
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -672,6 +771,16 @@ export async function roundDecisionEnter(machine) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function roundDecisionExit() {
   // Clear any scheduled decision guard to prevent late outcome dispatch.
   try {
@@ -682,6 +791,16 @@ export async function roundDecisionExit() {
   } catch {}
 }
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 /**
  * @summary TODO: Add summary
  * @pseudocode
@@ -742,6 +861,16 @@ export async function matchOverExit() {}
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function interruptRoundEnter(machine, payload) {
   emitBattleEvent("scoreboardClearMessage");
   emitBattleEvent("debugPanelUpdate");
@@ -791,6 +920,16 @@ export async function interruptRoundExit() {}
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function interruptMatchEnter(machine, payload) {
   emitBattleEvent("scoreboardClearMessage");
   emitBattleEvent("debugPanelUpdate");
@@ -807,6 +946,16 @@ export async function interruptMatchEnter(machine, payload) {
  */
 export async function interruptMatchExit() {}
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 /**
  * @summary TODO: Add summary
  * @pseudocode

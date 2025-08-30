@@ -68,6 +68,16 @@ export async function loadDefaultSettings() {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setCachedSettings(settings) {
   cachedSettings = cloneSettings(settings);
 }
@@ -77,6 +87,16 @@ export function setCachedSettings(settings) {
  *
  * @pseudocode
  * 1. Set `cachedSettings` to a cloned copy of `DEFAULT_SETTINGS`.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary
@@ -123,6 +143,16 @@ export function getFeatureFlag(flagName) {
  * Access the entire cached settings object.
  *
  * @returns {import("../config/settingsDefaults.js").Settings} Cached settings.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

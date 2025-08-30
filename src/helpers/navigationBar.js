@@ -32,6 +32,16 @@ if (typeof window !== "undefined") {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function highlightActiveLink() {
   if (typeof document === "undefined" || typeof window === "undefined") return;
   const links = document.querySelectorAll(".bottom-navbar a");

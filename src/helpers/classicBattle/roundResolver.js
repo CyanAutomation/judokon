@@ -56,6 +56,16 @@ export function evaluateRoundData(playerVal, opponentVal) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function evaluateRound(store, stat, playerVal, opponentVal) {
   return evaluateRoundData(playerVal, opponentVal);
 }

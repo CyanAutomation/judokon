@@ -83,6 +83,16 @@ export function createScrollButton(direction, container) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function updateScrollButtonState(container, leftBtn, rightBtn) {
   const EPSILON = 1; // allow small rounding differences
   const remaining = container.scrollWidth - container.clientWidth - container.scrollLeft;

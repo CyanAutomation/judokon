@@ -29,6 +29,16 @@ let activeCountdown = null;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function syncScoreDisplay() {
   const { playerScore, opponentScore } = getScores();
   if (typeof scoreboard.updateScore === "function") {

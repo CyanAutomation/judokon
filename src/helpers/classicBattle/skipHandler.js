@@ -22,6 +22,16 @@ let pendingSkip = false;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setSkipHandler(fn) {
   skipHandler = typeof fn === "function" ? fn : null;
   try {
@@ -47,6 +57,16 @@ export function setSkipHandler(fn) {
  * available, mark the skip as pending so it runs once a handler is provided.
  *
  * @returns {void}
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

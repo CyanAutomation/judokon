@@ -117,6 +117,16 @@ function addScrollMarkers(container, wrapper) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function initScrollMarkers(container, wrapper) {
   if (!container || !wrapper) return;
   requestAnimationFrame(() => addScrollMarkers(container, wrapper));
@@ -247,6 +257,16 @@ export async function buildCardCarousel(judokaList, gokyoData) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export { addScrollMarkers };
 
 /**
@@ -254,6 +274,16 @@ export { addScrollMarkers };
  *
  * @pseudocode
  * 1. Set a global flag so `buildCardCarousel` shows the spinner without delay.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

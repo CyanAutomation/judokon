@@ -42,6 +42,16 @@ export const browseJudokaReadyPromise =
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function setupLayoutToggle(layoutBtn, panel) {
   if (layoutBtn) {
     layoutBtn.addEventListener("click", () => toggleCountryPanelMode(panel));
@@ -58,6 +68,16 @@ export function setupLayoutToggle(layoutBtn, panel) {
  * 4. Attach event listeners for filtering, layout toggle, and panel controls.
  * 5. Handle errors by rendering a fallback card and showing a retry button when loading fails.
  * 6. Initialize tooltips for interactive elements.
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

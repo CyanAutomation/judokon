@@ -22,6 +22,16 @@ import { onFrame as scheduleFrame, cancel as cancelFrame } from "../utils/schedu
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function showSettingsError() {
   const existing = document.querySelector(".settings-error-popup");
   existing?.remove();

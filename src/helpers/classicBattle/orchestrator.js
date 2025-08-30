@@ -207,6 +207,16 @@ function resolveWindowWaiters(to) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function updateDebugState(from, to, event) {
   if (typeof window === "undefined" || typeof document === "undefined") return;
   try {
@@ -483,6 +493,16 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export async function dispatchBattleEvent(eventName, payload) {
   if (!machine) return;
   try {
@@ -502,6 +522,16 @@ export async function dispatchBattleEvent(eventName, payload) {
 /**
  * Get the current battle state machine instance for tests and helpers.
  * @returns {import('./stateMachine.js').BattleStateMachine|null}
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
  */
 /**
  * @summary TODO: Add summary

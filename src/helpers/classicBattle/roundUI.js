@@ -36,6 +36,16 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 export function applyRoundUI(store, roundNumber, stallTimeoutMs = 35000) {
   try {
     if (!IS_VITEST) console.log("INFO: applyRoundUI called for round", roundNumber);
@@ -82,6 +92,16 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 35000) {
 
 // --- Event bindings ---
 
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 /**
  * @summary TODO: Add summary
  * @pseudocode
@@ -185,6 +205,16 @@ bindRoundUIEventHandlers();
 
 // Test-friendly variant: dynamically import dependencies within handlers so
 // that vi.mock replacements are honored even when bindings occur before mocks.
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
+/**
+ * @summary TODO: Add summary
+ * @pseudocode
+ * 1. TODO: Add pseudocode
+ */
 /**
  * @summary TODO: Add summary
  * @pseudocode
