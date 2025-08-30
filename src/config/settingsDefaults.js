@@ -12,24 +12,13 @@ function deepFreeze(obj) {
 const DEFAULT_SETTINGS = deepFreeze(settings);
 
 /**
- * @summary TODO: Add summary
+ * Default application settings loaded from `data/settings.json`.
+ *
+ * @summary Frozen default settings object used as the canonical schema for runtime defaults.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Load settings JSON and deep-freeze the object to prevent runtime mutation.
+ * 2. Export the frozen object as `DEFAULT_SETTINGS` for consumers.
+ * @returns {object}
  */
 export { DEFAULT_SETTINGS };
 

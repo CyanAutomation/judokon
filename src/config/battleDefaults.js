@@ -11,24 +11,13 @@
  */
 export const POINTS_TO_WIN_OPTIONS = [5, 10, 15];
 /**
- * @summary TODO: Add summary
+ * Default points-to-win used when no prior value is stored.
+ *
+ * @summary Default target points for Classic Battle matches.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Provide a default numeric target used to initialize UI controls and game logic.
+ * 2. Consumers should read and persist user selections separately.
+ * @returns {number}
  */
 export const DEFAULT_POINTS_TO_WIN = 10;
 export const FEATURE_FLAGS = {

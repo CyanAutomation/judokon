@@ -61,4 +61,16 @@ function getStatValue(container, stat) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Retrieve a numeric stat value from a battle score container.
+ *
+ * @summary Return the integer stat value for `stat` inside the provided container.
+ * @pseudocode
+ * 1. Compute the stat index from `STATS` and select the matching `li.stat` span.
+ * 2. Parse the span textContent as an integer and return it, or `0` on failure.
+ *
+ * @param {HTMLElement} container - Element containing stat list items.
+ * @param {string} stat - Stat name as defined in `STATS`.
+ * @returns {number}
+ */
 export { getStatValue };

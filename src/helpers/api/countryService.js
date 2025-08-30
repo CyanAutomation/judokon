@@ -87,6 +87,19 @@ function normalizeCode(code) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Resolve a human-readable country name for a two-letter code.
+ *
+ * @summary Return the country name for `code`, falling back to a default when unknown.
+ * @pseudocode
+ * 1. Normalize the provided code.
+ * 2. If invalid, return `DEFAULT_COUNTRY`.
+ * 3. Load the country mapping and return the matching active entry's name.
+ * 4. Fallback to `DEFAULT_COUNTRY` when no active mapping exists.
+ *
+ * @param {string} code - Two-letter ISO country code.
+ * @returns {Promise<string>} The resolved country name.
+ */
 export async function getCountryName(code) {
   const normalized = normalizeCode(code);
   if (!normalized) return DEFAULT_COUNTRY;
@@ -120,6 +133,19 @@ export async function getCountryName(code) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Build or resolve a flag image URL for a two-letter country code.
+ *
+ * @summary Return a CDN URL for the flag matching `code` or a default image URL.
+ * @pseudocode
+ * 1. Normalize the provided code.
+ * 2. If invalid, return `DEFAULT_FLAG_URL`.
+ * 3. Load the country mapping and return a flag URL when the entry is active.
+ * 4. Otherwise return `DEFAULT_FLAG_URL`.
+ *
+ * @param {string} code - Two-letter ISO country code.
+ * @returns {Promise<string>} URL of the flag image.
  */
 export async function getFlagUrl(code) {
   const normalized = normalizeCode(code);

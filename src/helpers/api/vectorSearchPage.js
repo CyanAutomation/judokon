@@ -4,26 +4,13 @@ let extractor;
 
 /**
  * Similarity threshold separating strong from weak matches.
- */
-/**
- * @summary TODO: Add summary
+ *
+ * @summary Score threshold used to classify strong matches returned by the vector search.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. A match with score >= SIMILARITY_THRESHOLD is considered a strong match.
+ * 2. Consumers use this value to decide whether to show a strong result warning.
+ *
+ * @returns {number} Threshold value between 0 and 1.
  */
 export const SIMILARITY_THRESHOLD = 0.6;
 
@@ -105,64 +92,26 @@ export async function getExtractor() {
 }
 
 /**
- * Preload the feature extractor without awaiting its result.
+ * Preload the feature extractor in the background.
  *
+ * @summary Trigger extractor initialization to reduce first-call latency.
  * @pseudocode
- * 1. Call `getExtractor()` to trigger the model download.
- * 2. Ignore any errors to avoid blocking page initialization.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Call `getExtractor()` to start loading the model.
+ * 2. Swallow any errors so initialization is non-blocking.
+ * @returns {void}
  */
 export function preloadExtractor() {
   getExtractor().catch(() => {});
 }
 
 /**
- * Inject a custom extractor for testing purposes.
- * This allows mock extractor implementations to be used during tests
- * without affecting the production loading logic.
+ * Inject a custom extractor implementation (test helper).
  *
- * @param {any} model - The mock extractor instance to use.
+ * @summary Replace the internal `extractor` instance for testing or mocking.
  * @pseudocode
- * 1. Assign the provided `model` to the `extractor` variable.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Assign the provided `model` to the internal `extractor` variable so subsequent calls use it.
+ * @param {any} model - Mock or alternative extractor to use.
+ * @returns {void}
  */
 export function __setExtractor(model) {
   extractor = model;
