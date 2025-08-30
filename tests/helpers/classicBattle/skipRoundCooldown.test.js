@@ -13,8 +13,12 @@ vi.mock("../../../src/helpers/timers/createRoundTimer.js", () => ({
 }));
 
 describe("skipRoundCooldown feature flag", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetModules();
+    const { __resetBattleEventTarget } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
+    __resetBattleEventTarget();
   });
 
   it("skips countdown when flag enabled", async () => {

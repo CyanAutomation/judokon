@@ -3,11 +3,24 @@
  *
  * @pseudocode
  * 1. Retrieve a shared `EventTarget` from `globalThis` using a fixed key.
- * 2. Create and cache it if missing.
+ * 2. Create it if missing.
  * 3. Provide helpers to subscribe, unsubscribe, emit, and reset events.
  */
 const EVENT_TARGET_KEY = "__classicBattleEventTarget";
-let target = (globalThis[EVENT_TARGET_KEY] ||= new EventTarget());
+
+/**
+ * Return the shared event target, creating it if needed.
+ *
+ * @returns {EventTarget}
+ * @summary Get or create the classic battle event target.
+ * @pseudocode
+ * 1. Look up `EVENT_TARGET_KEY` on `globalThis`.
+ * 2. Create a new `EventTarget` if none exists.
+ * 3. Return the stored target.
+ */
+function getTarget() {
+  return (globalThis[EVENT_TARGET_KEY] ||= new EventTarget());
+}
 
 /**
  * Listen for a battle event.
@@ -16,10 +29,11 @@ let target = (globalThis[EVENT_TARGET_KEY] ||= new EventTarget());
  * @param {(e: CustomEvent) => void} handler - Listener callback.
  * @summary Listen for a specific classic battle event.
  * @pseudocode
- * 1. Add `handler` as a listener on the shared target.
+ * 1. Retrieve the shared target.
+ * 2. Add `handler` as a listener.
  */
 export function onBattleEvent(type, handler) {
-  target.addEventListener(type, handler);
+  getTarget().addEventListener(type, handler);
 }
 
 /**
@@ -29,10 +43,11 @@ export function onBattleEvent(type, handler) {
  * @param {(e: CustomEvent) => void} handler - Listener callback.
  * @summary Remove a listener for a classic battle event.
  * @pseudocode
- * 1. Remove `handler` from the shared target.
+ * 1. Retrieve the shared target.
+ * 2. Remove `handler`.
  */
 export function offBattleEvent(type, handler) {
-  target.removeEventListener(type, handler);
+  getTarget().removeEventListener(type, handler);
 }
 
 /**
@@ -43,11 +58,12 @@ export function offBattleEvent(type, handler) {
  * @summary Notify listeners of a classic battle event.
  * @pseudocode
  * 1. Create a `CustomEvent` with the provided detail.
- * 2. Dispatch it on the shared target.
+ * 2. Retrieve the shared target.
+ * 3. Dispatch the event.
  */
 export function emitBattleEvent(type, detail) {
   const event = new CustomEvent(type, { detail });
-  target.dispatchEvent(event);
+  getTarget().dispatchEvent(event);
   try {
     document.dispatchEvent(event);
   } catch {}
@@ -56,14 +72,14 @@ export function emitBattleEvent(type, detail) {
 /**
  * Replace the shared `EventTarget` instance.
  *
- * @summary Refresh the global event bus and local reference.
+ * @summary Refresh the global event bus.
  * @pseudocode
  * 1. Create a new `EventTarget`.
  * 2. Store it under `EVENT_TARGET_KEY` on `globalThis`.
- * 3. Reassign the module-scoped `target`.
  */
 export function __resetBattleEventTarget() {
-  target = globalThis[EVENT_TARGET_KEY] = new EventTarget();
+  globalThis[EVENT_TARGET_KEY] = new EventTarget();
 }
 
-export { target as default };
+export { getTarget as getBattleEventTarget };
+export default getTarget;
