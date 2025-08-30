@@ -21,6 +21,19 @@ import { createButton } from "../../components/Button.js";
 import { syncScoreDisplay } from "./uiService.js";
 import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
 
+/**
+ * Skip the inter-round cooldown when the corresponding feature flag is enabled.
+ *
+ * @returns {boolean} `true` if the cooldown was skipped.
+ */
+export function skipRoundCooldownIfEnabled() {
+  if (!isEnabled("skipRoundCooldown")) return false;
+  try {
+    emitBattleEvent("countdownFinished");
+  } catch {}
+  return true;
+}
+
 // Ensure a global statButtonsReadyPromise exists synchronously so tests
 // and early code can safely await it even before `initStatButtons` runs.
 if (typeof window !== "undefined") {

@@ -106,6 +106,10 @@
       "label": "Battle State Badge",
       "description": "Show the current match state in the header for testing."
     },
+    "skipRoundCooldown": {
+      "label": "Skip Round Cooldown",
+      "description": "Start the next round immediately without a cooldown."
+    },
     "cliVerbose": {
       "label": "CLI Verbose Logging",
       "description": "Show state transition logs in the battle CLI."

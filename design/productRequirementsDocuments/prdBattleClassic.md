@@ -227,6 +227,7 @@ This section lists small, implementer-facing contracts to reduce ambiguity betwe
   - `battleDebugPanel` — boolean, default: `false`. When enabled, show debug panel above the cards with copy/export controls.
   - `testMode` — boolean, default: `false` (test-only). When enabled, allow `battle.testRandomSeed` and fast AI delays for deterministic tests.
   - `statHotkeys` — boolean, default: `false`. When enabled, number keys 1–5 map to stat buttons (left→right).
+  - `skipRoundCooldown` — boolean, default: `false`. When enabled, bypass inter-round cooldown and begin the next round immediately.
 
   Implementations should read these flags via the global feature-flag service or from `src/config/battleDefaults.js`. The PRD and tests should reference the camelCase keys above (not `FF_*` prefixes) to avoid mismatches between code and documentation.
 

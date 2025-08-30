@@ -3,7 +3,7 @@ import * as scoreboard from "../setupScoreboard.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { navigateToHome } from "../navUtils.js";
-import { updateDebugPanel } from "./uiHelpers.js";
+import { updateDebugPanel, skipRoundCooldownIfEnabled } from "./uiHelpers.js";
 import { onBattleEvent, emitBattleEvent } from "./battleEvents.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
@@ -146,6 +146,7 @@ onBattleEvent("debugPanelUpdate", () => {
 });
 
 onBattleEvent("countdownStart", (e) => {
+  if (skipRoundCooldownIfEnabled()) return;
   const { duration } = e.detail || {};
   if (typeof duration !== "number") return;
   try {
