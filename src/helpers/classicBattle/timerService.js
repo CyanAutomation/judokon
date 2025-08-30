@@ -126,8 +126,11 @@ async function forceAutoSelectAndDispatch(onExpiredSelect) {
  * 2. Start the timer via `engineStartRound` and monitor for drift.
  *    - On drift trigger auto-select logic and dispatch the outcome event.
  * 3. Register a skip handler that stops the timer and triggers `onExpired`.
- * 4. When expired, dispatch "timeout" and call `autoSelectStat` to pick a stat
- *    and invoke `onExpiredSelect` with `delayOpponentMessage`.
+ * 4. When expired:
+ *    - If `isEnabled('autoSelect')`, dispatch "timeout" and call `autoSelectStat`
+ *      to pick a stat and invoke `onExpiredSelect` with `delayOpponentMessage`.
+ *    - Otherwise, keep waiting for manual selection without dispatching a
+ *      battle event.
  *
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>} onExpiredSelect
  * - Callback to handle stat auto-selection.
@@ -162,16 +165,18 @@ export async function startTimer(onExpiredSelect) {
     // The roundDecision onEnter waits for a short window for playerChoice;
     // if we await the dispatch first, the guard can interrupt before
     // autoSelect runs. Start auto-select immediately and then await the
-    // timeout dispatch so both proceed concurrently.
-    const selecting = isEnabled("autoSelect")
-      ? (async () => {
-          try {
-            await autoSelectStat(onExpiredSelect);
-          } catch {}
-        })()
-      : Promise.resolve();
-    await dispatchBattleEvent("timeout");
-    await selecting;
+    // timeout dispatch so both proceed concurrently. If auto-select is
+    // disabled, skip the timeout dispatch entirely so the player can
+    // continue selecting manually.
+    if (isEnabled("autoSelect")) {
+      const selecting = (async () => {
+        try {
+          await autoSelectStat(onExpiredSelect);
+        } catch {}
+      })();
+      await dispatchBattleEvent("timeout");
+      await selecting;
+    }
   };
 
   try {
