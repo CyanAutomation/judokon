@@ -13,7 +13,8 @@ async function loadBattleCLI() {
   }));
   vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
     createBattleStore: vi.fn(() => ({})),
-    startRound: vi.fn()
+    startRound: vi.fn(),
+    resetGame: vi.fn()
   }));
   vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
     initClassicBattleOrchestrator: vi.fn()
@@ -23,7 +24,11 @@ async function loadBattleCLI() {
     emitBattleEvent: vi.fn()
   }));
   vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: [] }));
-  vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({ setPointsToWin: vi.fn() }));
+  vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+    setPointsToWin: vi.fn(),
+    getPointsToWin: vi.fn(() => 5),
+    getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
+  }));
   vi.doMock("../../src/helpers/dataUtils.js", () => ({
     fetchJson: vi.fn().mockResolvedValue([{ statIndex: 1, name: "Speed" }])
   }));
@@ -36,6 +41,7 @@ describe("battleCLI init helpers", () => {
   beforeEach(() => {
     window.__TEST__ = true;
     document.body.innerHTML = `
+      <main id="cli-main"></main>
       <div id="cli-stats"></div>
       <div id="cli-help"></div>
       <select id="points-select"></select>
@@ -71,9 +77,14 @@ describe("battleCLI init helpers", () => {
   it("invokes init helpers", async () => {
     const mod = await loadBattleCLI();
     await mod.__test.init();
-    expect(window.__TEST_MACHINE__.dispatch).toHaveBeenCalled();
-    expect(document.getElementById("cli-stats").children.length).toBeGreaterThan(0);
+    const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     const { setPointsToWin } = await import("../../src/helpers/battleEngineFacade.js");
+    expect(emitBattleEvent).not.toHaveBeenCalledWith("startClicked");
+    const startBtn = document.getElementById("start-match-button");
+    expect(startBtn).toBeTruthy();
+    startBtn?.click();
+    expect(emitBattleEvent).toHaveBeenCalledWith("startClicked");
+    expect(document.getElementById("cli-stats").children.length).toBeGreaterThan(0);
     expect(setPointsToWin).toHaveBeenCalledWith(5);
   });
 });

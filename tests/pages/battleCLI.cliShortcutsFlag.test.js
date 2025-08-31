@@ -12,7 +12,8 @@ async function loadBattleCLI(flagEnabled) {
   }));
   vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
     createBattleStore: vi.fn(() => ({})),
-    startRound: vi.fn()
+    startRound: vi.fn(),
+    resetGame: vi.fn()
   }));
   vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
     initClassicBattleOrchestrator: vi.fn()
@@ -22,7 +23,11 @@ async function loadBattleCLI(flagEnabled) {
     emitBattleEvent: vi.fn()
   }));
   vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: [] }));
-  vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({ setPointsToWin: vi.fn() }));
+  vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+    setPointsToWin: vi.fn(),
+    getPointsToWin: vi.fn(() => 5),
+    getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
+  }));
   vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson: vi.fn().mockResolvedValue([]) }));
   vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
   const mod = await import("../../src/pages/battleCLI.js");

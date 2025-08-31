@@ -13,7 +13,8 @@ async function loadBattleCLI(seed) {
   }));
   vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
     createBattleStore: vi.fn(() => ({})),
-    startRound: vi.fn()
+    startRound: vi.fn(),
+    resetGame: vi.fn()
   }));
   vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
     initClassicBattleOrchestrator: vi.fn()
@@ -23,7 +24,11 @@ async function loadBattleCLI(seed) {
     emitBattleEvent: vi.fn()
   }));
   vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: [] }));
-  vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({ setPointsToWin: vi.fn() }));
+  vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+    setPointsToWin: vi.fn(),
+    getPointsToWin: vi.fn(() => 5),
+    getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
+  }));
   vi.doMock("../../src/helpers/dataUtils.js", () => ({
     fetchJson: vi.fn().mockResolvedValue([{ statIndex: 1, name: "Speed" }])
   }));
@@ -37,6 +42,7 @@ describe("battleCLI deterministic seed", () => {
   beforeEach(() => {
     window.__TEST__ = true;
     document.body.innerHTML = `
+      <main id="cli-main"></main>
       <div id="cli-stats"></div>
       <div id="cli-help"></div>
       <select id="points-select"></select>
@@ -74,6 +80,8 @@ describe("battleCLI deterministic seed", () => {
   it("applies seed for deterministic random", async () => {
     const mod = await loadBattleCLI(5);
     await mod.__test.init();
+    const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
+    expect(emitBattleEvent).not.toHaveBeenCalledWith("startClicked");
     const { seededRandom } = await import("../../src/helpers/testModeUtils.js");
     const first = seededRandom();
     const second = seededRandom();
@@ -90,5 +98,16 @@ describe("battleCLI deterministic seed", () => {
     expect(first).toBeCloseTo(e1);
     expect(second).toBeCloseTo(e2);
     expect(localStorage.getItem("battleCLI.seed")).toBe("5");
+  });
+
+  it("changing seed does not auto-start", async () => {
+    const mod = await loadBattleCLI(0);
+    await mod.__test.init();
+    const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
+    emitBattleEvent.mockClear();
+    const input = document.getElementById("seed-input");
+    input.value = "12";
+    input.dispatchEvent(new Event("change"));
+    expect(emitBattleEvent).not.toHaveBeenCalledWith("startClicked");
   });
 });

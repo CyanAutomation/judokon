@@ -13,7 +13,8 @@ async function loadBattleCLI(autoSelect = true, withSkip = false) {
   }));
   vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
     createBattleStore: vi.fn(() => ({})),
-    startRound: vi.fn()
+    startRound: vi.fn(),
+    resetGame: vi.fn()
   }));
   vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
     initClassicBattleOrchestrator: vi.fn()
@@ -23,7 +24,11 @@ async function loadBattleCLI(autoSelect = true, withSkip = false) {
     emitBattleEvent
   }));
   vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: ["speed"] }));
-  vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({ setPointsToWin: vi.fn() }));
+  vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+    setPointsToWin: vi.fn(),
+    getPointsToWin: vi.fn(() => 5),
+    getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
+  }));
   vi.doMock("../../src/helpers/dataUtils.js", () => ({
     fetchJson: vi.fn().mockResolvedValue([{ statIndex: 1, name: "Speed" }])
   }));
