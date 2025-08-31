@@ -35,23 +35,34 @@ export function setTestMode(enableOrOptions, initialSeed = 1) {
 }
 
 /**
- * Check whether deterministic test mode is active.
+ * Check whether deterministic Test Mode is active.
  *
  * @pseudocode
- * return active
+ * 1. Return the current boolean flag that indicates Test Mode activation.
+ *
+ * @returns {boolean} True when test mode is enabled.
+ */
+/**
+ * Check whether deterministic Test Mode is active.
+ *
+ * @pseudocode
+ * 1. Return the current boolean flag that indicates Test Mode activation.
+ *
+ * @returns {boolean} True when test mode is enabled.
  */
 export function isTestModeEnabled() {
   return active;
 }
 
 /**
- * Return a pseudo-random number.
+ * Produce a deterministic pseudo-random number when Test Mode is enabled.
  *
  * @pseudocode
- * if not active: return Math.random()
- * x = sin(seed) * 10000
- * seed += 1
- * return fractional part of x
+ * 1. If Test Mode is not active, return Math.random().
+ * 2. Otherwise compute x = sin(seed) * 10000, increment the seed, and
+ *    return the fractional part of x (x - floor(x)).
+ *
+ * @returns {number} A number in the range [0, 1).
  */
 export function seededRandom() {
   if (!active) return Math.random();
@@ -60,10 +71,12 @@ export function seededRandom() {
 }
 
 /**
- * Get the current seed value.
+ * Retrieve the current numeric seed used by the deterministic RNG.
  *
  * @pseudocode
- * return seed
+ * 1. Return the internal `seed` value used by `seededRandom()`.
+ *
+ * @returns {number} The current seed.
  */
 export function getCurrentSeed() {
   return seed;

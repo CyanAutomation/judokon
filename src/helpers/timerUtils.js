@@ -54,24 +54,13 @@ export async function getDefaultTimer(category) {
 }
 
 /**
- * @summary TODO: Add summary
+ * Reset internal timer caches and stop the shared scheduler used by tests.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Clear `timersPromise` and `cachedTimers` so subsequent calls reload data.
+ * 2. Stop the shared scheduler to avoid leaking background ticks in tests.
+ *
+ * @returns {void}
  */
 export function _resetForTest() {
   timersPromise = undefined;

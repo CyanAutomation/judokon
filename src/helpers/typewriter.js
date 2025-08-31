@@ -14,26 +14,6 @@ import { getSetting } from "./settingsCache.js";
  *
  * @returns {boolean} True when the effect is enabled.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export function shouldEnableTypewriter() {
   return Boolean(getSetting("typewriterEffect"));
 }
@@ -47,24 +27,11 @@ export function shouldEnableTypewriter() {
  * @returns {void}
  */
 /**
- * @summary TODO: Add summary
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. If `element` is falsy, return immediately.
+ * 2. Save the element's plain text and clear its content.
+ * 3. Use requestAnimationFrame to append one character every `speed` ms.
+ * 4. When finished, set `element.innerHTML` to `finalHtml` to restore markup.
  */
 export function runTypewriterEffect(element, finalHtml, speed = 200) {
   if (!element) return;

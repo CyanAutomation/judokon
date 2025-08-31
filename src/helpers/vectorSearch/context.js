@@ -66,24 +66,19 @@ function chunkSection(section) {
 }
 
 /**
- * @summary TODO: Add summary
+ * Split markdown text into context-preserving chunks suitable for embeddings.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Split the input into lines and divide it into logical sections using
+ *    markdown headings as boundaries.
+ * 2. For each section, split into sentence-like fragments and assemble
+ *    base chunks not exceeding `CHUNK_SIZE`.
+ * 3. Prepend an overlapping tail from the previous chunk using `OVERLAP_RATIO`
+ *    to preserve context between adjacent chunks.
+ * 4. Return an array of chunk strings.
+ *
+ * @param {string} text - Raw markdown text.
+ * @returns {string[]} Array of chunked text fragments.
  */
 export function chunkMarkdown(text) {
   const lines = text.split(/\r?\n/);

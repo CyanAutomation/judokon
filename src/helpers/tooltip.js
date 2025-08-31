@@ -20,26 +20,6 @@ let tooltipEl;
  * @param {string} [prefix=""] - Current key prefix.
  * @returns {Record<string, string>} Flattened tooltip map.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export function flattenTooltips(obj, prefix = "") {
   // Gracefully handle null/undefined or non-object inputs
   if (obj === null || obj === undefined || typeof obj !== "object") {
@@ -91,26 +71,6 @@ async function loadTooltips() {
  * Retrieve the flattened tooltip map.
  *
  * @returns {Promise<Record<string, string>>} Tooltip lookup object.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 export function getTooltips() {
   return loadTooltips();

@@ -10,25 +10,17 @@ const FILE_NOT_FOUND_MSG = "File not found";
 const LOAD_ERROR_MSG = "Error loading tooltips.";
 // Test hooks for dependency injection
 let snackbarFnOverride = null;
+
 /**
- * @summary TODO: Add summary
+ * Inject a snackbar function used by the tooltip viewer for user messages.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. If `fn` is a function, store it in the internal override slot.
+ * 2. If `fn` is not a function (or null), clear the override so the
+ *    normal dynamic-imported snackbar is used.
+ *
+ * @param {(message: string) => void|null} fn - Custom snackbar function or null.
+ * @returns {void}
  */
 export function setTooltipSnackbar(fn) {
   snackbarFnOverride = typeof fn === "function" ? fn : null;
@@ -37,25 +29,17 @@ export function setTooltipSnackbar(fn) {
 // Optional injection hook used by tests to bypass module resolution quirks
 /** @type {null | ((url: string) => Promise<Record<string, any>>)} */
 let tooltipDataLoader = null;
+
 /**
- * @summary TODO: Add summary
+ * Inject a custom loader for `tooltips.json` used in the tooltip viewer.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. If `fn` is a function, store it and use it to fetch the JSON during
+ *    `loadTooltipData`.
+ * 2. If `fn` is falsy, clear the override so normal dynamic import/fetch is used.
+ *
+ * @param {(url: string) => Promise<Record<string, any>>|null} fn - Loader function or null.
+ * @returns {void}
  */
 export function setTooltipDataLoader(fn) {
   tooltipDataLoader = typeof fn === "function" ? fn : null;
@@ -137,29 +121,6 @@ export function initSearchFilter(searchInput, updateList, debounceMs = 300) {
  * 4. Remove the `copied` class after `removeDelayMs` (600ms default).
  * 5. When copying fails, inform the user that copying isn't supported.
  *
- * @param {HTMLButtonElement} keyCopyBtn - Button for copying the key.
- * @param {HTMLButtonElement} bodyCopyBtn - Button for copying the body.
- * @param {number} [removeDelayMs=600] - Delay before removing the `copied` class.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 export function bindCopyButtons(keyCopyBtn, bodyCopyBtn, removeDelayMs = 600) {
   // Use dynamic import so tests can vi.doMock this module after initial import
@@ -268,6 +229,17 @@ export function bindCopyButtons(keyCopyBtn, bodyCopyBtn, removeDelayMs = 600) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Select and scroll to the list item referenced by `location.hash`.
+ *
+ * @pseudocode
+ * 1. Read the current URL hash and decode it to a key; return early on decode errors.
+ * 2. Attempt to find the DOM element with `data-key` matching the key.
+ * 3. If the element is found, call `select(key)` and scroll it into view.
+ *
+ * @param {HTMLElement} listPlaceholder - List element containing tooltip items.
+ * @param {(key: string) => void} select - Selection callback.
+ */
 export function applyHashSelection(listPlaceholder, select) {
   if (location.hash) {
     let key;
@@ -336,6 +308,22 @@ export function applyHashSelection(listPlaceholder, select) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Initialize the Tooltip Viewer page.
+ *
+ * @pseudocode
+ * 1. Prepare DOM references and start loading the sanitizer asynchronously.
+ * 2. Load tooltip data via `loadTooltipData`; abort if loading fails.
+ * 3. Render the list and wire selection handling to update preview and raw text.
+ * 4. Bind copy buttons and initialize search filtering with debounce.
+ * 5. Apply hash selection and initialize general tooltips for help icons.
+ * 6. Register cleanup for search filtering on page hide.
+ *
+ * @param {object} [options]
+ * @param {number} [options.debounceMs=300]
+ * @param {number} [options.removeDelayMs=600]
+ * @returns {Promise<void>}
  */
 export async function setupTooltipViewerPage({ debounceMs = 300, removeDelayMs = 600 } = {}) {
   // Start loading sanitizer but don't block initial render
