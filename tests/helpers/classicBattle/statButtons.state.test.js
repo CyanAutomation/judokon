@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import "./commonMocks.js";
 import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
 import {
   waitingForPlayerActionEnter,
@@ -35,13 +36,6 @@ vi.mock("../../../src/helpers/battleStateProgress.js", () => ({
   initBattleStateProgress: vi.fn().mockResolvedValue(null)
 }));
 vi.mock("../../../src/helpers/tooltip.js", () => ({ initTooltips: vi.fn().mockResolvedValue() }));
-vi.mock("../../../src/utils/scheduler.js", () => ({
-  onFrame: vi.fn(),
-  onSecondTick: vi.fn(),
-  cancel: vi.fn(),
-  start: vi.fn(),
-  stop: vi.fn()
-}));
 vi.mock("../../../src/helpers/setupBottomNavbar.js", () => ({}));
 vi.mock("../../../src/helpers/setupDisplaySettings.js", () => ({}));
 vi.mock("../../../src/helpers/setupSvgFallback.js", () => ({}));

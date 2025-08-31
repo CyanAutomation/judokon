@@ -1,9 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import "./commonMocks.js";
 
 // Force synchronous stat comparison (no animation)
-vi.mock("../../../src/helpers/motionUtils.js", () => ({
-  shouldReduceMotionSync: () => true
-}));
 
 describe("Classic Battle — outcome vs comparison surfaces", () => {
   let ui;

@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import "./commonMocks.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
-vi.mock("../../../src/helpers/motionUtils.js", () => ({
-  shouldReduceMotionSync: () => true
-}));
 
 vi.mock("../../../src/helpers/classicBattle/timerService.js", async () => {
   const actual = await vi.importActual("../../../src/helpers/classicBattle/timerService.js");

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import "./commonMocks.js";
 
 let modalOpenMock;
 let modalElement;
@@ -13,10 +14,6 @@ vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
   showMessage: vi.fn(),
   clearTimer: vi.fn(),
   updateTimer: vi.fn()
-}));
-vi.mock("../../../src/utils/scheduler.js", () => ({
-  stop: vi.fn(),
-  cancel: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
   resetSkipState: vi.fn()
