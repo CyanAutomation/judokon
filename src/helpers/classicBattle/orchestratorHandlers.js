@@ -589,11 +589,13 @@ async function dispatchOutcome(outcomeEvent, machine) {
  * 1. TODO: Add pseudocode
  */
 /**
- * @summary TODO: Add summary
+ * @summary Stamp round decision entry for diagnostics.
  * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Log debug message when not under Vitest.
+ * 2. Store `Date.now()` in `window.__roundDecisionEnter`.
+ * 3. Emit `debugPanelUpdate` to refresh the panel.
  */
-export function recordRoundDecisionEntry() {
+export function recordEntry() {
   try {
     if (!IS_VITEST) console.log("DEBUG: Entering roundDecisionEnter");
   } catch {}
@@ -694,53 +696,86 @@ export function waitForPlayerChoice(store, timeoutMs) {
 }
 
 /**
- * Orchestrate round decision entry by scheduling a guard and resolving any
- * immediate selection.
+ * Await a player's choice and resolve the round.
+ *
+ * @param {object} store
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Wait up to 1500 ms for `waitForPlayerChoice`.
+ * 2. Resolve selection via `resolveSelectionIfPresent`.
+ */
+export async function awaitPlayerChoice(store) {
+  await waitForPlayerChoice(store, 1500);
+  await resolveSelectionIfPresent(store);
+}
+
+/**
+ * Schedule outcome computation and expose a cancellation guard.
+ *
+ * @param {object} store
+ * @param {object} machine
+ * @returns {() => void} cleanup function
+ * @pseudocode
+ * 1. Schedule guard to run `computeAndDispatchOutcome` after 1200 ms.
+ * 2. Save cancel function to `window.__roundDecisionGuard`.
+ * 3. Return a cleanup function that clears the guard and nulls the global.
+ */
+export function guardSelectionResolution(store, machine) {
+  const cancel = scheduleGuard(1200, () => computeAndDispatchOutcome(store, machine));
+  if (typeof window !== "undefined") window.__roundDecisionGuard = cancel;
+  return () => {
+    guard(() => {
+      if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
+        window.__roundDecisionGuard();
+        window.__roundDecisionGuard = null;
+      }
+    });
+  };
+}
+
+/**
+ * Schedule watchdog to ensure state progression after resolution.
+ *
+ * @param {object} machine
+ * @pseudocode
+ * 1. After 600 ms, if state is still `roundDecision`, dispatch interrupt with `postResolveWatchdog`.
+ */
+export function schedulePostResolveWatchdog(machine) {
+  setTimeout(() => {
+    guardAsync(async () => {
+      const still = machine.getState ? machine.getState() : null;
+      if (still === "roundDecision") {
+        await machine.dispatch("interrupt", { reason: "postResolveWatchdog" });
+      }
+    });
+  }, 600);
+}
+
+/**
+ * Orchestrate round decision entry by composing small helpers.
  *
  * @param {object} machine
  * @returns {Promise<void>}
  * @pseudocode
- * ```
- * record round decision entry
- * schedule guard to compute outcome
- * attempt immediate resolution; if none, wait for player choice then resolve
- * clear guard and schedule watchdog
- * on timeout → interrupt with `noSelection`
+ * recordEntry()
+ * cancel ← guardSelectionResolution(store, machine)
+ * if !resolveSelectionIfPresent(store) → awaitPlayerChoice(store)
+ * cancel()
+ * schedulePostResolveWatchdog(machine)
+ * on timeout → show "No selection" and interrupt
  * on other error → handleRoundError(`roundResolutionError`)
- * ```
  */
 export async function roundDecisionEnter(machine) {
   const { store } = machine.context;
-  recordRoundDecisionEntry();
-  const cancelGuard = scheduleGuard(1200, () => computeAndDispatchOutcome(store, machine));
-  if (typeof window !== "undefined") window.__roundDecisionGuard = cancelGuard;
+  recordEntry();
+  const cancel = guardSelectionResolution(store, machine);
   try {
     const resolved = await resolveSelectionIfPresent(store);
-    if (!resolved) {
-      await waitForPlayerChoice(store, 1500);
-      await resolveSelectionIfPresent(store);
-    }
-    guard(() => {
-      if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
-        window.__roundDecisionGuard();
-        window.__roundDecisionGuard = null;
-      }
-    });
-    setTimeout(() => {
-      guardAsync(async () => {
-        const still = machine.getState ? machine.getState() : null;
-        if (still === "roundDecision") {
-          await machine.dispatch("interrupt", { reason: "postResolveWatchdog" });
-        }
-      });
-    }, 600);
+    if (!resolved) await awaitPlayerChoice(store);
+    cancel();
+    schedulePostResolveWatchdog(machine);
   } catch (err) {
-    guard(() => {
-      if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
-        window.__roundDecisionGuard();
-        window.__roundDecisionGuard = null;
-      }
-    });
+    cancel();
     if (err?.message === "timeout") {
       guard(() =>
         emitBattleEvent("scoreboardShowMessage", "No selection detected. Interrupting round.")
