@@ -200,4 +200,3 @@ test.describe("Classic Battle CLI", () => {
     await expect(page.locator(".home-screen")).toBeVisible();
   });
 });
-
