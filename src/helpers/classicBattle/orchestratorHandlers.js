@@ -1,5 +1,5 @@
 import { getDefaultTimer } from "../timerUtils.js";
-import { getNextRoundControls } from "./timerService.js";
+import { getNextRoundControls, setupFallbackTimer } from "./timerService.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
@@ -36,25 +36,6 @@ export function isStateTransition(from, to) {
     return prev === from && current === to;
   } catch {
     return false;
-  }
-}
-
-/**
- * Schedule a fallback timeout and return its id.
- *
- * @pseudocode
- * 1. Attempt to call `setTimeout(cb, ms)`.
- * 2. Return the timer id or `null` on failure.
- *
- * @param {number} ms
- * @param {Function} cb
- * @returns {ReturnType<typeof setTimeout>|null}
- */
-export function setupFallbackTimer(ms, cb) {
-  try {
-    return setTimeout(cb, ms);
-  } catch {
-    return null;
   }
 }
 

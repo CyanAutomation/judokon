@@ -55,7 +55,8 @@ beforeEach(() => {
 
   vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
     scheduleNextRound,
-    startTimer: vi.fn()
+    startTimer: vi.fn(),
+    setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
   }));
 
   vi.mock("../../../src/helpers/battle/index.js", () => ({

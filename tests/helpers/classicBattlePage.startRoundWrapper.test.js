@@ -68,7 +68,8 @@ describe("startRoundWrapper failures", () => {
     }));
     vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
       onNextButtonClick: vi.fn(),
-      getNextRoundControls: vi.fn()
+      getNextRoundControls: vi.fn(),
+      setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
     }));
     vi.doMock("../../src/helpers/classicBattle/skipHandler.js", () => ({
       skipCurrentPhase: vi.fn()
@@ -169,7 +170,8 @@ describe("startRoundWrapper failures", () => {
     }));
     vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
       onNextButtonClick: vi.fn(),
-      getNextRoundControls: vi.fn()
+      getNextRoundControls: vi.fn(),
+      setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
     }));
     vi.doMock("../../src/helpers/classicBattle/skipHandler.js", () => ({
       skipCurrentPhase: vi.fn()
@@ -272,7 +274,8 @@ describe("startRoundWrapper success", () => {
     }));
     vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
       onNextButtonClick: vi.fn(),
-      getNextRoundControls: vi.fn()
+      getNextRoundControls: vi.fn(),
+      setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
     }));
     vi.doMock("../../src/helpers/classicBattle/skipHandler.js", () => ({
       skipCurrentPhase: vi.fn()
