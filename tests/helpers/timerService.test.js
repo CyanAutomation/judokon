@@ -77,7 +77,7 @@ describe("timerService", () => {
   it("updates scoreboard timer and clears on expiration", async () => {
     const scoreboard = await import("../../src/helpers/setupScoreboard.js");
     const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
-    await startTimer(async () => {});
+    await startTimer(async () => {}, { selectionMade: false });
 
     expect(scoreboard.updateTimer).toHaveBeenCalledWith(2);
     scheduler.tick(1000);

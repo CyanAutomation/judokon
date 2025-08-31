@@ -27,7 +27,7 @@ describe("timerService drift handling", () => {
       return { ...actual, startRound };
     });
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
-    await mod.startTimer(async () => {});
+    await mod.startTimer(async () => {}, { selectionMade: false });
     round.triggerDrift(2);
     expect(showMessage).toHaveBeenCalledWith("Waiting…");
     // Shared timer restarts via factory
