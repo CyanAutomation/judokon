@@ -5,6 +5,10 @@ import { createTimerNodes } from "./domUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
 import { waitForState } from "../../../src/helpers/classicBattle/battleDebug.js";
 
+vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
+  attachCooldownRenderer: vi.fn()
+}));
+
 let timerSpy;
 let fetchJsonMock;
 let generateRandomCardMock;
@@ -145,6 +149,34 @@ describe("classicBattle scheduleNextRound", () => {
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
     expect(machine.getState()).toBe("waitingForPlayerAction");
     expect(generateRandomCardMock).toHaveBeenCalledTimes(2);
+  });
+
+  it.each([
+    { enabled: true, label: "enabled" },
+    { enabled: false, label: "disabled" }
+  ])("respects skipRoundCooldown when %s", async ({ enabled }) => {
+    vi.resetModules();
+    currentFlags.skipRoundCooldown = { enabled };
+    applyMockSetup({ currentFlags });
+
+    const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    battleEventsMod.__resetBattleEventTarget();
+    const emitSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
+    await import("../../../src/helpers/classicBattle/uiService.js");
+
+    const { attachCooldownRenderer } = await import("../../../src/helpers/CooldownRenderer.js");
+    attachCooldownRenderer.mockClear();
+
+    await battleEventsMod.emitBattleEvent("countdownStart", { duration: 3 });
+    await Promise.resolve();
+
+    if (enabled) {
+      expect(attachCooldownRenderer).not.toHaveBeenCalled();
+      expect(emitSpy).toHaveBeenCalledWith("countdownFinished");
+    } else {
+      expect(attachCooldownRenderer).toHaveBeenCalled();
+      expect(emitSpy).toHaveBeenCalledTimes(1);
+    }
   });
 
   it.skip("schedules a 1s minimum cooldown in test mode", async () => {
