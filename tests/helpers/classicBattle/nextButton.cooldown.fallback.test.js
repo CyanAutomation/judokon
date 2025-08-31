@@ -1,9 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 describe("Next button cooldown fallback", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     document.body.innerHTML = `<button id="next-button">Next</button>`;
-    window.__classicBattleState = "cooldown";
+    const { onBattleEvent, emitBattleEvent, __resetBattleEventTarget } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
+    const { createDebugLogListener } = await import(
+      "../../../src/helpers/classicBattle/stateTransitionListeners.js"
+    );
+    __resetBattleEventTarget();
+    onBattleEvent("battleStateChange", createDebugLogListener(null));
+    emitBattleEvent("battleStateChange", { from: null, to: "cooldown", event: null });
   });
   afterEach(() => {
     vi.restoreAllMocks();

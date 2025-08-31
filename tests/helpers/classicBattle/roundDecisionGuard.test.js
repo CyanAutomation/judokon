@@ -8,11 +8,21 @@ describe("scheduleRoundDecisionGuard", () => {
   beforeEach(() => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
-    document.body.dataset.battleState = "roundDecision";
     window.__roundDebug = {};
     timerSpy = vi.useFakeTimers();
     store = { playerChoice: null };
     machine = { dispatch: vi.fn().mockResolvedValue(undefined) };
+    return (async () => {
+      const { onBattleEvent, emitBattleEvent, __resetBattleEventTarget } = await import(
+        "../../../src/helpers/classicBattle/battleEvents.js"
+      );
+      const { domStateListener } = await import(
+        "../../../src/helpers/classicBattle/stateTransitionListeners.js"
+      );
+      __resetBattleEventTarget();
+      onBattleEvent("battleStateChange", domStateListener);
+      emitBattleEvent("battleStateChange", { from: null, to: "roundDecision", event: null });
+    })();
   });
   afterEach(() => {
     timerSpy.clearAllTimers();

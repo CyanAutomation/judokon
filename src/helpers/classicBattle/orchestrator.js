@@ -15,8 +15,13 @@ import {
   roundModificationEnter
 } from "./orchestratorHandlers.js";
 import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
-import { emitBattleEvent } from "./battleEvents.js";
+import { emitBattleEvent, onBattleEvent } from "./battleEvents.js";
 import { setMachine } from "./eventDispatcher.js";
+import {
+  domStateListener,
+  createDebugLogListener,
+  createWaiterResolver
+} from "./stateTransitionListeners.js";
 
 let machine = null;
 const stateWaiters = new Map();
@@ -107,14 +112,6 @@ export function onStateTransition(targetState, timeoutMs = 10000) {
  * @param {import("./stateMachine.js").BattleStateMachine|null} machineRef - Current battle machine.
  * @returns {void}
  */
-export function updateTimerDebug(machineRef) {
-  if (typeof window === "undefined" || !machineRef?.context?.engine) return;
-  try {
-    const timerState = machineRef.context.engine.getTimerState();
-    window.__classicBattleTimerState = timerState;
-  } catch {}
-}
-
 /**
  * Initialize the classic battle orchestrator. This function sets up the battle state machine,
  * defines its transition behavior, and exposes debugging utilities.
@@ -126,15 +123,11 @@ export function updateTimerDebug(machineRef) {
  * 4. Define the `onTransition` function executed on every state change:
  *    a. Call `onStateChange({ from, to, event })` when provided.
  *    b. Emit a `"battleStateChange"` battle event with `{ from, to, event }`.
- *    c. Dispatch a legacy `"battle:state"` DOM event with the same detail.
- *    d. Mirror state changes on `document.body.dataset` in the browser.
- *    e. Call `updateTimerDebug(machine)`.
- *    f. Emit a `"debugPanelUpdate"` battle event.
- *    g. Resolve any waiters queued for the new `to` state.
  * 5. Create the battle state machine via `BattleStateMachine.create` and store it with `setMachine`.
- * 6. Expose a getter for the machine, wire visibility listeners, and handle timer drift and injected errors.
- * 7. Expose `onStateTransition` and `getBattleStateSnapshot` on `window` for debugging.
- * 8. Return the initialized machine.
+ * 6. Register state transition listeners for DOM updates, debug logging, and waiter resolution.
+ * 7. Expose a getter for the machine, wire visibility listeners, and handle timer drift and injected errors.
+ * 8. Expose `onStateTransition` and `getBattleStateSnapshot` on `window` for debugging.
+ * 9. Return the initialized machine.
  *
  * @param {object} store - Shared battle store.
  * @param {Function} startRoundWrapper - Optional wrapper for starting a round.
@@ -169,72 +162,17 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     roundModification: roundModificationEnter
   };
 
-  const onTransition = async ({ from, to, event }) => {
+  const onTransition = ({ from, to, event }) => {
     onStateChange?.({ from, to, event });
     emitBattleEvent("battleStateChange", { from, to, event });
-    try {
-      // Mirror state in DOM dataset and dispatch legacy DOM event exactly once
-      const detail = { from: from || null, to, event: event || null };
-      if (typeof document !== "undefined") {
-        try {
-          const ds = document.body?.dataset;
-          if (ds) {
-            ds.battleState = to;
-            if (from) ds.prevBattleState = from;
-            else delete ds.prevBattleState;
-          }
-        } catch {}
-        document.dispatchEvent(new CustomEvent("battle:state", { detail }));
-      }
-
-      // Update window-scoped debug globals and resolve window waiters
-      if (typeof window !== "undefined") {
-        window.__classicBattleState = to;
-        if (from) window.__classicBattlePrevState = from;
-        if (event) window.__classicBattleLastEvent = event;
-        const log = Array.isArray(window.__classicBattleStateLog)
-          ? window.__classicBattleStateLog
-          : [];
-        log.push({ from: detail.from, to: detail.to, event: detail.event, ts: Date.now() });
-        while (log.length > 20) log.shift();
-        window.__classicBattleStateLog = log;
-        const winWaiters = (window.__stateWaiters && window.__stateWaiters[to]) || [];
-        if (Array.isArray(winWaiters) && winWaiters.length) {
-          window.__stateWaiters[to] = [];
-          for (const w of winWaiters) {
-            try {
-              if (w.timer) clearTimeout(w.timer);
-              w.resolve(true);
-            } catch {}
-          }
-        }
-      }
-    } catch {}
-    updateTimerDebug(machine);
-    emitBattleEvent("debugPanelUpdate");
-    const waiters = stateWaiters.get(to);
-    if (waiters) {
-      stateWaiters.delete(to);
-      for (const w of waiters) {
-        try {
-          try {
-            window.__stateWaiterEvents = window.__stateWaiterEvents || [];
-            window.__stateWaiterEvents.push({
-              action: "resolve",
-              state: to,
-              id: w.__id || null,
-              ts: Date.now()
-            });
-          } catch {}
-          if (w.timer) clearTimeout(w.timer);
-          w.resolve(true);
-        } catch {}
-      }
-    }
   };
 
   machine = await BattleStateMachine.create(onEnter, context, onTransition);
   setMachine(machine);
+
+  onBattleEvent("battleStateChange", domStateListener);
+  onBattleEvent("battleStateChange", createDebugLogListener(machine));
+  onBattleEvent("battleStateChange", createWaiterResolver(stateWaiters));
 
   // Expose a safe getter for the running machine to avoid import cycles
   // in hot-path modules (e.g., selection handling).

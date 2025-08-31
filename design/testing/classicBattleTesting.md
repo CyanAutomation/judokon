@@ -41,6 +41,16 @@ This note explains how Classic Battle bindings and promises are set up for tests
 
 - In Vitest, Classic Battle adds small test-mode fallbacks to avoid flaky races:
   - `startRound()` applies UI immediately and emits `roundPrompt`.
-  - `selectionHandler` clears transient text and surfaces the opponent-delay snackbar during selection.
+- `selectionHandler` clears transient text and surfaces the opponent-delay snackbar during selection.
   - `handleStatSelectionTimeout()` only shows the stall message at timeout (not earlier).
   - `__triggerStallPromptNow(store)` surfaces a stall prompt immediately for tests.
+
+## State Transition Listeners
+
+- `battleStateChange` events now drive side effects such as DOM mirroring, debug logging, and resolving waiters.
+- Tests should emit `battleStateChange` instead of mutating `document.body.dataset` or `window` globals.
+- `src/helpers/classicBattle/stateTransitionListeners.js` exports:
+  - `domStateListener` – mirrors state to `document.body.dataset` and dispatches a legacy `battle:state` event.
+  - `createDebugLogListener(machine)` – updates debug globals and emits `debugPanelUpdate`.
+  - `createWaiterResolver(stateWaiters)` – settles promises awaiting specific states.
+- Register these listeners with `onBattleEvent('battleStateChange', ...)` after the state machine is created (see orchestrator init).

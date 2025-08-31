@@ -1,9 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
-  emitBattleEvent: vi.fn(),
-  onBattleEvent: vi.fn()
-}));
 vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: vi.fn().mockResolvedValue()
 }));
@@ -44,7 +40,15 @@ describe.sequential("classicBattle round resolver once", () => {
       <div id="opponent-card"><ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul></div>
       <div id="stat-buttons"><button data-stat="power"></button></div>
     `;
-    document.body.dataset.battleState = "roundDecision";
+    const { onBattleEvent, emitBattleEvent, __resetBattleEventTarget } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
+    const { domStateListener } = await import(
+      "../../../src/helpers/classicBattle/stateTransitionListeners.js"
+    );
+    __resetBattleEventTarget();
+    onBattleEvent("battleStateChange", domStateListener);
+    emitBattleEvent("battleStateChange", { from: null, to: "roundDecision", event: null });
     ({ handleStatSelection, createBattleStore, _resetForTest, getCardStatValue } = await import(
       "../../../src/helpers/classicBattle.js"
     ));
