@@ -323,80 +323,12 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
 }
 
 /**
- * Dispatch an event to the currently running battle machine.
- * This small proxy is exported for backwards compatibility: some modules
- * import `dispatchBattleEvent` from this orchestrator file. Keep it
- * minimal and safe — if the machine isn't ready the call is a no-op.
- *
- * @pseudocode
- * 1. Check if the `machine` instance is null. If so, exit the function immediately as there's no machine to dispatch to.
- * 2. Attempt to dispatch the `eventName` with the `payload` to the `machine`.
- * 3. If an error occurs during dispatch:
- *    a. Catch the error to prevent cascading failures (higher-level code can still observe via emitted events).
- *    b. Attempt to emit a "debugPanelUpdate" battle event to inform UI debug panels of the failure.
- * 4. Return the result of the dispatch operation (if successful).
- *
- * @param {string} eventName
- * @param {any} payload
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. Dispatch event to the state machine if available.
- * 2. Return the result of machine.dispatch when successful.
- * 3. On error, attempt a debug event emission and swallow the error to
- *    avoid failing startup paths.
- *
- * @param {string} eventName - Event name to dispatch to the machine.
- * @param {any} [payload] - Optional payload forwarded to the machine.
- * @returns {Promise<any|undefined>} result from the machine or undefined when
- * the machine is missing or an error occurred.
- *
- * @pseudocode
- * 1. If `machine` is falsy -> return immediately.
- * 2. Try `await machine.dispatch(eventName, payload)` and return the result.
- * 3. If dispatch throws -> emit a `debugPanelUpdate` event and swallow the
- *    error (log to console only in non-test env).
- */
-export async function dispatchBattleEvent(eventName, payload) {
-  if (!machine) return;
-  try {
-    return await machine.dispatch(eventName, payload);
-  } catch {
-    // swallow to avoid cascading startup failures; higher-level code
-    // can still observe via emitted events or thrown errors if needed.
-    try {
-      // emit a debug event so UI debug panels can show the failure
-      emitBattleEvent("debugPanelUpdate");
-    } catch (innerError) {
-      if (!IS_VITEST) console.error("Failed to emit debugPanelUpdate event:", innerError);
-    }
-  }
-}
-
-/**
  * Get the current battle state machine instance for tests and helpers.
  *
- * @returns {import('./stateMachine.js').BattleStateMachine|null} the
- * module-scoped state machine instance, or null if not initialized.
- *
  * @pseudocode
- * 1. Return the module-scoped `machine` reference.
+ * 1. Return the internal `machine` reference.
+ *
+ * @returns {import('./stateMachine.js').BattleStateMachine|null} Current machine instance or null.
  */
 export function getBattleStateMachine() {
   return machine;

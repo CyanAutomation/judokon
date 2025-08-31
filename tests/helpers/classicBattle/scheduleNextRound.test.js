@@ -91,7 +91,8 @@ describe("classicBattle scheduleNextRound", () => {
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
 
     const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
-    const dispatchSpy = vi.spyOn(orchestrator, "dispatchBattleEvent");
+    const dispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
+    const dispatchSpy = vi.spyOn(dispatcher, "dispatchBattleEvent");
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
@@ -104,7 +105,7 @@ describe("classicBattle scheduleNextRound", () => {
     await battleMod.startRound(store);
 
     machine.current = "roundOver";
-    await orchestrator.dispatchBattleEvent("continue");
+    await dispatcher.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");
 
     const controls = battleMod.scheduleNextRound({ matchEnded: false });
@@ -148,7 +149,8 @@ describe("classicBattle scheduleNextRound", () => {
     expect(generateRandomCardMock).toHaveBeenCalledTimes(1);
 
     machine.current = "roundOver";
-    await orchestrator.dispatchBattleEvent("continue");
+    const dispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
+    await dispatcher.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");
 
     const controls = battleMod.scheduleNextRound({ matchEnded: false });

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("../../src/helpers/classicBattle/battleDispatcher.js", () => ({
+vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: vi.fn(() => Promise.resolve())
 }));
 
@@ -23,7 +23,7 @@ describe("onNextButtonClick", () => {
     window.__classicBattleState = "cooldown";
     const resolveReady = vi.fn();
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady });
-    const dispatcher = await import("../../src/helpers/classicBattle/battleDispatcher.js");
+    const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     expect(btn.disabled).toBe(true);
     expect(btn.dataset.nextReady).toBeUndefined();
     expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
@@ -35,7 +35,7 @@ describe("onNextButtonClick", () => {
     const stop = vi.fn();
     window.__classicBattleState = "roundDecision";
     await onNextButtonClick(new MouseEvent("click"), { timer: { stop }, resolveReady: null });
-    const dispatcher = await import("../../src/helpers/classicBattle/battleDispatcher.js");
+    const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     expect(stop).toHaveBeenCalledTimes(1);
     expect(dispatcher.dispatchBattleEvent).not.toHaveBeenCalled();
   });
@@ -45,7 +45,7 @@ describe("onNextButtonClick", () => {
     window.__classicBattleState = "cooldown";
     const resolveReady = vi.fn();
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady });
-    const dispatcher = await import("../../src/helpers/classicBattle/battleDispatcher.js");
+    const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
     expect(resolveReady).toHaveBeenCalledTimes(1);
   });

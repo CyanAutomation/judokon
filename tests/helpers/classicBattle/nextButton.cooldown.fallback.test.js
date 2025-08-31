@@ -18,8 +18,8 @@ describe("Next button cooldown fallback", () => {
   });
   it("dispatches 'ready' when no timer controls exist", async () => {
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
-    const orchestrator = await import("../../../src/helpers/classicBattle/battleDispatcher.js");
-    const spy = vi.spyOn(orchestrator, "dispatchBattleEvent").mockResolvedValue(undefined);
+    const dispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
+    const spy = vi.spyOn(dispatcher, "dispatchBattleEvent").mockResolvedValue(undefined);
     // Simulate click while not nextReady to take the no-timer path
     await mod.onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: vi.fn() });
     expect(spy).toHaveBeenCalledWith("ready");

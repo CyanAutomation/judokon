@@ -3,7 +3,8 @@ import { createButton } from "../../components/Button.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import { showResult } from "../battle/index.js";
 import { navigateToHome } from "../navUtils.js";
-import { dispatchBattleEvent, getBattleState } from "./eventBus.js";
+import { dispatchBattleEvent } from "./eventDispatcher.js";
+import { getBattleState } from "./eventBus.js";
 import { t } from "../i18n.js";
 
 function createQuitConfirmation(store, onConfirm) {
@@ -49,27 +50,6 @@ function createQuitConfirmation(store, onConfirm) {
   document.body.appendChild(modal.element);
   return modal;
 }
-
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export let quitConfirmButtonPromise = Promise.resolve();
 
 /**
