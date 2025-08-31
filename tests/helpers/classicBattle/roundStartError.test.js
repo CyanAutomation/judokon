@@ -42,4 +42,41 @@ describe("round start error recovery", () => {
 
     expect(machine.getState()).toBe("interruptRound");
   });
+
+  it("dispatches interrupt when startRoundWrapper throws", async () => {
+    vi.resetModules();
+    const startRoundWrapper = () => {
+      throw new Error("sync fail");
+    };
+    const states = new Map([
+      [
+        "roundStart",
+        {
+          name: "roundStart",
+          triggers: [
+            { on: "cardsRevealed", target: "waitingForPlayerAction" },
+            { on: "interrupt", target: "interruptRound" }
+          ]
+        }
+      ],
+      [
+        "waitingForPlayerAction",
+        {
+          name: "waitingForPlayerAction",
+          triggers: [{ on: "interrupt", target: "interruptRound" }]
+        }
+      ],
+      ["interruptRound", { name: "interruptRound", triggers: [] }]
+    ]);
+    const machine = new BattleStateMachine(
+      states,
+      "roundStart",
+      { roundStart: roundStartEnter },
+      { startRoundWrapper }
+    );
+
+    await roundStartEnter(machine);
+
+    expect(machine.getState()).toBe("interruptRound");
+  });
 });

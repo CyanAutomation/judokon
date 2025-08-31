@@ -340,15 +340,30 @@ function invokeRoundStart(ctx) {
 
 export async function roundStartEnter(machine) {
   const fallback = installRoundStartFallback(machine);
-  const startPromise = invokeRoundStart(machine.context);
-  Promise.resolve(startPromise).catch(async () => {
+
+  async function handleStartError() {
     guard(() => {
       if (fallback) clearTimeout(fallback);
     });
-    guard(() => emitBattleEvent("scoreboardShowMessage", "Round start error. Recovering…"));
+    guard(() =>
+      emitBattleEvent("scoreboardShowMessage", "Round start error. Recovering…")
+    );
     guard(() => emitBattleEvent("debugPanelUpdate"));
-    await guardAsync(() => machine.dispatch("interrupt", { reason: "roundStartError" }));
-  });
+    await guardAsync(() =>
+      machine.dispatch("interrupt", { reason: "roundStartError" })
+    );
+  }
+
+  let startPromise;
+  try {
+    startPromise = invokeRoundStart(machine.context);
+  } catch {
+    await handleStartError();
+    return;
+  }
+
+  Promise.resolve(startPromise).catch(handleStartError);
+
   guard(() => {
     if (fallback) clearTimeout(fallback);
   });
