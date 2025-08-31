@@ -41,9 +41,12 @@ test.describe("Classic battle flow", () => {
     await waitForBattleReady(page);
     // After stall timeout, show prompt before auto-select triggers the next round.
     // Allow either the stall prompt or an early countdown render depending on timing
-    await expect(page.locator(".snackbar")).toHaveText(/(Stat selection stalled|Next round in: \d+s)/, {
-      timeout: 10000
-    });
+    await expect(page.locator(".snackbar")).toHaveText(
+      /(Stat selection stalled|Next round in: \d+s)/,
+      {
+        timeout: 10000
+      }
+    );
     // Let the timer expire. Current UX shows the next-round countdown
     // via snackbar after auto-select, rather than a "Time's up!" banner.
     // Assert the countdown appears to confirm expiration + auto-pick.
