@@ -32,20 +32,26 @@ export function setMachine(m) {
 export async function dispatchBattleEvent(eventName, payload) {
   if (!machine) {
     try {
-      // eslint-disable-next-line no-console
-      console.log("DEBUG: eventDispatcher has no machine for", eventName);
+      if (!IS_VITEST) {
+        // eslint-disable-next-line no-console
+        console.log("DEBUG: eventDispatcher has no machine for", eventName);
+      }
     } catch {}
     return;
   }
   try {
-    // eslint-disable-next-line no-console
-    console.log("DEBUG: eventDispatcher dispatch", { state: machine?.getState?.(), eventName, payload });
+    if (!IS_VITEST) {
+      // eslint-disable-next-line no-console
+      console.log("DEBUG: eventDispatcher dispatch", { state: machine?.getState?.(), eventName, payload });
+    }
   } catch {}
   try {
     const res = await machine.dispatch(eventName, payload);
     try {
-      // eslint-disable-next-line no-console
-      console.log("DEBUG: eventDispatcher dispatched", { newState: machine?.getState?.(), eventName });
+      if (!IS_VITEST) {
+        // eslint-disable-next-line no-console
+        console.log("DEBUG: eventDispatcher dispatched", { newState: machine?.getState?.(), eventName });
+      }
     } catch {}
     return res;
   } catch {

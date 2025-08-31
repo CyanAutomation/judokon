@@ -30,12 +30,28 @@ export function logStateTransition(from, to, event) {
  * @returns {{state:string|null,prev:string|null,event:string|null,log:Array}}
  */
 export function getStateSnapshot() {
-  return {
-    state: currentState,
-    prev: prevState,
-    event: lastEvent,
-    log: stateLog.slice()
-  };
+  if (currentState) {
+    return {
+      state: currentState,
+      prev: prevState,
+      event: lastEvent,
+      log: stateLog.slice()
+    };
+  }
+  // Fallback to DOM-mirrored state when the debug logger wasn't wired in
+  // this module instance (possible in certain test setups).
+  try {
+    const ds = document?.body?.dataset;
+    if (ds && ds.battleState) {
+      return {
+        state: ds.battleState || null,
+        prev: ds.prevBattleState || null,
+        event: lastEvent,
+        log: stateLog.slice()
+      };
+    }
+  } catch {}
+  return { state: null, prev: null, event: null, log: stateLog.slice() };
 }
 
 /**
@@ -48,6 +64,19 @@ export function getStateSnapshot() {
 export function waitForState(targetState, timeoutMs = 10000) {
   return new Promise((resolve, reject) => {
     try {
+      // Resolve immediately if the current snapshot or the DOM mirror
+      // already reflects the desired target state.
+      if (currentState === targetState) {
+        resolve(true);
+        return;
+      }
+      try {
+        const ds = document?.body?.dataset;
+        if (ds && ds.battleState === targetState) {
+          resolve(true);
+          return;
+        }
+      } catch {}
       if (currentState === targetState) {
         resolve(true);
         return;

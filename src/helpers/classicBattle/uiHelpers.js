@@ -320,8 +320,7 @@ export function getMachineDebugState(win) {
   const state = {};
   try {
     const snap = getStateSnapshot();
-    if (!snap.state) return state;
-    state.machineState = snap.state;
+    if (snap.state) state.machineState = snap.state;
     if (snap.prev) state.machinePrevState = snap.prev;
     if (snap.event) state.machineLastEvent = snap.event;
     if (Array.isArray(snap.log)) state.machineLog = snap.log.slice();
@@ -433,8 +432,8 @@ function addMachineDiagnostics(win, state) {
   try {
     const getMachine = win.__getClassicBattleMachine;
     const machine = typeof getMachine === "function" ? getMachine() : null;
-    state.machineReady = !!(machine && typeof machine.getState === "function");
-    if (!state.machineReady) return;
+    if (!machine || typeof machine.getState !== "function") return;
+    state.machineReady = true;
     const current = machine.getState();
     const def = machine.statesByName?.get ? machine.statesByName.get(current) : null;
     if (!def || !Array.isArray(def.triggers)) return;

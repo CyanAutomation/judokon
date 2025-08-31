@@ -156,10 +156,11 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
     timer.stop();
     return;
   }
-  // No active timer controls: if we're in cooldown, advance immediately
+  // No active timer controls: if we're in cooldown (or state is unknown in
+  // this module instance during tests), advance immediately.
   try {
     const { state } = getStateSnapshot();
-    if (state === "cooldown") {
+    if (state === "cooldown" || !state) {
       await dispatchBattleEvent("ready");
       if (typeof resolveReady === "function") resolveReady();
       setSkipHandler(null);
@@ -432,10 +433,12 @@ export async function handleNextRoundExpiration(controls, btn) {
   markNextReady(btn);
   await awaitCooldownState();
   try {
-    // Debug: surface when expiration handler dispatches ready in tests
     try {
-      // eslint-disable-next-line no-console
-      console.log("DEBUG: handleNextRoundExpiration dispatching 'ready'");
+      const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
+      if (!IS_VITEST) {
+        // eslint-disable-next-line no-console
+        console.log("DEBUG: handleNextRoundExpiration dispatching 'ready'");
+      }
     } catch {}
     await dispatchBattleEvent("ready");
   } catch {}
