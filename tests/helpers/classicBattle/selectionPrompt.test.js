@@ -1,44 +1,19 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import "./commonMocks.js";
-import { setupClassicBattleDom } from "./utils.js";
-import { applyMockSetup } from "./mockSetup.js";
-
-let timerSpy;
-let fetchJsonMock;
-let generateRandomCardMock;
-let getRandomJudokaMock;
-let renderMock;
-let currentFlags;
-
-beforeEach(() => {
-  try {
-    if (typeof window !== "undefined" && window.__disableSnackbars)
-      delete window.__disableSnackbars;
-  } catch {}
-  ({
-    timerSpy,
-    fetchJsonMock,
-    generateRandomCardMock,
-    getRandomJudokaMock,
-    renderMock,
-    currentFlags
-  } = setupClassicBattleDom());
-  applyMockSetup({
-    fetchJsonMock,
-    generateRandomCardMock,
-    getRandomJudokaMock,
-    renderMock,
-    currentFlags
-  });
-});
-
-afterEach(() => {
-  timerSpy.clearAllTimers();
-  vi.restoreAllMocks();
-});
+import { setupClassicBattleHooks } from "./setupTestEnv.js";
 
 describe("classicBattle selection prompt", () => {
+  const getEnv = setupClassicBattleHooks();
+
+  beforeEach(() => {
+    try {
+      if (typeof window !== "undefined" && window.__disableSnackbars)
+        delete window.__disableSnackbars;
+    } catch {}
+  });
+
   it("shows selection prompt until a stat is chosen", async () => {
+    const { timerSpy } = getEnv();
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     const battleMod = await initClassicBattleTest({ afterMock: true });
     const store = battleMod.createBattleStore();
@@ -62,7 +37,7 @@ describe("classicBattle selection prompt", () => {
         playerVal,
         opponentVal
       });
-      await vi.runAllTimersAsync();
+      await timerSpy.runAllTimersAsync();
       await p;
     }
     expect(document.querySelector(".snackbar")?.textContent).not.toBe("Select your move");

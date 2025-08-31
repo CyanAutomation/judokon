@@ -1,40 +1,12 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import "./commonMocks.js";
-import { setupClassicBattleDom } from "./utils.js";
-import { applyMockSetup } from "./mockSetup.js";
-
-let timerSpy;
-let fetchJsonMock;
-let generateRandomCardMock;
-let getRandomJudokaMock;
-let renderMock;
-let currentFlags;
-
-beforeEach(() => {
-  ({
-    timerSpy,
-    fetchJsonMock,
-    generateRandomCardMock,
-    getRandomJudokaMock,
-    renderMock,
-    currentFlags
-  } = setupClassicBattleDom());
-  applyMockSetup({
-    fetchJsonMock,
-    generateRandomCardMock,
-    getRandomJudokaMock,
-    renderMock,
-    currentFlags
-  });
-});
-
-afterEach(() => {
-  timerSpy.clearAllTimers();
-  vi.restoreAllMocks();
-});
+import { setupClassicBattleHooks } from "./setupTestEnv.js";
 
 describe("classicBattle auto select", () => {
+  const getEnv = setupClassicBattleHooks();
+
   it("auto-selects a stat when timer expires", async () => {
+    const { timerSpy } = getEnv();
     vi.spyOn(Math, "random").mockReturnValue(0);
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     const battleMod = await initClassicBattleTest({ afterMock: true });
@@ -42,7 +14,7 @@ describe("classicBattle auto select", () => {
     battleMod._resetForTest(store);
     await battleMod.startRound(store, battleMod.applyRoundUI);
     const pending = battleMod.__triggerRoundTimeoutNow(store);
-    await vi.runAllTimersAsync();
+    await timerSpy.runAllTimersAsync();
     await pending;
     const score = document.querySelector("header #score-display").textContent;
     const msg = document.querySelector("header #round-message").textContent;
@@ -52,6 +24,7 @@ describe("classicBattle auto select", () => {
   });
 
   it("does not auto-select when feature flag disabled", async () => {
+    const { timerSpy, currentFlags } = getEnv();
     currentFlags.autoSelect.enabled = false;
     vi.spyOn(Math, "random").mockReturnValue(0);
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
@@ -59,8 +32,8 @@ describe("classicBattle auto select", () => {
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
     await battleMod.startRound(store, battleMod.applyRoundUI);
-    await vi.advanceTimersByTimeAsync(30000);
-    await vi.runAllTimersAsync();
+    await timerSpy.advanceTimersByTimeAsync(30000);
+    await timerSpy.runAllTimersAsync();
     const score = document.querySelector("header #score-display").textContent;
     expect(score).toBe("You: 0\nOpponent: 0");
   });
