@@ -914,9 +914,21 @@ function handleStatClick(event) {
   selectStat(stat);
 }
 
+/**
+ * Advance battle state when clicking outside interactive areas.
+ *
+ * @pseudocode
+ * state = body.dataset.battleState
+ * if click inside .cli-stat or #cli-shortcuts -> return
+ * if state == "roundOver" -> dispatch "continue"
+ * else if state == "cooldown" -> clear timers, dispatch "ready"
+ *
+ * @param {MouseEvent} event - Click event.
+ */
 function onClickAdvance(event) {
   const state = document.body?.dataset?.battleState || "";
   if (event.target?.closest?.(".cli-stat")) return;
+  if (event.target?.closest?.("#cli-shortcuts")) return;
   if (state === "roundOver") {
     try {
       const machine = window.__getClassicBattleMachine?.();
@@ -1114,7 +1126,8 @@ async function init() {
   updateBattleStateBadge(window.__classicBattleState || null);
   updateCliShortcutsVisibility();
   const close = byId("cli-shortcuts-close");
-  close?.addEventListener("click", () => {
+  close?.addEventListener("click", (event) => {
+    event.stopPropagation();
     const sec = byId("cli-shortcuts");
     if (sec) sec.hidden = true;
   });
