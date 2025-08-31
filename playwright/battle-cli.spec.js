@@ -116,6 +116,27 @@ test.describe("Classic Battle CLI", () => {
     expect(Number(secondPlayer) + Number(secondOpponent)).toBeGreaterThanOrEqual(
       Number(firstPlayer) + Number(firstOpponent)
     );
+  });
+
+  test("allows tab navigation without invalid key messages", async ({ page }) => {
+    await page.goto("/src/pages/battleCLI.html");
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    const countdown = page.locator("#cli-countdown");
+
+    const steps = ["Tab", "Tab", "Tab", "Shift+Tab", "Tab", "Tab", "Tab", "Tab", "Tab"];
+    for (const step of steps) {
+      await page.keyboard.press(step);
+      await expect(countdown).not.toContainText("Invalid key");
+    }
+
+    await page.keyboard.press("q");
+    const confirm = page.locator("#confirm-quit-button");
+    await expect(confirm).toBeVisible();
+    await page.keyboard.press("Tab");
+    await expect(countdown).not.toContainText("Invalid key");
+    await page.keyboard.press("Shift+Tab");
+    await expect(countdown).not.toContainText("Invalid key");
+  });
 
   test("returns to lobby after quitting", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html");

@@ -59,6 +59,14 @@ describe("battleCLI onKeyDown", () => {
     expect(countdown.textContent).toBe("");
   });
 
+  it("ignores tab navigation", () => {
+    const countdown = document.getElementById("cli-countdown");
+    onKeyDown(new KeyboardEvent("keydown", { key: "Tab" }));
+    expect(countdown.textContent).toBe("");
+    onKeyDown(new KeyboardEvent("keydown", { key: "Tab", shiftKey: true }));
+    expect(countdown.textContent).toBe("");
+  });
+
   it("confirms quit via modal", () => {
     const dispatch = vi.fn();
     window.__getClassicBattleMachine = () => ({ dispatch });

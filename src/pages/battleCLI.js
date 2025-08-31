@@ -837,6 +837,7 @@ export function handleCooldownKey(key) {
  * table = { waitingForPlayerAction: handleWaitingForPlayerActionKey,
  *           roundOver: handleRoundOverKey,
  *           cooldown: handleCooldownKey }
+ * if key == "tab": return
  * handler = table[state]
  * handled = handleGlobalKey(key) OR (handler ? handler(key) : false)
  * countdown = element '#cli-countdown'
@@ -847,6 +848,7 @@ export function handleCooldownKey(key) {
  */
 export function onKeyDown(e) {
   const key = e.key.toLowerCase();
+  if (key === "tab") return;
   if (!isEnabled("cliShortcuts") && key !== "q") return;
   const state = document.body?.dataset?.battleState || "";
   const table = {
