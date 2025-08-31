@@ -30,6 +30,35 @@ describe("roundDecisionEnter", () => {
     vi.useRealTimers();
   });
 
+  it("interrupts when no player choice is made", async () => {
+    vi.useFakeTimers();
+    const emitBattleEvent = vi.fn();
+    vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
+      emitBattleEvent,
+      onBattleEvent: vi.fn(),
+      offBattleEvent: vi.fn()
+    }));
+
+    const mod = await import("../../src/helpers/classicBattle/orchestratorHandlers.js");
+    const store = {};
+    const machine = {
+      context: { store },
+      dispatch: vi.fn(),
+      getState: vi.fn(() => "roundDecision")
+    };
+
+    const p = mod.roundDecisionEnter(machine);
+    await vi.runAllTimersAsync();
+    await p;
+
+    expect(emitBattleEvent).toHaveBeenCalledWith(
+      "scoreboardShowMessage",
+      "No selection detected. Interrupting round."
+    );
+    expect(machine.dispatch).toHaveBeenCalledWith("interrupt", { reason: "noSelection" });
+    vi.useRealTimers();
+  });
+
   it("resolves immediately when selection is present", async () => {
     vi.useFakeTimers();
     vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
