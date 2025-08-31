@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { readFileSync } from "fs";
+import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 
 async function loadBattleCLI() {
   const emitter = new EventTarget();
@@ -65,14 +66,17 @@ describe("battleCLI accessibility", () => {
         <div id="snackbar-container"></div>
       `;
       const machine = { dispatch: vi.fn() };
-      window.__getClassicBattleMachine = vi.fn(() => machine);
+      debugHooks.exposeDebugState(
+        "getClassicBattleMachine",
+        vi.fn(() => machine)
+      );
     });
 
     afterEach(() => {
       vi.useRealTimers();
       document.body.innerHTML = "";
       delete window.__TEST__;
-      delete window.__getClassicBattleMachine;
+      debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
       vi.resetModules();
       vi.clearAllMocks();
       vi.doUnmock("../../src/helpers/featureFlags.js");

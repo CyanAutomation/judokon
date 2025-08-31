@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
 
 async function loadBattleCLI() {
@@ -51,7 +52,10 @@ describe("battleCLI init helpers", () => {
       <input id="verbose-toggle" type="checkbox" />
     `;
     const machine = { dispatch: vi.fn() };
-    window.__getClassicBattleMachine = vi.fn(() => machine);
+    debugHooks.exposeDebugState(
+      "getClassicBattleMachine",
+      vi.fn(() => machine)
+    );
     window.__TEST_MACHINE__ = machine;
     localStorage.setItem(BATTLE_POINTS_TO_WIN, "5");
   });
@@ -59,7 +63,7 @@ describe("battleCLI init helpers", () => {
   afterEach(() => {
     document.body.innerHTML = "";
     delete window.__TEST__;
-    delete window.__getClassicBattleMachine;
+    debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
     delete window.__TEST_MACHINE__;
     vi.resetModules();
     vi.clearAllMocks();

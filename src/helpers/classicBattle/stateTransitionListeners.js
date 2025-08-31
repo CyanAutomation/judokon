@@ -5,6 +5,7 @@
  */
 import { emitBattleEvent } from "./battleEvents.js";
 import { logStateTransition, resolveStateWaiters } from "./battleDebug.js";
+import { exposeDebugState } from "./debugHooks.js";
 
 /**
  * Mirror the current battle state to the DOM and dispatch the legacy
@@ -47,8 +48,7 @@ export function domStateListener(e) {
  * 1. Return a function handling the `battleStateChange` event.
  * 2. Inside the handler:
  *    a. Record the transition via `logStateTransition`.
- *    b. Read timer state from the machine and mirror it on
- *       `window.__classicBattleTimerState`.
+ *    b. Read timer state from the machine and expose it via `exposeDebugState`.
  *    c. Emit `debugPanelUpdate` for UI consumers.
  */
 export function createDebugLogListener(machine) {
@@ -58,9 +58,7 @@ export function createDebugLogListener(machine) {
     try {
       if (machine) {
         const timerState = machine.context?.engine?.getTimerState?.();
-        if (timerState && typeof window !== "undefined") {
-          window.__classicBattleTimerState = timerState;
-        }
+        if (timerState) exposeDebugState("classicBattleTimerState", timerState);
       }
     } catch {}
     emitBattleEvent("debugPanelUpdate");

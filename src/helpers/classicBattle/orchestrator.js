@@ -23,6 +23,7 @@ import {
   createWaiterResolver
 } from "./stateTransitionListeners.js";
 import { getStateSnapshot } from "./battleDebug.js";
+import { exposeDebugState } from "./debugHooks.js";
 
 let machine = null;
 
@@ -32,7 +33,7 @@ let machine = null;
  * @pseudocode
  * 1. Return early when not in a browser or when no engine is present.
  * 2. Read timer state from the machine's engine.
- * 3. Mirror the timer state on `window.__classicBattleTimerState`.
+ * 3. Mirror the timer state via `exposeDebugState('classicBattleTimerState')`.
  *
  * @param {import("./stateManager.js").ClassicBattleStateManager|null} machineRef - Current battle machine.
  * @returns {void}
@@ -115,9 +116,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   // Expose a safe getter for the running machine to avoid import cycles
   // in hot-path modules (e.g., selection handling).
   try {
-    if (typeof window !== "undefined") {
-      window.__getClassicBattleMachine = () => machine;
-    }
+    exposeDebugState("getClassicBattleMachine", () => machine);
   } catch {}
 
   if (typeof document !== "undefined") {

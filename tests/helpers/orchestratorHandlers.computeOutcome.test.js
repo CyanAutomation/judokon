@@ -1,8 +1,20 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+let debugHooks;
 
-beforeEach(() => {
+let store;
+beforeEach(async () => {
   vi.resetModules();
+  debugHooks = await import("../../src/helpers/classicBattle/debugHooks.js");
+  store = {};
+  vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
+    store[k] = v;
+  });
+  vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe("computeAndDispatchOutcome", () => {
@@ -24,7 +36,7 @@ describe("computeAndDispatchOutcome", () => {
 
     document.body.innerHTML = '<div id="player-card"></div><div id="opponent-card"></div>';
     document.body.dataset.battleState = "roundDecision";
-    window.__roundDebug = {};
+    debugHooks.exposeDebugState("roundDebug", {});
 
     const store = { playerChoice: "strength" };
     const machine = { dispatch: vi.fn().mockResolvedValue(undefined) };
@@ -54,7 +66,7 @@ describe("computeAndDispatchOutcome", () => {
 
     document.body.innerHTML = '<div id="player-card"></div><div id="opponent-card"></div>';
     document.body.dataset.battleState = "roundDecision";
-    window.__roundDebug = {};
+    debugHooks.exposeDebugState("roundDebug", {});
 
     const store = { playerChoice: "strength" };
     const machine = { dispatch: vi.fn().mockResolvedValue(undefined) };

@@ -30,6 +30,7 @@ import { setTestMode } from "../helpers/testModeUtils.js";
 import { wrap } from "../helpers/storage.js";
 import { BATTLE_POINTS_TO_WIN } from "../config/storageKeys.js";
 import { POINTS_TO_WIN_OPTIONS } from "../config/battleDefaults.js";
+import { readDebugState } from "../helpers/classicBattle/debugHooks.js";
 
 /**
  * Minimal DOM utils for the CLI page
@@ -375,7 +376,7 @@ function showQuitModal() {
       quitModal.close();
       clearBottomLine();
       try {
-        const machine = window.__getClassicBattleMachine?.();
+        const machine = readDebugState("getClassicBattleMachine")?.();
         if (machine) await machine.dispatch("interrupt", { reason: "quit" });
       } catch {}
       try {
@@ -443,7 +444,7 @@ function selectStat(stat) {
   } catch {}
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
-    const machine = window.__getClassicBattleMachine?.();
+    const machine = readDebugState("getClassicBattleMachine")?.();
     if (machine) machine.dispatch("statSelected");
   } catch {}
 }
@@ -511,7 +512,7 @@ export function autostartBattle() {
   try {
     const autostart = new URLSearchParams(location.search).get("autostart");
     if (autostart === "1") {
-      const machine = window.__getClassicBattleMachine?.();
+      const machine = readDebugState("getClassicBattleMachine")?.();
       if (machine) machine.dispatch("startClicked");
     }
   } catch {}
@@ -790,7 +791,7 @@ export function handleWaitingForPlayerActionKey(key) {
 export function handleRoundOverKey(key) {
   if (key === "enter" || key === " ") {
     try {
-      const machine = window.__getClassicBattleMachine?.();
+      const machine = readDebugState("getClassicBattleMachine")?.();
       if (machine) machine.dispatch("continue");
     } catch {}
     return true;
@@ -855,7 +856,7 @@ export function handleCooldownKey(key) {
     cooldownInterval = null;
     clearBottomLine();
     try {
-      const machine = window.__getClassicBattleMachine?.();
+      const machine = readDebugState("getClassicBattleMachine")?.();
       if (machine) machine.dispatch("ready");
     } catch {}
     return true;
@@ -932,7 +933,7 @@ function onClickAdvance(event) {
   if (event.target?.closest?.("#cli-shortcuts")) return;
   if (state === "roundOver") {
     try {
-      const machine = window.__getClassicBattleMachine?.();
+      const machine = readDebugState("getClassicBattleMachine")?.();
       if (machine) machine.dispatch("continue");
     } catch {}
   } else if (state === "cooldown") {
@@ -946,7 +947,7 @@ function onClickAdvance(event) {
     cooldownInterval = null;
     clearBottomLine();
     try {
-      const machine = window.__getClassicBattleMachine?.();
+      const machine = readDebugState("getClassicBattleMachine")?.();
       if (machine) machine.dispatch("ready");
     } catch {}
   }

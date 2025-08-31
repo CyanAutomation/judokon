@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { __setStateSnapshot } from "../../src/helpers/classicBattle/battleDebug.js";
+import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 
 vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
   getScores: () => ({ player: 1, opponent: 2 }),
@@ -17,6 +18,7 @@ vi.mock("../../src/helpers/testModeUtils.js", () => ({
 import { collectDebugState } from "../../src/helpers/classicBattle/uiHelpers.js";
 
 describe("collectDebugState", () => {
+  let store;
   beforeEach(() => {
     document.body.innerHTML = '<div id="opponent-card"><div></div><div></div></div>';
     __setStateSnapshot({
@@ -25,17 +27,22 @@ describe("collectDebugState", () => {
       event: "event",
       log: ["a", "b"]
     });
+    store = {};
+    vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
+      store[k] = v;
+    });
+    vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
+    debugHooks.exposeDebugState("roundDecisionEnter", 123);
+    debugHooks.exposeDebugState("guardFiredAt", 456);
+    debugHooks.exposeDebugState("guardOutcomeEvent", "guard");
+    debugHooks.exposeDebugState("roundDebug", 7);
     Object.assign(window, {
-      __roundDecisionEnter: 123,
-      __guardFiredAt: 456,
-      __guardOutcomeEvent: "guard",
       __getClassicBattleMachine: () => ({
         getState: () => "idle",
         statesByName: new Map([["idle", { triggers: [{ on: "start" }] }]])
       }),
       battleStore: { selectionMade: true, playerChoice: "power" },
       __buildTag: "v1",
-      __roundDebug: 7,
       __eventDebug: ["x"]
     });
   });
@@ -43,13 +50,10 @@ describe("collectDebugState", () => {
   afterEach(() => {
     document.body.innerHTML = "";
     __setStateSnapshot({ state: null, prev: null, event: null, log: [] });
-    delete window.__roundDecisionEnter;
-    delete window.__guardFiredAt;
-    delete window.__guardOutcomeEvent;
+    vi.restoreAllMocks();
     delete window.__getClassicBattleMachine;
     delete window.battleStore;
     delete window.__buildTag;
-    delete window.__roundDebug;
     delete window.__eventDebug;
   });
 

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 
 async function loadBattleCLI(autoSelect = true, withSkip = false) {
   const emitter = new EventTarget();
@@ -62,14 +63,17 @@ describe("battleCLI countdown", () => {
       <div id="snackbar-container"></div>
     `;
     const machine = { dispatch: vi.fn() };
-    window.__getClassicBattleMachine = vi.fn(() => machine);
+    debugHooks.exposeDebugState(
+      "getClassicBattleMachine",
+      vi.fn(() => machine)
+    );
   });
 
   afterEach(() => {
     vi.useRealTimers();
     document.body.innerHTML = "";
     delete window.__TEST__;
-    delete window.__getClassicBattleMachine;
+    debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
     vi.resetModules();
     vi.clearAllMocks();
     vi.doUnmock("../../src/helpers/featureFlags.js");
