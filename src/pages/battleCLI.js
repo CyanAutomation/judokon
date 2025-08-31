@@ -8,7 +8,7 @@ import {
 import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
 import { onBattleEvent, emitBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { STATS } from "../helpers/BattleEngine.js";
-import { setPointsToWin, getPointsToWin } from "../helpers/battleEngineFacade.js";
+import { setPointsToWin, getPointsToWin, getScores } from "../helpers/battleEngineFacade.js";
 import { fetchJson } from "../helpers/dataUtils.js";
 import { DATA_DIR } from "../helpers/constants.js";
 import { createModal } from "../components/Modal.js";
@@ -99,9 +99,14 @@ function setRoundMessage(text) {
   if (el) el.textContent = text || "";
 }
 
-function updateScoreLine(player, opponent) {
+function updateScoreLine() {
+  const { playerScore, opponentScore } = getScores();
   const el = byId("cli-score");
-  if (el) el.textContent = `You: ${player} Opponent: ${opponent}`;
+  if (el) {
+    el.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
+    el.dataset.scorePlayer = String(playerScore);
+    el.dataset.scoreOpponent = String(opponentScore);
+  }
 }
 
 function initSeed() {
@@ -941,7 +946,7 @@ function handleRoundResolved(e) {
     setRoundMessage(
       `${result.message} (${String(stat || "").toUpperCase()} – You: ${playerVal} Opponent: ${opponentVal})`
     );
-    updateScoreLine(result.playerScore ?? 0, result.opponentScore ?? 0);
+    updateScoreLine();
   }
 }
 
