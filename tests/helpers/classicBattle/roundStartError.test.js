@@ -32,10 +32,15 @@ describe("round start error recovery", () => {
       undefined,
       states
     );
+    const spy = vi.spyOn(machine, "dispatch");
 
     await roundStartEnter(machine);
 
     expect(machine.getState()).toBe("interruptRound");
+    expect(spy).toHaveBeenCalledWith("interrupt", {
+      reason: "roundStartError",
+      error: "no cards"
+    });
   });
 
   it("dispatches interrupt when startRoundWrapper throws", async () => {
@@ -64,9 +69,14 @@ describe("round start error recovery", () => {
       undefined,
       states
     );
+    const spy = vi.spyOn(machine, "dispatch");
 
     await roundStartEnter(machine);
 
     expect(machine.getState()).toBe("interruptRound");
+    expect(spy).toHaveBeenCalledWith("interrupt", {
+      reason: "roundStartError",
+      error: "sync fail"
+    });
   });
 });

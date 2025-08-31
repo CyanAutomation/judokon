@@ -24,9 +24,10 @@ describe("roundDecisionEnter", () => {
     };
 
     const p = mod.roundDecisionEnter(machine);
+    expect(typeof window.__roundDecisionGuard).toBe("function");
     await vi.runAllTimersAsync();
     await p;
-    expect(typeof window.__roundDecisionGuard).toBe("function");
+    expect(window.__roundDecisionGuard).toBeNull();
     vi.useRealTimers();
   });
 
@@ -120,7 +121,10 @@ describe("roundDecisionEnter", () => {
       "scoreboardShowMessage",
       "Round error. Recovering…"
     );
-    expect(machine.dispatch).toHaveBeenCalledWith("interrupt", { reason: "roundResolutionError" });
+    expect(machine.dispatch).toHaveBeenCalledWith("interrupt", {
+      reason: "roundResolutionError",
+      error: "boom"
+    });
     expect(window.__roundDecisionGuard).toBeNull();
     await vi.runAllTimersAsync();
     vi.useRealTimers();
