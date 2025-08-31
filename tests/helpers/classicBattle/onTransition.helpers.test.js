@@ -54,20 +54,25 @@ describe("onTransition helpers", () => {
     machine = orchestrator.getBattleStateMachine();
   });
 
-  it("updates debug globals and timer info on transition", async () => {
+  it("emits state change and debug events on transition", async () => {
+    const { onBattleEvent, offBattleEvent } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
+    const stateSpy = vi.fn();
+    const debugSpy = vi.fn();
+    onBattleEvent("battleStateChange", stateSpy);
+    onBattleEvent("debugPanelUpdate", debugSpy);
     await machine.dispatch("stateA");
-    expect(window.__classicBattleState).toBe("stateA");
-    const el = document.getElementById("machine-state");
-    expect(el).toBeNull();
-    expect(window.__classicBattleTimerState).toEqual({ remaining: 30, paused: false });
+    expect(stateSpy).toHaveBeenCalled();
+    expect(debugSpy).toHaveBeenCalled();
+    offBattleEvent("battleStateChange", stateSpy);
+    offBattleEvent("debugPanelUpdate", debugSpy);
   });
 
-  it("mirrors state to dataset and dispatches legacy event", async () => {
+  it("dispatches legacy DOM event on transition", async () => {
     const handler = vi.fn();
     document.addEventListener("battle:state", handler);
     await machine.dispatch("stateA");
-    expect(document.body.dataset.battleState).toBe("stateA");
-    expect(document.body.dataset.prevBattleState).toBe("init");
     expect(handler).toHaveBeenCalledTimes(1);
     const evt = handler.mock.calls[0][0];
     expect(evt.detail).toEqual({ from: "init", to: "stateA", event: "stateA" });

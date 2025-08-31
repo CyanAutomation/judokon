@@ -23,12 +23,6 @@ vi.mock("../../../src/helpers/battleEngineFacade.js", async () => {
   };
 });
 
-vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
-  emitBattleEvent: vi.fn(),
-  onBattleEvent: vi.fn(),
-  offBattleEvent: vi.fn()
-}));
-
 // Capture dispatched machine events and simulate no machine at click time
 vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
   const events = [];
@@ -62,8 +56,15 @@ describe("race: statSelected before setMachine does not stall round", () => {
     </ul>`;
     document.body.append(playerCard, opponentCard, header);
 
-    // Make selectionHandler believe the machine is active, while event dispatcher isn't wired yet
-    document.body.dataset.battleState = "waitingForPlayerAction";
+    const { onBattleEvent, emitBattleEvent, __resetBattleEventTarget } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
+    const { domStateListener } = await import(
+      "../../../src/helpers/classicBattle/stateTransitionListeners.js"
+    );
+    __resetBattleEventTarget();
+    onBattleEvent("battleStateChange", domStateListener);
+    emitBattleEvent("battleStateChange", { from: null, to: "waitingForPlayerAction", event: null });
 
     const selectionMod = await import("../../../src/helpers/classicBattle/selectionHandler.js");
     const { handleStatSelection, getPlayerAndOpponentValues } = selectionMod;

@@ -42,21 +42,17 @@ describe("classic battle state table transitions", () => {
     if (!Array.isArray(state.triggers)) continue;
     for (const trigger of state.triggers) {
       it(`${state.name} --${trigger.on}--> ${trigger.target}`, async () => {
-        document.body.dataset.battleState = "";
-        document.body.dataset.prevBattleState = "";
         const spy = vi.fn();
-        const onTransition = ({ from, to }) => {
-          document.body.dataset.prevBattleState = from || "";
-          document.body.dataset.battleState = to;
-          emitBattleEvent("debugPanelUpdate");
+        const onTransition = ({ from, to, event }) => {
+          emitBattleEvent("battleStateChange", { from, to, event });
         };
-        onBattleEvent("debugPanelUpdate", spy);
+        onBattleEvent("battleStateChange", spy);
         const machine = createMachineForTransition(state, trigger, onTransition);
         await machine.dispatch(trigger.on);
         expect(machine.getState()).toBe(trigger.target);
         expect(spy).toHaveBeenCalled();
         expect(isStateTransition(state.name, trigger.target)).toBe(true);
-        offBattleEvent("debugPanelUpdate", spy);
+        offBattleEvent("battleStateChange", spy);
       });
     }
   }

@@ -46,7 +46,6 @@ vi.mock("../../../src/helpers/cardUtils.js", () => ({ toggleInspectorPanels: vi.
 vi.mock("../../../src/components/Modal.js", () => ({ createModal: vi.fn() }));
 vi.mock("../../../src/components/Button.js", () => ({ createButton: vi.fn() }));
 vi.mock("../../../src/helpers/classicBattle/uiService.js", () => ({ syncScoreDisplay: vi.fn() }));
-vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({ onBattleEvent: vi.fn() }));
 
 import { updateDebugPanel } from "../../../src/helpers/classicBattle/uiHelpers.js";
 
@@ -76,8 +75,16 @@ describe("updateDebugPanel", () => {
     expect(output.machineTriggers).toBeUndefined();
   });
 
-  it("includes machine diagnostics when available", () => {
-    window.__classicBattleState = "idle";
+  it("includes machine diagnostics when available", async () => {
+    const { onBattleEvent, emitBattleEvent, __resetBattleEventTarget } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
+    const { createDebugLogListener } = await import(
+      "../../../src/helpers/classicBattle/stateTransitionListeners.js"
+    );
+    __resetBattleEventTarget();
+    onBattleEvent("battleStateChange", createDebugLogListener(null));
+    emitBattleEvent("battleStateChange", { from: null, to: "idle", event: null });
     window.__getClassicBattleMachine = () => ({
       getState: () => "idle",
       statesByName: new Map([["idle", { triggers: [{ on: "start" }, { on: "quit" }] }]])

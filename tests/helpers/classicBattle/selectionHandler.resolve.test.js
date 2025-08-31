@@ -5,11 +5,6 @@ vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   stopTimer: vi.fn()
 }));
 
-vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
-  emitBattleEvent: vi.fn(),
-  onBattleEvent: vi.fn()
-}));
-
 vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: vi.fn()
 }));
@@ -32,6 +27,14 @@ describe("handleStatSelection resolution paths", () => {
   beforeEach(async () => {
     vi.useFakeTimers();
     vi.spyOn(global, "setTimeout");
+    const { onBattleEvent, __resetBattleEventTarget } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
+    const { domStateListener } = await import(
+      "../../../src/helpers/classicBattle/stateTransitionListeners.js"
+    );
+    __resetBattleEventTarget();
+    onBattleEvent("battleStateChange", domStateListener);
     store = { selectionMade: false, playerChoice: null, statTimeoutId: null, autoSelectId: null };
     dispatchMock = (await import("../../../src/helpers/classicBattle/eventDispatcher.js"))
       .dispatchBattleEvent;
@@ -47,7 +50,8 @@ describe("handleStatSelection resolution paths", () => {
   });
 
   it("uses state machine when available", async () => {
-    document.body.dataset.battleState = "roundDecision";
+    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    emitBattleEvent("battleStateChange", { from: null, to: "roundDecision", event: null });
     dispatchMock.mockResolvedValue();
 
     await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
@@ -73,7 +77,8 @@ describe("handleStatSelection resolution paths", () => {
   });
 
   it("falls back to direct resolution on dispatch error", async () => {
-    document.body.dataset.battleState = "roundDecision";
+    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    emitBattleEvent("battleStateChange", { from: null, to: "roundDecision", event: null });
     dispatchMock.mockRejectedValue(new Error("fail"));
     resolveMock.mockImplementation(async (s) => {
       s.playerChoice = null;
