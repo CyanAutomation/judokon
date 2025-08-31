@@ -95,4 +95,15 @@ test.describe("Classic Battle CLI", () => {
     await expect(score).toHaveText(afterRoundScore || "");
     expect(cardAfter).not.toBe(cardBefore);
   });
+
+  test("returns to lobby after quitting", async ({ page }) => {
+    await page.goto("/src/pages/battleCLI.html");
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    await page.keyboard.press("q");
+    const confirm = page.locator("#confirm-quit-button");
+    await expect(confirm).toBeVisible();
+    await confirm.click();
+    await page.waitForURL("**/index.html");
+    await expect(page.locator(".home-screen")).toBeVisible();
+  });
 });
