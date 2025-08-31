@@ -121,6 +121,29 @@ describe("battleCLI event handlers", () => {
     expect(document.getElementById("play-again-button")).toBeTruthy();
   });
 
+  it("clears verbose log on new match start", async () => {
+    const { handlers } = await loadHandlers();
+    document.body.innerHTML = '<pre id="cli-verbose-log">old</pre>';
+    handlers.handleBattleState({ detail: { from: "roundOver", to: "matchStart" } });
+    expect(document.getElementById("cli-verbose-log").textContent).toBe("");
+  });
+
+  it("clears verbose log when play again clicked", async () => {
+    const { handlers } = await loadHandlers();
+    document.body.innerHTML = '<main id="cli-main"></main><pre id="cli-verbose-log">old</pre>';
+    const reload = vi.fn();
+    const originalLocation = window.location;
+    // @ts-ignore
+    delete window.location;
+    // Provide minimal reload stub
+    window.location = { reload };
+    handlers.handleMatchOver();
+    document.getElementById("play-again-button").click();
+    expect(document.getElementById("cli-verbose-log").textContent).toBe("");
+    expect(reload).toHaveBeenCalled();
+    window.location = originalLocation;
+  });
+
   it("handles battle state transitions", async () => {
     const { handlers, updateBattleStateBadge } = await loadHandlers();
     document.body.innerHTML = '<div id="snackbar-container"></div>';

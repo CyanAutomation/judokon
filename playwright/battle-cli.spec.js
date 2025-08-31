@@ -116,5 +116,15 @@ test.describe("Classic Battle CLI", () => {
     expect(Number(secondPlayer) + Number(secondOpponent)).toBeGreaterThanOrEqual(
       Number(firstPlayer) + Number(firstOpponent)
     );
+
+  test("returns to lobby after quitting", async ({ page }) => {
+    await page.goto("/src/pages/battleCLI.html");
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    await page.keyboard.press("q");
+    const confirm = page.locator("#confirm-quit-button");
+    await expect(confirm).toBeVisible();
+    await confirm.click();
+    await page.waitForURL("**/index.html");
+    await expect(page.locator(".home-screen")).toBeVisible();
   });
 });
