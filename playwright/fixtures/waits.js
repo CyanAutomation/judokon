@@ -36,21 +36,23 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
     async (args) => {
       const s = args.stateName;
       const t = args.timeout;
-      try {
-        const mod = await import("/src/helpers/classicBattle/battleDebug.js");
-        await mod.waitForState(s, t);
-        return true;
-      } catch {}
+      if (typeof window.waitForState === "function") {
+        try {
+          await window.waitForState(s, t);
+          return true;
+        } catch {}
+      }
       // Fallback: poll
       const start = Date.now();
       const deadline = start + (typeof t === "number" ? t : 10000);
       while (Date.now() < deadline) {
         const d = document.body?.dataset?.battleState || null;
         let w = null;
-        try {
-          const mod = await import("/src/helpers/classicBattle/battleDebug.js");
-          w = mod.getStateSnapshot().state;
-        } catch {}
+        if (typeof window.getStateSnapshot === "function") {
+          try {
+            w = window.getStateSnapshot().state;
+          } catch {}
+        }
         if (d === s || w === s) return true;
         await new Promise((r) => setTimeout(r, 25));
       }
@@ -66,8 +68,9 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
       const d = document.body?.dataset?.battleState || null;
       let snap = { state: null, log: [] };
       try {
-        const mod = await import("/src/helpers/classicBattle/battleDebug.js");
-        snap = mod.getStateSnapshot();
+        if (typeof window.getStateSnapshot === "function") {
+          snap = window.getStateSnapshot();
+        }
       } catch {}
       const el = document.getElementById("machine-state");
       const t = el ? el.textContent : null;
@@ -105,14 +108,16 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
       const win = await page
         .evaluate(async () => {
           try {
-            const mod = await import("/src/helpers/classicBattle/battleDebug.js");
-            const snap = mod.getStateSnapshot();
-            return {
-              classicState: snap.state,
-              stateLog: Array.isArray(snap.log) ? snap.log.slice(-20) : null,
-              dataset: document.body?.dataset?.battleState || null,
-              prev: document.body?.dataset?.prevBattleState || null
-            };
+            if (typeof window.getStateSnapshot === "function") {
+              const snap = window.getStateSnapshot();
+              return {
+                classicState: snap.state,
+                stateLog: Array.isArray(snap.log) ? snap.log.slice(-20) : null,
+                dataset: document.body?.dataset?.battleState || null,
+                prev: document.body?.dataset?.prevBattleState || null
+              };
+            }
+            return null;
           } catch {
             return null;
           }
