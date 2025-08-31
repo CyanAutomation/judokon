@@ -30,15 +30,18 @@ export function bindUIHelperEventHandlersDynamic() {
     } catch {}
   });
 
-  onBattleEvent("statSelected", async () => {
+  onBattleEvent("statSelected", async (e) => {
     try {
       scoreboard.clearTimer?.();
     } catch {}
     try {
-      opponentSnackbarId = setTimeout(
-        () => showSnackbar(t("ui.opponentChoosing")),
-        opponentDelayMs
-      );
+      const opts = (e && e.detail && e.detail.opts) || {};
+      if (!opts.delayOpponentMessage) {
+        opponentSnackbarId = setTimeout(
+          () => showSnackbar(t("ui.opponentChoosing")),
+          opponentDelayMs
+        );
+      }
     } catch {}
   });
 

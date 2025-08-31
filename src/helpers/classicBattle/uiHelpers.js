@@ -1691,9 +1691,12 @@ export function bindUIHelperEventHandlers() {
       .catch(() => {});
   });
 
-  onBattleEvent("statSelected", () => {
+  onBattleEvent("statSelected", (e) => {
     scoreboard.clearTimer();
-    opponentSnackbarId = setTimeout(() => showSnackbar(t("ui.opponentChoosing")), opponentDelayMs);
+    const opts = (e && e.detail && e.detail.opts) || {};
+    if (!opts.delayOpponentMessage) {
+      opponentSnackbarId = setTimeout(() => showSnackbar(t("ui.opponentChoosing")), opponentDelayMs);
+    }
   });
 
   onBattleEvent("roundResolved", (e) => {

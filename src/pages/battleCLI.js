@@ -167,6 +167,10 @@ function renderStartButton() {
   });
   btn.addEventListener("click", () => {
     try {
+      // Notify UI/event listeners that start was clicked
+      emitBattleEvent("startClicked");
+    } catch {}
+    try {
       const getter = debugHooks.readDebugState("getClassicBattleMachine");
       const machine = typeof getter === "function" ? getter() : getter;
       if (machine) machine.dispatch("startClicked");

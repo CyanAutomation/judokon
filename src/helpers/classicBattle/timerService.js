@@ -418,7 +418,7 @@ export function handleStatSelectionTimeout(
         const secs = computeNextRoundCooldown();
         scheduler.setTimeout(() => {
           try { showSnackbar(t("ui.nextRoundIn", { seconds: secs })); } catch {}
-        }, 800);
+        }, 1500);
       } catch {}
       try {
         scheduler.setTimeout(() => {
