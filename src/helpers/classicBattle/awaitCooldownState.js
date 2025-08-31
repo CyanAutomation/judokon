@@ -16,7 +16,7 @@ export function awaitCooldownState() {
         typeof window !== "undefined" && window.__classicBattleState
           ? window.__classicBattleState
           : null;
-      if (!state || state === "cooldown" || state === "roundOver") {
+      if (!state || state === "cooldown") {
         resolve();
         return;
       }

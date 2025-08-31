@@ -407,7 +407,9 @@ export function handleStatSelectionTimeout(
  * @pseudocode
  * 1. Clear the skip handler and scoreboard timer.
  * 2. Enable the Next button and mark it as ready.
- * 3. Dispatch "ready", update the debug panel, and resolve the ready promise.
+ * 3. Wait for the battle state to reach "cooldown".
+ * 4. Dispatch "ready" and wait for handlers to complete.
+ * 5. Mark the button as ready again, update the debug panel, and resolve the ready promise.
  *
  * @param {{resolveReady: (() => void) | null}} controls - Timer controls.
  * @param {HTMLButtonElement | null} btn - Next button element.
@@ -419,7 +421,7 @@ export async function handleNextRoundExpiration(controls, btn) {
   markNextReady(btn);
   await awaitCooldownState();
   try {
-    dispatchBattleEvent("ready");
+    await dispatchBattleEvent("ready");
   } catch {}
   markNextReady(btn);
   updateDebugPanel();
