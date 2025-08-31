@@ -30,26 +30,6 @@
  *
  * @param {HTMLElement} container - Carousel container element.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export function setupFocusHandlers(container) {
   function updateCardFocusStyles() {
     const cards = Array.from(container.querySelectorAll(".judoka-card"));

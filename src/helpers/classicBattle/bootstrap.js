@@ -23,26 +23,6 @@ import { initRoundSelectModal } from "./roundSelectModal.js";
  * 3. Await `startPromise`.
  * 4. Return the debug API after the round is selected.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export async function setupClassicBattlePage() {
   let debugApi;
   let resolveStart;

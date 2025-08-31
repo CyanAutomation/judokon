@@ -107,26 +107,6 @@ function addScrollMarkers(container, wrapper) {
  * @param {HTMLElement} [container] - The carousel container element.
  * @param {HTMLElement} [wrapper] - The carousel wrapper element.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export function initScrollMarkers(container, wrapper) {
   if (!container || !wrapper) return;
   requestAnimationFrame(() => addScrollMarkers(container, wrapper));
@@ -246,26 +226,17 @@ export async function buildCardCarousel(judokaList, gokyoData) {
 
   return wrapper;
 }
-
 /**
- * @summary TODO: Add summary
+ * Re-export `addScrollMarkers` for external usage.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Consumers import this named export to initialize or attach scroll markers
+ *    after the carousel DOM is available.
+ * 2. The actual implementation is provided by `addScrollMarkers` defined
+ *    earlier in this module.
+ *
+ * @param {HTMLElement} [container] - The carousel container element.
+ * @param {HTMLElement} [wrapper] - The carousel wrapper element.
  */
 export { addScrollMarkers };
 
@@ -274,26 +245,6 @@ export { addScrollMarkers };
  *
  * @pseudocode
  * 1. Set a global flag so `buildCardCarousel` shows the spinner without delay.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 export function showSpinnerImmediately() {
   globalThis.__showSpinnerImmediately__ = true;

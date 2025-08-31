@@ -267,106 +267,59 @@ export async function drawCards() {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Return the currently selected opponent judoka, if any.
+ *
+ * @pseudocode
+ * 1. Return the module-scoped `opponentJudoka` variable.
+ *
+ * @returns {object|null}
+ */
 export function getOpponentJudoka() {
   return opponentJudoka;
 }
 
 /**
- * @summary TODO: Add summary
+ * Clear the stored opponent judoka selection.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Set `opponentJudoka` to `null` to forget the previous selection.
  */
 export function clearOpponentJudoka() {
   opponentJudoka = null;
 }
 
 /**
- * @summary TODO: Add summary
+ * Get the in-memory gokyo lookup (may be null if not loaded).
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Return the module-scoped `gokyoLookup` value.
+ *
+ * @returns {Object|null}
  */
 export function getGokyoLookup() {
   return gokyoLookup;
 }
 
 /**
- * Ensure the gokyo lookup is available, loading it if missing.
- * Primarily used by tests or code paths that render the opponent card directly.
- * @returns {Promise<ReturnType<typeof createGokyoLookup>>} Lookup (empty on failure).
- */
-/**
- * @summary TODO: Add summary
+ * Ensure the gokyo lookup is loaded and return it.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. If `gokyoLookup` exists, return it.
+ * 2. Otherwise call `ensureGokyoLookup()` which fetches and constructs the lookup.
+ * 3. Return the (possibly empty) lookup object.
+ *
+ * @returns {Promise<Object>}
  */
 export async function getOrLoadGokyoLookup() {
   return await ensureGokyoLookup();
 }
 
 /**
- * @summary TODO: Add summary
+ * Reset module state for tests.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Clear cached `judokaData`, `gokyoLookup`, `opponentJudoka`, and `loadErrorModal`.
  */
 export function _resetForTest() {
   judokaData = null;

@@ -16,26 +16,6 @@ let stateGetter = () => null;
  *
  * @param {(eventName: string, payload?: any) => Promise<void>|void} fn
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export function setBattleDispatcher(fn) {
   if (typeof fn === "function") dispatcher = fn;
 }
@@ -48,26 +28,6 @@ export function setBattleDispatcher(fn) {
  * 2. `getBattleState` will later use this stored getter.
  *
  * @param {() => string|null} fn
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 export function setBattleStateGetter(fn) {
   if (typeof fn === "function") stateGetter = fn;
@@ -82,26 +42,6 @@ export function setBattleStateGetter(fn) {
  *
  * @param {string} eventName
  * @param {any} [payload]
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 export async function dispatchBattleEvent(eventName, payload) {
   try {
