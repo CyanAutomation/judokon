@@ -658,6 +658,37 @@ export async function resolveSelectionIfPresent(store) {
 }
 
 /**
+ * Await a player's stat selection or time out.
+ *
+ * @param {object} store - Battle store.
+ * @param {number} timeoutMs - Maximum wait in milliseconds.
+ * @returns {Promise<void>} Resolves on `statSelected`; rejects on timeout.
+ * @pseudocode
+ * 1. If `store.playerChoice` exists → resolve immediately.
+ * 2. Listen for `statSelected` and resolve when fired.
+ * 3. Start a timeout that rejects after `timeoutMs`.
+ * 4. Return `Promise.race` of event and timeout promises.
+ */
+export function waitForPlayerChoice(store, timeoutMs) {
+  if (store.playerChoice) return Promise.resolve();
+  let handler;
+  const eventPromise = new Promise((resolve) => {
+    handler = () => {
+      offBattleEvent("statSelected", handler);
+      resolve();
+    };
+    onBattleEvent("statSelected", handler);
+  });
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => {
+      offBattleEvent("statSelected", handler);
+      reject(new Error("timeout"));
+    }, timeoutMs);
+  });
+  return Promise.race([eventPromise, timeoutPromise]);
+}
+
+/**
  * Orchestrate round decision entry by scheduling a guard and resolving any
  * immediate selection.
  *
@@ -715,13 +746,9 @@ export async function roundDecisionEnter(machine) {
     return;
   }
 
-  let waited = 0;
-  const maxWait = 1500;
-  while (!store.playerChoice && waited < maxWait) {
-    await new Promise((r) => setTimeout(r, 50));
-    waited += 50;
-  }
-  if (!store.playerChoice) {
+  try {
+    await waitForPlayerChoice(store, 1500);
+  } catch {
     try {
       emitBattleEvent("scoreboardShowMessage", "No selection detected. Interrupting round.");
     } catch {}
