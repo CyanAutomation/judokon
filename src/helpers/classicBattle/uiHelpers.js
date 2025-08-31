@@ -1748,7 +1748,6 @@ export function bindUIHelperEventHandlersDynamic() {
     const container = document.getElementById("opponent-card");
     try {
       const { getOpponentCardData } = await import("./opponentController.js");
-      const { renderOpponentCard } = await import("./uiHelpers.js");
       const j = await getOpponentCardData();
       if (j) await renderOpponentCard(j, container);
     } catch {}
