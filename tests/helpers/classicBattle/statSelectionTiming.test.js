@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import "./commonMocks.js";
 import { setupClassicBattleHooks } from "./setupTestEnv.js";
 
-describe("classicBattle selection prompt", () => {
+describe("classicBattle stat selection timing", () => {
   const getEnv = setupClassicBattleHooks();
 
   beforeEach(() => {
@@ -10,6 +10,24 @@ describe("classicBattle selection prompt", () => {
       if (typeof window !== "undefined" && window.__disableSnackbars)
         delete window.__disableSnackbars;
     } catch {}
+  });
+
+  it("auto-selects a stat when timer expires", async () => {
+    const { timerSpy } = getEnv();
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const { initClassicBattleTest } = await import("./initClassicBattle.js");
+    const battleMod = await initClassicBattleTest({ afterMock: true });
+    const store = battleMod.createBattleStore();
+    battleMod._resetForTest(store);
+    await battleMod.startRound(store, battleMod.applyRoundUI);
+    const pending = battleMod.__triggerRoundTimeoutNow(store);
+    await timerSpy.runAllTimersAsync();
+    await pending;
+    const score = document.querySelector("header #score-display").textContent;
+    const msg = document.querySelector("header #round-message").textContent;
+    expect(score).toBe("You: 1\nOpponent: 0");
+    // Ensure we surfaced the win message; cooldown drift hints must not overwrite it
+    expect(msg).toMatch(/win the round/i);
   });
 
   it("shows selection prompt until a stat is chosen", async () => {
