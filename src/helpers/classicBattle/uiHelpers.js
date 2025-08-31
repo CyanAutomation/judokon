@@ -1695,7 +1695,10 @@ export function bindUIHelperEventHandlers() {
     scoreboard.clearTimer();
     const opts = (e && e.detail && e.detail.opts) || {};
     if (!opts.delayOpponentMessage) {
-      opponentSnackbarId = setTimeout(() => showSnackbar(t("ui.opponentChoosing")), opponentDelayMs);
+      opponentSnackbarId = setTimeout(
+        () => showSnackbar(t("ui.opponentChoosing")),
+        opponentDelayMs
+      );
     }
   });
 
