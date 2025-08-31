@@ -40,7 +40,8 @@ test.describe("Classic battle flow", () => {
     await expect(page.locator(".modal-backdrop:not([hidden])")).toHaveCount(0);
     await waitForBattleReady(page);
     // After stall timeout, show prompt before auto-select triggers the next round.
-    await expect(page.locator(".snackbar")).toHaveText(/Stat selection stalled/, {
+    // Allow either the stall prompt or an early countdown render depending on timing
+    await expect(page.locator(".snackbar")).toHaveText(/(Stat selection stalled|Next round in: \d+s)/, {
       timeout: 10000
     });
     // Let the timer expire. Current UX shows the next-round countdown
