@@ -69,7 +69,7 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 35000) {
       opponentVal = Number.isFinite(raw) ? raw : opponentVal;
     } catch {}
     return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
-  });
+  }, store);
   store.stallTimeoutMs = stallTimeoutMs;
   store.statTimeoutId = setTimeout(
     () =>
