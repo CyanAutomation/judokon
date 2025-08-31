@@ -12,7 +12,7 @@ describe("initClassicBattleOrchestrator state change hooks", () => {
       BattleStateMachine: {
         create: vi.fn(async (_onEnter, _context, onTransition) => {
           await onTransition({ from: "a", to: "b", event: "go" });
-          return { context: {} };
+          return { context: {}, getState: () => "b" };
         })
       }
     }));
