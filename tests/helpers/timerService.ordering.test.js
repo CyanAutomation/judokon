@@ -74,7 +74,7 @@ describe("timerService timeout ordering", () => {
     const mod = await import("../../src/helpers/classicBattle/timerService.js");
 
     // Start timer with a no-op onExpiredSelect
-    await mod.startTimer(async () => {});
+    await mod.startTimer(async () => {}, { selectionMade: false });
 
     // At this point, `timeout` dispatch is pending; ensure autoSelect has begun
     expect(autoSelectCalled).toBe(true);

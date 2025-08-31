@@ -98,7 +98,7 @@ describe("Scoreboard integration without explicit init", () => {
 
     // Round timer (selection phase) updates #next-round-timer via scoreboard.updateTimer
     const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
-    const promise = startTimer(async () => {});
+    const promise = startTimer(async () => {}, { selectionMade: false });
     // Initial tick shows 3
     await vi.advanceTimersByTimeAsync(0);
     expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 3s");
@@ -118,7 +118,7 @@ describe("Scoreboard integration without explicit init", () => {
     const scoreboard = await import("../../src/helpers/setupScoreboard.js");
     const showMessageSpy = vi.spyOn(scoreboard, "showMessage");
     const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
-    await startTimer(async () => {});
+    await startTimer(async () => {}, { selectionMade: false });
     roundDrift(2);
     expect(showMessageSpy).toHaveBeenCalledWith("Waiting…");
   });

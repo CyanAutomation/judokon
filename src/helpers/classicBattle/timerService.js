@@ -264,9 +264,10 @@ async function forceAutoSelectAndDispatch(onExpiredSelect) {
  *
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>} onExpiredSelect
  * - Callback to handle stat auto-selection.
+ * @param {{selectionMade?: boolean}|null} [store=null] - Battle state store.
  * @returns {Promise<void>} Resolves when the timer begins.
  */
-export async function startTimer(onExpiredSelect) {
+export async function startTimer(onExpiredSelect, store = null) {
   let duration = 30;
   let synced = true;
 
@@ -278,16 +279,13 @@ export async function startTimer(onExpiredSelect) {
     setSkipHandler(null);
     scoreboard.clearTimer();
     // If a selection was already made, do not auto-select again.
+    const alreadyPicked = !!(store && store.selectionMade);
     try {
-      const store = typeof window !== "undefined" ? window.battleStore : null;
-      const alreadyPicked = !!(store && store.selectionMade);
-      try {
-        console.warn(`[test] onExpired: selectionMade=${alreadyPicked}`);
-      } catch {}
-      if (alreadyPicked) {
-        return;
-      }
+      console.warn(`[test] onExpired: selectionMade=${alreadyPicked}`);
     } catch {}
+    if (alreadyPicked) {
+      return;
+    }
     try {
       emitBattleEvent("roundTimeout");
     } catch {}
@@ -433,6 +431,63 @@ export async function handleNextRoundExpiration(controls, btn) {
 }
 
 /**
+ * Create an expiration handler for the next-round cooldown timer.
+ *
+ * @pseudocode
+ * 1. Ignore subsequent calls after the first invocation.
+ * 2. Delegate to `handleNextRoundExpiration(controls, btn)`.
+ *
+ * @param {{resolveReady: (() => void) | null}} controls - Timer controls.
+ * @param {HTMLButtonElement | null} btn - Next button element.
+ * @returns {() => Promise<void>} Expiration handler.
+ */
+function createNextRoundOnExpired(controls, btn) {
+  let expired = false;
+  return () => {
+    if (expired) return;
+    expired = true;
+    return handleNextRoundExpiration(controls, btn);
+  };
+}
+
+/**
+ * Prepare and return the cooldown timer for the next round.
+ *
+ * @pseudocode
+ * 1. Create a round timer and attach `CooldownRenderer`.
+ * 2. Register the provided expiration handler.
+ * 3. Forward drift events to a fallback message.
+ * 4. Register a skip handler that stops the timer.
+ *
+ * @param {{timer: ReturnType<typeof createRoundTimer>|null}} controls - Timer controls.
+ * @param {HTMLButtonElement | null} btn - Next button element.
+ * @param {number} cooldownSeconds - Cooldown duration in seconds.
+ * @param {() => Promise<void>} onExpired - Expiration handler.
+ * @returns {ReturnType<typeof createRoundTimer>} Prepared timer instance.
+ */
+function prepareNextRoundTimer(controls, btn, cooldownSeconds, onExpired) {
+  const timer = createRoundTimer();
+  attachCooldownRenderer(timer, cooldownSeconds);
+  timer.on("expired", onExpired);
+  timer.on("drift", () => {
+    const msgEl = document.getElementById("round-message");
+    if (msgEl && msgEl.textContent) {
+      showSnackbar("Waiting…");
+    } else {
+      scoreboard.showMessage("Waiting…");
+    }
+  });
+  controls.timer = timer;
+  setSkipHandler(() => {
+    try {
+      console.warn("[test] skip: stop nextRoundTimer");
+    } catch {}
+    controls.timer?.stop();
+  });
+  return timer;
+}
+
+/**
  * Enable the Next Round button after a cooldown period.
  *
  * @pseudocode
@@ -496,30 +551,8 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
   // while the machine is still transitioning. Scheduling early is safe — the
   // expiration handler checks the live state before dispatching 'ready'.
 
-  const timer = createRoundTimer();
-  attachCooldownRenderer(timer, cooldownSeconds);
-  let expired = false;
-  const onExpired = () => {
-    if (expired) return;
-    expired = true;
-    return handleNextRoundExpiration(controls, btn);
-  };
-  timer.on("expired", onExpired);
-  timer.on("drift", () => {
-    const msgEl = document.getElementById("round-message");
-    if (msgEl && msgEl.textContent) {
-      showSnackbar("Waiting…");
-    } else {
-      scoreboard.showMessage("Waiting…");
-    }
-  });
-  controls.timer = timer;
-  setSkipHandler(() => {
-    try {
-      console.warn("[test] skip: stop nextRoundTimer");
-    } catch {}
-    controls.timer?.stop();
-  });
+  const onExpired = createNextRoundOnExpired(controls, btn);
+  prepareNextRoundTimer(controls, btn, cooldownSeconds, onExpired);
 
   // Start engine-backed countdown on the next tick.
   scheduler.setTimeout(() => controls.timer.start(cooldownSeconds), 0);
