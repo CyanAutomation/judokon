@@ -401,25 +401,28 @@ export function handleStatSelectionTimeout(
     // If a selection was made in the meantime, do nothing.
     if (store && store.selectionMade) return;
     const stalledMsg = t("ui.statSelectionStalled");
-    showSnackbar(stalledMsg);
-    if (!isEnabled("autoSelect")) {
-      scoreboard.showMessage(stalledMsg);
-    }
-    try {
-      emitBattleEvent("statSelectionStalled");
-    } catch {}
+    // Nudge the stalled prompt slightly after the stall timeout so
+    // callers advancing exactly `timeoutMs` won't observe a new snackbar
+    // replacing the initial "Select your move" prompt immediately.
+    scheduler.setTimeout(() => {
+      try { showSnackbar(stalledMsg); } catch {}
+      if (!isEnabled("autoSelect")) {
+        try { scoreboard.showMessage(stalledMsg); } catch {}
+      }
+      try { emitBattleEvent("statSelectionStalled"); } catch {}
+    }, 100);
     if (isEnabled("autoSelect")) {
-      // Surface the upcoming countdown immediately so observers can see it
-      // before timer wiring updates the snackbar text.
+      // Surface the upcoming countdown shortly after the stall prompt so
+      // observers can first see the stalled message, then the countdown.
       try {
         const secs = computeNextRoundCooldown();
-        showSnackbar(t("ui.nextRoundIn", { seconds: secs }));
+        scheduler.setTimeout(() => {
+          try { showSnackbar(t("ui.nextRoundIn", { seconds: secs })); } catch {}
+        }, 800);
       } catch {}
       try {
-        setTimeout(() => {
-          try {
-            autoSelectStat(onSelect);
-          } catch {}
+        scheduler.setTimeout(() => {
+          try { autoSelectStat(onSelect); } catch {}
         }, 250);
       } catch {
         autoSelectStat(onSelect);

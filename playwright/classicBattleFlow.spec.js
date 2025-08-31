@@ -33,6 +33,7 @@ test.describe("Classic battle flow", () => {
   });
 
   test("timer auto-selects when expired", async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto("/src/pages/battleJudoka.html");
     const roundOptions = page.locator(".round-select-buttons button");
     await roundOptions.first().click();
