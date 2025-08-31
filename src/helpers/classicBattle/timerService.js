@@ -405,11 +405,17 @@ export function handleStatSelectionTimeout(
     // callers advancing exactly `timeoutMs` won't observe a new snackbar
     // replacing the initial "Select your move" prompt immediately.
     scheduler.setTimeout(() => {
-      try { showSnackbar(stalledMsg); } catch {}
+      try {
+        showSnackbar(stalledMsg);
+      } catch {}
       if (!isEnabled("autoSelect")) {
-        try { scoreboard.showMessage(stalledMsg); } catch {}
+        try {
+          scoreboard.showMessage(stalledMsg);
+        } catch {}
       }
-      try { emitBattleEvent("statSelectionStalled"); } catch {}
+      try {
+        emitBattleEvent("statSelectionStalled");
+      } catch {}
     }, 100);
     if (isEnabled("autoSelect")) {
       // Surface the upcoming countdown shortly after the stall prompt so
@@ -417,12 +423,16 @@ export function handleStatSelectionTimeout(
       try {
         const secs = computeNextRoundCooldown();
         scheduler.setTimeout(() => {
-          try { showSnackbar(t("ui.nextRoundIn", { seconds: secs })); } catch {}
+          try {
+            showSnackbar(t("ui.nextRoundIn", { seconds: secs }));
+          } catch {}
         }, 800);
       } catch {}
       try {
         scheduler.setTimeout(() => {
-          try { autoSelectStat(onSelect); } catch {}
+          try {
+            autoSelectStat(onSelect);
+          } catch {}
         }, 250);
       } catch {
         autoSelectStat(onSelect);
