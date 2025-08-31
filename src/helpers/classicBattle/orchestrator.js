@@ -125,9 +125,10 @@ export function onStateTransition(targetState, timeoutMs = 10000) {
  *    b. Emit a `"battleStateChange"` battle event with `{ from, to, event }`.
  * 5. Create the battle state machine via `BattleStateMachine.create` and store it with `setMachine`.
  * 6. Register state transition listeners for DOM updates, debug logging, and waiter resolution.
- * 7. Expose a getter for the machine, wire visibility listeners, and handle timer drift and injected errors.
- * 8. Expose `onStateTransition` and `getBattleStateSnapshot` on `window` for debugging.
- * 9. Return the initialized machine.
+ * 7. Emit an initial `"battleStateChange"` event so listeners mirror the starting state.
+ * 8. Expose a getter for the machine, wire visibility listeners, and handle timer drift and injected errors.
+ * 9. Expose `onStateTransition` and `getBattleStateSnapshot` on `window` for debugging.
+ * 10. Return the initialized machine.
  *
  * @param {object} store - Shared battle store.
  * @param {Function} startRoundWrapper - Optional wrapper for starting a round.
@@ -170,9 +171,21 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   machine = await BattleStateMachine.create(onEnter, context, onTransition);
   setMachine(machine);
 
+  const debugLogListener = createDebugLogListener(machine);
+  const waiterResolver = createWaiterResolver(stateWaiters);
+
   onBattleEvent("battleStateChange", domStateListener);
-  onBattleEvent("battleStateChange", createDebugLogListener(machine));
-  onBattleEvent("battleStateChange", createWaiterResolver(stateWaiters));
+  onBattleEvent("battleStateChange", debugLogListener);
+  onBattleEvent("battleStateChange", waiterResolver);
+
+  const initialDetail = {
+    from: null,
+    to: machine.getState(),
+    event: "init",
+  };
+  domStateListener({ detail: initialDetail });
+  debugLogListener({ detail: initialDetail });
+  waiterResolver({ detail: initialDetail });
 
   // Expose a safe getter for the running machine to avoid import cycles
   // in hot-path modules (e.g., selection handling).
