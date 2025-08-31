@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 vi.mock("../../src/helpers/classicBattle/timerService.js", () => ({
-  onNextButtonClick: vi.fn()
+  onNextButtonClick: vi.fn(),
+  setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
 }));
 
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({

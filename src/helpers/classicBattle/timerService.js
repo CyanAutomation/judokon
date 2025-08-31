@@ -24,6 +24,25 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 let currentNextRound = null;
 
 /**
+ * Schedule a fallback timeout and return its id.
+ *
+ * @pseudocode
+ * 1. Attempt to call `setTimeout(cb, ms)`.
+ * 2. Return the timer id or `null` on failure.
+ *
+ * @param {number} ms
+ * @param {Function} cb
+ * @returns {ReturnType<typeof setTimeout>|null}
+ */
+export function setupFallbackTimer(ms, cb) {
+  try {
+    return setTimeout(cb, ms);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Mark the Next button as ready and enable it.
  *
  * @pseudocode
@@ -494,9 +513,9 @@ function prepareNextRoundTimer(controls, btn, cooldownSeconds, onExpired) {
  * 1. If the match ended, resolve immediately.
  * 2. Determine cooldown seconds via `computeNextRoundCooldown` (minimum 1s).
  * 3. Locate `#next-button` and reset the button state.
- * 4. Attach `CooldownRenderer` to update UI and register `onExpired` with `handleNextRoundExpiration`.
+ * 4. Attach `CooldownRenderer` and wire expiration callbacks via helpers.
  * 5. Register a skip handler that logs the skip (for tests) and stops the timer.
- * 6. Start the timer and resolve when expired.
+ * 6. Start the timer and schedule a fallback with `setupFallbackTimer`.
  *
  * @param {{matchEnded: boolean}} result - Result from a completed round.
  * @returns {{
@@ -506,6 +525,26 @@ function prepareNextRoundTimer(controls, btn, cooldownSeconds, onExpired) {
  * }} Controls for the scheduled next round.
  */
 export function scheduleNextRound(result, scheduler = realScheduler) {
+  logScheduleNextRound(result);
+  const controls = createNextRoundControls();
+  if (result.matchEnded) {
+    setSkipHandler(null);
+    if (controls.resolveReady) controls.resolveReady();
+    currentNextRound = controls;
+    return controls;
+  }
+  const btn = document.getElementById("next-button");
+  if (btn) {
+    btn.disabled = false;
+    delete btn.dataset.nextReady;
+  }
+  const cooldownSeconds = computeNextRoundCooldown();
+  wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler);
+  currentNextRound = controls;
+  return controls;
+}
+
+function logScheduleNextRound(result) {
   try {
     const s = typeof window !== "undefined" ? window.__classicBattleState || null : null;
     if (typeof window !== "undefined") {
@@ -516,11 +555,10 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
         );
     }
   } catch {}
-  // Guard: only schedule when the machine is in roundOver/cooldown. If we're
-  // already in roundStart or waitingForPlayerAction, skip scheduling entirely
-  // to avoid conflicting timers and suppressed auto-advance.
-  const controls = { timer: null, resolveReady: null, ready: null };
+}
 
+function createNextRoundControls() {
+  const controls = { timer: null, resolveReady: null, ready: null };
   controls.ready = new Promise((resolve) => {
     controls.resolveReady = () => {
       emitBattleEvent("nextRoundTimerReady");
@@ -528,41 +566,43 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
       controls.resolveReady = null;
     };
   });
+  return controls;
+}
 
-  if (result.matchEnded) {
-    setSkipHandler(null);
-    if (controls.resolveReady) controls.resolveReady();
-    currentNextRound = controls;
-    return controls;
-  }
-
-  const btn = document.getElementById("next-button");
-
-  // Reset any leftover ready state so each cooldown runs through the timer
-  // path even after an auto-advance.
-  if (btn) {
-    btn.disabled = false;
-    delete btn.dataset.nextReady;
-  }
-
-  const cooldownSeconds = computeNextRoundCooldown();
-
+function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
   // Do not skip scheduling based on current state; roundResolved may fire
   // while the machine is still transitioning. Scheduling early is safe — the
   // expiration handler checks the live state before dispatching 'ready'.
-
-  const onExpired = createNextRoundOnExpired(controls, btn);
-  prepareNextRoundTimer(controls, btn, cooldownSeconds, onExpired);
-
+  const timer = createRoundTimer();
+  attachCooldownRenderer(timer, cooldownSeconds);
+  let expired = false;
+  const onExpired = () => {
+    if (expired) return;
+    expired = true;
+    return handleNextRoundExpiration(controls, btn);
+  };
+  timer.on("expired", onExpired);
+  timer.on("drift", () => {
+    const msgEl = document.getElementById("round-message");
+    if (msgEl && msgEl.textContent) {
+      showSnackbar("Waiting…");
+    } else {
+      scoreboard.showMessage("Waiting…");
+    }
+  });
+  controls.timer = timer;
+  setSkipHandler(() => {
+    try {
+      console.warn("[test] skip: stop nextRoundTimer");
+    } catch {}
+    controls.timer?.stop();
+  });
+  
   // Start engine-backed countdown on the next tick.
   scheduler.setTimeout(() => controls.timer.start(cooldownSeconds), 0);
-  // Fallback: in environments where the engine isn't running (or mocks omit
-  // startCoolDown), ensure expiration still occurs so the state machine can
-  // progress and tests don't hang.
+  // Fallback to ensure expiration when the engine isn't running.
   try {
     const ms = Math.max(0, Number(cooldownSeconds) * 1000) + 10;
-    scheduler.setTimeout(onExpired, ms);
+    setupFallbackTimer(ms, onExpired);
   } catch {}
-  currentNextRound = controls;
-  return controls;
 }

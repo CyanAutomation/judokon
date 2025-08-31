@@ -37,7 +37,8 @@ vi.mock("../../../src/helpers/classicBattle/selectionHandler.js", () => ({
 }));
 vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
   onNextButtonClick: vi.fn(),
-  getNextRoundControls: vi.fn()
+  getNextRoundControls: vi.fn(),
+  setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
 }));
 vi.mock("../../../src/helpers/stats.js", () => ({ loadStatNames: vi.fn() }));
 vi.mock("../../../src/helpers/viewportDebug.js", () => ({ toggleViewportSimulation: vi.fn() }));

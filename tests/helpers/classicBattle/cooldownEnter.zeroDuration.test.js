@@ -11,7 +11,8 @@ vi.mock("../../../src/helpers/timerUtils.js", () => ({
 }));
 
 vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
-  getNextRoundControls: vi.fn(() => ({ timer: true }))
+  getNextRoundControls: vi.fn(() => ({ timer: true })),
+  setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
 }));
 
 import {
