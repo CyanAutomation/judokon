@@ -345,13 +345,9 @@ export async function roundStartEnter(machine) {
     guard(() => {
       if (fallback) clearTimeout(fallback);
     });
-    guard(() =>
-      emitBattleEvent("scoreboardShowMessage", "Round start error. Recovering…")
-    );
+    guard(() => emitBattleEvent("scoreboardShowMessage", "Round start error. Recovering…"));
     guard(() => emitBattleEvent("debugPanelUpdate"));
-    await guardAsync(() =>
-      machine.dispatch("interrupt", { reason: "roundStartError" })
-    );
+    await guardAsync(() => machine.dispatch("interrupt", { reason: "roundStartError" }));
   }
 
   let startPromise;
