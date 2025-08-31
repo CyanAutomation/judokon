@@ -104,27 +104,13 @@ describe("classicBattle stat selection", () => {
     timerSpy.clearAllTimers();
   });
 
-  it("clears selected class on stat buttons after each round", async () => {
-    const btn = document.querySelector("[data-stat='power']");
-    btn.classList.add("selected");
-    await selectStat("power");
-    expectDeselected(btn);
-  });
-
-  it("re-enables stat button after selection", async () => {
-    const btn = document.querySelector("[data-stat='power']");
-    btn.classList.add("selected");
-    await selectStat("power");
-    expectDeselected(btn);
-    expect(btn.disabled).toBe(false);
-  });
-
-  it("clears inline background color with selected class", async () => {
+  it("resets stat button state after selection", async () => {
     const btn = document.querySelector("[data-stat='power']");
     btn.classList.add("selected");
     btn.style.backgroundColor = "red";
     await selectStat("power");
     expectDeselected(btn);
+    expect(btn.disabled).toBe(false);
     expect(btn.style.backgroundColor).toBe("");
   });
 
