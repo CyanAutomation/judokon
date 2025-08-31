@@ -33,7 +33,6 @@ export async function dispatchBattleEvent(eventName, payload) {
   if (!machine) {
     try {
       if (!IS_VITEST) {
-        // eslint-disable-next-line no-console
         console.log("DEBUG: eventDispatcher has no machine for", eventName);
       }
     } catch {}
@@ -41,16 +40,21 @@ export async function dispatchBattleEvent(eventName, payload) {
   }
   try {
     if (!IS_VITEST) {
-      // eslint-disable-next-line no-console
-      console.log("DEBUG: eventDispatcher dispatch", { state: machine?.getState?.(), eventName, payload });
+      console.log("DEBUG: eventDispatcher dispatch", {
+        state: machine?.getState?.(),
+        eventName,
+        payload
+      });
     }
   } catch {}
   try {
     const res = await machine.dispatch(eventName, payload);
     try {
       if (!IS_VITEST) {
-        // eslint-disable-next-line no-console
-        console.log("DEBUG: eventDispatcher dispatched", { newState: machine?.getState?.(), eventName });
+        console.log("DEBUG: eventDispatcher dispatched", {
+          newState: machine?.getState?.(),
+          eventName
+        });
       }
     } catch {}
     return res;
