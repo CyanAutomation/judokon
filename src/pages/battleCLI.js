@@ -171,7 +171,14 @@ function updateStateBadgeVisibility() {
  */
 function updateCliShortcutsVisibility() {
   const section = byId("cli-shortcuts");
-  if (section) section.hidden = !isEnabled("cliShortcuts");
+  if (!section) return;
+  if (!isEnabled("cliShortcuts")) {
+    section.hidden = true;
+    section.style.display = "none";
+  } else {
+    section.style.display = "";
+    section.hidden = true;
+  }
 }
 
 function showBottomLine(text) {
@@ -1069,13 +1076,20 @@ async function init() {
   } catch {}
   try {
     const params = new URLSearchParams(location.search);
-    const skip = params.get("skipRoundCooldown") === "1";
-    setFlag("skipRoundCooldown", skip);
+    if (params.has("skipRoundCooldown")) {
+      const skip = params.get("skipRoundCooldown") === "1";
+      setFlag("skipRoundCooldown", skip);
+    }
   } catch {}
   updateVerbose();
   updateStateBadgeVisibility();
   updateBattleStateBadge(window.__classicBattleState || null);
   updateCliShortcutsVisibility();
+  const close = byId("cli-shortcuts-close");
+  close?.addEventListener("click", () => {
+    const sec = byId("cli-shortcuts");
+    if (sec) sec.hidden = true;
+  });
   checkbox?.addEventListener("change", () => {
     setFlag("cliVerbose", !!checkbox.checked);
   });
