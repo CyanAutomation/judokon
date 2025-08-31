@@ -88,7 +88,7 @@ npm run check:jsdoc
 ### Classic Battle CLI (text-first)
 
 - Page: `src/pages/battleCLI.html` – terminal-style UI that reuses the Classic Battle engine/state machine.
-- Controls: number keys [1–5] select stats, Enter/Space advances, Q quits, H toggles help. Stats can also be selected by clicking or tapping, and rounds can be advanced with a click.
+- Controls: number keys [1–5] select stats, Enter/Space advances, Q quits, H toggles a help panel (also closable via button). Stats can also be selected by clicking or tapping, and rounds can be advanced with a click.
 - State badge: `#battle-state-badge` reflects the current machine state.
 - Bottom line: snackbars render as a single status line using `#snackbar-container`.
 - Win target: choose 5/10/15 from the header; persisted in localStorage under `battleCLI.pointsToWin`.
