@@ -39,7 +39,9 @@ export function setSettingsStorageTimers(fns = {}) {
 const SETTINGS_KEY = "settings";
 // Use a shorter debounce in test to reduce wall time while preserving semantics.
 const IS_TEST =
-  typeof process !== "undefined" && process?.env && (process.env.VITEST || process.env.NODE_ENV === "test");
+  typeof process !== "undefined" &&
+  process?.env &&
+  (process.env.VITEST || process.env.NODE_ENV === "test");
 const SAVE_DELAY_MS = IS_TEST ? 10 : 100;
 
 const debouncedSave = debounce(

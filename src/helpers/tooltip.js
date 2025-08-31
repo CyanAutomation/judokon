@@ -191,7 +191,13 @@ export async function initTooltips(root = globalThis.document) {
       loggedUnbalanced.add(id);
     }
     tip.style.display = "block";
-    const rect = target?.getBoundingClientRect?.() || { top: 0, bottom: 0, left: 0, width: 0, height: 0 };
+    const rect = target?.getBoundingClientRect?.() || {
+      top: 0,
+      bottom: 0,
+      left: 0,
+      width: 0,
+      height: 0
+    };
     let top = rect.bottom + window.scrollY;
     let left = rect.left + window.scrollX;
     if (!rect.width && !rect.height) {
