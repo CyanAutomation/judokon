@@ -17,10 +17,6 @@
   },
   "gameModes": {},
   "featureFlags": {
-    "battleDebugPanel": {
-      "enabled": false,
-      "tooltipId": "settings.battleDebugPanel"
-    },
     "enableTestMode": {
       "enabled": false,
       "tooltipId": "settings.enableTestMode"

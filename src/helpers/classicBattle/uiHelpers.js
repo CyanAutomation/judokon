@@ -1350,7 +1350,7 @@ export function applyBattleFeatureFlags(battleArea, banner) {
   setTestMode(isEnabled("enableTestMode"));
   toggleInspectorPanels(isEnabled("enableCardInspector"));
   toggleViewportSimulation(isEnabled("viewportSimulation"));
-  setDebugPanelEnabled(isEnabled("battleDebugPanel") || isEnabled("enableTestMode"));
+  setDebugPanelEnabled(isEnabled("enableTestMode"));
 
   featureFlagsEmitter.addEventListener("change", () => {
     if (battleArea) battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
@@ -1358,7 +1358,7 @@ export function applyBattleFeatureFlags(battleArea, banner) {
     setTestMode(isEnabled("enableTestMode"));
     toggleInspectorPanels(isEnabled("enableCardInspector"));
     toggleViewportSimulation(isEnabled("viewportSimulation"));
-    setDebugPanelEnabled(isEnabled("battleDebugPanel") || isEnabled("enableTestMode"));
+    setDebugPanelEnabled(isEnabled("enableTestMode"));
   });
 }
 
@@ -1399,7 +1399,7 @@ export function initDebugPanel() {
   const debugPanel = document.getElementById("debug-panel");
   if (!debugPanel) return;
   const battleArea = document.getElementById("battle-area");
-  if (isEnabled("battleDebugPanel") && battleArea) {
+  if (isEnabled("enableTestMode") && battleArea) {
     if (debugPanel.tagName !== "DETAILS") {
       const details = document.createElement("details");
       details.id = "debug-panel";

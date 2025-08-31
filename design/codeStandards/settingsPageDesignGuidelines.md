@@ -64,17 +64,17 @@ Reuse the following markup for general settings, game modes, and feature flags:
   Example markup:
 
   ```html
-  <label for="feature-battle-debug-panel" class="switch">
+  <label for="feature-enable-test-mode" class="switch">
     <input
       type="checkbox"
-      id="feature-battle-debug-panel"
-      name="battleDebugPanel"
-      data-tooltip-id="settings.battleDebugPanel"
-      data-flag="battleDebugPanel"
-      aria-label="Battle Debug Panel"
+      id="feature-enable-test-mode"
+      name="enableTestMode"
+      data-tooltip-id="settings.enableTestMode"
+      data-flag="enableTestMode"
+      aria-label="Test Mode"
     />
     <div class="slider round"></div>
-    <span>Battle Debug Panel</span>
+    <span>Test Mode</span>
   </label>
   ```
 
@@ -173,8 +173,8 @@ To support AI-assisted testing, variant gameplay modes, and scalable development
   Use predictable `id` and `name` values:
   - ID format: `feature-<kebab-case-feature-name>`
   - Name format: camelCase
-  - Example: `id="feature-battle-debug-panel" name="battleDebugPanel"`
-  - Common example flags include `Battle Debug Panel` and `Card Inspector`
+  - Example: `id="feature-enable-test-mode" name="enableTestMode"`
+  - Common example flags include `Test Mode` and `Card Inspector`
   - Include `data-flag="<camelCaseName>"` on the input element so automation scripts can locate specific toggles
 
 - **ARIA and Accessibility**

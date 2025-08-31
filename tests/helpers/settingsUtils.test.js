@@ -54,8 +54,8 @@ describe("settings utils", () => {
     );
     const { loadSettings } = await import("../../src/helpers/settingsStorage.js");
     const settings = await loadSettings();
-    expect(settings.featureFlags.battleDebugPanel).toEqual(
-      DEFAULT_SETTINGS.featureFlags.battleDebugPanel
+    expect(settings.featureFlags.enableCardInspector).toEqual(
+      DEFAULT_SETTINGS.featureFlags.enableCardInspector
     );
     expect(settings.featureFlags.enableTestMode.enabled).toBe(true);
   });
@@ -74,7 +74,6 @@ describe("settings utils", () => {
       fullNavigationMap: false,
       gameModes: {},
       featureFlags: {
-        battleDebugPanel: { enabled: false },
         enableTestMode: { enabled: false },
         enableCardInspector: { enabled: false }
       }
@@ -147,7 +146,6 @@ describe("settings utils", () => {
         fullNavigationMap: false,
         gameModes: {},
         featureFlags: {
-          battleDebugPanel: { enabled: false },
           enableTestMode: { enabled: false },
           enableCardInspector: { enabled: false }
         }
@@ -185,7 +183,6 @@ describe("settings utils", () => {
       fullNavigationMap: false,
       gameModes: {},
       featureFlags: {
-        battleDebugPanel: { enabled: false },
         enableTestMode: { enabled: false },
         enableCardInspector: { enabled: false }
       }
@@ -199,7 +196,6 @@ describe("settings utils", () => {
       fullNavigationMap: false,
       gameModes: {},
       featureFlags: {
-        battleDebugPanel: { enabled: false },
         enableTestMode: { enabled: false },
         enableCardInspector: { enabled: false }
       }

@@ -71,7 +71,7 @@
 
 7. State, Feature Flags, Persistence
 
-- Feature flags: Honor `FF_AUTO_SELECT` (default enabled) and `battleDebugPanel` if present.
+- Feature flags: Honor `FF_AUTO_SELECT` (default enabled) and `enableTestMode` if present.
 - Persist “first visit” help-tooltip dismissal and user-selected points-to-win.
 - Maintain `window.__classicBattleState`/`dataset.battleState` updates for test fixtures if already provided by helpers.
 
@@ -123,7 +123,7 @@
 ## Open Questions
 
 - PRD references URL `battleJudoka.html` but this plan targets `battleClassic.html`. Confirm that `battleClassic.html` is the intended canonical page for Classic Battle.
-- Confirm the feature flag keys and defaults (e.g., `FF_AUTO_SELECT`, `battleDebugPanel`) and their storage location to ensure correct initialization on this page.
+- Confirm the feature flag keys and defaults (e.g., `FF_AUTO_SELECT`, `enableTestMode`) and their storage location to ensure correct initialization on this page.
 - Should the “points to win” choice persist globally across sessions/pages or be per-session on `battleClassic.html` only?
 - Any additional telemetry or analytics events required on match start/end or quit?
 - Should the help tooltip auto-open be gated behind a global “first-run” flag or be specific to Classic Battle only?
@@ -148,7 +148,7 @@
 
 ## Low-Risk, High-Value Extras (plan to include)
 
-- src/config/battleDefaults.js: Centralize defaults (e.g., `pointsToWin: 10`, `featureFlags: { autoSelect: true, battleDebugPanel: false }`) for page bootstrap and tests.
+- src/config/battleDefaults.js: Centralize defaults (e.g., `pointsToWin: 10`, `featureFlags: { autoSelect: true }`) for page bootstrap and tests.
 - Orchestrator testAPI export: Extend existing classic battle exports to expose a small `testAPI` (e.g., `getMachine()`, `waitFor(state)`, `forceSkip()`) for deterministic testing without reaching into internals.
 - seedRandom helper: Add `src/helpers/seedRandom.js` with deterministic PRNG (e.g., mulberry32) and wire under a test flag to produce repeatable draws in tests.
 - Unit test scaffolding: Add vitest scaffolds for timer pause/resume and auto-select paths (expiry → `roundTimeout`, auto-select snackbar/message, AI delay reveal). Keep them minimal and parallel current test patterns.
@@ -196,7 +196,7 @@
 
 ## Notes on Feature Flags
 
-- Canonical keys (camelCase): `autoSelect`, `battleDebugPanel`, `enableTestMode`, `battleStateBadge`, `battleStateProgress`, `statHotkeys`.
+- Canonical keys (camelCase): `autoSelect`, `enableTestMode`, `battleStateBadge`, `battleStateProgress`, `statHotkeys`.
 - Older docs may reference `FF_*` names; prefer the keys above.
 
 ## Observability
