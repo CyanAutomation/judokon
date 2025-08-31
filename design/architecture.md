@@ -174,6 +174,16 @@ AI agents are encouraged to parse, test, and modify the system using these archi
 - Consumers should read `detail.to` when `detail` is an object; otherwise use the string value.
 - The current state is also mirrored on `document.body.dataset.battleState`.
 
+### Event Bus vs DOM Events
+
+- JU-DO-KON! uses a lightweight internal event bus (`classicBattle/battleEvents.getTarget()`) and also mirrors key events to the DOM for UI and tests.
+- Do not attempt to dispatch the same `CustomEvent` instance to multiple targets. Browsers allow an event to be dispatched on only one target. Reuse will silently fail for the second dispatch.
+- When emitting an event to both channels, create two separate events:
+  - `getTarget().dispatchEvent(new CustomEvent(type, { detail }))`
+  - `document.dispatchEvent(new CustomEvent(type, { detail }))`
+- Consumers that need to interoperate across modules (or in tests that reset modules) should also listen to the DOM event (e.g., `document.addEventListener('battle:state', ...)`) or read `document.body.dataset.battleState` for a consistent view of state.
+- Rationale: keeping DOM and bus emissions distinct avoids cross-module and test-environment mismatches and ensures observers (including MutationObserver-based UIs) see updates reliably.
+
 ---
 
 ## 📎 Related Docs for AI Agents
