@@ -14,14 +14,11 @@ import { withViewTransition } from "./viewTransition.js";
 import { applyMotionPreference } from "./motionUtils.js";
 import { onDomReady } from "./domReady.js";
 import { initTooltips, getTooltips } from "./tooltip.js";
-import { createModal } from "../components/Modal.js";
-import { createButton } from "../components/Button.js";
 import { toggleViewportSimulation } from "./viewportDebug.js";
 import { toggleTooltipOverlayDebug } from "./tooltipOverlayDebug.js";
 import { toggleLayoutDebugPanel } from "./layoutDebugPanel.js";
 import { initFeatureFlags, isEnabled } from "./featureFlags.js";
 import { showSnackbar } from "./showSnackbar.js";
-import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 
 import { applyInitialControlValues } from "./settings/applyInitialValues.js";
 import { attachToggleListeners } from "./settings/listenerUtils.js";
@@ -29,6 +26,9 @@ import { renderGameModeSwitches } from "./settings/gameModeSwitches.js";
 import { renderFeatureFlagSwitches } from "./settings/featureFlagSwitches.js";
 import { makeHandleUpdate } from "./settings/makeHandleUpdate.js";
 import { addNavResetButton } from "./settings/addNavResetButton.js";
+import { createResetModal } from "./settings/createResetModal.js";
+import { attachResetListener } from "./settings/attachResetListener.js";
+import { syncFeatureFlags } from "./settings/syncFeatureFlags.js";
 
 /**
  * @summary TODO: Add summary
@@ -60,70 +60,18 @@ window.settingsReadyPromise = settingsReadyPromise;
 let errorPopupTimeoutId;
 
 /**
- * Build a confirmation modal for restoring default settings.
- *
- * @pseudocode
- * 1. Create heading and description nodes.
- * 2. Create Cancel and Yes buttons via `createButton`.
- * 3. Assemble modal with `createModal` and wire button handlers.
- *    - Cancel closes the modal.
- *    - Yes awaits `onConfirm`; on failure shows an error, otherwise closes.
- * 4. Append the modal element to `document.body`.
- * 5. Return the modal API.
- *
- * @param {Function} onConfirm - Called when user confirms reset.
- * @returns {{ open(trigger?: HTMLElement): void }} Modal controls.
- */
-function createResetConfirmation(onConfirm) {
-  const title = document.createElement("h2");
-  title.id = "reset-modal-title";
-  title.textContent = "Restore default settings?";
-
-  const desc = document.createElement("p");
-  desc.id = "reset-modal-desc";
-  desc.textContent = "This will clear all saved preferences.";
-
-  const actions = document.createElement("div");
-  actions.className = "modal-actions";
-
-  const cancel = createButton("Cancel", {
-    id: "cancel-reset-button",
-    className: "secondary-button"
-  });
-  const yes = createButton("Yes", { id: "confirm-reset-button" });
-  actions.append(cancel, yes);
-
-  const frag = document.createDocumentFragment();
-  frag.append(title, desc, actions);
-
-  const modal = createModal(frag, { labelledBy: title, describedBy: desc });
-  cancel.addEventListener("click", () => modal.close());
-  yes.addEventListener("click", async () => {
-    try {
-      await onConfirm();
-      modal.close();
-    } catch {
-      showSnackbar("Failed to restore default settings");
-    }
-  });
-  document.body.appendChild(modal.element);
-  return modal;
-}
-
-/**
  * Initialize controls and event wiring for the Settings page.
  *
  * @pseudocode
  * 1. Store a mutable copy of `settings` for updates.
  * 2. Query DOM elements for each control and container.
  * 3. Provide helpers to read/persist settings and show errors.
- * 4. Attach listeners for existing controls and the Restore Defaults button.
- *    - Reset confirms with a modal, reloads feature flags, reapplies defaults, and rerenders switches.
- *    - Guard against duplicate reset listeners when controls reinitialize.
- * 5. Return `renderSwitches` to inject game-mode/feature-flag toggles and apply initial values later.
+ * 4. Build a reset modal and attach the Restore Defaults listener once.
+ *    - Reset confirms, reloads feature flags, reapplies defaults, and rerenders switches.
+ * 5. Return `renderSwitches` callback for injecting game-mode/feature-flag toggles later.
  *
  * @param {Settings} settings - Current settings object.
- * @returns {{ renderSwitches(gameModes: Array, tooltipMap: object): void }} Control API.
+ * @returns {(gameModes: Array, tooltipMap: object) => void} Render helper.
  */
 function initializeControls(settings) {
   let currentSettings = { ...settings };
@@ -144,7 +92,7 @@ function initializeControls(settings) {
 
   const renderSwitches = makeRenderSwitches(controls, () => currentSettings, handleUpdate);
 
-  const resetModal = createResetConfirmation(async () => {
+  const resetModal = createResetModal(async () => {
     resetSettings();
     currentSettings = await initFeatureFlags();
     withViewTransition(() => {
@@ -159,19 +107,12 @@ function initializeControls(settings) {
     showSnackbar("Settings restored to defaults");
   });
 
-  if (resetButton && !resetButton.dataset.resetListenerAttached) {
-    resetButton.addEventListener("click", () => {
-      resetModal.open(resetButton);
-    });
-    resetButton.dataset.resetListenerAttached = "true";
-  }
+  attachResetListener(resetButton, resetModal);
 
-  return {
-    renderSwitches: (gameModes, tooltipMap) => {
-      latestGameModes = Array.isArray(gameModes) ? gameModes : [];
-      latestTooltipMap = tooltipMap;
-      renderSwitches(gameModes, tooltipMap);
-    }
+  return (gameModes, tooltipMap) => {
+    latestGameModes = Array.isArray(gameModes) ? gameModes : [];
+    latestTooltipMap = tooltipMap;
+    renderSwitches(gameModes, tooltipMap);
   };
 }
 
@@ -237,13 +178,7 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
     const flagsContainerEl = document.getElementById("feature-flags-container");
     if (flagsContainerEl) {
       clearToggles(flagsContainerEl);
-      // Merge persisted flags with defaults so newly added flags appear automatically
-      const flags = {
-        ...DEFAULT_SETTINGS.featureFlags,
-        ...(current.featureFlags || {})
-      };
-      // Keep the working settings in sync with the merged map
-      current.featureFlags = flags;
+      const flags = syncFeatureFlags(current);
       renderFeatureFlagSwitches(
         flagsContainerEl,
         flags,
@@ -324,8 +259,8 @@ export async function fetchSettingsData() {
 export function renderSettingsControls(settings, gameModes, tooltipMap) {
   expandAllSections();
   applyInitialSettings(settings);
-  const controlsApi = initializeControls(settings);
-  controlsApi.renderSwitches(gameModes, tooltipMap);
+  const renderSwitches = initializeControls(settings);
+  renderSwitches(gameModes, tooltipMap);
   document.dispatchEvent(new Event("settings:ready"));
   return document.body;
 }
