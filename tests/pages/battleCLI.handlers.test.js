@@ -28,7 +28,8 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: ["speed"] }));
   vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
     setPointsToWin: vi.fn(),
-    getPointsToWin: vi.fn()
+    getPointsToWin: vi.fn(),
+    getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
   }));
   vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson: vi.fn().mockResolvedValue([]) }));
   vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));

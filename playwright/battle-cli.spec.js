@@ -96,6 +96,27 @@ test.describe("Classic Battle CLI", () => {
     expect(cardAfter).not.toBe(cardBefore);
   });
 
+  test("scoreboard updates after each round", async ({ page }) => {
+    await page.goto("/src/pages/battleCLI.html?seed=1");
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    const score = page.locator("#cli-score");
+    await page.keyboard.press("1");
+    await waitForBattleState(page, "roundOver", 10000);
+    const firstPlayer = await score.getAttribute("data-score-player");
+    const firstOpponent = await score.getAttribute("data-score-opponent");
+    await expect(score).toHaveText(`You: ${firstPlayer} Opponent: ${firstOpponent}`);
+
+    await page.keyboard.press("Enter");
+    await waitForBattleState(page, "waitingForPlayerAction", 10000);
+    await page.keyboard.press("1");
+    await waitForBattleState(page, "roundOver", 10000);
+    const secondPlayer = await score.getAttribute("data-score-player");
+    const secondOpponent = await score.getAttribute("data-score-opponent");
+    await expect(score).toHaveText(`You: ${secondPlayer} Opponent: ${secondOpponent}`);
+    expect(Number(secondPlayer) + Number(secondOpponent)).toBeGreaterThanOrEqual(
+      Number(firstPlayer) + Number(firstOpponent)
+    );
+
   test("returns to lobby after quitting", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html");
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
