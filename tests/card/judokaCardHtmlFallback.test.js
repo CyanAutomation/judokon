@@ -4,6 +4,10 @@ import { withMutedConsole } from "../utils/console.js";
 import * as cardRender from "../../src/helpers/cardRender.js";
 import * as statsPanel from "../../src/components/StatsPanel.js";
 
+vi.mock("../../src/components/StatsPanel.js", () => ({
+  createStatsPanel: vi.fn(),
+}));
+
 const judoka = {
   id: 1,
   firstname: "John",
@@ -34,7 +38,7 @@ describe("JudokaCard fallback containers", () => {
   });
 
   it("adds fallback when stats panel generation throws", async () => {
-    vi.spyOn(statsPanel, "createStatsPanel").mockImplementation(() =>
+    vi.mocked(statsPanel.createStatsPanel).mockImplementation(() =>
       Promise.reject(new Error("stats fail"))
     );
 
@@ -62,7 +66,7 @@ describe("JudokaCard fallback containers", () => {
   });
 
   it("adds fallback when stats panel throws undefined", async () => {
-    vi.spyOn(statsPanel, "createStatsPanel").mockImplementation(() => Promise.reject(undefined));
+    vi.mocked(statsPanel.createStatsPanel).mockImplementation(() => Promise.reject(undefined));
     const card = await withMutedConsole(async () => new JudokaCard(judoka, gokyoLookup).render());
     expect(card.textContent).toContain("No data available");
   });
