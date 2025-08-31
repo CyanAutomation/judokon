@@ -14,7 +14,7 @@ describe("classicBattlePage feature flag updates", () => {
     vi.resetModules();
   });
 
-  it("reacts to viewportSimulation and battleDebugPanel flag changes", async () => {
+  it("reacts to viewportSimulation and enableTestMode changes", async () => {
     // Minimal DOM
     const battleArea = document.createElement("div");
     battleArea.id = "battle-area";
@@ -31,7 +31,6 @@ describe("classicBattlePage feature flag updates", () => {
 
     const currentFlags = {
       viewportSimulation: { enabled: false },
-      battleDebugPanel: { enabled: false },
       enableCardInspector: { enabled: false },
       enableTestMode: { enabled: false }
     };
@@ -77,9 +76,9 @@ describe("classicBattlePage feature flag updates", () => {
     const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
     await setupClassicBattlePage();
 
-    // Enable viewportSimulation and battleDebugPanel
+    // Enable viewportSimulation and enableTestMode
     currentFlags.viewportSimulation.enabled = true;
-    currentFlags.battleDebugPanel.enabled = true;
+    currentFlags.enableTestMode.enabled = true;
     featureFlagsEmitter.dispatchEvent(new CustomEvent("change"));
 
     expect(toggleViewportSimulation).toHaveBeenCalledWith(true);
@@ -89,8 +88,8 @@ describe("classicBattlePage feature flag updates", () => {
     expect(panel.parentElement).toBe(battleArea.parentElement);
     expect(panel.nextElementSibling).toBe(battleArea);
 
-    // Disable battleDebugPanel
-    currentFlags.battleDebugPanel.enabled = false;
+    // Disable enableTestMode
+    currentFlags.enableTestMode.enabled = false;
     featureFlagsEmitter.dispatchEvent(new CustomEvent("change"));
     expect(document.getElementById("debug-panel")).toBeFalsy();
   });
@@ -104,7 +103,6 @@ describe("classicBattlePage feature flag updates", () => {
 
     const currentFlags = {
       viewportSimulation: { enabled: false },
-      battleDebugPanel: { enabled: false },
       enableCardInspector: { enabled: false },
       enableTestMode: { enabled: false }
     };
@@ -131,7 +129,7 @@ describe("classicBattlePage feature flag updates", () => {
     const { setupClassicBattlePage } = await import("../../src/helpers/classicBattlePage.js");
     await setupClassicBattlePage();
 
-    currentFlags.battleDebugPanel.enabled = true;
+    currentFlags.enableTestMode.enabled = true;
     featureFlagsEmitter.dispatchEvent(new CustomEvent("change"));
 
     const panel = document.getElementById("debug-panel");

@@ -12,7 +12,6 @@ const baseSettings = {
   fullNavigationMap: true,
   gameModes: {},
   featureFlags: {
-    battleDebugPanel: { enabled: false },
     enableTestMode: { enabled: false },
     enableCardInspector: { enabled: false },
     viewportSimulation: { enabled: false },
@@ -23,8 +22,6 @@ const baseSettings = {
 };
 
 const tooltipMap = {
-  "settings.battleDebugPanel.label": "Battle Debug Panel",
-  "settings.battleDebugPanel.description": "Adds a collapsible debug panel",
   "settings.fullNavigationMap.label": "Full Navigation Map",
   "settings.fullNavigationMap.description": "Expanded map navigation",
   "settings.enableTestMode.label": "Test Mode",
@@ -104,7 +101,7 @@ describe("renderSettingsControls", () => {
     const container = document.getElementById("game-mode-toggle-container");
     const checkboxes = container.querySelectorAll("input[type='checkbox']");
     expect(checkboxes).toHaveLength(3);
-    expect(document.getElementById("feature-battle-debug-panel")).toBeTruthy();
+    expect(document.getElementById("feature-enable-test-mode")).toBeTruthy();
   });
 
   it("updates navigation hidden state when a mode is toggled", async () => {
@@ -155,13 +152,13 @@ describe("renderSettingsControls", () => {
       "../../src/helpers/settingsPage.js"
     );
     renderSettingsControls(baseSettings, [], tooltipMap);
-    const input = document.querySelector("#feature-battle-debug-panel");
+    const input = document.querySelector("#feature-enable-test-mode");
     input.checked = true;
     await handleFeatureFlagChange({
       input,
-      flag: "battleDebugPanel",
-      info: baseSettings.featureFlags.battleDebugPanel,
-      label: "battleDebugPanel",
+      flag: "enableTestMode",
+      info: baseSettings.featureFlags.enableTestMode,
+      label: "enableTestMode",
       getCurrentSettings: () => baseSettings,
       handleUpdate: updateSetting
     });
@@ -169,7 +166,7 @@ describe("renderSettingsControls", () => {
       "featureFlags",
       {
         ...baseSettings.featureFlags,
-        battleDebugPanel: { enabled: true }
+        enableTestMode: { enabled: true }
       },
       expect.any(Function)
     );
@@ -230,19 +227,19 @@ describe("renderSettingsControls", () => {
       ...baseSettings,
       featureFlags: {
         ...baseSettings.featureFlags,
-        battleDebugPanel: { enabled: true }
+        enableTestMode: { enabled: true }
       }
     };
     currentFlags = settingsWithFlag.featureFlags;
     renderSettingsControls(settingsWithFlag, [], tooltipMap);
-    expect(document.getElementById("feature-battle-debug-panel").checked).toBe(true);
+    expect(document.getElementById("feature-enable-test-mode").checked).toBe(true);
     document.getElementById("reset-settings-button").dispatchEvent(new Event("click"));
     document.getElementById("confirm-reset-button").dispatchEvent(new Event("click"));
     await Promise.resolve();
     expect(resetSettings).toHaveBeenCalled();
     expect(initFeatureFlags).toHaveBeenCalled();
     expect(showSnackbar).toHaveBeenCalledWith("Settings restored to defaults");
-    expect(document.getElementById("feature-battle-debug-panel").checked).toBe(false);
+    expect(document.getElementById("feature-enable-test-mode").checked).toBe(false);
   });
 
   it("does not duplicate reset listener on reinit", async () => {

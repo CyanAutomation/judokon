@@ -10,7 +10,6 @@ const baseSettings = {
   fullNavigationMap: true,
   gameModes: {},
   featureFlags: {
-    battleDebugPanel: { enabled: false },
     enableTestMode: { enabled: false },
     enableCardInspector: { enabled: false }
   }

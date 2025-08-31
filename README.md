@@ -224,7 +224,7 @@ CLI-specific tests live in `playwright/battle-cli.spec.js` and verify the state 
 
 ### Battle Debug Panel
 
-Enable the `battleDebugPanel` feature flag to display a panel above the player and opponent cards with live match data. The panel includes a **Copy** button that copies all text for easy sharing.
+When the `enableTestMode` feature flag is active, a debug panel appears above the player and opponent cards with live match data. The panel includes a **Copy** button that copies all text for easy sharing.
 
 ### Stat Hotkeys
 
