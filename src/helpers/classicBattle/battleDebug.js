@@ -145,3 +145,9 @@ export function __setStateSnapshot(next) {
   lastEvent = next.event || null;
   stateLog = Array.isArray(next.log) ? next.log.slice() : [];
 }
+
+// Expose helpers for in-page consumers like Playwright fixtures.
+if (typeof window !== "undefined") {
+  window.waitForState = waitForState;
+  window.getStateSnapshot = getStateSnapshot;
+}
