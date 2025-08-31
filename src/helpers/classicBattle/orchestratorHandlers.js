@@ -6,6 +6,7 @@ import { getOpponentJudoka } from "./cardSelection.js";
 import { getStatValue } from "../battle/index.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { resolveRound } from "./roundResolver.js";
+import { guard, guardAsync } from "./guard.js";
 // Removed unused import for enableNextRoundButton
 
 // Test-mode flag for muting noisy logs in Vitest
@@ -308,57 +309,53 @@ export async function cooldownExit() {}
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
-export async function roundStartEnter(machine) {
-  const { startRoundWrapper, doStartRound, store } = machine.context;
-  // In Playwright test mode, set a short fallback to avoid UI stalls
-  let fallback = null;
-  try {
-    if (isTestModeEnabled && isTestModeEnabled()) {
-      fallback = setupFallbackTimer(50, () => {
-        try {
-          const state = machine.getState ? machine.getState() : null;
-          if (state === "roundStart") machine.dispatch("cardsRevealed");
-        } catch {}
-      });
-    }
-  } catch {}
-  // Start the round asynchronously; do not block state progression on opponent card rendering.
-  try {
-    const p =
-      typeof startRoundWrapper === "function"
-        ? startRoundWrapper()
-        : typeof doStartRound === "function"
-          ? doStartRound(store)
-          : Promise.resolve();
-    Promise.resolve(p).catch(async () => {
-      try {
-        if (fallback) clearTimeout(fallback);
-      } catch {}
-      try {
-        emitBattleEvent("scoreboardShowMessage", "Round start error. Recovering…");
-        emitBattleEvent("debugPanelUpdate");
-        await machine.dispatch("interrupt", { reason: "roundStartError" });
-      } catch {}
+/**
+ * Install a short timer that advances past `roundStart` in test environments.
+ *
+ * @param {object} machine
+ * @returns {ReturnType<typeof setTimeout>|null}
+ */
+function installRoundStartFallback(machine) {
+  if (!isTestModeEnabled || !isTestModeEnabled()) return null;
+  return setupFallbackTimer(50, () => {
+    guardAsync(async () => {
+      const state = machine.getState ? machine.getState() : null;
+      if (state === "roundStart") await machine.dispatch("cardsRevealed");
     });
-  } catch {
-    try {
+  });
+}
+
+/**
+ * Invoke the round start routine from the provided context.
+ *
+ * @param {{startRoundWrapper?: Function, doStartRound?: Function, store?: any}} ctx
+ * @returns {any}
+ */
+function invokeRoundStart(ctx) {
+  const { startRoundWrapper, doStartRound, store } = ctx;
+  if (typeof startRoundWrapper === "function") return startRoundWrapper();
+  if (typeof doStartRound === "function") return doStartRound(store);
+  return Promise.resolve();
+}
+
+export async function roundStartEnter(machine) {
+  const fallback = installRoundStartFallback(machine);
+  const startPromise = invokeRoundStart(machine.context);
+  Promise.resolve(startPromise).catch(async () => {
+    guard(() => {
       if (fallback) clearTimeout(fallback);
-    } catch {}
-    try {
-      emitBattleEvent("scoreboardShowMessage", "Round start error. Recovering…");
-      emitBattleEvent("debugPanelUpdate");
-      await machine.dispatch("interrupt", { reason: "roundStartError" });
-    } catch {}
-    return;
-  }
-  // Immediately proceed to stat selection if still in roundStart.
-  try {
+    });
+    guard(() => emitBattleEvent("scoreboardShowMessage", "Round start error. Recovering…"));
+    guard(() => emitBattleEvent("debugPanelUpdate"));
+    await guardAsync(() => machine.dispatch("interrupt", { reason: "roundStartError" }));
+  });
+  guard(() => {
     if (fallback) clearTimeout(fallback);
-  } catch {}
-  try {
+  });
+  await guardAsync(async () => {
     const state = machine.getState ? machine.getState() : null;
     if (state === "roundStart") await machine.dispatch("cardsRevealed");
-  } catch {}
+  });
 }
 /**
  * onExit handler for `roundStart` (no-op placeholder).
