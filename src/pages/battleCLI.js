@@ -925,7 +925,8 @@ export function onKeyDown(e) {
   const handler = table[state];
   const handled = handleGlobalKey(key) || (handler ? handler(key) : false);
   const countdown = byId("cli-countdown");
-  if (!handled && key !== "tab") { // Added key !== "tab"
+  if (!handled && key !== "tab") {
+    // Added key !== "tab"
     if (countdown) countdown.textContent = "Invalid key, press H for help";
   } else if (countdown && countdown.textContent) {
     countdown.textContent = "";
@@ -960,7 +961,7 @@ function onClickAdvance(event) {
   let el = event.target;
   let path = [];
   while (el) {
-    path.push(el.tagName + (el.id ? '#' + el.id : ''));
+    path.push(el.tagName + (el.id ? "#" + el.id : ""));
     el = el.parentElement;
   }
   const state = document.body?.dataset?.battleState || "";
@@ -1127,7 +1128,7 @@ function installEventBindings() {
 }
 
 async function init() {
-  console.log('init called');
+  console.log("init called");
   initSeed();
   store = createBattleStore();
   // Expose store for debug panels if needed

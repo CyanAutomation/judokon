@@ -120,8 +120,12 @@ export async function initRoundSelectModal(onStart) {
       } catch {}
       modal.close();
       // Proactively clean up UI affordances before starting heavy work
-      try { cleanupTooltips(); } catch {}
-      try { modal.destroy(); } catch {}
+      try {
+        cleanupTooltips();
+      } catch {}
+      try {
+        modal.destroy();
+      } catch {}
       try {
         if (typeof onStart === "function") await onStart();
         // Bridge the user action to both the UI event bus and the
