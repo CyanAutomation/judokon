@@ -8,13 +8,11 @@ describe("initClassicBattleOrchestrator state change hooks", () => {
   });
 
   it("emits battleStateChange and invokes onStateChange", async () => {
-    vi.doMock("../../src/helpers/classicBattle/stateMachine.js", () => ({
-      BattleStateMachine: {
-        create: vi.fn(async (_onEnter, _context, onTransition) => {
-          await onTransition({ from: "a", to: "b", event: "go" });
-          return { context: {}, getState: () => "b" };
-        })
-      }
+    vi.doMock("../../src/helpers/classicBattle/stateManager.js", () => ({
+      createStateManager: vi.fn(async (_onEnter, _context, onTransition) => {
+        await onTransition({ from: "a", to: "b", event: "go" });
+        return { context: {}, getState: () => "b", dispatch: vi.fn() };
+      })
     }));
     vi.doMock("../../src/helpers/classicBattle/orchestratorHandlers.js", () => ({
       waitingForMatchStartEnter: vi.fn(),

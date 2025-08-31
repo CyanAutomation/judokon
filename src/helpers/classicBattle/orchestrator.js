@@ -1,4 +1,4 @@
-import { BattleStateMachine } from "./stateMachine.js";
+import { createStateManager } from "./stateManager.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 import {
   waitingForMatchStartEnter,
@@ -34,7 +34,7 @@ let machine = null;
  * 2. Read timer state from the machine's engine.
  * 3. Mirror the timer state on `window.__classicBattleTimerState`.
  *
- * @param {import("./stateMachine.js").BattleStateMachine|null} machineRef - Current battle machine.
+ * @param {import("./stateManager.js").ClassicBattleStateManager|null} machineRef - Current battle machine.
  * @returns {void}
  */
 /**
@@ -48,7 +48,7 @@ let machine = null;
  * 4. Define the `onTransition` function executed on every state change:
  *    a. Call `onStateChange({ from, to, event })` when provided.
  *    b. Emit a `"battleStateChange"` battle event with `{ from, to, event }`.
- * 5. Create the battle state machine via `BattleStateMachine.create` and store it with `setMachine`.
+ * 5. Create the battle state manager via `createStateManager` and store it with `setMachine`.
  * 6. Register state transition listeners for DOM updates, debug logging, and waiter resolution.
  * 7. Emit an initial `"battleStateChange"` event so listeners mirror the starting state.
  * 8. Expose a getter for the machine, wire visibility listeners, and handle timer drift and injected errors.
@@ -93,7 +93,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     emitBattleEvent("battleStateChange", { from, to, event });
   };
 
-  machine = await BattleStateMachine.create(onEnter, context, onTransition);
+  machine = await createStateManager(onEnter, context, onTransition);
   setMachine(machine);
 
   const debugLogListener = createDebugLogListener(machine);
@@ -173,7 +173,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
  * @pseudocode
  * 1. Return the internal `machine` reference.
  *
- * @returns {import('./stateMachine.js').BattleStateMachine|null} Current machine instance or null.
+ * @returns {import('./stateManager.js').ClassicBattleStateManager|null} Current machine instance or null.
  */
 export function getBattleStateMachine() {
   return machine;

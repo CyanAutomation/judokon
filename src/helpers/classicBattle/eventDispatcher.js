@@ -9,7 +9,7 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
  * @pseudocode
  * 1. Store the provided machine reference for later dispatches.
  *
- * @param {import('./stateMachine.js').BattleStateMachine} m - Live battle machine.
+ * @param {import('./stateManager.js').ClassicBattleStateManager} m - Live battle machine.
  */
 export function setMachine(m) {
   machine = m;

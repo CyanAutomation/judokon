@@ -105,7 +105,7 @@ describe("classicBattle scheduleNextRound", () => {
 
     await battleMod.startRound(store);
 
-    machine.current = "roundOver";
+    await machine.dispatch("roundOver");
     await dispatcher.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");
 
@@ -149,7 +149,7 @@ describe("classicBattle scheduleNextRound", () => {
     await battleMod.startRound(store);
     expect(generateRandomCardMock).toHaveBeenCalledTimes(1);
 
-    machine.current = "roundOver";
+    await machine.dispatch("roundOver");
     const dispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
     await dispatcher.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");

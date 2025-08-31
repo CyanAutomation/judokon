@@ -1,36 +1,39 @@
 import { describe, it, expect } from "vitest";
-import { BattleStateMachine } from "../../../src/helpers/classicBattle/stateMachine.js";
+import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
 
 describe("classic battle interrupt flow", () => {
   it("routes matchStart → interruptMatch → matchOver with payloads", async () => {
     const payloads = {};
-    const states = new Map([
-      [
-        "matchStart",
-        { name: "matchStart", triggers: [{ on: "interruptMatch", target: "interruptMatch" }] }
-      ],
-      [
-        "interruptMatch",
-        {
-          name: "interruptMatch",
-          triggers: [
-            { on: "interruptMatch", target: "matchOver" },
-            { on: "toLobby", target: "waitingForMatchStart" }
-          ]
-        }
-      ],
-      ["matchOver", { name: "matchOver", triggers: [] }],
-      ["waitingForMatchStart", { name: "waitingForMatchStart", triggers: [] }]
-    ]);
-
-    const machine = new BattleStateMachine(states, "matchStart", {
-      interruptMatch: (_, payload) => {
-        payloads.interruptMatch = payload;
+    const states = [
+      {
+        name: "matchStart",
+        type: "initial",
+        triggers: [{ on: "interruptMatch", target: "interruptMatch" }]
       },
-      matchOver: (_, payload) => {
-        payloads.matchOver = payload;
-      }
-    });
+      {
+        name: "interruptMatch",
+        triggers: [
+          { on: "interruptMatch", target: "matchOver" },
+          { on: "toLobby", target: "waitingForMatchStart" }
+        ]
+      },
+      { name: "matchOver", triggers: [] },
+      { name: "waitingForMatchStart", triggers: [] }
+    ];
+
+    const machine = await createStateManager(
+      {
+        interruptMatch: (_, payload) => {
+          payloads.interruptMatch = payload;
+        },
+        matchOver: (_, payload) => {
+          payloads.matchOver = payload;
+        }
+      },
+      {},
+      undefined,
+      states
+    );
 
     await machine.dispatch("interruptMatch", { reason: "disconnect" });
     expect(machine.getState()).toBe("interruptMatch");
@@ -43,30 +46,33 @@ describe("classic battle interrupt flow", () => {
 
   it("returns to waitingForMatchStart on toLobby", async () => {
     const payloads = {};
-    const states = new Map([
-      [
-        "matchStart",
-        { name: "matchStart", triggers: [{ on: "interruptMatch", target: "interruptMatch" }] }
-      ],
-      [
-        "interruptMatch",
-        {
-          name: "interruptMatch",
-          triggers: [
-            { on: "interruptMatch", target: "matchOver" },
-            { on: "toLobby", target: "waitingForMatchStart" }
-          ]
-        }
-      ],
-      ["matchOver", { name: "matchOver", triggers: [] }],
-      ["waitingForMatchStart", { name: "waitingForMatchStart", triggers: [] }]
-    ]);
+    const states = [
+      {
+        name: "matchStart",
+        type: "initial",
+        triggers: [{ on: "interruptMatch", target: "interruptMatch" }]
+      },
+      {
+        name: "interruptMatch",
+        triggers: [
+          { on: "interruptMatch", target: "matchOver" },
+          { on: "toLobby", target: "waitingForMatchStart" }
+        ]
+      },
+      { name: "matchOver", triggers: [] },
+      { name: "waitingForMatchStart", triggers: [] }
+    ];
 
-    const machine = new BattleStateMachine(states, "matchStart", {
-      waitingForMatchStart: (_, payload) => {
-        payloads.waitingForMatchStart = payload;
-      }
-    });
+    const machine = await createStateManager(
+      {
+        waitingForMatchStart: (_, payload) => {
+          payloads.waitingForMatchStart = payload;
+        }
+      },
+      {},
+      undefined,
+      states
+    );
 
     await machine.dispatch("interruptMatch");
     await machine.dispatch("toLobby", { adminTest: true });
@@ -76,39 +82,39 @@ describe("classic battle interrupt flow", () => {
 
   it("handles roundModification path and resumeRound payload", async () => {
     const payloads = {};
-    const states = new Map([
-      [
-        "interruptRound",
-        {
-          name: "interruptRound",
-          triggers: [{ on: "roundModifyFlag", target: "roundModification" }]
-        }
-      ],
-      [
-        "roundModification",
-        {
-          name: "roundModification",
-          triggers: [
-            { on: "modifyRoundDecision", target: "roundStart" },
-            { on: "cancelModification", target: "cooldown" }
-          ]
-        }
-      ],
-      ["roundStart", { name: "roundStart", triggers: [] }],
-      ["cooldown", { name: "cooldown", triggers: [] }]
-    ]);
+    const states = [
+      {
+        name: "interruptRound",
+        type: "initial",
+        triggers: [{ on: "roundModifyFlag", target: "roundModification" }]
+      },
+      {
+        name: "roundModification",
+        triggers: [
+          { on: "modifyRoundDecision", target: "roundStart" },
+          { on: "cancelModification", target: "cooldown" }
+        ]
+      },
+      { name: "roundStart", triggers: [] },
+      { name: "cooldown", triggers: [] }
+    ];
 
-    const machine = new BattleStateMachine(states, "interruptRound", {
-      roundModification: (_, payload) => {
-        payloads.roundModification = payload;
+    const machine = await createStateManager(
+      {
+        roundModification: (_, payload) => {
+          payloads.roundModification = payload;
+        },
+        roundStart: (_, payload) => {
+          payloads.roundStart = payload;
+        },
+        cooldown: () => {
+          payloads.cooldown = true;
+        }
       },
-      roundStart: (_, payload) => {
-        payloads.roundStart = payload;
-      },
-      cooldown: () => {
-        payloads.cooldown = true;
-      }
-    });
+      {},
+      undefined,
+      states
+    );
 
     await machine.dispatch("roundModifyFlag", { reason: "score adjusted" });
     expect(machine.getState()).toBe("roundModification");
@@ -120,29 +126,24 @@ describe("classic battle interrupt flow", () => {
   });
 
   it("cancels modification and goes to cooldown", async () => {
-    const states = new Map([
-      [
-        "interruptRound",
-        {
-          name: "interruptRound",
-          triggers: [{ on: "roundModifyFlag", target: "roundModification" }]
-        }
-      ],
-      [
-        "roundModification",
-        {
-          name: "roundModification",
-          triggers: [
-            { on: "modifyRoundDecision", target: "roundStart" },
-            { on: "cancelModification", target: "cooldown" }
-          ]
-        }
-      ],
-      ["roundStart", { name: "roundStart", triggers: [] }],
-      ["cooldown", { name: "cooldown", triggers: [] }]
-    ]);
+    const states = [
+      {
+        name: "interruptRound",
+        type: "initial",
+        triggers: [{ on: "roundModifyFlag", target: "roundModification" }]
+      },
+      {
+        name: "roundModification",
+        triggers: [
+          { on: "modifyRoundDecision", target: "roundStart" },
+          { on: "cancelModification", target: "cooldown" }
+        ]
+      },
+      { name: "roundStart", triggers: [] },
+      { name: "cooldown", triggers: [] }
+    ];
 
-    const machine = new BattleStateMachine(states, "interruptRound", {});
+    const machine = await createStateManager({}, {}, undefined, states);
     await machine.dispatch("roundModifyFlag");
     await machine.dispatch("cancelModification");
     expect(machine.getState()).toBe("cooldown");

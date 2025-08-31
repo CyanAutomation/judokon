@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 
-import { BattleStateMachine } from "../../../src/helpers/classicBattle/stateMachine.js";
+import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
 import { roundStartEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 
 describe("round start error recovery", () => {
@@ -11,31 +11,26 @@ describe("round start error recovery", () => {
       _resetForTest: vi.fn()
     }));
     const { startRound } = await import("../../../src/helpers/classicBattle/roundManager.js");
-    const states = new Map([
-      [
-        "roundStart",
-        {
-          name: "roundStart",
-          triggers: [
-            { on: "cardsRevealed", target: "waitingForPlayerAction" },
-            { on: "interrupt", target: "interruptRound" }
-          ]
-        }
-      ],
-      [
-        "waitingForPlayerAction",
-        {
-          name: "waitingForPlayerAction",
-          triggers: [{ on: "interrupt", target: "interruptRound" }]
-        }
-      ],
-      ["interruptRound", { name: "interruptRound", triggers: [] }]
-    ]);
-    const machine = new BattleStateMachine(
-      states,
-      "roundStart",
+    const states = [
+      {
+        name: "roundStart",
+        type: "initial",
+        triggers: [
+          { on: "cardsRevealed", target: "waitingForPlayerAction" },
+          { on: "interrupt", target: "interruptRound" }
+        ]
+      },
+      {
+        name: "waitingForPlayerAction",
+        triggers: [{ on: "interrupt", target: "interruptRound" }]
+      },
+      { name: "interruptRound", triggers: [] }
+    ];
+    const machine = await createStateManager(
       { roundStart: roundStartEnter },
-      { doStartRound: startRound, store: {} }
+      { doStartRound: startRound, store: {} },
+      undefined,
+      states
     );
 
     await roundStartEnter(machine);
@@ -48,31 +43,26 @@ describe("round start error recovery", () => {
     const startRoundWrapper = () => {
       throw new Error("sync fail");
     };
-    const states = new Map([
-      [
-        "roundStart",
-        {
-          name: "roundStart",
-          triggers: [
-            { on: "cardsRevealed", target: "waitingForPlayerAction" },
-            { on: "interrupt", target: "interruptRound" }
-          ]
-        }
-      ],
-      [
-        "waitingForPlayerAction",
-        {
-          name: "waitingForPlayerAction",
-          triggers: [{ on: "interrupt", target: "interruptRound" }]
-        }
-      ],
-      ["interruptRound", { name: "interruptRound", triggers: [] }]
-    ]);
-    const machine = new BattleStateMachine(
-      states,
-      "roundStart",
+    const states = [
+      {
+        name: "roundStart",
+        type: "initial",
+        triggers: [
+          { on: "cardsRevealed", target: "waitingForPlayerAction" },
+          { on: "interrupt", target: "interruptRound" }
+        ]
+      },
+      {
+        name: "waitingForPlayerAction",
+        triggers: [{ on: "interrupt", target: "interruptRound" }]
+      },
+      { name: "interruptRound", triggers: [] }
+    ];
+    const machine = await createStateManager(
       { roundStart: roundStartEnter },
-      { startRoundWrapper }
+      { startRoundWrapper },
+      undefined,
+      states
     );
 
     await roundStartEnter(machine);

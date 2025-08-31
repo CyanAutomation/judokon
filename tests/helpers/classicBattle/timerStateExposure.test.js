@@ -25,24 +25,22 @@ const engineMock = {
   getTimerState: () => ({ ...timerState })
 };
 
-vi.mock("../../../src/helpers/classicBattle/stateMachine.js", () => ({
-  BattleStateMachine: {
-    async create(_onEnter, { store }, onTransition) {
-      const machine = {
-        context: { store, engine: engineMock },
-        current: "init",
-        async dispatch(event) {
-          const from = this.current;
-          const to = event;
-          this.current = to;
-          await onTransition({ from, to, event });
-        },
-        getState() {
-          return this.current;
-        }
-      };
-      return machine;
-    }
+vi.mock("../../../src/helpers/classicBattle/stateManager.js", () => ({
+  createStateManager: async (_onEnter, { store }, onTransition) => {
+    const machine = {
+      context: { store, engine: engineMock },
+      current: "init",
+      async dispatch(event) {
+        const from = this.current;
+        const to = event;
+        this.current = to;
+        await onTransition({ from, to, event });
+      },
+      getState() {
+        return this.current;
+      }
+    };
+    return machine;
   }
 }));
 
