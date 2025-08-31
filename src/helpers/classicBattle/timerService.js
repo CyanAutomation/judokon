@@ -419,7 +419,7 @@ export async function handleNextRoundExpiration(controls, btn) {
   markNextReady(btn);
   await awaitCooldownState();
   try {
-    dispatchBattleEvent("ready");
+    await dispatchBattleEvent("ready");
   } catch {}
   markNextReady(btn);
   updateDebugPanel();

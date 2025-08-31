@@ -11,9 +11,13 @@ describe("awaitCooldownState", () => {
     await expect(awaitCooldownState()).resolves.toBeUndefined();
   });
 
-  it("resolves immediately when in roundOver", async () => {
+  it("waits for cooldown when in roundOver", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     window.__classicBattleState = "roundOver";
-    await expect(awaitCooldownState()).resolves.toBeUndefined();
+    const p = awaitCooldownState();
+    document.dispatchEvent(new CustomEvent("battle:state", { detail: { to: "cooldown" } }));
+    await expect(p).resolves.toBeUndefined();
+    expect(warn).toHaveBeenCalled();
   });
 
   it("waits for cooldown when pre-cooldown", async () => {
