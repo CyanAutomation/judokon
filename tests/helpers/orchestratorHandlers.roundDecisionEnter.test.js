@@ -26,7 +26,7 @@ describe("roundDecisionEnter", () => {
     const p = mod.roundDecisionEnter(machine);
     await vi.runAllTimersAsync();
     await p;
-    expect(window.__roundDecisionGuard).toBeTruthy();
+    expect(typeof window.__roundDecisionGuard).toBe("function");
     vi.useRealTimers();
   });
 

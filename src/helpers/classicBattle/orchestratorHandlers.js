@@ -6,7 +6,7 @@ import { getOpponentJudoka } from "./cardSelection.js";
 import { getStatValue } from "../battle/index.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { resolveRound } from "./roundResolver.js";
-import { guard, guardAsync } from "./guard.js";
+import { guard, guardAsync, scheduleGuard } from "./guard.js";
 // Removed unused import for enableNextRoundButton
 
 // Test-mode flag for muting noisy logs in Vitest
@@ -557,29 +557,6 @@ async function dispatchOutcome(outcomeEvent, machine) {
  * Schedule a timeout that computes the round outcome if resolution stalls.
  *
  * @param {object} store
- * @param {object} machine
- * @returns {number|null} guard timeout id
- * @pseudocode
- * ```
- * setTimeout → computeAndDispatchOutcome(store, machine)
- * store id on window for cancellation
- * return id
- * ```
- */
-export function scheduleRoundDecisionGuard(store, machine) {
-  try {
-    const id = setTimeout(() => {
-      computeAndDispatchOutcome(store, machine);
-    }, 1200);
-    try {
-      if (typeof window !== "undefined") window.__roundDecisionGuard = id;
-    } catch {}
-    return id;
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Record entry into the round decision state for debug purposes.
  *
@@ -730,14 +707,17 @@ export function waitForPlayerChoice(store, timeoutMs) {
 export async function roundDecisionEnter(machine) {
   const { store } = machine.context;
   recordRoundDecisionEntry();
-  scheduleRoundDecisionGuard(store, machine);
+  const cancelGuard = scheduleGuard(1200, () => computeAndDispatchOutcome(store, machine));
+  try {
+    if (typeof window !== "undefined") window.__roundDecisionGuard = cancelGuard;
+  } catch {}
 
   try {
     const resolved = await resolveSelectionIfPresent(store);
     if (resolved) {
       try {
-        if (typeof window !== "undefined" && window.__roundDecisionGuard) {
-          clearTimeout(window.__roundDecisionGuard);
+        if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
+          window.__roundDecisionGuard();
           window.__roundDecisionGuard = null;
         }
       } catch {}
@@ -755,8 +735,8 @@ export async function roundDecisionEnter(machine) {
     }
   } catch {
     try {
-      if (typeof window !== "undefined" && window.__roundDecisionGuard) {
-        clearTimeout(window.__roundDecisionGuard);
+      if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
+        window.__roundDecisionGuard();
         window.__roundDecisionGuard = null;
       }
     } catch {}
@@ -781,8 +761,8 @@ export async function roundDecisionEnter(machine) {
   try {
     await resolveSelectionIfPresent(store);
     try {
-      if (typeof window !== "undefined" && window.__roundDecisionGuard) {
-        clearTimeout(window.__roundDecisionGuard);
+      if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
+        window.__roundDecisionGuard();
         window.__roundDecisionGuard = null;
       }
     } catch {}
@@ -798,8 +778,8 @@ export async function roundDecisionEnter(machine) {
     } catch {}
   } catch {
     try {
-      if (typeof window !== "undefined" && window.__roundDecisionGuard) {
-        clearTimeout(window.__roundDecisionGuard);
+      if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
+        window.__roundDecisionGuard();
         window.__roundDecisionGuard = null;
       }
     } catch {}
@@ -813,8 +793,8 @@ export async function roundDecisionEnter(machine) {
 export async function roundDecisionExit() {
   // Clear any scheduled decision guard to prevent late outcome dispatch.
   try {
-    if (typeof window !== "undefined" && window.__roundDecisionGuard) {
-      clearTimeout(window.__roundDecisionGuard);
+    if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
+      window.__roundDecisionGuard();
       window.__roundDecisionGuard = null;
     }
   } catch {}
@@ -911,8 +891,8 @@ export async function interruptRoundEnter(machine, payload) {
       store.playerChoice = null;
       store.selectionMade = false;
     }
-    if (typeof window !== "undefined" && window.__roundDecisionGuard) {
-      clearTimeout(window.__roundDecisionGuard);
+    if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
+      window.__roundDecisionGuard();
       window.__roundDecisionGuard = null;
     }
   } catch {}
