@@ -380,7 +380,9 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
 
   // Preload remaining docs during idle. Skip in test to reduce overhead.
   const isTest =
-    typeof process !== "undefined" && process?.env && (process.env.VITEST || process.env.NODE_ENV === "test");
+    typeof process !== "undefined" &&
+    process?.env &&
+    (process.env.VITEST || process.env.NODE_ENV === "test");
   if (!isTest) {
     Promise.resolve().then(() => {
       for (let i = 0; i < sidebar.files.length; i++) {
