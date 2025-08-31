@@ -1712,5 +1712,3 @@ try {
 } catch {
   bindUIHelperEventHandlers();
 }
-
-

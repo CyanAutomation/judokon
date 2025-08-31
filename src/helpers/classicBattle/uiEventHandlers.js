@@ -3,7 +3,12 @@ import { getOpponentCardData } from "./opponentController.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
-import { renderOpponentCard, showRoundOutcome, showStatComparison, updateDebugPanel } from "./uiHelpers.js";
+import {
+  renderOpponentCard,
+  showRoundOutcome,
+  showStatComparison,
+  updateDebugPanel
+} from "./uiHelpers.js";
 
 let opponentSnackbarId = 0;
 let opponentDelayMs = 500;
