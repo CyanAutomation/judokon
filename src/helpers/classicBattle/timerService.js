@@ -9,7 +9,7 @@ import { emitBattleEvent } from "./battleEvents.js";
 import { isEnabled } from "../featureFlags.js";
 
 import { realScheduler } from "../scheduler.js";
-import { dispatchBattleEvent } from "./battleDispatcher.js";
+import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";

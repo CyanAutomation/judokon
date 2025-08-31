@@ -35,7 +35,7 @@ describe("timerService without auto-select", () => {
     }));
 
     const dispatchSpy = vi.fn();
-    vi.doMock("../../src/helpers/classicBattle/battleDispatcher.js", () => ({
+    vi.doMock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
       dispatchBattleEvent: dispatchSpy
     }));
 

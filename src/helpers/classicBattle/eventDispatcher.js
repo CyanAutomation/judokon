@@ -1,36 +1,50 @@
+import { emitBattleEvent } from "./battleEvents.js";
+
 let machine = null;
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
- * Register the battle state machine instance used by this dispatcher.
+ * Register the active battle state machine.
  *
- * @param {import('./stateMachine.js').BattleStateMachine} m
  * @pseudocode
- * 1. Store the provided machine instance in module-scope `machine`.
- * 2. Later `dispatchBattleEvent` will call `machine.dispatch` if present.
+ * 1. Store the provided machine reference for later dispatches.
+ *
+ * @param {import('./stateMachine.js').BattleStateMachine} m - Live battle machine.
  */
 export function setMachine(m) {
   machine = m;
 }
 
 /**
- * Dispatch an event to the registered state machine.
+ * Dispatch an event to the registered battle machine.
  *
- * @param {string} eventName
- * @param {any} payload
  * @pseudocode
- * 1. If no `machine` is registered, exit early.
- * 2. Optionally log debug information when not running in Vitest.
- * 3. Call `machine.dispatch(eventName, payload)` and await completion.
- * 4. Optionally log completion when not running in Vitest.
+ * 1. Exit early when no machine is registered.
+ * 2. Attempt to dispatch `eventName` with optional `payload` on the machine.
+ * 3. If dispatch throws:
+ *    a. Swallow the error to prevent cascading failures.
+ *    b. Emit `debugPanelUpdate` so UI diagnostics can react.
+ *
+ * @param {string} eventName - Event to send to the machine.
+ * @param {any} [payload] - Optional event payload.
+ * @returns {Promise<any>|void} Result of the dispatch when available.
  */
 export async function dispatchBattleEvent(eventName, payload) {
   if (!machine) return;
   try {
     if (!IS_VITEST) console.log("DEBUG: eventDispatcher dispatch", { eventName, payload });
   } catch {}
-  await machine.dispatch(eventName, payload);
   try {
-    if (!IS_VITEST) console.log("DEBUG: eventDispatcher dispatched", { eventName });
-  } catch {}
+    const res = await machine.dispatch(eventName, payload);
+    try {
+      if (!IS_VITEST) console.log("DEBUG: eventDispatcher dispatched", { eventName });
+    } catch {}
+    return res;
+  } catch {
+    try {
+      emitBattleEvent("debugPanelUpdate");
+    } catch (innerError) {
+      if (!IS_VITEST) console.error("Failed to emit debugPanelUpdate event:", innerError);
+    }
+  }
 }
