@@ -603,8 +603,9 @@ export function restorePointsToWin() {
       if (!POINTS_TO_WIN_OPTIONS.includes(val)) return;
       if (window.confirm("Changing win target resets scores. Start a new match?")) {
         storage.set(val);
-        setPointsToWin(val);
         resetMatch();
+        setPointsToWin(val);
+        updateRoundHeader(0, val);
         renderStartButton();
         current = val;
       } else {
