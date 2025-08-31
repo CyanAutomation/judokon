@@ -104,6 +104,19 @@ function updateScoreLine(player, opponent) {
   if (el) el.textContent = `You: ${player} Opponent: ${opponent}`;
 }
 
+/**
+ * Clear the verbose log output.
+ *
+ * @pseudocode
+ * el = document.getElementById("cli-verbose-log")
+ * if el exists:
+ *   set textContent to ""
+ */
+function clearVerboseLog() {
+  const el = byId("cli-verbose-log");
+  if (el) el.textContent = "";
+}
+
 function initSeed() {
   const input = byId("seed-input");
   let seed = null;
@@ -956,6 +969,9 @@ function handleMatchOver() {
   });
   btn.addEventListener("click", () => {
     try {
+      clearVerboseLog();
+    } catch {}
+    try {
       location.reload();
     } catch {}
   });
@@ -966,6 +982,9 @@ function handleMatchOver() {
 function handleBattleState(ev) {
   const { from, to } = ev.detail || {};
   updateBattleStateBadge(to);
+  if (to === "matchStart") {
+    clearVerboseLog();
+  }
   if (to === "waitingForPlayerAction") {
     startSelectionCountdown(30);
     byId("cli-stats")?.focus();
@@ -1036,8 +1055,9 @@ async function init() {
     await initFeatureFlags();
   } catch {}
   try {
-    const skip = new URLSearchParams(location.search).get("skipRoundCooldown");
-    if (skip === "1") setFlag("skipRoundCooldown", true);
+    const params = new URLSearchParams(location.search);
+    const skip = params.get("skipRoundCooldown") === "1";
+    setFlag("skipRoundCooldown", skip);
   } catch {}
   updateVerbose();
   updateStateBadgeVisibility();
