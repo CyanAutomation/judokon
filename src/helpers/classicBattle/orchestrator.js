@@ -181,7 +181,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   const initialDetail = {
     from: null,
     to: machine.getState(),
-    event: "init",
+    event: "init"
   };
   domStateListener({ detail: initialDetail });
   debugLogListener({ detail: initialDetail });
