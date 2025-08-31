@@ -357,7 +357,21 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
 /**
  * @summary TODO: Add summary
  * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Dispatch event to the state machine if available.
+ * 2. Return the result of machine.dispatch when successful.
+ * 3. On error, attempt a debug event emission and swallow the error to
+ *    avoid failing startup paths.
+ *
+ * @param {string} eventName - Event name to dispatch to the machine.
+ * @param {any} [payload] - Optional payload forwarded to the machine.
+ * @returns {Promise<any|undefined>} result from the machine or undefined when
+ * the machine is missing or an error occurred.
+ *
+ * @pseudocode
+ * 1. If `machine` is falsy -> return immediately.
+ * 2. Try `await machine.dispatch(eventName, payload)` and return the result.
+ * 3. If dispatch throws -> emit a `debugPanelUpdate` event and swallow the
+ *    error (log to console only in non-test env).
  */
 export async function dispatchBattleEvent(eventName, payload) {
   if (!machine) return;
