@@ -160,7 +160,7 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
     const next = syncDisplayMode(current, handleUpdate);
     applyInitialControlValues(controls, next, tooltipMap);
     renderGameModes(gameModes, getCurrentSettings, handleUpdate);
-    renderFeatureFlags(next, getCurrentSettings, handleUpdate, tooltipMap);
+    renderFeatureFlags(current, getCurrentSettings, handleUpdate, tooltipMap);
     renderNavCacheReset();
     initTooltips().then((fn) => {
       cleanupTooltips = fn;
